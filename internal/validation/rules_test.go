@@ -153,6 +153,8 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 }
 func TestInputsModelFields(t *testing.T) {
 
+	//Inputs of ops must be model fields
+
 }
 
 //No reserved field names (id, createdAt, updatedAt)
@@ -172,4 +174,25 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 
 //Supported field types
 func TestSupportedFieldTypes(t *testing.T) {
+}
+
+// test findDuplicates
+func TestFindDuplicates(t *testing.T) {
+	input1 := []string{"a", "b", "b"}
+	input2 := []string{"a", "b", "c"}
+
+	tests := map[string]struct {
+		input    []string
+		expected []string
+	}{
+		"working": {input: input1, expected: []string{"b"}},
+		"nodups":  {input: input2, expected: []string(nil)},
+	}
+
+	for name, tc := range tests {
+		got := findDuplicates(tc.input)
+		if !assert.Equal(t, tc.expected, got) {
+			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
+		}
+	}
 }

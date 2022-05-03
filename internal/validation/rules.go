@@ -100,6 +100,31 @@ func findDuplicatesOperations(globalOperations []GlobalOperations) error {
 }
 
 //Inputs of ops must be model fields
+func OperationInputs(input []*parser.ModelSection) error {
+	functionFields := make(map[string][]*parser.FunctionArg, 0)
+
+	for _, field := range input {
+		for _, function := range field.Functions {
+			functionFields[function.Name] = function.Arguments
+		}
+	}
+
+	for _, modelName := range input {
+		for _, fields := range modelName.Fields {
+			for functionName, functionField := range functionFields {
+				for _, functionFieldName := range functionField {
+					if fields.Name == functionFieldName.Name {
+						return fmt.Errorf("%s is an input of %s", fields.Name, functionName)
+					}
+				}
+			}
+		}
+
+	}
+
+	return nil
+
+}
 
 //No reserved field names (id, createdAt, updatedAt)
 

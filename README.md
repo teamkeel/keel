@@ -13,7 +13,6 @@ keel-cli is a tool to build and deploy services
 |  run              | Run the application locally                                                                       |
 |  validate         | Validate the Keel schema                                                                          |
 
-
 ## Development
 
 Requires Go 1.18.x
