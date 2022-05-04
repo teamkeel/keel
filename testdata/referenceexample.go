@@ -7,7 +7,8 @@ model Book {
 	  isbn Text {
 		@unique
 	  }
-	  authors Author[]
+	  // Not valid
+	  // authors Author[]
 	}
 	functions {
 	  create createBook(title, authors)

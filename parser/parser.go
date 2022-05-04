@@ -38,6 +38,7 @@ type ModelSection struct {
 type ModelField struct {
 	Pos lexer.Position
 
+	BuiltIn    bool
 	Name       string       `@Ident`
 	Type       string       `@Ident`
 	Repeated   bool         `@( "[" "]" )?`

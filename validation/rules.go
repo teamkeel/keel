@@ -63,7 +63,9 @@ func fieldsOpsFuncsLowerCamel(schema *parser.Schema) error {
 	for _, input := range schema.Declarations {
 		for _, model := range input.Model.Sections {
 			for _, field := range model.Fields {
-				fmt.Println(field.Name)
+				if field.BuiltIn {
+					continue
+				}
 				if strcase.ToLowerCamel(field.Name) != field.Name {
 					return fmt.Errorf("you have a field name that is not lowerCamel %s", field.Name)
 				}
@@ -188,6 +190,9 @@ func noReservedFieldNames(schema *parser.Schema) error {
 		for _, dec := range schema.Declarations {
 			for _, section := range dec.Model.Sections {
 				for _, field := range section.Fields {
+					if field.BuiltIn {
+						continue
+					}
 					if strings.EqualFold(name, field.Name) {
 						return fmt.Errorf("you have a reserved field name %s", field.Name)
 					}
@@ -272,7 +277,7 @@ func operationUniqueFieldInput(schema *parser.Schema) error {
 
 //Supported field types
 func supportedFieldTypes(schema *parser.Schema) error {
-	var fieldTypes = map[string]bool{"Text": true, "Date": true, "Timestamp": true, "Image": true, "Boolean": true, "Enum": true, "Identity": true}
+	var fieldTypes = map[string]bool{"Text": true, "Date": true, "Timestamp": true, "Image": true, "Boolean": true, "Enum": true, "Identity": true, parser.FieldTypeID: true}
 
 	for _, dec := range schema.Declarations {
 		if dec.Model == nil {
