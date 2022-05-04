@@ -34,6 +34,7 @@ func (v *Validator) RunAllValidators() error {
 		noReservedFieldNames,
 		noReservedModelNames,
 		operationUniqueFieldInput,
+		supportedFieldTypes,
 	}
 	for _, vf := range validatorFuncs {
 		err := vf(v.schema)
@@ -204,11 +205,82 @@ func noReservedModelNames(schema *parser.Schema) error {
 
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
 func operationUniqueFieldInput(schema *parser.Schema) error {
+	// getAuthor(id)
+	// A get operation can only accept a single field. Needs to be unique OR primary key
+
+	for _, dec := range schema.Declarations {
+		if dec.Model == nil {
+			continue
+		}
+
+		for _, section := range dec.Model.Sections {
+			if len(section.Functions) == 0 {
+				continue
+			}
+
+			for _, function := range section.Functions {
+				if !function.Get {
+					continue
+				}
+
+				if len(function.Arguments) != 1 {
+					return fmt.Errorf("get operation must take a unique field as an input")
+				}
+
+				arg := function.Arguments[0]
+				isValid := false
+
+				for _, section2 := range dec.Model.Sections {
+					if len(section2.Fields) == 0 {
+						continue
+					}
+					for _, field := range section2.Fields {
+						if field.Name != arg.Name {
+							continue
+						}
+						for _, attr := range field.Attributes {
+							if attr.Name == "unique" {
+								isValid = true
+							}
+							if attr.Name == "primaryKey" {
+								isValid = true
+							}
+						}
+					}
+				}
+
+				if !isValid {
+					return fmt.Errorf("operation %s must take a unique field as an input", function.Name)
+				}
+
+			}
+		}
+
+	}
 
 	return nil
 }
 
 //Supported field types
+func supportedFieldTypes(schema *parser.Schema) error {
+	var fieldTypes = map[string]bool{"Text": true, "Date": true, "Timestamp": true, "Image": true, "Boolean": true, "Enum": true, "Identity": true}
+
+	for _, dec := range schema.Declarations {
+		if dec.Model == nil {
+			continue
+		}
+
+		for _, section := range dec.Model.Sections {
+			for _, field := range section.Fields {
+				if _, ok := fieldTypes[field.Type]; !ok {
+					return fmt.Errorf("field %s has an unsupported type %s", field.Name, field.Type)
+				}
+			}
+		}
+	}
+
+	return nil
+}
 
 func findDuplicates(s []string) []string {
 	inResult := make(map[string]bool)

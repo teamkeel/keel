@@ -309,11 +309,83 @@ func TestReservedModelNames(t *testing.T) {
 
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
 func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
+	tests := map[string]struct {
+		input    *parser.Schema
+		expected error
+	}{
+		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
+			{
+				Fields: []*parser.ModelField{
+					{Name: "id", Type: "int", Attributes: []*parser.Attribute{{Name: "primaryKey"}}},
+					{Name: "name", Type: "string", Attributes: []*parser.Attribute{{Name: "unique"}}},
+				},
+			}, {
+				Functions: []*parser.ModelFunction{
+					{
+						Get:  true,
+						Name: "createBook",
+						Arguments: []*parser.FunctionArg{
+							{Name: "id"},
+						},
+					},
+				},
+			},
+		}}}}}, expected: nil},
+		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
+			{
+				Fields: []*parser.ModelField{
+					{Name: "id", Type: "int", Attributes: []*parser.Attribute{{Name: "primaryKey"}}},
+					{Name: "name", Type: "string"},
+				},
+			}, {
+				Functions: []*parser.ModelFunction{
+					{
+						Get:  true,
+						Name: "createBook",
+						Arguments: []*parser.FunctionArg{
+							{Name: "name"},
+						},
+					},
+				},
+			},
+		}}}}}, expected: fmt.Errorf("operation createBook must take a unique field as an input")},
+	}
 
+	for name, tc := range tests {
+		got := operationUniqueFieldInput(tc.input)
+		if !assert.Equal(t, tc.expected, got) {
+			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
+		}
+	}
 }
 
 //Supported field types
 func TestSupportedFieldTypes(t *testing.T) {
+
+	input1 := []*parser.ModelField{
+		{Name: "userId", Type: "Text"},
+	}
+	input2 := []*parser.ModelField{
+		{Name: "userId", Type: "Invalid"},
+	}
+	tests := map[string]struct {
+		input    *parser.Schema
+		expected error
+	}{
+		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
+			{Fields: input1, Functions: []*parser.ModelFunction{{Name: "createBook", Get: true, Arguments: []*parser.FunctionArg{{Name: "userId"}}}}},
+		}}}}}, expected: nil},
+		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
+			{Fields: input2, Functions: []*parser.ModelFunction{{Name: "createBook", Get: true, Arguments: []*parser.FunctionArg{{Name: "userId"}}}}},
+		}}}}}, expected: errors.New("field userId has an unsupported type Invalid")},
+	}
+
+	for name, tc := range tests {
+		got := supportedFieldTypes(tc.input)
+		if !assert.Equal(t, tc.expected, got) {
+			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
+		}
+	}
 }
 
 // test findDuplicates
