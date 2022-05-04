@@ -2,46 +2,85 @@ package parser
 
 import (
 	"github.com/alecthomas/participle"
+	"github.com/alecthomas/participle/lexer"
 	"github.com/teamkeel/keel/proto"
 )
 
 type Schema struct {
+	Pos lexer.Position
+
 	Declarations []*Declaration `@@+`
 }
 
 type Declaration struct {
-	Model *Model `"model" @@`
+	Pos lexer.Position
+
+	Model *Model `("model" @@`
+	API   *API   `| "api" @@)`
 }
 
 type Model struct {
+	Pos lexer.Position
+
 	Name     string          `@Ident`
 	Sections []*ModelSection `"{" @@* "}"`
 }
 
 type ModelSection struct {
-	Fields    []*ModelField    `( "fields" "{" @@+ "}"`
-	Functions []*ModelFunction `| "functions" "{" @@+ "}"`
-	Attribute *Attribute       `| @@)`
+	Pos lexer.Position
+
+	Fields     []*ModelField  `( "fields" "{" @@+ "}"`
+	Functions  []*ModelAction `| "functions" "{" @@+ "}"`
+	Operations []*ModelAction `| "operations" "{" @@+ "}"`
+	Attribute  *Attribute     `| @@)`
 }
 
 type ModelField struct {
+	Pos lexer.Position
+
 	Name       string       `@Ident`
 	Type       string       `@Ident`
 	Repeated   bool         `@( "[" "]" )?`
 	Attributes []*Attribute `( "{" @@* "}" )?`
 }
 
+type API struct {
+	Pos lexer.Position
+
+	Name     string        `@Ident`
+	Sections []*APISection `"{" @@* "}"`
+}
+
+type APISection struct {
+	Pos lexer.Position
+
+	Models    []*APIModels `("models" "{" @@* "}"`
+	Attribute *Attribute   `| @@)`
+}
+
+type APIModels struct {
+	Pos lexer.Position
+
+	ModelName string `@Ident`
+}
+
 type Attribute struct {
+	Pos lexer.Position
+
 	Name      string               `"@" @Ident`
 	Arguments []*AttributeArgument `( "(" @@ ( "," @@ )* ")" )?`
 }
 
 type AttributeArgument struct {
+	Pos lexer.Position
+
 	Expression *Expression `@@`
 	Value      *Value      `| @@`
 }
 
 type Value struct {
+	Pos lexer.Position
+
 	True   bool     `  @"true"`
 	False  bool     `| @"false"`
 	String string   `| @String`
@@ -50,19 +89,24 @@ type Value struct {
 }
 
 type Expression struct {
+	Pos lexer.Position
+
 	LHS *Value `@@`
 	Op  string `@( "in" | "=" )`
 	RHS *Value `@@`
 }
 
-type ModelFunction struct {
-	Create    bool           `( @"create"`
-	Get       bool           `| @"get" )`
-	Name      string         `@Ident`
-	Arguments []*FunctionArg `"(" @@ ( "," @@ )* ")"`
+type ModelAction struct {
+	Pos lexer.Position
+
+	Type      string       `@Ident`
+	Name      string       `@Ident`
+	Arguments []*ActionArg `"(" @@ ( "," @@ )* ")"`
 }
 
-type FunctionArg struct {
+type ActionArg struct {
+	Pos lexer.Position
+
 	Name string `@Ident`
 }
 
