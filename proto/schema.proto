@@ -20,9 +20,6 @@ message Model {
     // The operations this model defines. Contains both operations that will be auto
     // generated and also custom functions
     repeated Operation operations = 3;
-
-    // Any attributes defined at the model level.
-    repeated Attribute attributes = 4;
 }
 
 message Field {
@@ -35,8 +32,17 @@ message Field {
     // The type of the field.
     FieldType type = 3;
 
-    // Any attributes defined within this field.
-    repeated Attribute attributes = 4;
+    // If true then this field is allowed to be null
+    bool optional = 4;
+
+    // If true then this field will have a unique constraint added to it meaning
+    // a given value can only exist in a single row.
+    // Cannot be true if `repeated` is true
+    bool unique = 5;
+
+    // If true then this field can contain multiple values.
+    // Cannot be true if `unique` is true.
+    bool repeated = 6;
 }
 
 message Operation {
@@ -56,9 +62,6 @@ message Operation {
 
     // The inputs this operation accepts.
     repeated OperationInput inputs = 5;
-
-    // Any attributes defined within this operation.
-    repeated Attribute attributes = 6;
 }
 
 message OperationInput {
@@ -127,42 +130,6 @@ enum OperationType {
 
     // Delete a record and returns it's ID
     OPERATION_TYPE_DELETE = 5;
-}
-
-message Attribute {
-    // Name of the attribute.
-    AttributeName name = 1;
-
-    // Arguments passed to this attribute.
-    repeated AttributeArgument arguments = 2;
-}
-
-message AttributeArgument {
-    // Only one of `expression` or `value` should be populated.
-
-    // To avoid very large proto payloads expressions are represented in their string format.
-    // For example "ctx.identity == person.identity". Parsing these expresssions should be 
-    // very fast and so it's reasonable to do it as required when working with this schema.
-    google.protobuf.StringValue expression = 1;
-
-    // A literal value
-    AttributeValue value = 2;
-}
-
-message AttributeValue {
-    // Only one field should be populated
-
-    google.protobuf.StringValue string = 1;
-    google.protobuf.BoolValue bool = 2;
-    google.protobuf.StringValue ident = 3;
-    repeated AttributeValue array = 4;
-}
-
-enum AttributeName {
-    ATTRIBUTE_NAME_UNKNOWN = 0;
-    ATTRIBUTE_NAME_REQUIRED = 1;
-    ATTRIBUTE_NAME_UNIQUE = 2;
-    ATTRIBUTE_NAME_PERMISSION = 3;
 }
 
 enum FieldType {
