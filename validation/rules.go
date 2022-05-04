@@ -33,6 +33,7 @@ func (v *Validator) RunAllValidators() error {
 		operationInputs,
 		noReservedFieldNames,
 		noReservedModelNames,
+		operationUniqueFieldInput,
 	}
 	for _, vf := range validatorFuncs {
 		err := vf(v.schema)
@@ -202,6 +203,10 @@ func noReservedModelNames(schema *parser.Schema) error {
 }
 
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
+func operationUniqueFieldInput(schema *parser.Schema) error {
+
+	return nil
+}
 
 //Supported field types
 

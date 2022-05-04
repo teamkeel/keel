@@ -16,7 +16,6 @@ var validateCmd = &cobra.Command{
 	Short: "Validate the Keel schema",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("validate called")
-
 	},
 }
 
