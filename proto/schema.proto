@@ -43,6 +43,9 @@ message Field {
     // If true then this field can contain multiple values.
     // Cannot be true if `unique` is true.
     bool repeated = 6;
+
+    // Primary key for this field.
+    bool primary_key = 7;
 }
 
 message Operation {
