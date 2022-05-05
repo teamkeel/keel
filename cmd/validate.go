@@ -16,6 +16,16 @@ var validateCmd = &cobra.Command{
 	Short: "Validate the Keel schema",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("validate called")
+
+		// upgrade the command meta data above
+
+		// harvest input schema file name from cmd arguments
+
+		// slurp the file contents into a string
+
+		// delegate to exported Schema method
+
+		// output something useful
 	},
 }
 

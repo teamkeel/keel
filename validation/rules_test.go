@@ -45,19 +45,19 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 			}}}}}, expected: nil},
 		"simpelFunction": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{{
-				Functions: []*parser.ModelFunction{
+				Functions: []*parser.ModelAction{
 					{Name: "createBook"},
 				}},
 			}}}}}, expected: nil},
 		"allLower": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createbook", Sections: []*parser.ModelSection{{
-				Functions: []*parser.ModelFunction{
+				Functions: []*parser.ModelAction{
 					{Name: "createbook"},
 				}},
 			}}}}}, expected: nil},
 		"allUpperFunction": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{{
-				Functions: []*parser.ModelFunction{
+				Functions: []*parser.ModelAction{
 					{Name: "CREATEBOOK"},
 				}},
 			}}}}}, expected: fmt.Errorf("you have a function name that is not lowerCamel CREATEBOOK")},
@@ -66,7 +66,7 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 				Fields: []*parser.ModelField{
 					{Name: "title", Type: "string"},
 				},
-				Functions: []*parser.ModelFunction{
+				Functions: []*parser.ModelAction{
 					{Name: "book_author"},
 				}},
 			}}}}}, expected: fmt.Errorf("you have a function name that is not lowerCamel book_author")},
