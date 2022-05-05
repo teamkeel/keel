@@ -61,10 +61,19 @@ func modelsUpperCamel(schema *parser.Schema) error {
 //Fields/operations/functions are lowerCamel
 func fieldsOpsFuncsLowerCamel(schema *parser.Schema) error {
 	for _, input := range schema.Declarations {
-		if strcase.ToLowerCamel(input.Model.Name) != input.Model.Name {
-			return fmt.Errorf("you have a field name that is not lowerCamel %s", input.Model.Name)
+		for _, model := range input.Model.Sections {
+			for _, field := range model.Fields {
+				fmt.Println(field.Name)
+				if strcase.ToLowerCamel(field.Name) != field.Name {
+					return fmt.Errorf("you have a field name that is not lowerCamel %s", field.Name)
+				}
+			}
+			for _, function := range model.Functions {
+				if strcase.ToLowerCamel(function.Name) != function.Name {
+					return fmt.Errorf("you have a function name that is not lowerCamel %s", function.Name)
+				}
+			}
 		}
-
 	}
 
 	return nil
