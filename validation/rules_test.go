@@ -150,7 +150,7 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 				Name: "book",
 				Sections: []*parser.ModelSection{
 					{
-						Functions: []*parser.ModelFunction{
+						Functions: []*parser.ModelAction{
 							{
 								Name: "createbook",
 							},
@@ -167,7 +167,7 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 				Name: "book",
 				Sections: []*parser.ModelSection{
 					{
-						Functions: []*parser.ModelFunction{
+						Functions: []*parser.ModelAction{
 							{
 								Name: "createbook",
 							},
@@ -201,10 +201,10 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelFunction{
+							Functions: []*parser.ModelAction{
 								{
 									Name: "createBook",
-									Arguments: []*parser.FunctionArg{
+									Arguments: []*parser.ActionArg{
 										{Name: "id"},
 									},
 								},
@@ -216,10 +216,10 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelFunction{
+							Functions: []*parser.ModelAction{
 								{
 									Name: "author",
-									Arguments: []*parser.FunctionArg{
+									Arguments: []*parser.ActionArg{
 										{Name: "id"},
 									},
 								},
@@ -236,10 +236,10 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelFunction{
+							Functions: []*parser.ModelAction{
 								{
 									Name: "createBook",
-									Arguments: []*parser.FunctionArg{
+									Arguments: []*parser.ActionArg{
 										{Name: "id"},
 									},
 								},
@@ -251,10 +251,10 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelFunction{
+							Functions: []*parser.ModelAction{
 								{
 									Name: "author",
-									Arguments: []*parser.FunctionArg{
+									Arguments: []*parser.ActionArg{
 										{Name: "name"},
 									},
 								},
@@ -344,11 +344,11 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 					{Name: "name", Type: "string", Attributes: []*parser.Attribute{{Name: "unique"}}},
 				},
 			}, {
-				Functions: []*parser.ModelFunction{
+				Functions: []*parser.ModelAction{
 					{
-						Get:  true,
+						Type: parser.ActionTypeGet,
 						Name: "createBook",
-						Arguments: []*parser.FunctionArg{
+						Arguments: []*parser.ActionArg{
 							{Name: "id"},
 						},
 					},
@@ -362,11 +362,11 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 					{Name: "name", Type: "string"},
 				},
 			}, {
-				Functions: []*parser.ModelFunction{
+				Functions: []*parser.ModelAction{
 					{
-						Get:  true,
+						Type: parser.ActionTypeGet,
 						Name: "createBook",
-						Arguments: []*parser.FunctionArg{
+						Arguments: []*parser.ActionArg{
 							{Name: "name"},
 						},
 					},
@@ -397,10 +397,10 @@ func TestSupportedFieldTypes(t *testing.T) {
 		expected error
 	}{
 		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input1, Functions: []*parser.ModelFunction{{Name: "createBook", Get: true, Arguments: []*parser.FunctionArg{{Name: "userId"}}}}},
+			{Fields: input1, Functions: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
 		}}}}}, expected: nil},
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input2, Functions: []*parser.ModelFunction{{Name: "createBook", Get: true, Arguments: []*parser.FunctionArg{{Name: "userId"}}}}},
+			{Fields: input2, Functions: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
 		}}}}}, expected: errors.New("field userId has an unsupported type Invalid")},
 	}
 

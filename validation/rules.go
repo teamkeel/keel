@@ -144,7 +144,7 @@ func findDuplicatesOperations(globalOperations []GlobalOperations) error {
 
 //Inputs of ops must be model fields
 func operationInputs(schema *parser.Schema) error {
-	functionFields := make(map[string][]*parser.FunctionArg, 0)
+	functionFields := make(map[string][]*parser.ActionArg, 0)
 	for _, declaration := range schema.Declarations {
 		for _, section := range declaration.Model.Sections {
 			for _, function := range section.Functions {
@@ -228,7 +228,7 @@ func operationUniqueFieldInput(schema *parser.Schema) error {
 			}
 
 			for _, function := range section.Functions {
-				if !function.Get {
+				if function.Type != parser.ActionTypeGet {
 					continue
 				}
 

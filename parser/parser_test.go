@@ -61,12 +61,12 @@ func TestModelWithFunctions(t *testing.T) {
 	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
 
-	assert.Equal(t, true, schema.Declarations[0].Model.Sections[1].Functions[0].Create)
+	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Functions[0].Type)
 	assert.Equal(t, "createAuthor", schema.Declarations[0].Model.Sections[1].Functions[0].Name)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[0].Arguments, 1)
 	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Functions[0].Arguments[0].Name)
 
-	assert.Equal(t, true, schema.Declarations[0].Model.Sections[1].Functions[1].Get)
+	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[1].Functions[1].Type)
 	assert.Equal(t, "author", schema.Declarations[0].Model.Sections[1].Functions[1].Name)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[1].Arguments, 1)
 	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Functions[1].Arguments[0].Name)
@@ -149,4 +149,34 @@ func TestModelWithExpressionAttribute(t *testing.T) {
 	assert.Equal(t, "ctx.identity", strings.Join(expr.LHS.Ident, "."))
 	assert.Equal(t, "=", expr.Op)
 	assert.Equal(t, "author.identity", strings.Join(expr.RHS.Ident, "."))
+}
+
+func TestAPI(t *testing.T) {
+	schema := parse(t, `
+	api Web {
+		@graphql
+
+		models {
+			Author
+			Book
+		}
+	}`)
+	assert.Equal(t, "Web", schema.Declarations[0].API.Name)
+
+	assert.Equal(t, "graphql", schema.Declarations[0].API.Sections[0].Attribute.Name)
+
+	assert.Equal(t, "Author", schema.Declarations[0].API.Sections[1].Models[0].ModelName)
+	assert.Equal(t, "Book", schema.Declarations[0].API.Sections[1].Models[1].ModelName)
+}
+
+func TestParserPos(t *testing.T) {
+	schema := parse(t, `model Author {
+    fields {
+        name TextyTexty
+    }
+}`)
+
+	// The field defintion starts on line 3 character 9
+	assert.Equal(t, 3, schema.Declarations[0].Model.Sections[0].Fields[0].Pos.Line)
+	assert.Equal(t, 9, schema.Declarations[0].Model.Sections[0].Fields[0].Pos.Column)
 }
