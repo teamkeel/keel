@@ -24,6 +24,9 @@ var validateCmd = &cobra.Command{
 			return
 		}
 
+		// This function call not only validates your schema, but also returns the
+		// protobuf representation of it. However in this Validate use-case - we
+		// take no interest in the returned protobuf models.
 		_, err = schema.NewSchema(string(schemaBytes)).Make()
 
 		if err != nil {
