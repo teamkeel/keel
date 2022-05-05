@@ -1,7 +1,6 @@
 package parser_test
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -111,11 +110,11 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 		)
 	  }`)
 	assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name)
-	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0].Value.Array[0].Ident[0])
+	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0].Array[0].Ident[0])
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1].Value.True)
 }
 
-func TestModelWithExpressionAttribute(t *testing.T) {
+func TestAttributeWithNamedArguments(t *testing.T) {
 	schema := parse(t, `
 	model Author {
 		fields {
@@ -130,25 +129,18 @@ func TestModelWithExpressionAttribute(t *testing.T) {
 		}
 
 		@permission(
-		  [create],
-		  "admin" in ctx.identity.roles
-		)
-
-		@permission(
-	      [get],
-		  ctx.identity = author.identity
+			role: Admin,
+			actions: [create]
 		)
 	  }`)
 
-	expr := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1].Expression
-	assert.Equal(t, "admin", expr.LHS.String)
-	assert.Equal(t, "in", expr.Op)
-	assert.Equal(t, "ctx.identity.roles", strings.Join(expr.RHS.Ident, "."))
+	arg := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
+	assert.Equal(t, "role", arg.Name)
+	assert.Equal(t, []string{"Admin"}, arg.Value.Ident)
 
-	expr = schema.Declarations[0].Model.Sections[3].Attribute.Arguments[1].Expression
-	assert.Equal(t, "ctx.identity", strings.Join(expr.LHS.Ident, "."))
-	assert.Equal(t, "=", expr.Op)
-	assert.Equal(t, "author.identity", strings.Join(expr.RHS.Ident, "."))
+	arg = schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
+	assert.Equal(t, "actions", arg.Name)
+	assert.Equal(t, []string{"create"}, arg.Array[0].Ident)
 }
 
 func TestAPI(t *testing.T) {
