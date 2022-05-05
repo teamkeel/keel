@@ -36,16 +36,40 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 		input    *parser.Schema
 		expected error
 	}{
-		"simple": {input: &parser.Schema{Declarations: []*parser.Declaration{{
-			Model: &parser.Model{Name: "createBook"}}}}, expected: nil},
-		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{
-			Model: &parser.Model{Name: "createBooksForService"}}}}, expected: nil},
+		"simpleFieldName": {input: &parser.Schema{Declarations: []*parser.Declaration{{
+			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{
+				{Fields: []*parser.ModelField{
+					{Name: "title", Type: "string"},
+				},
+				},
+			}}}}}, expected: nil},
+		"simpelFunction": {input: &parser.Schema{Declarations: []*parser.Declaration{{
+			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{{
+				Functions: []*parser.ModelFunction{
+					{Name: "createBook"},
+				}},
+			}}}}}, expected: nil},
 		"allLower": {input: &parser.Schema{Declarations: []*parser.Declaration{{
-			Model: &parser.Model{Name: "bookauthor"}}}}, expected: nil},
-		"allUpper": {input: &parser.Schema{Declarations: []*parser.Declaration{{
-			Model: &parser.Model{Name: "CREATEBOOK"}}}}, expected: fmt.Errorf("you have a field name that is not lowerCamel CREATEBOOK")},
-		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{
-			Name: "book_author"}}}}, expected: fmt.Errorf("you have a field name that is not lowerCamel book_author")},
+			Model: &parser.Model{Name: "createbook", Sections: []*parser.ModelSection{{
+				Functions: []*parser.ModelFunction{
+					{Name: "createbook"},
+				}},
+			}}}}}, expected: nil},
+		"allUpperFunction": {input: &parser.Schema{Declarations: []*parser.Declaration{{
+			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{{
+				Functions: []*parser.ModelFunction{
+					{Name: "CREATEBOOK"},
+				}},
+			}}}}}, expected: fmt.Errorf("you have a function name that is not lowerCamel CREATEBOOK")},
+		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{
+			Model: &parser.Model{Name: "createbook", Sections: []*parser.ModelSection{{
+				Fields: []*parser.ModelField{
+					{Name: "title", Type: "string"},
+				},
+				Functions: []*parser.ModelFunction{
+					{Name: "book_author"},
+				}},
+			}}}}}, expected: fmt.Errorf("you have a function name that is not lowerCamel book_author")},
 	}
 
 	for name, tc := range tests {
