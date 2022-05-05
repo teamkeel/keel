@@ -6,29 +6,38 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	"github.com/spf13/cobra"
+	"github.com/teamkeel/keel/schema"
 )
 
 // validateCmd represents the validate command
 var validateCmd = &cobra.Command{
 	Use:   "validate",
-	Short: "Validate the Keel schema",
+	Short: "Validate your Keel schema",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("validate called")
 
-		// upgrade the command meta data above
+		schemaBytes, err := ioutil.ReadFile(schemaFilename)
+		if err != nil {
+			fmt.Printf("Error reading input schema file: <%s> : %v\n", schemaFilename, err)
+			return
+		}
 
-		// harvest input schema file name from cmd arguments
+		_, err = schema.NewSchema(string(schemaBytes)).Make()
 
-		// slurp the file contents into a string
+		if err != nil {
+			fmt.Printf("Validation error: %v\n", err)
+			return
+		}
 
-		// delegate to exported Schema method
-
-		// output something useful
+		fmt.Printf("Validation OK\n")
 	},
 }
 
+var schemaFilename string
+
 func init() {
 	rootCmd.AddCommand(validateCmd)
+	validateCmd.Flags().StringVar(&schemaFilename, "file", "keel.schema", "input file to validate")
 }
