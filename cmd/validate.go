@@ -42,5 +42,5 @@ var schemaFilename string
 
 func init() {
 	rootCmd.AddCommand(validateCmd)
-	validateCmd.Flags().StringVar(&schemaFilename, "file", "keel.schema", "input file to validate")
+	validateCmd.Flags().StringVar(&schemaFilename, "file", "schema.keel", "input file to validate")
 }
