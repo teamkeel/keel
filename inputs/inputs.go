@@ -27,9 +27,13 @@ func Assemble(dirName string) (*Inputs, error) {
 		Directory: dirName,
 		SchemaFiles: []InputFile{},
 	}
-	schemaFileNames, err := filepath.Glob(filepath.Join(dirName, "*.keel"))
+	globPattern := filepath.Join(dirName, "*.keel")
+	schemaFileNames, err := filepath.Glob(globPattern)
 	if err != nil {
 		return nil, fmt.Errorf("filepath.Glob errored with: %v", err)
+	}
+	if len(schemaFileNames) < 1 {
+		return nil, fmt.Errorf("No *.keel files are present in: %s", globPattern)
 	}
 	for _, fName := range schemaFileNames {
 		fileBytes, err := ioutil.ReadFile(fName)

@@ -2,8 +2,6 @@ package schema
 
 import (
 	"fmt"
-	"io/ioutil"
-	"path/filepath"
 
 	"github.com/teamkeel/keel/inputs"
 	"github.com/teamkeel/keel/parser"
@@ -37,6 +35,9 @@ func (scm *Schema) Make() (*proto.Schema, error) {
 	// 		- Convert to single / unified proto model
 
 	allInputFiles, err := inputs.Assemble(scm.schemaDir)
+	if err != nil {
+		return nil, fmt.Errorf("Error assembling input files from: %s: %v", scm.schemaDir, err)
+	}
 	validationInputs := []validation.Input{}
 	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(oneInputSchemaFile.Contents)
@@ -95,12 +96,14 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
-	for _, decl := range parserSchema.Declarations {
-		if decl.Model == nil {
-			continue
+	for _, parserSchema := range parserSchemas {
+		for _, decl := range parserSchema.Declarations {
+			if decl.Model == nil {
+				continue
+			}
+			protoModel := scm.makeModel(decl)
+			protoSchema.Models = append(protoSchema.Models, protoModel)
 		}
-		protoModel := scm.makeModel(decl)
-		protoSchema.Models = append(protoSchema.Models, protoModel)
 	}
 	return protoSchema
 }
