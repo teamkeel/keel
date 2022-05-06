@@ -1,8 +1,10 @@
 package parser
 
 import (
-	"github.com/alecthomas/participle"
-	"github.com/alecthomas/participle/lexer"
+	"text/scanner"
+
+	"github.com/alecthomas/participle/v2"
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -42,7 +44,7 @@ type ModelField struct {
 	Name       string       `@Ident`
 	Type       string       `@Ident`
 	Repeated   bool         `@( "[" "]" )?`
-	Attributes []*Attribute `( "{" @@* "}" )?`
+	Attributes []*Attribute `( "{" @@+ "}" )?`
 }
 
 type API struct {
@@ -75,8 +77,10 @@ type Attribute struct {
 type AttributeArgument struct {
 	Pos lexer.Position
 
-	Expression *Expression `@@`
+	Name       string      `(@Ident ":")?`
+	Expression *Expression `( @@`
 	Value      *Value      `| @@`
+	Array      []*Value    `| "[" @@ ("," @@)* "]" )`
 }
 
 type Value struct {
@@ -86,23 +90,23 @@ type Value struct {
 	False  bool     `| @"false"`
 	String string   `| @String`
 	Ident  []string `| ( @Ident ( "." @Ident )* )`
-	Array  []*Value `| "[" @@ ("," @@)* "]"`
 }
 
 type Expression struct {
 	Pos lexer.Position
 
 	LHS *Value `@@`
-	Op  string `@( "in" | "=" )`
+	Op  string `@( "=" "=" | "!" "=" | "=" )`
 	RHS *Value `@@`
 }
 
 type ModelAction struct {
 	Pos lexer.Position
 
-	Type      string       `@Ident`
-	Name      string       `@Ident`
-	Arguments []*ActionArg `"(" @@ ( "," @@ )* ")"`
+	Type       string       `@Ident`
+	Name       string       `@Ident`
+	Arguments  []*ActionArg `"(" ( @@ ( "," @@ )* )? ")"`
+	Attributes []*Attribute `( "{" @@+ "}" )?`
 }
 
 type ActionArg struct {
@@ -112,13 +116,26 @@ type ActionArg struct {
 }
 
 func Parse(s string) (*Schema, error) {
-	parser, err := participle.Build(&Schema{}, participle.UseLookahead(3))
+
+	// Customise the lexer to not ignore comments
+	lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
+		s.Mode =
+			scanner.ScanIdents |
+				scanner.ScanFloats |
+				scanner.ScanChars |
+				scanner.ScanStrings |
+				scanner.ScanRawStrings |
+				scanner.ScanComments
+	})
+
+	parser, err := participle.Build(&Schema{}, participle.Lexer(lex))
 	if err != nil {
 		return nil, err
 	}
 
 	schema := &Schema{}
-	err = parser.ParseString(s, schema)
+	// TODO: pass filename as first argument
+	err = parser.ParseString("", s, schema)
 	if err != nil {
 		return nil, err
 	}
