@@ -36,7 +36,7 @@ func (scm *Schema) Make() (*proto.Schema, error) {
 
 	allInputFiles, err := inputs.Assemble(scm.schemaDir)
 	if err != nil {
-		return nil, fmt.Errorf("Error assembling input files from: %s: %v", scm.schemaDir, err)
+		return nil, fmt.Errorf("Error assembling input files: %v", err)
 	}
 	validationInputs := []validation.Input{}
 	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {

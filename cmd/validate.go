@@ -6,7 +6,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/schema"
@@ -18,16 +17,11 @@ var validateCmd = &cobra.Command{
 	Short: "Validate your Keel schema",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		schemaBytes, err := ioutil.ReadFile(schemaFilename)
-		if err != nil {
-			fmt.Printf("Error reading input schema file: <%s> : %v\n", schemaFilename, err)
-			return
-		}
-
-		// This function call not only validates your schema, but also returns the
+		// This function call not only validates the schemas in your input directory,
+		// but also returns the
 		// protobuf representation of it. However in this Validate use-case - we
 		// take no interest in the returned protobuf models.
-		_, err = schema.NewSchema(string(schemaBytes)).Make()
+		_, err := schema.NewSchema(inputDir).Make()
 
 		if err != nil {
 			fmt.Printf("Validation error: %v\n", err)
@@ -38,9 +32,9 @@ var validateCmd = &cobra.Command{
 	},
 }
 
-var schemaFilename string
+var inputDir string
 
 func init() {
 	rootCmd.AddCommand(validateCmd)
-	validateCmd.Flags().StringVar(&schemaFilename, "file", "schema.keel", "input file to validate")
+	validateCmd.Flags().StringVar(&inputDir, "d", "input-dir", "input directory to validate")
 }
