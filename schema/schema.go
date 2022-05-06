@@ -2,6 +2,8 @@ package schema
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
@@ -11,39 +13,49 @@ import (
 // A Schema knows how to produce a (validated) proto.Schema,
 // from a given Keel Schema. Construct one, then call the Make method.
 type Schema struct {
-	keelSchema string
+	schemaDir string
 }
 
-func NewSchema(keelSchema string) *Schema {
+func NewSchema(schemaDir string) *Schema {
 	return &Schema{
-		keelSchema: keelSchema,
+		schemaDir: schemaDir,
 	}
 }
 
-// Make constructs a proto.Schema from the Keel Schema provided
-// at construction time.
+// Make constructs a proto.Schema from the files present in the directory
+// given at construction time.
 func (scm *Schema) Make() (*proto.Schema, error) {
-	// Four mains steps:
-	// 1. Parse to AST
-	// 2. Insert built-in fields
-	// 3. Validate
-	// 4. Convert to proto model
-	declarations, err := parser.Parse(scm.keelSchema)
-	if err != nil {
-		return nil, fmt.Errorf("parser.Parse() failed with: %v", err)
+	// These are the main steps:
+	//
+	// - Locate and read the files in the directory.
+	// - For each of the schema files present...
+	// 		- Parse to AST
+	// 		- Insert built-in fields
+	// - With the parsed schemas as a set:
+	// 		- Validate
+	// 		- Convert to single / unified proto model
+
+	inputs, err := inputs.Assemble(scm.schemaDir)
+
+	for _, oneInputSchema := range inputSchemas {
+		declarations, err := parser.Parse(oneInputSchema.SlurpedContents)
+		if err != nil {
+			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchema.FileName, err)
+		}
+		scm.insertBuiltInFields(declarations)
 	}
+	
 
-	scm.insertBuiltInFields(declarations)
-
-	v := validation.NewValidator(declarations)
+	v := validation.NewValidator(inputSchemas)
 	err = v.RunAllValidators()
 	if err != nil {
 		return nil, fmt.Errorf("RunAllValidators() failed with: %v", err)
 	}
 
-	protoModels := scm.makeProtoModels(declarations)
+	protoModels := scm.makeProtoModels(inputSchemas)
 	return protoModels, nil
 }
+
 
 // insertBuiltInFields injects new fields into the parser schema, to represent
 // our implicit (or built-in) fields. For example every Model has an <id> field.
