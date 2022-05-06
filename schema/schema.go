@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"path/filepath"
 
+	"github.com/teamkeel/keel/inputs"
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/validation"
@@ -35,24 +36,32 @@ func (scm *Schema) Make() (*proto.Schema, error) {
 	// 		- Validate
 	// 		- Convert to single / unified proto model
 
-	inputs, err := inputs.Assemble(scm.schemaDir)
-
-	for _, oneInputSchema := range inputSchemas {
-		declarations, err := parser.Parse(oneInputSchema.SlurpedContents)
+	allInputFiles, err := inputs.Assemble(scm.schemaDir)
+	validationInputs := []validation.Input{}
+	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
+		declarations, err := parser.Parse(oneInputSchemaFile.Contents)
 		if err != nil {
-			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchema.FileName, err)
+			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
 		scm.insertBuiltInFields(declarations)
+		validationInputs = append(validationInputs, validation.Input{
+			FileName: oneInputSchemaFile.FileName,
+			ParsedSchema: declarations,
+		})
 	}
 	
 
-	v := validation.NewValidator(inputSchemas)
+	v := validation.NewValidator(validationInputs)
 	err = v.RunAllValidators()
 	if err != nil {
 		return nil, fmt.Errorf("RunAllValidators() failed with: %v", err)
 	}
 
-	protoModels := scm.makeProtoModels(inputSchemas)
+	validatedSchemas := []*parser.Schema{}
+	for _, vs := range validationInputs {
+		validatedSchemas = append(validatedSchemas, vs.ParsedSchema)
+	}
+	protoModels := scm.makeProtoModels(validatedSchemas)
 	return protoModels, nil
 }
 
@@ -83,7 +92,7 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 }
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) parsed AST.
-func (scm *Schema) makeProtoModels(parserSchema *parser.Schema) *proto.Schema {
+func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
 	for _, decl := range parserSchema.Declarations {

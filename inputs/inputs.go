@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-// Inputs models a set of files (like Schema files etc.) that have been found in a directory.
+// Inputs models a set of files (Schema files and other files) that have all been found in a given directory.
 type Inputs struct {
 	Directory string
 	SchemaFiles []InputFile
@@ -18,8 +18,8 @@ type InputFile struct{
 	Contents string
 }
 
-// Assemble constructs an Inputs instance from the files in the given
-// directory that are relevant.
+// Assemble constructs an Inputs instance by selecting relevant
+// files from the given directory.
 //
 // So far it only looks for *.keel files and puts those in the SchemaFiles field.
 func Assemble(dirName string) (*Inputs, error) {

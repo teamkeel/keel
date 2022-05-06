@@ -14,18 +14,27 @@ var (
 	ReservedModels = []string{"query"}
 )
 
+// A Validator knows how to validate a parsed Keel schema.
+//
+// Conceptually we are validating a single schema.
+// But the Validator supports it being "delivered" as a collection
+// of *parser.Schema objects - to match up with a user's schema likely
+// being written across N files.
+//
+// We use a []Input to model the inputs - so that the original file names are
+// available for error reporting. (TODO although that is not implemented yet).
 type Validator struct {
-	schema *parser.Schema
+	inputs []Input
 }
 
-func NewValidator(schema *parser.Schema) *Validator {
+func NewValidator(inputs []Input) *Validator {
 	return &Validator{
-		schema: schema,
+		inputs: inputs,
 	}
 }
 
 func (v *Validator) RunAllValidators() error {
-	validatorFuncs := []func(*parser.Schema) error{
+	validatorFuncs := []func([]Input) error{
 		modelsUpperCamel,
 		fieldsOpsFuncsLowerCamel,
 		fieldNamesMustBeUniqueInAModel,
@@ -37,7 +46,7 @@ func (v *Validator) RunAllValidators() error {
 		supportedFieldTypes,
 	}
 	for _, vf := range validatorFuncs {
-		err := vf(v.schema)
+		err := vf(v.inputs)
 		if err != nil {
 			return err
 		}
@@ -46,64 +55,73 @@ func (v *Validator) RunAllValidators() error {
 }
 
 //Models are UpperCamel
-func modelsUpperCamel(schema *parser.Schema) error {
-	for _, input := range schema.Declarations {
-		if input.Model == nil {
-			continue
-		}
-		reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
+func modelsUpperCamel(inputs []Input) error {
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, decl := range schema.Declarations {
+			if decl.Model == nil {
+				continue
+			}
+			// todo - these MustCompile regex would be better at module scope, to
+			// make the MustCompile panic a load-time thing rather than a runtime thing.
+			reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
-		if reg.FindString(input.Model.Name) != input.Model.Name {
-			return fmt.Errorf("you have a model name that is not UpperCamel %s", input.Model.Name)
+			if reg.FindString(decl.Model.Name) != decl.Model.Name {
+				return fmt.Errorf("you have a model name that is not UpperCamel %s", decl.Model.Name)
+			}
 		}
 	}
-
 	return nil
 }
 
 //Fields/operations/functions are lowerCamel
-func fieldsOpsFuncsLowerCamel(schema *parser.Schema) error {
-	for _, input := range schema.Declarations {
-		if input.Model == nil {
-			continue
-		}
-		for _, model := range input.Model.Sections {
-			for _, field := range model.Fields {
-				if field.BuiltIn {
-					continue
-				}
-				if strcase.ToLowerCamel(field.Name) != field.Name {
-					return fmt.Errorf("you have a field name that is not lowerCamel %s", field.Name)
-				}
+func fieldsOpsFuncsLowerCamel(inputs []Input) error {
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+
+		for _, decl := range schema.Declarations {
+			if decl.Model == nil {
+				continue
 			}
-			for _, function := range model.Functions {
-				if strcase.ToLowerCamel(function.Name) != function.Name {
-					return fmt.Errorf("you have a function name that is not lowerCamel %s", function.Name)
+			for _, model := range decl.Model.Sections {
+				for _, field := range model.Fields {
+					if field.BuiltIn {
+						continue
+					}
+					if strcase.ToLowerCamel(field.Name) != field.Name {
+						return fmt.Errorf("you have a field name that is not lowerCamel %s", field.Name)
+					}
+				}
+				for _, function := range model.Functions {
+					if strcase.ToLowerCamel(function.Name) != function.Name {
+						return fmt.Errorf("you have a function name that is not lowerCamel %s", function.Name)
+					}
 				}
 			}
 		}
 	}
-
 	return nil
 }
 
 //Field names must be unique in a model
-func fieldNamesMustBeUniqueInAModel(schema *parser.Schema) error {
-	for _, model := range schema.Declarations {
-		if model.Model == nil {
-			continue
-		}
-		for _, sections := range model.Model.Sections {
-			fieldNames := map[string]bool{}
-			for _, name := range sections.Fields {
-				if _, ok := fieldNames[name.Name]; ok {
-					return fmt.Errorf("you have duplicate field names %s", name.Name)
+func fieldNamesMustBeUniqueInAModel(inputs []Input) error {
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, model := range schema.Declarations {
+			if model.Model == nil {
+				continue
+			}
+			for _, sections := range model.Model.Sections {
+				fieldNames := map[string]bool{}
+				for _, name := range sections.Fields {
+					if _, ok := fieldNames[name.Name]; ok {
+						return fmt.Errorf("you have duplicate field names %s", name.Name)
+					}
+					fieldNames[name.Name] = true
 				}
-				fieldNames[name.Name] = true
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -113,18 +131,20 @@ type GlobalOperations struct {
 }
 
 //Operations/functions must be globally unique
-func operationsUniqueGlobally(schema *parser.Schema) error {
+func operationsUniqueGlobally(inputs []Input) error {
 	var globalOperations []GlobalOperations
-
-	for _, declaration := range schema.Declarations {
-		if declaration.Model == nil {
-			continue
-		}
-		for _, sec := range declaration.Model.Sections {
-			for _, functionNames := range sec.Functions {
-				globalOperations = append(globalOperations, GlobalOperations{
-					Name: functionNames.Name, Model: declaration.Model.Name,
-				})
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, declaration := range schema.Declarations {
+			if declaration.Model == nil {
+				continue
+			}
+			for _, sec := range declaration.Model.Sections {
+				for _, functionNames := range sec.Functions {
+					globalOperations = append(globalOperations, GlobalOperations{
+						Name: functionNames.Name, Model: declaration.Model.Name,
+					})
+				}
 			}
 		}
 	}
@@ -157,30 +177,35 @@ func findDuplicatesOperations(globalOperations []GlobalOperations) error {
 }
 
 //Inputs of ops must be model fields
-func operationInputs(schema *parser.Schema) error {
+func operationInputs(inputs []Input) error {
 	functionFields := make(map[string][]*parser.ActionArg, 0)
-	for _, declaration := range schema.Declarations {
-		if declaration.Model == nil {
-			continue
-		}
-		for _, section := range declaration.Model.Sections {
-			for _, function := range section.Functions {
-				functionFields[function.Name] = function.Arguments
+
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+
+		for _, declaration := range schema.Declarations {
+			if declaration.Model == nil {
+				continue
 			}
+			for _, section := range declaration.Model.Sections {
+				for _, function := range section.Functions {
+					functionFields[function.Name] = function.Arguments
+				}
+			}
+
 		}
 
-	}
-
-	for _, input := range schema.Declarations {
-		if input.Model == nil {
-			continue
-		}
-		for _, modelName := range input.Model.Sections {
-			for _, fields := range modelName.Fields {
-				for functionName, functionField := range functionFields {
-					for _, functionFieldName := range functionField {
-						if functionFieldName.Name == fields.Name {
-							delete(functionFields, functionName)
+		for _, input := range schema.Declarations {
+			if input.Model == nil {
+				continue
+			}
+			for _, modelName := range input.Model.Sections {
+				for _, fields := range modelName.Fields {
+					for functionName, functionField := range functionFields {
+						for _, functionFieldName := range functionField {
+							if functionFieldName.Name == fields.Name {
+								delete(functionFields, functionName)
+							}
 						}
 					}
 				}
@@ -203,121 +228,131 @@ func operationInputs(schema *parser.Schema) error {
 }
 
 //No reserved field names (id, createdAt, updatedAt)
-func noReservedFieldNames(schema *parser.Schema) error {
-	for _, name := range ReservedNames {
-		for _, dec := range schema.Declarations {
-			if dec.Model == nil {
-				continue
-			}
-			for _, section := range dec.Model.Sections {
-				for _, field := range section.Fields {
-					if field.BuiltIn {
-						continue
-					}
-					if strings.EqualFold(name, field.Name) {
-						return fmt.Errorf("you have a reserved field name %s", field.Name)
+func noReservedFieldNames(inputs []Input) error {
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, name := range ReservedNames {
+			for _, dec := range schema.Declarations {
+				if dec.Model == nil {
+					continue
+				}
+				for _, section := range dec.Model.Sections {
+					for _, field := range section.Fields {
+						if field.BuiltIn {
+							continue
+						}
+						if strings.EqualFold(name, field.Name) {
+							return fmt.Errorf("you have a reserved field name %s", field.Name)
+						}
 					}
 				}
 			}
 		}
 	}
-
 	return nil
 }
 
 //No reserved model name (query)
-func noReservedModelNames(schema *parser.Schema) error {
-	for _, name := range ReservedModels {
-		for _, dec := range schema.Declarations {
-			if dec.Model == nil {
-				continue
-			}
-			if strings.EqualFold(name, dec.Model.Name) {
-				return fmt.Errorf("you have a reserved model name %s", dec.Model.Name)
+func noReservedModelNames(inputs []Input) error {
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, name := range ReservedModels {
+			for _, dec := range schema.Declarations {
+				if dec.Model == nil {
+					continue
+				}
+				if strings.EqualFold(name, dec.Model.Name) {
+					return fmt.Errorf("you have a reserved model name %s", dec.Model.Name)
+				}
 			}
 		}
 	}
-
 	return nil
 }
 
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
-func operationUniqueFieldInput(schema *parser.Schema) error {
-	// getAuthor(id)
-	// A get operation can only accept a single field. Needs to be unique OR primary key
+func operationUniqueFieldInput(inputs []Input) error {
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		// getAuthor(id)
+		// A get operation can only accept a single field. Needs to be unique OR primary key
 
-	for _, dec := range schema.Declarations {
-		if dec.Model == nil {
-			continue
-		}
-
-		for _, section := range dec.Model.Sections {
-			if len(section.Functions) == 0 {
+		for _, dec := range schema.Declarations {
+			if dec.Model == nil {
 				continue
 			}
 
-			for _, function := range section.Functions {
-				if function.Type != parser.ActionTypeGet {
+			for _, section := range dec.Model.Sections {
+				if len(section.Functions) == 0 {
 					continue
 				}
 
-				if len(function.Arguments) != 1 {
-					return fmt.Errorf("get operation must take a unique field as an input")
-				}
-
-				arg := function.Arguments[0]
-				isValid := false
-
-				for _, section2 := range dec.Model.Sections {
-					if len(section2.Fields) == 0 {
+				for _, function := range section.Functions {
+					if function.Type != parser.ActionTypeGet {
 						continue
 					}
-					for _, field := range section2.Fields {
-						if field.Name != arg.Name {
+
+					if len(function.Arguments) != 1 {
+						return fmt.Errorf("get operation must take a unique field as an input")
+					}
+
+					arg := function.Arguments[0]
+					isValid := false
+
+					for _, section2 := range dec.Model.Sections {
+						if len(section2.Fields) == 0 {
 							continue
 						}
-						for _, attr := range field.Attributes {
-							if attr.Name == "unique" {
-								isValid = true
+						for _, field := range section2.Fields {
+							if field.Name != arg.Name {
+								continue
 							}
-							if attr.Name == "primaryKey" {
-								isValid = true
+							for _, attr := range field.Attributes {
+								if attr.Name == "unique" {
+									isValid = true
+								}
+								if attr.Name == "primaryKey" {
+									isValid = true
+								}
 							}
 						}
 					}
-				}
 
-				if !isValid {
-					return fmt.Errorf("operation %s must take a unique field as an input", function.Name)
-				}
+					if !isValid {
+						return fmt.Errorf("operation %s must take a unique field as an input", function.Name)
+					}
 
+				}
 			}
-		}
 
+		}
 	}
 
 	return nil
 }
 
 //Supported field types
-func supportedFieldTypes(schema *parser.Schema) error {
+func supportedFieldTypes(inputs []Input) error {
 	var fieldTypes = map[string]bool{"Text": true, "Date": true, "Timestamp": true, "Image": true, "Boolean": true, "Enum": true, "Identity": true, parser.FieldTypeID: true}
 
-	for _, dec := range schema.Declarations {
-		if dec.Model != nil {
-			fieldTypes[dec.Model.Name] = true
-		}
-	}
-
-	for _, dec := range schema.Declarations {
-		if dec.Model == nil {
-			continue
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, dec := range schema.Declarations {
+			if dec.Model != nil {
+				fieldTypes[dec.Model.Name] = true
+			}
 		}
 
-		for _, section := range dec.Model.Sections {
-			for _, field := range section.Fields {
-				if _, ok := fieldTypes[field.Type]; !ok {
-					return fmt.Errorf("field %s has an unsupported type %s", field.Name, field.Type)
+		for _, dec := range schema.Declarations {
+			if dec.Model == nil {
+				continue
+			}
+
+			for _, section := range dec.Model.Sections {
+				for _, field := range section.Fields {
+					if _, ok := fieldTypes[field.Type]; !ok {
+						return fmt.Errorf("field %s has an unsupported type %s", field.Name, field.Type)
+					}
 				}
 			}
 		}
