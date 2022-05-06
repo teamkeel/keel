@@ -6,14 +6,15 @@ import (
 	"path/filepath"
 )
 
-// Inputs models a set of files (Schema files and other files) that have all been found in a given directory.
+// Inputs models a set of files (Schema files and other files) that have been found in a
+// given directory.
 type Inputs struct {
 	Directory string
-	SchemaFiles []InputFile
+	SchemaFiles []SchemaFile
 	OtherTypesOfFiles int // Placeholder for illustration
 }
 
-type InputFile struct{
+type SchemaFile struct{
 	FileName string
 	Contents string
 }
@@ -25,7 +26,7 @@ type InputFile struct{
 func Assemble(dirName string) (*Inputs, error) {
 	inputs := &Inputs{
 		Directory: dirName,
-		SchemaFiles: []InputFile{},
+		SchemaFiles: []SchemaFile{},
 	}
 	globPattern := filepath.Join(dirName, "*.keel")
 	schemaFileNames, err := filepath.Glob(globPattern)
@@ -40,7 +41,7 @@ func Assemble(dirName string) (*Inputs, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Error reading file: %v", err)
 		}
-		inputs.SchemaFiles = append(inputs.SchemaFiles, InputFile{
+		inputs.SchemaFiles = append(inputs.SchemaFiles, SchemaFile{
 			FileName: fName,
 			Contents: string(fileBytes),
 		})

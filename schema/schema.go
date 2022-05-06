@@ -15,24 +15,25 @@ type Schema struct {
 	schemaDir string
 }
 
+// NewSchema provides a Schema that is ready to have its Make method called.
 func NewSchema(schemaDir string) *Schema {
 	return &Schema{
 		schemaDir: schemaDir,
 	}
 }
 
-// Make constructs a proto.Schema from the files present in the directory
+// Make constructs a proto.Schema from the .keel files present in the directory
 // given at construction time.
 func (scm *Schema) Make() (*proto.Schema, error) {
 	// These are the main steps:
 	//
 	// - Locate and read the files in the directory.
-	// - For each of the schema files present...
+	// - For each of the .keel (schema) files present...
 	// 		- Parse to AST
-	// 		- Insert built-in fields
-	// - With the parsed schemas as a set:
-	// 		- Validate
-	// 		- Convert to single / unified proto model
+	// 		- Add built-in fields
+	// - With the parsed (AST) schemas as a set:
+	// 		- Validate them (as a set)
+	// 		- Convert the set to a single / aggregate proto model
 
 	allInputFiles, err := inputs.Assemble(scm.schemaDir)
 	if err != nil {
