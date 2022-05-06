@@ -49,6 +49,9 @@ func (scm *Schema) Make() (*proto.Schema, error) {
 // our implicit (or built-in) fields. For example every Model has an <id> field.
 func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 	for _, decl := range declarations.Declarations {
+		if decl.Model == nil {
+			continue
+		}
 		field := &parser.ModelField{
 			BuiltIn: true,
 			Name:    "id", // todo - replace magic string with a more widely shared const.
@@ -72,6 +75,9 @@ func (scm *Schema) makeProtoModels(parserSchema *parser.Schema) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
 	for _, decl := range parserSchema.Declarations {
+		if decl.Model == nil {
+			continue
+		}
 		protoModel := scm.makeModel(decl)
 		protoSchema.Models = append(protoSchema.Models, protoModel)
 	}
@@ -90,10 +96,13 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 			protoModel.Fields = scm.makeFields(section.Fields, protoModel.Name)
 
 		case section.Functions != nil:
-			protoModel.Operations = scm.makeOperations(section.Functions, protoModel.Name)
+			protoModel.Operations = scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+
+		case section.Operations != nil:
+			protoModel.Operations = scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
 
 		case section.Attribute != nil:
-			panic("not implemented yet")
+			// TODO: implement support for attributes on model
 		default:
 			panic("unrecognized case")
 		}
@@ -121,21 +130,21 @@ func (scm *Schema) makeField(parserField *parser.ModelField, modelName string) *
 	return protoField
 }
 
-func (scm *Schema) makeOperations(parserFunctions []*parser.ModelAction, modelName string) []*proto.Operation {
+func (scm *Schema) makeOperations(parserFunctions []*parser.ModelAction, modelName string, impl proto.OperationImplementation) []*proto.Operation {
 	protoOps := []*proto.Operation{}
 	for _, parserFunc := range parserFunctions {
-		protoOp := scm.makeOp(parserFunc, modelName)
+		protoOp := scm.makeOp(parserFunc, modelName, impl)
 		protoOps = append(protoOps, protoOp)
 	}
 	return protoOps
 }
 
-func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string) *proto.Operation {
+func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, impl proto.OperationImplementation) *proto.Operation {
 
 	protoOp := &proto.Operation{
 		ModelName:      modelName,
 		Name:           parserFunction.Name,
-		Implementation: proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM, // todo - is it always custom in this context?
+		Implementation: impl,
 	}
 
 	// Todo the proto type also supports other operation types - like "delete", but don't know how to choose them

@@ -48,6 +48,9 @@ func (v *Validator) RunAllValidators() error {
 //Models are UpperCamel
 func modelsUpperCamel(schema *parser.Schema) error {
 	for _, input := range schema.Declarations {
+		if input.Model == nil {
+			continue
+		}
 		reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
 		if reg.FindString(input.Model.Name) != input.Model.Name {
@@ -61,6 +64,9 @@ func modelsUpperCamel(schema *parser.Schema) error {
 //Fields/operations/functions are lowerCamel
 func fieldsOpsFuncsLowerCamel(schema *parser.Schema) error {
 	for _, input := range schema.Declarations {
+		if input.Model == nil {
+			continue
+		}
 		for _, model := range input.Model.Sections {
 			for _, field := range model.Fields {
 				if field.BuiltIn {
@@ -84,6 +90,9 @@ func fieldsOpsFuncsLowerCamel(schema *parser.Schema) error {
 //Field names must be unique in a model
 func fieldNamesMustBeUniqueInAModel(schema *parser.Schema) error {
 	for _, model := range schema.Declarations {
+		if model.Model == nil {
+			continue
+		}
 		for _, sections := range model.Model.Sections {
 			fieldNames := map[string]bool{}
 			for _, name := range sections.Fields {
@@ -108,6 +117,9 @@ func operationsUniqueGlobally(schema *parser.Schema) error {
 	var globalOperations []GlobalOperations
 
 	for _, declaration := range schema.Declarations {
+		if declaration.Model == nil {
+			continue
+		}
 		for _, sec := range declaration.Model.Sections {
 			for _, functionNames := range sec.Functions {
 				globalOperations = append(globalOperations, GlobalOperations{
@@ -148,6 +160,9 @@ func findDuplicatesOperations(globalOperations []GlobalOperations) error {
 func operationInputs(schema *parser.Schema) error {
 	functionFields := make(map[string][]*parser.ActionArg, 0)
 	for _, declaration := range schema.Declarations {
+		if declaration.Model == nil {
+			continue
+		}
 		for _, section := range declaration.Model.Sections {
 			for _, function := range section.Functions {
 				functionFields[function.Name] = function.Arguments
@@ -157,6 +172,9 @@ func operationInputs(schema *parser.Schema) error {
 	}
 
 	for _, input := range schema.Declarations {
+		if input.Model == nil {
+			continue
+		}
 		for _, modelName := range input.Model.Sections {
 			for _, fields := range modelName.Fields {
 				for functionName, functionField := range functionFields {
@@ -188,6 +206,9 @@ func operationInputs(schema *parser.Schema) error {
 func noReservedFieldNames(schema *parser.Schema) error {
 	for _, name := range ReservedNames {
 		for _, dec := range schema.Declarations {
+			if dec.Model == nil {
+				continue
+			}
 			for _, section := range dec.Model.Sections {
 				for _, field := range section.Fields {
 					if field.BuiltIn {
@@ -208,6 +229,9 @@ func noReservedFieldNames(schema *parser.Schema) error {
 func noReservedModelNames(schema *parser.Schema) error {
 	for _, name := range ReservedModels {
 		for _, dec := range schema.Declarations {
+			if dec.Model == nil {
+				continue
+			}
 			if strings.EqualFold(name, dec.Model.Name) {
 				return fmt.Errorf("you have a reserved model name %s", dec.Model.Name)
 			}
@@ -278,6 +302,12 @@ func operationUniqueFieldInput(schema *parser.Schema) error {
 //Supported field types
 func supportedFieldTypes(schema *parser.Schema) error {
 	var fieldTypes = map[string]bool{"Text": true, "Date": true, "Timestamp": true, "Image": true, "Boolean": true, "Enum": true, "Identity": true, parser.FieldTypeID: true}
+
+	for _, dec := range schema.Declarations {
+		if dec.Model != nil {
+			fieldTypes[dec.Model.Name] = true
+		}
+	}
 
 	for _, dec := range schema.Declarations {
 		if dec.Model == nil {
