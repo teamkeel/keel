@@ -1,4 +1,4 @@
-package schema2model
+package schema
 
 import (
 	"fmt"
