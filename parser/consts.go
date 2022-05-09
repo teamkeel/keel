@@ -28,3 +28,11 @@ const (
 const (
 	ImplicitFieldNameId = "id"
 )
+
+const (
+	AttributeUnique = "unique"
+	AttributeOptional = "optional"
+	AttributePermission = "permission"
+	AttributeWhere = "where"
+	AttributeSet = "set"
+)

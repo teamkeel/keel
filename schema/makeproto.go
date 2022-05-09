@@ -1,7 +1,6 @@
 package schema
 
 import (
-
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
 )
@@ -12,11 +11,15 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 
 	for _, parserSchema := range parserSchemas {
 		for _, decl := range parserSchema.Declarations {
-			if decl.Model == nil {
-				continue
+			switch {
+			case decl.Model != nil:
+				protoModel := scm.makeModel(decl)
+				protoSchema.Models = append(protoSchema.Models, protoModel)
+			case decl.API != nil:
+				// todo API not yet supported
+			default:
+				panic("Case not recognized")
 			}
-			protoModel := scm.makeModel(decl)
-			protoSchema.Models = append(protoSchema.Models, protoModel)
 		}
 	}
 	return protoSchema
@@ -40,7 +43,7 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 			protoModel.Operations = scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
 
 		case section.Attribute != nil:
-			scm.applyModelAttributes(parserModel, protoModel, section.Attribute)
+			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
 		default:
 			panic("unrecognized case")
 		}
@@ -64,7 +67,7 @@ func (scm *Schema) makeField(parserField *parser.ModelField, modelName string) *
 		Name:      parserField.Name,
 		Type:      proto.FieldType_FIELD_TYPE_BOOL, // todo need to map parserField.Type,
 	}
-	// todo protoField.Attributes = nil // todo
+	scm.applyFieldAttributes(parserField, protoField)
 	return protoField
 }
 
@@ -78,21 +81,23 @@ func (scm *Schema) makeOperations(parserFunctions []*parser.ModelAction, modelNa
 }
 
 func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, impl proto.OperationImplementation) *proto.Operation {
-
 	protoOp := &proto.Operation{
 		ModelName:      modelName,
 		Name:           parserFunction.Name,
 		Implementation: impl,
 	}
-	// todo:
-	// set optional if attr
-	// set unique if attr
-	// 
 
-	// Todo the proto type also supports other operation types - like "delete", but don't know how to choose them
-	protoOp.Type = proto.OperationType_OPERATION_TYPE_GET
-	if parserFunction.Type == parser.ActionTypeCreate {
+	switch parserFunction.Type {
+	case parser.ActionTypeCreate:
 		protoOp.Type = proto.OperationType_OPERATION_TYPE_CREATE
+	case parser.ActionTypeUpdate:
+		protoOp.Type = proto.OperationType_OPERATION_TYPE_UPDATE
+	case parser.ActionTypeGet:
+		protoOp.Type = proto.OperationType_OPERATION_TYPE_GET
+	case parser.ActionTypeList:
+		protoOp.Type = proto.OperationType_OPERATION_TYPE_LIST
+	default:
+		panic("Action type not recognized")
 	}
 
 	protoOp.Inputs = scm.makeArguments(parserFunction)
@@ -102,17 +107,49 @@ func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, 
 }
 
 func (scm *Schema) makeArguments(parserFunction *parser.ModelAction) []*proto.OperationInput {
-	// todo - for each, then
-	// LHS, RHS and Operation
+	// todo
+
+	// parser.ModelAction has [][]*ActionArg - which are just identifiers (strings)
+
+	// proto.Operation has []proto.OperationInput
+	// proto.OperationInput has name, type, optional, modelname, fieldname
+	// different fields required in different contexts
+
 	return nil
 }
- 
-func (scm *Schema) applyModelAttributes(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
-	// todo - think we need to upgrade the protobuf model structure to support this
+
+func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
+	if attribute.Name != parser.AttributePermission {
+		return
+	}
+	// todo, we have nothing in the protobuf to write this to yet
 }
 
 func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation) {
-	// todo
+	for _, attribute := range parserFunction.Attributes {
+		scm.applyFunctionAttribute(attribute, protoOperation)
+	}
 }
 
+func (scm *Schema) applyFunctionAttribute(attribute *parser.Attribute, protoOperation *proto.Operation) {
+	// permission, where, or set
+	switch attribute.Name {
+	case parser.AttributePermission:
+		// todo
+	case parser.AttributeWhere:
+		// todo
+	case parser.AttributeSet:
+		// todo
+	}
+}
 
+func (scm *Schema) applyFieldAttributes(parserField *parser.ModelField, protoField *proto.Field) {
+	for _, fieldAttribute := range parserField.Attributes {
+		switch fieldAttribute.Name {
+		case parser.AttributeUnique:
+			protoField.Unique = true
+		case parser.AttributeOptional:
+			protoField.Optional = true
+		}
+	}
+}
