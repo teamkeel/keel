@@ -5,10 +5,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/expressions"
+	"github.com/teamkeel/keel/inputs"
 	"github.com/teamkeel/keel/parser"
 )
 
-func parse(t *testing.T, s string) *parser.Schema {
+func parse(t *testing.T, s *inputs.SchemaFile) *parser.Schema {
 	schema, err := parser.Parse(s)
 	if err != nil {
 		assert.Fail(t, err.Error())
@@ -18,18 +19,18 @@ func parse(t *testing.T, s string) *parser.Schema {
 }
 
 func TestEmptyModel(t *testing.T) {
-	schema := parse(t, `model Person { }`)
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `model Person { }`})
 	assert.Equal(t, "Person", schema.Declarations[0].Model.Name)
 }
 
 func TestModelWithFields(t *testing.T) {
-	schema := parse(t, `
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
 	  model Author {
 		  fields {
 			name Text
 			books Book[]
 		  }
-		}`)
+		}`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name)
 	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name)
 	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type)
@@ -41,7 +42,7 @@ func TestModelWithFields(t *testing.T) {
 }
 
 func TestModelWithFunctions(t *testing.T) {
-	schema := parse(t, `
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
 		fields {
 		  name Text
@@ -51,7 +52,7 @@ func TestModelWithFunctions(t *testing.T) {
 		  create createAuthor(name)
 		  get author(id)
 		}
-	  }`)
+	  }`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name)
 	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name)
 	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type)
@@ -73,7 +74,7 @@ func TestModelWithFunctions(t *testing.T) {
 }
 
 func TestModelWithFieldAttributes(t *testing.T) {
-	schema := parse(t, `
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
 	model Book {
 		fields {
 		  title Text
@@ -87,7 +88,7 @@ func TestModelWithFieldAttributes(t *testing.T) {
 		  get book(id)
 		  get bookByIsbn(isbn)
 		}
-	  }`)
+	  }`})
 	assert.Len(t, schema.Declarations[0].Model.Sections[0].Fields[1].Attributes, 1)
 	assert.Equal(t, "unique", schema.Declarations[0].Model.Sections[0].Fields[1].Attributes[0].Name)
 }
@@ -128,7 +129,7 @@ func TestRole(t *testing.T) {
 }
 
 func TestModelWithPermissionAttributes(t *testing.T) {
-	schema := parse(t, `
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
 		fields {
 		  name Text
@@ -172,7 +173,7 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 }
 
 func TestAttributeWithNamedArguments(t *testing.T) {
-	schema := parse(t, `
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
 		fields {
 		  identity Identity
@@ -189,7 +190,7 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 			role: Admin,
 			actions: [create]
 		)
-	  }`)
+	  }`})
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
 	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
@@ -209,7 +210,7 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 }
 
 func TestAPI(t *testing.T) {
-	schema := parse(t, `
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
 	api Web {
 		@graphql
 
@@ -217,7 +218,7 @@ func TestAPI(t *testing.T) {
 			Author
 			Book
 		}
-	}`)
+	}`})
 	assert.Equal(t, "Web", schema.Declarations[0].API.Name)
 
 	assert.Equal(t, "graphql", schema.Declarations[0].API.Sections[0].Attribute.Name)
@@ -227,11 +228,11 @@ func TestAPI(t *testing.T) {
 }
 
 func TestParserPos(t *testing.T) {
-	schema := parse(t, `model Author {
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `model Author {
     fields {
         name TextyTexty
     }
-}`)
+}`})
 
 	// The field defintion starts on line 3 character 9
 	assert.Equal(t, 3, schema.Declarations[0].Model.Sections[0].Fields[0].Pos.Line)

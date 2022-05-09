@@ -20,7 +20,7 @@ model Profile {
         create createProfile(username) {
             @set(profile.identity = ctx.identity)
         }
-        get myProfile() {
+        get myProfile(id) {
             @where(profile.identity = ctx.identity)
         }
         get profile(id)

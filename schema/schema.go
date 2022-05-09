@@ -17,33 +17,32 @@ type Schema struct {
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
 // directory.
-func (scm *Schema) MakeFromDirectory(directory string) (*proto.Schema, error) {
+func (scm *Schema) MakeFromDirectory(directory string) (*proto.Schema, []error, error) {
 	allInputFiles, err := inputs.Assemble(directory)
 	if err != nil {
-		return nil, fmt.Errorf("Error assembling input files: %v", err)
+		return nil, nil, fmt.Errorf("error assembling input files: %v", err)
 	}
 	return scm.makeFromInputs(allInputFiles)
 }
 
-
 // MakeFromFile constructs a proto.Schema from the given .keel file.
-func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, error) {
+func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, []error, error) {
 	fileBytes, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("Error reading file: %v", err)
+		return nil, nil, fmt.Errorf("error reading file: %v", err)
 	}
 	schemaFile := inputs.SchemaFile{
 		FileName: filename,
 		Contents: string(fileBytes),
 	}
 	allInputFiles := &inputs.Inputs{
-		Directory: "Unspecified",
+		Directory:   "Unspecified",
 		SchemaFiles: []inputs.SchemaFile{schemaFile},
 	}
 	return scm.makeFromInputs(allInputFiles)
 }
 
-func (scm *Schema) makeFromInputs(allInputFiles *inputs.Inputs) (*proto.Schema, error) {
+func (scm *Schema) makeFromInputs(allInputFiles *inputs.Inputs) (*proto.Schema, []error, error) {
 	// - For each of the .keel (schema) files specified...
 	// 		- Parse to AST
 	// 		- Add built-in fields
@@ -52,21 +51,21 @@ func (scm *Schema) makeFromInputs(allInputFiles *inputs.Inputs) (*proto.Schema, 
 	// 		- Convert the set to a single / aggregate proto model
 	validationInputs := []validation.Input{}
 	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
-		declarations, err := parser.Parse(oneInputSchemaFile.Contents)
+		declarations, err := parser.Parse(&oneInputSchemaFile)
 		if err != nil {
-			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
+			return nil, nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
 		scm.insertBuiltInFields(declarations)
 		validationInputs = append(validationInputs, validation.Input{
-			FileName: oneInputSchemaFile.FileName,
+			FileName:     oneInputSchemaFile.FileName,
 			ParsedSchema: declarations,
 		})
 	}
 
 	v := validation.NewValidator(validationInputs)
-	err := v.RunAllValidators()
-	if err != nil {
-		return nil, fmt.Errorf("RunAllValidators() failed with: %v", err)
+	errs := v.RunAllValidators()
+	if len(errs) > 0 {
+		return nil, errs, &validation.ValidationError{Message: "validation errors"}
 	}
 
 	validatedSchemas := []*parser.Schema{}
@@ -74,9 +73,9 @@ func (scm *Schema) makeFromInputs(allInputFiles *inputs.Inputs) (*proto.Schema, 
 		validatedSchemas = append(validatedSchemas, vs.ParsedSchema)
 	}
 	protoModels := scm.makeProtoModels(validatedSchemas)
-	return protoModels, nil
+	return protoModels, nil, nil
 }
-	
+
 // insertBuiltInFields injects new fields into the parser schema, to represent
 // our implicit (or built-in) fields. For example every Model has an <id> field.
 func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
