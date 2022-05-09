@@ -40,7 +40,7 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 			protoModel.Operations = scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
 
 		case section.Attribute != nil:
-			// todo make model attributes
+			scm.applyModelAttributes(parserModel, protoModel, section.Attribute)
 		default:
 			panic("unrecognized case")
 		}
@@ -84,6 +84,10 @@ func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, 
 		Name:           parserFunction.Name,
 		Implementation: impl,
 	}
+	// todo:
+	// set optional if attr
+	// set unique if attr
+	// 
 
 	// Todo the proto type also supports other operation types - like "delete", but don't know how to choose them
 	protoOp.Type = proto.OperationType_OPERATION_TYPE_GET
@@ -91,14 +95,24 @@ func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, 
 		protoOp.Type = proto.OperationType_OPERATION_TYPE_CREATE
 	}
 
-	protoOp.Inputs = scm.makeOpInputs(parserFunction)
-
-	// todo protoOp.Attributes = nil // todo
+	protoOp.Inputs = scm.makeArguments(parserFunction)
+	scm.applyFunctionAttributes(parserFunction, protoOp)
 
 	return protoOp
 }
 
-func (scm *Schema) makeOpInputs(parserFunction *parser.ModelAction) []*proto.OperationInput {
-	// todo - a bit lost here
+func (scm *Schema) makeArguments(parserFunction *parser.ModelAction) []*proto.OperationInput {
+	// todo - for each, then
+	// LHS, RHS and Operation
 	return nil
 }
+ 
+func (scm *Schema) applyModelAttributes(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
+	// todo - think we need to upgrade the protobuf model structure to support this
+}
+
+func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation) {
+	// todo
+}
+
+
