@@ -23,7 +23,7 @@ func TestModelsAreUpperCamel(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		got := modelsUpperCamel(tc.input)
+		got := modelsUpperCamel(asInputs(tc.input))
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
@@ -73,7 +73,7 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		got := fieldsOpsFuncsLowerCamel(tc.input)
+		got := fieldsOpsFuncsLowerCamel(asInputs(tc.input))
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
@@ -107,7 +107,7 @@ func TestFieldNamesMustBeUniqueInAModel(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		got := fieldNamesMustBeUniqueInAModel(tc.input)
+		got := fieldNamesMustBeUniqueInAModel(asInputs(tc.input))
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
@@ -144,7 +144,7 @@ func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
 
 //Inputs of ops must be model fields
 func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
-	err := operationsUniqueGlobally(&parser.Schema{Declarations: []*parser.Declaration{
+	err := operationsUniqueGlobally(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
 		{
 			Model: &parser.Model{
 				Name: "book",
@@ -179,7 +179,7 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 				},
 			},
 		},
-	}})
+	}}))
 
 	assert.Equal(t, errors.New("you have duplicate operations [{createbook book} {createbook book}]"), err)
 }
@@ -263,7 +263,7 @@ func TestInputsModelFields(t *testing.T) {
 					}}}}}, expected: fmt.Errorf("you are using inputs that are not fields model:author, field:name")}}
 
 	for name, tc := range tests {
-		got := operationInputs(tc.input)
+		got := operationInputs(asInputs(tc.input))
 
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
@@ -306,7 +306,7 @@ func TestNoReservedFieldNames(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		got := noReservedFieldNames(tc.input)
+		got := noReservedFieldNames(asInputs(tc.input))
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
@@ -324,7 +324,7 @@ func TestReservedModelNames(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		got := noReservedModelNames(tc.input)
+		got := noReservedModelNames(asInputs(tc.input))
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
@@ -376,7 +376,7 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		got := operationUniqueFieldInput(tc.input)
+		got := operationUniqueFieldInput(asInputs(tc.input))
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
@@ -405,7 +405,7 @@ func TestSupportedFieldTypes(t *testing.T) {
 	}
 
 	for name, tc := range tests {
-		got := supportedFieldTypes(tc.input)
+		got := supportedFieldTypes(asInputs(tc.input))
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
@@ -431,4 +431,14 @@ func TestFindDuplicates(t *testing.T) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
 		}
 	}
+}
+
+// asInputs wraps a single parser.Schema into an []Inputs - as required by most of the
+// functions under test.
+func asInputs(oneSchema *parser.Schema) []Input {
+	oneInput := Input{
+		FileName:     "unused",
+		ParsedSchema: oneSchema,
+	}
+	return []Input{oneInput}
 }

@@ -2,7 +2,9 @@ package schema
 
 import (
 	"fmt"
+	"io/ioutil"
 
+	"github.com/teamkeel/keel/inputs"
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/validation"
@@ -11,40 +13,70 @@ import (
 // A Schema knows how to produce a (validated) proto.Schema,
 // from a given Keel Schema. Construct one, then call the Make method.
 type Schema struct {
-	keelSchema string
 }
 
-func NewSchema(keelSchema string) *Schema {
-	return &Schema{
-		keelSchema: keelSchema,
-	}
-}
-
-// Make constructs a proto.Schema from the Keel Schema provided
-// at construction time.
-func (scm *Schema) Make() (*proto.Schema, error) {
-	// Four mains steps:
-	// 1. Parse to AST
-	// 2. Insert built-in fields
-	// 3. Validate
-	// 4. Convert to proto model
-	declarations, err := parser.Parse(scm.keelSchema)
+// MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
+// directory.
+func (scm *Schema) MakeFromDirectory(directory string) (*proto.Schema, error) {
+	allInputFiles, err := inputs.Assemble(directory)
 	if err != nil {
-		return nil, fmt.Errorf("parser.Parse() failed with: %v", err)
+		return nil, fmt.Errorf("Error assembling input files: %v", err)
+	}
+	return scm.makeFromInputs(allInputFiles)
+}
+
+
+// MakeFromFile constructs a proto.Schema from the given .keel file.
+func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, error) {
+	fileBytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading file: %v", err)
+	}
+	schemaFile := inputs.SchemaFile{
+		FileName: filename,
+		Contents: string(fileBytes),
+	}
+	allInputFiles := &inputs.Inputs{
+		Directory: "Unspecified",
+		SchemaFiles: []inputs.SchemaFile{schemaFile},
+	}
+	return scm.makeFromInputs(allInputFiles)
+}
+
+func (scm *Schema) makeFromInputs(allInputFiles *inputs.Inputs) (*proto.Schema, error) {
+	// - For each of the .keel (schema) files specified...
+	// 		- Parse to AST
+	// 		- Add built-in fields
+	// - With the parsed (AST) schemas as a set:
+	// 		- Validate them (as a set)
+	// 		- Convert the set to a single / aggregate proto model
+	validationInputs := []validation.Input{}
+	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
+		declarations, err := parser.Parse(oneInputSchemaFile.Contents)
+		if err != nil {
+			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
+		}
+		scm.insertBuiltInFields(declarations)
+		validationInputs = append(validationInputs, validation.Input{
+			FileName: oneInputSchemaFile.FileName,
+			ParsedSchema: declarations,
+		})
 	}
 
-	scm.insertBuiltInFields(declarations)
-
-	v := validation.NewValidator(declarations)
-	err = v.RunAllValidators()
+	v := validation.NewValidator(validationInputs)
+	err := v.RunAllValidators()
 	if err != nil {
 		return nil, fmt.Errorf("RunAllValidators() failed with: %v", err)
 	}
 
-	protoModels := scm.makeProtoModels(declarations)
+	validatedSchemas := []*parser.Schema{}
+	for _, vs := range validationInputs {
+		validatedSchemas = append(validatedSchemas, vs.ParsedSchema)
+	}
+	protoModels := scm.makeProtoModels(validatedSchemas)
 	return protoModels, nil
 }
-
+	
 // insertBuiltInFields injects new fields into the parser schema, to represent
 // our implicit (or built-in) fields. For example every Model has an <id> field.
 func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
@@ -71,15 +103,17 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 }
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) parsed AST.
-func (scm *Schema) makeProtoModels(parserSchema *parser.Schema) *proto.Schema {
+func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
-	for _, decl := range parserSchema.Declarations {
-		if decl.Model == nil {
-			continue
+	for _, parserSchema := range parserSchemas {
+		for _, decl := range parserSchema.Declarations {
+			if decl.Model == nil {
+				continue
+			}
+			protoModel := scm.makeModel(decl)
+			protoSchema.Models = append(protoSchema.Models, protoModel)
 		}
-		protoModel := scm.makeModel(decl)
-		protoSchema.Models = append(protoSchema.Models, protoModel)
 	}
 	return protoSchema
 }

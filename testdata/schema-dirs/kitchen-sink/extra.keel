@@ -1,0 +1,5 @@
+model Extra {
+    fields {
+        greeting Text
+    }
+}

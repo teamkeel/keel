@@ -4,14 +4,21 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/testdata"
 )
 
-func TestItCompilesAndRuns(t *testing.T) {
-	s2m := NewSchema(testdata.ReferenceExample)
-	protoModels, err := s2m.Make()
-
+func TestMakeFromDirectoryCompilesAndRuns(t *testing.T) {
+	inputDir := "../testdata/schema-dirs/kitchen-sink"
+	s2m := Schema{}
+	protoModels, err := s2m.MakeFromDirectory(inputDir)
 	require.Nil(t, err)
+	require.Equal(t, 3, len(protoModels.Models))
+}
 
+
+func TestMakeFromFileCompilesAndRuns(t *testing.T) {
+	schemaFile := "../testdata/schema-dirs/kitchen-sink/kitchen-sink.keel"
+	s2m := Schema{}
+	protoModels, err := s2m.MakeFromFile(schemaFile)
+	require.Nil(t, err)
 	require.Equal(t, 2, len(protoModels.Models))
 }
