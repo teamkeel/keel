@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"io/ioutil"
 
 	"github.com/teamkeel/keel/inputs"
 	"github.com/teamkeel/keel/parser"
@@ -12,33 +13,43 @@ import (
 // A Schema knows how to produce a (validated) proto.Schema,
 // from a given Keel Schema. Construct one, then call the Make method.
 type Schema struct {
-	schemaDir string
 }
 
-// NewSchema provides a Schema that is ready to have its Make method called.
-func NewSchema(schemaDir string) *Schema {
-	return &Schema{
-		schemaDir: schemaDir,
+// MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
+// directory.
+func (scm *Schema) MakeFromDirectory(directory string) (*proto.Schema, error) {
+	allInputFiles, err := inputs.Assemble(directory)
+	if err != nil {
+		return nil, fmt.Errorf("Error assembling input files: %v", err)
 	}
+	return scm.makeFromInputs(allInputFiles)
 }
 
-// Make constructs a proto.Schema from the .keel files present in the directory
-// given at construction time.
-func (scm *Schema) Make() (*proto.Schema, error) {
-	// These are the main steps:
-	//
-	// - Locate and read the files in the directory.
-	// - For each of the .keel (schema) files present...
+
+// MakeFromFile constructs a proto.Schema from the given .keel file.
+func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, error) {
+	fileBytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading file: %v", err)
+	}
+	schemaFile := inputs.SchemaFile{
+		FileName: filename,
+		Contents: string(fileBytes),
+	}
+	allInputFiles := &inputs.Inputs{
+		Directory: "Unspecified",
+		SchemaFiles: []inputs.SchemaFile{schemaFile},
+	}
+	return scm.makeFromInputs(allInputFiles)
+}
+
+func (scm *Schema) makeFromInputs(allInputFiles *inputs.Inputs) (*proto.Schema, error) {
+	// - For each of the .keel (schema) files specified...
 	// 		- Parse to AST
 	// 		- Add built-in fields
 	// - With the parsed (AST) schemas as a set:
 	// 		- Validate them (as a set)
 	// 		- Convert the set to a single / aggregate proto model
-
-	allInputFiles, err := inputs.Assemble(scm.schemaDir)
-	if err != nil {
-		return nil, fmt.Errorf("Error assembling input files: %v", err)
-	}
 	validationInputs := []validation.Input{}
 	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(oneInputSchemaFile.Contents)
@@ -51,10 +62,9 @@ func (scm *Schema) Make() (*proto.Schema, error) {
 			ParsedSchema: declarations,
 		})
 	}
-	
 
 	v := validation.NewValidator(validationInputs)
-	err = v.RunAllValidators()
+	err := v.RunAllValidators()
 	if err != nil {
 		return nil, fmt.Errorf("RunAllValidators() failed with: %v", err)
 	}
@@ -66,8 +76,7 @@ func (scm *Schema) Make() (*proto.Schema, error) {
 	protoModels := scm.makeProtoModels(validatedSchemas)
 	return protoModels, nil
 }
-
-
+	
 // insertBuiltInFields injects new fields into the parser schema, to represent
 // our implicit (or built-in) fields. For example every Model has an <id> field.
 func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {

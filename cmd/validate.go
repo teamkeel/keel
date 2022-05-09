@@ -6,9 +6,11 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/proto"
 )
 
 // validateCmd represents the validate command
@@ -17,11 +19,17 @@ var validateCmd = &cobra.Command{
 	Short: "Validate your Keel schema",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// This function call not only validates the schema files in your input directory,
-		// but also returns the
-		// protobuf representation of it. However in this Validate use-case - we
-		// take no interest in the returned protobuf models.
-		_, err := schema.NewSchema(inputDir).Make()
+		schema := schema.Schema{}
+		var protoSchema *proto.Schema // For clarity only.
+		_ = protoSchema
+		var err error
+
+		switch {
+		case inputFile != "":
+			protoSchema, err = schema.MakeFromFile(inputFile)
+		default:
+			protoSchema, err = schema.MakeFromDirectory(inputDir) 
+		}
 
 		if err != nil {
 			fmt.Printf("Validation error: %v\n", err)
@@ -33,8 +41,14 @@ var validateCmd = &cobra.Command{
 }
 
 var inputDir string
+var inputFile string
 
 func init() {
 	rootCmd.AddCommand(validateCmd)
-	validateCmd.Flags().StringVar(&inputDir, "d", "input-dir", "input directory to validate")
+	defaultDir, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Errorf("os.Getwd() errored: %v", err))
+	}
+	validateCmd.Flags().StringVar(&inputDir, "d", defaultDir, "input directory to validate")
+	validateCmd.Flags().StringVar(&inputFile, "f", "", "schema file to validate")
 }
