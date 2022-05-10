@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "inputs": [
+      {
+        "id": "schemaPath",
+        "type": "promptString",
+        "description": "Relative filepath to schema file",
+        "default": "./testdata/schema-dirs/kitchen-sink/kitchen-sink.keel"
+      }
+    ],
+    "configurations": [
+      {
+        "name": "Debug validate",
+        "type": "go",
+        "request": "launch",
+        "mode": "auto",
+        "program": "${workspaceFolder}",
+        "args":["validate", "--f", "${input:schemaPath}"],
+      }
+    ]
+  }
