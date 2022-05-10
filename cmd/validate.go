@@ -43,11 +43,16 @@ var validateCmd = &cobra.Command{
 						return fmt.Errorf("error marshalling validation errors: %v", err)
 					}
 					fmt.Println(string(output))
+					return nil
 				} else {
-					fmt.Printf("Validation OK\n")
+					for _, e := range errors {
+						fmt.Println(e.Error())
+					}
+					return nil
 				}
 			}
 		}
+		fmt.Printf("Validation OK\n")
 
 		return nil
 	},

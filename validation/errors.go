@@ -14,7 +14,7 @@ type ValidationError struct {
 }
 
 func (e *ValidationError) Error() string {
-	return fmt.Sprintf("message: %s - on line: %v", e.Message, e.Pos.Line)
+	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
 }
 
 func (e *ValidationError) Contents() ValidationError {
