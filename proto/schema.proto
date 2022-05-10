@@ -20,6 +20,8 @@ message Model {
     // The operations this model defines. Contains both operations that will be auto
     // generated and also custom functions
     repeated Operation operations = 3;
+
+    repeated PermissionRule permissions = 4;
 }
 
 message Field {
@@ -65,6 +67,19 @@ message Operation {
 
     // The inputs this operation accepts.
     repeated OperationInput inputs = 5;
+
+    // A list of permission rules to apply to this operation
+    repeated PermissionRule permissions = 6;
+
+    // A list of assignment expression to be executed as part of this operation.
+    // Only valid in `type` is OPERATION_TYPE_CREATE or OPERATION_TYPE_UPDATE
+    repeated Expression set_expressions = 7;
+
+    // A list of logical expressions to be applied to the database query being
+    // executed as part of the operation.
+    // Not valid if `type` is OPERATION_TYPE_CREATE
+    // If there are multiple entries in this field they are AND'd.
+    repeated Expression where_expressions = 8;
 }
 
 message OperationInput {
@@ -90,6 +105,42 @@ message OperationInput {
     // The name of the field inside `model_name` that this input type refers to. Should only 
     // be set if `type` is set to OPERATION_INPUT_TYPE_FIELD
     google.protobuf.StringValue field_name = 6;
+}
+
+message Role {
+    // The name of the role
+    string name = 1;
+
+    // A list of domains to match for this role e.g. myorg.com
+    repeated string domains = 2;
+
+    // A list of specific email addresses to match for this role eg. sarah@myorg.com
+    repeated string emails = 3;
+}
+
+message PermissionRule {
+    // Name of the model this permission rule applies to
+    string model_name = 1;
+
+    // Name of the specific operation this permission rule applies to.
+    // If this field is populated then `operations_types` is ignored.
+    google.protobuf.StringValue operation_name = 2;
+
+    // A name of a Role that has been defined in the schema.
+    // Cannot be provided if `expression` is provided.
+    string role_name = 3;
+
+    // An expression to evaluate at runtime.
+    // Cannot be provided if `role_name` is provided.
+    Expression expression = 4;
+
+    // A list of operation types that this permission rule applies to
+    // Should not be set if `operation_name` is provided.
+    repeated OperationType operations_types = 5;
+}
+
+message Expression {
+    string source = 1;
 }
 
 enum OperationInputType {
