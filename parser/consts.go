@@ -4,6 +4,7 @@ package parser
 // another user-defined model
 const (
 	FieldTypeID       = "ID"        // a uuid or similar
+	FieldTypeIdentity = "Identity"  // represents the abstraction of a user/service account etc.
 	FieldTypeText     = "Text"      // a string
 	FieldTypeNumber   = "Number"    // an integer
 	FieldTypeDate     = "Date"      // a date with no time element

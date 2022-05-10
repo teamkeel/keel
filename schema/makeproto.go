@@ -1,6 +1,7 @@
 package schema
 
 import (
+
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
 )
@@ -66,6 +67,35 @@ func (scm *Schema) makeField(parserField *parser.ModelField, modelName string) *
 		ModelName: modelName,
 		Name:      parserField.Name,
 		Type:      proto.FieldType_FIELD_TYPE_BOOL, // todo need to map parserField.Type,
+	}
+
+	// We establish the field type when possible using the 1:1 mapping between parser enums
+	// and proto enums. However, when the parsed field type is not one of the built in types, we
+	// infer that it must refer to one of the Models defined in the schema, and is therefore of type
+	// relationship.
+	switch parserField.Type {
+	case parser.FieldTypeBoolean:
+		protoField.Type = proto.FieldType_FIELD_TYPE_BOOL
+	case parser.FieldTypeText:
+		protoField.Type = proto.FieldType_FIELD_TYPE_STRING
+	case parser.FieldTypeCurrency:
+		protoField.Type = proto.FieldType_FIELD_TYPE_CURRENCY
+	case parser.FieldTypeDate:
+		protoField.Type = proto.FieldType_FIELD_TYPE_DATE
+	case parser.FieldTypeDatetime:
+		protoField.Type = proto.FieldType_FIELD_TYPE_DATETIME
+	case parser.FieldTypeEnum:
+		protoField.Type = proto.FieldType_FIELD_TYPE_ENUM
+	case parser.FieldTypeID:
+		protoField.Type = proto.FieldType_FIELD_TYPE_ID
+	case parser.FieldTypeImage:
+		protoField.Type = proto.FieldType_FIELD_TYPE_IMAGE
+	case parser.FieldTypeNumber:
+		protoField.Type = proto.FieldType_FIELD_TYPE_INT
+	case parser.FieldTypeIdentity:
+		protoField.Type = proto.FieldType_FIELD_TYPE_IDENTITY
+	default:
+		protoField.Type = proto.FieldType_FIELD_TYPE_RELATIONSHIP
 	}
 	scm.applyFieldAttributes(parserField, protoField)
 	return protoField
