@@ -1,9 +1,9 @@
 package schema
 
 import (
-
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) parsed AST.
@@ -130,22 +130,26 @@ func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, 
 		panic("Action type not recognized")
 	}
 
-	protoOp.Inputs = scm.makeArguments(parserFunction)
+	protoOp.Inputs = scm.makeArguments(parserFunction, modelName)
 	scm.applyFunctionAttributes(parserFunction, protoOp)
 
 	return protoOp
 }
 
-func (scm *Schema) makeArguments(parserFunction *parser.ModelAction) []*proto.OperationInput {
-	// todo
+func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName string) []*proto.OperationInput {
+	// Currently, we only support arguments of the form <modelname>.
+	operationInputs := []*proto.OperationInput{}
+	for _, parserArg := range parserFunction.Arguments {
+		operationInput := proto.OperationInput{
+			Name: parserArg.Name,
+			Type: proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
+			ModelName: wrapperspb.String(parserArg.Name),
+			FieldName: wrapperspb.String(parserArg.Name),
+		}
+		operationInputs = append(operationInputs, &operationInput)
+	}
 
-	// parser.ModelAction has [][]*ActionArg - which are just identifiers (strings)
-
-	// proto.Operation has []proto.OperationInput
-	// proto.OperationInput has name, type, optional, modelname, fieldname
-	// different fields required in different contexts
-
-	return nil
+	return operationInputs
 }
 
 func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
