@@ -17,7 +17,7 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 				protoModel := scm.makeModel(decl)
 				protoSchema.Models = append(protoSchema.Models, protoModel)
 			case decl.API != nil:
-				// todo API not yet supported
+				// todo API not yet supported in proto
 			default:
 				panic("Case not recognized")
 			}
@@ -66,7 +66,6 @@ func (scm *Schema) makeField(parserField *parser.ModelField, modelName string) *
 	protoField := &proto.Field{
 		ModelName: modelName,
 		Name:      parserField.Name,
-		Type:      proto.FieldType_FIELD_TYPE_BOOL, // todo need to map parserField.Type,
 	}
 
 	// We establish the field type when possible using the 1:1 mapping between parser enums
@@ -156,7 +155,7 @@ func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *pr
 	if attribute.Name != parser.AttributePermission {
 		return
 	}
-	// todo, we have nothing in the protobuf to write this to yet
+	// todo, await permissions in parser
 }
 
 func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation) {
@@ -169,11 +168,11 @@ func (scm *Schema) applyFunctionAttribute(attribute *parser.Attribute, protoOper
 	// permission, where, or set
 	switch attribute.Name {
 	case parser.AttributePermission:
-		// todo
+		// todo await permission support in parser
 	case parser.AttributeWhere:
-		// todo
+		// todo await where support in parser
 	case parser.AttributeSet:
-		// todo
+		// todo await set support in parser
 	}
 }
 
