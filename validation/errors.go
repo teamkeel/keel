@@ -17,6 +17,4 @@ func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
 }
 
-func (e *ValidationError) Contents() ValidationError {
-	return *e
-}
+func (e *ValidationError) Unwrap() error { return e }

@@ -373,12 +373,28 @@ func operationUniqueFieldInput(inputs []Input) []error {
 						continue
 					}
 
-					if len(function.Arguments) != 1 {
-						errors = append(errors, &ValidationError{
-							ShortMessage: fmt.Sprintf("cannot use %v", function.Arguments),
-							Message:      fmt.Sprintf("get operation must take a unique field as an input: %s", function.Name),
-							Pos:          function.Pos,
-						})
+					for _, modelSection := range dec.Model.Sections {
+						if len(modelSection.Fields) == 0 {
+							continue
+						}
+
+						if len(function.Arguments) != 1 && len(function.Attributes) > 0 {
+							checkER := checkAttributes(function.Attributes, function.Pos, modelSection.Fields)
+							if len(checkER) > 0 {
+								fmt.Println(":done")
+							}
+						} else if len(function.Arguments) != 1 {
+							errors = append(errors, &ValidationError{
+								ShortMessage: fmt.Sprintf("cannot use %v", function.Arguments),
+								Message:      fmt.Sprintf("get operation must take a unique field as an input: %s", function.Name),
+								Pos:          function.Pos,
+							})
+							continue
+						}
+
+					}
+
+					if len(function.Arguments) == 0 {
 						continue
 					}
 
@@ -390,6 +406,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 							continue
 						}
 						for _, field := range modelSection.Fields {
+
 							if field.Name != arg.Name {
 								continue
 							}
@@ -420,6 +437,45 @@ func operationUniqueFieldInput(inputs []Input) []error {
 	}
 
 	return errors
+}
+
+func checkAttributes(input []*parser.Attribute, pos lexer.Position, fields []*parser.ModelField) []error {
+	var uniqueFields []string
+
+	for _, field := range fields {
+		for _, attr := range field.Attributes {
+			if attr.Name == "unique" {
+				uniqueFields = append(uniqueFields, field.Name)
+			}
+
+		}
+
+	}
+	if len(uniqueFields) == 0 {
+		return nil
+	}
+
+	for _, attr := range input {
+		for _, uniqueField := range uniqueFields {
+			fmt.Println("attr")
+			fmt.Println(attr.Name)
+			for _, attrArg := range attr.Arguments {
+
+				fmt.Println("attrArg.Name")
+				fmt.Println(attrArg.Expression)
+			}
+			fmt.Println("field")
+			fmt.Println(uniqueField)
+
+			// if attr.Name == uniqueField {
+
+			// }
+
+		}
+
+	}
+
+	return nil
 }
 
 //Supported field types

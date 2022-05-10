@@ -10,7 +10,9 @@ role Admin {
 
 model Profile {
     fields {
-        identity Identity
+        identity Identity {
+            @unique
+        }
         username Text {
             @unique
         }
@@ -20,7 +22,7 @@ model Profile {
         create createProfile(username) {
             @set(profile.identity = ctx.identity)
         }
-        get myProfile(id) {
+        get myProfile() {
             @where(profile.identity = ctx.identity)
         }
         get profile(id)
