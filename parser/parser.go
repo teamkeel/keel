@@ -5,6 +5,7 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -77,27 +78,8 @@ type Attribute struct {
 type AttributeArgument struct {
 	Pos lexer.Position
 
-	Name       string      `(@Ident ":")?`
-	Expression *Expression `( @@`
-	Value      *Value      `| @@`
-	Array      []*Value    `| "[" @@ ("," @@)* "]" )`
-}
-
-type Value struct {
-	Pos lexer.Position
-
-	True   bool     `  @"true"`
-	False  bool     `| @"false"`
-	String string   `| @String`
-	Ident  []string `| ( @Ident ( "." @Ident )* )`
-}
-
-type Expression struct {
-	Pos lexer.Position
-
-	LHS *Value `@@`
-	Op  string `@( "=" "=" | "!" "=" | "=" )`
-	RHS *Value `@@`
+	Name       string                  `(@Ident ":")?`
+	Expression *expressions.Expression `@@`
 }
 
 type ModelAction struct {

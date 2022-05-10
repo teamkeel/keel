@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
 )
 
@@ -105,13 +106,27 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 		}
 	  
 		@permission(
-		  [get],
-		  true
+		  expression: true,
+		  actions: [get]
 		)
 	  }`)
 	assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name)
-	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0].Array[0].Ident[0])
-	assert.Equal(t, true, schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1].Value.True)
+
+	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
+	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
+	assert.Equal(t, "expression", arg1.Name)
+
+	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
+	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
+	assert.Equal(t, "actions", arg2.Name)
+
+	v1, err := expressions.ToValue(arg1.Expression)
+	assert.NoError(t, err)
+	assert.Equal(t, true, v1.True)
+
+	v2, err := expressions.ToValue(arg2.Expression)
+	assert.NoError(t, err)
+	assert.Equal(t, "get", v2.Array.Values[0].Ident[0])
 }
 
 func TestAttributeWithNamedArguments(t *testing.T) {
@@ -134,13 +149,21 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 		)
 	  }`)
 
-	arg := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
-	assert.Equal(t, "role", arg.Name)
-	assert.Equal(t, []string{"Admin"}, arg.Value.Ident)
+	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
+	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
+	assert.Equal(t, "role", arg1.Name)
 
-	arg = schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
-	assert.Equal(t, "actions", arg.Name)
-	assert.Equal(t, []string{"create"}, arg.Array[0].Ident)
+	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
+	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
+	assert.Equal(t, "actions", arg2.Name)
+
+	v1, err := expressions.ToValue(arg1.Expression)
+	assert.NoError(t, err)
+	assert.Equal(t, "Admin", v1.Ident[0])
+
+	v2, err := expressions.ToValue(arg2.Expression)
+	assert.NoError(t, err)
+	assert.Equal(t, "create", v2.Array.Values[0].Ident[0])
 }
 
 func TestAPI(t *testing.T) {
