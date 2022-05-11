@@ -33,10 +33,7 @@ model Post {
 
     operations {
         create createPost(body, author) {
-            @permission(
-                expression: post.author.identity == ctx.identity,
-                actions: [create]
-            )
+            @permission(expression: post.author.identity == ctx.identity)
         }
         list listPosts()
         get getPost(id)

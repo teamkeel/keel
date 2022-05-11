@@ -122,7 +122,7 @@ func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, 
 	}
 
 	protoOp.Inputs = scm.makeArguments(parserFunction, modelName)
-	scm.applyFunctionAttributes(parserFunction, protoOp)
+	scm.applyFunctionAttributes(parserFunction, protoOp, modelName)
 
 	return protoOp
 }
@@ -150,17 +150,17 @@ func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *pr
 	}
 }
 
-func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation) {
+func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation, modelName string) {
 	for _, attribute := range parserFunction.Attributes {
-		scm.applyFunctionAttribute(attribute, protoOperation)
+		scm.applyFunctionAttribute(attribute, protoOperation, modelName)
 	}
 }
 
-func (scm *Schema) applyFunctionAttribute(attribute *parser.Attribute, protoOperation *proto.Operation) {
+func (scm *Schema) applyFunctionAttribute(attribute *parser.Attribute, protoOperation *proto.Operation, modelName string) {
 	// permission, where, or set
 	switch attribute.Name {
 	case parser.AttributePermission:
-		// todo await attr/expr support in parser
+		scm.applyFunctionPermission(attribute, protoOperation, modelName)
 	case parser.AttributeWhere:
 		// todo await attr/exp support in parser
 	case parser.AttributeSet:
@@ -199,6 +199,34 @@ func (scm *Schema) applyModelPermission(permissionAttribute *parser.Attribute, p
 		protoModel.Permissions = []*proto.PermissionRule{permissionRule}
 
 	// todo - extend cases to support Model permissions of the form @Permission(role, actions)
+	default:
+		panic("Permission attribute malformed")
+	}
+}
+
+
+func (scm *Schema) applyFunctionPermission(permissionAttribute *parser.Attribute, operation *proto.Operation, modelName string) {
+	// what is allowed
+	// (Role)
+	// (Expression)
+	args := permissionAttribute.Arguments
+	switch {
+	// The first form we support is Permission(conditional)
+	case len(args) == 1 && args[0].Expression != nil:
+		// todo - see if we can remove error from ToString return values
+		conditional, _ := expressions.ToString(args[0].Expression)
+
+		permissionRule := &proto.PermissionRule{
+			ModelName: modelName,
+			OperationName: wrapperspb.String(operation.Name),
+			RoleName: "",
+			Expression: &proto.Expression{Source: conditional},
+			OperationsTypes: nil,
+		}
+
+		operation.Permissions = []*proto.PermissionRule{permissionRule}
+
+	// todo - extend cases to support function permissions of the form @Permission(role)
 	default:
 		panic("Permission attribute malformed")
 	}
@@ -249,5 +277,7 @@ func (scm *Schema) mapToOperationType(parsedOperation string) proto.OperationTyp
 		return proto.OperationType_OPERATION_TYPE_UNKNOWN
 	}
 }
+
+
 
 
