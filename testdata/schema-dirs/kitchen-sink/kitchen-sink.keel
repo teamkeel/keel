@@ -1,3 +1,13 @@
+role Admin {
+    domains {
+        "hello.com"
+    }
+
+    emails {
+        "hello@agency.com"
+    }
+}
+
 model Profile {
     fields {
         identity Identity
@@ -33,7 +43,11 @@ model Post {
 
     operations {
         create createPost(body, author) {
-            @permission(expression: post.author.identity == ctx.identity)
+            @permission(
+                expression: post.author.identity == ctx.identity,
+                actions: [create],
+                role: Admin
+            )
         }
         list listPosts()
         get getPost(id)

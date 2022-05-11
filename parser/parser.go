@@ -18,6 +18,7 @@ type Declaration struct {
 	Pos lexer.Position
 
 	Model *Model `("model" @@`
+	Role  *Role  `| "role" @@`
 	API   *API   `| "api" @@)`
 }
 
@@ -52,6 +53,32 @@ type API struct {
 
 	Name     string        `@Ident`
 	Sections []*APISection `"{" @@* "}"`
+}
+
+type Role struct {
+	Pos lexer.Position
+
+	Name     string         `@Ident`
+	Sections []*RoleSection `"{" @@* "}"`
+}
+
+type RoleSection struct {
+	Pos lexer.Position
+
+	Domains []*RoleDomain `("domains" "{" @@* "}"`
+	Emails  []*RoleEmail  `| "emails" "{" @@* "}")`
+}
+
+type RoleDomain struct {
+	Pos lexer.Position
+
+	Domain string `@String`
+}
+
+type RoleEmail struct {
+	Pos lexer.Position
+
+	Email string `@String`
 }
 
 type APISection struct {
