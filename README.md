@@ -17,3 +17,13 @@ keel-cli is a tool to build and deploy services
 ## Development
 
 Requires Go 1.18.x
+
+## Updating protobuf definition
+
+Make amends to protobuf definition file (e.g. `./proto/schema.proto`) and regenerate corresponding generated go code:
+
+```
+protoc --go_out=. --go_opt=paths=source_relative \
+    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+    proto/schema.proto
+```
