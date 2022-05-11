@@ -125,6 +125,10 @@ func IsValue(expr *Expression) bool {
 
 var ErrNotValue = errors.New("expression is not a single value")
 
+// implement IsAssignment
+
+// ToAssignmentCondition
+
 func ToValue(expr *Expression) (*Value, error) {
 	if len(expr.Or) > 1 {
 		return nil, ErrNotValue
@@ -147,6 +151,36 @@ func ToValue(expr *Expression) (*Value, error) {
 	}
 
 	return cond.LHS, nil
+}
+
+var ErrNotAssignment = errors.New("expression is not a assignment")
+
+func IsAssignment(expr *Expression) bool {
+	v, _ := ToAssignmentCondition(expr)
+	return v != nil
+}
+
+func ToAssignmentCondition(expr *Expression) (*Condition, error) {
+	if len(expr.Or) > 1 {
+		return nil, ErrNotAssignment
+	}
+
+	or := expr.Or[0]
+	if len(or.And) > 1 {
+		return nil, ErrNotAssignment
+	}
+
+	and := or.And[0]
+
+	if and.Expression != nil {
+		return nil, ErrNotAssignment
+	}
+	cond := and.Condition
+	if cond.Operator != "=" {
+		return nil, ErrNotAssignment
+	}
+
+	return cond, nil
 }
 
 func valueToString(v *Value) string {

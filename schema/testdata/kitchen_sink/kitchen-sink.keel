@@ -10,7 +10,9 @@ role Admin {
 
 model Profile {
     fields {
-        identity Identity
+        identity Identity {
+            @unique
+        }
         username Text {
             @unique
         }

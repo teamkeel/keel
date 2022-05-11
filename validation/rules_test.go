@@ -5,6 +5,7 @@ import (
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
 )
 
@@ -185,7 +186,6 @@ func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	if !assert.Equal(t, expected, got) {
 		t.Fatalf("%s: expected: %v, got: %v", "name", expected, got)
 	}
-
 }
 
 //Inputs of ops must be model fields
@@ -520,24 +520,98 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 		input    *parser.Schema
 		expected []error
 	}{
-		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
+		"workingbasic": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
 			{
 				Fields: []*parser.ModelField{
 					{Name: "id", Type: "int", Attributes: []*parser.Attribute{{Name: "primaryKey"}}},
 					{Name: "name", Type: "string", Attributes: []*parser.Attribute{{Name: "unique"}}},
+					{Name: "title", Type: "string"},
 				},
 			}, {
-				Functions: []*parser.ModelAction{
+				Operations: []*parser.ModelAction{
 					{
 						Type: parser.ActionTypeGet,
 						Name: "createBook",
-						Arguments: []*parser.ActionArg{
-							{Name: "id"},
+						Attributes: []*parser.Attribute{
+							{
+								Name: "input",
+								Arguments: []*parser.AttributeArgument{
+									{
+										Expression: &expressions.Expression{
+											Or: []*expressions.OrExpression{
+												{
+													And: []*expressions.ConditionWrap{
+														{
+															Condition: &expressions.Condition{
+																Operator: "=",
+																LHS: &expressions.Value{
+																	Ident: []string{"book", "name"},
+																},
+																RHS: &expressions.Value{
+																	Ident: []string{"book", "title"},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
 						},
 					},
 				},
 			},
 		}}}}}, expected: nil},
+		"equalityOperator": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
+			{
+				Fields: []*parser.ModelField{
+					{Name: "id", Type: "int", Attributes: []*parser.Attribute{{Name: "primaryKey"}}},
+					{Name: "name", Type: "string", Attributes: []*parser.Attribute{{Name: "unique"}}},
+					{Name: "title", Type: "string"},
+				},
+			}, {
+				Operations: []*parser.ModelAction{
+					{
+						Type: parser.ActionTypeGet,
+						Name: "createBook",
+						Attributes: []*parser.Attribute{
+							{
+								Name: "input",
+								Arguments: []*parser.AttributeArgument{
+									{
+										Expression: &expressions.Expression{
+											Or: []*expressions.OrExpression{
+												{
+													And: []*expressions.ConditionWrap{
+														{
+															Condition: &expressions.Condition{
+																Operator: "==",
+																LHS: &expressions.Value{
+																	Ident: []string{"book", "name"},
+																},
+																RHS: &expressions.Value{
+																	Ident: []string{"book", "title"},
+																},
+															},
+														},
+													},
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}}}}}, expected: []error{&ValidationError{
+			Message:      "operation createBook must take a unique field as an input",
+			ShortMessage: "createBook requires a unique field",
+			Hint:         "Are you sure you are using a unique field?",
+		}}},
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
 			{
 				Fields: []*parser.ModelField{
@@ -545,7 +619,7 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 					{Name: "name", Type: "string"},
 				},
 			}, {
-				Functions: []*parser.ModelAction{
+				Operations: []*parser.ModelAction{
 					{
 						Type: parser.ActionTypeGet,
 						Name: "createBook",
@@ -677,4 +751,44 @@ func TestModelsBeGloballyUnique(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, err)
+}
+
+func TestCheckAttributeExpressions(t *testing.T) {
+	input := []*parser.Attribute{
+		{
+			Name: "test",
+			Arguments: []*parser.AttributeArgument{
+				{
+					Name: "test",
+					Expression: &expressions.Expression{
+						Or: []*expressions.OrExpression{
+							{
+								And: []*expressions.ConditionWrap{
+									{
+										Condition: &expressions.Condition{
+											Operator: "=",
+											LHS: &expressions.Value{
+												Ident: []string{"profile", "identity"},
+											},
+											RHS: &expressions.Value{
+												Ident: []string{"foo", "name"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got := checkAttributeExpressions(input, "Profile", &parser.ModelField{Name: "identity", Attributes: []*parser.Attribute{
+		{
+			Name: "unique",
+		},
+	}})
+	assert.Equal(t, true, got)
+
 }
