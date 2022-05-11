@@ -94,30 +94,27 @@ func TestModelWithFieldAttributes(t *testing.T) {
 }
 
 func TestRole(t *testing.T) {
-	schema := parse(t, `
-		model Post {
+	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	model Post {
 			fields {
 				title Text
 			}
-
 			@permission(
 				actions: [get],
 				role: Admin
 			)
 		}
-
 	  role Admin {
 			domains {
 				"keel.xyz"
 				"keel.zyx"
 			}
-
 			emails {
 				"adam@keel.xyz"
 				"adam@keel.zyx"
 			}
 		}
-	`)
+	`})
 
 	assert.Equal(t, "Admin", schema.Declarations[1].Role.Name)
 
@@ -151,8 +148,7 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 		emails {
 			"adam@keel.xyz"
 		}
-	}
-	`)
+	}`})
 	assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name)
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]

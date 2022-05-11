@@ -45,7 +45,6 @@ func (v *Validator) RunAllValidators() error {
 		noReservedModelNames,
 		operationUniqueFieldInput,
 		supportedFieldTypes,
-		modelsGloballyUnique,
 	}
 	var errors []*ValidationError
 	for _, vf := range validatorFuncs {
@@ -80,7 +79,7 @@ func modelsUpperCamel(inputs []Input) []error {
 			if reg.FindString(decl.Model.Name) != decl.Model.Name {
 				errors = append(errors, validationError(fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
 					fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
-					strcase.ToCamel(decl.Model.Name),
+					strcase.ToCamel(strings.ToLower(decl.Model.Name)),
 					decl.Model.Pos))
 			}
 		}
@@ -106,7 +105,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if strcase.ToLowerCamel(field.Name) != field.Name {
 						errors = append(errors, validationError(fmt.Sprintf("you have a field name that is not lowerCamel %s", field.Name),
 							fmt.Sprintf("%s isn't lower camel", field.Name),
-							strcase.ToLowerCamel(field.Name),
+							strcase.ToLowerCamel(strings.ToLower(field.Name)),
 							field.Pos))
 
 					}
@@ -115,7 +114,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if strcase.ToLowerCamel(function.Name) != function.Name {
 						errors = append(errors, validationError(fmt.Sprintf("you have a function name that is not lowerCamel %s", function.Name),
 							fmt.Sprintf("%s isn't lower camel", function.Name),
-							strcase.ToLowerCamel(function.Name),
+							strcase.ToLowerCamel(strings.ToLower(function.Name)),
 							function.Pos))
 
 					}
@@ -358,124 +357,69 @@ func noReservedModelNames(inputs []Input) []error {
 func operationUniqueFieldInput(inputs []Input) []error {
 	var errors []error
 
-	var fields []*parser.ModelField
 	for _, input := range inputs {
 		schema := input.ParsedSchema
+
 		for _, dec := range schema.Declarations {
 			if dec.Model == nil {
 				continue
 			}
 
 			for _, section := range dec.Model.Sections {
-				fields = append(fields, section.Fields...)
-			}
-		}
-	}
-
-	for _, input := range inputs {
-		schema := input.ParsedSchema
-		for _, dec := range schema.Declarations {
-			if dec.Model == nil {
-				continue
-			}
-
-			for _, section := range dec.Model.Sections {
-				if len(section.Operations) == 0 {
+				if len(section.Functions) == 0 {
 					continue
 				}
-				nonFieldAttrs := make(map[string]bool, 0)
-				for _, function := range section.Operations {
-					nonFieldAttrs[function.Name] = false
 
+				for _, function := range section.Functions {
 					if function.Type != parser.ActionTypeGet {
 						continue
 					}
+
+					if len(function.Arguments) != 1 {
+						errors = append(errors, validationError(
+							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
+							fmt.Sprintf("%s requires a unique field", function.Name),
+							"",
+							function.Pos))
+					}
+
+					arg := function.Arguments[0]
 					isValid := false
 
-					for _, field := range fields {
-						if len(function.Arguments) != 1 && len(function.Attributes) > 0 {
-							validAttrs := checkAttributes(function.Attributes, field)
-							if validAttrs {
-								nonFieldAttrs[function.Name] = true
-								isValid = true
-							}
-						}
-						if !nonFieldAttrs[function.Name] && len(function.Arguments) != 1 {
+					for _, section2 := range dec.Model.Sections {
+						if len(section2.Fields) == 0 {
 							continue
 						}
-
-						if !nonFieldAttrs[function.Name] {
-							isValid = checkFuncArgsUnique(function, fields)
+						for _, field := range section2.Fields {
+							if field.Name != arg.Name {
+								continue
+							}
+							for _, attr := range field.Attributes {
+								if attr.Name == "unique" {
+									isValid = true
+								}
+								if attr.Name == "primaryKey" {
+									isValid = true
+								}
+							}
 						}
 					}
+
 					if !isValid {
 						errors = append(errors, validationError(
 							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
 							fmt.Sprintf("%s requires a unique field", function.Name),
 							"",
 							function.Pos))
-
 					}
+
 				}
 			}
+
 		}
 	}
 
 	return errors
-}
-
-func checkAttributes(input []*parser.Attribute, fields *parser.ModelField) bool {
-	var uniqueFields []string
-	var isValid bool
-
-	for _, attr := range fields.Attributes {
-		if attr.Name == "unique" {
-			uniqueFields = append(uniqueFields, fields.Name)
-		}
-	}
-	if len(uniqueFields) == 0 {
-		return false
-	}
-
-	for _, attr := range input {
-		for _, uniqueField := range uniqueFields {
-			for _, attrArg := range attr.Arguments {
-				for _, expression := range attrArg.Expression.Or {
-					for _, and := range expression.And {
-						for _, ident := range and.Condition.LHS.Ident {
-							if ident == uniqueField {
-								isValid = true
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return isValid
-}
-
-func checkFuncArgsUnique(function *parser.ModelAction, fields []*parser.ModelField) bool {
-	isValid := false
-	arg := function.Arguments[0]
-
-	for _, field := range fields {
-		if field.Name != arg.Name {
-			continue
-		}
-
-		for _, attr := range field.Attributes {
-			if attr.Name == "unique" {
-				isValid = true
-			}
-			if attr.Name == "primaryKey" {
-				isValid = true
-			}
-		}
-	}
-
-	return isValid
 }
 
 //Supported field types
@@ -509,42 +453,6 @@ func supportedFieldTypes(inputs []Input) []error {
 				}
 			}
 		}
-	}
-
-	return errors
-}
-
-//Models are globally unique
-func modelsGloballyUnique(inputs []Input) []error {
-	var errors []error
-	var modelNames []string
-
-	globalOperations := uniqueModelsGlobally(inputs)
-
-	for _, name := range globalOperations {
-		modelNames = append(modelNames, name.Model)
-	}
-	duplicates := findDuplicates(modelNames)
-
-	if len(duplicates) == 0 {
-		return nil
-	}
-
-	var duplicateModels []GlobalOperations
-	for _, model := range globalOperations {
-		for _, duplicate := range duplicates {
-			if model.Model == duplicate {
-				duplicateModels = append(duplicateModels, model)
-			}
-		}
-	}
-
-	for _, nameError := range duplicateModels {
-		errors = append(errors, validationError(
-			fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", nameError.Model, nameError.Pos),
-			fmt.Sprintf("%s is duplicated", nameError.Model),
-			"",
-			nameError.Pos))
 	}
 
 	return errors
