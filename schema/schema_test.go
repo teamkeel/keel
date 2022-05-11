@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,6 +14,10 @@ func TestMakeFromDirectoryCompilesAndRuns(t *testing.T) {
 	protoModels, err := s2m.MakeFromDirectory(inputDir)
 	require.Nil(t, err)
 	require.Equal(t, 3, len(protoModels.Models))
+
+	jsn, err := json.MarshalIndent(protoModels, "", "  ")
+
+	fmt.Printf("\n%s\n", string(jsn))
 }
 
 func TestMakeFromFileCompilesAndRuns(t *testing.T) {

@@ -155,7 +155,7 @@ func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *pr
 	if attribute.Name != parser.AttributePermission {
 		return
 	}
-	// todo, await permissions in parser
+	// todo, should be poss now
 }
 
 func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation) {
@@ -168,11 +168,11 @@ func (scm *Schema) applyFunctionAttribute(attribute *parser.Attribute, protoOper
 	// permission, where, or set
 	switch attribute.Name {
 	case parser.AttributePermission:
-		// todo await permission support in parser
+		// todo await attr/expr support in parser
 	case parser.AttributeWhere:
-		// todo await where support in parser
+		// todo await attr/exp support in parser
 	case parser.AttributeSet:
-		// todo await set support in parser
+		// todo await attr/exp support in parser
 	}
 }
 
