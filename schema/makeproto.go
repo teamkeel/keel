@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
@@ -9,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-// makeProtoModels derives and returns a proto.Schema from the given (known to be valid) parsed AST.
+// makeProtoModels derives and returns a proto.Schema from the given (known to be valid) set of parsed AST.
 func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
@@ -197,14 +198,14 @@ func (scm *Schema) applyModelPermission(permissionAttribute *parser.Attribute, p
 	case len(args) == 2 && args[0].Expression != nil:
 		// todo - see if we can remove error from ToString return values
 		conditional, _ := expressions.ToString(args[0].Expression)
-		actions, _ := expressions.ToString(args[1].Expression)
+		operationTypes := scm.convertExpressionToListOfOperationTypes(args[1].Expression)
 
 		permissionRule := &proto.PermissionRule{
 			ModelName: protoModel.Name,
 			OperationName: nil,
-			RoleName: nil,
-			Expression: conditional,
-			OperationsTypes: actions,
+			RoleName: "",
+			Expression: &proto.Expression{Source: conditional},
+			OperationsTypes: operationTypes,
 		}
 
 		protoModel.Permissions = []*proto.PermissionRule{permissionRule}
@@ -214,3 +215,48 @@ func (scm *Schema) applyModelPermission(permissionAttribute *parser.Attribute, p
 		panic("Permission attribute malformed")
 	}
 }
+
+func (scm *Schema) convertExpressionToListOfOperationTypes(expr *expressions.Expression) []proto.OperationType {
+	// todo - this is a temporary cludge unti we get code to evaluate expressions properly.
+	asListOfStrings := scm.evalExpressionToListOfStrings(expr)
+	mappedToOperationTypes := scm.mapToOperationTypes(asListOfStrings)
+	return mappedToOperationTypes
+}
+
+func (scm *Schema) evalExpressionToListOfStrings(expr *expressions.Expression) []string {
+	// todo - this is a temporary cludge unti we get code to evaluate expressions properly.
+	asString, err := expressions.ToString(expr)
+	if err != nil {
+		panic(fmt.Errorf("expressionsToString() failed with: %v", err))
+	}
+	asString = strings.ReplaceAll(asString, "[", "")
+	asString = strings.ReplaceAll(asString, "]", "")
+	segments := strings.Split(asString, ",")
+	trimmed := []string{}
+	for _, seg := range segments {
+		trimmed = append(trimmed, strings.TrimSpace(seg))
+	}
+	return trimmed
+}
+
+func (scm *Schema) mapToOperationTypes(parsedStrings []string) []proto.OperationType {
+	types := []proto.OperationType{}
+	// todo DRY this up - we something similar in two places
+	for _, parsedString := range parsedStrings {
+		switch parsedString {
+		case parser.ActionTypeCreate:
+			types = append(types, proto.OperationType_OPERATION_TYPE_CREATE)
+		case parser.ActionTypeUpdate:
+			types = append(types, proto.OperationType_OPERATION_TYPE_UPDATE)
+		case parser.ActionTypeGet:
+			types = append(types, proto.OperationType_OPERATION_TYPE_GET)
+		case parser.ActionTypeList:
+			types = append(types, proto.OperationType_OPERATION_TYPE_LIST)
+		default:
+			panic("Action type not recognized")
+		}
+	}
+	return types
+}
+
+
