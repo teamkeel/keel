@@ -162,7 +162,7 @@ func (scm *Schema) applyFunctionAttribute(attribute *parser.Attribute, protoOper
 	case parser.AttributePermission:
 		scm.applyFunctionPermission(attribute, protoOperation, modelName)
 	case parser.AttributeWhere:
-		// todo await attr/exp support in parser
+		scm.applyWhereAttribute(attribute, protoOperation, modelName)
 	case parser.AttributeSet:
 		// todo await attr/exp support in parser
 	}
@@ -206,9 +206,6 @@ func (scm *Schema) applyModelPermission(permissionAttribute *parser.Attribute, p
 
 
 func (scm *Schema) applyFunctionPermission(permissionAttribute *parser.Attribute, operation *proto.Operation, modelName string) {
-	// what is allowed
-	// (Role)
-	// (Expression)
 	args := permissionAttribute.Arguments
 	switch {
 	// The first form we support is Permission(conditional)
@@ -229,6 +226,16 @@ func (scm *Schema) applyFunctionPermission(permissionAttribute *parser.Attribute
 	// todo - extend cases to support function permissions of the form @Permission(role)
 	default:
 		panic("Permission attribute malformed")
+	}
+}
+
+func (scm *Schema) applyWhereAttribute(permissionAttribute *parser.Attribute, operation *proto.Operation, modelName string) {
+	args := permissionAttribute.Arguments
+	switch {
+	case len(args) == 1 && args[0].Expression != nil:
+		// todo - see if we can remove error from ToString return values
+		conditional, _ := expressions.ToString(args[0].Expression)
+		operation.WhereExpressions = []*proto.Expression{{Source: conditional}}
 	}
 }
 
