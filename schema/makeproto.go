@@ -1,6 +1,9 @@
 package schema
 
 import (
+	"fmt"
+
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -140,8 +143,8 @@ func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName s
 	operationInputs := []*proto.OperationInput{}
 	for _, parserArg := range parserFunction.Arguments {
 		operationInput := proto.OperationInput{
-			Name: parserArg.Name,
-			Type: proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
+			Name:      parserArg.Name,
+			Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
 			ModelName: wrapperspb.String(parserArg.Name),
 			FieldName: wrapperspb.String(parserArg.Name),
 		}
@@ -152,10 +155,10 @@ func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName s
 }
 
 func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
-	if attribute.Name != parser.AttributePermission {
-		return
+	switch attribute.Name {
+	case parser.AttributePermission:
+		scm.applyModelPermission(attribute, protoModel)
 	}
-	// todo, should be poss now
 }
 
 func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation) {
@@ -184,5 +187,30 @@ func (scm *Schema) applyFieldAttributes(parserField *parser.ModelField, protoFie
 		case parser.AttributeOptional:
 			protoField.Optional = true
 		}
+	}
+}
+
+func (scm *Schema) applyModelPermission(permissionAttribute *parser.Attribute, protoModel *proto.Model) {
+	args := permissionAttribute.Arguments
+	switch {
+	// The first form we support is Permission(conditional, actions)
+	case len(args) == 2 && args[0].Expression != nil:
+		// todo - see if we can remove error from ToString return values
+		conditional, _ := expressions.ToString(args[0].Expression)
+		actions, _ := expressions.ToString(args[1].Expression)
+
+		permissionRule := &proto.PermissionRule{
+			ModelName: protoModel.Name,
+			OperationName: nil,
+			RoleName: nil,
+			Expression: conditional,
+			OperationsTypes: actions,
+		}
+
+		protoModel.Permissions = []*proto.PermissionRule{permissionRule}
+
+	// todo - extend cases to support Model permissions of the form @Permission(role, actions)
+	default:
+		panic("Permission attribute malformed")
 	}
 }
