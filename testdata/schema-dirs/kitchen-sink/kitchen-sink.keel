@@ -4,7 +4,7 @@ role Admin {
     }
 
     emails {
-        "someagencyguy@blah.com"
+        "hello@agency.com"
     }
 }
 
