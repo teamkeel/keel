@@ -198,7 +198,8 @@ func (scm *Schema) applyModelPermission(permissionAttribute *parser.Attribute, p
 
 		protoModel.Permissions = []*proto.PermissionRule{permissionRule}
 
-	// todo - extend cases to support Model permissions of the form @Permission(role, actions)
+	// todo - when the parser supports Roles, extend cases to support Model permissions of the
+	// form @Permission(role, actions)
 	default:
 		panic("Permission attribute malformed")
 	}
@@ -223,7 +224,8 @@ func (scm *Schema) applyFunctionPermission(permissionAttribute *parser.Attribute
 
 		operation.Permissions = []*proto.PermissionRule{permissionRule}
 
-	// todo - extend cases to support function permissions of the form @Permission(role)
+	// todo - when the parser supports Roles, extend cases to support function permissions of the
+	// form @Permission(role)
 	default:
 		panic("Permission attribute malformed")
 	}
