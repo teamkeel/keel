@@ -356,6 +356,21 @@ func noReservedModelNames(inputs []Input) []error {
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
 func operationUniqueFieldInput(inputs []Input) []error {
 	var errors []error
+
+	var fields []*parser.ModelField
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, dec := range schema.Declarations {
+			if dec.Model == nil {
+				continue
+			}
+
+			for _, section := range dec.Model.Sections {
+				fields = append(fields, section.Fields...)
+			}
+		}
+	}
+
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 		for _, dec := range schema.Declarations {
@@ -367,60 +382,31 @@ func operationUniqueFieldInput(inputs []Input) []error {
 				if len(section.Operations) == 0 {
 					continue
 				}
-
+				nonFieldAttrs := make(map[string]bool, 0)
 				for _, function := range section.Operations {
+					nonFieldAttrs[function.Name] = false
+
 					if function.Type != parser.ActionTypeGet {
 						continue
 					}
-
-					for _, modelSection := range dec.Model.Sections {
-						if len(modelSection.Fields) == 0 {
-							continue
-						}
-
-						if len(function.Arguments) != 1 && len(function.Attributes) > 0 {
-							checkER := checkAttributes(function.Attributes, function.Pos, modelSection.Fields)
-							if len(checkER) > 0 {
-								fmt.Println(":done")
-							}
-						} else if len(function.Arguments) != 1 {
-							errors = append(errors, &ValidationError{
-								ShortMessage: fmt.Sprintf("cannot use %v", function.Arguments),
-								Message:      fmt.Sprintf("get operation must take a unique field as an input: %s", function.Name),
-								Pos:          function.Pos,
-							})
-							continue
-						}
-
-					}
-
-					if len(function.Arguments) == 0 {
-						continue
-					}
-
-					arg := function.Arguments[0]
 					isValid := false
 
-					for _, modelSection := range dec.Model.Sections {
-						if len(modelSection.Fields) == 0 {
+					for _, field := range fields {
+						if len(function.Arguments) != 1 && len(function.Attributes) > 0 {
+							validAttrs := checkAttributes(function.Attributes, field)
+							if validAttrs {
+								nonFieldAttrs[function.Name] = true
+								isValid = true
+							}
+						}
+						if !nonFieldAttrs[function.Name] && len(function.Arguments) != 1 {
 							continue
 						}
-						for _, field := range modelSection.Fields {
 
-							if field.Name != arg.Name {
-								continue
-							}
-							for _, attr := range field.Attributes {
-								if attr.Name == "unique" {
-									isValid = true
-								}
-								if attr.Name == "primaryKey" {
-									isValid = true
-								}
-							}
+						if !nonFieldAttrs[function.Name] {
+							isValid = checkFuncArgsUnique(function, fields)
 						}
 					}
-
 					if !isValid {
 						errors = append(errors, &ValidationError{
 							ShortMessage: fmt.Sprintf("%s requires a unique field", function.Name),
@@ -429,53 +415,66 @@ func operationUniqueFieldInput(inputs []Input) []error {
 						})
 
 					}
-
 				}
 			}
-
 		}
 	}
 
 	return errors
 }
 
-func checkAttributes(input []*parser.Attribute, pos lexer.Position, fields []*parser.ModelField) []error {
+func checkAttributes(input []*parser.Attribute, fields *parser.ModelField) bool {
 	var uniqueFields []string
+	var isValid bool
 
-	for _, field := range fields {
-		for _, attr := range field.Attributes {
-			if attr.Name == "unique" {
-				uniqueFields = append(uniqueFields, field.Name)
-			}
-
+	for _, attr := range fields.Attributes {
+		if attr.Name == "unique" {
+			uniqueFields = append(uniqueFields, fields.Name)
 		}
-
 	}
 	if len(uniqueFields) == 0 {
-		return nil
+		return false
 	}
 
 	for _, attr := range input {
 		for _, uniqueField := range uniqueFields {
-			fmt.Println("attr")
-			fmt.Println(attr.Name)
 			for _, attrArg := range attr.Arguments {
-
-				fmt.Println("attrArg.Name")
-				fmt.Println(attrArg.Expression)
+				for _, expression := range attrArg.Expression.Or {
+					for _, and := range expression.And {
+						for _, ident := range and.Condition.LHS.Ident {
+							if ident == uniqueField {
+								isValid = true
+							}
+						}
+					}
+				}
 			}
-			fmt.Println("field")
-			fmt.Println(uniqueField)
-
-			// if attr.Name == uniqueField {
-
-			// }
-
 		}
-
 	}
 
-	return nil
+	return isValid
+}
+
+func checkFuncArgsUnique(function *parser.ModelAction, fields []*parser.ModelField) bool {
+	isValid := false
+	arg := function.Arguments[0]
+
+	for _, field := range fields {
+		if field.Name != arg.Name {
+			continue
+		}
+
+		for _, attr := range field.Attributes {
+			if attr.Name == "unique" {
+				isValid = true
+			}
+			if attr.Name == "primaryKey" {
+				isValid = true
+			}
+		}
+	}
+
+	return isValid
 }
 
 //Supported field types
