@@ -18,7 +18,6 @@ type Schema struct {
 type Declaration struct {
 	Pos lexer.Position
 
-	// todo - allow any order of these sections -- todo
 	Model *Model `("model" @@`
 	Role  *Role  `| "role" @@`
 	API   *API   `| "api" @@)`
