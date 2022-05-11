@@ -92,6 +92,41 @@ func TestModelWithFieldAttributes(t *testing.T) {
 	assert.Equal(t, "unique", schema.Declarations[0].Model.Sections[0].Fields[1].Attributes[0].Name)
 }
 
+func TestRole(t *testing.T) {
+	schema := parse(t, `
+		model Post {
+			fields {
+				title Text
+			}
+
+			@permission(
+				actions: [get],
+				role: Admin
+			)
+		}
+
+	  role Admin {
+			domains {
+				"keel.xyz"
+				"keel.zyx"
+			}
+
+			emails {
+				"adam@keel.xyz"
+				"adam@keel.zyx"
+			}
+		}
+	`)
+
+	assert.Equal(t, "Admin", schema.Declarations[1].Role.Name)
+
+	assert.Equal(t, "\"adam@keel.xyz\"", schema.Declarations[1].Role.Sections[1].Emails[0].Email)
+	assert.Equal(t, "\"adam@keel.zyx\"", schema.Declarations[1].Role.Sections[1].Emails[1].Email)
+
+	assert.Equal(t, "\"keel.xyz\"", schema.Declarations[1].Role.Sections[0].Domains[0].Domain)
+	assert.Equal(t, "\"keel.zyx\"", schema.Declarations[1].Role.Sections[0].Domains[1].Domain)
+}
+
 func TestModelWithPermissionAttributes(t *testing.T) {
 	schema := parse(t, `
 	model Author {
@@ -107,9 +142,16 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 	  
 		@permission(
 		  expression: true,
-		  actions: [get]
+		  actions: [get],
+		  role: Admin
 		)
-	  }`)
+	}
+	role Admin {
+		emails {
+			"adam@keel.xyz"
+		}
+	}
+	`)
 	assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name)
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
