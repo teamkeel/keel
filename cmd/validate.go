@@ -25,27 +25,26 @@ var validateCmd = &cobra.Command{
 		var protoSchema *proto.Schema // For clarity only.
 		_ = protoSchema
 		var err error
-		var errors []error
 
 		switch {
 		case inputFile != "":
-			protoSchema, errors, err = schema.MakeFromFile(inputFile)
+			protoSchema, err = schema.MakeFromFile(inputFile)
 		default:
-			protoSchema, errors, err = schema.MakeFromDirectory(inputDir)
+			protoSchema, err = schema.MakeFromDirectory(inputDir)
 		}
 
 		if err != nil {
-			_, ok := err.(*validation.ValidationError)
+			errs, ok := err.(validation.ValidationErrors)
 			if ok {
 				if output == "json" {
-					output, err := json.Marshal(errors)
+					output, err := json.Marshal(errs.Errors)
 					if err != nil {
 						return fmt.Errorf("error marshalling validation errors: %v", err)
 					}
 					fmt.Println(string(output))
 					return nil
 				} else {
-					for _, e := range errors {
+					for _, e := range errs.Errors {
 						fmt.Println(e.Error())
 					}
 					return nil

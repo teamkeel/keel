@@ -34,7 +34,7 @@ func NewValidator(inputs []Input) *Validator {
 	}
 }
 
-func (v *Validator) RunAllValidators() []error {
+func (v *Validator) RunAllValidators() error {
 	validatorFuncs := []func([]Input) []error{
 		modelsUpperCamel,
 		fieldsOpsFuncsLowerCamel,
@@ -47,14 +47,21 @@ func (v *Validator) RunAllValidators() []error {
 		supportedFieldTypes,
 		modelsGloballyUnique,
 	}
-	var errors []error
+	var errors []*ValidationError
 	for _, vf := range validatorFuncs {
 		err := vf(v.inputs)
-		if err != nil {
-			errors = append(errors, err...)
+		for _, e := range err {
+			if verrs, ok := e.(*ValidationError); ok {
+				errors = append(errors, verrs)
+			}
 		}
 	}
-	return errors
+
+	if len(errors) > 0 {
+		return ValidationErrors{Errors: errors}
+	}
+
+	return nil
 }
 
 // //Models are UpperCamel
@@ -71,11 +78,10 @@ func modelsUpperCamel(inputs []Input) []error {
 			reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
 			if reg.FindString(decl.Model.Name) != decl.Model.Name {
-				errors = append(errors, &ValidationError{
-					ShortMessage: fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
-					Message:      fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
-					Pos:          decl.Model.Pos,
-				})
+				errors = append(errors, validationError(fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
+					fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
+					"",
+					decl.Model.Pos))
 			}
 		}
 	}
@@ -98,21 +104,19 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 						continue
 					}
 					if strcase.ToLowerCamel(field.Name) != field.Name {
-						errors = append(errors, &ValidationError{
-							ShortMessage: fmt.Sprintf("%s isn't lower camel", field.Name),
-							Message:      fmt.Sprintf("you have a field name that is not lowerCamel %s", field.Name),
-							Pos:          field.Pos,
-						})
+						errors = append(errors, validationError(fmt.Sprintf("you have a field name that is not lowerCamel %s", field.Name),
+							fmt.Sprintf("%s isn't lower camel", field.Name),
+							"",
+							field.Pos))
 
 					}
 				}
 				for _, function := range model.Operations {
 					if strcase.ToLowerCamel(function.Name) != function.Name {
-						errors = append(errors, &ValidationError{
-							ShortMessage: fmt.Sprintf("%s isn't lower camel", function.Name),
-							Message:      fmt.Sprintf("you have a function name that is not lowerCamel %s", function.Name),
-							Pos:          function.Pos,
-						})
+						errors = append(errors, validationError(fmt.Sprintf("you have a function name that is not lowerCamel %s", function.Name),
+							fmt.Sprintf("%s isn't lower camel", function.Name),
+							"",
+							function.Pos))
 
 					}
 				}
@@ -136,11 +140,12 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 				fieldNames := map[string]bool{}
 				for _, name := range sections.Fields {
 					if _, ok := fieldNames[name.Name]; ok {
-						errors = append(errors, &ValidationError{
-							ShortMessage: fmt.Sprintf("%s is duplicated", name.Name),
-							Message:      fmt.Sprintf("you have duplicate field names %s", name.Name),
-							Pos:          name.Pos,
-						})
+						errors = append(errors, validationError(
+							fmt.Sprintf("you have duplicate field names %s", name.Name),
+							fmt.Sprintf("%s is duplicated", name.Name),
+							"",
+							name.Pos))
+
 					}
 					fieldNames[name.Name] = true
 				}
@@ -220,11 +225,12 @@ func operationsUniqueGlobally(inputs []Input) []error {
 	}
 
 	for _, nameError := range duplicationOperations {
-		errors = append(errors, &ValidationError{
-			ShortMessage: fmt.Sprintf("%s is duplicated", nameError.Name),
-			Message:      fmt.Sprintf("you have duplicate operations Model:%s Name:%s", nameError.Model, nameError.Name),
-			Pos:          nameError.Pos,
-		})
+		errors = append(errors, validationError(
+			fmt.Sprintf("you have duplicate operations Model:%s Name:%s", nameError.Model, nameError.Name),
+			fmt.Sprintf("%s is duplicated", nameError.Name),
+			"",
+			nameError.Pos))
+
 	}
 
 	return errors
@@ -284,11 +290,8 @@ func operationInputs(inputs []Input) []error {
 		for k, v := range functionFields {
 			for _, field := range v.Fields {
 				message := fmt.Sprintf("model:%s, field:%v", k, field.Name)
-				errors = append(errors, &ValidationError{
-					ShortMessage: fmt.Sprintf("Replace %s", field.Name),
-					Message:      fmt.Sprintf("you are using inputs that are not fields %s", message),
-					Pos:          field.Pos,
-				})
+				errors = append(errors, validationError(fmt.Sprintf("you are using inputs that are not fields %s", message),
+					fmt.Sprintf("Replace %s", field.Name), "", field.Pos))
 			}
 
 		}
@@ -313,11 +316,10 @@ func noReservedFieldNames(inputs []Input) []error {
 							continue
 						}
 						if strings.EqualFold(name, field.Name) {
-							errors = append(errors, &ValidationError{
-								ShortMessage: fmt.Sprintf("cannot use %s", field.Name),
-								Message:      fmt.Sprintf("you have a reserved field name %s", field.Name),
-								Pos:          field.Pos,
-							})
+							errors = append(errors, validationError(fmt.Sprintf("you have a reserved field name %s", field.Name),
+								fmt.Sprintf("cannot use %s", field.Name),
+								"",
+								field.Pos))
 						}
 					}
 				}
@@ -339,11 +341,9 @@ func noReservedModelNames(inputs []Input) []error {
 					continue
 				}
 				if strings.EqualFold(name, dec.Model.Name) {
-					errors = append(errors, &ValidationError{
-						ShortMessage: fmt.Sprintf("%s is reserved", dec.Model.Name),
-						Message:      fmt.Sprintf("you have a reserved model name %s", dec.Model.Name),
-						Pos:          dec.Model.Pos,
-					})
+					errors = append(errors, validationError(fmt.Sprintf("you have a reserved model name %s", dec.Model.Name),
+						fmt.Sprintf("%s is reserved", dec.Model.Name),
+						"", dec.Model.Pos))
 
 				}
 			}
@@ -408,11 +408,11 @@ func operationUniqueFieldInput(inputs []Input) []error {
 						}
 					}
 					if !isValid {
-						errors = append(errors, &ValidationError{
-							ShortMessage: fmt.Sprintf("%s requires a unique field", function.Name),
-							Message:      fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
-							Pos:          function.Pos,
-						})
+						errors = append(errors, validationError(
+							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
+							fmt.Sprintf("%s requires a unique field", function.Name),
+							"",
+							function.Pos))
 
 					}
 				}
@@ -499,11 +499,11 @@ func supportedFieldTypes(inputs []Input) []error {
 			for _, section := range dec.Model.Sections {
 				for _, field := range section.Fields {
 					if _, ok := fieldTypes[field.Type]; !ok {
-						errors = append(errors, &ValidationError{
-							ShortMessage: fmt.Sprintf("%s isn't supported", field.Type),
-							Message:      fmt.Sprintf("field %s has an unsupported type %s", field.Name, field.Type),
-							Pos:          field.Pos,
-						})
+						errors = append(errors, validationError(
+							fmt.Sprintf("field %s has an unsupported type %s", field.Name, field.Type),
+							fmt.Sprintf("%s isn't supported", field.Type),
+							"",
+							field.Pos))
 					}
 				}
 			}
@@ -539,11 +539,11 @@ func modelsGloballyUnique(inputs []Input) []error {
 	}
 
 	for _, nameError := range duplicateModels {
-		errors = append(errors, &ValidationError{
-			ShortMessage: fmt.Sprintf("%s is duplicated", nameError.Model),
-			Message:      fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", nameError.Model, nameError.Pos),
-			Pos:          nameError.Pos,
-		})
+		errors = append(errors, validationError(
+			fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", nameError.Model, nameError.Pos),
+			fmt.Sprintf("%s is duplicated", nameError.Model),
+			"",
+			nameError.Pos))
 	}
 
 	return errors
