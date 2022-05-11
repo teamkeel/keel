@@ -108,17 +108,23 @@ func TestRole(t *testing.T) {
 	  role Admin {
 			domains {
 				"keel.xyz"
+				"keel.zyx"
 			}
 
 			emails {
 				"adam@keel.xyz"
+				"adam@keel.zyx"
 			}
 		}
 	`)
 
 	assert.Equal(t, "Admin", schema.Declarations[1].Role.Name)
+
 	assert.Equal(t, "\"adam@keel.xyz\"", schema.Declarations[1].Role.Sections[1].Emails[0].Email)
+	assert.Equal(t, "\"adam@keel.zyx\"", schema.Declarations[1].Role.Sections[1].Emails[1].Email)
+
 	assert.Equal(t, "\"keel.xyz\"", schema.Declarations[1].Role.Sections[0].Domains[0].Domain)
+	assert.Equal(t, "\"keel.zyx\"", schema.Declarations[1].Role.Sections[0].Domains[1].Domain)
 }
 
 func TestModelWithPermissionAttributes(t *testing.T) {
