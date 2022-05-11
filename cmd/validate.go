@@ -50,7 +50,7 @@ var validateCmd = &cobra.Command{
 				return fmt.Errorf("error making schema: %v", err)
 			}
 		}
-		c.outputFormatter.Write("Validation OK\n")
+		c.outputFormatter.Write("Validation OK")
 
 		return nil
 	},

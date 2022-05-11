@@ -80,7 +80,7 @@ func modelsUpperCamel(inputs []Input) []error {
 			if reg.FindString(decl.Model.Name) != decl.Model.Name {
 				errors = append(errors, validationError(fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
 					fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
-					"",
+					strcase.ToCamel(decl.Model.Name),
 					decl.Model.Pos))
 			}
 		}
@@ -106,7 +106,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if strcase.ToLowerCamel(field.Name) != field.Name {
 						errors = append(errors, validationError(fmt.Sprintf("you have a field name that is not lowerCamel %s", field.Name),
 							fmt.Sprintf("%s isn't lower camel", field.Name),
-							"",
+							strcase.ToLowerCamel(field.Name),
 							field.Pos))
 
 					}
@@ -115,7 +115,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if strcase.ToLowerCamel(function.Name) != function.Name {
 						errors = append(errors, validationError(fmt.Sprintf("you have a function name that is not lowerCamel %s", function.Name),
 							fmt.Sprintf("%s isn't lower camel", function.Name),
-							"",
+							strcase.ToLowerCamel(function.Name),
 							function.Pos))
 
 					}
@@ -143,7 +143,7 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 						errors = append(errors, validationError(
 							fmt.Sprintf("you have duplicate field names %s", name.Name),
 							fmt.Sprintf("%s is duplicated", name.Name),
-							"",
+							fmt.Sprintf(`Remove '%s' on line %v`, name.Name, name.Pos.Line),
 							name.Pos))
 
 					}
@@ -228,7 +228,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 		errors = append(errors, validationError(
 			fmt.Sprintf("you have duplicate operations Model:%s Name:%s", nameError.Model, nameError.Name),
 			fmt.Sprintf("%s is duplicated", nameError.Name),
-			"",
+			fmt.Sprintf(`Remove '%s' on line %v`, nameError.Name, nameError.Pos.Line),
 			nameError.Pos))
 
 	}
@@ -291,7 +291,7 @@ func operationInputs(inputs []Input) []error {
 			for _, field := range v.Fields {
 				message := fmt.Sprintf("model:%s, field:%v", k, field.Name)
 				errors = append(errors, validationError(fmt.Sprintf("you are using inputs that are not fields %s", message),
-					fmt.Sprintf("Replace %s", field.Name), "", field.Pos))
+					fmt.Sprintf("Replace %s", field.Name), fmt.Sprintf("Check inputs for %s", k), field.Pos))
 			}
 
 		}
@@ -318,7 +318,7 @@ func noReservedFieldNames(inputs []Input) []error {
 						if strings.EqualFold(name, field.Name) {
 							errors = append(errors, validationError(fmt.Sprintf("you have a reserved field name %s", field.Name),
 								fmt.Sprintf("cannot use %s", field.Name),
-								"",
+								fmt.Sprintf("You cannot use %s as field name, it is reserved, try %ser", field.Name, field.Name),
 								field.Pos))
 						}
 					}
@@ -343,7 +343,8 @@ func noReservedModelNames(inputs []Input) []error {
 				if strings.EqualFold(name, dec.Model.Name) {
 					errors = append(errors, validationError(fmt.Sprintf("you have a reserved model name %s", dec.Model.Name),
 						fmt.Sprintf("%s is reserved", dec.Model.Name),
-						"", dec.Model.Pos))
+						fmt.Sprintf("You cannot use %s as a model name, it is reserved, try %ser", dec.Model.Name, dec.Model.Name),
+						dec.Model.Pos))
 
 				}
 			}
