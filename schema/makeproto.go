@@ -164,7 +164,7 @@ func (scm *Schema) applyFunctionAttribute(attribute *parser.Attribute, protoOper
 	case parser.AttributeWhere:
 		scm.applyWhereAttribute(attribute, protoOperation, modelName)
 	case parser.AttributeSet:
-		// todo await attr/exp support in parser
+		scm.applySetAttribute(attribute, protoOperation, modelName)
 	}
 }
 
@@ -236,6 +236,16 @@ func (scm *Schema) applyWhereAttribute(permissionAttribute *parser.Attribute, op
 		// todo - see if we can remove error from ToString return values
 		conditional, _ := expressions.ToString(args[0].Expression)
 		operation.WhereExpressions = []*proto.Expression{{Source: conditional}}
+	}
+}
+
+func (scm *Schema) applySetAttribute(permissionAttribute *parser.Attribute, operation *proto.Operation, modelName string) {
+	args := permissionAttribute.Arguments
+	switch {
+	case len(args) == 1 && args[0].Expression != nil:
+		// todo - see if we can remove error from ToString return values
+		assignmentExpr, _ := expressions.ToString(args[0].Expression)
+		operation.SetExpressions = []*proto.Expression{{Source: assignmentExpr}}
 	}
 }
 
