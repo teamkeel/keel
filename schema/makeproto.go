@@ -118,19 +118,7 @@ func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, 
 		ModelName:      modelName,
 		Name:           parserFunction.Name,
 		Implementation: impl,
-	}
-
-	switch parserFunction.Type {
-	case parser.ActionTypeCreate:
-		protoOp.Type = proto.OperationType_OPERATION_TYPE_CREATE
-	case parser.ActionTypeUpdate:
-		protoOp.Type = proto.OperationType_OPERATION_TYPE_UPDATE
-	case parser.ActionTypeGet:
-		protoOp.Type = proto.OperationType_OPERATION_TYPE_GET
-	case parser.ActionTypeList:
-		protoOp.Type = proto.OperationType_OPERATION_TYPE_LIST
-	default:
-		panic("Action type not recognized")
+		Type: scm.mapToOperationType(parserFunction.Type),
 	}
 
 	protoOp.Inputs = scm.makeArguments(parserFunction, modelName)
@@ -224,7 +212,7 @@ func (scm *Schema) convertExpressionToListOfOperationTypes(expr *expressions.Exp
 }
 
 func (scm *Schema) evalExpressionToListOfStrings(expr *expressions.Expression) []string {
-	// todo - this is a temporary cludge unti we get code to evaluate expressions properly.
+	// todo - this is a temporary cludge until we get code to evaluate expressions properly.
 	asString, err := expressions.ToString(expr)
 	if err != nil {
 		panic(fmt.Errorf("expressionsToString() failed with: %v", err))
@@ -241,22 +229,25 @@ func (scm *Schema) evalExpressionToListOfStrings(expr *expressions.Expression) [
 
 func (scm *Schema) mapToOperationTypes(parsedStrings []string) []proto.OperationType {
 	types := []proto.OperationType{}
-	// todo DRY this up - we something similar in two places
 	for _, parsedString := range parsedStrings {
-		switch parsedString {
-		case parser.ActionTypeCreate:
-			types = append(types, proto.OperationType_OPERATION_TYPE_CREATE)
-		case parser.ActionTypeUpdate:
-			types = append(types, proto.OperationType_OPERATION_TYPE_UPDATE)
-		case parser.ActionTypeGet:
-			types = append(types, proto.OperationType_OPERATION_TYPE_GET)
-		case parser.ActionTypeList:
-			types = append(types, proto.OperationType_OPERATION_TYPE_LIST)
-		default:
-			panic("Action type not recognized")
-		}
+		types = append(types, scm.mapToOperationType(parsedString))
 	}
 	return types
+}
+
+func (scm *Schema) mapToOperationType(parsedOperation string) proto.OperationType {
+	switch parsedOperation {
+	case parser.ActionTypeCreate:
+		return proto.OperationType_OPERATION_TYPE_CREATE
+	case parser.ActionTypeUpdate:
+		return proto.OperationType_OPERATION_TYPE_UPDATE
+	case parser.ActionTypeGet:
+		return proto.OperationType_OPERATION_TYPE_GET
+	case parser.ActionTypeList:
+		return proto.OperationType_OPERATION_TYPE_LIST
+	default:
+		return proto.OperationType_OPERATION_TYPE_UNKNOWN
+	}
 }
 
 
