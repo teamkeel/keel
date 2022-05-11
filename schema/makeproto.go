@@ -187,7 +187,7 @@ func (scm *Schema) permissionAttributeToProtoPermission(attr *parser.Attribute) 
 	pr := &proto.PermissionRule{}
 	for _, arg := range attr.Arguments {
 		switch arg.Name {
-		// user parser constants for "expression" etc below
+		// todo use parser constants for "expression" etc below
 		case "expression":
 			expr, _ := expressions.ToString(arg.Expression)
 			pr.Expression = &proto.Expression{Source: expr}
