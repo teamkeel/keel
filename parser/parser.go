@@ -18,6 +18,7 @@ type Schema struct {
 type Declaration struct {
 	Pos lexer.Position
 
+	// todo - allow any order of these sections -- todo
 	Model *Model `("model" @@`
 	Role  *Role  `| "role" @@`
 	API   *API   `| "api" @@)`
@@ -79,7 +80,6 @@ type RoleDomain struct {
 type RoleEmail struct {
 	Pos lexer.Position
 
-	// foo.bar_1abc@myorg.com
 	Email string `@String`
 }
 
