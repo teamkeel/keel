@@ -442,3 +442,47 @@ func asInputs(oneSchema *parser.Schema) []Input {
 	}
 	return []Input{oneInput}
 }
+
+//Models must be globally unique
+func TestModelsBeGloballyUnique(t *testing.T) {
+	err := modelsGloballyUnique(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
+		{
+			Model: &parser.Model{
+				Name: "Book",
+				Sections: []*parser.ModelSection{
+					{
+						Operations: []*parser.ModelAction{
+							{
+								Name: "createbook",
+							},
+							{
+								Name: "dave",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			Model: &parser.Model{
+				Name: "Book",
+				Sections: []*parser.ModelSection{
+					{
+						Operations: []*parser.ModelAction{
+							{
+								Name: "createbook",
+							},
+							{
+								Name: "dave1",
+							},
+						},
+					},
+				},
+			},
+		},
+	}}))
+
+	expected := errors.New("you have duplicate Models Model:Book")
+
+	assert.Equal(t, expected, err)
+}

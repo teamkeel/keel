@@ -44,6 +44,7 @@ func (v *Validator) RunAllValidators() error {
 		noReservedModelNames,
 		operationUniqueFieldInput,
 		supportedFieldTypes,
+		modelsGloballyUnique,
 	}
 	for _, vf := range validatorFuncs {
 		err := vf(v.inputs)
@@ -359,6 +360,54 @@ func supportedFieldTypes(inputs []Input) error {
 	}
 
 	return nil
+}
+
+//Models are globally unique
+func modelsGloballyUnique(inputs []Input) error {
+	var modelNames []string
+
+	globalOperations := uniqueModelsGlobally(inputs)
+
+	for _, name := range globalOperations {
+		modelNames = append(modelNames, name.Model)
+	}
+	duplicates := findDuplicates(modelNames)
+
+	if len(duplicates) == 0 {
+		return nil
+	}
+
+	var duplicateModels []GlobalOperations
+	for _, model := range globalOperations {
+		for _, duplicate := range duplicates {
+			if model.Model == duplicate {
+				duplicateModels = append(duplicateModels, model)
+			}
+		}
+	}
+
+	for _, nameError := range duplicateModels {
+		return fmt.Errorf("you have duplicate Models Model:%s", nameError.Model)
+	}
+
+	return nil
+}
+
+func uniqueModelsGlobally(inputs []Input) []GlobalOperations {
+	var globalOperations []GlobalOperations
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, declaration := range schema.Declarations {
+			if declaration.Model == nil {
+				continue
+			}
+
+			globalOperations = append(globalOperations, GlobalOperations{
+				Model: declaration.Model.Name,
+			})
+		}
+	}
+	return globalOperations
 }
 
 func findDuplicates(s []string) []string {
