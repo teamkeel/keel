@@ -15,7 +15,7 @@
       "request": "launch",
       "mode": "auto",
       "program": "${workspaceFolder}",
-      "args":["validate", "--f", "${input:schemaPath}"],
+      "args":["validate", "-f", "${input:schemaPath}"],
     }
   ]
 }

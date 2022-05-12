@@ -45,6 +45,7 @@ func (v *Validator) RunAllValidators() error {
 		noReservedModelNames,
 		operationUniqueFieldInput,
 		supportedFieldTypes,
+		supportedAttributeTypes,
 		modelsGloballyUnique,
 	}
 	var errors []*ValidationError
@@ -498,6 +499,86 @@ func uniqueModelsGlobally(inputs []Input) []GlobalOperations {
 	return globalOperations
 }
 
+func supportedAttributeTypes(inputs []Input) []error {
+	var errors []error
+
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+
+		for _, dec := range schema.Declarations {
+			if dec.Model != nil {
+				for _, section := range dec.Model.Sections {
+					if section.Attribute != nil {
+						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "model", dec.Model.Name)...)
+					}
+
+					if section.Operations != nil {
+						for _, op := range section.Operations {
+							errors = append(errors, checkAttributes(op.Attributes, "operation", op.Name)...)
+						}
+					}
+
+					if section.Functions != nil {
+						for _, function := range section.Functions {
+							errors = append(errors, checkAttributes(function.Attributes, "function", function.Name)...)
+						}
+					}
+
+					if section.Fields != nil {
+						for _, field := range section.Fields {
+							errors = append(errors, checkAttributes(field.Attributes, "field", field.Name)...)
+						}
+					}
+				}
+			}
+
+			// Validate attributes defined within api sections
+			if dec.API != nil {
+				for _, section := range dec.API.Sections {
+					if section.Attribute != nil {
+						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "api", dec.API.Name)...)
+					}
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
+func checkAttributes(attributes []*parser.Attribute, definedOn string, parentName string) []error {
+	var supportedAttributes = map[string][]string{
+		"model":     {"permission"},
+		"api":       {"graphql"},
+		"field":     {"unique", "optional"},
+		"operation": {"set", "where", "permission"},
+		"function":  {"permission"},
+	}
+
+	var builtIns = map[string][]string{
+		"model":     {},
+		"api":       {},
+		"operation": {},
+		"function":  {},
+		"field":     {"primaryKey"},
+	}
+
+	errors := make([]error, 0)
+
+	for _, attr := range attributes {
+		if contains(builtIns[definedOn], attr.Name) {
+			continue
+		}
+
+		if !contains(supportedAttributes[definedOn], attr.Name) {
+			// todo: implement 'Did you mean XXX?' where XXX is a suggestion with an levenstein / edit distance of less than 1 - 2 chars away
+			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute @%s", attr.Name), "Did you mean XX?", attr.Pos))
+		}
+	}
+
+	return errors
+}
+
 func findDuplicates(s []string) []string {
 	inResult := make(map[string]bool)
 	var result []string
@@ -510,4 +591,14 @@ func findDuplicates(s []string) []string {
 		}
 	}
 	return result
+}
+
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+
+	return false
 }
