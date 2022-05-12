@@ -313,7 +313,7 @@ func TestUnrecognisedAttributes(t *testing.T) {
 		&ValidationError{Message: "field 'isbn' has an unrecognised attribute @who",
 			ShortMessage: "Unrecognised attribute @who",
 			Hint:         "Did you mean XX?",
-			Pos:          LexerPos{Line: 1000, Column: 4},
+			Pos:          LexerPos{Line: 1050, Column: 7},
 		},
 	}
 
