@@ -571,7 +571,8 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 		}
 
 		if !contains(supportedAttributes[definedOn], attr.Name) {
-			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute %s", attr.Name), "Did you mean XX?", attr.Pos))
+			// todo: implement 'Did you mean XXX?' where XXX is a suggestion with an levenstein / edit distance of less than 1 - 2 chars away
+			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute @%s", attr.Name), "Did you mean XX?", attr.Pos))
 		}
 	}
 
