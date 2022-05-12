@@ -241,6 +241,35 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	assert.Equal(t, expected, err)
 }
 
+func TestHintCorrection(t *testing.T) {
+	apiAttribute := parser.Attribute{Name: "graphq", Pos: lexer.Position{Line: 23, Column: 1}}
+
+	err := supportedAttributeTypes(asInputs(&parser.Schema{
+		Declarations: []*parser.Declaration{
+			{
+				API: &parser.API{
+					Name: "Web",
+					Sections: []*parser.APISection{
+						{
+							Attribute: &apiAttribute,
+						},
+					},
+				},
+			},
+		},
+	}))
+
+	expected := []error{
+		&ValidationError{
+			Message:      "api 'Web' has an unrecognised attribute @graphq",
+			ShortMessage: "Unrecognised attribute @graphq",
+			Hint:         "Did you mean @graphql?",
+			Pos:          LexerPos{Line: 23, Column: 1},
+		}}
+
+	assert.Equal(t, err, expected)
+}
+
 func TestUnrecognisedAttributes(t *testing.T) {
 	modelAttribute := parser.Attribute{Name: "huh", Pos: lexer.Position{Line: 245, Column: 1}}
 	operationAttribute := parser.Attribute{Name: "unknown", Pos: lexer.Position{Line: 123, Column: 5}}
@@ -292,27 +321,27 @@ func TestUnrecognisedAttributes(t *testing.T) {
 	expected := []error{
 		&ValidationError{Message: "model 'book' has an unrecognised attribute @huh",
 			ShortMessage: "Unrecognised attribute @huh",
-			Hint:         "Did you mean XX?",
+			Hint:         "Did you mean @permission?",
 			Pos:          LexerPos{Line: 245, Column: 1},
 		},
 		&ValidationError{Message: "operation 'createBook' has an unrecognised attribute @unknown",
 			ShortMessage: "Unrecognised attribute @unknown",
-			Hint:         "Did you mean XX?",
+			Hint:         "Did you mean @set, @where, @permission?",
 			Pos:          LexerPos{Line: 123, Column: 5},
 		},
 		&ValidationError{Message: "api 'Web' has an unrecognised attribute @whoknew",
 			ShortMessage: "Unrecognised attribute @whoknew",
-			Hint:         "Did you mean XX?",
+			Hint:         "Did you mean @graphql?",
 			Pos:          LexerPos{Line: 933, Column: 10},
 		},
 		&ValidationError{Message: "function 'deleteBookImmediately' has an unrecognised attribute @what",
 			ShortMessage: "Unrecognised attribute @what",
-			Hint:         "Did you mean XX?",
+			Hint:         "Did you mean @permission?",
 			Pos:          LexerPos{Line: 1000, Column: 4},
 		},
 		&ValidationError{Message: "field 'isbn' has an unrecognised attribute @who",
 			ShortMessage: "Unrecognised attribute @who",
-			Hint:         "Did you mean XX?",
+			Hint:         "Did you mean @unique, @optional?",
 			Pos:          LexerPos{Line: 1050, Column: 7},
 		},
 	}

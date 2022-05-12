@@ -8,6 +8,8 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/parser"
+
+	levenshtein "github.com/ka-weihe/fast-levenshtein"
 )
 
 var (
@@ -572,7 +574,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 
 		if !contains(supportedAttributes[definedOn], attr.Name) {
 			// todo: implement 'Did you mean XXX?' where XXX is a suggestion with an levenstein / edit distance of less than 1 - 2 chars away
-			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute @%s", attr.Name), "Did you mean XX?", attr.Pos))
+			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute @%s", attr.Name), fmt.Sprintf("Did you mean %s?", strings.Join(findHintMatches(supportedAttributes[definedOn], attr.Name), ", ")), attr.Pos))
 		}
 	}
 
@@ -601,4 +603,29 @@ func contains(slice []string, item string) bool {
 	}
 
 	return false
+}
+
+// Initially just for correcting attributes
+// eventually correcting any fat fingered mistake
+// e.g
+// role Admin {}
+// model Post { @permission(role: Adamin) }
+// => Did you mean Admin?
+func findHintMatches(availableAttributes []string, attrName string) []string {
+	matches := make([]string, 0)
+	attributeNames := make([]string, 0)
+
+	for _, attr := range availableAttributes {
+		attributeNames = append(attributeNames, fmt.Sprintf("@%s", attr))
+
+		if levenshtein.Distance(attrName, attr) < 2 {
+			matches = append(matches, fmt.Sprintf("@%s", attr))
+		}
+	}
+
+	if len(matches) < 1 {
+		matches = append(matches, attributeNames...)
+	}
+
+	return matches
 }
