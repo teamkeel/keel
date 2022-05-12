@@ -367,7 +367,8 @@ func supportedAttributeTypes(inputs []Input) error {
 		"model":     {"permission"},
 		"api":       {"graphql"},
 		"field":     {"unique"},
-		"operation": {"set", "where", "get"},
+		"operation": {"set", "where", "get", "permission"},
+		"function":  {"permission"},
 	}
 
 	for _, input := range inputs {
@@ -375,8 +376,7 @@ func supportedAttributeTypes(inputs []Input) error {
 
 		for _, dec := range schema.Declarations {
 
-			// Validate attributes defined within model sections
-
+			// Validate attributes defined within model sections and subsections
 			if dec.Model != nil {
 				for _, section := range dec.Model.Sections {
 					if section.Attribute != nil {
@@ -390,6 +390,16 @@ func supportedAttributeTypes(inputs []Input) error {
 							for _, operationAttr := range op.Attributes {
 								if !contains(supportedAttributes["operation"], operationAttr.Name) {
 									return fmt.Errorf("operation '%s' has an unrecognised attribute @%s", op.Name, operationAttr.Name)
+								}
+							}
+						}
+					}
+
+					if section.Functions != nil {
+						for _, function := range section.Functions {
+							for _, funcAttr := range function.Attributes {
+								if !contains(supportedAttributes["function"], funcAttr.Name) {
+									return fmt.Errorf("function '%s' has an unrecognised atttribute @%s", function.Name, funcAttr.Name)
 								}
 							}
 						}
