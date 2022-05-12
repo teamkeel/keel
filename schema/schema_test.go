@@ -14,7 +14,6 @@ func TestMakeFromDirectoryCompilesAndRuns(t *testing.T) {
 	require.Equal(t, 3, len(protoModels.Models))
 }
 
-
 func TestMakeFromFileCompilesAndRuns(t *testing.T) {
 	schemaFile := "../testdata/schema-dirs/kitchen-sink/kitchen-sink.keel"
 	s2m := Schema{}

@@ -6,6 +6,7 @@ import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/expressions"
+	"github.com/teamkeel/keel/inputs"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -124,7 +125,7 @@ type ActionArg struct {
 	Name string `@Ident`
 }
 
-func Parse(s string) (*Schema, error) {
+func Parse(s *inputs.SchemaFile) (*Schema, error) {
 
 	// Customise the lexer to not ignore comments
 	lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
@@ -144,7 +145,7 @@ func Parse(s string) (*Schema, error) {
 
 	schema := &Schema{}
 	// TODO: pass filename as first argument
-	err = parser.ParseString("", s, schema)
+	err = parser.ParseString(s.FileName, s.Contents, schema)
 	if err != nil {
 		return nil, err
 	}
