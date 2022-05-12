@@ -3,6 +3,7 @@ package validation
 import (
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/alecthomas/participle/v2/lexer"
@@ -53,8 +54,10 @@ func (v *Validator) RunAllValidators() error {
 	var errors []*ValidationError
 	for _, vf := range validatorFuncs {
 		err := vf(v.inputs)
+
 		for _, e := range err {
 			if verrs, ok := e.(*ValidationError); ok {
+
 				errors = append(errors, verrs)
 			}
 		}
@@ -434,10 +437,20 @@ func supportedFieldTypes(inputs []Input) []error {
 			for _, section := range dec.Model.Sections {
 				for _, field := range section.Fields {
 					if _, ok := fieldTypes[field.Type]; !ok {
+						availableTypes := []string{}
+
+						for fieldType := range fieldTypes {
+							if len(fieldType) > 0 {
+								availableTypes = append(availableTypes, fieldType)
+							}
+						}
+
+						sort.Strings(availableTypes)
+
 						errors = append(errors, validationError(
 							fmt.Sprintf("field %s has an unsupported type %s", field.Name, field.Type),
 							fmt.Sprintf("%s isn't supported", field.Type),
-							"Have you tried Text?",
+							fmt.Sprintf("Did you mean one of: %s?", strings.Join(findHintMatches(availableTypes, field.Type), ", ")),
 							field.Pos))
 					}
 				}
@@ -573,8 +586,13 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 		}
 
 		if !contains(supportedAttributes[definedOn], attr.Name) {
-			// todo: implement 'Did you mean XXX?' where XXX is a suggestion with an levenstein / edit distance of less than 1 - 2 chars away
-			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute @%s", attr.Name), fmt.Sprintf("Did you mean %s?", strings.Join(findHintMatches(supportedAttributes[definedOn], attr.Name), ", ")), attr.Pos))
+			hintOptions := supportedAttributes[definedOn]
+
+			for i, hint := range hintOptions {
+				hintOptions[i] = fmt.Sprintf("@%s", hint)
+			}
+
+			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute @%s", attr.Name), fmt.Sprintf("Did you mean %s?", strings.Join(findHintMatches(hintOptions, attr.Name), ", ")), attr.Pos))
 		}
 	}
 
@@ -611,15 +629,15 @@ func contains(slice []string, item string) bool {
 // role Admin {}
 // model Post { @permission(role: Adamin) }
 // => Did you mean Admin?
-func findHintMatches(availableAttributes []string, attrName string) []string {
+func findHintMatches(collection []string, query string) []string {
 	matches := make([]string, 0)
 	attributeNames := make([]string, 0)
 
-	for _, attr := range availableAttributes {
-		attributeNames = append(attributeNames, fmt.Sprintf("@%s", attr))
+	for _, item := range collection {
+		attributeNames = append(attributeNames, item)
 
-		if levenshtein.Distance(attrName, attr) < 2 {
-			matches = append(matches, fmt.Sprintf("@%s", attr))
+		if levenshtein.Distance(query, item) < 2 {
+			matches = append(matches, item)
 		}
 	}
 

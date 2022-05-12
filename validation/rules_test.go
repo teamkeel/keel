@@ -590,7 +590,7 @@ func TestSupportedFieldTypes(t *testing.T) {
 			{Fields: input2, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
 		}}}}}, expected: []error{&ValidationError{Message: "field userId has an unsupported type Invalid",
 			ShortMessage: "Invalid isn't supported",
-			Hint:         "Have you tried Text?",
+			Hint:         "Did you mean one of: Boolean, Date, Enum, ID, Identity, Image, Text, Timestamp?",
 		}}},
 	}
 
