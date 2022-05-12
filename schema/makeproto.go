@@ -197,16 +197,7 @@ func (scm *Schema) permissionAttributeToProtoPermission(attr *parser.Attribute) 
 		case "actions":
 			value, _ := expressions.ToValue(arg.Expression)
 			for _, v := range value.Array.Values {
-				switch v.Ident[0] {
-				case parser.ActionTypeCreate:
-					pr.OperationsTypes = append(pr.OperationsTypes, proto.OperationType_OPERATION_TYPE_CREATE)
-				case parser.ActionTypeUpdate:
-					pr.OperationsTypes = append(pr.OperationsTypes, proto.OperationType_OPERATION_TYPE_UPDATE)
-				case parser.ActionTypeGet:
-					pr.OperationsTypes = append(pr.OperationsTypes, proto.OperationType_OPERATION_TYPE_GET)
-				case parser.ActionTypeList:
-					pr.OperationsTypes = append(pr.OperationsTypes, proto.OperationType_OPERATION_TYPE_LIST)
-				}
+				pr.OperationsTypes = append(pr.OperationsTypes, scm.mapToOperationType(v.Ident[0]))
 			}
 		}
 	}
