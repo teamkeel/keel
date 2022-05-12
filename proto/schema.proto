@@ -8,6 +8,7 @@ import "google/protobuf/wrappers.proto";
 
 message Schema {
     repeated Model models = 1;
+    repeated Role roles = 2;
 }
 
 message Model {

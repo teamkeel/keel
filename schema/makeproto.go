@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"strings"
 
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
@@ -19,7 +20,8 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 				protoModel := scm.makeModel(decl)
 				protoSchema.Models = append(protoSchema.Models, protoModel)
 			case decl.Role != nil:
-				// todo implement Role
+				protoRole := scm.makeRole(decl)
+				protoSchema.Roles = append(protoSchema.Roles, protoRole)
 			case decl.API != nil:
 				// todo API not yet supported in proto
 			default:
@@ -55,6 +57,23 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 	}
 
 	return protoModel
+}
+
+
+func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
+	parserRole := decl.Role
+	protoRole := &proto.Role{
+		Name: parserRole.Name,
+	}
+	for _, section := range parserRole.Sections {
+		for _, parserDomain := range section.Domains {
+			protoRole.Domains = append(protoRole.Domains, stripQuotes(parserDomain.Domain))
+		}
+		for _, parserEmail := range section.Emails {
+			protoRole.Emails = append(protoRole.Emails, stripQuotes(parserEmail.Email))
+		}
+	}
+	return protoRole
 }
 
 func (scm *Schema) makeFields(parserFields []*parser.ModelField, modelName string) []*proto.Field {
@@ -217,4 +236,9 @@ func (scm *Schema) mapToOperationType(parsedOperation string) proto.OperationTyp
 	default:
 		return proto.OperationType_OPERATION_TYPE_UNKNOWN
 	}
+}
+
+// stripQuotes removes all double quotes from the given string, regardless of where they are.
+func stripQuotes(s string) string {
+	return strings.ReplaceAll(s, `"`, "")
 }
