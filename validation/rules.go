@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/parser"
 )
@@ -34,7 +35,7 @@ func NewValidator(inputs []Input) *Validator {
 }
 
 func (v *Validator) RunAllValidators() error {
-	validatorFuncs := []func([]Input) error{
+	validatorFuncs := []func([]Input) []error{
 		modelsUpperCamel,
 		fieldsOpsFuncsLowerCamel,
 		fieldNamesMustBeUniqueInAModel,
@@ -45,18 +46,28 @@ func (v *Validator) RunAllValidators() error {
 		operationUniqueFieldInput,
 		supportedFieldTypes,
 		supportedAttributeTypes,
+		modelsGloballyUnique,
 	}
+	var errors []*ValidationError
 	for _, vf := range validatorFuncs {
 		err := vf(v.inputs)
-		if err != nil {
-			return err
+		for _, e := range err {
+			if verrs, ok := e.(*ValidationError); ok {
+				errors = append(errors, verrs)
+			}
 		}
 	}
+
+	if len(errors) > 0 {
+		return ValidationErrors{Errors: errors}
+	}
+
 	return nil
 }
 
-//Models are UpperCamel
-func modelsUpperCamel(inputs []Input) error {
+// Models are UpperCamel
+func modelsUpperCamel(inputs []Input) []error {
+	var errors []error
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 		for _, decl := range schema.Declarations {
@@ -68,15 +79,19 @@ func modelsUpperCamel(inputs []Input) error {
 			reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
 			if reg.FindString(decl.Model.Name) != decl.Model.Name {
-				return fmt.Errorf("you have a model name that is not UpperCamel %s", decl.Model.Name)
+				errors = append(errors, validationError(fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
+					fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
+					strcase.ToCamel(strings.ToLower(decl.Model.Name)),
+					decl.Model.Pos))
 			}
 		}
 	}
-	return nil
+	return errors
 }
 
-//Fields/operations/functions are lowerCamel
-func fieldsOpsFuncsLowerCamel(inputs []Input) error {
+//Fields/operations are lowerCamel
+func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
+	var errors []error
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 
@@ -90,22 +105,32 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) error {
 						continue
 					}
 					if strcase.ToLowerCamel(field.Name) != field.Name {
-						return fmt.Errorf("you have a field name that is not lowerCamel %s", field.Name)
+						errors = append(errors, validationError(fmt.Sprintf("you have a field name that is not lowerCamel %s", field.Name),
+							fmt.Sprintf("%s isn't lower camel", field.Name),
+							strcase.ToLowerCamel(strings.ToLower(field.Name)),
+							field.Pos))
+
 					}
 				}
-				for _, function := range model.Functions {
+				for _, function := range model.Operations {
 					if strcase.ToLowerCamel(function.Name) != function.Name {
-						return fmt.Errorf("you have a function name that is not lowerCamel %s", function.Name)
+						errors = append(errors, validationError(fmt.Sprintf("you have a function name that is not lowerCamel %s", function.Name),
+							fmt.Sprintf("%s isn't lower camel", function.Name),
+							strcase.ToLowerCamel(strings.ToLower(function.Name)),
+							function.Pos))
+
 					}
 				}
 			}
 		}
 	}
-	return nil
+
+	return errors
 }
 
 //Field names must be unique in a model
-func fieldNamesMustBeUniqueInAModel(inputs []Input) error {
+func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
+	var errors []error
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 		for _, model := range schema.Declarations {
@@ -116,23 +141,28 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) error {
 				fieldNames := map[string]bool{}
 				for _, name := range sections.Fields {
 					if _, ok := fieldNames[name.Name]; ok {
-						return fmt.Errorf("you have duplicate field names %s", name.Name)
+						errors = append(errors, validationError(
+							fmt.Sprintf("you have duplicate field names %s", name.Name),
+							fmt.Sprintf("%s is duplicated", name.Name),
+							fmt.Sprintf(`Remove '%s' on line %v`, name.Name, name.Pos.Line),
+							name.Pos))
+
 					}
 					fieldNames[name.Name] = true
 				}
 			}
 		}
 	}
-	return nil
+	return errors
 }
 
 type GlobalOperations struct {
 	Name  string
 	Model string
+	Pos   lexer.Position
 }
 
-//Operations/functions must be globally unique
-func operationsUniqueGlobally(inputs []Input) error {
+func uniqueOperationsGlobally(inputs []Input) []GlobalOperations {
 	var globalOperations []GlobalOperations
 	for _, input := range inputs {
 		schema := input.ParsedSchema
@@ -141,19 +171,23 @@ func operationsUniqueGlobally(inputs []Input) error {
 				continue
 			}
 			for _, sec := range declaration.Model.Sections {
-				for _, functionNames := range sec.Functions {
+				for _, functionNames := range sec.Operations {
 					globalOperations = append(globalOperations, GlobalOperations{
-						Name: functionNames.Name, Model: declaration.Model.Name,
+						Name: functionNames.Name, Model: declaration.Model.Name, Pos: functionNames.Pos,
 					})
 				}
 			}
 		}
 	}
-	return findDuplicatesOperations(globalOperations)
+	return globalOperations
 }
 
-func findDuplicatesOperations(globalOperations []GlobalOperations) error {
+//Operations must be globally unique
+func operationsUniqueGlobally(inputs []Input) []error {
+	var errors []error
 	var operationNames []string
+
+	globalOperations := uniqueOperationsGlobally(inputs)
 
 	for _, name := range globalOperations {
 		operationNames = append(operationNames, name.Name)
@@ -174,12 +208,28 @@ func findDuplicatesOperations(globalOperations []GlobalOperations) error {
 		}
 	}
 
-	return fmt.Errorf("you have duplicate operations %v", duplicationOperations)
+	for _, nameError := range duplicationOperations {
+		errors = append(errors, validationError(
+			fmt.Sprintf("you have duplicate operations Model:%s Name:%s", nameError.Model, nameError.Name),
+			fmt.Sprintf("%s is duplicated", nameError.Name),
+			fmt.Sprintf(`Remove '%s' on line %v`, nameError.Name, nameError.Pos.Line),
+			nameError.Pos))
+
+	}
+
+	return errors
+}
+
+type operationInputFields struct {
+	Fields []*parser.ActionArg
+	Pos    lexer.Position
 }
 
 //Inputs of ops must be model fields
-func operationInputs(inputs []Input) error {
-	functionFields := make(map[string][]*parser.ActionArg, 0)
+func operationInputs(inputs []Input) []error {
+	var errors []error
+
+	functionFields := make(map[string]*operationInputFields, 0)
 
 	for _, input := range inputs {
 		schema := input.ParsedSchema
@@ -189,8 +239,14 @@ func operationInputs(inputs []Input) error {
 				continue
 			}
 			for _, section := range declaration.Model.Sections {
-				for _, function := range section.Functions {
-					functionFields[function.Name] = function.Arguments
+				for _, function := range section.Operations {
+					if len(function.Arguments) == 0 {
+						continue
+					}
+					functionFields[function.Name] = &operationInputFields{
+						Fields: function.Arguments,
+						Pos:    function.Pos,
+					}
 				}
 			}
 
@@ -203,7 +259,7 @@ func operationInputs(inputs []Input) error {
 			for _, modelName := range input.Model.Sections {
 				for _, fields := range modelName.Fields {
 					for functionName, functionField := range functionFields {
-						for _, functionFieldName := range functionField {
+						for _, functionFieldName := range functionField.Fields {
 							if functionFieldName.Name == fields.Name {
 								delete(functionFields, functionName)
 							}
@@ -216,20 +272,24 @@ func operationInputs(inputs []Input) error {
 
 	if len(functionFields) > 0 {
 		for k, v := range functionFields {
-			var fields []string
-			for _, field := range v {
-				fields = append(fields, field.Name)
+			for _, field := range v.Fields {
+				message := fmt.Sprintf("model:%s, field:%v", k, field.Name)
+				errors = append(errors, validationError(fmt.Sprintf("you are using inputs that are not fields %s", message),
+					fmt.Sprintf("Replace %s", field.Name),
+					fmt.Sprintf("Check inputs for %s", k),
+					field.Pos,
+				))
 			}
-			message := fmt.Sprintf("model:%s, field:%v", k, strings.Join(fields, ","))
-			return fmt.Errorf("you are using inputs that are not fields %s", message)
+
 		}
 	}
 
-	return nil
+	return errors
 }
 
 //No reserved field names (id, createdAt, updatedAt)
-func noReservedFieldNames(inputs []Input) error {
+func noReservedFieldNames(inputs []Input) []error {
+	var errors []error
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 		for _, name := range ReservedNames {
@@ -243,18 +303,23 @@ func noReservedFieldNames(inputs []Input) error {
 							continue
 						}
 						if strings.EqualFold(name, field.Name) {
-							return fmt.Errorf("you have a reserved field name %s", field.Name)
+							errors = append(errors, validationError(fmt.Sprintf("you have a reserved field name %s", field.Name),
+								fmt.Sprintf("cannot use %s", field.Name),
+								fmt.Sprintf("You cannot use %s as field name, it is reserved, try %ser", field.Name, field.Name),
+								field.Pos))
 						}
 					}
 				}
 			}
 		}
 	}
-	return nil
+
+	return errors
 }
 
 //No reserved model name (query)
-func noReservedModelNames(inputs []Input) error {
+func noReservedModelNames(inputs []Input) []error {
+	var errors []error
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 		for _, name := range ReservedModels {
@@ -263,20 +328,25 @@ func noReservedModelNames(inputs []Input) error {
 					continue
 				}
 				if strings.EqualFold(name, dec.Model.Name) {
-					return fmt.Errorf("you have a reserved model name %s", dec.Model.Name)
+					errors = append(errors, validationError(fmt.Sprintf("you have a reserved model name %s", dec.Model.Name),
+						fmt.Sprintf("%s is reserved", dec.Model.Name),
+						fmt.Sprintf("You cannot use %s as a model name, it is reserved, try %ser", dec.Model.Name, dec.Model.Name),
+						dec.Model.Pos))
+
 				}
 			}
 		}
 	}
-	return nil
+
+	return errors
 }
 
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
-func operationUniqueFieldInput(inputs []Input) error {
+func operationUniqueFieldInput(inputs []Input) []error {
+	var errors []error
+
 	for _, input := range inputs {
 		schema := input.ParsedSchema
-		// getAuthor(id)
-		// A get operation can only accept a single field. Needs to be unique OR primary key
 
 		for _, dec := range schema.Declarations {
 			if dec.Model == nil {
@@ -294,7 +364,11 @@ func operationUniqueFieldInput(inputs []Input) error {
 					}
 
 					if len(function.Arguments) != 1 {
-						return fmt.Errorf("get operation must take a unique field as an input")
+						errors = append(errors, validationError(
+							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
+							fmt.Sprintf("%s requires a unique field", function.Name),
+							"Are you using a unique field?",
+							function.Pos))
 					}
 
 					arg := function.Arguments[0]
@@ -320,7 +394,11 @@ func operationUniqueFieldInput(inputs []Input) error {
 					}
 
 					if !isValid {
-						return fmt.Errorf("operation %s must take a unique field as an input", function.Name)
+						errors = append(errors, validationError(
+							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
+							fmt.Sprintf("%s requires a unique field", function.Name),
+							"Are you sure you are using a unique field?",
+							function.Pos))
 					}
 
 				}
@@ -329,11 +407,13 @@ func operationUniqueFieldInput(inputs []Input) error {
 		}
 	}
 
-	return nil
+	return errors
 }
 
 //Supported field types
-func supportedFieldTypes(inputs []Input) error {
+func supportedFieldTypes(inputs []Input) []error {
+	var errors []error
+
 	var fieldTypes = map[string]bool{"Text": true, "Date": true, "Timestamp": true, "Image": true, "Boolean": true, "Enum": true, "Identity": true, parser.FieldTypeID: true}
 
 	for _, input := range inputs {
@@ -352,17 +432,76 @@ func supportedFieldTypes(inputs []Input) error {
 			for _, section := range dec.Model.Sections {
 				for _, field := range section.Fields {
 					if _, ok := fieldTypes[field.Type]; !ok {
-						return fmt.Errorf("field %s has an unsupported type %s", field.Name, field.Type)
+						errors = append(errors, validationError(
+							fmt.Sprintf("field %s has an unsupported type %s", field.Name, field.Type),
+							fmt.Sprintf("%s isn't supported", field.Type),
+							"Have you tried Text?",
+							field.Pos))
 					}
 				}
 			}
 		}
 	}
 
-	return nil
+	return errors
 }
 
-func supportedAttributeTypes(inputs []Input) error {
+//Models are globally unique
+func modelsGloballyUnique(inputs []Input) []error {
+	var errors []error
+	var modelNames []string
+
+	globalOperations := uniqueModelsGlobally(inputs)
+
+	for _, name := range globalOperations {
+		modelNames = append(modelNames, name.Model)
+	}
+	duplicates := findDuplicates(modelNames)
+
+	if len(duplicates) == 0 {
+		return nil
+	}
+
+	var duplicateModels []GlobalOperations
+	for _, model := range globalOperations {
+		for _, duplicate := range duplicates {
+			if model.Model == duplicate {
+				duplicateModels = append(duplicateModels, model)
+			}
+		}
+	}
+
+	for _, nameError := range duplicateModels {
+		errors = append(errors, validationError(
+			fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", nameError.Model, nameError.Pos),
+			fmt.Sprintf("%s is duplicated", nameError.Model),
+			fmt.Sprintf("Remove %s", nameError.Model),
+			nameError.Pos))
+	}
+
+	return errors
+}
+
+func uniqueModelsGlobally(inputs []Input) []GlobalOperations {
+	var globalOperations []GlobalOperations
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, declaration := range schema.Declarations {
+			if declaration.Model == nil {
+				continue
+			}
+
+			globalOperations = append(globalOperations, GlobalOperations{
+				Model: declaration.Model.Name,
+			})
+		}
+	}
+	return globalOperations
+}
+
+func supportedAttributeTypes(inputs []Input) []error {
+	var errors []error
+
 	var supportedAttributes = map[string][]string{
 		"model":     {"permission"},
 		"api":       {"graphql"},
@@ -381,7 +520,7 @@ func supportedAttributeTypes(inputs []Input) error {
 				for _, section := range dec.Model.Sections {
 					if section.Attribute != nil {
 						if !contains(supportedAttributes["model"], section.Attribute.Name) {
-							return fmt.Errorf("model '%s' has an unrecognised attribute @%s", dec.Model.Name, section.Attribute.Name)
+							errors = append(errors, fmt.Errorf("model '%s' has an unrecognised attribute @%s", dec.Model.Name, section.Attribute.Name)
 						}
 					}
 
