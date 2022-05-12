@@ -44,6 +44,7 @@ func (v *Validator) RunAllValidators() error {
 		noReservedModelNames,
 		operationUniqueFieldInput,
 		supportedFieldTypes,
+		supportedAttributeTypes,
 	}
 	for _, vf := range validatorFuncs {
 		err := vf(v.inputs)
@@ -361,6 +362,65 @@ func supportedFieldTypes(inputs []Input) error {
 	return nil
 }
 
+func supportedAttributeTypes(inputs []Input) error {
+	var supportedAttributes = map[string][]string{
+		"model":     {"permission"},
+		"api":       {"graphql"},
+		"field":     {"unique"},
+		"operation": {"set", "where", "get"},
+	}
+
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+
+		for _, dec := range schema.Declarations {
+
+			// Validate attributes defined within model sections
+
+			if dec.Model != nil {
+				for _, section := range dec.Model.Sections {
+					if section.Attribute != nil {
+						if !contains(supportedAttributes["model"], section.Attribute.Name) {
+							return fmt.Errorf("model '%s' has an unrecognised attribute @%s", dec.Model.Name, section.Attribute.Name)
+						}
+					}
+
+					if section.Operations != nil {
+						for _, op := range section.Operations {
+							for _, operationAttr := range op.Attributes {
+								if !contains(supportedAttributes["operation"], operationAttr.Name) {
+									return fmt.Errorf("operation '%s' has an unrecognised attribute @%s", op.Name, operationAttr.Name)
+								}
+							}
+						}
+					}
+
+					for _, field := range section.Fields {
+						for _, fieldAttr := range field.Attributes {
+							if !contains(supportedAttributes["field"], fieldAttr.Name) {
+								return fmt.Errorf("field '%s' has an unrecognised attribute @%s", field.Name, fieldAttr.Name)
+							}
+						}
+					}
+				}
+			}
+
+			// Validate attributes defined within api sections
+			if dec.API != nil {
+				for _, section := range dec.API.Sections {
+					if section.Attribute != nil {
+						if !contains(supportedAttributes["api"], section.Attribute.Name) {
+							return fmt.Errorf("api '%s' has an unrecognised attribute @%s", dec.API.Name, section.Attribute.Name)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func findDuplicates(s []string) []string {
 	inResult := make(map[string]bool)
 	var result []string
@@ -373,4 +433,16 @@ func findDuplicates(s []string) []string {
 		}
 	}
 	return result
+}
+
+func contains(slice []string, item string) bool {
+	set := make(map[string]struct{}, len(slice))
+
+	for _, s := range slice {
+		set[s] = struct{}{}
+	}
+
+	_, ok := set[item]
+
+	return ok
 }
