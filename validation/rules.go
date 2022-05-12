@@ -274,7 +274,10 @@ func operationInputs(inputs []Input) []error {
 			for _, field := range v.Fields {
 				message := fmt.Sprintf("model:%s, field:%v", k, field.Name)
 				errors = append(errors, validationError(fmt.Sprintf("you are using inputs that are not fields %s", message),
-					fmt.Sprintf("Replace %s", field.Name), fmt.Sprintf("Check inputs for %s", k), field.Pos))
+					fmt.Sprintf("Replace %s", field.Name),
+					fmt.Sprintf("Check inputs for %s", k),
+					field.Pos,
+				))
 			}
 
 		}
@@ -363,7 +366,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 						errors = append(errors, validationError(
 							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
 							fmt.Sprintf("%s requires a unique field", function.Name),
-							"",
+							"Are you using a unique field?",
 							function.Pos))
 					}
 
@@ -393,7 +396,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 						errors = append(errors, validationError(
 							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
 							fmt.Sprintf("%s requires a unique field", function.Name),
-							"",
+							"Are you sure you are using a unique field?",
 							function.Pos))
 					}
 
@@ -431,7 +434,7 @@ func supportedFieldTypes(inputs []Input) []error {
 						errors = append(errors, validationError(
 							fmt.Sprintf("field %s has an unsupported type %s", field.Name, field.Type),
 							fmt.Sprintf("%s isn't supported", field.Type),
-							"",
+							"Have you tried Text?",
 							field.Pos))
 					}
 				}
@@ -471,7 +474,7 @@ func modelsGloballyUnique(inputs []Input) []error {
 		errors = append(errors, validationError(
 			fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", nameError.Model, nameError.Pos),
 			fmt.Sprintf("%s is duplicated", nameError.Model),
-			"",
+			fmt.Sprintf("Remove %s", nameError.Model),
 			nameError.Pos))
 	}
 

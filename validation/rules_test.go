@@ -446,7 +446,11 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 					},
 				},
 			},
-		}}}}}, expected: []error{&ValidationError{Message: "operation createBook must take a unique field as an input", ShortMessage: "createBook requires a unique field"}}},
+		}}}}}, expected: []error{&ValidationError{
+			Message:      "operation createBook must take a unique field as an input",
+			ShortMessage: "createBook requires a unique field",
+			Hint:         "Are you sure you are using a unique field?",
+		}}},
 	}
 
 	for name, tc := range tests {
@@ -475,7 +479,10 @@ func TestSupportedFieldTypes(t *testing.T) {
 		}}}}}, expected: nil},
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input2, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
-		}}}}}, expected: []error{&ValidationError{Message: "field userId has an unsupported type Invalid", ShortMessage: "Invalid isn't supported"}}},
+		}}}}}, expected: []error{&ValidationError{Message: "field userId has an unsupported type Invalid",
+			ShortMessage: "Invalid isn't supported",
+			Hint:         "Have you tried Text?",
+		}}},
 	}
 
 	for name, tc := range tests {
@@ -557,8 +564,8 @@ func TestModelsBeGloballyUnique(t *testing.T) {
 	}}))
 
 	expected := []error{
-		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated"},
-		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated"},
+		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated", Hint: "Remove Book"},
+		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated", Hint: "Remove Book"},
 	}
 
 	assert.Equal(t, expected, err)
