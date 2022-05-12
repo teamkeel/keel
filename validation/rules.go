@@ -550,7 +550,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 	var supportedAttributes = map[string][]string{
 		"model":     {"permission"},
 		"api":       {"graphql"},
-		"field":     {"unique"},
+		"field":     {"unique", "optional"},
 		"operation": {"set", "where", "permission"},
 		"function":  {"permission"},
 	}
