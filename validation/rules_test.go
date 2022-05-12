@@ -244,20 +244,20 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 func TestHintCorrection(t *testing.T) {
 	apiAttribute := parser.Attribute{Name: "graphq", Pos: lexer.Position{Line: 23, Column: 1}}
 
-	err := supportedAttributeTypes(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
-		{
-			API: &parser.API{
-				Name: "Web",
-				Sections: []*parser.APISection{
-					{
-						Attribute: &apiAttribute,
+	err := supportedAttributeTypes(asInputs(&parser.Schema{
+		Declarations: []*parser.Declaration{
+			{
+				API: &parser.API{
+					Name: "Web",
+					Sections: []*parser.APISection{
+						{
+							Attribute: &apiAttribute,
+						},
 					},
 				},
 			},
 		},
-	},
-	},
-	))
+	}))
 
 	expected := []error{
 		&ValidationError{
