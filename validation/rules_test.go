@@ -241,6 +241,35 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	assert.Equal(t, expected, err)
 }
 
+func TestHintCorrection(t *testing.T) {
+	apiAttribute := parser.Attribute{Name: "graphq", Pos: lexer.Position{Line: 23, Column: 1}}
+
+	err := supportedAttributeTypes(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
+		{
+			API: &parser.API{
+				Name: "Web",
+				Sections: []*parser.APISection{
+					{
+						Attribute: &apiAttribute,
+					},
+				},
+			},
+		},
+	},
+	},
+	))
+
+	expected := []error{
+		&ValidationError{
+			Message:      "api 'Web' has an unrecognised attribute @graphq",
+			ShortMessage: "Unrecognised attribute @graphq",
+			Hint:         "Did you mean @graphql?",
+			Pos:          LexerPos{Line: 23, Column: 1},
+		}}
+
+	assert.Equal(t, err, expected)
+}
+
 func TestUnrecognisedAttributes(t *testing.T) {
 	modelAttribute := parser.Attribute{Name: "huh", Pos: lexer.Position{Line: 245, Column: 1}}
 	operationAttribute := parser.Attribute{Name: "unknown", Pos: lexer.Position{Line: 123, Column: 5}}

@@ -105,7 +105,7 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 		}
 		field := &parser.ModelField{
 			BuiltIn: true,
-			Name: parser.ImplicitFieldNameId,
+			Name:    parser.ImplicitFieldNameId,
 			Type:    parser.FieldTypeID,
 			Attributes: []*parser.Attribute{
 				{
@@ -120,4 +120,3 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 		model.Sections = append(model.Sections, section)
 	}
 }
-
