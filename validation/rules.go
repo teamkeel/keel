@@ -536,7 +536,7 @@ func supportedAttributeTypes(inputs []Input) []error {
 			if dec.API != nil {
 				for _, section := range dec.API.Sections {
 					if section.Attribute != nil {
-						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "api", section.Attribute.Name)...)
+						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "api", dec.API.Name)...)
 					}
 				}
 			}
@@ -555,17 +555,21 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 		"function":  {"permission"},
 	}
 
-	// var builtIns = map[string][]string{
-	// 	"model":     {},
-	// 	"api":       {},
-	// 	"operation": {},
-	// 	"function":  {},
-	// 	"field":     {"primaryKey"},
-	// }
+	var builtIns = map[string][]string{
+		"model":     {},
+		"api":       {},
+		"operation": {},
+		"function":  {},
+		"field":     {"primaryKey"},
+	}
 
 	errors := make([]error, 0)
 
 	for _, attr := range attributes {
+		if contains(builtIns[definedOn], attr.Name) {
+			continue
+		}
+
 		if !contains(supportedAttributes[definedOn], attr.Name) {
 			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute %s", attr.Name), "Did you mean XX?", attr.Pos))
 		}
