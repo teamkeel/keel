@@ -405,10 +405,12 @@ func supportedAttributeTypes(inputs []Input) error {
 						}
 					}
 
-					for _, field := range section.Fields {
-						for _, fieldAttr := range field.Attributes {
-							if !contains(supportedAttributes["field"], fieldAttr.Name) {
-								return fmt.Errorf("field '%s' has an unrecognised attribute @%s", field.Name, fieldAttr.Name)
+					if section.Fields != nil {
+						for _, field := range section.Fields {
+							for _, fieldAttr := range field.Attributes {
+								if !contains(supportedAttributes["field"], fieldAttr.Name) {
+									return fmt.Errorf("field '%s' has an unrecognised attribute @%s", field.Name, fieldAttr.Name)
+								}
 							}
 						}
 					}
