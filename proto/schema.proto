@@ -9,7 +9,7 @@ import "google/protobuf/wrappers.proto";
 message Schema {
     repeated Model models = 1;
     repeated Role roles = 2;
-    repeated Api api = 3;
+    repeated Api apis = 3;
 }
 
 message Model {
