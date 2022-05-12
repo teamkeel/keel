@@ -1,8 +1,6 @@
 package validation
 
 import (
-	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,13 +11,25 @@ import (
 func TestModelsAreUpperCamel(t *testing.T) {
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
-		"simple":     {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "Book"}}}}, expected: nil},
-		"long":       {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BookAuthorLibrary"}}}}, expected: nil},
-		"allLower":   {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "bookauthor"}}}}, expected: fmt.Errorf("you have a model name that is not UpperCamel bookauthor")},
-		"allUpper":   {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BOOKAUTHOR"}}}}, expected: fmt.Errorf("you have a model name that is not UpperCamel BOOKAUTHOR")},
-		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book_author"}}}}, expected: fmt.Errorf("you have a model name that is not UpperCamel book_author")},
+		"simple": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "Book"}}}},
+			expected: nil},
+		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BookAuthorLibrary"}}}},
+			expected: nil},
+		"allLower": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "bookauthor"}}}},
+			expected: []error{&ValidationError{Message: "you have a model name that is not UpperCamel bookauthor",
+				ShortMessage: "bookauthor is not UpperCamel", Hint: "Bookauthor"}}},
+		"allUpper": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BOOKAUTHOR"}}}},
+			expected: []error{&ValidationError{Message: "you have a model name that is not UpperCamel BOOKAUTHOR",
+				ShortMessage: "BOOKAUTHOR is not UpperCamel",
+				Hint:         "Bookauthor",
+			}}},
+		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book_author"}}}},
+			expected: []error{&ValidationError{Message: "you have a model name that is not UpperCamel book_author",
+				ShortMessage: "book_author is not UpperCamel",
+				Hint:         "BookAuthor",
+			}}},
 	}
 
 	for name, tc := range tests {
@@ -34,7 +44,7 @@ func TestModelsAreUpperCamel(t *testing.T) {
 func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
 		"simpleFieldName": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{
@@ -45,31 +55,37 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 			}}}}}, expected: nil},
 		"simpelFunction": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{{
-				Functions: []*parser.ModelAction{
+				Operations: []*parser.ModelAction{
 					{Name: "createBook"},
 				}},
 			}}}}}, expected: nil},
 		"allLower": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createbook", Sections: []*parser.ModelSection{{
-				Functions: []*parser.ModelAction{
+				Operations: []*parser.ModelAction{
 					{Name: "createbook"},
 				}},
 			}}}}}, expected: nil},
 		"allUpperFunction": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createBook", Sections: []*parser.ModelSection{{
-				Functions: []*parser.ModelAction{
+				Operations: []*parser.ModelAction{
 					{Name: "CREATEBOOK"},
 				}},
-			}}}}}, expected: fmt.Errorf("you have a function name that is not lowerCamel CREATEBOOK")},
+			}}}}}, expected: []error{&ValidationError{Message: "you have a function name that is not lowerCamel CREATEBOOK",
+			ShortMessage: "CREATEBOOK isn't lower camel",
+			Hint:         "createbook",
+		}}},
 		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createbook", Sections: []*parser.ModelSection{{
 				Fields: []*parser.ModelField{
 					{Name: "title", Type: "string"},
 				},
-				Functions: []*parser.ModelAction{
+				Operations: []*parser.ModelAction{
 					{Name: "book_author"},
 				}},
-			}}}}}, expected: fmt.Errorf("you have a function name that is not lowerCamel book_author")},
+			}}}}}, expected: []error{&ValidationError{Message: "you have a function name that is not lowerCamel book_author",
+			ShortMessage: "book_author isn't lower camel",
+			Hint:         "bookAuthor",
+		}}},
 	}
 
 	for name, tc := range tests {
@@ -96,14 +112,17 @@ func TestFieldNamesMustBeUniqueInAModel(t *testing.T) {
 
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
 		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input1},
 		}}}}}, expected: nil},
 		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input2},
-		}}}}}, expected: errors.New("you have duplicate field names name")},
+		}}}}}, expected: []error{&ValidationError{Message: "you have duplicate field names name",
+			ShortMessage: "name is duplicated",
+			Hint:         "Remove 'name' on line 0",
+		}}},
 	}
 
 	for name, tc := range tests {
@@ -117,40 +136,13 @@ func TestFieldNamesMustBeUniqueInAModel(t *testing.T) {
 
 //Operations/functions must be globally unique
 func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
-	input1 := []GlobalOperations{
-		{Name: "deleteBook", Model: "book"},
-		{Name: "createBook", Model: "author"},
-	}
-	input2 := []GlobalOperations{
-		{Name: "createBook", Model: "book"},
-		{Name: "createBook", Model: "author"},
-	}
-
-	tests := map[string]struct {
-		input    []GlobalOperations
-		expected error
-	}{
-		"working": {input: input1, expected: nil},
-		"invalid": {input: input2, expected: errors.New("you have duplicate operations [{createBook book} {createBook author}]")},
-	}
-
-	for name, tc := range tests {
-		got := findDuplicatesOperations(tc.input)
-		if !assert.Equal(t, tc.expected, got) {
-			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
-		}
-	}
-}
-
-//Inputs of ops must be model fields
-func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
-	err := operationsUniqueGlobally(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
+	input := asInputs(&parser.Schema{Declarations: []*parser.Declaration{
 		{
 			Model: &parser.Model{
 				Name: "book",
 				Sections: []*parser.ModelSection{
 					{
-						Functions: []*parser.ModelAction{
+						Operations: []*parser.ModelAction{
 							{
 								Name: "createbook",
 							},
@@ -167,7 +159,60 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 				Name: "book",
 				Sections: []*parser.ModelSection{
 					{
-						Functions: []*parser.ModelAction{
+						Operations: []*parser.ModelAction{
+							{
+								Name: "createbook",
+							},
+							{
+								Name: "dave1",
+							},
+						},
+					},
+				},
+			},
+		},
+	}})
+
+	expected := []GlobalOperations{
+		{Name: "createbook", Model: "book"},
+		{Name: "dave", Model: "book"},
+		{Name: "createbook", Model: "book"},
+		{Name: "dave1", Model: "book"},
+	}
+
+	got := uniqueOperationsGlobally(input)
+	if !assert.Equal(t, expected, got) {
+		t.Fatalf("%s: expected: %v, got: %v", "name", expected, got)
+	}
+
+}
+
+//Inputs of ops must be model fields
+func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
+	err := operationsUniqueGlobally(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
+		{
+			Model: &parser.Model{
+				Name: "book",
+				Sections: []*parser.ModelSection{
+					{
+						Operations: []*parser.ModelAction{
+							{
+								Name: "createbook",
+							},
+							{
+								Name: "dave",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			Model: &parser.Model{
+				Name: "book",
+				Sections: []*parser.ModelSection{
+					{
+						Operations: []*parser.ModelAction{
 							{
 								Name: "createbook",
 							},
@@ -181,14 +226,25 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 		},
 	}}))
 
-	assert.Equal(t, errors.New("you have duplicate operations [{createbook book} {createbook book}]"), err)
+	expected := []error{
+		&ValidationError{Message: "you have duplicate operations Model:book Name:createbook",
+			ShortMessage: "createbook is duplicated",
+			Hint:         "Remove 'createbook' on line 0",
+		},
+		&ValidationError{Message: "you have duplicate operations Model:book Name:createbook",
+			ShortMessage: "createbook is duplicated",
+			Hint:         "Remove 'createbook' on line 0",
+		},
+	}
+
+	assert.Equal(t, expected, err)
 }
 
 //Inputs of ops must be model fields
 func TestInputsModelFields(t *testing.T) {
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
 		"passing": {input: &parser.Schema{Declarations: []*parser.Declaration{
 			{
@@ -201,7 +257,7 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelAction{
+							Operations: []*parser.ModelAction{
 								{
 									Name: "createBook",
 									Arguments: []*parser.ActionArg{
@@ -216,7 +272,7 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelAction{
+							Operations: []*parser.ModelAction{
 								{
 									Name: "author",
 									Arguments: []*parser.ActionArg{
@@ -236,7 +292,7 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelAction{
+							Operations: []*parser.ModelAction{
 								{
 									Name: "createBook",
 									Arguments: []*parser.ActionArg{
@@ -251,7 +307,7 @@ func TestInputsModelFields(t *testing.T) {
 									Name: "id",
 								},
 							},
-							Functions: []*parser.ModelAction{
+							Operations: []*parser.ModelAction{
 								{
 									Name: "author",
 									Arguments: []*parser.ActionArg{
@@ -260,7 +316,9 @@ func TestInputsModelFields(t *testing.T) {
 								},
 							},
 						},
-					}}}}}, expected: fmt.Errorf("you are using inputs that are not fields model:author, field:name")}}
+					}}}}}, expected: []error{
+			&ValidationError{Message: "you are using inputs that are not fields model:author, field:name", ShortMessage: "Replace name", Hint: "Check inputs for author"},
+		}}}
 
 	for name, tc := range tests {
 		got := operationInputs(asInputs(tc.input))
@@ -292,17 +350,28 @@ func TestNoReservedFieldNames(t *testing.T) {
 
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
 		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input1},
 		}}}}}, expected: nil},
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input2},
-		}}}}}, expected: errors.New("you have a reserved field name id")},
+		}}}}}, expected: []error{
+			&ValidationError{Message: "you have a reserved field name id",
+				ShortMessage: "cannot use id",
+				Hint:         "You cannot use id as field name, it is reserved, try ider"},
+			&ValidationError{Message: "you have a reserved field name createdAt",
+				ShortMessage: "cannot use createdAt",
+				Hint:         "You cannot use createdAt as field name, it is reserved, try createdAter",
+			}}},
 		"invalidUpperCase": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input3},
-		}}}}}, expected: errors.New("you have a reserved field name ID")},
+		}}}}}, expected: []error{&ValidationError{Message: "you have a reserved field name ID", ShortMessage: "cannot use ID", Hint: "You cannot use ID as field name, it is reserved, try IDer"},
+			&ValidationError{Message: "you have a reserved field name createdAt",
+				ShortMessage: "cannot use createdAt",
+				Hint:         "You cannot use createdAt as field name, it is reserved, try createdAter",
+			}}},
 	}
 
 	for name, tc := range tests {
@@ -317,10 +386,15 @@ func TestNoReservedFieldNames(t *testing.T) {
 func TestReservedModelNames(t *testing.T) {
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
-		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book"}}}}, expected: nil},
-		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "query"}}}}, expected: errors.New("you have a reserved model name query")},
+		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book"}}}},
+			expected: nil},
+		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "query"}}}},
+			expected: []error{&ValidationError{Message: "you have a reserved model name query",
+				ShortMessage: "query is reserved",
+				Hint:         "You cannot use query as a model name, it is reserved, try queryer",
+			}}},
 	}
 
 	for name, tc := range tests {
@@ -335,7 +409,7 @@ func TestReservedModelNames(t *testing.T) {
 func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
 		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
 			{
@@ -372,7 +446,11 @@ func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
 					},
 				},
 			},
-		}}}}}, expected: fmt.Errorf("operation createBook must take a unique field as an input")},
+		}}}}}, expected: []error{&ValidationError{
+			Message:      "operation createBook must take a unique field as an input",
+			ShortMessage: "createBook requires a unique field",
+			Hint:         "Are you sure you are using a unique field?",
+		}}},
 	}
 
 	for name, tc := range tests {
@@ -394,14 +472,17 @@ func TestSupportedFieldTypes(t *testing.T) {
 	}
 	tests := map[string]struct {
 		input    *parser.Schema
-		expected error
+		expected []error
 	}{
 		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input1, Functions: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
+			{Fields: input1, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
 		}}}}}, expected: nil},
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input2, Functions: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
-		}}}}}, expected: errors.New("field userId has an unsupported type Invalid")},
+			{Fields: input2, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
+		}}}}}, expected: []error{&ValidationError{Message: "field userId has an unsupported type Invalid",
+			ShortMessage: "Invalid isn't supported",
+			Hint:         "Have you tried Text?",
+		}}},
 	}
 
 	for name, tc := range tests {
@@ -482,7 +563,10 @@ func TestModelsBeGloballyUnique(t *testing.T) {
 		},
 	}}))
 
-	expected := errors.New("you have duplicate Models Model:Book")
+	expected := []error{
+		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated", Hint: "Remove Book"},
+		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated", Hint: "Remove Book"},
+	}
 
 	assert.Equal(t, expected, err)
 }
