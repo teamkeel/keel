@@ -502,55 +502,31 @@ func uniqueModelsGlobally(inputs []Input) []GlobalOperations {
 func supportedAttributeTypes(inputs []Input) []error {
 	var errors []error
 
-	var supportedAttributes = map[string][]string{
-		"model":     {"permission"},
-		"api":       {"graphql"},
-		"field":     {"unique"},
-		"operation": {"set", "where", "get", "permission"},
-		"function":  {"permission"},
-	}
-
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 
 		for _, dec := range schema.Declarations {
-
-			// Validate attributes defined within model sections and subsections
 			if dec.Model != nil {
 				for _, section := range dec.Model.Sections {
 					if section.Attribute != nil {
-						if !contains(supportedAttributes["model"], section.Attribute.Name) {
-							errors = append(errors, fmt.Errorf("model '%s' has an unrecognised attribute @%s", dec.Model.Name, section.Attribute.Name)
-						}
+						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "model", dec.Model.Name)...)
 					}
 
 					if section.Operations != nil {
 						for _, op := range section.Operations {
-							for _, operationAttr := range op.Attributes {
-								if !contains(supportedAttributes["operation"], operationAttr.Name) {
-									return fmt.Errorf("operation '%s' has an unrecognised attribute @%s", op.Name, operationAttr.Name)
-								}
-							}
+							errors = append(errors, checkAttributes(op.Attributes, "operation", op.Name)...)
 						}
 					}
 
 					if section.Functions != nil {
 						for _, function := range section.Functions {
-							for _, funcAttr := range function.Attributes {
-								if !contains(supportedAttributes["function"], funcAttr.Name) {
-									return fmt.Errorf("function '%s' has an unrecognised atttribute @%s", function.Name, funcAttr.Name)
-								}
-							}
+							errors = append(errors, checkAttributes(function.Attributes, "function", function.Name)...)
 						}
 					}
 
 					if section.Fields != nil {
 						for _, field := range section.Fields {
-							for _, fieldAttr := range field.Attributes {
-								if !contains(supportedAttributes["field"], fieldAttr.Name) {
-									return fmt.Errorf("field '%s' has an unrecognised attribute @%s", field.Name, fieldAttr.Name)
-								}
-							}
+							errors = append(errors, checkAttributes(field.Attributes, "field", field.Name)...)
 						}
 					}
 				}
@@ -560,16 +536,42 @@ func supportedAttributeTypes(inputs []Input) []error {
 			if dec.API != nil {
 				for _, section := range dec.API.Sections {
 					if section.Attribute != nil {
-						if !contains(supportedAttributes["api"], section.Attribute.Name) {
-							return fmt.Errorf("api '%s' has an unrecognised attribute @%s", dec.API.Name, section.Attribute.Name)
-						}
+						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "api", section.Attribute.Name)...)
 					}
 				}
 			}
 		}
 	}
 
-	return nil
+	return errors
+}
+
+func checkAttributes(attributes []*parser.Attribute, definedOn string, parentName string) []error {
+	var supportedAttributes = map[string][]string{
+		"model":     {"permission"},
+		"api":       {"graphql"},
+		"field":     {"unique"},
+		"operation": {"set", "where", "get", "permission"},
+		"function":  {"permission"},
+	}
+
+	// var builtIns = map[string][]string{
+	// 	"model":     {},
+	// 	"api":       {},
+	// 	"operation": {},
+	// 	"function":  {},
+	// 	"field":     {"primaryKey"},
+	// }
+
+	errors := make([]error, 0)
+
+	for _, attr := range attributes {
+		if !contains(supportedAttributes[definedOn], attr.Name) {
+			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute %s", attr.Name), "Did you mean XX?", attr.Pos))
+		}
+	}
+
+	return errors
 }
 
 func findDuplicates(s []string) []string {
@@ -587,13 +589,11 @@ func findDuplicates(s []string) []string {
 }
 
 func contains(slice []string, item string) bool {
-	set := make(map[string]struct{}, len(slice))
-
 	for _, s := range slice {
-		set[s] = struct{}{}
+		if s == item {
+			return true
+		}
 	}
 
-	_, ok := set[item]
-
-	return ok
+	return false
 }

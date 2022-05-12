@@ -61,6 +61,8 @@ model Post {
 
 api Web {
     @graphql
+    @jdjd
+    @fjjd
 
     models {
         Profile

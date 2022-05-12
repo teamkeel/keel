@@ -240,6 +240,12 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	assert.Equal(t, expected, err)
 }
 
+func TestUnrecognisedAttributes(t *testing.T) {
+	tests := map[string]string {
+		""
+	}
+}
+
 //Inputs of ops must be model fields
 func TestInputsModelFields(t *testing.T) {
 	tests := map[string]struct {
