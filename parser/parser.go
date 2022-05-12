@@ -7,7 +7,6 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/inputs"
-	"github.com/teamkeel/keel/proto"
 )
 
 type Schema struct {
@@ -151,33 +150,4 @@ func Parse(s *inputs.SchemaFile) (*Schema, error) {
 	}
 
 	return schema, nil
-}
-
-func ToProto(s *Schema) (*proto.Schema, error) {
-	ps := &proto.Schema{}
-
-	for _, dec := range s.Declarations {
-		if dec.Model == nil {
-			continue
-		}
-
-		m := &proto.Model{
-			Name: dec.Model.Name,
-		}
-
-		for _, sec := range dec.Model.Sections {
-			if sec.Fields == nil {
-				continue
-			}
-			for _, field := range sec.Fields {
-				f := &proto.Field{
-					Name: field.Name,
-				}
-
-				m.Fields = append(m.Fields, f)
-			}
-		}
-	}
-
-	return ps, nil
 }

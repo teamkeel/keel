@@ -4,6 +4,7 @@ package parser
 // another user-defined model
 const (
 	FieldTypeID       = "ID"        // a uuid or similar
+	FieldTypeIdentity = "Identity"  // represents the abstraction of a user/service account etc.
 	FieldTypeText     = "Text"      // a string
 	FieldTypeNumber   = "Number"    // an integer
 	FieldTypeDate     = "Date"      // a date with no time element
@@ -21,4 +22,18 @@ const (
 	ActionTypeUpdate = "update"
 	ActionTypeList   = "list"
 	ActionTypeDelete = "delete"
+)
+
+// All models get a field named "id" implicitly. This set of constants provides
+// the set of this, and other similar implicit fields.
+const (
+	ImplicitFieldNameId = "id"
+)
+
+const (
+	AttributeUnique = "unique"
+	AttributeOptional = "optional"
+	AttributePermission = "permission"
+	AttributeWhere = "where"
+	AttributeSet = "set"
 )
