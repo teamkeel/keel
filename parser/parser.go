@@ -7,7 +7,6 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/inputs"
-	"github.com/teamkeel/keel/proto"
 )
 
 type Schema struct {
