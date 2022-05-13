@@ -9,6 +9,7 @@ import "google/protobuf/wrappers.proto";
 message Schema {
     repeated Model models = 1;
     repeated Role roles = 2;
+    repeated Api apis = 3;
 }
 
 message Model {
@@ -142,6 +143,22 @@ message PermissionRule {
 
 message Expression {
     string source = 1;
+}
+
+message Api {
+    string name = 1;
+    ApiType type = 2;
+    repeated ApiModel api_models = 3;
+}
+
+message ApiModel {
+    string model_name = 1;
+}
+
+enum ApiType {
+    API_TYPE_UNKNOWN = 0;
+    API_TYPE_GRAPHQL = 1;
+    API_TYPE_RPC = 2;
 }
 
 enum OperationInputType {
