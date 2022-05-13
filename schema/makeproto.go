@@ -23,7 +23,8 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 				protoRole := scm.makeRole(decl)
 				protoSchema.Roles = append(protoSchema.Roles, protoRole)
 			case decl.API != nil:
-				// todo API not yet supported in proto
+				protoAPI := scm.makeAPI(decl)
+				protoSchema.Apis = append(protoSchema.Apis, protoAPI)
 			default:
 				panic("Case not recognized")
 			}
@@ -74,6 +75,18 @@ func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 		}
 	}
 	return protoRole
+}
+
+func (scm *Schema) makeApi(decl *parser.Declaration) *proto.Api {
+	parserAPI := decl.API
+	protoAPI := &proto.Api{
+		Name: parserAPI.Name,
+	}
+	for _, section := range parserAPI.Sections {
+		// todo map attribute for type
+		// harvest list of models for models
+	}
+	return protoAPI
 }
 
 func (scm *Schema) makeFields(parserFields []*parser.ModelField, modelName string) []*proto.Field {
