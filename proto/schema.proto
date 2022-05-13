@@ -148,7 +148,11 @@ message Expression {
 message Api {
     string name = 1;
     ApiType type = 2;
-    repeated string models = 3;
+    repeated ApiModel api_models = 3;
+}
+
+message ApiModel {
+    string model_name = 1;
 }
 
 enum ApiType {
