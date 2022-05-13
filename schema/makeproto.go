@@ -23,7 +23,8 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 				protoRole := scm.makeRole(decl)
 				protoSchema.Roles = append(protoSchema.Roles, protoRole)
 			case decl.API != nil:
-				// todo API not yet supported in proto
+				protoAPI := scm.makeAPI(decl)
+				protoSchema.Apis = append(protoSchema.Apis, protoAPI)
 			default:
 				panic("Case not recognized")
 			}
@@ -74,6 +75,28 @@ func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 		}
 	}
 	return protoRole
+}
+
+func (scm *Schema) makeAPI(decl *parser.Declaration) *proto.Api {
+	parserAPI := decl.API
+	protoAPI := &proto.Api{
+		Name: parserAPI.Name,
+		ApiModels: []*proto.ApiModel{},
+	}
+	for _, section := range parserAPI.Sections {
+		switch {
+		case section.Attribute != nil:
+			protoAPI.Type = scm.mapToAPIType(section.Attribute.Name)
+		case len(section.Models) > 0:
+			for _, parserApiModel := range section.Models {
+				protoModel := &proto.ApiModel{
+					ModelName: parserApiModel.ModelName,
+				}
+				protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
+			}
+		}
+	}
+	return protoAPI
 }
 
 func (scm *Schema) makeFields(parserFields []*parser.ModelField, modelName string) []*proto.Field {
@@ -242,3 +265,15 @@ func (scm *Schema) mapToOperationType(parsedOperation string) proto.OperationTyp
 func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
 }
+
+func (scm *Schema) mapToAPIType(parserAPIType string) proto.ApiType {
+	switch parserAPIType {
+	case parser.APITypeGraphQL:
+		return proto.ApiType_API_TYPE_GRAPHQL
+	case parser.APITypeRPC:
+		return proto.ApiType_API_TYPE_RPC
+	default:
+		return proto.ApiType_API_TYPE_UNKNOWN
+	}
+}
+
