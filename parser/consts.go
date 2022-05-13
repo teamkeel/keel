@@ -37,3 +37,8 @@ const (
 	AttributeWhere = "where"
 	AttributeSet = "set"
 )
+
+const (
+	APITypeGraphQL = "graphql"
+	APITypeRPC = "rpc"
+)
