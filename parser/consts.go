@@ -1,5 +1,14 @@
 package parser
 
+// Keywords
+const (
+	KeywordModel     = "model"
+	KeywordApi       = "api"
+	KeywordField     = "field"
+	KeywordOperation = "operation"
+	KeywordFunction  = "function"
+)
+
 // Built in Keel types. Worth noting a field type can also reference
 // another user-defined model
 const (
@@ -31,9 +40,11 @@ const (
 )
 
 const (
-	AttributeUnique = "unique"
-	AttributeOptional = "optional"
+	AttributeUnique     = "unique"
+	AttributeOptional   = "optional"
 	AttributePermission = "permission"
-	AttributeWhere = "where"
-	AttributeSet = "set"
+	AttributeWhere      = "where"
+	AttributeSet        = "set"
+	AttributeGraphQL    = "graphql"
+	AttributePrimaryKey = "primaryKey"
 )

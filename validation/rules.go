@@ -9,8 +9,6 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/parser"
-
-	levenshtein "github.com/ka-weihe/fast-levenshtein"
 )
 
 var (
@@ -84,13 +82,19 @@ func modelsUpperCamel(inputs []Input) []error {
 			reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
 			if reg.FindString(decl.Model.Name) != decl.Model.Name {
-				errors = append(errors, validationError(fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
-					fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
-					strcase.ToCamel(strings.ToLower(decl.Model.Name)),
-					decl.Model.Pos))
+				errors = append(
+					errors,
+					validationError(
+						fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
+						fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
+						NormalHint{Message: strcase.ToCamel(strings.ToLower(decl.Model.Name))}.ToString(),
+						decl.Model.Pos,
+					),
+				)
 			}
 		}
 	}
+
 	return errors
 }
 
@@ -447,10 +451,12 @@ func supportedFieldTypes(inputs []Input) []error {
 
 						sort.Strings(availableTypes)
 
+						hint := NewCorrectionHint(availableTypes, field.Type)
+
 						errors = append(errors, validationError(
 							fmt.Sprintf("field %s has an unsupported type %s", field.Name, field.Type),
 							fmt.Sprintf("%s isn't supported", field.Type),
-							fmt.Sprintf("Did you mean one of: %s?", strings.Join(findHintMatches(availableTypes, field.Type), ", ")),
+							hint.ToString(),
 							field.Pos))
 					}
 				}
@@ -563,19 +569,19 @@ func supportedAttributeTypes(inputs []Input) []error {
 
 func checkAttributes(attributes []*parser.Attribute, definedOn string, parentName string) []error {
 	var supportedAttributes = map[string][]string{
-		"model":     {"permission"},
-		"api":       {"graphql"},
-		"field":     {"unique", "optional"},
-		"operation": {"set", "where", "permission"},
-		"function":  {"permission"},
+		parser.KeywordModel:     {parser.AttributePermission},
+		parser.KeywordApi:       {parser.AttributeGraphQL},
+		parser.KeywordField:     {parser.AttributeUnique, parser.AttributeOptional},
+		parser.KeywordOperation: {parser.AttributeSet, parser.AttributeWhere, parser.AttributePermission},
+		parser.KeywordFunction:  {parser.AttributePermission},
 	}
 
 	var builtIns = map[string][]string{
-		"model":     {},
-		"api":       {},
-		"operation": {},
-		"function":  {},
-		"field":     {"primaryKey"},
+		parser.KeywordModel:     {},
+		parser.KeywordApi:       {},
+		parser.KeywordOperation: {},
+		parser.KeywordFunction:  {},
+		parser.KeywordField:     {parser.AttributePrimaryKey},
 	}
 
 	errors := make([]error, 0)
@@ -592,7 +598,17 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 				hintOptions[i] = fmt.Sprintf("@%s", hint)
 			}
 
-			errors = append(errors, validationError(fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name), fmt.Sprintf("Unrecognised attribute @%s", attr.Name), fmt.Sprintf("Did you mean %s?", strings.Join(findHintMatches(hintOptions, attr.Name), ", ")), attr.Pos))
+			hint := NewCorrectionHint(hintOptions, attr.Name)
+
+			errors = append(
+				errors,
+				validationError(
+					fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name),
+					fmt.Sprintf("Unrecognised attribute @%s", attr.Name),
+					hint.ToString(),
+					attr.Pos,
+				),
+			)
 		}
 	}
 
@@ -621,29 +637,4 @@ func contains(slice []string, item string) bool {
 	}
 
 	return false
-}
-
-// Initially just for correcting attributes
-// eventually correcting any fat fingered mistake
-// e.g
-// role Admin {}
-// model Post { @permission(role: Adamin) }
-// => Did you mean Admin?
-func findHintMatches(collection []string, query string) []string {
-	matches := make([]string, 0)
-	attributeNames := make([]string, 0)
-
-	for _, item := range collection {
-		attributeNames = append(attributeNames, item)
-
-		if levenshtein.Distance(query, item) < 2 {
-			matches = append(matches, item)
-		}
-	}
-
-	if len(matches) < 1 {
-		matches = append(matches, attributeNames...)
-	}
-
-	return matches
 }
