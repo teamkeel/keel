@@ -674,7 +674,6 @@ func TestModelsBeGloballyUnique(t *testing.T) {
 
 	expected := []error{
 		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated", Hint: "Remove Book"},
-		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated", Hint: "Remove Book"},
 	}
 
 	assert.Equal(t, expected, err)

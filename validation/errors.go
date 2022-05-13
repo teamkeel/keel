@@ -14,10 +14,10 @@ type ValidationError struct {
 }
 
 type LexerPos struct {
-	Filename string `json:"filename,omitempty"`
-	Offset   int    `json:"offset,omitempty"`
-	Line     int    `json:"line,omitempty"`
-	Column   int    `json:"column,omitempty"`
+	Filename string `json:"filename"`
+	Offset   int    `json:"offset"`
+	Line     int    `json:"line"`
+	Column   int    `json:"column"`
 }
 
 func (e *ValidationError) Error() string {

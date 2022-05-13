@@ -5,7 +5,7 @@
       "id": "schemaPath",
       "type": "promptString",
       "description": "Relative filepath to schema file",
-      "default": "./testdata/schema-dirs/kitchen-sink/kitchen-sink.keel"
+      "default": "./schema/testdata/kitchen_sink/kitchen-sink.keel"
     }
   ],
   "configurations": [

@@ -41,13 +41,16 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 		switch {
 
 		case section.Fields != nil:
-			protoModel.Fields = scm.makeFields(section.Fields, protoModel.Name)
+			fields := scm.makeFields(section.Fields, protoModel.Name)
+			protoModel.Fields = append(protoModel.Fields, fields...)
 
 		case section.Functions != nil:
-			protoModel.Operations = scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			ops := scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Operations != nil:
-			protoModel.Operations = scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
+			ops := scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Attribute != nil:
 			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
@@ -58,7 +61,6 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 
 	return protoModel
 }
-
 
 func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 	parserRole := decl.Role

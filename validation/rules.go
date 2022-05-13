@@ -448,57 +448,36 @@ func supportedFieldTypes(inputs []Input) []error {
 	return errors
 }
 
+func findModels(inputs []Input) []*parser.Model {
+	models := []*parser.Model{}
+	for _, input := range inputs {
+		for _, decl := range input.ParsedSchema.Declarations {
+			if decl.Model != nil {
+				models = append(models, decl.Model)
+			}
+		}
+	}
+	return models
+}
+
 //Models are globally unique
 func modelsGloballyUnique(inputs []Input) []error {
 	var errors []error
-	var modelNames []string
+	seenModelNames := map[string]bool{}
 
-	globalOperations := uniqueModelsGlobally(inputs)
-
-	for _, name := range globalOperations {
-		modelNames = append(modelNames, name.Model)
-	}
-	duplicates := findDuplicates(modelNames)
-
-	if len(duplicates) == 0 {
-		return nil
-	}
-
-	var duplicateModels []GlobalOperations
-	for _, model := range globalOperations {
-		for _, duplicate := range duplicates {
-			if model.Model == duplicate {
-				duplicateModels = append(duplicateModels, model)
-			}
+	for _, model := range findModels(inputs) {
+		if _, ok := seenModelNames[model.Name]; ok {
+			errors = append(errors, validationError(
+				fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", model.Name, model.Pos),
+				fmt.Sprintf("%s is duplicated", model.Name),
+				fmt.Sprintf("Remove %s", model.Name),
+				model.Pos))
+			continue
 		}
-	}
-
-	for _, nameError := range duplicateModels {
-		errors = append(errors, validationError(
-			fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", nameError.Model, nameError.Pos),
-			fmt.Sprintf("%s is duplicated", nameError.Model),
-			fmt.Sprintf("Remove %s", nameError.Model),
-			nameError.Pos))
+		seenModelNames[model.Name] = true
 	}
 
 	return errors
-}
-
-func uniqueModelsGlobally(inputs []Input) []GlobalOperations {
-	var globalOperations []GlobalOperations
-	for _, input := range inputs {
-		schema := input.ParsedSchema
-		for _, declaration := range schema.Declarations {
-			if declaration.Model == nil {
-				continue
-			}
-
-			globalOperations = append(globalOperations, GlobalOperations{
-				Model: declaration.Model.Name,
-			})
-		}
-	}
-	return globalOperations
 }
 
 func supportedAttributeTypes(inputs []Input) []error {
