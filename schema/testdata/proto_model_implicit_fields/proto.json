@@ -1,0 +1,24 @@
+{
+  "models": [
+    {
+      "name": "Profile",
+      "fields": [
+        {
+          "modelName": "Profile",
+          "name": "id",
+          "type": "FIELD_TYPE_ID"
+        }
+      ]
+    },
+    {
+      "name": "Other",
+      "fields": [
+        {
+          "modelName": "Other",
+          "name": "id",
+          "type": "FIELD_TYPE_ID"
+        }
+      ]
+    }
+  ]
+}

@@ -2,6 +2,7 @@ package schema_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -44,6 +45,7 @@ func TestSchema(t *testing.T) {
 
 			var expectedJSON []byte
 			var actualJSON []byte
+			var debugJSON []byte
 
 			if expectedProto, ok := filesByName["proto.json"]; ok {
 				require.NoError(t, err)
@@ -51,6 +53,11 @@ func TestSchema(t *testing.T) {
 				expectedJSON = expectedProto
 				actualJSON, err = protojson.Marshal(protoSchema)
 				require.NoError(t, err)
+
+				marshalOps := protojson.MarshalOptions{Indent: "  "}
+				debugJSON, err = marshalOps.Marshal(protoSchema)
+				require.NoError(t, err)
+
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
 				require.NotNil(t, err)
 
@@ -71,6 +78,7 @@ func TestSchema(t *testing.T) {
 			case jsondiff.FullMatch:
 				// success
 			case jsondiff.SupersetMatch, jsondiff.NoMatch:
+				fmt.Printf("XXXX \n%s\n", string(debugJSON))
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")

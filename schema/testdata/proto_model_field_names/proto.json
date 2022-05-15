@@ -1,0 +1,24 @@
+{
+  "models": [
+    {
+      "name": "Profile",
+      "fields": [
+        {
+          "modelName": "Profile",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Profile",
+          "name": "worstHabit",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Profile",
+          "name": "id",
+          "type": "FIELD_TYPE_ID"
+        }
+      ]
+    }
+  ]
+}

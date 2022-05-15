@@ -1,0 +1,14 @@
+role Admin {
+    domains {
+        "hello.com"
+        "hi.com"
+    }
+
+    emails {
+        "hello@agency.com"
+        "potato@vegetable.com"
+    }
+}
+
+role Other {
+}
