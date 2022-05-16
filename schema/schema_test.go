@@ -48,6 +48,7 @@ func TestSchema(t *testing.T) {
 			var debugJSON []byte
 
 			if expectedProto, ok := filesByName["proto.json"]; ok {
+
 				require.NoError(t, err)
 
 				expectedJSON = expectedProto

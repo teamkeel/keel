@@ -1,0 +1,110 @@
+{
+  "models": [
+    {
+      "name": "Extra",
+      "fields": [
+        {
+          "modelName": "Extra",
+          "name": "greeting",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Extra",
+          "name": "id",
+          "type": "FIELD_TYPE_ID"
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "fields": [
+        {
+          "modelName": "Profile",
+          "name": "identity",
+          "type": "FIELD_TYPE_IDENTITY"
+        },
+        {
+          "modelName": "Profile",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING",
+          "unique": true
+        },
+        {
+          "modelName": "Profile",
+          "name": "id",
+          "type": "FIELD_TYPE_ID"
+        }
+      ],
+      "permissions": [
+        {
+          "modelName": "Profile",
+          "expression": {
+            "source": "true"
+          },
+          "operationsTypes": [
+            "OPERATION_TYPE_CREATE",
+            "OPERATION_TYPE_GET",
+            "OPERATION_TYPE_UPDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Post",
+      "fields": [
+        {
+          "modelName": "Post",
+          "name": "body",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Post",
+          "name": "author",
+          "type": "FIELD_TYPE_RELATIONSHIP"
+        },
+        {
+          "modelName": "Post",
+          "name": "id",
+          "type": "FIELD_TYPE_ID"
+        }
+      ],
+      "permissions": [
+        {
+          "modelName": "Post",
+          "expression": {
+            "source": "ctx.identity != null"
+          },
+          "operationsTypes": [
+            "OPERATION_TYPE_LIST",
+            "OPERATION_TYPE_GET"
+          ]
+        }
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "name": "Admin",
+      "domains": [
+        "hello.com"
+      ],
+      "emails": [
+        "hello@agency.com"
+      ]
+    }
+  ],
+  "apis": [
+    {
+      "name": "Web",
+      "type": "API_TYPE_GRAPHQL",
+      "apiModels": [
+        {
+          "modelName": "Profile"
+        },
+        {
+          "modelName": "Post"
+        }
+      ]
+    }
+  ]
+}
