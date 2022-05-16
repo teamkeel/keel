@@ -1,20 +1,20 @@
 {
   "models": [
     {
-      "name": "Profile",
+      "name": "Foo",
       "fields": [
         {
-          "modelName": "Profile",
-          "name": "username",
+          "modelName": "Foo",
+          "name": "name1",
           "type": "FIELD_TYPE_STRING"
         },
         {
-          "modelName": "Profile",
-          "name": "worstHabit",
+          "modelName": "Foo",
+          "name": "name2",
           "type": "FIELD_TYPE_STRING"
         },
         {
-          "modelName": "Profile",
+          "modelName": "Foo",
           "name": "id",
           "type": "FIELD_TYPE_ID"
         }

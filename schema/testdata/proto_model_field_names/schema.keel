@@ -1,6 +1,0 @@
-model Profile {
-    fields {
-        username Text
-        worstHabit Text
-    }
-}

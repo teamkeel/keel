@@ -1,0 +1,6 @@
+model Foo {
+    fields {
+        name1 Text
+        name2 Text
+    }
+}
