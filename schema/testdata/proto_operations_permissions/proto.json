@@ -1,39 +1,39 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Foo",
-      "fields": [
+      "name":  "Foo",
+      "fields":  [
         {
-          "modelName": "Foo",
-          "name": "f1",
-          "type": "FIELD_TYPE_BOOL"
+          "modelName":  "Foo",
+          "name":  "f1",
+          "type":  "FIELD_TYPE_BOOL"
         },
         {
-          "modelName": "Foo",
-          "name": "id",
-          "type": "FIELD_TYPE_ID",
-          "unique": true
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Foo",
-          "name": "opA",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "permissions": [
+          "modelName":  "Foo",
+          "name":  "opA",
+          "type":  "OPERATION_TYPE_LIST",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "permissions":  [
             {
-              "modelName": "Foo",
-              "operationName": "opA",
-              "roleName": "Admin",
-              "expression": {
-                "source": "foo.f1 == bool"
+              "modelName":  "Foo",
+              "operationName":  "opA",
+              "roleName":  "Admin",
+              "expression":  {
+                "source":  "foo.f1 == bool"
               }
             },
             {
-              "modelName": "Foo",
-              "operationName": "opA",
-              "roleName": "Restricted"
+              "modelName":  "Foo",
+              "operationName":  "opA",
+              "roleName":  "Restricted"
             }
           ]
         }
