@@ -20,7 +20,7 @@ It operates on all of the sub directories inside the testdata directory whose
 name begins with "proto".
 */
 func main() {
-	testdataDir := ".."
+	testdataDir := "../testdata"
 	fileNodes, err := ioutil.ReadDir(testdataDir)
 	if err != nil {
 		panic(fmt.Errorf("ioutil.ReadDir() failed with: %v", err))
@@ -31,13 +31,12 @@ func main() {
 		if !fileNode.IsDir() {
 			continue
 		}
-		dirFullPathName := fileNode.Name()
-		if !strings.HasPrefix(dirFullPathName, "proto") {
+		if !strings.HasPrefix(fileNode.Name(), "proto") {
 			continue
 		}
 
 		s2m := schema.Schema{}
-		protoSchema, err := s2m.MakeFromDirectory(dirFullPathName)
+		protoSchema, err := s2m.MakeFromDirectory("../testdata/" + fileNode.Name())
 		if err != nil {
 			panic(fmt.Errorf("MakeFromDirectory() failed with: %v", err))
 		}
@@ -48,7 +47,7 @@ func main() {
 			panic(fmt.Errorf("Marshal() failed with: %v", err))
 		}
 		
-		err = os.WriteFile(dirFullPathName + "/proto.json", asJSON, 0666)
+		err = os.WriteFile("../testdata/" + fileNode.Name() + "/proto.json", asJSON, 0666)
 		if err != nil {
 			panic(fmt.Errorf("Marshal() failed with: %v", err))
 		}

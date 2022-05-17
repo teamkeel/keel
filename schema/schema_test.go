@@ -3,13 +3,11 @@ package schema_test
 import (
 	"encoding/json"
 	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 	"google.golang.org/protobuf/encoding/protojson"
 )
