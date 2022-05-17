@@ -5,6 +5,7 @@ import (
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
 )
 
@@ -185,7 +186,6 @@ func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	if !assert.Equal(t, expected, got) {
 		t.Fatalf("%s: expected: %v, got: %v", "name", expected, got)
 	}
-
 }
 
 //Inputs of ops must be model fields
@@ -514,62 +514,6 @@ func TestReservedModelNames(t *testing.T) {
 	}
 }
 
-//GET operation must take a unique field as an input (or a unique combinations of inputs)
-func TestGetOperationMustTakeAUniqueFieldAsAnInput(t *testing.T) {
-	tests := map[string]struct {
-		input    *parser.Schema
-		expected []error
-	}{
-		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
-			{
-				Fields: []*parser.ModelField{
-					{Name: "id", Type: "int", Attributes: []*parser.Attribute{{Name: "primaryKey"}}},
-					{Name: "name", Type: "string", Attributes: []*parser.Attribute{{Name: "unique"}}},
-				},
-			}, {
-				Functions: []*parser.ModelAction{
-					{
-						Type: parser.ActionTypeGet,
-						Name: "createBook",
-						Arguments: []*parser.ActionArg{
-							{Name: "id"},
-						},
-					},
-				},
-			},
-		}}}}}, expected: nil},
-		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book", Sections: []*parser.ModelSection{
-			{
-				Fields: []*parser.ModelField{
-					{Name: "id", Type: "int", Attributes: []*parser.Attribute{{Name: "primaryKey"}}},
-					{Name: "name", Type: "string"},
-				},
-			}, {
-				Functions: []*parser.ModelAction{
-					{
-						Type: parser.ActionTypeGet,
-						Name: "createBook",
-						Arguments: []*parser.ActionArg{
-							{Name: "name"},
-						},
-					},
-				},
-			},
-		}}}}}, expected: []error{&ValidationError{
-			Message:      "operation createBook must take a unique field as an input",
-			ShortMessage: "createBook requires a unique field",
-			Hint:         "Are you sure you are using a unique field?",
-		}}},
-	}
-
-	for name, tc := range tests {
-		got := operationUniqueFieldInput(asInputs(tc.input))
-		if !assert.Equal(t, tc.expected, got) {
-			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
-		}
-	}
-}
-
 //Supported field types
 func TestSupportedFieldTypes(t *testing.T) {
 
@@ -677,4 +621,44 @@ func TestModelsBeGloballyUnique(t *testing.T) {
 	}
 
 	assert.Equal(t, expected, err)
+}
+
+func TestCheckAttributeExpressions(t *testing.T) {
+	input := []*parser.Attribute{
+		{
+			Name: "test",
+			Arguments: []*parser.AttributeArgument{
+				{
+					Name: "test",
+					Expression: &expressions.Expression{
+						Or: []*expressions.OrExpression{
+							{
+								And: []*expressions.ConditionWrap{
+									{
+										Condition: &expressions.Condition{
+											Operator: "=",
+											LHS: &expressions.Value{
+												Ident: []string{"profile", "identity"},
+											},
+											RHS: &expressions.Value{
+												Ident: []string{"foo", "name"},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	got := checkAttributeExpressions(input, "Profile", &parser.ModelField{Name: "identity", Attributes: []*parser.Attribute{
+		{
+			Name: "unique",
+		},
+	}})
+	assert.Equal(t, true, got)
+
 }

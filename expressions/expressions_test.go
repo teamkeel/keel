@@ -85,3 +85,30 @@ func TestIsValue(t *testing.T) {
 		})
 	}
 }
+
+func TestIsAssignment(t *testing.T) {
+	fixtures := map[string]bool{
+		"a":       false,
+		"1":       false,
+		"true":    false,
+		"false":   false,
+		"null":    false,
+		"42":      false,
+		"[1,2,3]": false,
+
+		"a == b":          false,
+		"true or a == b":  false,
+		"true and a == b": false,
+		"(a == b)":        false,
+		"a = b":           true,
+	}
+
+	for input, expected := range fixtures {
+		t.Run(input, func(t *testing.T) {
+			expr, err := expressions.Parse(input)
+			assert.NoError(t, err)
+
+			assert.Equal(t, expected, expressions.IsAssignment(expr))
+		})
+	}
+}

@@ -1,0 +1,15 @@
+{
+    "Errors": [
+        {
+            "hint": "Have you tried Text?",
+            "message": "field identity has an unsupported type InvalidIdentity",
+            "pos": {
+                "column": 9,
+                "filename": "testdata/operations_expression/invalid.keel",
+                "line": 3,
+                "offset": 44
+            },
+            "short_message": "InvalidIdentity isn't supported"
+        }
+    ]
+}
