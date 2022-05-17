@@ -125,10 +125,6 @@ func IsValue(expr *Expression) bool {
 
 var ErrNotValue = errors.New("expression is not a single value")
 
-// implement IsAssignment
-
-// ToAssignmentCondition
-
 func ToValue(expr *Expression) (*Value, error) {
 	if len(expr.Or) > 1 {
 		return nil, ErrNotValue
@@ -153,7 +149,7 @@ func ToValue(expr *Expression) (*Value, error) {
 	return cond.LHS, nil
 }
 
-var ErrNotAssignment = errors.New("expression is not a assignment")
+var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
 
 func IsAssignment(expr *Expression) bool {
 	v, _ := ToAssignmentCondition(expr)
