@@ -1,18 +1,18 @@
 {
-    "roles": [
-      {
-        "name": "Admin",
-        "domains": [
-          "hello.com",
-          "hi.com"
-        ],
-        "emails": [
-          "hello@agency.com",
-          "potato@vegetable.com"
-        ]
-      },
-      {
-        "name": "Other"
-      }
-    ]
-  }
+  "roles": [
+    {
+      "name": "Admin",
+      "domains": [
+        "hello.com",
+        "hi.com"
+      ],
+      "emails": [
+        "hello@agency.com",
+        "potato@vegetable.com"
+      ]
+    },
+    {
+      "name": "Other"
+    }
+  ]
+}

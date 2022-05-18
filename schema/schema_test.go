@@ -2,7 +2,6 @@ package schema_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"testing"
 
@@ -79,7 +78,6 @@ func TestSchema(t *testing.T) {
 			case jsondiff.FullMatch:
 				// success
 			case jsondiff.SupersetMatch, jsondiff.NoMatch:
-				fmt.Printf("XXXX \n%s\n", string(debugJSON))
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")
