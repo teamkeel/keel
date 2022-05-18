@@ -1,12 +1,12 @@
 role Admin {
     domains {
-        "hello.com"
-        "hi.com"
+        "domain1.com"
+        "domain2.zyz"
     }
 
     emails {
-        "hello@agency.com"
-        "potato@vegetable.com"
+        "person1@bbc.com"
+        "person2@keel.xyz"
     }
 }
 

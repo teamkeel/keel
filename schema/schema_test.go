@@ -44,7 +44,6 @@ func TestSchema(t *testing.T) {
 
 			var expectedJSON []byte
 			var actualJSON []byte
-			var debugJSON []byte
 
 			if expectedProto, ok := filesByName["proto.json"]; ok {
 
@@ -52,10 +51,6 @@ func TestSchema(t *testing.T) {
 
 				expectedJSON = expectedProto
 				actualJSON, err = protojson.Marshal(protoSchema)
-				require.NoError(t, err)
-
-				marshalOps := protojson.MarshalOptions{Indent: "  "}
-				debugJSON, err = marshalOps.Marshal(protoSchema)
 				require.NoError(t, err)
 
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
