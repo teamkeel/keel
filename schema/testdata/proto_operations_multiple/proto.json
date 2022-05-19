@@ -1,0 +1,14 @@
+{
+  "models": [
+    {
+      "name": "Foo",
+      "fields": [
+        {
+          "modelName": "Foo",
+          "name": "id",
+          "type": "FIELD_TYPE_ID"
+        }
+      ]
+    }
+  ]
+}

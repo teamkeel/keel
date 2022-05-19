@@ -1,0 +1,6 @@
+model Foo {
+    operations {
+        list operationA()
+        list operationB()
+    }
+}

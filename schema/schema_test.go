@@ -42,6 +42,11 @@ func TestSchema(t *testing.T) {
 			s2m := schema.Schema{}
 			protoSchema, err := s2m.MakeFromDirectory(testCaseDir)
 
+			if err != nil {
+				a := 1
+				_ = a
+			}
+
 			var expectedJSON []byte
 			var actualJSON []byte
 

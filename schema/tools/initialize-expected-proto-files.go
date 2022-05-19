@@ -42,12 +42,12 @@ func main() {
 		opts := protojson.MarshalOptions{Indent: "  "}
 		asJSON, err := opts.Marshal(protoSchema)
 		if err != nil {
-			panic(fmt.Errorf("Could not marshal protobuf structure into json: %v", err))
+			panic(fmt.Errorf("could not marshal protobuf structure into json: %v", err))
 		}
 		
 		err = os.WriteFile("../testdata/" + subDir.Name() + "/proto.json", asJSON, 0666)
 		if err != nil {
-			panic(fmt.Errorf("Marshal() failed with: %v", err))
+			panic(fmt.Errorf("could not save proto.json file: %v", err))
 		}
 		nFilesWritten++
 	}
