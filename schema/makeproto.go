@@ -177,7 +177,7 @@ func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName s
 		operationInput := proto.OperationInput{
 			Name:      parserArg.Name,
 			Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
-			ModelName: wrapperspb.String(parserArg.Name),
+			ModelName: wrapperspb.String(modelName),
 			FieldName: wrapperspb.String(parserArg.Name),
 		}
 		operationInputs = append(operationInputs, &operationInput)
