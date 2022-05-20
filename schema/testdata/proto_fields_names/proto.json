@@ -1,22 +1,23 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Foo",
-      "fields": [
+      "name":  "Foo",
+      "fields":  [
         {
-          "modelName": "Foo",
-          "name": "name1",
-          "type": "FIELD_TYPE_STRING"
+          "modelName":  "Foo",
+          "name":  "name1",
+          "type":  "FIELD_TYPE_STRING"
         },
         {
-          "modelName": "Foo",
-          "name": "name2",
-          "type": "FIELD_TYPE_STRING"
+          "modelName":  "Foo",
+          "name":  "name2",
+          "type":  "FIELD_TYPE_STRING"
         },
         {
-          "modelName": "Foo",
-          "name": "id",
-          "type": "FIELD_TYPE_ID"
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
         }
       ]
     }

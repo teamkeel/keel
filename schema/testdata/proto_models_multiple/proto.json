@@ -1,22 +1,24 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Model1",
-      "fields": [
+      "name":  "Model1",
+      "fields":  [
         {
-          "modelName": "Model1",
-          "name": "id",
-          "type": "FIELD_TYPE_ID"
+          "modelName":  "Model1",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
         }
       ]
     },
     {
-      "name": "Model2",
-      "fields": [
+      "name":  "Model2",
+      "fields":  [
         {
-          "modelName": "Model2",
-          "name": "id",
-          "type": "FIELD_TYPE_ID"
+          "modelName":  "Model2",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
         }
       ]
     }

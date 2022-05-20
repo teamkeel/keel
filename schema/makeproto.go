@@ -50,7 +50,7 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Operations != nil:
-			ops := scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			ops := scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
 			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Attribute != nil:

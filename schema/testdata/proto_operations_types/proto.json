@@ -13,14 +13,14 @@
       "operations":  [
         {
           "modelName":  "Foo",
-          "name":  "operationA",
-          "type":  "OPERATION_TYPE_LIST",
+          "name":  "opA",
+          "type":  "OPERATION_TYPE_CREATE",
           "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
         },
         {
           "modelName":  "Foo",
-          "name":  "operationB",
-          "type":  "OPERATION_TYPE_LIST",
+          "name":  "opB",
+          "type":  "OPERATION_TYPE_UPDATE",
           "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
         }
       ]

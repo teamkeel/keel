@@ -111,6 +111,9 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 				{
 					Name: "primaryKey",
 				},
+				{
+					Name: "unique",
+				},
 			},
 		}
 		section := &parser.ModelSection{

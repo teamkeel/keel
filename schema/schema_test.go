@@ -42,16 +42,15 @@ func TestSchema(t *testing.T) {
 			s2m := schema.Schema{}
 			protoSchema, err := s2m.MakeFromDirectory(testCaseDir)
 
-			if err != nil {
-				a := 1
-				_ = a
-			}
-
 			var expectedJSON []byte
 			var actualJSON []byte
 
 			if expectedProto, ok := filesByName["proto.json"]; ok {
-
+				if err != nil {
+					a := 1
+					_ = a
+				}
+	
 				require.NoError(t, err)
 
 				expectedJSON = expectedProto
