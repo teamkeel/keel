@@ -3,5 +3,6 @@ model Foo {
         create opA()
         update opB()
         get opC(id)
+        list opD()
     }
 }

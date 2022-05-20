@@ -15,7 +15,7 @@ import (
 func TestSchema(t *testing.T) {
 	testdataDir := "./testdata"
 	testCases, err := ioutil.ReadDir(testdataDir)
-	require.NoError(t, err)
+	require.NoError(t, err)	
 
 	for _, testCase := range testCases {
 		if !testCase.IsDir() {
