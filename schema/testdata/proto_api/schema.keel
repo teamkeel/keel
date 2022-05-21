@@ -1,0 +1,17 @@
+model Foo {
+}
+model Bar {
+}
+api ApiOne {
+    @graphql
+    models {
+        Foo
+        Bar
+    }
+}
+api ApiTwo {
+    @graphql
+    models {
+        Foo
+    }
+}
