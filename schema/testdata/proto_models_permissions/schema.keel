@@ -1,0 +1,15 @@
+model Foo {
+  fields {
+    f1 Boolean
+  }
+ 
+  @permission(
+    expression: foo.f1 == bool,
+    role: Admin,
+    actions: [list, get]
+  )
+  @permission(
+    role: Restricted,
+    actions: [update]
+  )
+}
