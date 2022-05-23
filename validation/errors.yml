@@ -28,9 +28,9 @@ en:
     message: "You have a reserved model name {{ .Name }}"
     hint: "You cannot use {{ .Name }} as a model name, it is reserved, try {{ .Suggestion }}"
   E008:
-    short_message: ""
-    message: ""
-    hint: ""
+    short_message: "{{ .Name }} requires a unique field"
+    message: "Operation {{ .Name }} must take a unique field as an input"
+    hint: "Are you sure you are using a unique field?"
   E009:
     short_message: "{{ .Type }} isn't supported"
     message: "field {{ .Name }} has an unsupported type {{ .Type }}"
