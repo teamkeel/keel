@@ -42,7 +42,7 @@ func (hint *CorrectionHint) ToString() string {
 	if len(hint.Results) == 1 {
 		message = fmt.Sprintf("Did you mean %s?", hint.Results[0])
 	} else if len(hint.Results) > 1 {
-		message = fmt.Sprintf("Did you mean one of %s?", strings.Join(hint.Results, hint.Query))
+		message = fmt.Sprintf("Did you mean one of %s?", strings.Join(hint.Results, ", "))
 	}
 
 	return message
@@ -55,4 +55,8 @@ type NormalHint struct {
 
 func NewHint(message string) *NormalHint {
 	return &NormalHint{Message: message}
+}
+
+func (hint *NormalHint) ToString() string {
+	return hint.Message
 }

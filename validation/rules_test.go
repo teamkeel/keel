@@ -326,7 +326,7 @@ func TestUnrecognisedAttributes(t *testing.T) {
 		},
 		&ValidationError{Message: "operation 'createBook' has an unrecognised attribute @unknown",
 			ShortMessage: "Unrecognised attribute @unknown",
-			Hint:         "Did you mean @set, @where, @permission?",
+			Hint:         "Did you mean one of @set, @where, @permission?",
 			Pos:          LexerPos{Line: 123, Column: 5},
 		},
 		&ValidationError{Message: "api 'Web' has an unrecognised attribute @whoknew",
@@ -341,7 +341,7 @@ func TestUnrecognisedAttributes(t *testing.T) {
 		},
 		&ValidationError{Message: "field 'isbn' has an unrecognised attribute @who",
 			ShortMessage: "Unrecognised attribute @who",
-			Hint:         "Did you mean @unique, @optional?",
+			Hint:         "Did you mean one of @unique, @optional?",
 			Pos:          LexerPos{Line: 1050, Column: 7},
 		},
 	}
@@ -534,7 +534,7 @@ func TestSupportedFieldTypes(t *testing.T) {
 			{Fields: input2, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
 		}}}}}, expected: []error{&ValidationError{Message: "field userId has an unsupported type Invalid",
 			ShortMessage: "Invalid isn't supported",
-			Hint:         "Did you mean one of: Boolean, Date, Enum, ID, Identity, Image, Text, Timestamp?",
+			Hint:         "Did you mean one of Boolean, Date, Enum, ID, Identity, Image, Text, Timestamp?",
 		}}},
 	}
 

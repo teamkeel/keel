@@ -83,12 +83,15 @@ func modelsUpperCamel(inputs []Input) []error {
 			reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
 			if reg.FindString(decl.Model.Name) != decl.Model.Name {
+				message := strcase.ToCamel(strings.ToLower(decl.Model.Name))
+				hint := NewHint(message)
+
 				errors = append(
 					errors,
 					validationError(
 						fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
 						fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
-						NormalHint{Message: strcase.ToCamel(strings.ToLower(decl.Model.Name))}.ToString(),
+						hint.ToString(),
 						decl.Model.Pos,
 					),
 				)
@@ -501,6 +504,8 @@ func supportedFieldTypes(inputs []Input) []error {
 
 	for _, input := range inputs {
 		schema := input.ParsedSchema
+
+		// Append all model names to the supported types definition
 		for _, dec := range schema.Declarations {
 			if dec.Model != nil {
 				fieldTypes[dec.Model.Name] = true
