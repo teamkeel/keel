@@ -23,7 +23,7 @@ func TestModelsAreUpperCamel(t *testing.T) {
 			expected: []error{&ValidationError{
 				Code: "E001",
 				ErrorDetails: ErrorDetails{
-					Message:      "you have a model name that is not UpperCamel bookauthor",
+					Message:      "You have a model name that is not UpperCamel bookauthor",
 					ShortMessage: "bookauthor is not UpperCamel",
 					Hint:         "Bookauthor",
 				},
@@ -33,7 +33,7 @@ func TestModelsAreUpperCamel(t *testing.T) {
 			expected: []error{&ValidationError{
 				Code: "E001",
 				ErrorDetails: ErrorDetails{
-					Message:      "you have a model name that is not UpperCamel BOOKAUTHOR",
+					Message:      "You have a model name that is not UpperCamel BOOKAUTHOR",
 					ShortMessage: "BOOKAUTHOR is not UpperCamel",
 					Hint:         "Bookauthor",
 				},
@@ -42,7 +42,7 @@ func TestModelsAreUpperCamel(t *testing.T) {
 			expected: []error{&ValidationError{
 				Code: "E001",
 				ErrorDetails: ErrorDetails{
-					Message:      "you have a model name that is not UpperCamel book_author",
+					Message:      "You have a model name that is not UpperCamel book_author",
 					ShortMessage: "book_author is not UpperCamel",
 					Hint:         "BookAuthor",
 				},

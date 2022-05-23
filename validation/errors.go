@@ -1,6 +1,7 @@
 package validation
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -86,6 +87,7 @@ type YamlFile struct {
 	Locale Locale `yaml:"en"`
 }
 
+// Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
 func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) *ErrorDetails {
 	openFile, err := os.Open("errors.yml")
 
@@ -121,15 +123,26 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 		panic(err)
 	}
 
-	err = template.Execute(os.Stdout, literals.Literals)
+	var buf bytes.Buffer
+	err = template.Execute(&buf, literals.Literals)
+
+	if err != nil {
+		panic(err)
+	}
+
+	interpolatedBytes := buf.Bytes()
+
+	o := make(map[string]string)
+
+	err = yaml.Unmarshal(interpolatedBytes, &o)
 
 	if err != nil {
 		panic(err)
 	}
 
 	return &ErrorDetails{
-		Message:      "",
-		ShortMessage: "",
-		Hint:         "",
+		Message:      o["message"],
+		ShortMessage: o["short_message"],
+		Hint:         o["hint"],
 	}
 }
