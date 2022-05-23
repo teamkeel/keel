@@ -725,7 +725,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 			}
 
 			hint := NewCorrectionHint(hintOptions, attr.Name)
-			suggestions := strings.Join(hint.Results, ",")
+			suggestions := strings.Join(hint.Results, ", ")
 
 			errors = append(
 				errors,
