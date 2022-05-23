@@ -1,0 +1,28 @@
+#!/bin/bash
+
+mkdir -p ./schema/testdata/$1
+
+cd ./schema/testdata/$1
+
+touch errors.json
+touch keel.schema
+
+cat <<EOF > errors.json
+  {
+    "Errors": [
+      {
+        "code": "",
+        "hint": "",
+        "message": "",
+        "pos": {
+          "column": 0,
+          "filename": "testdata/$1/schema.keel",
+          "line": 0,
+          "offset": 0
+        }
+      }
+    ]
+  }
+EOF
+
+echo "Test case created at ./schema/testdata/$1"
