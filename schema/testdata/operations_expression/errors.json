@@ -1,7 +1,7 @@
 {
     "Errors": [
         {
-            "hint": "Have you tried Text?",
+            "hint": "Did you mean one of Boolean, Date, Enum, ID, Identity, Image, InvalidProfile, Text, Timestamp?",
             "message": "field identity has an unsupported type InvalidIdentity",
             "pos": {
                 "column": 9,
