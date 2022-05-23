@@ -23,6 +23,7 @@ const (
 	ErrorOperationInputFieldNotUnique = "E008"
 	ErrorUnsupportedFieldType         = "E009"
 	ErrorUniqueModelsGlobally         = "E010"
+	ErrorUnsupportedAttributeType     = "E011"
 )
 
 type ErrorDetails struct {

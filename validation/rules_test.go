@@ -88,8 +88,9 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 					{Name: "CREATEBOOK"},
 				}},
 			}}}}}, expected: []error{&ValidationError{
+			Code: "E002",
 			ErrorDetails: ErrorDetails{
-				Message:      "you have a function name that is not lowerCamel CREATEBOOK",
+				Message:      "You have a function name that is not lowerCamel CREATEBOOK",
 				ShortMessage: "CREATEBOOK isn't lower camel",
 				Hint:         "createbook",
 			},
@@ -103,8 +104,9 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 					{Name: "book_author"},
 				}},
 			}}}}}, expected: []error{&ValidationError{
+			Code: "E002",
 			ErrorDetails: ErrorDetails{
-				Message:      "you have a function name that is not lowerCamel book_author",
+				Message:      "You have a function name that is not lowerCamel book_author",
 				ShortMessage: "book_author isn't lower camel",
 				Hint:         "bookAuthor",
 			},
@@ -143,8 +145,9 @@ func TestFieldNamesMustBeUniqueInAModel(t *testing.T) {
 		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input2},
 		}}}}}, expected: []error{&ValidationError{
+			Code: "E003",
 			ErrorDetails: ErrorDetails{
-				Message:      "you have duplicate field names name",
+				Message:      "You have duplicate field names name",
 				ShortMessage: "name is duplicated",
 				Hint:         "Remove 'name' on line 0",
 			},
@@ -253,15 +256,17 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 
 	expected := []error{
 		&ValidationError{
+			Code: "E004",
 			ErrorDetails: ErrorDetails{
-				Message:      "you have duplicate operations Model:book Name:createbook",
+				Message:      "You have duplicate operations Model:book Name:createbook",
 				ShortMessage: "createbook is duplicated",
 				Hint:         "Remove 'createbook' on line 0",
 			},
 		},
 		&ValidationError{
+			Code: "E004",
 			ErrorDetails: ErrorDetails{
-				Message:      "you have duplicate operations Model:book Name:createbook",
+				Message:      "You have duplicate operations Model:book Name:createbook",
 				ShortMessage: "createbook is duplicated",
 				Hint:         "Remove 'createbook' on line 0",
 			},
@@ -291,6 +296,7 @@ func TestHintCorrection(t *testing.T) {
 
 	expected := []error{
 		&ValidationError{
+			Code: "E011",
 			ErrorDetails: ErrorDetails{
 				Message:      "api 'Web' has an unrecognised attribute @graphq",
 				ShortMessage: "Unrecognised attribute @graphq",
@@ -474,8 +480,9 @@ func TestInputsModelFields(t *testing.T) {
 						},
 					}}}}}, expected: []error{
 			&ValidationError{
+				Code: "E005",
 				ErrorDetails: ErrorDetails{
-					Message:      "you are using inputs that are not fields model:author, field:name",
+					Message:      "You are using inputs that are not fields model:author, field:name",
 					ShortMessage: "Replace name",
 					Hint:         "Check inputs for author",
 				},

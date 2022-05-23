@@ -3,3 +3,23 @@ en:
     short_message: "{{ .Model }} is not UpperCamel"
     message: "You have a model name that is not UpperCamel {{ .Model }}"
     hint: "{{ .Suggested }}"
+  E002:
+    short_message: "{{ .Name }} isn't lower camel"
+    message: "You have a function name that is not lowerCamel {{ .Name }}"
+    hint: "{{ .Suggested }}"
+  E003:
+    short_message: "{{ .Name }} is duplicated"
+    message: "You have duplicate field names {{ .Name }}"
+    hint: "Remove '{{ .Name }}' on line {{ .Line }}"
+  E004:
+    short_message: "createbook is duplicated"
+    message: "You have duplicate operations Model:{{ .Model }} Name:{{ .Name }}"
+    hint: "Remove '{{ .Name }}' on line {{ .Line }}"
+  E005:
+    short_message: "Replace {{ .Field }}"
+    message: "You are using inputs that are not fields model:{{ .Model }}, field:{{ .Field }}"
+    hint: "Check inputs for {{ .Model }}"
+  E011:
+    short_message: "Unrecognised attribute {{ .Name }}"
+    message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute {{ .Name }}"
+    hint: "Did you mean {{ .Suggestions }}?"

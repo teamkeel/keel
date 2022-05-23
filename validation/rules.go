@@ -126,7 +126,8 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 							validationError(ErrorFieldsOpsFuncsLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name": field.Name,
+										"Name":      field.Name,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(field.Name)),
 									},
 								},
 								field.Pos,
@@ -141,7 +142,8 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 							validationError(ErrorFieldsOpsFuncsLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name": function.Name,
+										"Name":      function.Name,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(function.Name)),
 									},
 								},
 								function.Pos,
@@ -725,17 +727,18 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 				hintOptions[i] = fmt.Sprintf("@%s", hint)
 			}
 
-			// hint := NewCorrectionHint(hintOptions, attr.Name)
-			// todo hint options
+			hint := NewCorrectionHint(hintOptions, attr.Name)
+			suggestions := strings.Join(hint.Results, ",")
 
 			errors = append(
 				errors,
-				validationError(ErrorUniqueModelsGlobally,
+				validationError(ErrorUnsupportedAttributeType,
 					TemplateLiterals{
 						Literals: map[string]string{
-							"Name":       attr.Name,
-							"ParentName": parentName,
-							"DefinedOn":  definedOn,
+							"Name":        fmt.Sprintf("@%s", attr.Name),
+							"ParentName":  parentName,
+							"DefinedOn":   definedOn,
+							"Suggestions": suggestions,
 						},
 					},
 					attr.Pos,
