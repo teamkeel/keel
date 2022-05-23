@@ -20,17 +20,32 @@ func TestModelsAreUpperCamel(t *testing.T) {
 		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BookAuthorLibrary"}}}},
 			expected: nil},
 		"allLower": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "bookauthor"}}}},
-			expected: []error{&ValidationError{Message: "you have a model name that is not UpperCamel bookauthor",
-				ShortMessage: "bookauthor is not UpperCamel", Hint: "Bookauthor"}}},
+			expected: []error{&ValidationError{
+				Code: "E001",
+				ErrorDetails: ErrorDetails{
+					Message:      "You have a model name that is not UpperCamel bookauthor",
+					ShortMessage: "bookauthor is not UpperCamel",
+					Hint:         "Bookauthor",
+				},
+			},
+			}},
 		"allUpper": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BOOKAUTHOR"}}}},
-			expected: []error{&ValidationError{Message: "you have a model name that is not UpperCamel BOOKAUTHOR",
-				ShortMessage: "BOOKAUTHOR is not UpperCamel",
-				Hint:         "Bookauthor",
+			expected: []error{&ValidationError{
+				Code: "E001",
+				ErrorDetails: ErrorDetails{
+					Message:      "You have a model name that is not UpperCamel BOOKAUTHOR",
+					ShortMessage: "BOOKAUTHOR is not UpperCamel",
+					Hint:         "Bookauthor",
+				},
 			}}},
 		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book_author"}}}},
-			expected: []error{&ValidationError{Message: "you have a model name that is not UpperCamel book_author",
-				ShortMessage: "book_author is not UpperCamel",
-				Hint:         "BookAuthor",
+			expected: []error{&ValidationError{
+				Code: "E001",
+				ErrorDetails: ErrorDetails{
+					Message:      "You have a model name that is not UpperCamel book_author",
+					ShortMessage: "book_author is not UpperCamel",
+					Hint:         "BookAuthor",
+				},
 			}}},
 	}
 
@@ -72,9 +87,13 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 				Operations: []*parser.ModelAction{
 					{Name: "CREATEBOOK"},
 				}},
-			}}}}}, expected: []error{&ValidationError{Message: "you have a function name that is not lowerCamel CREATEBOOK",
-			ShortMessage: "CREATEBOOK isn't lower camel",
-			Hint:         "createbook",
+			}}}}}, expected: []error{&ValidationError{
+			Code: "E002",
+			ErrorDetails: ErrorDetails{
+				Message:      "You have a function name that is not lowerCamel CREATEBOOK",
+				ShortMessage: "CREATEBOOK isn't lower camel",
+				Hint:         "createbook",
+			},
 		}}},
 		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{
 			Model: &parser.Model{Name: "createbook", Sections: []*parser.ModelSection{{
@@ -84,9 +103,13 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 				Operations: []*parser.ModelAction{
 					{Name: "book_author"},
 				}},
-			}}}}}, expected: []error{&ValidationError{Message: "you have a function name that is not lowerCamel book_author",
-			ShortMessage: "book_author isn't lower camel",
-			Hint:         "bookAuthor",
+			}}}}}, expected: []error{&ValidationError{
+			Code: "E002",
+			ErrorDetails: ErrorDetails{
+				Message:      "You have a function name that is not lowerCamel book_author",
+				ShortMessage: "book_author isn't lower camel",
+				Hint:         "bookAuthor",
+			},
 		}}},
 	}
 
@@ -121,9 +144,13 @@ func TestFieldNamesMustBeUniqueInAModel(t *testing.T) {
 		}}}}}, expected: nil},
 		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input2},
-		}}}}}, expected: []error{&ValidationError{Message: "you have duplicate field names name",
-			ShortMessage: "name is duplicated",
-			Hint:         "Remove 'name' on line 0",
+		}}}}}, expected: []error{&ValidationError{
+			Code: "E003",
+			ErrorDetails: ErrorDetails{
+				Message:      "You have duplicate field names name",
+				ShortMessage: "name is duplicated",
+				Hint:         "Remove 'name' on line 0",
+			},
 		}}},
 	}
 
@@ -228,13 +255,21 @@ func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	}}))
 
 	expected := []error{
-		&ValidationError{Message: "you have duplicate operations Model:book Name:createbook",
-			ShortMessage: "createbook is duplicated",
-			Hint:         "Remove 'createbook' on line 0",
+		&ValidationError{
+			Code: "E004",
+			ErrorDetails: ErrorDetails{
+				Message:      "You have duplicate operations Model:book Name:createbook",
+				ShortMessage: "createbook is duplicated",
+				Hint:         "Remove 'createbook' on line 0",
+			},
 		},
-		&ValidationError{Message: "you have duplicate operations Model:book Name:createbook",
-			ShortMessage: "createbook is duplicated",
-			Hint:         "Remove 'createbook' on line 0",
+		&ValidationError{
+			Code: "E004",
+			ErrorDetails: ErrorDetails{
+				Message:      "You have duplicate operations Model:book Name:createbook",
+				ShortMessage: "createbook is duplicated",
+				Hint:         "Remove 'createbook' on line 0",
+			},
 		},
 	}
 
@@ -261,92 +296,16 @@ func TestHintCorrection(t *testing.T) {
 
 	expected := []error{
 		&ValidationError{
-			Message:      "api 'Web' has an unrecognised attribute @graphq",
-			ShortMessage: "Unrecognised attribute @graphq",
-			Hint:         "Did you mean @graphql?",
-			Pos:          LexerPos{Line: 23, Column: 1},
+			Code: "E011",
+			ErrorDetails: ErrorDetails{
+				Message:      "api 'Web' has an unrecognised attribute @graphq",
+				ShortMessage: "Unrecognised attribute @graphq",
+				Hint:         "Did you mean @graphql?",
+			},
+			Pos: LexerPos{Line: 23, Column: 1},
 		}}
 
 	assert.Equal(t, err, expected)
-}
-
-func TestUnrecognisedAttributes(t *testing.T) {
-	modelAttribute := parser.Attribute{Name: "huh", Pos: lexer.Position{Line: 245, Column: 1}}
-	operationAttribute := parser.Attribute{Name: "unknown", Pos: lexer.Position{Line: 123, Column: 5}}
-	apiAttribute := parser.Attribute{Name: "whoknew", Pos: lexer.Position{Line: 933, Column: 10}}
-	functionAttribute := parser.Attribute{Name: "what", Pos: lexer.Position{Line: 1000, Column: 4}}
-	fieldAttribute := parser.Attribute{Name: "who", Pos: lexer.Position{Line: 1050, Column: 7}}
-
-	err := supportedAttributeTypes(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
-		{
-			API: &parser.API{
-				Name: "Web",
-				Sections: []*parser.APISection{
-					{
-						Attribute: &apiAttribute,
-					},
-				},
-			},
-
-			Model: &parser.Model{
-				Name: "book",
-				Sections: []*parser.ModelSection{
-					{
-						Attribute: &modelAttribute,
-						Operations: []*parser.ModelAction{
-							{
-								Name:       "createBook",
-								Attributes: []*parser.Attribute{&operationAttribute},
-							},
-						},
-						Functions: []*parser.ModelAction{
-							{
-								Name:       "deleteBookImmediately",
-								Type:       parser.ActionTypeDelete,
-								Attributes: []*parser.Attribute{&functionAttribute},
-							},
-						},
-						Fields: []*parser.ModelField{
-							{
-								Name:       "isbn",
-								Attributes: []*parser.Attribute{&fieldAttribute},
-							},
-						},
-					},
-				},
-			},
-		},
-	}}))
-
-	expected := []error{
-		&ValidationError{Message: "model 'book' has an unrecognised attribute @huh",
-			ShortMessage: "Unrecognised attribute @huh",
-			Hint:         "Did you mean @permission?",
-			Pos:          LexerPos{Line: 245, Column: 1},
-		},
-		&ValidationError{Message: "operation 'createBook' has an unrecognised attribute @unknown",
-			ShortMessage: "Unrecognised attribute @unknown",
-			Hint:         "Did you mean one of @set, @where, @permission?",
-			Pos:          LexerPos{Line: 123, Column: 5},
-		},
-		&ValidationError{Message: "api 'Web' has an unrecognised attribute @whoknew",
-			ShortMessage: "Unrecognised attribute @whoknew",
-			Hint:         "Did you mean @graphql?",
-			Pos:          LexerPos{Line: 933, Column: 10},
-		},
-		&ValidationError{Message: "function 'deleteBookImmediately' has an unrecognised attribute @what",
-			ShortMessage: "Unrecognised attribute @what",
-			Hint:         "Did you mean @permission?",
-			Pos:          LexerPos{Line: 1000, Column: 4},
-		},
-		&ValidationError{Message: "field 'isbn' has an unrecognised attribute @who",
-			ShortMessage: "Unrecognised attribute @who",
-			Hint:         "Did you mean one of @unique, @optional?",
-			Pos:          LexerPos{Line: 1050, Column: 7},
-		},
-	}
-
-	assert.ElementsMatch(t, expected, err)
 }
 
 //Inputs of ops must be model fields
@@ -462,7 +421,14 @@ func TestInputsModelFields(t *testing.T) {
 							},
 						},
 					}}}}}, expected: []error{
-			&ValidationError{Message: "you are using inputs that are not fields model:author, field:name", ShortMessage: "Replace name", Hint: "Check inputs for author"},
+			&ValidationError{
+				Code: "E005",
+				ErrorDetails: ErrorDetails{
+					Message:      "You are using inputs that are not fields model:author, field:name",
+					ShortMessage: "Replace name",
+					Hint:         "Check inputs for author",
+				},
+			},
 		}}}
 
 	for name, tc := range tests {
@@ -503,19 +469,39 @@ func TestNoReservedFieldNames(t *testing.T) {
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input2},
 		}}}}}, expected: []error{
-			&ValidationError{Message: "you have a reserved field name id",
-				ShortMessage: "cannot use id",
-				Hint:         "You cannot use id as field name, it is reserved, try ider"},
-			&ValidationError{Message: "you have a reserved field name createdAt",
-				ShortMessage: "cannot use createdAt",
-				Hint:         "You cannot use createdAt as field name, it is reserved, try createdAter",
+			&ValidationError{
+				Code: "E006",
+				ErrorDetails: ErrorDetails{
+					Message:      "You have a reserved field name id",
+					ShortMessage: "cannot use id",
+					Hint:         "You cannot use id as field name, it is reserved, try ider",
+				},
+			},
+			&ValidationError{
+				Code: "E006",
+				ErrorDetails: ErrorDetails{
+					Message:      "You have a reserved field name createdAt",
+					ShortMessage: "cannot use createdAt",
+					Hint:         "You cannot use createdAt as field name, it is reserved, try createdAter",
+				},
 			}}},
 		"invalidUpperCase": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input3},
-		}}}}}, expected: []error{&ValidationError{Message: "you have a reserved field name ID", ShortMessage: "cannot use ID", Hint: "You cannot use ID as field name, it is reserved, try IDer"},
-			&ValidationError{Message: "you have a reserved field name createdAt",
-				ShortMessage: "cannot use createdAt",
-				Hint:         "You cannot use createdAt as field name, it is reserved, try createdAter",
+		}}}}}, expected: []error{&ValidationError{
+			Code: "E006",
+			ErrorDetails: ErrorDetails{
+				Message:      "You have a reserved field name ID",
+				ShortMessage: "cannot use ID",
+				Hint:         "You cannot use ID as field name, it is reserved, try IDer",
+			},
+		},
+			&ValidationError{
+				Code: "E006",
+				ErrorDetails: ErrorDetails{
+					Message:      "You have a reserved field name createdAt",
+					ShortMessage: "cannot use createdAt",
+					Hint:         "You cannot use createdAt as field name, it is reserved, try createdAter",
+				},
 			}}},
 	}
 
@@ -536,9 +522,13 @@ func TestReservedModelNames(t *testing.T) {
 		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book"}}}},
 			expected: nil},
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "query"}}}},
-			expected: []error{&ValidationError{Message: "you have a reserved model name query",
-				ShortMessage: "query is reserved",
-				Hint:         "You cannot use query as a model name, it is reserved, try queryer",
+			expected: []error{&ValidationError{
+				Code: "E007",
+				ErrorDetails: ErrorDetails{
+					Message:      "You have a reserved model name query",
+					ShortMessage: "query is reserved",
+					Hint:         "You cannot use query as a model name, it is reserved, try queryer",
+				},
 			}}},
 	}
 
@@ -568,9 +558,13 @@ func TestSupportedFieldTypes(t *testing.T) {
 		}}}}}, expected: nil},
 		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
 			{Fields: input2, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
-		}}}}}, expected: []error{&ValidationError{Message: "field userId has an unsupported type Invalid",
-			ShortMessage: "Invalid isn't supported",
-			Hint:         "Did you mean one of Boolean, Date, Enum, ID, Identity, Image, Text, Timestamp?",
+		}}}}}, expected: []error{&ValidationError{
+			Code: "E009",
+			ErrorDetails: ErrorDetails{
+				Message:      "field userId has an unsupported type Invalid",
+				ShortMessage: "Invalid isn't supported",
+				Hint:         "Did you mean one of Boolean, Date, Enum, ID, Identity, Image, Text, Timestamp?",
+			},
 		}}},
 	}
 
@@ -653,7 +647,14 @@ func TestModelsBeGloballyUnique(t *testing.T) {
 	}}))
 
 	expected := []error{
-		&ValidationError{Message: "you have duplicate Models Model:Book Pos:0:0", ShortMessage: "Book is duplicated", Hint: "Remove Book"},
+		&ValidationError{
+			Code: "E010",
+			ErrorDetails: ErrorDetails{
+				Message:      "You have duplicate Models Model:Book",
+				ShortMessage: "Book is duplicated",
+				Hint:         "Remove Book",
+			},
+		},
 	}
 
 	assert.Equal(t, expected, err)

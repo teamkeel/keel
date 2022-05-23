@@ -1,0 +1,16 @@
+{
+  "Errors": [
+      {
+          "code": "E011",
+          "hint": "Did you mean @permission?",
+          "message": "model 'Person' has an unrecognised attribute @whatisthis",
+          "pos": {
+              "column": 3,
+              "filename": "testdata/validation_model_unsupported_attribute/schema.keel",
+              "line": 2,
+              "offset": 17
+          },
+          "short_message": "Unrecognised attribute @whatisthis"
+      }
+  ]
+}

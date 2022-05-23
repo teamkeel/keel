@@ -1,16 +1,45 @@
 package validation
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
+	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"gopkg.in/yaml.v3"
 )
 
+// error codes
+const (
+	ErrorUpperCamel                   = "E001"
+	ErrorFieldsOpsFuncsLowerCamel     = "E002"
+	ErrorFieldNamesUniqueInModel      = "E003"
+	ErrorOperationsUniqueGlobally     = "E004"
+	ErrorInputsNotFields              = "E005"
+	ErrorReservedFieldName            = "E006"
+	ErrorReservedModelName            = "E007"
+	ErrorOperationInputFieldNotUnique = "E008"
+	ErrorUnsupportedFieldType         = "E009"
+	ErrorUniqueModelsGlobally         = "E010"
+	ErrorUnsupportedAttributeType     = "E011"
+)
+
+type ErrorDetails struct {
+	Message      string `json:"message" yaml:"message" omitempty"`
+	ShortMessage string `json:"short_message, yaml:"short_message" omitempty"`
+	Hint         string `json:"hint" yaml:"hint" omitempty"`
+}
+
+type TemplateLiterals struct {
+	Literals map[string]string
+}
+
 type ValidationError struct {
-	Message      string   `json:"message,omitempty"`
-	ShortMessage string   `json:"short_message,omitempty"`
-	Hint         string   `json:"hint,omitempty"`
-	Pos          LexerPos `json:"pos,omitempty"`
+	ErrorDetails
+
+	Code string   `json:"code" regexp:"\\d+"`
+	Pos  LexerPos `json:"pos,omitempty"`
 }
 
 type LexerPos struct {
@@ -36,16 +65,67 @@ func (v ValidationErrors) Error() string {
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func validationError(message, shortMessage, hint string, Pos lexer.Position) error {
+func validationError(code string, data TemplateLiterals, Pos lexer.Position) error {
 	return &ValidationError{
-		Message:      message,
-		ShortMessage: shortMessage,
-		Hint:         hint,
+		Code: code,
+		// todo global locale setting
+		ErrorDetails: *buildErrorDetailsFromYaml(code, "en", data),
 		Pos: LexerPos{
 			Filename: Pos.Filename,
 			Offset:   Pos.Offset,
 			Line:     Pos.Line,
 			Column:   Pos.Column,
 		},
+	}
+}
+
+//go:embed errors.yml
+var fileBytes []byte
+
+// Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
+func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) *ErrorDetails {
+	m := make(map[string]map[string]interface{})
+
+	err := yaml.Unmarshal(fileBytes, &m)
+
+	if err != nil {
+		panic(err)
+	}
+
+	slice := m[locale][code]
+
+	sliceYaml, err := yaml.Marshal(slice)
+
+	if err != nil {
+		panic(err)
+	}
+
+	template, err := template.New(code).Parse(string(sliceYaml))
+
+	if err != nil {
+		panic(err)
+	}
+
+	var buf bytes.Buffer
+	err = template.Execute(&buf, literals.Literals)
+
+	if err != nil {
+		panic(err)
+	}
+
+	interpolatedBytes := buf.Bytes()
+
+	o := make(map[string]string)
+
+	err = yaml.Unmarshal(interpolatedBytes, &o)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return &ErrorDetails{
+		Message:      o["message"],
+		ShortMessage: o["short_message"],
+		Hint:         o["hint"],
 	}
 }
