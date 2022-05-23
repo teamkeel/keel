@@ -8,6 +8,7 @@ import (
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
 )
 
@@ -353,6 +354,7 @@ func noReservedModelNames(inputs []Input) []error {
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
 func operationUniqueFieldInput(inputs []Input) []error {
 	var errors []error
+	var fields []*parser.ModelField
 
 	for _, input := range inputs {
 		schema := input.ParsedSchema
@@ -363,42 +365,47 @@ func operationUniqueFieldInput(inputs []Input) []error {
 			}
 
 			for _, section := range dec.Model.Sections {
-				if len(section.Functions) == 0 {
+				fields = append(fields, section.Fields...)
+			}
+		}
+	}
+
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, dec := range schema.Declarations {
+			if dec.Model == nil {
+				continue
+			}
+
+			for _, section := range dec.Model.Sections {
+				if len(section.Operations) == 0 {
 					continue
 				}
+				nonFieldAttrs := make(map[string]bool, 0)
+				for _, function := range section.Operations {
+					nonFieldAttrs[function.Name] = false
 
-				for _, function := range section.Functions {
 					if function.Type != parser.ActionTypeGet {
 						continue
 					}
 
-					if len(function.Arguments) != 1 {
-						errors = append(errors, validationError(
-							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
-							fmt.Sprintf("%s requires a unique field", function.Name),
-							"Are you using a unique field?",
-							function.Pos))
-					}
-
-					arg := function.Arguments[0]
 					isValid := false
 
-					for _, section2 := range dec.Model.Sections {
-						if len(section2.Fields) == 0 {
+					for _, field := range fields {
+						if len(function.Arguments) != 1 && len(function.Attributes) > 0 {
+							validAttrs := checkAttributeExpressions(function.Attributes, dec.Model.Name, field)
+							if validAttrs {
+								nonFieldAttrs[function.Name] = true
+								isValid = true
+							}
+						}
+
+						if !nonFieldAttrs[function.Name] && len(function.Arguments) != 1 {
 							continue
 						}
-						for _, field := range section2.Fields {
-							if field.Name != arg.Name {
-								continue
-							}
-							for _, attr := range field.Attributes {
-								if attr.Name == "unique" {
-									isValid = true
-								}
-								if attr.Name == "primaryKey" {
-									isValid = true
-								}
-							}
+
+						if !nonFieldAttrs[function.Name] {
+							isValid = checkFuncArgsUnique(function, fields)
 						}
 					}
 
@@ -409,14 +416,81 @@ func operationUniqueFieldInput(inputs []Input) []error {
 							"Are you sure you are using a unique field?",
 							function.Pos))
 					}
-
 				}
 			}
-
 		}
 	}
 
 	return errors
+}
+
+func checkAttributeExpressions(input []*parser.Attribute, model string, field *parser.ModelField) bool {
+	var isValid bool
+
+	for _, attr := range input {
+		for _, attrArg := range attr.Arguments {
+			if len(field.Attributes) == 0 {
+				continue
+			}
+			for _, at := range field.Attributes {
+				if at.Name != "unique" {
+					continue
+				}
+				ok := expressions.IsAssignment(attrArg.Expression)
+				if !ok {
+					continue
+				}
+				if len(attrArg.Expression.Or) == 0 {
+					continue
+				}
+
+				condition, err := expressions.ToAssignmentCondition(attrArg.Expression)
+				if err != nil {
+					continue
+				}
+
+				lhsOk := checkAssignmentFields(condition.LHS, model, field)
+				if lhsOk {
+					isValid = true
+				}
+				rhsOk := checkAssignmentFields(condition.RHS, model, field)
+				if rhsOk {
+					isValid = true
+				}
+			}
+		}
+	}
+
+	return isValid
+}
+
+func checkAssignmentFields(indents *expressions.Value, model string, field *parser.ModelField) bool {
+	if indents.Ident[0] != strings.ToLower(model) {
+		return false
+	}
+	return indents.Ident[1] == field.Name
+}
+
+func checkFuncArgsUnique(function *parser.ModelAction, fields []*parser.ModelField) bool {
+	isValid := false
+	arg := function.Arguments[0]
+
+	for _, field := range fields {
+		if field.Name != arg.Name {
+			continue
+		}
+
+		for _, attr := range field.Attributes {
+			if attr.Name == "unique" {
+				isValid = true
+			}
+			if attr.Name == "primaryKey" {
+				isValid = true
+			}
+		}
+	}
+
+	return isValid
 }
 
 //Supported field types
@@ -467,57 +541,36 @@ func supportedFieldTypes(inputs []Input) []error {
 	return errors
 }
 
+func findModels(inputs []Input) []*parser.Model {
+	models := []*parser.Model{}
+	for _, input := range inputs {
+		for _, decl := range input.ParsedSchema.Declarations {
+			if decl.Model != nil {
+				models = append(models, decl.Model)
+			}
+		}
+	}
+	return models
+}
+
 //Models are globally unique
 func modelsGloballyUnique(inputs []Input) []error {
 	var errors []error
-	var modelNames []string
+	seenModelNames := map[string]bool{}
 
-	globalOperations := uniqueModelsGlobally(inputs)
-
-	for _, name := range globalOperations {
-		modelNames = append(modelNames, name.Model)
-	}
-	duplicates := findDuplicates(modelNames)
-
-	if len(duplicates) == 0 {
-		return nil
-	}
-
-	var duplicateModels []GlobalOperations
-	for _, model := range globalOperations {
-		for _, duplicate := range duplicates {
-			if model.Model == duplicate {
-				duplicateModels = append(duplicateModels, model)
-			}
+	for _, model := range findModels(inputs) {
+		if _, ok := seenModelNames[model.Name]; ok {
+			errors = append(errors, validationError(
+				fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", model.Name, model.Pos),
+				fmt.Sprintf("%s is duplicated", model.Name),
+				fmt.Sprintf("Remove %s", model.Name),
+				model.Pos))
+			continue
 		}
-	}
-
-	for _, nameError := range duplicateModels {
-		errors = append(errors, validationError(
-			fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", nameError.Model, nameError.Pos),
-			fmt.Sprintf("%s is duplicated", nameError.Model),
-			fmt.Sprintf("Remove %s", nameError.Model),
-			nameError.Pos))
+		seenModelNames[model.Name] = true
 	}
 
 	return errors
-}
-
-func uniqueModelsGlobally(inputs []Input) []GlobalOperations {
-	var globalOperations []GlobalOperations
-	for _, input := range inputs {
-		schema := input.ParsedSchema
-		for _, declaration := range schema.Declarations {
-			if declaration.Model == nil {
-				continue
-			}
-
-			globalOperations = append(globalOperations, GlobalOperations{
-				Model: declaration.Model.Name,
-			})
-		}
-	}
-	return globalOperations
 }
 
 func supportedAttributeTypes(inputs []Input) []error {

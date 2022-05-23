@@ -1,0 +1,21 @@
+model InvalidProfile {
+    fields {
+        identity InvalidIdentity {
+            @unique
+        }
+        username Text {
+            @unique
+        }
+    }
+
+    operations {
+        create invalidCreateProfile(username) {
+            @set(invalidprofile.identity = ctx.identity)
+        }
+        get invalidMyProfile() {
+            @where(invalidprofile.identity = ctx.identity)
+        }
+        get invalidProfile(id)
+    }
+}
+

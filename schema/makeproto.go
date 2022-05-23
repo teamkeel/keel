@@ -23,7 +23,8 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 				protoRole := scm.makeRole(decl)
 				protoSchema.Roles = append(protoSchema.Roles, protoRole)
 			case decl.API != nil:
-				// todo API not yet supported in proto
+				protoAPI := scm.makeAPI(decl)
+				protoSchema.Apis = append(protoSchema.Apis, protoAPI)
 			default:
 				panic("Case not recognized")
 			}
@@ -41,13 +42,16 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 		switch {
 
 		case section.Fields != nil:
-			protoModel.Fields = scm.makeFields(section.Fields, protoModel.Name)
+			fields := scm.makeFields(section.Fields, protoModel.Name)
+			protoModel.Fields = append(protoModel.Fields, fields...)
 
 		case section.Functions != nil:
-			protoModel.Operations = scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			ops := scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Operations != nil:
-			protoModel.Operations = scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
+			ops := scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Attribute != nil:
 			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
@@ -58,7 +62,6 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 
 	return protoModel
 }
-
 
 func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 	parserRole := decl.Role
@@ -74,6 +77,28 @@ func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 		}
 	}
 	return protoRole
+}
+
+func (scm *Schema) makeAPI(decl *parser.Declaration) *proto.Api {
+	parserAPI := decl.API
+	protoAPI := &proto.Api{
+		Name: parserAPI.Name,
+		ApiModels: []*proto.ApiModel{},
+	}
+	for _, section := range parserAPI.Sections {
+		switch {
+		case section.Attribute != nil:
+			protoAPI.Type = scm.mapToAPIType(section.Attribute.Name)
+		case len(section.Models) > 0:
+			for _, parserApiModel := range section.Models {
+				protoModel := &proto.ApiModel{
+					ModelName: parserApiModel.ModelName,
+				}
+				protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
+			}
+		}
+	}
+	return protoAPI
 }
 
 func (scm *Schema) makeFields(parserFields []*parser.ModelField, modelName string) []*proto.Field {
@@ -242,3 +267,15 @@ func (scm *Schema) mapToOperationType(parsedOperation string) proto.OperationTyp
 func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
 }
+
+func (scm *Schema) mapToAPIType(parserAPIType string) proto.ApiType {
+	switch parserAPIType {
+	case parser.APITypeGraphQL:
+		return proto.ApiType_API_TYPE_GRAPHQL
+	case parser.APITypeRPC:
+		return proto.ApiType_API_TYPE_RPC
+	default:
+		return proto.ApiType_API_TYPE_UNKNOWN
+	}
+}
+

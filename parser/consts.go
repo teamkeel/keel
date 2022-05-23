@@ -48,3 +48,8 @@ const (
 	AttributeGraphQL    = "graphql"
 	AttributePrimaryKey = "primaryKey"
 )
+
+const (
+	APITypeGraphQL = "graphql"
+	APITypeRPC     = "rpc"
+)
