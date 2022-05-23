@@ -123,7 +123,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if strcase.ToLowerCamel(field.Name) != field.Name {
 						errors = append(
 							errors,
-							validationError(ErrorFieldsOpsFuncsLowerCamel,
+							validationError(ErrorFieldNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
 										"Name":      field.Name,

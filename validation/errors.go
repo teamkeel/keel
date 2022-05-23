@@ -23,6 +23,7 @@ const (
 	ErrorUnsupportedFieldType         = "E009"
 	ErrorUniqueModelsGlobally         = "E010"
 	ErrorUnsupportedAttributeType     = "E011"
+	ErrorFieldNameLowerCamel          = "E012"
 )
 
 type ErrorDetails struct {

@@ -43,3 +43,7 @@ en:
     short_message: "Unrecognised attribute {{ .Name }}"
     message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute {{ .Name }}"
     hint: "Did you mean {{ .Suggestions }}?"
+  E012:
+    short_message: "{{ .Name }} isn't lower camel"
+    message: "You have a field name that is not lowerCamel {{ .Name }}"
+    hint: "{{ .Suggested }}"
