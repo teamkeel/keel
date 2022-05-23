@@ -1,0 +1,49 @@
+{
+  "models":  [
+    {
+      "name":  "Foo",
+      "fields":  [
+        {
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ]
+    },
+    {
+      "name":  "Bar",
+      "fields":  [
+        {
+          "modelName":  "Bar",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ]
+    }
+  ],
+  "apis":  [
+    {
+      "name":  "ApiOne",
+      "type":  "API_TYPE_GRAPHQL",
+      "apiModels":  [
+        {
+          "modelName":  "Foo"
+        },
+        {
+          "modelName":  "Bar"
+        }
+      ]
+    },
+    {
+      "name":  "ApiTwo",
+      "type":  "API_TYPE_GRAPHQL",
+      "apiModels":  [
+        {
+          "modelName":  "Foo"
+        }
+      ]
+    }
+  ]
+}

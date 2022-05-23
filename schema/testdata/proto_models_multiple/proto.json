@@ -1,0 +1,26 @@
+{
+  "models":  [
+    {
+      "name":  "Model1",
+      "fields":  [
+        {
+          "modelName":  "Model1",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ]
+    },
+    {
+      "name":  "Model2",
+      "fields":  [
+        {
+          "modelName":  "Model2",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ]
+    }
+  ]
+}

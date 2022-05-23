@@ -1,0 +1,49 @@
+{
+  "models":  [
+    {
+      "name":  "Foo",
+      "fields":  [
+        {
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ],
+      "operations":  [
+        {
+          "modelName":  "Foo",
+          "name":  "opA",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "opB",
+          "type":  "OPERATION_TYPE_UPDATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "opC",
+          "type":  "OPERATION_TYPE_GET",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "name":  "id",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Foo",
+              "fieldName":  "id"
+            }
+          ]
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "opD",
+          "type":  "OPERATION_TYPE_LIST",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
+        }
+      ]
+    }
+  ]
+}

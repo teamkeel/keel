@@ -15,7 +15,7 @@ import (
 func TestSchema(t *testing.T) {
 	testdataDir := "./testdata"
 	testCases, err := ioutil.ReadDir(testdataDir)
-	require.NoError(t, err)
+	require.NoError(t, err)	
 
 	for _, testCase := range testCases {
 		if !testCase.IsDir() {
@@ -46,11 +46,22 @@ func TestSchema(t *testing.T) {
 			var actualJSON []byte
 
 			if expectedProto, ok := filesByName["proto.json"]; ok {
+				// todo, for this use-case, i.e. when we are checking proto generation, we do not
+				// expect errors. However if we write the fixture's schema wrong and trigger a validation
+				// error, we need to drill down into the error to find out what we did wrong. The test
+				// assertion provides just says we got validation errors and no details, so for the
+				// time being, please retain this block to use as a debug break point.
+				if err != nil {
+					a := 1
+					_ = a
+				}
+	
 				require.NoError(t, err)
 
 				expectedJSON = expectedProto
 				actualJSON, err = protojson.Marshal(protoSchema)
 				require.NoError(t, err)
+
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
 				require.NotNil(t, err)
 

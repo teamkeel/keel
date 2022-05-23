@@ -1,0 +1,14 @@
+model Foo {
+  fields {
+    f1 Boolean
+  }
+  operations {
+    list opA() {
+      @permission(
+          expression: foo.f1 == bool,
+          role: Admin
+      )
+      @where(True = False)
+    }
+  }
+}

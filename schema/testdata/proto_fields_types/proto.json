@@ -1,0 +1,50 @@
+{
+  "models":  [
+    {
+      "name":  "Foo",
+      "fields":  [
+        {
+          "modelName":  "Foo",
+          "name":  "a",
+          "type":  "FIELD_TYPE_IDENTITY"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "b",
+          "type":  "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "c",
+          "type":  "FIELD_TYPE_DATE"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "d",
+          "type":  "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "e",
+          "type":  "FIELD_TYPE_BOOL"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "f",
+          "type":  "FIELD_TYPE_IMAGE"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "g",
+          "type":  "FIELD_TYPE_ENUM"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ]
+    }
+  ]
+}

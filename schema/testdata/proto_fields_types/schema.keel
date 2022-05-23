@@ -1,0 +1,13 @@
+model Foo {
+    fields {
+        a Identity
+        b Text
+        c Date
+        d Timestamp
+        e Boolean
+        f Image
+        g Enum
+    }
+}
+
+

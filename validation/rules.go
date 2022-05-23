@@ -42,7 +42,7 @@ func (v *Validator) RunAllValidators() error {
 		fieldsOpsFuncsLowerCamel,
 		fieldNamesMustBeUniqueInAModel,
 		operationsUniqueGlobally,
-		operationInputs,
+		operationFunctionInputs,
 		noReservedFieldNames,
 		noReservedModelNames,
 		operationUniqueFieldInput,
@@ -207,9 +207,9 @@ func uniqueOperationsGlobally(inputs []Input) []GlobalOperations {
 				continue
 			}
 			for _, sec := range declaration.Model.Sections {
-				for _, functionNames := range sec.Operations {
+				for _, operation := range sec.Operations {
 					globalOperations = append(globalOperations, GlobalOperations{
-						Name: functionNames.Name, Model: declaration.Model.Name, Pos: functionNames.Pos,
+						Name: operation.Name, Model: declaration.Model.Name, Pos: operation.Pos,
 					})
 				}
 			}
@@ -236,10 +236,10 @@ func operationsUniqueGlobally(inputs []Input) []error {
 
 	var duplicationOperations []GlobalOperations
 
-	for _, function := range globalOperations {
+	for _, operation := range globalOperations {
 		for _, duplicate := range duplicates {
-			if function.Name == duplicate {
-				duplicationOperations = append(duplicationOperations, function)
+			if operation.Name == duplicate {
+				duplicationOperations = append(duplicationOperations, operation)
 			}
 		}
 	}
@@ -263,16 +263,17 @@ func operationsUniqueGlobally(inputs []Input) []error {
 	return errors
 }
 
-type operationInputFields struct {
+type operationFunctionInputFields struct {
 	Fields []*parser.ActionArg
 	Pos    lexer.Position
 }
 
-//Inputs of ops must be model fields
-func operationInputs(inputs []Input) []error {
+//Inputs of operations/functions must be model fields
+func operationFunctionInputs(inputs []Input) []error {
 	var errors []error
 
-	functionFields := make(map[string]*operationInputFields, 0)
+	operationFields := make(map[string]*operationFunctionInputFields, 0)
+	functionFields := make(map[string]*operationFunctionInputFields, 0)
 
 	for _, input := range inputs {
 		schema := input.ParsedSchema
@@ -281,12 +282,35 @@ func operationInputs(inputs []Input) []error {
 			if declaration.Model == nil {
 				continue
 			}
-			for _, section := range declaration.Model.Sections {
-				for _, function := range section.Operations {
+			for _, modelSection := range declaration.Model.Sections {
+				for _, operation := range modelSection.Operations {
+					if len(operation.Arguments) == 0 {
+						continue
+					}
+					operationFields[operation.Name] = &operationFunctionInputFields{
+						Fields: operation.Arguments,
+						Pos:    operation.Pos,
+					}
+				}
+			}
+
+		}
+
+		operationFields = findInvalidOpsFunctionInputs(inputs, operationFields)
+	}
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+
+		for _, declaration := range schema.Declarations {
+			if declaration.Model == nil {
+				continue
+			}
+			for _, modelSection := range declaration.Model.Sections {
+				for _, function := range modelSection.Functions {
 					if len(function.Arguments) == 0 {
 						continue
 					}
-					functionFields[function.Name] = &operationInputFields{
+					functionFields[function.Name] = &operationFunctionInputFields{
 						Fields: function.Arguments,
 						Pos:    function.Pos,
 					}
@@ -295,43 +319,11 @@ func operationInputs(inputs []Input) []error {
 
 		}
 
-		for _, input := range schema.Declarations {
-			if input.Model == nil {
-				continue
-			}
-			for _, modelName := range input.Model.Sections {
-				for _, fields := range modelName.Fields {
-					for functionName, functionField := range functionFields {
-						for _, functionFieldName := range functionField.Fields {
-							if functionFieldName.Name == fields.Name {
-								delete(functionFields, functionName)
-							}
-						}
-					}
-				}
-			}
-		}
+		functionFields = findInvalidOpsFunctionInputs(inputs, functionFields)
 	}
 
-	if len(functionFields) > 0 {
-		for k, v := range functionFields {
-			for _, field := range v.Fields {
-				errors = append(
-					errors,
-					validationError(ErrorInputsNotFields,
-						TemplateLiterals{
-							Literals: map[string]string{
-								"Model": k,
-								"Field": field.Name,
-								"Line":  fmt.Sprint(field.Pos.Line),
-							},
-						},
-						field.Pos,
-					),
-				)
-			}
-		}
-	}
+	errors = append(errors, buildErrorInvalidInputs(operationFields)...)
+	errors = append(errors, buildErrorInvalidInputs(functionFields)...)
 
 	return errors
 }
@@ -346,8 +338,8 @@ func noReservedFieldNames(inputs []Input) []error {
 				if dec.Model == nil {
 					continue
 				}
-				for _, section := range dec.Model.Sections {
-					for _, field := range section.Fields {
+				for _, modelSection := range dec.Model.Sections {
+					for _, field := range modelSection.Fields {
 						if field.BuiltIn {
 							continue
 						}
@@ -437,30 +429,30 @@ func operationUniqueFieldInput(inputs []Input) []error {
 					continue
 				}
 				nonFieldAttrs := make(map[string]bool, 0)
-				for _, function := range section.Operations {
-					nonFieldAttrs[function.Name] = false
+				for _, operation := range section.Operations {
+					nonFieldAttrs[operation.Name] = false
 
-					if function.Type != parser.ActionTypeGet {
+					if operation.Type != parser.ActionTypeGet {
 						continue
 					}
 
 					isValid := false
 
 					for _, field := range fields {
-						if len(function.Arguments) != 1 && len(function.Attributes) > 0 {
-							validAttrs := checkAttributeExpressions(function.Attributes, dec.Model.Name, field)
+						if len(operation.Arguments) != 1 && len(operation.Attributes) > 0 {
+							validAttrs := checkAttributeExpressions(operation.Attributes, dec.Model.Name, field)
 							if validAttrs {
-								nonFieldAttrs[function.Name] = true
+								nonFieldAttrs[operation.Name] = true
 								isValid = true
 							}
 						}
 
-						if !nonFieldAttrs[function.Name] && len(function.Arguments) != 1 {
+						if !nonFieldAttrs[operation.Name] && len(operation.Arguments) != 1 {
 							continue
 						}
 
-						if !nonFieldAttrs[function.Name] {
-							isValid = checkFuncArgsUnique(function, fields)
+						if !nonFieldAttrs[operation.Name] {
+							isValid = checkFuncArgsUnique(operation, fields)
 						}
 					}
 
@@ -470,10 +462,10 @@ func operationUniqueFieldInput(inputs []Input) []error {
 							validationError(ErrorOperationInputFieldNotUnique,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name": function.Name,
+										"Name": operation.Name,
 									},
 								},
-								function.Pos,
+								operation.Pos,
 							),
 						)
 					}
@@ -777,4 +769,51 @@ func contains(slice []string, item string) bool {
 	}
 
 	return false
+}
+
+func buildErrorInvalidInputs(fields map[string]*operationFunctionInputFields) []error {
+	var errors []error
+	if len(fields) > 0 {
+		for functionName, functionInput := range fields {
+			for _, field := range functionInput.Fields {
+				errors = append(
+					errors,
+					validationError(ErrorInputsNotFields,
+						TemplateLiterals{
+							Literals: map[string]string{
+								"Model": functionName,
+								"Field": field.Name,
+								"Line":  fmt.Sprint(field.Pos.Line),
+							},
+						},
+						field.Pos,
+					),
+				)
+			}
+		}
+	}
+	return errors
+}
+
+func findInvalidOpsFunctionInputs(inputs []Input, operationInput map[string]*operationFunctionInputFields) map[string]*operationFunctionInputFields {
+	for _, input := range inputs {
+		schema := input.ParsedSchema
+		for _, input := range schema.Declarations {
+			if input.Model == nil {
+				continue
+			}
+			for _, modelName := range input.Model.Sections {
+				for _, field := range modelName.Fields {
+					for operationName, operationField := range operationInput {
+						for _, operationFieldName := range operationField.Fields {
+							if operationFieldName.Name == field.Name {
+								delete(operationInput, operationName)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return operationInput
 }

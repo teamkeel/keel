@@ -1,0 +1,43 @@
+{
+  "models":  [
+    {
+      "name":  "Foo",
+      "fields":  [
+        {
+          "modelName":  "Foo",
+          "name":  "f1",
+          "type":  "FIELD_TYPE_BOOL"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ],
+      "operations":  [
+        {
+          "modelName":  "Foo",
+          "name":  "opA",
+          "type":  "OPERATION_TYPE_LIST",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "permissions":  [
+            {
+              "modelName":  "Foo",
+              "operationName":  "opA",
+              "roleName":  "Admin",
+              "expression":  {
+                "source":  "foo.f1 == bool"
+              }
+            }
+          ],
+          "whereExpressions":  [
+            {
+              "source":  "True = False"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
