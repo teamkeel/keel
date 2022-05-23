@@ -50,7 +50,7 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Operations != nil:
-			ops := scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			ops := scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
 			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Attribute != nil:
@@ -177,7 +177,7 @@ func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName s
 		operationInput := proto.OperationInput{
 			Name:      parserArg.Name,
 			Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
-			ModelName: wrapperspb.String(parserArg.Name),
+			ModelName: wrapperspb.String(modelName),
 			FieldName: wrapperspb.String(parserArg.Name),
 		}
 		operationInputs = append(operationInputs, &operationInput)

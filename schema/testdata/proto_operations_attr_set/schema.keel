@@ -1,0 +1,11 @@
+model Foo {
+  fields {
+    f1 Boolean
+    f2 Text
+  }
+  operations {
+    create createPost(f2) {
+      @set(foo.f1 = true)
+    }
+  }
+}

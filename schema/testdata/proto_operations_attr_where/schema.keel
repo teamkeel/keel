@@ -1,0 +1,13 @@
+model Foo {
+    fields {
+        f1 Boolean {
+            @unique
+        }
+    }
+
+    operations {
+        get operationA() {
+            @where(foo.f1 = True)
+        }
+    }
+}

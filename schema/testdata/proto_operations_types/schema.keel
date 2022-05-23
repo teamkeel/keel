@@ -1,0 +1,8 @@
+model Foo {
+    operations {
+        create opA()
+        update opB()
+        get opC(id)
+        list opD()
+    }
+}

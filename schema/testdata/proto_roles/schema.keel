@@ -1,0 +1,14 @@
+role Admin {
+    domains {
+        "domain1.com"
+        "domain2.zyz"
+    }
+
+    emails {
+        "person1@bbc.com"
+        "person2@keel.xyz"
+    }
+}
+
+role Other {
+}
