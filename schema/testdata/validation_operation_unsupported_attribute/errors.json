@@ -1,0 +1,16 @@
+{
+  "Errors": [
+      {
+          "code": "E011",
+          "hint": "Did you mean @set, @where, @permission?",
+          "message": "operation 'createProfile' has an unrecognised attribute @save",
+          "pos": {
+              "column": 13,
+              "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",
+              "line": 13,
+              "offset": 218
+          },
+          "short_message": "Unrecognised attribute @save"
+      }
+  ]
+}
