@@ -1,11 +1,12 @@
 {
     "Errors": [
         {
+            "code": "E010",
             "hint": "Remove Person",
-            "message": "you have duplicate Models Model:Person Pos:testdata/unique_model_names/schema.keel:5:7",
+            "message": "You have duplicate Models Model:Person",
             "pos": {
                 "column": 7,
-                "filename": "testdata/unique_model_names/schema.keel",
+                "filename": "testdata/validation_unique_model_names/schema.keel",
                 "line": 5,
                 "offset": 25
             },
