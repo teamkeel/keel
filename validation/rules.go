@@ -83,15 +83,18 @@ func modelsUpperCamel(inputs []Input) []error {
 			reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
 			if reg.FindString(decl.Model.Name) != decl.Model.Name {
-				message := strcase.ToCamel(strings.ToLower(decl.Model.Name))
-				hint := NewHint(message)
+				suggested := strcase.ToCamel(strings.ToLower(decl.Model.Name))
 
 				errors = append(
 					errors,
 					validationError(
-						fmt.Sprintf("you have a model name that is not UpperCamel %s", decl.Model.Name),
-						fmt.Sprintf("%s is not UpperCamel", decl.Model.Name),
-						hint.ToString(),
+						ErrorUpperCamel,
+						TemplateLiterals{
+							Literals: map[string]string{
+								"Model":     decl.Model.Name,
+								"Suggested": suggested,
+							},
+						},
 						decl.Model.Pos,
 					),
 				)
@@ -118,20 +121,32 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 						continue
 					}
 					if strcase.ToLowerCamel(field.Name) != field.Name {
-						errors = append(errors, validationError(fmt.Sprintf("you have a field name that is not lowerCamel %s", field.Name),
-							fmt.Sprintf("%s isn't lower camel", field.Name),
-							strcase.ToLowerCamel(strings.ToLower(field.Name)),
-							field.Pos))
-
+						errors = append(
+							errors,
+							validationError(ErrorFieldsOpsFuncsLowerCamel,
+								TemplateLiterals{
+									Literals: map[string]string{
+										"Name": field.Name,
+									},
+								},
+								field.Pos,
+							),
+						)
 					}
 				}
 				for _, function := range model.Operations {
 					if strcase.ToLowerCamel(function.Name) != function.Name {
-						errors = append(errors, validationError(fmt.Sprintf("you have a function name that is not lowerCamel %s", function.Name),
-							fmt.Sprintf("%s isn't lower camel", function.Name),
-							strcase.ToLowerCamel(strings.ToLower(function.Name)),
-							function.Pos))
-
+						errors = append(
+							errors,
+							validationError(ErrorFieldsOpsFuncsLowerCamel,
+								TemplateLiterals{
+									Literals: map[string]string{
+										"Name": function.Name,
+									},
+								},
+								function.Pos,
+							),
+						)
 					}
 				}
 			}
@@ -154,12 +169,18 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 				fieldNames := map[string]bool{}
 				for _, name := range sections.Fields {
 					if _, ok := fieldNames[name.Name]; ok {
-						errors = append(errors, validationError(
-							fmt.Sprintf("you have duplicate field names %s", name.Name),
-							fmt.Sprintf("%s is duplicated", name.Name),
-							fmt.Sprintf(`Remove '%s' on line %v`, name.Name, name.Pos.Line),
-							name.Pos))
-
+						errors = append(
+							errors,
+							validationError(ErrorFieldNamesUniqueInModel,
+								TemplateLiterals{
+									Literals: map[string]string{
+										"Name": name.Name,
+										"Line": fmt.Sprint(name.Pos.Line),
+									},
+								},
+								name.Pos,
+							),
+						)
 					}
 					fieldNames[name.Name] = true
 				}
@@ -222,12 +243,19 @@ func operationsUniqueGlobally(inputs []Input) []error {
 	}
 
 	for _, nameError := range duplicationOperations {
-		errors = append(errors, validationError(
-			fmt.Sprintf("you have duplicate operations Model:%s Name:%s", nameError.Model, nameError.Name),
-			fmt.Sprintf("%s is duplicated", nameError.Name),
-			fmt.Sprintf(`Remove '%s' on line %v`, nameError.Name, nameError.Pos.Line),
-			nameError.Pos))
-
+		errors = append(
+			errors,
+			validationError(ErrorOperationsUniqueGlobally,
+				TemplateLiterals{
+					Literals: map[string]string{
+						"Model": nameError.Model,
+						"Name":  nameError.Name,
+						"Line":  fmt.Sprint(nameError.Pos.Line),
+					},
+				},
+				nameError.Pos,
+			),
+		)
 	}
 
 	return errors
@@ -286,14 +314,20 @@ func operationInputs(inputs []Input) []error {
 	if len(functionFields) > 0 {
 		for k, v := range functionFields {
 			for _, field := range v.Fields {
-				message := fmt.Sprintf("model:%s, field:%v", k, field.Name)
-				errors = append(errors, validationError(fmt.Sprintf("you are using inputs that are not fields %s", message),
-					fmt.Sprintf("Replace %s", field.Name),
-					fmt.Sprintf("Check inputs for %s", k),
-					field.Pos,
-				))
+				errors = append(
+					errors,
+					validationError(ErrorInputsNotFields,
+						TemplateLiterals{
+							Literals: map[string]string{
+								"Model": k,
+								"Field": field.Name,
+								"Line":  fmt.Sprint(field.Pos.Line),
+							},
+						},
+						field.Pos,
+					),
+				)
 			}
-
 		}
 	}
 
@@ -315,11 +349,20 @@ func noReservedFieldNames(inputs []Input) []error {
 						if field.BuiltIn {
 							continue
 						}
+
 						if strings.EqualFold(name, field.Name) {
-							errors = append(errors, validationError(fmt.Sprintf("you have a reserved field name %s", field.Name),
-								fmt.Sprintf("cannot use %s", field.Name),
-								fmt.Sprintf("You cannot use %s as field name, it is reserved, try %ser", field.Name, field.Name),
-								field.Pos))
+							errors = append(
+								errors,
+								validationError(ErrorReservedFieldName,
+									TemplateLiterals{
+										Literals: map[string]string{
+											"Name":       field.Name,
+											"Suggestion": fmt.Sprintf("%ser", field.Name),
+										},
+									},
+									field.Pos,
+								),
+							)
 						}
 					}
 				}
@@ -341,11 +384,18 @@ func noReservedModelNames(inputs []Input) []error {
 					continue
 				}
 				if strings.EqualFold(name, dec.Model.Name) {
-					errors = append(errors, validationError(fmt.Sprintf("you have a reserved model name %s", dec.Model.Name),
-						fmt.Sprintf("%s is reserved", dec.Model.Name),
-						fmt.Sprintf("You cannot use %s as a model name, it is reserved, try %ser", dec.Model.Name, dec.Model.Name),
-						dec.Model.Pos))
-
+					errors = append(
+						errors,
+						validationError(ErrorReservedFieldName,
+							TemplateLiterals{
+								Literals: map[string]string{
+									"Name":       dec.Model.Name,
+									"Suggestion": fmt.Sprintf("%ser", dec.Model.Name),
+								},
+							},
+							dec.Model.Pos,
+						),
+					)
 				}
 			}
 		}
@@ -413,11 +463,17 @@ func operationUniqueFieldInput(inputs []Input) []error {
 					}
 
 					if !isValid {
-						errors = append(errors, validationError(
-							fmt.Sprintf("operation %s must take a unique field as an input", function.Name),
-							fmt.Sprintf("%s requires a unique field", function.Name),
-							"Are you sure you are using a unique field?",
-							function.Pos))
+						errors = append(
+							errors,
+							validationError(ErrorOperationInputFieldNotUnique,
+								TemplateLiterals{
+									Literals: map[string]string{
+										"Name": function.Name,
+									},
+								},
+								function.Pos,
+							),
+						)
 					}
 				}
 			}
@@ -528,15 +584,21 @@ func supportedFieldTypes(inputs []Input) []error {
 							}
 						}
 
+						// todo feed hint suggestions into validation error somehow.
 						sort.Strings(availableTypes)
 
-						hint := NewCorrectionHint(availableTypes, field.Type)
-
-						errors = append(errors, validationError(
-							fmt.Sprintf("field %s has an unsupported type %s", field.Name, field.Type),
-							fmt.Sprintf("%s isn't supported", field.Type),
-							hint.ToString(),
-							field.Pos))
+						errors = append(
+							errors,
+							validationError(ErrorUnsupportedFieldType,
+								TemplateLiterals{
+									Literals: map[string]string{
+										"Name": field.Name,
+										"Type": field.Type,
+									},
+								},
+								field.Pos,
+							),
+						)
 					}
 				}
 			}
@@ -565,11 +627,18 @@ func modelsGloballyUnique(inputs []Input) []error {
 
 	for _, model := range findModels(inputs) {
 		if _, ok := seenModelNames[model.Name]; ok {
-			errors = append(errors, validationError(
-				fmt.Sprintf("you have duplicate Models Model:%s Pos:%s", model.Name, model.Pos),
-				fmt.Sprintf("%s is duplicated", model.Name),
-				fmt.Sprintf("Remove %s", model.Name),
-				model.Pos))
+			errors = append(
+				errors,
+				validationError(ErrorUniqueModelsGlobally,
+					TemplateLiterals{
+						Literals: map[string]string{
+							"Name": model.Name,
+						},
+					},
+					model.Pos,
+				),
+			)
+
 			continue
 		}
 		seenModelNames[model.Name] = true
@@ -656,14 +725,19 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 				hintOptions[i] = fmt.Sprintf("@%s", hint)
 			}
 
-			hint := NewCorrectionHint(hintOptions, attr.Name)
+			// hint := NewCorrectionHint(hintOptions, attr.Name)
+			// todo hint options
 
 			errors = append(
 				errors,
-				validationError(
-					fmt.Sprintf("%s '%s' has an unrecognised attribute @%s", definedOn, parentName, attr.Name),
-					fmt.Sprintf("Unrecognised attribute @%s", attr.Name),
-					hint.ToString(),
+				validationError(ErrorUniqueModelsGlobally,
+					TemplateLiterals{
+						Literals: map[string]string{
+							"Name":       attr.Name,
+							"ParentName": parentName,
+							"DefinedOn":  definedOn,
+						},
+					},
 					attr.Pos,
 				),
 			)
