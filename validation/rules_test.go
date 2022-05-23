@@ -355,7 +355,7 @@ func TestInputsModelFields(t *testing.T) {
 		input    *parser.Schema
 		expected []error
 	}{
-		"passing": {input: &parser.Schema{Declarations: []*parser.Declaration{
+		"passingOperation": {input: &parser.Schema{Declarations: []*parser.Declaration{
 			{
 				Model: &parser.Model{
 					Sections: []*parser.ModelSection{
@@ -382,6 +382,42 @@ func TestInputsModelFields(t *testing.T) {
 								},
 							},
 							Operations: []*parser.ModelAction{
+								{
+									Name: "author",
+									Arguments: []*parser.ActionArg{
+										{Name: "id"},
+									},
+								},
+							},
+						},
+					}}}}}, expected: nil},
+		"passingFunction": {input: &parser.Schema{Declarations: []*parser.Declaration{
+			{
+				Model: &parser.Model{
+					Sections: []*parser.ModelSection{
+
+						{
+							Fields: []*parser.ModelField{
+								{
+									Name: "id",
+								},
+							},
+							Operations: []*parser.ModelAction{
+								{
+									Name: "createBook",
+									Arguments: []*parser.ActionArg{
+										{Name: "id"},
+									},
+								},
+							},
+						},
+						{
+							Fields: []*parser.ModelField{
+								{
+									Name: "id",
+								},
+							},
+							Functions: []*parser.ModelAction{
 								{
 									Name: "author",
 									Arguments: []*parser.ActionArg{
@@ -430,7 +466,7 @@ func TestInputsModelFields(t *testing.T) {
 		}}}
 
 	for name, tc := range tests {
-		got := operationInputs(asInputs(tc.input))
+		got := operationFunctionInputs(asInputs(tc.input))
 
 		if !assert.Equal(t, tc.expected, got) {
 			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
