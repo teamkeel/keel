@@ -2,9 +2,8 @@ package validation
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
@@ -80,32 +79,14 @@ func validationError(code string, data TemplateLiterals, Pos lexer.Position) err
 	}
 }
 
-type Locale struct {
-	Name string `yaml:""`
-}
-
-type YamlFile struct {
-	Locale Locale `yaml:"en"`
-}
+//go:embed errors.yml
+var fileBytes []byte
 
 // Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
 func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) *ErrorDetails {
-
-	openFile, err := os.Open("./errors.yml")
-
-	if err != nil {
-		panic(err)
-	}
-
-	byteValue, err := ioutil.ReadAll(openFile)
-
-	if err != nil {
-		panic(err)
-	}
-
 	m := make(map[string]map[string]interface{})
 
-	err = yaml.Unmarshal(byteValue, &m)
+	err := yaml.Unmarshal(fileBytes, &m)
 
 	if err != nil {
 		panic(err)
