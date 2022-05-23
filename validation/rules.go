@@ -388,7 +388,7 @@ func noReservedModelNames(inputs []Input) []error {
 				if strings.EqualFold(name, dec.Model.Name) {
 					errors = append(
 						errors,
-						validationError(ErrorReservedFieldName,
+						validationError(ErrorReservedModelName,
 							TemplateLiterals{
 								Literals: map[string]string{
 									"Name":       dec.Model.Name,
@@ -589,13 +589,18 @@ func supportedFieldTypes(inputs []Input) []error {
 						// todo feed hint suggestions into validation error somehow.
 						sort.Strings(availableTypes)
 
+						hint := NewCorrectionHint(availableTypes, field.Type)
+
+						suggestions := strings.Join(hint.Results, ", ")
+
 						errors = append(
 							errors,
 							validationError(ErrorUnsupportedFieldType,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name": field.Name,
-										"Type": field.Type,
+										"Name":        field.Name,
+										"Type":        field.Type,
+										"Suggestions": suggestions,
 									},
 								},
 								field.Pos,

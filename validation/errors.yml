@@ -19,6 +19,26 @@ en:
     short_message: "Replace {{ .Field }}"
     message: "You are using inputs that are not fields model:{{ .Model }}, field:{{ .Field }}"
     hint: "Check inputs for {{ .Model }}"
+  E006:
+    short_message: "cannot use {{ .Name }}"
+    message: "You have a reserved field name {{ .Name }}"
+    hint: "You cannot use {{ .Name }} as field name, it is reserved, try {{ .Suggestion }}"
+  E007:
+    short_message: "{{ .Name }} is reserved"
+    message: "You have a reserved model name {{ .Name }}"
+    hint: "You cannot use {{ .Name }} as a model name, it is reserved, try {{ .Suggestion }}"
+  E008:
+    short_message: ""
+    message: ""
+    hint: ""
+  E009:
+    short_message: "{{ .Type }} isn't supported"
+    message: "field {{ .Name }} has an unsupported type {{ .Type }}"
+    hint: "Did you mean one of {{ .Suggestions }}?"
+  E010:
+    short_message: "{{ .Name }} is duplicated"
+    message: "You have duplicate Models Model:{{ .Name }}"
+    hint: "Remove {{ .Name }}"
   E011:
     short_message: "Unrecognised attribute {{ .Name }}"
     message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute {{ .Name }}"
