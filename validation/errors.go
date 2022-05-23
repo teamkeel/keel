@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
@@ -91,13 +90,8 @@ type YamlFile struct {
 
 // Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
 func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) *ErrorDetails {
-	wd, err := os.Getwd()
 
-	if err != nil {
-		panic(err)
-	}
-
-	openFile, err := os.Open(path.Join(wd, "errors.yml"))
+	openFile, err := os.Open("./errors.yml")
 
 	if err != nil {
 		panic(err)
