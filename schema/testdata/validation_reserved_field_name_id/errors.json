@@ -2,15 +2,15 @@
   "Errors": [
       {
           "code": "E006",
-          "hint": "You cannot use id as field name, it is reserved, try IDer",
-          "message": "You have a reserved field name ID",
+          "hint": "You cannot use id as field name, it is reserved, try ider",
+          "message": "You have a reserved field name id",
           "pos": {
               "column": 9,
               "filename": "testdata/validation_reserved_field_name_id/schema.keel",
               "line": 3,
               "offset": 36
           },
-          "short_message": "cannot use ID"
+          "short_message": "cannot use id"
       }
   ]
 }

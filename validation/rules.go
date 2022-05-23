@@ -38,12 +38,12 @@ func NewValidator(inputs []Input) *Validator {
 
 func (v *Validator) RunAllValidators() error {
 	validatorFuncs := []func([]Input) []error{
+		noReservedFieldNames,
 		modelsUpperCamel,
 		fieldsOpsFuncsLowerCamel,
 		fieldNamesMustBeUniqueInAModel,
 		operationsUniqueGlobally,
 		operationFunctionInputs,
-		noReservedFieldNames,
 		noReservedModelNames,
 		operationUniqueFieldInput,
 		supportedFieldTypes,
