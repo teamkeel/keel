@@ -1,0 +1,8 @@
+model Person {
+
+  operations {
+    create createPerson(blah) {
+      @set(profile.identity = ctx.identity)
+    }
+  }
+}

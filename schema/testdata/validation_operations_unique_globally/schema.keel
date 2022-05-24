@@ -1,0 +1,15 @@
+model Profile {
+  fields {
+    username Text
+  }
+
+  operations {
+    create createProfile(username) {
+        @set(profile.identity = ctx.identity)
+    }
+
+    create createProfile(username) {
+        @set(profile.identity = ctx.identity)
+    } 
+  }
+}

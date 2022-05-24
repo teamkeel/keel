@@ -1,0 +1,26 @@
+name: Conventional commits
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    name: Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install semantic release changelog plugin
+        run: npm install @semantic-release/changelog -D
+
+      - name: Install semantic release git plugin
+        run: npm install @semantic-release/git -D
+
+      - name: Semantic release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release@18

@@ -38,25 +38,25 @@ func NewValidator(inputs []Input) *Validator {
 
 func (v *Validator) RunAllValidators() error {
 	validatorFuncs := []func([]Input) []error{
+		noReservedFieldNames,
+		noReservedModelNames,
 		modelsUpperCamel,
 		fieldsOpsFuncsLowerCamel,
 		fieldNamesMustBeUniqueInAModel,
 		operationsUniqueGlobally,
 		operationFunctionInputs,
-		noReservedFieldNames,
-		noReservedModelNames,
 		operationUniqueFieldInput,
 		supportedFieldTypes,
 		supportedAttributeTypes,
 		modelsGloballyUnique,
 	}
 	var errors []*ValidationError
+
 	for _, vf := range validatorFuncs {
 		err := vf(v.inputs)
 
 		for _, e := range err {
 			if verrs, ok := e.(*ValidationError); ok {
-
 				errors = append(errors, verrs)
 			}
 		}
@@ -123,7 +123,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if strcase.ToLowerCamel(field.Name) != field.Name {
 						errors = append(
 							errors,
-							validationError(ErrorFieldsOpsFuncsLowerCamel,
+							validationError(ErrorFieldNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
 										"Name":      field.Name,
@@ -135,11 +135,28 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 						)
 					}
 				}
-				for _, function := range model.Operations {
+				for _, operation := range model.Operations {
+					if strcase.ToLowerCamel(operation.Name) != operation.Name {
+						errors = append(
+							errors,
+							validationError(ErrorOperationNameLowerCamel,
+								TemplateLiterals{
+									Literals: map[string]string{
+										"Name":      operation.Name,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(operation.Name)),
+									},
+								},
+								operation.Pos,
+							),
+						)
+					}
+				}
+
+				for _, function := range model.Functions {
 					if strcase.ToLowerCamel(function.Name) != function.Name {
 						errors = append(
 							errors,
-							validationError(ErrorFieldsOpsFuncsLowerCamel,
+							validationError(ErrorFunctionNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
 										"Name":      function.Name,
@@ -244,20 +261,30 @@ func operationsUniqueGlobally(inputs []Input) []error {
 		}
 	}
 
+	seenOperations := map[string]bool{}
+
 	for _, nameError := range duplicationOperations {
-		errors = append(
-			errors,
-			validationError(ErrorOperationsUniqueGlobally,
-				TemplateLiterals{
-					Literals: map[string]string{
-						"Model": nameError.Model,
-						"Name":  nameError.Name,
-						"Line":  fmt.Sprint(nameError.Pos.Line),
+		key := fmt.Sprintf("%s-%s", nameError.Model, nameError.Name)
+
+		if _, ok := seenOperations[key]; ok {
+			errors = append(
+				errors,
+				validationError(ErrorOperationsUniqueGlobally,
+					TemplateLiterals{
+						Literals: map[string]string{
+							"Model": nameError.Model,
+							"Name":  nameError.Name,
+							"Line":  fmt.Sprint(nameError.Pos.Line),
+						},
 					},
-				},
-				nameError.Pos,
-			),
-		)
+					nameError.Pos,
+				),
+			)
+
+			break
+		}
+
+		seenOperations[key] = true
 	}
 
 	return errors
@@ -367,9 +394,10 @@ func noReservedFieldNames(inputs []Input) []error {
 	return errors
 }
 
-//No reserved model name (query)
+// Check for reserved model names
 func noReservedModelNames(inputs []Input) []error {
 	var errors []error
+
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 		for _, name := range ReservedModels {
@@ -377,6 +405,7 @@ func noReservedModelNames(inputs []Input) []error {
 				if dec.Model == nil {
 					continue
 				}
+
 				if strings.EqualFold(name, dec.Model.Name) {
 					errors = append(
 						errors,
@@ -725,7 +754,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 			}
 
 			hint := NewCorrectionHint(hintOptions, attr.Name)
-			suggestions := strings.Join(hint.Results, ",")
+			suggestions := strings.Join(hint.Results, ", ")
 
 			errors = append(
 				errors,
