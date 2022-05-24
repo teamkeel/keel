@@ -1,3 +1,11 @@
+## [0.2.1](https://github.com/teamkeel/keel/compare/v0.2.0...v0.2.1) (2022-05-24)
+
+
+### Bug Fixes
+
+* cleanup semantic release versions ([289bb7c](https://github.com/teamkeel/keel/commit/289bb7c4866fe20f83c5177da796248c81b94a8e))
+* reapply gitignore after node_module change ([b612d5f](https://github.com/teamkeel/keel/commit/b612d5f3345bc63ff719e2ecab2b271fbba4be78))
+
 # [0.2.0](https://github.com/teamkeel/keel/compare/v0.1.0...v0.2.0) (2022-05-24)
 
 
