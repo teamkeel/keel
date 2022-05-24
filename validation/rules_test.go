@@ -8,54 +8,6 @@ import (
 	"github.com/teamkeel/keel/parser"
 )
 
-//Models are UpperCamel
-func TestModelsAreUpperCamel(t *testing.T) {
-	tests := map[string]struct {
-		input    *parser.Schema
-		expected []error
-	}{
-		"simple": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "Book"}}}},
-			expected: nil},
-		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BookAuthorLibrary"}}}},
-			expected: nil},
-		"allLower": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "bookauthor"}}}},
-			expected: []error{&ValidationError{
-				Code: "E001",
-				ErrorDetails: ErrorDetails{
-					Message:      "You have a model name that is not UpperCamel bookauthor",
-					ShortMessage: "bookauthor is not UpperCamel",
-					Hint:         "Bookauthor",
-				},
-			},
-			}},
-		"allUpper": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "BOOKAUTHOR"}}}},
-			expected: []error{&ValidationError{
-				Code: "E001",
-				ErrorDetails: ErrorDetails{
-					Message:      "You have a model name that is not UpperCamel BOOKAUTHOR",
-					ShortMessage: "BOOKAUTHOR is not UpperCamel",
-					Hint:         "Bookauthor",
-				},
-			}}},
-		"underscore": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Name: "book_author"}}}},
-			expected: []error{&ValidationError{
-				Code: "E001",
-				ErrorDetails: ErrorDetails{
-					Message:      "You have a model name that is not UpperCamel book_author",
-					ShortMessage: "book_author is not UpperCamel",
-					Hint:         "BookAuthor",
-				},
-			}}},
-	}
-
-	for name, tc := range tests {
-		got := modelsUpperCamel(asInputs(tc.input))
-		if !assert.Equal(t, tc.expected, got) {
-			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
-		}
-	}
-}
-
 //Fields/operations/functions are lowerCamel
 func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 	tests := map[string]struct {
