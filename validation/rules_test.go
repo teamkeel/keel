@@ -3,7 +3,6 @@ package validation
 import (
 	"testing"
 
-	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/parser"
@@ -213,38 +212,6 @@ func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	if !assert.Equal(t, expected, got) {
 		t.Fatalf("%s: expected: %v, got: %v", "name", expected, got)
 	}
-}
-
-func TestHintCorrection(t *testing.T) {
-	apiAttribute := parser.Attribute{Name: "graphq", Pos: lexer.Position{Line: 23, Column: 1}}
-
-	err := supportedAttributeTypes(asInputs(&parser.Schema{
-		Declarations: []*parser.Declaration{
-			{
-				API: &parser.API{
-					Name: "Web",
-					Sections: []*parser.APISection{
-						{
-							Attribute: &apiAttribute,
-						},
-					},
-				},
-			},
-		},
-	}))
-
-	expected := []error{
-		&ValidationError{
-			Code: "E011",
-			ErrorDetails: ErrorDetails{
-				Message:      "api 'Web' has an unrecognised attribute @graphq",
-				ShortMessage: "Unrecognised attribute @graphq",
-				Hint:         "Did you mean @graphql?",
-			},
-			Pos: LexerPos{Line: 23, Column: 1},
-		}}
-
-	assert.Equal(t, err, expected)
 }
 
 //Inputs of ops must be model fields
