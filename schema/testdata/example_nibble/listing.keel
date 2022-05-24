@@ -1,0 +1,47 @@
+model Listing {
+	fields {
+		Brand Brand
+		Name Text
+		Details Text
+		Terms Text
+		MaxSpend Currency
+		StartDate DateTime
+		EndDate DateTime
+		Status ListingStatus
+		Fee Currency
+		BookingOffset Number
+		Days Text
+		RequiresPhone Boolean
+		MinFollowers Number
+		MaxFollowers Number
+		Locations BrandLocation[]
+		TimeSlots TimeSlot[]      
+	}
+
+	operations {
+		list brandListings(brandId) {
+			@where(ctx.brandId == brand.id)
+		}
+	}
+
+	functions {
+		list activeListings()
+	}
+
+	@permission(
+		expression: listing.Status == ListingStatus.Active,
+		actions: [get, list]
+	)
+
+	@permission(
+		expression: listing.brand.accounts.identity contains ctx.identity,
+		actions: [get, list, update, create]
+	)
+}
+
+type ListingStatus {
+	"Active"
+	"Scheduled"
+	"Expired"
+	"Draft"
+}

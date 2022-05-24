@@ -1,0 +1,36 @@
+model Creator {
+	fields {
+		Accounts []Account
+		FbPageID Text {
+			@unique
+		} 
+		FbName Text
+		PhoneNumber Phone
+		Instagram InstagramAccount
+	}
+
+	@permission(
+		expression: true,
+		actions: [get]
+	)
+
+	@permission(
+		expression: creator.accounts.identity contains ctx.identity,
+		actions: [update]
+	)
+}
+
+model InstagramAccount {
+	fields {
+		Name Text
+		Username Text
+		Biography Text
+		ProfilePictureURL Text
+		MediaCount Number
+		FollowersCount Number
+		FollowsCount Number
+		Reach28Day Number
+		Impressions28Day Number
+		Engagement28Day Number
+	}
+}

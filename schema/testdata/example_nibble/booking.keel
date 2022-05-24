@@ -1,0 +1,66 @@
+model Booking {
+	fields {
+		ListingID Text
+		LocationID Text
+		CreatorID Text
+		Status BookingStatus
+		AdditionalInfo Text
+		RejectionMessage Text
+		ResponseToken Text
+		ConfirmedTimeslotID Text
+		CancellationReason Text
+		Listing Listing
+		Location BrandLocation
+		Creator Creator
+		SuggestedTimeSlots []BookingTimeSlot
+		ConfirmedTimeslot BookingTimeSlot
+	}
+
+	operations {
+		create createBooking(CreatorID, ListingID, LocationID, SuggestedTimeSlots) {
+			@set(
+				booking.ListingID = ctx.ListingID,
+				booking.LocationID = ctx.LocationID,
+				booking.CreatorID = ctx.CreatorID,
+				booking.SuggestedTimeSlots = ctx.SuggestedTimeSlots,
+				booking.BookingStatus = BookingStatus.Pending, 
+				booking.ResponseToken = "bktkn_" + ksuid()
+			)
+		}
+		get getBooking(id)
+		list listBookings(creatorID) {
+			@where(booking.CreatorID = ctx.creatorID)
+		}
+		update cancelBooking(id, CancellationReason) {
+			@set(
+				booking.BookingStatus = BookingStatus.Cancelled,
+				booking.CancellationReason = ctx.CancellationReason,
+			)
+		}
+	}
+
+	functions {
+		update bookingApproval() 
+	}
+
+	@permission(
+		expression: booking.creator.account.identity contains ctx.identity || booking.brand.account.identity contains ctx.identity,
+		actions: *
+	)
+}
+
+type BookingStatus {
+	"Pending"
+	"Confirmed"
+	"Cancelled"
+	"Expired"
+}
+
+model BookingTimeSlot {
+	fields {
+		Booking Booking
+		Date DateTime
+		Title Text
+		Description Text
+	}
+}

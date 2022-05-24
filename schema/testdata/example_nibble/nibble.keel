@@ -1,0 +1,21 @@
+role Admin {
+    domains {
+        "wenibble.com"
+    }
+}
+
+api Web {
+    @graphql
+
+	functions {
+		Authenticate
+	}
+
+    models {
+        Account
+		Listing
+		Location
+		Booking
+		Creator
+    }
+}

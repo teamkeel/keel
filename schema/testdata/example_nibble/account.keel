@@ -1,0 +1,40 @@
+model Account {
+	fields {
+		identity Identity {
+            @unique
+        }
+		FirstName Text
+		LastName Text
+		Email Email
+		FbID Text {
+			@unique
+		}
+		Type AccountType
+		Status AccountStatus
+		FbAccessToken Text
+		FbAccessTokenExpiry DateTime
+		Creators Creator[] 
+		Brands Brand[]
+	}
+
+	operations {
+		get myAccount() {
+			@where(profile.identity = ctx.identity)
+		}
+	}
+
+	@permission(
+        expression: ctx.identity == identity,
+        actions: [*]
+    )
+}
+
+type AccountType {
+	"Admin"
+	"User"
+}
+
+type AccountStatus {
+	"Active"
+	"Pending"
+}

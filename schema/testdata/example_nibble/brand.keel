@@ -1,0 +1,88 @@
+model Brand {
+	fields {
+		Name Text
+		Email Email
+		URL Text
+		Logo Text
+		InstagramHandle Text
+		FacebookPage Text
+		Twitter Text
+		Status Text
+		FbPageID Text
+		FbPageAccessToken Text
+		InstagramID Text
+		Accounts Account[]
+		Instagram InstagramAccount
+		Locations BrandLocation[]
+		TimeSlots TimeSlot[]
+		Contacts Text[]
+		Categories Text[]
+	}
+
+	operations {
+		get getBrand(id)
+		update updateBrand(email, contacts, categories) {
+			@set(
+				brand.email = ctx.email,
+				brand.contacts = ctx.contacts,
+				brand.categories = ctx.categories
+			)
+		}
+	}
+
+	@permission(
+		expression: true,
+		actions: [get, list]
+	)
+
+	@permission(
+		expression: brand.accounts.identity contains ctx.identity,
+		actions: [update]
+	)
+}
+
+model BrandLocation {
+	fields {
+		Name Text
+		Location LatLng
+		PlacesID Text
+		Email Email
+		Phone Phone
+		Address Text
+		UTCOffset Number
+		Images Image
+		Listings Listing[] 
+		OpeningHours OpeningHours[]
+		ExcludedHours ExcludedHours[]
+		Images Image[]
+	}
+}
+
+model OpeningHours {
+	fields {
+		DayOfWeek Text
+		OpenTime Text
+		CloseTime Text
+		OpenHour Number
+		OpenMinute Number
+		CloseHour Number
+		CloseMinute Number
+	}
+}
+model ExcludedHours {
+	fields {
+		DayOfWeek Text
+		StartHour Number
+		StartMinute Number
+		EndHour Number
+		EndMinute Number
+	}
+}
+
+model TimeSlot {
+	fields {
+		StartTime Number
+		Title Text
+		Description Text
+	}
+}
