@@ -1,0 +1,16 @@
+  {
+    "Errors": [
+      {
+        "code": "E004",
+        "hint": "Remove 'createProfile' on line 3",
+        "message": "You have duplicate operations Model:Profile Name:createProfile",
+        "pos": {
+          "column": 5,
+          "filename": "testdata/validation_operations_unique_globally/schema.keel",
+          "line": 3,
+          "offset": 35
+        },
+        "short_message": "createProfile is duplicated"
+      }
+    ]
+  }
