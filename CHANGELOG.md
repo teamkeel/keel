@@ -1,3 +1,10 @@
+## [0.2.4](https://github.com/teamkeel/keel/compare/v0.2.3...v0.2.4) (2022-05-24)
+
+
+### Bug Fixes
+
+* adds npm plugin to sem release ([5f4029d](https://github.com/teamkeel/keel/commit/5f4029da697fdae3267e835dcd4c3b2148a7df88))
+
 ## [0.2.3](https://github.com/teamkeel/keel/compare/v0.2.2...v0.2.3) (2022-05-24)
 
 
