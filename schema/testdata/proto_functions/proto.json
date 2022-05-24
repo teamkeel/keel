@@ -15,13 +15,7 @@
           "modelName": "Foo",
           "name": "operationA",
           "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO"
-        },
-        {
-          "modelName": "Foo",
-          "name": "operationB",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO"
+          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM"
         }
       ]
     }
