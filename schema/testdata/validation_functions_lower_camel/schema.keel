@@ -1,0 +1,14 @@
+model Profile {
+  fields {
+      identity Identity {
+          @unique
+      }
+      username Text {
+          @unique
+      }
+  }
+
+  functions {
+    create CREATE_PROFILE(username)
+  }
+}
