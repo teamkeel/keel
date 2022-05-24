@@ -1,3 +1,10 @@
+## [0.2.3](https://github.com/teamkeel/keel/compare/v0.2.2...v0.2.3) (2022-05-24)
+
+
+### Bug Fixes
+
+* use github access token for checkout to avoid protected branch issue ([88e258a](https://github.com/teamkeel/keel/commit/88e258a4a1b9798d2763b398ee17b1d94e429c16))
+
 ## [0.2.2](https://github.com/teamkeel/keel/compare/v0.2.1...v0.2.2) (2022-05-24)
 
 
