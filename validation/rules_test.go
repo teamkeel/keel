@@ -121,58 +121,6 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 
 }
 
-//Operations/functions must be globally unique
-func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
-	input := asInputs(&parser.Schema{Declarations: []*parser.Declaration{
-		{
-			Model: &parser.Model{
-				Name: "book",
-				Sections: []*parser.ModelSection{
-					{
-						Operations: []*parser.ModelAction{
-							{
-								Name: "createbook",
-							},
-							{
-								Name: "dave",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Model: &parser.Model{
-				Name: "book",
-				Sections: []*parser.ModelSection{
-					{
-						Operations: []*parser.ModelAction{
-							{
-								Name: "createbook",
-							},
-							{
-								Name: "dave1",
-							},
-						},
-					},
-				},
-			},
-		},
-	}})
-
-	expected := []GlobalOperations{
-		{Name: "createbook", Model: "book"},
-		{Name: "dave", Model: "book"},
-		{Name: "createbook", Model: "book"},
-		{Name: "dave1", Model: "book"},
-	}
-
-	got := uniqueOperationsGlobally(input)
-	if !assert.Equal(t, expected, got) {
-		t.Fatalf("%s: expected: %v, got: %v", "name", expected, got)
-	}
-}
-
 //Inputs of ops must be model fields
 func TestInputsModelFields(t *testing.T) {
 	tests := map[string]struct {
@@ -334,59 +282,6 @@ func asInputs(oneSchema *parser.Schema) []Input {
 		ParsedSchema: oneSchema,
 	}
 	return []Input{oneInput}
-}
-
-//Models must be globally unique
-func TestModelsBeGloballyUnique(t *testing.T) {
-	err := modelsGloballyUnique(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
-		{
-			Model: &parser.Model{
-				Name: "Book",
-				Sections: []*parser.ModelSection{
-					{
-						Operations: []*parser.ModelAction{
-							{
-								Name: "createbook",
-							},
-							{
-								Name: "dave",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Model: &parser.Model{
-				Name: "Book",
-				Sections: []*parser.ModelSection{
-					{
-						Operations: []*parser.ModelAction{
-							{
-								Name: "createbook",
-							},
-							{
-								Name: "dave1",
-							},
-						},
-					},
-				},
-			},
-		},
-	}}))
-
-	expected := []error{
-		&ValidationError{
-			Code: "E010",
-			ErrorDetails: ErrorDetails{
-				Message:      "You have duplicate Models Model:Book",
-				ShortMessage: "Book is duplicated",
-				Hint:         "Remove Book",
-			},
-		},
-	}
-
-	assert.Equal(t, expected, err)
 }
 
 func TestCheckAttributeExpressions(t *testing.T) {
