@@ -1,0 +1,16 @@
+{
+  "Errors": [
+    {
+      "code": "E002",
+      "hint": "createProfile",
+      "message": "You have a function name that is not lowerCamel CREATE_PROFILE",
+      "pos": {
+        "column": 5,
+        "filename": "testdata/validation_functions_lower_camel/schema.keel",
+        "line": 12,
+        "offset": 150
+      },
+      "short_message": "CREATE_PROFILE isn't lower camel"
+    }
+  ]
+}
