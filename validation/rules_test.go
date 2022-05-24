@@ -446,42 +446,6 @@ func TestReservedModelNames(t *testing.T) {
 	}
 }
 
-//Supported field types
-func TestSupportedFieldTypes(t *testing.T) {
-
-	input1 := []*parser.ModelField{
-		{Name: "userId", Type: "Text"},
-	}
-	input2 := []*parser.ModelField{
-		{Name: "userId", Type: "Invalid"},
-	}
-	tests := map[string]struct {
-		input    *parser.Schema
-		expected []error
-	}{
-		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input1, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
-		}}}}}, expected: nil},
-		"invalid": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input2, Operations: []*parser.ModelAction{{Name: "createBook", Type: parser.ActionTypeGet, Arguments: []*parser.ActionArg{{Name: "userId"}}}}},
-		}}}}}, expected: []error{&ValidationError{
-			Code: "E009",
-			ErrorDetails: ErrorDetails{
-				Message:      "field userId has an unsupported type Invalid",
-				ShortMessage: "Invalid isn't supported",
-				Hint:         "Did you mean one of Boolean, Date, Enum, ID, Identity, Image, Text, Timestamp?",
-			},
-		}}},
-	}
-
-	for name, tc := range tests {
-		got := supportedFieldTypes(asInputs(tc.input))
-		if !assert.Equal(t, tc.expected, got) {
-			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
-		}
-	}
-}
-
 // test findDuplicates
 func TestFindDuplicates(t *testing.T) {
 	input1 := []string{"a", "b", "b"}
