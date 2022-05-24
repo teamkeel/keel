@@ -14,8 +14,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Conventional Changelog Action
-        uses: TriPSs/conventional-changelog-action@v3
-        with:
-          github-token: ${{ secrets.gh_token }}
-          skip-git-pull: "true"
+      - name: Semantic release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx semantic-release@18
