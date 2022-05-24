@@ -1,18 +1,18 @@
 {
-  "roles":  [
+  "roles": [
     {
-      "name":  "Admin",
-      "domains":  [
+      "name": "Admin",
+      "domains": [
         "domain1.com",
         "domain2.zyz"
       ],
-      "emails":  [
+      "emails": [
         "person1@bbc.com",
         "person2@keel.xyz"
       ]
     },
     {
-      "name":  "Other"
+      "name": "Other"
     }
   ]
 }

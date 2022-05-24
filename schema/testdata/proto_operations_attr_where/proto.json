@@ -1,30 +1,30 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "f1",
-          "type":  "FIELD_TYPE_BOOL",
-          "unique":  true
+          "modelName": "Foo",
+          "name": "f1",
+          "type": "FIELD_TYPE_BOOL",
+          "unique": true
         },
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "modelName": "Foo",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "unique": true
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Foo",
-          "name":  "operationA",
-          "type":  "OPERATION_TYPE_GET",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "whereExpressions":  [
+          "modelName": "Foo",
+          "name": "operationA",
+          "type": "OPERATION_TYPE_GET",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
             {
-              "source":  "foo.f1 = True"
+              "source": "foo.f1 = True"
             }
           ]
         }

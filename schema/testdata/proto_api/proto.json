@@ -1,47 +1,47 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "modelName": "Foo",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "unique": true
         }
       ]
     },
     {
-      "name":  "Bar",
-      "fields":  [
+      "name": "Bar",
+      "fields": [
         {
-          "modelName":  "Bar",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "modelName": "Bar",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "unique": true
         }
       ]
     }
   ],
-  "apis":  [
+  "apis": [
     {
-      "name":  "ApiOne",
-      "type":  "API_TYPE_GRAPHQL",
-      "apiModels":  [
+      "name": "ApiOne",
+      "type": "API_TYPE_GRAPHQL",
+      "apiModels": [
         {
-          "modelName":  "Foo"
+          "modelName": "Foo"
         },
         {
-          "modelName":  "Bar"
+          "modelName": "Bar"
         }
       ]
     },
     {
-      "name":  "ApiTwo",
-      "type":  "API_TYPE_GRAPHQL",
-      "apiModels":  [
+      "name": "ApiTwo",
+      "type": "API_TYPE_GRAPHQL",
+      "apiModels": [
         {
-          "modelName":  "Foo"
+          "modelName": "Foo"
         }
       ]
     }
