@@ -57,7 +57,6 @@ func (v *Validator) RunAllValidators() error {
 
 		for _, e := range err {
 			if verrs, ok := e.(*ValidationError); ok {
-
 				errors = append(errors, verrs)
 			}
 		}
@@ -245,20 +244,30 @@ func operationsUniqueGlobally(inputs []Input) []error {
 		}
 	}
 
+	seenOperations := map[string]bool{}
+
 	for _, nameError := range duplicationOperations {
-		errors = append(
-			errors,
-			validationError(ErrorOperationsUniqueGlobally,
-				TemplateLiterals{
-					Literals: map[string]string{
-						"Model": nameError.Model,
-						"Name":  nameError.Name,
-						"Line":  fmt.Sprint(nameError.Pos.Line),
+		key := fmt.Sprintf("%s-%s", nameError.Model, nameError.Name)
+
+		if _, ok := seenOperations[key]; ok {
+			errors = append(
+				errors,
+				validationError(ErrorOperationsUniqueGlobally,
+					TemplateLiterals{
+						Literals: map[string]string{
+							"Model": nameError.Model,
+							"Name":  nameError.Name,
+							"Line":  fmt.Sprint(nameError.Pos.Line),
+						},
 					},
-				},
-				nameError.Pos,
-			),
-		)
+					nameError.Pos,
+				),
+			)
+
+			break
+		}
+
+		seenOperations[key] = true
 	}
 
 	return errors
