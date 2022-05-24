@@ -1,11 +1,11 @@
 name: Conventional commits
 
 on:
-  pull_request:
+  push:
     branches: [ main ]
 
 jobs:
-  build:
+  release:
     name: Conventional Commits
     runs-on: ubuntu-latest
     steps:
