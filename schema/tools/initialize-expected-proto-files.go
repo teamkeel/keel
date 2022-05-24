@@ -49,17 +49,19 @@ func main() {
 		if err != nil {
 			panic(fmt.Errorf("could not marshal protobuf structure into json: %v", err))
 		}
-		
-		err = os.WriteFile(outputFile, newFileContents, 0666)
-		if err != nil {
-			panic(fmt.Errorf("could not save proto.json file: %v", err))
+
+		if len(originalContents) == 0 || filesDiffer(originalContents, newFileContents) {
+			err = os.WriteFile(outputFile, newFileContents, 0666)
+			if err != nil {
+				panic(fmt.Errorf("could not save proto.json file: %v", err))
+			}
 		}
 
 		// Update statistics
 		switch {
 		case len(originalContents) == 0:
 			stats.created++
-		case filesDiffer(originalContents, newFileContents):
+		case len(originalContents) != 0 && filesDiffer(originalContents, newFileContents):
 			stats.changed = append(stats.changed, subDir.Name())
 		default:
 			stats.unchanged++
@@ -69,9 +71,9 @@ func main() {
 }
 
 type stats struct {
-	created int
+	created   int
 	unchanged int
-	changed []string
+	changed   []string
 }
 
 func getFileContents(fileName string) []byte {
@@ -96,10 +98,8 @@ func filesDiffer(a, b []byte) bool {
 }
 
 func outputStats(stats stats) {
-	fmt.Printf("Created %d files that did not exist before\n", stats.created)
-	fmt.Printf("Overwrote %d files, of which %d changed\n",
-		stats.unchanged + len(stats.changed),
-		len(stats.changed))
+	fmt.Printf("Created %d completely new files\n", stats.created)
+	fmt.Printf("Overwrote %d files with changes\n", len(stats.changed))
 	fmt.Printf("The files that changed are...\n")
 	for _, c := range stats.changed {
 		fmt.Printf("%s\n", c)
