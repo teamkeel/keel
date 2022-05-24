@@ -5,7 +5,7 @@ mkdir -p ./schema/testdata/$1
 cd ./schema/testdata/$1
 
 touch errors.json
-touch keel.schema
+touch schema.keel
 
 cat <<EOF > errors.json
   {
