@@ -14,8 +14,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install semantic release changelog
+      - name: Install semantic release changelog plugin
         run: npm install @semantic-release/changelog -D
+
+      - name: Install semantic release git plugin
+        run: npm install @semantic-release/git -D
 
       - name: Semantic release
         env:
