@@ -1,0 +1,16 @@
+  {
+    "Errors": [
+      {
+        "code": "E009",
+        "hint": "Did you mean one of Boolean, Date, Enum, ID, Identity, Image, Post, Text, Timestamp?",
+        "message": "field something has an unsupported type Unknown",
+        "pos": {
+          "column": 5,
+          "filename": "testdata/validation_unsupported_field_type/schema.keel",
+          "line": 3,
+          "offset": 28
+        },
+        "short_message": "Unknown isn't supported"
+      }
+    ]
+  }

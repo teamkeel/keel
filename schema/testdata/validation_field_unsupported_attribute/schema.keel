@@ -1,0 +1,7 @@
+model User {
+  fields {
+    identity Identity {
+      @something
+    }
+  }
+}

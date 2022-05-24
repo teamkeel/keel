@@ -1,0 +1,16 @@
+  {
+    "Errors": [
+      {
+        "code": "E006",
+        "hint": "You cannot use createdAt as field name, it is reserved, try createdAter",
+        "message": "You have a reserved field name createdAt",
+        "pos": {
+          "column": 5,
+          "filename": "testdata/validation_reserved_field_name_created_at/schema.keel",
+          "line": 3,
+          "offset": 28
+        },
+        "short_message": "cannot use createdAt"
+      }
+    ]
+  }
