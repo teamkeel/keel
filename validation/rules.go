@@ -39,18 +39,19 @@ func NewValidator(inputs []Input) *Validator {
 func (v *Validator) RunAllValidators() error {
 	validatorFuncs := []func([]Input) []error{
 		noReservedFieldNames,
+		noReservedModelNames,
 		modelsUpperCamel,
 		fieldsOpsFuncsLowerCamel,
 		fieldNamesMustBeUniqueInAModel,
 		operationsUniqueGlobally,
 		operationFunctionInputs,
-		noReservedModelNames,
 		operationUniqueFieldInput,
 		supportedFieldTypes,
 		supportedAttributeTypes,
 		modelsGloballyUnique,
 	}
 	var errors []*ValidationError
+
 	for _, vf := range validatorFuncs {
 		err := vf(v.inputs)
 
@@ -367,9 +368,10 @@ func noReservedFieldNames(inputs []Input) []error {
 	return errors
 }
 
-//No reserved model name (query)
+// Check for reserved model names
 func noReservedModelNames(inputs []Input) []error {
 	var errors []error
+
 	for _, input := range inputs {
 		schema := input.ParsedSchema
 		for _, name := range ReservedModels {
@@ -377,6 +379,7 @@ func noReservedModelNames(inputs []Input) []error {
 				if dec.Model == nil {
 					continue
 				}
+
 				if strings.EqualFold(name, dec.Model.Name) {
 					errors = append(
 						errors,
