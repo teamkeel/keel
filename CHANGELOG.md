@@ -1,3 +1,10 @@
+## [0.2.2](https://github.com/teamkeel/keel/compare/v0.2.1...v0.2.2) (2022-05-24)
+
+
+### Bug Fixes
+
+* **test:** test file ([da3cff1](https://github.com/teamkeel/keel/commit/da3cff13b87bf52e2022b6459fab90f24fd3c74d))
+
 ## [0.2.1](https://github.com/teamkeel/keel/compare/v0.2.0...v0.2.1) (2022-05-24)
 
 
