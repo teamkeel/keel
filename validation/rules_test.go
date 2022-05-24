@@ -215,67 +215,6 @@ func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	}
 }
 
-//Inputs of ops must be model fields
-func TestOpsFuncsMustBeGloballyUnique(t *testing.T) {
-	err := operationsUniqueGlobally(asInputs(&parser.Schema{Declarations: []*parser.Declaration{
-		{
-			Model: &parser.Model{
-				Name: "book",
-				Sections: []*parser.ModelSection{
-					{
-						Operations: []*parser.ModelAction{
-							{
-								Name: "createbook",
-							},
-							{
-								Name: "dave",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Model: &parser.Model{
-				Name: "book",
-				Sections: []*parser.ModelSection{
-					{
-						Operations: []*parser.ModelAction{
-							{
-								Name: "createbook",
-							},
-							{
-								Name: "dave1",
-							},
-						},
-					},
-				},
-			},
-		},
-	}}))
-
-	expected := []error{
-		&ValidationError{
-			Code: "E004",
-			ErrorDetails: ErrorDetails{
-				Message:      "You have duplicate operations Model:book Name:createbook",
-				ShortMessage: "createbook is duplicated",
-				Hint:         "Remove 'createbook' on line 0",
-			},
-		},
-		&ValidationError{
-			Code: "E004",
-			ErrorDetails: ErrorDetails{
-				Message:      "You have duplicate operations Model:book Name:createbook",
-				ShortMessage: "createbook is duplicated",
-				Hint:         "Remove 'createbook' on line 0",
-			},
-		},
-	}
-
-	assert.Equal(t, expected, err)
-}
-
 func TestHintCorrection(t *testing.T) {
 	apiAttribute := parser.Attribute{Name: "graphq", Pos: lexer.Position{Line: 23, Column: 1}}
 
