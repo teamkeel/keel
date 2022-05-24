@@ -47,3 +47,17 @@ You can run a test by it's pattern like so:
 ```
 go test -timeout 30s -run ^TestSchema/test_case_name github.com/teamkeel/keel/schema
 ```
+
+## Contributing
+
+This repo is setup so that all contributors follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) conventions when writing commit messages. 
+
+__You will not be able to merge your PR without following these conventions.__
+
+### A short primer on conventional commit messages
+
+Prefix your commit messages with:
+
+- For minor version bumps: `feat: some commit message` 
+- For patches / fixes: `fix: some commit message`
+- For major bumps (note the `!`): `fix!: a major / breaking change`
