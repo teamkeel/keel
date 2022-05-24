@@ -12,7 +12,7 @@ en:
     message: "You have duplicate field names {{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E004:
-    short_message: "createbook is duplicated"
+    short_message: "{{ .Name }} is duplicated"
     message: "You have duplicate operations Model:{{ .Model }} Name:{{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E005:
