@@ -1,0 +1,16 @@
+  {
+    "Errors": [
+      {
+        "code": "E011",
+        "hint": "Did you mean @permission?",
+        "message": "function 'createProfile' has an unrecognised attribute @set",
+        "pos": {
+          "column": 7,
+          "filename": "testdata/validation_function_unsupported_attribute/schema.keel",
+          "line": 8,
+          "offset": 107
+        },
+        "short_message": "Unrecognised attribute @set"
+      }
+    ]
+  }
