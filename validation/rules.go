@@ -151,6 +151,23 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 						)
 					}
 				}
+
+				for _, function := range model.Functions {
+					if strcase.ToLowerCamel(function.Name) != function.Name {
+						errors = append(
+							errors,
+							validationError(ErrorFieldsOpsFuncsLowerCamel,
+								TemplateLiterals{
+									Literals: map[string]string{
+										"Name":      function.Name,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(function.Name)),
+									},
+								},
+								function.Pos,
+							),
+						)
+					}
+				}
 			}
 		}
 	}
