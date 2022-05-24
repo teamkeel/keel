@@ -135,18 +135,18 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 						)
 					}
 				}
-				for _, function := range model.Operations {
-					if strcase.ToLowerCamel(function.Name) != function.Name {
+				for _, operation := range model.Operations {
+					if strcase.ToLowerCamel(operation.Name) != operation.Name {
 						errors = append(
 							errors,
-							validationError(ErrorFieldsOpsFuncsLowerCamel,
+							validationError(ErrorOperationNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name":      function.Name,
-										"Suggested": strcase.ToLowerCamel(strings.ToLower(function.Name)),
+										"Name":      operation.Name,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(operation.Name)),
 									},
 								},
-								function.Pos,
+								operation.Pos,
 							),
 						)
 					}
@@ -156,7 +156,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if strcase.ToLowerCamel(function.Name) != function.Name {
 						errors = append(
 							errors,
-							validationError(ErrorFieldsOpsFuncsLowerCamel,
+							validationError(ErrorFunctionNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
 										"Name":      function.Name,

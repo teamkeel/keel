@@ -13,7 +13,7 @@ import (
 // error codes
 const (
 	ErrorUpperCamel                   = "E001"
-	ErrorFieldsOpsFuncsLowerCamel     = "E002"
+	ErrorOperationNameLowerCamel      = "E002"
 	ErrorFieldNamesUniqueInModel      = "E003"
 	ErrorOperationsUniqueGlobally     = "E004"
 	ErrorInputsNotFields              = "E005"
@@ -24,6 +24,7 @@ const (
 	ErrorUniqueModelsGlobally         = "E010"
 	ErrorUnsupportedAttributeType     = "E011"
 	ErrorFieldNameLowerCamel          = "E012"
+	ErrorFunctionNameLowerCamel       = "E013"
 )
 
 type ErrorDetails struct {

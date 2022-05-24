@@ -47,3 +47,7 @@ en:
     short_message: "{{ .Name }} isn't lower camel"
     message: "You have a field name that is not lowerCamel {{ .Name }}"
     hint: "{{ .Suggested }}"
+  E013:
+    short_message: "{{ .Name }} isn't lower camel"
+    message: "You have a function name that is not lowerCamel {{ .Name }}"
+    hint: "{{ .Suggested }}"
