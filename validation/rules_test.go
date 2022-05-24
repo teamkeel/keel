@@ -121,47 +121,6 @@ func TestFieldsOpsFuncsLowerCamel(t *testing.T) {
 
 }
 
-//Field names must be unique in a model
-func TestFieldNamesMustBeUniqueInAModel(t *testing.T) {
-	input1 := []*parser.ModelField{
-		{Name: "id", Type: "int"},
-		{Name: "name", Type: "string"},
-		{Name: "createdAt", Type: "time.Time"},
-	}
-	input2 := []*parser.ModelField{
-		{Name: "id", Type: "int"},
-		{Name: "name", Type: "string"},
-		{Name: "name", Type: "time.Time"},
-	}
-
-	tests := map[string]struct {
-		input    *parser.Schema
-		expected []error
-	}{
-		"working": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input1},
-		}}}}}, expected: nil},
-		"long": {input: &parser.Schema{Declarations: []*parser.Declaration{{Model: &parser.Model{Sections: []*parser.ModelSection{
-			{Fields: input2},
-		}}}}}, expected: []error{&ValidationError{
-			Code: "E003",
-			ErrorDetails: ErrorDetails{
-				Message:      "You have duplicate field names name",
-				ShortMessage: "name is duplicated",
-				Hint:         "Remove 'name' on line 0",
-			},
-		}}},
-	}
-
-	for name, tc := range tests {
-		got := fieldNamesMustBeUniqueInAModel(asInputs(tc.input))
-		if !assert.Equal(t, tc.expected, got) {
-			t.Fatalf("%s: expected: %v, got: %v", name, tc.expected, got)
-		}
-	}
-
-}
-
 //Operations/functions must be globally unique
 func TestFindOpsFuncsMustBeGloballyUnique(t *testing.T) {
 	input := asInputs(&parser.Schema{Declarations: []*parser.Declaration{
