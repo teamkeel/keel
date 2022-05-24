@@ -19,7 +19,8 @@ cat <<EOF > errors.json
           "filename": "testdata/$1/schema.keel",
           "line": 0,
           "offset": 0
-        }
+        },
+        "short_message": ""
       }
     ]
   }
