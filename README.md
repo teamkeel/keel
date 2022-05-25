@@ -18,6 +18,14 @@ keel-cli is a tool to build and deploy services
 
 Requires Go 1.18.x
 
+## Setting up
+
+Run:
+
+```
+sh ./scripts/setup.sh
+```
+
 ## Testing
 
 ### Generating new schema test cases
