@@ -1,3 +1,10 @@
+## [0.2.5](https://github.com/teamkeel/keel/compare/v0.2.4...v0.2.5) (2022-05-25)
+
+
+### Bug Fixes
+
+* adds npm package.json version number bump within semantic release ([fe2c0ad](https://github.com/teamkeel/keel/commit/fe2c0ad19f7eb3a2859f0301163a089c17f696b3))
+
 ## [0.2.4](https://github.com/teamkeel/keel/compare/v0.2.3...v0.2.4) (2022-05-24)
 
 
