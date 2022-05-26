@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/teamkeel/keel/inputs"
+	"github.com/teamkeel/keel/model"
 	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/validation"
@@ -41,17 +42,18 @@ func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, error) {
 	if err != nil {
 		return nil, err
 	}
-	schemaFile := inputs.SchemaFile{
+	schemaFile := model.SchemaFile{
 		FileName: filename,
 		Contents: string(fileBytes),
 	}
-	allInputFiles := &inputs.Inputs{
+	allInputFiles := &model.Inputs{
 		Directory:   "Unspecified",
-		SchemaFiles: []inputs.SchemaFile{schemaFile},
+		SchemaFiles: []model.SchemaFile{schemaFile},
 	}
 	schema, err := scm.makeFromInputs(allInputFiles)
 	if err != nil {
 		verrs, ok := err.(validation.ValidationErrors)
+
 		if ok {
 			return nil, verrs
 		} else {
@@ -62,7 +64,7 @@ func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, error) {
 	return schema, nil
 }
 
-func (scm *Schema) makeFromInputs(allInputFiles *inputs.Inputs) (*proto.Schema, error) {
+func (scm *Schema) makeFromInputs(allInputFiles *model.Inputs) (*proto.Schema, error) {
 	// - For each of the .keel (schema) files specified...
 	// 		- Parse to AST
 	// 		- Add built-in fields
@@ -123,3 +125,7 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 		model.Sections = append(model.Sections, section)
 	}
 }
+
+// func (scm Schema) PrettyPrint() {
+
+// }

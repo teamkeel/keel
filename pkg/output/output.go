@@ -32,6 +32,6 @@ func (o *Output) SetOutput(formatterType FormatterType, writer io.Writer) {
 }
 
 // Write uses the current output formatter to write out the interface provided:
-func (o *Output) Write(output interface{}) error {
+func (o *Output) Write(output []byte) error {
 	return o.formatter.Output(output)
 }

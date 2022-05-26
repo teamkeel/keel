@@ -1,7 +1,6 @@
 package console
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -18,8 +17,8 @@ func New(writer io.Writer) *Formatter {
 }
 
 // Output implements the Formatter interface:
-func (f *Formatter) Output(output interface{}) error {
-	if _, err := f.printer.Write([]byte(fmt.Sprintf("%v", output))); err != nil {
+func (f *Formatter) Output(bytes []byte) error {
+	if _, err := f.printer.Write(bytes); err != nil {
 		return err
 	}
 	return nil

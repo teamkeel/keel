@@ -4,9 +4,12 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"os"
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/teamkeel/keel/model"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,9 +31,9 @@ const (
 )
 
 type ErrorDetails struct {
-	Message      string `json:"message" yaml:"message" omitempty"`
-	ShortMessage string `json:"short_message, yaml:"short_message" omitempty"`
-	Hint         string `json:"hint" yaml:"hint" omitempty"`
+	Message      string `json:"message,omitempty" yaml:"message"`
+	ShortMessage string `json:"short_message,omitempty" yaml:"short_message"`
+	Hint         string `json:"hint,omitempty" yaml:"hint"`
 }
 
 type TemplateLiterals struct {
@@ -61,8 +64,50 @@ type ValidationErrors struct {
 	Errors []*ValidationError
 }
 
+func (v ValidationErrors) MatchingSchemas() map[string]model.SchemaFile {
+	paths := []string{}
+	schemaFiles := map[string]model.SchemaFile{}
+
+	for _, err := range v.Errors {
+		if contains(paths, err.Pos.Filename) {
+			continue
+		}
+
+		paths = append(paths, err.Pos.Filename)
+	}
+
+	for _, path := range paths {
+		fileBytes, err := os.ReadFile(path)
+
+		if err != nil {
+			panic(err)
+		}
+
+		schemaFiles[path] = model.SchemaFile{FileName: path, Contents: string(fileBytes)}
+	}
+
+	return schemaFiles
+}
+
 func (v ValidationErrors) Error() string {
+
 	return fmt.Sprintf("%d validation errors found", len(v.Errors))
+}
+
+func (v ValidationErrors) AsBytes() []byte {
+	ret := ""
+
+	matchingSchemas := v.MatchingSchemas()
+
+	for _, err := range v.Errors {
+		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
+			ret += match.Contents
+		}
+	}
+
+	return []byte(
+		ret,
+	)
 }
 
 func (e ValidationErrors) Unwrap() error { return e }

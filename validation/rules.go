@@ -63,7 +63,8 @@ func (v *Validator) RunAllValidators() error {
 	}
 
 	if len(errors) > 0 {
-		return ValidationErrors{Errors: errors}
+		errors := ValidationErrors{Errors: errors}
+		return errors
 	}
 
 	return nil

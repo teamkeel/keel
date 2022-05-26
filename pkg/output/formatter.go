@@ -1,5 +1,7 @@
 package output
 
+import "bytes"
+
 type FormatterType string
 
 const (
@@ -7,7 +9,11 @@ const (
 	FormatterConsole FormatterType = "console"
 )
 
+type Outputter interface {
+	Result() bytes.Buffer
+}
+
 // Formatter is a simple interface which takes bytes and produces formatted output:
 type Formatter interface {
-	Output(output interface{}) error
+	Output(output []byte) error
 }

@@ -21,6 +21,6 @@ func New(writer io.Writer) *Formatter {
 }
 
 // Output implements the Formatter interface:
-func (f *Formatter) Output(output interface{}) error {
+func (f *Formatter) Output(output []byte) error {
 	return f.encoder.Encode(output)
 }

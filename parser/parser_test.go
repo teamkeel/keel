@@ -5,11 +5,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/expressions"
-	"github.com/teamkeel/keel/inputs"
+	"github.com/teamkeel/keel/model"
 	"github.com/teamkeel/keel/parser"
 )
 
-func parse(t *testing.T, s *inputs.SchemaFile) *parser.Schema {
+func parse(t *testing.T, s *model.SchemaFile) *parser.Schema {
 	schema, err := parser.Parse(s)
 	if err != nil {
 		assert.Fail(t, err.Error())
@@ -19,12 +19,12 @@ func parse(t *testing.T, s *inputs.SchemaFile) *parser.Schema {
 }
 
 func TestEmptyModel(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `model Person { }`})
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `model Person { }`})
 	assert.Equal(t, "Person", schema.Declarations[0].Model.Name)
 }
 
 func TestModelWithFields(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `
 	  model Author {
 		  fields {
 			name Text
@@ -42,7 +42,7 @@ func TestModelWithFields(t *testing.T) {
 }
 
 func TestModelWithFunctions(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
 		fields {
 		  name Text
@@ -74,7 +74,7 @@ func TestModelWithFunctions(t *testing.T) {
 }
 
 func TestModelWithFieldAttributes(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `
 	model Book {
 		fields {
 		  title Text
@@ -94,7 +94,7 @@ func TestModelWithFieldAttributes(t *testing.T) {
 }
 
 func TestRole(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `
 	model Post {
 			fields {
 				title Text
@@ -126,18 +126,18 @@ func TestRole(t *testing.T) {
 }
 
 func TestModelWithPermissionAttributes(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
 		fields {
 		  name Text
 		  books Book[]
 		}
-	  
+
 		functions {
 		  create createAuthor(name)
 		  get author(id)
 		}
-	  
+
 		@permission(
 		  expression: true,
 		  actions: [get],
@@ -169,14 +169,14 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 }
 
 func TestAttributeWithNamedArguments(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `
 	model Author {
 		fields {
 		  identity Identity
 		  name Text
 		  books Book[]
 		}
-	  
+
 		functions {
 		  create createAuthor(name)
 		  get author(id)
@@ -206,7 +206,7 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 }
 
 func TestAPI(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `
 	api Web {
 		@graphql
 
@@ -224,7 +224,7 @@ func TestAPI(t *testing.T) {
 }
 
 func TestParserPos(t *testing.T) {
-	schema := parse(t, &inputs.SchemaFile{FileName: "test.keel", Contents: `model Author {
+	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `model Author {
     fields {
         name TextyTexty
     }

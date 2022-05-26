@@ -45,12 +45,13 @@ var validateCmd = &cobra.Command{
 		if err != nil {
 			errs, ok := err.(validation.ValidationErrors)
 			if ok {
-				return c.outputFormatter.Write(errs.Errors)
+				return c.outputFormatter.Write(errs.AsBytes())
 			} else {
 				return fmt.Errorf("error making schema: %v", err)
 			}
 		}
-		c.outputFormatter.Write("Validation OK")
+
+		c.outputFormatter.Write([]byte("Validation OK"))
 
 		return nil
 	},
