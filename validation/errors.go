@@ -103,9 +103,9 @@ func (v ValidationErrors) Error() string {
 
 			errorLine := err.Pos.Line
 			errorColumn := err.Pos.Column
-			// errorOffset := err.Pos.Offset
 
 			// fmt.Printf("offset is %s", fmt.Sprint(errorOffset))
+			match := false
 
 			for lineIndex, line := range lines {
 				if (lineIndex + 1) != errorLine {
@@ -118,16 +118,18 @@ func (v ValidationErrors) Error() string {
 				chars := strings.Split(line, "")
 
 				for charIdx, char := range chars {
-					if (charIdx + 1) != errorColumn {
+					if !match && (charIdx+1) != errorColumn {
 						outputLine += char
 
 						continue
 					}
 
+					match = true
 					outputLine += red.Sprint(char)
 				}
 
 				ret += fmt.Sprintf("%s\n", outputLine)
+				match = false
 			}
 		}
 	}
@@ -141,8 +143,13 @@ func (v ValidationErrors) Error() string {
 	}
 	infoMessage := red.Add(color.Underline).Sprintf("%d validation %s found:", len(v.Errors), errorsPartial)
 	schemaPreview := ret
+	errorDetail := ""
 
-	return fmt.Sprintf("%s\n\n%s", infoMessage, schemaPreview)
+	for _, err := range v.Errors {
+		errorDetail += fmt.Sprintf("• %s \n", err.Message)
+	}
+
+	return fmt.Sprintf("%s\n%s\n%s", infoMessage, errorDetail, schemaPreview)
 }
 
 func (v ValidationErrors) AsBytes() []byte {
