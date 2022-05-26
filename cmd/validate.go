@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/pkg/output"
 	"github.com/teamkeel/keel/proto"
@@ -51,7 +52,7 @@ var validateCmd = &cobra.Command{
 			}
 		}
 
-		c.outputFormatter.Write([]byte("Validation OK"))
+		c.outputFormatter.Write([]byte(color.New(color.FgGreen).Sprint("Validation OK\n")))
 
 		return nil
 	},
