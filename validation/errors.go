@@ -5,9 +5,11 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/fatih/color"
 	"github.com/teamkeel/keel/model"
 
 	"gopkg.in/yaml.v3"
@@ -90,23 +92,63 @@ func (v ValidationErrors) MatchingSchemas() map[string]model.SchemaFile {
 }
 
 func (v ValidationErrors) Error() string {
-
-	return fmt.Sprintf("%d validation errors found", len(v.Errors))
-}
-
-func (v ValidationErrors) AsBytes() []byte {
 	ret := ""
 
+	red := color.New(color.FgRed)
 	matchingSchemas := v.MatchingSchemas()
 
 	for _, err := range v.Errors {
 		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
-			ret += match.Contents
+			lines := strings.Split(match.Contents, "\n")
+
+			errorLine := err.Pos.Line
+			errorColumn := err.Pos.Column
+			// errorOffset := err.Pos.Offset
+
+			// fmt.Printf("offset is %s", fmt.Sprint(errorOffset))
+
+			for lineIndex, line := range lines {
+				if (lineIndex + 1) != errorLine {
+					ret += fmt.Sprintf("%s\n", line)
+
+					continue
+				}
+
+				outputLine := ""
+				chars := strings.Split(line, "")
+
+				for charIdx, char := range chars {
+					if (charIdx + 1) != errorColumn {
+						outputLine += char
+
+						continue
+					}
+
+					outputLine += red.Sprint(char)
+				}
+
+				ret += fmt.Sprintf("%s\n", outputLine)
+			}
 		}
 	}
 
+	errorCount := len(v.Errors)
+	errorsPartial := ""
+	if errorCount > 1 {
+		errorsPartial = "errors"
+	} else {
+		errorsPartial = "error"
+	}
+	infoMessage := red.Add(color.Underline).Sprintf("%d validation %s found:", len(v.Errors), errorsPartial)
+	schemaPreview := ret
+
+	return fmt.Sprintf("%s\n\n%s", infoMessage, schemaPreview)
+}
+
+func (v ValidationErrors) AsBytes() []byte {
+
 	return []byte(
-		ret,
+		v.Error(),
 	)
 }
 
