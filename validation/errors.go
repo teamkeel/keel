@@ -128,7 +128,6 @@ func (v ValidationErrors) Error() string {
 				}
 
 				ret += fmt.Sprintf("%s\n", outputLine)
-
 			}
 		}
 	}
