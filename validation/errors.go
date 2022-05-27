@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/model"
 
@@ -45,8 +46,9 @@ type TemplateLiterals struct {
 type ValidationError struct {
 	ErrorDetails
 
-	Code string   `json:"code" regexp:"\\d+"`
-	Pos  LexerPos `json:"pos,omitempty"`
+	Code   string   `json:"code" regexp:"\\d+"`
+	Pos    LexerPos `json:"pos,omitempty"`
+	EndPos LexerPos `json:"end_pos,omitempty"`
 }
 
 type LexerPos struct {
@@ -98,17 +100,18 @@ func (v ValidationErrors) Error() string {
 	matchingSchemas := v.MatchingSchemas()
 
 	for _, err := range v.Errors {
+		errorStartLine := err.Pos.Line
+		errorEndLine := err.EndPos.Line
+		errorStartColumn := err.Pos.Column
+		errorEndColumn := err.EndPos.Column
+		spew.Dump("start:", err.Pos)
+		spew.Dump("end:", err.EndPos)
+
 		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
 			lines := strings.Split(match.Contents, "\n")
 
-			errorLine := err.Pos.Line
-			errorColumn := err.Pos.Column
-
-			// fmt.Printf("offset is %s", fmt.Sprint(errorOffset))
-			match := false
-
 			for lineIndex, line := range lines {
-				if (lineIndex + 1) != errorLine {
+				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
 					ret += fmt.Sprintf("%s\n", line)
 
 					continue
@@ -118,18 +121,17 @@ func (v ValidationErrors) Error() string {
 				chars := strings.Split(line, "")
 
 				for charIdx, char := range chars {
-					if !match && (charIdx+1) != errorColumn {
-						outputLine += char
 
+					if (charIdx+1) < errorStartColumn && (charIdx+1) < errorEndColumn {
+						outputLine += char
 						continue
 					}
 
-					match = true
 					outputLine += red.Sprint(char)
 				}
 
 				ret += fmt.Sprintf("%s\n", outputLine)
-				match = false
+
 			}
 		}
 	}
@@ -161,7 +163,7 @@ func (v ValidationErrors) AsBytes() []byte {
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func validationError(code string, data TemplateLiterals, Pos lexer.Position) error {
+func validationError(code string, data TemplateLiterals, Pos lexer.Position, EndPos lexer.Position) error {
 	return &ValidationError{
 		Code: code,
 		// todo global locale setting
@@ -171,6 +173,12 @@ func validationError(code string, data TemplateLiterals, Pos lexer.Position) err
 			Offset:   Pos.Offset,
 			Line:     Pos.Line,
 			Column:   Pos.Column,
+		},
+		EndPos: LexerPos{
+			Filename: EndPos.Filename,
+			Offset:   EndPos.Offset,
+			Line:     EndPos.Line,
+			Column:   EndPos.Column,
 		},
 	}
 }

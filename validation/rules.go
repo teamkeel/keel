@@ -97,6 +97,7 @@ func modelsUpperCamel(inputs []Input) []error {
 							},
 						},
 						decl.Model.Pos,
+						decl.Model.EndPos,
 					),
 				)
 			}
@@ -132,6 +133,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 									},
 								},
 								field.Pos,
+								field.EndPos,
 							),
 						)
 					}
@@ -148,6 +150,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 									},
 								},
 								operation.Pos,
+								operation.EndPos,
 							),
 						)
 					}
@@ -165,6 +168,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 									},
 								},
 								function.Pos,
+								function.EndPos,
 							),
 						)
 					}
@@ -199,6 +203,7 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 									},
 								},
 								name.Pos,
+								name.EndPos,
 							),
 						)
 					}
@@ -211,9 +216,10 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 }
 
 type GlobalOperations struct {
-	Name  string
-	Model string
-	Pos   lexer.Position
+	Name   string
+	Model  string
+	Pos    lexer.Position
+	EndPos lexer.Position
 }
 
 func uniqueOperationsGlobally(inputs []Input) []GlobalOperations {
@@ -279,6 +285,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 						},
 					},
 					nameError.Pos,
+					nameError.EndPos,
 				),
 			)
 
@@ -383,6 +390,7 @@ func noReservedFieldNames(inputs []Input) []error {
 										},
 									},
 									field.Pos,
+									field.EndPos,
 								),
 							)
 						}
@@ -418,6 +426,7 @@ func noReservedModelNames(inputs []Input) []error {
 								},
 							},
 							dec.Model.Pos,
+							dec.Model.EndPos,
 						),
 					)
 				}
@@ -496,6 +505,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 									},
 								},
 								operation.Pos,
+								operation.EndPos,
 							),
 						)
 					}
@@ -626,6 +636,7 @@ func supportedFieldTypes(inputs []Input) []error {
 									},
 								},
 								field.Pos,
+								field.EndPos,
 							),
 						)
 					}
@@ -665,6 +676,7 @@ func modelsGloballyUnique(inputs []Input) []error {
 						},
 					},
 					model.Pos,
+					model.EndPos,
 				),
 			)
 
@@ -769,6 +781,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 						},
 					},
 					attr.Pos,
+					attr.EndPos,
 				),
 			)
 		}
@@ -817,6 +830,7 @@ func buildErrorInvalidInputs(fields map[string]*operationFunctionInputFields) []
 							},
 						},
 						field.Pos,
+						field.EndPos,
 					),
 				)
 			}

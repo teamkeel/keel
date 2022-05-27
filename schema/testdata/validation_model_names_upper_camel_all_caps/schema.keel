@@ -1,3 +1,9 @@
-model PERSON {
+role Admin {
 
+}
+
+model PERSON {
+  fields {
+    name Text
+  }
 }
