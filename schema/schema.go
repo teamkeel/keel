@@ -113,10 +113,10 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 			Type: parser.FieldTypeID,
 			Attributes: []*parser.Attribute{
 				{
-					NameToken: parser.NameToken{Name: "primaryKey"},
+					NameToken: parser.AttributeNameToken{Name: "primaryKey"},
 				},
 				{
-					NameToken: parser.NameToken{Name: "unique"},
+					NameToken: parser.AttributeNameToken{Name: "unique"},
 				},
 			},
 		}

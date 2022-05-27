@@ -9,7 +9,6 @@ import (
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/model"
 
@@ -102,8 +101,8 @@ func (v ValidationErrors) Error() string {
 	for _, err := range v.Errors {
 		errorStartLine := err.Pos.Line
 		errorEndLine := err.EndPos.Line
-		spew.Dump("start:", err.Pos)
-		spew.Dump("end:", err.EndPos)
+		// spew.Dump("start:", err.Pos)
+		// spew.Dump("end:", err.EndPos)
 
 		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
 			lines := strings.Split(match.Contents, "\n")

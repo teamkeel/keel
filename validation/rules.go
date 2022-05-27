@@ -772,19 +772,26 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 			hint := NewCorrectionHint(hintOptions, attr.NameToken.Name)
 			suggestions := strings.Join(hint.Results, ", ")
 
+			// todo: very hacky to fix issue with attributes with @ not being captured by the lexer properly
+			newAttr := attr
+			newAttr.NameToken.Name = fmt.Sprintf("@%s", newAttr.NameToken.Name)
+			newAttr.NameToken.EndPos.Line = newAttr.NameToken.Pos.Line
+			newAttr.NameToken.EndPos.Column = newAttr.NameToken.Pos.Column + len(newAttr.NameToken.Name)
+			newAttr.NameToken.Pos.Column--
+
 			errors = append(
 				errors,
 				validationError(ErrorUnsupportedAttributeType,
 					TemplateLiterals{
 						Literals: map[string]string{
-							"Name":        fmt.Sprintf("@%s", attr.NameToken.EndPos),
+							"Name":        fmt.Sprintf("@%s", attr.NameToken.Name),
 							"ParentName":  parentName,
 							"DefinedOn":   definedOn,
 							"Suggestions": suggestions,
 						},
 					},
-					attr.NameToken.Pos,
-					attr.NameToken.EndPos,
+					newAttr.NameToken.Pos,
+					newAttr.NameToken.EndPos,
 				),
 			)
 		}

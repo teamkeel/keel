@@ -50,6 +50,13 @@ type NameToken struct {
 	Name string `@Ident`
 }
 
+type AttributeNameToken struct {
+	Pos    lexer.Position
+	EndPos lexer.Position
+
+	Name string `"@" @Ident`
+}
+
 type ModelField struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
@@ -118,7 +125,7 @@ type Attribute struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	NameToken NameToken            `"@" @@`
+	NameToken AttributeNameToken   `@@`
 	Arguments []*AttributeArgument `( "(" @@ ( "," @@ )* ")" )?`
 }
 
