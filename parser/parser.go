@@ -29,8 +29,8 @@ type Model struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	Name     string          `@Ident`
-	Sections []*ModelSection `"{" @@* "}"`
+	NameToken NameToken       `@@`
+	Sections  []*ModelSection `"{" @@* "}"`
 }
 
 type ModelSection struct {
@@ -43,12 +43,19 @@ type ModelSection struct {
 	Attribute  *Attribute     `| @@)`
 }
 
+type NameToken struct {
+	Pos    lexer.Position
+	EndPos lexer.Position
+
+	Name string `@Ident`
+}
+
 type ModelField struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
 	BuiltIn    bool
-	Name       string       `@Ident`
+	NameToken  NameToken    `@@`
 	Type       string       `@Ident`
 	Repeated   bool         `@( "[" "]" )?`
 	Attributes []*Attribute `( "{" @@+ "}" )?`
@@ -58,16 +65,16 @@ type API struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	Name     string        `@Ident`
-	Sections []*APISection `"{" @@* "}"`
+	NameToken NameToken     `@@`
+	Sections  []*APISection `"{" @@* "}"`
 }
 
 type Role struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	Name     string         `@Ident`
-	Sections []*RoleSection `"{" @@* "}"`
+	NameToken NameToken      `@@`
+	Sections  []*RoleSection `"{" @@* "}"`
 }
 
 type RoleSection struct {
@@ -104,14 +111,14 @@ type APIModels struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	ModelName string `@Ident`
+	ModelNameToken NameToken `@@`
 }
 
 type Attribute struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	Name      string               `"@" @Ident`
+	NameToken NameToken            `"@" @@`
 	Arguments []*AttributeArgument `( "(" @@ ( "," @@ )* ")" )?`
 }
 
@@ -119,7 +126,7 @@ type AttributeArgument struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	Name       string                  `(@Ident ":")?`
+	NameToken  NameToken               `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 
@@ -128,7 +135,7 @@ type ModelAction struct {
 	EndPos lexer.Position
 
 	Type       string       `@Ident`
-	Name       string       `@Ident`
+	NameToken  NameToken    `@@`
 	Arguments  []*ActionArg `"(" ( @@ ( "," @@ )* )? ")"`
 	Attributes []*Attribute `( "{" @@+ "}" )?`
 }
@@ -137,7 +144,7 @@ type ActionArg struct {
 	Pos    lexer.Position
 	EndPos lexer.Position
 
-	Name string `@Ident`
+	NameToken NameToken `@@`
 }
 
 func Parse(s *model.SchemaFile) (*Schema, error) {

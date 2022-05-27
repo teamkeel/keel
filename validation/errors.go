@@ -102,8 +102,6 @@ func (v ValidationErrors) Error() string {
 	for _, err := range v.Errors {
 		errorStartLine := err.Pos.Line
 		errorEndLine := err.EndPos.Line
-		errorStartColumn := err.Pos.Column
-		errorEndColumn := err.EndPos.Column
 		spew.Dump("start:", err.Pos)
 		spew.Dump("end:", err.EndPos)
 
@@ -122,7 +120,7 @@ func (v ValidationErrors) Error() string {
 
 				for charIdx, char := range chars {
 
-					if (charIdx+1) < errorStartColumn && (charIdx+1) < errorEndColumn {
+					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
 						outputLine += char
 						continue
 					}

@@ -107,14 +107,16 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 		}
 		field := &parser.ModelField{
 			BuiltIn: true,
-			Name:    parser.ImplicitFieldNameId,
-			Type:    parser.FieldTypeID,
+			NameToken: parser.NameToken{
+				Name: parser.ImplicitFieldNameId,
+			},
+			Type: parser.FieldTypeID,
 			Attributes: []*parser.Attribute{
 				{
-					Name: "primaryKey",
+					NameToken: parser.NameToken{Name: "primaryKey"},
 				},
 				{
-					Name: "unique",
+					NameToken: parser.NameToken{Name: "unique"},
 				},
 			},
 		}
