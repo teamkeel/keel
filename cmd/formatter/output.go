@@ -1,13 +1,10 @@
-package output
+package formatter
 
 import (
 	"io"
-
-	"github.com/teamkeel/keel/pkg/output/console"
-	"github.com/teamkeel/keel/pkg/output/json"
 )
 
-var defaultFormatterFunc = json.New
+var defaultFormatterFunc = NewTextFormatter
 
 // Output is a configurable output mechanism:
 type Output struct {
@@ -22,12 +19,12 @@ func New(writer io.Writer) *Output {
 }
 
 // SetOutput allows us to change the output at runtime:
-func (o *Output) SetOutput(formatterType FormatterType, writer io.Writer) {
+func (o *Output) SetOutput(formatterType FormatType, writer io.Writer) {
 	switch formatterType {
-	case FormatterJSON:
-		o.formatter = json.New(writer)
+	case FormatJSON:
+		o.formatter = NewJSONFormatter(writer)
 	default:
-		o.formatter = console.New(writer)
+		o.formatter = NewTextFormatter(writer)
 	}
 }
 

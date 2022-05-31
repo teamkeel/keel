@@ -28,9 +28,9 @@ const (
 )
 
 type ErrorDetails struct {
-	Message      string `json:"message" yaml:"message" omitempty"`
-	ShortMessage string `json:"short_message, yaml:"short_message" omitempty"`
-	Hint         string `json:"hint" yaml:"hint" omitempty"`
+	Message      string `json:"message" yaml:"message"`
+	ShortMessage string `json:"short_message" yaml:"short_message"`
+	Hint         string `json:"hint" yaml:"hint"`
 }
 
 type TemplateLiterals struct {

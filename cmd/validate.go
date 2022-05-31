@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -9,14 +5,13 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/teamkeel/keel/pkg/output"
-	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/cmd/formatter"
 	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/validation"
+	"github.com/teamkeel/keel/schema/validation"
 )
 
 type validateCommand struct {
-	outputFormatter *output.Output
+	outputFormatter *formatter.Output
 }
 
 // validateCmd represents the validate command
@@ -25,21 +20,24 @@ var validateCmd = &cobra.Command{
 	Short: "Validate your Keel schema",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		c := &validateCommand{
-			outputFormatter: output.New(os.Stdout),
+			outputFormatter: formatter.New(os.Stdout),
 		}
 
-		formatter(outputFormat, *c)
+		switch outputFormat {
+		case string(formatter.FormatJSON):
+			c.outputFormatter.SetOutput(formatter.FormatJSON, os.Stdout)
+		default:
+			c.outputFormatter.SetOutput(formatter.FormatText, os.Stdout)
+		}
 
 		schema := schema.Schema{}
-		var protoSchema *proto.Schema // For clarity only.
-		_ = protoSchema
 		var err error
 
 		switch {
 		case inputFile != "":
-			protoSchema, err = schema.MakeFromFile(inputFile)
+			_, err = schema.MakeFromFile(inputFile)
 		default:
-			protoSchema, err = schema.MakeFromDirectory(inputDir)
+			_, err = schema.MakeFromDirectory(inputDir)
 		}
 
 		if err != nil {
@@ -54,16 +52,6 @@ var validateCmd = &cobra.Command{
 
 		return nil
 	},
-}
-
-func formatter(outputFormatter string, c validateCommand) {
-	switch outputFormatter {
-	case string(output.FormatterJSON):
-		c.outputFormatter.SetOutput(output.FormatterJSON, os.Stdout)
-	default:
-		c.outputFormatter.SetOutput(output.FormatterConsole, os.Stdout)
-	}
-
 }
 
 var inputDir string

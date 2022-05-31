@@ -9,12 +9,12 @@ import (
 // Inputs models a set of files (Schema files and other files) that have been found in a
 // given directory.
 type Inputs struct {
-	Directory string
-	SchemaFiles []SchemaFile
+	Directory         string
+	SchemaFiles       []SchemaFile
 	OtherTypesOfFiles int // Placeholder for illustration
 }
 
-type SchemaFile struct{
+type SchemaFile struct {
 	FileName string
 	Contents string
 }
@@ -25,7 +25,7 @@ type SchemaFile struct{
 // So far it only looks for *.keel files and puts those in the SchemaFiles field.
 func Assemble(dirName string) (*Inputs, error) {
 	inputs := &Inputs{
-		Directory: dirName,
+		Directory:   dirName,
 		SchemaFiles: []SchemaFile{},
 	}
 	globPattern := filepath.Join(dirName, "*.keel")
