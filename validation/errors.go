@@ -96,6 +96,8 @@ func (v ValidationErrors) Error() string {
 	ret := ""
 
 	red := color.New(color.FgRed)
+	white := color.New(color.FgWhite).Add(color.FgHiBlue)
+
 	matchingSchemas := v.MatchingSchemas()
 
 	for _, err := range v.Errors {
@@ -108,17 +110,18 @@ func (v ValidationErrors) Error() string {
 			lines := strings.Split(match.Contents, "\n")
 
 			for lineIndex, line := range lines {
-				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
-					ret += fmt.Sprintf("%s\n", line)
+				outputLine := fmt.Sprintf("%s  ", white.Sprint(lineIndex+1))
 
+				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
+					outputLine += fmt.Sprintf("%s\n", line)
+
+					ret += outputLine
 					continue
 				}
 
-				outputLine := ""
 				chars := strings.Split(line, "")
 
 				for charIdx, char := range chars {
-
 					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
 						outputLine += char
 						continue
