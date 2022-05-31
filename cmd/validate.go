@@ -10,7 +10,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/teamkeel/keel/pkg/output"
+	"github.com/teamkeel/keel/output"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/validation"

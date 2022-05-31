@@ -3,8 +3,8 @@ package output
 import (
 	"io"
 
-	"github.com/teamkeel/keel/pkg/output/console"
-	"github.com/teamkeel/keel/pkg/output/json"
+	"github.com/teamkeel/keel/output/console"
+	"github.com/teamkeel/keel/output/json"
 )
 
 var defaultFormatterFunc = json.New
