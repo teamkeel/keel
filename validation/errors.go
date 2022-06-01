@@ -131,6 +131,16 @@ func (v ValidationErrors) Error() string {
 				}
 
 				ret += fmt.Sprintf("%s\n", outputLine)
+
+				counter := 0
+
+				for counter <= err.Pos.Column {
+					ret += " "
+					counter++
+				}
+
+				ret += fmt.Sprintf("%s\n", color.New(color.FgYellow).Sprintf(" ↳ %s", err.ErrorDetails.Message))
+
 			}
 		}
 	}
