@@ -77,28 +77,30 @@ func init() {
 
 func bringUpPostgres() error {
 	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
 	imageName := "postgres"
 
-	out, err := cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+	out, err := dockerClient.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
 	io.Copy(os.Stdout, out)
 
-	resp, err := cli.ContainerCreate(ctx, &container.Config{
+	containerConfig := &container.Config{
 		Image: imageName,
-	}, nil, nil, nil, "")
+		Env:   []string{"POSTGRES_PASSWORD=admin123"},
+	}
+	resp, err := dockerClient.ContainerCreate(ctx, containerConfig, nil, nil, nil, "")
 	if err != nil {
 		panic(err)
 	}
 
-	if err := cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
+	if err := dockerClient.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
 		panic(err)
 	}
 	return nil
