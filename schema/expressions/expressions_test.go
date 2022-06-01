@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/teamkeel/keel/expressions"
+	"github.com/teamkeel/keel/schema/expressions"
 )
 
 func TestRoundTrip(t *testing.T) {

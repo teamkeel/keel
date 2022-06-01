@@ -3,9 +3,9 @@ package schema
 import (
 	"strings"
 
-	"github.com/teamkeel/keel/expressions"
-	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -82,7 +82,7 @@ func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 func (scm *Schema) makeAPI(decl *parser.Declaration) *proto.Api {
 	parserAPI := decl.API
 	protoAPI := &proto.Api{
-		Name: parserAPI.Name,
+		Name:      parserAPI.Name,
 		ApiModels: []*proto.ApiModel{},
 	}
 	for _, section := range parserAPI.Sections {
@@ -278,4 +278,3 @@ func (scm *Schema) mapToAPIType(parserAPIType string) proto.ApiType {
 		return proto.ApiType_API_TYPE_UNKNOWN
 	}
 }
-

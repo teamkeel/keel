@@ -5,9 +5,9 @@ import (
 	"io/ioutil"
 
 	"github.com/teamkeel/keel/inputs"
-	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/validation"
+	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/validation"
 )
 
 // A Schema knows how to produce a (validated) proto.Schema,

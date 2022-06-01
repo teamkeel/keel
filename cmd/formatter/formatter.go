@@ -1,10 +1,10 @@
-package output
+package formatter
 
-type FormatterType string
+type FormatType string
 
 const (
-	FormatterJSON    FormatterType = "json"
-	FormatterConsole FormatterType = "console"
+	FormatJSON FormatType = "json"
+	FormatText FormatType = "text"
 )
 
 // Formatter is a simple interface which takes bytes and produces formatted output:

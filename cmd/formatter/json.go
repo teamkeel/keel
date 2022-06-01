@@ -1,26 +1,26 @@
-package json
+package formatter
 
 import (
 	"encoding/json"
 	"io"
 )
 
-// Formatter will output as formatted JSON:
-type Formatter struct {
+// JSONFormatter will output as formatted JSON:
+type JSONFormatter struct {
 	encoder *json.Encoder
 }
 
 // New returns a JSON formatter:
-func New(writer io.Writer) *Formatter {
+func NewJSONFormatter(writer io.Writer) *JSONFormatter {
 	newEncoder := json.NewEncoder(writer)
 	newEncoder.SetIndent("", "    ")
 
-	return &Formatter{
+	return &JSONFormatter{
 		encoder: newEncoder,
 	}
 }
 
 // Output implements the Formatter interface:
-func (f *Formatter) Output(output interface{}) error {
+func (f *JSONFormatter) Output(output interface{}) error {
 	return f.encoder.Encode(output)
 }
