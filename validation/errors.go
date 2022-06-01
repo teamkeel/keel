@@ -132,15 +132,53 @@ func (v ValidationErrors) Error() string {
 
 				ret += fmt.Sprintf("%s\n", outputLine)
 
-				counter := 0
+				indent := func(position int) {
+					counter := 0
 
-				for counter <= err.Pos.Column {
-					ret += " "
-					counter++
+					for counter <= position {
+						ret += " "
+						counter++
+					}
 				}
 
-				ret += fmt.Sprintf("%s\n", color.New(color.FgYellow).Sprintf(" ↳ %s", err.ErrorDetails.Message))
+				newLine := func() {
+					ret += "\n"
+				}
 
+				underline := func(token string) {
+					tokenLength := len(token)
+
+					counter := 0
+
+					for counter <= tokenLength {
+						if counter == tokenLength/2 {
+							ret += color.New(color.FgYellow).Sprint("\u252C")
+						} else {
+							ret += color.New(color.FgYellow).Sprint("\u2500")
+
+						}
+						counter++
+					}
+				}
+
+				arrowDown := func(token string) {
+					newLine()
+					indent(err.Pos.Column + (len(token) / 2))
+
+					ret += color.New(color.FgYellow).Sprint("\u2502")
+					newLine()
+					indent(err.Pos.Column + (len(token) / 2))
+					ret += color.New(color.FgYellow).Sprint("\u2570")
+					ret += color.New(color.FgYellow).Sprint("\u2500")
+				}
+
+				token := strings.Join(chars[err.Pos.Column:err.EndPos.Column], "")
+				indent(err.Pos.Column)
+				underline(token)
+
+				arrowDown(token)
+				ret += fmt.Sprintf("%s\n", color.New(color.FgYellow).Sprintf(" %s", err.ErrorDetails.Message))
+				newLine()
 			}
 		}
 	}
