@@ -7,5 +7,5 @@ do
   test_case_name=${dir//$find/$replace}
   echo "Running $test_case_name"
 
-  (set -x; go run . validate -f "$dir/schema.keel")
+  (set -x; go run . validate -d $dir)
 done
