@@ -784,7 +784,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 				validationError(ErrorUnsupportedAttributeType,
 					TemplateLiterals{
 						Literals: map[string]string{
-							"Name":        fmt.Sprintf("@%s", attr.NameToken.Name),
+							"Name":        attr.NameToken.Name,
 							"ParentName":  parentName,
 							"DefinedOn":   definedOn,
 							"Suggestions": suggestions,
