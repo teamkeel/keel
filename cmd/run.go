@@ -25,43 +25,45 @@ type runCommand struct {
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run your Keel App locally",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		c := &runCommand{
-			outputFormatter: formatter.New(os.Stdout),
+	RunE:  commandImplementation,
+}
+
+func commandImplementation(cmd *cobra.Command, args []string) error {
+	c := &runCommand{
+		outputFormatter: formatter.New(os.Stdout),
+	}
+	switch outputFormat {
+	case string(formatter.FormatJSON):
+		c.outputFormatter.SetOutput(formatter.FormatJSON, os.Stdout)
+	default:
+		c.outputFormatter.SetOutput(formatter.FormatText, os.Stdout)
+	}
+
+	schema := schema.Schema{}
+	var err error
+
+	c.outputFormatter.Write("Reading your schema(s)")
+
+	switch {
+	case inputFile != "":
+		_, err = schema.MakeFromFile(inputFile)
+	default:
+		_, err = schema.MakeFromDirectory(inputDir)
+	}
+
+	if err != nil {
+		errs, ok := err.(validation.ValidationErrors)
+		if ok {
+			return c.outputFormatter.Write(errs.Errors)
+		} else {
+			return fmt.Errorf("error making schema: %v", err)
 		}
-		switch outputFormat {
-		case string(formatter.FormatJSON):
-			c.outputFormatter.SetOutput(formatter.FormatJSON, os.Stdout)
-		default:
-			c.outputFormatter.SetOutput(formatter.FormatText, os.Stdout)
-		}
+	}
 
-		schema := schema.Schema{}
-		var err error
+	c.outputFormatter.Write("Starting PostgreSQL")
+	bringUpPostgres()
 
-		c.outputFormatter.Write("Reading your schema(s)")
-
-		switch {
-		case inputFile != "":
-			_, err = schema.MakeFromFile(inputFile)
-		default:
-			_, err = schema.MakeFromDirectory(inputDir)
-		}
-
-		if err != nil {
-			errs, ok := err.(validation.ValidationErrors)
-			if ok {
-				return c.outputFormatter.Write(errs.Errors)
-			} else {
-				return fmt.Errorf("error making schema: %v", err)
-			}
-		}
-
-		c.outputFormatter.Write("Starting PostgreSQL")
-		bringUpPostgres()
-
-		return nil
-	},
+	return nil
 }
 
 func init() {
