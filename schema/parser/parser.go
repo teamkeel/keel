@@ -2,6 +2,7 @@ package parser
 
 import (
 	"text/scanner"
+	"unicode/utf8"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
@@ -10,15 +11,13 @@ import (
 )
 
 type Schema struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Declarations []*Declaration `@@+`
 }
 
 type Declaration struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Model *Model `("model" @@`
 	Role  *Role  `| "role" @@`
@@ -26,16 +25,14 @@ type Declaration struct {
 }
 
 type Model struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Name     NameToken       `@@`
 	Sections []*ModelSection `"{" @@* "}"`
 }
 
 type ModelSection struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Fields     []*ModelField  `( "fields" "{" @@+ "}"`
 	Functions  []*ModelAction `| "functions" "{" @@+ "}"`
@@ -44,22 +41,19 @@ type ModelSection struct {
 }
 
 type NameToken struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Text string `@Ident`
 }
 
 type AttributeNameToken struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Text string `"@" @Ident`
 }
 
 type ModelField struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	BuiltIn    bool
 	Name       NameToken    `@@`
@@ -69,77 +63,67 @@ type ModelField struct {
 }
 
 type API struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Name     NameToken     `@@`
 	Sections []*APISection `"{" @@* "}"`
 }
 
 type Role struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Name     NameToken      `@@`
 	Sections []*RoleSection `"{" @@* "}"`
 }
 
 type RoleSection struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Domains []*RoleDomain `("domains" "{" @@* "}"`
 	Emails  []*RoleEmail  `| "emails" "{" @@* "}")`
 }
 
 type RoleDomain struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Domain string `@String`
 }
 
 type RoleEmail struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Email string `@String`
 }
 
 type APISection struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Models    []*APIModels `("models" "{" @@* "}"`
 	Attribute *Attribute   `| @@)`
 }
 
 type APIModels struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Name NameToken `@@`
 }
 
 type Attribute struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Name      AttributeNameToken   `@@`
 	Arguments []*AttributeArgument `( "(" @@ ( "," @@ )* ")" )?`
 }
 
 type AttributeArgument struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Name       NameToken               `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 
 type ModelAction struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Type       string       `@Ident`
 	Name       NameToken    `@@`
@@ -148,10 +132,50 @@ type ModelAction struct {
 }
 
 type ActionArg struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Node
 
 	Name NameToken `@@`
+}
+
+type Node struct {
+	Pos    lexer.Position
+	EndPos lexer.Position
+	Tokens []lexer.Token
+}
+
+// GetPositionRange returns a start and end position that correspond to Node
+// The behaviour of start position is exactly the same as the Pos field that
+// participle provides but the end position is calculated from the position of
+// the last token in this node, which is more useful if you want to know where
+// _this_ node starts and ends.
+func (n Node) GetPositionRange() (start lexer.Position, end lexer.Position) {
+	start.Column = n.Pos.Column
+	start.Filename = n.Pos.Filename
+	start.Line = n.Pos.Line
+	start.Offset = n.Pos.Offset
+
+	// This shouldn't really happen but just to be safe
+	if len(n.Tokens) == 0 {
+		return start, n.EndPos
+	}
+
+	lastToken := n.Tokens[len(n.Tokens)-1]
+	endPos := lastToken.Pos
+
+	tokenLength := utf8.RuneCountInString(lastToken.Value)
+
+	end.Filename = endPos.Filename
+
+	// assumption here is that a token can't span multiple lines, which
+	// I'm pretty sure is true
+	end.Line = endPos.Line
+
+	// Update offset and column to reflect the end of last token
+	// in this node
+	end.Offset = endPos.Offset + tokenLength
+	end.Column = endPos.Column + tokenLength
+
+	return start, end
 }
 
 func Parse(s *model.SchemaFile) (*Schema, error) {
@@ -172,7 +196,7 @@ func Parse(s *model.SchemaFile) (*Schema, error) {
 	}
 
 	schema := &Schema{}
-	// TODO: pass filename as first argument
+
 	err = parser.ParseString(s.FileName, s.Contents, schema)
 	if err != nil {
 		return nil, err

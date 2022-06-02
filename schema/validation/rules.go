@@ -97,8 +97,7 @@ func modelsUpperCamel(inputs []Input) []error {
 								"Suggested": suggested,
 							},
 						},
-						decl.Model.Name.Pos,
-						decl.Model.Name.EndPos,
+						decl.Model.Name,
 					),
 				)
 			}
@@ -133,8 +132,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 										"Suggested": strcase.ToLowerCamel(strings.ToLower(field.Name.Text)),
 									},
 								},
-								field.Name.Pos,
-								field.Name.EndPos,
+								field.Name,
 							),
 						)
 					}
@@ -150,8 +148,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 										"Suggested": strcase.ToLowerCamel(strings.ToLower(operation.Name.Text)),
 									},
 								},
-								operation.Name.Pos,
-								operation.Name.EndPos,
+								operation.Name,
 							),
 						)
 					}
@@ -168,8 +165,7 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 										"Suggested": strcase.ToLowerCamel(strings.ToLower(function.Name.Text)),
 									},
 								},
-								function.Name.Pos,
-								function.Name.EndPos,
+								function.Name,
 							),
 						)
 					}
@@ -205,8 +201,7 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 										"Line": fmt.Sprint(field.Name.Pos.Line),
 									},
 								},
-								field.Name.Pos,
-								field.Name.EndPos,
+								field.Name,
 							),
 						)
 					}
@@ -220,10 +215,8 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 }
 
 type GlobalOperations struct {
-	Name   string
-	Model  string
-	Pos    lexer.Position
-	EndPos lexer.Position
+	Op        *parser.ModelAction
+	ModelName string
 }
 
 func uniqueOperationsGlobally(inputs []Input) []GlobalOperations {
@@ -237,10 +230,8 @@ func uniqueOperationsGlobally(inputs []Input) []GlobalOperations {
 			for _, sec := range declaration.Model.Sections {
 				for _, operation := range sec.Operations {
 					globalOperations = append(globalOperations, GlobalOperations{
-						Name:   operation.Name.Text,
-						Model:  declaration.Model.Name.Text,
-						Pos:    operation.Name.Pos,
-						EndPos: operation.Name.EndPos,
+						Op:        operation,
+						ModelName: declaration.Model.Name.Text,
 					})
 				}
 			}
@@ -256,8 +247,8 @@ func operationsUniqueGlobally(inputs []Input) []error {
 
 	globalOperations := uniqueOperationsGlobally(inputs)
 
-	for _, name := range globalOperations {
-		operationNames = append(operationNames, name.Name)
+	for _, op := range globalOperations {
+		operationNames = append(operationNames, op.Op.Name.Text)
 	}
 	duplicates := findDuplicates(operationNames)
 
@@ -269,7 +260,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 
 	for _, operation := range globalOperations {
 		for _, duplicate := range duplicates {
-			if operation.Name == duplicate {
+			if operation.Op.Name.Text == duplicate {
 				duplicationOperations = append(duplicationOperations, operation)
 			}
 		}
@@ -278,7 +269,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 	seenOperations := map[string]bool{}
 
 	for _, nameError := range duplicationOperations {
-		key := fmt.Sprintf("%s-%s", nameError.Model, nameError.Name)
+		key := fmt.Sprintf("%s-%s", nameError.ModelName, nameError.Op.Name.Text)
 
 		if _, ok := seenOperations[key]; ok {
 			errors = append(
@@ -286,13 +277,12 @@ func operationsUniqueGlobally(inputs []Input) []error {
 				validationError(ErrorOperationsUniqueGlobally,
 					TemplateLiterals{
 						Literals: map[string]string{
-							"Model": nameError.Model,
-							"Name":  nameError.Name,
-							"Line":  fmt.Sprint(nameError.Pos.Line),
+							"Model": nameError.ModelName,
+							"Name":  nameError.Op.Name.Text,
+							"Line":  fmt.Sprint(nameError.Op.Pos.Line),
 						},
 					},
-					nameError.Pos,
-					nameError.EndPos,
+					nameError.Op.Name,
 				),
 			)
 
@@ -396,8 +386,7 @@ func noReservedFieldNames(inputs []Input) []error {
 											"Suggestion": fmt.Sprintf("%ser", field.Name.Text),
 										},
 									},
-									field.Name.Pos,
-									field.Name.EndPos,
+									field.Name,
 								),
 							)
 						}
@@ -432,8 +421,7 @@ func noReservedModelNames(inputs []Input) []error {
 									"Suggestion": fmt.Sprintf("%ser", dec.Model.Name.Text),
 								},
 							},
-							dec.Model.Name.Pos,
-							dec.Model.Name.EndPos,
+							dec.Model.Name,
 						),
 					)
 				}
@@ -511,8 +499,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 										"Name": operation.Name.Text,
 									},
 								},
-								operation.Name.Pos,
-								operation.Name.EndPos,
+								operation.Name,
 							),
 						)
 					}
@@ -642,8 +629,7 @@ func supportedFieldTypes(inputs []Input) []error {
 										"Suggestions": suggestions,
 									},
 								},
-								field.Name.Pos,
-								field.Name.EndPos,
+								field.Name,
 							),
 						)
 					}
@@ -682,8 +668,7 @@ func modelsGloballyUnique(inputs []Input) []error {
 							"Name": model.Name.Text,
 						},
 					},
-					model.Name.Pos,
-					model.Name.EndPos,
+					model.Name,
 				),
 			)
 
@@ -776,12 +761,6 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 			hint := NewCorrectionHint(hintOptions, attr.Name.Text)
 			suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
 
-			// todo: very hacky to fix issue with attributes with @ not being captured by the lexer properly
-			newAttr := attr
-			newAttr.Name.Text = fmt.Sprintf("@%s", newAttr.Name.Text)
-			newAttr.Name.EndPos.Line = newAttr.Name.Pos.Line
-			newAttr.Name.EndPos.Column = newAttr.Name.Pos.Column + len(newAttr.Name.Text)
-
 			errors = append(
 				errors,
 				validationError(ErrorUnsupportedAttributeType,
@@ -793,8 +772,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 							"Suggestions": suggestions,
 						},
 					},
-					newAttr.Name.Pos,
-					newAttr.Name.EndPos,
+					attr.Name,
 				),
 			)
 		}
@@ -842,8 +820,7 @@ func buildErrorInvalidInputs(fields map[string]*operationFunctionInputFields) []
 								"Line":  fmt.Sprint(field.Pos.Line),
 							},
 						},
-						field.Name.Pos,
-						field.Name.EndPos,
+						field.Name,
 					),
 				)
 			}
