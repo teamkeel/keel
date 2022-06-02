@@ -10,9 +10,9 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/formatter"
+	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/schema/validation"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -43,7 +43,7 @@ func commandImplementation(cmd *cobra.Command, args []string) error {
 
 func (c *runCommand) doTheWork() error {
 	var err error
-	if _, err = c.makeProtoFromSchemaFiles(); err != nil {
+	if _, err = makeProtoFromSchemaFiles(); err != nil {
 		return err
 	}
 
@@ -146,30 +146,43 @@ func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *Sc
 }
 
 type SchemaChangedHandler struct {
+	incumbentProto *proto.Schema
 }
 
 func NewSchemaChangedHandler() *SchemaChangedHandler {
-	return &SchemaChangedHandler{}
+	return &SchemaChangedHandler{
+		incumbentProto: &proto.Schema{},
+	}
 }
 
-func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) error {
+func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	fmt.Printf("XXXX handler fired because this file: %s, changed\n", schemaThatHasChanged)
+	var newProto *proto.Schema
+	if newProto, err = makeProtoFromSchemaFiles(); err != nil {
+		return fmt.Errorf("error making proto from schema files: %v", err)
+	}
+	oldProto := h.incumbentProto
+	h.incumbentProto = newProto
+
+	differenceAnalyser := migrations.NewProtoDiffer()
+	var differences *migrations.Differences
+	if differences, err = differenceAnalyser.Analyse(oldProto, newProto); err != nil {
+		return fmt.Errorf("error comparing old and new schemas: %v", err)
+	}
+
+	_ = differences
+
+	// Todo now we have machine-readable data to inform the migrations we can generate SQL to make them.
 	return nil
 }
 
-func (c *runCommand) makeProtoFromSchemaFiles() (proto *proto.Schema, err error) {
-	c.outputFormatter.Write("Reading your schema(s)")
+func makeProtoFromSchemaFiles() (proto *proto.Schema, err error) {
 	schema := schema.Schema{}
 	// todo - inputDir is a cmd package-global variable (because it is a CLI command flag), but we
 	// should introduce a pass-by-value copy to pass down the call stack.
 	proto, err = schema.MakeFromDirectory(inputDir)
 	if err != nil {
-		errs, ok := err.(validation.ValidationErrors)
-		if ok {
-			return nil, c.outputFormatter.Write(errs.Errors)
-		} else {
-			return nil, fmt.Errorf("error making schema: %v", err)
-		}
+		panic(fmt.Sprintf("error making protobuf schema from directory: %v", err))
 	}
 	return proto, nil
 }
