@@ -24,7 +24,7 @@ func NewProtoDiffer(old, new *proto.Schema) *ProtoDiffer {
 }
 
 func (d *ProtoDiffer) Analyse() (diffs Differences, err error) {
-	diffs.ModelsAdded, diffs.ModelsRemoved = lo.Difference(
+	diffs.ModelsRemoved, diffs.ModelsAdded = lo.Difference(
 		protoqry.AllModelNames(d.old),
 		protoqry.AllModelNames(d.new))
 
