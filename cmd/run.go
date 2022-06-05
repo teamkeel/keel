@@ -23,19 +23,16 @@ import (
 // - Setting up a watcher on the input schema directory with a handler that
 //   reacts to changes as follows...
 //
-// - Parse and validate the input schema files.
-// - Build the protobuffer schema representation.
-// - Deploy an analyser to work out the significant changes
-// - Formulate a database migrations file
-// - Perform a migration on the running database.
+// 		- Parse and validate the input schema files.
+// 		- Build the protobuffer schema representation.
+// 		- Generate the SQL to completely remove the existing database and rebuild it
+//        from scratch (migration0)
+// 		- Perform this migration on the running database.
 //
 // TODOs these are the major functional todos for the migrations-only first cut...
 //
-// - What about building the initial migrations?
-// - How to tell at boot time if the current database is already in
-//   the correct shape?
+// - How to trigger the database recreation at boot time
 // - Stop it making a new postgres docker image every time
-// - Make sure the database is persisted locally across runs
 // - Clean up when the command terminates (stop postgres)
 //
 // TODOs these will be the next steps beyond the migrations-only version.
@@ -118,7 +115,6 @@ func bringUpPostgres() error {
 	}
 
 	imageName := "postgres" // The official (and latest) PostgreSQL image.
-
 	// todo - should we use a fixed and known version?
 
 	out, err := dockerClient.ImagePull(ctx, imageName, types.ImagePullOptions{})
@@ -126,7 +122,7 @@ func bringUpPostgres() error {
 		panic(err)
 	}
 	defer out.Close()
-	// Todo: What to do about this output? In its naive form it is not part of the CLI Run command contract,
+	// Todo: What to do about this image pull output? In its naive form it is not part of the CLI Run command contract,
 	// but does a good job of showing the progress of this slow-running step. But it is also problematically
 	// verbose (when the image has to be fetched the first time.)
 
@@ -167,16 +163,10 @@ func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *Sc
 	}
 }
 
-type SchemaChangedHandler struct {
-	// The handler needs to hold the last-known good schema as state
-	// so that it has something to compare new, an incoming changed schema.
-	incumbentProto *proto.Schema
-}
+type SchemaChangedHandler struct{}
 
 func NewSchemaChangedHandler() *SchemaChangedHandler {
-	return &SchemaChangedHandler{
-		incumbentProto: &proto.Schema{},
-	}
+	return &SchemaChangedHandler{}
 }
 
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
@@ -186,18 +176,21 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	if newProto, err = makeProtoFromSchemaFiles(); err != nil {
 		return fmt.Errorf("error making proto from schema files: %v", err)
 	}
-	oldProto := h.incumbentProto
-	h.incumbentProto = newProto
 
-	differenceAnalyser := migrations.NewProtoDiffer(oldProto, newProto)
+	// TODO - leaving these calls in to show the work done on a schema-difference based
+	// approach - but going now to experiment with a complete re-generation of the database instead.
+	differenceAnalyser := migrations.NewProtoDiffer(nil, newProto)
 	differences, err := differenceAnalyser.Analyse()
-	if err != nil {
-		return fmt.Errorf("error comparing old and new schemas: %v", err)
-	}
-
 	_ = differences
 
-	// Todo now we have machine-readable data to inform the migrations we can generate SQL to make them.
+	migrationSQL, err := migrations.NewMigrationZeroMaker(newProto).MakeSQL()
+	if err != nil {
+		panic(fmt.Sprintf("error making migration zero: %v", err))
+	}
+
+	_ = migrationSQL
+
+	// Todo now apply these migrations
 	return nil
 }
 
