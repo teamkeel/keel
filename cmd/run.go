@@ -165,7 +165,7 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	h.incumbentProto = newProto
 
 	differenceAnalyser := migrations.NewProtoDiffer(oldProto, newProto)
-	var differences migrations.Differences
+	var differences *migrations.Differences
 	if differences, err = differenceAnalyser.Analyse(); err != nil {
 		return fmt.Errorf("error comparing old and new schemas: %v", err)
 	}

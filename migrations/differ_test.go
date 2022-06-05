@@ -8,37 +8,64 @@ import (
 )
 
 func TestModelsDroppedOrAdded(t *testing.T) {
-	differ := NewProtoDiffer(modelsABC, modelsBCD)
+
+	differ := NewProtoDiffer(modelsAB, modelsBC)
 	diffs, err := differ.Analyse()
 	require.NoError(t, err)
-	require.Equal(t, []string{"D"}, diffs.ModelsAdded)
-	require.Equal(t, []string{"A"}, diffs.ModelsRemoved)
+	require.Equal(t, []string{"ModelC"}, diffs.ModelsAdded)
+	require.Equal(t, []string{"ModelA"}, diffs.ModelsRemoved)
 }
 
-var modelsABC *proto.Schema = &proto.Schema{
+func TestFieldsDroppedOrAdded(t *testing.T) {
+	differ := NewProtoDiffer(fieldsAB, fieldsBC)
+	diffs, err := differ.Analyse()
+	require.NoError(t, err)
+	require.Equal(t, []string{"FieldC"}, diffs.FieldsAdded["ModelA"])
+	require.Equal(t, []string{"FieldA"}, diffs.FieldsRemoved["ModelA"])
+}
+
+var modelsAB *proto.Schema = &proto.Schema{
 	Models: []*proto.Model{
 		{
-			Name: "A",
+			Name: "ModelA",
 		},
 		{
-			Name: "B",
-		},
-		{
-			Name: "C",
+			Name: "ModelB",
 		},
 	},
 }
 
-var modelsBCD *proto.Schema = &proto.Schema{
+var modelsBC *proto.Schema = &proto.Schema{
 	Models: []*proto.Model{
 		{
-			Name: "B",
+			Name: "ModelB",
 		},
 		{
-			Name: "C",
+			Name: "ModelC",
 		},
+	},
+}
+
+var fieldsAB *proto.Schema = &proto.Schema{
+	Models: []*proto.Model{
 		{
-			Name: "D",
+			Name: "ModelA",
+			Fields: []*proto.Field{
+				{Name: "FieldA"},
+				{Name: "FieldB"},
+			},
+		},
+	},
+}
+
+var fieldsBC *proto.Schema = &proto.Schema{
+	Models: []*proto.Model{
+		{
+			Name: "ModelA",
+			Fields: []*proto.Field{
+				{Name: "FieldB"},
+				{Name: "FieldC"},
+			},
 		},
 	},
 }

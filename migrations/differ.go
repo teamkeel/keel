@@ -12,21 +12,38 @@ import (
 // or a field that exists for a certain model in both, but which has differing
 // constraints or type from one to the other.
 type ProtoDiffer struct {
-	old *proto.Schema
-	new *proto.Schema
+	previousSchema *proto.Schema
+	incomingSchema *proto.Schema
 }
 
 func NewProtoDiffer(old, new *proto.Schema) *ProtoDiffer {
 	return &ProtoDiffer{
-		old: old,
-		new: new,
+		previousSchema: old,
+		incomingSchema: new,
 	}
 }
 
-func (d *ProtoDiffer) Analyse() (diffs Differences, err error) {
+// Analyse provides information about the differences between the two
+// schemas given at construction time.
+func (d *ProtoDiffer) Analyse() (*Differences, error) {
+	diffs := NewDifferences()
+
+	// Models added or removed.
 	diffs.ModelsRemoved, diffs.ModelsAdded = lo.Difference(
-		protoqry.AllModelNames(d.old),
-		protoqry.AllModelNames(d.new))
+		protoqry.ModelNames(d.previousSchema),
+		protoqry.ModelNames(d.incomingSchema))
+
+	// For models that exist in both schemas, which fields are newly introduced in
+	// the new one, and which have been dropped in the new one?
+	for _, m := range d.incomingSchema.Models {
+		modelName := m.Name
+		newNames := protoqry.FieldNames(protoqry.FindModel(d.incomingSchema.Models, modelName))
+		oldNames := []string{}
+		if protoqry.ModelExists(d.previousSchema.Models, modelName) {
+			oldNames = protoqry.FieldNames(protoqry.FindModel(d.previousSchema.Models, modelName))
+		}
+		diffs.FieldsRemoved[modelName], diffs.FieldsAdded[modelName] = lo.Difference(oldNames, newNames)
+	}
 
 	return diffs, nil
 }
