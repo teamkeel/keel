@@ -8,7 +8,6 @@ import (
 )
 
 func TestModelsDroppedOrAdded(t *testing.T) {
-
 	differ := NewProtoDiffer(modelsAB, modelsBC)
 	diffs, err := differ.Analyse()
 	require.NoError(t, err)

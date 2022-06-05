@@ -17,12 +17,37 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
+// The Run command does this:
+//
+// - Starts Postgres locally in a docker container.
+// - Setting up a watcher on the input schema directory with a handler that
+//   reacts to changes as follows...
+//
+// - Parse and validate the input schema files.
+// - Build the protobuffer schema representation.
+// - Deploy an analyser to work out the significant changes
+// - Formulate a database migrations file
+// - Perform a migration on the running database.
+//
+// TODOs these are the major functional todos for the migrations-only first cut...
+//
+// - What about building the initial migrations?
+// - How to tell at boot time if the current database is already in
+//   the correct shape?
+// - Stop it making a new postgres docker image every time
+// - Make sure the database is persisted locally across runs
+// - Clean up when the command terminates (stop postgres)
+//
+// TODOs these will be the next steps beyond the migrations-only version.
+//
+// - Auto generate the code to implement the service (GraphQL service)
+// - Build the executable service
+// - Kill the old version and bring up the new version.
 type runCommand struct {
 	outputFormatter *formatter.Output
 }
 
-// runCmd represents the run command
-var runCmd = &cobra.Command{
+var cobraCommandWrapper = &cobra.Command{
 	Use:   "run",
 	Short: "Run your Keel App locally",
 	RunE:  commandImplementation,
@@ -32,19 +57,12 @@ func commandImplementation(cmd *cobra.Command, args []string) error {
 	c := &runCommand{
 		outputFormatter: formatter.New(os.Stdout),
 	}
+	// todo - not sure how to integrate with the formatter for the Run command user case?
 	switch outputFormat {
 	case string(formatter.FormatJSON):
 		c.outputFormatter.SetOutput(formatter.FormatJSON, os.Stdout)
 	default:
 		c.outputFormatter.SetOutput(formatter.FormatText, os.Stdout)
-	}
-	return c.doTheWork()
-}
-
-func (c *runCommand) doTheWork() error {
-	var err error
-	if _, err = makeProtoFromSchemaFiles(); err != nil {
-		return err
 	}
 
 	c.outputFormatter.Write("Starting PostgreSQL")
@@ -56,11 +74,13 @@ func (c *runCommand) doTheWork() error {
 	}
 	defer directoryWatcher.Close()
 
-	// All the action is triggered by reacting to changes being made to the input schema
-	// files, so we set that up and then block this thread.
 	handler := NewSchemaChangedHandler()
+	// goroutine housekeeping: This goroutine lives for as long as the Keel-Run command is running, and its
+	// resources are release when the command terminates (with CTRL-C).
 	go c.reactToSchemaChanges(directoryWatcher, handler)
 
+	// todo: I hate that this is consuming a package-global variable <inputDir>
+	// but that's how Cobra command flags are exposed.
 	err = directoryWatcher.Add(inputDir)
 	if err != nil {
 		return fmt.Errorf("error specifying directory to schema watcher: %v", err)
@@ -68,24 +88,28 @@ func (c *runCommand) doTheWork() error {
 
 	c.outputFormatter.Write(fmt.Sprintf("Waiting for a schema file to change in %s ...\n", inputDir))
 
+	// Block the main go routine to keep the process alive until the user kills it with CTRL-C.
 	ch := make(chan bool)
 	<-ch
 
-	// Todo - work out what resource clean up is required here.
+	// Todo - resource clean-up lives here.
 
 	return nil
 }
 
 func init() {
-	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(cobraCommandWrapper)
 	defaultDir, err := os.Getwd()
 	if err != nil {
 		panic(fmt.Errorf("os.Getwd() errored: %v", err))
 	}
-	runCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "schema directory to run")
-	runCmd.Flags().StringVarP(&outputFormat, "output", "o", "console", "output format (console, json)")
+	// The Keel Run command works by observing a directory, and therefor does not offer a single-file command
+	// line flag.
+	cobraCommandWrapper.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "schema directory to run")
+	cobraCommandWrapper.Flags().StringVarP(&outputFormat, "output", "o", "console", "output format (console, json)")
 }
 
+// todo - move this to a separate module or even package, because its code will inevitably get quite a bit bigger.
 func bringUpPostgres() error {
 	ctx := context.Background()
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -93,18 +117,22 @@ func bringUpPostgres() error {
 		panic(err)
 	}
 
-	imageName := "postgres"
+	imageName := "postgres" // The official (and latest) PostgreSQL image.
+
+	// todo - should we use a fixed and known version?
 
 	out, err := dockerClient.ImagePull(ctx, imageName, types.ImagePullOptions{})
 	if err != nil {
 		panic(err)
 	}
 	defer out.Close()
-	// What to do about this output? In its naive form it is not part of the CLI Run command contract,
-	// but does a good job of showing the progress of this slow-running step.
+	// Todo: What to do about this output? In its naive form it is not part of the CLI Run command contract,
+	// but does a good job of showing the progress of this slow-running step. But it is also problematically
+	// verbose (when the image has to be fetched the first time.)
 
 	// io.Copy(os.Stdout, out)
 
+	// todo - decide if its ok to hard-code the database superuser, and serve on a fixed well known port.
 	containerConfig := &container.Config{
 		Image: imageName,
 		Env:   []string{"POSTGRES_PASSWORD=admin123"},
@@ -123,11 +151,7 @@ func bringUpPostgres() error {
 func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *SchemaChangedHandler) {
 	for {
 		select {
-		case event, ok := <-watcher.Events:
-			if !ok {
-				fmt.Printf("XXXX this signals that the watcher event channel got closed. No known stimulii yet.\n")
-				return
-			}
+		case event := <-watcher.Events:
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				nameOfFileThatChanged := event.Name
 				if err := handler.Handle(nameOfFileThatChanged); err != nil {
@@ -135,17 +159,17 @@ func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *Sc
 				}
 			}
 
-		case err, ok := <-watcher.Errors:
-			if !ok {
-				fmt.Printf("XXXX this signifies the watcher error channel got closed. No known stimulli yet.\n")
-				return
-			}
+		case err := <-watcher.Errors:
 			fmt.Printf("XXXX error received on watcher error channel: %v\n", err)
+			// Bail out of the Run command if the watcher encounters an error.
+			return
 		}
 	}
 }
 
 type SchemaChangedHandler struct {
+	// The handler needs to hold the last-known good schema as state
+	// so that it has something to compare new, an incoming changed schema.
 	incumbentProto *proto.Schema
 }
 
@@ -156,7 +180,8 @@ func NewSchemaChangedHandler() *SchemaChangedHandler {
 }
 
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
-	fmt.Printf("XXXX handler fired because this file: %s, changed\n", schemaThatHasChanged)
+	// todo - feed these user feedback messages through the command's managed formatter.
+	fmt.Printf("Reacting to a change in this file: %s, changed\n", schemaThatHasChanged)
 	var newProto *proto.Schema
 	if newProto, err = makeProtoFromSchemaFiles(); err != nil {
 		return fmt.Errorf("error making proto from schema files: %v", err)
@@ -165,8 +190,8 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	h.incumbentProto = newProto
 
 	differenceAnalyser := migrations.NewProtoDiffer(oldProto, newProto)
-	var differences *migrations.Differences
-	if differences, err = differenceAnalyser.Analyse(); err != nil {
+	differences, err := differenceAnalyser.Analyse()
+	if err != nil {
 		return fmt.Errorf("error comparing old and new schemas: %v", err)
 	}
 
