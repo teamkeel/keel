@@ -1,12 +1,10 @@
 package formatter
 
-<<<<<<<< HEAD:output/formatter.go
 import "bytes"
 
 type FormatterType string
-========
+
 type FormatType string
->>>>>>>> @{-1}:cmd/formatter/formatter.go
 
 const (
 	FormatJSON FormatType = "json"

@@ -12,6 +12,14 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
+type Error struct {
+	Code string `json:"code"`
+}
+
+type Errors struct {
+	Errors []Error `json:"Errors"`
+}
+
 func TestSchema(t *testing.T) {
 	testdataDir := "./testdata"
 	testCases, err := ioutil.ReadDir(testdataDir)
@@ -65,9 +73,12 @@ func TestSchema(t *testing.T) {
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
 				require.NotNil(t, err)
 
-				expectedJSON = expectedErrors
-				actualJSON, err = json.Marshal(err)
-				assert.NoError(t, err)
+				expectedJSON = selectErrorCodesFromJSON(t, expectedErrors)
+
+				actualJSONBytes, err := json.Marshal(err)
+				require.NoError(t, err)
+
+				actualJSON = selectErrorCodesFromJSON(t, actualJSONBytes)
 			} else {
 				// if no proto.json file or errors.json file is provided then we assume this
 				// is a test case that is just expected to parse and validate with no errors
@@ -76,12 +87,13 @@ func TestSchema(t *testing.T) {
 			}
 
 			opts := jsondiff.DefaultConsoleOptions()
+
 			diff, explanation := jsondiff.Compare(expectedJSON, actualJSON, &opts)
 
 			switch diff {
-			case jsondiff.FullMatch:
+			case jsondiff.FullMatch, jsondiff.SupersetMatch:
 				// success
-			case jsondiff.SupersetMatch, jsondiff.NoMatch:
+			case jsondiff.NoMatch:
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")
@@ -95,4 +107,14 @@ func TestSchema(t *testing.T) {
 
 		})
 	}
+}
+
+func selectErrorCodesFromJSON(t *testing.T, jsonBytes []byte) []byte {
+	errorCodes := Errors{}
+	err := json.Unmarshal(jsonBytes, &errorCodes)
+	require.NoError(t, err)
+	bytes, err := json.Marshal(errorCodes)
+	require.NoError(t, err)
+
+	return bytes
 }

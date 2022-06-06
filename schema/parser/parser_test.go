@@ -20,7 +20,7 @@ func parse(t *testing.T, s *model.SchemaFile) *parser.Schema {
 
 func TestEmptyModel(t *testing.T) {
 	schema := parse(t, &model.SchemaFile{FileName: "test.keel", Contents: `model Person { }`})
-	assert.Equal(t, "Person", schema.Declarations[0].Model.Name)
+	assert.Equal(t, "Person", schema.Declarations[0].Model.Name.Text)
 }
 
 func TestModelWithFields(t *testing.T) {
@@ -31,12 +31,12 @@ func TestModelWithFields(t *testing.T) {
 			books Book[]
 		  }
 		}`})
-	assert.Equal(t, "Author", schema.Declarations[0].Model.Name)
-	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name)
+	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Text)
+	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name.Text)
 	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[0].Repeated)
 
-	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name)
+	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name.Text)
 	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
 }
@@ -53,24 +53,24 @@ func TestModelWithFunctions(t *testing.T) {
 		  get author(id)
 		}
 	  }`})
-	assert.Equal(t, "Author", schema.Declarations[0].Model.Name)
-	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name)
+	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Text)
+	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name.Text)
 	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[0].Repeated)
 
-	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name)
+	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name.Text)
 	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
 
 	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Functions[0].Type)
-	assert.Equal(t, "createAuthor", schema.Declarations[0].Model.Sections[1].Functions[0].Name)
+	assert.Equal(t, "createAuthor", schema.Declarations[0].Model.Sections[1].Functions[0].Name.Text)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[0].Arguments, 1)
-	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Functions[0].Arguments[0].Name)
+	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Functions[0].Arguments[0].Name.Text)
 
 	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[1].Functions[1].Type)
-	assert.Equal(t, "author", schema.Declarations[0].Model.Sections[1].Functions[1].Name)
+	assert.Equal(t, "author", schema.Declarations[0].Model.Sections[1].Functions[1].Name.Text)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[1].Arguments, 1)
-	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Functions[1].Arguments[0].Name)
+	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Functions[1].Arguments[0].Name.Text)
 }
 
 func TestModelWithFieldAttributes(t *testing.T) {
@@ -90,7 +90,7 @@ func TestModelWithFieldAttributes(t *testing.T) {
 		}
 	  }`})
 	assert.Len(t, schema.Declarations[0].Model.Sections[0].Fields[1].Attributes, 1)
-	assert.Equal(t, "unique", schema.Declarations[0].Model.Sections[0].Fields[1].Attributes[0].Name)
+	assert.Equal(t, "unique", schema.Declarations[0].Model.Sections[0].Fields[1].Attributes[0].Name.Text)
 }
 
 func TestRole(t *testing.T) {
@@ -116,7 +116,7 @@ func TestRole(t *testing.T) {
 		}
 	`})
 
-	assert.Equal(t, "Admin", schema.Declarations[1].Role.Name)
+	assert.Equal(t, "Admin", schema.Declarations[1].Role.Name.Text)
 
 	assert.Equal(t, "\"adam@keel.xyz\"", schema.Declarations[1].Role.Sections[1].Emails[0].Email)
 	assert.Equal(t, "\"adam@keel.zyx\"", schema.Declarations[1].Role.Sections[1].Emails[1].Email)
@@ -149,15 +149,15 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 			"adam@keel.xyz"
 		}
 	}`})
-	assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name)
+	assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name.Text)
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
 	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
-	assert.Equal(t, "expression", arg1.Name)
+	assert.Equal(t, "expression", arg1.Name.Text)
 
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
 	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
-	assert.Equal(t, "actions", arg2.Name)
+	assert.Equal(t, "actions", arg2.Name.Text)
 
 	v1, err := expressions.ToValue(arg1.Expression)
 	assert.NoError(t, err)
@@ -190,11 +190,11 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
 	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
-	assert.Equal(t, "role", arg1.Name)
+	assert.Equal(t, "role", arg1.Name.Text)
 
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
 	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
-	assert.Equal(t, "actions", arg2.Name)
+	assert.Equal(t, "actions", arg2.Name.Text)
 
 	v1, err := expressions.ToValue(arg1.Expression)
 	assert.NoError(t, err)
@@ -215,12 +215,12 @@ func TestAPI(t *testing.T) {
 			Book
 		}
 	}`})
-	assert.Equal(t, "Web", schema.Declarations[0].API.Name)
+	assert.Equal(t, "Web", schema.Declarations[0].API.Name.Text)
 
-	assert.Equal(t, "graphql", schema.Declarations[0].API.Sections[0].Attribute.Name)
+	assert.Equal(t, "graphql", schema.Declarations[0].API.Sections[0].Attribute.Name.Text)
 
-	assert.Equal(t, "Author", schema.Declarations[0].API.Sections[1].Models[0].ModelName)
-	assert.Equal(t, "Book", schema.Declarations[0].API.Sections[1].Models[1].ModelName)
+	assert.Equal(t, "Author", schema.Declarations[0].API.Sections[1].Models[0].Name.Text)
+	assert.Equal(t, "Book", schema.Declarations[0].API.Sections[1].Models[1].Name.Text)
 }
 
 func TestParserPos(t *testing.T) {

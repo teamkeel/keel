@@ -36,7 +36,7 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 	parserModel := decl.Model
 	protoModel := &proto.Model{
-		Name: parserModel.NameToken.Name,
+		Name: parserModel.Name.Text,
 	}
 	for _, section := range parserModel.Sections {
 		switch {
@@ -66,7 +66,7 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 	parserRole := decl.Role
 	protoRole := &proto.Role{
-		Name: parserRole.NameToken.Name,
+		Name: parserRole.Name.Text,
 	}
 	for _, section := range parserRole.Sections {
 		for _, parserDomain := range section.Domains {
@@ -82,17 +82,17 @@ func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 func (scm *Schema) makeAPI(decl *parser.Declaration) *proto.Api {
 	parserAPI := decl.API
 	protoAPI := &proto.Api{
-		Name:      parserAPI.NameToken.Name,
+		Name:      parserAPI.Name.Text,
 		ApiModels: []*proto.ApiModel{},
 	}
 	for _, section := range parserAPI.Sections {
 		switch {
 		case section.Attribute != nil:
-			protoAPI.Type = scm.mapToAPIType(section.Attribute.NameToken.Name)
+			protoAPI.Type = scm.mapToAPIType(section.Attribute.Name.Text)
 		case len(section.Models) > 0:
 			for _, parserApiModel := range section.Models {
 				protoModel := &proto.ApiModel{
-					ModelName: parserApiModel.ModelNameToken.Name,
+					ModelName: parserApiModel.Name.Text,
 				}
 				protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
 			}
@@ -113,7 +113,7 @@ func (scm *Schema) makeFields(parserFields []*parser.ModelField, modelName strin
 func (scm *Schema) makeField(parserField *parser.ModelField, modelName string) *proto.Field {
 	protoField := &proto.Field{
 		ModelName: modelName,
-		Name:      parserField.NameToken.Name,
+		Name:      parserField.Name.Text,
 	}
 
 	// We establish the field type when possible using the 1:1 mapping between parser enums
@@ -160,7 +160,7 @@ func (scm *Schema) makeOperations(parserFunctions []*parser.ModelAction, modelNa
 func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
 		ModelName:      modelName,
-		Name:           parserFunction.NameToken.Name,
+		Name:           parserFunction.Name.Text,
 		Implementation: impl,
 		Type:           scm.mapToOperationType(parserFunction.Type),
 	}
@@ -175,10 +175,10 @@ func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName s
 	operationInputs := []*proto.OperationInput{}
 	for _, parserArg := range parserFunction.Arguments {
 		operationInput := proto.OperationInput{
-			Name:      parserArg.NameToken.Name,
+			Name:      parserArg.Name.Text,
 			Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
 			ModelName: wrapperspb.String(modelName),
-			FieldName: wrapperspb.String(parserArg.NameToken.Name),
+			FieldName: wrapperspb.String(parserArg.Name.Text),
 		}
 		operationInputs = append(operationInputs, &operationInput)
 	}
@@ -186,7 +186,7 @@ func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName s
 }
 
 func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
-	switch attribute.NameToken.Name {
+	switch attribute.Name.Text {
 	case parser.AttributePermission:
 		perm := scm.permissionAttributeToProtoPermission(attribute)
 		perm.ModelName = protoModel.Name
@@ -196,7 +196,7 @@ func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *pr
 
 func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation, modelName string) {
 	for _, attribute := range parserFunction.Attributes {
-		switch attribute.NameToken.Name {
+		switch attribute.Name.Text {
 		case parser.AttributePermission:
 			perm := scm.permissionAttributeToProtoPermission(attribute)
 			perm.ModelName = modelName
@@ -218,7 +218,7 @@ func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, p
 
 func (scm *Schema) applyFieldAttributes(parserField *parser.ModelField, protoField *proto.Field) {
 	for _, fieldAttribute := range parserField.Attributes {
-		switch fieldAttribute.NameToken.Name {
+		switch fieldAttribute.Name.Text {
 		case parser.AttributeUnique:
 			protoField.Unique = true
 		case parser.AttributeOptional:
@@ -230,7 +230,7 @@ func (scm *Schema) applyFieldAttributes(parserField *parser.ModelField, protoFie
 func (scm *Schema) permissionAttributeToProtoPermission(attr *parser.Attribute) *proto.PermissionRule {
 	pr := &proto.PermissionRule{}
 	for _, arg := range attr.Arguments {
-		switch arg.NameToken.Name {
+		switch arg.Name.Text {
 		// todo use parser constants for "expression" etc below
 		case "expression":
 			expr, _ := expressions.ToString(arg.Expression)

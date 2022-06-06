@@ -2,12 +2,6 @@ package formatter
 
 import (
 	"io"
-<<<<<<<< HEAD:output/output.go
-
-	"github.com/teamkeel/keel/output/console"
-	"github.com/teamkeel/keel/output/json"
-========
->>>>>>>> @{-1}:cmd/formatter/output.go
 )
 
 var defaultFormatterFunc = NewTextFormatter
