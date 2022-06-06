@@ -110,15 +110,19 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 	matchingSchemas := v.MatchingSchemas()
 
+	gutterAmount := 5
+
 	for _, err := range v.Errors {
 		errorStartLine := err.Pos.Line
 		errorEndLine := err.EndPos.Line
 
 		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
 			lines := strings.Split(match.Contents, "\n")
+			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
 
 			for lineIndex, line := range lines {
-				outputLine := fmt.Sprintf("%s  ", white.Sprint(lineIndex+1))
+				// line numbers
+				outputLine := white.Sprint(padRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
 
 				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
 					outputLine += fmt.Sprintf("%s\n", line)
@@ -130,6 +134,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				chars := strings.Split(line, "")
 
 				for charIdx, char := range chars {
+
 					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
 						outputLine += char
 						continue
@@ -139,26 +144,30 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				}
 
 				ret += fmt.Sprintf("%s\n", outputLine)
-
-				indent := func(position int) {
-					counter := 0
-
-					for counter <= position {
-						ret += " "
-						counter++
-					}
-				}
+				token := strings.TrimSpace(strings.Join(chars[err.Pos.Column-1:err.EndPos.Column-1], ""))
+				midPointPosition := codeStartCol + err.Pos.Column + (len(token) / 2)
 
 				newLine := func() {
 					ret += "\n"
 				}
 
+				indent := func(length int) {
+					counter := 1
+
+					for counter < length {
+						ret += " "
+						counter += 1
+					}
+				}
+
 				underline := func(token string) {
+					indent(codeStartCol + err.Pos.Column)
+
 					tokenLength := len(token)
 
 					counter := 0
 
-					for counter <= tokenLength {
+					for counter < tokenLength {
 						if counter == tokenLength/2 {
 							ret += color.New(color.FgYellow).Sprint("\u252C")
 						} else {
@@ -171,21 +180,17 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 				arrowDown := func(token string) {
 					newLine()
-					indent(err.Pos.Column + (len(token) / 2))
-
+					indent(midPointPosition)
 					ret += color.New(color.FgYellow).Sprint("\u2502")
 					newLine()
-					indent(err.Pos.Column + (len(token) / 2))
+					indent(midPointPosition)
 					ret += color.New(color.FgYellow).Sprint("\u2570")
 					ret += color.New(color.FgYellow).Sprint("\u2500")
 				}
 
-				token := strings.Join(chars[err.Pos.Column:err.EndPos.Column], "")
-				indent(err.Pos.Column)
 				underline(token)
-
 				arrowDown(token)
-				ret += fmt.Sprintf("%s\n", color.New(color.FgYellow).Sprintf(" %s", err.ErrorDetails.Message))
+				ret += fmt.Sprintf("%s\n", color.New(color.FgYellow).Sprintf(" %s. %s", err.ErrorDetails.Message, err.ErrorDetails.Hint))
 				newLine()
 			}
 		}
@@ -279,5 +284,45 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 		Message:      o["message"],
 		ShortMessage: o["short_message"],
 		Hint:         o["hint"],
+	}
+}
+
+func MaxOf(ints ...int) int {
+	max := ints[0]
+
+	for _, i := range ints {
+		if max < i {
+			max = i
+		}
+	}
+
+	return max
+}
+
+func MinOf(vars ...int) int {
+	min := vars[0]
+
+	for _, i := range vars {
+		if min > i {
+			min = i
+		}
+	}
+
+	return min
+}
+
+func padRight(str string, padAmount int) string {
+	for len(str) < padAmount {
+		str += " "
+	}
+
+	return str
+}
+
+func recursionCountDigits(number int) int {
+	if number < 10 {
+		return 1
+	} else {
+		return 1 + recursionCountDigits(number/10)
 	}
 }

@@ -780,7 +780,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 			newAttr.Name.Text = fmt.Sprintf("@%s", newAttr.Name.Text)
 			newAttr.Name.EndPos.Line = newAttr.Name.Pos.Line
 			newAttr.Name.EndPos.Column = newAttr.Name.Pos.Column + len(newAttr.Name.Text)
-			newAttr.Name.Pos.Column--
+			// newAttr.Name.Pos.Column--
 
 			errors = append(
 				errors,
