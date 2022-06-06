@@ -34,6 +34,7 @@ import (
 // - How to trigger the database recreation at boot time
 // - Stop it making a new postgres docker image every time
 // - Clean up when the command terminates (stop postgres)
+// - Proper error handling strategy
 //
 // TODOs these will be the next steps beyond the migrations-only version.
 //
@@ -72,7 +73,7 @@ func commandImplementation(cmd *cobra.Command, args []string) error {
 	defer directoryWatcher.Close()
 
 	handler := NewSchemaChangedHandler()
-	// goroutine housekeeping: This goroutine lives for as long as the Keel-Run command is running, and its
+	// goroutine housekeeping note: This goroutine lives for as long as the Keel-Run command is running, and its
 	// resources are release when the command terminates (with CTRL-C).
 	go c.reactToSchemaChanges(directoryWatcher, handler)
 
@@ -183,12 +184,10 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	differences, err := differenceAnalyser.Analyse()
 	_ = differences
 
-	migrationSQL, err := migrations.NewMigration0(newProto).MakeSQL()
-	if err != nil {
-		panic(fmt.Sprintf("error making migration zero: %v", err))
-	}
-
-	_ = migrationSQL
+	migrator := migrations.NewMigration0(newProto)
+	migrator.GenerateSQL()
+	sqlStatements := migrator.SQL
+	_ = sqlStatements
 
 	// Todo now apply these migrations
 	return nil

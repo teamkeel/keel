@@ -41,14 +41,6 @@ func (m0 *Migration0) GenerateSQL() {
 
 func (m0 *Migration0) appendCreateModel(model *proto.Model) {
 
-	// todo: need to add [] when field type is a list
-	format := `
-		CREATE TABLE {{.Name}} (
-			{{range .Columns}}
-    			{{.Name}} {{.Type}},
-			{{end}}
-		);
-	`
 	templateData := table{
 		Name:    model.Name, // Todo can we use the proto model names as they stand?
 		Columns: []*column{},
@@ -57,7 +49,7 @@ func (m0 *Migration0) appendCreateModel(model *proto.Model) {
 		templateData.Columns = append(templateData.Columns, m0.column(field))
 	}
 
-	tmpl, err := template.New("foo").Parse(format)
+	tmpl, err := template.New("foo").Parse(templateCreateTable)
 	if err != nil {
 		panic(fmt.Sprintf("error parsing template: %v", err))
 	}
@@ -87,3 +79,8 @@ type column struct {
 	Name string
 	Type string
 }
+
+// todo: need to add [] when field type is a list
+const templateCreateTable string = `CREATE TABLE {{.Name}} (
+{{range .Columns}}  {{.Name}} {{.Type}},
+{{end}});`

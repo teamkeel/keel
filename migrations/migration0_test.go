@@ -15,7 +15,7 @@ func TestItCompiles(t *testing.T) {
 
 	fmt.Println()
 	for _, statement := range m0.SQL {
-		fmt.Printf("%s", statement)
+		fmt.Printf("%s\n", statement)
 	}
 }
 
