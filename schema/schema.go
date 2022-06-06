@@ -127,7 +127,3 @@ func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
 		model.Sections = append(model.Sections, section)
 	}
 }
-
-// func (scm Schema) PrettyPrint() {
-
-// }
