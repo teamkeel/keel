@@ -4,29 +4,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+
+	"github.com/teamkeel/keel/model"
 )
-
-// Inputs models a set of files (Schema files and other files) that have been found in a
-// given directory.
-type Inputs struct {
-	Directory         string
-	SchemaFiles       []SchemaFile
-	OtherTypesOfFiles int // Placeholder for illustration
-}
-
-type SchemaFile struct {
-	FileName string
-	Contents string
-}
 
 // Assemble constructs an Inputs instance by selecting relevant
 // files from the given directory.
 //
 // So far it only looks for *.keel files and puts those in the SchemaFiles field.
-func Assemble(dirName string) (*Inputs, error) {
-	inputs := &Inputs{
+func Assemble(dirName string) (*model.Inputs, error) {
+	inputs := &model.Inputs{
 		Directory:   dirName,
-		SchemaFiles: []SchemaFile{},
+		SchemaFiles: []model.SchemaFile{},
 	}
 	globPattern := filepath.Join(dirName, "*.keel")
 	schemaFileNames, err := filepath.Glob(globPattern)
@@ -41,7 +30,7 @@ func Assemble(dirName string) (*Inputs, error) {
 		if err != nil {
 			return nil, fmt.Errorf("Error reading file: %v", err)
 		}
-		inputs.SchemaFiles = append(inputs.SchemaFiles, SchemaFile{
+		inputs.SchemaFiles = append(inputs.SchemaFiles, model.SchemaFile{
 			FileName: fName,
 			Contents: string(fileBytes),
 		})

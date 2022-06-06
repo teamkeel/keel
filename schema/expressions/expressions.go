@@ -10,26 +10,30 @@ import (
 )
 
 type Expression struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Or []*OrExpression `@@ ("or" @@)*`
 }
 
 type OrExpression struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	And []*ConditionWrap `@@ ("and" @@)*`
 }
 
 type ConditionWrap struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Expression *Expression `( "(" @@ ")"`
 	Condition  *Condition  `| @@ )`
 }
 
 type Condition struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	LHS      *Value `@@`
 	Operator string `( @( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" )`
@@ -37,7 +41,8 @@ type Condition struct {
 }
 
 type Value struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Number *int64   `  @Int`
 	String *string  `| @String`
@@ -49,7 +54,8 @@ type Value struct {
 }
 
 type Array struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Values []*Value `"[" @@ ( "," @@ )* "]"`
 }

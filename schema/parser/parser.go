@@ -5,18 +5,20 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/teamkeel/keel/inputs"
+	"github.com/teamkeel/keel/model"
 	"github.com/teamkeel/keel/schema/expressions"
 )
 
 type Schema struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Declarations []*Declaration `@@+`
 }
 
 type Declaration struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Model *Model `("model" @@`
 	Role  *Role  `| "role" @@`
@@ -24,14 +26,16 @@ type Declaration struct {
 }
 
 type Model struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
-	Name     string          `@Ident`
+	Name     NameToken       `@@`
 	Sections []*ModelSection `"{" @@* "}"`
 }
 
 type ModelSection struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Fields     []*ModelField  `( "fields" "{" @@+ "}"`
 	Functions  []*ModelAction `| "functions" "{" @@+ "}"`
@@ -39,93 +43,118 @@ type ModelSection struct {
 	Attribute  *Attribute     `| @@)`
 }
 
+type NameToken struct {
+	Pos    lexer.Position
+	EndPos lexer.Position
+
+	Text string `@Ident`
+}
+
+type AttributeNameToken struct {
+	Pos    lexer.Position
+	EndPos lexer.Position
+
+	Text string `"@" @Ident`
+}
+
 type ModelField struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	BuiltIn    bool
-	Name       string       `@Ident`
+	Name       NameToken    `@@`
 	Type       string       `@Ident`
 	Repeated   bool         `@( "[" "]" )?`
 	Attributes []*Attribute `( "{" @@+ "}" )?`
 }
 
 type API struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
-	Name     string        `@Ident`
+	Name     NameToken     `@@`
 	Sections []*APISection `"{" @@* "}"`
 }
 
 type Role struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
-	Name     string         `@Ident`
+	Name     NameToken      `@@`
 	Sections []*RoleSection `"{" @@* "}"`
 }
 
 type RoleSection struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Domains []*RoleDomain `("domains" "{" @@* "}"`
 	Emails  []*RoleEmail  `| "emails" "{" @@* "}")`
 }
 
 type RoleDomain struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Domain string `@String`
 }
 
 type RoleEmail struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Email string `@String`
 }
 
 type APISection struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Models    []*APIModels `("models" "{" @@* "}"`
 	Attribute *Attribute   `| @@)`
 }
 
 type APIModels struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
-	ModelName string `@Ident`
+	Name NameToken `@@`
 }
 
 type Attribute struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
-	Name      string               `"@" @Ident`
+	Name      AttributeNameToken   `@@`
 	Arguments []*AttributeArgument `( "(" @@ ( "," @@ )* ")" )?`
 }
 
 type AttributeArgument struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
-	Name       string                  `(@Ident ":")?`
+	Name       NameToken               `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 
 type ModelAction struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
 	Type       string       `@Ident`
-	Name       string       `@Ident`
+	Name       NameToken    `@@`
 	Arguments  []*ActionArg `"(" ( @@ ( "," @@ )* )? ")"`
 	Attributes []*Attribute `( "{" @@+ "}" )?`
 }
 
 type ActionArg struct {
-	Pos lexer.Position
+	Pos    lexer.Position
+	EndPos lexer.Position
 
-	Name string `@Ident`
+	Name NameToken `@@`
 }
 
-func Parse(s *inputs.SchemaFile) (*Schema, error) {
-
+func Parse(s *model.SchemaFile) (*Schema, error) {
 	// Customise the lexer to not ignore comments
 	lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
 		s.Mode =

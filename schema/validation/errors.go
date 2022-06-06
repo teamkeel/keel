@@ -4,9 +4,14 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"os"
+	"strings"
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/fatih/color"
+	"github.com/teamkeel/keel/model"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -40,8 +45,9 @@ type TemplateLiterals struct {
 type ValidationError struct {
 	ErrorDetails
 
-	Code string   `json:"code" regexp:"\\d+"`
-	Pos  LexerPos `json:"pos,omitempty"`
+	Code   string   `json:"code" regexp:"\\d+"`
+	Pos    LexerPos `json:"pos,omitempty"`
+	EndPos LexerPos `json:"end_pos,omitempty"`
 }
 
 type LexerPos struct {
@@ -61,13 +67,153 @@ type ValidationErrors struct {
 	Errors []*ValidationError
 }
 
+func (v ValidationErrors) MatchingSchemas() map[string]model.SchemaFile {
+	paths := []string{}
+	schemaFiles := map[string]model.SchemaFile{}
+
+	for _, err := range v.Errors {
+		if contains(paths, err.Pos.Filename) {
+			continue
+		}
+
+		paths = append(paths, err.Pos.Filename)
+	}
+
+	for _, path := range paths {
+		fileBytes, err := os.ReadFile(path)
+
+		if err != nil {
+			panic(err)
+		}
+
+		schemaFiles[path] = model.SchemaFile{FileName: path, Contents: string(fileBytes)}
+	}
+
+	return schemaFiles
+}
+
 func (v ValidationErrors) Error() string {
-	return fmt.Sprintf("%d validation errors found", len(v.Errors))
+	str := ""
+
+	for _, err := range v.Errors {
+		str += fmt.Sprintf("%s\n", err.Message)
+	}
+
+	return str
+}
+
+// Returns a visual representation of a schema file, annotated with error highlighting and messages
+func (v ValidationErrors) ToAnnotatedSchema() string {
+	ret := ""
+
+	red := color.New(color.FgRed)
+	blue := color.New(color.FgHiBlue)
+	yellow := color.New(color.FgYellow)
+
+	matchingSchemas := v.MatchingSchemas()
+
+	gutterAmount := 5
+
+	for _, err := range v.Errors {
+		errorStartLine := err.Pos.Line
+		errorEndLine := err.EndPos.Line
+
+		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
+			lines := strings.Split(match.Contents, "\n")
+			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
+
+			for lineIndex, line := range lines {
+				// line numbers
+				outputLine := blue.Sprint(padRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+
+				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
+					outputLine += fmt.Sprintf("%s\n", line)
+
+					ret += outputLine
+					continue
+				}
+
+				chars := strings.Split(line, "")
+
+				for charIdx, char := range chars {
+
+					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
+						outputLine += char
+						continue
+					}
+
+					outputLine += red.Sprint(char)
+				}
+
+				ret += fmt.Sprintf("%s\n", outputLine)
+				token := strings.TrimSpace(strings.Join(chars[err.Pos.Column-1:err.EndPos.Column-1], ""))
+				midPointPosition := codeStartCol + err.Pos.Column + (len(token) / 2)
+
+				newLine := func() {
+					ret += "\n"
+				}
+
+				indent := func(length int) {
+					counter := 1
+
+					for counter < length {
+						ret += " "
+						counter += 1
+					}
+				}
+
+				underline := func(token string) {
+					indent(codeStartCol + err.Pos.Column)
+
+					tokenLength := len(token)
+
+					counter := 0
+
+					for counter < tokenLength {
+						if counter == tokenLength/2 {
+							ret += yellow.Sprint("\u252C")
+						} else {
+							ret += yellow.Sprint("\u2500")
+
+						}
+						counter++
+					}
+				}
+
+				arrowDown := func(token string) {
+					newLine()
+					indent(midPointPosition)
+					ret += yellow.Sprint("\u2570")
+					ret += yellow.Sprint("\u2500")
+				}
+
+				underline(token)
+				arrowDown(token)
+				ret += fmt.Sprintf("%s\n", yellow.Sprintf(" %s. %s", err.ErrorDetails.Message, err.ErrorDetails.Hint))
+				newLine()
+			}
+		}
+	}
+
+	errorCount := len(v.Errors)
+	errorsPartial := ""
+	if errorCount > 1 {
+		errorsPartial = "errors"
+	} else {
+		errorsPartial = "error"
+	}
+
+	statusMessage := red.Sprint("INVALID\n")
+	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
+
+	schemaPreview := ret
+
+	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview)
 }
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func validationError(code string, data TemplateLiterals, Pos lexer.Position) error {
+func validationError(code string, data TemplateLiterals, Pos lexer.Position, EndPos lexer.Position) error {
 	return &ValidationError{
 		Code: code,
 		// todo global locale setting
@@ -77,6 +223,12 @@ func validationError(code string, data TemplateLiterals, Pos lexer.Position) err
 			Offset:   Pos.Offset,
 			Line:     Pos.Line,
 			Column:   Pos.Column,
+		},
+		EndPos: LexerPos{
+			Filename: EndPos.Filename,
+			Offset:   EndPos.Offset,
+			Line:     EndPos.Line,
+			Column:   EndPos.Column,
 		},
 	}
 }
@@ -130,4 +282,12 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 		ShortMessage: o["short_message"],
 		Hint:         o["hint"],
 	}
+}
+
+func padRight(str string, padAmount int) string {
+	for len(str) < padAmount {
+		str += " "
+	}
+
+	return str
 }
