@@ -21,6 +21,6 @@ func NewJSONFormatter(writer io.Writer) *JSONFormatter {
 }
 
 // Output implements the Formatter interface:
-func (f *JSONFormatter) Output(output []byte) error {
+func (f *JSONFormatter) Output(output interface{}) error {
 	return f.encoder.Encode(output)
 }

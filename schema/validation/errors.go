@@ -93,6 +93,16 @@ func (v ValidationErrors) MatchingSchemas() map[string]model.SchemaFile {
 }
 
 func (v ValidationErrors) Error() string {
+	str := ""
+
+	for _, err := range v.Errors {
+		str += fmt.Sprintf("%s\n", err.Message)
+	}
+
+	return str
+}
+
+func (v ValidationErrors) ToAnnotatedSchema() string {
 	ret := ""
 
 	red := color.New(color.FgRed)
@@ -103,8 +113,6 @@ func (v ValidationErrors) Error() string {
 	for _, err := range v.Errors {
 		errorStartLine := err.Pos.Line
 		errorEndLine := err.EndPos.Line
-		// spew.Dump("start:", err.Pos)
-		// spew.Dump("end:", err.EndPos)
 
 		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
 			lines := strings.Split(match.Contents, "\n")
@@ -199,13 +207,6 @@ func (v ValidationErrors) Error() string {
 	}
 
 	return fmt.Sprintf("%s\n%s\n%s", infoMessage, errorDetail, schemaPreview)
-}
-
-func (v ValidationErrors) AsBytes() []byte {
-
-	return []byte(
-		v.Error(),
-	)
 }
 
 func (e ValidationErrors) Unwrap() error { return e }

@@ -17,5 +17,5 @@ type Outputter interface {
 
 // Formatter is a simple interface which takes bytes and produces formatted output:
 type Formatter interface {
-	Output(output []byte) error
+	Output(output interface{}) error
 }
