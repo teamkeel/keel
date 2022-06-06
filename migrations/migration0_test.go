@@ -13,7 +13,10 @@ func TestItCompiles(t *testing.T) {
 	m0.GenerateSQL()
 	require.True(t, len(m0.SQL) > 0)
 
-	fmt.Printf("XXXX generated SQL so far...\n\n%s\n", m0.SQL)
+	fmt.Println()
+	for _, statement := range m0.SQL {
+		fmt.Printf("%s", statement)
+	}
 }
 
 var referenceSchema proto.Schema = proto.Schema{
@@ -21,15 +24,14 @@ var referenceSchema proto.Schema = proto.Schema{
 		{
 			Name: "ModelA",
 			Fields: []*proto.Field{
-				{Name: "Field1"},
-				{Name: "Field2"},
-			},
-		},
-		{
-			Name: "ModelB",
-			Fields: []*proto.Field{
-				{Name: "Field2"},
-				{Name: "Field3"},
+				{
+					Name: "Name",
+					Type: proto.FieldType_FIELD_TYPE_STRING,
+				},
+				{
+					Name: "Age",
+					Type: proto.FieldType_FIELD_TYPE_INT,
+				},
 			},
 		},
 	},

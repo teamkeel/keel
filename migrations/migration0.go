@@ -41,6 +41,7 @@ func (m0 *Migration0) GenerateSQL() {
 
 func (m0 *Migration0) appendCreateModel(model *proto.Model) {
 
+	// todo: need to add [] when field type is a list
 	format := `
 		CREATE TABLE {{.Name}} (
 			{{range .Columns}}
@@ -49,7 +50,7 @@ func (m0 *Migration0) appendCreateModel(model *proto.Model) {
 		);
 	`
 	templateData := table{
-		Name:    model.Name,
+		Name:    model.Name, // Todo can we use the proto model names as they stand?
 		Columns: []*column{},
 	}
 	for _, field := range model.Fields {
@@ -73,7 +74,7 @@ func (m0 *Migration0) appendCreateModel(model *proto.Model) {
 func (m0 *Migration0) column(field *proto.Field) *column {
 	return &column{
 		Name: field.Name,
-		Type: field.Type.String(),
+		Type: PostgresFieldTypes[field.Type],
 	}
 }
 
