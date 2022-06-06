@@ -183,9 +183,6 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				arrowDown := func(token string) {
 					newLine()
 					indent(midPointPosition)
-					ret += yellow.Sprint("\u2502")
-					newLine()
-					indent(midPointPosition)
 					ret += yellow.Sprint("\u2570")
 					ret += yellow.Sprint("\u2500")
 				}
