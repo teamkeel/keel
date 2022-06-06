@@ -183,7 +183,7 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	differences, err := differenceAnalyser.Analyse()
 	_ = differences
 
-	migrationSQL, err := migrations.NewMigrationZeroMaker(newProto).MakeSQL()
+	migrationSQL, err := migrations.NewMigration0(newProto).MakeSQL()
 	if err != nil {
 		panic(fmt.Sprintf("error making migration zero: %v", err))
 	}
