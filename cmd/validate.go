@@ -50,7 +50,7 @@ var validateCmd = &cobra.Command{
 			}
 		}
 
-		c.outputFormatter.Write([]byte(color.New(color.FgGreen).Sprint("Validation OK\n")))
+		c.outputFormatter.Write([]byte(color.New(color.FgGreen).Sprint("VALID\n")))
 
 		return nil
 	},

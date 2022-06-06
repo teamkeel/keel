@@ -102,11 +102,13 @@ func (v ValidationErrors) Error() string {
 	return str
 }
 
+// Returns a visual representation of a schema file, annotated with error highlighting and messages
 func (v ValidationErrors) ToAnnotatedSchema() string {
 	ret := ""
 
 	red := color.New(color.FgRed)
-	white := color.New(color.FgWhite).Add(color.FgHiBlue)
+	blue := color.New(color.FgHiBlue)
+	yellow := color.New(color.FgYellow)
 
 	matchingSchemas := v.MatchingSchemas()
 
@@ -122,7 +124,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 			for lineIndex, line := range lines {
 				// line numbers
-				outputLine := white.Sprint(padRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+				outputLine := blue.Sprint(padRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
 
 				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
 					outputLine += fmt.Sprintf("%s\n", line)
@@ -169,9 +171,9 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 					for counter < tokenLength {
 						if counter == tokenLength/2 {
-							ret += color.New(color.FgYellow).Sprint("\u252C")
+							ret += yellow.Sprint("\u252C")
 						} else {
-							ret += color.New(color.FgYellow).Sprint("\u2500")
+							ret += yellow.Sprint("\u2500")
 
 						}
 						counter++
@@ -181,16 +183,16 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				arrowDown := func(token string) {
 					newLine()
 					indent(midPointPosition)
-					ret += color.New(color.FgYellow).Sprint("\u2502")
+					ret += yellow.Sprint("\u2502")
 					newLine()
 					indent(midPointPosition)
-					ret += color.New(color.FgYellow).Sprint("\u2570")
-					ret += color.New(color.FgYellow).Sprint("\u2500")
+					ret += yellow.Sprint("\u2570")
+					ret += yellow.Sprint("\u2500")
 				}
 
 				underline(token)
 				arrowDown(token)
-				ret += fmt.Sprintf("%s\n", color.New(color.FgYellow).Sprintf(" %s. %s", err.ErrorDetails.Message, err.ErrorDetails.Hint))
+				ret += fmt.Sprintf("%s\n", yellow.Sprintf(" %s. %s", err.ErrorDetails.Message, err.ErrorDetails.Hint))
 				newLine()
 			}
 		}
@@ -203,15 +205,13 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 	} else {
 		errorsPartial = "error"
 	}
-	infoMessage := red.Add(color.Underline).Sprintf("%d validation %s found:", len(v.Errors), errorsPartial)
+
+	statusMessage := red.Sprint("INVALID\n")
+	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
+
 	schemaPreview := ret
-	errorDetail := ""
 
-	for _, err := range v.Errors {
-		errorDetail += fmt.Sprintf("• %s \n", err.Message)
-	}
-
-	return fmt.Sprintf("%s\n%s\n%s", infoMessage, errorDetail, schemaPreview)
+	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview)
 }
 
 func (e ValidationErrors) Unwrap() error { return e }
@@ -287,42 +287,10 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 	}
 }
 
-func MaxOf(ints ...int) int {
-	max := ints[0]
-
-	for _, i := range ints {
-		if max < i {
-			max = i
-		}
-	}
-
-	return max
-}
-
-func MinOf(vars ...int) int {
-	min := vars[0]
-
-	for _, i := range vars {
-		if min > i {
-			min = i
-		}
-	}
-
-	return min
-}
-
 func padRight(str string, padAmount int) string {
 	for len(str) < padAmount {
 		str += " "
 	}
 
 	return str
-}
-
-func recursionCountDigits(number int) int {
-	if number < 10 {
-		return 1
-	} else {
-		return 1 + recursionCountDigits(number/10)
-	}
 }

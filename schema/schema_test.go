@@ -91,9 +91,9 @@ func TestSchema(t *testing.T) {
 			diff, explanation := jsondiff.Compare(expectedJSON, actualJSON, &opts)
 
 			switch diff {
-			case jsondiff.FullMatch, jsondiff.SupersetMatch:
+			case jsondiff.FullMatch:
 				// success
-			case jsondiff.NoMatch:
+			case jsondiff.SupersetMatch, jsondiff.NoMatch:
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")
