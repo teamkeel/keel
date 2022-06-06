@@ -4,18 +4,18 @@ go 1.18
 
 require (
 	github.com/alecthomas/participle/v2 v2.0.0-alpha8
+	github.com/fatih/color v1.13.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/spf13/cobra v1.4.0
 	github.com/stretchr/testify v1.7.1
 	google.golang.org/protobuf v1.28.0
+	gopkg.in/yaml.v3 v3.0.0
 )
 
 require (
-	github.com/alexflint/go-restructure v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/fatih/color v1.13.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
@@ -26,5 +26,4 @@ require (
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
 )
