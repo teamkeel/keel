@@ -5,8 +5,8 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/model"
+	"github.com/teamkeel/keel/schema/expressions"
 )
 
 type Schema struct {

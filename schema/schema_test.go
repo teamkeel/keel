@@ -15,7 +15,7 @@ import (
 func TestSchema(t *testing.T) {
 	testdataDir := "./testdata"
 	testCases, err := ioutil.ReadDir(testdataDir)
-	require.NoError(t, err)	
+	require.NoError(t, err)
 
 	for _, testCase := range testCases {
 		if !testCase.IsDir() {
@@ -55,7 +55,7 @@ func TestSchema(t *testing.T) {
 					a := 1
 					_ = a
 				}
-	
+
 				require.NoError(t, err)
 
 				expectedJSON = expectedProto

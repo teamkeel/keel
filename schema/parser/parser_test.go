@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/model"
-	"github.com/teamkeel/keel/parser"
+	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 func parse(t *testing.T, s *model.SchemaFile) *parser.Schema {

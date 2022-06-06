@@ -8,8 +8,8 @@ import (
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/expressions"
-	"github.com/teamkeel/keel/parser"
+	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 var (

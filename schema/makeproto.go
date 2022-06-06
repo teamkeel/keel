@@ -3,9 +3,9 @@ package schema
 import (
 	"strings"
 
-	"github.com/teamkeel/keel/expressions"
-	"github.com/teamkeel/keel/parser"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 

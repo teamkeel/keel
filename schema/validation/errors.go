@@ -33,9 +33,9 @@ const (
 )
 
 type ErrorDetails struct {
-	Message      string `json:"message,omitempty" yaml:"message"`
-	ShortMessage string `json:"short_message,omitempty" yaml:"short_message"`
-	Hint         string `json:"hint,omitempty" yaml:"hint"`
+	Message      string `json:"message" yaml:"message"`
+	ShortMessage string `json:"short_message" yaml:"short_message"`
+	Hint         string `json:"hint" yaml:"hint"`
 }
 
 type TemplateLiterals struct {
