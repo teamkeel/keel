@@ -22,3 +22,19 @@ func TestHumanizeListDelimiterOr(t *testing.T) {
 
 	assert.Equal(t, "bananas, apples, or oranges", actual)
 }
+
+func TestHumanizeListOneItem(t *testing.T) {
+	list := []string{"bananas"}
+
+	actual := formatting.HumanizeList(list, formatting.DelimiterOr)
+
+	assert.Equal(t, "bananas", actual)
+}
+
+func TestHumanizeListTwoItems(t *testing.T) {
+	list := []string{"bananas", "oranges"}
+
+	actual := formatting.HumanizeList(list, formatting.DelimiterAnd)
+
+	assert.Equal(t, "bananas, and oranges", actual)
+}
