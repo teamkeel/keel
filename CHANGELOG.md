@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/teamkeel/keel/compare/v0.3.0...v0.3.1) (2022-06-07)
+
+
+### Bug Fixes
+
+* add GetPositionRange function to all parser nodes ([b799430](https://github.com/teamkeel/keel/commit/b799430194ad4f94e7e3c3b34f6e423fb66ff5dc))
+
 # [0.3.0](https://github.com/teamkeel/keel/compare/v0.2.5...v0.3.0) (2022-06-06)
 
 
