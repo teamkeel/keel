@@ -13,7 +13,7 @@ keel-cli is a tool to build and deploy services
 |  run              | Run the application locally                                                                       |
 |  validate         | Validate the Keel schema                                                                          |
 
-## Building
+## Building from source
 
 You can build the CLI executable by running:
 
