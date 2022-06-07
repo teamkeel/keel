@@ -1,16 +1,13 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"os"
 
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/client"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/formatter"
 	"github.com/teamkeel/keel/migrations"
+	"github.com/teamkeel/keel/postgres"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 
@@ -55,7 +52,6 @@ func commandImplementation(cmd *cobra.Command, args []string) error {
 	c := &runCommand{
 		outputFormatter: formatter.New(os.Stdout),
 	}
-	// todo - not sure how to integrate with the formatter for the Run command user case?
 	switch outputFormat {
 	case string(formatter.FormatJSON):
 		c.outputFormatter.SetOutput(formatter.FormatJSON, os.Stdout)
@@ -63,9 +59,10 @@ func commandImplementation(cmd *cobra.Command, args []string) error {
 		c.outputFormatter.SetOutput(formatter.FormatText, os.Stdout)
 	}
 
-	// todo what about localizing these messages - as we have others
 	c.outputFormatter.Write("Starting PostgreSQL")
-	bringUpPostgres()
+	if err := postgres.BringUpPostgresLocally(); err != nil {
+		return err
+	}
 
 	directoryWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -106,46 +103,6 @@ func init() {
 	// line flag.
 	cobraCommandWrapper.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "schema directory to run")
 	cobraCommandWrapper.Flags().StringVarP(&outputFormat, "output", "o", "console", "output format (console, json)")
-}
-
-// todo - move this to a separate module or even package, because its code will inevitably get quite a bit bigger.
-func bringUpPostgres() error {
-	ctx := context.Background()
-	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		panic(err)
-	}
-
-	imageName := "postgres" // The official (and latest) PostgreSQL image.
-	// todo - should we use a fixed and known version?
-
-	out, err := dockerClient.ImagePull(ctx, imageName, types.ImagePullOptions{})
-	if err != nil {
-		panic(err)
-	}
-	defer out.Close()
-	// Todo: What to do about this image pull output? In its naive form it is not part of the CLI Run command contract,
-	// but does a good job of showing the progress of this slow-running step. But it is also problematically
-	// verbose (when the image has to be fetched the first time.)
-
-	// io.Copy(os.Stdout, out)
-
-	// todo - decide if its ok to hard-code the database superuser, and serve on a fixed well known port.
-	containerConfig := &container.Config{
-		Image: imageName,
-		Env: []string{
-			"POSTGRES_PASSWORD=postgres",
-		},
-	}
-	resp, err := dockerClient.ContainerCreate(ctx, containerConfig, nil, nil, nil, "")
-	if err != nil {
-		panic(err)
-	}
-
-	if err := dockerClient.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{}); err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *SchemaChangedHandler) {
