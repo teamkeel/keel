@@ -137,6 +137,8 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
 			lines := strings.Split(match.Contents, "\n")
 			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
+			midPointPosition := codeStartCol + err.Pos.Column + ((err.EndPos.Column - err.Pos.Column) / 2)
+			tokenLength := err.EndPos.Column - err.Pos.Column
 
 			for lineIndex, line := range lines {
 				// Render line numbers in gutter
@@ -168,13 +170,6 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 				schemaString += fmt.Sprintf("%s\n", outputLine)
 
-				// Find the token in the char array based on the start and end column position of the error
-				token := strings.TrimSpace(strings.Join(chars[err.Pos.Column-1:err.EndPos.Column-1], ""))
-
-				// Find the midpoint of the token in the wider context of the line
-				// The codeStartCol is the the sum of the number of digits of the rendered line number + the default gutter of 5
-				midPointPosition := codeStartCol + err.Pos.Column + (len(token) / 2)
-
 				// Begin closures to render unicode arrows / hints / messages
 				newLine := func() {
 					schemaString += "\n"
@@ -189,10 +184,8 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 					}
 				}
 
-				underline := func(token string) {
+				underline := func() {
 					indent(codeStartCol + err.Pos.Column)
-
-					tokenLength := len(token)
 
 					counter := 0
 
@@ -207,7 +200,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 					}
 				}
 
-				arrowDown := func(token string) {
+				arrowDown := func() {
 					newLine()
 					indent(midPointPosition)
 					schemaString += yellow.Sprint("\u2570")
@@ -222,8 +215,8 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 					schemaString += cyan.Sprint(err.ErrorDetails.Hint)
 				}
 
-				underline(token)
-				arrowDown(token)
+				underline()
+				arrowDown()
 				message()
 				newLine()
 
@@ -241,22 +234,28 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func validationError(code string, data TemplateLiterals, Pos lexer.Position, EndPos lexer.Position) error {
+type PositionRanger interface {
+	GetPositionRange() (lexer.Position, lexer.Position)
+}
+
+func validationError(code string, data TemplateLiterals, position PositionRanger) error {
+	start, end := position.GetPositionRange()
+
 	return &ValidationError{
 		Code: code,
 		// todo global locale setting
 		ErrorDetails: *buildErrorDetailsFromYaml(code, "en", data),
 		Pos: LexerPos{
-			Filename: Pos.Filename,
-			Offset:   Pos.Offset,
-			Line:     Pos.Line,
-			Column:   Pos.Column,
+			Filename: start.Filename,
+			Offset:   start.Offset,
+			Line:     start.Line,
+			Column:   start.Column,
 		},
 		EndPos: LexerPos{
-			Filename: EndPos.Filename,
-			Offset:   EndPos.Offset,
-			Line:     EndPos.Line,
-			Column:   EndPos.Column,
+			Filename: end.Filename,
+			Offset:   end.Offset,
+			Line:     end.Line,
+			Column:   end.Column,
 		},
 	}
 }
