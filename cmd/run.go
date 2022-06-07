@@ -133,7 +133,9 @@ func bringUpPostgres() error {
 	// todo - decide if its ok to hard-code the database superuser, and serve on a fixed well known port.
 	containerConfig := &container.Config{
 		Image: imageName,
-		Env:   []string{"POSTGRES_PASSWORD=admin123"}, // change to postgres/postgres
+		Env: []string{
+			"POSTGRES_PASSWORD=postgres",
+		},
 	}
 	resp, err := dockerClient.ContainerCreate(ctx, containerConfig, nil, nil, nil, "")
 	if err != nil {
