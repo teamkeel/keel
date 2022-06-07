@@ -44,7 +44,7 @@ var validateCmd = &cobra.Command{
 		if err != nil {
 			errs, ok := err.(validation.ValidationErrors)
 			if ok {
-				return c.outputFormatter.Write(errs.ToAnnotatedSchema())
+				return c.outputFormatter.Write(errs.ToConsole())
 			} else {
 				return fmt.Errorf("error making schema: %v", err)
 			}

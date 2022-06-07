@@ -57,6 +57,8 @@ type LexerPos struct {
 	Column   int    `json:"column"`
 }
 
+var red, blue, yellow, cyan color.Color = *color.New(color.FgRed), *color.New(color.FgHiBlue), *color.New(color.FgHiYellow), *color.New(color.FgCyan)
+
 func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
 }
@@ -102,13 +104,27 @@ func (v ValidationErrors) Error() string {
 	return str
 }
 
+// Returns the console flavoured output format for a set of validation errors
+func (v ValidationErrors) ToConsole() string {
+	errorCount := len(v.Errors)
+	errorsPartial := ""
+	if errorCount > 1 {
+		errorsPartial = "errors"
+	} else {
+		errorsPartial = "error"
+	}
+
+	statusMessage := red.Sprint("INVALID\n")
+	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
+
+	schemaPreview := v.ToAnnotatedSchema()
+
+	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview)
+}
+
 // Returns a visual representation of a schema file, annotated with error highlighting and messages
 func (v ValidationErrors) ToAnnotatedSchema() string {
-	ret := ""
-
-	red := color.New(color.FgRed)
-	blue := color.New(color.FgHiBlue)
-	yellow := color.New(color.FgYellow)
+	schemaString := ""
 
 	matchingSchemas := v.MatchingSchemas()
 
@@ -123,20 +139,25 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
 
 			for lineIndex, line := range lines {
-				// line numbers
+				// Render line numbers in gutter
 				outputLine := blue.Sprint(padRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
 
+				// If the error line doesn't match the currently enumerated line
+				// then we can render the whole line without any colorization
 				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
 					outputLine += fmt.Sprintf("%s\n", line)
 
-					ret += outputLine
+					schemaString += outputLine
 					continue
 				}
 
 				chars := strings.Split(line, "")
 
+				// Enumerate over the characters in the line
 				for charIdx, char := range chars {
 
+					// Check if the character index is less than or greater than the corresponding start and end column
+					// If so, then render the char without any colorization
 					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
 						outputLine += char
 						continue
@@ -145,19 +166,25 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 					outputLine += red.Sprint(char)
 				}
 
-				ret += fmt.Sprintf("%s\n", outputLine)
+				schemaString += fmt.Sprintf("%s\n", outputLine)
+
+				// Find the token in the char array based on the start and end column position of the error
 				token := strings.TrimSpace(strings.Join(chars[err.Pos.Column-1:err.EndPos.Column-1], ""))
+
+				// Find the midpoint of the token in the wider context of the line
+				// The codeStartCol is the the sum of the number of digits of the rendered line number + the default gutter of 5
 				midPointPosition := codeStartCol + err.Pos.Column + (len(token) / 2)
 
+				// Begin closures to render unicode arrows / hints / messages
 				newLine := func() {
-					ret += "\n"
+					schemaString += "\n"
 				}
 
 				indent := func(length int) {
 					counter := 1
 
 					for counter < length {
-						ret += " "
+						schemaString += " "
 						counter += 1
 					}
 				}
@@ -171,9 +198,9 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 					for counter < tokenLength {
 						if counter == tokenLength/2 {
-							ret += yellow.Sprint("\u252C")
+							schemaString += yellow.Sprint("\u252C")
 						} else {
-							ret += yellow.Sprint("\u2500")
+							schemaString += yellow.Sprint("\u2500")
 
 						}
 						counter++
@@ -183,32 +210,33 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				arrowDown := func(token string) {
 					newLine()
 					indent(midPointPosition)
-					ret += yellow.Sprint("\u2570")
-					ret += yellow.Sprint("\u2500")
+					schemaString += yellow.Sprint("\u2570")
+					schemaString += yellow.Sprint("\u2500")
+				}
+
+				message := func() {
+					schemaString += yellow.Sprintf(" %s", err.ErrorDetails.Message)
+				}
+
+				hint := func() {
+					schemaString += cyan.Sprint(err.ErrorDetails.Hint)
 				}
 
 				underline(token)
 				arrowDown(token)
-				ret += fmt.Sprintf("%s\n", yellow.Sprintf(" %s. %s", err.ErrorDetails.Message, err.ErrorDetails.Hint))
+				message()
+				newLine()
+
+				// Line up hint with the error message above (taking into account unicode arrows)
+				hintOffset := 3
+				indent(midPointPosition + hintOffset)
+				hint()
 				newLine()
 			}
 		}
 	}
 
-	errorCount := len(v.Errors)
-	errorsPartial := ""
-	if errorCount > 1 {
-		errorsPartial = "errors"
-	} else {
-		errorsPartial = "error"
-	}
-
-	statusMessage := red.Sprint("INVALID\n")
-	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
-
-	schemaPreview := ret
-
-	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview)
+	return schemaString
 }
 
 func (e ValidationErrors) Unwrap() error { return e }
