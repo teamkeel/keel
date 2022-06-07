@@ -97,7 +97,7 @@ type column struct {
 
 // todos:
 // add [] when field type is a list
-// add field constraints
+// add field constraints - particularly not null is !OPTIONAL
 const templateCreateTable string = `CREATE TABLE {{.Name}} (
 {{range .Columns}}  {{.Name}} {{.Type}},
 {{end}});`

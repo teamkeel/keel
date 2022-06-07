@@ -150,6 +150,7 @@ func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *Sc
 	for {
 		select {
 		case event := <-watcher.Events:
+			// todo horrid hidden use of bitwise and
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				nameOfFileThatChanged := event.Name
 				if err := handler.Handle(nameOfFileThatChanged); err != nil {
@@ -179,11 +180,11 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 		return fmt.Errorf("error making proto from schema files: %v", err)
 	}
 
-	// TODO - leaving these calls in to show the work done on a schema-difference based
+	// TODO - leaving these calls in but commented out, to show the work done on a schema-difference based
 	// approach - but going now to experiment with a complete re-generation of the database instead.
-	differenceAnalyser := migrations.NewProtoDiffer(nil, newProto)
-	differences, err := differenceAnalyser.Analyse()
-	_ = differences
+	// differenceAnalyser := migrations.NewProtoDiffer(nil, newProto)
+	// differences, err := differenceAnalyser.Analyse()
+	// _ = differences
 
 	migrator := migrations.NewMigration0(newProto)
 	migrator.GenerateSQL()
