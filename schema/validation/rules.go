@@ -8,6 +8,7 @@ import (
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -629,7 +630,7 @@ func supportedFieldTypes(inputs []Input) []error {
 
 						hint := NewCorrectionHint(availableTypes, field.Type)
 
-						suggestions := strings.Join(hint.Results, ", ")
+						suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
 
 						errors = append(
 							errors,
@@ -773,14 +774,13 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 			}
 
 			hint := NewCorrectionHint(hintOptions, attr.Name.Text)
-			suggestions := strings.Join(hint.Results, ", ")
+			suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
 
 			// todo: very hacky to fix issue with attributes with @ not being captured by the lexer properly
 			newAttr := attr
 			newAttr.Name.Text = fmt.Sprintf("@%s", newAttr.Name.Text)
 			newAttr.Name.EndPos.Line = newAttr.Name.Pos.Line
 			newAttr.Name.EndPos.Column = newAttr.Name.Pos.Column + len(newAttr.Name.Text)
-			// newAttr.Name.Pos.Column--
 
 			errors = append(
 				errors,
