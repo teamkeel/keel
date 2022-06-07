@@ -27,6 +27,7 @@ func FieldNames(m *proto.Model) []string {
 
 // ModelsExists returns true if the given schema contains a
 // model with the given name.
+// todo move this family into proto package
 func ModelExists(models []*proto.Model, name string) bool {
 	_, _, found := lo.FindIndexOf(models, func(m *proto.Model) bool {
 		return m.Name == name

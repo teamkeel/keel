@@ -63,6 +63,7 @@ func commandImplementation(cmd *cobra.Command, args []string) error {
 		c.outputFormatter.SetOutput(formatter.FormatText, os.Stdout)
 	}
 
+	// todo what about localizing these messages - as we have others
 	c.outputFormatter.Write("Starting PostgreSQL")
 	bringUpPostgres()
 
@@ -132,7 +133,7 @@ func bringUpPostgres() error {
 	// todo - decide if its ok to hard-code the database superuser, and serve on a fixed well known port.
 	containerConfig := &container.Config{
 		Image: imageName,
-		Env:   []string{"POSTGRES_PASSWORD=admin123"},
+		Env:   []string{"POSTGRES_PASSWORD=admin123"}, // change to postgres/postgres
 	}
 	resp, err := dockerClient.ContainerCreate(ctx, containerConfig, nil, nil, nil, "")
 	if err != nil {
@@ -158,7 +159,7 @@ func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *Sc
 
 		case err := <-watcher.Errors:
 			fmt.Printf("XXXX error received on watcher error channel: %v\n", err)
-			// Bail out of the Run command if the watcher encounters an error.
+			// Todo Bail out of the Run command if the watcher encounters an error.
 			return
 		}
 	}
