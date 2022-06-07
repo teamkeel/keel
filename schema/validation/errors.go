@@ -4,9 +4,14 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"os"
+	"strings"
 	"text/template"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/fatih/color"
+	"github.com/teamkeel/keel/model"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -40,8 +45,9 @@ type TemplateLiterals struct {
 type ValidationError struct {
 	ErrorDetails
 
-	Code string   `json:"code" regexp:"\\d+"`
-	Pos  LexerPos `json:"pos,omitempty"`
+	Code   string   `json:"code" regexp:"\\d+"`
+	Pos    LexerPos `json:"pos,omitempty"`
+	EndPos LexerPos `json:"end_pos,omitempty"`
 }
 
 type LexerPos struct {
@@ -50,6 +56,8 @@ type LexerPos struct {
 	Line     int    `json:"line"`
 	Column   int    `json:"column"`
 }
+
+var red, blue, yellow, cyan color.Color = *color.New(color.FgRed), *color.New(color.FgHiBlue), *color.New(color.FgHiYellow), *color.New(color.FgCyan)
 
 func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
@@ -61,22 +69,193 @@ type ValidationErrors struct {
 	Errors []*ValidationError
 }
 
+func (v ValidationErrors) MatchingSchemas() map[string]model.SchemaFile {
+	paths := []string{}
+	schemaFiles := map[string]model.SchemaFile{}
+
+	for _, err := range v.Errors {
+		if contains(paths, err.Pos.Filename) {
+			continue
+		}
+
+		paths = append(paths, err.Pos.Filename)
+	}
+
+	for _, path := range paths {
+		fileBytes, err := os.ReadFile(path)
+
+		if err != nil {
+			panic(err)
+		}
+
+		schemaFiles[path] = model.SchemaFile{FileName: path, Contents: string(fileBytes)}
+	}
+
+	return schemaFiles
+}
+
 func (v ValidationErrors) Error() string {
-	return fmt.Sprintf("%d validation errors found", len(v.Errors))
+	str := ""
+
+	for _, err := range v.Errors {
+		str += fmt.Sprintf("%s\n", err.Message)
+	}
+
+	return str
+}
+
+// Returns the console flavoured output format for a set of validation errors
+func (v ValidationErrors) ToConsole() string {
+	errorCount := len(v.Errors)
+	errorsPartial := ""
+	if errorCount > 1 {
+		errorsPartial = "errors"
+	} else {
+		errorsPartial = "error"
+	}
+
+	statusMessage := red.Sprint("INVALID\n")
+	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
+
+	schemaPreview := v.ToAnnotatedSchema()
+
+	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview)
+}
+
+// Returns a visual representation of a schema file, annotated with error highlighting and messages
+func (v ValidationErrors) ToAnnotatedSchema() string {
+	schemaString := ""
+
+	matchingSchemas := v.MatchingSchemas()
+
+	gutterAmount := 5
+
+	for _, err := range v.Errors {
+		errorStartLine := err.Pos.Line
+		errorEndLine := err.EndPos.Line
+
+		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
+			lines := strings.Split(match.Contents, "\n")
+			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
+			midPointPosition := codeStartCol + err.Pos.Column + ((err.EndPos.Column - err.Pos.Column) / 2)
+			tokenLength := err.EndPos.Column - err.Pos.Column
+
+			for lineIndex, line := range lines {
+				// Render line numbers in gutter
+				outputLine := blue.Sprint(padRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+
+				// If the error line doesn't match the currently enumerated line
+				// then we can render the whole line without any colorization
+				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
+					outputLine += fmt.Sprintf("%s\n", line)
+
+					schemaString += outputLine
+					continue
+				}
+
+				chars := strings.Split(line, "")
+
+				// Enumerate over the characters in the line
+				for charIdx, char := range chars {
+
+					// Check if the character index is less than or greater than the corresponding start and end column
+					// If so, then render the char without any colorization
+					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
+						outputLine += char
+						continue
+					}
+
+					outputLine += red.Sprint(char)
+				}
+
+				schemaString += fmt.Sprintf("%s\n", outputLine)
+
+				// Begin closures to render unicode arrows / hints / messages
+				newLine := func() {
+					schemaString += "\n"
+				}
+
+				indent := func(length int) {
+					counter := 1
+
+					for counter < length {
+						schemaString += " "
+						counter += 1
+					}
+				}
+
+				underline := func() {
+					indent(codeStartCol + err.Pos.Column)
+
+					counter := 0
+
+					for counter < tokenLength {
+						if counter == tokenLength/2 {
+							schemaString += yellow.Sprint("\u252C")
+						} else {
+							schemaString += yellow.Sprint("\u2500")
+
+						}
+						counter++
+					}
+				}
+
+				arrowDown := func() {
+					newLine()
+					indent(midPointPosition)
+					schemaString += yellow.Sprint("\u2570")
+					schemaString += yellow.Sprint("\u2500")
+				}
+
+				message := func() {
+					schemaString += yellow.Sprintf(" %s", err.ErrorDetails.Message)
+				}
+
+				hint := func() {
+					schemaString += cyan.Sprint(err.ErrorDetails.Hint)
+				}
+
+				underline()
+				arrowDown()
+				message()
+				newLine()
+
+				// Line up hint with the error message above (taking into account unicode arrows)
+				hintOffset := 3
+				indent(midPointPosition + hintOffset)
+				hint()
+				newLine()
+			}
+		}
+	}
+
+	return schemaString
 }
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func validationError(code string, data TemplateLiterals, Pos lexer.Position) error {
+type PositionRanger interface {
+	GetPositionRange() (lexer.Position, lexer.Position)
+}
+
+func validationError(code string, data TemplateLiterals, position PositionRanger) error {
+	start, end := position.GetPositionRange()
+
 	return &ValidationError{
 		Code: code,
 		// todo global locale setting
 		ErrorDetails: *buildErrorDetailsFromYaml(code, "en", data),
 		Pos: LexerPos{
-			Filename: Pos.Filename,
-			Offset:   Pos.Offset,
-			Line:     Pos.Line,
-			Column:   Pos.Column,
+			Filename: start.Filename,
+			Offset:   start.Offset,
+			Line:     start.Line,
+			Column:   start.Column,
+		},
+		EndPos: LexerPos{
+			Filename: end.Filename,
+			Offset:   end.Offset,
+			Line:     end.Line,
+			Column:   end.Column,
 		},
 	}
 }
@@ -130,4 +309,12 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 		ShortMessage: o["short_message"],
 		Hint:         o["hint"],
 	}
+}
+
+func padRight(str string, padAmount int) string {
+	for len(str) < padAmount {
+		str += " "
+	}
+
+	return str
 }

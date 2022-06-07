@@ -1,3 +1,33 @@
+## [0.3.1](https://github.com/teamkeel/keel/compare/v0.3.0...v0.3.1) (2022-06-07)
+
+
+### Bug Fixes
+
+* add GetPositionRange function to all parser nodes ([b799430](https://github.com/teamkeel/keel/commit/b799430194ad4f94e7e3c3b34f6e423fb66ff5dc))
+
+# [0.3.0](https://github.com/teamkeel/keel/compare/v0.2.5...v0.3.0) (2022-06-06)
+
+
+### Bug Fixes
+
+* cleanup newlines ([66202aa](https://github.com/teamkeel/keel/commit/66202aaa17aa2f31030316a0bc08a44624d699c2))
+* get all error highlighting working in right position in schema string ([28c51d7](https://github.com/teamkeel/keel/commit/28c51d75fa0b58ccf06a7b58c2ae31e87456dc0e))
+* revert back to output package receiving generic interface for writing ([c88ff5f](https://github.com/teamkeel/keel/commit/c88ff5f7fe41b17653d3f64965337a8c809222e0))
+
+
+### Features
+
+* adds line numbers to schema output ([3f36c77](https://github.com/teamkeel/keel/commit/3f36c77dda34661aca9bdad6de0b2df9f0eea6b1))
+* align error messages on the same column as violated token ([602b530](https://github.com/teamkeel/keel/commit/602b5301dd6b0534ae27eb3f19eaaa25ca87d7dc))
+* fancy inline errors ([daaf839](https://github.com/teamkeel/keel/commit/daaf8397dc04cfa3d18ba15547821aef5cf88a71))
+* green valid text ([5afa5d9](https://github.com/teamkeel/keel/commit/5afa5d9ea25874e27be3a7f4b1df2db73c5fd13e))
+* highlight start of error in schema ([9e3d57e](https://github.com/teamkeel/keel/commit/9e3d57ee8cffe66eec6b6203cc7ca7106efed54b))
+* remove extra down line ([2d371de](https://github.com/teamkeel/keel/commit/2d371de53a900a02b7ce7b46248dabcaa6a178de))
+* restructure output package and share models via new package ([da15a22](https://github.com/teamkeel/keel/commit/da15a22455c6023375a55c31b739df05ba476c93))
+* sort out end pos bug ([5338611](https://github.com/teamkeel/keel/commit/533861122c3070a830c02a78393b87db211c415d))
+* update all nodes to include EndPos ([73f8167](https://github.com/teamkeel/keel/commit/73f8167701c31c190ca65ca9fa509d4d7af282af))
+* update rules to reference NameToken.Name.Pos and EndPos ([90b35f5](https://github.com/teamkeel/keel/commit/90b35f566b87bfde29ff6d813bd48d15c286bd51))
+
 ## [0.2.5](https://github.com/teamkeel/keel/compare/v0.2.4...v0.2.5) (2022-05-25)
 
 
