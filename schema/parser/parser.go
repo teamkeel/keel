@@ -10,131 +10,149 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 )
 
-type Schema struct {
+type AST struct {
 	Node
 
-	Declarations []*Declaration `@@+`
+	Declarations []*DeclarationNode `@@+`
 }
 
-type Declaration struct {
+type DeclarationNode struct {
 	Node
 
-	Model *Model `("model" @@`
-	Role  *Role  `| "role" @@`
-	API   *API   `| "api" @@)`
+	Model *ModelNode `("model" @@`
+	Role  *RoleNode  `| "role" @@`
+	API   *APINode   `| "api" @@)`
+	Enum  *EnumNode  `| @@`
 }
 
-type Model struct {
+type ModelNode struct {
 	Node
 
-	Name     NameToken       `@@`
-	Sections []*ModelSection `"{" @@* "}"`
+	Name     NameNode            `@@`
+	Sections []*ModelSectionNode `"{" @@* "}"`
 }
 
-type ModelSection struct {
+type ModelSectionNode struct {
 	Node
 
-	Fields     []*ModelField  `( "fields" "{" @@+ "}"`
-	Functions  []*ModelAction `| "functions" "{" @@+ "}"`
-	Operations []*ModelAction `| "operations" "{" @@+ "}"`
-	Attribute  *Attribute     `| @@)`
+	Fields     []*FieldNode   `( "fields" "{" @@+ "}"`
+	Functions  []*ActionNode  `| "functions" "{" @@+ "}"`
+	Operations []*ActionNode  `| "operations" "{" @@+ "}"`
+	Attribute  *AttributeNode `| @@)`
 }
 
-type NameToken struct {
+type NameNode struct {
 	Node
 
-	Text string `@Ident`
+	Value string `@Ident`
 }
 
 type AttributeNameToken struct {
 	Node
 
-	Text string `"@" @Ident`
+	Value string `"@" @Ident`
 }
 
-type ModelField struct {
+type FieldNode struct {
 	Node
 
-	BuiltIn    bool
-	Name       NameToken    `@@`
-	Type       string       `@Ident`
-	Repeated   bool         `@( "[" "]" )?`
-	Attributes []*Attribute `( "{" @@+ "}" )?`
+	Name       NameNode         `@@`
+	Type       string           `@Ident`
+	Repeated   bool             `@( "[" "]" )?`
+	Attributes []*AttributeNode `( "{" @@+ "}" )?`
+
+	// Some fields are added implicitly after parsing the schema
+	// For these fields this value is set to true so we can distinguish
+	// them from fields defined by the user in the schema
+	BuiltIn bool
 }
 
-type API struct {
+type APINode struct {
 	Node
 
-	Name     NameToken     `@@`
-	Sections []*APISection `"{" @@* "}"`
+	Name     NameNode          `@@`
+	Sections []*APISectionNode `"{" @@* "}"`
 }
 
-type Role struct {
+type APISectionNode struct {
 	Node
 
-	Name     NameToken      `@@`
-	Sections []*RoleSection `"{" @@* "}"`
+	Models    []*ModelsNode  `("models" "{" @@* "}"`
+	Attribute *AttributeNode `| @@)`
 }
 
-type RoleSection struct {
+type RoleNode struct {
 	Node
 
-	Domains []*RoleDomain `("domains" "{" @@* "}"`
-	Emails  []*RoleEmail  `| "emails" "{" @@* "}")`
+	Name     NameNode           `@@`
+	Sections []*RoleSectionNode `"{" @@* "}"`
 }
 
-type RoleDomain struct {
+type RoleSectionNode struct {
+	Node
+
+	Domains []*DomainNode `("domains" "{" @@* "}"`
+	Emails  []*EmailsNode `| "emails" "{" @@* "}")`
+}
+
+type DomainNode struct {
 	Node
 
 	Domain string `@String`
 }
 
-type RoleEmail struct {
+type EmailsNode struct {
 	Node
 
 	Email string `@String`
 }
 
-type APISection struct {
+type ModelsNode struct {
 	Node
 
-	Models    []*APIModels `("models" "{" @@* "}"`
-	Attribute *Attribute   `| @@)`
+	Name NameNode `@@`
 }
 
-type APIModels struct {
+type AttributeNode struct {
 	Node
 
-	Name NameToken `@@`
+	Name      AttributeNameToken       `@@`
+	Arguments []*AttributeArgumentNode `( "(" @@ ( "," @@ )* ")" )?`
 }
 
-type Attribute struct {
+type AttributeArgumentNode struct {
 	Node
 
-	Name      AttributeNameToken   `@@`
-	Arguments []*AttributeArgument `( "(" @@ ( "," @@ )* ")" )?`
-}
-
-type AttributeArgument struct {
-	Node
-
-	Name       NameToken               `(@@ ":")?`
+	Name       NameNode                `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 
-type ModelAction struct {
+type ActionNode struct {
 	Node
 
-	Type       string       `@Ident`
-	Name       NameToken    `@@`
-	Arguments  []*ActionArg `"(" ( @@ ( "," @@ )* )? ")"`
-	Attributes []*Attribute `( "{" @@+ "}" )?`
+	Type       string                `@Ident`
+	Name       NameNode              `@@`
+	Arguments  []*ActionArgumentNode `"(" ( @@ ( "," @@ )* )? ")"`
+	Attributes []*AttributeNode      `( "{" @@+ "}" )?`
 }
 
-type ActionArg struct {
+type ActionArgumentNode struct {
 	Node
 
-	Name NameToken `@@`
+	Name NameNode `@@`
+}
+
+type EnumNode struct {
+	Node
+
+	Name   NameNode         `"enum" @@`
+	Values []*EnumValueNode `"{" @@+ "}"`
+}
+
+type EnumValueNode struct {
+	Node
+
+	Name NameNode `@@`
 }
 
 type Node struct {
@@ -178,7 +196,7 @@ func (n Node) GetPositionRange() (start lexer.Position, end lexer.Position) {
 	return start, end
 }
 
-func Parse(s *reader.SchemaFile) (*Schema, error) {
+func Parse(s *reader.SchemaFile) (*AST, error) {
 	// Customise the lexer to not ignore comments
 	lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
 		s.Mode =
@@ -190,12 +208,12 @@ func Parse(s *reader.SchemaFile) (*Schema, error) {
 				scanner.ScanComments
 	})
 
-	parser, err := participle.Build(&Schema{}, participle.Lexer(lex))
+	parser, err := participle.Build(&AST{}, participle.Lexer(lex))
 	if err != nil {
 		return nil, err
 	}
 
-	schema := &Schema{}
+	schema := &AST{}
 
 	err = parser.ParseString(s.FileName, s.Contents, schema)
 	if err != nil {

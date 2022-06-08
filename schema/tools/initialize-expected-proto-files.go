@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
@@ -19,7 +20,7 @@ Specificially it populates all the directories whose name is testdata/proto<some
 with a proto.json file.
 */
 func main() {
-	testdataDir := "../testdata"
+	testdataDir := os.Args[1]
 	subDirs, err := os.ReadDir(testdataDir)
 	if err != nil {
 		panic(fmt.Errorf("cannot read the testdata directory: %v", err))
@@ -35,7 +36,7 @@ func main() {
 			continue
 		}
 
-		outputFile := "../testdata/" + subDir.Name() + "/proto.json"
+		outputFile := filepath.Join(testdataDir, subDir.Name(), "proto.json")
 		originalContents := getFileContents(outputFile)
 
 		s2m := schema.Builder{}
@@ -60,7 +61,7 @@ func main() {
 		// Update statistics
 		switch {
 		case len(originalContents) == 0:
-			stats.created++
+			stats.created = append(stats.created, subDir.Name())
 		case len(originalContents) != 0 && filesDiffer(originalContents, newFileContents):
 			stats.changed = append(stats.changed, subDir.Name())
 		default:
@@ -71,7 +72,7 @@ func main() {
 }
 
 type stats struct {
-	created   int
+	created   []string
 	unchanged int
 	changed   []string
 }
@@ -98,11 +99,23 @@ func filesDiffer(a, b []byte) bool {
 }
 
 func outputStats(stats stats) {
-	fmt.Printf("Created %d completely new files\n", stats.created)
-	fmt.Printf("Overwrote %d files with changes\n", len(stats.changed))
-	fmt.Printf("The files that changed are...\n")
-	for _, c := range stats.changed {
-		fmt.Printf("%s\n", c)
+	if stats.unchanged > 0 {
+		fmt.Printf("%d files were unchanged\n\n", stats.unchanged)
 	}
-	fmt.Printf("\n")
+
+	if len(stats.created) > 0 {
+		fmt.Println("The following files were created...")
+		for _, c := range stats.created {
+			fmt.Printf(" - %s\n", c)
+		}
+		fmt.Println("")
+	}
+
+	if len(stats.changed) > 0 {
+		fmt.Println("The following files changed...")
+		for _, c := range stats.changed {
+			fmt.Printf(" - %s\n", c)
+		}
+		fmt.Println("")
+	}
 }

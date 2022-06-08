@@ -13,6 +13,7 @@ import (
 // A Builder knows how to produce a (validated) proto.Schema,
 // from a given Keel Builder. Construct one, then call the Make method.
 type Builder struct {
+	asts []*parser.AST
 }
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
@@ -82,38 +83,40 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		return nil, err
 	}
 
-	validatedSchemas := []*parser.Schema{}
+	validatedSchemas := []*parser.AST{}
 	for _, vs := range validationInputs {
 		validatedSchemas = append(validatedSchemas, vs.ParsedSchema)
 	}
-	protoModels := scm.makeProtoModels(validatedSchemas)
+	scm.asts = validatedSchemas
+
+	protoModels := scm.makeProtoModels()
 	return protoModels, nil
 }
 
 // insertBuiltInFields injects new fields into the parser schema, to represent
 // our implicit (or built-in) fields. For example every Model has an <id> field.
-func (scm *Builder) insertBuiltInFields(declarations *parser.Schema) {
+func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 	for _, decl := range declarations.Declarations {
 		if decl.Model == nil {
 			continue
 		}
-		field := &parser.ModelField{
+		field := &parser.FieldNode{
 			BuiltIn: true,
-			Name: parser.NameToken{
-				Text: parser.ImplicitFieldNameId,
+			Name: parser.NameNode{
+				Value: parser.ImplicitFieldNameId,
 			},
 			Type: parser.FieldTypeID,
-			Attributes: []*parser.Attribute{
+			Attributes: []*parser.AttributeNode{
 				{
-					Name: parser.AttributeNameToken{Text: "primaryKey"},
+					Name: parser.AttributeNameToken{Value: "primaryKey"},
 				},
 				{
-					Name: parser.AttributeNameToken{Text: "unique"},
+					Name: parser.AttributeNameToken{Value: "unique"},
 				},
 			},
 		}
-		section := &parser.ModelSection{
-			Fields: []*parser.ModelField{field},
+		section := &parser.ModelSectionNode{
+			Fields: []*parser.FieldNode{field},
 		}
 		model := decl.Model
 		model.Sections = append(model.Sections, section)

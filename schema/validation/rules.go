@@ -84,8 +84,8 @@ func modelsUpperCamel(inputs []Input) []error {
 			// make the MustCompile panic a load-time thing rather than a runtime thing.
 			reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
 
-			if reg.FindString(decl.Model.Name.Text) != decl.Model.Name.Text {
-				suggested := strcase.ToCamel(strings.ToLower(decl.Model.Name.Text))
+			if reg.FindString(decl.Model.Name.Value) != decl.Model.Name.Value {
+				suggested := strcase.ToCamel(strings.ToLower(decl.Model.Name.Value))
 
 				errors = append(
 					errors,
@@ -93,7 +93,7 @@ func modelsUpperCamel(inputs []Input) []error {
 						ErrorUpperCamel,
 						TemplateLiterals{
 							Literals: map[string]string{
-								"Model":     decl.Model.Name.Text,
+								"Model":     decl.Model.Name.Value,
 								"Suggested": suggested,
 							},
 						},
@@ -122,14 +122,14 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					if field.BuiltIn {
 						continue
 					}
-					if strcase.ToLowerCamel(field.Name.Text) != field.Name.Text {
+					if strcase.ToLowerCamel(field.Name.Value) != field.Name.Value {
 						errors = append(
 							errors,
 							validationError(ErrorFieldNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name":      field.Name.Text,
-										"Suggested": strcase.ToLowerCamel(strings.ToLower(field.Name.Text)),
+										"Name":      field.Name.Value,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(field.Name.Value)),
 									},
 								},
 								field.Name,
@@ -138,14 +138,14 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 					}
 				}
 				for _, operation := range model.Operations {
-					if strcase.ToLowerCamel(operation.Name.Text) != operation.Name.Text {
+					if strcase.ToLowerCamel(operation.Name.Value) != operation.Name.Value {
 						errors = append(
 							errors,
 							validationError(ErrorOperationNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name":      operation.Name.Text,
-										"Suggested": strcase.ToLowerCamel(strings.ToLower(operation.Name.Text)),
+										"Name":      operation.Name.Value,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(operation.Name.Value)),
 									},
 								},
 								operation.Name,
@@ -155,14 +155,14 @@ func fieldsOpsFuncsLowerCamel(inputs []Input) []error {
 				}
 
 				for _, function := range model.Functions {
-					if strcase.ToLowerCamel(function.Name.Text) != function.Name.Text {
+					if strcase.ToLowerCamel(function.Name.Value) != function.Name.Value {
 						errors = append(
 							errors,
 							validationError(ErrorFunctionNameLowerCamel,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name":      function.Name.Text,
-										"Suggested": strcase.ToLowerCamel(strings.ToLower(function.Name.Text)),
+										"Name":      function.Name.Value,
+										"Suggested": strcase.ToLowerCamel(strings.ToLower(function.Name.Value)),
 									},
 								},
 								function.Name,
@@ -191,13 +191,13 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 				fieldNames := map[string]bool{}
 
 				for _, field := range sections.Fields {
-					if _, ok := fieldNames[field.Name.Text]; ok {
+					if _, ok := fieldNames[field.Name.Value]; ok {
 						errors = append(
 							errors,
 							validationError(ErrorFieldNamesUniqueInModel,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name": field.Name.Text,
+										"Name": field.Name.Value,
 										"Line": fmt.Sprint(field.Name.Pos.Line),
 									},
 								},
@@ -206,7 +206,7 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 						)
 					}
 
-					fieldNames[field.Name.Text] = true
+					fieldNames[field.Name.Value] = true
 				}
 			}
 		}
@@ -215,7 +215,7 @@ func fieldNamesMustBeUniqueInAModel(inputs []Input) []error {
 }
 
 type GlobalOperations struct {
-	Op        *parser.ModelAction
+	Op        *parser.ActionNode
 	ModelName string
 }
 
@@ -231,7 +231,7 @@ func uniqueOperationsGlobally(inputs []Input) []GlobalOperations {
 				for _, operation := range sec.Operations {
 					globalOperations = append(globalOperations, GlobalOperations{
 						Op:        operation,
-						ModelName: declaration.Model.Name.Text,
+						ModelName: declaration.Model.Name.Value,
 					})
 				}
 			}
@@ -248,7 +248,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 	globalOperations := uniqueOperationsGlobally(inputs)
 
 	for _, op := range globalOperations {
-		operationNames = append(operationNames, op.Op.Name.Text)
+		operationNames = append(operationNames, op.Op.Name.Value)
 	}
 	duplicates := findDuplicates(operationNames)
 
@@ -260,7 +260,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 
 	for _, operation := range globalOperations {
 		for _, duplicate := range duplicates {
-			if operation.Op.Name.Text == duplicate {
+			if operation.Op.Name.Value == duplicate {
 				duplicationOperations = append(duplicationOperations, operation)
 			}
 		}
@@ -269,7 +269,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 	seenOperations := map[string]bool{}
 
 	for _, nameError := range duplicationOperations {
-		key := fmt.Sprintf("%s-%s", nameError.ModelName, nameError.Op.Name.Text)
+		key := fmt.Sprintf("%s-%s", nameError.ModelName, nameError.Op.Name.Value)
 
 		if _, ok := seenOperations[key]; ok {
 			errors = append(
@@ -278,7 +278,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 					TemplateLiterals{
 						Literals: map[string]string{
 							"Model": nameError.ModelName,
-							"Name":  nameError.Op.Name.Text,
+							"Name":  nameError.Op.Name.Value,
 							"Line":  fmt.Sprint(nameError.Op.Pos.Line),
 						},
 					},
@@ -296,7 +296,7 @@ func operationsUniqueGlobally(inputs []Input) []error {
 }
 
 type operationFunctionInputFields struct {
-	Fields []*parser.ActionArg
+	Fields []*parser.ActionArgumentNode
 	Pos    lexer.Position
 }
 
@@ -319,7 +319,7 @@ func operationFunctionInputs(inputs []Input) []error {
 					if len(operation.Arguments) == 0 {
 						continue
 					}
-					operationFields[operation.Name.Text] = &operationFunctionInputFields{
+					operationFields[operation.Name.Value] = &operationFunctionInputFields{
 						Fields: operation.Arguments,
 						Pos:    operation.Pos,
 					}
@@ -342,7 +342,7 @@ func operationFunctionInputs(inputs []Input) []error {
 					if len(function.Arguments) == 0 {
 						continue
 					}
-					functionFields[function.Name.Text] = &operationFunctionInputFields{
+					functionFields[function.Name.Value] = &operationFunctionInputFields{
 						Fields: function.Arguments,
 						Pos:    function.Name.Pos,
 					}
@@ -376,14 +376,14 @@ func noReservedFieldNames(inputs []Input) []error {
 							continue
 						}
 
-						if strings.EqualFold(name, field.Name.Text) {
+						if strings.EqualFold(name, field.Name.Value) {
 							errors = append(
 								errors,
 								validationError(ErrorReservedFieldName,
 									TemplateLiterals{
 										Literals: map[string]string{
-											"Name":       field.Name.Text,
-											"Suggestion": fmt.Sprintf("%ser", field.Name.Text),
+											"Name":       field.Name.Value,
+											"Suggestion": fmt.Sprintf("%ser", field.Name.Value),
 										},
 									},
 									field.Name,
@@ -411,14 +411,14 @@ func noReservedModelNames(inputs []Input) []error {
 					continue
 				}
 
-				if strings.EqualFold(name, dec.Model.Name.Text) {
+				if strings.EqualFold(name, dec.Model.Name.Value) {
 					errors = append(
 						errors,
 						validationError(ErrorReservedModelName,
 							TemplateLiterals{
 								Literals: map[string]string{
-									"Name":       dec.Model.Name.Text,
-									"Suggestion": fmt.Sprintf("%ser", dec.Model.Name.Text),
+									"Name":       dec.Model.Name.Value,
+									"Suggestion": fmt.Sprintf("%ser", dec.Model.Name.Value),
 								},
 							},
 							dec.Model.Name,
@@ -435,7 +435,7 @@ func noReservedModelNames(inputs []Input) []error {
 //GET operation must take a unique field as an input (or a unique combinations of inputs)
 func operationUniqueFieldInput(inputs []Input) []error {
 	var errors []error
-	var fields []*parser.ModelField
+	var fields []*parser.FieldNode
 
 	for _, input := range inputs {
 		schema := input.ParsedSchema
@@ -464,7 +464,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 				}
 				nonFieldAttrs := make(map[string]bool, 0)
 				for _, operation := range section.Operations {
-					nonFieldAttrs[operation.Name.Text] = false
+					nonFieldAttrs[operation.Name.Value] = false
 
 					if operation.Type != parser.ActionTypeGet {
 						continue
@@ -474,18 +474,18 @@ func operationUniqueFieldInput(inputs []Input) []error {
 
 					for _, field := range fields {
 						if len(operation.Arguments) != 1 && len(operation.Attributes) > 0 {
-							validAttrs := checkAttributeExpressions(operation.Attributes, dec.Model.Name.Text, field)
+							validAttrs := checkAttributeExpressions(operation.Attributes, dec.Model.Name.Value, field)
 							if validAttrs {
-								nonFieldAttrs[operation.Name.Text] = true
+								nonFieldAttrs[operation.Name.Value] = true
 								isValid = true
 							}
 						}
 
-						if !nonFieldAttrs[operation.Name.Text] && len(operation.Arguments) != 1 {
+						if !nonFieldAttrs[operation.Name.Value] && len(operation.Arguments) != 1 {
 							continue
 						}
 
-						if !nonFieldAttrs[operation.Name.Text] {
+						if !nonFieldAttrs[operation.Name.Value] {
 							isValid = checkFuncArgsUnique(operation, fields)
 						}
 					}
@@ -496,7 +496,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 							validationError(ErrorOperationInputFieldNotUnique,
 								TemplateLiterals{
 									Literals: map[string]string{
-										"Name": operation.Name.Text,
+										"Name": operation.Name.Value,
 									},
 								},
 								operation.Name,
@@ -511,7 +511,7 @@ func operationUniqueFieldInput(inputs []Input) []error {
 	return errors
 }
 
-func checkAttributeExpressions(input []*parser.Attribute, model string, field *parser.ModelField) bool {
+func checkAttributeExpressions(input []*parser.AttributeNode, model string, field *parser.FieldNode) bool {
 	var isValid bool
 
 	for _, attr := range input {
@@ -520,7 +520,7 @@ func checkAttributeExpressions(input []*parser.Attribute, model string, field *p
 				continue
 			}
 			for _, at := range field.Attributes {
-				if at.Name.Text != "unique" {
+				if at.Name.Value != "unique" {
 					continue
 				}
 				ok := expressions.IsAssignment(attrArg.Expression)
@@ -551,27 +551,27 @@ func checkAttributeExpressions(input []*parser.Attribute, model string, field *p
 	return isValid
 }
 
-func checkAssignmentFields(indents *expressions.Value, model string, field *parser.ModelField) bool {
+func checkAssignmentFields(indents *expressions.Value, model string, field *parser.FieldNode) bool {
 	if indents.Ident[0] != strings.ToLower(model) {
 		return false
 	}
-	return indents.Ident[1] == field.Name.Text
+	return indents.Ident[1] == field.Name.Value
 }
 
-func checkFuncArgsUnique(function *parser.ModelAction, fields []*parser.ModelField) bool {
+func checkFuncArgsUnique(function *parser.ActionNode, fields []*parser.FieldNode) bool {
 	isValid := false
 	arg := function.Arguments[0]
 
 	for _, field := range fields {
-		if field.Name.Text != arg.Name.Text {
+		if field.Name.Value != arg.Name.Value {
 			continue
 		}
 
 		for _, attr := range field.Attributes {
-			if attr.Name.Text == "unique" {
+			if attr.Name.Value == "unique" {
 				isValid = true
 			}
-			if attr.Name.Text == "primaryKey" {
+			if attr.Name.Value == "primaryKey" {
 				isValid = true
 			}
 		}
@@ -580,11 +580,21 @@ func checkFuncArgsUnique(function *parser.ModelAction, fields []*parser.ModelFie
 	return isValid
 }
 
+var builtInFieldTypes = map[string]bool{
+	"Text":             true,
+	"Date":             true,
+	"Timestamp":        true,
+	"Image":            true,
+	"Boolean":          true,
+	"Identity":         true,
+	parser.FieldTypeID: true,
+}
+
 //Supported field types
 func supportedFieldTypes(inputs []Input) []error {
 	var errors []error
 
-	var fieldTypes = map[string]bool{"Text": true, "Date": true, "Timestamp": true, "Image": true, "Boolean": true, "Enum": true, "Identity": true, parser.FieldTypeID: true}
+	userDefinedNames := map[string]bool{}
 
 	for _, input := range inputs {
 		schema := input.ParsedSchema
@@ -592,9 +602,17 @@ func supportedFieldTypes(inputs []Input) []error {
 		// Append all model names to the supported types definition
 		for _, dec := range schema.Declarations {
 			if dec.Model != nil {
-				fieldTypes[dec.Model.Name.Text] = true
+				userDefinedNames[dec.Model.Name.Value] = true
+			}
+			if dec.Enum != nil {
+				userDefinedNames[dec.Enum.Name.Value] = true
 			}
 		}
+
+	}
+
+	for _, input := range inputs {
+		schema := input.ParsedSchema
 
 		for _, dec := range schema.Declarations {
 			if dec.Model == nil {
@@ -603,36 +621,44 @@ func supportedFieldTypes(inputs []Input) []error {
 
 			for _, section := range dec.Model.Sections {
 				for _, field := range section.Fields {
-					if _, ok := fieldTypes[field.Type]; !ok {
-						availableTypes := []string{}
-
-						for fieldType := range fieldTypes {
-							if len(fieldType) > 0 {
-								availableTypes = append(availableTypes, fieldType)
-							}
-						}
-
-						// todo feed hint suggestions into validation error somehow.
-						sort.Strings(availableTypes)
-
-						hint := NewCorrectionHint(availableTypes, field.Type)
-
-						suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
-
-						errors = append(
-							errors,
-							validationError(ErrorUnsupportedFieldType,
-								TemplateLiterals{
-									Literals: map[string]string{
-										"Name":        field.Name.Text,
-										"Type":        field.Type,
-										"Suggestions": suggestions,
-									},
-								},
-								field.Name,
-							),
-						)
+					if _, ok := builtInFieldTypes[field.Type]; ok {
+						continue
 					}
+
+					if _, ok := userDefinedNames[field.Type]; ok {
+						continue
+					}
+
+					availableTypes := []string{}
+
+					for fieldType := range builtInFieldTypes {
+						availableTypes = append(availableTypes, fieldType)
+					}
+					for name := range userDefinedNames {
+						availableTypes = append(availableTypes, name)
+					}
+
+					// todo feed hint suggestions into validation error somehow.
+					sort.Strings(availableTypes)
+
+					hint := NewCorrectionHint(availableTypes, field.Type)
+
+					suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
+
+					errors = append(
+						errors,
+						validationError(ErrorUnsupportedFieldType,
+							TemplateLiterals{
+								Literals: map[string]string{
+									"Name":        field.Name.Value,
+									"Type":        field.Type,
+									"Suggestions": suggestions,
+								},
+							},
+							field.Name,
+						),
+					)
+
 				}
 			}
 		}
@@ -641,8 +667,8 @@ func supportedFieldTypes(inputs []Input) []error {
 	return errors
 }
 
-func findModels(inputs []Input) []*parser.Model {
-	models := []*parser.Model{}
+func findModels(inputs []Input) []*parser.ModelNode {
+	models := []*parser.ModelNode{}
 	for _, input := range inputs {
 		for _, decl := range input.ParsedSchema.Declarations {
 			if decl.Model != nil {
@@ -659,13 +685,13 @@ func modelsGloballyUnique(inputs []Input) []error {
 	seenModelNames := map[string]bool{}
 
 	for _, model := range findModels(inputs) {
-		if _, ok := seenModelNames[model.Name.Text]; ok {
+		if _, ok := seenModelNames[model.Name.Value]; ok {
 			errors = append(
 				errors,
 				validationError(ErrorUniqueModelsGlobally,
 					TemplateLiterals{
 						Literals: map[string]string{
-							"Name": model.Name.Text,
+							"Name": model.Name.Value,
 						},
 					},
 					model.Name,
@@ -674,7 +700,7 @@ func modelsGloballyUnique(inputs []Input) []error {
 
 			continue
 		}
-		seenModelNames[model.Name.Text] = true
+		seenModelNames[model.Name.Value] = true
 	}
 
 	return errors
@@ -690,24 +716,24 @@ func supportedAttributeTypes(inputs []Input) []error {
 			if dec.Model != nil {
 				for _, section := range dec.Model.Sections {
 					if section.Attribute != nil {
-						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "model", dec.Model.Name.Text)...)
+						errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", dec.Model.Name.Value)...)
 					}
 
 					if section.Operations != nil {
 						for _, op := range section.Operations {
-							errors = append(errors, checkAttributes(op.Attributes, "operation", op.Name.Text)...)
+							errors = append(errors, checkAttributes(op.Attributes, "operation", op.Name.Value)...)
 						}
 					}
 
 					if section.Functions != nil {
 						for _, function := range section.Functions {
-							errors = append(errors, checkAttributes(function.Attributes, "function", function.Name.Text)...)
+							errors = append(errors, checkAttributes(function.Attributes, "function", function.Name.Value)...)
 						}
 					}
 
 					if section.Fields != nil {
 						for _, field := range section.Fields {
-							errors = append(errors, checkAttributes(field.Attributes, "field", field.Name.Text)...)
+							errors = append(errors, checkAttributes(field.Attributes, "field", field.Name.Value)...)
 						}
 					}
 				}
@@ -717,7 +743,7 @@ func supportedAttributeTypes(inputs []Input) []error {
 			if dec.API != nil {
 				for _, section := range dec.API.Sections {
 					if section.Attribute != nil {
-						errors = append(errors, checkAttributes([]*parser.Attribute{section.Attribute}, "api", dec.API.Name.Text)...)
+						errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "api", dec.API.Name.Value)...)
 					}
 				}
 			}
@@ -727,7 +753,7 @@ func supportedAttributeTypes(inputs []Input) []error {
 	return errors
 }
 
-func checkAttributes(attributes []*parser.Attribute, definedOn string, parentName string) []error {
+func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) []error {
 	var supportedAttributes = map[string][]string{
 		parser.KeywordModel:     {parser.AttributePermission},
 		parser.KeywordApi:       {parser.AttributeGraphQL},
@@ -747,18 +773,18 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 	errors := make([]error, 0)
 
 	for _, attr := range attributes {
-		if contains(builtIns[definedOn], attr.Name.Text) {
+		if contains(builtIns[definedOn], attr.Name.Value) {
 			continue
 		}
 
-		if !contains(supportedAttributes[definedOn], attr.Name.Text) {
+		if !contains(supportedAttributes[definedOn], attr.Name.Value) {
 			hintOptions := supportedAttributes[definedOn]
 
 			for i, hint := range hintOptions {
 				hintOptions[i] = fmt.Sprintf("@%s", hint)
 			}
 
-			hint := NewCorrectionHint(hintOptions, attr.Name.Text)
+			hint := NewCorrectionHint(hintOptions, attr.Name.Value)
 			suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
 
 			errors = append(
@@ -766,7 +792,7 @@ func checkAttributes(attributes []*parser.Attribute, definedOn string, parentNam
 				validationError(ErrorUnsupportedAttributeType,
 					TemplateLiterals{
 						Literals: map[string]string{
-							"Name":        attr.Name.Text,
+							"Name":        attr.Name.Value,
 							"ParentName":  parentName,
 							"DefinedOn":   definedOn,
 							"Suggestions": suggestions,
@@ -816,7 +842,7 @@ func buildErrorInvalidInputs(fields map[string]*operationFunctionInputFields) []
 						TemplateLiterals{
 							Literals: map[string]string{
 								"Model": functionName,
-								"Field": field.Name.Text,
+								"Field": field.Name.Value,
 								"Line":  fmt.Sprint(field.Pos.Line),
 							},
 						},
@@ -840,7 +866,7 @@ func findInvalidOpsFunctionInputs(inputs []Input, operationInput map[string]*ope
 				for _, field := range modelName.Fields {
 					for operationName, operationField := range operationInput {
 						for _, operationFieldName := range operationField.Fields {
-							if operationFieldName.Name.Text == field.Name.Text {
+							if operationFieldName.Name.Value == field.Name.Value {
 								delete(operationInput, operationName)
 							}
 						}
