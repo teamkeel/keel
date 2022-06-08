@@ -6,8 +6,8 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/teamkeel/keel/model"
 	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/reader"
 )
 
 type Schema struct {
@@ -178,7 +178,7 @@ func (n Node) GetPositionRange() (start lexer.Position, end lexer.Position) {
 	return start, end
 }
 
-func Parse(s *model.SchemaFile) (*Schema, error) {
+func Parse(s *reader.SchemaFile) (*Schema, error) {
 	// Customise the lexer to not ignore comments
 	lex := lexer.NewTextScannerLexer(func(s *scanner.Scanner) {
 		s.Mode =

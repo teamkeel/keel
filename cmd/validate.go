@@ -31,7 +31,7 @@ var validateCmd = &cobra.Command{
 			c.outputFormatter.SetOutput(formatter.FormatText, os.Stdout)
 		}
 
-		schema := schema.Schema{}
+		schema := schema.Builder{}
 		var err error
 
 		switch {
