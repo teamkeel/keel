@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -25,6 +26,38 @@ func BringUpPostgresLocally() error {
 		return err
 	}
 	// todo establish and return the connection
+	return nil
+}
+
+// StopThePostgresContainer stops the postgres container - having checked first
+// that such a container exists, and it is running.
+func StopThePostgresContainer() error {
+	fmt.Printf("Stopping the postgres container... ")
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+	container, err := findPostgresContainer(dockerClient)
+	if err != nil {
+		return err
+	}
+	if container == nil {
+		return nil
+	}
+	running, err := isContainerRunning(dockerClient, container)
+	if err != nil {
+		return err
+	}
+	if !running {
+		return nil
+	}
+	stopTimeout := time.Duration(5 * time.Second)
+	// Note that ContainerStop() gracefully stops the container by choice, but then forcibly after the timeout.
+	err = dockerClient.ContainerStop(context.Background(), container.ID, &stopTimeout)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Stopped\n")
 	return nil
 }
 
@@ -154,6 +187,11 @@ func isContainerRunning(dockerClient *client.Client, container *types.Container)
 	return containerJSON.State.Running, nil
 }
 
+// awaitReadCompletion reads from the given reader until it reaches EOF.
+// It's used in the context of waiting for a docker image to be fetched, and
+// is the method used in the docker SDK to wait for the fetch to be complete.
+// We exploit it also to emit a growing row of dot characters to indicate
+// progress.
 func awaitReadCompletion(r io.Reader) {
 	// Consuming the output in (max) 1000 byte chunks gives us circa
 	// 80 read cycles - and we output a dot for each of them to show progress.

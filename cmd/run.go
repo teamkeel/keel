@@ -48,7 +48,7 @@ var cobraCommandWrapper = &cobra.Command{
 	RunE:  commandImplementation,
 }
 
-func commandImplementation(cmd *cobra.Command, args []string) error {
+func commandImplementation(cmd *cobra.Command, args []string) (err error) {
 	c := &runCommand{
 		outputFormatter: formatter.New(os.Stdout),
 	}
@@ -60,7 +60,7 @@ func commandImplementation(cmd *cobra.Command, args []string) error {
 	}
 
 	c.outputFormatter.Write("Starting PostgreSQL")
-	if err := postgres.BringUpPostgresLocally(); err != nil {
+	if err = postgres.BringUpPostgresLocally(); err != nil {
 		return err
 	}
 
