@@ -10,7 +10,7 @@ import (
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/fatih/color"
-	"github.com/teamkeel/keel/model"
+	"github.com/teamkeel/keel/schema/reader"
 
 	"gopkg.in/yaml.v3"
 )
@@ -69,9 +69,9 @@ type ValidationErrors struct {
 	Errors []*ValidationError
 }
 
-func (v ValidationErrors) MatchingSchemas() map[string]model.SchemaFile {
+func (v ValidationErrors) MatchingSchemas() map[string]reader.SchemaFile {
 	paths := []string{}
-	schemaFiles := map[string]model.SchemaFile{}
+	schemaFiles := map[string]reader.SchemaFile{}
 
 	for _, err := range v.Errors {
 		if contains(paths, err.Pos.Filename) {
@@ -88,7 +88,7 @@ func (v ValidationErrors) MatchingSchemas() map[string]model.SchemaFile {
 			panic(err)
 		}
 
-		schemaFiles[path] = model.SchemaFile{FileName: path, Contents: string(fileBytes)}
+		schemaFiles[path] = reader.SchemaFile{FileName: path, Contents: string(fileBytes)}
 	}
 
 	return schemaFiles
