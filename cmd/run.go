@@ -155,10 +155,10 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 }
 
 func makeProtoFromSchemaFiles() (proto *proto.Schema, err error) {
-	schema := schema.Schema{}
+	builder := schema.Builder{}
 	// todo - inputDir is a cmd package-global variable (because it is a CLI command flag), but we
 	// should introduce a pass-by-value copy to pass down the call stack.
-	proto, err = schema.MakeFromDirectory(inputDir)
+	proto, err = builder.MakeFromDirectory(inputDir)
 	if err != nil {
 		panic(fmt.Sprintf("error making protobuf schema from directory: %v", err))
 	}
