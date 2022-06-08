@@ -2,24 +2,23 @@ package schema
 
 import (
 	"fmt"
-	"io/ioutil"
 
-	"github.com/teamkeel/keel/inputs"
-	"github.com/teamkeel/keel/model"
 	"github.com/teamkeel/keel/proto"
+
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
 )
 
-// A Schema knows how to produce a (validated) proto.Schema,
-// from a given Keel Schema. Construct one, then call the Make method.
-type Schema struct {
+// A Builder knows how to produce a (validated) proto.Schema,
+// from a given Keel Builder. Construct one, then call the Make method.
+type Builder struct {
 }
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
 // directory.
-func (scm *Schema) MakeFromDirectory(directory string) (*proto.Schema, error) {
-	allInputFiles, err := inputs.Assemble(directory)
+func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
+	allInputFiles, err := reader.FromDir(directory)
 	if err != nil {
 		return nil, fmt.Errorf("error assembling input files: %v", err)
 	}
@@ -37,19 +36,12 @@ func (scm *Schema) MakeFromDirectory(directory string) (*proto.Schema, error) {
 }
 
 // MakeFromFile constructs a proto.Schema from the given .keel file.
-func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, error) {
-	fileBytes, err := ioutil.ReadFile(filename)
+func (scm *Builder) MakeFromFile(filename string) (*proto.Schema, error) {
+	allInputFiles, err := reader.FromFile(filename)
 	if err != nil {
 		return nil, err
 	}
-	schemaFile := model.SchemaFile{
-		FileName: filename,
-		Contents: string(fileBytes),
-	}
-	allInputFiles := &model.Inputs{
-		Directory:   "Unspecified",
-		SchemaFiles: []model.SchemaFile{schemaFile},
-	}
+
 	schema, err := scm.makeFromInputs(allInputFiles)
 	if err != nil {
 		verrs, ok := err.(validation.ValidationErrors)
@@ -64,7 +56,7 @@ func (scm *Schema) MakeFromFile(filename string) (*proto.Schema, error) {
 	return schema, nil
 }
 
-func (scm *Schema) makeFromInputs(allInputFiles *model.Inputs) (*proto.Schema, error) {
+func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema, error) {
 	// - For each of the .keel (schema) files specified...
 	// 		- Parse to AST
 	// 		- Add built-in fields
@@ -100,7 +92,7 @@ func (scm *Schema) makeFromInputs(allInputFiles *model.Inputs) (*proto.Schema, e
 
 // insertBuiltInFields injects new fields into the parser schema, to represent
 // our implicit (or built-in) fields. For example every Model has an <id> field.
-func (scm *Schema) insertBuiltInFields(declarations *parser.Schema) {
+func (scm *Builder) insertBuiltInFields(declarations *parser.Schema) {
 	for _, decl := range declarations.Declarations {
 		if decl.Model == nil {
 			continue

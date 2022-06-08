@@ -47,7 +47,7 @@ func TestSchema(t *testing.T) {
 				filesByName[f.Name()] = b
 			}
 
-			s2m := schema.Schema{}
+			s2m := schema.Builder{}
 			protoSchema, err := s2m.MakeFromDirectory(testCaseDir)
 
 			var expectedJSON []byte

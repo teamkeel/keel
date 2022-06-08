@@ -38,7 +38,7 @@ func main() {
 		outputFile := "../testdata/" + subDir.Name() + "/proto.json"
 		originalContents := getFileContents(outputFile)
 
-		s2m := schema.Schema{}
+		s2m := schema.Builder{}
 		protoSchema, err := s2m.MakeFromDirectory(testdataDir + "/" + subDir.Name())
 		if err != nil {
 			panic(fmt.Errorf("failed to make schema from directory: %v", err))

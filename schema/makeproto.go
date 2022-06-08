@@ -10,7 +10,7 @@ import (
 )
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) set of parsed AST.
-func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema {
+func (scm *Builder) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
 	for _, parserSchema := range parserSchemas {
@@ -33,7 +33,7 @@ func (scm *Schema) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema
 	return protoSchema
 }
 
-func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
+func (scm *Builder) makeModel(decl *parser.Declaration) *proto.Model {
 	parserModel := decl.Model
 	protoModel := &proto.Model{
 		Name: parserModel.Name.Text,
@@ -63,7 +63,7 @@ func (scm *Schema) makeModel(decl *parser.Declaration) *proto.Model {
 	return protoModel
 }
 
-func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
+func (scm *Builder) makeRole(decl *parser.Declaration) *proto.Role {
 	parserRole := decl.Role
 	protoRole := &proto.Role{
 		Name: parserRole.Name.Text,
@@ -79,7 +79,7 @@ func (scm *Schema) makeRole(decl *parser.Declaration) *proto.Role {
 	return protoRole
 }
 
-func (scm *Schema) makeAPI(decl *parser.Declaration) *proto.Api {
+func (scm *Builder) makeAPI(decl *parser.Declaration) *proto.Api {
 	parserAPI := decl.API
 	protoAPI := &proto.Api{
 		Name:      parserAPI.Name.Text,
@@ -101,7 +101,7 @@ func (scm *Schema) makeAPI(decl *parser.Declaration) *proto.Api {
 	return protoAPI
 }
 
-func (scm *Schema) makeFields(parserFields []*parser.ModelField, modelName string) []*proto.Field {
+func (scm *Builder) makeFields(parserFields []*parser.ModelField, modelName string) []*proto.Field {
 	protoFields := []*proto.Field{}
 	for _, parserField := range parserFields {
 		protoField := scm.makeField(parserField, modelName)
@@ -110,7 +110,7 @@ func (scm *Schema) makeFields(parserFields []*parser.ModelField, modelName strin
 	return protoFields
 }
 
-func (scm *Schema) makeField(parserField *parser.ModelField, modelName string) *proto.Field {
+func (scm *Builder) makeField(parserField *parser.ModelField, modelName string) *proto.Field {
 	protoField := &proto.Field{
 		ModelName: modelName,
 		Name:      parserField.Name.Text,
@@ -148,7 +148,7 @@ func (scm *Schema) makeField(parserField *parser.ModelField, modelName string) *
 	return protoField
 }
 
-func (scm *Schema) makeOperations(parserFunctions []*parser.ModelAction, modelName string, impl proto.OperationImplementation) []*proto.Operation {
+func (scm *Builder) makeOperations(parserFunctions []*parser.ModelAction, modelName string, impl proto.OperationImplementation) []*proto.Operation {
 	protoOps := []*proto.Operation{}
 	for _, parserFunc := range parserFunctions {
 		protoOp := scm.makeOp(parserFunc, modelName, impl)
@@ -157,7 +157,7 @@ func (scm *Schema) makeOperations(parserFunctions []*parser.ModelAction, modelNa
 	return protoOps
 }
 
-func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, impl proto.OperationImplementation) *proto.Operation {
+func (scm *Builder) makeOp(parserFunction *parser.ModelAction, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
 		ModelName:      modelName,
 		Name:           parserFunction.Name.Text,
@@ -170,7 +170,7 @@ func (scm *Schema) makeOp(parserFunction *parser.ModelAction, modelName string, 
 	return protoOp
 }
 
-func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName string) []*proto.OperationInput {
+func (scm *Builder) makeArguments(parserFunction *parser.ModelAction, modelName string) []*proto.OperationInput {
 	// Currently, we only support arguments of the form <modelname>.
 	operationInputs := []*proto.OperationInput{}
 	for _, parserArg := range parserFunction.Arguments {
@@ -185,7 +185,7 @@ func (scm *Schema) makeArguments(parserFunction *parser.ModelAction, modelName s
 	return operationInputs
 }
 
-func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
+func (scm *Builder) applyModelAttribute(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
 	switch attribute.Name.Text {
 	case parser.AttributePermission:
 		perm := scm.permissionAttributeToProtoPermission(attribute)
@@ -194,7 +194,7 @@ func (scm *Schema) applyModelAttribute(parserModel *parser.Model, protoModel *pr
 	}
 }
 
-func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation, modelName string) {
+func (scm *Builder) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation, modelName string) {
 	for _, attribute := range parserFunction.Attributes {
 		switch attribute.Name.Text {
 		case parser.AttributePermission:
@@ -216,7 +216,7 @@ func (scm *Schema) applyFunctionAttributes(parserFunction *parser.ModelAction, p
 	}
 }
 
-func (scm *Schema) applyFieldAttributes(parserField *parser.ModelField, protoField *proto.Field) {
+func (scm *Builder) applyFieldAttributes(parserField *parser.ModelField, protoField *proto.Field) {
 	for _, fieldAttribute := range parserField.Attributes {
 		switch fieldAttribute.Name.Text {
 		case parser.AttributeUnique:
@@ -227,7 +227,7 @@ func (scm *Schema) applyFieldAttributes(parserField *parser.ModelField, protoFie
 	}
 }
 
-func (scm *Schema) permissionAttributeToProtoPermission(attr *parser.Attribute) *proto.PermissionRule {
+func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.Attribute) *proto.PermissionRule {
 	pr := &proto.PermissionRule{}
 	for _, arg := range attr.Arguments {
 		switch arg.Name.Text {
@@ -248,7 +248,7 @@ func (scm *Schema) permissionAttributeToProtoPermission(attr *parser.Attribute) 
 	return pr
 }
 
-func (scm *Schema) mapToOperationType(parsedOperation string) proto.OperationType {
+func (scm *Builder) mapToOperationType(parsedOperation string) proto.OperationType {
 	switch parsedOperation {
 	case parser.ActionTypeCreate:
 		return proto.OperationType_OPERATION_TYPE_CREATE
@@ -268,7 +268,7 @@ func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
 }
 
-func (scm *Schema) mapToAPIType(parserAPIType string) proto.ApiType {
+func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 	switch parserAPIType {
 	case parser.APITypeGraphQL:
 		return proto.ApiType_API_TYPE_GRAPHQL
