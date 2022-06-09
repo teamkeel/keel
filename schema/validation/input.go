@@ -4,5 +4,5 @@ import "github.com/teamkeel/keel/schema/parser"
 
 type Input struct {
 	FileName     string
-	ParsedSchema *parser.Schema
+	ParsedSchema *parser.AST
 }
