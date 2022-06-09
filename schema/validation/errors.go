@@ -18,10 +18,10 @@ import (
 // error codes
 const (
 	ErrorUpperCamel                   = "E001"
-	ErrorOperationNameLowerCamel      = "E002"
+	ErrorActionNameLowerCamel         = "E002"
 	ErrorFieldNamesUniqueInModel      = "E003"
 	ErrorOperationsUniqueGlobally     = "E004"
-	ErrorInputsNotFields              = "E005"
+	ErrorInvalidActionInput           = "E005"
 	ErrorReservedFieldName            = "E006"
 	ErrorReservedModelName            = "E007"
 	ErrorOperationInputFieldNotUnique = "E008"
@@ -29,7 +29,7 @@ const (
 	ErrorUniqueModelsGlobally         = "E010"
 	ErrorUnsupportedAttributeType     = "E011"
 	ErrorFieldNameLowerCamel          = "E012"
-	ErrorFunctionNameLowerCamel       = "E013"
+	// ErrorFunctionNameLowerCamel       = "E013"
 )
 
 type ErrorDetails struct {
@@ -244,7 +244,7 @@ func validationError(code string, data TemplateLiterals, position PositionRanger
 	return &ValidationError{
 		Code: code,
 		// todo global locale setting
-		ErrorDetails: *buildErrorDetailsFromYaml(code, "en", data),
+		ErrorDetails: buildErrorDetailsFromYaml(code, "en", data),
 		Pos: LexerPos{
 			Filename: start.Filename,
 			Offset:   start.Offset,
@@ -264,7 +264,7 @@ func validationError(code string, data TemplateLiterals, position PositionRanger
 var fileBytes []byte
 
 // Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
-func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) *ErrorDetails {
+func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) ErrorDetails {
 	m := make(map[string]map[string]interface{})
 
 	err := yaml.Unmarshal(fileBytes, &m)
@@ -304,7 +304,7 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 		panic(err)
 	}
 
-	return &ErrorDetails{
+	return ErrorDetails{
 		Message:      o["message"],
 		ShortMessage: o["short_message"],
 		Hint:         o["hint"],

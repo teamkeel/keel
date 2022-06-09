@@ -1,0 +1,13 @@
+model MyModel {
+    fields {
+        name Text {
+            @unique
+        }
+    }
+
+    operations {
+        get getMyModel() {
+            @where(myModel.name = "Bob")
+        }
+    }
+}

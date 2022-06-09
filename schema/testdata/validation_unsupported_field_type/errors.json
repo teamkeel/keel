@@ -1,16 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E009",
-        "hint": "Did you mean one of Boolean, Date, Enum, ID, Identity, Image, Post, Text, Timestamp?",
-        "message": "field something has an unsupported type Unknown",
-        "pos": {
-          "column": 5,
-          "filename": "testdata/validation_unsupported_field_type/schema.keel",
-          "line": 3,
-          "offset": 28
-        },
-        "short_message": "Unknown isn't supported"
+{
+  "Errors": [
+    {
+      "message": "field something has an unsupported type Unknown",
+      "short_message": "Unknown isn't supported",
+      "hint": "Did you mean one of Boolean, Date, ID, Identity, Image, Post, Text, or Timestamp?",
+      "code": "E009",
+      "pos": {
+        "filename": "testdata/validation_unsupported_field_type/schema.keel",
+        "offset": 28,
+        "line": 3,
+        "column": 5
+      },
+      "end_pos": {
+        "filename": "testdata/validation_unsupported_field_type/schema.keel",
+        "offset": 37,
+        "line": 3,
+        "column": 14
       }
-    ]
-  }
+    }
+  ]
+}

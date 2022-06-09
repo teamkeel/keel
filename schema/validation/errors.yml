@@ -4,8 +4,8 @@ en:
     message: "You have a model name that is not UpperCamel {{ .Model }}"
     hint: "Did you mean '{{ .Suggested }}'?"
   E002:
-    short_message: "{{ .Name }} isn't lower camel"
-    message: "You have a function name that is not lowerCamel {{ .Name }}"
+    short_message: "{{ .Name }} isn't a valid action name"
+    message: "Action names should be written in lowerCamelCase"
     hint: "Did you mean '{{ .Suggested }}'?"
   E003:
     short_message: "{{ .Name }} is duplicated"
@@ -16,9 +16,9 @@ en:
     message: "You have duplicate operations Model:{{ .Model }} Name:{{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E005:
-    short_message: "Replace {{ .Field }}"
-    message: "You are using inputs that are not fields model:{{ .Model }}, field:{{ .Field }}"
-    hint: "Check inputs for {{ .Model }}"
+    short_message: "{{ .Input }} is not a valid input"
+    message: "Action inputs must be one of the fields defined in the model"
+    hint: "Did you mean '{{ .Suggested }}'?"
   E006:
     short_message: "cannot use {{ .Name }}"
     message: "You have a reserved field name {{ .Name }}"
@@ -28,9 +28,9 @@ en:
     message: "You have a reserved model name {{ .Name }}"
     hint: "Try '{{ .Suggestion }}' instead"
   E008:
-    short_message: "{{ .Name }} requires a unique field"
-    message: "Operation {{ .Name }} must take a unique field as an input"
-    hint: "Are you sure you are using a unique field?"
+    short_message: "{{ .Name }} does not specify a unique field to lookup by"
+    message: "Operation {{ .Name }} must either take a unique field as input or filter on a unique field using a @where attribute"
+    hint: "Did you mean to add 'id' as an input?"
   E009:
     short_message: "{{ .Type }} isn't supported"
     message: "field {{ .Name }} has an unsupported type {{ .Type }}"
@@ -41,13 +41,9 @@ en:
     hint: "Try to remove '{{ .Name }}'"
   E011:
     short_message: "Unrecognised attribute {{ .Name }}"
-    message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute {{ .Name }}"
+    message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute @{{ .Name }}"
     hint: "Did you mean {{ .Suggestions }}?"
   E012:
     short_message: "{{ .Name }} isn't lower camel"
     message: "You have a field name that is not lowerCamel {{ .Name }}"
-    hint: "Did you mean '{{ .Suggested }}'?"
-  E013:
-    short_message: "{{ .Name }} isn't lower camel"
-    message: "You have a function name that is not lowerCamel {{ .Name }}"
     hint: "Did you mean '{{ .Suggested }}'?"

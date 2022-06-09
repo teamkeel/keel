@@ -10,5 +10,5 @@ proto:
 		proto/schema.proto
 
 testdata:
-	@go run schema/tools/initialize-expected-proto-files.go $$(pwd)/schema/testdata
+	@cd ./schema && go run ./tools/generate_testdata.go ./testdata
 

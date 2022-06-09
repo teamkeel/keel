@@ -1,16 +1,22 @@
-  {
-    "Errors": [
-        {
-          "code": "E007",
-          "hint": "You cannot use Query as a model name, it is reserved, try Queryer",
-          "message": "You have a reserved model name Query",
-          "pos": {
-            "column": 7,
-            "filename": "testdata/validation_reserved_model_names/schema.keel",
-            "line": 1,
-            "offset": 6
-          },
-          "short_message": "Query is reserved"
-        }
-    ]
-  }
+{
+  "Errors": [
+    {
+      "message": "You have a reserved model name Query",
+      "short_message": "Query is reserved",
+      "hint": "Try 'Queryer' instead",
+      "code": "E007",
+      "pos": {
+        "filename": "testdata/validation_reserved_model_names/schema.keel",
+        "offset": 6,
+        "line": 1,
+        "column": 7
+      },
+      "end_pos": {
+        "filename": "testdata/validation_reserved_model_names/schema.keel",
+        "offset": 11,
+        "line": 1,
+        "column": 12
+      }
+    }
+  ]
+}

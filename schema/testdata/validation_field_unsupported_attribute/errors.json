@@ -1,16 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E011",
-        "hint": "Did you mean @unique, @optional?",
-        "message": "field 'identity' has an unrecognised attribute @something",
-        "pos": {
-          "column": 7,
-          "filename": "testdata/validation_field_unsupported_attribute/schema.keel",
-          "line": 4,
-          "offset": 54
-        },
-        "short_message": "Unrecognised attribute @something"
+{
+  "Errors": [
+    {
+      "message": "field 'identity' has an unrecognised attribute @something",
+      "short_message": "Unrecognised attribute something",
+      "hint": "Did you mean @unique, or @optional?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_field_unsupported_attribute/schema.keel",
+        "offset": 54,
+        "line": 4,
+        "column": 7
+      },
+      "end_pos": {
+        "filename": "testdata/validation_field_unsupported_attribute/schema.keel",
+        "offset": 64,
+        "line": 4,
+        "column": 17
       }
-    ]
-  }
+    }
+  ]
+}

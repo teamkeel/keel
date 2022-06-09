@@ -1,16 +1,22 @@
 {
   "Errors": [
     {
-      "code": "E001",
-      "hint": "Person",
       "message": "You have a model name that is not UpperCamel PERSON",
+      "short_message": "PERSON is not UpperCamel",
+      "hint": "Did you mean 'Person'?",
+      "code": "E001",
       "pos": {
-        "column": 7,
         "filename": "testdata/validation_model_names_upper_camel_all_caps/schema.keel",
+        "offset": 6,
         "line": 1,
-        "offset": 6
+        "column": 7
       },
-      "short_message": "PERSON is not UpperCamel"
+      "end_pos": {
+        "filename": "testdata/validation_model_names_upper_camel_all_caps/schema.keel",
+        "offset": 12,
+        "line": 1,
+        "column": 13
+      }
     }
   ]
 }
