@@ -1,16 +1,22 @@
 {
-    "Errors": [
-        {
-            "code": "E010",
-            "hint": "Remove Person",
-            "message": "You have duplicate Models Model:Person",
-            "pos": {
-                "column": 7,
-                "filename": "testdata/validation_unique_model_names/schema.keel",
-                "line": 5,
-                "offset": 25
-            },
-            "short_message": "Person is duplicated"
-        }
-    ]
+  "Errors": [
+    {
+      "message": "You have duplicate Models Model:Person",
+      "short_message": "Person is duplicated",
+      "hint": "Try to remove 'Person'",
+      "code": "E010",
+      "pos": {
+        "filename": "testdata/validation_unique_model_names/schema.keel",
+        "offset": 25,
+        "line": 5,
+        "column": 7
+      },
+      "end_pos": {
+        "filename": "testdata/validation_unique_model_names/schema.keel",
+        "offset": 31,
+        "line": 5,
+        "column": 13
+      }
+    }
+  ]
 }

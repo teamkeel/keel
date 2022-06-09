@@ -6,6 +6,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -158,21 +159,16 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 	case parser.FieldTypeIdentity:
 		protoField.Type = proto.FieldType_FIELD_TYPE_IDENTITY
 	default:
-	lookup:
-		for _, ast := range scm.asts {
-			for _, d := range ast.Declarations {
-				if d.Enum != nil && d.Enum.Name.Value == parserField.Type {
-					protoField.Type = proto.FieldType_FIELD_TYPE_ENUM
-					protoField.EnumName = &wrapperspb.StringValue{
-						Value: parserField.Type,
-					}
-					break lookup
-				}
+		model := query.Model(scm.asts, parserField.Type)
+		if model != nil {
+			protoField.Type = proto.FieldType_FIELD_TYPE_RELATIONSHIP
+		}
 
-				if d.Model != nil && d.Model.Name.Value == parserField.Type {
-					protoField.Type = proto.FieldType_FIELD_TYPE_RELATIONSHIP
-					break lookup
-				}
+		enum := query.Enum(scm.asts, parserField.Type)
+		if enum != nil {
+			protoField.Type = proto.FieldType_FIELD_TYPE_ENUM
+			protoField.EnumName = &wrapperspb.StringValue{
+				Value: parserField.Type,
 			}
 		}
 	}

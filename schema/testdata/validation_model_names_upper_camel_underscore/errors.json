@@ -1,16 +1,22 @@
 {
   "Errors": [
     {
-      "code": "E001",
-      "hint": "PersonThing",
       "message": "You have a model name that is not UpperCamel Person_Thing",
+      "short_message": "Person_Thing is not UpperCamel",
+      "hint": "Did you mean 'PersonThing'?",
+      "code": "E001",
       "pos": {
-        "column": 7,
         "filename": "testdata/validation_model_names_upper_camel_underscore/schema.keel",
+        "offset": 6,
         "line": 1,
-        "offset": 6
+        "column": 7
       },
-      "short_message": "Person_Thing is not UpperCamel"
+      "end_pos": {
+        "filename": "testdata/validation_model_names_upper_camel_underscore/schema.keel",
+        "offset": 18,
+        "line": 1,
+        "column": 19
+      }
     }
   ]
 }

@@ -64,30 +64,23 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// - With the parsed (AST) schemas as a set:
 	// 		- Validate them (as a set)
 	// 		- Convert the set to a single / aggregate proto model
-	validationInputs := []validation.Input{}
+	asts := []*parser.AST{}
 	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(&oneInputSchemaFile)
 		if err != nil {
 			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
 		scm.insertBuiltInFields(declarations)
-		validationInputs = append(validationInputs, validation.Input{
-			FileName:     oneInputSchemaFile.FileName,
-			ParsedSchema: declarations,
-		})
+		asts = append(asts, declarations)
 	}
 
-	v := validation.NewValidator(validationInputs)
+	v := validation.NewValidator(asts)
 	err := v.RunAllValidators()
 	if err != nil {
 		return nil, err
 	}
 
-	validatedSchemas := []*parser.AST{}
-	for _, vs := range validationInputs {
-		validatedSchemas = append(validatedSchemas, vs.ParsedSchema)
-	}
-	scm.asts = validatedSchemas
+	scm.asts = asts
 
 	protoModels := scm.makeProtoModels()
 	return protoModels, nil

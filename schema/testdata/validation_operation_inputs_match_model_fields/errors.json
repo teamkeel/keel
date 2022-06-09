@@ -1,16 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E005",
-        "hint": "Check inputs for createPerson",
-        "message": "You are using inputs that are not fields model:createPerson, field:blah",
-        "pos": {
-          "column": 25,
-          "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
-          "line": 4,
-          "offset": 55
-        },
-        "short_message": "Replace blah"
+{
+  "Errors": [
+    {
+      "message": "Action inputs must be one of the fields defined in the model",
+      "short_message": "blah is not a valid input",
+      "hint": "Did you mean 'id'?",
+      "code": "E005",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
+        "offset": 55,
+        "line": 4,
+        "column": 25
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
+        "offset": 59,
+        "line": 4,
+        "column": 29
       }
-    ]
-  }
+    }
+  ]
+}

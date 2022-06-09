@@ -1,0 +1,234 @@
+{
+  "models":  [
+    {
+      "name":  "Extra",
+      "fields":  [
+        {
+          "modelName":  "Extra",
+          "name":  "greeting",
+          "type":  "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName":  "Extra",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ]
+    },
+    {
+      "name":  "Profile",
+      "fields":  [
+        {
+          "modelName":  "Profile",
+          "name":  "identity",
+          "type":  "FIELD_TYPE_IDENTITY",
+          "unique":  true
+        },
+        {
+          "modelName":  "Profile",
+          "name":  "username",
+          "type":  "FIELD_TYPE_STRING",
+          "unique":  true
+        },
+        {
+          "modelName":  "Profile",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ],
+      "operations":  [
+        {
+          "modelName":  "Profile",
+          "name":  "createProfile",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "name":  "username",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Profile",
+              "fieldName":  "username"
+            }
+          ],
+          "setExpressions":  [
+            {
+              "source":  "profile.identity = ctx.identity"
+            }
+          ]
+        },
+        {
+          "modelName":  "Profile",
+          "name":  "myProfile",
+          "type":  "OPERATION_TYPE_GET",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "whereExpressions":  [
+            {
+              "source":  "profile.identity = ctx.identity"
+            }
+          ]
+        },
+        {
+          "modelName":  "Profile",
+          "name":  "profile",
+          "type":  "OPERATION_TYPE_GET",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "name":  "id",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Profile",
+              "fieldName":  "id"
+            }
+          ]
+        },
+        {
+          "modelName":  "Profile",
+          "name":  "updateUsername",
+          "type":  "OPERATION_TYPE_UPDATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "name":  "username",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Profile",
+              "fieldName":  "username"
+            }
+          ],
+          "whereExpressions":  [
+            {
+              "source":  "profile.identity = ctx.identity"
+            }
+          ]
+        }
+      ],
+      "permissions":  [
+        {
+          "modelName":  "Profile",
+          "expression":  {
+            "source":  "true"
+          },
+          "operationsTypes":  [
+            "OPERATION_TYPE_CREATE",
+            "OPERATION_TYPE_GET",
+            "OPERATION_TYPE_UPDATE"
+          ]
+        }
+      ]
+    },
+    {
+      "name":  "Post",
+      "fields":  [
+        {
+          "modelName":  "Post",
+          "name":  "body",
+          "type":  "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName":  "Post",
+          "name":  "author",
+          "type":  "FIELD_TYPE_RELATIONSHIP"
+        },
+        {
+          "modelName":  "Post",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ],
+      "operations":  [
+        {
+          "modelName":  "Post",
+          "name":  "createPost",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "name":  "body",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Post",
+              "fieldName":  "body"
+            },
+            {
+              "name":  "author",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Post",
+              "fieldName":  "author"
+            }
+          ],
+          "permissions":  [
+            {
+              "modelName":  "Post",
+              "operationName":  "createPost",
+              "roleName":  "Admin",
+              "expression":  {
+                "source":  "post.author.identity == ctx.identity"
+              },
+              "operationsTypes":  [
+                "OPERATION_TYPE_CREATE"
+              ]
+            }
+          ]
+        },
+        {
+          "modelName":  "Post",
+          "name":  "listPosts",
+          "type":  "OPERATION_TYPE_LIST",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
+        },
+        {
+          "modelName":  "Post",
+          "name":  "getPost",
+          "type":  "OPERATION_TYPE_GET",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "name":  "id",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Post",
+              "fieldName":  "id"
+            }
+          ]
+        }
+      ],
+      "permissions":  [
+        {
+          "modelName":  "Post",
+          "expression":  {
+            "source":  "ctx.identity != null"
+          },
+          "operationsTypes":  [
+            "OPERATION_TYPE_LIST",
+            "OPERATION_TYPE_GET"
+          ]
+        }
+      ]
+    }
+  ],
+  "roles":  [
+    {
+      "name":  "Admin",
+      "domains":  [
+        "hello.com"
+      ],
+      "emails":  [
+        "hello@agency.com"
+      ]
+    }
+  ],
+  "apis":  [
+    {
+      "name":  "Web",
+      "type":  "API_TYPE_GRAPHQL",
+      "apiModels":  [
+        {
+          "modelName":  "Profile"
+        },
+        {
+          "modelName":  "Post"
+        }
+      ]
+    }
+  ]
+}
