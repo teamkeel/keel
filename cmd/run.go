@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/formatter"
+	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/postgres"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
@@ -154,7 +155,12 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	}
 	_ = oldProto
 
-	// migrations := migrations.MakeMigrationsFromSchemaDifference(oldProto, newProto)
+	migrationsSQL, err := migrations.MakeMigrationsFromSchemaDifference(oldProto, newProto)
+	if err != nil {
+		return fmt.Errorf("Could not make migrations: %v", err)
+	}
+	_ = migrationsSQL
+
 	// Todo now apply these migrations
 
 	if err := proto.SaveToLocalStorage(newProto, inputDir); err != nil {

@@ -26,7 +26,7 @@ func SaveToLocalStorage(p *Schema, schemaDir string) error {
 
 // FetchFromLocalStorage returns the protobuf.Schema that has been serialized into
 // the .keel private directory inside the given schema directory. If that file does not
-// exist it returns nil for the schema, and no error.
+// exist it returns a valid (but empty) schema.
 func FetchFromLocalStorage(schemaDir string) (*Schema, error) {
 	privateDir, err := accessPrivateDir(schemaDir)
 	if err != nil {
@@ -34,8 +34,10 @@ func FetchFromLocalStorage(schemaDir string) (*Schema, error) {
 	}
 	protoFile := path.Join(privateDir, protoFileBaseName)
 
+	// Detect the first ever pass through this code, for any given schemaDir, and
+	// return a valid, but empty protobuf.
 	if !fileExists(protoFile) {
-		return nil, nil
+		return &Schema{}, nil
 	}
 	b, err := os.ReadFile(protoFile)
 	if err != nil {
@@ -65,5 +67,5 @@ func fileExists(filePath string) bool {
 	return !errors.Is(err, os.ErrNotExist)
 }
 
-const privateDirBasename string = ".keel"
+const privateDirBasename string = ".keel-state"
 const protoFileBaseName string = "last-known-proto"

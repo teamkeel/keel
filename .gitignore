@@ -25,3 +25,6 @@ go.work
 __debug_bin
 
 node_modules
+
+# files used locally for the keel run command
+.keel-state
