@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/teamkeel/keel/compare/v0.3.1...v0.4.0) (2022-06-09)
+
+
+### Features
+
+* add support for enums ([ee0b674](https://github.com/teamkeel/keel/commit/ee0b6744539f19e6530dceb1c60cc1caecbbdfde))
+
 ## [0.3.1](https://github.com/teamkeel/keel/compare/v0.3.0...v0.3.1) (2022-06-07)
 
 
