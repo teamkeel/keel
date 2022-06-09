@@ -11,6 +11,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
 	"github.com/samber/lo"
 )
 
@@ -111,10 +112,11 @@ func bringUpContainer() error {
 				"POSTGRES_PASSWORD=postgres",
 			},
 		}
+
 		if _, err := dockerClient.ContainerCreate(
 			context.Background(),
 			containerConfig,
-			nil,
+			makeHostConfig(),
 			nil,
 			nil,
 			keelPostgresContainerName); err != nil {
@@ -203,6 +205,20 @@ func awaitReadCompletion(r io.Reader) {
 			break
 		}
 	}
+}
+
+func makeHostConfig() *container.HostConfig {
+	portBinding := nat.PortBinding{
+		HostIP:   "",
+		HostPort: "5432", // todo could be problematic to have this hard coded
+	}
+	portMap := nat.PortMap{
+		nat.Port("5432/tcp"): []nat.PortBinding{portBinding},
+	}
+	hostConfig := &container.HostConfig{
+		PortBindings: portMap,
+	}
+	return hostConfig
 }
 
 const postgresImageName string = "postgres"
