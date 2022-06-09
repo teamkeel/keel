@@ -1,5 +1,5 @@
 model Extra {
     fields {
-        xgreeting Text
+        greeting Text
     }
 }

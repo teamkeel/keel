@@ -6,7 +6,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/formatter"
-	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/postgres"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
@@ -149,14 +148,19 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 		return fmt.Errorf("error making proto from schema files: %v", err)
 	}
 
-	// This is currently just generating the virgin migration SQL, but
-	// once that works we'll switch to a schema-delta based migration.
+	oldProto, err := proto.FetchFromLocalStorage(inputDir)
+	if err != nil {
+		return fmt.Errorf("error trying to retreive old protobuf: %v", err)
+	}
+	_ = oldProto
 
-	generatedSQL := migrations.GenerateAllTables(newProto.Models)
-
-	_ = generatedSQL
-
+	// migrations := migrations.MakeMigrationsFromSchemaDifference(oldProto, newProto)
 	// Todo now apply these migrations
+
+	if err := proto.SaveToLocalStorage(newProto, inputDir); err != nil {
+		return fmt.Errorf("error trying to save the new protobuf: %v", err)
+	}
+
 	return nil
 }
 
