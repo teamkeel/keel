@@ -158,6 +158,7 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 	migrator := migrations.NewMigration0(newProto)
 	migrator.GenerateSQL()
 	sqlStatements := migrator.SQL
+
 	_ = sqlStatements
 
 	// Todo now apply these migrations
