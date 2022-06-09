@@ -6,19 +6,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// This test is just a code exerciser - to see if the start/stop cycle
-// runs without error (two cycles). And to provide a debugging entry point.
-func TestBringUpShutDown(t *testing.T) {
-	err := BringUpPostgresLocally()
+func TestBringUpOnce(t *testing.T) {
+	db, err := BringUpPostgresLocally()
 	require.NoError(t, err)
+	require.NotNil(t, db)
+}
+
+func TestBringUpAndStopCycles(t *testing.T) {
+	db, err := BringUpPostgresLocally()
+	require.NoError(t, err)
+	require.NotNil(t, db)
 
 	err = StopThePostgresContainer()
 	require.NoError(t, err)
 
 	// Another full up/down cycle...
 
-	err = BringUpPostgresLocally()
+	db, err = BringUpPostgresLocally()
 	require.NoError(t, err)
+	require.NotNil(t, db)
 
 	err = StopThePostgresContainer()
 	require.NoError(t, err)

@@ -8,26 +8,35 @@ import (
 	"strings"
 	"time"
 
+	"database/sql"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
+	_ "github.com/lib/pq"
 	"github.com/samber/lo"
 )
 
 // BringUpPostgresLocally spins up a PostgreSQL server locally and returns
 // a connection to it.
 //
+// It is the client's responsibility to call db.Close() on the returned
+// connection when done with it.
+//
 // It deploys it with Docker.
 // It pulls the postres docker image if it is not already available locally.
 // It leaves the default superuser name untouched "postgres".
 // It sets the password for that user to "postgres".
-func BringUpPostgresLocally() error {
+func BringUpPostgresLocally() (*sql.DB, error) {
 	if err := bringUpContainer(); err != nil {
-		return err
+		return nil, err
 	}
-	// todo establish and return the connection
-	return nil
+	connection, err := establishConnection()
+	if err != nil {
+		return nil, err
+	}
+	return connection, nil
 }
 
 // StopThePostgresContainer stops the postgres container - having checked first
@@ -219,6 +228,18 @@ func makeHostConfig() *container.HostConfig {
 		PortBindings: portMap,
 	}
 	return hostConfig
+}
+
+func establishConnection() (*sql.DB, error) {
+	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		return nil, err
+	}
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 const postgresImageName string = "postgres"

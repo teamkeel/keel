@@ -52,6 +52,8 @@ func commandImplementation(cmd *cobra.Command, args []string) (err error) {
 	c := &runCommand{
 		outputFormatter: formatter.New(os.Stdout),
 	}
+	// todo - think this takes a default value, so we can probably
+	// not set it up for this case
 	switch outputFormat {
 	case string(formatter.FormatJSON):
 		c.outputFormatter.SetOutput(formatter.FormatJSON, os.Stdout)
@@ -60,9 +62,12 @@ func commandImplementation(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	c.outputFormatter.Write("Starting PostgreSQL")
-	if err = postgres.BringUpPostgresLocally(); err != nil {
+	db, err := postgres.BringUpPostgresLocally()
+	if err != nil {
 		return err
 	}
+
+	_ = db
 
 	directoryWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -88,7 +93,12 @@ func commandImplementation(cmd *cobra.Command, args []string) (err error) {
 	ch := make(chan bool)
 	<-ch
 
-	// Todo - resource clean-up lives here.
+	// Todo - do some resource housekeeping when the command exits:
+	// Do a db.Close() on the database connection
+	// Stop the postgres container
+	//
+	// - It would be good if we had a kill signal handler mechanism at top level
+	//   cobra command level.
 
 	return nil
 }
