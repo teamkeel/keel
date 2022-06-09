@@ -149,17 +149,12 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
 		return fmt.Errorf("error making proto from schema files: %v", err)
 	}
 
-	// TODO - leaving these calls in but commented out, to show the work done on a schema-difference based
-	// approach - but going now to experiment with a complete re-generation of the database instead.
-	// differenceAnalyser := migrations.NewProtoDiffer(nil, newProto)
-	// differences, err := differenceAnalyser.Analyse()
-	// _ = differences
+	// This is currently just generating the virgin migration SQL, but
+	// once that works we'll switch to a schema-delta based migration.
 
-	migrator := migrations.NewMigration0(newProto)
-	migrator.GenerateSQL()
-	sqlStatements := migrator.SQL
+	generatedSQL := migrations.GenerateAllTables(newProto.Models)
 
-	_ = sqlStatements
+	_ = generatedSQL
 
 	// Todo now apply these migrations
 	return nil
