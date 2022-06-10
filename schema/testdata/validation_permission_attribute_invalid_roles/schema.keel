@@ -1,0 +1,27 @@
+model Person {
+    operations {
+        get getPerson(id)
+    }
+    @permission(
+        roles: [NotValidRole],
+        actions: [get]
+    )
+    @permission(
+        roles: 1234,
+        actions: [get]
+    )
+    @permission(
+        roles: "1234",
+        actions: [get]
+    )
+    @permission(
+        roles: ["thisisnotvalid"],
+        actions: [get]
+    )
+}
+
+role Admin {
+    domains {
+        "myorg.com"
+    }
+}

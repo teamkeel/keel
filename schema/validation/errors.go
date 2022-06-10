@@ -8,8 +8,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/fatih/color"
+	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
 
 	"gopkg.in/yaml.v3"
@@ -17,19 +17,22 @@ import (
 
 // error codes
 const (
-	ErrorUpperCamel                   = "E001"
-	ErrorActionNameLowerCamel         = "E002"
-	ErrorFieldNamesUniqueInModel      = "E003"
-	ErrorOperationsUniqueGlobally     = "E004"
-	ErrorInvalidActionInput           = "E005"
-	ErrorReservedFieldName            = "E006"
-	ErrorReservedModelName            = "E007"
-	ErrorOperationInputFieldNotUnique = "E008"
-	ErrorUnsupportedFieldType         = "E009"
-	ErrorUniqueModelsGlobally         = "E010"
-	ErrorUnsupportedAttributeType     = "E011"
-	ErrorFieldNameLowerCamel          = "E012"
-	// ErrorFunctionNameLowerCamel       = "E013"
+	ErrorUpperCamel                       = "E001"
+	ErrorActionNameLowerCamel             = "E002"
+	ErrorFieldNamesUniqueInModel          = "E003"
+	ErrorOperationsUniqueGlobally         = "E004"
+	ErrorInvalidActionInput               = "E005"
+	ErrorReservedFieldName                = "E006"
+	ErrorReservedModelName                = "E007"
+	ErrorOperationInputFieldNotUnique     = "E008"
+	ErrorUnsupportedFieldType             = "E009"
+	ErrorUniqueModelsGlobally             = "E010"
+	ErrorUnsupportedAttributeType         = "E011"
+	ErrorFieldNameLowerCamel              = "E012"
+	ErrorInvalidAttributeArgument         = "E013"
+	ErrorAttributeRequiresNamedArguments  = "E014"
+	ErrorAttributeMissingRequiredArgument = "E015"
+	ErrorInvalidValue                     = "E016"
 )
 
 type ErrorDetails struct {
@@ -98,7 +101,7 @@ func (v ValidationErrors) Error() string {
 	str := ""
 
 	for _, err := range v.Errors {
-		str += fmt.Sprintf("%s\n", err.Message)
+		str += fmt.Sprintf("%s: %s\n", err.Code, err.Message)
 	}
 
 	return str
@@ -212,7 +215,9 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				}
 
 				hint := func() {
-					schemaString += cyan.Sprint(err.ErrorDetails.Hint)
+					if err.ErrorDetails.Hint != "" {
+						schemaString += cyan.Sprint(err.ErrorDetails.Hint)
+					}
 				}
 
 				underline()
@@ -234,11 +239,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-type PositionRanger interface {
-	GetPositionRange() (lexer.Position, lexer.Position)
-}
-
-func validationError(code string, data TemplateLiterals, position PositionRanger) error {
+func validationError(code string, data TemplateLiterals, position node.ParserNode) error {
 	start, end := position.GetPositionRange()
 
 	return &ValidationError{

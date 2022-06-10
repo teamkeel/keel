@@ -6,9 +6,15 @@ model Foo {
     list opA() {
       @permission(
           expression: foo.f1 == bool,
-          role: Admin
+          roles: [Admin]
       )
       @where(True = False)
     }
+  }
+}
+
+role Admin {
+  domains {
+    "myorg.com"
   }
 }

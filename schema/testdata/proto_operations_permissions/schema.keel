@@ -6,11 +6,23 @@ model Foo {
     list opA() {
       @permission(
           expression: foo.f1 == bool,
-          role: Admin
+          roles: [Admin]
       )
       @permission(
-          role: Restricted
+          roles: [Restricted]
       )
     }
+  }
+}
+
+role Admin {
+  domains {
+    "myorg.com"
+  }
+}
+
+role Restricted {
+  emails {
+    "superuser@myorg.com"
   }
 }

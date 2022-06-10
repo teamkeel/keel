@@ -161,13 +161,12 @@
             {
               "modelName":  "Post",
               "operationName":  "createPost",
-              "roleName":  "Admin",
+              "roleNames":  [
+                "Admin"
+              ],
               "expression":  {
                 "source":  "post.author.identity == ctx.identity"
-              },
-              "operationsTypes":  [
-                "OPERATION_TYPE_CREATE"
-              ]
+              }
             }
           ]
         },
