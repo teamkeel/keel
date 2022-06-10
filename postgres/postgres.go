@@ -204,17 +204,16 @@ func isContainerRunning(dockerClient *client.Client, container *types.Container)
 // We exploit it also to emit a growing row of dot characters to indicate
 // progress.
 func awaitReadCompletion(r io.Reader) {
-	// Consuming the output in (max) 1000 byte chunks gives us circa
-	// 80 read cycles - and we output a dot for each of them to show progress.
-	buf := make([]byte, 1000)
+	// Consuming the output in N-byte chunks gives us circa
+	// a friendly number of read cycles - good for outputting a progress dot "." for each of them.
+	buf := make([]byte, 2000)
 	for {
 		_, err := r.Read(buf)
 		fmt.Printf(".")
-		switch err {
-		case io.EOF:
-			break
-		default:
-			fmt.Printf("error from read operation: %v", err)
+		if err != nil {
+			if err != io.EOF {
+				fmt.Printf("error from read operation: %v", err)
+			}
 			return
 		}
 	}
@@ -234,15 +233,32 @@ func makeHostConfig() *container.HostConfig {
 	return hostConfig
 }
 
+// establishConnection connects to the database, veryifies the connection and returns the connection.
+// It makes a series of attempts over a small time span to give postgres the
+// change to be ready.
 func establishConnection() (*sql.DB, error) {
+	fmt.Printf("Connecting to database... ")
 	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		return nil, fmt.Errorf("error from sql.Open: %v", err)
 	}
-	err = db.Ping()
-	if err != nil {
-		return nil, fmt.Errorf("error tring to ping the database: %v", err)
+	fmt.Printf("connected\n")
+
+	// Attempt to ping() the database at 250ms intervals a few times.
+	fmt.Printf("testing we can ping it...")
+	var pingError error
+	for i := 0; i < 10; i++ {
+		if pingError = db.Ping(); pingError == nil {
+			fmt.Printf(" yes")
+			break
+		}
+		fmt.Printf(" no... ")
+		time.Sleep(250 * time.Millisecond)
+	}
+	fmt.Printf("\n")
+	if pingError != nil {
+		return nil, fmt.Errorf("could not ping the database, despite several retries: %v", pingError)
 	}
 	return db, nil
 }
