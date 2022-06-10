@@ -1,16 +1,22 @@
 {
   "Errors": [
     {
-      "code": "E006",
-      "hint": "You cannot use updatedAt as field name, it is reserved, try updatedAter",
       "message": "You have a reserved field name updatedAt",
+      "short_message": "cannot use updatedAt",
+      "hint": "Try 'updatedAter' instead",
+      "code": "E006",
       "pos": {
-        "column": 5,
         "filename": "testdata/validation_reserved_field_name_updated_at/schema.keel",
+        "offset": 28,
         "line": 3,
-        "offset": 28
+        "column": 5
       },
-      "short_message": "cannot use updatedAt"
+      "end_pos": {
+        "filename": "testdata/validation_reserved_field_name_updated_at/schema.keel",
+        "offset": 37,
+        "line": 3,
+        "column": 14
+      }
     }
   ]
 }

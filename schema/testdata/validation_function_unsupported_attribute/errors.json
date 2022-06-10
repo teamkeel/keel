@@ -1,16 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E011",
-        "hint": "Did you mean @permission?",
-        "message": "function 'createProfile' has an unrecognised attribute @unknown",
-        "pos": {
-          "column": 7,
-          "filename": "testdata/validation_function_unsupported_attribute/schema.keel",
-          "line": 8,
-          "offset": 107
-        },
-        "short_message": "Unrecognised attribute @unknown"
+{
+  "Errors": [
+    {
+      "message": "function 'createProfile' has an unrecognised attribute @unknown",
+      "short_message": "Unrecognised attribute unknown",
+      "hint": "Did you mean @permission?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_function_unsupported_attribute/schema.keel",
+        "offset": 107,
+        "line": 8,
+        "column": 7
+      },
+      "end_pos": {
+        "filename": "testdata/validation_function_unsupported_attribute/schema.keel",
+        "offset": 115,
+        "line": 8,
+        "column": 15
       }
-    ]
-  }
+    }
+  ]
+}

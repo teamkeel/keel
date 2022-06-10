@@ -1,0 +1,19 @@
+model Profile {
+    fields {
+        status Text
+    }
+
+    operations {
+        update updateStatus(status)
+    }
+}
+
+model Order {
+    fields {
+        status Text
+    }
+
+    operations {
+        update updateStatus(status)
+    }
+}

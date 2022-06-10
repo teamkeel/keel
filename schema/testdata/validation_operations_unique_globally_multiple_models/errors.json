@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "You have duplicate operations Model:Order Name:updateStatus",
+      "short_message": "updateStatus is duplicated",
+      "hint": "Remove 'updateStatus' on line 17",
+      "code": "E004",
+      "pos": {
+        "filename": "testdata/validation_operations_unique_globally_multiple_models/schema.keel",
+        "offset": 204,
+        "line": 17,
+        "column": 16
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operations_unique_globally_multiple_models/schema.keel",
+        "offset": 216,
+        "line": 17,
+        "column": 28
+      }
+    }
+  ]
+}

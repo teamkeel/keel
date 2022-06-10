@@ -1,16 +1,22 @@
 {
   "Errors": [
-      {
-          "code": "E006",
-          "hint": "You cannot use id as field name, it is reserved, try ider",
-          "message": "You have a reserved field name id",
-          "pos": {
-              "column": 9,
-              "filename": "testdata/validation_reserved_field_name_id/schema.keel",
-              "line": 3,
-              "offset": 36
-          },
-          "short_message": "cannot use id"
+    {
+      "message": "You have a reserved field name id",
+      "short_message": "cannot use id",
+      "hint": "Try 'ider' instead",
+      "code": "E006",
+      "pos": {
+        "filename": "testdata/validation_reserved_field_name_id/schema.keel",
+        "offset": 36,
+        "line": 3,
+        "column": 9
+      },
+      "end_pos": {
+        "filename": "testdata/validation_reserved_field_name_id/schema.keel",
+        "offset": 38,
+        "line": 3,
+        "column": 11
       }
+    }
   ]
 }

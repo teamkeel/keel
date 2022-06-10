@@ -1,16 +1,22 @@
 {
   "Errors": [
-      {
-          "code": "E011",
-          "hint": "Did you mean @graphql?",
-          "message": "api 'Web' has an unrecognised attribute @what",
-          "pos": {
-              "column": 5,
-              "filename": "testdata/validation_api_unsupported_attribute/schema.keel",
-              "line": 2,
-              "offset": 14
-          },
-          "short_message": "Unrecognised attribute @what"
+    {
+      "message": "api 'Web' has an unrecognised attribute @what",
+      "short_message": "Unrecognised attribute what",
+      "hint": "Did you mean @graphql?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_api_unsupported_attribute/schema.keel",
+        "offset": 12,
+        "line": 2,
+        "column": 3
+      },
+      "end_pos": {
+        "filename": "testdata/validation_api_unsupported_attribute/schema.keel",
+        "offset": 17,
+        "line": 2,
+        "column": 8
       }
+    }
   ]
 }

@@ -1,0 +1,31 @@
+{
+  "models":  [
+    {
+      "name":  "MyModel",
+      "fields":  [
+        {
+          "modelName":  "MyModel",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ],
+      "operations":  [
+        {
+          "modelName":  "MyModel",
+          "name":  "getMyModel",
+          "type":  "OPERATION_TYPE_GET",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "name":  "id",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "MyModel",
+              "fieldName":  "id"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

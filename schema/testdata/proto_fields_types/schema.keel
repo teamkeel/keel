@@ -6,8 +6,15 @@ model Foo {
         d Timestamp
         e Boolean
         f Image
-        g Enum
+        g Beatles
     }
+}
+
+enum Beatles {
+    John
+    Paul
+    George
+    Ringo
 }
 
 

@@ -73,12 +73,10 @@ func TestSchema(t *testing.T) {
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
 				require.NotNil(t, err)
 
-				expectedJSON = selectErrorCodesFromJSON(t, expectedErrors)
-
-				actualJSONBytes, err := json.Marshal(err)
+				expectedJSON = expectedErrors
+				actualJSON, err = json.Marshal(err)
 				require.NoError(t, err)
 
-				actualJSON = selectErrorCodesFromJSON(t, actualJSONBytes)
 			} else {
 				// if no proto.json file or errors.json file is provided then we assume this
 				// is a test case that is just expected to parse and validate with no errors
@@ -107,14 +105,4 @@ func TestSchema(t *testing.T) {
 
 		})
 	}
-}
-
-func selectErrorCodesFromJSON(t *testing.T, jsonBytes []byte) []byte {
-	errorCodes := Errors{}
-	err := json.Unmarshal(jsonBytes, &errorCodes)
-	require.NoError(t, err)
-	bytes, err := json.Marshal(errorCodes)
-	require.NoError(t, err)
-
-	return bytes
 }

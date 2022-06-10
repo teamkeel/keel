@@ -1,16 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E003",
-        "hint": "Remove 'name' on line 4",
-        "message": "You have duplicate field names name",
-        "pos": {
-          "column": 5,
-          "filename": "testdata/validation_fields_unique_in_model/schema.keel",
-          "line": 4,
-          "offset": 42
-        },
-        "short_message": "name is duplicated"
+{
+  "Errors": [
+    {
+      "message": "You have duplicate field names name",
+      "short_message": "name is duplicated",
+      "hint": "Remove 'name' on line 4",
+      "code": "E003",
+      "pos": {
+        "filename": "testdata/validation_fields_unique_in_model/schema.keel",
+        "offset": 42,
+        "line": 4,
+        "column": 5
+      },
+      "end_pos": {
+        "filename": "testdata/validation_fields_unique_in_model/schema.keel",
+        "offset": 46,
+        "line": 4,
+        "column": 9
       }
-    ]
-  }
+    }
+  ]
+}

@@ -4,12 +4,7 @@ model Profile {
   }
 
   operations {
-    create createProfile(username) {
-        @set(profile.identity = ctx.identity)
-    }
-
-    create createProfile(username) {
-        @set(profile.identity = ctx.identity)
-    } 
+    create createProfile(username)
+    create createProfile(username)
   }
 }

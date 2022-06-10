@@ -1,21 +1,21 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Foo",
-      "fields": [
+      "name":  "Foo",
+      "fields":  [
         {
-          "modelName": "Foo",
-          "name": "id",
-          "type": "FIELD_TYPE_ID",
-          "unique": true
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Foo",
-          "name": "operationA",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM"
+          "modelName":  "Foo",
+          "name":  "operationA",
+          "type":  "OPERATION_TYPE_LIST",
+          "implementation":  "OPERATION_IMPLEMENTATION_CUSTOM"
         }
       ]
     }

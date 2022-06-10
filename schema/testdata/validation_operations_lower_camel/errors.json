@@ -1,16 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E002",
-        "hint": "createProfile",
-        "message": "You have a function name that is not lowerCamel CREATE_PROFILE",
-        "pos": {
-          "column": 5,
-          "filename": "testdata/validation_operations_lower_camel/schema.keel",
-          "line": 12,
-          "offset": 151
-        },
-        "short_message": "CREATE_PROFILE isn't lower camel"
+{
+  "Errors": [
+    {
+      "message": "Action names should be written in lowerCamelCase",
+      "short_message": "CREATE_PROFILE isn't a valid action name",
+      "hint": "Did you mean 'createProfile'?",
+      "code": "E002",
+      "pos": {
+        "filename": "testdata/validation_operations_lower_camel/schema.keel",
+        "offset": 158,
+        "line": 12,
+        "column": 12
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operations_lower_camel/schema.keel",
+        "offset": 172,
+        "line": 12,
+        "column": 26
       }
-    ]
-  }
+    }
+  ]
+}

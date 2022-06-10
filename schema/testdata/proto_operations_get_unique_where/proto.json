@@ -1,0 +1,34 @@
+{
+  "models":  [
+    {
+      "name":  "MyModel",
+      "fields":  [
+        {
+          "modelName":  "MyModel",
+          "name":  "name",
+          "type":  "FIELD_TYPE_STRING",
+          "unique":  true
+        },
+        {
+          "modelName":  "MyModel",
+          "name":  "id",
+          "type":  "FIELD_TYPE_ID",
+          "unique":  true
+        }
+      ],
+      "operations":  [
+        {
+          "modelName":  "MyModel",
+          "name":  "getMyModel",
+          "type":  "OPERATION_TYPE_GET",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "whereExpressions":  [
+            {
+              "source":  "myModel.name = \"Bob\""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

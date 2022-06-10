@@ -6,14 +6,15 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) set of parsed AST.
-func (scm *Builder) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schema {
+func (scm *Builder) makeProtoModels() *proto.Schema {
 	protoSchema := &proto.Schema{}
 
-	for _, parserSchema := range parserSchemas {
+	for _, parserSchema := range scm.asts {
 		for _, decl := range parserSchema.Declarations {
 			switch {
 			case decl.Model != nil:
@@ -25,6 +26,9 @@ func (scm *Builder) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schem
 			case decl.API != nil:
 				protoAPI := scm.makeAPI(decl)
 				protoSchema.Apis = append(protoSchema.Apis, protoAPI)
+			case decl.Enum != nil:
+				protoEnum := scm.makeEnum(decl)
+				protoSchema.Enums = append(protoSchema.Enums, protoEnum)
 			default:
 				panic("Case not recognized")
 			}
@@ -33,10 +37,10 @@ func (scm *Builder) makeProtoModels(parserSchemas []*parser.Schema) *proto.Schem
 	return protoSchema
 }
 
-func (scm *Builder) makeModel(decl *parser.Declaration) *proto.Model {
+func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 	parserModel := decl.Model
 	protoModel := &proto.Model{
-		Name: parserModel.Name.Text,
+		Name: parserModel.Name.Value,
 	}
 	for _, section := range parserModel.Sections {
 		switch {
@@ -63,10 +67,10 @@ func (scm *Builder) makeModel(decl *parser.Declaration) *proto.Model {
 	return protoModel
 }
 
-func (scm *Builder) makeRole(decl *parser.Declaration) *proto.Role {
+func (scm *Builder) makeRole(decl *parser.DeclarationNode) *proto.Role {
 	parserRole := decl.Role
 	protoRole := &proto.Role{
-		Name: parserRole.Name.Text,
+		Name: parserRole.Name.Value,
 	}
 	for _, section := range parserRole.Sections {
 		for _, parserDomain := range section.Domains {
@@ -79,20 +83,20 @@ func (scm *Builder) makeRole(decl *parser.Declaration) *proto.Role {
 	return protoRole
 }
 
-func (scm *Builder) makeAPI(decl *parser.Declaration) *proto.Api {
+func (scm *Builder) makeAPI(decl *parser.DeclarationNode) *proto.Api {
 	parserAPI := decl.API
 	protoAPI := &proto.Api{
-		Name:      parserAPI.Name.Text,
+		Name:      parserAPI.Name.Value,
 		ApiModels: []*proto.ApiModel{},
 	}
 	for _, section := range parserAPI.Sections {
 		switch {
 		case section.Attribute != nil:
-			protoAPI.Type = scm.mapToAPIType(section.Attribute.Name.Text)
+			protoAPI.Type = scm.mapToAPIType(section.Attribute.Name.Value)
 		case len(section.Models) > 0:
 			for _, parserApiModel := range section.Models {
 				protoModel := &proto.ApiModel{
-					ModelName: parserApiModel.Name.Text,
+					ModelName: parserApiModel.Name.Value,
 				}
 				protoAPI.ApiModels = append(protoAPI.ApiModels, protoModel)
 			}
@@ -101,7 +105,21 @@ func (scm *Builder) makeAPI(decl *parser.Declaration) *proto.Api {
 	return protoAPI
 }
 
-func (scm *Builder) makeFields(parserFields []*parser.ModelField, modelName string) []*proto.Field {
+func (scm *Builder) makeEnum(decl *parser.DeclarationNode) *proto.Enum {
+	parserEnum := decl.Enum
+	enum := &proto.Enum{
+		Name:   parserEnum.Name.Value,
+		Values: []*proto.EnumValue{},
+	}
+	for _, value := range parserEnum.Values {
+		enum.Values = append(enum.Values, &proto.EnumValue{
+			Name: value.Name.Value,
+		})
+	}
+	return enum
+}
+
+func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
 	protoFields := []*proto.Field{}
 	for _, parserField := range parserFields {
 		protoField := scm.makeField(parserField, modelName)
@@ -110,10 +128,11 @@ func (scm *Builder) makeFields(parserFields []*parser.ModelField, modelName stri
 	return protoFields
 }
 
-func (scm *Builder) makeField(parserField *parser.ModelField, modelName string) *proto.Field {
+func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *proto.Field {
 	protoField := &proto.Field{
 		ModelName: modelName,
-		Name:      parserField.Name.Text,
+		Name:      parserField.Name.Value,
+		Type:      proto.FieldType_FIELD_TYPE_UNKNOWN,
 	}
 
 	// We establish the field type when possible using the 1:1 mapping between parser enums
@@ -131,8 +150,6 @@ func (scm *Builder) makeField(parserField *parser.ModelField, modelName string) 
 		protoField.Type = proto.FieldType_FIELD_TYPE_DATE
 	case parser.FieldTypeDatetime:
 		protoField.Type = proto.FieldType_FIELD_TYPE_DATETIME
-	case parser.FieldTypeEnum:
-		protoField.Type = proto.FieldType_FIELD_TYPE_ENUM
 	case parser.FieldTypeID:
 		protoField.Type = proto.FieldType_FIELD_TYPE_ID
 	case parser.FieldTypeImage:
@@ -142,13 +159,25 @@ func (scm *Builder) makeField(parserField *parser.ModelField, modelName string) 
 	case parser.FieldTypeIdentity:
 		protoField.Type = proto.FieldType_FIELD_TYPE_IDENTITY
 	default:
-		protoField.Type = proto.FieldType_FIELD_TYPE_RELATIONSHIP
+		model := query.Model(scm.asts, parserField.Type)
+		if model != nil {
+			protoField.Type = proto.FieldType_FIELD_TYPE_RELATIONSHIP
+		}
+
+		enum := query.Enum(scm.asts, parserField.Type)
+		if enum != nil {
+			protoField.Type = proto.FieldType_FIELD_TYPE_ENUM
+			protoField.EnumName = &wrapperspb.StringValue{
+				Value: parserField.Type,
+			}
+		}
 	}
+
 	scm.applyFieldAttributes(parserField, protoField)
 	return protoField
 }
 
-func (scm *Builder) makeOperations(parserFunctions []*parser.ModelAction, modelName string, impl proto.OperationImplementation) []*proto.Operation {
+func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {
 	protoOps := []*proto.Operation{}
 	for _, parserFunc := range parserFunctions {
 		protoOp := scm.makeOp(parserFunc, modelName, impl)
@@ -157,10 +186,10 @@ func (scm *Builder) makeOperations(parserFunctions []*parser.ModelAction, modelN
 	return protoOps
 }
 
-func (scm *Builder) makeOp(parserFunction *parser.ModelAction, modelName string, impl proto.OperationImplementation) *proto.Operation {
+func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
 		ModelName:      modelName,
-		Name:           parserFunction.Name.Text,
+		Name:           parserFunction.Name.Value,
 		Implementation: impl,
 		Type:           scm.mapToOperationType(parserFunction.Type),
 	}
@@ -170,23 +199,23 @@ func (scm *Builder) makeOp(parserFunction *parser.ModelAction, modelName string,
 	return protoOp
 }
 
-func (scm *Builder) makeArguments(parserFunction *parser.ModelAction, modelName string) []*proto.OperationInput {
+func (scm *Builder) makeArguments(parserFunction *parser.ActionNode, modelName string) []*proto.OperationInput {
 	// Currently, we only support arguments of the form <modelname>.
 	operationInputs := []*proto.OperationInput{}
 	for _, parserArg := range parserFunction.Arguments {
 		operationInput := proto.OperationInput{
-			Name:      parserArg.Name.Text,
+			Name:      parserArg.Name.Value,
 			Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
 			ModelName: wrapperspb.String(modelName),
-			FieldName: wrapperspb.String(parserArg.Name.Text),
+			FieldName: wrapperspb.String(parserArg.Name.Value),
 		}
 		operationInputs = append(operationInputs, &operationInput)
 	}
 	return operationInputs
 }
 
-func (scm *Builder) applyModelAttribute(parserModel *parser.Model, protoModel *proto.Model, attribute *parser.Attribute) {
-	switch attribute.Name.Text {
+func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoModel *proto.Model, attribute *parser.AttributeNode) {
+	switch attribute.Name.Value {
 	case parser.AttributePermission:
 		perm := scm.permissionAttributeToProtoPermission(attribute)
 		perm.ModelName = protoModel.Name
@@ -194,9 +223,9 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.Model, protoModel *p
 	}
 }
 
-func (scm *Builder) applyFunctionAttributes(parserFunction *parser.ModelAction, protoOperation *proto.Operation, modelName string) {
+func (scm *Builder) applyFunctionAttributes(parserFunction *parser.ActionNode, protoOperation *proto.Operation, modelName string) {
 	for _, attribute := range parserFunction.Attributes {
-		switch attribute.Name.Text {
+		switch attribute.Name.Value {
 		case parser.AttributePermission:
 			perm := scm.permissionAttributeToProtoPermission(attribute)
 			perm.ModelName = modelName
@@ -216,9 +245,9 @@ func (scm *Builder) applyFunctionAttributes(parserFunction *parser.ModelAction, 
 	}
 }
 
-func (scm *Builder) applyFieldAttributes(parserField *parser.ModelField, protoField *proto.Field) {
+func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoField *proto.Field) {
 	for _, fieldAttribute := range parserField.Attributes {
-		switch fieldAttribute.Name.Text {
+		switch fieldAttribute.Name.Value {
 		case parser.AttributeUnique:
 			protoField.Unique = true
 		case parser.AttributeOptional:
@@ -227,10 +256,10 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.ModelField, protoFi
 	}
 }
 
-func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.Attribute) *proto.PermissionRule {
+func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeNode) *proto.PermissionRule {
 	pr := &proto.PermissionRule{}
 	for _, arg := range attr.Arguments {
-		switch arg.Name.Text {
+		switch arg.Name.Value {
 		// todo use parser constants for "expression" etc below
 		case "expression":
 			expr, _ := expressions.ToString(arg.Expression)
