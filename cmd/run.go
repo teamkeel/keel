@@ -64,7 +64,7 @@ func commandImplementation(cmd *cobra.Command, args []string) (err error) {
 	c.outputFormatter.Write("Starting PostgreSQL")
 	db, err := postgres.BringUpPostgresLocally()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not bring up postgres locally: %v", err)
 	}
 
 	_ = db
@@ -122,9 +122,9 @@ func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *Sc
 			// todo horrid hidden use of bitwise and
 			if event.Op&fsnotify.Write == fsnotify.Write {
 				nameOfFileThatChanged := event.Name
-				if err := handler.Handle(nameOfFileThatChanged); err != nil {
-					panic(fmt.Errorf("error handling schema change event: %v", err))
-				}
+				// todo the Handle() function responds to internal errors by printing errors
+				// to standard out and returning early.
+				handler.Handle(nameOfFileThatChanged)
 			}
 
 		case err := <-watcher.Errors:
@@ -141,33 +141,35 @@ func NewSchemaChangedHandler() *SchemaChangedHandler {
 	return &SchemaChangedHandler{}
 }
 
-func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) (err error) {
+func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 	// todo - feed these user feedback messages through the command's managed formatter.
 	fmt.Printf("Reacting to a change in this file: %s, changed\n", schemaThatHasChanged)
 	var newProto *proto.Schema
-	if newProto, err = makeProtoFromSchemaFiles(); err != nil {
-		return fmt.Errorf("error making proto from schema files: %v", err)
+	newProto, err := makeProtoFromSchemaFiles()
+	if err != nil {
+		fmt.Printf("error making proto from schema files: %v", err)
+		return
 	}
 
 	oldProto, err := proto.FetchFromLocalStorage(inputDir)
 	if err != nil {
-		return fmt.Errorf("error trying to retreive old protobuf: %v", err)
+		fmt.Printf("error trying to retreive old protobuf: %v", err)
+		return
 	}
-	_ = oldProto
 
 	migrationsSQL, err := migrations.MakeMigrationsFromSchemaDifference(oldProto, newProto)
 	if err != nil {
-		return fmt.Errorf("Could not make migrations: %v", err)
+		fmt.Printf("Could not make migrations: %v", err)
+		return
 	}
 	_ = migrationsSQL
 
 	// Todo now apply these migrations
 
 	if err := proto.SaveToLocalStorage(newProto, inputDir); err != nil {
-		return fmt.Errorf("error trying to save the new protobuf: %v", err)
+		fmt.Printf("error trying to save the new protobuf: %v", err)
+		return
 	}
-
-	return nil
 }
 
 func makeProtoFromSchemaFiles() (proto *proto.Schema, err error) {
@@ -176,7 +178,7 @@ func makeProtoFromSchemaFiles() (proto *proto.Schema, err error) {
 	// should introduce a pass-by-value copy to pass down the call stack.
 	proto, err = builder.MakeFromDirectory(inputDir)
 	if err != nil {
-		panic(fmt.Sprintf("error making protobuf schema from directory: %v", err))
+		return nil, fmt.Errorf("error making protobuf schema from directory: %v", err)
 	}
 	return proto, nil
 }

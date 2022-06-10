@@ -30,11 +30,11 @@ import (
 // It sets the password for that user to "postgres".
 func BringUpPostgresLocally() (*sql.DB, error) {
 	if err := bringUpContainer(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not bring up postgres container: %v", err)
 	}
 	connection, err := establishConnection()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not establish connect to postgres: %v", err)
 	}
 	return connection, nil
 }
@@ -45,18 +45,18 @@ func StopThePostgresContainer() error {
 	fmt.Printf("Stopping the postgres container... ")
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return err
+		return fmt.Errorf("could not construct docker client: %v", err)
 	}
 	container, err := findPostgresContainer(dockerClient)
 	if err != nil {
-		return err
+		return fmt.Errorf("error trying to find postgres container: %v", err)
 	}
 	if container == nil {
 		return nil
 	}
 	running, err := isContainerRunning(dockerClient, container)
 	if err != nil {
-		return err
+		return fmt.Errorf("error trying to see if container is running: %v", err)
 	}
 	if !running {
 		return nil
@@ -65,7 +65,7 @@ func StopThePostgresContainer() error {
 	// Note that ContainerStop() gracefully stops the container by choice, but then forcibly after the timeout.
 	err = dockerClient.ContainerStop(context.Background(), container.ID, &stopTimeout)
 	if err != nil {
-		return err
+		return fmt.Errorf("error trying to stop the container: %v", err)
 	}
 	fmt.Printf("Stopped\n")
 	return nil
@@ -74,13 +74,13 @@ func StopThePostgresContainer() error {
 func bringUpContainer() error {
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return err
+		return fmt.Errorf("error trying to construct docker client: %v", err)
 	}
 
 	fmt.Printf("Checking if postgres image already present... ")
 	postgresImage, err := findPostresImageLocally(dockerClient)
 	if err != nil {
-		return err
+		return fmt.Errorf("error while checking if postgres image available locally: %v", err)
 	}
 
 	switch {
@@ -105,7 +105,7 @@ func bringUpContainer() error {
 	fmt.Printf("Checking if postgres container exists... ")
 	postgresContainer, err := findPostgresContainer(dockerClient)
 	if err != nil {
-		return err
+		return fmt.Errorf("error trying to see if container exists: %v", err)
 	}
 
 	switch {
@@ -139,7 +139,7 @@ func bringUpContainer() error {
 	fmt.Printf("Checking if postgres container is already running... ")
 	isRunning, err := isContainerRunning(dockerClient, postgresContainer)
 	if err != nil {
-		return err
+		return fmt.Errorf("error trying to see if container is running: %v", err)
 	}
 
 	switch {
@@ -162,7 +162,7 @@ func bringUpContainer() error {
 func findPostresImageLocally(dockerClient *client.Client) (*types.ImageSummary, error) {
 	images, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error trying to list docker images: %v", err)
 	}
 	searchFor := strings.Join([]string{postgresImageName, postgresTag}, ":")
 	for _, image := range images {
@@ -180,7 +180,7 @@ func findPostgresContainer(dockerClient *client.Client) (container *types.Contai
 	}
 	containers, err := dockerClient.ContainerList(context.Background(), listOptions)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error trying to list docker containers: %v", err)
 	}
 	for _, c := range containers {
 		if lo.Contains(c.Names, "/"+keelPostgresContainerName) {
@@ -193,7 +193,7 @@ func findPostgresContainer(dockerClient *client.Client) (container *types.Contai
 func isContainerRunning(dockerClient *client.Client, container *types.Container) (bool, error) {
 	containerJSON, err := dockerClient.ContainerInspect(context.Background(), container.ID)
 	if err != nil {
-		return false, err
+		return false, fmt.Errorf("error inspecting container: %v", err)
 	}
 	return containerJSON.State.Running, nil
 }
@@ -210,8 +210,12 @@ func awaitReadCompletion(r io.Reader) {
 	for {
 		_, err := r.Read(buf)
 		fmt.Printf(".")
-		if err == io.EOF {
+		switch err {
+		case io.EOF:
 			break
+		default:
+			fmt.Printf("error from read operation: %v", err)
+			return
 		}
 	}
 }
@@ -234,10 +238,11 @@ func establishConnection() (*sql.DB, error) {
 	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error from sql.Open: %v", err)
 	}
-	if err := db.Ping(); err != nil {
-		return nil, err
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("error tring to ping the database: %v", err)
 	}
 	return db, nil
 }
