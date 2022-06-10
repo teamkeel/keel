@@ -240,7 +240,7 @@ func makeHostConfig() *container.HostConfig {
 // change to be ready.
 func establishConnection() (*sql.DB, error) {
 	fmt.Printf("Connecting to database... ")
-	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
+	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=keel sslmode=disable"
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
 		return nil, fmt.Errorf("error from sql.Open: %v", err)
@@ -248,7 +248,7 @@ func establishConnection() (*sql.DB, error) {
 	fmt.Printf("connected\n")
 
 	// Attempt to ping() the database at 250ms intervals a few times.
-	fmt.Printf("testing we can ping it...")
+	fmt.Printf("Testing we can ping it...")
 	var pingError error
 	for i := 0; i < 10; i++ {
 		if pingError = db.Ping(); pingError == nil {

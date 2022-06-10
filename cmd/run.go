@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
@@ -67,15 +68,13 @@ func commandImplementation(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("could not bring up postgres locally: %v", err)
 	}
 
-	_ = db
-
 	directoryWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("error creating schema change watcher: %v", err)
 	}
 	defer directoryWatcher.Close()
 
-	handler := NewSchemaChangedHandler()
+	handler := NewSchemaChangedHandler(db)
 	// goroutine housekeeping note: This goroutine lives for as long as the Keel-Run command is running, and its
 	// resources are release when the command terminates (with CTRL-C).
 	go c.reactToSchemaChanges(directoryWatcher, handler)
@@ -135,10 +134,14 @@ func (c *runCommand) reactToSchemaChanges(watcher *fsnotify.Watcher, handler *Sc
 	}
 }
 
-type SchemaChangedHandler struct{}
+type SchemaChangedHandler struct {
+	db *sql.DB
+}
 
-func NewSchemaChangedHandler() *SchemaChangedHandler {
-	return &SchemaChangedHandler{}
+func NewSchemaChangedHandler(db *sql.DB) *SchemaChangedHandler {
+	return &SchemaChangedHandler{
+		db: db,
+	}
 }
 
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
@@ -157,6 +160,7 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 		return
 	}
 
+	fmt.Printf("Working out database migrations\n")
 	migrationsSQL, err := migrations.MakeMigrationsFromSchemaDifference(oldProto, newProto)
 	if err != nil {
 		fmt.Printf("Could not make migrations: %v", err)
@@ -165,6 +169,17 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 	_ = migrationsSQL
 
 	// Todo now apply these migrations
+	fmt.Printf("Applying database migrations... ")
+	sqlResult, err := h.db.Exec(migrationsSQL)
+	if err != nil {
+		fmt.Printf("error trying to perform database migration: %v", err)
+		return
+	}
+	fmt.Printf("done\n")
+
+	if os.Getenv("DEBUG") != "" {
+		fmt.Printf("Migration SQL result: \n\n%+v\n\n", sqlResult)
+	}
 
 	if err := proto.SaveToLocalStorage(newProto, inputDir); err != nil {
 		fmt.Printf("error trying to save the new protobuf: %v", err)

@@ -9,8 +9,7 @@ import (
 )
 
 func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQL string, err error) {
-	differ := NewProtoDiffer(oldProto, newProto)
-	differences, err := differ.Analyse() // todo compress the constructor and method into a plain function.
+	differences, err := ProtoDeltas(oldProto, newProto)
 	if err != nil {
 		return "", fmt.Errorf("could not analyse differences: %v", err)
 	}

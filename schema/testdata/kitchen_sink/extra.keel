@@ -1,4 +1,4 @@
-model ExtraFoo3 {
+model Extra {
     fields {
         greeting Text
     }

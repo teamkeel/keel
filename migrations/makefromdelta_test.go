@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,6 +13,9 @@ func TestChangedModelName(t *testing.T) {
 	// of one of the models has changed. So we should get a new table created,
 	// and one table dropped.
 	generatedSQL, err := MakeMigrationsFromSchemaDifference(&oldProto, &newProto)
+	if os.Getenv("DEBUG") != "" {
+		t.Logf("TestChangedMode generated SQL...\n\n%s\n\n", generatedSQL)
+	}
 	require.NoError(t, err)
 	require.Equal(t, expectedChangedNameSQL, generatedSQL)
 }
