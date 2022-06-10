@@ -28,6 +28,7 @@ import (
 // It pulls the postres docker image if it is not already available locally.
 // It leaves the default superuser name untouched "postgres".
 // It sets the password for that user to "postgres".
+// It sets the default database name to "keel"
 func BringUpPostgresLocally() (*sql.DB, error) {
 	if err := bringUpContainer(); err != nil {
 		return nil, fmt.Errorf("could not bring up postgres container: %v", err)
@@ -96,7 +97,7 @@ func bringUpContainer() error {
 			return fmt.Errorf("error pulling postgres image: %v", err)
 		}
 		defer reader.Close()
-		// ImagePull is async - and the suggested protocol for waiting for it to complete is
+		// ImagePull() is async - and the suggested protocol for waiting for it to complete is
 		// to read from the returned reader, until you reach EOF.
 		awaitReadCompletion(reader)
 		fmt.Printf("Fetched ok\n")
@@ -119,6 +120,7 @@ func bringUpContainer() error {
 			Image: postgresImageName,
 			Env: []string{
 				"POSTGRES_PASSWORD=postgres",
+				"POSTGRES_DB=keel",
 			},
 		}
 
