@@ -1,21 +1,19 @@
 package migrations
 
 import (
-	"os"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 )
 
-func TestChangedModelName(t *testing.T) {
+func TestYouGetOneCreatedTableAndOneDroppedTableIfYouChangeAModelName(t *testing.T) {
 	// The only difference between these two schemas are that the name
 	// of one of the models has changed. So we should get a new table created,
 	// and one table dropped.
 	generatedSQL, err := MakeMigrationsFromSchemaDifference(&oldProto, &newProto)
-	if os.Getenv("DEBUG") != "" {
-		t.Logf("TestChangedMode generated SQL...\n\n%s\n\n", generatedSQL)
-	}
+	fmt.Printf("TestChangedMode generated SQL...\n\n%s\n\n", generatedSQL)
 	require.NoError(t, err)
 	require.Equal(t, expectedChangedNameSQL, generatedSQL)
 }
@@ -51,4 +49,5 @@ var newProto proto.Schema = proto.Schema{
 const expectedChangedNameSQL string = `
 CREATE TABLE Human(
 Name TEXT
-);`
+);
+DROP TABLE Person;`

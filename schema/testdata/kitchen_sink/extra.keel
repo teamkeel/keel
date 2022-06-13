@@ -1,4 +1,4 @@
-model Extra {
+model Extra22 {
     fields {
         greeting Text
     }

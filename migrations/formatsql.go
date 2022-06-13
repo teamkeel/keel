@@ -7,8 +7,7 @@ import (
 )
 
 func createTable(model *proto.Model) string {
-
-	output := fmt.Sprintf("\nCREATE TABLE %s(\n", model.Name) // Should we apply transformation proto model name?
+	output := fmt.Sprintf("CREATE TABLE %s(\n", model.Name) // Should we apply transformation proto model name?
 	for i, field := range model.Fields {
 		f := fmt.Sprintf("%s %s", field.Name, PostgresFieldTypes[field.Type])
 		if i != len(model.Fields)-1 {
@@ -19,6 +18,10 @@ func createTable(model *proto.Model) string {
 	}
 	output += ");"
 	return output
+}
+
+func dropTable(name string) string {
+	return fmt.Sprintf("DROP TABLE %s;", name)
 }
 
 // todos:

@@ -13,10 +13,17 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 	if err != nil {
 		return "", fmt.Errorf("could not analyse differences: %v", err)
 	}
-	// Create tables for any new models
+	// Are there any new tables?
 	for _, newModelName := range differences.ModelsAdded {
 		model := protoqry.FindModel(newProto.Models, newModelName)
+		theSQL += "\n"
 		theSQL += createTable(model)
+	}
+
+	// Have any tables disappeared?
+	for _, droppedModel := range differences.ModelsRemoved {
+		theSQL += "\n"
+		theSQL += dropTable(droppedModel)
 	}
 
 	if os.Getenv("DEBUG") != "" {

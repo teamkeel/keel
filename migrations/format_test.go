@@ -1,7 +1,6 @@
 package migrations
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -9,12 +8,11 @@ import (
 )
 
 func TestCreateTable(t *testing.T) {
-	output := createTable(exampleModel)
-	require.True(t, len(output) > 20)
-	if os.Getenv("DEBUG") != "" {
-		t.Logf("\n\n%s\n\n", output)
-	}
-	require.Equal(t, expectedCreateTable, output)
+	require.Equal(t, expectedCreateTable, createTable(exampleModel))
+}
+
+func TestDropTable(t *testing.T) {
+	require.Equal(t, expectedDropTable, dropTable("Person"))
 }
 
 var exampleModel *proto.Model = &proto.Model{
@@ -35,3 +33,5 @@ const expectedCreateTable string = `CREATE TABLE Person(
 Name TEXT,
 Age integer
 );`
+
+const expectedDropTable string = `DROP TABLE Person;`
