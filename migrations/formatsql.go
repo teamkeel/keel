@@ -2,23 +2,9 @@ package migrations
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/teamkeel/keel/proto"
 )
-
-func GenerateAllTables(models []*proto.Model) string {
-	output := ""
-	for _, model := range models {
-		output += createTable(model)
-	}
-	// todo - similar for API's, Enums, etc.
-
-	if os.Getenv("DEBUG") != "" {
-		fmt.Printf("\n%s\n\n", output)
-	}
-	return output
-}
 
 func createTable(model *proto.Model) string {
 
