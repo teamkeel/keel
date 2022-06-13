@@ -24,6 +24,18 @@ func dropTable(name string) string {
 	return fmt.Sprintf("DROP TABLE %s;", name)
 }
 
+func createField(modelName string, field *proto.Field) string {
+	output := fmt.Sprintf("ALTER TABLE %s\n", modelName)
+	output += fmt.Sprintf("ADD %s %s;", field.Name, PostgresFieldTypes[field.Type])
+	return output
+}
+
+func dropField(modelName string, fieldName string) string {
+	output := fmt.Sprintf("ALTER TABLE %s\n", modelName)
+	output += fmt.Sprintf("DROP %s;", fieldName)
+	return output
+}
+
 // todos:
 // add [] when field type is a list
 // add field constraints - particularly not null is !OPTIONAL

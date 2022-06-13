@@ -15,6 +15,19 @@ func TestDropTable(t *testing.T) {
 	require.Equal(t, expectedDropTable, dropTable("Person"))
 }
 
+func TestCreateField(t *testing.T) {
+	require.Equal(t, expectedCreateField, createField(
+		exampleModel.Name,
+		&proto.Field{
+			Name: "myNewField",
+			Type: proto.FieldType_FIELD_TYPE_DATE,
+		}))
+}
+
+func TestDropField(t *testing.T) {
+	require.Equal(t, expectedDropField, dropField("Person", "Age"))
+}
+
 var exampleModel *proto.Model = &proto.Model{
 	Name: "Person",
 	Fields: []*proto.Field{
@@ -35,3 +48,9 @@ Age integer
 );`
 
 const expectedDropTable string = `DROP TABLE Person;`
+
+const expectedCreateField string = `ALTER TABLE Person
+ADD myNewField DATE;`
+
+const expectedDropField string = `ALTER TABLE Person
+DROP Age;`

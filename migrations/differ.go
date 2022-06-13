@@ -11,21 +11,26 @@ import (
 func ProtoDeltas(old, new *proto.Schema) (*Differences, error) {
 	diffs := NewDifferences()
 
+	oldModels := protoqry.ModelNames(old)
+	newModels := protoqry.ModelNames(new)
+	modelsIncommon := modelsPresentInBothOldAndNew(old, new)
+
 	// Models added or removed.
-	diffs.ModelsRemoved, diffs.ModelsAdded = lo.Difference(
-		protoqry.ModelNames(old),
-		protoqry.ModelNames(new))
+	diffs.ModelsRemoved, diffs.ModelsAdded = lo.Difference(oldModels, newModels)
 
 	// Fields added or removed
-	for _, m := range new.Models {
-		modelName := m.Name
-		newNames := protoqry.FieldNames(protoqry.FindModel(new.Models, modelName))
-		oldNames := []string{}
-		if protoqry.ModelExists(old.Models, modelName) {
-			oldNames = protoqry.FieldNames(protoqry.FindModel(old.Models, modelName))
-		}
-		diffs.FieldsRemoved[modelName], diffs.FieldsAdded[modelName] = lo.Difference(oldNames, newNames)
+	for _, modelName := range modelsIncommon {
+		oldFieldNames := protoqry.FieldNames(protoqry.FindModel(old.Models, modelName))
+		newFieldNames := protoqry.FieldNames(protoqry.FindModel(new.Models, modelName))
+		diffs.FieldsRemoved[modelName], diffs.FieldsAdded[modelName] = lo.Difference(oldFieldNames, newFieldNames)
 	}
 
 	return diffs, nil
+}
+
+func modelsPresentInBothOldAndNew(old, new *proto.Schema) []string {
+	oldNames := protoqry.ModelNames(old)
+	newNames := protoqry.ModelNames(new)
+	namesInCommon := lo.Intersect(oldNames, newNames)
+	return namesInCommon
 }

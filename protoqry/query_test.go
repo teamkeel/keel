@@ -19,6 +19,10 @@ func TestFindModel(t *testing.T) {
 	require.Equal(t, "ModelA", FindModel(referenceSchema.Models, "ModelA").Name)
 }
 
+func TestFindField(t *testing.T) {
+	require.Equal(t, "Field2", FindField(referenceSchema.Models, "ModelA", "Field2").Name)
+}
+
 func TestModelExists(t *testing.T) {
 	require.True(t, ModelExists(referenceSchema.Models, "ModelA"))
 	require.False(t, ModelExists(referenceSchema.Models, "ModelZ"))

@@ -2,7 +2,6 @@ package migrations
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/protoqry"
@@ -26,8 +25,22 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 		theSQL += dropTable(droppedModel)
 	}
 
-	if os.Getenv("DEBUG") != "" {
-		fmt.Printf("\n%s\n\n", theSQL)
+	// Have any fields been added to models that are present in both old and new schema?
+	for modelName, fieldsAdded := range differences.FieldsAdded {
+		for _, fieldName := range fieldsAdded {
+			field := protoqry.FindField(newProto.Models, modelName, fieldName)
+			theSQL += "\n"
+			theSQL += createField(modelName, field)
+		}
+	}
+
+	// Have any fields been removed from models that are present in both old and new schema?
+	for modelName, fieldsRemoved := range differences.FieldsRemoved {
+		for _, fieldName := range fieldsRemoved {
+			field := protoqry.FindField(oldProto.Models, modelName, fieldName)
+			theSQL += "\n"
+			theSQL += dropField(modelName, field.Name)
+		}
 	}
 
 	return theSQL, nil

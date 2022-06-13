@@ -46,3 +46,13 @@ func FindModel(models []*proto.Model, name string) *proto.Model {
 	}
 	return model
 }
+
+func FindField(models []*proto.Model, modelName string, fieldName string) *proto.Field {
+	model := FindModel(models, modelName)
+	for _, field := range model.Fields {
+		if field.Name == fieldName {
+			return field
+		}
+	}
+	panic("No such field exists in the given model")
+}
