@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/teamkeel/keel/compare/v0.4.0...v0.5.0) (2022-06-13)
+
+
+### Features
+
+* add validation for the [@permission](https://github.com/permission) attribute ([03a06ab](https://github.com/teamkeel/keel/commit/03a06ab2c6f40ff45d29945238ed7591c3c898fe))
+
 # [0.4.0](https://github.com/teamkeel/keel/compare/v0.3.1...v0.4.0) (2022-06-09)
 
 
