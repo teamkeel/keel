@@ -68,6 +68,21 @@ func commandImplementation(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("could not bring up postgres locally: %v", err)
 	}
 
+	// If this is the first ever run - do the initial migration to the database, before
+	// we drop into the watcher that reacts to live schema changes.
+	firstRun, err := isFirstEverRun(inputDir)
+	if err != nil {
+		return fmt.Errorf("error assessing if first ever run: %v", err)
+	}
+	if firstRun {
+		fmt.Printf("This is the first ever run, so performing initial database migration... ")
+		err := performInitialDatabaseMigration(inputDir, db)
+		if err != nil {
+			return fmt.Errorf("error trying to perform initial database migrations: %v", err)
+		}
+		fmt.Printf("done\n")
+	}
+
 	directoryWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("error creating schema change watcher: %v", err)
@@ -145,46 +160,39 @@ func NewSchemaChangedHandler(db *sql.DB) *SchemaChangedHandler {
 }
 
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
-	// todo - feed these user feedback messages through the command's managed formatter.
 	fmt.Printf("Reacting to a change in this file: %s, changed\n", schemaThatHasChanged)
-	var newProto *proto.Schema
-	newProto, err := makeProtoFromSchemaFiles()
-	if err != nil {
-		fmt.Printf("error making proto from schema files: %v", err)
-		return
-	}
 
+	// In the context of this Handler - we assume that the oldProto is available,
+	// because we make sure it is before we set up the schema watcher.
 	oldProto, err := proto.FetchFromLocalStorage(inputDir)
 	if err != nil {
 		fmt.Printf("error trying to retreive old protobuf: %v", err)
 		return
 	}
-
-	fmt.Printf("Working out database migrations\n")
-	migrationsSQL, err := migrations.MakeMigrationsFromSchemaDifference(oldProto, newProto)
-	if err != nil {
-		fmt.Printf("Could not make migrations: %v", err)
-		return
-	}
-	_ = migrationsSQL
-
-	// Todo now apply these migrations
-	fmt.Printf("Applying database migrations... ")
-	sqlResult, err := h.db.Exec(migrationsSQL)
-	if err != nil {
-		fmt.Printf("error trying to perform database migration: %v", err)
-		return
+	fmt.Printf("Migrating your database to the changed schema... ")
+	if err = performMigration(oldProto, h.db); err != nil {
+		fmt.Printf("error: %v\n", err)
 	}
 	fmt.Printf("done\n")
+}
 
-	if os.Getenv("DEBUG") != "" {
-		fmt.Printf("Migration SQL result: \n\n%+v\n\n", sqlResult)
+func performMigration(oldProto *proto.Schema, db *sql.DB) error {
+	newProto, err := makeProtoFromSchemaFiles()
+	if err != nil {
+		return fmt.Errorf("error making proto from schema files: %v", err)
 	}
-
+	migrationsSQL, err := migrations.MakeMigrationsFromSchemaDifference(oldProto, newProto)
+	if err != nil {
+		return fmt.Errorf("could not generate SQL for migrations: %v", err)
+	}
+	_, err = db.Exec(migrationsSQL)
+	if err != nil {
+		return fmt.Errorf("error trying to perform database migration: %v", err)
+	}
 	if err := proto.SaveToLocalStorage(newProto, inputDir); err != nil {
-		fmt.Printf("error trying to save the new protobuf: %v", err)
-		return
+		return fmt.Errorf("error trying to save the new protobuf: %v", err)
 	}
+	return nil
 }
 
 func makeProtoFromSchemaFiles() (proto *proto.Schema, err error) {
@@ -196,4 +204,22 @@ func makeProtoFromSchemaFiles() (proto *proto.Schema, err error) {
 		return nil, fmt.Errorf("error making protobuf schema from directory: %v", err)
 	}
 	return proto, nil
+}
+
+func isFirstEverRun(schemaDir string) (bool, error) {
+	proto, err := proto.FetchFromLocalStorage(schemaDir)
+	if err != nil {
+		return false, fmt.Errorf("error trying to fetch last used protobuf: %v", err)
+	}
+	return proto == nil, nil
+}
+
+func performInitialDatabaseMigration(inputDir string, db *sql.DB) error {
+	// We re-use the performMigration() function, but have to provide it with
+	// a valid, but completely empty schema.
+	emptySchema := &proto.Schema{}
+	if err := performMigration(emptySchema, db); err != nil {
+		return fmt.Errorf("error: %v\n", err)
+	}
+	return nil
 }

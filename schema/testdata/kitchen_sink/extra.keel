@@ -1,4 +1,4 @@
-model Extra23 {
+model Extra24 {
     fields {
         greeting Text
         counter Boolean

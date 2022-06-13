@@ -24,9 +24,9 @@ func SaveToLocalStorage(p *Schema, schemaDir string) error {
 	return nil
 }
 
-// FetchFromLocalStorage returns the protobuf.Schema that has been serialized into
-// the .keel private directory inside the given schema directory. If that file does not
-// exist it returns a valid (but empty) schema.
+// FetchFromLocalStorage provides the last-known good schema. I.e. the one that was used to
+// determine the most recent database migrations. In the special case, that none has been
+// saved yet - it returns nil and no error.
 func FetchFromLocalStorage(schemaDir string) (*Schema, error) {
 	privateDir, err := accessPrivateDir(schemaDir)
 	if err != nil {
@@ -37,7 +37,7 @@ func FetchFromLocalStorage(schemaDir string) (*Schema, error) {
 	// Detect the first ever pass through this code, for any given schemaDir, and
 	// return a valid, but empty protobuf.
 	if !fileExists(protoFile) {
-		return &Schema{}, nil
+		return nil, nil
 	}
 	b, err := os.ReadFile(protoFile)
 	if err != nil {
