@@ -18,7 +18,9 @@
       "permissions":  [
         {
           "modelName":  "Foo",
-          "roleName":  "Admin",
+          "roleNames":  [
+            "Admin"
+          ],
           "expression":  {
             "source":  "foo.f1 == bool"
           },
@@ -29,11 +31,27 @@
         },
         {
           "modelName":  "Foo",
-          "roleName":  "Restricted",
+          "roleNames":  [
+            "Restricted"
+          ],
           "operationsTypes":  [
             "OPERATION_TYPE_UPDATE"
           ]
         }
+      ]
+    }
+  ],
+  "roles":  [
+    {
+      "name":  "Admin",
+      "domains":  [
+        "bar.com"
+      ]
+    },
+    {
+      "name":  "Restricted",
+      "emails":  [
+        "superuser@myorg.com"
       ]
     }
   ]

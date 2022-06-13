@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "The @permission attribute is missing required argument actions",
+      "short_message": "The @permission attribute is missing required argument actions",
+      "hint": "",
+      "code": "E015",
+      "pos": {
+        "filename": "testdata/validation_permission_attribute_missing_actions/schema.keel",
+        "offset": 19,
+        "line": 2,
+        "column": 5
+      },
+      "end_pos": {
+        "filename": "testdata/validation_permission_attribute_missing_actions/schema.keel",
+        "offset": 30,
+        "line": 2,
+        "column": 16
+      }
+    }
+  ]
+}

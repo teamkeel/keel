@@ -25,7 +25,9 @@
             {
               "modelName":  "Foo",
               "operationName":  "opA",
-              "roleName":  "Admin",
+              "roleNames":  [
+                "Admin"
+              ],
               "expression":  {
                 "source":  "foo.f1 == bool"
               }
@@ -37,6 +39,14 @@
             }
           ]
         }
+      ]
+    }
+  ],
+  "roles":  [
+    {
+      "name":  "Admin",
+      "domains":  [
+        "myorg.com"
       ]
     }
   ]
