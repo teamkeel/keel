@@ -232,12 +232,10 @@ func (scm *Builder) applyFunctionAttributes(parserFunction *parser.ActionNode, p
 			perm.OperationName = wrapperspb.String(protoOperation.Name)
 			protoOperation.Permissions = append(protoOperation.Permissions, perm)
 		case parser.AttributeWhere:
-			// todo hope to remove error return from ToString
 			expr, _ := expressions.ToString(attribute.Arguments[0].Expression)
 			where := &proto.Expression{Source: expr}
 			protoOperation.WhereExpressions = append(protoOperation.WhereExpressions, where)
 		case parser.AttributeSet:
-			// todo hope to remove error return from ToString
 			expr, _ := expressions.ToString(attribute.Arguments[0].Expression)
 			set := &proto.Expression{Source: expr}
 			protoOperation.SetExpressions = append(protoOperation.SetExpressions, set)
@@ -260,7 +258,6 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 	pr := &proto.PermissionRule{}
 	for _, arg := range attr.Arguments {
 		switch arg.Name.Value {
-		// todo use parser constants for "expression" etc below
 		case "expression":
 			expr, _ := expressions.ToString(arg.Expression)
 			pr.Expression = &proto.Expression{Source: expr}

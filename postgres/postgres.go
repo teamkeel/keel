@@ -89,9 +89,6 @@ func bringUpContainer() error {
 		fmt.Printf("it is\n")
 	default:
 		fmt.Printf("it is not, so fetching it\n")
-		// todo set a timeout for the pull
-		// todo - consider if doing the image pull syncronously is ok.
-		// todo - consider showing some output from the pull operation (first return value)
 		reader, err := dockerClient.ImagePull(context.Background(), postgresImageName, types.ImagePullOptions{})
 		if err != nil {
 			return fmt.Errorf("error pulling postgres image: %v", err)
@@ -224,7 +221,7 @@ func awaitReadCompletion(r io.Reader) {
 func makeHostConfig() *container.HostConfig {
 	portBinding := nat.PortBinding{
 		HostIP:   "",
-		HostPort: "5432", // todo could be problematic to have this hard coded
+		HostPort: "5432",
 	}
 	portMap := nat.PortMap{
 		nat.Port("5432/tcp"): []nat.PortBinding{portBinding},

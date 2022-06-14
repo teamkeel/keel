@@ -35,7 +35,3 @@ func dropField(modelName string, fieldName string) string {
 	output += fmt.Sprintf("DROP %s;", fieldName)
 	return output
 }
-
-// todos:
-// add [] when field type is a list
-// add field constraints - particularly not null is !OPTIONAL

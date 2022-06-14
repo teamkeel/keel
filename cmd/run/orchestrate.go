@@ -59,12 +59,5 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	ch := make(chan bool)
 	<-ch
 
-	// Todo - do some resource housekeeping when the command exits:
-	// Do a db.Close() on the database connection
-	// Stop the postgres container
-	//
-	// - It would be good if we had a kill signal handler mechanism at top level
-	//   cobra command level.
-
 	return nil
 }
