@@ -13,13 +13,13 @@ func reactToSchemaChanges(watcher *fsnotify.Watcher, handler *SchemaChangedHandl
 	for {
 		select {
 		case event := <-watcher.Events:
-			// The watcher documentation shows how we could inspect the event to discriminate
-			// between {create/write/remove/rename/chmod} - but since all of these seem to
-			// be valid triggers - we do not.
-			nameOfFileThatChanged := event.Name
-			// Handle() responds to errors occuring by printing the details
-			// to standard out and returning early.
-			handler.Handle(nameOfFileThatChanged)
+			switch event.Op {
+			case fsnotify.Create, fsnotify.Write, fsnotify.Remove:
+				nameOfFileThatChanged := event.Name
+				handler.Handle(nameOfFileThatChanged)
+			default:
+				// We are ignoring fsnotify.Rename and fsnotify.Chmod
+			}
 
 		case err := <-watcher.Errors:
 			fmt.Printf("error received on watcher error channel: %v\n", err)
