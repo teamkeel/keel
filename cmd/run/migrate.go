@@ -27,7 +27,7 @@ func performMigration(oldProto *proto.Schema, db *sql.DB, schemaDir string) erro
 	if err != nil {
 		return fmt.Errorf("error trying to perform database migration: %v", err)
 	}
-	if err := proto.SaveToLocalStorage(newProto, schemaDir); err != nil {
+	if err := saveProtoToDb(newProto, db); err != nil {
 		return fmt.Errorf("error trying to save the new protobuf: %v", err)
 	}
 	return nil
@@ -42,10 +42,49 @@ func makeProtoFromSchemaFiles(schemaDir string) (proto *proto.Schema, err error)
 	return proto, nil
 }
 
-func isFirstEverRun(schemaDir string) (bool, error) {
-	proto, err := proto.FetchFromLocalStorage(schemaDir)
+func isFirstEverRun(db *sql.DB) (bool, error) {
+	proto, err := fetchProtoFromDb(db)
 	if err != nil {
 		return false, fmt.Errorf("error trying to fetch last used protobuf: %v", err)
 	}
 	return proto == nil, nil
 }
+
+// performFirstEverMigration is a minor variation to the sister method performMigration.
+// It differs does not depend on a last-known protobuf input, and instead uses a
+// valid, but empty protobuf to drive the standard deltas-based migration process.
+// It also (uniquely) creates the table in which we store the last-known protobuf
+// for subsequent migrations.
+func performFirstEverMigration(db *sql.DB, schemaDir string) error {
+
+	// Make a table to store the last-known protobuf.
+	sql := makeTableForLastKnownProto()
+	if _, err := db.Exec(sql); err != nil {
+		return err
+	}
+
+	sql = initializeRowForLastKnownProto()
+	if _, err := db.Exec(sql); err != nil {
+		return err
+	}
+
+	// Give the db a structure that represents the user's schema.
+	dummyLastKnownProto := &proto.Schema{}
+	if err := performMigration(dummyLastKnownProto, db, schemaDir); err != nil {
+		return err
+	}
+	return nil
+}
+
+// makeTableForLastKnownProto generates the SQL to make a database table
+// suitable for storing the last-known protobuf schema (as JSON)
+func makeTableForLastKnownProto() string {
+	output := fmt.Sprintf("CREATE TABLE %s(\n", tableForProtobuf)
+	f := fmt.Sprintf("%s %s\n", columnForTheJson, "TEXT")
+	output += f
+	output += ");"
+	return output
+}
+
+const tableForProtobuf string = "_protobuf"
+const columnForTheJson string = "the_json" // The column name.

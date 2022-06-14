@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/postgres"
-	"github.com/teamkeel/keel/proto"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -22,21 +21,20 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	schemaDir, _ := cmd.Flags().GetString("dir")
 
 	// If this is the first ever run - do the initial migrations on the database.
-	isFirstRun, err := isFirstEverRun(schemaDir)
+	isFirstRun, err := isFirstEverRun(db)
 	if err != nil {
 		return fmt.Errorf("error while assessing if first ever run: %v", err)
 	}
 	if isFirstRun {
 		fmt.Printf("This is the first ever run, so performing initial database migration... ")
-		emptySchema := &proto.Schema{}
-		if err := performMigration(emptySchema, db, schemaDir); err != nil {
+		if err := performFirstEverMigration(db, schemaDir); err != nil {
 			return fmt.Errorf("error trying to perform initial database migrations: %v", err)
 		}
 		fmt.Printf("done\n")
 	}
 
-	// The run command is passive now until the user changes their schema, so we establish
-	// a watcher.
+	// The run command remains passive now, until the user changes their schema, so we establish
+	// a watcher on the schema directorty.
 	directoryWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return fmt.Errorf("error creating schema change watcher: %v", err)

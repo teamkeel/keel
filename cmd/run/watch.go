@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/teamkeel/keel/proto"
 )
 
 // reactToSchemaChanges should be called in its own goroutine. It has a blocking
@@ -23,7 +22,7 @@ func reactToSchemaChanges(watcher *fsnotify.Watcher, handler *SchemaChangedHandl
 			handler.Handle(nameOfFileThatChanged)
 
 		case err := <-watcher.Errors:
-			fmt.Printf("XXXX error received on watcher error channel: %v\n", err)
+			fmt.Printf("error received on watcher error channel: %v\n", err)
 			// If we get an internal error from the watcher - we simply report the details
 			// and allow the watching to continue. We leave it to the user to decide if
 			// they want to quit the run command.
@@ -51,7 +50,7 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 
 	// In the context of this Handler - we assume that the oldProto must be available,
 	// because we make sure it is before we set up the schema watcher.
-	oldProto, err := proto.FetchFromLocalStorage(h.schemaDir)
+	oldProto, err := fetchProtoFromDb(h.db)
 	if err != nil {
 		fmt.Printf("error trying to retreive old protobuf: %v", err)
 		return
