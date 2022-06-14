@@ -5,11 +5,23 @@ model Foo {
  
   @permission(
     expression: foo.f1 == bool,
-    role: Admin,
+    roles: [Admin],
     actions: [list, get]
   )
   @permission(
-    role: Restricted,
+    roles: [Restricted],
     actions: [update]
   )
+}
+
+role Admin {
+  domains {
+    "bar.com"
+  }
+}
+
+role Restricted {
+  emails {
+    "superuser@myorg.com"
+  }
 }

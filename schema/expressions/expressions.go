@@ -6,34 +6,30 @@ import (
 	"strings"
 
 	"github.com/alecthomas/participle/v2"
-	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/teamkeel/keel/schema/node"
 )
 
 type Expression struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	node.Node
 
 	Or []*OrExpression `@@ ("or" @@)*`
 }
 
 type OrExpression struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	node.Node
 
 	And []*ConditionWrap `@@ ("and" @@)*`
 }
 
 type ConditionWrap struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	node.Node
 
 	Expression *Expression `( "(" @@ ")"`
 	Condition  *Condition  `| @@ )`
 }
 
 type Condition struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	node.Node
 
 	LHS      *Value `@@`
 	Operator string `( @( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" )`
@@ -41,8 +37,7 @@ type Condition struct {
 }
 
 type Value struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	node.Node
 
 	Number *int64   `  @Int`
 	String *string  `| @String`
@@ -54,8 +49,7 @@ type Value struct {
 }
 
 type Array struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
+	node.Node
 
 	Values []*Value `"[" @@ ( "," @@ )* "]"`
 }

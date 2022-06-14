@@ -47,3 +47,19 @@ en:
     short_message: "{{ .Name }} isn't lower camel"
     message: "You have a field name that is not lowerCamel {{ .Name }}"
     hint: "Did you mean '{{ .Suggested }}'?"
+  E013:
+    short_message: "{{ .ArgumentName }} isn't a valid argument for {{ .AttributeName }}"
+    message: "The {{ .AttributeName }} attribute doesn't accept the argument {{ .ArgumentName }}{{ if .Location }} when used inside an {{ .Location }}{{ end }}"
+    hint: "{{ if .ValidArgumentNames }}Did you mean one of {{ .ValidArgumentNames }}?{{ else }}Maybe remove the {{ .ArgumentName }} argument?{{ end }}"
+  E014:
+    short_message: "{{ .AttributeName }} requires all arguments to be named"
+    message: "{{ .AttributeName }} requires all arguments to be named, for example @permission(roles: [MyRole])"
+    hint: "Valid argument names for {{ .AttributeName }} are {{ .ValidArgumentNames }}"
+  E015:
+    short_message: "The @{{ .AttributeName }} attribute is missing required argument {{ .ArgumentName }}"
+    message: "The @{{ .AttributeName }} attribute is missing required argument {{ .ArgumentName }}"
+    hint: ""
+  E016:
+    short_message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
+    message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
+    hint: ""

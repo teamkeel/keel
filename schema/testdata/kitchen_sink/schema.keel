@@ -47,8 +47,7 @@ model Post {
         create createPost(body, author) {
             @permission(
                 expression: post.author.identity == ctx.identity,
-                actions: [create],
-                role: Admin
+                roles: [Admin]
             )
         }
         list listPosts()

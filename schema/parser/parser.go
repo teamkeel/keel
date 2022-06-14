@@ -2,22 +2,22 @@ package parser
 
 import (
 	"text/scanner"
-	"unicode/utf8"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
 )
 
 type AST struct {
-	Node
+	node.Node
 
 	Declarations []*DeclarationNode `@@+`
 }
 
 type DeclarationNode struct {
-	Node
+	node.Node
 
 	Model *ModelNode `("model" @@`
 	Role  *RoleNode  `| "role" @@`
@@ -26,14 +26,14 @@ type DeclarationNode struct {
 }
 
 type ModelNode struct {
-	Node
+	node.Node
 
 	Name     NameNode            `@@`
 	Sections []*ModelSectionNode `"{" @@* "}"`
 }
 
 type ModelSectionNode struct {
-	Node
+	node.Node
 
 	Fields     []*FieldNode   `( "fields" "{" @@+ "}"`
 	Functions  []*ActionNode  `| "functions" "{" @@+ "}"`
@@ -42,19 +42,19 @@ type ModelSectionNode struct {
 }
 
 type NameNode struct {
-	Node
+	node.Node
 
 	Value string `@Ident`
 }
 
 type AttributeNameToken struct {
-	Node
+	node.Node
 
 	Value string `"@" @Ident`
 }
 
 type FieldNode struct {
-	Node
+	node.Node
 
 	Name       NameNode         `@@`
 	Type       string           `@Ident`
@@ -68,67 +68,67 @@ type FieldNode struct {
 }
 
 type APINode struct {
-	Node
+	node.Node
 
 	Name     NameNode          `@@`
 	Sections []*APISectionNode `"{" @@* "}"`
 }
 
 type APISectionNode struct {
-	Node
+	node.Node
 
 	Models    []*ModelsNode  `("models" "{" @@* "}"`
 	Attribute *AttributeNode `| @@)`
 }
 
 type RoleNode struct {
-	Node
+	node.Node
 
 	Name     NameNode           `@@`
 	Sections []*RoleSectionNode `"{" @@* "}"`
 }
 
 type RoleSectionNode struct {
-	Node
+	node.Node
 
 	Domains []*DomainNode `("domains" "{" @@* "}"`
 	Emails  []*EmailsNode `| "emails" "{" @@* "}")`
 }
 
 type DomainNode struct {
-	Node
+	node.Node
 
 	Domain string `@String`
 }
 
 type EmailsNode struct {
-	Node
+	node.Node
 
 	Email string `@String`
 }
 
 type ModelsNode struct {
-	Node
+	node.Node
 
 	Name NameNode `@@`
 }
 
 type AttributeNode struct {
-	Node
+	node.Node
 
 	Name      AttributeNameToken       `@@`
 	Arguments []*AttributeArgumentNode `( "(" @@ ( "," @@ )* ")" )?`
 }
 
 type AttributeArgumentNode struct {
-	Node
+	node.Node
 
 	Name       NameNode                `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 
 type ActionNode struct {
-	Node
+	node.Node
 
 	Type       string                `@Ident`
 	Name       NameNode              `@@`
@@ -137,63 +137,22 @@ type ActionNode struct {
 }
 
 type ActionArgumentNode struct {
-	Node
+	node.Node
 
 	Name NameNode `@@`
 }
 
 type EnumNode struct {
-	Node
+	node.Node
 
 	Name   NameNode         `"enum" @@`
 	Values []*EnumValueNode `"{" @@+ "}"`
 }
 
 type EnumValueNode struct {
-	Node
+	node.Node
 
 	Name NameNode `@@`
-}
-
-type Node struct {
-	Pos    lexer.Position
-	EndPos lexer.Position
-	Tokens []lexer.Token
-}
-
-// GetPositionRange returns a start and end position that correspond to Node
-// The behaviour of start position is exactly the same as the Pos field that
-// participle provides but the end position is calculated from the position of
-// the last token in this node, which is more useful if you want to know where
-// _this_ node starts and ends.
-func (n Node) GetPositionRange() (start lexer.Position, end lexer.Position) {
-	start.Column = n.Pos.Column
-	start.Filename = n.Pos.Filename
-	start.Line = n.Pos.Line
-	start.Offset = n.Pos.Offset
-
-	// This shouldn't really happen but just to be safe
-	if len(n.Tokens) == 0 {
-		return start, n.EndPos
-	}
-
-	lastToken := n.Tokens[len(n.Tokens)-1]
-	endPos := lastToken.Pos
-
-	tokenLength := utf8.RuneCountInString(lastToken.Value)
-
-	end.Filename = endPos.Filename
-
-	// assumption here is that a token can't span multiple lines, which
-	// I'm pretty sure is true
-	end.Line = endPos.Line
-
-	// Update offset and column to reflect the end of last token
-	// in this node
-	end.Offset = endPos.Offset + tokenLength
-	end.Column = endPos.Column + tokenLength
-
-	return start, end
 }
 
 func Parse(s *reader.SchemaFile) (*AST, error) {

@@ -25,7 +25,9 @@
             {
               "modelName":  "Foo",
               "operationName":  "opA",
-              "roleName":  "Admin",
+              "roleNames":  [
+                "Admin"
+              ],
               "expression":  {
                 "source":  "foo.f1 == bool"
               }
@@ -33,10 +35,26 @@
             {
               "modelName":  "Foo",
               "operationName":  "opA",
-              "roleName":  "Restricted"
+              "roleNames":  [
+                "Restricted"
+              ]
             }
           ]
         }
+      ]
+    }
+  ],
+  "roles":  [
+    {
+      "name":  "Admin",
+      "domains":  [
+        "myorg.com"
+      ]
+    },
+    {
+      "name":  "Restricted",
+      "emails":  [
+        "superuser@myorg.com"
       ]
     }
   ]

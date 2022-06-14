@@ -35,6 +35,15 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
+func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
+	for _, section := range model.Sections {
+		if section.Attribute != nil {
+			res = append(res, section.Attribute)
+		}
+	}
+	return res
+}
+
 func Enums(asts []*parser.AST) (res []*parser.EnumNode) {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
@@ -55,6 +64,17 @@ func Enum(asts []*parser.AST, name string) *parser.EnumNode {
 		}
 	}
 	return nil
+}
+
+func Roles(asts []*parser.AST) (res []*parser.RoleNode) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Role != nil {
+				res = append(res, decl.Role)
+			}
+		}
+	}
+	return res
 }
 
 func IsUserDefinedType(asts []*parser.AST, name string) bool {

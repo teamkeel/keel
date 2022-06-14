@@ -261,9 +261,11 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 		case "expression":
 			expr, _ := expressions.ToString(arg.Expression)
 			pr.Expression = &proto.Expression{Source: expr}
-		case "role":
+		case "roles":
 			value, _ := expressions.ToValue(arg.Expression)
-			pr.RoleName = value.Ident[0]
+			for _, item := range value.Array.Values {
+				pr.RoleNames = append(pr.RoleNames, item.Ident[0])
+			}
 		case "actions":
 			value, _ := expressions.ToValue(arg.Expression)
 			for _, v := range value.Array.Values {

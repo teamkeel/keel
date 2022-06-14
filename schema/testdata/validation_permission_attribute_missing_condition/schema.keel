@@ -1,0 +1,8 @@
+model Person {
+    operations {
+        get getPerson(id)
+    }
+    @permission(
+        actions: [get]
+    )
+}

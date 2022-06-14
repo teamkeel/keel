@@ -135,7 +135,7 @@ message PermissionRule {
 
     // A name of a Role that has been defined in the schema.
     // Cannot be provided if `expression` is provided.
-    string role_name = 3;
+    repeated string role_names = 3;
 
     // An expression to evaluate at runtime.
     // Cannot be provided if `role_name` is provided.
