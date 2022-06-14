@@ -1,4 +1,4 @@
-package protoqry
+package proto
 
 import (
 	"testing"

@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/protoqry"
 )
 
 func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQL string, err error) {
@@ -14,7 +13,7 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 	}
 	// Are there any new tables?
 	for _, newModelName := range differences.ModelsAdded {
-		model := protoqry.FindModel(newProto.Models, newModelName)
+		model := proto.FindModel(newProto.Models, newModelName)
 		theSQL += "\n"
 		theSQL += createTable(model)
 	}
@@ -28,7 +27,7 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 	// Have any fields been added to models that are present in both old and new schema?
 	for modelName, fieldsAdded := range differences.FieldsAdded {
 		for _, fieldName := range fieldsAdded {
-			field := protoqry.FindField(newProto.Models, modelName, fieldName)
+			field := proto.FindField(newProto.Models, modelName, fieldName)
 			theSQL += "\n"
 			theSQL += createField(modelName, field)
 		}
@@ -37,7 +36,7 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 	// Have any fields been removed from models that are present in both old and new schema?
 	for modelName, fieldsRemoved := range differences.FieldsRemoved {
 		for _, fieldName := range fieldsRemoved {
-			field := protoqry.FindField(oldProto.Models, modelName, fieldName)
+			field := proto.FindField(oldProto.Models, modelName, fieldName)
 			theSQL += "\n"
 			theSQL += dropField(modelName, field.Name)
 		}

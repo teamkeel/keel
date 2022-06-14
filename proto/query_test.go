@@ -1,14 +1,13 @@
-package protoqry
+package proto
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/proto"
 )
 
 func TestModelNames(t *testing.T) {
-	require.Equal(t, []string{"ModelA", "ModelB"}, ModelNames(&referenceSchema))
+	require.Equal(t, []string{"ModelA", "ModelB"}, ModelNames(referenceSchema))
 }
 
 func TestFieldNames(t *testing.T) {
@@ -28,18 +27,18 @@ func TestModelExists(t *testing.T) {
 	require.False(t, ModelExists(referenceSchema.Models, "ModelZ"))
 }
 
-var referenceSchema proto.Schema = proto.Schema{
-	Models: []*proto.Model{
+var referenceSchema *Schema = &Schema{
+	Models: []*Model{
 		{
 			Name: "ModelA",
-			Fields: []*proto.Field{
+			Fields: []*Field{
 				{Name: "Field1"},
 				{Name: "Field2"},
 			},
 		},
 		{
 			Name: "ModelB",
-			Fields: []*proto.Field{
+			Fields: []*Field{
 				{Name: "Field2"},
 				{Name: "Field3"},
 			},
