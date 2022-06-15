@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/formatter"
 	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/schema/validation"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 type validateCommand struct {
@@ -42,7 +42,7 @@ var validateCmd = &cobra.Command{
 		}
 
 		if err != nil {
-			errs, ok := err.(validation.ValidationErrors)
+			errs, ok := err.(errorhandling.ValidationErrors)
 			if ok {
 				return c.outputFormatter.Write(errs.ToConsole())
 			} else {

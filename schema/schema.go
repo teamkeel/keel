@@ -8,6 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 // A Builder knows how to produce a (validated) proto.Schema,
@@ -25,7 +26,7 @@ func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
 	}
 	schema, err := scm.makeFromInputs(allInputFiles)
 	if err != nil {
-		verrs, ok := err.(validation.ValidationErrors)
+		verrs, ok := err.(errorhandling.ValidationErrors)
 		if ok {
 			return nil, verrs
 		} else {
@@ -45,7 +46,7 @@ func (scm *Builder) MakeFromFile(filename string) (*proto.Schema, error) {
 
 	schema, err := scm.makeFromInputs(allInputFiles)
 	if err != nil {
-		verrs, ok := err.(validation.ValidationErrors)
+		verrs, ok := err.(errorhandling.ValidationErrors)
 
 		if ok {
 			return nil, verrs
