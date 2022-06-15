@@ -17,8 +17,8 @@ var (
 	reservedModelNames = []string{"query"}
 )
 
-func ModelNamingRule(asts []*parser.AST) (errors []error) {
-	for _, model := range query.Models(asts) {
+func ModelNamingRule(ast *parser.AST) (errors []error) {
+	for _, model := range query.Models(ast) {
 		// todo - these MustCompile regex would be better at module scope, to
 		// make the MustCompile panic a load-time thing rather than a runtime thing.
 		reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
@@ -46,10 +46,10 @@ func ModelNamingRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func ReservedModelNamesRule(asts []*parser.AST) []error {
+func ReservedModelNamesRule(ast *parser.AST) []error {
 	var errors []error
 
-	for _, model := range query.Models(asts) {
+	for _, model := range query.Models(ast) {
 		for _, name := range reservedModelNames {
 			if strings.EqualFold(name, model.Name.Value) {
 				errors = append(
@@ -71,10 +71,10 @@ func ReservedModelNamesRule(asts []*parser.AST) []error {
 	return errors
 }
 
-func UniqueModelNamesRule(asts []*parser.AST) (errors []error) {
+func UniqueModelNamesRule(ast *parser.AST) (errors []error) {
 	seenModelNames := map[string]bool{}
 
-	for _, model := range query.Models(asts) {
+	for _, model := range query.Models(ast) {
 		if _, ok := seenModelNames[model.Name.Value]; ok {
 			errors = append(
 				errors,
@@ -96,8 +96,8 @@ func UniqueModelNamesRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func ActionNamingRule(asts []*parser.AST) (errors []error) {
-	for _, model := range query.Models(asts) {
+func ActionNamingRule(ast *parser.AST) (errors []error) {
+	for _, model := range query.Models(ast) {
 		for _, action := range query.ModelActions(model) {
 			if strcase.ToLowerCamel(action.Name.Value) != action.Name.Value {
 				errors = append(
@@ -119,10 +119,10 @@ func ActionNamingRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func UniqueOperationNamesRule(asts []*parser.AST) (errors []error) {
+func UniqueOperationNamesRule(ast *parser.AST) (errors []error) {
 	operationNames := map[string]bool{}
 
-	for _, model := range query.Models(asts) {
+	for _, model := range query.Models(ast) {
 		for _, action := range query.ModelActions(model) {
 			if _, ok := operationNames[action.Name.Value]; ok {
 				errors = append(
@@ -146,8 +146,8 @@ func UniqueOperationNamesRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
-	for _, model := range query.Models(asts) {
+func ValidActionInputsRule(ast *parser.AST) (errors []error) {
+	for _, model := range query.Models(ast) {
 		for _, action := range query.ModelActions(model) {
 			for _, input := range action.Arguments {
 				field := query.ModelField(model, input.Name.Value)
@@ -187,10 +187,10 @@ func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 
 // GET operations must take a unique field as an input or filter on a unique field
 // using @where
-func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
+func GetOperationUniqueLookupRule(ast *parser.AST) []error {
 	var errors []error
 
-	for _, model := range query.Models(asts) {
+	for _, model := range query.Models(ast) {
 
 	actions:
 		for _, action := range query.ModelActions(model) {

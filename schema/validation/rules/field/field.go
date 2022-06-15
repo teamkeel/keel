@@ -25,10 +25,10 @@ var (
 	}
 )
 
-func ReservedNameRule(asts []*parser.AST) []error {
+func ReservedNameRule(ast *parser.AST) []error {
 	var errors []error
 
-	for _, model := range query.Models(asts) {
+	for _, model := range query.Models(ast) {
 		for _, field := range query.ModelFields(model) {
 
 			if field.BuiltIn {
@@ -58,8 +58,8 @@ func ReservedNameRule(asts []*parser.AST) []error {
 	return errors
 }
 
-func FieldNamingRule(asts []*parser.AST) (errors []error) {
-	for _, model := range query.Models(asts) {
+func FieldNamingRule(ast *parser.AST) (errors []error) {
+	for _, model := range query.Models(ast) {
 		for _, field := range query.ModelFields(model) {
 			if field.BuiltIn {
 				continue
@@ -84,8 +84,8 @@ func FieldNamingRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func UniqueFieldNamesRule(asts []*parser.AST) (errors []error) {
-	for _, model := range query.Models(asts) {
+func UniqueFieldNamesRule(ast *parser.AST) (errors []error) {
+	for _, model := range query.Models(ast) {
 		fieldNames := map[string]bool{}
 		for _, field := range query.ModelFields(model) {
 			// Ignore built in fields as usage of these field names is handled
@@ -115,19 +115,19 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func ValidFieldTypesRule(asts []*parser.AST) (errors []error) {
-	for _, model := range query.Models(asts) {
+func ValidFieldTypesRule(ast *parser.AST) (errors []error) {
+	for _, model := range query.Models(ast) {
 		for _, field := range query.ModelFields(model) {
 
 			if _, ok := builtInFieldTypes[field.Type]; ok {
 				continue
 			}
 
-			if query.IsUserDefinedType(asts, field.Type) {
+			if query.IsUserDefinedType(ast, field.Type) {
 				continue
 			}
 
-			validTypes := query.UserDefinedTypes(asts)
+			validTypes := query.UserDefinedTypes(ast)
 			for t := range builtInFieldTypes {
 				validTypes = append(validTypes, t)
 			}

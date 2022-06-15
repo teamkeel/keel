@@ -14,7 +14,7 @@ import (
 // A Builder knows how to produce a (validated) proto.Schema,
 // from a given Keel Builder. Construct one, then call the Make method.
 type Builder struct {
-	asts []*parser.AST
+	ast *parser.AST
 }
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
@@ -78,13 +78,15 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		asts = append(asts, declarations)
 	}
 
-	v := validation.NewValidator(asts)
+	ast := asts[0].MergeWith(asts[1:]...)
+
+	v := validation.NewValidator(ast)
 	err := v.RunAllValidators()
 	if err != nil {
 		return nil, err
 	}
 
-	scm.asts = asts
+	scm.ast = ast
 
 	protoModels := scm.makeProtoModels()
 	return protoModels, nil

@@ -10,9 +10,9 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
-func ValidateExpressionRule(asts []*parser.AST) []error {
+func ValidateExpressionRule(ast *parser.AST) []error {
 	modelName := "Profile"
-	attributes := query.AttributesInModel(asts, modelName)
+	attributes := query.AttributesInModel(ast, modelName)
 
 	for _, attr := range attributes {
 		for _, arg := range attr.Arguments {
@@ -24,11 +24,11 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 			}
 
 			if condition.LHS.Ident != nil {
-				lhs, err := checkResolution(asts, modelName, condition.LHS)
+				lhs, err := checkResolution(ast, modelName, condition.LHS)
 
 			}
 			if condition.RHS.Ident != nil {
-				rhs, err := checkResolution(asts, modelName, condition.RHS)
+				rhs, err := checkResolution(ast, modelName, condition.RHS)
 
 			}
 
@@ -38,8 +38,8 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 	return make([]error, 0)
 }
 
-func checkResolution(asts []*parser.AST, contextModel string, value *expressions.Value) (*node.Node, error) {
-	errors = make([]error, 0)
+func checkResolution(ast *parser.AST, contextModel string, value *expressions.Value) (*node.Node, error) {
+	errs := make([]error, 0)
 	fragments := strings.Split(value.ToString(), ".")
 
 	if fragments[0] != strings.ToLower(contextModel) {
@@ -47,16 +47,14 @@ func checkResolution(asts []*parser.AST, contextModel string, value *expressions
 	}
 
 	if value.Ident != nil {
-		for _, ast := range asts {
-			node, err := ast.ResolveAssociation(contextModel, fragments)
+		n, err := ast.ResolveAssociation(contextModel, fragments)
 
-			if err != nil {
-				return nil, err
-			}
-
-			return node, nil
+		if err != nil {
+			return nil, err
 		}
+
+		return n, nil
 	}
 
-	return node, nil
+	return nil, nil
 }

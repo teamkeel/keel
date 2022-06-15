@@ -13,10 +13,10 @@ import (
 
 // attributeLocationsRule checks that attributes are used in valid places
 // For example it's invalid to use a @where attribute inside a model definition
-func AttributeLocationsRule(asts []*parser.AST) []error {
+func AttributeLocationsRule(ast *parser.AST) []error {
 	var errors []error
 
-	for _, model := range query.Models(asts) {
+	for _, model := range query.Models(ast) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
 				errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value)...)
@@ -42,7 +42,7 @@ func AttributeLocationsRule(asts []*parser.AST) []error {
 		}
 	}
 
-	for _, api := range query.APIs(asts) {
+	for _, api := range query.APIs(ast) {
 		for _, section := range api.Sections {
 			if section.Attribute != nil {
 				errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "api", api.Name.Value)...)
@@ -107,14 +107,14 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 	return errors
 }
 
-func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
-	for _, model := range query.Models(asts) {
+func PermissionAttributeRule(ast *parser.AST) (errors []error) {
+	for _, model := range query.Models(ast) {
 		for _, attr := range query.ModelAttributes(model) {
 			if attr.Name.Value != parser.AttributePermission {
 				continue
 			}
 
-			errors = append(errors, validatePermissionAttribute(asts, attr, model, nil)...)
+			errors = append(errors, validatePermissionAttribute(ast, attr, model, nil)...)
 		}
 
 		for _, action := range query.ModelActions(model) {
@@ -123,7 +123,7 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 					continue
 				}
 
-				errors = append(errors, validatePermissionAttribute(asts, attr, model, action)...)
+				errors = append(errors, validatePermissionAttribute(ast, attr, model, action)...)
 			}
 		}
 	}
@@ -139,7 +139,7 @@ var validActionKeywords = []string{
 	parser.ActionTypeDelete,
 }
 
-func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode, model *parser.ModelNode, action *parser.ActionNode) (errors []error) {
+func validatePermissionAttribute(ast *parser.AST, attr *parser.AttributeNode, model *parser.ModelNode, action *parser.ActionNode) (errors []error) {
 	hasActions := false
 	hasExpression := false
 	hasRoles := false
@@ -175,7 +175,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 		case "roles":
 			hasRoles = true
 			allowedIdents := []string{}
-			for _, role := range query.Roles(asts) {
+			for _, role := range query.Roles(ast) {
 				allowedIdents = append(allowedIdents, role.Name.Value)
 			}
 			errors = append(errors, validateIdentArray(model, arg.Expression, allowedIdents)...)
