@@ -13,7 +13,7 @@ import (
 // - Starts Postgres locally in a docker container.
 // - If this is the first run ever, then perform initial database migrations.
 // - Setting up a watcher on the input schema directory with a handler that
-//   reacts to changes as follows...
+//   reacts to changes as follows:
 //
 // 		- Parse and validate the input schema files.
 // 		- Build the protobuffer schema representation.

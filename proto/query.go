@@ -22,12 +22,13 @@ func FieldNames(m *Model) []string {
 
 // ModelsExists returns true if the given schema contains a
 // model with the given name.
-// todo move this family into proto package
 func ModelExists(models []*Model, name string) bool {
-	_, _, found := lo.FindIndexOf(models, func(m *Model) bool {
-		return m.Name == name
-	})
-	return lo.Ternary(found, true, false)
+	for _, m := range models {
+		if m.Name == name {
+			return true
+		}
+	}
+	return false
 }
 
 // FindModel locates the model of the given name.

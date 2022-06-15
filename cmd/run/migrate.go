@@ -33,9 +33,9 @@ func performMigration(oldProto *proto.Schema, db *sql.DB, schemaDir string) erro
 	return nil
 }
 
-func makeProtoFromSchemaFiles(schemaDir string) (proto *proto.Schema, err error) {
+func makeProtoFromSchemaFiles(schemaDir string) (*proto.Schema, error) {
 	builder := schema.Builder{}
-	proto, err = builder.MakeFromDirectory(schemaDir)
+	proto, err := builder.MakeFromDirectory(schemaDir)
 	if err != nil {
 		return nil, fmt.Errorf("error making protobuf schema from directory: %v", err)
 	}
