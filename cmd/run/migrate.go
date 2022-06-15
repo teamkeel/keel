@@ -12,8 +12,8 @@ import (
 // performMigration performs the migration deemed to be necessary to the database
 // given the last-used schema, and a (presumed to have changed) user's keel schema directory.
 // It is good for both the incremental migrations needed as the user works on their input schema,
-// but also for the initial, first-ever migration. In the latter case - the caller must provide
-// a valid, but empty last-used schema.
+// but also for the initial, first-ever migration. In the latter case - the caller should pass
+// &proto.Schema{} as the oldProto argument.
 func performMigration(oldProto *proto.Schema, db *sql.DB, schemaDir string) error {
 	newProto, err := makeProtoFromSchemaFiles(schemaDir)
 	if err != nil {
