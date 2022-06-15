@@ -3,8 +3,10 @@ package run
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/samber/lo"
 )
 
 // reactToSchemaChanges should be called in its own goroutine. It has a blocking
@@ -13,12 +15,14 @@ func reactToSchemaChanges(watcher *fsnotify.Watcher, handler *SchemaChangedHandl
 	for {
 		select {
 		case event := <-watcher.Events:
-			switch event.Op {
-			case fsnotify.Create, fsnotify.Write, fsnotify.Remove:
+			switch {
+			case !strings.HasSuffix(event.Name, ".keel"):
+				// Ignore
+			case !isRelevantEventType(event.Op):
+				// Ignore
+			default:
 				nameOfFileThatChanged := event.Name
 				handler.Handle(nameOfFileThatChanged)
-			default:
-				// We are ignoring fsnotify.Rename and fsnotify.Chmod
 			}
 
 		case err := <-watcher.Errors:
@@ -60,4 +64,10 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 		fmt.Printf("error: %v\n", err)
 	}
 	fmt.Printf("done\n")
+}
+
+func isRelevantEventType(op fsnotify.Op) bool {
+	relevant := []fsnotify.Op{fsnotify.Create, fsnotify.Write, fsnotify.Remove}
+	// The irrelevant ones are Rename and Chmod.
+	return lo.Contains(relevant, op)
 }
