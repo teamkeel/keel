@@ -11,6 +11,7 @@ import (
 )
 
 func ValidateExpressionRule(ast *parser.AST) []error {
+	//todo replace with loop
 	modelName := "Profile"
 	attributes := query.AttributesInModel(ast, modelName)
 
@@ -19,7 +20,7 @@ func ValidateExpressionRule(ast *parser.AST) []error {
 			condition, err := expressions.ToEqualityCondition(arg.Expression)
 
 			if err != nil {
-				// not an equality expression
+				// this is not an equality expression
 				continue
 			}
 
@@ -39,10 +40,12 @@ func ValidateExpressionRule(ast *parser.AST) []error {
 }
 
 func checkResolution(ast *parser.AST, contextModel string, value *expressions.Value) (*node.Node, error) {
-	errs := make([]error, 0)
 	fragments := strings.Split(value.ToString(), ".")
 
 	if fragments[0] != strings.ToLower(contextModel) {
+
+		// e.g model is Profile
+		// but expression is something.else == 123 where something should be profile (lowercased)
 		return nil, errors.New("Does not match model context")
 	}
 
