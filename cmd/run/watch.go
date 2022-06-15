@@ -50,7 +50,7 @@ func NewSchemaChangedHandler(schemaDir string, db *sql.DB) *SchemaChangedHandler
 
 // Handle is the callback function that receives change events.
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
-	fmt.Printf("Reacting to a change in this file: %s, changed\n", schemaThatHasChanged)
+	fmt.Printf("File changed: %s\n", schemaThatHasChanged)
 
 	// In the context of this Handler - we assume that the oldProto must be available,
 	// because we make sure it is before we set up the schema watcher.
