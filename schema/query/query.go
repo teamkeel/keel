@@ -24,6 +24,58 @@ func Models(asts []*parser.AST) (res []*parser.ModelNode) {
 	return res
 }
 
+func Attributes(asts []*parser.AST) (res []*parser.AttributeNode) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil {
+
+				for _, section := range decl.Model.Sections {
+					if section.Fields != nil {
+						for _, field := range section.Fields {
+							if field.BuiltIn {
+								continue
+							}
+							if field.Attributes != nil {
+								res = append(res, field.Attributes...)
+							}
+						}
+					}
+
+					if section.Functions != nil {
+						for _, function := range section.Functions {
+							if function.Attributes != nil {
+								res = append(res, function.Attributes...)
+							}
+						}
+					}
+
+					if section.Operations != nil {
+						for _, operation := range section.Operations {
+							if operation.Attributes != nil {
+								res = append(res, operation.Attributes...)
+							}
+						}
+					}
+
+					if section.Attribute != nil {
+						res = append(res, section.Attribute)
+					}
+				}
+			}
+
+			if decl.API != nil {
+				for _, section := range decl.API.Sections {
+					if section.Attribute != nil {
+						res = append(res, section.Attribute)
+					}
+				}
+			}
+		}
+	}
+
+	return res
+}
+
 func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {

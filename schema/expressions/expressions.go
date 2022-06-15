@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/teamkeel/keel/schema/node"
+	"github.com/teamkeel/keel/util/collection"
 )
 
 type Expression struct {
@@ -32,8 +33,25 @@ type Condition struct {
 	node.Node
 
 	LHS      *Value `@@`
-	Operator string `( @( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=" )`
+	Operator string `( @( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
 	RHS      *Value `@@ )?`
+}
+
+func (condition *Condition) ToString() string {
+	result := ""
+
+	if condition == nil {
+		return "shit"
+	}
+	if condition.LHS != nil {
+		result += condition.LHS.ToString()
+	}
+	result += condition.Operator
+	if condition.RHS != nil {
+		result += condition.RHS.ToString()
+	}
+
+	return result
 }
 
 type Value struct {
@@ -93,7 +111,7 @@ func ToString(expr *Expression) (string, error) {
 				continue
 			}
 
-			result += valueToString(andExpr.Condition.LHS)
+			result += andExpr.Condition.LHS.ToString()
 
 			op := andExpr.Condition.Operator
 
@@ -110,7 +128,7 @@ func ToString(expr *Expression) (string, error) {
 				result += op
 			}
 
-			result += " " + valueToString(andExpr.Condition.RHS)
+			result += " " + andExpr.Condition.RHS.ToString()
 		}
 
 	}
@@ -134,7 +152,6 @@ func ToValue(expr *Expression) (*Value, error) {
 	if len(or.And) > 1 {
 		return nil, ErrNotValue
 	}
-
 	and := or.And[0]
 
 	if and.Expression != nil {
@@ -147,6 +164,40 @@ func ToValue(expr *Expression) (*Value, error) {
 	}
 
 	return cond.LHS, nil
+}
+
+func IsEquality(expr *Expression) bool {
+	v, _ := ToEqualityCondition(expr)
+	return v != nil
+}
+
+var ErrNotEquality = errors.New("expression does not check for equality")
+
+var equalityOperators = []string{"==", "<", ">", ">=", "<=", "!=", "in", "notin", "contains"}
+
+func ToEqualityCondition(expr *Expression) (*Condition, error) {
+	or := expr.Or[0]
+
+	and := or.And[0]
+
+	if and.Expression != nil {
+		return nil, ErrNotEquality
+	}
+
+	cond := and.Condition
+
+	if cond == nil {
+		return nil, ErrNotEquality
+	}
+
+	if !collection.Contains(equalityOperators, cond.Operator) {
+		return nil, ErrNotEquality
+	}
+
+	if cond.LHS == nil || cond.RHS == nil {
+		return nil, ErrNotEquality
+	}
+	return cond, nil
 }
 
 var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
@@ -179,8 +230,10 @@ func ToAssignmentCondition(expr *Expression) (*Condition, error) {
 	return cond, nil
 }
 
-func valueToString(v *Value) string {
+func (v *Value) ToString() string {
 	switch {
+	case v == nil:
+		return ""
 	case v.Number != nil:
 		return fmt.Sprintf("%d", *v.Number)
 	case v.String != nil:
@@ -197,7 +250,7 @@ func valueToString(v *Value) string {
 			if i > 0 {
 				r += ", "
 			}
-			r += valueToString(el)
+			r += el.ToString()
 		}
 		return r + "]"
 	case len(v.Ident) > 0:

@@ -6,6 +6,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/api"
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
 	"github.com/teamkeel/keel/schema/validation/rules/enum"
+	"github.com/teamkeel/keel/schema/validation/rules/expression"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
 	"github.com/teamkeel/keel/schema/validation/rules/model"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
@@ -54,6 +55,8 @@ var validatorFuncs = []validationFunc{
 	api.UniqueAPINamesRule,
 	// Enum
 	enum.UniqueEnumsRule,
+	// Attribute expressions
+	expression.ValidateExpressionRule,
 }
 
 func (v *Validator) RunAllValidators() error {

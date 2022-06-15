@@ -1,0 +1,16 @@
+  {
+    "Errors": [
+      {
+        "code": "",
+        "hint": "",
+        "message": "",
+        "pos": {
+          "column": 0,
+          "filename": "testdata/validation_expression_lhs_rhs/schema.keel",
+          "line": 0,
+          "offset": 0
+        },
+        "short_message": ""
+      }
+    ]
+  }

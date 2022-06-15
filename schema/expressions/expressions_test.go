@@ -112,3 +112,40 @@ func TestIsAssignment(t *testing.T) {
 		})
 	}
 }
+
+func TestIsEquality(t *testing.T) {
+	fixtures := map[string]bool{
+		"a":       false,
+		"1":       false,
+		"true":    false,
+		"false":   false,
+		"null":    false,
+		"42":      false,
+		"[1,2,3]": false,
+		"a = b":   false,
+
+		"a == b":                   true,
+		"a.b.c == b":               true,
+		"a == b.c":                 true,
+		"a.b == b.c or a.c == b.c": true,
+		"a.b == b.c and b.c == x.x or a.b.c == b.c.a": true,
+		"a > b":              true,
+		"a >= b":             true,
+		"a < b":              true,
+		"a <= b":             true,
+		"a in b":             true,
+		"a != b":             true,
+		"a not in b":         true,
+		"a.b.c not in b.c.a": true,
+	}
+
+	for input, expected := range fixtures {
+		t.Run(input, func(t *testing.T) {
+			expr, err := expressions.Parse(input)
+			assert.NoError(t, err)
+
+			actual := expressions.IsEquality(expr)
+			assert.Equal(t, expected, actual)
+		})
+	}
+}
