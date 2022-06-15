@@ -12,13 +12,13 @@ func ProtoDeltas(old, new *proto.Schema) (*Differences, error) {
 
 	oldModels := proto.ModelNames(old)
 	newModels := proto.ModelNames(new)
-	modelsIncommon := modelsPresentInBothOldAndNew(old, new)
+	modelsInCommon := modelsPresentInBothOldAndNew(old, new)
 
 	// Models added or removed.
 	diffs.ModelsRemoved, diffs.ModelsAdded = lo.Difference(oldModels, newModels)
 
 	// Fields added or removed
-	for _, modelName := range modelsIncommon {
+	for _, modelName := range modelsInCommon {
 		oldFieldNames := proto.FieldNames(proto.FindModel(old.Models, modelName))
 		newFieldNames := proto.FieldNames(proto.FindModel(new.Models, modelName))
 		diffs.FieldsRemoved[modelName], diffs.FieldsAdded[modelName] = lo.Difference(oldFieldNames, newFieldNames)
