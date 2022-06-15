@@ -4,3 +4,10 @@ model Profile {
       actions: [get, update]
     )
 }
+
+model Something {
+  @permission(
+    expression: something.identity == ctx.identity,
+    actions: [get, update]
+  )
+}

@@ -41,7 +41,7 @@ func (condition *Condition) ToString() string {
 	result := ""
 
 	if condition == nil {
-		return "shit"
+		return "oh no"
 	}
 	if condition.LHS != nil {
 		result += condition.LHS.ToString()
@@ -232,8 +232,6 @@ func ToAssignmentCondition(expr *Expression) (*Condition, error) {
 
 func (v *Value) ToString() string {
 	switch {
-	case v == nil:
-		return ""
 	case v.Number != nil:
 		return fmt.Sprintf("%d", *v.Number)
 	case v.String != nil:
