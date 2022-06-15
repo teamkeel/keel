@@ -21,7 +21,7 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	schemaDir, _ := cmd.Flags().GetString("dir")
 
 	// If this is the first ever run - do the initial migrations on the database.
-	isFirstRun, err := isFirstEverRun(db)
+	isFirstRun, err := isInitialRun(db)
 	if err != nil {
 		return fmt.Errorf("error while assessing if first ever run: %v", err)
 	}

@@ -42,7 +42,7 @@ func makeProtoFromSchemaFiles(schemaDir string) (*proto.Schema, error) {
 	return proto, nil
 }
 
-func isFirstEverRun(db *sql.DB) (bool, error) {
+func isInitialRun(db *sql.DB) (bool, error) {
 	proto, err := fetchProtoFromDb(db)
 	if err != nil {
 		return false, fmt.Errorf("error trying to fetch last used protobuf: %v", err)
