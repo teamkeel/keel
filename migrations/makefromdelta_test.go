@@ -10,7 +10,6 @@ import (
 
 func TestItFindsTheDifferencesItShould(t *testing.T) {
 	generatedSQL, err := MakeMigrationsFromSchemaDifference(&oldProto, &newProto)
-	fmt.Printf("TestChangedMode generated SQL...\n\n%s\n\n", generatedSQL)
 	require.NoError(t, err)
 	if generatedSQL != expected {
 		fmt.Printf("\n\n%s\n\n", generatedSQL)
@@ -79,12 +78,12 @@ var newProto proto.Schema = proto.Schema{
 }
 
 const expected string = `
-CREATE TABLE Human(
-Name TEXT,
-Age integer
+CREATE TABLE "Human"(
+"Name" TEXT,
+"Age" integer
 );
-DROP TABLE Person;
-ALTER TABLE Address
-ADD City TEXT;
-ALTER TABLE Address
-DROP Postcode;`
+DROP TABLE "Person";
+ALTER TABLE "Address"
+ADD "City" TEXT;
+ALTER TABLE "Address"
+DROP "Postcode";`

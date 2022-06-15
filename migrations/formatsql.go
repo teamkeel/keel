@@ -7,9 +7,10 @@ import (
 )
 
 func createTable(model *proto.Model) string {
-	output := fmt.Sprintf("CREATE TABLE %s(\n", model.Name) // Should we apply transformation proto model name?
+	output := fmt.Sprintf("CREATE TABLE \"%s\"(\n", model.Name) // todo - we should normalise model names
 	for i, field := range model.Fields {
-		f := fmt.Sprintf("%s %s", field.Name, PostgresFieldTypes[field.Type])
+		// todo: field names need to be normalised / standardised for use in the database.
+		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type])
 		if i != len(model.Fields)-1 {
 			f += ","
 		}
@@ -21,17 +22,17 @@ func createTable(model *proto.Model) string {
 }
 
 func dropTable(name string) string {
-	return fmt.Sprintf("DROP TABLE %s;", name)
+	return fmt.Sprintf("DROP TABLE \"%s\";", name)
 }
 
 func createField(modelName string, field *proto.Field) string {
-	output := fmt.Sprintf("ALTER TABLE %s\n", modelName)
-	output += fmt.Sprintf("ADD %s %s;", field.Name, PostgresFieldTypes[field.Type])
+	output := fmt.Sprintf("ALTER TABLE \"%s\"\n", modelName)
+	output += fmt.Sprintf("ADD \"%s\" %s;", field.Name, PostgresFieldTypes[field.Type])
 	return output
 }
 
 func dropField(modelName string, fieldName string) string {
-	output := fmt.Sprintf("ALTER TABLE %s\n", modelName)
-	output += fmt.Sprintf("DROP %s;", fieldName)
+	output := fmt.Sprintf("ALTER TABLE \"%s\"\n", modelName)
+	output += fmt.Sprintf("DROP \"%s\";", fieldName)
 	return output
 }

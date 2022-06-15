@@ -42,15 +42,15 @@ var exampleModel *proto.Model = &proto.Model{
 	},
 }
 
-const expectedCreateTable string = `CREATE TABLE Person(
-Name TEXT,
-Age integer
+const expectedCreateTable string = `CREATE TABLE "Person"(
+"Name" TEXT,
+"Age" integer
 );`
 
-const expectedDropTable string = `DROP TABLE Person;`
+const expectedDropTable string = `DROP TABLE "Person";`
 
-const expectedCreateField string = `ALTER TABLE Person
-ADD myNewField DATE;`
+const expectedCreateField string = `ALTER TABLE "Person"
+ADD "myNewField" DATE;`
 
-const expectedDropField string = `ALTER TABLE Person
-DROP Age;`
+const expectedDropField string = `ALTER TABLE "Person"
+DROP "Age";`

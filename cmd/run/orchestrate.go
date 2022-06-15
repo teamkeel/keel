@@ -53,7 +53,8 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("error specifying directory to schema watcher: %v", err)
 	}
 
-	fmt.Printf("Waiting for a schema file to change in %s ...\n", schemaDir)
+	fmt.Printf("Waiting for schema files to change in %s ...\n", schemaDir)
+	fmt.Printf("Press CTRL-C to exit\n")
 
 	// Block the main go routine to keep the process alive until the user kills it with CTRL-C.
 	ch := make(chan bool)
