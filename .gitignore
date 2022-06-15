@@ -26,6 +26,6 @@ __debug_bin
 
 node_modules
 
-# files used locally for the keel run command
-.keel-state
 .launch.json
+
+/cmd/keel/keel
