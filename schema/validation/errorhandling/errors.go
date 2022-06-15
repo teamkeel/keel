@@ -12,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/util/collection"
+	"github.com/teamkeel/keel/util/str"
 
 	"gopkg.in/yaml.v3"
 )
@@ -153,7 +154,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 			for lineIndex, line := range lines {
 				// Render line numbers in gutter
-				outputLine := blue.Sprint(padRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+				outputLine := blue.Sprint(str.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
 
 				// If the error line doesn't match the currently enumerated line
 				// then we can render the whole line without any colorization
@@ -317,12 +318,4 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 		ShortMessage: o["short_message"],
 		Hint:         o["hint"],
 	}
-}
-
-func padRight(str string, padAmount int) string {
-	for len(str) < padAmount {
-		str += " "
-	}
-
-	return str
 }
