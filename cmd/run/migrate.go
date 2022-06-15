@@ -87,4 +87,4 @@ func makeTableForLastKnownProto() string {
 }
 
 const tableForProtobuf string = "_protobuf"
-const columnForTheJson string = "the_json" // The column name.
+const columnForTheJson string = "json" // The column name.
