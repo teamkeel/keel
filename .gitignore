@@ -25,3 +25,7 @@ go.work
 __debug_bin
 
 node_modules
+
+.launch.json
+
+/cmd/keel/keel

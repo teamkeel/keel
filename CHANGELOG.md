@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/teamkeel/keel/compare/v0.5.0...v0.6.0) (2022-06-16)
+
+
+### Features
+
+* introduce first version of the Run command ([5ed54e0](https://github.com/teamkeel/keel/commit/5ed54e03a4c14e512eb94563c008866fb2c91dd1))
+
 # [0.5.0](https://github.com/teamkeel/keel/compare/v0.4.0...v0.5.0) (2022-06-13)
 
 
