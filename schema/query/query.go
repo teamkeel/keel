@@ -1,6 +1,12 @@
 package query
 
-import "github.com/teamkeel/keel/schema/parser"
+import (
+	"fmt"
+
+	"github.com/teamkeel/keel/schema/node"
+	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/util/str"
+)
 
 func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	for _, ast := range asts {
@@ -128,4 +134,29 @@ func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 
 func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
+}
+
+func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*node.Node, error) {
+	for i, fragment := range fragments {
+		field := ModelField(contextModel, fragment)
+
+		if field == nil {
+			return nil, fmt.Errorf("field %s not found on model %s", fragments[0], contextModel.Name.Value)
+		}
+
+		newFragments := fragments[i+1:]
+		newContextModel := Model(asts, str.AsTitle(newFragments[0]))
+
+		return ResolveAssociation(asts, newContextModel, newFragments)
+	}
+
+	return &node.Node{}, nil
+}
+
+func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode) []string {
+	names := []string{}
+	for _, field := range ModelFields(model) {
+		names = append(names, field.Name.Value)
+	}
+	return names
 }

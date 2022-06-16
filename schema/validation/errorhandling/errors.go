@@ -38,6 +38,7 @@ const (
 	ErrorUniqueAPIGlobally                = "E017"
 	ErrorUniqueRoleGlobally               = "E018"
 	ErrorUniqueEnumGlobally               = "E019"
+	ErrorUnresolvableExpressionLHS        = "E020"
 )
 
 type ErrorDetails struct {

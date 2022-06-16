@@ -1,13 +1,23 @@
-model Profile {
-    @permission(
-      expression: profile.identity == ctx.identity,
-      actions: [get, update]
-    )
-}
+model Customer {
+  fields {
+    orders Order[]
+  }
 
-model Something {
   @permission(
-    expression: something.identity == ctx.identity,
+    expression: customer.orders.rating.rated == true,
     actions: [get, update]
   )
+}
+
+model Order {
+  fields {
+    ratings Rating
+    customer Customer
+  }
+}
+
+model Rating {
+  fields {
+    rated Boolean
+  }
 }

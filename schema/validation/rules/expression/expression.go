@@ -1,12 +1,14 @@
 package expression
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 type ResolvedValue struct {
@@ -34,6 +36,7 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 
 				// Check left hand side (a.b.c) of conditional to try to resolve it
 				_, err = checkExpressionConditionSide(asts, model, condition.LHS)
+				fmt.Print(err)
 				if err != nil {
 					errs = append(errs, err)
 				}
@@ -65,10 +68,21 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 
 		// Try to resolve the association based on the contextModel
 		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
-		v, err := tryAssociation(asts, contextModel, fragments)
+		_, err := tryAssociation(asts, contextModel, fragments[1:])
 
 		if err != nil {
-			return v, nil
+			suggestions := errorhandling.NewCorrectionHint(query.ModelFieldNames(asts, contextModel), "rating")
+
+			return nil, errorhandling.NewValidationError(
+				errorhandling.ErrorUnresolvableExpressionLHS,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Suggestions": suggestions.ToString(),
+						"LHS":         "Something",
+					},
+				},
+				value,
+			)
 		}
 	}
 
@@ -78,16 +92,14 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 }
 
 func tryAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
-	// n, err := query.ResolveAssociation(contextModel, fragments)
+	n, err := query.ResolveAssociation(asts, contextModel, fragments)
+	fmt.Print(n)
+	if err == nil {
+		return &ResolvedValue{
+			Node: n,
+			Type: "association",
+		}, nil
+	}
 
-	// if err == nil {
-	// 	return &ResolvedValue{
-	// 		Node: n,
-	// 		Type: "association",
-	// 	}, nil
-	// }
-
-	// return nil, err
-
-	return nil, nil
+	return nil, err
 }
