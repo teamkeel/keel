@@ -16,11 +16,6 @@ type AST struct {
 	Declarations []*DeclarationNode `@@+`
 }
 
-func (ast *AST) ResolveAssociation(contextModel string, pathFragments []string) (*node.Node, error) {
-
-	return &node.Node{}, nil
-}
-
 type DeclarationNode struct {
 	node.Node
 

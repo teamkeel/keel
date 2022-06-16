@@ -1,7 +1,6 @@
 package expression
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/teamkeel/keel/schema/expressions"
@@ -10,45 +9,48 @@ import (
 )
 
 func ValidateExpressionRule(ast *parser.AST) []error {
-	//todo replace with loop
-	// modelName := "Profile"
-	// attributes := ast.AttributesInModel(modelName)
+	errs := make([]error, 0)
 
-	// for _, attr := range attributes {
-	// 	for _, arg := range attr.Arguments {
-	// 		// condition, err := expressions.ToEqualityCondition(arg.Expression)
+	for _, model := range ast.Models() {
+		attrs := model.Attributes()
 
-	// 		// if err != nil {
-	// 		// 	// this is not an equality expression
-	// 		// 	continue
-	// 		// }
+		if attrs != nil {
+			for _, attr := range attrs {
+				for _, arg := range attr.Arguments {
+					condition, err := expressions.ToEqualityCondition(arg.Expression)
 
-	// 		// if condition.LHS.Ident != nil {
-	// 		// 	lhs, err := checkResolution(ast, modelName, condition.LHS)
+					if err != nil {
+						// this is not an equality expression
+						continue
+					}
 
-	// 		// }
-	// 		// if condition.RHS.Ident != nil {
-	// 		// 	rhs, err := checkResolution(ast, modelName, condition.RHS)
+					if condition.LHS.Ident != nil {
+						_, err := checkResolution(ast, model, condition.LHS)
 
-	// 		// }
+						if err != nil {
+							errs = append(errs, err)
+						}
 
-	// 	}
-	// }
+					}
+					if condition.RHS.Ident != nil {
+						_, err := checkResolution(ast, model, condition.RHS)
 
-	return make([]error, 0)
-}
-
-func checkResolution(ast *parser.AST, contextModel string, value *expressions.Value) (*node.Node, error) {
-	fragments := strings.Split(value.ToString(), ".")
-
-	if fragments[0] != strings.ToLower(contextModel) {
-
-		// e.g model is Profile
-		// but expression is something.else == 123 where something should be profile (lowercased)
-		return nil, errors.New("Does not match model context")
+						if err != nil {
+							errs = append(errs, err)
+						}
+					}
+				}
+			}
+		}
 	}
 
+	return errs
+}
+
+func checkResolution(ast *parser.AST, contextModel *parser.ModelNode, value *expressions.Value) (*node.Node, error) {
 	if value.Ident != nil {
+		fragments := strings.Split(value.ToString(), ".")
+
 		n, err := ast.ResolveAssociation(contextModel, fragments)
 
 		if err != nil {

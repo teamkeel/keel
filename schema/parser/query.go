@@ -1,5 +1,12 @@
 package parser
 
+import (
+	"errors"
+	"strings"
+
+	"github.com/teamkeel/keel/schema/node"
+)
+
 // Finds all APIs defined in an AST
 func (ast *AST) APIs() (res []*APINode) {
 	for _, decl := range ast.Declarations {
@@ -174,4 +181,15 @@ func (field *FieldNode) HasAttribute(name string) bool {
 // Checks if a field is marked as unique
 func (field *FieldNode) IsUnique() bool {
 	return field.HasAttribute(AttributePrimaryKey) || field.HasAttribute(AttributeUnique)
+}
+
+func (ast *AST) ResolveAssociation(context *ModelNode, fragments []string) (*node.Node, error) {
+	if fragments[0] != strings.ToLower(context.Name.Value) {
+		// e.g model is Profile
+		// but expression is something.else == 123 where something should be profile (lowercased)
+		return nil, errors.New("Does not match model context")
+	}
+
+	targetFragments := fragments[1:]
+
 }
