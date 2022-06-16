@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E017",
+        "hint": "Please remove one of the definitions",
+        "end_pos": {
+          "column": 8,
+          "filename": "testdata/validation_api_duplicate_definitions/schema.keel",
+          "line": 1,
+          "offset": 7
+        },
+        "message": "You have a duplicate definition for 'api Web'",
+        "pos": {
+          "column": 5,
+          "filename": "testdata/validation_api_duplicate_definitions/schema.keel",
+          "line": 1,
+          "offset": 4
+        },
+        "short_message": "Web is duplicated"
+      }
+    ]
+  }

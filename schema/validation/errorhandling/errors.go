@@ -34,6 +34,8 @@ const (
 	ErrorAttributeRequiresNamedArguments  = "E014"
 	ErrorAttributeMissingRequiredArgument = "E015"
 	ErrorInvalidValue                     = "E016"
+	ErrorUniqueAPIGlobally                = "E017"
+	ErrorUniqueRoleGlobally               = "E018"
 )
 
 type ErrorDetails struct {
@@ -62,6 +64,7 @@ type LexerPos struct {
 }
 
 var red, blue, yellow, cyan color.Color = *color.New(color.FgRed), *color.New(color.FgHiBlue), *color.New(color.FgHiYellow), *color.New(color.FgCyan)
+var bgWhite = *color.New(color.BgWhite)
 
 func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
@@ -133,6 +136,9 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 	matchingSchemas := v.MatchingSchemas()
 
 	gutterAmount := 5
+	newLine := func() {
+		schemaString += "\n"
+	}
 
 	for _, err := range v.Errors {
 		errorStartLine := err.Pos.Line
@@ -175,10 +181,6 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				schemaString += fmt.Sprintf("%s\n", outputLine)
 
 				// Begin closures to render unicode arrows / hints / messages
-				newLine := func() {
-					schemaString += "\n"
-				}
-
 				indent := func(length int) {
 					counter := 1
 
@@ -232,6 +234,9 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 				hint()
 				newLine()
 			}
+
+			schemaString += red.Add(color.Italic).Sprintf("\u21B3 %s", err.Pos.Filename)
+			newLine()
 		}
 	}
 

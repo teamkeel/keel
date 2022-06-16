@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E018",
+        "hint": "Please remove one of the definitions",
+        "message": "You have a duplicate definition for 'role Admin'",
+        "end_pos": {
+          "column": 11,
+          "filename": "testdata/validation_role_duplicate_definitions/schema.keel",
+          "line": 1,
+          "offset": 10
+        },
+        "pos": {
+          "column": 6,
+          "filename": "testdata/validation_role_duplicate_definitions/schema.keel",
+          "line": 1,
+          "offset": 5
+      },
+        "short_message": "Admin is duplicated"
+      }
+    ]
+  }

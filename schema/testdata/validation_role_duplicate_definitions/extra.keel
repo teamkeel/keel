@@ -1,0 +1,5 @@
+role Admin {
+  emails {
+    "tom@keel.xyz"
+  }
+}
