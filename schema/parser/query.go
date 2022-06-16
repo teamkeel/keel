@@ -1,8 +1,6 @@
-package query
+package parser
 
-import "github.com/teamkeel/keel/schema/parser"
-
-func APIs(ast *parser.AST) (res []*parser.APINode) {
+func (ast *AST) APIs() (res []*APINode) {
 	for _, decl := range ast.Declarations {
 		if decl.API != nil {
 			res = append(res, decl.API)
@@ -11,7 +9,7 @@ func APIs(ast *parser.AST) (res []*parser.APINode) {
 	return res
 }
 
-func Models(ast *parser.AST) (res []*parser.ModelNode) {
+func (ast *AST) Models() (res []*ModelNode) {
 	for _, decl := range ast.Declarations {
 		if decl.Model != nil {
 			res = append(res, decl.Model)
@@ -20,7 +18,7 @@ func Models(ast *parser.AST) (res []*parser.ModelNode) {
 	return res
 }
 
-func AttributesInModel(ast *parser.AST, modelName string) (res []*parser.AttributeNode) {
+func (ast *AST) AttributesInModel(modelName string) (res []*AttributeNode) {
 	for _, decl := range ast.Declarations {
 		if decl.Model != nil {
 			if decl.Model.Name.Value != modelName {
@@ -65,7 +63,7 @@ func AttributesInModel(ast *parser.AST, modelName string) (res []*parser.Attribu
 	return res
 }
 
-func Model(ast *parser.AST, name string) *parser.ModelNode {
+func (ast *AST) Model(name string) *ModelNode {
 	for _, decl := range ast.Declarations {
 		if decl.Model != nil && decl.Model.Name.Value == name {
 			return decl.Model
@@ -74,7 +72,7 @@ func Model(ast *parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
-func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
+func (model *ModelNode) Attributes() (res []*AttributeNode) {
 	for _, section := range model.Sections {
 		if section.Attribute != nil {
 			res = append(res, section.Attribute)
@@ -83,7 +81,7 @@ func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
 	return res
 }
 
-func Enums(ast *parser.AST) (res []*parser.EnumNode) {
+func (ast *AST) Enums() (res []*EnumNode) {
 	for _, decl := range ast.Declarations {
 		if decl.Enum != nil {
 			res = append(res, decl.Enum)
@@ -93,7 +91,7 @@ func Enums(ast *parser.AST) (res []*parser.EnumNode) {
 	return res
 }
 
-func Enum(ast *parser.AST, name string) *parser.EnumNode {
+func (ast *AST) Enum(name string) *EnumNode {
 	for _, decl := range ast.Declarations {
 		if decl.Enum != nil && decl.Enum.Name.Value == name {
 			return decl.Enum
@@ -102,7 +100,7 @@ func Enum(ast *parser.AST, name string) *parser.EnumNode {
 	return nil
 }
 
-func Roles(ast *parser.AST) (res []*parser.RoleNode) {
+func (ast *AST) Roles() (res []*RoleNode) {
 	for _, decl := range ast.Declarations {
 		if decl.Role != nil {
 			res = append(res, decl.Role)
@@ -111,22 +109,22 @@ func Roles(ast *parser.AST) (res []*parser.RoleNode) {
 	return res
 }
 
-func IsUserDefinedType(ast *parser.AST, name string) bool {
-	return Model(ast, name) != nil || Enum(ast, name) != nil
+func (ast *AST) IsUserDefinedType(name string) bool {
+	return ast.Model(name) != nil || ast.Enum(name) != nil
 }
 
-func UserDefinedTypes(ast *parser.AST) (res []string) {
-	for _, model := range Models(ast) {
+func (ast *AST) UserDefinedTypes() (res []string) {
+	for _, model := range ast.Models() {
 		res = append(res, model.Name.Value)
 	}
-	for _, enum := range Enums(ast) {
+	for _, enum := range ast.Enums() {
 		res = append(res, enum.Name.Value)
 	}
 	return res
 }
 
 // todo: loop over decl
-func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
+func (model *ModelNode) Actions() (res []*ActionNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Functions...)
 		res = append(res, section.Operations...)
@@ -135,7 +133,7 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 }
 
 // todo: loop over decl
-func ModelFields(model *parser.ModelNode) (res []*parser.FieldNode) {
+func (model *ModelNode) Fields() (res []*FieldNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Fields...)
 	}
@@ -143,7 +141,7 @@ func ModelFields(model *parser.ModelNode) (res []*parser.FieldNode) {
 }
 
 // todo: loop over decl
-func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
+func (model *ModelNode) Field(name string) *FieldNode {
 	for _, section := range model.Sections {
 		for _, field := range section.Fields {
 			if field.Name.Value == name {
@@ -155,7 +153,7 @@ func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
 }
 
 // todo: loop over decl
-func FieldHasAttribute(field *parser.FieldNode, name string) bool {
+func (field *FieldNode) HasAttribute(name string) bool {
 	for _, attr := range field.Attributes {
 		if attr.Name.Value == name {
 			return true
@@ -164,6 +162,6 @@ func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 	return false
 }
 
-func FieldIsUnique(field *parser.FieldNode) bool {
-	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
+func (field *FieldNode) IsUnique() bool {
+	return field.HasAttribute(AttributePrimaryKey) || field.HasAttribute(AttributeUnique)
 }

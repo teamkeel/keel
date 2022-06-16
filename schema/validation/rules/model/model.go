@@ -9,7 +9,6 @@ import (
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -18,7 +17,7 @@ var (
 )
 
 func ModelNamingRule(ast *parser.AST) (errors []error) {
-	for _, model := range query.Models(ast) {
+	for _, model := range ast.Models() {
 		// todo - these MustCompile regex would be better at module scope, to
 		// make the MustCompile panic a load-time thing rather than a runtime thing.
 		reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
@@ -49,7 +48,7 @@ func ModelNamingRule(ast *parser.AST) (errors []error) {
 func ReservedModelNamesRule(ast *parser.AST) []error {
 	var errors []error
 
-	for _, model := range query.Models(ast) {
+	for _, model := range ast.Models() {
 		for _, name := range reservedModelNames {
 			if strings.EqualFold(name, model.Name.Value) {
 				errors = append(
@@ -74,7 +73,7 @@ func ReservedModelNamesRule(ast *parser.AST) []error {
 func UniqueModelNamesRule(ast *parser.AST) (errors []error) {
 	seenModelNames := map[string]bool{}
 
-	for _, model := range query.Models(ast) {
+	for _, model := range ast.Models() {
 		if _, ok := seenModelNames[model.Name.Value]; ok {
 			errors = append(
 				errors,
@@ -97,8 +96,8 @@ func UniqueModelNamesRule(ast *parser.AST) (errors []error) {
 }
 
 func ActionNamingRule(ast *parser.AST) (errors []error) {
-	for _, model := range query.Models(ast) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range ast.Models() {
+		for _, action := range model.Actions() {
 			if strcase.ToLowerCamel(action.Name.Value) != action.Name.Value {
 				errors = append(
 					errors,
@@ -122,8 +121,8 @@ func ActionNamingRule(ast *parser.AST) (errors []error) {
 func UniqueOperationNamesRule(ast *parser.AST) (errors []error) {
 	operationNames := map[string]bool{}
 
-	for _, model := range query.Models(ast) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range ast.Models() {
+		for _, action := range model.Actions() {
 			if _, ok := operationNames[action.Name.Value]; ok {
 				errors = append(
 					errors,
@@ -147,16 +146,16 @@ func UniqueOperationNamesRule(ast *parser.AST) (errors []error) {
 }
 
 func ValidActionInputsRule(ast *parser.AST) (errors []error) {
-	for _, model := range query.Models(ast) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range ast.Models() {
+		for _, action := range model.Actions() {
 			for _, input := range action.Arguments {
-				field := query.ModelField(model, input.Name.Value)
+				field := model.Field(input.Name.Value)
 				if field != nil {
 					continue
 				}
 
 				fieldNames := []string{}
-				for _, field := range query.ModelFields(model) {
+				for _, field := range model.Fields() {
 					fieldNames = append(fieldNames, field.Name.Value)
 				}
 
@@ -190,22 +189,21 @@ func ValidActionInputsRule(ast *parser.AST) (errors []error) {
 func GetOperationUniqueLookupRule(ast *parser.AST) []error {
 	var errors []error
 
-	for _, model := range query.Models(ast) {
-
+	for _, model := range ast.Models() {
 	actions:
-		for _, action := range query.ModelActions(model) {
+		for _, action := range model.Actions() {
 			if action.Type != parser.ActionTypeGet {
 				continue
 			}
 
 			for _, arg := range action.Arguments {
-				field := query.ModelField(model, arg.Name.Value)
+				field := model.Field(arg.Name.Value)
 				if field == nil {
 					continue
 				}
 
 				// action has a unique field, go to next action
-				if query.FieldIsUnique(field) {
+				if field.IsUnique() {
 					continue actions
 				}
 
@@ -241,13 +239,13 @@ func GetOperationUniqueLookupRule(ast *parser.AST) []error {
 					continue
 				}
 
-				field := query.ModelField(model, fieldName)
+				field := model.Field(fieldName)
 				if field == nil {
 					continue
 				}
 
 				// action has a @where filtering on a unique field - go to next action
-				if query.FieldIsUnique(field) {
+				if field.IsUnique() {
 					continue actions
 				}
 			}

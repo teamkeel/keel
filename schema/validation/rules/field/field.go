@@ -8,7 +8,6 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -28,8 +27,8 @@ var (
 func ReservedNameRule(ast *parser.AST) []error {
 	var errors []error
 
-	for _, model := range query.Models(ast) {
-		for _, field := range query.ModelFields(model) {
+	for _, model := range ast.Models() {
+		for _, field := range model.Fields() {
 
 			if field.BuiltIn {
 				continue
@@ -59,8 +58,8 @@ func ReservedNameRule(ast *parser.AST) []error {
 }
 
 func FieldNamingRule(ast *parser.AST) (errors []error) {
-	for _, model := range query.Models(ast) {
-		for _, field := range query.ModelFields(model) {
+	for _, model := range ast.Models() {
+		for _, field := range model.Fields() {
 			if field.BuiltIn {
 				continue
 			}
@@ -85,9 +84,9 @@ func FieldNamingRule(ast *parser.AST) (errors []error) {
 }
 
 func UniqueFieldNamesRule(ast *parser.AST) (errors []error) {
-	for _, model := range query.Models(ast) {
+	for _, model := range ast.Models() {
 		fieldNames := map[string]bool{}
-		for _, field := range query.ModelFields(model) {
+		for _, field := range model.Fields() {
 			// Ignore built in fields as usage of these field names is handled
 			// by reservedFieldNamesRule
 			if field.BuiltIn {
@@ -116,18 +115,18 @@ func UniqueFieldNamesRule(ast *parser.AST) (errors []error) {
 }
 
 func ValidFieldTypesRule(ast *parser.AST) (errors []error) {
-	for _, model := range query.Models(ast) {
-		for _, field := range query.ModelFields(model) {
+	for _, model := range ast.Models() {
+		for _, field := range model.Fields() {
 
 			if _, ok := builtInFieldTypes[field.Type]; ok {
 				continue
 			}
 
-			if query.IsUserDefinedType(ast, field.Type) {
+			if ast.IsUserDefinedType(field.Type) {
 				continue
 			}
 
-			validTypes := query.UserDefinedTypes(ast)
+			validTypes := ast.UserDefinedTypes()
 			for t := range builtInFieldTypes {
 				validTypes = append(validTypes, t)
 			}

@@ -7,34 +7,33 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 )
 
 func ValidateExpressionRule(ast *parser.AST) []error {
 	//todo replace with loop
-	modelName := "Profile"
-	attributes := query.AttributesInModel(ast, modelName)
+	// modelName := "Profile"
+	// attributes := ast.AttributesInModel(modelName)
 
-	for _, attr := range attributes {
-		for _, arg := range attr.Arguments {
-			condition, err := expressions.ToEqualityCondition(arg.Expression)
+	// for _, attr := range attributes {
+	// 	for _, arg := range attr.Arguments {
+	// 		// condition, err := expressions.ToEqualityCondition(arg.Expression)
 
-			if err != nil {
-				// this is not an equality expression
-				continue
-			}
+	// 		// if err != nil {
+	// 		// 	// this is not an equality expression
+	// 		// 	continue
+	// 		// }
 
-			if condition.LHS.Ident != nil {
-				lhs, err := checkResolution(ast, modelName, condition.LHS)
+	// 		// if condition.LHS.Ident != nil {
+	// 		// 	lhs, err := checkResolution(ast, modelName, condition.LHS)
 
-			}
-			if condition.RHS.Ident != nil {
-				rhs, err := checkResolution(ast, modelName, condition.RHS)
+	// 		// }
+	// 		// if condition.RHS.Ident != nil {
+	// 		// 	rhs, err := checkResolution(ast, modelName, condition.RHS)
 
-			}
+	// 		// }
 
-		}
-	}
+	// 	}
+	// }
 
 	return make([]error, 0)
 }
