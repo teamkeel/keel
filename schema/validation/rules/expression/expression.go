@@ -64,13 +64,13 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 			}, nil
 		}
 
-		// todo: check levenstein distance for ctx (e.g user writes context) and return suggestion hint
-
 		// Try to resolve the association based on the contextModel
 		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
 		_, err := tryAssociation(asts, contextModel, fragments[1:])
 
 		if err != nil {
+
+			// todo: fix this check levenstein distance for ctx (e.g user writes context) and return suggestion hint
 			suggestions := errorhandling.NewCorrectionHint(query.ModelFieldNames(asts, contextModel), "rating")
 
 			return nil, errorhandling.NewValidationError(
@@ -81,6 +81,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 						"LHS":         "Something",
 					},
 				},
+				// todo: value is the whole of the expression condition. need the particular pos of the fragment
 				value,
 			)
 		}
