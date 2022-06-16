@@ -8,37 +8,39 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
+type ResolvedValue struct {
+	*node.Node
+
+	Type string
+}
+
 func ValidateExpressionRule(ast *parser.AST) []error {
 	errs := make([]error, 0)
 
 	for _, model := range ast.Models() {
 		attrs := model.Attributes()
 
-		if attrs != nil {
-			for _, attr := range attrs {
-				for _, arg := range attr.Arguments {
-					condition, err := expressions.ToEqualityCondition(arg.Expression)
+		for _, attr := range attrs {
+			for _, arg := range attr.Arguments {
+				condition, err := expressions.ToEqualityCondition(arg.Expression)
 
-					if err != nil {
-						// this is not an equality expression
-						continue
-					}
+				if err != nil {
+					// it is not an equality expression, so we are not interested
+					continue
+				}
 
-					if condition.LHS.Ident != nil {
-						_, err := checkResolution(ast, model, condition.LHS)
+				// Example: a full condition as a string could be: "a.b.c == c.b.a"
 
-						if err != nil {
-							errs = append(errs, err)
-						}
+				// Check left hand side (a.b.c) of conditional to try to resolve it
+				_, err = checkExpressionConditionSide(ast, model, condition.LHS)
+				if err != nil {
+					errs = append(errs, err)
+				}
 
-					}
-					if condition.RHS.Ident != nil {
-						_, err := checkResolution(ast, model, condition.RHS)
-
-						if err != nil {
-							errs = append(errs, err)
-						}
-					}
+				// Check right hand side (c.b.a) of conditional to try to resolve it
+				_, err = checkExpressionConditionSide(ast, model, condition.RHS)
+				if err != nil {
+					errs = append(errs, err)
 				}
 			}
 		}
@@ -47,18 +49,40 @@ func ValidateExpressionRule(ast *parser.AST) []error {
 	return errs
 }
 
-func checkResolution(ast *parser.AST, contextModel *parser.ModelNode, value *expressions.Value) (*node.Node, error) {
+func checkExpressionConditionSide(ast *parser.AST, contextModel *parser.ModelNode, value *expressions.Value) (*ResolvedValue, error) {
 	if value.Ident != nil {
 		fragments := strings.Split(value.ToString(), ".")
 
-		n, err := ast.ResolveAssociation(contextModel, fragments)
-
-		if err != nil {
-			return nil, err
+		// Handle special case where an ident refers to the ctx object, which is not a model.
+		if fragments[0] == "ctx" {
+			return &ResolvedValue{
+				Type: "ctx",
+			}, nil
 		}
 
-		return n, nil
+		// Try to resolve the association based on the contextModel
+		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
+		v, err := tryAssociation(ast, contextModel, fragments)
+
+		if err != nil {
+			return v, nil
+		}
 	}
 
-	return nil, nil
+	return &ResolvedValue{
+		Type: value.Type(),
+	}, nil
+}
+
+func tryAssociation(ast *parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
+	n, err := ast.ResolveAssociation(contextModel, fragments)
+
+	if err == nil {
+		return &ResolvedValue{
+			Node: n,
+			Type: "association",
+		}, nil
+	}
+
+	return nil, err
 }

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/teamkeel/keel/schema/node"
@@ -187,9 +188,11 @@ func (ast *AST) ResolveAssociation(context *ModelNode, fragments []string) (*nod
 	if fragments[0] != strings.ToLower(context.Name.Value) {
 		// e.g model is Profile
 		// but expression is something.else == 123 where something should be profile (lowercased)
-		return nil, errors.New("Does not match model context")
+		return nil, errors.New("does not match model context")
 	}
 
 	targetFragments := fragments[1:]
 
+	fmt.Print(targetFragments)
+	return nil, nil
 }

@@ -231,18 +231,18 @@ func ToAssignmentCondition(expr *Expression) (*Condition, error) {
 }
 
 func (v *Value) ToString() string {
-	switch {
-	case v.Number != nil:
+	switch v.Type() {
+	case "Number":
 		return fmt.Sprintf("%d", *v.Number)
-	case v.String != nil:
+	case "String":
 		return *v.String
-	case v.Null:
+	case "Null":
 		return "null"
-	case v.False:
+	case "False":
 		return "false"
-	case v.True:
+	case "True":
 		return "true"
-	case v.Array != nil:
+	case "Array":
 		r := "["
 		for i, el := range v.Array.Values {
 			if i > 0 {
@@ -251,8 +251,29 @@ func (v *Value) ToString() string {
 			r += el.ToString()
 		}
 		return r + "]"
-	case len(v.Ident) > 0:
+	case "Ident":
 		return strings.Join(v.Ident, ".")
+	default:
+		return ""
+	}
+}
+
+func (v *Value) Type() string {
+	switch {
+	case v.Number != nil:
+		return "Number"
+	case v.String != nil:
+		return "String"
+	case v.Null:
+		return "Null"
+	case v.False:
+		return "False"
+	case v.True:
+		return "True"
+	case v.Array != nil:
+		return "Array"
+	case len(v.Ident) > 0:
+		return "Ident"
 	default:
 		return ""
 	}
