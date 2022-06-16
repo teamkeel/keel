@@ -2,19 +2,36 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/teamkeel/keel/cmd/run"
 )
 
-// runCmd represents the run command
-var runCmd = &cobra.Command{
+// The Run command does this:
+//
+// - Starts Postgres locally in a docker container.
+// - If this is the first run ever, then perform initial database migrations.
+// - Setting up a watcher on the input schema directory with a handler that
+//   reacts to changes as follows:
+//
+// 		- Parse and validate the input schema files.
+// 		- Build the protobuffer schema representation.
+// 		- Analyse the differences between the new and previous schema
+//		- Generate the database migration SQL required
+// 		- Perform this migration on the running database.
+
+var cobraCommandWrapper = &cobra.Command{
 	Use:   "run",
-	Short: "Run the application locally",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("run called")
-	},
+	Short: "Run your Keel App locally",
+	RunE:  run.CommandImplementation,
 }
 
 func init() {
-	rootCmd.AddCommand(runCmd)
+	rootCmd.AddCommand(cobraCommandWrapper)
+	defaultDir, err := os.Getwd()
+	if err != nil {
+		panic(fmt.Errorf("os.Getwd() errored: %v", err))
+	}
+	cobraCommandWrapper.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "schema directory to run")
 }
