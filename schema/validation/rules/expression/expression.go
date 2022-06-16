@@ -6,6 +6,7 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 )
 
 type ResolvedValue struct {
@@ -14,11 +15,11 @@ type ResolvedValue struct {
 	Type string
 }
 
-func ValidateExpressionRule(ast *parser.AST) []error {
+func ValidateExpressionRule(asts []*parser.AST) []error {
 	errs := make([]error, 0)
 
-	for _, model := range ast.Models() {
-		attrs := model.Attributes()
+	for _, model := range query.Models(asts) {
+		attrs := query.ModelAttributes(model)
 
 		for _, attr := range attrs {
 			for _, arg := range attr.Arguments {
@@ -32,13 +33,13 @@ func ValidateExpressionRule(ast *parser.AST) []error {
 				// Example: a full condition as a string could be: "a.b.c == c.b.a"
 
 				// Check left hand side (a.b.c) of conditional to try to resolve it
-				_, err = checkExpressionConditionSide(ast, model, condition.LHS)
+				_, err = checkExpressionConditionSide(asts, model, condition.LHS)
 				if err != nil {
 					errs = append(errs, err)
 				}
 
 				// Check right hand side (c.b.a) of conditional to try to resolve it
-				_, err = checkExpressionConditionSide(ast, model, condition.RHS)
+				_, err = checkExpressionConditionSide(asts, model, condition.RHS)
 				if err != nil {
 					errs = append(errs, err)
 				}
@@ -77,14 +78,16 @@ func checkExpressionConditionSide(ast *parser.AST, contextModel *parser.ModelNod
 }
 
 func tryAssociation(ast *parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
-	n, err := ast.ResolveAssociation(contextModel, fragments)
+	// n, err := query.ResolveAssociation(contextModel, fragments)
 
-	if err == nil {
-		return &ResolvedValue{
-			Node: n,
-			Type: "association",
-		}, nil
-	}
+	// if err == nil {
+	// 	return &ResolvedValue{
+	// 		Node: n,
+	// 		Type: "association",
+	// 	}, nil
+	// }
 
-	return nil, err
+	// return nil, err
+
+	return nil, nil
 }

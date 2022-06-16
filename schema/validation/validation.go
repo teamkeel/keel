@@ -13,12 +13,12 @@ import (
 )
 
 type Validator struct {
-	ast *parser.AST
+	asts []*parser.AST
 }
 
-func NewValidator(ast *parser.AST) *Validator {
+func NewValidator(asts []*parser.AST) *Validator {
 	return &Validator{
-		ast: ast,
+		asts: asts,
 	}
 }
 
@@ -29,7 +29,7 @@ func NewValidator(ast *parser.AST) *Validator {
 // of *parser.Schema objects - to match up with a user's schema likely
 // being written across N files.
 
-type validationFunc func(*parser.AST) []error
+type validationFunc func(asts []*parser.AST) []error
 
 var validatorFuncs = []validationFunc{
 	// Begin base model validations
@@ -63,7 +63,7 @@ func (v *Validator) RunAllValidators() error {
 	var errors []*errorhandling.ValidationError
 
 	for _, vf := range validatorFuncs {
-		err := vf(v.ast)
+		err := vf(v.asts)
 
 		for _, e := range err {
 			if verrs, ok := e.(*errorhandling.ValidationError); ok {

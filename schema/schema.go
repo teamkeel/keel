@@ -14,7 +14,7 @@ import (
 // A Builder knows how to produce a (validated) proto.Schema,
 // from a given Keel Builder. Construct one, then call the Make method.
 type Builder struct {
-	ast *parser.AST
+	asts []*parser.AST
 }
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
@@ -66,9 +66,6 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// 		- Validate them (as a set)
 	// 		- Convert the set to a single / aggregate proto model
 	asts := []*parser.AST{}
-
-	// todo: combine asts into one
-	// will simplify things massively
 	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(&oneInputSchemaFile)
 		if err != nil {
@@ -78,15 +75,13 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		asts = append(asts, declarations)
 	}
 
-	ast := asts[0].MergeWith(asts[1:]...)
-
-	v := validation.NewValidator(ast)
+	v := validation.NewValidator(asts)
 	err := v.RunAllValidators()
 	if err != nil {
 		return nil, err
 	}
 
-	scm.ast = ast
+	scm.asts = asts
 
 	protoModels := scm.makeProtoModels()
 	return protoModels, nil

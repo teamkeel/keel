@@ -6,16 +6,17 @@ import (
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/util/collection"
 )
 
 // attributeLocationsRule checks that attributes are used in valid places
 // For example it's invalid to use a @where attribute inside a model definition
-func AttributeLocationsRule(ast *parser.AST) []error {
+func AttributeLocationsRule(asts []*parser.AST) []error {
 	var errors []error
 
-	for _, model := range ast.Models() {
+	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
 				errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value)...)
@@ -41,7 +42,7 @@ func AttributeLocationsRule(ast *parser.AST) []error {
 		}
 	}
 
-	for _, api := range ast.APIs() {
+	for _, api := range query.APIs(asts) {
 		for _, section := range api.Sections {
 			if section.Attribute != nil {
 				errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "api", api.Name.Value)...)
@@ -106,23 +107,23 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 	return errors
 }
 
-func PermissionAttributeRule(ast *parser.AST) (errors []error) {
-	for _, model := range ast.Models() {
-		for _, attr := range model.Attributes() {
+func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, attr := range query.ModelAttributes(model) {
 			if attr.Name.Value != parser.AttributePermission {
 				continue
 			}
 
-			errors = append(errors, validatePermissionAttribute(ast, attr, model, nil)...)
+			errors = append(errors, validatePermissionAttribute(asts, attr, model, nil)...)
 		}
 
-		for _, action := range model.Actions() {
+		for _, action := range query.ModelActions(model) {
 			for _, attr := range action.Attributes {
 				if attr.Name.Value != parser.AttributePermission {
 					continue
 				}
 
-				errors = append(errors, validatePermissionAttribute(ast, attr, model, action)...)
+				errors = append(errors, validatePermissionAttribute(asts, attr, model, action)...)
 			}
 		}
 	}
@@ -138,7 +139,7 @@ var validActionKeywords = []string{
 	parser.ActionTypeDelete,
 }
 
-func validatePermissionAttribute(ast *parser.AST, attr *parser.AttributeNode, model *parser.ModelNode, action *parser.ActionNode) (errors []error) {
+func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode, model *parser.ModelNode, action *parser.ActionNode) (errors []error) {
 	hasActions := false
 	hasExpression := false
 	hasRoles := false
@@ -151,7 +152,7 @@ func validatePermissionAttribute(ast *parser.AST, attr *parser.AttributeNode, mo
 			// applies to that action.
 			if action == nil {
 				allowedIdents := append([]string{}, validActionKeywords...)
-				for _, action := range model.Actions() {
+				for _, action := range query.ModelActions(model) {
 					allowedIdents = append(allowedIdents, action.Name.Value)
 				}
 				errors = append(errors, validateIdentArray(model, arg.Expression, allowedIdents)...)
@@ -174,7 +175,7 @@ func validatePermissionAttribute(ast *parser.AST, attr *parser.AttributeNode, mo
 		case "roles":
 			hasRoles = true
 			allowedIdents := []string{}
-			for _, role := range ast.Roles() {
+			for _, role := range query.Roles(asts) {
 				allowedIdents = append(allowedIdents, role.Name.Value)
 			}
 			errors = append(errors, validateIdentArray(model, arg.Expression, allowedIdents)...)

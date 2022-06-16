@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -16,8 +17,8 @@ var (
 	reservedModelNames = []string{"query"}
 )
 
-func ModelNamingRule(ast *parser.AST) (errors []error) {
-	for _, model := range ast.Models() {
+func ModelNamingRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
 		// todo - these MustCompile regex would be better at module scope, to
 		// make the MustCompile panic a load-time thing rather than a runtime thing.
 		reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
@@ -45,10 +46,10 @@ func ModelNamingRule(ast *parser.AST) (errors []error) {
 	return errors
 }
 
-func ReservedModelNamesRule(ast *parser.AST) []error {
+func ReservedModelNamesRule(asts []*parser.AST) []error {
 	var errors []error
 
-	for _, model := range ast.Models() {
+	for _, model := range query.Models(asts) {
 		for _, name := range reservedModelNames {
 			if strings.EqualFold(name, model.Name.Value) {
 				errors = append(
@@ -70,10 +71,10 @@ func ReservedModelNamesRule(ast *parser.AST) []error {
 	return errors
 }
 
-func UniqueModelNamesRule(ast *parser.AST) (errors []error) {
+func UniqueModelNamesRule(asts []*parser.AST) (errors []error) {
 	seenModelNames := map[string]bool{}
 
-	for _, model := range ast.Models() {
+	for _, model := range query.Models(asts) {
 		if _, ok := seenModelNames[model.Name.Value]; ok {
 			errors = append(
 				errors,
@@ -95,9 +96,9 @@ func UniqueModelNamesRule(ast *parser.AST) (errors []error) {
 	return errors
 }
 
-func ActionNamingRule(ast *parser.AST) (errors []error) {
-	for _, model := range ast.Models() {
-		for _, action := range model.Actions() {
+func ActionNamingRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
 			if strcase.ToLowerCamel(action.Name.Value) != action.Name.Value {
 				errors = append(
 					errors,
@@ -118,11 +119,11 @@ func ActionNamingRule(ast *parser.AST) (errors []error) {
 	return errors
 }
 
-func UniqueOperationNamesRule(ast *parser.AST) (errors []error) {
+func UniqueOperationNamesRule(asts []*parser.AST) (errors []error) {
 	operationNames := map[string]bool{}
 
-	for _, model := range ast.Models() {
-		for _, action := range model.Actions() {
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
 			if _, ok := operationNames[action.Name.Value]; ok {
 				errors = append(
 					errors,
@@ -145,17 +146,17 @@ func UniqueOperationNamesRule(ast *parser.AST) (errors []error) {
 	return errors
 }
 
-func ValidActionInputsRule(ast *parser.AST) (errors []error) {
-	for _, model := range ast.Models() {
-		for _, action := range model.Actions() {
+func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
 			for _, input := range action.Arguments {
-				field := model.Field(input.Name.Value)
+				field := query.ModelField(model, input.Name.Value)
 				if field != nil {
 					continue
 				}
 
 				fieldNames := []string{}
-				for _, field := range model.Fields() {
+				for _, field := range query.ModelFields(model) {
 					fieldNames = append(fieldNames, field.Name.Value)
 				}
 
@@ -186,24 +187,25 @@ func ValidActionInputsRule(ast *parser.AST) (errors []error) {
 
 // GET operations must take a unique field as an input or filter on a unique field
 // using @where
-func GetOperationUniqueLookupRule(ast *parser.AST) []error {
+func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
 	var errors []error
 
-	for _, model := range ast.Models() {
+	for _, model := range query.Models(asts) {
+
 	actions:
-		for _, action := range model.Actions() {
+		for _, action := range query.ModelActions(model) {
 			if action.Type != parser.ActionTypeGet {
 				continue
 			}
 
 			for _, arg := range action.Arguments {
-				field := model.Field(arg.Name.Value)
+				field := query.ModelField(model, arg.Name.Value)
 				if field == nil {
 					continue
 				}
 
 				// action has a unique field, go to next action
-				if field.IsUnique() {
+				if query.FieldIsUnique(field) {
 					continue actions
 				}
 
@@ -239,13 +241,13 @@ func GetOperationUniqueLookupRule(ast *parser.AST) []error {
 					continue
 				}
 
-				field := model.Field(fieldName)
+				field := query.ModelField(model, fieldName)
 				if field == nil {
 					continue
 				}
 
 				// action has a @where filtering on a unique field - go to next action
-				if field.IsUnique() {
+				if query.FieldIsUnique(field) {
 					continue actions
 				}
 			}

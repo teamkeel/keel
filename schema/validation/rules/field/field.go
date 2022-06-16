@@ -8,6 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -24,11 +25,11 @@ var (
 	}
 )
 
-func ReservedNameRule(ast *parser.AST) []error {
+func ReservedNameRule(asts []*parser.AST) []error {
 	var errors []error
 
-	for _, model := range ast.Models() {
-		for _, field := range model.Fields() {
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
 
 			if field.BuiltIn {
 				continue
@@ -57,9 +58,9 @@ func ReservedNameRule(ast *parser.AST) []error {
 	return errors
 }
 
-func FieldNamingRule(ast *parser.AST) (errors []error) {
-	for _, model := range ast.Models() {
-		for _, field := range model.Fields() {
+func FieldNamingRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
 			if field.BuiltIn {
 				continue
 			}
@@ -83,10 +84,10 @@ func FieldNamingRule(ast *parser.AST) (errors []error) {
 	return errors
 }
 
-func UniqueFieldNamesRule(ast *parser.AST) (errors []error) {
-	for _, model := range ast.Models() {
+func UniqueFieldNamesRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
 		fieldNames := map[string]bool{}
-		for _, field := range model.Fields() {
+		for _, field := range query.ModelFields(model) {
 			// Ignore built in fields as usage of these field names is handled
 			// by reservedFieldNamesRule
 			if field.BuiltIn {
@@ -114,19 +115,19 @@ func UniqueFieldNamesRule(ast *parser.AST) (errors []error) {
 	return errors
 }
 
-func ValidFieldTypesRule(ast *parser.AST) (errors []error) {
-	for _, model := range ast.Models() {
-		for _, field := range model.Fields() {
+func ValidFieldTypesRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
 
 			if _, ok := builtInFieldTypes[field.Type]; ok {
 				continue
 			}
 
-			if ast.IsUserDefinedType(field.Type) {
+			if query.IsUserDefinedType(asts, field.Type) {
 				continue
 			}
 
-			validTypes := ast.UserDefinedTypes()
+			validTypes := query.UserDefinedTypes(asts)
 			for t := range builtInFieldTypes {
 				validTypes = append(validTypes, t)
 			}
