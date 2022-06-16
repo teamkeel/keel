@@ -1,8 +1,6 @@
 package query
 
 import (
-	"fmt"
-
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util/str"
@@ -136,18 +134,28 @@ func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
 }
 
-func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*node.Node, error) {
+type AssociationResolutionError struct {
+	ErrorFragment string
+	ContextModel  *parser.ModelNode
+}
+
+func (err *AssociationResolutionError) Error() string {
+	return err.ErrorFragment
+}
+
+func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, previousFragments []string) (*node.Node, error) {
 	for i, fragment := range fragments {
 		field := ModelField(contextModel, fragment)
 
 		if field == nil {
-			return nil, fmt.Errorf("field %s not found on model %s", fragments[0], contextModel.Name.Value)
+			previousContextModel := Model(asts, str.AsTitle(previousFragments[len(previousFragments)-1]))
+			return nil, &AssociationResolutionError{ErrorFragment: fragment, ContextModel: previousContextModel}
 		}
 
 		newFragments := fragments[i+1:]
 		newContextModel := Model(asts, str.AsTitle(newFragments[0]))
 
-		return ResolveAssociation(asts, newContextModel, newFragments)
+		return ResolveAssociation(asts, newContextModel, newFragments, fragments)
 	}
 
 	return &node.Node{}, nil

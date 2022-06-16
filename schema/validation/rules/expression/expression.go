@@ -36,7 +36,6 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 
 				// Check left hand side (a.b.c) of conditional to try to resolve it
 				_, err = checkExpressionConditionSide(asts, model, condition.LHS)
-				fmt.Print(err)
 				if err != nil {
 					errs = append(errs, err)
 				}
@@ -71,14 +70,14 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 		if err != nil {
 
 			// todo: fix this check levenstein distance for ctx (e.g user writes context) and return suggestion hint
-			suggestions := errorhandling.NewCorrectionHint(query.ModelFieldNames(asts, contextModel), "rating")
+			suggestions := errorhandling.NewCorrectionHint(query.ModelFieldNames(asts, err.(*query.AssociationResolutionError).ContextModel), "rating")
 
 			return nil, errorhandling.NewValidationError(
 				errorhandling.ErrorUnresolvableExpressionLHS,
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
 						"Suggestions": suggestions.ToString(),
-						"LHS":         "Something",
+						"LHS":         err.Error(),
 					},
 				},
 				// todo: value is the whole of the expression condition. need the particular pos of the fragment
@@ -93,7 +92,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 }
 
 func tryAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
-	n, err := query.ResolveAssociation(asts, contextModel, fragments)
+	n, err := query.ResolveAssociation(asts, contextModel, fragments, []string{})
 	fmt.Print(n)
 	if err == nil {
 		return &ResolvedValue{
