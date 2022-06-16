@@ -123,7 +123,6 @@ func (ast *AST) UserDefinedTypes() (res []string) {
 	return res
 }
 
-// todo: loop over decl
 func (model *ModelNode) Actions() (res []*ActionNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Functions...)
@@ -132,7 +131,6 @@ func (model *ModelNode) Actions() (res []*ActionNode) {
 	return res
 }
 
-// todo: loop over decl
 func (model *ModelNode) Fields() (res []*FieldNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Fields...)
@@ -140,7 +138,6 @@ func (model *ModelNode) Fields() (res []*FieldNode) {
 	return res
 }
 
-// todo: loop over decl
 func (model *ModelNode) Field(name string) *FieldNode {
 	for _, section := range model.Sections {
 		for _, field := range section.Fields {
@@ -152,7 +149,6 @@ func (model *ModelNode) Field(name string) *FieldNode {
 	return nil
 }
 
-// todo: loop over decl
 func (field *FieldNode) HasAttribute(name string) bool {
 	for _, attr := range field.Attributes {
 		if attr.Name.Value == name {
