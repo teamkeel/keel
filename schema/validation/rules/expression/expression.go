@@ -69,19 +69,30 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 
 		if err != nil {
 
+			resolutionError := err.(*query.AssociationResolutionError)
 			// todo: fix this check levenstein distance for ctx (e.g user writes context) and return suggestion hint
-			suggestions := errorhandling.NewCorrectionHint(query.ModelFieldNames(asts, err.(*query.AssociationResolutionError).ContextModel), "rating")
+
+			errModel := resolutionError.ContextModel
+			allModelFields := query.ModelFieldNames(asts, errModel)
+
+			suggestions := errorhandling.NewCorrectionHint(allModelFields, "rating")
+
+			mutatedValue := value
+			mutatedValue.Pos.Column = mutatedValue.Pos.Column + resolutionError.StartCol
+			mutatedValue.EndPos.Column = mutatedValue.Pos.Column + resolutionError.StartCol + len(resolutionError.ErrorFragment)
+			// todo: hack the pos and end pos based on position in fragment string
 
 			return nil, errorhandling.NewValidationError(
 				errorhandling.ErrorUnresolvableExpressionLHS,
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
 						"Suggestions": suggestions.ToString(),
-						"LHS":         err.Error(),
+						"LHS":         resolutionError.ErrorFragment,
+						"Type":        resolutionError.Type,
 					},
 				},
 				// todo: value is the whole of the expression condition. need the particular pos of the fragment
-				value,
+				mutatedValue,
 			)
 		}
 	}
@@ -92,7 +103,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 }
 
 func tryAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
-	n, err := query.ResolveAssociation(asts, contextModel, fragments, []string{})
+	n, err := query.ResolveAssociation(asts, contextModel, fragments, 0)
 	fmt.Print(n)
 	if err == nil {
 		return &ResolvedValue{

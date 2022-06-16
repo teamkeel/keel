@@ -37,6 +37,7 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/go-connections v0.4.0
+	github.com/gertd/go-pluralize v0.2.1
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/lib/pq v1.10.6
 	github.com/mattn/go-colorable v0.1.9 // indirect

@@ -1,6 +1,7 @@
 package query
 
 import (
+	"github.com/gertd/go-pluralize"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util/str"
@@ -137,25 +138,63 @@ func FieldIsUnique(field *parser.FieldNode) bool {
 type AssociationResolutionError struct {
 	ErrorFragment string
 	ContextModel  *parser.ModelNode
+	Type          string
+	StartCol      int
 }
 
 func (err *AssociationResolutionError) Error() string {
 	return err.ErrorFragment
 }
 
-func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, previousFragments []string) (*node.Node, error) {
+func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, currentFragmentIndex int) (*node.Node, error) {
 	for i, fragment := range fragments {
 		field := ModelField(contextModel, fragment)
 
 		if field == nil {
-			previousContextModel := Model(asts, str.AsTitle(previousFragments[len(previousFragments)-1]))
-			return nil, &AssociationResolutionError{ErrorFragment: fragment, ContextModel: previousContextModel}
+			title := str.AsTitle(fragments[currentFragmentIndex])
+
+			previousContextModel := Model(asts, title)
+
+			col := 0
+
+			for i, frag := range fragments {
+				if i >= currentFragmentIndex {
+					break
+				}
+
+				col += len(frag) + 1
+			}
+
+			if previousContextModel != nil {
+				return nil, &AssociationResolutionError{
+					ErrorFragment: fragments[i+1],
+					ContextModel:  previousContextModel,
+					Type:          "association",
+					StartCol:      col,
+				}
+			}
+
+			// todo: need proper singularize function that is locale aware
+			pluralize := pluralize.NewClient()
+			titleDepluralized := pluralize.Singular(title)
+			previousContextModelDepluralized := Model(asts, titleDepluralized)
+
+			if previousContextModelDepluralized != nil {
+				return nil, &AssociationResolutionError{
+					ErrorFragment: fragment,
+					ContextModel:  previousContextModelDepluralized,
+					Type:          "association",
+					StartCol:      col,
+				}
+			}
+
+			panic("sjjssj")
 		}
 
-		newFragments := fragments[i+1:]
-		newContextModel := Model(asts, str.AsTitle(newFragments[0]))
+		newContextModelName := str.AsTitle(fragments[i+1])
+		newContextModel := Model(asts, newContextModelName)
 
-		return ResolveAssociation(asts, newContextModel, newFragments, fragments)
+		return ResolveAssociation(asts, newContextModel, fragments, currentFragmentIndex+1)
 	}
 
 	return &node.Node{}, nil

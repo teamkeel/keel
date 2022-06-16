@@ -76,6 +76,6 @@ en:
     message: "You have a duplicate definition for 'enum {{ .Name }}'"
     hint: "Please remove one of the definitions"
   E020:
-    short_message: "{{ .LHS }} not found"
-    message: "{{ .LHS }} not found"
+    short_message: "{{ .Type }} '{{ .LHS }}' not found"
+    message: "{{ .Type }} '{{ .LHS }}' not found"
     hint: "Try {{ .Suggestions }}"
