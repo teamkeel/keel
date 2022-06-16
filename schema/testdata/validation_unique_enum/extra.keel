@@ -1,0 +1,4 @@
+enum TheBeatles {
+  Paul
+  Ringo
+}

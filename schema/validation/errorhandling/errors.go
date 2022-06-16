@@ -36,6 +36,7 @@ const (
 	ErrorInvalidValue                     = "E016"
 	ErrorUniqueAPIGlobally                = "E017"
 	ErrorUniqueRoleGlobally               = "E018"
+	ErrorUniqueEnumGlobally               = "E019"
 )
 
 type ErrorDetails struct {
