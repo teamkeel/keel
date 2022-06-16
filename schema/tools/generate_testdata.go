@@ -11,7 +11,7 @@ import (
 
 	"github.com/nsf/jsondiff"
 	"github.com/teamkeel/keel/schema"
-	"github.com/teamkeel/keel/schema/validation"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 /*
@@ -81,7 +81,7 @@ func main() {
 		protoSchema, err := s2m.MakeFromDirectory(filepath.Join(testdataDir, subDir.Name()))
 		if err != nil {
 
-			verrs, ok := err.(validation.ValidationErrors)
+			verrs, ok := err.(errorhandling.ValidationErrors)
 			if !ok {
 				panic(fmt.Errorf("failed to make schema from directory: %v", err))
 			}

@@ -1,4 +1,4 @@
-package validation
+package errorhandling
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/util/collection"
 
 	"gopkg.in/yaml.v3"
 )
@@ -77,7 +78,7 @@ func (v ValidationErrors) MatchingSchemas() map[string]reader.SchemaFile {
 	schemaFiles := map[string]reader.SchemaFile{}
 
 	for _, err := range v.Errors {
-		if contains(paths, err.Pos.Filename) {
+		if collection.Contains(paths, err.Pos.Filename) {
 			continue
 		}
 
@@ -239,7 +240,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func validationError(code string, data TemplateLiterals, position node.ParserNode) error {
+func NewValidationError(code string, data TemplateLiterals, position node.ParserNode) error {
 	start, end := position.GetPositionRange()
 
 	return &ValidationError{
