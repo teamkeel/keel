@@ -42,49 +42,21 @@ func makeProtoFromSchemaFiles(schemaDir string) (*proto.Schema, error) {
 	return proto, nil
 }
 
-func isInitialRun(db *sql.DB) (bool, error) {
-	proto, err := fetchProtoFromDb(db)
+// doMigrationBasedOnSchemaChanges is a thin wrapper that fetches
+// the last-known schema protobuf from the database, before delegating
+// the performance of a schema-difference based migration to another function.
+func doMigrationBasedOnSchemaChanges(db *sql.DB, schemaDir string) error {
+	// This function assumes that the oldProto is available in the database.
+	oldProto, err := fetchProtoFromDb(db)
 	if err != nil {
-		return false, fmt.Errorf("error trying to fetch last used protobuf: %v", err)
-	}
-	return proto == nil, nil
-}
-
-// performFirstEverMigration is a minor variation to the sister method performMigration.
-// It differs does not depend on a last-known protobuf input, and instead uses a
-// valid, but empty protobuf to drive the standard deltas-based migration process.
-// It also (uniquely) creates the table in which we store the last-known protobuf
-// for subsequent migrations.
-func performFirstEverMigration(db *sql.DB, schemaDir string) error {
-
-	// Make a table to store the last-known protobuf.
-	sql := makeTableForLastKnownProto()
-	if _, err := db.Exec(sql); err != nil {
+		fmt.Printf("error trying to retreive old protobuf: %v", err)
 		return err
 	}
-
-	sql = initializeRowForLastKnownProto()
-	if _, err := db.Exec(sql); err != nil {
+	fmt.Printf("Migrating your database to the latest schema... ")
+	if err = performMigration(oldProto, db, schemaDir); err != nil {
+		fmt.Printf("error: %v\n", err)
 		return err
 	}
-
-	// Give the db a structure that represents the user's schema.
-	dummyLastKnownProto := &proto.Schema{}
-	if err := performMigration(dummyLastKnownProto, db, schemaDir); err != nil {
-		return err
-	}
+	fmt.Printf("done\n")
 	return nil
 }
-
-// makeTableForLastKnownProto generates the SQL to make a database table
-// suitable for storing the last-known protobuf schema (as JSON)
-func makeTableForLastKnownProto() string {
-	output := fmt.Sprintf("CREATE TABLE %s(\n", tableForProtobuf)
-	f := fmt.Sprintf("%s %s\n", columnForTheJson, "TEXT")
-	output += f
-	output += ");"
-	return output
-}
-
-const tableForProtobuf string = "_protobuf"
-const columnForTheJson string = "json" // The column name.

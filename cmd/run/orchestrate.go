@@ -18,19 +18,18 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 		return fmt.Errorf("could not bring up postgres locally: %v", err)
 	}
 
-	schemaDir, _ := cmd.Flags().GetString("dir")
-
-	// If this is the first ever run - do the initial migrations on the database.
-	isFirstRun, err := isInitialRun(db)
-	if err != nil {
-		return fmt.Errorf("error while assessing if first ever run: %v", err)
+	// This sets up internal configuration and state in the database - only if it
+	// has not been done in an earlier run. It means that all subsequent code can
+	// then safely retreive the last-known protobuf used - which makes it simpler.
+	if err := initDBIfNecessary(db); err != nil {
+		return fmt.Errorf("error initialising the database: %v", err)
 	}
-	if isFirstRun {
-		fmt.Printf("This is the first ever run, so performing initial database migration... ")
-		if err := performFirstEverMigration(db, schemaDir); err != nil {
-			return fmt.Errorf("error trying to perform initial database migrations: %v", err)
-		}
-		fmt.Printf("done\n")
+
+	// We refresh the migrations as the command comes up, (before we start the watcher),
+	// to make sure the database reflects the current user's schema.
+	schemaDir, _ := cmd.Flags().GetString("dir")
+	if err := doMigrationBasedOnSchemaChanges(db, schemaDir); err != nil {
+		return err
 	}
 
 	// The run command remains passive now, until the user changes their schema, so we establish
@@ -43,7 +42,7 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 
 	handler := NewSchemaChangedHandler(schemaDir, db)
 	// goroutine housekeeping note: This goroutine lives for as long as the Keel-Run command is running, and its
-	// resources are release when the command terminates (with CTRL-C).
+	// resources are released when the command terminates (with CTRL-C).
 	go reactToSchemaChanges(directoryWatcher, handler)
 
 	// The watcher documentation suggests we tell the watcher about the directory to watch,

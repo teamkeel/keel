@@ -52,18 +52,10 @@ func NewSchemaChangedHandler(schemaDir string, db *sql.DB) *SchemaChangedHandler
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 	fmt.Printf("File changed: %s\n", schemaThatHasChanged)
 
-	// In the context of this Handler - we assume that the oldProto must be available,
-	// because we make sure it is before we set up the schema watcher.
-	oldProto, err := fetchProtoFromDb(h.db)
-	if err != nil {
-		fmt.Printf("error trying to retreive old protobuf: %v", err)
-		return
-	}
-	fmt.Printf("Migrating your database to the changed schema... ")
-	if err = performMigration(oldProto, h.db, h.schemaDir); err != nil {
-		fmt.Printf("error: %v\n", err)
-	}
-	fmt.Printf("done\n")
+	// Deliberately ignoring errors returned by this call in the context of
+	// the handler, because they get printed when they occur, and because the handler
+	// is called from the watching goroutine, it has nothing to return them to.
+	doMigrationBasedOnSchemaChanges(h.db, h.schemaDir)
 }
 
 func isRelevantEventType(op fsnotify.Op) bool {
