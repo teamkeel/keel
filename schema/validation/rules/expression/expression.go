@@ -50,7 +50,7 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 	return errs
 }
 
-func checkExpressionConditionSide(ast *parser.AST, contextModel *parser.ModelNode, value *expressions.Value) (*ResolvedValue, error) {
+func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.ModelNode, value *expressions.Value) (*ResolvedValue, error) {
 	if value.Ident != nil {
 		fragments := strings.Split(value.ToString(), ".")
 
@@ -65,7 +65,7 @@ func checkExpressionConditionSide(ast *parser.AST, contextModel *parser.ModelNod
 
 		// Try to resolve the association based on the contextModel
 		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
-		v, err := tryAssociation(ast, contextModel, fragments)
+		v, err := tryAssociation(asts, contextModel, fragments)
 
 		if err != nil {
 			return v, nil
@@ -77,7 +77,7 @@ func checkExpressionConditionSide(ast *parser.AST, contextModel *parser.ModelNod
 	}, nil
 }
 
-func tryAssociation(ast *parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
+func tryAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
 	// n, err := query.ResolveAssociation(contextModel, fragments)
 
 	// if err == nil {
