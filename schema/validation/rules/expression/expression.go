@@ -60,6 +60,8 @@ func checkExpressionConditionSide(ast *parser.AST, contextModel *parser.ModelNod
 			}, nil
 		}
 
+		// todo: check levenstein distance for ctx (e.g user writes context) and return suggestion hint
+
 		// Try to resolve the association based on the contextModel
 		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
 		v, err := tryAssociation(ast, contextModel, fragments)
