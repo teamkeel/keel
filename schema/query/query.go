@@ -1,8 +1,6 @@
 package query
 
 import (
-	"fmt"
-
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util/str"
@@ -218,15 +216,10 @@ func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode, includeBuiltIn
 // Finds a model by either singular or pluralized name
 func FuzzyFindModel(asts []*parser.AST, modelName string) *parser.ModelNode {
 	if str.IsPlural(modelName) {
-
 		lookupValue := str.AsTitle(str.Singularize(modelName))
-		// fmt.Printf("Model: plural %s to singular %s\n", modelName, lookupValue)
-
 		return Model(asts, lookupValue)
 	} else if str.IsSingular(modelName) {
 		lookupValue := str.AsTitle(modelName)
-		// fmt.Printf("Model(Singular): %s \n", lookupValue)
-
 		return Model(asts, lookupValue)
 	} else {
 		return nil
@@ -236,16 +229,9 @@ func FuzzyFindModel(asts []*parser.AST, modelName string) *parser.ModelNode {
 // Finds a field by either singular or pluralized name
 func FuzzyFindField(model *parser.ModelNode, fieldName string) *parser.FieldNode {
 	if str.IsPlural(fieldName) {
-
-		fmt.Printf("here: %s (%s)\n", fieldName, model.Name.Value)
-		// fmt.Printf("Field: plural %s to singular %s\n", fieldName, fieldName)
-
 		return ModelField(model, fieldName, false)
-
 	} else if str.IsSingular(fieldName) {
-		// fmt.Printf("Field: plural %s to singular %s\n", fieldName, fieldName)
-		ret := ModelField(model, fieldName, false)
-		return ret
+		return ModelField(model, fieldName, false)
 	} else {
 		return nil
 	}
