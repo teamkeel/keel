@@ -6,13 +6,13 @@
         "message": "model 'cufstomer' not found",
         "end_pos": {
           "column": 26,
-          "filename": "testdata/validation_expression_lhs_rhs/schema.keel",
+          "filename": "testdata/validation_expression_lhs_root_model_missing/schema.keel",
           "line": 7,
-          "offset": 117
+          "offset": 114
         },
         "pos": {
           "column": 17,
-          "filename": "testdata/validation_expression_lhs_rhs/schema.keel",
+          "filename": "testdata/validation_expression_lhs_root_model_missing/schema.keel",
           "line": 7,
           "offset": 83
       },

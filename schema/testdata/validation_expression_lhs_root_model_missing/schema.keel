@@ -1,0 +1,23 @@
+model Customer {
+  fields {
+    orders Order[]
+  }
+
+  @permission(
+    expression: cufstomer.orders.ratings.rated == true,
+    actions: [get, update]
+  )
+}
+
+model Order {
+  fields {
+    ratings Rating
+    customer Customer
+  }
+}
+
+model Rating {
+  fields {
+    rated Boolean
+  }
+}
