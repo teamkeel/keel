@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/util/str"
 )
 
 type ResolvedValue struct {
@@ -63,6 +64,27 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 			}, nil
 		}
 
+		rootModel := query.Model(asts, fragments[0])
+
+		if rootModel == nil {
+			suggested := str.Pluralize(strings.ToLower(contextModel.Name.Value))
+			mutatedValue := value
+			mutatedValue.EndPos.Column = mutatedValue.Pos.Column + len(fragments[0])
+			mutatedValue.Tokens = []lexer.Token{}
+
+			return nil, errorhandling.NewValidationError(
+				errorhandling.ErrorUnresolvedRootCondition,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Root":       fragments[0],
+						"Type":       "model",
+						"Suggestion": suggested,
+					},
+				},
+				value,
+			)
+		}
+
 		// Try to resolve the association based on the contextModel
 		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
 		_, err := tryAssociation(asts, contextModel, fragments)
@@ -73,7 +95,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 			// todo: fix this check levenstein distance for ctx (e.g user writes context) and return suggestion hint
 
 			errModel := resolutionError.ContextModel
-			allModelFields := query.ModelFieldNames(asts, errModel)
+			allModelFields := query.ModelFieldNames(asts, errModel, false)
 
 			suggestions := errorhandling.NewCorrectionHint(allModelFields, resolutionError.ErrorFragment)
 

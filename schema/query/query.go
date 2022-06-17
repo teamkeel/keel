@@ -107,12 +107,21 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 
 func ModelFields(model *parser.ModelNode) (res []*parser.FieldNode) {
 	for _, section := range model.Sections {
-		res = append(res, section.Fields...)
+		if section.Fields == nil {
+			continue
+		}
+		for _, field := range section.Fields {
+			if field.BuiltIn {
+				continue
+			}
+
+			res = append(res, field)
+		}
 	}
 	return res
 }
 
-func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
+func ModelField(model *parser.ModelNode, name string, includeBuiltIn ...bool) *parser.FieldNode {
 	for _, section := range model.Sections {
 		for _, field := range section.Fields {
 			if field.Name.Value == name {
@@ -152,7 +161,6 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 	field := FuzzyFindField(contextModel, fragments[currentFragmentIndex])
 
 	if field == nil {
-
 		previousContextModel := FuzzyFindModel(asts, fragments[currentFragmentIndex-1])
 
 		col := 0
@@ -177,7 +185,13 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 			}
 		}
 
-		panic("no parent model in association tree found")
+		return nil, &AssociationResolutionError{
+			ErrorFragment: fragments[currentFragmentIndex],
+			ContextModel:  contextModel,
+			Type:          "association",
+			Parent:        fragments[currentFragmentIndex-1],
+			StartCol:      col,
+		}
 	}
 
 	newContextModel := FuzzyFindModel(asts, fragments[currentFragmentIndex])
@@ -189,9 +203,13 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 	return nil, nil
 }
 
-func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode) []string {
+func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode, includeBuiltIn ...bool) []string {
 	names := []string{}
 	for _, field := range ModelFields(model) {
+		if field.BuiltIn {
+			continue
+		}
+
 		names = append(names, field.Name.Value)
 	}
 	return names
@@ -222,11 +240,11 @@ func FuzzyFindField(model *parser.ModelNode, fieldName string) *parser.FieldNode
 		fmt.Printf("here: %s (%s)\n", fieldName, model.Name.Value)
 		// fmt.Printf("Field: plural %s to singular %s\n", fieldName, fieldName)
 
-		return ModelField(model, fieldName)
+		return ModelField(model, fieldName, false)
 
 	} else if str.IsSingular(fieldName) {
 		// fmt.Printf("Field: plural %s to singular %s\n", fieldName, fieldName)
-		ret := ModelField(model, fieldName)
+		ret := ModelField(model, fieldName, false)
 		return ret
 	} else {
 		return nil

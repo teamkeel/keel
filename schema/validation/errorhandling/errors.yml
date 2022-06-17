@@ -79,3 +79,7 @@ en:
     short_message: "{{ .Type }} '{{ .LHS }}' not found"
     message: "{{ .Type }} '{{ .LHS }}' not found on '{{ .Parent }}'"
     hint: "{{ .Suggestions }}"
+  E021:
+    short_message: "{{ .Type }} '{{ .Root }}' not found"
+    message: "{{ .Type }} '{{ .Root }}' not found"
+    hint: "Did you mean '{{ .Suggestion }}' instead?"
