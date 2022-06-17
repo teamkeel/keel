@@ -115,7 +115,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
 						"Suggestions": suggestions.ToString(),
-						"LHS":         resolutionError.ErrorFragment,
+						"Fragment":    resolutionError.ErrorFragment,
 						"Type":        resolutionError.Type,
 						"Parent":      resolutionError.Parent,
 					},
