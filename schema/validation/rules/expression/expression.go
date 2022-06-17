@@ -64,7 +64,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 			}, nil
 		}
 
-		rootModel := query.Model(asts, fragments[0])
+		rootModel := query.FuzzyFindModel(asts, fragments[0])
 
 		if rootModel == nil {
 			suggested := str.Pluralize(strings.ToLower(contextModel.Name.Value))
