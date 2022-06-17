@@ -1,9 +1,9 @@
 package expression
 
 import (
-	"fmt"
 	"strings"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -75,12 +75,18 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 			errModel := resolutionError.ContextModel
 			allModelFields := query.ModelFieldNames(asts, errModel)
 
-			suggestions := errorhandling.NewCorrectionHint(allModelFields, "rating")
+			suggestions := errorhandling.NewCorrectionHint(allModelFields, resolutionError.ErrorFragment)
 
 			mutatedValue := value
+
+			// Set the start and end column values to the length of the erroring token
 			mutatedValue.Pos.Column = mutatedValue.Pos.Column + resolutionError.StartCol
-			mutatedValue.EndPos.Column = mutatedValue.Pos.Column + resolutionError.StartCol + len(resolutionError.ErrorFragment)
-			// todo: hack the pos and end pos based on position in fragment string
+			mutatedValue.EndPos.Column = mutatedValue.Pos.Column + len(resolutionError.ErrorFragment)
+
+			// Clear out the old tokens which are used by the GetPositionRange function to calculate the error underlining
+			// With the old tokens (for the whole expression string) in place, the wrong portion of the string is highlighted
+			// todo: A long term fix for this is to change the tokenization so that it tokenizes each fragment of an expression condition with regex
+			mutatedValue.Tokens = []lexer.Token{}
 
 			return nil, errorhandling.NewValidationError(
 				errorhandling.ErrorUnresolvableExpressionLHS,
@@ -89,9 +95,9 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 						"Suggestions": suggestions.ToString(),
 						"LHS":         resolutionError.ErrorFragment,
 						"Type":        resolutionError.Type,
+						"Parent":      resolutionError.Parent,
 					},
 				},
-				// todo: value is the whole of the expression condition. need the particular pos of the fragment
 				mutatedValue,
 			)
 		}
@@ -104,7 +110,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 
 func tryAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
 	n, err := query.ResolveAssociation(asts, contextModel, fragments, 0)
-	fmt.Print(n)
+
 	if err == nil {
 		return &ResolvedValue{
 			Node: n,

@@ -139,6 +139,7 @@ type AssociationResolutionError struct {
 	ErrorFragment string
 	ContextModel  *parser.ModelNode
 	Type          string
+	Parent        string
 	StartCol      int
 }
 
@@ -147,57 +148,40 @@ func (err *AssociationResolutionError) Error() string {
 }
 
 func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, currentFragmentIndex int) (*node.Node, error) {
-	for i, fragment := range fragments {
-		field := ModelField(contextModel, fragment)
+	field := ModelField(contextModel, fragments[currentFragmentIndex])
 
-		if field == nil {
-			title := str.AsTitle(fragments[currentFragmentIndex])
+	if field == nil {
+		pluralize := pluralize.NewClient()
+		title := str.AsTitle(pluralize.Singular(fragments[currentFragmentIndex-1]))
+		previousContextModel := Model(asts, title)
 
-			previousContextModel := Model(asts, title)
+		col := 0
 
-			col := 0
-
-			for i, frag := range fragments {
-				if i >= currentFragmentIndex {
-					break
-				}
-
-				col += len(frag) + 1
+		for i, frag := range fragments {
+			if i > currentFragmentIndex {
+				break
 			}
 
-			if previousContextModel != nil {
-				return nil, &AssociationResolutionError{
-					ErrorFragment: fragments[i+1],
-					ContextModel:  previousContextModel,
-					Type:          "association",
-					StartCol:      col,
-				}
-			}
-
-			// todo: need proper singularize function that is locale aware
-			pluralize := pluralize.NewClient()
-			titleDepluralized := pluralize.Singular(title)
-			previousContextModelDepluralized := Model(asts, titleDepluralized)
-
-			if previousContextModelDepluralized != nil {
-				return nil, &AssociationResolutionError{
-					ErrorFragment: fragment,
-					ContextModel:  previousContextModelDepluralized,
-					Type:          "association",
-					StartCol:      col,
-				}
-			}
-
-			panic("sjjssj")
+			col += len(frag) + 2
 		}
 
-		newContextModelName := str.AsTitle(fragments[i+1])
-		newContextModel := Model(asts, newContextModelName)
+		if previousContextModel != nil {
+			return nil, &AssociationResolutionError{
+				ErrorFragment: fragments[currentFragmentIndex],
+				ContextModel:  previousContextModel,
+				Type:          "association",
+				Parent:        fragments[currentFragmentIndex-1],
+				StartCol:      col,
+			}
+		}
 
-		return ResolveAssociation(asts, newContextModel, fragments, currentFragmentIndex+1)
+		panic("sjjssj")
 	}
 
-	return &node.Node{}, nil
+	newContextModelName := str.AsTitle(fragments[currentFragmentIndex+1])
+	newContextModel := Model(asts, newContextModelName)
+
+	return ResolveAssociation(asts, newContextModel, fragments, currentFragmentIndex+1)
 }
 
 func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode) []string {

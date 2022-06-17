@@ -77,5 +77,5 @@ en:
     hint: "Please remove one of the definitions"
   E020:
     short_message: "{{ .Type }} '{{ .LHS }}' not found"
-    message: "{{ .Type }} '{{ .LHS }}' not found"
-    hint: "Try {{ .Suggestions }}"
+    message: "{{ .Type }} '{{ .LHS }}' not found on '{{ .Parent }}'"
+    hint: "{{ .Suggestions }}"
