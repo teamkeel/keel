@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E020",
+        "hint": "Did you mean ratings?",
+        "message": "association 'ratingss' not found on 'orders'",
+        "end_pos": {
+          "column": 49,
+          "filename": "testdata/validation_expression_rhs_nested_association_missing/schema.keel",
+          "line": 7,
+          "offset": 121
+        },
+        "pos": {
+          "column": 41,
+          "filename": "testdata/validation_expression_rhs_nested_association_missing/schema.keel",
+          "line": 7,
+          "offset": 91
+      },
+        "short_message": "association 'ratingss' not found"
+      }
+    ]
+  }
