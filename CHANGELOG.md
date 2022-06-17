@@ -1,3 +1,11 @@
+# [0.7.0](https://github.com/teamkeel/keel/compare/v0.6.0...v0.7.0) (2022-06-17)
+
+
+### Features
+
+* add validation roles for unique roles and apis ([91e783c](https://github.com/teamkeel/keel/commit/91e783c3cb4dc6228fc9ce8aee490cc846872978))
+* add validation rule for unique enum definition ([473e8c4](https://github.com/teamkeel/keel/commit/473e8c44418c37407667bc44faee2b730726ae48))
+
 # [0.6.0](https://github.com/teamkeel/keel/compare/v0.5.0...v0.6.0) (2022-06-16)
 
 
