@@ -1,7 +1,8 @@
 package query
 
 import (
-	"github.com/gertd/go-pluralize"
+	"fmt"
+
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util/str"
@@ -148,21 +149,22 @@ func (err *AssociationResolutionError) Error() string {
 }
 
 func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, currentFragmentIndex int) (*node.Node, error) {
-	field := ModelField(contextModel, fragments[currentFragmentIndex])
+	field := FuzzyFindField(contextModel, fragments[currentFragmentIndex])
 
 	if field == nil {
-		pluralize := pluralize.NewClient()
-		title := str.AsTitle(pluralize.Singular(fragments[currentFragmentIndex-1]))
-		previousContextModel := Model(asts, title)
+
+		previousContextModel := FuzzyFindModel(asts, fragments[currentFragmentIndex-1])
 
 		col := 0
 
 		for i, frag := range fragments {
-			if i > currentFragmentIndex {
+			// Take into account that the root fragment isnt being eval-ed here
+			// so -1 on currentFragmentIndex
+			if i > currentFragmentIndex-1 {
 				break
 			}
 
-			col += len(frag) + 2
+			col += len(frag) + 1
 		}
 
 		if previousContextModel != nil {
@@ -175,13 +177,16 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 			}
 		}
 
-		panic("sjjssj")
+		panic("no parent model in association tree found")
 	}
 
-	newContextModelName := str.AsTitle(fragments[currentFragmentIndex+1])
-	newContextModel := Model(asts, newContextModelName)
+	newContextModel := FuzzyFindModel(asts, fragments[currentFragmentIndex])
 
-	return ResolveAssociation(asts, newContextModel, fragments, currentFragmentIndex+1)
+	if currentFragmentIndex < len(fragments)-1 {
+		return ResolveAssociation(asts, newContextModel, fragments, currentFragmentIndex+1)
+	}
+
+	return nil, nil
 }
 
 func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode) []string {
@@ -190,4 +195,40 @@ func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode) []string {
 		names = append(names, field.Name.Value)
 	}
 	return names
+}
+
+// Finds a model by either singular or pluralized name
+func FuzzyFindModel(asts []*parser.AST, modelName string) *parser.ModelNode {
+	if str.IsPlural(modelName) {
+
+		lookupValue := str.AsTitle(str.Singularize(modelName))
+		// fmt.Printf("Model: plural %s to singular %s\n", modelName, lookupValue)
+
+		return Model(asts, lookupValue)
+	} else if str.IsSingular(modelName) {
+		lookupValue := str.AsTitle(modelName)
+		// fmt.Printf("Model(Singular): %s \n", lookupValue)
+
+		return Model(asts, lookupValue)
+	} else {
+		return nil
+	}
+}
+
+// Finds a field by either singular or pluralized name
+func FuzzyFindField(model *parser.ModelNode, fieldName string) *parser.FieldNode {
+	if str.IsPlural(fieldName) {
+
+		fmt.Printf("here: %s (%s)\n", fieldName, model.Name.Value)
+		// fmt.Printf("Field: plural %s to singular %s\n", fieldName, fieldName)
+
+		return ModelField(model, fieldName)
+
+	} else if str.IsSingular(fieldName) {
+		// fmt.Printf("Field: plural %s to singular %s\n", fieldName, fieldName)
+		ret := ModelField(model, fieldName)
+		return ret
+	} else {
+		return nil
+	}
 }

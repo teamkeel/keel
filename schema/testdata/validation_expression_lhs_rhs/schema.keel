@@ -4,7 +4,7 @@ model Customer {
   }
 
   @permission(
-    expression: customer.orders.rating.rated == true,
+    expression: customer.orderssss.ratings.rated == true,
     actions: [get, update]
   )
 }

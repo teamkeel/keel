@@ -65,7 +65,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 
 		// Try to resolve the association based on the contextModel
 		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
-		_, err := tryAssociation(asts, contextModel, fragments[1:])
+		_, err := tryAssociation(asts, contextModel, fragments)
 
 		if err != nil {
 
@@ -109,7 +109,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 }
 
 func tryAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string) (*ResolvedValue, error) {
-	n, err := query.ResolveAssociation(asts, contextModel, fragments, 0)
+	n, err := query.ResolveAssociation(asts, contextModel, fragments, 1)
 
 	if err == nil {
 		return &ResolvedValue{
