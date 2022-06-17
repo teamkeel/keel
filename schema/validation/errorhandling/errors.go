@@ -241,6 +241,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 
 			schemaString += red.Add(color.Italic).Sprintf("\u21B3 %s", err.Pos.Filename)
 			newLine()
+			newLine()
 		}
 	}
 
