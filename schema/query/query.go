@@ -105,13 +105,13 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	return res
 }
 
-func ModelFields(model *parser.ModelNode) (res []*parser.FieldNode) {
+func ModelFields(model *parser.ModelNode, includeBuiltIn ...bool) (res []*parser.FieldNode) {
 	for _, section := range model.Sections {
 		if section.Fields == nil {
 			continue
 		}
 		for _, field := range section.Fields {
-			if field.BuiltIn {
+			if len(includeBuiltIn) > 0 && includeBuiltIn[0] && field.BuiltIn {
 				continue
 			}
 
@@ -206,7 +206,7 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode, includeBuiltIn ...bool) []string {
 	names := []string{}
 	for _, field := range ModelFields(model) {
-		if field.BuiltIn {
+		if len(includeBuiltIn) > 0 && includeBuiltIn[0] && field.BuiltIn {
 			continue
 		}
 
