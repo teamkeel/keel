@@ -2,9 +2,9 @@ model Foo {
   fields {
     f1 Boolean
   }
- 
+
   @permission(
-    expression: foo.f1 == bool,
+    expression: foo.f1 == true,
     roles: [Admin],
     actions: [list, get]
   )

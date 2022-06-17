@@ -1,16 +1,22 @@
   {
     "Errors": [
       {
-        "code": "",
-        "hint": "",
-        "message": "",
-        "pos": {
-          "column": 0,
+        "code": "E021",
+        "hint": "Did you mean 'customer' instead?",
+        "message": "model 'cufstomer' not found",
+        "end_pos": {
+          "column": 26,
           "filename": "testdata/validation_expression_lhs_rhs/schema.keel",
-          "line": 0,
-          "offset": 0
+          "line": 7,
+          "offset": 117
         },
-        "short_message": ""
+        "pos": {
+          "column": 17,
+          "filename": "testdata/validation_expression_lhs_rhs/schema.keel",
+          "line": 7,
+          "offset": 83
+      },
+        "short_message": "model 'cufstomer' not found"
       }
     ]
   }

@@ -5,7 +5,7 @@ model Foo {
   operations {
     list opA() {
       @permission(
-          expression: foo.f1 == bool,
+          expression: foo.f1 == true,
           roles: [Admin]
       )
       @where(True = False)
