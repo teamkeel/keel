@@ -3,9 +3,12 @@ package validation
 import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/schema/validation/rules/api"
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
+	"github.com/teamkeel/keel/schema/validation/rules/enum"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
 	"github.com/teamkeel/keel/schema/validation/rules/model"
+	"github.com/teamkeel/keel/schema/validation/rules/role"
 )
 
 type Validator struct {
@@ -45,6 +48,12 @@ var validatorFuncs = []validationFunc{
 	// Begin attribute validation
 	attribute.AttributeLocationsRule,
 	attribute.PermissionAttributeRule,
+	// Role
+	role.UniqueRoleNamesRule,
+	// API
+	api.UniqueAPINamesRule,
+	// Enum
+	enum.UniqueEnumsRule,
 }
 
 func (v *Validator) RunAllValidators() error {

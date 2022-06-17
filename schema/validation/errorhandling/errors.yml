@@ -63,3 +63,15 @@ en:
     short_message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
     message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
     hint: ""
+  E017:
+    short_message: "{{ .Name }} is duplicated"
+    message: "You have a duplicate definition for 'api {{ .Name }}'"
+    hint: "Please remove one of the definitions"
+  E018:
+    short_message: "{{ .Name }} is duplicated"
+    message: "You have a duplicate definition for 'role {{ .Name }}'"
+    hint: "Please remove one of the definitions"
+  E019:
+    short_message: "{{ .Name }} is duplicated"
+    message: "You have a duplicate definition for 'enum {{ .Name }}'"
+    hint: "Please remove one of the definitions"
