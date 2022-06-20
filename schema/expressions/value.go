@@ -60,10 +60,6 @@ type IdentFragment struct {
 	Fragment string `@Ident`
 }
 
-func (fragment *IdentFragment) Resolve() {
-
-}
-
 type Array struct {
 	node.Node
 
