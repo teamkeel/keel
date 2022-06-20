@@ -26,9 +26,7 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 				conditions := arg.Expression.Conditions()
 
 				for _, condition := range conditions {
-					if condition == nil {
-						continue
-					}
+
 					conditionType := condition.Type()
 					lhs, operator, rhs := condition.ToFragments()
 

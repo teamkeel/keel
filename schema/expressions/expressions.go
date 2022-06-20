@@ -28,7 +28,13 @@ func (e *Expression) Conditions() []*Condition {
 		}
 	}
 
-	return conds
+	ret := []*Condition{}
+	for _, cond := range conds {
+		if cond != nil {
+			ret = append(ret, cond)
+		}
+	}
+	return ret
 }
 
 type OrExpression struct {
@@ -63,9 +69,6 @@ var (
 )
 
 func (c *Condition) Type() string {
-	if c == nil {
-		panic("nil pointer")
-	}
 	if collection.Contains(equalityOperators, c.Operator.Symbol) {
 		return EqualityCondition
 	} else if c.Operator.Symbol == "=" {
