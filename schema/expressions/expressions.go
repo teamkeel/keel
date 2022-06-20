@@ -46,7 +46,9 @@ func (condition *Condition) ToString() string {
 	if condition.LHS != nil {
 		result += condition.LHS.ToString()
 	}
-	result += condition.Operator
+
+	result += fmt.Sprintf(" %s ", condition.Operator)
+
 	if condition.RHS != nil {
 		result += condition.RHS.ToString()
 	}
