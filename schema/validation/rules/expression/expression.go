@@ -111,7 +111,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 			mutatedValue.Tokens = []lexer.Token{}
 
 			return nil, errorhandling.NewValidationError(
-				errorhandling.ErrorUnresolvableExpressionLHS,
+				errorhandling.ErrorUnresolvableExpression,
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
 						"Suggestions": suggestions.ToString(),

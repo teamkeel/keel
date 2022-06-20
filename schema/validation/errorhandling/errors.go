@@ -38,7 +38,7 @@ const (
 	ErrorUniqueAPIGlobally                = "E017"
 	ErrorUniqueRoleGlobally               = "E018"
 	ErrorUniqueEnumGlobally               = "E019"
-	ErrorUnresolvableExpressionLHS        = "E020"
+	ErrorUnresolvableExpression           = "E020"
 	ErrorUnresolvedRootCondition          = "E021"
 )
 
