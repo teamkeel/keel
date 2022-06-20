@@ -1,6 +1,10 @@
 package query
 
-import "github.com/teamkeel/keel/schema/parser"
+import (
+	"github.com/teamkeel/keel/schema/node"
+	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/util/str"
+)
 
 func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	for _, ast := range asts {
@@ -99,9 +103,28 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	return res
 }
 
-func ModelFields(model *parser.ModelNode) (res []*parser.FieldNode) {
+type ModelFieldFilter func(f *parser.FieldNode) bool
+
+func ExcludeBuiltInFields(f *parser.FieldNode) bool {
+	return !f.BuiltIn
+}
+
+func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*parser.FieldNode) {
 	for _, section := range model.Sections {
-		res = append(res, section.Fields...)
+		if section.Fields == nil {
+			continue
+		}
+
+	fields:
+		for _, field := range section.Fields {
+			for _, filter := range filters {
+				if !filter(field) {
+					continue fields
+				}
+			}
+
+			res = append(res, field)
+		}
 	}
 	return res
 }
@@ -128,4 +151,71 @@ func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 
 func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
+}
+
+type AssociationResolutionError struct {
+	ErrorFragment string
+	ContextModel  *parser.ModelNode
+	Type          string
+	Parent        string
+	StartCol      int
+}
+
+func (err *AssociationResolutionError) Error() string {
+	return err.ErrorFragment
+}
+
+func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, currentFragmentIndex int) (*node.Node, error) {
+	field := ModelField(contextModel, fragments[currentFragmentIndex])
+
+	if field == nil {
+		col := 0
+
+		for i, frag := range fragments {
+			// Take into account that the root fragment isnt being eval-ed here
+			// so -1 on currentFragmentIndex
+			if i > currentFragmentIndex-1 {
+				break
+			}
+
+			col += len(frag) + 1
+		}
+
+		return nil, &AssociationResolutionError{
+			ErrorFragment: fragments[currentFragmentIndex],
+			ContextModel:  contextModel,
+			Type:          "association",
+			Parent:        fragments[currentFragmentIndex-1],
+			StartCol:      col,
+		}
+	}
+
+	newContextModel := FuzzyFindModel(asts, fragments[currentFragmentIndex])
+
+	if currentFragmentIndex < len(fragments)-1 {
+		return ResolveAssociation(asts, newContextModel, fragments, currentFragmentIndex+1)
+	}
+
+	return nil, nil
+}
+
+func ModelFieldNames(model *parser.ModelNode) []string {
+	names := []string{}
+	for _, field := range ModelFields(model, ExcludeBuiltInFields) {
+		names = append(names, field.Name.Value)
+	}
+	return names
+}
+
+// Finds a model by either singular or pluralized name
+func FuzzyFindModel(asts []*parser.AST, modelName string) *parser.ModelNode {
+	if str.IsPlural(modelName) {
+		lookupValue := str.AsTitle(str.Singularize(modelName))
+		return Model(asts, lookupValue)
+	} else if str.IsSingular(modelName) {
+		lookupValue := str.AsTitle(modelName)
+		return Model(asts, lookupValue)
+	} else {
+		return nil
+	}
 }

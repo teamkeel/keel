@@ -75,3 +75,11 @@ en:
     short_message: "{{ .Name }} is duplicated"
     message: "You have a duplicate definition for 'enum {{ .Name }}'"
     hint: "Please remove one of the definitions"
+  E020:
+    short_message: "{{ .Type }} '{{ .Fragment }}' not found"
+    message: "{{ .Type }} '{{ .Fragment }}' not found on '{{ .Parent }}'"
+    hint: "{{ .Suggestions }}"
+  E021:
+    short_message: "{{ .Type }} '{{ .Root }}' not found"
+    message: "{{ .Type }} '{{ .Root }}' not found"
+    hint: "Did you mean '{{ .Suggestion }}' instead?"

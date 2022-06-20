@@ -14,6 +14,12 @@ cat <<EOF > errors.json
         "code": "",
         "hint": "",
         "message": "",
+        "end_pos": {
+          "column": 0,
+          "filename": "testdata/$1/schema.keel",
+          "line": 0,
+          "offset": 0
+        },
         "pos": {
           "column": 0,
           "filename": "testdata/$1/schema.keel",

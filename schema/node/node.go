@@ -28,6 +28,8 @@ func (n Node) GetPositionRange() (start lexer.Position, end lexer.Position) {
 	start.Offset = n.Pos.Offset
 
 	// This shouldn't really happen but just to be safe
+	// Note: However, clearing out the tokens in some cases is useful when you want to render a substring
+	// that cannot otherwise be easily tokenized by the lexer.
 	if len(n.Tokens) == 0 {
 		return start, n.EndPos
 	}

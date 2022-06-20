@@ -22,7 +22,7 @@
             "Admin"
           ],
           "expression":  {
-            "source":  "foo.f1 == bool"
+            "source":  "foo.f1 == true"
           },
           "operationsTypes":  [
             "OPERATION_TYPE_LIST",
