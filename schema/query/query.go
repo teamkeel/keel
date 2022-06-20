@@ -156,7 +156,7 @@ func (err *AssociationResolutionError) Error() string {
 }
 
 func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, currentFragmentIndex int) (*node.Node, error) {
-	field := FuzzyFindField(contextModel, fragments[currentFragmentIndex])
+	field := ModelField(contextModel, fragments[currentFragmentIndex])
 
 	if field == nil {
 		col := 0
@@ -209,17 +209,6 @@ func FuzzyFindModel(asts []*parser.AST, modelName string) *parser.ModelNode {
 	} else if str.IsSingular(modelName) {
 		lookupValue := str.AsTitle(modelName)
 		return Model(asts, lookupValue)
-	} else {
-		return nil
-	}
-}
-
-// Finds a field by either singular or pluralized name
-func FuzzyFindField(model *parser.ModelNode, fieldName string) *parser.FieldNode {
-	if str.IsPlural(fieldName) {
-		return ModelField(model, fieldName, false)
-	} else if str.IsSingular(fieldName) {
-		return ModelField(model, fieldName, false)
 	} else {
 		return nil
 	}
