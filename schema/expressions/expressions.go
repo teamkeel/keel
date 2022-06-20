@@ -41,7 +41,7 @@ func (condition *Condition) ToString() string {
 	result := ""
 
 	if condition == nil {
-		return "oh no"
+		panic("condition is nil")
 	}
 	if condition.LHS != nil {
 		result += condition.LHS.ToString()
