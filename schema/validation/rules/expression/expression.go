@@ -1,12 +1,9 @@
 package expression
 
 import (
-	"fmt"
-
-	"github.com/teamkeel/keel/schema/associations"
+	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 )
 
 type ResolvedValue struct {
@@ -15,31 +12,19 @@ type ResolvedValue struct {
 	Type string
 }
 
-func ValidateExpressionRule(asts []*parser.AST) []error {
-	errs := make([]error, 0)
+func ValidateExpressionConditions(asts []*parser.AST, arg *parser.AttributeArgumentNode, validateFunc func(lhs *expressions.Operand, operator *expressions.Operator, rhs *expressions.Operand) []error) (errs []error) {
+	// get all of the nested conditions in the expression
+	conditions := arg.Expression.Conditions()
 
-	for _, model := range query.Models(asts) {
-		attrs := query.ModelAttributes(model)
+	for _, condition := range conditions {
 
-		for _, attr := range attrs {
-			for _, arg := range attr.Arguments {
-				// get all of the nested conditions in the expression
-				conditions := arg.Expression.Conditions()
+		// conditionType := condition.Type()
+		lhs, operator, rhs := condition.ToFragments()
 
-				for _, condition := range conditions {
+		result := validateFunc(lhs, operator, rhs)
 
-					// conditionType := condition.Type()
-					lhs, _, _ := condition.ToFragments()
-
-					if lhs.Ident != nil {
-						tree, err := associations.TryResolveIdent(asts, lhs.Ident)
-
-						if err != nil {
-							fmt.Printf("%s (%s)\n", err, tree.PrettyPrint())
-						}
-					}
-				}
-			}
+		if len(errs) > 0 {
+			errs = append(errs, result...)
 		}
 	}
 

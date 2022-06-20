@@ -40,6 +40,7 @@ const (
 	ErrorUniqueEnumGlobally               = "E019"
 	ErrorUnresolvableExpression           = "E020"
 	ErrorUnresolvedRootCondition          = "E021"
+	ErrorForbiddenExpressionOperation     = "E022"
 )
 
 type ErrorDetails struct {

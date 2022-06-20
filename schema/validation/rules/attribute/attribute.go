@@ -171,7 +171,29 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			hasActions = true
 		case "expression":
 			hasExpression = true
-			// TODO: validate expression
+
+			conditions := arg.Expression.Conditions()
+
+			for _, cond := range conditions {
+				// _, _, _ := cond.ToFragments()
+				t := cond.Type()
+
+				if t != expressions.LogicalCondition {
+					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Operator":   cond.Operator.Symbol,
+								"Area":       "@permission",
+								"Suggestion": "'=='",
+								"Condition":  cond.ToString(),
+							},
+						},
+						arg,
+					))
+				}
+				// check type is equality
+
+			}
 		case "roles":
 			hasRoles = true
 			allowedIdents := []string{}

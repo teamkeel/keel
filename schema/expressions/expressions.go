@@ -62,13 +62,17 @@ var equalityOperators = []string{"==", "<", ">", ">=", "<=", "!=", "in", "notin"
 
 var (
 	AssignmentCondition = "assignment"
-	EqualityCondition   = "equality"
+	LogicalCondition    = "logical"
 	ValueCondition      = "value"
 )
 
 func (c *Condition) Type() string {
+
 	if collection.Contains(equalityOperators, c.Operator.Symbol) {
-		return EqualityCondition
+		return LogicalCondition
+
+	} else if (c.LHS.False || c.LHS.True) && c.RHS == nil {
+		return LogicalCondition
 	} else if c.Operator.Symbol == "=" {
 		return AssignmentCondition
 	} else if c.Operator.Symbol == "" && c.RHS == nil && c.LHS != nil {
@@ -136,9 +140,8 @@ func (condition *Condition) ToString() string {
 		result += condition.LHS.ToString()
 	}
 
-	result += fmt.Sprintf(" %s ", condition.Operator)
-
-	if condition.RHS != nil {
+	if condition.Operator.Symbol != "" && condition.RHS != nil {
+		result += fmt.Sprintf(" %s ", condition.Operator.Symbol)
 		result += condition.RHS.ToString()
 	}
 

@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E022",
+        "hint": "Did you mean '=='?",
+        "message": "Operator '=' not permitted on @permission",
+        "end_pos": {
+          "column": 49,
+          "filename": "testdata/validation_permission_attribute_expression_forbidden_operator/schema.keel",
+          "line": 7,
+          "offset": 123
+        },
+        "pos": {
+          "column": 9,
+          "filename": "testdata/validation_permission_attribute_expression_forbidden_operator/schema.keel",
+          "line": 7,
+          "offset": 83
+        },
+        "short_message": "Operator '=' not permitted on @permission"
+      }
+    ]
+  }

@@ -1,0 +1,10 @@
+model Profile {
+    fields {
+        username Text
+    }
+
+    @permission(
+        expression: profile.username = something,
+        actions: [get]
+    )
+}
