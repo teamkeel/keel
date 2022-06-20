@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E020",
+        "hint": "",
+        "message": "association 'autho' not found on 'Post'",
+        "end_pos": {
+          "column": 32,
+          "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
+          "line": 7,
+          "offset": 93
+        },
+        "pos": {
+          "column": 17,
+          "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
+          "line": 7,
+          "offset": 78
+        },
+        "short_message": "association 'autho' not found"
+      }
+    ]
+  }

@@ -1,0 +1,16 @@
+model Post {
+  fields {
+    author Author
+  }
+
+  @permission(
+    expression: post.autho.name == "adam",
+    actions: [get]
+  )
+}
+
+model Author {
+  fields {
+    name Text
+  }
+}

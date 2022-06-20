@@ -1,9 +1,11 @@
 package expression
 
 import (
+	"github.com/teamkeel/keel/schema/associations"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 type ResolvedValue struct {
@@ -29,4 +31,28 @@ func ValidateExpressionConditions(asts []*parser.AST, arg *parser.AttributeArgum
 	}
 
 	return errs
+}
+
+func ValidateConditionSide(asts []*parser.AST, operand expressions.Operand) error {
+	if operand.Ident != nil {
+		tree, err := associations.TryResolveIdent(asts, operand.Ident)
+
+		if err != nil {
+			unresolved := tree.ErrorFragment()
+
+			return errorhandling.NewValidationError(errorhandling.ErrorUnresolvableExpression,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Type":        "association",
+						"Fragment":    unresolved.Ident,
+						"Parent":      tree.Fragments[len(tree.Fragments)-2].ToString(),
+						"Suggestions": "",
+					},
+				},
+				operand,
+			)
+		}
+	}
+
+	return nil
 }

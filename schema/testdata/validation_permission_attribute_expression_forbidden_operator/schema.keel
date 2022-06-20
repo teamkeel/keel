@@ -4,7 +4,7 @@ model Profile {
     }
 
     @permission(
-        expression: profile.username = something,
+        expression: profile.username = "adaam2",
         actions: [get]
     )
 }

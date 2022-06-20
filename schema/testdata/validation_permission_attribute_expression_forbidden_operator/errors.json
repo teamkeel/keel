@@ -5,10 +5,10 @@
         "hint": "Did you mean '=='?",
         "message": "Operator '=' not permitted on @permission",
         "end_pos": {
-          "column": 49,
+          "column": 48,
           "filename": "testdata/validation_permission_attribute_expression_forbidden_operator/schema.keel",
           "line": 7,
-          "offset": 123
+          "offset": 122
         },
         "pos": {
           "column": 9,

@@ -29,6 +29,16 @@ type AssociationTree struct {
 	Fragments []AssociationPart
 }
 
+func (tree *AssociationTree) ErrorFragment() *UnresolvedAssociation {
+	for _, frag := range tree.Fragments {
+		if err, ok := frag.(*UnresolvedAssociation); ok {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (tree *AssociationTree) PrettyPrint() (ret string) {
 	for i, item := range tree.Fragments {
 		if i == len(tree.Fragments)-1 {
@@ -43,32 +53,20 @@ func (tree *AssociationTree) PrettyPrint() (ret string) {
 // Takes
 func TryResolveIdent(asts []*parser.AST, ident *expressions.Ident) (AssociationTree, error) {
 	tree := AssociationTree{}
-	var walk func(idx int) (AssociationTree, error)
+	var walk func(previousModel *parser.ModelNode, idx int) (AssociationTree, error)
 
-	walk = func(idx int) (AssociationTree, error) {
-		fragment := ident.Fragments[idx-1]
-		lookupModel := str.AsTitle(str.Singularize(fragment.Fragment))
-		model := query.Model(asts, lookupModel)
-
-		if model == nil {
-			tree.Fragments = append(tree.Fragments, &UnresolvedAssociation{
-				Node:  ident.Fragments[idx].Node,
-				Ident: ident.ToString(),
-			})
-
-			return tree, fmt.Errorf("could not find model %s", lookupModel)
-		}
+	walk = func(previousModel *parser.ModelNode, idx int) (AssociationTree, error) {
 		if idx == 1 {
-			tree.Fragments = append(tree.Fragments, model)
+			tree.Fragments = append(tree.Fragments, previousModel)
 		}
 		lookupField := ident.Fragments[idx].Fragment
 
-		field := query.ModelField(model, lookupField)
+		field := query.ModelField(previousModel, lookupField)
 
 		if field == nil {
 			tree.Fragments = append(tree.Fragments, &UnresolvedAssociation{
 				Node:  ident.Fragments[idx].Node,
-				Ident: ident.ToString(),
+				Ident: ident.Fragments[idx].Fragment,
 			})
 
 			return tree, fmt.Errorf("could not find field %s", lookupField)
@@ -77,12 +75,27 @@ func TryResolveIdent(asts []*parser.AST, ident *expressions.Ident) (AssociationT
 		tree.Fragments = append(tree.Fragments, field)
 
 		if idx < len(ident.Fragments)-1 {
-			return walk(idx + 1)
+			nextModel := query.ModelForAssociationField(asts, field)
+			return walk(nextModel, idx+1)
 		} else {
 			return tree, nil
 		}
 	}
+	lookupModel := str.AsTitle(str.Singularize(ident.Fragments[0].Fragment))
+	rootModel := query.Model(asts, lookupModel)
+	if rootModel == nil {
+		tree.Fragments = append(tree.Fragments, &UnresolvedAssociation{
+			Node:  ident.Fragments[0].Node,
+			Ident: ident.ToString(),
+		})
+
+		return tree, fmt.Errorf("could not find model %s", lookupModel)
+	}
 
 	// Start at index 1 so we can look backwards to index 0 for the parent
-	return walk(1)
+	if len(ident.Fragments) > 1 {
+		return walk(rootModel, 1)
+	}
+
+	panic("no fragments")
 }

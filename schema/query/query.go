@@ -109,6 +109,12 @@ func ExcludeBuiltInFields(f *parser.FieldNode) bool {
 	return !f.BuiltIn
 }
 
+func ModelForAssociationField(asts []*parser.AST, f *parser.FieldNode) *parser.ModelNode {
+	fieldType := f.Type
+
+	return Model(asts, str.AsTitle(fieldType))
+}
+
 func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*parser.FieldNode) {
 	for _, section := range model.Sections {
 		if section.Fields == nil {

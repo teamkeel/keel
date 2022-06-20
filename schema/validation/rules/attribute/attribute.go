@@ -8,6 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/schema/validation/rules/expression"
 	"github.com/teamkeel/keel/util/collection"
 )
 
@@ -178,6 +179,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				// _, _, _ := cond.ToFragments()
 				t := cond.Type()
 
+				// Check that the expression uses the logical comparison operator
 				if t != expressions.LogicalCondition {
 					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
 						errorhandling.TemplateLiterals{
@@ -191,7 +193,14 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 						arg,
 					))
 				}
-				// check type is equality
+
+				// check that the lhs and rhs resolve
+				if cond.LHS != nil {
+					errors = append(errors, expression.ValidateConditionSide(asts, *cond.LHS))
+				}
+				if cond.RHS != nil {
+					errors = append(errors, expression.ValidateConditionSide(asts, *cond.RHS))
+				}
 
 			}
 		case "roles":
