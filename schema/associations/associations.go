@@ -78,15 +78,18 @@ func TryResolveIdent(asts []*parser.AST, ident *expressions.Ident) (AssociationT
 			nextModel := query.ModelForAssociationField(asts, field)
 			return walk(nextModel, idx+1)
 		} else {
+			// Tree has been fully resolved
 			return tree, nil
 		}
 	}
+
 	lookupModel := str.AsTitle(str.Singularize(ident.Fragments[0].Fragment))
 	rootModel := query.Model(asts, lookupModel)
+
 	if rootModel == nil {
 		tree.Fragments = append(tree.Fragments, &UnresolvedAssociation{
 			Node:  ident.Fragments[0].Node,
-			Ident: ident.ToString(),
+			Ident: ident.Fragments[0].Fragment,
 		})
 
 		return tree, fmt.Errorf("could not find model %s", lookupModel)
