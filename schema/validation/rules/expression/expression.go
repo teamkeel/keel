@@ -81,7 +81,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 						"Suggestion": suggested,
 					},
 				},
-				value,
+				mutatedValue,
 			)
 		}
 
