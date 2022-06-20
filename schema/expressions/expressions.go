@@ -43,8 +43,6 @@ type OrExpression struct {
 	And []*ConditionWrap `@@ ("and" @@)*`
 }
 
-//
-
 type ConditionWrap struct {
 	node.Node
 

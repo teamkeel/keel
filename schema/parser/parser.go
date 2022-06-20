@@ -32,6 +32,10 @@ type ModelNode struct {
 	Sections []*ModelSectionNode `"{" @@* "}"`
 }
 
+func (model *ModelNode) ToString() string {
+	return model.Name.Value
+}
+
 type ModelSectionNode struct {
 	node.Node
 
@@ -65,6 +69,10 @@ type FieldNode struct {
 	// For these fields this value is set to true so we can distinguish
 	// them from fields defined by the user in the schema
 	BuiltIn bool
+}
+
+func (field *FieldNode) ToString() string {
+	return field.Name.Value
 }
 
 type APINode struct {
