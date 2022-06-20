@@ -3,7 +3,6 @@ package expressions
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/teamkeel/keel/schema/node"
@@ -32,9 +31,46 @@ type ConditionWrap struct {
 type Condition struct {
 	node.Node
 
-	LHS      *Value `@@`
-	Operator string `( @( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
-	RHS      *Value `@@ )?`
+	LHS      *Operand `@@`
+	Operator Operator `( @@`
+	RHS      *Operand `@@ )?`
+}
+
+type Operator struct {
+	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
+}
+
+var operators = map[string]string{
+	"==":    "Equals",
+	"=":     "Assignment",
+	"!=":    "NotEquals",
+	">=":    "GreaterThanOrEqual",
+	"<=":    "LessThanOrEqual",
+	"<":     "LessThan",
+	">":     "GreaterThan",
+	"in":    "In",
+	"notin": "NotIn",
+	"+=":    "Increment",
+	"--":    "Decrement",
+}
+
+func (o *Operator) Name() string {
+	if o.Symbol == "" {
+		return ""
+	}
+
+	if operator, ok := operators[o.Symbol]; ok {
+		return operator
+	}
+
+	return ""
+}
+
+// Returns the respective fragments (lhs, operator, rhs) of an expression
+// For value expressions, operator and rhs will be nil
+// For equality & assignment expressions, lhs, operator and rhs will be populated
+func (condition *Condition) ToFragments() (*Operand, Operator, *Operand) {
+	return condition.LHS, condition.Operator, condition.RHS
 }
 
 func (condition *Condition) ToString() string {
@@ -54,24 +90,6 @@ func (condition *Condition) ToString() string {
 	}
 
 	return result
-}
-
-type Value struct {
-	node.Node
-
-	Number *int64   `  @Int`
-	String *string  `| @String`
-	Null   bool     `| @"null"`
-	True   bool     `| @"true"`
-	False  bool     `| @"false"`
-	Array  *Array   `| @@`
-	Ident  []string `| ( @Ident ( "." @Ident )* )`
-}
-
-type Array struct {
-	node.Node
-
-	Values []*Value `"[" @@ ( "," @@ )* "]"`
 }
 
 func Parse(source string) (*Expression, error) {
@@ -117,22 +135,21 @@ func ToString(expr *Expression) (string, error) {
 
 			op := andExpr.Condition.Operator
 
-			if op == "" {
+			if op.Symbol == "" {
 				continue
 			}
 
 			result += " "
 
 			// special case for "not in"
-			if op == "notin" {
+			if op.Symbol == "notin" {
 				result += "not in"
 			} else {
-				result += op
+				result += op.Symbol
 			}
 
 			result += " " + andExpr.Condition.RHS.ToString()
 		}
-
 	}
 
 	return result, nil
@@ -145,7 +162,7 @@ func IsValue(expr *Expression) bool {
 
 var ErrNotValue = errors.New("expression is not a single value")
 
-func ToValue(expr *Expression) (*Value, error) {
+func ToValue(expr *Expression) (*Operand, error) {
 	if len(expr.Or) > 1 {
 		return nil, ErrNotValue
 	}
@@ -161,7 +178,8 @@ func ToValue(expr *Expression) (*Value, error) {
 	}
 
 	cond := and.Condition
-	if cond.Operator != "" {
+
+	if cond.Operator.Symbol != "" {
 		return nil, ErrNotValue
 	}
 
@@ -192,7 +210,7 @@ func ToEqualityCondition(expr *Expression) (*Condition, error) {
 		return nil, ErrNotEquality
 	}
 
-	if !collection.Contains(equalityOperators, cond.Operator) {
+	if !collection.Contains(equalityOperators, cond.Operator.Symbol) {
 		return nil, ErrNotEquality
 	}
 
@@ -225,58 +243,9 @@ func ToAssignmentCondition(expr *Expression) (*Condition, error) {
 		return nil, ErrNotAssignment
 	}
 	cond := and.Condition
-	if cond.Operator != "=" {
+	if cond.Operator.Symbol != "=" {
 		return nil, ErrNotAssignment
 	}
 
 	return cond, nil
-}
-
-func (v *Value) ToString() string {
-	switch v.Type() {
-	case "Number":
-		return fmt.Sprintf("%d", *v.Number)
-	case "String":
-		return *v.String
-	case "Null":
-		return "null"
-	case "False":
-		return "false"
-	case "True":
-		return "true"
-	case "Array":
-		r := "["
-		for i, el := range v.Array.Values {
-			if i > 0 {
-				r += ", "
-			}
-			r += el.ToString()
-		}
-		return r + "]"
-	case "Ident":
-		return strings.Join(v.Ident, ".")
-	default:
-		return ""
-	}
-}
-
-func (v *Value) Type() string {
-	switch {
-	case v.Number != nil:
-		return "Number"
-	case v.String != nil:
-		return "String"
-	case v.Null:
-		return "Null"
-	case v.False:
-		return "False"
-	case v.True:
-		return "True"
-	case v.Array != nil:
-		return "Array"
-	case len(v.Ident) > 0:
-		return "Ident"
-	default:
-		return ""
-	}
 }

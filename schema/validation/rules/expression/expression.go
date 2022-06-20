@@ -53,9 +53,9 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 	return errs
 }
 
-func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.ModelNode, value *expressions.Value) (*ResolvedValue, error) {
+func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.ModelNode, value *expressions.Operand) (*ResolvedValue, error) {
 	if value.Ident != nil {
-		fragments := value.Ident
+		fragments := value.Ident.ToArray()
 
 		// Handle special case where an ident refers to the ctx object, which is not a model.
 		if fragments[0] == "ctx" {
@@ -87,7 +87,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 
 		// Try to resolve the association based on the contextModel
 		// e.g contextModel will be "modelName" in the path fragment modelName.associationA.associationB
-		_, err := tryAssociation(asts, contextModel, fragments)
+		_, err := tryAssociation(asts, contextModel, value.Ident.ToArray())
 
 		if err != nil {
 

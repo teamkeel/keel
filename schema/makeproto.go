@@ -264,12 +264,12 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 		case "roles":
 			value, _ := expressions.ToValue(arg.Expression)
 			for _, item := range value.Array.Values {
-				pr.RoleNames = append(pr.RoleNames, item.Ident[0])
+				pr.RoleNames = append(pr.RoleNames, item.Ident.Fragments[0].Fragment)
 			}
 		case "actions":
 			value, _ := expressions.ToValue(arg.Expression)
 			for _, v := range value.Array.Values {
-				pr.OperationsTypes = append(pr.OperationsTypes, scm.mapToOperationType(v.Ident[0]))
+				pr.OperationsTypes = append(pr.OperationsTypes, scm.mapToOperationType(v.Ident.Fragments[0].Fragment))
 			}
 		}
 	}

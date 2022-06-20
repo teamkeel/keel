@@ -231,11 +231,11 @@ func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
 					continue
 				}
 
-				if len(condition.LHS.Ident) != 2 {
+				if len(condition.LHS.Ident.Fragments) != 2 {
 					continue
 				}
 
-				modelName, fieldName := condition.LHS.Ident[0], condition.LHS.Ident[1]
+				modelName, fieldName := condition.LHS.Ident.Fragments[0].Fragment, condition.LHS.Ident.Fragments[1].Fragment
 
 				if modelName != strcase.ToLowerCamel(model.Name.Value) {
 					continue
