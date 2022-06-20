@@ -159,8 +159,6 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 	field := FuzzyFindField(contextModel, fragments[currentFragmentIndex])
 
 	if field == nil {
-		previousContextModel := FuzzyFindModel(asts, fragments[currentFragmentIndex-1])
-
 		col := 0
 
 		for i, frag := range fragments {
@@ -171,16 +169,6 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 			}
 
 			col += len(frag) + 1
-		}
-
-		if previousContextModel != nil {
-			return nil, &AssociationResolutionError{
-				ErrorFragment: fragments[currentFragmentIndex],
-				ContextModel:  previousContextModel,
-				Type:          "association",
-				Parent:        fragments[currentFragmentIndex-1],
-				StartCol:      col,
-			}
 		}
 
 		return nil, &AssociationResolutionError{
