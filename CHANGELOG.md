@@ -1,3 +1,29 @@
+# [0.8.0](https://github.com/teamkeel/keel/compare/v0.7.0...v0.8.0) (2022-06-20)
+
+
+### Bug Fixes
+
+* adds spaces around operator ([9275f14](https://github.com/teamkeel/keel/commit/9275f1491ec5ef467184b8cfaf66b2de1d547025))
+* change error symbol name ([e350ec0](https://github.com/teamkeel/keel/commit/e350ec0d67140385ca6b9ca2f7e965b91c692905))
+* check length of variadic includeBuiltIn parameter ([9df74ca](https://github.com/teamkeel/keel/commit/9df74ca3ed2024f8ac96ce491fb43bd41611d431))
+* fix bugginess of association resolution ([1283dce](https://github.com/teamkeel/keel/commit/1283dceb9b54621947f8b2a93c6e5d060e9b7ac4))
+* fix use of variadic args ([3125c67](https://github.com/teamkeel/keel/commit/3125c672af739bd7eb6b85fda594c16b266c7240))
+* fixes bug with expression validation display whereby positioning info is incorrect ([1e09a35](https://github.com/teamkeel/keel/commit/1e09a359e83864b4239356599e9feccd1ee51d5c))
+* guard against root model not being found ([229a043](https://github.com/teamkeel/keel/commit/229a0435c760b5753713a7ca1818f046ed7ce162))
+* panic if nil pointer ([0ec83a4](https://github.com/teamkeel/keel/commit/0ec83a422c1180ffea8cb0507a294409c6efac26))
+* remove unnecessary lookup ([8beff68](https://github.com/teamkeel/keel/commit/8beff681c0080118a8bff33c10495741cbe42d3c))
+* remove unnecessary splitting of ident ([a3b4355](https://github.com/teamkeel/keel/commit/a3b435577300040f6d73dca96536e7bacbbcb39b))
+* remove unused methods ([b0d752e](https://github.com/teamkeel/keel/commit/b0d752e600814a9ec6ea77bca8b4b03804470a91))
+* update older proto test cases that don't use proper syntax for expressions ([77bdd8c](https://github.com/teamkeel/keel/commit/77bdd8ceb2504fa02ad6ee5a6b4357f2488d124d))
+* use fuzzy find models for pluralised model names ([6492a82](https://github.com/teamkeel/keel/commit/6492a8262ab15dc55456d8cd3a425cb7c35a0962))
+* use mutated value instead of original ([2681c76](https://github.com/teamkeel/keel/commit/2681c76206ff38689897fd8fd8ad7a7c78144009))
+
+
+### Features
+
+* begin lhs / rhs parsing of expressions ([706f85a](https://github.com/teamkeel/keel/commit/706f85a8d467bc3f7abfa457fb37c9f61eb5412a))
+* more work on resolving associations ([6533cdc](https://github.com/teamkeel/keel/commit/6533cdc2d3c1e1314897feae7420227c8c5b6fc0))
+
 # [0.7.0](https://github.com/teamkeel/keel/compare/v0.6.0...v0.7.0) (2022-06-17)
 
 
