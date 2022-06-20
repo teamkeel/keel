@@ -2,7 +2,6 @@ package associations
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
@@ -39,18 +38,6 @@ func (tree *AssociationTree) ErrorFragment() *UnresolvedAssociation {
 	return nil
 }
 
-func (tree *AssociationTree) PrettyPrint() (ret string) {
-	for i, item := range tree.Fragments {
-		if i == len(tree.Fragments)-1 {
-			ret += strings.ToLower(item.ToString())
-		} else {
-			ret += fmt.Sprintf("%s.", strings.ToLower(item.ToString()))
-		}
-	}
-	return ret
-}
-
-// Takes
 func TryResolveIdent(asts []*parser.AST, ident *expressions.Ident) (AssociationTree, error) {
 	tree := AssociationTree{}
 	var walk func(previousModel *parser.ModelNode, idx int) (AssociationTree, error)
