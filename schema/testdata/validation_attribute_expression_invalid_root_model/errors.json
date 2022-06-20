@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E021",
+        "hint": "Did you mean 'post' instead?",
+        "message": "association 'pos' not found",
+        "end_pos": {
+          "column": 20,
+          "filename": "testdata/validation_attribute_expression_invalid_root_model/schema.keel",
+          "line": 7,
+          "offset": 78
+        },
+        "pos": {
+          "column": 17,
+          "filename": "testdata/validation_attribute_expression_invalid_root_model/schema.keel",
+          "line": 7,
+          "offset": 75
+        },
+        "short_message": "association '<no value>' not found"
+      }
+    ]
+  }

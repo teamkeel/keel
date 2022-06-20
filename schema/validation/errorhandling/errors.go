@@ -39,7 +39,7 @@ const (
 	ErrorUniqueRoleGlobally               = "E018"
 	ErrorUniqueEnumGlobally               = "E019"
 	ErrorUnresolvableExpression           = "E020"
-	ErrorUnresolvedRootCondition          = "E021"
+	ErrorUnresolvedRootModel              = "E021"
 	ErrorForbiddenExpressionOperation     = "E022"
 )
 

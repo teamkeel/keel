@@ -40,6 +40,19 @@ func ValidateConditionSide(asts []*parser.AST, operand expressions.Operand) erro
 		if err != nil {
 			unresolved := tree.ErrorFragment()
 
+			if len(tree.Fragments) == 1 {
+				return errorhandling.NewValidationError(errorhandling.ErrorUnresolvedRootModel,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Type":       "association",
+							"Root":       unresolved.Ident,
+							"Suggestion": "",
+						},
+					},
+					unresolved.Node,
+				)
+			}
+
 			return errorhandling.NewValidationError(errorhandling.ErrorUnresolvableExpression,
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
@@ -49,7 +62,7 @@ func ValidateConditionSide(asts []*parser.AST, operand expressions.Operand) erro
 						"Suggestions": "",
 					},
 				},
-				operand,
+				unresolved.Node,
 			)
 		}
 	}
