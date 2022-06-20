@@ -95,7 +95,7 @@ func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.Model
 			// todo: fix this check levenstein distance for ctx (e.g user writes context) and return suggestion hint
 
 			errModel := resolutionError.ContextModel
-			allModelFields := query.ModelFieldNames(asts, errModel, false)
+			allModelFields := query.ModelFieldNames(errModel)
 
 			suggestions := errorhandling.NewCorrectionHint(allModelFields, resolutionError.ErrorFragment)
 

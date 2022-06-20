@@ -103,14 +103,24 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	return res
 }
 
-func ModelFields(model *parser.ModelNode, includeBuiltIn ...bool) (res []*parser.FieldNode) {
+type ModelFieldFilter func(f *parser.FieldNode) bool
+
+func ExcludeBuiltInFields(f *parser.FieldNode) bool {
+	return !f.BuiltIn
+}
+
+func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*parser.FieldNode) {
 	for _, section := range model.Sections {
 		if section.Fields == nil {
 			continue
 		}
+
+	fields:
 		for _, field := range section.Fields {
-			if len(includeBuiltIn) > 0 && includeBuiltIn[0] && field.BuiltIn {
-				continue
+			for _, filter := range filters {
+				if !filter(field) {
+					continue fields
+				}
 			}
 
 			res = append(res, field)
@@ -119,7 +129,7 @@ func ModelFields(model *parser.ModelNode, includeBuiltIn ...bool) (res []*parser
 	return res
 }
 
-func ModelField(model *parser.ModelNode, name string, includeBuiltIn ...bool) *parser.FieldNode {
+func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
 	for _, section := range model.Sections {
 		for _, field := range section.Fields {
 			if field.Name.Value == name {
@@ -189,13 +199,9 @@ func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, frag
 	return nil, nil
 }
 
-func ModelFieldNames(asts []*parser.AST, model *parser.ModelNode, includeBuiltIn ...bool) []string {
+func ModelFieldNames(model *parser.ModelNode) []string {
 	names := []string{}
-	for _, field := range ModelFields(model) {
-		if len(includeBuiltIn) > 0 && includeBuiltIn[0] && field.BuiltIn {
-			continue
-		}
-
+	for _, field := range ModelFields(model, ExcludeBuiltInFields) {
 		names = append(names, field.Name.Value)
 	}
 	return names
