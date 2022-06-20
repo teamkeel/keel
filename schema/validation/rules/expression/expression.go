@@ -55,7 +55,7 @@ func ValidateExpressionRule(asts []*parser.AST) []error {
 
 func checkExpressionConditionSide(asts []*parser.AST, contextModel *parser.ModelNode, value *expressions.Value) (*ResolvedValue, error) {
 	if value.Ident != nil {
-		fragments := strings.Split(value.ToString(), ".")
+		fragments := value.Ident
 
 		// Handle special case where an ident refers to the ctx object, which is not a model.
 		if fragments[0] == "ctx" {
