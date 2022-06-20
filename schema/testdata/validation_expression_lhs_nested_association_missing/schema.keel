@@ -4,7 +4,7 @@ model Customer {
   }
 
   @permission(
-    expression: customer.orders.ratingss.rated == true,
+    expression: (customer.orders == nil or customer.orders.ratings == nil and (customer.orders.ho == nil or customer.orders.hey == nil)) or customer.orders.ratingss.rated == true,
     actions: [get, update]
   )
 }

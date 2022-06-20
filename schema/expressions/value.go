@@ -71,6 +71,10 @@ type Array struct {
 }
 
 func (v *Operand) ToString() string {
+	if v == nil {
+		return ""
+	}
+
 	switch v.Type() {
 	case "Number":
 		return fmt.Sprintf("%d", *v.Number)

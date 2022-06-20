@@ -15,11 +15,29 @@ type Expression struct {
 	Or []*OrExpression `@@ ("or" @@)*`
 }
 
+func (e *Expression) Conditions() []*Condition {
+	conds := []*Condition{}
+
+	for _, or := range e.Or {
+		for _, and := range or.And {
+			conds = append(conds, and.Condition)
+
+			if and.Expression != nil {
+				conds = append(conds, and.Expression.Conditions()...)
+			}
+		}
+	}
+
+	return conds
+}
+
 type OrExpression struct {
 	node.Node
 
 	And []*ConditionWrap `@@ ("and" @@)*`
 }
+
+//
 
 type ConditionWrap struct {
 	node.Node
@@ -36,8 +54,39 @@ type Condition struct {
 	RHS      *Operand `@@ )?`
 }
 
+var equalityOperators = []string{"==", "<", ">", ">=", "<=", "!=", "in", "notin", "contains"}
+
+var (
+	AssignmentCondition = "assignment"
+	EqualityCondition   = "equality"
+	ValueCondition      = "value"
+)
+
+func (c *Condition) Type() string {
+	if c == nil {
+		panic("nil pointer")
+	}
+	if collection.Contains(equalityOperators, c.Operator.Symbol) {
+		return EqualityCondition
+	} else if c.Operator.Symbol == "=" {
+		return AssignmentCondition
+	} else if c.Operator.Symbol == "" && c.RHS == nil && c.LHS != nil {
+		return ValueCondition
+	}
+
+	panic("not a known condition type")
+}
+
 type Operator struct {
 	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
+}
+
+func (o *Operator) ToString() string {
+	if o == nil {
+		return ""
+	}
+
+	return o.Symbol
 }
 
 var operators = map[string]string{
@@ -69,8 +118,11 @@ func (o *Operator) Name() string {
 // Returns the respective fragments (lhs, operator, rhs) of an expression
 // For value expressions, operator and rhs will be nil
 // For equality & assignment expressions, lhs, operator and rhs will be populated
-func (condition *Condition) ToFragments() (*Operand, Operator, *Operand) {
-	return condition.LHS, condition.Operator, condition.RHS
+func (condition *Condition) ToFragments() (*Operand, *Operator, *Operand) {
+	if condition == nil {
+		return nil, nil, nil
+	}
+	return condition.LHS, &condition.Operator, condition.RHS
 }
 
 func (condition *Condition) ToString() string {
@@ -192,8 +244,6 @@ func IsEquality(expr *Expression) bool {
 }
 
 var ErrNotEquality = errors.New("expression does not check for equality")
-
-var equalityOperators = []string{"==", "<", ">", ">=", "<=", "!=", "in", "notin", "contains"}
 
 func ToEqualityCondition(expr *Expression) (*Condition, error) {
 	or := expr.Or[0]

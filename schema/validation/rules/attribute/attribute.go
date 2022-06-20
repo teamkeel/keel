@@ -257,11 +257,14 @@ func validateIdentArray(model *parser.ModelNode, expr *expressions.Expression, a
 	}
 
 	for _, item := range value.Array.Values {
-		if item.Ident == nil {
-			continue
-		}
 		// Each item should be a singular ident e.g. "foo" and not "foo.baz.bop"
-		valid := len(item.Ident.Fragments) == 1
+		// String literal idents e.g ["thisisinvalid"] are assumed not to be invalid
+		valid := false
+
+		if item.Ident != nil {
+			valid = len(item.Ident.Fragments) == 1
+		}
+
 		if valid {
 			// If it is a single ident check it's an allowed value
 			name := item.Ident.Fragments[0].Fragment
