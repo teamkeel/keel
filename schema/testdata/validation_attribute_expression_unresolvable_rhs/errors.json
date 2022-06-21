@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E020",
+        "hint": "Did you mean author?",
+        "message": "relationship 'auth' not found on 'Post' model",
+        "end_pos": {
+          "column": 41,
+          "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
+          "line": 7,
+          "offset": 102
+        },
+        "pos": {
+          "column": 37,
+          "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
+          "line": 7,
+          "offset": 98
+        },
+        "short_message": "relationship 'auth' not found"
+      }
+    ]
+  }

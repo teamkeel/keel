@@ -77,9 +77,13 @@ en:
     hint: "Please remove one of the definitions"
   E020:
     short_message: "{{ .Type }} '{{ .Fragment }}' not found"
-    message: "{{ .Type }} '{{ .Fragment }}' not found on '{{ .Parent }}'"
-    hint: "{{ .Suggestions }}"
+    message: "{{ .Type }} '{{ .Fragment }}' not found on '{{ .Parent }}' model"
+    hint: "{{ .Suggestion }}"
   E021:
     short_message: "{{ .Type }} '{{ .Root }}' not found"
     message: "{{ .Type }} '{{ .Root }}' not found"
-    hint: "Did you mean '{{ .Suggestion }}' instead?"
+    hint: "Did you mean '{{ .Model }}' instead?"
+  E022:
+    short_message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
+    message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
+    hint: "Did you mean {{ .Suggestion }}?"

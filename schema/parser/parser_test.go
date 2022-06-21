@@ -165,7 +165,7 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 
 	v2, err := expressions.ToValue(arg2.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "get", v2.Array.Values[0].Ident[0])
+	assert.Equal(t, "get", v2.Array.Values[0].Ident.Fragments[0].Fragment)
 }
 
 func TestAttributeWithNamedArguments(t *testing.T) {
@@ -198,11 +198,11 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 
 	v1, err := expressions.ToValue(arg1.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "Admin", v1.Ident[0])
+	assert.Equal(t, "Admin", v1.Ident.Fragments[0].Fragment)
 
 	v2, err := expressions.ToValue(arg2.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "create", v2.Array.Values[0].Ident[0])
+	assert.Equal(t, "create", v2.Array.Values[0].Ident.Fragments[0].Fragment)
 }
 
 func TestAPI(t *testing.T) {
@@ -241,7 +241,7 @@ func TestEnum(t *testing.T) {
 		Mercury
 		Venus
 		Earth
-		Mars	
+		Mars
 	}`})
 	assert.Equal(t, "Planets", schema.Declarations[0].Enum.Name.Value)
 

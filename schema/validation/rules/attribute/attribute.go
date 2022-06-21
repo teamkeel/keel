@@ -7,6 +7,7 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/util/collection"
 )
@@ -171,7 +172,44 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			hasActions = true
 		case "expression":
 			hasExpression = true
-			// TODO: validate expression
+
+			conditions := arg.Expression.Conditions()
+
+			for _, cond := range conditions {
+				t := cond.Type()
+
+				// Check that the expression uses the logical comparison operator
+				if t != expressions.LogicalCondition {
+					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Operator":   cond.Operator.Symbol,
+								"Area":       "@permission",
+								"Suggestion": "'=='",
+								"Condition":  cond.ToString(),
+							},
+						},
+						arg,
+					))
+				}
+
+				// check that the lhs and rhs resolve
+				if cond.LHS != nil {
+					relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
+
+					if err != nil && relationships != nil {
+						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
+					}
+				}
+				if cond.RHS != nil {
+					relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
+
+					if err != nil && relationships != nil {
+						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
+					}
+				}
+
+			}
 		case "roles":
 			hasRoles = true
 			allowedIdents := []string{}
@@ -257,12 +295,17 @@ func validateIdentArray(model *parser.ModelNode, expr *expressions.Expression, a
 	}
 
 	for _, item := range value.Array.Values {
-
 		// Each item should be a singular ident e.g. "foo" and not "foo.baz.bop"
-		valid := len(item.Ident) == 1
+		// String literal idents e.g ["thisisinvalid"] are assumed not to be invalid
+		valid := false
+
+		if item.Ident != nil {
+			valid = len(item.Ident.Fragments) == 1
+		}
+
 		if valid {
 			// If it is a single ident check it's an allowed value
-			name := item.Ident[0]
+			name := item.Ident.Fragments[0].Fragment
 			valid = collection.Contains(allowedIdents, name)
 		}
 

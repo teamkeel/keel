@@ -1,7 +1,6 @@
 package query
 
 import (
-	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/util/str"
 )
@@ -25,6 +24,18 @@ func Models(asts []*parser.AST) (res []*parser.ModelNode) {
 			}
 		}
 	}
+	return res
+}
+
+func ModelNames(asts []*parser.AST) (res []string) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil {
+				res = append(res, decl.Model.Name.Value)
+			}
+		}
+	}
+
 	return res
 }
 
@@ -151,52 +162,6 @@ func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 
 func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
-}
-
-type AssociationResolutionError struct {
-	ErrorFragment string
-	ContextModel  *parser.ModelNode
-	Type          string
-	Parent        string
-	StartCol      int
-}
-
-func (err *AssociationResolutionError) Error() string {
-	return err.ErrorFragment
-}
-
-func ResolveAssociation(asts []*parser.AST, contextModel *parser.ModelNode, fragments []string, currentFragmentIndex int) (*node.Node, error) {
-	field := ModelField(contextModel, fragments[currentFragmentIndex])
-
-	if field == nil {
-		col := 0
-
-		for i, frag := range fragments {
-			// Take into account that the root fragment isnt being eval-ed here
-			// so -1 on currentFragmentIndex
-			if i > currentFragmentIndex-1 {
-				break
-			}
-
-			col += len(frag) + 1
-		}
-
-		return nil, &AssociationResolutionError{
-			ErrorFragment: fragments[currentFragmentIndex],
-			ContextModel:  contextModel,
-			Type:          "association",
-			Parent:        fragments[currentFragmentIndex-1],
-			StartCol:      col,
-		}
-	}
-
-	newContextModel := FuzzyFindModel(asts, fragments[currentFragmentIndex])
-
-	if currentFragmentIndex < len(fragments)-1 {
-		return ResolveAssociation(asts, newContextModel, fragments, currentFragmentIndex+1)
-	}
-
-	return nil, nil
 }
 
 func ModelFieldNames(model *parser.ModelNode) []string {

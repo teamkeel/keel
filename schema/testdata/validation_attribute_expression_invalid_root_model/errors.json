@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E021",
+        "hint": "Did you mean 'post' instead?",
+        "message": "relationship 'pos' not found",
+        "end_pos": {
+          "column": 26,
+          "filename": "testdata/validation_attribute_expression_invalid_root_model/schema.keel",
+          "line": 7,
+          "offset": 84
+        },
+        "pos": {
+          "column": 17,
+          "filename": "testdata/validation_attribute_expression_invalid_root_model/schema.keel",
+          "line": 7,
+          "offset": 75
+        },
+        "short_message": "relationship 'pos' not found"
+      }
+    ]
+  }
