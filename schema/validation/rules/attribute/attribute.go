@@ -176,7 +176,6 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			conditions := arg.Expression.Conditions()
 
 			for _, cond := range conditions {
-				// _, _, _ := cond.ToFragments()
 				t := cond.Type()
 
 				// Check that the expression uses the logical comparison operator
