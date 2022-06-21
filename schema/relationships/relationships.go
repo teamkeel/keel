@@ -51,6 +51,7 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relat
 	ident := operand.Ident
 
 	relationships := Relationships{}
+
 	var walk func(previousModel *parser.ModelNode, idx int) (*Relationships, error)
 
 	walk = func(previousModel *parser.ModelNode, idx int) (*Relationships, error) {
