@@ -276,12 +276,12 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 	}
 }
 
-func NewAssociationValidationError(asts []*parser.AST, context interface{}, tree *associations.AssociationTree) error {
-	unresolved := tree.UnresolvedFragment()
+func NewAssociationValidationError(asts []*parser.AST, context interface{}, association *associations.Association) error {
+	unresolved := association.UnresolvedFragment()
 	suggestion := ""
 
-	if len(tree.Fragments) == 1 {
-		// If there is only one fragment in the tree
+	if len(association.Fragments) == 1 {
+		// If there is only one fragment in the association
 		// then it means that the root model was unresolvable
 		// So therefore the suggestion should be the context (downcased)
 		if model, ok := context.(*parser.ModelNode); ok {

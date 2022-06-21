@@ -10,6 +10,9 @@ import (
 	"github.com/teamkeel/keel/util/str"
 )
 
+// Represents one fragment of a relationship
+// e.g in the expression operand post.author.name
+// each fragment is separated by dots
 type AssociationFragment struct {
 	node.Node
 
@@ -18,11 +21,11 @@ type AssociationFragment struct {
 	Parent     string
 }
 
-type AssociationTree struct {
+type Association struct {
 	Fragments []AssociationFragment
 }
 
-func (t *AssociationTree) UnresolvedFragment() (frag *AssociationFragment) {
+func (t *Association) UnresolvedFragment() (frag *AssociationFragment) {
 	for _, item := range t.Fragments {
 		if item.Resolvable {
 			continue
@@ -34,7 +37,11 @@ func (t *AssociationTree) UnresolvedFragment() (frag *AssociationFragment) {
 	return nil
 }
 
-func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*AssociationTree, error) {
+// Given an operand of a condition, tries to resolve the associations defined within the operand
+// e.g if the operand is of type "Ident", and the ident is post.author.name
+// then the method will return a AssociationTree representing each fragment in post.author.name
+// along with an error if it hasn't been able to resolve the full path.
+func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Association, error) {
 	// If the operand is of a different type (e.g string, bool etc),
 	// then return early.
 	if operand.Ident == nil {
@@ -43,14 +50,14 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 
 	ident := operand.Ident
 
-	tree := AssociationTree{}
-	var walk func(previousModel *parser.ModelNode, idx int) (*AssociationTree, error)
+	association := Association{}
+	var walk func(previousModel *parser.ModelNode, idx int) (*Association, error)
 
-	walk = func(previousModel *parser.ModelNode, idx int) (*AssociationTree, error) {
+	walk = func(previousModel *parser.ModelNode, idx int) (*Association, error) {
 		// If we are at the first index passed to this method,
 		// add the parent model to the fragment tree
 		if idx == 1 {
-			tree.Fragments = append(tree.Fragments,
+			association.Fragments = append(association.Fragments,
 				AssociationFragment{
 					Current:    previousModel.Name.Value,
 					Resolvable: true,
@@ -64,7 +71,7 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 		field := query.ModelField(previousModel, lookupField)
 
 		if field == nil {
-			tree.Fragments = append(tree.Fragments,
+			association.Fragments = append(association.Fragments,
 				AssociationFragment{
 					Node:       ident.Fragments[idx].Node,
 					Resolvable: false,
@@ -73,10 +80,10 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 				},
 			)
 
-			return &tree, fmt.Errorf("could not find field %s", lookupField)
+			return &association, fmt.Errorf("could not find field %s", lookupField)
 		}
 
-		tree.Fragments = append(tree.Fragments, AssociationFragment{
+		association.Fragments = append(association.Fragments, AssociationFragment{
 			Node:       ident.Fragments[idx].Node,
 			Resolvable: true,
 			Current:    ident.Fragments[idx].Fragment,
@@ -87,8 +94,8 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 			nextModel := query.ModelForAssociationField(asts, field)
 			return walk(nextModel, idx+1)
 		} else {
-			// Tree has been fully resolved
-			return &tree, nil
+			// association path has been fully resolved
+			return &association, nil
 		}
 	}
 
@@ -96,13 +103,13 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 	rootModel := query.Model(asts, lookupModel)
 
 	if rootModel == nil {
-		tree.Fragments = append(tree.Fragments, AssociationFragment{
+		association.Fragments = append(association.Fragments, AssociationFragment{
 			Node:       ident.Node,
 			Resolvable: false,
 			Current:    ident.Fragments[0].Fragment,
 		})
 
-		return &tree, fmt.Errorf("could not find model %s", lookupModel)
+		return &association, fmt.Errorf("could not find model %s", lookupModel)
 	}
 
 	// Start at index 1 so we can look backwards to index 0 for the parent
