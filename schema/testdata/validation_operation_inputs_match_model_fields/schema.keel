@@ -1,8 +1,17 @@
 model Person {
+  fields {
+    profile Profile
+  }
 
   operations {
     create createPerson(blah) {
       @set(profile.identity = ctx.identity)
     }
+  }
+}
+
+model Profile {
+  fields {
+    identity Identity
   }
 }

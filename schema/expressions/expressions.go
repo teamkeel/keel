@@ -83,6 +83,8 @@ func (c *Condition) Type() string {
 }
 
 type Operator struct {
+	node.Node
+
 	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
 }
 

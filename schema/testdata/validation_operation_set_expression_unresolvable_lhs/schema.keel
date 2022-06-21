@@ -1,0 +1,16 @@
+model Profile {
+    fields {
+        identity Identity {
+            @unique
+        }
+        username Text {
+            @unique
+        }
+    }
+
+    operations {
+        create createProfile(username) {
+            @set(profile.identit = ctx.identity)
+        }
+    }
+}

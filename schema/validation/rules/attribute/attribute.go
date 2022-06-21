@@ -132,6 +132,63 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
+func SetAttributeRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, operation := range query.ModelActions(model) {
+			if len(operation.Attributes) == 0 {
+				continue
+			}
+
+			for _, attr := range operation.Attributes {
+				if attr.Name.Value != "set" {
+					continue
+				}
+				for _, arg := range attr.Arguments {
+					conditions := arg.Expression.Conditions()
+
+					for _, cond := range conditions {
+						t := cond.Type()
+						_, operator, _ := cond.ToFragments()
+
+						// Check that assignment operator is used in @set attribute
+						if t != expressions.AssignmentCondition {
+							errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
+								errorhandling.TemplateLiterals{
+									Literals: map[string]string{
+										"Operator":   operator.Symbol,
+										"Area":       "@set",
+										"Suggestion": "'='",
+										"Condition":  cond.ToString(),
+									},
+								},
+								operator,
+							))
+						}
+
+						// Check lhs & rhs existence
+						if cond.LHS != nil {
+							relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
+
+							if err != nil && relationships != nil {
+								errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
+							}
+						}
+						if cond.RHS != nil {
+							relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
+
+							if err != nil && relationships != nil {
+								errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
 var validActionKeywords = []string{
 	parser.ActionTypeGet,
 	parser.ActionTypeCreate,
