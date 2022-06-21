@@ -36,7 +36,8 @@ const (
 // All models get a field named "id" implicitly. This set of constants provides
 // the set of this, and other similar implicit fields.
 const (
-	ImplicitFieldNameId = "id"
+	ImplicitFieldNameId     = "id"
+	ImplicitContextIdentity = "identity"
 )
 
 const (

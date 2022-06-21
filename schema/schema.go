@@ -3,8 +3,10 @@ package schema
 import (
 	"fmt"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/proto"
 
+	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
@@ -66,12 +68,13 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// 		- Validate them (as a set)
 	// 		- Convert the set to a single / aggregate proto model
 	asts := []*parser.AST{}
-	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
-		declarations, err := parser.Parse(&oneInputSchemaFile)
+	for _, schemaFile := range allInputFiles.SchemaFiles {
+		declarations, err := parser.Parse(&schemaFile)
 		if err != nil {
-			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
+			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", schemaFile.FileName, err)
 		}
 		scm.insertBuiltInFields(declarations)
+		scm.insertCtx(declarations, schemaFile)
 		asts = append(asts, declarations)
 	}
 
@@ -85,6 +88,38 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	protoModels := scm.makeProtoModels()
 	return protoModels, nil
+}
+
+func (scm *Builder) insertCtx(declarations *parser.AST, schemaFile reader.SchemaFile) {
+	declarations.Declarations = append(declarations.Declarations,
+		&parser.DeclarationNode{
+			Model: &parser.ModelNode{
+				Name: parser.NameNode{
+					Value: "Ctx",
+					Node: node.Node{
+						Pos: lexer.Position{
+							Filename: schemaFile.FileName,
+						},
+					},
+				},
+			},
+		},
+	)
+
+	field := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: parser.ImplicitContextIdentity,
+		},
+		Type: parser.FieldTypeIdentity,
+	}
+	section := &parser.ModelSectionNode{
+		Fields: []*parser.FieldNode{field},
+	}
+
+	model := declarations.Declarations[len(declarations.Declarations)-1].Model
+
+	model.Sections = append(model.Sections, section)
 }
 
 // insertBuiltInFields injects new fields into the parser schema, to represent

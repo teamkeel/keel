@@ -30,6 +30,16 @@ type ModelNode struct {
 
 	Name     NameNode            `@@`
 	Sections []*ModelSectionNode `"{" @@* "}"`
+
+	// Some models are added implicitly after parsing the schema
+	// For these models this value is set to true so we can distinguish
+	// them from models defined by the user in the schema
+	// Models that are built in automatically include:
+	// - Ctx
+	// - Identity
+	// Models that are built in do not have correct lexer positioning data set,
+	// aside from the filename
+	BuiltIn bool
 }
 
 func (model *ModelNode) ToString() string {

@@ -130,7 +130,7 @@ func (v ValidationErrors) ToConsole() string {
 		errorsPartial = "error"
 	}
 
-	statusMessage := red.Sprint("INVALID\n")
+	statusMessage := red.Sprintf("INVALID\n")
 	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
 
 	schemaPreview := v.ToAnnotatedSchema()
@@ -141,7 +141,6 @@ func (v ValidationErrors) ToConsole() string {
 // Returns a visual representation of a schema file, annotated with error highlighting and messages
 func (v ValidationErrors) ToAnnotatedSchema() string {
 	schemaString := ""
-
 	matchingSchemas := v.MatchingSchemas()
 
 	gutterAmount := 5
@@ -158,6 +157,7 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
 			midPointPosition := codeStartCol + err.Pos.Column + ((err.EndPos.Column - err.Pos.Column) / 2)
 			tokenLength := err.EndPos.Column - err.Pos.Column
+			schemaString += red.Sprintf("%s (%s)\n", err.ShortMessage, err.Code)
 
 			for lineIndex, line := range lines {
 				// Render line numbers in gutter

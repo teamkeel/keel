@@ -1,0 +1,10 @@
+model Profile {
+  fields {
+    identity Identity
+  }
+
+  @permission(
+    expression: profile.identity == ctx.identity,
+    actions: [get]
+  )
+}

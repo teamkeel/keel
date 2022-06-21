@@ -15,7 +15,6 @@ type Operand struct {
 	True   bool    `| @"true"`
 	False  bool    `| @"false"`
 	Array  *Array  `| @@`
-	Ctx    *Ctx    `| @@`
 	Ident  *Ident  `| @@`
 }
 
@@ -93,8 +92,6 @@ func (v *Operand) ToString() string {
 		return r + "]"
 	case "Ident":
 		return v.Ident.ToString()
-	case "Ctx":
-		return v.Ctx.Token
 	default:
 		return ""
 	}
@@ -116,8 +113,6 @@ func (v *Operand) Type() string {
 		return "Array"
 	case v.Ident != nil && len(v.Ident.Fragments) > 0:
 		return "Ident"
-	case v.Ctx != nil:
-		return "Ctx"
 	default:
 		return ""
 	}
