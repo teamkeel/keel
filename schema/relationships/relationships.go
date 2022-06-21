@@ -93,10 +93,10 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relat
 		if idx < len(ident.Fragments)-1 {
 			nextModel := query.Model(asts, field.Type)
 			return walk(nextModel, idx+1)
-		} else {
-			// relationship path has been fully resolved
-			return &relationships, nil
 		}
+
+		// relationship path has been fully resolved
+		return &relationships, nil
 	}
 
 	lookupModel := str.AsTitle(ident.Fragments[0].Fragment)
