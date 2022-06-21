@@ -138,11 +138,11 @@ type Operator struct {
 }
 
 var supportedOpsForSetWhere map[string]Operator = map[string]Operator{
-	"set": Operator{
+	parser.AttributeSet: {
 		Type:   expressions.AssignmentCondition,
 		Symbol: "=",
 	},
-	"where": Operator{
+	parser.AttributeWhere: {
 		Type:   expressions.LogicalCondition,
 		Symbol: "==",
 	},
@@ -156,7 +156,7 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 			}
 
 			for _, attr := range operation.Attributes {
-				if attr.Name.Value != "set" && attr.Name.Value != "where" {
+				if attr.Name.Value != parser.AttributeSet && attr.Name.Value != parser.AttributeWhere {
 					continue
 				}
 
@@ -429,6 +429,34 @@ func validateIdentArray(model *parser.ModelNode, expr *expressions.Expression, a
 				},
 				item,
 			))
+		}
+	}
+
+	return errors
+}
+
+func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
+
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
+			for _, attr := range field.Attributes {
+				if attr.Name.Value != parser.AttributeUnique {
+					continue
+				}
+
+				if len(attr.Arguments) > 0 {
+					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorTooManyArguments,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Area":   fmt.Sprintf("@%s", attr.Name.Value),
+								"Value":  attr.Name.Value,
+								"NoArgs": "true",
+							},
+						},
+						attr,
+					))
+				}
+			}
 		}
 	}
 
