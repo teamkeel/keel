@@ -8,7 +8,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -310,7 +309,6 @@ func NewRelationshipValidationError(asts []*parser.AST, context interface{}, rel
 	parentModel := query.Model(asts, unresolved.Parent)
 
 	fieldsOnParent := query.ModelFieldNames(parentModel)
-	spew.Dump(parentModel)
 
 	correctionHint := NewCorrectionHint(fieldsOnParent, unresolved.Current)
 

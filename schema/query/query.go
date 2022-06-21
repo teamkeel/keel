@@ -20,6 +20,9 @@ func Models(asts []*parser.AST) (res []*parser.ModelNode) {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
+				if decl.Model.BuiltIn {
+					continue
+				}
 				res = append(res, decl.Model)
 			}
 		}
@@ -31,6 +34,9 @@ func ModelNames(asts []*parser.AST) (res []string) {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
+				if decl.Model.BuiltIn {
+					continue
+				}
 				res = append(res, decl.Model.Name.Value)
 			}
 		}

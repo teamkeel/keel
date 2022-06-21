@@ -129,6 +129,7 @@ func (scm *Builder) insertCtx(declarations *parser.AST, schemaFile reader.Schema
 	declarations.Declarations = append(declarations.Declarations,
 		&parser.DeclarationNode{
 			Model: &parser.ModelNode{
+				BuiltIn: true,
 				Name: parser.NameNode{
 					Value: "Ctx",
 					Node: node.Node{

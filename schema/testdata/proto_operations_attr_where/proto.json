@@ -22,12 +22,12 @@
           "name":  "operationA",
           "type":  "OPERATION_TYPE_GET",
           "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "inputs":  [
             {
-                "fieldName": "f1",
-                "modelName": "Foo",
-                "name": "f1",
-                "type": "OPERATION_INPUT_TYPE_FIELD"
+              "name":  "f1",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Foo",
+              "fieldName":  "f1"
             }
           ],
           "whereExpressions":  [
@@ -35,6 +35,26 @@
               "source":  "foo.f1 == true"
             }
           ]
+        }
+      ]
+    },
+    {
+      "name":  "Identity",
+      "fields":  [
+        {
+          "modelName":  "Identity",
+          "name":  "username",
+          "type":  "FIELD_TYPE_IDENTITY"
+        }
+      ]
+    },
+    {
+      "name":  "Ctx",
+      "fields":  [
+        {
+          "modelName":  "Ctx",
+          "name":  "identity",
+          "type":  "FIELD_TYPE_IDENTITY"
         }
       ]
     }

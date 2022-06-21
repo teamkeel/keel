@@ -15,6 +15,26 @@
           "unique":  true
         }
       ]
+    },
+    {
+      "name":  "Identity",
+      "fields":  [
+        {
+          "modelName":  "Identity",
+          "name":  "username",
+          "type":  "FIELD_TYPE_IDENTITY"
+        }
+      ]
+    },
+    {
+      "name":  "Ctx",
+      "fields":  [
+        {
+          "modelName":  "Ctx",
+          "name":  "identity",
+          "type":  "FIELD_TYPE_IDENTITY"
+        }
+      ]
     }
   ]
 }
