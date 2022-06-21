@@ -74,8 +74,9 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", schemaFile.FileName, err)
 		}
 
+		scm.insertBuiltInFields(declarations)
+
 		if i == 0 {
-			scm.insertBuiltInFields(declarations)
 			scm.insertCtx(declarations, schemaFile)
 		}
 		asts = append(asts, declarations)
