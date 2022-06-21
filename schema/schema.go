@@ -68,13 +68,16 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// 		- Validate them (as a set)
 	// 		- Convert the set to a single / aggregate proto model
 	asts := []*parser.AST{}
-	for _, schemaFile := range allInputFiles.SchemaFiles {
+	for i, schemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(&schemaFile)
 		if err != nil {
 			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", schemaFile.FileName, err)
 		}
-		scm.insertBuiltInFields(declarations)
-		scm.insertCtx(declarations, schemaFile)
+
+		if i == 0 {
+			scm.insertBuiltInFields(declarations)
+			scm.insertCtx(declarations, schemaFile)
+		}
 		asts = append(asts, declarations)
 	}
 
@@ -91,6 +94,38 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 }
 
 func (scm *Builder) insertCtx(declarations *parser.AST, schemaFile reader.SchemaFile) {
+	// todo: cleanup
+	// todo: prevent dupe insertions across multiple asts
+	declarations.Declarations = append(declarations.Declarations,
+		&parser.DeclarationNode{
+			Model: &parser.ModelNode{
+				Name: parser.NameNode{
+					Value: "Identity",
+					Node: node.Node{
+						Pos: lexer.Position{
+							Filename: schemaFile.FileName,
+						},
+					},
+				},
+			},
+		},
+	)
+
+	field := &parser.FieldNode{
+		BuiltIn: false,
+		Name: parser.NameNode{
+			Value: "username",
+		},
+		Type: parser.FieldTypeIdentity,
+	}
+	section := &parser.ModelSectionNode{
+		Fields: []*parser.FieldNode{field},
+	}
+
+	model := declarations.Declarations[len(declarations.Declarations)-1].Model
+
+	model.Sections = append(model.Sections, section)
+
 	declarations.Declarations = append(declarations.Declarations,
 		&parser.DeclarationNode{
 			Model: &parser.ModelNode{
@@ -106,18 +141,18 @@ func (scm *Builder) insertCtx(declarations *parser.AST, schemaFile reader.Schema
 		},
 	)
 
-	field := &parser.FieldNode{
+	field = &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
 			Value: parser.ImplicitContextIdentity,
 		},
 		Type: parser.FieldTypeIdentity,
 	}
-	section := &parser.ModelSectionNode{
+	section = &parser.ModelSectionNode{
 		Fields: []*parser.FieldNode{field},
 	}
 
-	model := declarations.Declarations[len(declarations.Declarations)-1].Model
+	model = declarations.Declarations[len(declarations.Declarations)-1].Model
 
 	model.Sections = append(model.Sections, section)
 }

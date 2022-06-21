@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -285,8 +286,8 @@ func NewRelationshipValidationError(asts []*parser.AST, context interface{}, rel
 		// If there is only one fragment in the relationship
 		// then it means that the root model was unresolvable
 		// So therefore the suggestion should be the context (downcased)
-		if model, ok := context.(*parser.ModelNode); ok {
-			suggestion = strings.ToLower(model.Name.Value)
+		if m, ok := context.(*parser.ModelNode); ok {
+			suggestion = strings.ToLower(m.Name.Value)
 		}
 
 		literals := map[string]string{
@@ -307,7 +308,9 @@ func NewRelationshipValidationError(asts []*parser.AST, context interface{}, rel
 	// And find the field names on the parent in order to build up the suggestion hint
 	// e.g Given the condition post.autho it should suggest post.author instead
 	parentModel := query.Model(asts, unresolved.Parent)
+
 	fieldsOnParent := query.ModelFieldNames(parentModel)
+	spew.Dump(parentModel)
 
 	correctionHint := NewCorrectionHint(fieldsOnParent, unresolved.Current)
 

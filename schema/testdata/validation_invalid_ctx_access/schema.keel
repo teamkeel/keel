@@ -4,7 +4,7 @@ model Profile {
   }
 
   @permission(
-    expression: profile.identity == ctx.identity,
+    expression: profile.identity.username == ctx.identity.email,
     actions: [get]
   )
 }

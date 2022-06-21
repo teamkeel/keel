@@ -50,6 +50,9 @@ func ReservedModelNamesRule(asts []*parser.AST) []error {
 	var errors []error
 
 	for _, model := range query.Models(asts) {
+		if model.BuiltIn {
+			continue
+		}
 		for _, name := range reservedModelNames {
 			if strings.EqualFold(name, model.Name.Value) {
 				errors = append(

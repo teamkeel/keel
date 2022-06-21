@@ -20,7 +20,6 @@ var (
 		"Timestamp":        true,
 		"Image":            true,
 		"Boolean":          true,
-		"Identity":         true,
 		parser.FieldTypeID: true,
 	}
 )
