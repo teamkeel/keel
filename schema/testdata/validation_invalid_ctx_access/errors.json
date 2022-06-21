@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "",
-        "hint": "",
-        "message": "",
-        "end_pos": {
-          "column": 0,
-          "filename": "testdata/validation_invalid_ctx_access/schema.keel",
-          "line": 0,
-          "offset": 0
-        },
-        "pos": {
-          "column": 0,
-          "filename": "testdata/validation_invalid_ctx_access/schema.keel",
-          "line": 0,
-          "offset": 0
-        },
-        "short_message": ""
+{
+  "Errors": [
+    {
+      "message": "relationship 'email' not found on 'Identity' model",
+      "short_message": "relationship 'email' not found",
+      "hint": "Did you mean username?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_invalid_ctx_access/schema.keel",
+        "offset": 127,
+        "line": 7,
+        "column": 59
+      },
+      "end_pos": {
+        "filename": "testdata/validation_invalid_ctx_access/schema.keel",
+        "offset": 132,
+        "line": 7,
+        "column": 64
       }
-    ]
-  }
+    }
+  ]
+}
