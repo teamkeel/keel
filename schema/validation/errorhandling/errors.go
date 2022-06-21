@@ -72,7 +72,6 @@ type LexerPos struct {
 }
 
 var red, blue, yellow, cyan color.Color = *color.New(color.FgRed), *color.New(color.FgHiBlue), *color.New(color.FgHiYellow), *color.New(color.FgCyan)
-var bgWhite = *color.New(color.BgWhite)
 
 func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
