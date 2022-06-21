@@ -97,9 +97,6 @@ func (v ValidationErrors) MatchingSchemas() map[string]reader.SchemaFile {
 	}
 
 	for _, path := range paths {
-		if path == "" {
-			continue
-		}
 		fileBytes, err := os.ReadFile(path)
 
 		if err != nil {
