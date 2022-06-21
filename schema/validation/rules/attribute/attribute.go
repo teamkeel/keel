@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/schema/associations"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/util/collection"
 )
@@ -195,17 +195,17 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 
 				// check that the lhs and rhs resolve
 				if cond.LHS != nil {
-					association, err := associations.TryResolveOperand(asts, cond.LHS)
+					relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
 
-					if err != nil && association != nil {
-						errors = append(errors, errorhandling.NewAssociationValidationError(asts, model, association))
+					if err != nil && relationships != nil {
+						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
 					}
 				}
 				if cond.RHS != nil {
-					association, err := associations.TryResolveOperand(asts, cond.RHS)
+					relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
 
-					if err != nil && association != nil {
-						errors = append(errors, errorhandling.NewAssociationValidationError(asts, model, association))
+					if err != nil && relationships != nil {
+						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
 					}
 				}
 

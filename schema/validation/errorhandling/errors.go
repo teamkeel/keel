@@ -9,11 +9,11 @@ import (
 	"text/template"
 
 	"github.com/fatih/color"
-	"github.com/teamkeel/keel/schema/associations"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/util/collection"
 	"github.com/teamkeel/keel/util/str"
 
@@ -276,12 +276,12 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 	}
 }
 
-func NewAssociationValidationError(asts []*parser.AST, context interface{}, association *associations.Association) error {
-	unresolved := association.UnresolvedFragment()
+func NewRelationshipValidationError(asts []*parser.AST, context interface{}, relationships *relationships.Relationships) error {
+	unresolved := relationships.UnresolvedFragment()
 	suggestion := ""
 
-	if len(association.Fragments) == 1 {
-		// If there is only one fragment in the association
+	if len(relationships.Fragments) == 1 {
+		// If there is only one fragment in the relationship
 		// then it means that the root model was unresolvable
 		// So therefore the suggestion should be the context (downcased)
 		if model, ok := context.(*parser.ModelNode); ok {
@@ -289,7 +289,7 @@ func NewAssociationValidationError(asts []*parser.AST, context interface{}, asso
 		}
 
 		literals := map[string]string{
-			"Type":  "association",
+			"Type":  "relationship",
 			"Root":  unresolved.Current,
 			"Model": suggestion,
 		}
@@ -311,7 +311,7 @@ func NewAssociationValidationError(asts []*parser.AST, context interface{}, asso
 	correctionHint := NewCorrectionHint(fieldsOnParent, unresolved.Current)
 
 	literals := map[string]string{
-		"Type":       "association",
+		"Type":       "relationship",
 		"Fragment":   unresolved.Current,
 		"Parent":     unresolved.Parent,
 		"Suggestion": correctionHint.ToString(),

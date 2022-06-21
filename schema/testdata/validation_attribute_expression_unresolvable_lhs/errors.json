@@ -3,7 +3,7 @@
       {
         "code": "E020",
         "hint": "Did you mean author?",
-        "message": "association 'autho' not found on 'Post' model",
+        "message": "relationship 'autho' not found on 'Post' model",
         "end_pos": {
           "column": 27,
           "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
@@ -16,7 +16,7 @@
           "line": 7,
           "offset": 83
         },
-        "short_message": "association 'autho' not found"
+        "short_message": "relationship 'autho' not found"
       }
     ]
   }

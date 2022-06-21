@@ -1,4 +1,4 @@
-package associations
+package relationships
 
 import (
 	"fmt"
@@ -13,7 +13,7 @@ import (
 // Represents one fragment of a relationship
 // e.g in the expression operand post.author.name
 // each fragment is separated by dots
-type AssociationFragment struct {
+type RelationshipFragment struct {
 	node.Node
 
 	Current    string
@@ -21,11 +21,11 @@ type AssociationFragment struct {
 	Parent     string
 }
 
-type Association struct {
-	Fragments []AssociationFragment
+type Relationships struct {
+	Fragments []RelationshipFragment
 }
 
-func (t *Association) UnresolvedFragment() (frag *AssociationFragment) {
+func (t *Relationships) UnresolvedFragment() (frag *RelationshipFragment) {
 	for _, item := range t.Fragments {
 		if item.Resolvable {
 			continue
@@ -37,11 +37,11 @@ func (t *Association) UnresolvedFragment() (frag *AssociationFragment) {
 	return nil
 }
 
-// Given an operand of a condition, tries to resolve the associations defined within the operand
+// Given an operand of a condition, tries to resolve the relationships defined within the operand
 // e.g if the operand is of type "Ident", and the ident is post.author.name
-// then the method will return a AssociationTree representing each fragment in post.author.name
+// then the method will return a Relationships representing each fragment in post.author.name
 // along with an error if it hasn't been able to resolve the full path.
-func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Association, error) {
+func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relationships, error) {
 	// If the operand is of a different type (e.g string, bool etc),
 	// then return early.
 	if operand.Ident == nil {
@@ -50,15 +50,15 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 
 	ident := operand.Ident
 
-	association := Association{}
-	var walk func(previousModel *parser.ModelNode, idx int) (*Association, error)
+	relationships := Relationships{}
+	var walk func(previousModel *parser.ModelNode, idx int) (*Relationships, error)
 
-	walk = func(previousModel *parser.ModelNode, idx int) (*Association, error) {
+	walk = func(previousModel *parser.ModelNode, idx int) (*Relationships, error) {
 		// If we are at the first index passed to this method,
 		// add the parent model to the fragment tree
 		if idx == 1 {
-			association.Fragments = append(association.Fragments,
-				AssociationFragment{
+			relationships.Fragments = append(relationships.Fragments,
+				RelationshipFragment{
 					Current:    previousModel.Name.Value,
 					Resolvable: true,
 					Node:       previousModel.Node,
@@ -71,8 +71,8 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 		field := query.ModelField(previousModel, lookupField)
 
 		if field == nil {
-			association.Fragments = append(association.Fragments,
-				AssociationFragment{
+			relationships.Fragments = append(relationships.Fragments,
+				RelationshipFragment{
 					Node:       ident.Fragments[idx].Node,
 					Resolvable: false,
 					Current:    ident.Fragments[idx].Fragment,
@@ -80,10 +80,10 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 				},
 			)
 
-			return &association, fmt.Errorf("could not find field %s", lookupField)
+			return &relationships, fmt.Errorf("could not find field %s", lookupField)
 		}
 
-		association.Fragments = append(association.Fragments, AssociationFragment{
+		relationships.Fragments = append(relationships.Fragments, RelationshipFragment{
 			Node:       ident.Fragments[idx].Node,
 			Resolvable: true,
 			Current:    ident.Fragments[idx].Fragment,
@@ -91,11 +91,11 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 		})
 
 		if idx < len(ident.Fragments)-1 {
-			nextModel := query.ModelForAssociationField(asts, field)
+			nextModel := query.Model(asts, field.Type)
 			return walk(nextModel, idx+1)
 		} else {
-			// association path has been fully resolved
-			return &association, nil
+			// relationship path has been fully resolved
+			return &relationships, nil
 		}
 	}
 
@@ -103,13 +103,13 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Assoc
 	rootModel := query.Model(asts, lookupModel)
 
 	if rootModel == nil {
-		association.Fragments = append(association.Fragments, AssociationFragment{
+		relationships.Fragments = append(relationships.Fragments, RelationshipFragment{
 			Node:       ident.Node,
 			Resolvable: false,
 			Current:    ident.Fragments[0].Fragment,
 		})
 
-		return &association, fmt.Errorf("could not find model %s", lookupModel)
+		return &relationships, fmt.Errorf("could not find model %s", lookupModel)
 	}
 
 	// Start at index 1 so we can look backwards to index 0 for the parent
