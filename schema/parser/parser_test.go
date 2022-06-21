@@ -29,6 +29,7 @@ func TestModelWithFields(t *testing.T) {
 		  fields {
 			name Text
 			books Book[]
+			rating Number
 		  }
 		}`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
@@ -39,6 +40,11 @@ func TestModelWithFields(t *testing.T) {
 	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name.Value)
 	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
+
+	assert.Equal(t, "rating", schema.Declarations[0].Model.Sections[0].Fields[2].Name.Value)
+	assert.Equal(t, "Number", schema.Declarations[0].Model.Sections[0].Fields[2].Type)
+	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[2].Repeated)
+
 }
 
 func TestModelWithFunctions(t *testing.T) {
