@@ -7,7 +7,7 @@ model Author {
 
     operations {
         get getAuthor() {
-            @where(author.name = "Bob")
+            @where(author.name == "Bob")
         }
     }
 }

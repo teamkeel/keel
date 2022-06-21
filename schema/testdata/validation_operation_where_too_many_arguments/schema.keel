@@ -10,7 +10,7 @@ model Profile {
 
     operations {
         get getProfile(username) {
-            @where(profile.identit == ctx.identity)
+            @where(profile.identity == ctx.identity, profile.username == "adaam2")
         }
     }
 }

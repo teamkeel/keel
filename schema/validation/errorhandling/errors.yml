@@ -86,8 +86,12 @@ en:
   E022:
     short_message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
     message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
-    hint: "Did you mean {{ .Suggestion }}?"
+    hint: "Did you mean '{{ .Suggestion }}'?"
   E023:
     short_message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
     message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
     hint: "Please assign a value e.g 'a.b = b.a'"
+  E024:
+    short_message: "Too many arguments provided to '{{ .Area }}'"
+    message: "Too many arguments provided to '{{ .Area }}'"
+    hint: "{{ .Area }} only accepts {{ .Count }} argument(s)"

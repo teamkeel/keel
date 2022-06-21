@@ -22,9 +22,17 @@
           "name":  "operationA",
           "type":  "OPERATION_TYPE_GET",
           "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+                "fieldName": "f1",
+                "modelName": "Foo",
+                "name": "f1",
+                "type": "OPERATION_INPUT_TYPE_FIELD"
+            }
+          ],
           "whereExpressions":  [
             {
-              "source":  "foo.f1 = true"
+              "source":  "foo.f1 == true"
             }
           ]
         }

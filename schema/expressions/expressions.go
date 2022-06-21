@@ -67,7 +67,6 @@ var (
 )
 
 func (c *Condition) Type() string {
-
 	if collection.Contains(equalityOperators, c.Operator.Symbol) {
 		return LogicalCondition
 

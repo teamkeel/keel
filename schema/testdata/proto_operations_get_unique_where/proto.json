@@ -24,7 +24,7 @@
           "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
           "whereExpressions":  [
             {
-              "source":  "author.name = \"Bob\""
+              "source":  "author.name == \"Bob\""
             }
           ]
         }

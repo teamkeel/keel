@@ -3,20 +3,20 @@
       {
         "code": "E022",
         "end_pos": {
-            "column": 39,
+            "column": 38,
             "filename": "testdata/validation_operation_where_expression_forbidden_operator/schema.keel",
             "line": 13,
-            "offset": 244
+            "offset": 243
         },
-        "hint": "Did you mean '='?",
-        "message": "Operator '==' not permitted on @where",
+        "hint": "Did you mean '=='?",
+        "message": "Operator '=' not permitted on @where",
         "pos": {
             "column": 37,
             "filename": "testdata/validation_operation_where_expression_forbidden_operator/schema.keel",
             "line": 13,
             "offset": 242
         },
-        "short_message": "Operator '==' not permitted on @where"
+        "short_message": "Operator '=' not permitted on @where"
       }
     ]
   }

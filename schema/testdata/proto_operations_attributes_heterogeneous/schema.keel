@@ -8,7 +8,7 @@ model Foo {
           expression: foo.f1 == true,
           roles: [Admin]
       )
-      @where(true = false)
+      @where(true == false)
     }
   }
 }

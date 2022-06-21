@@ -10,7 +10,7 @@ model Profile {
 
     operations {
         create createProfile(username) {
-            @where(profile.identity == ctx.identity)
+            @where(profile.identity = ctx.identity)
         }
     }
 }

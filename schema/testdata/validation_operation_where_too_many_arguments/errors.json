@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E024",
+        "hint": "@where only accepts 1 argument(s)",
+        "message": "Too many arguments provided to '@where'",
+        "end_pos": {
+          "column": 83,
+          "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
+          "line": 13,
+          "offset": 282
+        },
+        "pos": {
+          "column": 13,
+          "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
+          "line": 13,
+          "offset": 212
+        },
+        "short_message": "Too many arguments provided to '@where'"
+      }
+    ]
+  }
