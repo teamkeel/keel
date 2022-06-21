@@ -1,3 +1,10 @@
+## [0.10.1](https://github.com/teamkeel/keel/compare/v0.10.0...v0.10.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* adds missing Number field type. All of the proto generation for numerical types exists already ([#76](https://github.com/teamkeel/keel/issues/76)) ([2ab97b1](https://github.com/teamkeel/keel/commit/2ab97b1395f473d957a6bed23a12c9c696454385))
+
 # [0.10.0](https://github.com/teamkeel/keel/compare/v0.9.0...v0.10.0) (2022-06-21)
 
 
