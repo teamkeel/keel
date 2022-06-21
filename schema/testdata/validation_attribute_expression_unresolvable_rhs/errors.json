@@ -2,7 +2,7 @@
     "Errors": [
       {
         "code": "E020",
-        "hint": "",
+        "hint": "Did you mean author?",
         "message": "association 'auth' not found on 'Post' model",
         "end_pos": {
           "column": 41,

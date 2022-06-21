@@ -2,8 +2,8 @@
     "Errors": [
       {
         "code": "E020",
-        "hint": "",
-        "message": "association 'postCod' not found on 'address' model",
+        "hint": "Did you mean postCode?",
+        "message": "association 'postCod' not found on 'Address' model",
         "end_pos": {
           "column": 39,
           "filename": "testdata/validation_attribute_expression_complex/schema.keel",

@@ -78,11 +78,11 @@ en:
   E020:
     short_message: "{{ .Type }} '{{ .Fragment }}' not found"
     message: "{{ .Type }} '{{ .Fragment }}' not found on '{{ .Parent }}' model"
-    hint: "{{ .Suggestions }}"
+    hint: "{{ .Suggestion }}"
   E021:
     short_message: "{{ .Type }} '{{ .Root }}' not found"
     message: "{{ .Type }} '{{ .Root }}' not found"
-    hint: "Did you mean '{{ .Suggestion }}' instead?"
+    hint: "Did you mean '{{ .Model }}' instead?"
   E022:
     short_message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
     message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"

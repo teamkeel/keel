@@ -4,11 +4,11 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/formatting"
+	"github.com/teamkeel/keel/schema/associations"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"github.com/teamkeel/keel/schema/validation/rules/expression"
 	"github.com/teamkeel/keel/util/collection"
 )
 
@@ -196,10 +196,18 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 
 				// check that the lhs and rhs resolve
 				if cond.LHS != nil {
-					errors = append(errors, expression.ValidateConditionSide(asts, *cond.LHS))
+					tree, err := associations.TryResolveIdent(asts, cond.LHS)
+
+					if err != nil && tree != nil {
+						errors = append(errors, errorhandling.NewAssociationValidationError(asts, model, tree))
+					}
 				}
 				if cond.RHS != nil {
-					errors = append(errors, expression.ValidateConditionSide(asts, *cond.RHS))
+					tree, err := associations.TryResolveIdent(asts, cond.RHS)
+
+					if err != nil && tree != nil {
+						errors = append(errors, errorhandling.NewAssociationValidationError(asts, model, tree))
+					}
 				}
 
 			}

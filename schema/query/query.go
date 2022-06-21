@@ -28,6 +28,18 @@ func Models(asts []*parser.AST) (res []*parser.ModelNode) {
 	return res
 }
 
+func ModelNames(asts []*parser.AST) (res []string) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Model != nil {
+				res = append(res, decl.Model.Name.Value)
+			}
+		}
+	}
+
+	return res
+}
+
 func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {

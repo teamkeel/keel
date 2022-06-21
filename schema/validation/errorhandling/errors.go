@@ -9,7 +9,10 @@ import (
 	"text/template"
 
 	"github.com/fatih/color"
+	"github.com/teamkeel/keel/schema/associations"
 	"github.com/teamkeel/keel/schema/node"
+	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/util/collection"
 	"github.com/teamkeel/keel/util/str"
@@ -271,6 +274,56 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 			Column:   end.Column,
 		},
 	}
+}
+
+func NewAssociationValidationError(asts []*parser.AST, context interface{}, tree *associations.AssociationTree) error {
+	unresolved := tree.UnresolvedFragment()
+	suggestion := ""
+
+	if len(tree.Fragments) == 1 {
+		// If there is only one fragment in the tree
+		// then it means that the root model was unresolvable
+		// So therefore the suggestion should be the context (downcased)
+		if model, ok := context.(*parser.ModelNode); ok {
+			suggestion = strings.ToLower(model.Name.Value)
+		}
+
+		literals := map[string]string{
+			"Type":  "association",
+			"Root":  unresolved.Current,
+			"Model": suggestion,
+		}
+
+		return NewValidationError(ErrorUnresolvedRootModel,
+			TemplateLiterals{
+				Literals: literals,
+			},
+			unresolved,
+		)
+	}
+
+	// If more than one fragment, then we need to resolve the second fragment's parent
+	// And find the field names on the parent in order to build up the suggestion hint
+	// e.g Given the condition post.autho it should suggest post.author instead
+	parentModel := query.Model(asts, unresolved.Parent)
+	fieldsOnParent := query.ModelFieldNames(parentModel)
+
+	correctionHint := NewCorrectionHint(fieldsOnParent, unresolved.Current)
+
+	literals := map[string]string{
+		"Type":       "association",
+		"Fragment":   unresolved.Current,
+		"Parent":     unresolved.Parent,
+		"Suggestion": correctionHint.ToString(),
+	}
+
+	return NewValidationError(ErrorUnresolvableExpression,
+		TemplateLiterals{
+			Literals: literals,
+		},
+		unresolved.Node,
+	)
+
 }
 
 //go:embed errors.yml
