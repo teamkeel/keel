@@ -9,14 +9,14 @@
             "offset": 244
         },
         "hint": "Did you mean '='?",
-        "message": "Operator '==' not permitted on @set",
+        "message": "Operator '==' not permitted on @where",
         "pos": {
             "column": 37,
             "filename": "testdata/validation_operation_where_expression_forbidden_operator/schema.keel",
             "line": 13,
             "offset": 242
         },
-        "short_message": "Operator '==' not permitted on @set"
+        "short_message": "Operator '==' not permitted on @where"
       }
     ]
   }

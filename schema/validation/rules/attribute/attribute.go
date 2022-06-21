@@ -172,7 +172,7 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 								errorhandling.TemplateLiterals{
 									Literals: map[string]string{
 										"Operator":   operator.Symbol,
-										"Area":       "@set",
+										"Area":       fmt.Sprintf("@%s", attr.Name.Value),
 										"Suggestion": "'='",
 										"Condition":  cond.ToString(),
 									},
