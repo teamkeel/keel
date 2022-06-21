@@ -34,7 +34,7 @@ func (t *AssociationTree) UnresolvedFragment() (frag *AssociationFragment) {
 	return nil
 }
 
-func TryResolveIdent(asts []*parser.AST, operand *expressions.Operand) (*AssociationTree, error) {
+func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*AssociationTree, error) {
 	// If the operand is of a different type (e.g string, bool etc),
 	// then return early.
 	if operand.Ident == nil {

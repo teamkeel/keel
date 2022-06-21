@@ -196,14 +196,14 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 
 				// check that the lhs and rhs resolve
 				if cond.LHS != nil {
-					tree, err := associations.TryResolveIdent(asts, cond.LHS)
+					tree, err := associations.TryResolveOperand(asts, cond.LHS)
 
 					if err != nil && tree != nil {
 						errors = append(errors, errorhandling.NewAssociationValidationError(asts, model, tree))
 					}
 				}
 				if cond.RHS != nil {
-					tree, err := associations.TryResolveIdent(asts, cond.RHS)
+					tree, err := associations.TryResolveOperand(asts, cond.RHS)
 
 					if err != nil && tree != nil {
 						errors = append(errors, errorhandling.NewAssociationValidationError(asts, model, tree))
