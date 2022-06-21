@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E021",
+        "end_pos": {
+            "column": 53,
+            "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
+            "line": 13,
+            "offset": 258
+        },
+        "hint": "Did you mean 'profile' instead?",
+        "message": "relationship 'context' not found",
+        "pos": {
+            "column": 37,
+            "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
+            "line": 13,
+            "offset": 242
+        },
+        "short_message": "relationship 'context' not found"
+      }
+    ]
+  }

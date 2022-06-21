@@ -132,6 +132,113 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
+type Operator struct {
+	Type   string
+	Symbol string
+}
+
+var supportedOpsForSetWhere map[string]Operator = map[string]Operator{
+	"set": Operator{
+		Type:   expressions.AssignmentCondition,
+		Symbol: "=",
+	},
+	"where": Operator{
+		Type:   expressions.LogicalCondition,
+		Symbol: "==",
+	},
+}
+
+func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, operation := range query.ModelActions(model) {
+			if len(operation.Attributes) == 0 {
+				continue
+			}
+
+			for _, attr := range operation.Attributes {
+				if attr.Name.Value != "set" && attr.Name.Value != "where" {
+					continue
+				}
+
+				argLength := len(attr.Arguments)
+
+				if argLength == 0 || argLength >= 2 {
+					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorTooManyArguments,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Area":  fmt.Sprintf("@%s", attr.Name.Value),
+								"Value": attr.Name.Value,
+								"Count": fmt.Sprint(1),
+							},
+						},
+						attr,
+					))
+				}
+
+				arg := attr.Arguments[0]
+
+				conditions := arg.Expression.Conditions()
+
+				for _, cond := range conditions {
+					t := cond.Type()
+					lhs, operator, rhs := cond.ToFragments()
+
+					operatorForAttribute := supportedOpsForSetWhere[attr.Name.Value]
+
+					// Handle erroneous value conditions separately
+					// as they do not have an operator to act on
+					if t == expressions.ValueCondition {
+						errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenValueCondition,
+							errorhandling.TemplateLiterals{
+								Literals: map[string]string{
+									"Area":  fmt.Sprintf("@%s", attr.Name.Value),
+									"Value": cond.ToString(),
+								},
+							},
+							cond,
+						))
+
+						continue
+					}
+
+					// Check that assignment operator is used in @set attribute
+					if t != operatorForAttribute.Type {
+						errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
+							errorhandling.TemplateLiterals{
+								Literals: map[string]string{
+									"Operator":   operator.Symbol,
+									"Area":       fmt.Sprintf("@%s", attr.Name.Value),
+									"Suggestion": operatorForAttribute.Symbol,
+									"Condition":  cond.ToString(),
+								},
+							},
+							operator,
+						))
+					}
+
+					// Check lhs & rhs existence
+					if lhs != nil {
+						relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
+
+						if err != nil && relationships != nil {
+							errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
+						}
+					}
+					if rhs != nil {
+						relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
+
+						if err != nil && relationships != nil {
+							errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return errors
+}
+
 var validActionKeywords = []string{
 	parser.ActionTypeGet,
 	parser.ActionTypeCreate,
@@ -185,7 +292,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 							Literals: map[string]string{
 								"Operator":   cond.Operator.Symbol,
 								"Area":       "@permission",
-								"Suggestion": "'=='",
+								"Suggestion": "==",
 								"Condition":  cond.ToString(),
 							},
 						},

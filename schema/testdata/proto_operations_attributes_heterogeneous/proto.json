@@ -35,7 +35,7 @@
           ],
           "whereExpressions":  [
             {
-              "source":  "True = False"
+              "source":  "true == false"
             }
           ]
         }

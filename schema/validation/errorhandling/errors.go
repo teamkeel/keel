@@ -44,6 +44,8 @@ const (
 	ErrorUnresolvableExpression           = "E020"
 	ErrorUnresolvedRootModel              = "E021"
 	ErrorForbiddenExpressionOperation     = "E022"
+	ErrorForbiddenValueCondition          = "E023"
+	ErrorTooManyArguments                 = "E024"
 )
 
 type ErrorDetails struct {
