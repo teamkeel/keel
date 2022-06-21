@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E023",
+        "end_pos": {
+            "column": 34,
+            "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
+            "line": 13,
+            "offset": 239
+        },
+        "hint": "Please assign a value e.g 'a.b = b.a'",
+        "message": "Values such as 'profile.identity' not permitted on @set",
+        "pos": {
+            "column": 18,
+            "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
+            "line": 13,
+            "offset": 223
+        },
+        "short_message": "Values such as 'profile.identity' not permitted on @set"
+      }
+    ]
+  }

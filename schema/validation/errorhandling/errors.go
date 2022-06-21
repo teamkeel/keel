@@ -44,6 +44,7 @@ const (
 	ErrorUnresolvableExpression           = "E020"
 	ErrorUnresolvedRootModel              = "E021"
 	ErrorForbiddenExpressionOperation     = "E022"
+	ErrorForbiddenValueCondition          = "E023"
 )
 
 type ErrorDetails struct {
@@ -96,6 +97,9 @@ func (v ValidationErrors) MatchingSchemas() map[string]reader.SchemaFile {
 	}
 
 	for _, path := range paths {
+		if path == "" {
+			continue
+		}
 		fileBytes, err := os.ReadFile(path)
 
 		if err != nil {

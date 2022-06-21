@@ -87,3 +87,7 @@ en:
     short_message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
     message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
     hint: "Did you mean {{ .Suggestion }}?"
+  E023:
+    short_message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
+    message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
+    hint: "Please assign a value e.g 'a.b = b.a'"

@@ -150,6 +150,22 @@ func SetAttributeRule(asts []*parser.AST) (errors []error) {
 						t := cond.Type()
 						_, operator, _ := cond.ToFragments()
 
+						// Handle erroneous value conditions separately
+						// as they do not have an operator to act on
+						if t == expressions.ValueCondition {
+							errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenValueCondition,
+								errorhandling.TemplateLiterals{
+									Literals: map[string]string{
+										"Area":  "@set",
+										"Value": cond.ToString(),
+									},
+								},
+								cond,
+							))
+
+							continue
+						}
+
 						// Check that assignment operator is used in @set attribute
 						if t != expressions.AssignmentCondition {
 							errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
