@@ -25,6 +25,11 @@ import (
 )
 
 func main() {
+	s := NewServer()
+	s.ListenAndServe()
+}
+
+func NewServer() *http.Server {
 
 	// Compose the types that form the GQL hierarchy - in dependency order, i.e. bottom up.
 	// I've stripped the user type down to the smallest possible - it just has a name field.
@@ -86,7 +91,7 @@ func main() {
 
 	_ = schema
 
-	// Register a handler with the Go HTTP package to handle requests to /graphql by first calling
+	// Register a handler with the default server MUX to handle requests to /graphql by first calling
 	// the executeQuery function - passing in the executable schema. Then json encoding the result
 	// to form the response.
 	http.HandleFunc("/graphql", func(w http.ResponseWriter, r *http.Request) {
@@ -103,7 +108,11 @@ func main() {
 	fmt.Println("Now server is running on port 8080")
 	fmt.Println("Test with Get      : curl -g 'http://localhost:8080/graphql?query={user(id:\"1\"){name}}'")
 	fmt.Println(`You should get this back: {"data":{"user":{"name":"fred"}}}`)
-	http.ListenAndServe(":8080", nil)
+
+	s := &http.Server{
+		Addr: ":8080",
+	}
+	return s
 }
 
 // A pure-go handler function that receives a query (string), and an
