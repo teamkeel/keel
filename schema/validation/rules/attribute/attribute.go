@@ -132,7 +132,7 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func SetAttributeRule(asts []*parser.AST) (errors []error) {
+func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, operation := range query.ModelActions(model) {
 			if len(operation.Attributes) == 0 {
@@ -140,7 +140,7 @@ func SetAttributeRule(asts []*parser.AST) (errors []error) {
 			}
 
 			for _, attr := range operation.Attributes {
-				if attr.Name.Value != "set" {
+				if attr.Name.Value != "set" && attr.Name.Value != "where" {
 					continue
 				}
 				for _, arg := range attr.Arguments {
@@ -156,7 +156,7 @@ func SetAttributeRule(asts []*parser.AST) (errors []error) {
 							errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenValueCondition,
 								errorhandling.TemplateLiterals{
 									Literals: map[string]string{
-										"Area":  "@set",
+										"Area":  fmt.Sprintf("@%s", attr.Name.Value),
 										"Value": cond.ToString(),
 									},
 								},

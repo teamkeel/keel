@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E022",
+        "end_pos": {
+            "column": 39,
+            "filename": "testdata/validation_operation_where_expression_forbidden_operator/schema.keel",
+            "line": 13,
+            "offset": 244
+        },
+        "hint": "Did you mean '='?",
+        "message": "Operator '==' not permitted on @set",
+        "pos": {
+            "column": 37,
+            "filename": "testdata/validation_operation_where_expression_forbidden_operator/schema.keel",
+            "line": 13,
+            "offset": 242
+        },
+        "short_message": "Operator '==' not permitted on @set"
+      }
+    ]
+  }

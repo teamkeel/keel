@@ -7,7 +7,7 @@ model Foo {
 
     operations {
         get operationA() {
-            @where(foo.f1 = True)
+            @where(foo.f1 = true)
         }
     }
 }
