@@ -21,6 +21,7 @@ var (
 		"Image":            true,
 		"Boolean":          true,
 		"Identity":         true,
+		"Number":           true,
 		parser.FieldTypeID: true,
 	}
 )
