@@ -94,4 +94,4 @@ en:
   E024:
     short_message: "Too many arguments provided to '{{ .Area }}'"
     message: "Too many arguments provided to '{{ .Area }}'"
-    hint: "{{ .Area }} only accepts {{ .Count }} argument(s)"
+    hint: "{{ if .NoArgs }}{{ .Area }} doesn't accept any arguments{{ else }}{{ .Area }} only accepts {{ .Count }} argument(s){{ end }}"
