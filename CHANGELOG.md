@@ -1,3 +1,24 @@
+## [0.10.1](https://github.com/teamkeel/keel/compare/v0.10.0...v0.10.1) (2022-06-21)
+
+
+### Bug Fixes
+
+* adds missing Number field type. All of the proto generation for numerical types exists already ([#76](https://github.com/teamkeel/keel/issues/76)) ([2ab97b1](https://github.com/teamkeel/keel/commit/2ab97b1395f473d957a6bed23a12c9c696454385))
+
+# [0.10.0](https://github.com/teamkeel/keel/compare/v0.9.0...v0.10.0) (2022-06-21)
+
+
+### Features
+
+* validate that [@unique](https://github.com/unique) doesn't accept any args ([#75](https://github.com/teamkeel/keel/issues/75)) ([842bbac](https://github.com/teamkeel/keel/commit/842bbac6f8567f827f85767da03cbd1d2ebd3562))
+
+# [0.9.0](https://github.com/teamkeel/keel/compare/v0.8.0...v0.9.0) (2022-06-21)
+
+
+### Features
+
+* validate correct usage of expressions in [@set](https://github.com/set) and [@where](https://github.com/where) attributes ([#74](https://github.com/teamkeel/keel/issues/74)) ([a933f24](https://github.com/teamkeel/keel/commit/a933f24df6ad63423c26eabc3e88b6890422e823))
+
 # [0.8.0](https://github.com/teamkeel/keel/compare/v0.7.0...v0.8.0) (2022-06-20)
 
 

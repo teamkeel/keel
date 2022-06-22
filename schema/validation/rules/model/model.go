@@ -226,29 +226,38 @@ func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
 					continue
 				}
 
-				condition, err := expressions.ToAssignmentCondition(attr.Arguments[0].Expression)
-				if err != nil {
-					continue
+				conds := attr.Arguments[0].Expression.Conditions()
+				for _, cond := range conds {
+					if cond.Type() != expressions.LogicalCondition {
+						// error
+					}
 				}
 
-				if len(condition.LHS.Ident) != 2 {
-					continue
-				}
+				for _, condition := range conds {
 
-				modelName, fieldName := condition.LHS.Ident[0], condition.LHS.Ident[1]
+					for _, op := range []*expressions.Operand{condition.LHS, condition.RHS} {
 
-				if modelName != strcase.ToLowerCamel(model.Name.Value) {
-					continue
-				}
+						// @where(myModel.someUniqueField == true or a and b)
+						if len(op.Ident.Fragments) != 2 {
+							continue
+						}
 
-				field := query.ModelField(model, fieldName)
-				if field == nil {
-					continue
-				}
+						modelName, fieldName := op.Ident.Fragments[0].Fragment, op.Ident.Fragments[1].Fragment
 
-				// action has a @where filtering on a unique field - go to next action
-				if query.FieldIsUnique(field) {
-					continue actions
+						if modelName != strcase.ToLowerCamel(model.Name.Value) {
+							continue
+						}
+
+						field := query.ModelField(model, fieldName)
+						if field == nil {
+							continue
+						}
+
+						// action has a @where filtering on a unique field - go to next action
+						if query.FieldIsUnique(field) {
+							continue actions
+						}
+					}
 				}
 			}
 

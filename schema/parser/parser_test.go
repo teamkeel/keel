@@ -29,6 +29,7 @@ func TestModelWithFields(t *testing.T) {
 		  fields {
 			name Text
 			books Book[]
+			rating Number
 		  }
 		}`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
@@ -39,6 +40,11 @@ func TestModelWithFields(t *testing.T) {
 	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name.Value)
 	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
+
+	assert.Equal(t, "rating", schema.Declarations[0].Model.Sections[0].Fields[2].Name.Value)
+	assert.Equal(t, "Number", schema.Declarations[0].Model.Sections[0].Fields[2].Type)
+	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[2].Repeated)
+
 }
 
 func TestModelWithFunctions(t *testing.T) {
@@ -165,7 +171,7 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 
 	v2, err := expressions.ToValue(arg2.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "get", v2.Array.Values[0].Ident[0])
+	assert.Equal(t, "get", v2.Array.Values[0].Ident.Fragments[0].Fragment)
 }
 
 func TestAttributeWithNamedArguments(t *testing.T) {
@@ -198,11 +204,11 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 
 	v1, err := expressions.ToValue(arg1.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "Admin", v1.Ident[0])
+	assert.Equal(t, "Admin", v1.Ident.Fragments[0].Fragment)
 
 	v2, err := expressions.ToValue(arg2.Expression)
 	assert.NoError(t, err)
-	assert.Equal(t, "create", v2.Array.Values[0].Ident[0])
+	assert.Equal(t, "create", v2.Array.Values[0].Ident.Fragments[0].Fragment)
 }
 
 func TestAPI(t *testing.T) {
@@ -241,7 +247,7 @@ func TestEnum(t *testing.T) {
 		Mercury
 		Venus
 		Earth
-		Mars	
+		Mars
 	}`})
 	assert.Equal(t, "Planets", schema.Declarations[0].Enum.Name.Value)
 

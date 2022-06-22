@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "E020",
+        "hint": "Did you mean identity?",
+        "message": "relationship 'identit' not found on 'Profile' model",
+        "end_pos": {
+          "column": 33,
+          "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
+          "line": 13,
+          "offset": 238
+        },
+        "pos": {
+          "column": 26,
+          "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
+          "line": 13,
+          "offset": 231
+        },
+        "short_message": "relationship 'identit' not found"
+      }
+    ]
+  }

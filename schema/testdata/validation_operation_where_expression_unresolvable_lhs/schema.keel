@@ -1,0 +1,16 @@
+model Profile {
+    fields {
+        identity Identity {
+            @unique
+        }
+        username Text {
+            @unique
+        }
+    }
+
+    operations {
+        get getProfile(username) {
+            @where(profile.identit == ctx.identity)
+        }
+    }
+}

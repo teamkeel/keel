@@ -3,18 +3,18 @@
     {
       "message": "Action inputs must be one of the fields defined in the model",
       "short_message": "blah is not a valid input",
-      "hint": "Did you mean 'id'?",
+      "hint": "Did you mean profile, or id?",
       "code": "E005",
       "pos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
-        "offset": 55,
-        "line": 4,
+        "offset": 90,
+        "line": 7,
         "column": 25
       },
       "end_pos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
-        "offset": 59,
-        "line": 4,
+        "offset": 94,
+        "line": 7,
         "column": 29
       }
     }

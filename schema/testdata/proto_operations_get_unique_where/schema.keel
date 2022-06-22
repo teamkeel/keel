@@ -1,4 +1,4 @@
-model MyModel {
+model Author {
     fields {
         name Text {
             @unique
@@ -6,8 +6,8 @@ model MyModel {
     }
 
     operations {
-        get getMyModel() {
-            @where(myModel.name = "Bob")
+        get getAuthor() {
+            @where(author.name == "Bob")
         }
     }
 }
