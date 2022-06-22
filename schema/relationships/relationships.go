@@ -44,7 +44,7 @@ func (t *Relationships) UnresolvedFragment() *RelationshipFragment {
 
 var (
 	TypeModel   = "model"
-	TypeInvalid = "invalid"
+	TypeInvalid = "not resolvable"
 )
 
 // Given an operand of a condition, tries to resolve the relationships defined within the operand
@@ -52,10 +52,10 @@ var (
 // then the method will return a Relationships representing each fragment in post.author.name
 // along with an error if it hasn't been able to resolve the full path.
 func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relationships, error) {
-	// If the operand is of a different type (e.g string, bool etc),
-	// then return early.
 	relationships := Relationships{}
 
+	// If the operand is not of type Ident, then we can just return the Operand value as a single fragment
+	// e.g it may be a String, Number, Boolean etc
 	if operand.Ident == nil {
 		relationships.Fragments = append(relationships.Fragments, RelationshipFragment{
 			Current: operand.ToString(),
