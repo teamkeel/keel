@@ -2,6 +2,7 @@ package expressions
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/teamkeel/keel/schema/node"
 )
@@ -9,14 +10,107 @@ import (
 type Operand struct {
 	node.Node
 
-	Number *int64  `  @Int`
-	String *string `| @String`
-	Null   bool    `| @"null"`
-	True   bool    `| @"true"`
-	False  bool    `| @"false"`
-	Array  *Array  `| @@`
-	Ctx    *Ctx    `| @@`
-	Ident  *Ident  `| @@`
+	Number *Number  `  @Int`
+	String *String  `| @String`
+	Null   *Boolean `| @"null"`
+	True   *Boolean `| @"true"`
+	False  *Boolean `| @"false"`
+	Array  *Array   `| @@`
+	Ctx    *Ctx     `| @@`
+	Ident  *Ident   `| @@`
+}
+
+func (op *Operand) Resolve() (OperandResolution, error) {
+	switch {
+	case op.Array != nil:
+		return op.Array.Resolve()
+	case op.Ctx != nil:
+		return op.Ctx.Resolve()
+	case op.String != nil:
+		return op.String.Resolve()
+	case op.True != nil:
+		return op.True.Resolve()
+	case op.False != nil:
+		return op.False.Resolve()
+	case op.Null != nil:
+		return op.Null.Resolve()
+	case op.Ident != nil:
+		return op.Ident.Resolve()
+	case op.Number != nil:
+		return op.Null.Resolve()
+	default:
+		panic("not a known operand type")
+	}
+}
+
+type OperandPart struct {
+	node.Node
+
+	Value      string
+	Resolvable bool
+	Parent     *OperandPart
+	Type       string
+}
+
+type OperandResolution struct {
+	Parts []OperandPart
+}
+
+type Boolean struct {
+	node.Node
+
+	Value bool
+}
+
+func (b *Boolean) Resolve() (OperandResolution, error) {
+	return OperandResolution{
+		Parts: []OperandPart{
+			{
+				Node:       b.Node,
+				Value:      strconv.FormatBool(b.Value),
+				Resolvable: true,
+				Type:       "Boolean",
+			},
+		},
+	}, nil
+}
+
+type Number struct {
+	node.Node
+
+	Value int64
+}
+
+func (n *Number) Resolve() (OperandResolution, error) {
+	return OperandResolution{
+		Parts: []OperandPart{
+			{
+				Node:       n.Node,
+				Value:      fmt.Sprint(n.Value),
+				Resolvable: true,
+				Type:       "Number",
+			},
+		},
+	}, nil
+}
+
+type String struct {
+	node.Node
+
+	Value string
+}
+
+func (s *String) Resolve() (OperandResolution, error) {
+	return OperandResolution{
+		Parts: []OperandPart{
+			{
+				Node:       s.Node,
+				Value:      fmt.Sprint(s.Value),
+				Resolvable: true,
+				Type:       "String",
+			},
+		},
+	}, nil
 }
 
 type Ctx struct {
@@ -25,10 +119,20 @@ type Ctx struct {
 	Token string `@"ctx" @"." @Ident`
 }
 
+func (ctx *Ctx) Resolve() (OperandResolution, error) {
+	return OperandResolution{}, nil
+}
+
 type Ident struct {
 	node.Node
 
 	Fragments []*IdentFragment `( @@ ( "." @@ )* )`
+}
+
+func (ident *Ident) Resolve() (OperandResolution, error) {
+	return OperandResolution{
+		Parts: []OperandPart{},
+	}, nil
 }
 
 func (ident *Ident) ToString() string {
@@ -39,16 +143,6 @@ func (ident *Ident) ToString() string {
 		} else {
 			ret += fmt.Sprintf("%s.", fragment.Fragment)
 		}
-	}
-
-	return ret
-}
-
-func (ident *Ident) ToArray() []string {
-	ret := []string{}
-
-	for _, fragment := range ident.Fragments {
-		ret = append(ret, fragment.Fragment)
 	}
 
 	return ret
@@ -66,6 +160,12 @@ type Array struct {
 	Values []*Operand `"[" @@ ( "," @@ )* "]"`
 }
 
+func (ident *Array) Resolve() (OperandResolution, error) {
+	return OperandResolution{
+		Parts: []OperandPart{},
+	}, nil
+}
+
 func (v *Operand) ToString() string {
 	if v == nil {
 		return ""
@@ -74,8 +174,8 @@ func (v *Operand) ToString() string {
 	switch v.Type() {
 	case "Number":
 		return fmt.Sprintf("%d", *v.Number)
-	case "String":
-		return *v.String
+	case "Text":
+		return v.String.Value
 	case "Null":
 		return "null"
 	case "False":
@@ -106,11 +206,11 @@ func (v *Operand) Type() string {
 		return "Number"
 	case v.String != nil:
 		return "Text"
-	case v.Null:
+	case v.Null != nil:
 		return "Null"
-	case v.False:
+	case v.False != nil:
 		return "False"
-	case v.True:
+	case v.True != nil:
 		return "True"
 	case v.Array != nil:
 		return "Array"
