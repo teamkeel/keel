@@ -180,11 +180,12 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 				expressionErrs := expression.ValidateExpression(
 					asts,
 					expr,
-					[]expression.Rules{},
+					[]expression.Rules{
+						expression.PreventValueConditionRule,
+					},
 				)
 
 				errors = append(errors, expressionErrs...)
-
 			}
 		}
 	}
@@ -237,7 +238,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				asts,
 				arg.Expression,
 				[]expression.Rules{
-					expression.OperatorAssignmentRule,
+					expression.OperatorLogicalRule,
 				},
 			)
 
