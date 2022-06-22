@@ -231,6 +231,13 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 							errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
 						}
 					}
+
+					if lhs != nil && rhs != nil {
+						lhsRel, _ := relationships.TryResolveOperand(asts, cond.LHS)
+						rhsRel, _ := relationships.TryResolveOperand(asts, cond.RHS)
+
+						errors = append(errors, errorhandling.NewOperandTypeMismatchError(asts, cond, lhsRel, rhsRel))
+					}
 				}
 			}
 		}
@@ -316,6 +323,12 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 					}
 				}
 
+				if cond.LHS != nil && cond.RHS != nil {
+					lhsRel, _ := relationships.TryResolveOperand(asts, cond.LHS)
+					rhsRel, _ := relationships.TryResolveOperand(asts, cond.RHS)
+
+					errors = append(errors, errorhandling.NewOperandTypeMismatchError(asts, cond, lhsRel, rhsRel))
+				}
 			}
 		case "roles":
 			hasRoles = true

@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	"github.com/fatih/color"
+	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -45,6 +46,7 @@ const (
 	ErrorForbiddenValueCondition          = "E023"
 	ErrorTooManyArguments                 = "E024"
 	ErrorInvalidSyntax                    = "E025"
+	ErrorExpressionTypeMismatch           = "E026"
 )
 
 type ErrorDetails struct {
@@ -262,6 +264,29 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 			Column:   end.Column,
 		},
 	}
+}
+
+func NewOperandTypeMismatchError(asts []*parser.AST, cond *expressions.Condition, lhs *relationships.Relationships, rhs *relationships.Relationships) error {
+	lastFragmentLhs := lhs.LastFragment()
+
+	lastFragmentRhs := rhs.LastFragment()
+
+	if lastFragmentLhs.Type != lastFragmentRhs.Type {
+		return NewValidationError(
+			ErrorExpressionTypeMismatch,
+			TemplateLiterals{
+				Literals: map[string]string{
+					"LHS":     lastFragmentLhs.Current,
+					"LHSType": lastFragmentLhs.Type,
+					"RHS":     lastFragmentRhs.Current,
+					"RHSType": lastFragmentRhs.Type,
+				},
+			},
+			cond,
+		)
+	}
+
+	return nil
 }
 
 func NewRelationshipValidationError(asts []*parser.AST, context interface{}, relationships *relationships.Relationships) error {

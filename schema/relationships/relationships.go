@@ -17,6 +17,7 @@ type RelationshipFragment struct {
 	node.Node
 
 	Current    string
+	Type       string
 	Resolvable bool
 	Parent     string
 }
@@ -25,7 +26,11 @@ type Relationships struct {
 	Fragments []RelationshipFragment
 }
 
-func (t *Relationships) UnresolvedFragment() (frag *RelationshipFragment) {
+func (t *Relationships) LastFragment() *RelationshipFragment {
+	return &t.Fragments[len(t.Fragments)-1]
+}
+
+func (t *Relationships) UnresolvedFragment() *RelationshipFragment {
 	for _, item := range t.Fragments {
 		if item.Resolvable {
 			continue
@@ -37,6 +42,11 @@ func (t *Relationships) UnresolvedFragment() (frag *RelationshipFragment) {
 	return nil
 }
 
+var (
+	TypeModel   = "model"
+	TypeInvalid = "invalid"
+)
+
 // Given an operand of a condition, tries to resolve the relationships defined within the operand
 // e.g if the operand is of type "Ident", and the ident is post.author.name
 // then the method will return a Relationships representing each fragment in post.author.name
@@ -44,13 +54,18 @@ func (t *Relationships) UnresolvedFragment() (frag *RelationshipFragment) {
 func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relationships, error) {
 	// If the operand is of a different type (e.g string, bool etc),
 	// then return early.
+	relationships := Relationships{}
+
 	if operand.Ident == nil {
-		return nil, nil
+		relationships.Fragments = append(relationships.Fragments, RelationshipFragment{
+			Current: operand.ToString(),
+			Type:    operand.Type(),
+		})
+
+		return &relationships, nil
 	}
 
 	ident := operand.Ident
-
-	relationships := Relationships{}
 
 	var walk func(previousModel *parser.ModelNode, idx int) (*Relationships, error)
 
@@ -63,6 +78,7 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relat
 					Current:    previousModel.Name.Value,
 					Resolvable: true,
 					Node:       previousModel.Node,
+					Type:       TypeModel,
 				},
 			)
 		}
@@ -78,6 +94,7 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relat
 					Resolvable: false,
 					Current:    ident.Fragments[idx].Fragment,
 					Parent:     previousModel.Name.Value,
+					Type:       TypeInvalid,
 				},
 			)
 
@@ -89,6 +106,7 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relat
 			Resolvable: true,
 			Current:    ident.Fragments[idx].Fragment,
 			Parent:     previousModel.Name.Value,
+			Type:       field.Type,
 		})
 
 		if idx < len(ident.Fragments)-1 {
@@ -108,6 +126,7 @@ func TryResolveOperand(asts []*parser.AST, operand *expressions.Operand) (*Relat
 			Node:       ident.Node,
 			Resolvable: false,
 			Current:    ident.Fragments[0].Fragment,
+			Type:       TypeInvalid,
 		})
 
 		return &relationships, fmt.Errorf("could not find model %s", lookupModel)

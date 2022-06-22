@@ -98,3 +98,7 @@ en:
   E025:
     short_message: "Invalid syntax"
     message: "{{ .Message }}"
+  E026:
+    short_message: "{{ .LHS }} is of type {{ .LHSType }} and {{ .RHS }} is of type {{ .RHSType }}"
+    message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is a {{ .RHSType }}"
+    hint: "Please make sure that you are comparing entities of the same type"

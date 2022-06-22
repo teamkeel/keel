@@ -105,7 +105,7 @@ func (v *Operand) Type() string {
 	case v.Number != nil:
 		return "Number"
 	case v.String != nil:
-		return "String"
+		return "Text"
 	case v.Null:
 		return "Null"
 	case v.False:
