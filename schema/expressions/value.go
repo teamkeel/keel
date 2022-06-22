@@ -52,6 +52,16 @@ func (o *Operand) ToString() string {
 	}
 }
 
+var (
+	TypeNumber  = "Number"
+	TypeString  = "String"
+	TypeText    = "Text"
+	TypeNull    = "Null"
+	TypeBoolean = "Boolean"
+	TypeArray   = "Array"
+	TypeIdent   = "Ident"
+)
+
 func (o *Operand) Type() string {
 	switch {
 	case o.Number != nil:

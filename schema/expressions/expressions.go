@@ -53,9 +53,9 @@ type ConditionWrap struct {
 type Condition struct {
 	node.Node
 
-	LHS      *Operand `@@`
-	Operator Operator `( @@`
-	RHS      *Operand `@@ )?`
+	LHS      *Operand  `@@`
+	Operator *Operator `( @@`
+	RHS      *Operand  `@@ )?`
 }
 
 var equalityOperators = []string{"==", "<", ">", ">=", "<=", "!=", "in", "notin", "contains"}
@@ -67,14 +67,14 @@ var (
 )
 
 func (c *Condition) Type() string {
-	if collection.Contains(equalityOperators, c.Operator.Symbol) {
+	if c.Operator == nil && c.RHS == nil && c.LHS != nil {
+		return ValueCondition
+	} else if collection.Contains(equalityOperators, c.Operator.Symbol) {
 		return LogicalCondition
 	} else if (c.LHS.False || c.LHS.True) && c.RHS == nil {
 		return LogicalCondition
 	} else if c.Operator.Symbol == "=" {
 		return AssignmentCondition
-	} else if c.Operator.Symbol == "" && c.RHS == nil && c.LHS != nil {
-		return ValueCondition
 	}
 
 	panic("not a known condition type")
@@ -83,6 +83,7 @@ func (c *Condition) Type() string {
 type Operator struct {
 	node.Node
 
+	// Todo need to figure out how we can share with the consts below
 	Symbol string `@( "=" "=" | "!" "=" | ">" "=" | "<" "=" | ">" | "<" | "not" "in" | "in" | "+" "=" | "-" "=" | "=")`
 }
 
@@ -94,41 +95,43 @@ func (o *Operator) ToString() string {
 	return o.Symbol
 }
 
-var operators = map[string]string{
-	"==":    "Equals",
-	"=":     "Assignment",
-	"!=":    "NotEquals",
-	">=":    "GreaterThanOrEqual",
-	"<=":    "LessThanOrEqual",
-	"<":     "LessThan",
-	">":     "GreaterThan",
-	"in":    "In",
-	"notin": "NotIn",
-	"+=":    "Increment",
-	"--":    "Decrement",
-}
+var (
+	OperatorEquals               = "=="
+	OperatorAssignment           = "="
+	OperatorNotEquals            = "!="
+	OperatorGreaterThanOrEqualTo = ">="
+	OperatorLessThanOrEqualTo    = "<="
+	OperatorLessThan             = "<"
+	OperatorGreaterThan          = ">"
+	OperatorIn                   = "in"
+	OperatorNotIn                = "notin"
+	OperatorIncrement            = "+="
+	OperatorDecrement            = "--"
 
-func (o *Operator) Name() string {
-	if o.Symbol == "" {
-		return ""
+	// Collections
+	LogicalOperators = []string{
+		OperatorEquals,
+		OperatorNotEquals,
 	}
 
-	if operator, ok := operators[o.Symbol]; ok {
-		return operator
+	NumericalOperators = []string{
+		OperatorGreaterThan,
+		OperatorGreaterThanOrEqualTo,
+		OperatorLessThan,
+		OperatorLessThanOrEqualTo,
 	}
 
-	return ""
-}
-
-// Returns the respective fragments (lhs, operator, rhs) of an expression
-// For value expressions, operator and rhs will be nil
-// For equality & assignment expressions, lhs, operator and rhs will be populated
-func (condition *Condition) ToFragments() (*Operand, *Operator, *Operand) {
-	if condition == nil {
-		return nil, nil, nil
+	ArrayOperators = []string{
+		OperatorIn,
+		OperatorNotIn,
 	}
-	return condition.LHS, &condition.Operator, condition.RHS
-}
+
+	AssignmentOperators = []string{
+		OperatorAssignment,
+		OperatorIncrement,
+		OperatorDecrement,
+	}
+)
 
 func (condition *Condition) ToString() string {
 	result := ""
@@ -140,7 +143,7 @@ func (condition *Condition) ToString() string {
 		result += condition.LHS.ToString()
 	}
 
-	if condition.Operator.Symbol != "" && condition.RHS != nil {
+	if condition.Operator != nil && condition.RHS != nil {
 		result += fmt.Sprintf(" %s ", condition.Operator.Symbol)
 		result += condition.RHS.ToString()
 	}
@@ -167,13 +170,11 @@ func ToString(expr *Expression) (string, error) {
 	result := ""
 
 	for i, orExpr := range expr.Or {
-
 		if i > 0 {
 			result += " or "
 		}
 
 		for j, andExpr := range orExpr.And {
-
 			if j > 0 {
 				result += " and "
 			}
@@ -191,20 +192,20 @@ func ToString(expr *Expression) (string, error) {
 
 			op := andExpr.Condition.Operator
 
-			if op.Symbol == "" {
+			if op != nil && op.Symbol == "" {
 				continue
 			}
 
-			result += " "
-
 			// special case for "not in"
-			if op.Symbol == "notin" {
-				result += "not in"
-			} else {
-				result += op.Symbol
+			if op != nil && op.Symbol == "notin" {
+				result += " not in "
+			} else if op != nil {
+				result += fmt.Sprintf(" %s ", op.Symbol)
 			}
 
-			result += " " + andExpr.Condition.RHS.ToString()
+			if andExpr.Condition.RHS != nil {
+				result += andExpr.Condition.RHS.ToString()
+			}
 		}
 	}
 
@@ -235,7 +236,7 @@ func ToValue(expr *Expression) (*Operand, error) {
 
 	cond := and.Condition
 
-	if cond.Operator.Symbol != "" {
+	if cond.Operator != nil && cond.Operator.Symbol != "" {
 		return nil, ErrNotValue
 	}
 
@@ -264,7 +265,7 @@ func ToEqualityCondition(expr *Expression) (*Condition, error) {
 		return nil, ErrNotEquality
 	}
 
-	if !collection.Contains(equalityOperators, cond.Operator.Symbol) {
+	if cond.Operator != nil && !collection.Contains(equalityOperators, cond.Operator.Symbol) {
 		return nil, ErrNotEquality
 	}
 
@@ -297,7 +298,8 @@ func ToAssignmentCondition(expr *Expression) (*Condition, error) {
 		return nil, ErrNotAssignment
 	}
 	cond := and.Condition
-	if cond.Operator.Symbol != "=" {
+
+	if cond.Operator == nil || cond.Operator.Symbol != "=" {
 		return nil, ErrNotAssignment
 	}
 

@@ -108,7 +108,8 @@ func TestIsAssignment(t *testing.T) {
 			expr, err := expressions.Parse(input)
 			assert.NoError(t, err)
 
-			assert.Equal(t, expected, expressions.IsAssignment(expr))
+			actual := expressions.IsAssignment(expr)
+			assert.Equal(t, expected, actual)
 		})
 	}
 }
