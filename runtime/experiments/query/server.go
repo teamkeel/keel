@@ -44,7 +44,7 @@ func NewServer() *http.Server {
 		},
 	)
 
-	// Now the root level type - which is a query, that has-a userType field.
+	// Now the root level type - which is a query, that HAS-A userType field.
 	// Note that it defines an Arg for the query called <id> of type string.
 	// It seems the Arg need not refer to a field in the object type (I took it out),
 	// but is only part of the resolver contract.
