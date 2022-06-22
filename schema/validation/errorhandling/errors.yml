@@ -95,3 +95,7 @@ en:
     short_message: "Too many arguments provided to '{{ .Area }}'"
     message: "Too many arguments provided to '{{ .Area }}'"
     hint: "{{ if .NoArgs }}{{ .Area }} doesn't accept any arguments{{ else }}{{ .Area }} only accepts {{ .Count }} argument(s){{ end }}"
+  E025:
+    short_message: "{{ .LHS }} is of type {{ .LHSType }} and {{ .RHS }} is of type {{ .RHSType }}"
+    message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is a {{ .RHSType }}"
+    hint: "Please make sure that you are comparing entities of the same type"
