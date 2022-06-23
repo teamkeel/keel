@@ -195,7 +195,7 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 					asts,
 					expr,
 					rules,
-					model,
+					fmt.Sprintf("@%s", attr.Name.Value),
 				)
 
 				errors = append(errors, expressionErrs...)
