@@ -44,6 +44,7 @@ const (
 	ErrorForbiddenExpressionOperation     = "E022"
 	ErrorForbiddenValueCondition          = "E023"
 	ErrorTooManyArguments                 = "E024"
+	ErrorInvalidSyntax                    = "E025"
 )
 
 type ErrorDetails struct {
@@ -241,7 +242,7 @@ func (v ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) (string
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func NewValidationError(code string, data TemplateLiterals, position node.ParserNode) error {
+func NewValidationError(code string, data TemplateLiterals, position node.ParserNode) *ValidationError {
 	start, end := position.GetPositionRange()
 
 	return &ValidationError{
