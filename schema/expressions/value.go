@@ -65,24 +65,6 @@ func (a *OperandResolution) TypesMatch(b *OperandResolution) bool {
 	return lhs.Type != rhs.Type
 }
 
-type Boolean struct {
-	node.Node
-
-	Value bool `@("false"|"true")`
-}
-
-type Number struct {
-	node.Node
-
-	Value int64 `@Int`
-}
-
-type String struct {
-	node.Node
-
-	Value string `@String`
-}
-
 type Ctx struct {
 	node.Node
 
