@@ -183,6 +183,7 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 					[]expression.Rules{
 						expression.PreventValueConditionRule,
 					},
+					model,
 				)
 
 				errors = append(errors, expressionErrs...)
@@ -240,6 +241,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				[]expression.Rules{
 					expression.OperatorLogicalRule,
 				},
+				model,
 			)
 
 			if expressionErrors != nil {
