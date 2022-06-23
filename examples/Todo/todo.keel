@@ -11,11 +11,11 @@ model Account {
 	}
 
 	@permission(
-		expression: account.identity == ctx.identity
+		expression: account.identity == ctx.identity,
 		actions: [get, update]
 	)
 	@permission(
-		expression: true
+		expression: true,
 		actions: [create]
 	)
 
@@ -38,17 +38,17 @@ model Team {
 	}
 
 	@permission(
-		expression: team.members.account.identity contains ctx.identity
+		expression: ctx.identity in team.members.account.identity,
 		actions: [create, get, list, update, delete]
 	)
 
 	operations {
 		list myTeams() {
-			@where(team.members.account.identity contains ctx.identity)
+			@where(ctx.identity in team.members.account.identity)
 		}
 		get getTeam(id)
 		delete deleteTeam(id)
-		create createTeam(name, members) 
+		create createTeam(name)
 	}
 }
 
@@ -64,14 +64,14 @@ model TeamMember {
 	@unique([account, team])
 
 	@permission(
-		expression: account.identity == ctx.identity
+		expression: account.identity == ctx.identity,
 		actions: [create, update, delete]
 	)
 
 	operations {
-		create addToTeam(account.email, team.id, role)
-		update updateTeamRole(account.id, team.id, role)
-		delete removeFromTeam(account.id, team.id)
+		create addToTeam(account, team, role)
+		update updateTeamRole(account, team, role)
+		delete removeFromTeam(account, team)
 	}
 }
 
@@ -89,13 +89,13 @@ model Project {
 	}
 
 	@permission(
-		expression: project.team.members.accounts.identity contains ctx.identity
+		expression: ctx.identity in project.team.members.accounts.identity,
 		actions: [create, list, delete]
 	)
 
 	operations {
-		create createProject(name, team.id)
-		list listProjects(team.id) 
+		create createProject(name, team)
+		list listProjects(team) 
 		delete deleteProject(id)
 	}
 }
@@ -115,7 +115,7 @@ model Task {
 	}
 
 	@permission(
-		expression: task.project.team.members.accounts.identity contains ctx.identity
+		expression: ctx.identity in task.project.team.members.accounts.identity,
 		actions: [get, list, update, delete]
 	)
 
@@ -134,14 +134,14 @@ model Task {
 			@set(task.completed = false)
 			@set(task.completedAt = null)
 		}
-		update assignTask(id, assignedTo.id) {
+		update assignTask(id, assignedTo) {
 			@validate(task.assignedTo in task.project.team.members.accounts)
 		}
 		update updateTask(id, title, description)
 		update createTasks(title, description, dueDate)
 		update setEstimate(id, estimate)
 		update setDueDate(id, dueDate)
-		update moveTasks(id, project.id)
+		update moveTasks(id, project)
 	}
 }
 
@@ -153,16 +153,16 @@ model Comment {
 	}
 
 	@permission(
-		expression: comment.task.team.members.accounts.identity contains ctx.identity
+		expression: ctx.identity in comment.task.team.members.accounts.identity,
 		actions: [create]
 	)
 	@permission(
-		expression: comment.author.identity == ctx.identity
+		expression: comment.author.identity == ctx.identity,
 		actions: [update, delete]
 	)
 
 	operations {
-		create createComment(task.id, text, author.id)
+		create createComment(task, text, author)
 		update updateComment(id, text)
 		delete deleteComment(id)
 	}

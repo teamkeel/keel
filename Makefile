@@ -1,4 +1,4 @@
-.PHONY: build proto testdata
+.PHONY: build proto testdata wasm test testpretty
 
 build:
 	go build -o keel cmd/keel/main.go
@@ -12,3 +12,11 @@ proto:
 testdata:
 	@cd ./schema && go run ./tools/generate_testdata.go ./testdata
 
+test:
+	go test ./... -count=1
+
+testpretty:
+	go test ./... -count=1 -json | gotestpretty
+
+wasm:
+	GOOS=js GOARCH=wasm go build -o ./wasm/keel.wasm ./wasm/main.go

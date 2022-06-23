@@ -8,6 +8,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/iancoleman/strcase v0.2.0
+	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/samber/lo v1.21.0
