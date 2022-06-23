@@ -228,68 +228,35 @@ func PreventInverseTraversalRule(asts []*parser.AST, expression *expressions.Exp
 	return nil
 }
 
-func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition) (lhs *expressions.OperandResolution, rhs *expressions.OperandResolution, errors []error) {
-	lhsIsValue, lhsValue := cond.LHS.IsValueType()
-	rhsIsValue, rhsValue := cond.RHS.IsValueType()
+func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition) (*expressions.OperandResolution, *expressions.OperandResolution, []error) {
+	lhs := cond.LHS
+	rhs := cond.RHS
 
-	if lhsIsValue && rhsIsValue {
-		return &expressions.OperandResolution{
-				Parts: []expressions.OperandPart{
-					{
-						Value:      lhsValue,
-						Type:       cond.LHS.Type(),
-						Resolvable: true,
-						Node:       cond.LHS.Node,
-					},
-				},
-			}, &expressions.OperandResolution{
-				Parts: []expressions.OperandPart{
-					{
-						Value:      rhsValue,
-						Type:       cond.RHS.Type(),
-						Resolvable: true,
-						Node:       cond.RHS.Node,
-					},
-				},
-			}, nil
-	}
+	resolvedLHS, lhsErrors := resolveOperand(asts, lhs)
+	resolvedRHS, rhsErrors := resolveOperand(asts, rhs)
 
-	if lhsIsValue && !rhsIsValue {
-		relationshipResolution, err := relationships.TryResolveIdent(asts, cond.RHS)
+	return &resolvedLHS, &resolvedRHS, append(lhsErrors, rhsErrors...)
+}
 
-		return &expressions.OperandResolution{
+func resolveOperand(asts []*parser.AST, o *expressions.Operand) (expressions.OperandResolution, []error) {
+	if ok, v := o.IsValueType(); ok {
+		return expressions.OperandResolution{
 			Parts: []expressions.OperandPart{
 				{
-					Value:      lhsValue,
-					Type:       cond.LHS.Type(),
+					Value:      v,
+					Type:       o.Type(),
 					Resolvable: true,
-					Node:       cond.LHS.Node,
+					Node:       o.Node,
 				},
 			},
-		}, relationshipResolution, err
+		}, nil
+	} else if ok, _ := o.IsCtx(); ok {
+		// resolve ctx
+		panic("context resolution not yet implemented")
+	} else {
+		relationshipResolution, errs := relationships.TryResolveIdent(asts, o)
+
+		return *relationshipResolution, errs
 	}
 
-	if !lhsIsValue && rhsIsValue {
-		relationshipResolution, err := relationships.TryResolveIdent(asts, cond.LHS)
-
-		return relationshipResolution, &expressions.OperandResolution{
-			Parts: []expressions.OperandPart{
-				{
-					Value:      rhsValue,
-					Type:       cond.RHS.Type(),
-					Resolvable: true,
-					Node:       cond.RHS.Node,
-				},
-			},
-		}, err
-	}
-
-	if !lhsIsValue && !rhsIsValue {
-		lhsResolution, lhsErr := relationships.TryResolveIdent(asts, cond.LHS)
-		rhsResolution, rhsErr := relationships.TryResolveIdent(asts, cond.RHS)
-
-		return lhsResolution, rhsResolution, append(lhsErr, rhsErr...)
-	}
-
-	return nil, nil, nil
 }
