@@ -3,6 +3,8 @@ package expression
 import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -30,32 +32,211 @@ func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, 
 	return errors
 }
 
-// Validates that all conditions in an expression use equality
-func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expression) []error {
-	return nil
+// Validates that all conditions in an expression use assignment
+func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expression) (errors []error) {
+	conditions := expression.Conditions()
+
+	for _, condition := range conditions {
+		if condition.Type() != expressions.AssignmentCondition {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorForbiddenExpressionOperation,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Operator":   condition.Operator.Symbol,
+							"Suggestion": "==",
+							"Area":       "//todo: need to provide context",
+						},
+					},
+					condition.Operator,
+				),
+			)
+		}
+	}
+
+	return errors
 }
 
 // Validates that no value conditions are used
 // e.g just true or false as a condition with  would not be permitted
-func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expression) []error {
-	return nil
+func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expression) (errors []error) {
+	conditions := expression.Conditions()
+
+	for _, cond := range conditions {
+		if cond.Type() == expressions.ValueCondition {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorForbiddenValueCondition,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Value": cond.ToString(),
+							"Area":  "// todo",
+						},
+					},
+					cond,
+				),
+			)
+		}
+	}
+
+	return errors
 }
 
-// Validates that all conditions in an expression use equality
-func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression) []error {
-	return nil
-}
+// Validates that all conditions in an expression use logical operators
+func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression) (errors []error) {
+	conditions := expression.Conditions()
 
-// Validates that only one condition has been used in an expression
-func OnlyOneConditionRule(asts []*parser.AST, expression *expressions.Expression) []error {
-	return nil
+	for _, condition := range conditions {
+		if condition.Type() != expressions.LogicalCondition {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorForbiddenExpressionOperation,
+					errorhandling.TemplateLiterals{},
+					condition.Operator,
+				),
+			)
+		}
+	}
+
+	return errors
 }
 
 // Validates that all operands resolve correctly
 // This handles operands of all types including operands such as model.associationA.associationB
 // as well as simple value types such as string, number, bool etc
-func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expression) []error {
-	return nil
+func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expression) (errors []error) {
+	conditions := expression.Conditions()
+
+	for _, condition := range conditions {
+		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition)
+
+		// ident resolution logic
+		if len(resolvedLHS.UnresolvedFragments()) > 0 {
+			unresolved := resolvedLHS.UnresolvedFragments()[0]
+
+			if unresolved.Parent == nil {
+				literals := map[string]string{
+					"Type":  "relationship",
+					"Root":  unresolved.Value,
+					"Model": "Something",
+				}
+
+				errors = append(errors, errorhandling.NewValidationError(
+					errorhandling.ErrorUnresolvedRootModel,
+					errorhandling.TemplateLiterals{
+						Literals: literals,
+					},
+					unresolved,
+				))
+			} else {
+				if unresolved.Parent.Resolvable {
+					parentModel := query.Model(asts, unresolved.Parent.Model)
+
+					fieldsOnParent := query.ModelFieldNames(parentModel)
+					correctionHint := errorhandling.NewCorrectionHint(fieldsOnParent, unresolved.Value)
+
+					literals := map[string]string{
+						"Type":       "relationship",
+						"Fragment":   unresolved.Value,
+						"Parent":     unresolved.Parent.Model,
+						"Suggestion": correctionHint.ToString(),
+					}
+
+					errors = append(errors,
+						errorhandling.NewValidationError(
+							errorhandling.ErrorUnresolvableExpression,
+							errorhandling.TemplateLiterals{
+								Literals: literals,
+							},
+							unresolved,
+						))
+				} else {
+					literals := map[string]string{
+						"Type":       "relationship",
+						"Fragment":   unresolved.Value,
+						"Parent":     unresolved.Parent.Value,
+						"Suggestion": "Something",
+					}
+
+					errors = append(errors,
+						errorhandling.NewValidationError(
+							errorhandling.ErrorUnresolvableExpression,
+							errorhandling.TemplateLiterals{
+								Literals: literals,
+							},
+							unresolved,
+						),
+					)
+				}
+
+			}
+		}
+
+		if len(resolvedRHS.UnresolvedFragments()) > 0 {
+			unresolved := resolvedRHS.UnresolvedFragments()[0]
+
+			if unresolved.Parent == nil {
+				literals := map[string]string{
+					"Type":  "relationship",
+					"Root":  unresolved.Value,
+					"Model": "Something",
+				}
+
+				errors = append(errors, errorhandling.NewValidationError(
+					errorhandling.ErrorUnresolvedRootModel,
+					errorhandling.TemplateLiterals{
+						Literals: literals,
+					},
+					unresolved,
+				))
+			} else {
+
+				if unresolved.Parent.Resolvable {
+					parentModel := query.Model(asts, unresolved.Parent.Value)
+
+					fieldsOnParent := query.ModelFieldNames(parentModel)
+					correctionHint := errorhandling.NewCorrectionHint(fieldsOnParent, unresolved.Value)
+
+					literals := map[string]string{
+						"Type":       "relationship",
+						"Fragment":   unresolved.Value,
+						"Parent":     unresolved.Parent.Value,
+						"Suggestion": correctionHint.ToString(),
+					}
+
+					errors = append(errors,
+						errorhandling.NewValidationError(
+							errorhandling.ErrorUnresolvableExpression,
+							errorhandling.TemplateLiterals{
+								Literals: literals,
+							},
+							unresolved,
+						))
+				} else {
+					literals := map[string]string{
+						"Type":       "relationship",
+						"Fragment":   unresolved.Value,
+						"Parent":     unresolved.Parent.Value,
+						"Suggestion": "Something",
+					}
+
+					errors = append(errors,
+						errorhandling.NewValidationError(
+							errorhandling.ErrorUnresolvableExpression,
+							errorhandling.TemplateLiterals{
+								Literals: literals,
+							},
+							unresolved,
+						),
+					)
+				}
+
+			}
+		}
+
+	}
+
+	return errors
 }
 
 // Validates ctx access
@@ -64,12 +245,97 @@ func CtxResolutionRule(asts []*parser.AST, expression *expressions.Expression) [
 }
 
 // Validates that all lhs and rhs operands of each condition in an expression match
-func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression) []error {
-	return nil
+func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression) (errors []error) {
+	conditions := expression.Conditions()
+
+	for _, condition := range conditions {
+		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition)
+
+		// ident resolution logic
+		if !resolvedLHS.TypesMatch(resolvedRHS) {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionTypeMismatch,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{},
+					},
+					condition,
+				),
+			)
+		}
+	}
+
+	return errors
 }
 
 // Validates inverse traversal in a relationship based expression
 // e.g walking backwards (model => association => model) is not permitted
 func PreventInverseTraversalRule(asts []*parser.AST, expression *expressions.Expression) []error {
 	return nil
+}
+
+func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition) (lhs *expressions.OperandResolution, rhs *expressions.OperandResolution, errors []error) {
+	lhsIsValue, lhsValue := cond.LHS.IsValueType()
+	rhsIsValue, rhsValue := cond.RHS.IsValueType()
+
+	if lhsIsValue && rhsIsValue {
+		return &expressions.OperandResolution{
+				Parts: []expressions.OperandPart{
+					{
+						Value:      lhsValue,
+						Type:       cond.LHS.Type(),
+						Resolvable: true,
+						Node:       cond.LHS.Node,
+					},
+				},
+			}, &expressions.OperandResolution{
+				Parts: []expressions.OperandPart{
+					{
+						Value:      rhsValue,
+						Type:       cond.RHS.Type(),
+						Resolvable: true,
+						Node:       cond.RHS.Node,
+					},
+				},
+			}, nil
+	}
+
+	if lhsIsValue && !rhsIsValue {
+		relationshipResolution, err := relationships.TryResolveIdent(asts, cond.RHS)
+
+		return &expressions.OperandResolution{
+			Parts: []expressions.OperandPart{
+				{
+					Value:      lhsValue,
+					Type:       cond.LHS.Type(),
+					Resolvable: true,
+					Node:       cond.LHS.Node,
+				},
+			},
+		}, relationshipResolution, err
+	}
+
+	if !lhsIsValue && rhsIsValue {
+		relationshipResolution, err := relationships.TryResolveIdent(asts, cond.LHS)
+
+		return relationshipResolution, &expressions.OperandResolution{
+			Parts: []expressions.OperandPart{
+				{
+					Value:      rhsValue,
+					Type:       cond.RHS.Type(),
+					Resolvable: true,
+					Node:       cond.RHS.Node,
+				},
+			},
+		}, err
+	}
+
+	if !lhsIsValue && !rhsIsValue {
+		lhsResolution, lhsErr := relationships.TryResolveIdent(asts, cond.LHS)
+		rhsResolution, rhsErr := relationships.TryResolveIdent(asts, cond.RHS)
+
+		return lhsResolution, rhsResolution, append(lhsErr, rhsErr...)
+	}
+
+	return nil, nil, nil
 }
