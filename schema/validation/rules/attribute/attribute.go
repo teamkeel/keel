@@ -195,7 +195,10 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 					asts,
 					expr,
 					rules,
-					fmt.Sprintf("@%s", attr.Name.Value),
+					expression.RuleContext{
+						Model:     model,
+						Attribute: attr,
+					},
 				)
 
 				errors = append(errors, expressionErrs...)
@@ -253,7 +256,10 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				[]expression.Rules{
 					expression.OperatorLogicalRule,
 				},
-				model,
+				expression.RuleContext{
+					Model:     model,
+					Attribute: attr,
+				},
 			)
 
 			if expressionErrors != nil {

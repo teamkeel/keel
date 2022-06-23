@@ -1,6 +1,7 @@
 package expression
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/teamkeel/keel/schema/expressions"
@@ -10,13 +11,17 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-type Rules func(asts []*parser.AST, expression *expressions.Expression, context interface{}) []error
+type RuleContext struct {
+	Model     *parser.ModelNode
+	Attribute *parser.AttributeNode
+}
 
-func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, customRules []Rules, context interface{}) (errors []error) {
+type Rules func(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error
+
+func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, customRules []Rules, context RuleContext) (errors []error) {
 	baseRules := []Rules{
 		OperandResolutionRule,
 		MismatchedTypesRule,
-		CtxResolutionRule,
 	}
 
 	baseRules = append(baseRules, customRules...)
@@ -35,10 +40,15 @@ func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, 
 }
 
 // Validates that all conditions in an expression use assignment
-func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expression, context interface{}) (errors []error) {
+func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
+		// If there is no operator, then it means there is no rhs
+		if condition.Operator.Symbol == "" {
+			continue
+		}
+
 		if condition.Type() != expressions.AssignmentCondition {
 			errors = append(errors,
 				errorhandling.NewValidationError(
@@ -46,8 +56,8 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expressi
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"Operator":   condition.Operator.Symbol,
-							"Suggestion": "==",
-							"Area":       "//todo: need to provide context",
+							"Suggestion": "=",
+							"Area":       fmt.Sprintf("@%s", context.Attribute.Name.Value),
 						},
 					},
 					condition.Operator,
@@ -61,7 +71,7 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expressi
 
 // Validates that no value conditions are used
 // e.g just true or false as a condition with  would not be permitted
-func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expression, context interface{}) (errors []error) {
+func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, cond := range conditions {
@@ -72,7 +82,7 @@ func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expre
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"Value": cond.ToString(),
-							"Area":  "// todo",
+							"Area":  fmt.Sprintf("@%s", context.Attribute.Name.Value),
 						},
 					},
 					cond,
@@ -85,15 +95,26 @@ func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expre
 }
 
 // Validates that all conditions in an expression use logical operators
-func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression, context interface{}) (errors []error) {
+func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
+		// If there is no operator, then it means there is no rhs
+		if condition.Operator.Symbol == "" {
+			continue
+		}
+
 		if condition.Type() != expressions.LogicalCondition {
 			errors = append(errors,
 				errorhandling.NewValidationError(
 					errorhandling.ErrorForbiddenExpressionOperation,
-					errorhandling.TemplateLiterals{},
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Operator":   condition.Operator.Symbol,
+							"Area":       fmt.Sprintf("@%s", context.Attribute.Name.Value),
+							"Suggestion": "==",
+						},
+					},
 					condition.Operator,
 				),
 			)
@@ -106,23 +127,25 @@ func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression,
 // Validates that all operands resolve correctly
 // This handles operands of all types including operands such as model.associationA.associationB
 // as well as simple value types such as string, number, bool etc
-func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expression, context interface{}) (errors []error) {
+func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
 		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition)
 
 		errors = append(errors, buildOperandResolutionErrors(asts, resolvedLHS, context)...)
-		errors = append(errors, buildOperandResolutionErrors(asts, resolvedRHS, context)...)
+		if resolvedRHS != nil {
+			errors = append(errors, buildOperandResolutionErrors(asts, resolvedRHS, context)...)
+		}
 	}
 
 	return errors
 }
 
-func buildOperandResolutionErrors(asts []*parser.AST, resolution *expressions.OperandResolution, context interface{}) (errors []error) {
+func buildOperandResolutionErrors(asts []*parser.AST, resolution *expressions.OperandResolution, context RuleContext) (errors []error) {
 	contextModel := ""
-	if model, ok := context.(*parser.ModelNode); ok {
-		contextModel = strings.ToLower(model.Name.Value)
+	if context.Model != nil {
+		contextModel = strings.ToLower(context.Model.Name.Value)
 	}
 
 	if len(resolution.UnresolvedFragments()) > 0 {
@@ -188,19 +211,20 @@ func buildOperandResolutionErrors(asts []*parser.AST, resolution *expressions.Op
 	return errors
 }
 
-// Validates ctx access
-func CtxResolutionRule(asts []*parser.AST, expression *expressions.Expression, context interface{}) []error {
-	return nil
-}
-
 // Validates that all lhs and rhs operands of each condition in an expression match
-func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context interface{}) (errors []error) {
+func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
 		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition)
 
-		// ident resolution logic
+		// if there is no rhs (value only conditions with only a lhs)
+		// then we do not care about validating this rule for this condition
+		if resolvedRHS == nil {
+			continue
+		}
+
+		// check the type of the last fragment in both lhs and rhs operands match
 		if !resolvedLHS.TypesMatch(resolvedRHS) {
 			errors = append(errors,
 				errorhandling.NewValidationError(
@@ -224,7 +248,7 @@ func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression,
 
 // Validates inverse traversal in a relationship based expression
 // e.g walking backwards (model => association => model) is not permitted
-func PreventInverseTraversalRule(asts []*parser.AST, expression *expressions.Expression, context interface{}) []error {
+func PreventInverseTraversalRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error {
 	return nil
 }
 
@@ -235,12 +259,16 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition) (
 	resolvedLHS, lhsErrors := resolveOperand(asts, lhs)
 	resolvedRHS, rhsErrors := resolveOperand(asts, rhs)
 
-	return &resolvedLHS, &resolvedRHS, append(lhsErrors, rhsErrors...)
+	return resolvedLHS, resolvedRHS, append(lhsErrors, rhsErrors...)
 }
 
-func resolveOperand(asts []*parser.AST, o *expressions.Operand) (expressions.OperandResolution, []error) {
+func resolveOperand(asts []*parser.AST, o *expressions.Operand) (*expressions.OperandResolution, []error) {
+	if o == nil {
+		return nil, nil
+	}
+
 	if ok, v := o.IsValueType(); ok {
-		return expressions.OperandResolution{
+		return &expressions.OperandResolution{
 			Parts: []expressions.OperandPart{
 				{
 					Value:      v,
@@ -250,13 +278,44 @@ func resolveOperand(asts []*parser.AST, o *expressions.Operand) (expressions.Ope
 				},
 			},
 		}, nil
-	} else if ok, _ := o.IsCtx(); ok {
+	} else if ok, ctx := o.IsCtx(); ok {
+
+		// known context
+
+		knownPath := "ctx.identity"
+
+		resolution := expressions.OperandResolution{}
+
+		for i, token := range strings.Split(ctx.Token, ".") {
+
+			resolved := strings.Split(knownPath, ".")[i] == token
+
+			t := ""
+
+			if i == 0 {
+				t = "ctx"
+			} else if i == 1 && token == "identity" {
+				t = "Identity"
+			} else if i > 1 {
+				panic("Redo this whole method")
+			}
+
+			resolution.Parts = append(resolution.Parts,
+				expressions.OperandPart{
+					Resolvable: resolved,
+					Value:      token,
+					Type:       t,
+				},
+			)
+
+		}
+
 		// resolve ctx
-		panic("context resolution not yet implemented")
+		return &resolution, nil
 	} else {
 		relationshipResolution, errs := relationships.TryResolveIdent(asts, o)
 
-		return *relationshipResolution, errs
+		return relationshipResolution, errs
 	}
 
 }
