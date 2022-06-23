@@ -13,7 +13,17 @@
           "modelName":  "Author",
           "name":  "id",
           "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "primaryKey":  true
+        },
+        {
+          "modelName":  "Author",
+          "name":  "createdAt",
+          "type":  "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName":  "Author",
+          "name":  "updatedAt",
+          "type":  "FIELD_TYPE_DATETIME"
         }
       ],
       "operations":  [

@@ -1,0 +1,6 @@
+model Person {
+    fields {
+        name Text?
+    }
+}
+

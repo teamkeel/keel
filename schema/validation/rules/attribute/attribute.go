@@ -58,7 +58,7 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 	var supportedAttributes = map[string][]string{
 		parser.KeywordModel:     {parser.AttributePermission},
 		parser.KeywordApi:       {parser.AttributeGraphQL},
-		parser.KeywordField:     {parser.AttributeUnique, parser.AttributeOptional},
+		parser.KeywordField:     {parser.AttributeUnique},
 		parser.KeywordOperation: {parser.AttributeSet, parser.AttributeWhere, parser.AttributePermission},
 		parser.KeywordFunction:  {parser.AttributePermission},
 	}

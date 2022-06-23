@@ -7,7 +7,17 @@
           "modelName":  "Foo",
           "name":  "id",
           "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "primaryKey":  true
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "createdAt",
+          "type":  "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "updatedAt",
+          "type":  "FIELD_TYPE_DATETIME"
         }
       ]
     },
@@ -18,7 +28,17 @@
           "modelName":  "Bar",
           "name":  "id",
           "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "primaryKey":  true
+        },
+        {
+          "modelName":  "Bar",
+          "name":  "createdAt",
+          "type":  "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName":  "Bar",
+          "name":  "updatedAt",
+          "type":  "FIELD_TYPE_DATETIME"
         }
       ]
     }

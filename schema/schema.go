@@ -94,25 +94,52 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 		if decl.Model == nil {
 			continue
 		}
-		field := &parser.FieldNode{
-			BuiltIn: true,
-			Name: parser.NameNode{
-				Value: parser.ImplicitFieldNameId,
+
+		fields := []*parser.FieldNode{
+			{
+				BuiltIn: true,
+				Name: parser.NameNode{
+					Value: parser.ImplicitFieldNameId,
+				},
+				Type: parser.FieldTypeID,
+				Attributes: []*parser.AttributeNode{
+					{
+						Name: parser.AttributeNameToken{Value: "primaryKey"},
+					},
+				},
 			},
-			Type: parser.FieldTypeID,
-			Attributes: []*parser.AttributeNode{
-				{
-					Name: parser.AttributeNameToken{Value: "primaryKey"},
+			{
+				BuiltIn: true,
+				Name: parser.NameNode{
+					Value: parser.ImplicitFieldNameCreatedAt,
 				},
-				{
-					Name: parser.AttributeNameToken{Value: "unique"},
+				Type: parser.FieldTypeDatetime,
+				// TODO: add @default(now())
+			},
+			{
+				BuiltIn: true,
+				Name: parser.NameNode{
+					Value: parser.ImplicitFieldNameUpdatedAt,
 				},
+				Type: parser.FieldTypeDatetime,
+				// TODO: add default(now())
 			},
 		}
-		section := &parser.ModelSectionNode{
-			Fields: []*parser.FieldNode{field},
+
+		var fieldsSection *parser.ModelSectionNode
+		for _, section := range decl.Model.Sections {
+			if len(section.Fields) > 0 {
+				fieldsSection = section
+				break
+			}
 		}
-		model := decl.Model
-		model.Sections = append(model.Sections, section)
+
+		if fieldsSection == nil {
+			decl.Model.Sections = append(decl.Model.Sections, &parser.ModelSectionNode{
+				Fields: fields,
+			})
+		} else {
+			fieldsSection.Fields = append(fieldsSection.Fields, fields...)
+		}
 	}
 }

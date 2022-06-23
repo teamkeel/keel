@@ -3,8 +3,6 @@ model Foo {
         bar Text {
             @unique
         }
-        baz Text {
-            @optional
-        }
+        baz Text?
     }
 }

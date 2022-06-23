@@ -7,7 +7,17 @@
           "modelName":  "MyModel",
           "name":  "id",
           "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "primaryKey":  true
+        },
+        {
+          "modelName":  "MyModel",
+          "name":  "createdAt",
+          "type":  "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName":  "MyModel",
+          "name":  "updatedAt",
+          "type":  "FIELD_TYPE_DATETIME"
         }
       ],
       "operations":  [

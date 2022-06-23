@@ -1,33 +1,27 @@
 {
   "models":  [
     {
-      "name":  "Foo",
+      "name":  "Person",
       "fields":  [
         {
-          "modelName":  "Foo",
-          "name":  "bar",
-          "type":  "FIELD_TYPE_STRING",
-          "unique":  true
-        },
-        {
-          "modelName":  "Foo",
-          "name":  "baz",
+          "modelName":  "Person",
+          "name":  "name",
           "type":  "FIELD_TYPE_STRING",
           "optional":  true
         },
         {
-          "modelName":  "Foo",
+          "modelName":  "Person",
           "name":  "id",
           "type":  "FIELD_TYPE_ID",
           "primaryKey":  true
         },
         {
-          "modelName":  "Foo",
+          "modelName":  "Person",
           "name":  "createdAt",
           "type":  "FIELD_TYPE_DATETIME"
         },
         {
-          "modelName":  "Foo",
+          "modelName":  "Person",
           "name":  "updatedAt",
           "type":  "FIELD_TYPE_DATETIME"
         }
