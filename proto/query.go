@@ -43,6 +43,17 @@ func FindModel(models []*Model, name string) *Model {
 	return model
 }
 
+// FindModels locates and returns the models whose names match up with those
+// specified in the given names to find.
+func FindModels(allModels []*Model, namesToFind []string) (foundModels []*Model) {
+	for _, candidateModel := range allModels {
+		if lo.Contains(namesToFind, candidateModel.Name) {
+			foundModels = append(foundModels, candidateModel)
+		}
+	}
+	return foundModels
+}
+
 func FindField(models []*Model, modelName string, fieldName string) *Field {
 	model := FindModel(models, modelName)
 	for _, field := range model.Fields {

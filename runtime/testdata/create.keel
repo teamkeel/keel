@@ -1,0 +1,14 @@
+model Author {
+  fields {
+    name Text
+  }
+  operations {
+    create createAuthor(name)
+  }
+}
+
+api Web {
+  models {
+    Author
+  }
+}
