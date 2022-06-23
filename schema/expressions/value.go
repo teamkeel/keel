@@ -9,14 +9,14 @@ import (
 type Operand struct {
 	node.Node
 
-	Number *Number  `  @Int`
-	String *String  `| @String`
-	Null   *Boolean `| @"null"`
-	True   *Boolean `| @"true"`
-	False  *Boolean `| @"false"`
-	Array  *Array   `| @@`
-	Ctx    *Ctx     `| @@`
-	Ident  *Ident   `| @@`
+	Number *int64  `  @Int`
+	String *string `| @String`
+	Null   bool    `| @"null"`
+	True   bool    `| @"true"`
+	False  bool    `| @"false"`
+	Array  *Array  `| @@`
+	Ctx    *Ctx    `| @@`
+	Ident  *Ident  `| @@`
 }
 
 type OperandPart struct {
@@ -24,6 +24,7 @@ type OperandPart struct {
 
 	Value      string
 	Resolvable bool
+	Model      string // Modelised representation of fragment
 	Parent     *OperandPart
 	Type       string
 }
@@ -32,22 +33,54 @@ type OperandResolution struct {
 	Parts []OperandPart
 }
 
+func (res *OperandResolution) LastFragment() *OperandPart {
+	if len(res.Parts) < 1 {
+		return nil
+	}
+
+	return &res.Parts[len(res.Parts)-1]
+}
+
+func (res *OperandResolution) UnresolvedFragments() []OperandPart {
+	unresolvable := []OperandPart{}
+	parts := res.Parts
+
+	for _, part := range parts {
+		if !part.Resolvable {
+			unresolvable = append(unresolvable, part)
+		}
+	}
+
+	return unresolvable
+}
+
+func (a *OperandResolution) TypesMatch(b *OperandResolution) bool {
+	if a == nil || b == nil {
+		return false
+	}
+
+	lhs := a.LastFragment()
+	rhs := b.LastFragment()
+
+	return lhs.Type != rhs.Type
+}
+
 type Boolean struct {
 	node.Node
 
-	Value bool
+	Value bool `@("false"|"true")`
 }
 
 type Number struct {
 	node.Node
 
-	Value int64
+	Value int64 `@Int`
 }
 
 type String struct {
 	node.Node
 
-	Value string
+	Value string `@String`
 }
 
 type Ctx struct {
@@ -87,16 +120,16 @@ type Array struct {
 	Values []*Operand `"[" @@ ( "," @@ )* "]"`
 }
 
-func (v *Operand) ToString() string {
-	if v == nil {
+func (o *Operand) ToString() string {
+	if o == nil {
 		return ""
 	}
 
-	switch v.Type() {
+	switch o.Type() {
 	case "Number":
-		return fmt.Sprintf("%d", &v.Number)
+		return fmt.Sprintf("%d", &o.Number)
 	case "Text":
-		return v.String.Value
+		return *o.String
 	case "Null":
 		return "null"
 	case "False":
@@ -105,7 +138,7 @@ func (v *Operand) ToString() string {
 		return "true"
 	case "Array":
 		r := "["
-		for i, el := range v.Array.Values {
+		for i, el := range o.Array.Values {
 			if i > 0 {
 				r += ", "
 			}
@@ -113,33 +146,56 @@ func (v *Operand) ToString() string {
 		}
 		return r + "]"
 	case "Ident":
-		return v.Ident.ToString()
+		return o.Ident.ToString()
 	case "Ctx":
-		return v.Ctx.Token
+		return o.Ctx.Token
 	default:
 		return ""
 	}
 }
 
-func (v *Operand) Type() string {
+func (o *Operand) Type() string {
 	switch {
-	case v.Number != nil:
+	case o.Number != nil:
 		return "Number"
-	case v.String != nil:
+	case o.String != nil:
 		return "Text"
-	case v.Null != nil:
+	case o.Null:
 		return "Null"
-	case v.False != nil:
+	case o.False:
 		return "False"
-	case v.True != nil:
+	case o.True:
 		return "True"
-	case v.Array != nil:
+	case o.Array != nil:
 		return "Array"
-	case v.Ident != nil && len(v.Ident.Fragments) > 0:
+	case o.Ident != nil && len(o.Ident.Fragments) > 0:
 		return "Ident"
-	case v.Ctx != nil:
+	case o.Ctx != nil:
 		return "Ctx"
 	default:
 		return ""
+	}
+}
+
+func (o *Operand) IsValueType() (bool, string) {
+	switch {
+	case o.Number != nil:
+		return true, o.ToString()
+	case o.String != nil:
+		return true, o.ToString()
+	case o.Null:
+		return true, o.ToString()
+	case o.False:
+		return true, o.ToString()
+	case o.True:
+		return true, o.ToString()
+	case o.Array != nil:
+		return false, o.ToString() // todo: arrays containing idents?
+	case o.Ident != nil && len(o.Ident.Fragments) > 0:
+		return false, o.ToString()
+	case o.Ctx != nil:
+		return false, o.ToString()
+	default:
+		return true, o.ToString()
 	}
 }

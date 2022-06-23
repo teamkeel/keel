@@ -11,9 +11,7 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
-	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/util/str"
 
 	"gopkg.in/yaml.v3"
@@ -266,7 +264,7 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 	}
 }
 
-func NewOperandTypeMismatchError(asts []*parser.AST, cond *expressions.Condition, lhs *relationships.Relationships, rhs *relationships.Relationships) error {
+func NewOperandTypeMismatchError(asts []*parser.AST, cond *expressions.Condition, lhs *expressions.OperandResolution, rhs *expressions.OperandResolution) error {
 	lastFragmentLhs := lhs.LastFragment()
 
 	lastFragmentRhs := rhs.LastFragment()
@@ -276,9 +274,9 @@ func NewOperandTypeMismatchError(asts []*parser.AST, cond *expressions.Condition
 			ErrorExpressionTypeMismatch,
 			TemplateLiterals{
 				Literals: map[string]string{
-					"LHS":     lastFragmentLhs.Current,
+					"LHS":     lastFragmentLhs.Value,
 					"LHSType": lastFragmentLhs.Type,
-					"RHS":     lastFragmentRhs.Current,
+					"RHS":     lastFragmentRhs.Value,
 					"RHSType": lastFragmentRhs.Type,
 				},
 			},
@@ -287,56 +285,6 @@ func NewOperandTypeMismatchError(asts []*parser.AST, cond *expressions.Condition
 	}
 
 	return nil
-}
-
-func NewRelationshipValidationError(asts []*parser.AST, context interface{}, relationships *relationships.Relationships) error {
-	unresolved := relationships.UnresolvedFragment()
-	suggestion := ""
-
-	if len(relationships.Fragments) == 1 {
-		// If there is only one fragment in the relationship
-		// then it means that the root model was unresolvable
-		// So therefore the suggestion should be the context (downcased)
-		if model, ok := context.(*parser.ModelNode); ok {
-			suggestion = strings.ToLower(model.Name.Value)
-		}
-
-		literals := map[string]string{
-			"Type":  "relationship",
-			"Root":  unresolved.Current,
-			"Model": suggestion,
-		}
-
-		return NewValidationError(ErrorUnresolvedRootModel,
-			TemplateLiterals{
-				Literals: literals,
-			},
-			unresolved,
-		)
-	}
-
-	// If more than one fragment, then we need to resolve the second fragment's parent
-	// And find the field names on the parent in order to build up the suggestion hint
-	// e.g Given the condition post.autho it should suggest post.author instead
-	parentModel := query.Model(asts, unresolved.Parent)
-	fieldsOnParent := query.ModelFieldNames(parentModel)
-
-	correctionHint := NewCorrectionHint(fieldsOnParent, unresolved.Current)
-
-	literals := map[string]string{
-		"Type":       "relationship",
-		"Fragment":   unresolved.Current,
-		"Parent":     unresolved.Parent,
-		"Suggestion": correctionHint.ToString(),
-	}
-
-	return NewValidationError(ErrorUnresolvableExpression,
-		TemplateLiterals{
-			Literals: literals,
-		},
-		unresolved.Node,
-	)
-
 }
 
 //go:embed errors.yml
