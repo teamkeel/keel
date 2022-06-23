@@ -62,7 +62,7 @@ func (a *OperandResolution) TypesMatch(b *OperandResolution) bool {
 	lhs := a.LastFragment()
 	rhs := b.LastFragment()
 
-	return lhs.Type != rhs.Type
+	return lhs.Type == rhs.Type
 }
 
 type Ctx struct {
@@ -109,15 +109,17 @@ func (o *Operand) ToString() string {
 
 	switch o.Type() {
 	case "Number":
-		return fmt.Sprintf("%d", &o.Number)
+		return fmt.Sprintf("%d", *o.Number)
 	case "Text":
 		return *o.String
 	case "Null":
 		return "null"
-	case "False":
-		return "false"
-	case "True":
-		return "true"
+	case "Boolean":
+		if o.False {
+			return "false"
+		} else {
+			return "true"
+		}
 	case "Array":
 		r := "["
 		for i, el := range o.Array.Values {
@@ -145,9 +147,9 @@ func (o *Operand) Type() string {
 	case o.Null:
 		return "Null"
 	case o.False:
-		return "False"
+		return "Boolean"
 	case o.True:
-		return "True"
+		return "Boolean"
 	case o.Array != nil:
 		return "Array"
 	case o.Ident != nil && len(o.Ident.Fragments) > 0:

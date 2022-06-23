@@ -33,15 +33,22 @@ func TryResolveIdent(asts []*parser.AST, operand *expressions.Operand) (*express
 			rootModel := query.Model(asts, lookupModel)
 			resolvableRoot := rootModel != nil
 
+			resolvedType := ""
+
 			if !resolvableRoot {
 				errors = append(errors, fmt.Errorf("could not find root model %s", lookupModel))
+
+				resolvedType = TypeInvalid
+			} else {
+				resolvedType = rootModel.Name.Value
 			}
 
 			res.Parts = append(res.Parts, expressions.OperandPart{
 				Node:       ident.Fragments[idx].Node,
 				Resolvable: resolvableRoot,
 				Model:      lookupModel,
-				Value:      lookupModel,
+				Value:      ident.Fragments[idx].Fragment,
+				Type:       resolvedType,
 			})
 		} else {
 			// we're dealing with fields on a parent
@@ -57,8 +64,13 @@ func TryResolveIdent(asts []*parser.AST, operand *expressions.Operand) (*express
 
 				resolvableField := field != nil
 
+				resolvableType := ""
+
 				if !resolvableField {
 					errors = append(errors, fmt.Errorf("unresolvable field %s", lookupField))
+					resolvableType = TypeInvalid
+				} else {
+					resolvableType = field.Type
 				}
 
 				res.Parts = append(res.Parts, expressions.OperandPart{
@@ -67,6 +79,7 @@ func TryResolveIdent(asts []*parser.AST, operand *expressions.Operand) (*express
 					Value:      ident.Fragments[idx].Fragment,
 					Model:      str.AsTitle(ident.Fragments[idx].Fragment),
 					Parent:     &parent,
+					Type:       resolvableType,
 				})
 			} else {
 				errors = append(errors, fmt.Errorf("unresolvable field %s", ident.Fragments[idx].Fragment))
@@ -74,8 +87,10 @@ func TryResolveIdent(asts []*parser.AST, operand *expressions.Operand) (*express
 				res.Parts = append(res.Parts, expressions.OperandPart{
 					Node:       ident.Fragments[idx].Node,
 					Resolvable: parent.Resolvable,
-					Value:      str.AsTitle(ident.Fragments[idx].Fragment),
+					Value:      ident.Fragments[idx].Fragment,
+					Model:      str.AsTitle(ident.Fragments[idx].Fragment),
 					Parent:     &parent,
+					Type:       TypeInvalid,
 				})
 			}
 		}

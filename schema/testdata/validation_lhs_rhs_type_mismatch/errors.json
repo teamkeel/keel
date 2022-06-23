@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "",
-        "hint": "",
-        "message": "",
-        "end_pos": {
-          "column": 0,
-          "filename": "testdata/validation_lhs_rhs_type_mismatch/schema.keel",
-          "line": 0,
-          "offset": 0
-        },
-        "pos": {
-          "column": 0,
-          "filename": "testdata/validation_lhs_rhs_type_mismatch/schema.keel",
-          "line": 0,
-          "offset": 0
-        },
-        "short_message": ""
+{
+  "Errors": [
+    {
+      "message": "title is a Text and 12 is a Number",
+      "short_message": "title is of type Text and 12 is of type Number",
+      "hint": "Please make sure that you are comparing entities of the same type",
+      "code": "E025",
+      "pos": {
+        "filename": "testdata/validation_lhs_rhs_type_mismatch/schema.keel",
+        "offset": 75,
+        "line": 7,
+        "column": 17
+      },
+      "end_pos": {
+        "filename": "testdata/validation_lhs_rhs_type_mismatch/schema.keel",
+        "offset": 91,
+        "line": 7,
+        "column": 33
       }
-    ]
-  }
+    }
+  ]
+}
