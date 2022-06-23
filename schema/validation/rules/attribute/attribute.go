@@ -177,12 +177,24 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 
 				expr := attr.Arguments[0].Expression
 
+				rules := []expression.Rules{
+					expression.PreventValueConditionRule,
+				}
+
+				if attr.Name.Value == parser.AttributeSet {
+					rules = append(rules,
+						expression.OperatorAssignmentRule,
+					)
+				} else {
+					rules = append(rules,
+						expression.OperatorLogicalRule,
+					)
+				}
+
 				expressionErrs := expression.ValidateExpression(
 					asts,
 					expr,
-					[]expression.Rules{
-						expression.PreventValueConditionRule,
-					},
+					rules,
 					model,
 				)
 
