@@ -4,7 +4,6 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"os"
 	"strings"
 	"text/template"
 
@@ -14,7 +13,6 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/relationships"
-	"github.com/teamkeel/keel/util/collection"
 	"github.com/teamkeel/keel/util/str"
 
 	"gopkg.in/yaml.v3"
@@ -85,31 +83,6 @@ type ValidationErrors struct {
 	Errors []*ValidationError
 }
 
-func (v ValidationErrors) MatchingSchemas() map[string]reader.SchemaFile {
-	paths := []string{}
-	schemaFiles := map[string]reader.SchemaFile{}
-
-	for _, err := range v.Errors {
-		if collection.Contains(paths, err.Pos.Filename) {
-			continue
-		}
-
-		paths = append(paths, err.Pos.Filename)
-	}
-
-	for _, path := range paths {
-		fileBytes, err := os.ReadFile(path)
-
-		if err != nil {
-			panic(err)
-		}
-
-		schemaFiles[path] = reader.SchemaFile{FileName: path, Contents: string(fileBytes)}
-	}
-
-	return schemaFiles
-}
-
 func (v ValidationErrors) Error() string {
 	str := ""
 
@@ -121,7 +94,7 @@ func (v ValidationErrors) Error() string {
 }
 
 // Returns the console flavoured output format for a set of validation errors
-func (v ValidationErrors) ToConsole() string {
+func (v ValidationErrors) ToConsole(sources []reader.SchemaFile) (string, error) {
 	errorCount := len(v.Errors)
 	errorsPartial := ""
 	if errorCount > 1 {
@@ -133,16 +106,17 @@ func (v ValidationErrors) ToConsole() string {
 	statusMessage := red.Sprint("INVALID\n")
 	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
 
-	schemaPreview := v.ToAnnotatedSchema()
+	schemaPreview, err := v.ToAnnotatedSchema(sources)
+	if err != nil {
+		return "", err
+	}
 
-	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview)
+	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview), nil
 }
 
 // Returns a visual representation of a schema file, annotated with error highlighting and messages
-func (v ValidationErrors) ToAnnotatedSchema() string {
+func (v ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) (string, error) {
 	schemaString := ""
-
-	matchingSchemas := v.MatchingSchemas()
 
 	gutterAmount := 5
 	newLine := func() {
@@ -153,104 +127,116 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 		errorStartLine := err.Pos.Line
 		errorEndLine := err.EndPos.Line
 
-		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
-			lines := strings.Split(match.Contents, "\n")
-			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
-			midPointPosition := codeStartCol + err.Pos.Column + ((err.EndPos.Column - err.Pos.Column) / 2)
-			tokenLength := err.EndPos.Column - err.Pos.Column
+		var source string
+		for _, s := range sources {
+			if s.FileName == err.Pos.Filename {
+				source = s.Contents
+				break
+			}
+		}
 
-			for lineIndex, line := range lines {
-				// Render line numbers in gutter
-				outputLine := blue.Sprint(str.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+		// kind of feels like this should be an error...
+		if source == "" {
+			return "", fmt.Errorf("no source file provided for %s", err.Pos.Filename)
+		}
 
-				// If the error line doesn't match the currently enumerated line
-				// then we can render the whole line without any colorization
-				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
-					outputLine += fmt.Sprintf("%s\n", line)
+		lines := strings.Split(source, "\n")
+		codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
+		midPointPosition := codeStartCol + err.Pos.Column + ((err.EndPos.Column - err.Pos.Column) / 2)
+		tokenLength := err.EndPos.Column - err.Pos.Column
 
-					schemaString += outputLine
+		for lineIndex, line := range lines {
+			// Render line numbers in gutter
+			outputLine := blue.Sprint(str.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+
+			// If the error line doesn't match the currently enumerated line
+			// then we can render the whole line without any colorization
+			if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
+				outputLine += fmt.Sprintf("%s\n", line)
+
+				schemaString += outputLine
+				continue
+			}
+
+			chars := strings.Split(line, "")
+
+			// Enumerate over the characters in the line
+			for charIdx, char := range chars {
+
+				// Check if the character index is less than or greater than the corresponding start and end column
+				// If so, then render the char without any colorization
+				if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
+					outputLine += char
 					continue
 				}
 
-				chars := strings.Split(line, "")
-
-				// Enumerate over the characters in the line
-				for charIdx, char := range chars {
-
-					// Check if the character index is less than or greater than the corresponding start and end column
-					// If so, then render the char without any colorization
-					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
-						outputLine += char
-						continue
-					}
-
-					outputLine += red.Sprint(char)
-				}
-
-				schemaString += fmt.Sprintf("%s\n", outputLine)
-
-				// Begin closures to render unicode arrows / hints / messages
-				indent := func(length int) {
-					counter := 1
-
-					for counter < length {
-						schemaString += " "
-						counter += 1
-					}
-				}
-
-				underline := func() {
-					indent(codeStartCol + err.Pos.Column)
-
-					counter := 0
-
-					for counter < tokenLength {
-						if counter == tokenLength/2 {
-							schemaString += yellow.Sprint("\u252C")
-						} else {
-							schemaString += yellow.Sprint("\u2500")
-
-						}
-						counter++
-					}
-				}
-
-				arrowDown := func() {
-					newLine()
-					indent(midPointPosition)
-					schemaString += yellow.Sprint("\u2570")
-					schemaString += yellow.Sprint("\u2500")
-				}
-
-				message := func() {
-					schemaString += yellow.Sprintf(" %s", err.ErrorDetails.Message)
-				}
-
-				hint := func() {
-					if err.ErrorDetails.Hint != "" {
-						schemaString += cyan.Sprint(err.ErrorDetails.Hint)
-					}
-				}
-
-				underline()
-				arrowDown()
-				message()
-				newLine()
-
-				// Line up hint with the error message above (taking into account unicode arrows)
-				hintOffset := 3
-				indent(midPointPosition + hintOffset)
-				hint()
-				newLine()
+				outputLine += red.Sprint(char)
 			}
 
-			schemaString += red.Add(color.Italic).Sprintf("\u21B3 %s", err.Pos.Filename)
+			schemaString += fmt.Sprintf("%s\n", outputLine)
+
+			// Begin closures to render unicode arrows / hints / messages
+			indent := func(length int) {
+				counter := 1
+
+				for counter < length {
+					schemaString += " "
+					counter += 1
+				}
+			}
+
+			underline := func() {
+				indent(codeStartCol + err.Pos.Column)
+
+				counter := 0
+
+				for counter < tokenLength {
+					if counter == tokenLength/2 {
+						schemaString += yellow.Sprint("\u252C")
+					} else {
+						schemaString += yellow.Sprint("\u2500")
+
+					}
+					counter++
+				}
+			}
+
+			arrowDown := func() {
+				newLine()
+				indent(midPointPosition)
+				schemaString += yellow.Sprint("\u2570")
+				schemaString += yellow.Sprint("\u2500")
+			}
+
+			message := func() {
+				schemaString += yellow.Sprintf(" %s", err.ErrorDetails.Message)
+			}
+
+			hint := func() {
+				if err.ErrorDetails.Hint != "" {
+					schemaString += cyan.Sprint(err.ErrorDetails.Hint)
+				}
+			}
+
+			underline()
+			arrowDown()
+			message()
 			newLine()
+
+			// Line up hint with the error message above (taking into account unicode arrows)
+			hintOffset := 3
+			indent(midPointPosition + hintOffset)
+			hint()
 			newLine()
 		}
+
+		schemaString += red.Add(color.Italic).Sprintf("\u21B3 %s", err.Pos.Filename)
+		newLine()
+		newLine()
+
 	}
 
-	return schemaString
+	return schemaString, nil
 }
 
 func (e ValidationErrors) Unwrap() error { return e }

@@ -8,13 +8,13 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
-	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 // A Builder knows how to produce a (validated) proto.Schema,
 // from a given Keel Builder. Construct one, then call the Make method.
 type Builder struct {
-	asts []*parser.AST
+	asts        []*parser.AST
+	schemaFiles []reader.SchemaFile
 }
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
@@ -24,17 +24,9 @@ func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error assembling input files: %v", err)
 	}
-	schema, err := scm.makeFromInputs(allInputFiles)
-	if err != nil {
-		verrs, ok := err.(errorhandling.ValidationErrors)
-		if ok {
-			return nil, verrs
-		} else {
-			return nil, fmt.Errorf("error reading file: %v", err)
-		}
-	}
 
-	return schema, nil
+	scm.schemaFiles = allInputFiles.SchemaFiles
+	return scm.makeFromInputs(allInputFiles)
 }
 
 // MakeFromFile constructs a proto.Schema from the given .keel file.
@@ -44,18 +36,22 @@ func (scm *Builder) MakeFromFile(filename string) (*proto.Schema, error) {
 		return nil, err
 	}
 
-	schema, err := scm.makeFromInputs(allInputFiles)
-	if err != nil {
-		verrs, ok := err.(errorhandling.ValidationErrors)
+	scm.schemaFiles = allInputFiles.SchemaFiles
+	return scm.makeFromInputs(allInputFiles)
+}
 
-		if ok {
-			return nil, verrs
-		} else {
-			return nil, fmt.Errorf("error reading file: %v", err)
-		}
-	}
+// MakeFromFile constructs a proto.Schema from the given inputs
+func (scm *Builder) MakeFromInputs(inputs *reader.Inputs) (*proto.Schema, error) {
+	scm.schemaFiles = inputs.SchemaFiles
+	return scm.makeFromInputs(inputs)
+}
 
-	return schema, nil
+func (scm *Builder) SchemaFiles() []reader.SchemaFile {
+	return scm.schemaFiles
+}
+
+func (scm *Builder) ASTs() []*parser.AST {
+	return scm.asts
 }
 
 func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema, error) {
