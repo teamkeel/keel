@@ -17,6 +17,7 @@ func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
 	require.NoError(t, err)
 	protoJSON, err := json.Marshal(protoSchema)
 	require.NoError(t, err)
+
 	svr, err := NewServer(string(protoJSON))
 	require.NoError(t, err)
 

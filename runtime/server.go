@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/graphql-go/graphql"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/makegql"
 )
 
 // NewServer returns an http.Server that implements the GraphQL API as
@@ -24,90 +23,8 @@ func NewServer(schemaProtoJSON string) (*http.Server, error) {
 	if err := json.Unmarshal([]byte(schemaProtoJSON), &schema); err != nil {
 		return nil, fmt.Errorf("error unmarshalling the schema: %v", err)
 	}
-	var gqlSchema, _ = graphql.NewSchema(
-		graphql.SchemaConfig{
-			Query:    composeTopLevelQuery(&schema),
-			Mutation: nil,
-		},
-	)
-	_ = gqlSchema
+	gqlSchemas := makegql.MakeGQLSchemas(&schema)
+	_ = gqlSchemas
+
 	return nil, nil
-}
-
-func composeTopLevelQuery(schema *proto.Schema) *graphql.Object {
-	topLevelQueryFields := graphql.Fields{} // map[string]*graphql.Field
-	for _, model := range schema.Models {
-		fieldsInTheModel := composeFields(model, schema) // map[string]*graphql.Field
-		gqlModel := graphql.NewObject(graphql.ObjectConfig{
-			Name:   model.Name,
-			Fields: fieldsInTheModel,
-		})
-		modelAsField := graphql.Field{
-			Name: model.Name,
-			Type: ModelAsOutput{
-				referencedModel: model,
-			},
-		}
-		topLevelQueryFields[model.Name] = &modelAsField
-	}
-
-	gqlModels := graphql.NewObject(
-		graphql.ObjectConfig{
-			Name:   "Query",
-			Fields: topLevelQueryFields,
-		},
-	)
-
-	return gqlModels
-}
-
-func composeFields(model *proto.Model, schema *proto.Schema) graphql.Fields {
-	fields := graphql.Fields{}
-	for _, field := range model.Fields {
-		fields[field.Name] = &graphql.Field{
-			Type: fieldTypeMap[field.Type],
-		}
-	}
-	return fields
-}
-
-func composeAPI(api *proto.Api, schema *proto.Schema) {
-	namesOfModelsUsedByAPI := lo.Map(api.ApiModels, func(m *proto.ApiModel, _ int) string {
-		return m.ModelName
-	})
-	modelInstances := proto.FindModels(schema.Models, namesOfModelsUsedByAPI)
-
-	for _, model := range modelInstances {
-		composeOperations(model, schema)
-	}
-}
-
-func composeOperations(model *proto.Model, schema *proto.Schema) {
-	for _, op := range model.Operations {
-		switch {
-		case op.Type == proto.OperationType_OPERATION_TYPE_CREATE &&
-			op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
-			composeCreateAutoOp(op, model, schema)
-
-		default:
-			panic(fmt.Sprintf("This operation type not yet implemented: %v", op.Type))
-		}
-	}
-}
-
-func composeCreateAutoOp(op *proto.Operation, model *proto.Model, schema *proto.Schema) {
-	// create createAuthor(name)
-}
-
-var fieldTypeMap map[proto.FieldType]graphql.Output = map[proto.FieldType]graphql.Output{
-	proto.FieldType_FIELD_TYPE_STRING: graphql.String,
-	// todo the other types
-}
-
-type ModelAsOutput struct {
-	referencedModel *proto.Model
-}
-
-func (mao ModelAsOutput) Description() string {
-	return "todo this is model description"
 }
