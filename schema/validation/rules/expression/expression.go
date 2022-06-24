@@ -2,13 +2,11 @@ package expression
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
-	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/schema/validation/operand"
 )
 
 type RuleContext struct {
@@ -21,19 +19,14 @@ type Rules func(asts []*parser.AST, expression *expressions.Expression, context 
 func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, customRules []Rules, context RuleContext) (errors []error) {
 	baseRules := []Rules{
 		OperandResolutionRule,
-		MismatchedTypesRule,
+		// MismatchedTypesRule,
 	}
 
 	baseRules = append(baseRules, customRules...)
 
 	for _, rule := range baseRules {
 		errs := rule(asts, expression, context)
-
-		for _, err := range errs {
-			if verrs, ok := err.(*errorhandling.ValidationError); ok {
-				errors = append(errors, verrs)
-			}
-		}
+		errors = append(errors, errs...)
 	}
 
 	return errors
@@ -131,152 +124,143 @@ func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expressio
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
-		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
+		_, _, errs := resolveConditionOperands(asts, condition, context)
 
-		errors = append(errors, buildOperandResolutionErrors(asts, resolvedLHS, context)...)
-		if resolvedRHS != nil {
-			errors = append(errors, buildOperandResolutionErrors(asts, resolvedRHS, context)...)
-		}
+		errors = append(errors, errs...)
 	}
 
 	return errors
 }
 
-func buildOperandResolutionErrors(asts []*parser.AST, resolution *expressions.OperandResolution, context RuleContext) (errors []error) {
-	contextModel := ""
-	if context.Model != nil {
-		contextModel = strings.ToLower(context.Model.Name.Value)
-	}
+// func buildOperandResolutionErrors(asts []*parser.AST, scopes *relationships.ExpressionScopeEntity, context RuleContext) (errors []*errorhandling.ValidationError) {
+// 	contextModel := ""
+// 	if context.Model != nil {
+// 		contextModel = strings.ToLower(context.Model.Name.Value)
+// 	}
 
-	if len(resolution.UnresolvedFragments()) > 0 {
-		unresolved := resolution.UnresolvedFragments()[0]
+// 	if len(resolution.UnresolvedFragments()) > 0 {
+// 		unresolved := resolution.UnresolvedFragments()[0]
 
-		if unresolved.Parent == nil {
-			literals := map[string]string{
-				"Type":  "relationship",
-				"Root":  unresolved.Value,
-				"Model": contextModel,
-			}
+// 		if unresolved.Parent == nil {
+// 			literals := map[string]string{
+// 				"Type":  "relationship",
+// 				"Root":  unresolved.Value,
+// 				"Model": contextModel,
+// 			}
 
-			errors = append(errors, errorhandling.NewValidationError(
-				errorhandling.ErrorUnresolvedRootModel,
-				errorhandling.TemplateLiterals{
-					Literals: literals,
-				},
-				unresolved,
-			))
-		} else {
-			if unresolved.Parent.Resolvable {
-				parentModel := query.Model(asts, unresolved.Parent.Model)
+// 			errors = append(errors, errorhandling.NewValidationError(
+// 				errorhandling.ErrorUnresolvedRootModel,
+// 				errorhandling.TemplateLiterals{
+// 					Literals: literals,
+// 				},
+// 				unresolved,
+// 			))
+// 		} else {
+// 			if unresolved.Parent.Resolvable {
+// 				parentModel := query.Model(asts, unresolved.Parent.Model)
 
-				fieldsOnParent := query.ModelFieldNames(parentModel)
-				correctionHint := errorhandling.NewCorrectionHint(fieldsOnParent, unresolved.Value)
+// 				fieldsOnParent := query.ModelFieldNames(parentModel)
+// 				correctionHint := errorhandling.NewCorrectionHint(fieldsOnParent, unresolved.Value)
 
-				literals := map[string]string{
-					"Type":       "relationship",
-					"Fragment":   unresolved.Value,
-					"Parent":     unresolved.Parent.Model,
-					"Suggestion": correctionHint.ToString(),
-				}
+// 				literals := map[string]string{
+// 					"Type":       "relationship",
+// 					"Fragment":   unresolved.Value,
+// 					"Parent":     unresolved.Parent.Model,
+// 					"Suggestion": correctionHint.ToString(),
+// 				}
 
-				errors = append(errors,
-					errorhandling.NewValidationError(
-						errorhandling.ErrorUnresolvableExpression,
-						errorhandling.TemplateLiterals{
-							Literals: literals,
-						},
-						unresolved,
-					))
-			} else {
-				literals := map[string]string{
-					"Type":       "relationship",
-					"Fragment":   unresolved.Value,
-					"Parent":     unresolved.Parent.Value,
-					"Suggestion": contextModel,
-				}
+// 				errors = append(errors,
+// 					errorhandling.NewValidationError(
+// 						errorhandling.ErrorUnresolvableExpression,
+// 						errorhandling.TemplateLiterals{
+// 							Literals: literals,
+// 						},
+// 						unresolved,
+// 					))
+// 			} else {
+// 				literals := map[string]string{
+// 					"Type":       "relationship",
+// 					"Fragment":   unresolved.Value,
+// 					"Parent":     unresolved.Parent.Value,
+// 					"Suggestion": contextModel,
+// 				}
 
-				errors = append(errors,
-					errorhandling.NewValidationError(
-						errorhandling.ErrorUnresolvableExpression,
-						errorhandling.TemplateLiterals{
-							Literals: literals,
-						},
-						unresolved,
-					),
-				)
-			}
-		}
-	}
+// 				errors = append(errors,
+// 					errorhandling.NewValidationError(
+// 						errorhandling.ErrorUnresolvableExpression,
+// 						errorhandling.TemplateLiterals{
+// 							Literals: literals,
+// 						},
+// 						unresolved,
+// 					),
+// 				)
+// 			}
+// 		}
+// 	}
 
-	return errors
-}
+// 	return errors
+// }
 
-func TypeCheck(a *relationships.ExpressionScopeEntity, b *relationships.ExpressionScopeEntity, operator string) *errorhandling.ValidationError {
-	allowedOperators := []string{}
+// func TypeCheck(a *relationships.ExpressionScopeEntity, b *relationships.ExpressionScopeEntity, operator string) *errorhandling.ValidationError {
+// 	allowedOperators := []string{}
 
-	if a.Model != nil {
-		resolvedA = a.Model.Name.Value
-		allowedOperators = []string{"=="}
-	}
+// 	if a.Model != nil {
+// 		resolvedA = a.Model.Name.Value
+// 		allowedOperators = []string{"=="}
+// 	}
 
-	if a.TypeIdentifier() != b.TypeIdentifier() {
-		// error
-	}
+// 	if a.TypeIdentifier() != b.TypeIdentifier() {
+// 		// error
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // Validates that all lhs and rhs operands of each condition in an expression match
-func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
-	conditions := expression.Conditions()
+// func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []*errorhandling.ValidationError) {
+// 	conditions := expression.Conditions()
 
-	//
+// 	for _, condition := range conditions {
+// 		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
 
-	if ourcode.Unresolvabe() {
-		return
-	}
+// 		// if there is no rhs (value only conditions with only a lhs)
+// 		// then we do not care about validating this rule for this condition
+// 		if resolvedRHS == nil {
+// 			continue
+// 		}
 
-	for _, condition := range conditions {
-		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
+// 		// check the type of the last fragment in both lhs and rhs operands match
+// 		if !resolvedLHS.TypesMatch(resolvedRHS) {
+// 			errors = append(errors,
+// 				errorhandling.NewValidationError(
+// 					errorhandling.ErrorExpressionTypeMismatch,
+// 					errorhandling.TemplateLiterals{
+// 						Literals: map[string]string{
+// 							"LHS":     resolvedLHS.LastFragment().Value,
+// 							"LHSType": resolvedLHS.LastFragment().Type,
+// 							"RHS":     resolvedRHS.LastFragment().Value,
+// 							"RHSType": resolvedRHS.LastFragment().Type,
+// 						},
+// 					},
+// 					condition,
+// 				),
+// 			)
+// 		}
+// 	}
 
-		// if there is no rhs (value only conditions with only a lhs)
-		// then we do not care about validating this rule for this condition
-		if resolvedRHS == nil {
-			continue
-		}
+// 	return errors
+// }
 
-		// check the type of the last fragment in both lhs and rhs operands match
-		if !resolvedLHS.TypesMatch(resolvedRHS) {
-			errors = append(errors,
-				errorhandling.NewValidationError(
-					errorhandling.ErrorExpressionTypeMismatch,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"LHS":     resolvedLHS.LastFragment().Value,
-							"LHSType": resolvedLHS.LastFragment().Type,
-							"RHS":     resolvedRHS.LastFragment().Value,
-							"RHSType": resolvedRHS.LastFragment().Type,
-						},
-					},
-					condition,
-				),
-			)
-		}
-	}
-
-	return errors
-}
-
-func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, context RuleContext) (*relationships.ExpressionScopeEntity, *relationships.ExpressionScopeEntity, []error) {
+func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, context RuleContext) (*operand.ExpressionScopeEntity, *operand.ExpressionScopeEntity, []error) {
 	lhs := cond.LHS
 	rhs := cond.RHS
 
-	lhsEntity, lhsErr := relationships.ResolveOperand(
+	lhsEntity, lhsErr := operand.ResolveOperand(
 		asts,
 		lhs,
-		relationships.DefaultExpressionScope(asts).Merge(
-			&relationships.ExpressionScope{
-				Entities: []*relationships.ExpressionScopeEntity{
+		operand.DefaultExpressionScope(asts).Merge(
+			&operand.ExpressionScope{
+				Entities: []*operand.ExpressionScopeEntity{
 					{
 						Model: context.Model,
 					},
@@ -284,12 +268,12 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 			},
 		),
 	)
-	rhsEntity, rhsErr := relationships.ResolveOperand(
+	rhsEntity, rhsErr := operand.ResolveOperand(
 		asts,
 		rhs,
-		relationships.DefaultExpressionScope(asts).Merge(
-			&relationships.ExpressionScope{
-				Entities: []*relationships.ExpressionScopeEntity{
+		operand.DefaultExpressionScope(asts).Merge(
+			&operand.ExpressionScope{
+				Entities: []*operand.ExpressionScopeEntity{
 					{
 						Model: context.Model,
 					},

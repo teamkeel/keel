@@ -1,9 +1,11 @@
-package relationships
+package operand
 
 import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/util/str"
 )
 
 var (
@@ -98,28 +100,26 @@ func scopeFromObject(parent *ExpressionScope, obj *ExpressionObjectEntity) *Expr
 // e.g if the operand is of type "Ident", and the ident is post.author.name
 // then the method will return a Relationships representing each fragment in post.author.name
 // along with an error if it hasn't been able to resolve the full path.
-func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope) (*ExpressionScopeEntity, error) {
-	if ok, _ := operand.IsValueType(); ok {
-		entity := &ExpressionScopeEntity{
+func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope) (entity *ExpressionScopeEntity, err error) {
+	if ok, _ := operand.IsLiteralType(); ok {
+		entity = &ExpressionScopeEntity{
 			Literal: operand,
 		}
 		return entity, nil
 	}
 
-	var entity *ExpressionScopeEntity
-
 fragments:
 	for _, fragment := range operand.Ident.Fragments {
+
 		for _, e := range scope.Entities {
 			switch {
-			// todo: casing comparison for below
-			case e.Model != nil && e.Model.Name.Value == fragment.Fragment:
+			case e.Model != nil && e.Model.Name.Value == str.AsTitle(str.Singularize(fragment.Fragment)):
 				entity = e
+
 				scope = scopeFromModel(scope, e.Model)
 
 				continue fragments
 			case e.Field != nil && e.Field.Name.Value == fragment.Fragment:
-				// handle field e.g person.hobbies
 				entity = e
 
 				model := query.Model(asts, e.Field.Type)
@@ -127,7 +127,8 @@ fragments:
 				if model == nil {
 					scope = &ExpressionScope{}
 				} else {
-					scope = scopeFromModel(scope, e.Model)
+
+					scope = scopeFromModel(scope, model)
 				}
 				continue fragments
 			case e.Object != nil && e.Object.Name == fragment.Fragment:
@@ -136,12 +137,60 @@ fragments:
 				scope = scopeFromObject(scope, e.Object)
 
 				continue fragments
-			default:
-				// handle anything after unresolvable "thing"
-				// including unknown cxt children or unknown model children
-				return nil, nil
 			}
 		}
+
+		// entity in this case is the last resolved parent
+		if entity.Model != nil {
+			fieldNames := query.ModelFieldNames(entity.Model)
+			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
+			err = errorhandling.NewValidationError(
+				errorhandling.ErrorUnresolvableExpression,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Fragment":   fragment.Fragment,
+						"Parent":     entity.Model.Name.Value,
+						"Suggestion": suggestions.ToString(),
+					},
+				},
+				fragment,
+			)
+		} else if entity.Object != nil {
+			fieldNames := []string{}
+
+			for key := range entity.Object.Fields {
+				fieldNames = append(fieldNames, key)
+			}
+			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
+			err = errorhandling.NewValidationError(
+				errorhandling.ErrorUnresolvableExpression,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Fragment":   fragment.Fragment,
+						"Parent":     entity.Object.Name,
+						"Suggestion": suggestions.ToString(),
+					},
+				},
+				fragment,
+			)
+		} else if entity.Field != nil {
+			parentModel := query.Model(asts, entity.Field.Type)
+			fieldNames := query.ModelFieldNames(parentModel)
+			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
+			err = errorhandling.NewValidationError(
+				errorhandling.ErrorUnresolvableExpression,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Fragment":   fragment.Fragment,
+						"Parent":     entity.Field.Type,
+						"Suggestion": suggestions.ToString(),
+					},
+				},
+				fragment,
+			)
+		}
+
+		return nil, err
 	}
 
 	return entity, nil

@@ -3,8 +3,10 @@ package schema
 import (
 	"fmt"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/proto"
 
+	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
@@ -82,6 +84,10 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
 		scm.insertBuiltInFields(declarations)
+
+		if i == 0 {
+			scm.insertBuiltInModels(declarations, oneInputSchemaFile)
+		}
 		asts = append(asts, declarations)
 	}
 
@@ -157,4 +163,35 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			fieldsSection.Fields = append(fieldsSection.Fields, fields...)
 		}
 	}
+}
+
+func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
+	declarations.Declarations = append(declarations.Declarations,
+		&parser.DeclarationNode{
+			Model: &parser.ModelNode{
+				Name: parser.NameNode{
+					Value: "Identity",
+					Node: node.Node{
+						Pos: lexer.Position{
+							Filename: schemaFile.FileName,
+						},
+					},
+				},
+			},
+		},
+	)
+
+	field := &parser.FieldNode{
+		BuiltIn: false,
+		Name: parser.NameNode{
+			Value: "username",
+		},
+		Type: "Text",
+	}
+	section := &parser.ModelSectionNode{
+		Fields: []*parser.FieldNode{field},
+	}
+
+	model := declarations.Declarations[len(declarations.Declarations)-1].Model
+	model.Sections = append(model.Sections, section)
 }

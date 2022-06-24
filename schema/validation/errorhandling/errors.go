@@ -8,9 +8,7 @@ import (
 	"text/template"
 
 	"github.com/fatih/color"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
-	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/util/str"
 
@@ -74,7 +72,7 @@ type LexerPos struct {
 
 var red, blue, yellow, cyan color.Color = *color.New(color.FgRed), *color.New(color.FgHiBlue), *color.New(color.FgHiYellow), *color.New(color.FgCyan)
 
-func (e *ValidationError) Error() string {
+func (e ValidationError) Error() string {
 	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
 }
 
@@ -262,29 +260,6 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 			Column:   end.Column,
 		},
 	}
-}
-
-func NewOperandTypeMismatchError(asts []*parser.AST, cond *expressions.Condition, lhs *expressions.OperandResolution, rhs *expressions.OperandResolution) error {
-	lastFragmentLhs := lhs.LastFragment()
-
-	lastFragmentRhs := rhs.LastFragment()
-
-	if lastFragmentLhs.Type != lastFragmentRhs.Type {
-		return NewValidationError(
-			ErrorExpressionTypeMismatch,
-			TemplateLiterals{
-				Literals: map[string]string{
-					"LHS":     lastFragmentLhs.Value,
-					"LHSType": lastFragmentLhs.Type,
-					"RHS":     lastFragmentRhs.Value,
-					"RHSType": lastFragmentRhs.Type,
-				},
-			},
-			cond,
-		)
-	}
-
-	return nil
 }
 
 //go:embed errors.yml

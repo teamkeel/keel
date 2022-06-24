@@ -73,8 +73,7 @@ func (o *Operand) Type() string {
 	}
 }
 
-// TODO: IsLiteralType
-func (o *Operand) IsValueType() (bool, string) {
+func (o *Operand) IsLiteralType() (bool, string) {
 	switch {
 	case o.Number != nil:
 		return true, o.ToString()
@@ -93,57 +92,6 @@ func (o *Operand) IsValueType() (bool, string) {
 	default:
 		return true, o.ToString()
 	}
-}
-
-type OperandPart struct {
-	node.Node
-
-	Value      string
-	Resolvable bool
-	Model      string // Modelised representation of fragment
-	Parent     *OperandPart
-	Type       string
-}
-
-type OperandResolution struct {
-	Parts []OperandPart
-}
-
-func (res *OperandResolution) LastFragment() *OperandPart {
-	if res == nil {
-		return &OperandPart{}
-	}
-	if len(res.Parts) < 1 {
-		return &OperandPart{}
-	}
-
-	return &res.Parts[len(res.Parts)-1]
-}
-
-func (res *OperandResolution) UnresolvedFragments() []OperandPart {
-	unresolvable := []OperandPart{}
-	parts := res.Parts
-
-	for _, part := range parts {
-		if !part.Resolvable {
-			unresolvable = append(unresolvable, part)
-		}
-	}
-
-	return unresolvable
-}
-
-func (a *OperandResolution) TypesMatch(b *OperandResolution) bool {
-	if a == nil || b == nil {
-		return false
-	}
-
-	lhs := a.LastFragment()
-
-	// a.b.c.d.e
-	rhs := b.LastFragment()
-
-	return lhs.Type == rhs.Type
 }
 
 type Ctx struct {
