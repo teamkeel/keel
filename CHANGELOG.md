@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/teamkeel/keel/compare/v0.10.1...v0.11.0) (2022-06-24)
+
+
+### Features
+
+* add support for optional syntax on field types ([131decc](https://github.com/teamkeel/keel/commit/131decc21b87561967c9d7cd35a52bf3d3c2d7cb))
+
 ## [0.10.1](https://github.com/teamkeel/keel/compare/v0.10.0...v0.10.1) (2022-06-21)
 
 
