@@ -26,11 +26,9 @@ type ExpressionObjectEntity struct {
 }
 
 type ExpressionScopeEntity struct {
-	Object *ExpressionObjectEntity
-	// wrap Model in "ExpressionModelEntity" where key = actual name and model is actual model
-	Model *parser.ModelNode
-	Field *parser.FieldNode
-
+	Object  *ExpressionObjectEntity
+	Model   *parser.ModelNode
+	Field   *parser.FieldNode
 	Literal *expressions.Operand
 }
 
@@ -162,9 +160,14 @@ func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *Exp
 		return entity, nil
 	}
 
+	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything
+	// stored in the expression scope.
+	// e.g if the first ident fragment is "ctx", and the ExpressionScope has a matching key
+	// (which it does if you use the DefaultExpressionScope)
+	// then it will continue onto the next fragment, setting the new scope to Ctx
+	// so that the next fragment can be compared to fields that exist on the Ctx object
 fragments:
 	for _, fragment := range operand.Ident.Fragments {
-
 		for _, e := range scope.Entities {
 			switch {
 			case e.Model != nil && e.Model.Name.Value == str.AsTitle(str.Singularize(fragment.Fragment)):
