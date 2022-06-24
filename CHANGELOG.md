@@ -1,3 +1,10 @@
+# [0.13.0](https://github.com/teamkeel/keel/compare/v0.12.0...v0.13.0) (2022-06-24)
+
+
+### Features
+
+* turn parser errors into validation errors ([a295e4b](https://github.com/teamkeel/keel/commit/a295e4be35154de27a88d30b00a182f92cd3537d))
+
 # [0.12.0](https://github.com/teamkeel/keel/compare/v0.11.0...v0.12.0) (2022-06-24)
 
 
