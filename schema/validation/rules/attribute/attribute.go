@@ -132,22 +132,6 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-type Operator struct {
-	Type   string
-	Symbol string
-}
-
-// var supportedOpsForSetWhere map[string]Operator = map[string]Operator{
-// 	parser.AttributeSet: {
-// 		Type:   expressions.AssignmentCondition,
-// 		Symbol: "=",
-// 	},
-// 	parser.AttributeWhere: {
-// 		Type:   expressions.LogicalCondition,
-// 		Symbol: "==",
-// 	},
-// }
-
 func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, operation := range query.ModelActions(model) {

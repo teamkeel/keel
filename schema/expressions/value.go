@@ -26,7 +26,7 @@ func (o *Operand) ToString() string {
 	switch o.Type() {
 	case "Number":
 		return fmt.Sprintf("%d", *o.Number)
-	case "Text":
+	case "String":
 		return *o.String
 	case "Null":
 		return "null"
@@ -92,20 +92,6 @@ func (o *Operand) IsLiteralType() (bool, string) {
 	default:
 		return true, o.ToString()
 	}
-}
-
-type Ctx struct {
-	node.Node
-
-	Token string `@"ctx" @(@"." @Ident)*`
-}
-
-type CtxShape struct {
-	Identity IdentityShape `json:"identity"`
-}
-
-type IdentityShape struct {
-	Username string `json:"username"`
 }
 
 type Ident struct {

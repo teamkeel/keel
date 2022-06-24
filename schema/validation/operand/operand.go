@@ -9,11 +9,6 @@ import (
 	"github.com/teamkeel/keel/util/str"
 )
 
-var (
-	TypeModel   = "model"
-	TypeInvalid = "not resolvable"
-)
-
 type ExpressionScope struct {
 	Parent   *ExpressionScope
 	Entities []*ExpressionScopeEntity
@@ -59,6 +54,29 @@ func (e *ExpressionScopeEntity) Type() string {
 	return ""
 }
 
+func (e *ExpressionScopeEntity) BaseType() string {
+	if e.Object != nil {
+		return e.Object.Name
+	}
+
+	if e.Model != nil {
+		return e.Model.Name.Value
+	}
+
+	if e.Field != nil {
+		if e.Field.Type == "Text" {
+			return "String"
+		}
+		return e.Field.Type
+	}
+
+	if e.Literal != nil {
+		return e.Literal.Type()
+	}
+
+	return ""
+}
+
 func (e *ExpressionScopeEntity) AllowedOperators() []string {
 	return []string{}
 }
@@ -82,13 +100,6 @@ func (e *ExpressionScopeEntity) Value() string {
 
 	return ""
 }
-
-// Type() -> String
-// AllowedOperators() -> []string
-
-// person.firstName == 123
-
-// person.age == ctx.ipAddress
 
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 	stringLiteral := ""
@@ -143,8 +154,6 @@ func scopeFromObject(parent *ExpressionScope, obj *ExpressionObjectEntity) *Expr
 
 // Given an operand of a condition, tries to resolve the relationships defined within the operand
 // e.g if the operand is of type "Ident", and the ident is post.author.name
-// then the method will return a Relationships representing each fragment in post.author.name
-// along with an error if it hasn't been able to resolve the full path.
 func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope) (entity *ExpressionScopeEntity, err error) {
 	if ok, _ := operand.IsLiteralType(); ok {
 		entity = &ExpressionScopeEntity{
@@ -188,10 +197,10 @@ fragments:
 
 		// entity in this case is the last resolved parent
 		if entity == nil {
-			// unresolvable root model
-
+			// The first fragment didn't match anything in the scope
 			inScope := []string{}
 
+			// Suggest all of the top level things that are in the scope, e.g ctx, {modelName}, any input parameters
 			for _, entity := range scope.Entities {
 				if entity.Model != nil {
 					inScope = append(inScope, strcase.ToLowerCamel(entity.Model.Name.Value))

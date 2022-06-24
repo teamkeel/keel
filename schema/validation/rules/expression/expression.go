@@ -63,7 +63,6 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expressi
 }
 
 // Validates that no value conditions are used
-// e.g just true or false as a condition with  would not be permitted
 func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
@@ -132,21 +131,6 @@ func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expressio
 	return errors
 }
 
-// func TypeCheck(a *relationships.ExpressionScopeEntity, b *relationships.ExpressionScopeEntity, operator string) *errorhandling.ValidationError {
-// 	allowedOperators := []string{}
-
-// 	if a.Model != nil {
-// 		resolvedA = a.Model.Name.Value
-// 		allowedOperators = []string{"=="}
-// 	}
-
-// 	if a.TypeIdentifier() != b.TypeIdentifier() {
-// 		// error
-// 	}
-
-// 	return nil
-// }
-
 // Validates that all lhs and rhs operands of each condition in an expression match
 func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
@@ -154,9 +138,9 @@ func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression,
 	for _, condition := range conditions {
 		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
 
-		// if there is no rhs (value only conditions with only a lhs)
+		// if there is no lhs or rhs
 		// then we do not care about validating this rule for this condition
-		if resolvedRHS == nil {
+		if resolvedLHS == nil || resolvedRHS == nil {
 			continue
 		}
 
@@ -177,8 +161,7 @@ func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression,
 		// 	)
 		// }
 
-		fmt.Print(resolvedLHS.Type(), "||", resolvedRHS.Type())
-		if resolvedLHS.Type() != resolvedRHS.Type() {
+		if resolvedLHS.BaseType() != resolvedRHS.BaseType() {
 			errors = append(errors,
 				errorhandling.NewValidationError(
 					errorhandling.ErrorExpressionTypeMismatch,
@@ -194,24 +177,6 @@ func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression,
 				),
 			)
 		}
-
-		// check the type of the last fragment in both lhs and rhs operands match
-		// if !resolvedLHS.TypesMatch(resolvedRHS) {
-		// 	errors = append(errors,
-		// 		errorhandling.NewValidationError(
-		// 			errorhandling.ErrorExpressionTypeMismatch,
-		// 			errorhandling.TemplateLiterals{
-		// 				Literals: map[string]string{
-		// 					"LHS":     resolvedLHS.LastFragment().Value,
-		// 					"LHSType": resolvedLHS.LastFragment().Type,
-		// 					"RHS":     resolvedRHS.LastFragment().Value,
-		// 					"RHSType": resolvedRHS.LastFragment().Type,
-		// 				},
-		// 			},
-		// 			condition,
-		// 		),
-		// 	)
-		// }
 	}
 
 	return errors

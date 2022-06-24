@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E020",
-        "hint": "Did you mean identity?",
-        "message": "relationship 'identit' not found on 'Profile' model",
-        "end_pos": {
-          "column": 33,
-          "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
-          "line": 13,
-          "offset": 238
-        },
-        "pos": {
-          "column": 26,
-          "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
-          "line": 13,
-          "offset": 231
-        },
-        "short_message": "relationship 'identit' not found"
+{
+  "Errors": [
+    {
+      "message": "'identit' not found on 'Profile' model",
+      "short_message": "'identit' not found",
+      "hint": "Did you mean identity?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
+        "offset": 231,
+        "line": 13,
+        "column": 26
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
+        "offset": 238,
+        "line": 13,
+        "column": 33
       }
-    ]
-  }
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "Errors": [
     {
-      "message": "relationship 'postCod' not found on 'Address' model",
-      "short_message": "relationship 'postCod' not found",
+      "message": "'postCod' not found on 'Address' model",
+      "short_message": "'postCod' not found",
       "hint": "Did you mean postCode?",
       "code": "E020",
       "pos": {
@@ -16,24 +16,6 @@
         "offset": 267,
         "line": 13,
         "column": 39
-      }
-    },
-    {
-      "message": "postCod is a not resolvable and \"ABC123\" is a Text",
-      "short_message": "postCod is of type not resolvable and \"ABC123\" is of type Text",
-      "hint": "Please make sure that you are comparing entities of the same type",
-      "code": "E025",
-      "pos": {
-        "filename": "testdata/validation_attribute_expression_complex/schema.keel",
-        "offset": 237,
-        "line": 13,
-        "column": 9
-      },
-      "end_pos": {
-        "filename": "testdata/validation_attribute_expression_complex/schema.keel",
-        "offset": 279,
-        "line": 13,
-        "column": 51
       }
     }
   ]

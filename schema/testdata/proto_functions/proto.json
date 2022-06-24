@@ -28,6 +28,16 @@
           "implementation":  "OPERATION_IMPLEMENTATION_CUSTOM"
         }
       ]
+    },
+    {
+      "name":  "Identity",
+      "fields":  [
+        {
+          "modelName":  "Identity",
+          "name":  "username",
+          "type":  "FIELD_TYPE_STRING"
+        }
+      ]
     }
   ]
 }

@@ -66,7 +66,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// 		- Convert the set to a single / aggregate proto model
 	asts := []*parser.AST{}
 	parseErrors := errorhandling.ValidationErrors{}
-	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
+	for i, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(&oneInputSchemaFile)
 		if err != nil {
 

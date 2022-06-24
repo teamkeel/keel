@@ -25,6 +25,16 @@
           "type":  "FIELD_TYPE_DATETIME"
         }
       ]
+    },
+    {
+      "name":  "Identity",
+      "fields":  [
+        {
+          "modelName":  "Identity",
+          "name":  "username",
+          "type":  "FIELD_TYPE_STRING"
+        }
+      ]
     }
   ]
 }
