@@ -131,7 +131,7 @@ func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expressio
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
-		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition)
+		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
 
 		errors = append(errors, buildOperandResolutionErrors(asts, resolvedLHS, context)...)
 		if resolvedRHS != nil {
@@ -216,7 +216,7 @@ func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression,
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
-		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition)
+		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
 
 		// if there is no rhs (value only conditions with only a lhs)
 		// then we do not care about validating this rule for this condition
@@ -246,76 +246,36 @@ func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression,
 	return errors
 }
 
-// Validates inverse traversal in a relationship based expression
-// e.g walking backwards (model => association => model) is not permitted
-func PreventInverseTraversalRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error {
-	return nil
-}
-
-func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition) (*expressions.OperandResolution, *expressions.OperandResolution, []error) {
+func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, context RuleContext) (*expressions.OperandResolution, *expressions.OperandResolution, []error) {
 	lhs := cond.LHS
 	rhs := cond.RHS
 
-	resolvedLHS, lhsErrors := resolveOperand(asts, lhs)
-	resolvedRHS, rhsErrors := resolveOperand(asts, rhs)
-
-	return resolvedLHS, resolvedRHS, append(lhsErrors, rhsErrors...)
-}
-
-func resolveOperand(asts []*parser.AST, o *expressions.Operand) (*expressions.OperandResolution, []error) {
-	if o == nil {
-		return nil, nil
-	}
-
-	if ok, v := o.IsValueType(); ok {
-		return &expressions.OperandResolution{
-			Parts: []expressions.OperandPart{
-				{
-					Value:      v,
-					Type:       o.Type(),
-					Resolvable: true,
-					Node:       o.Node,
+	resolvedLHS, lhsErrors := relationships.ResolveOperand(
+		asts,
+		lhs,
+		relationships.DefaultExpressionScope(asts).Merge(
+			&relationships.ExpressionScope{
+				Entities: []*relationships.ExpressionScopeEntity{
+					{
+						Model: context.Model,
+					},
 				},
 			},
-		}, nil
-	} else if ok, ctx := o.IsCtx(); ok {
-
-		// known context
-
-		knownPath := "ctx.identity"
-
-		resolution := expressions.OperandResolution{}
-
-		for i, token := range strings.Split(ctx.Token, ".") {
-
-			resolved := strings.Split(knownPath, ".")[i] == token
-
-			t := ""
-
-			if i == 0 {
-				t = "ctx"
-			} else if i == 1 && token == "identity" {
-				t = "Identity"
-			} else if i > 1 {
-				panic("Redo this whole method")
-			}
-
-			resolution.Parts = append(resolution.Parts,
-				expressions.OperandPart{
-					Resolvable: resolved,
-					Value:      token,
-					Type:       t,
+		),
+	)
+	resolvedRHS, rhsErrors := relationships.ResolveOperand(
+		asts,
+		rhs,
+		relationships.DefaultExpressionScope(asts).Merge(
+			&relationships.ExpressionScope{
+				Entities: []*relationships.ExpressionScopeEntity{
+					{
+						Model: context.Model,
+					},
 				},
-			)
+			},
+		),
+	)
 
-		}
-
-		// resolve ctx
-		return &resolution, nil
-	} else {
-		relationshipResolution, errs := relationships.TryResolveIdent(asts, o)
-
-		return relationshipResolution, errs
-	}
-
+	return resolvedLHS, resolvedRHS, append(lhsErrors, rhsErrors...)
 }

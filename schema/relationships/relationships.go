@@ -14,14 +14,66 @@ var (
 	TypeInvalid = "not resolvable"
 )
 
+type ExpressionScope struct {
+	Entities []*ExpressionScopeEntity
+}
+
+func (a *ExpressionScope) Merge(b *ExpressionScope) ExpressionScope {
+	return ExpressionScope{
+		Entities: append(a.Entities, b.Entities...),
+	}
+}
+
+type ExpressionObjectEntity struct {
+	Name   string
+	Fields map[string]*ExpressionScopeEntity
+}
+
+type ExpressionScopeEntity struct {
+	Object *ExpressionObjectEntity
+	Model  *parser.ModelNode
+	String bool
+	Int    bool
+}
+
+var DefaultExpressionScope func(asts []*parser.AST) *ExpressionScope = func(asts []*parser.AST) *ExpressionScope {
+	return &ExpressionScope{
+		Entities: []*ExpressionScopeEntity{
+			{
+				Object: &ExpressionObjectEntity{
+					Name: "ctx",
+					Fields: map[string]*ExpressionScopeEntity{
+						"identity": {
+							Model: query.Model(asts, "Identity"),
+						},
+						"ipAddress": {
+							String: true,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 // Given an operand of a condition, tries to resolve the relationships defined within the operand
 // e.g if the operand is of type "Ident", and the ident is post.author.name
 // then the method will return a Relationships representing each fragment in post.author.name
 // along with an error if it hasn't been able to resolve the full path.
-func TryResolveIdent(asts []*parser.AST, operand *expressions.Operand) (*expressions.OperandResolution, []error) {
+func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope ExpressionScope) (*expressions.OperandResolution, []error) {
 	ident := operand.Ident
 	errors := []error{}
 	res := expressions.OperandResolution{}
+
+	// refactor notes:
+
+	// check operand type
+
+	// check scope matching type e.g break out ctx into ctx scope
+
+	// generic walk logic for both ctx and relationships
+
+	// extract out model/field resolution
 
 	var resolvePart func(idx int) (*expressions.OperandResolution, []error)
 

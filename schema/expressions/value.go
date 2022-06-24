@@ -124,8 +124,11 @@ type OperandResolution struct {
 }
 
 func (res *OperandResolution) LastFragment() *OperandPart {
+	if res == nil {
+		return &OperandPart{}
+	}
 	if len(res.Parts) < 1 {
-		return nil
+		return &OperandPart{}
 	}
 
 	return &res.Parts[len(res.Parts)-1]
@@ -158,7 +161,15 @@ func (a *OperandResolution) TypesMatch(b *OperandResolution) bool {
 type Ctx struct {
 	node.Node
 
-	Token string `@"ctx" @"." @Ident`
+	Token string `@"ctx" @(@"." @Ident)*`
+}
+
+type CtxShape struct {
+	Identity IdentityShape `json:"identity"`
+}
+
+type IdentityShape struct {
+	Username string `json:"username"`
 }
 
 type Ident struct {
