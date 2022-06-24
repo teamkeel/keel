@@ -95,3 +95,6 @@ en:
     short_message: "Too many arguments provided to '{{ .Area }}'"
     message: "Too many arguments provided to '{{ .Area }}'"
     hint: "{{ if .NoArgs }}{{ .Area }} doesn't accept any arguments{{ else }}{{ .Area }} only accepts {{ .Count }} argument(s){{ end }}"
+  E025:
+    short_message: "Invalid syntax"
+    message: "{{ .Message }}"

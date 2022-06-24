@@ -8,6 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 // A Builder knows how to produce a (validated) proto.Schema,
@@ -62,13 +63,31 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// 		- Validate them (as a set)
 	// 		- Convert the set to a single / aggregate proto model
 	asts := []*parser.AST{}
+	parseErrors := errorhandling.ValidationErrors{}
 	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(&oneInputSchemaFile)
 		if err != nil {
+
+			// try to convert into a validation error and move to next schema file
+			if perr, ok := err.(parser.Error); ok {
+				verr := errorhandling.NewValidationError(errorhandling.ErrorInvalidSyntax, errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Message": perr.Error(),
+					},
+				}, perr)
+				parseErrors.Errors = append(parseErrors.Errors, verr)
+				continue
+			}
+
 			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
 		scm.insertBuiltInFields(declarations)
 		asts = append(asts, declarations)
+	}
+
+	// if we have errors in parsing then no point running validation rules
+	if len(parseErrors.Errors) > 0 {
+		return nil, parseErrors
 	}
 
 	v := validation.NewValidator(asts)

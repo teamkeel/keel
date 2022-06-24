@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": " unexpected token \"fields\" (expected \"{\" ModelSectionNode* \"}\")",
+      "short_message": "Invalid syntax",
+      "hint": "",
+      "code": "E025",
+      "pos": {
+        "filename": "testdata/syntax_error/schema.keel",
+        "offset": 17,
+        "line": 2,
+        "column": 5
+      },
+      "end_pos": {
+        "filename": "testdata/syntax_error/schema.keel",
+        "offset": 17,
+        "line": 2,
+        "column": 5
+      }
+    }
+  ]
+}
