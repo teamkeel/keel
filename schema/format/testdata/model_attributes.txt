@@ -1,0 +1,12 @@
+model Person {
+    @permission(expression: ctx.identity != null, roles: [Staff])
+}
+
+===
+
+model Person {
+    @permission(
+        expression: ctx.identity != null,
+        roles: [Staff]
+    )
+}

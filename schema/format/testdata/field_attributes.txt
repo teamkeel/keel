@@ -1,0 +1,27 @@
+model Person {
+    fields {
+        name Text {
+            @unique
+        }
+        magicNumber Number {
+            @unique
+            @maxValue(9999)
+            @minValue(0)
+        }
+        dateOfBirth Date @maxValue(ctx.now)
+    }
+}
+
+=== 
+
+model Person {
+    fields {
+        name Text @unique
+        magicNumber Number {
+            @unique
+            @maxValue(9999)
+            @minValue(0)
+        }
+        dateOfBirth Date @maxValue(ctx.now)
+    }
+}

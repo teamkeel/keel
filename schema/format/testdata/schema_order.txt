@@ -1,0 +1,61 @@
+enum Colour {
+    Red
+}
+
+model Person {
+    fields {
+        favouriteColor Colour
+        hobbies Hobby[]
+    }
+}
+
+role Staff {
+    domains {
+        "myorg.com"
+    }
+}
+
+api Web {
+    models {
+        Hobby
+        Person
+    }
+}
+
+model Hobby {
+    fields {
+        name Text
+    }
+}
+
+===
+
+enum Colour {
+    Red
+}
+
+model Person {
+    fields {
+        favouriteColor Colour
+        hobbies Hobby[]
+    }
+}
+
+role Staff {
+    domains {
+        "myorg.com"
+    }
+}
+
+api Web {
+    models {
+        Hobby
+        Person
+    }
+}
+
+model Hobby {
+    fields {
+        name Text
+    }
+}

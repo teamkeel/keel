@@ -67,7 +67,7 @@ type FieldNode struct {
 	Type       string           `@Ident`
 	Repeated   bool             `( @( "[" "]" )`
 	Optional   bool             `| @( "?" ))?`
-	Attributes []*AttributeNode `( "{" @@+ "}" )?`
+	Attributes []*AttributeNode `( "{" @@+ "}" | @@+ )?`
 
 	// Some fields are added implicitly after parsing the schema
 	// For these fields this value is set to true so we can distinguish
@@ -135,7 +135,7 @@ type AttributeNode struct {
 type AttributeArgumentNode struct {
 	node.Node
 
-	Name       NameNode                `(@@ ":")?`
+	Name       *NameNode               `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 

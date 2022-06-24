@@ -1,0 +1,17 @@
+api Web {
+    @graphql
+
+    models {
+        Person
+    }
+}
+
+===
+
+api Web {
+    @graphql
+
+    models {
+        Person
+    }
+}

@@ -1,0 +1,29 @@
+model Person {
+    @permission(expression: true, actions: [create])
+    
+    operations {
+        create createPerson(name)
+    }
+
+    fields {
+
+        name Text
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+    }
+
+    operations {
+        create createPerson(name)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create]
+    )
+}
