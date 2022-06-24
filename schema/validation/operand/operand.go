@@ -1,6 +1,7 @@
 package operand
 
 import (
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -138,10 +139,39 @@ fragments:
 
 				continue fragments
 			}
+
 		}
 
 		// entity in this case is the last resolved parent
-		if entity.Model != nil {
+		if entity == nil {
+			// unresolvable root model
+
+			inScope := []string{}
+
+			for _, entity := range scope.Entities {
+				if entity.Model != nil {
+					inScope = append(inScope, strcase.ToLowerCamel(entity.Model.Name.Value))
+				}
+
+				if entity.Object != nil {
+					inScope = append(inScope, entity.Object.Name)
+				}
+
+				// todo: input parameters + genericize
+			}
+
+			hint := errorhandling.NewCorrectionHint(inScope, fragment.Fragment)
+			err = errorhandling.NewValidationError(
+				errorhandling.ErrorUnresolvedRootModel,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Root":        fragment.Fragment,
+						"Suggestions": hint.ToString(),
+					},
+				},
+				fragment,
+			)
+		} else if entity.Model != nil {
 			fieldNames := query.ModelFieldNames(entity.Model)
 			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
 			err = errorhandling.NewValidationError(

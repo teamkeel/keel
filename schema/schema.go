@@ -169,6 +169,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 	declarations.Declarations = append(declarations.Declarations,
 		&parser.DeclarationNode{
 			Model: &parser.ModelNode{
+				BuiltIn: true,
 				Name: parser.NameNode{
 					Value: "Identity",
 					Node: node.Node{
