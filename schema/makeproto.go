@@ -133,6 +133,8 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		ModelName: modelName,
 		Name:      parserField.Name.Value,
 		Type:      proto.FieldType_FIELD_TYPE_UNKNOWN,
+		Optional:  parserField.Optional,
+		Repeated:  parserField.Repeated,
 	}
 
 	// We establish the field type when possible using the 1:1 mapping between parser enums
@@ -248,8 +250,8 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 		switch fieldAttribute.Name.Value {
 		case parser.AttributeUnique:
 			protoField.Unique = true
-		case parser.AttributeOptional:
-			protoField.Optional = true
+		case parser.AttributePrimaryKey:
+			protoField.PrimaryKey = true
 		}
 	}
 }

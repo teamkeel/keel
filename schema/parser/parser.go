@@ -62,7 +62,8 @@ type FieldNode struct {
 
 	Name       NameNode         `@@`
 	Type       string           `@Ident`
-	Repeated   bool             `@( "[" "]" )?`
+	Repeated   bool             `( @( "[" "]" )`
+	Optional   bool             `| @( "?" ))?`
 	Attributes []*AttributeNode `( "{" @@+ "}" )?`
 
 	// Some fields are added implicitly after parsing the schema

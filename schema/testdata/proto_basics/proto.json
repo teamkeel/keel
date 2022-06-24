@@ -12,7 +12,17 @@
           "modelName":  "Person",
           "name":  "id",
           "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "primaryKey":  true
+        },
+        {
+          "modelName":  "Person",
+          "name":  "createdAt",
+          "type":  "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName":  "Person",
+          "name":  "updatedAt",
+          "type":  "FIELD_TYPE_DATETIME"
         }
       ]
     }

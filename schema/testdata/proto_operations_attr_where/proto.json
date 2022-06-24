@@ -13,7 +13,17 @@
           "modelName":  "Foo",
           "name":  "id",
           "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "primaryKey":  true
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "createdAt",
+          "type":  "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName":  "Foo",
+          "name":  "updatedAt",
+          "type":  "FIELD_TYPE_DATETIME"
         }
       ],
       "operations":  [
@@ -22,12 +32,12 @@
           "name":  "operationA",
           "type":  "OPERATION_TYPE_GET",
           "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "inputs":  [
             {
-                "fieldName": "f1",
-                "modelName": "Foo",
-                "name": "f1",
-                "type": "OPERATION_INPUT_TYPE_FIELD"
+              "name":  "f1",
+              "type":  "OPERATION_INPUT_TYPE_FIELD",
+              "modelName":  "Foo",
+              "fieldName":  "f1"
             }
           ],
           "whereExpressions":  [
