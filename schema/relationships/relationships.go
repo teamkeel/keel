@@ -1,12 +1,9 @@
 package relationships
 
 import (
-	"fmt"
-
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
-	"github.com/teamkeel/keel/util/str"
 )
 
 var (
@@ -15,11 +12,12 @@ var (
 )
 
 type ExpressionScope struct {
+	Parent   *ExpressionScope
 	Entities []*ExpressionScopeEntity
 }
 
-func (a *ExpressionScope) Merge(b *ExpressionScope) ExpressionScope {
-	return ExpressionScope{
+func (a *ExpressionScope) Merge(b *ExpressionScope) *ExpressionScope {
+	return &ExpressionScope{
 		Entities: append(a.Entities, b.Entities...),
 	}
 }
@@ -31,12 +29,22 @@ type ExpressionObjectEntity struct {
 
 type ExpressionScopeEntity struct {
 	Object *ExpressionObjectEntity
-	Model  *parser.ModelNode
-	String bool
-	Int    bool
+	// wrap Model in "ExpressionModelEntity" where key = actual name and model is actual model
+	Model *parser.ModelNode
+	Field *parser.FieldNode
+
+	Literal *expressions.Operand
 }
 
-var DefaultExpressionScope func(asts []*parser.AST) *ExpressionScope = func(asts []*parser.AST) *ExpressionScope {
+// Type() -> String
+// AllowedOperators() -> []string
+
+// person.firstName == 123
+
+// person.age == ctx.ipAddress
+
+func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
+	stringLiteral := ""
 	return &ExpressionScope{
 		Entities: []*ExpressionScopeEntity{
 			{
@@ -47,7 +55,9 @@ var DefaultExpressionScope func(asts []*parser.AST) *ExpressionScope = func(asts
 							Model: query.Model(asts, "Identity"),
 						},
 						"ipAddress": {
-							String: true,
+							Literal: &expressions.Operand{
+								String: &stringLiteral,
+							},
 						},
 					},
 				},
@@ -56,110 +66,83 @@ var DefaultExpressionScope func(asts []*parser.AST) *ExpressionScope = func(asts
 	}
 }
 
+func scopeFromModel(parent *ExpressionScope, model *parser.ModelNode) *ExpressionScope {
+	newEntities := []*ExpressionScopeEntity{}
+
+	for _, field := range query.ModelFields(model) {
+		newEntities = append(newEntities, &ExpressionScopeEntity{
+			Field: field,
+		})
+	}
+
+	return &ExpressionScope{
+		Entities: newEntities,
+		Parent:   parent,
+	}
+}
+
+func scopeFromObject(parent *ExpressionScope, obj *ExpressionObjectEntity) *ExpressionScope {
+	newEntities := []*ExpressionScopeEntity{}
+
+	for _, field := range obj.Fields {
+		newEntities = append(newEntities, field)
+	}
+
+	return &ExpressionScope{
+		Entities: newEntities,
+		Parent:   parent,
+	}
+}
+
 // Given an operand of a condition, tries to resolve the relationships defined within the operand
 // e.g if the operand is of type "Ident", and the ident is post.author.name
 // then the method will return a Relationships representing each fragment in post.author.name
 // along with an error if it hasn't been able to resolve the full path.
-func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope ExpressionScope) (*expressions.OperandResolution, []error) {
-	ident := operand.Ident
-	errors := []error{}
-	res := expressions.OperandResolution{}
+func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope) (*ExpressionScopeEntity, error) {
+	if ok, _ := operand.IsValueType(); ok {
+		entity := &ExpressionScopeEntity{
+			Literal: operand,
+		}
+		return entity, nil
+	}
 
-	// refactor notes:
+	var entity *ExpressionScopeEntity
 
-	// check operand type
+fragments:
+	for _, fragment := range operand.Ident.Fragments {
+		for _, e := range scope.Entities {
+			switch {
+			// todo: casing comparison for below
+			case e.Model != nil && e.Model.Name.Value == fragment.Fragment:
+				entity = e
+				scope = scopeFromModel(scope, e.Model)
 
-	// check scope matching type e.g break out ctx into ctx scope
+				continue fragments
+			case e.Field != nil && e.Field.Name.Value == fragment.Fragment:
+				// handle field e.g person.hobbies
+				entity = e
 
-	// generic walk logic for both ctx and relationships
+				model := query.Model(asts, e.Field.Type)
 
-	// extract out model/field resolution
-
-	var resolvePart func(idx int) (*expressions.OperandResolution, []error)
-
-	resolvePart = func(idx int) (*expressions.OperandResolution, []error) {
-		// if its index 0, then do root model resolution
-		if idx == 0 {
-			lookupModel := str.AsTitle(ident.Fragments[idx].Fragment)
-
-			rootModel := query.Model(asts, lookupModel)
-			resolvableRoot := rootModel != nil
-
-			resolvedType := ""
-
-			if !resolvableRoot {
-				errors = append(errors, fmt.Errorf("could not find root model %s", lookupModel))
-
-				resolvedType = TypeInvalid
-			} else {
-				resolvedType = rootModel.Name.Value
-			}
-
-			res.Parts = append(res.Parts, expressions.OperandPart{
-				Node:       ident.Fragments[idx].Node,
-				Resolvable: resolvableRoot,
-				Model:      lookupModel,
-				Value:      ident.Fragments[idx].Fragment,
-				Type:       resolvedType,
-			})
-		} else {
-			// we're dealing with fields on a parent
-			// although the parent may not have been resolved
-			parent := res.Parts[idx-1]
-
-			if parent.Resolvable {
-				parentModel := query.Model(asts, parent.Model)
-
-				lookupField := ident.Fragments[idx].Fragment
-
-				field := query.ModelField(parentModel, lookupField)
-
-				resolvableField := field != nil
-
-				resolvableType := ""
-
-				if !resolvableField {
-					errors = append(errors, fmt.Errorf("unresolvable field %s", lookupField))
-					resolvableType = TypeInvalid
+				if model == nil {
+					scope = &ExpressionScope{}
 				} else {
-					resolvableType = field.Type
+					scope = scopeFromModel(scope, e.Model)
 				}
+				continue fragments
+			case e.Object != nil && e.Object.Name == fragment.Fragment:
+				entity = e
 
-				res.Parts = append(res.Parts, expressions.OperandPart{
-					Node:       ident.Fragments[idx].Node,
-					Resolvable: resolvableField,
-					Value:      ident.Fragments[idx].Fragment,
-					Model:      str.AsTitle(ident.Fragments[idx].Fragment),
-					Parent:     &parent,
-					Type:       resolvableType,
-				})
-			} else {
-				errors = append(errors, fmt.Errorf("unresolvable field %s", ident.Fragments[idx].Fragment))
+				scope = scopeFromObject(scope, e.Object)
 
-				res.Parts = append(res.Parts, expressions.OperandPart{
-					Node:       ident.Fragments[idx].Node,
-					Resolvable: parent.Resolvable,
-					Value:      ident.Fragments[idx].Fragment,
-					Model:      str.AsTitle(ident.Fragments[idx].Fragment),
-					Parent:     &parent,
-					Type:       TypeInvalid,
-				})
+				continue fragments
+			default:
+				// handle anything after unresolvable "thing"
+				// including unknown cxt children or unknown model children
+				return nil, nil
 			}
 		}
-
-		// continue resolving the next fragment as we haven't reached the end yet
-		if idx < len(ident.Fragments)-1 {
-			return resolvePart(idx + 1)
-		}
-
-		// relationship path has been fully resolved
-		return &res, errors
 	}
 
-	// Start at index 1 so we can look backwards to index 0 for the parent
-	if len(ident.Fragments) > 0 {
-		return resolvePart(0)
-	}
-
-	panic("no fragments")
+	return entity, nil
 }

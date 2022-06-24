@@ -15,7 +15,6 @@ type Operand struct {
 	True   bool    `| @"true"`
 	False  bool    `| @"false"`
 	Array  *Array  `| @@`
-	Ctx    *Ctx    `| @@`
 	Ident  *Ident  `| @@`
 }
 
@@ -48,8 +47,6 @@ func (o *Operand) ToString() string {
 		return r + "]"
 	case "Ident":
 		return o.Ident.ToString()
-	case "Ctx":
-		return o.Ctx.Token
 	default:
 		return ""
 	}
@@ -60,7 +57,7 @@ func (o *Operand) Type() string {
 	case o.Number != nil:
 		return "Number"
 	case o.String != nil:
-		return "Text"
+		return "String"
 	case o.Null:
 		return "Null"
 	case o.False:
@@ -71,13 +68,12 @@ func (o *Operand) Type() string {
 		return "Array"
 	case o.Ident != nil && len(o.Ident.Fragments) > 0:
 		return "Ident"
-	case o.Ctx != nil:
-		return "Ctx"
 	default:
 		return ""
 	}
 }
 
+// TODO: IsLiteralType
 func (o *Operand) IsValueType() (bool, string) {
 	switch {
 	case o.Number != nil:
@@ -94,19 +90,9 @@ func (o *Operand) IsValueType() (bool, string) {
 		return false, o.ToString() // todo: arrays containing idents?
 	case o.Ident != nil && len(o.Ident.Fragments) > 0:
 		return false, o.ToString()
-	case o.Ctx != nil:
-		return false, o.ToString()
 	default:
 		return true, o.ToString()
 	}
-}
-
-func (o *Operand) IsCtx() (bool, *Ctx) {
-	if o.Ctx != nil {
-		return true, o.Ctx
-	}
-
-	return false, nil
 }
 
 type OperandPart struct {
@@ -153,6 +139,8 @@ func (a *OperandResolution) TypesMatch(b *OperandResolution) bool {
 	}
 
 	lhs := a.LastFragment()
+
+	// a.b.c.d.e
 	rhs := b.LastFragment()
 
 	return lhs.Type == rhs.Type

@@ -211,9 +211,30 @@ func buildOperandResolutionErrors(asts []*parser.AST, resolution *expressions.Op
 	return errors
 }
 
+func TypeCheck(a *relationships.ExpressionScopeEntity, b *relationships.ExpressionScopeEntity, operator string) *errorhandling.ValidationError {
+	allowedOperators := []string{}
+
+	if a.Model != nil {
+		resolvedA = a.Model.Name.Value
+		allowedOperators = []string{"=="}
+	}
+
+	if a.TypeIdentifier() != b.TypeIdentifier() {
+		// error
+	}
+
+	return nil
+}
+
 // Validates that all lhs and rhs operands of each condition in an expression match
 func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
+
+	//
+
+	if ourcode.Unresolvabe() {
+		return
+	}
 
 	for _, condition := range conditions {
 		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
@@ -246,11 +267,11 @@ func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression,
 	return errors
 }
 
-func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, context RuleContext) (*expressions.OperandResolution, *expressions.OperandResolution, []error) {
+func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, context RuleContext) (*relationships.ExpressionScopeEntity, *relationships.ExpressionScopeEntity, []error) {
 	lhs := cond.LHS
 	rhs := cond.RHS
 
-	resolvedLHS, lhsErrors := relationships.ResolveOperand(
+	lhsEntity, lhsErr := relationships.ResolveOperand(
 		asts,
 		lhs,
 		relationships.DefaultExpressionScope(asts).Merge(
@@ -263,7 +284,7 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 			},
 		),
 	)
-	resolvedRHS, rhsErrors := relationships.ResolveOperand(
+	rhsEntity, rhsErr := relationships.ResolveOperand(
 		asts,
 		rhs,
 		relationships.DefaultExpressionScope(asts).Merge(
@@ -277,5 +298,5 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 		),
 	)
 
-	return resolvedLHS, resolvedRHS, append(lhsErrors, rhsErrors...)
+	return lhsEntity, rhsEntity, []error{lhsErr, rhsErr}
 }
