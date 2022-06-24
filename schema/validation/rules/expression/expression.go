@@ -19,7 +19,7 @@ type Rules func(asts []*parser.AST, expression *expressions.Expression, context 
 func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, customRules []Rules, context RuleContext) (errors []error) {
 	baseRules := []Rules{
 		OperandResolutionRule,
-		// MismatchedTypesRule,
+		MismatchedTypesRule,
 	}
 
 	baseRules = append(baseRules, customRules...)
@@ -148,39 +148,74 @@ func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expressio
 // }
 
 // Validates that all lhs and rhs operands of each condition in an expression match
-// func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []*errorhandling.ValidationError) {
-// 	conditions := expression.Conditions()
+func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
+	conditions := expression.Conditions()
 
-// 	for _, condition := range conditions {
-// 		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
+	for _, condition := range conditions {
+		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
 
-// 		// if there is no rhs (value only conditions with only a lhs)
-// 		// then we do not care about validating this rule for this condition
-// 		if resolvedRHS == nil {
-// 			continue
-// 		}
+		// if there is no rhs (value only conditions with only a lhs)
+		// then we do not care about validating this rule for this condition
+		if resolvedRHS == nil {
+			continue
+		}
 
-// 		// check the type of the last fragment in both lhs and rhs operands match
-// 		if !resolvedLHS.TypesMatch(resolvedRHS) {
-// 			errors = append(errors,
-// 				errorhandling.NewValidationError(
-// 					errorhandling.ErrorExpressionTypeMismatch,
-// 					errorhandling.TemplateLiterals{
-// 						Literals: map[string]string{
-// 							"LHS":     resolvedLHS.LastFragment().Value,
-// 							"LHSType": resolvedLHS.LastFragment().Type,
-// 							"RHS":     resolvedRHS.LastFragment().Value,
-// 							"RHSType": resolvedRHS.LastFragment().Type,
-// 						},
-// 					},
-// 					condition,
-// 				),
-// 			)
-// 		}
-// 	}
+		// if !slices.Equal(resolvedLHS.AllowedOperators(), resolvedRHS.AllowedOperators()) {
+		// 	errors = append(errors,
+		// 		errorhandling.NewValidationError(
+		// 			errorhandling.ErrorForbiddenExpressionOperation,
+		// 			errorhandling.TemplateLiterals{
+		// 				Literals: map[string]string{
+		// 					"LHS":     resolvedLHS.LastFragment().Value,
+		// 					"LHSType": resolvedLHS.LastFragment().Type,
+		// 					"RHS":     resolvedRHS.LastFragment().Value,
+		// 					"RHSType": resolvedRHS.LastFragment().Type,
+		// 				},
+		// 			},
+		// 			condition,
+		// 		),
+		// 	)
+		// }
 
-// 	return errors
-// }
+		fmt.Print(resolvedLHS.Type(), "||", resolvedRHS.Type())
+		if resolvedLHS.Type() != resolvedRHS.Type() {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionTypeMismatch,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"LHS":     resolvedLHS.Value(),
+							"LHSType": resolvedLHS.Type(),
+							"RHS":     resolvedRHS.Value(),
+							"RHSType": resolvedRHS.Type(),
+						},
+					},
+					condition,
+				),
+			)
+		}
+
+		// check the type of the last fragment in both lhs and rhs operands match
+		// if !resolvedLHS.TypesMatch(resolvedRHS) {
+		// 	errors = append(errors,
+		// 		errorhandling.NewValidationError(
+		// 			errorhandling.ErrorExpressionTypeMismatch,
+		// 			errorhandling.TemplateLiterals{
+		// 				Literals: map[string]string{
+		// 					"LHS":     resolvedLHS.LastFragment().Value,
+		// 					"LHSType": resolvedLHS.LastFragment().Type,
+		// 					"RHS":     resolvedRHS.LastFragment().Value,
+		// 					"RHSType": resolvedRHS.LastFragment().Type,
+		// 				},
+		// 			},
+		// 			condition,
+		// 		),
+		// 	)
+		// }
+	}
+
+	return errors
+}
 
 func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, context RuleContext) (resolvedLhs *operand.ExpressionScopeEntity, resolvedRhs *operand.ExpressionScopeEntity, errors []error) {
 	lhs := cond.LHS

@@ -39,6 +39,50 @@ type ExpressionScopeEntity struct {
 	Literal *expressions.Operand
 }
 
+func (e *ExpressionScopeEntity) Type() string {
+	if e.Object != nil {
+		return e.Object.Name
+	}
+
+	if e.Model != nil {
+		return e.Model.Name.Value
+	}
+
+	if e.Field != nil {
+		return e.Field.Type
+	}
+
+	if e.Literal != nil {
+		return e.Literal.Type()
+	}
+
+	return ""
+}
+
+func (e *ExpressionScopeEntity) AllowedOperators() []string {
+	return []string{}
+}
+
+func (e *ExpressionScopeEntity) Value() string {
+	if e.Object != nil {
+		return e.Object.Name
+	}
+
+	if e.Model != nil {
+		return e.Model.Name.Value
+	}
+
+	if e.Field != nil {
+		return e.Field.Name.Value
+	}
+
+	if e.Literal != nil {
+		return e.Literal.ToString()
+	}
+
+	return ""
+}
+
 // Type() -> String
 // AllowedOperators() -> []string
 
