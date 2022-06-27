@@ -1,45 +1,61 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "bar",
-          "type":  "FIELD_TYPE_STRING",
-          "unique":  true
+          "modelName": "Foo",
+          "name": "bar",
+          "type": "FIELD_TYPE_STRING",
+          "unique": true
         },
         {
-          "modelName":  "Foo",
-          "name":  "baz",
-          "type":  "FIELD_TYPE_STRING",
-          "optional":  true
+          "modelName": "Foo",
+          "name": "baz",
+          "type": "FIELD_TYPE_STRING",
+          "optional": true
         },
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "primaryKey":  true
+          "modelName": "Foo",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
         },
         {
-          "modelName":  "Foo",
-          "name":  "createdAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
         },
         {
-          "modelName":  "Foo",
-          "name":  "updatedAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     },
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "username",
-          "type":  "FIELD_TYPE_STRING"
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     }

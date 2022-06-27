@@ -1,43 +1,59 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "username",
-          "type":  "FIELD_TYPE_STRING"
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     }
   ],
-  "enums":  [
+  "enums": [
     {
-      "name":  "Planets",
-      "values":  [
+      "name": "Planets",
+      "values": [
         {
-          "name":  "Mercury"
+          "name": "Mercury"
         },
         {
-          "name":  "Venus"
+          "name": "Venus"
         },
         {
-          "name":  "Earth"
+          "name": "Earth"
         },
         {
-          "name":  "Mars"
+          "name": "Mars"
         },
         {
-          "name":  "Jupiter"
+          "name": "Jupiter"
         },
         {
-          "name":  "Saturn"
+          "name": "Saturn"
         },
         {
-          "name":  "Uranus"
+          "name": "Uranus"
         },
         {
-          "name":  "Neptune"
+          "name": "Neptune"
         }
       ]
     }

@@ -1,51 +1,51 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "f1",
-          "type":  "FIELD_TYPE_BOOL"
+          "modelName": "Foo",
+          "name": "f1",
+          "type": "FIELD_TYPE_BOOL"
         },
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "primaryKey":  true
+          "modelName": "Foo",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
         },
         {
-          "modelName":  "Foo",
-          "name":  "createdAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
         },
         {
-          "modelName":  "Foo",
-          "name":  "updatedAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Foo",
-          "name":  "opA",
-          "type":  "OPERATION_TYPE_LIST",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "permissions":  [
+          "modelName": "Foo",
+          "name": "opA",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "permissions": [
             {
-              "modelName":  "Foo",
-              "operationName":  "opA",
-              "roleNames":  [
+              "modelName": "Foo",
+              "operationName": "opA",
+              "roleNames": [
                 "Admin"
               ],
-              "expression":  {
-                "source":  "foo.f1 == true"
+              "expression": {
+                "source": "foo.f1 == true"
               }
             },
             {
-              "modelName":  "Foo",
-              "operationName":  "opA",
-              "roleNames":  [
+              "modelName": "Foo",
+              "operationName": "opA",
+              "roleNames": [
                 "Restricted"
               ]
             }
@@ -54,26 +54,42 @@
       ]
     },
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "username",
-          "type":  "FIELD_TYPE_STRING"
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     }
   ],
-  "roles":  [
+  "roles": [
     {
-      "name":  "Admin",
-      "domains":  [
+      "name": "Admin",
+      "domains": [
         "myorg.com"
       ]
     },
     {
-      "name":  "Restricted",
-      "emails":  [
+      "name": "Restricted",
+      "emails": [
         "superuser@myorg.com"
       ]
     }

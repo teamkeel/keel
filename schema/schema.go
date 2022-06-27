@@ -83,11 +83,19 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
-		scm.insertBuiltInFields(declarations)
 
+		// Insert built in models like Identity. We only want to call this once
+		// so that only one instance of the built in models are added if there
+		// are multiple ASTs at play.
+		// We want the insertion of built in models to happen
+		// before insertion of built in fields, so that built in fields such as
+		// primary key are added to the newly added built in models
 		if i == 0 {
 			scm.insertBuiltInModels(declarations, oneInputSchemaFile)
 		}
+
+		scm.insertBuiltInFields(declarations)
+
 		asts = append(asts, declarations)
 	}
 
@@ -183,7 +191,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 	)
 
 	field := &parser.FieldNode{
-		BuiltIn: false,
+		BuiltIn: true,
 		Name: parser.NameNode{
 			Value: "username",
 		},
