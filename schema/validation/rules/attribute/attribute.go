@@ -147,33 +147,29 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 				argLength := len(attr.Arguments)
 
 				if argLength == 0 || argLength >= 2 {
-					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorTooManyArguments,
-						errorhandling.TemplateLiterals{
-							Literals: map[string]string{
-								"Area":  fmt.Sprintf("@%s", attr.Name.Value),
-								"Value": attr.Name.Value,
-								"Count": fmt.Sprint(1),
+					errors = append(errors,
+						errorhandling.NewValidationError(
+							errorhandling.ErrorTooManyArguments,
+							errorhandling.TemplateLiterals{
+								Literals: map[string]string{
+									"Attribute": fmt.Sprintf("@%s", attr.Name.Value),
+									"Value":     attr.Name.Value,
+									"Count":     fmt.Sprint(1),
+								},
 							},
-						},
-						attr,
-					))
+							attr,
+						))
 					continue
 				}
 
 				expr := attr.Arguments[0].Expression
 
-				rules := []expression.Rules{
-					expression.PreventValueConditionRule,
-				}
+				rules := []expression.Rule{expression.PreventValueConditionRule}
 
 				if attr.Name.Value == parser.AttributeSet {
-					rules = append(rules,
-						expression.OperatorAssignmentRule,
-					)
+					rules = append(rules, expression.OperatorAssignmentRule)
 				} else {
-					rules = append(rules,
-						expression.OperatorLogicalRule,
-					)
+					rules = append(rules, expression.OperatorLogicalRule)
 				}
 
 				expressionErrs := expression.ValidateExpression(
@@ -238,7 +234,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			expressionErrors := expression.ValidateExpression(
 				asts,
 				arg.Expression,
-				[]expression.Rules{
+				[]expression.Rule{
 					expression.OperatorLogicalRule,
 				},
 				expression.RuleContext{
@@ -381,9 +377,9 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
 					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorTooManyArguments,
 						errorhandling.TemplateLiterals{
 							Literals: map[string]string{
-								"Area":   fmt.Sprintf("@%s", attr.Name.Value),
-								"Value":  attr.Name.Value,
-								"NoArgs": "true",
+								"Attribute": fmt.Sprintf("@%s", attr.Name.Value),
+								"Value":     attr.Name.Value,
+								"NoArgs":    "true",
 							},
 						},
 						attr,

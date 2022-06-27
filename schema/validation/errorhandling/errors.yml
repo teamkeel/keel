@@ -18,7 +18,7 @@ en:
   E005:
     short_message: "{{ .Input }} is not a valid input"
     message: "Action inputs must be one of the fields defined in the model"
-    hint: "Did you mean {{ .Suggested }}?"
+    hint: "{{ .Suggested }}"
   E006:
     short_message: "cannot use {{ .Name }}"
     message: "You have a reserved field name {{ .Name }}"
@@ -84,21 +84,29 @@ en:
     message: "{{ .Root }} not found"
     hint: "{{ .Suggestions }}"
   E022:
-    short_message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
-    message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
-    hint: "Did you mean '{{ .Suggestion }}'?"
+    short_message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
+    message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
+    hint: "{{ .Suggestion }}"
   E023:
-    short_message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
-    message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
-    hint: "Please assign a value e.g 'a.b = b.a'"
+    short_message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
+    message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
+    hint: "Please assign a value. Did you mean '{{ .Suggestion }}'?"
   E024:
-    short_message: "Too many arguments provided to '{{ .Area }}'"
-    message: "Too many arguments provided to '{{ .Area }}'"
-    hint: "{{ if .NoArgs }}{{ .Area }} doesn't accept any arguments{{ else }}{{ .Area }} only accepts {{ .Count }} argument(s){{ end }}"
+    short_message: "Too many arguments provided to '{{ .Attribute }}'"
+    message: "Too many arguments provided to '{{ .Attribute }}'"
+    hint: "{{ if .NoArgs }}{{ .Attribute }} doesn't accept any arguments{{ else }}{{ .Attribute }} only accepts {{ .Count }} argument(s){{ end }}"
   E025:
     short_message: "Invalid syntax"
     message: "{{ .Message }}"
   E026:
-    short_message: "{{ .LHS }} is of type {{ .LHSType }} and {{ .RHS }} is of type {{ .RHSType }}"
-    message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is a {{ .RHSType }}"
-    hint: "Please make sure that you are comparing entities of the same type"
+    short_message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
+    message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
+    hint: "Please make sure that you are evaluating entities of the same type"
+  E027:
+    short_message: "Cannot compare '{{ .LHS }}' and '{{ .RHS }}' with operator '{{ .Operator }}'"
+    message: "Cannot compare '{{ .LHS }}' and '{{ .RHS }}' with operator '{{ .Operator }}'"
+    hint: "{{ .Suggestion }}"
+  E028:
+    short_message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
+    message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
+    hint: "Only boolean literals are allowed e.g true or false"

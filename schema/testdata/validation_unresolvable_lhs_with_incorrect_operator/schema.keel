@@ -1,0 +1,13 @@
+model Post {
+  fields {
+    title Text
+    published Boolean
+  }
+
+  operations {
+    get posts(id) {
+      @where(post.titles = 123)
+    }
+  }
+}
+

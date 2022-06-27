@@ -3,10 +3,13 @@ package expression
 import (
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/schema/validation/operand"
+	"github.com/teamkeel/keel/util/collection"
+	"golang.org/x/exp/slices"
 )
 
 type RuleContext struct {
@@ -14,20 +17,23 @@ type RuleContext struct {
 	Attribute *parser.AttributeNode
 }
 
-type Rules func(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error
+type Rule func(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error
 
-func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, customRules []Rules, context RuleContext) (errors []error) {
-	baseRules := []Rules{
-		OperandResolutionRule,
-		MismatchedTypesRule,
-	}
-
-	baseRules = append(baseRules, customRules...)
-
-	for _, rule := range baseRules {
+func ValidateExpression(asts []*parser.AST, expression *expressions.Expression, rules []Rule, context RuleContext) (errors []error) {
+	for _, rule := range rules {
 		errs := rule(asts, expression, context)
 		errors = append(errors, errs...)
 	}
+
+	return errors
+}
+
+// Validates that all operands resolve correctly
+// This handles operands of all types including operands such as model.associationA.associationB
+// as well as simple value types such as string, number, bool etc
+func OperandResolutionRule(asts []*parser.AST, condition *expressions.Condition, context RuleContext) (errors []error) {
+	_, _, errs := resolveConditionOperands(asts, condition, context)
+	errors = append(errors, errs...)
 
 	return errors
 }
@@ -38,49 +44,31 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expressi
 
 	for _, condition := range conditions {
 		// If there is no operator, then it means there is no rhs
-		if condition.Operator.Symbol == "" {
+		if condition.Operator == nil {
 			continue
 		}
 
 		if condition.Type() != expressions.AssignmentCondition {
+			correction := errorhandling.NewCorrectionHint([]string{"="}, condition.Operator.Symbol)
+
 			errors = append(errors,
 				errorhandling.NewValidationError(
 					errorhandling.ErrorForbiddenExpressionOperation,
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"Operator":   condition.Operator.Symbol,
-							"Suggestion": "=",
-							"Area":       fmt.Sprintf("@%s", context.Attribute.Name.Value),
+							"Suggestion": correction.ToString(),
+							"Attribute":  fmt.Sprintf("@%s", context.Attribute.Name.Value),
 						},
 					},
 					condition.Operator,
 				),
 			)
+
+			continue
 		}
-	}
 
-	return errors
-}
-
-// Validates that no value conditions are used
-func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
-	conditions := expression.Conditions()
-
-	for _, cond := range conditions {
-		if cond.Type() == expressions.ValueCondition {
-			errors = append(errors,
-				errorhandling.NewValidationError(
-					errorhandling.ErrorForbiddenValueCondition,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Value": cond.ToString(),
-							"Area":  fmt.Sprintf("@%s", context.Attribute.Name.Value),
-						},
-					},
-					cond,
-				),
-			)
-		}
+		errors = append(errors, runSideEffectOperandRules(asts, condition, context, expressions.AssignmentOperators)...)
 	}
 
 	return errors
@@ -90,11 +78,16 @@ func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expre
 func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
+	permittedOperators := append(expressions.LogicalOperators, expressions.LogicalOperators...)
+	permittedOperators = append(permittedOperators, expressions.ArrayOperators...)
+	permittedOperators = append(permittedOperators, expressions.NumericalOperators...)
+
 	for _, condition := range conditions {
 		// If there is no operator, then it means there is no rhs
-		if condition.Operator.Symbol == "" {
+		if condition.Operator == nil {
 			continue
 		}
+		correction := errorhandling.NewCorrectionHint([]string{"=="}, condition.Operator.Symbol)
 
 		if condition.Type() != expressions.LogicalCondition {
 			errors = append(errors,
@@ -103,80 +96,117 @@ func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression,
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"Operator":   condition.Operator.Symbol,
-							"Area":       fmt.Sprintf("@%s", context.Attribute.Name.Value),
-							"Suggestion": "==",
+							"Attribute":  fmt.Sprintf("@%s", context.Attribute.Name.Value),
+							"Suggestion": correction.ToString(),
 						},
 					},
 					condition.Operator,
 				),
 			)
-		}
-	}
 
-	return errors
-}
-
-// Validates that all operands resolve correctly
-// This handles operands of all types including operands such as model.associationA.associationB
-// as well as simple value types such as string, number, bool etc
-func OperandResolutionRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
-	conditions := expression.Conditions()
-
-	for _, condition := range conditions {
-		_, _, errs := resolveConditionOperands(asts, condition, context)
-
-		errors = append(errors, errs...)
-	}
-
-	return errors
-}
-
-// Validates that all lhs and rhs operands of each condition in an expression match
-func MismatchedTypesRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
-	conditions := expression.Conditions()
-
-	for _, condition := range conditions {
-		resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
-
-		// if there is no lhs or rhs
-		// then we do not care about validating this rule for this condition
-		if resolvedLHS == nil || resolvedRHS == nil {
 			continue
 		}
 
-		// if !slices.Equal(resolvedLHS.AllowedOperators(), resolvedRHS.AllowedOperators()) {
-		// 	errors = append(errors,
-		// 		errorhandling.NewValidationError(
-		// 			errorhandling.ErrorForbiddenExpressionOperation,
-		// 			errorhandling.TemplateLiterals{
-		// 				Literals: map[string]string{
-		// 					"LHS":     resolvedLHS.LastFragment().Value,
-		// 					"LHSType": resolvedLHS.LastFragment().Type,
-		// 					"RHS":     resolvedRHS.LastFragment().Value,
-		// 					"RHSType": resolvedRHS.LastFragment().Type,
-		// 				},
-		// 			},
-		// 			condition,
-		// 		),
-		// 	)
-		// }
+		errors = append(errors, runSideEffectOperandRules(asts, condition, context, permittedOperators)...)
+	}
 
-		if resolvedLHS.BaseType() != resolvedRHS.BaseType() {
+	return errors
+}
+
+// Validates that no value conditions are used
+func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
+	conditions := expression.Conditions()
+
+	for _, condition := range conditions {
+		if condition.Type() == expressions.ValueCondition {
 			errors = append(errors,
 				errorhandling.NewValidationError(
-					errorhandling.ErrorExpressionTypeMismatch,
+					errorhandling.ErrorForbiddenValueCondition,
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
-							"LHS":     resolvedLHS.Value(),
-							"LHSType": resolvedLHS.Type(),
-							"RHS":     resolvedRHS.Value(),
-							"RHSType": resolvedRHS.Type(),
+							"Value":      condition.ToString(),
+							"Attribute":  fmt.Sprintf("@%s", context.Attribute.Name.Value),
+							"Suggestion": fmt.Sprintf("%s = xxx", condition.ToString()),
 						},
 					},
 					condition,
 				),
 			)
 		}
+	}
+
+	return errors
+}
+
+func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.Condition, context RuleContext, permittedOperators []string) (errors []error) {
+	resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
+
+	// If there is no operator, then we are not interested in validating this rule
+	if condition.Operator == nil {
+		return nil
+	}
+
+	allowedOperatorsLHS := resolvedLHS.AllowedOperators()
+	allowedOperatorsRHS := resolvedRHS.AllowedOperators()
+
+	if slices.Equal(allowedOperatorsLHS, allowedOperatorsRHS) {
+		if !collection.Contains(allowedOperatorsLHS, condition.Operator.Symbol) {
+			collection := lo.Intersect(permittedOperators, allowedOperatorsLHS)
+			corrections := errorhandling.NewCorrectionHint(collection, condition.Operator.Symbol)
+
+			errors = append(errors, errorhandling.NewValidationError(
+				errorhandling.ErrorForbiddenOperator,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"LHS":        resolvedLHS.Value(),
+						"RHS":        resolvedRHS.Value(),
+						"Operator":   condition.Operator.Symbol,
+						"Suggestion": corrections.ToString(),
+					},
+				},
+				condition.Operator,
+			))
+		}
+	} else {
+		// todo: lhs: single vs rhs: array
+	}
+
+	return errors
+}
+
+// Validates that all lhs and rhs operands of each condition in an expression match
+func OperandTypesMatchRule(asts []*parser.AST, condition *expressions.Condition, context RuleContext) (errors []error) {
+
+	resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
+
+	// if there is no lhs or rhs
+	// then we do not care about validating this rule for this condition
+	if resolvedLHS == nil || resolvedRHS == nil {
+		return nil
+	}
+
+	operator := condition.Operator.Symbol
+
+	// Validate first that the LHS and RHS types match
+	if resolvedLHS.BaseType() != resolvedRHS.BaseType() {
+		errors = append(errors,
+			errorhandling.NewValidationError(
+				errorhandling.ErrorExpressionTypeMismatch,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Operator": operator,
+						"LHS":      condition.LHS.ToString(),
+						"LHSType":  resolvedLHS.Type(),
+						"RHS":      condition.RHS.ToString(),
+						"RHSType":  resolvedRHS.Type(),
+					},
+				},
+				condition,
+			),
+		)
+	} else {
+		// todo: handle array comparisons
+		// e.g single.value in array
 	}
 
 	return errors
@@ -227,4 +257,22 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 	}
 
 	return resolvedLhs, nil, errors
+}
+
+func runSideEffectOperandRules(asts []*parser.AST, condition *expressions.Condition, context RuleContext, permittedOperators []string) (errors []error) {
+	errors = append(errors, OperandResolutionRule(asts, condition, context)...)
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	errors = append(errors, OperandTypesMatchRule(asts, condition, context)...)
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	errors = append(errors, InvalidOperatorForOperandsRule(asts, condition, context, permittedOperators)...)
+
+	return errors
 }

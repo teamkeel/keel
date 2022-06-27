@@ -52,6 +52,17 @@ func (o *Operand) ToString() string {
 	}
 }
 
+var (
+	TypeNumber = "Number"
+	TypeString = "String"
+	// Text is the string type for fields, whereas String is the type for literal strings
+	TypeText    = "Text"
+	TypeNull    = "Null"
+	TypeBoolean = "Boolean"
+	TypeArray   = "Array"
+	TypeIdent   = "Ident"
+)
+
 func (o *Operand) Type() string {
 	switch {
 	case o.Number != nil:

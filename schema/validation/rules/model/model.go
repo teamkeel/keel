@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -162,15 +161,14 @@ func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 
 				hint := errorhandling.NewCorrectionHint(fieldNames, input.Name.Value)
 
-				suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
-
 				errors = append(
 					errors,
-					errorhandling.NewValidationError(errorhandling.ErrorInvalidActionInput,
+					errorhandling.NewValidationError(
+						errorhandling.ErrorInvalidActionInput,
 						errorhandling.TemplateLiterals{
 							Literals: map[string]string{
 								"Input":     input.Name.Value,
-								"Suggested": suggestions,
+								"Suggested": hint.ToString(),
 							},
 						},
 						input.Name,
@@ -227,17 +225,17 @@ func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
 				}
 
 				conds := attr.Arguments[0].Expression.Conditions()
-				for _, cond := range conds {
-					if cond.Type() != expressions.LogicalCondition {
-						// todo: implement
-					}
-				}
 
 				for _, condition := range conds {
+					if condition.RHS == nil {
+						continue
+					}
+
+					if condition.LHS.Ident == nil {
+						continue
+					}
 
 					for _, op := range []*expressions.Operand{condition.LHS, condition.RHS} {
-
-						// @where(myModel.someUniqueField == true or a and b)
 						if len(op.Ident.Fragments) != 2 {
 							continue
 						}

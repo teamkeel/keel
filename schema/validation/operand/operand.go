@@ -62,8 +62,8 @@ func (e *ExpressionScopeEntity) BaseType() string {
 	}
 
 	if e.Field != nil {
-		if e.Field.Type == "Text" {
-			return "String"
+		if e.Field.Type == expressions.TypeText {
+			return expressions.TypeString
 		}
 		return e.Field.Type
 	}
@@ -75,8 +75,55 @@ func (e *ExpressionScopeEntity) BaseType() string {
 	return ""
 }
 
-func (e *ExpressionScopeEntity) AllowedOperators() []string {
-	return []string{}
+func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
+	switch {
+	case e.Literal != nil:
+		t := e.Literal.Type()
+
+		switch t {
+		case expressions.TypeBoolean:
+			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.OperatorAssignment)
+		case expressions.TypeNumber:
+			operators = append(operators, expressions.LogicalOperators...)
+			operators = append(operators, expressions.OperatorAssignment)
+		case expressions.TypeNull:
+			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.AssignmentCondition)
+		case expressions.TypeString:
+			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.OperatorAssignment)
+		case expressions.TypeArray:
+			// todo: implement
+		}
+
+	case e.Model != nil:
+		operators = append(operators, expressions.OperatorEquals)
+		operators = append(operators, expressions.OperatorAssignment)
+	case e.Field != nil:
+		baseType := e.BaseType()
+
+		switch baseType {
+		case expressions.TypeString:
+			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.OperatorAssignment)
+		case expressions.TypeBoolean:
+			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.OperatorAssignment)
+		case expressions.TypeNumber:
+			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.OperatorAssignment)
+			operators = append(operators, expressions.NumericalOperators...)
+		default:
+			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.OperatorAssignment)
+		}
+	case e.Object != nil:
+		operators = append(operators, expressions.OperatorEquals)
+		operators = append(operators, expressions.OperatorAssignment)
+	}
+
+	return operators
 }
 
 func (e *ExpressionScopeEntity) Value() string {

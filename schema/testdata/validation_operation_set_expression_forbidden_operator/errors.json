@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E022",
-        "end_pos": {
-            "column": 37,
-            "filename": "testdata/validation_operation_set_expression_forbidden_operator/schema.keel",
-            "line": 13,
-            "offset": 242
-        },
-        "hint": "Did you mean '='?",
-        "message": "Operator '==' not permitted on @set",
-        "pos": {
-            "column": 35,
-            "filename": "testdata/validation_operation_set_expression_forbidden_operator/schema.keel",
-            "line": 13,
-            "offset": 240
-        },
-        "short_message": "Operator '==' not permitted on @set"
+{
+  "Errors": [
+    {
+      "message": "Operator '==' not permitted on @set",
+      "short_message": "Operator '==' not permitted on @set",
+      "hint": "Did you mean =?",
+      "code": "E022",
+      "pos": {
+        "filename": "testdata/validation_operation_set_expression_forbidden_operator/schema.keel",
+        "offset": 240,
+        "line": 13,
+        "column": 35
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_set_expression_forbidden_operator/schema.keel",
+        "offset": 242,
+        "line": 13,
+        "column": 37
       }
-    ]
-  }
+    }
+  ]
+}

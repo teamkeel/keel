@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "Value-only conditions such as '\"something\"' not permitted on @where",
+      "short_message": "Value-only conditions such as '\"something\"' not permitted on @where",
+      "hint": "Please assign a value. Did you mean '\"something\" = xxx'?",
+      "code": "E023",
+      "pos": {
+        "filename": "testdata/validation_where_expression_single_string_literal/schema.keel",
+        "offset": 114,
+        "line": 9,
+        "column": 14
+      },
+      "end_pos": {
+        "filename": "testdata/validation_where_expression_single_string_literal/schema.keel",
+        "offset": 125,
+        "line": 9,
+        "column": 25
+      }
+    }
+  ]
+}

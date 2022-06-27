@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "Cannot compare 'username' and '\"adaam2\"' with operator '\u003e='",
+      "short_message": "Cannot compare 'username' and '\"adaam2\"' with operator '\u003e='",
+      "hint": "Did you mean ==?",
+      "code": "E027",
+      "pos": {
+        "filename": "testdata/validation_where_mismatched_operator_for_matching_lhs_rhs/schema.keel",
+        "offset": 112,
+        "line": 7,
+        "column": 38
+      },
+      "end_pos": {
+        "filename": "testdata/validation_where_mismatched_operator_for_matching_lhs_rhs/schema.keel",
+        "offset": 114,
+        "line": 7,
+        "column": 40
+      }
+    }
+  ]
+}

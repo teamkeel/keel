@@ -43,6 +43,8 @@ const (
 	ErrorTooManyArguments                 = "E024"
 	ErrorInvalidSyntax                    = "E025"
 	ErrorExpressionTypeMismatch           = "E026"
+	ErrorForbiddenOperator                = "E027"
+	ErrorNonBooleanValueCondition         = "E028"
 )
 
 type ErrorDetails struct {
@@ -208,7 +210,7 @@ func (v ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) (string
 			}
 
 			message := func() {
-				schemaString += yellow.Sprintf(" %s", err.ErrorDetails.Message)
+				schemaString += fmt.Sprintf(" %s %s", yellow.Sprint(err.ErrorDetails.Message), red.Sprintf("(%s)", err.Code))
 			}
 
 			hint := func() {

@@ -3,7 +3,7 @@
     {
       "message": "Operator '=' not permitted on @permission",
       "short_message": "Operator '=' not permitted on @permission",
-      "hint": "Did you mean '=='?",
+      "hint": "Did you mean ==?",
       "code": "E022",
       "pos": {
         "filename": "testdata/validation_permission_attribute_expression_forbidden_operator/schema.keel",
