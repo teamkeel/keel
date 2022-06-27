@@ -89,6 +89,7 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 			operators = append(operators, expressions.OperatorAssignment)
 		case expressions.TypeNull:
 			operators = append(operators, expressions.OperatorEquals)
+			operators = append(operators, expressions.AssignmentCondition)
 		case expressions.TypeString:
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
