@@ -100,7 +100,6 @@ func (e *ExpressionScopeEntity) Value() string {
 }
 
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
-	stringLiteral := ""
 	return &ExpressionScope{
 		Entities: []*ExpressionScopeEntity{
 			{
@@ -109,11 +108,6 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 					Fields: map[string]*ExpressionScopeEntity{
 						"identity": {
 							Model: query.Model(asts, "Identity"),
-						},
-						"ipAddress": {
-							Literal: &expressions.Operand{
-								String: &stringLiteral,
-							},
 						},
 					},
 				},
