@@ -26,10 +26,14 @@ type ExpressionObjectEntity struct {
 }
 
 type ExpressionScopeEntity struct {
-	Object  *ExpressionObjectEntity
-	Model   *parser.ModelNode
-	Field   *parser.FieldNode
-	Literal *expressions.Operand
+	Object    *ExpressionObjectEntity
+	Model     *parser.ModelNode
+	Field     *parser.FieldNode
+	Literal   *expressions.Operand
+	Enum      *parser.EnumNode
+	EnumValue *parser.EnumValueNode
+
+	Parent *ExpressionScopeEntity
 }
 
 func (e *ExpressionScopeEntity) Type() string {
@@ -47,6 +51,10 @@ func (e *ExpressionScopeEntity) Type() string {
 
 	if e.Literal != nil {
 		return e.Literal.Type()
+	}
+
+	if e.EnumValue != nil {
+		return e.Parent.Value()
 	}
 
 	return ""
@@ -70,6 +78,10 @@ func (e *ExpressionScopeEntity) BaseType() string {
 
 	if e.Literal != nil {
 		return e.Literal.Type()
+	}
+
+	if e.EnumValue != nil {
+		return e.Parent.Value()
 	}
 
 	return ""
@@ -143,23 +155,35 @@ func (e *ExpressionScopeEntity) Value() string {
 		return e.Literal.ToString()
 	}
 
+	if e.Enum != nil {
+		return e.Enum.Name.Value
+	}
+
 	return ""
 }
 
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
-	return &ExpressionScope{
-		Entities: []*ExpressionScopeEntity{
-			{
-				Object: &ExpressionObjectEntity{
-					Name: "ctx",
-					Fields: map[string]*ExpressionScopeEntity{
-						"identity": {
-							Model: query.Model(asts, "Identity"),
-						},
+	entities := []*ExpressionScopeEntity{
+		{
+			Object: &ExpressionObjectEntity{
+				Name: "ctx",
+				Fields: map[string]*ExpressionScopeEntity{
+					"identity": {
+						Model: query.Model(asts, "Identity"),
 					},
 				},
 			},
 		},
+	}
+
+	for _, enum := range query.Enums(asts) {
+		entities = append(entities, &ExpressionScopeEntity{
+			Enum: enum,
+		})
+	}
+
+	return &ExpressionScope{
+		Entities: entities,
 	}
 }
 
@@ -183,6 +207,24 @@ func scopeFromObject(parent *ExpressionScope, obj *ExpressionObjectEntity) *Expr
 
 	for _, field := range obj.Fields {
 		newEntities = append(newEntities, field)
+	}
+
+	return &ExpressionScope{
+		Entities: newEntities,
+		Parent:   parent,
+	}
+}
+
+func scopeFromEnum(parent *ExpressionScope, enum *parser.EnumNode) *ExpressionScope {
+	newEntities := []*ExpressionScopeEntity{}
+
+	for _, value := range enum.Values {
+		newEntities = append(newEntities, &ExpressionScopeEntity{
+			EnumValue: value,
+			Parent: &ExpressionScopeEntity{
+				Enum: enum,
+			},
+		})
 	}
 
 	return &ExpressionScope{
@@ -235,8 +277,19 @@ fragments:
 				scope = scopeFromObject(scope, e.Object)
 
 				continue fragments
-			}
+			case e.Enum != nil && e.Enum.Name.Value == fragment.Fragment:
+				entity = e
 
+				scope = scopeFromEnum(scope, e.Enum)
+
+				continue fragments
+			case e.EnumValue != nil && e.EnumValue.Name.Value == fragment.Fragment:
+				entity = e
+
+				scope = &ExpressionScope{}
+
+				continue fragments
+			}
 		}
 
 		// entity in this case is the last resolved parent
