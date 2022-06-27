@@ -107,9 +107,19 @@ func UserDefinedTypes(asts []*parser.AST) (res []string) {
 }
 
 func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
+	return append(ModelOperations(model), ModelFunctions(model)...)
+}
+
+func ModelOperations(model *parser.ModelNode) (res []*parser.ActionNode) {
+	for _, section := range model.Sections {
+		res = append(res, section.Operations...)
+	}
+	return res
+}
+
+func ModelFunctions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Functions...)
-		res = append(res, section.Operations...)
 	}
 	return res
 }

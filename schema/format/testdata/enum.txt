@@ -1,0 +1,11 @@
+enum Colours {
+    Red Blue Green
+}
+
+===
+
+enum Colours {
+    Red
+    Blue
+    Green
+}

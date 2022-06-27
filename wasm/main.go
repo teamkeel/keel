@@ -8,6 +8,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/schema/format"
+	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -17,12 +19,26 @@ func init() {
 	// available in JS land at the call time.
 	js.Global().Set("keel", js.ValueOf(map[string]interface{}{
 		"validate": js.FuncOf(validate),
+		"format":   js.FuncOf(formatSchema),
 	}))
 }
 
 func main() {
 	done := make(chan bool)
 	<-done
+}
+
+func formatSchema(this js.Value, args []js.Value) interface{} {
+	ast, err := parser.Parse(&reader.SchemaFile{
+		FileName: "schema.keel",
+		Contents: args[0].String(),
+	})
+	if err != nil {
+		// if the schema can't be parsed then just return it as-is
+		return js.ValueOf(args[0].String())
+	}
+
+	return js.ValueOf(format.Format(ast))
 }
 
 // Type definition for this function:
