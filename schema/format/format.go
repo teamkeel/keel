@@ -170,7 +170,12 @@ func printActionsBlock(writer *Writer, actions []*parser.ActionNode) {
 				if i > 0 {
 					writer.Write(", ")
 				}
-				writer.Write(lowerCamel(arg.Name.Value))
+				if arg.Label != nil {
+					writer.Write("%s: ", arg.Label.Value)
+				}
+
+				// TODO: support dot-notation here
+				writer.Write(lowerCamel(arg.Type.Fragments[0].Fragment))
 			}
 			writer.Write(")")
 			printAttributesBlock(writer, op.Attributes)
@@ -267,8 +272,8 @@ func printAttributes(writer *Writer, attributes []*parser.AttributeNode) {
 						writer.Write(", ")
 					}
 				}
-				if arg.Name != nil {
-					writer.Write("%s: ", lowerCamel(arg.Name.Value))
+				if arg.Label != nil {
+					writer.Write("%s: ", lowerCamel(arg.Label.Value))
 				}
 				expr, _ := expressions.ToString(arg.Expression)
 				writer.Write(expr)

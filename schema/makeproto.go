@@ -3,6 +3,7 @@ package schema
 import (
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -205,13 +206,52 @@ func (scm *Builder) makeArguments(parserFunction *parser.ActionNode, modelName s
 	// Currently, we only support arguments of the form <modelname>.
 	operationInputs := []*proto.OperationInput{}
 	for _, parserArg := range parserFunction.Arguments {
-		operationInput := proto.OperationInput{
-			Name:      parserArg.Name.Value,
-			Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
-			ModelName: wrapperspb.String(modelName),
-			FieldName: wrapperspb.String(parserArg.Name.Value),
+		if parserArg.Label == nil {
+			idents := parserArg.Type.Fragments
+
+			// if accessing a field on a related model prepend the related field
+			// e.g. if type is `post.author.name` then the input is called `authorName`
+			name := idents[len(idents)-1].Fragment
+			if len(idents) > 1 {
+				name = idents[len(idents)-2].Fragment + strcase.ToCamel(name)
+			}
+
+			model := query.Model(scm.asts, modelName)
+			var field *parser.FieldNode
+			for _, i := range idents {
+				field = query.ModelField(model, i.Fragment)
+				m := query.Model(scm.asts, field.Type)
+				if m != nil {
+					model = m
+				}
+			}
+
+			operationInput := proto.OperationInput{
+				Name:      name,
+				Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
+				ModelName: wrapperspb.String(model.Name.Value),
+				FieldName: wrapperspb.String(field.Name.Value),
+				Optional:  parserArg.Optional,
+				Repeated:  field.Repeated,
+			}
+			operationInputs = append(operationInputs, &operationInput)
+		} else {
+			// TODO: support more input field types
+			var fieldType proto.OperationInputType
+			switch parserArg.Type.Fragments[0].Fragment {
+			case parser.FieldTypeText:
+				fieldType = proto.OperationInputType_OPERATION_INPUT_TYPE_STRING
+			case parser.FieldTypeBoolean:
+				fieldType = proto.OperationInputType_OPERATION_INPUT_TYPE_BOOL
+			}
+			operationInput := proto.OperationInput{
+				Name:     parserArg.Label.Value,
+				Type:     fieldType,
+				Optional: parserArg.Optional,
+				Repeated: parserArg.Repeated,
+			}
+			operationInputs = append(operationInputs, &operationInput)
 		}
-		operationInputs = append(operationInputs, &operationInput)
 	}
 	return operationInputs
 }
@@ -259,7 +299,7 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeNode) *proto.PermissionRule {
 	pr := &proto.PermissionRule{}
 	for _, arg := range attr.Arguments {
-		switch arg.Name.Value {
+		switch arg.Label.Value {
 		case "expression":
 			expr, _ := expressions.ToString(arg.Expression)
 			pr.Expression = &proto.Expression{Source: expr}

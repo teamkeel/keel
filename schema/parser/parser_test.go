@@ -71,12 +71,12 @@ func TestModelWithFunctions(t *testing.T) {
 	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Functions[0].Type)
 	assert.Equal(t, "createAuthor", schema.Declarations[0].Model.Sections[1].Functions[0].Name.Value)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[0].Arguments, 1)
-	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Functions[0].Arguments[0].Name.Value)
+	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Functions[0].Arguments[0].Type.Fragments[0].Fragment)
 
 	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[1].Functions[1].Type)
 	assert.Equal(t, "author", schema.Declarations[0].Model.Sections[1].Functions[1].Name.Value)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[1].Arguments, 1)
-	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Functions[1].Arguments[0].Name.Value)
+	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Functions[1].Arguments[0].Type.Fragments[0].Fragment)
 }
 
 func TestModelWithFieldAttributes(t *testing.T) {
@@ -159,11 +159,11 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
 	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
-	assert.Equal(t, "expression", arg1.Name.Value)
+	assert.Equal(t, "expression", arg1.Label.Value)
 
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
 	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
-	assert.Equal(t, "actions", arg2.Name.Value)
+	assert.Equal(t, "actions", arg2.Label.Value)
 
 	v1, err := expressions.ToValue(arg1.Expression)
 	assert.NoError(t, err)
@@ -196,11 +196,11 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
 	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
-	assert.Equal(t, "role", arg1.Name.Value)
+	assert.Equal(t, "role", arg1.Label.Value)
 
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
 	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
-	assert.Equal(t, "actions", arg2.Name.Value)
+	assert.Equal(t, "actions", arg2.Label.Value)
 
 	v1, err := expressions.ToValue(arg1.Expression)
 	assert.NoError(t, err)

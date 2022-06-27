@@ -14,7 +14,7 @@ import (
 
 var (
 	reservedFieldNames = []string{"id", "createdAt", "updatedAt"}
-	builtInFieldTypes  = map[string]bool{
+	BuiltInFieldTypes  = map[string]bool{
 		"Text":             true,
 		"Date":             true,
 		"Timestamp":        true,
@@ -119,7 +119,7 @@ func ValidFieldTypesRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
 
-			if _, ok := builtInFieldTypes[field.Type]; ok {
+			if _, ok := BuiltInFieldTypes[field.Type]; ok {
 				continue
 			}
 
@@ -128,7 +128,7 @@ func ValidFieldTypesRule(asts []*parser.AST) (errors []error) {
 			}
 
 			validTypes := query.UserDefinedTypes(asts)
-			for t := range builtInFieldTypes {
+			for t := range BuiltInFieldTypes {
 				validTypes = append(validTypes, t)
 			}
 
