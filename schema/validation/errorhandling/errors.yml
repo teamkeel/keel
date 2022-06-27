@@ -18,7 +18,7 @@ en:
   E005:
     short_message: "{{ .Input }} is not a valid input"
     message: "Action inputs must be one of the fields defined in the model"
-    hint: "Did you mean {{ .Suggested }}?"
+    hint: "{{ .Suggested }}"
   E006:
     short_message: "cannot use {{ .Name }}"
     message: "You have a reserved field name {{ .Name }}"

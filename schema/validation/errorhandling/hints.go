@@ -2,9 +2,9 @@ package errorhandling
 
 import (
 	"fmt"
-	"strings"
 
 	levenshtein "github.com/ka-weihe/fast-levenshtein"
+	"github.com/teamkeel/keel/formatting"
 )
 
 type Hint interface {
@@ -41,8 +41,10 @@ func (hint *CorrectionHint) ToString() string {
 
 	if len(hint.Results) == 1 {
 		message = fmt.Sprintf("Did you mean %s?", hint.Results[0])
-	} else if len(hint.Results) > 1 {
-		message = fmt.Sprintf("Did you mean one of %s?", strings.Join(hint.Results, ", "))
+	} else if len(hint.Results) <= 2 {
+		message = fmt.Sprintf("Did you mean %s?", formatting.HumanizeList(hint.Results, formatting.DelimiterOr))
+	} else {
+		message = fmt.Sprintf("Did you mean one of %s?", formatting.HumanizeList(hint.Results, formatting.DelimiterOr))
 	}
 
 	return message

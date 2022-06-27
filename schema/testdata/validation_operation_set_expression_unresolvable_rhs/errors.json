@@ -3,7 +3,7 @@
     {
       "message": "context not found",
       "short_message": "context not found",
-      "hint": "Did you mean one of ctx, profile?",
+      "hint": "Did you mean ctx, or profile?",
       "code": "E021",
       "pos": {
         "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
