@@ -53,8 +53,9 @@ func (o *Operand) ToString() string {
 }
 
 var (
-	TypeNumber  = "Number"
-	TypeString  = "String"
+	TypeNumber = "Number"
+	TypeString = "String"
+	// Text is the string type for fields, whereas String is the type for literal strings
 	TypeText    = "Text"
 	TypeNull    = "Null"
 	TypeBoolean = "Boolean"
