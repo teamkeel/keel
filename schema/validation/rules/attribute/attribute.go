@@ -157,6 +157,7 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 						},
 						attr,
 					))
+					continue
 				}
 
 				expr := attr.Arguments[0].Expression
