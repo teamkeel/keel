@@ -3,6 +3,7 @@ package expression
 import (
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -67,7 +68,7 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expressi
 			continue
 		}
 
-		errors = append(errors, runSideEffectOperandRules(asts, condition, context)...)
+		errors = append(errors, runSideEffectOperandRules(asts, condition, context, expressions.AssignmentOperators)...)
 	}
 
 	return errors
@@ -76,6 +77,10 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expressi
 // Validates that all conditions in an expression use logical operators
 func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
+
+	permittedOperators := append(expressions.LogicalOperators, expressions.LogicalOperators...)
+	permittedOperators = append(permittedOperators, expressions.ArrayOperators...)
+	permittedOperators = append(permittedOperators, expressions.NumericalOperators...)
 
 	for _, condition := range conditions {
 		// If there is no operator, then it means there is no rhs
@@ -102,7 +107,7 @@ func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression,
 			continue
 		}
 
-		errors = append(errors, runSideEffectOperandRules(asts, condition, context)...)
+		errors = append(errors, runSideEffectOperandRules(asts, condition, context, permittedOperators)...)
 	}
 
 	return errors
@@ -133,7 +138,7 @@ func PreventValueConditionRule(asts []*parser.AST, expression *expressions.Expre
 	return errors
 }
 
-func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.Condition, context RuleContext) (errors []error) {
+func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.Condition, context RuleContext, permittedOperators []string) (errors []error) {
 	resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
 
 	// If there is no operator, then we are not interested in validating this rule
@@ -146,7 +151,8 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 
 	if slices.Equal(allowedOperatorsLHS, allowedOperatorsRHS) {
 		if !collection.Contains(allowedOperatorsLHS, condition.Operator.Symbol) {
-			corrections := errorhandling.NewCorrectionHint(allowedOperatorsLHS, condition.Operator.Symbol)
+			collection := lo.Intersect(permittedOperators, allowedOperatorsLHS)
+			corrections := errorhandling.NewCorrectionHint(collection, condition.Operator.Symbol)
 
 			errors = append(errors, errorhandling.NewValidationError(
 				errorhandling.ErrorForbiddenOperator,
@@ -253,7 +259,7 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 	return resolvedLhs, nil, errors
 }
 
-func runSideEffectOperandRules(asts []*parser.AST, condition *expressions.Condition, context RuleContext) (errors []error) {
+func runSideEffectOperandRules(asts []*parser.AST, condition *expressions.Condition, context RuleContext, permittedOperators []string) (errors []error) {
 	errors = append(errors, OperandResolutionRule(asts, condition, context)...)
 
 	if len(errors) > 0 {
@@ -266,7 +272,7 @@ func runSideEffectOperandRules(asts []*parser.AST, condition *expressions.Condit
 		return errors
 	}
 
-	errors = append(errors, InvalidOperatorForOperandsRule(asts, condition, context)...)
+	errors = append(errors, InvalidOperatorForOperandsRule(asts, condition, context, permittedOperators)...)
 
 	return errors
 }

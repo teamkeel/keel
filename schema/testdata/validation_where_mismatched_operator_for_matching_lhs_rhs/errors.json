@@ -3,7 +3,7 @@
     {
       "message": "Cannot compare 'username' and '\"adaam2\"' with operator '\u003e='",
       "short_message": "Cannot compare 'username' and '\"adaam2\"' with operator '\u003e='",
-      "hint": "Did you mean one of ==, =?",
+      "hint": "Did you mean ==?",
       "code": "E027",
       "pos": {
         "filename": "testdata/validation_where_mismatched_operator_for_matching_lhs_rhs/schema.keel",
