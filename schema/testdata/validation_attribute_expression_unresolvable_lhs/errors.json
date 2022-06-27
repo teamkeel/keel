@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E020",
-        "hint": "Did you mean author?",
-        "message": "relationship 'autho' not found on 'Post' model",
-        "end_pos": {
-          "column": 27,
-          "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
-          "line": 7,
-          "offset": 88
-        },
-        "pos": {
-          "column": 22,
-          "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
-          "line": 7,
-          "offset": 83
-        },
-        "short_message": "relationship 'autho' not found"
+{
+  "Errors": [
+    {
+      "message": "'autho' not found on 'Post' model",
+      "short_message": "'autho' not found",
+      "hint": "Did you mean author?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
+        "offset": 83,
+        "line": 7,
+        "column": 22
+      },
+      "end_pos": {
+        "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
+        "offset": 88,
+        "line": 7,
+        "column": 27
       }
-    ]
-  }
+    }
+  ]
+}

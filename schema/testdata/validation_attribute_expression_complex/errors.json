@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E020",
-        "hint": "Did you mean postCode?",
-        "message": "relationship 'postCod' not found on 'Address' model",
-        "end_pos": {
-          "column": 39,
-          "filename": "testdata/validation_attribute_expression_complex/schema.keel",
-          "line": 13,
-          "offset": 267
-        },
-        "pos": {
-          "column": 32,
-          "filename": "testdata/validation_attribute_expression_complex/schema.keel",
-          "line": 13,
-          "offset": 260
-        },
-        "short_message": "relationship 'postCod' not found"
+{
+  "Errors": [
+    {
+      "message": "'postCod' not found on 'Address' model",
+      "short_message": "'postCod' not found",
+      "hint": "Did you mean postCode?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_attribute_expression_complex/schema.keel",
+        "offset": 260,
+        "line": 13,
+        "column": 32
+      },
+      "end_pos": {
+        "filename": "testdata/validation_attribute_expression_complex/schema.keel",
+        "offset": 267,
+        "line": 13,
+        "column": 39
       }
-    ]
-  }
+    }
+  ]
+}

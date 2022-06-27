@@ -1,67 +1,93 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "primaryKey":  true
+          "modelName": "Foo",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
         },
         {
-          "modelName":  "Foo",
-          "name":  "createdAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
         },
         {
-          "modelName":  "Foo",
-          "name":  "updatedAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     },
     {
-      "name":  "Bar",
-      "fields":  [
+      "name": "Bar",
+      "fields": [
         {
-          "modelName":  "Bar",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "primaryKey":  true
+          "modelName": "Bar",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
         },
         {
-          "modelName":  "Bar",
-          "name":  "createdAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Bar",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
         },
         {
-          "modelName":  "Bar",
-          "name":  "updatedAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Bar",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     }
   ],
-  "apis":  [
+  "apis": [
     {
-      "name":  "ApiOne",
-      "type":  "API_TYPE_GRAPHQL",
-      "apiModels":  [
+      "name": "ApiOne",
+      "type": "API_TYPE_GRAPHQL",
+      "apiModels": [
         {
-          "modelName":  "Foo"
+          "modelName": "Foo"
         },
         {
-          "modelName":  "Bar"
+          "modelName": "Bar"
         }
       ]
     },
     {
-      "name":  "ApiTwo",
-      "type":  "API_TYPE_GRAPHQL",
-      "apiModels":  [
+      "name": "ApiTwo",
+      "type": "API_TYPE_GRAPHQL",
+      "apiModels": [
         {
-          "modelName":  "Foo"
+          "modelName": "Foo"
         }
       ]
     }

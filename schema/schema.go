@@ -3,8 +3,10 @@ package schema
 import (
 	"fmt"
 
+	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/proto"
 
+	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
@@ -64,7 +66,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 	// 		- Convert the set to a single / aggregate proto model
 	asts := []*parser.AST{}
 	parseErrors := errorhandling.ValidationErrors{}
-	for _, oneInputSchemaFile := range allInputFiles.SchemaFiles {
+	for i, oneInputSchemaFile := range allInputFiles.SchemaFiles {
 		declarations, err := parser.Parse(&oneInputSchemaFile)
 		if err != nil {
 
@@ -81,7 +83,19 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 			return nil, fmt.Errorf("parser.Parse() failed on file: %s, with error %v", oneInputSchemaFile.FileName, err)
 		}
+
+		// Insert built in models like Identity. We only want to call this once
+		// so that only one instance of the built in models are added if there
+		// are multiple ASTs at play.
+		// We want the insertion of built in models to happen
+		// before insertion of built in fields, so that built in fields such as
+		// primary key are added to the newly added built in models
+		if i == 0 {
+			scm.insertBuiltInModels(declarations, oneInputSchemaFile)
+		}
+
 		scm.insertBuiltInFields(declarations)
+
 		asts = append(asts, declarations)
 	}
 
@@ -157,4 +171,36 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			fieldsSection.Fields = append(fieldsSection.Fields, fields...)
 		}
 	}
+}
+
+func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
+	declarations.Declarations = append(declarations.Declarations,
+		&parser.DeclarationNode{
+			Model: &parser.ModelNode{
+				BuiltIn: true,
+				Name: parser.NameNode{
+					Value: "Identity",
+					Node: node.Node{
+						Pos: lexer.Position{
+							Filename: schemaFile.FileName,
+						},
+					},
+				},
+			},
+		},
+	)
+
+	field := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: "username",
+		},
+		Type: "Text",
+	}
+	section := &parser.ModelSectionNode{
+		Fields: []*parser.FieldNode{field},
+	}
+
+	model := declarations.Declarations[len(declarations.Declarations)-1].Model
+	model.Sections = append(model.Sections, section)
 }

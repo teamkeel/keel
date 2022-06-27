@@ -17,6 +17,24 @@
         "line": 7,
         "column": 29
       }
+    },
+    {
+      "message": "profile not found",
+      "short_message": "profile not found",
+      "hint": "Did you mean one of ctx, person?",
+      "code": "E021",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
+        "offset": 109,
+        "line": 8,
+        "column": 12
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
+        "offset": 116,
+        "line": 8,
+        "column": 19
+      }
     }
   ]
 }

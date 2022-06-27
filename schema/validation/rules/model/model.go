@@ -229,7 +229,7 @@ func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
 				conds := attr.Arguments[0].Expression.Conditions()
 				for _, cond := range conds {
 					if cond.Type() != expressions.LogicalCondition {
-						// error
+						// todo: implement
 					}
 				}
 

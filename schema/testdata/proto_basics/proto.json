@@ -1,28 +1,54 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Person",
-      "fields":  [
+      "name": "Person",
+      "fields": [
         {
-          "modelName":  "Person",
-          "name":  "firstName",
-          "type":  "FIELD_TYPE_STRING"
+          "modelName": "Person",
+          "name": "firstName",
+          "type": "FIELD_TYPE_STRING"
         },
         {
-          "modelName":  "Person",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "primaryKey":  true
+          "modelName": "Person",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
         },
         {
-          "modelName":  "Person",
-          "name":  "createdAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Person",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
         },
         {
-          "modelName":  "Person",
-          "name":  "updatedAt",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Person",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     }

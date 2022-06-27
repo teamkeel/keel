@@ -7,8 +7,8 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
-	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/schema/validation/rules/expression"
 	"github.com/teamkeel/keel/util/collection"
 )
 
@@ -132,22 +132,6 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-type Operator struct {
-	Type   string
-	Symbol string
-}
-
-var supportedOpsForSetWhere map[string]Operator = map[string]Operator{
-	parser.AttributeSet: {
-		Type:   expressions.AssignmentCondition,
-		Symbol: "=",
-	},
-	parser.AttributeWhere: {
-		Type:   expressions.LogicalCondition,
-		Symbol: "==",
-	},
-}
-
 func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, operation := range query.ModelActions(model) {
@@ -175,63 +159,33 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 					))
 				}
 
-				arg := attr.Arguments[0]
+				expr := attr.Arguments[0].Expression
 
-				conditions := arg.Expression.Conditions()
-
-				for _, cond := range conditions {
-					t := cond.Type()
-					lhs, operator, rhs := cond.ToFragments()
-
-					operatorForAttribute := supportedOpsForSetWhere[attr.Name.Value]
-
-					// Handle erroneous value conditions separately
-					// as they do not have an operator to act on
-					if t == expressions.ValueCondition {
-						errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenValueCondition,
-							errorhandling.TemplateLiterals{
-								Literals: map[string]string{
-									"Area":  fmt.Sprintf("@%s", attr.Name.Value),
-									"Value": cond.ToString(),
-								},
-							},
-							cond,
-						))
-
-						continue
-					}
-
-					// Check that assignment operator is used in @set attribute
-					if t != operatorForAttribute.Type {
-						errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
-							errorhandling.TemplateLiterals{
-								Literals: map[string]string{
-									"Operator":   operator.Symbol,
-									"Area":       fmt.Sprintf("@%s", attr.Name.Value),
-									"Suggestion": operatorForAttribute.Symbol,
-									"Condition":  cond.ToString(),
-								},
-							},
-							operator,
-						))
-					}
-
-					// Check lhs & rhs existence
-					if lhs != nil {
-						relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
-
-						if err != nil && relationships != nil {
-							errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-						}
-					}
-					if rhs != nil {
-						relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
-
-						if err != nil && relationships != nil {
-							errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-						}
-					}
+				rules := []expression.Rules{
+					expression.PreventValueConditionRule,
 				}
+
+				if attr.Name.Value == parser.AttributeSet {
+					rules = append(rules,
+						expression.OperatorAssignmentRule,
+					)
+				} else {
+					rules = append(rules,
+						expression.OperatorLogicalRule,
+					)
+				}
+
+				expressionErrs := expression.ValidateExpression(
+					asts,
+					expr,
+					rules,
+					expression.RuleContext{
+						Model:     model,
+						Attribute: attr,
+					},
+				)
+
+				errors = append(errors, expressionErrs...)
 			}
 		}
 	}
@@ -280,42 +234,20 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 		case "expression":
 			hasExpression = true
 
-			conditions := arg.Expression.Conditions()
+			expressionErrors := expression.ValidateExpression(
+				asts,
+				arg.Expression,
+				[]expression.Rules{
+					expression.OperatorLogicalRule,
+				},
+				expression.RuleContext{
+					Model:     model,
+					Attribute: attr,
+				},
+			)
 
-			for _, cond := range conditions {
-				t := cond.Type()
-
-				// Check that the expression uses the logical comparison operator
-				if t != expressions.LogicalCondition {
-					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
-						errorhandling.TemplateLiterals{
-							Literals: map[string]string{
-								"Operator":   cond.Operator.Symbol,
-								"Area":       "@permission",
-								"Suggestion": "==",
-								"Condition":  cond.ToString(),
-							},
-						},
-						arg,
-					))
-				}
-
-				// check that the lhs and rhs resolve
-				if cond.LHS != nil {
-					relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
-
-					if err != nil && relationships != nil {
-						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-					}
-				}
-				if cond.RHS != nil {
-					relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
-
-					if err != nil && relationships != nil {
-						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-					}
-				}
-
+			if expressionErrors != nil {
+				errors = append(errors, expressionErrors...)
 			}
 		case "roles":
 			hasRoles = true

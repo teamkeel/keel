@@ -32,6 +32,7 @@ type ModelNode struct {
 
 	Name     NameNode            `@@`
 	Sections []*ModelSectionNode `"{" @@* "}"`
+	BuiltIn  bool
 }
 
 func (model *ModelNode) ToString() string {

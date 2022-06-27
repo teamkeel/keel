@@ -15,14 +15,83 @@ type Operand struct {
 	True   bool    `| @"true"`
 	False  bool    `| @"false"`
 	Array  *Array  `| @@`
-	Ctx    *Ctx    `| @@`
 	Ident  *Ident  `| @@`
 }
 
-type Ctx struct {
-	node.Node
+func (o *Operand) ToString() string {
+	if o == nil {
+		return ""
+	}
 
-	Token string `@"ctx" @"." @Ident`
+	switch o.Type() {
+	case "Number":
+		return fmt.Sprintf("%d", *o.Number)
+	case "String":
+		return *o.String
+	case "Null":
+		return "null"
+	case "Boolean":
+		if o.False {
+			return "false"
+		} else {
+			return "true"
+		}
+	case "Array":
+		r := "["
+		for i, el := range o.Array.Values {
+			if i > 0 {
+				r += ", "
+			}
+			r += el.ToString()
+		}
+		return r + "]"
+	case "Ident":
+		return o.Ident.ToString()
+	default:
+		return ""
+	}
+}
+
+func (o *Operand) Type() string {
+	switch {
+	case o.Number != nil:
+		return "Number"
+	case o.String != nil:
+		return "String"
+	case o.Null:
+		return "Null"
+	case o.False:
+		return "Boolean"
+	case o.True:
+		return "Boolean"
+	case o.Array != nil:
+		return "Array"
+	case o.Ident != nil && len(o.Ident.Fragments) > 0:
+		return "Ident"
+	default:
+		return ""
+	}
+}
+
+func (o *Operand) IsLiteralType() (bool, string) {
+	switch {
+	case o.Number != nil:
+		return true, o.ToString()
+	case o.String != nil:
+		return true, o.ToString()
+	case o.Null:
+		return true, o.ToString()
+	case o.False:
+		return true, o.ToString()
+	case o.True:
+		return true, o.ToString()
+	case o.Array != nil:
+		return false, o.ToString() // todo: arrays containing idents?
+	case o.Ident != nil && len(o.Ident.Fragments) > 0:
+		return false, o.ToString()
+	default:
+		return true, o.ToString()
+	}
 }
 
 type Ident struct {
@@ -44,16 +113,6 @@ func (ident *Ident) ToString() string {
 	return ret
 }
 
-func (ident *Ident) ToArray() []string {
-	ret := []string{}
-
-	for _, fragment := range ident.Fragments {
-		ret = append(ret, fragment.Fragment)
-	}
-
-	return ret
-}
-
 type IdentFragment struct {
 	node.Node
 
@@ -64,61 +123,4 @@ type Array struct {
 	node.Node
 
 	Values []*Operand `"[" @@ ( "," @@ )* "]"`
-}
-
-func (v *Operand) ToString() string {
-	if v == nil {
-		return ""
-	}
-
-	switch v.Type() {
-	case "Number":
-		return fmt.Sprintf("%d", *v.Number)
-	case "String":
-		return *v.String
-	case "Null":
-		return "null"
-	case "False":
-		return "false"
-	case "True":
-		return "true"
-	case "Array":
-		r := "["
-		for i, el := range v.Array.Values {
-			if i > 0 {
-				r += ", "
-			}
-			r += el.ToString()
-		}
-		return r + "]"
-	case "Ident":
-		return v.Ident.ToString()
-	case "Ctx":
-		return v.Ctx.Token
-	default:
-		return ""
-	}
-}
-
-func (v *Operand) Type() string {
-	switch {
-	case v.Number != nil:
-		return "Number"
-	case v.String != nil:
-		return "String"
-	case v.Null:
-		return "Null"
-	case v.False:
-		return "False"
-	case v.True:
-		return "True"
-	case v.Array != nil:
-		return "Array"
-	case v.Ident != nil && len(v.Ident.Fragments) > 0:
-		return "Ident"
-	case v.Ctx != nil:
-		return "Ctx"
-	default:
-		return ""
-	}
 }
