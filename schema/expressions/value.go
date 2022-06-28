@@ -66,19 +66,19 @@ var (
 func (o *Operand) Type() string {
 	switch {
 	case o.Number != nil:
-		return "Number"
+		return TypeNumber
 	case o.String != nil:
-		return "String"
+		return TypeString
 	case o.Null:
-		return "Null"
+		return TypeNull
 	case o.False:
-		return "Boolean"
+		return TypeBoolean
 	case o.True:
-		return "Boolean"
+		return TypeBoolean
 	case o.Array != nil:
-		return "Array"
+		return TypeArray
 	case o.Ident != nil && len(o.Ident.Fragments) > 0:
-		return "Ident"
+		return TypeIdent
 	default:
 		return ""
 	}
@@ -97,7 +97,17 @@ func (o *Operand) IsLiteralType() (bool, string) {
 	case o.True:
 		return true, o.ToString()
 	case o.Array != nil:
-		return false, o.ToString() // todo: arrays containing idents?
+		allLiterals := true
+
+		for _, item := range o.Array.Values {
+			if ok, _ := item.IsLiteralType(); ok {
+				continue
+			}
+
+			allLiterals = false
+		}
+
+		return allLiterals, o.ToString()
 	case o.Ident != nil && len(o.Ident.Fragments) > 0:
 		return false, o.ToString()
 	default:

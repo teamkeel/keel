@@ -32,6 +32,7 @@ type ExpressionScopeEntity struct {
 	Literal   *expressions.Operand
 	Enum      *parser.EnumNode
 	EnumValue *parser.EnumValueNode
+	Array     []*ExpressionScopeEntity
 
 	Parent *ExpressionScopeEntity
 }
@@ -57,6 +58,12 @@ func (e *ExpressionScopeEntity) Type() string {
 		return e.Parent.Value()
 	}
 
+	if e.Array != nil {
+		// We have already validated by this point that the array has all matching types
+		// so we know the first item in the array is representative of all items in the array
+		return e.Array[0].Type()
+	}
+
 	return ""
 }
 
@@ -70,6 +77,9 @@ func (e *ExpressionScopeEntity) BaseType() string {
 	}
 
 	if e.Field != nil {
+		if e.Field.Repeated {
+			return expressions.TypeArray
+		}
 		if e.Field.Type == expressions.TypeText {
 			return expressions.TypeString
 		}
@@ -82,6 +92,10 @@ func (e *ExpressionScopeEntity) BaseType() string {
 
 	if e.EnumValue != nil {
 		return e.Parent.Value()
+	}
+
+	if e.Array != nil {
+		return expressions.TypeArray
 	}
 
 	return ""
@@ -106,9 +120,8 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
 		case expressions.TypeArray:
-			// todo: implement
+			operators = append(operators, expressions.ArrayOperators...)
 		}
-
 	case e.Model != nil:
 		operators = append(operators, expressions.OperatorEquals)
 		operators = append(operators, expressions.OperatorAssignment)
@@ -126,6 +139,8 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
 			operators = append(operators, expressions.NumericalOperators...)
+		case expressions.TypeArray:
+			operators = append(operators, expressions.ArrayOperators...)
 		default:
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
@@ -187,10 +202,13 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 	}
 }
 
-func scopeFromModel(parent *ExpressionScope, model *parser.ModelNode) *ExpressionScope {
+func scopeFromModel(parent *ExpressionScope, model *parser.ModelNode, repeated bool) *ExpressionScope {
 	newEntities := []*ExpressionScopeEntity{}
 
 	for _, field := range query.ModelFields(model) {
+		// Set the repeated value based first and foremost on whether the field is repeated in the schema
+		// otherwise use the parent repeated value
+		field.Repeated = field.Repeated || repeated
 		newEntities = append(newEntities, &ExpressionScopeEntity{
 			Field: field,
 		})
@@ -237,10 +255,32 @@ func scopeFromEnum(parent *ExpressionScope, enum *parser.EnumNode) *ExpressionSc
 // e.g if the operand is of type "Ident", and the ident is post.author.name
 func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope) (entity *ExpressionScopeEntity, err error) {
 	if ok, _ := operand.IsLiteralType(); ok {
-		entity = &ExpressionScopeEntity{
-			Literal: operand,
+
+		// If it is an array literal then handle differently.
+		if operand.Type() == expressions.TypeArray {
+
+			array := []*ExpressionScopeEntity{}
+
+			for _, item := range operand.Array.Values {
+				array = append(array,
+					&ExpressionScopeEntity{
+						Literal: item,
+					},
+				)
+			}
+
+			entity = &ExpressionScopeEntity{
+				Array: array,
+			}
+
+			return entity, nil
+		} else {
+			entity = &ExpressionScopeEntity{
+				Literal: operand,
+			}
+			return entity, nil
 		}
-		return entity, nil
+
 	}
 
 	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything
@@ -256,7 +296,7 @@ fragments:
 			case e.Model != nil && e.Model.Name.Value == str.AsTitle(str.Singularize(fragment.Fragment)):
 				entity = e
 
-				scope = scopeFromModel(scope, e.Model)
+				scope = scopeFromModel(scope, e.Model, false)
 
 				continue fragments
 			case e.Field != nil && e.Field.Name.Value == fragment.Fragment:
@@ -265,10 +305,14 @@ fragments:
 				model := query.Model(asts, e.Field.Type)
 
 				if model == nil {
+					// Did not find the model matching the field
 					scope = &ExpressionScope{}
+				} else if e.Field.Repeated {
+					// Found a field which is a collection type
+					scope = scopeFromModel(scope, model, true)
 				} else {
-
-					scope = scopeFromModel(scope, model)
+					// Found a field that is singular
+					scope = scopeFromModel(scope, model, false)
 				}
 				continue fragments
 			case e.Object != nil && e.Object.Name == fragment.Fragment:

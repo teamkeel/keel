@@ -149,6 +149,18 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 	allowedOperatorsLHS := resolvedLHS.AllowedOperators()
 	allowedOperatorsRHS := resolvedRHS.AllowedOperators()
 
+	if resolvedLHS.BaseType() == expressions.TypeArray && resolvedRHS.BaseType() == expressions.TypeArray {
+		return append(errors, errorhandling.NewValidationError(
+			errorhandling.ErrorExpressionForbiddenArrayLHS,
+			errorhandling.TemplateLiterals{
+				Literals: map[string]string{
+					"LHS": condition.LHS.ToString(),
+				},
+			},
+			condition.Operator,
+		))
+	}
+
 	if slices.Equal(allowedOperatorsLHS, allowedOperatorsRHS) {
 		if !collection.Contains(allowedOperatorsLHS, condition.Operator.Symbol) {
 			collection := lo.Intersect(permittedOperators, allowedOperatorsLHS)
@@ -168,7 +180,25 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 			))
 		}
 	} else {
-		// todo: lhs: single vs rhs: array
+		if resolvedRHS.BaseType() == expressions.TypeArray {
+			if !collection.Contains(allowedOperatorsRHS, condition.Operator.Symbol) {
+				corrections := errorhandling.NewCorrectionHint(allowedOperatorsRHS, condition.Operator.Symbol)
+
+				errors = append(errors, errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionArrayMismatchingOperator,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"LHS":        resolvedLHS.Value(),
+							"RHS":        condition.RHS.ToString(),
+							"RHSType":    resolvedRHS.Type(),
+							"Operator":   condition.Operator.Symbol,
+							"Suggestion": corrections.ToString(),
+						},
+					},
+					condition.Operator,
+				))
+			}
+		}
 	}
 
 	return errors
@@ -189,24 +219,94 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *expressions.Condition,
 
 	// Validate first that the LHS and RHS types match
 	if resolvedLHS.BaseType() != resolvedRHS.BaseType() {
-		errors = append(errors,
-			errorhandling.NewValidationError(
-				errorhandling.ErrorExpressionTypeMismatch,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Operator": operator,
-						"LHS":      condition.LHS.ToString(),
-						"LHSType":  resolvedLHS.Type(),
-						"RHS":      condition.RHS.ToString(),
-						"RHSType":  resolvedRHS.Type(),
+		// BaseType returns Array for literal arrays and fields which are repeated
+		if resolvedRHS.BaseType() == expressions.TypeArray {
+			// check that the rhs array is an array of T where T is LHS base type
+			allMatching := true
+
+			if resolvedRHS.Field != nil && resolvedRHS.Field.Repeated {
+				// non literal arrays
+				if resolvedRHS.Field.Type == parser.FieldTypeText && resolvedLHS.BaseType() == expressions.TypeString {
+					allMatching = true
+				} else if resolvedRHS.Type() != resolvedLHS.BaseType() {
+					allMatching = false
+				}
+			} else {
+				// literal arrays
+				for _, item := range resolvedRHS.Array {
+					if item.BaseType() == resolvedLHS.BaseType() {
+						continue
+					}
+
+					allMatching = false
+				}
+
+				arrayType := ""
+
+				mixedTypes := false
+
+				for _, item := range resolvedRHS.Array {
+					if arrayType != "" {
+						if item.Type() != arrayType {
+							errors = append(errors,
+								errorhandling.NewValidationError(
+									errorhandling.ErrorExpressionMixedTypesInArrayLiteral,
+									errorhandling.TemplateLiterals{
+										Literals: map[string]string{
+											"Item": item.Literal.ToString(),
+											"Type": arrayType,
+										},
+									},
+									item.Literal,
+								),
+							)
+
+							mixedTypes = true
+							break
+						}
+					}
+					arrayType = item.Type()
+				}
+
+				if mixedTypes {
+					return errors
+				}
+			}
+
+			if !allMatching {
+				errors = append(errors,
+					errorhandling.NewValidationError(
+						errorhandling.ErrorExpressionArrayWrongType,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Operator": operator,
+								"LHS":      condition.LHS.ToString(),
+								"LHSType":  resolvedLHS.Type(),
+								"RHS":      condition.RHS.ToString(),
+								"RHSType":  resolvedRHS.Type(),
+							},
+						},
+						condition,
+					),
+				)
+			}
+		} else {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionTypeMismatch,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Operator": operator,
+							"LHS":      condition.LHS.ToString(),
+							"LHSType":  resolvedLHS.Type(),
+							"RHS":      condition.RHS.ToString(),
+							"RHSType":  resolvedRHS.Type(),
+						},
 					},
-				},
-				condition,
-			),
-		)
-	} else {
-		// todo: handle array comparisons
-		// e.g single.value in array
+					condition,
+				),
+			)
+		}
 	}
 
 	return errors
