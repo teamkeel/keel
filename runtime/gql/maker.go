@@ -42,7 +42,7 @@ func (mk *Maker) makeSchemaForOneAPI(api *proto.Api) (*graphql.Schema, error) {
 	fieldsUnderConstruction := &fieldsUnderConstruction{
 		queries:   graphql.Fields{},
 		mutations: graphql.Fields{},
-		models:    graphql.Fields{},
+		models:    []graphql.Type{},
 	}
 
 	for _, model := range modelInstances {
@@ -63,7 +63,7 @@ func (mk *Maker) makeSchemaForOneAPI(api *proto.Api) (*graphql.Schema, error) {
 		graphql.SchemaConfig{
 			Query:    queryType,
 			Mutation: nil,
-			Types:    nil,
+			Types:    fieldsUnderConstruction.models,
 		},
 	)
 	if err != nil {
@@ -81,13 +81,11 @@ func (mk *Maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (m
 		if err != nil {
 			return nil, err
 		}
-		field := newField(model.Name, outputType, NewFieldResolver().Resolve)
+		field := newField(field.Name, outputType, NewFieldResolver().Resolve)
 		fields[field.Name] = field
 	}
 	modelOutputType = newObject(model.Name, fields)
-	modelAsField := newField(model.Name, modelOutputType, NewModelResolver().Resolve)
-
-	addTo.models[model.Name] = modelAsField
+	addTo.models = append(addTo.models, modelOutputType)
 	return modelOutputType, nil
 }
 
@@ -147,5 +145,5 @@ func (mk *Maker) isDirectlyMappableType(keelType proto.FieldType) (graphql.Outpu
 type fieldsUnderConstruction struct {
 	queries   graphql.Fields
 	mutations graphql.Fields
-	models    graphql.Fields
+	models    []graphql.Type
 }

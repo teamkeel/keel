@@ -86,6 +86,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	fmt.Printf("XXXX json response:\n%s\n", string(responseJSON))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseJSON)
 }
