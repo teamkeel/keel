@@ -15,6 +15,8 @@ func newField(
 	}
 }
 
+// newFieldWithArgs is an extension of newField that allows input arguments to
+// be specified.
 func newFieldWithArgs(
 	name string,
 	args graphql.FieldConfigArgument,

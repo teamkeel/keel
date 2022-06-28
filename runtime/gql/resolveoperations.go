@@ -7,6 +7,10 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
+// A GetOperationResolver provides a Resolve method that matches the signature needed for
+// a graphql.FieldResolveFn. It is implemented as an object that holds state, so that
+// individual instances can be constructed with access to the data they need when their
+// Resolve method gets called.
 type GetOperationResolver struct {
 	op *proto.Operation
 }

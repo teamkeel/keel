@@ -50,6 +50,10 @@ func NewServer(schemaProtoJSON string) (*http.Server, error) {
 	return s, nil
 }
 
+// A handler is an HTTP request handler, that expects incoming requests to
+// contain a GraphQL query embedded in a JSON object. It replies with the
+// results of executing that query against the graphql.Schema passed to the
+// handler at construction time.
 type handler struct {
 	schema *graphql.Schema
 }

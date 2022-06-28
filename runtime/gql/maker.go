@@ -8,6 +8,8 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
+// A Maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
+// of the APIs defined in the keel schema provided at construction time.
 type Maker struct {
 	proto *proto.Schema
 }
@@ -18,9 +20,8 @@ func NewMaker(proto *proto.Schema) *Maker {
 	}
 }
 
-// Make makes a set of graphql.Schema objects - one for each
-// of the APIs defined in the given keel schema. It returns these in a map keyed
-// on the API name.
+// The graphql.Schema(s) are returned in a map, keyed on the name of the
+// API name they belong to.
 func (mk *Maker) Make() (map[string]*graphql.Schema, error) {
 	outputSchemas := map[string]*graphql.Schema{}
 	for _, api := range mk.proto.Apis {
@@ -33,12 +34,19 @@ func (mk *Maker) Make() (map[string]*graphql.Schema, error) {
 	return outputSchemas, nil
 }
 
+// makeSchemaForOneAPI returns a graphql.Schema that implements the given API.
 func (mk *Maker) makeSchemaForOneAPI(api *proto.Api) (*graphql.Schema, error) {
+	// The graphql top level query contents will be comprised ONLY of the
+	// OPERATIONS from the keel schema. But to find these we have to traverse the
+	// schema, first by model, then by said model's operations. As a side effect
+	// we must define graphl types for the models involved.
+
 	namesOfModelsUsedByAPI := lo.Map(api.ApiModels, func(m *proto.ApiModel, _ int) string {
 		return m.ModelName
 	})
 	modelInstances := proto.FindModels(mk.proto.Models, namesOfModelsUsedByAPI)
 
+	// This is a container that the function call stack below populates as it goes.
 	fieldsUnderConstruction := &fieldsUnderConstruction{
 		queries:   graphql.Fields{},
 		mutations: graphql.Fields{},
@@ -73,6 +81,8 @@ func (mk *Maker) makeSchemaForOneAPI(api *proto.Api) (*graphql.Schema, error) {
 	return &gSchema, nil
 }
 
+// addModel generates the graphql type to represent the given proto.Model, and inserts it into
+// the given fieldsUnderConstruction container.
 func (mk *Maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (modelOutputType graphql.Output, err error) {
 	// todo - don't add it, if we already did earlier
 	fields := graphql.Fields{}
@@ -89,28 +99,30 @@ func (mk *Maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (m
 	return modelOutputType, nil
 }
 
+// addOperation generates the graphql field object to represent the given proto.Operation.
+// This field will eventually live in the top level graphql Query type, but at this stage
+// the function just accumulates them in the given fieldsUnderConstruction container.
 func (mk *Maker) addOperation(
 	op *proto.Operation,
 	modelOutputType graphql.Output,
 	model *proto.Model,
 	addTo *fieldsUnderConstruction) error {
 	// todo - don't add it, if we already did earlier
-	for _, op := range model.Operations {
-		if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
-			continue
+	if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
+		return nil
+	}
+	switch op.Type {
+	case proto.OperationType_OPERATION_TYPE_GET:
+		if err := mk.addGetOp(op, modelOutputType, model, addTo); err != nil {
+			return err
 		}
-		switch op.Type {
-		case proto.OperationType_OPERATION_TYPE_GET:
-			if err := mk.addGetOp(op, modelOutputType, model, addTo); err != nil {
-				return err
-			}
-		default:
-			return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
-		}
+	default:
+		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
 	return nil
 }
 
+// addGetOp is just a helper for addOperation - that is dedicated to operations of type GET.
 func (mk *Maker) addGetOp(
 	op *proto.Operation,
 	modelOutputType graphql.Output,
@@ -125,6 +137,7 @@ func (mk *Maker) addGetOp(
 	return nil
 }
 
+// outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *Maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
 	if outputType, ok := mk.isFieldTypeDirectlyMappableType(field.Type); ok {
 		return outputType, nil
@@ -132,6 +145,7 @@ func (mk *Maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
 	return nil, fmt.Errorf("cannot yet make output type for a: %v", field)
 }
 
+// inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
 func (mk *Maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 	if inputType, ok := mk.isOperationInputTypeDirectlyMappableType(op.Type); ok {
 		return inputType, nil
@@ -139,6 +153,9 @@ func (mk *Maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 	return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
 }
 
+// isFieldTypeDirectlyMappableType attempts to map the field type in the given proto.FieldType
+// to a suitable built-in graphql.Output type. It returns a boolean to indicate if such a mapping
+// can be found, and so, it also returns that mapped type.
 func (mk *Maker) isFieldTypeDirectlyMappableType(keelType proto.FieldType) (graphql.Output, bool) {
 	switch keelType {
 	case proto.FieldType_FIELD_TYPE_STRING:
@@ -153,6 +170,9 @@ func (mk *Maker) isFieldTypeDirectlyMappableType(keelType proto.FieldType) (grap
 	return nil, false
 }
 
+// isOperationInputTypeDirectlyMappableType attempts to map the type in the given proto.OperationInputType
+// to a suitable built-in graphql.Input type. It returns a boolean to indicate if such a mapping
+// can be found, and so, it also returns that mapped type.
 func (mk *Maker) isOperationInputTypeDirectlyMappableType(keelType proto.OperationInputType) (graphql.Input, bool) {
 	switch keelType {
 	// Special case, when specifying a field - we expect its name.
@@ -168,6 +188,8 @@ func (mk *Maker) isOperationInputTypeDirectlyMappableType(keelType proto.Operati
 	return nil, false
 }
 
+// makeArgs generates a graphql.FieldConfigArgument to reflect the inputs of the given
+// proto.Operation - which can be used as the Args field in a graphql.Field.
 func (mk *Maker) makeArgs(op *proto.Operation) (graphql.FieldConfigArgument, error) {
 	res := graphql.FieldConfigArgument{}
 	for _, input := range op.Inputs {
@@ -182,6 +204,11 @@ func (mk *Maker) makeArgs(op *proto.Operation) (graphql.FieldConfigArgument, err
 	return res, nil
 }
 
+// A fieldsUnderConstruction is a container to carry graphql.Fields and
+// graphql.Type(s) that can be used later to compose a graphql.Schema.
+// We intend the queries bucket to be the fields that should be added to
+// the top level graphql Query. Simiarly for mutations. The models are different; these
+// are graphql.Type(s) which are intented to populate the graphql.Schema's Types attribute.
 type fieldsUnderConstruction struct {
 	queries   graphql.Fields
 	mutations graphql.Fields
