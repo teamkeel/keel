@@ -1,3 +1,10 @@
+# [0.19.0](https://github.com/teamkeel/keel/compare/v0.18.0...v0.19.0) (2022-06-28)
+
+
+### Features
+
+* trimmed validation output ([da6f9c0](https://github.com/teamkeel/keel/commit/da6f9c00bf6493612290bec0c4f24181117a0589))
+
 # [0.18.0](https://github.com/teamkeel/keel/compare/v0.17.0...v0.18.0) (2022-06-28)
 
 
