@@ -204,7 +204,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 	hasRoles := false
 
 	for _, arg := range attr.Arguments {
-		switch arg.Name.Value {
+		switch arg.Label.Value {
 		case "actions":
 			// The 'actions' argument should not be provided if the permission attribute
 			// is defined inside an action as that implicitly means the permission only
@@ -254,7 +254,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			}
 			errors = append(errors, validateIdentArray(model, arg.Expression, allowedIdents)...)
 		default:
-			if arg.Name.Value == "" {
+			if arg.Label.Value == "" {
 				// All arguments to @permission should have a label
 				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorAttributeRequiresNamedArguments,
 					errorhandling.TemplateLiterals{
@@ -272,11 +272,11 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"AttributeName":      "permission",
-							"ArgumentName":       arg.Name.Value,
+							"ArgumentName":       arg.Label.Value,
 							"ValidArgumentNames": "actions, expression, or roles",
 						},
 					},
-					arg.Name,
+					arg.Label,
 				))
 			}
 		}

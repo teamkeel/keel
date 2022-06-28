@@ -135,7 +135,7 @@ type AttributeNode struct {
 type AttributeArgumentNode struct {
 	node.Node
 
-	Name       *NameNode               `(@@ ":")?`
+	Label      *NameNode               `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 
@@ -151,7 +151,10 @@ type ActionNode struct {
 type ActionArgumentNode struct {
 	node.Node
 
-	Name NameNode `@@`
+	Label    *NameNode         `(@@ ":")?`
+	Type     expressions.Ident `@@`
+	Repeated bool              `( @( "[" "]" )`
+	Optional bool              `| @( "?" ))?`
 }
 
 type EnumNode struct {
