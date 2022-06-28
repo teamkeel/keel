@@ -65,9 +65,14 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Variables     map[string]interface{} `json:"variables"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		// todo - how to surface the error details?
+		fmt.Printf("XXXX request is malformed json: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	fmt.Printf("XXXX json decoded params is: %+v\n", params)
+	fmt.Printf("XXXX isolated query string is: %s\n", params.Query)
 
 	result := graphql.Do(graphql.Params{
 		Schema:         *h.schema,

@@ -1,6 +1,8 @@
 package gql
 
 import (
+	"fmt"
+
 	"github.com/graphql-go/graphql"
 )
 
@@ -12,6 +14,7 @@ func NewFieldResolver() *FieldResolver {
 }
 
 func (r *FieldResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
+	fmt.Printf("XXXX field resolver fired, with params: %+v\n", p)
 	return "Not yet implemented", nil
 }
 
@@ -23,6 +26,7 @@ func NewModelResolver() *ModelResolver {
 }
 
 func (mr *ModelResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
+	fmt.Printf("XXXX model resolver fired, with params: %+v\n", p)
 	return "Not yet implemented", nil
 }
 
@@ -34,5 +38,6 @@ func NewGetOpResolver() *GetOpResolver {
 }
 
 func (r *GetOpResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
+	fmt.Printf("XXXX operation resolver fired, with params: %+v\n", p)
 	return "Not yet implemented", nil
 }

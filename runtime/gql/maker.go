@@ -63,6 +63,7 @@ func (mk *Maker) makeSchemaForOneAPI(api *proto.Api) (*graphql.Schema, error) {
 		graphql.SchemaConfig{
 			Query:    queryType,
 			Mutation: nil,
+			Types:    nil,
 		},
 	)
 	if err != nil {

@@ -49,4 +49,14 @@ func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
 	require.Equal(t, expected, bodyStr)
 }
 
-const exampleQuery string = `{getAuthor(name:"fred"){name}}`
+// var exampleQuery string = `
+// {
+// 	"query": "getAuthor(name: fred) { name } }"
+// }
+// `
+
+var exampleQuery string = `
+{
+	"query": "getAuthor { name } }"
+}
+`
