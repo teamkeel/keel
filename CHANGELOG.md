@@ -1,3 +1,10 @@
+# [0.18.0](https://github.com/teamkeel/keel/compare/v0.17.0...v0.18.0) (2022-06-28)
+
+
+### Features
+
+* support enum resolution in expressions ([#87](https://github.com/teamkeel/keel/issues/87)) ([30a3a18](https://github.com/teamkeel/keel/commit/30a3a18bb478e9bc8975473797d4ce3627cf4b1f))
+
 # [0.17.0](https://github.com/teamkeel/keel/compare/v0.16.0...v0.17.0) (2022-06-28)
 
 
