@@ -119,6 +119,7 @@ func (v ValidationErrors) ToConsole(sources []reader.SchemaFile) (string, error)
 func (v ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) (string, error) {
 	schemaString := ""
 
+	bufferLines := 5
 	gutterAmount := 5
 	newLine := func() {
 		schemaString += "\n"
@@ -149,6 +150,11 @@ func (v ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) (string
 		for lineIndex, line := range lines {
 			// Render line numbers in gutter
 			outputLine := blue.Sprint(str.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+
+			// If this line isn't close enough to an error let's ignore it
+			if (lineIndex+1) < (errorStartLine-bufferLines) || (lineIndex+1) > (errorEndLine+bufferLines) {
+				continue
+			}
 
 			// If the error line doesn't match the currently enumerated line
 			// then we can render the whole line without any colorization
