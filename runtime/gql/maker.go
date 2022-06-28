@@ -116,19 +116,30 @@ func (mk *Maker) addGetOp(
 	modelOutputType graphql.Output,
 	model *proto.Model,
 	addTo *fieldsUnderConstruction) error {
-	field := newField(op.Name, modelOutputType, NewGetOpResolver().Resolve)
+	args, err := mk.makeArgs(op)
+	if err != nil {
+		return err
+	}
+	field := newFieldWithArgs(op.Name, args, modelOutputType, NewGetOpResolver().Resolve)
 	addTo.queries[op.Name] = field
 	return nil
 }
 
 func (mk *Maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
-	if outputType, ok := mk.isDirectlyMappableType(field.Type); ok {
+	if outputType, ok := mk.isFieldTypeDirectlyMappableType(field.Type); ok {
 		return outputType, nil
 	}
 	return nil, fmt.Errorf("cannot yet make output type for a: %v", field)
 }
 
-func (mk *Maker) isDirectlyMappableType(keelType proto.FieldType) (graphql.Output, bool) {
+func (mk *Maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
+	if inputType, ok := mk.isOperationInputTypeDirectlyMappableType(op.Type); ok {
+		return inputType, nil
+	}
+	return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
+}
+
+func (mk *Maker) isFieldTypeDirectlyMappableType(keelType proto.FieldType) (graphql.Output, bool) {
 	switch keelType {
 	case proto.FieldType_FIELD_TYPE_STRING:
 		return graphql.String, true
@@ -140,6 +151,35 @@ func (mk *Maker) isDirectlyMappableType(keelType proto.FieldType) (graphql.Outpu
 		return graphql.String, true
 	}
 	return nil, false
+}
+
+func (mk *Maker) isOperationInputTypeDirectlyMappableType(keelType proto.OperationInputType) (graphql.Input, bool) {
+	switch keelType {
+	// Special case, when specifying a field - we expect its name.
+	case proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD:
+		return graphql.String, true
+
+	// General (scalar) cases.
+	case proto.OperationInputType_OPERATION_INPUT_TYPE_BOOL:
+		return graphql.Boolean, true
+	case proto.OperationInputType_OPERATION_INPUT_TYPE_STRING:
+		return graphql.String, true
+	}
+	return nil, false
+}
+
+func (mk *Maker) makeArgs(op *proto.Operation) (graphql.FieldConfigArgument, error) {
+	res := graphql.FieldConfigArgument{}
+	for _, input := range op.Inputs {
+		inputType, err := mk.inputTypeFor(input)
+		if err != nil {
+			return nil, err
+		}
+		res[input.Name] = &graphql.ArgumentConfig{
+			Type: inputType,
+		}
+	}
+	return res, nil
 }
 
 type fieldsUnderConstruction struct {
