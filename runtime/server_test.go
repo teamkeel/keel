@@ -1,7 +1,11 @@
 package runtime
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
+	"io/ioutil"
+	"net/http"
 	"path/filepath"
 	"testing"
 
@@ -21,5 +25,28 @@ func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
 	svr, err := NewServer(string(protoJSON))
 	require.NoError(t, err)
 
-	_ = svr
+	defer svr.Shutdown(context.Background())
+	go svr.ListenAndServe()
+
+	posturl := "http://localhost:8080/graphql/Web"
+	req, err := http.NewRequest("POST", posturl, bytes.NewBuffer([]byte(exampleQuery)))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	client := &http.Client{}
+	httpResponse, err := client.Do(req)
+	require.NoError(t, err)
+	defer httpResponse.Body.Close()
+	require.Equal(t, http.StatusOK, httpResponse.StatusCode)
+
+	responseBody, err := ioutil.ReadAll(httpResponse.Body)
+	require.Nil(t, err)
+	bodyStr := string(responseBody)
+
+	const expected = "wontbethis"
+	require.Equal(t, expected, bodyStr)
 }
+
+const exampleQuery string = `{getAuthor(name:"fred"){name}}`

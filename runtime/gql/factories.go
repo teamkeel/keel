@@ -1,12 +1,6 @@
-package makegql
+package gql
 
 import "github.com/graphql-go/graphql"
-
-func newArgumentConfig(inputType graphql.Input) *graphql.ArgumentConfig {
-	return &graphql.ArgumentConfig{
-		Type: inputType,
-	}
-}
 
 func newField(
 	name string,
@@ -25,19 +19,4 @@ func newObject(name string, fields graphql.Fields) *graphql.Object {
 		Fields: fields,
 	}
 	return graphql.NewObject(objectConfig)
-}
-
-func newSchema(
-	query *graphql.Object,
-	mutation *graphql.Object,
-) *graphql.Schema {
-	config := graphql.SchemaConfig{
-		Query:    query,
-		Mutation: mutation,
-	}
-	schema, err := graphql.NewSchema(config)
-	if err != nil {
-		panic(err.Error())
-	}
-	return &schema
 }

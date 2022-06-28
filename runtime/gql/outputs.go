@@ -1,4 +1,4 @@
-package makegql
+package gql
 
 import (
 	"time"

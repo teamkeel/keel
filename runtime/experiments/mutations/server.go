@@ -16,6 +16,7 @@ As it stands, it serves two purposes:
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -123,7 +124,7 @@ func NewServer() *http.Server {
 			return
 		}
 		result := graphql.Do(graphql.Params{
-			Context:        req.Context(),
+			Context:        context.Background(),
 			Schema:         schema,
 			RequestString:  p.Query,
 			VariableValues: p.Variables,

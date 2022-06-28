@@ -1,16 +1,20 @@
 package runtime
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/makegql"
+	"github.com/teamkeel/keel/runtime/gql"
 )
 
-// NewServer returns an http.Server that implements the GraphQL API as
+// NewServer returns an http.Server that implements the GraphQL API(s)
 // implied by the given keel schema.
+//
+// Each API from the Keel Schema is served at /graphql/<api-name>.
 //
 // It is left to the client to call ListenAndServe() on it.
 // And to call Shutdown() on it when done with it.
@@ -18,13 +22,65 @@ import (
 // You effectively pass in a proto.Schema, but it accepts a
 // JSON serialised form for that to make it suitable be be delivered
 // from a deployment script.
+//
+// TODO have the entry point function pick up the schema from an environment variable,
+// then delegate to an internal function that accepts a string as an argument.
 func NewServer(schemaProtoJSON string) (*http.Server, error) {
 	var schema proto.Schema
 	if err := json.Unmarshal([]byte(schemaProtoJSON), &schema); err != nil {
 		return nil, fmt.Errorf("error unmarshalling the schema: %v", err)
 	}
-	gqlSchemas := makegql.MakeGQLSchemas(&schema)
-	_ = gqlSchemas
+	gSchemaMaker := gql.NewMaker(&schema)
+	gSchemas, err := gSchemaMaker.Make()
+	if err != nil {
+		return nil, err
+	}
 
-	return nil, nil
+	for apiName, gSchema := range gSchemas {
+		handler, err := newHandler(gSchema)
+		if err != nil {
+			panic(err.Error())
+		}
+		serveAt := fmt.Sprintf("/graphql/%s", apiName)
+		http.Handle(serveAt, handler)
+	}
+	s := &http.Server{
+		Addr: ":8080",
+	}
+	return s, nil
+}
+
+type handler struct {
+	schema *graphql.Schema
+}
+
+func newHandler(gSchema *graphql.Schema) (*handler, error) {
+	return &handler{schema: gSchema}, nil
+}
+
+func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var params struct {
+		Query         string                 `json:"query"`
+		OperationName string                 `json:"operationName"`
+		Variables     map[string]interface{} `json:"variables"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	result := graphql.Do(graphql.Params{
+		Schema:         *h.schema,
+		Context:        context.Background(),
+		RequestString:  params.Query,
+		VariableValues: params.Variables,
+	})
+
+	responseJSON, err := json.Marshal(result)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(responseJSON)
 }

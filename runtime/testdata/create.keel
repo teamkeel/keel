@@ -1,9 +1,11 @@
 model Author {
   fields {
-    name Text
+    name Text {
+      @unique
+    }
   }
   operations {
-    create createAuthor(name)
+    get getAuthor(name)
   }
 }
 
