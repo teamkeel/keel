@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "\"bob\" is a String and [1, 2] is an array of Numbers",
+      "short_message": "\"bob\" is a String and [1, 2] is an array of Numbers",
+      "hint": "Left hand side \"bob\" can only be compared to an array of Strings",
+      "code": "E029",
+      "pos": {
+        "filename": "testdata/validation_expression_literal_string_in_literal_array/schema.keel",
+        "offset": 44,
+        "line": 3,
+        "column": 17
+      },
+      "end_pos": {
+        "filename": "testdata/validation_expression_literal_string_in_literal_array/schema.keel",
+        "offset": 59,
+        "line": 3,
+        "column": 32
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "post.authors.name is an array of Text. Only 'in' or 'not in' can be used",
+      "short_message": "You can only use operators 'in' or 'not in' when checking for inclusion of \"bob\" in post.authors.name",
+      "hint": "Change '\u003e' to either 'in' or 'not in'.",
+      "code": "E030",
+      "pos": {
+        "filename": "testdata/validation_expression_array_operator_mismatch/schema.keel",
+        "offset": 87,
+        "line": 7,
+        "column": 23
+      },
+      "end_pos": {
+        "filename": "testdata/validation_expression_array_operator_mismatch/schema.keel",
+        "offset": 88,
+        "line": 7,
+        "column": 24
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "Both sides of the expression cannot be an array",
+      "short_message": "Both sides of the expression cannot be an array",
+      "hint": "Left hand side of expression ('post.authors.name') produced more than one result because one of the relationships was a collection.",
+      "code": "E031",
+      "pos": {
+        "filename": "testdata/validation_expression_forbidden_lhs_array/schema.keel",
+        "offset": 99,
+        "line": 7,
+        "column": 35
+      },
+      "end_pos": {
+        "filename": "testdata/validation_expression_forbidden_lhs_array/schema.keel",
+        "offset": 101,
+        "line": 7,
+        "column": 37
+      }
+    }
+  ]
+}
