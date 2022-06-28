@@ -81,7 +81,7 @@ func (mk *Maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (m
 		if err != nil {
 			return nil, err
 		}
-		field := newField(field.Name, outputType, NewFieldResolver().Resolve)
+		field := newField(field.Name, outputType, NewFieldResolver(field).Resolve)
 		fields[field.Name] = field
 	}
 	modelOutputType = newObject(model.Name, fields)
@@ -120,7 +120,7 @@ func (mk *Maker) addGetOp(
 	if err != nil {
 		return err
 	}
-	field := newFieldWithArgs(op.Name, args, modelOutputType, NewGetOpResolver(op).Resolve)
+	field := newFieldWithArgs(op.Name, args, modelOutputType, NewGetOperationResolver(op).Resolve)
 	addTo.queries[op.Name] = field
 	return nil
 }
