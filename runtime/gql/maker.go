@@ -120,7 +120,7 @@ func (mk *Maker) addGetOp(
 	if err != nil {
 		return err
 	}
-	field := newFieldWithArgs(op.Name, args, modelOutputType, NewGetOpResolver().Resolve)
+	field := newFieldWithArgs(op.Name, args, modelOutputType, NewGetOpResolver(op).Resolve)
 	addTo.queries[op.Name] = field
 	return nil
 }
