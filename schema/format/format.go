@@ -166,7 +166,7 @@ func printActionsBlock(writer *Writer, actions []*parser.ActionNode) {
 			)
 
 			writer.Write("(")
-			for i, arg := range op.Arguments {
+			for i, arg := range op.Inputs {
 				if i > 0 {
 					writer.Write(", ")
 				}

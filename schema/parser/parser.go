@@ -142,13 +142,14 @@ type AttributeArgumentNode struct {
 type ActionNode struct {
 	node.Node
 
-	Type       string                `@Ident`
-	Name       NameNode              `@@`
-	Arguments  []*ActionArgumentNode `"(" ( @@ ( "," @@ )* )? ")"`
-	Attributes []*AttributeNode      `( "{" @@+ "}" )?`
+	Type       string             `@Ident`
+	Name       NameNode           `@@`
+	Inputs     []*ActionInputNode `"(" ( @@ ( "," @@ )* )? ")"`
+	With       []*ActionInputNode `( "with" "(" ( @@ ( "," @@ )* ) ")" )?`
+	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
 
-type ActionArgumentNode struct {
+type ActionInputNode struct {
 	node.Node
 
 	Label    *NameNode         `(@@ ":")?`
