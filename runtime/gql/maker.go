@@ -167,6 +167,9 @@ func (mk *Maker) isFieldTypeDirectlyMappableType(keelType proto.FieldType) (grap
 
 	case proto.FieldType_FIELD_TYPE_ID:
 		return graphql.String, true
+
+	case proto.FieldType_FIELD_TYPE_DATETIME:
+		return graphql.String, true
 	}
 	return nil, false
 }
