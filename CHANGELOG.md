@@ -1,3 +1,10 @@
+# [0.21.0](https://github.com/teamkeel/keel/compare/v0.20.0...v0.21.0) (2022-06-29)
+
+
+### Features
+
+* add TypeInfo message to proto to align field and action input types ([6cb8b4e](https://github.com/teamkeel/keel/commit/6cb8b4e1ce3d2291aeb07694f8e2f213b9dee74d))
+
 # [0.20.0](https://github.com/teamkeel/keel/compare/v0.19.0...v0.20.0) (2022-06-28)
 
 
