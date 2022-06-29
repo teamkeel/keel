@@ -1,3 +1,10 @@
+# [0.23.0](https://github.com/teamkeel/keel/compare/v0.22.0...v0.23.0) (2022-06-29)
+
+
+### Features
+
+* Auto generate GraphQL server in Run package - first cut ([04c99d5](https://github.com/teamkeel/keel/commit/04c99d51593bf47c4a770ea733265fbdca04dd8f))
+
 # [0.22.0](https://github.com/teamkeel/keel/compare/v0.21.0...v0.22.0) (2022-06-29)
 
 
