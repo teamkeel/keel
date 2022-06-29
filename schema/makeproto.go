@@ -130,50 +130,13 @@ func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName strin
 }
 
 func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *proto.Field {
+	typeInfo := scm.parserFieldToProtoTypeInfo(parserField)
+
 	protoField := &proto.Field{
 		ModelName: modelName,
 		Name:      parserField.Name.Value,
-		Type:      proto.FieldType_FIELD_TYPE_UNKNOWN,
+		Type:      typeInfo,
 		Optional:  parserField.Optional,
-		Repeated:  parserField.Repeated,
-	}
-
-	// We establish the field type when possible using the 1:1 mapping between parser enums
-	// and proto enums. However, when the parsed field type is not one of the built in types, we
-	// infer that it must refer to one of the Models defined in the schema, and is therefore of type
-	// relationship.
-	switch parserField.Type {
-	case parser.FieldTypeBoolean:
-		protoField.Type = proto.FieldType_FIELD_TYPE_BOOL
-	case parser.FieldTypeText:
-		protoField.Type = proto.FieldType_FIELD_TYPE_STRING
-	case parser.FieldTypeCurrency:
-		protoField.Type = proto.FieldType_FIELD_TYPE_CURRENCY
-	case parser.FieldTypeDate:
-		protoField.Type = proto.FieldType_FIELD_TYPE_DATE
-	case parser.FieldTypeDatetime:
-		protoField.Type = proto.FieldType_FIELD_TYPE_DATETIME
-	case parser.FieldTypeID:
-		protoField.Type = proto.FieldType_FIELD_TYPE_ID
-	case parser.FieldTypeImage:
-		protoField.Type = proto.FieldType_FIELD_TYPE_IMAGE
-	case parser.FieldTypeNumber:
-		protoField.Type = proto.FieldType_FIELD_TYPE_INT
-	case parser.FieldTypeIdentity:
-		protoField.Type = proto.FieldType_FIELD_TYPE_IDENTITY
-	default:
-		model := query.Model(scm.asts, parserField.Type)
-		if model != nil {
-			protoField.Type = proto.FieldType_FIELD_TYPE_RELATIONSHIP
-		}
-
-		enum := query.Enum(scm.asts, parserField.Type)
-		if enum != nil {
-			protoField.Type = proto.FieldType_FIELD_TYPE_ENUM
-			protoField.EnumName = &wrapperspb.StringValue{
-				Value: parserField.Type,
-			}
-		}
 	}
 
 	scm.applyFieldAttributes(parserField, protoField)
@@ -196,18 +159,27 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 		Implementation: impl,
 		Type:           scm.mapToOperationType(parserFunction.Type),
 	}
-	protoOp.Inputs = scm.makeArguments(parserFunction, modelName)
+	inputs, setExprs, whereExprs := scm.makeArguments(parserFunction, modelName)
+	protoOp.Inputs = inputs
+	protoOp.SetExpressions = setExprs
+	protoOp.WhereExpressions = whereExprs
 	scm.applyFunctionAttributes(parserFunction, protoOp, modelName)
 
 	return protoOp
 }
 
-func (scm *Builder) makeArguments(parserFunction *parser.ActionNode, modelName string) []*proto.OperationInput {
-	// Currently, we only support arguments of the form <modelname>.
-	operationInputs := []*proto.OperationInput{}
+func (scm *Builder) makeArguments(
+	parserFunction *parser.ActionNode,
+	modelName string,
+) (
+	inputs []*proto.OperationInput,
+	setExprs []*proto.Expression,
+	whereExprs []*proto.Expression,
+) {
 	for _, parserArg := range parserFunction.Arguments {
+		idents := parserArg.Type.Fragments
+
 		if parserArg.Label == nil {
-			idents := parserArg.Type.Fragments
 
 			// if accessing a field on a related model prepend the related field
 			// e.g. if type is `post.author.name` then the input is called `authorName`
@@ -218,42 +190,99 @@ func (scm *Builder) makeArguments(parserFunction *parser.ActionNode, modelName s
 
 			model := query.Model(scm.asts, modelName)
 			var field *parser.FieldNode
-			for _, i := range idents {
-				field = query.ModelField(model, i.Fragment)
-				m := query.Model(scm.asts, field.Type)
-				if m != nil {
-					model = m
+			expr := ""
+			for i, ident := range idents {
+				if i > 0 {
+					expr += "."
 				}
+				expr += ident.Fragment
+
+				field = query.ModelField(model, ident.Fragment)
+				model = query.Model(scm.asts, field.Type)
 			}
 
-			operationInput := proto.OperationInput{
-				Name:      name,
-				Type:      proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD,
-				ModelName: wrapperspb.String(model.Name.Value),
-				FieldName: wrapperspb.String(field.Name.Value),
-				Optional:  parserArg.Optional,
-				Repeated:  field.Repeated,
-			}
-			operationInputs = append(operationInputs, &operationInput)
-		} else {
-			// TODO: support more input field types
-			var fieldType proto.OperationInputType
-			switch parserArg.Type.Fragments[0].Fragment {
-			case parser.FieldTypeText:
-				fieldType = proto.OperationInputType_OPERATION_INPUT_TYPE_STRING
-			case parser.FieldTypeBoolean:
-				fieldType = proto.OperationInputType_OPERATION_INPUT_TYPE_BOOL
-			}
-			operationInput := proto.OperationInput{
-				Name:     parserArg.Label.Value,
-				Type:     fieldType,
+			expr += " = " + name
+
+			// TODO: add expr to either setExprs or whereExprs depending
+			// on whether the inputs are in the with() section
+
+			typeInfo := scm.parserFieldToProtoTypeInfo(field)
+
+			inputs = append(inputs, &proto.OperationInput{
+				Name:     name,
+				Type:     typeInfo,
 				Optional: parserArg.Optional,
-				Repeated: parserArg.Repeated,
-			}
-			operationInputs = append(operationInputs, &operationInput)
+			})
+
+			// TODO: make set expressions
+		} else {
+			protoType := scm.parserTypeToProtoType(idents[0].Fragment)
+
+			inputs = append(inputs, &proto.OperationInput{
+				Name: parserArg.Label.Value,
+				Type: &proto.TypeInfo{
+					Type:     protoType,
+					Repeated: parserArg.Repeated,
+				},
+				Optional: parserArg.Optional,
+			})
 		}
 	}
-	return operationInputs
+
+	return inputs, setExprs, whereExprs
+}
+
+func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
+	switch parserType {
+	case parser.FieldTypeText:
+		return proto.Type_TYPE_STRING
+	case parser.FieldTypeID:
+		return proto.Type_TYPE_ID
+	case parser.FieldTypeBoolean:
+		return proto.Type_TYPE_BOOL
+	case parser.FieldTypeNumber:
+		return proto.Type_TYPE_INT
+	case parser.FieldTypeDate:
+		return proto.Type_TYPE_DATE
+	case parser.FieldTypeDatetime:
+		return proto.Type_TYPE_DATETIME
+	default:
+		return proto.Type_TYPE_UNKNOWN
+	}
+}
+
+func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.TypeInfo {
+
+	protoType := scm.parserTypeToProtoType(field.Type)
+	var modelName *wrapperspb.StringValue
+	var enumName *wrapperspb.StringValue
+
+	if protoType == proto.Type_TYPE_UNKNOWN {
+		model := query.Model(scm.asts, field.Type)
+		if model != nil {
+			modelName = &wrapperspb.StringValue{
+				Value: model.Name.Value,
+			}
+			protoType = proto.Type_TYPE_MODEL
+		}
+	}
+
+	if protoType == proto.Type_TYPE_UNKNOWN {
+		enum := query.Enum(scm.asts, field.Type)
+		if enum != nil {
+			enumName = &wrapperspb.StringValue{
+				Value: enum.Name.Value,
+			}
+			protoType = proto.Type_TYPE_ENUM
+		}
+	}
+
+	return &proto.TypeInfo{
+		Type:      protoType,
+		Repeated:  field.Repeated,
+		ModelName: modelName,
+		EnumName:  enumName,
+	}
 }
 
 func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoModel *proto.Model, attribute *parser.AttributeNode) {

@@ -24,11 +24,11 @@ var oldProto proto.Schema = proto.Schema{
 			Fields: []*proto.Field{
 				{
 					Name: "Name",
-					Type: proto.FieldType_FIELD_TYPE_STRING,
+					Type: &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 				},
 				{
 					Name: "Age",
-					Type: proto.FieldType_FIELD_TYPE_INT,
+					Type: &proto.TypeInfo{Type: proto.Type_TYPE_INT},
 				},
 			},
 		},
@@ -38,7 +38,7 @@ var oldProto proto.Schema = proto.Schema{
 			Fields: []*proto.Field{
 				{
 					Name: "Postcode",
-					Type: proto.FieldType_FIELD_TYPE_STRING,
+					Type: &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 				},
 			},
 		},
@@ -56,11 +56,11 @@ var newProto proto.Schema = proto.Schema{
 			Fields: []*proto.Field{
 				{
 					Name: "Name",
-					Type: proto.FieldType_FIELD_TYPE_STRING,
+					Type: &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 				},
 				{
 					Name: "Age",
-					Type: proto.FieldType_FIELD_TYPE_INT,
+					Type: &proto.TypeInfo{Type: proto.Type_TYPE_INT},
 				},
 			},
 		},
@@ -70,7 +70,7 @@ var newProto proto.Schema = proto.Schema{
 			Fields: []*proto.Field{
 				{
 					Name: "City",
-					Type: proto.FieldType_FIELD_TYPE_STRING,
+					Type: &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 				},
 			},
 		},
