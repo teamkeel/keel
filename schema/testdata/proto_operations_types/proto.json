@@ -1,96 +1,101 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Foo",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true
+          "primaryKey": true
         },
         {
-          "modelName":  "Foo",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         },
         {
-          "modelName":  "Foo",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Foo",
-          "name":  "opA",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
+          "modelName": "Foo",
+          "name": "opA",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO"
         },
         {
-          "modelName":  "Foo",
-          "name":  "opB",
-          "type":  "OPERATION_TYPE_UPDATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
+          "modelName": "Foo",
+          "name": "opB",
+          "type": "OPERATION_TYPE_UPDATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO"
         },
         {
-          "modelName":  "Foo",
-          "name":  "opC",
-          "type":  "OPERATION_TYPE_GET",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Foo",
+          "name": "opC",
+          "type": "OPERATION_TYPE_GET",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "name":  "id",
-              "type":  {
-                "type":  "TYPE_ID"
+              "name": "id",
+              "type": {
+                "type": "TYPE_ID"
               }
+            }
+          ],
+          "whereExpressions": [
+            {
+              "source": "foo.id = id"
             }
           ]
         },
         {
-          "modelName":  "Foo",
-          "name":  "opD",
-          "type":  "OPERATION_TYPE_LIST",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO"
+          "modelName": "Foo",
+          "name": "opD",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO"
         }
       ]
     },
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "username",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Identity",
+          "name": "username",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true
+          "primaryKey": true
         },
         {
-          "modelName":  "Identity",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         }
       ]
