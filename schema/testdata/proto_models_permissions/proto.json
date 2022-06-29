@@ -1,92 +1,108 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Foo",
-      "fields": [
+      "name":  "Foo",
+      "fields":  [
         {
-          "modelName": "Foo",
-          "name": "f1",
-          "type": "FIELD_TYPE_BOOL"
+          "modelName":  "Foo",
+          "name":  "f1",
+          "type":  {
+            "type":  "TYPE_BOOL"
+          }
         },
         {
-          "modelName": "Foo",
-          "name": "id",
-          "type": "FIELD_TYPE_ID",
-          "primaryKey": true
+          "modelName":  "Foo",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "primaryKey":  true
         },
         {
-          "modelName": "Foo",
-          "name": "createdAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Foo",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         },
         {
-          "modelName": "Foo",
-          "name": "updatedAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Foo",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         }
       ],
-      "permissions": [
+      "permissions":  [
         {
-          "modelName": "Foo",
-          "roleNames": [
+          "modelName":  "Foo",
+          "roleNames":  [
             "Admin"
           ],
-          "expression": {
-            "source": "foo.f1 == true"
+          "expression":  {
+            "source":  "foo.f1 == true"
           },
-          "operationsTypes": [
+          "operationsTypes":  [
             "OPERATION_TYPE_LIST",
             "OPERATION_TYPE_GET"
           ]
         },
         {
-          "modelName": "Foo",
-          "roleNames": [
+          "modelName":  "Foo",
+          "roleNames":  [
             "Restricted"
           ],
-          "operationsTypes": [
+          "operationsTypes":  [
             "OPERATION_TYPE_UPDATE"
           ]
         }
       ]
     },
     {
-      "name": "Identity",
-      "fields": [
+      "name":  "Identity",
+      "fields":  [
         {
-          "modelName": "Identity",
-          "name": "username",
-          "type": "FIELD_TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "username",
+          "type":  {
+            "type":  "TYPE_STRING"
+          }
         },
         {
-          "modelName": "Identity",
-          "name": "id",
-          "type": "FIELD_TYPE_ID",
-          "primaryKey": true
+          "modelName":  "Identity",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "primaryKey":  true
         },
         {
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         },
         {
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         }
       ]
     }
   ],
-  "roles": [
+  "roles":  [
     {
-      "name": "Admin",
-      "domains": [
+      "name":  "Admin",
+      "domains":  [
         "bar.com"
       ]
     },
     {
-      "name": "Restricted",
-      "emails": [
+      "name":  "Restricted",
+      "emails":  [
         "superuser@myorg.com"
       ]
     }

@@ -10,7 +10,7 @@ func createTable(model *proto.Model) string {
 	output := fmt.Sprintf("CREATE TABLE \"%s\"(\n", model.Name) // todo - we should normalise model names
 	for i, field := range model.Fields {
 		// todo: field names need to be normalised / standardised for use in the database.
-		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type])
+		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type.Type])
 		if i != len(model.Fields)-1 {
 			f += ","
 		}
@@ -25,7 +25,7 @@ func CreateTableIfNotExists(name string, fields []*proto.Field) string {
 	output := fmt.Sprintf("CREATE TABLE if not exists \"%s\"(\n", name) // todo - we should normalise model names
 	for i, field := range fields {
 		// todo: field names need to be normalised / standardised for use in the database.
-		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type])
+		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type.Type])
 		if i != len(fields)-1 {
 			f += ","
 		}
@@ -42,7 +42,7 @@ func dropTable(name string) string {
 
 func createField(modelName string, field *proto.Field) string {
 	output := fmt.Sprintf("ALTER TABLE \"%s\"\n", modelName)
-	output += fmt.Sprintf("ADD \"%s\" %s;", field.Name, PostgresFieldTypes[field.Type])
+	output += fmt.Sprintf("ADD \"%s\" %s;", field.Name, PostgresFieldTypes[field.Type.Type])
 	return output
 }
 

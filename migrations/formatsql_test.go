@@ -15,7 +15,7 @@ func TestCreateTableIfNotExists(t *testing.T) {
 	fields := []*proto.Field{
 		{
 			Name: "my-field-name",
-			Type: proto.FieldType_FIELD_TYPE_BOOL,
+			Type: &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
 		},
 	}
 	require.Equal(t, expectedCreateTableIfNotExists, CreateTableIfNotExists("my-model-name", fields))
@@ -30,7 +30,7 @@ func TestCreateField(t *testing.T) {
 		exampleModel.Name,
 		&proto.Field{
 			Name: "myNewField",
-			Type: proto.FieldType_FIELD_TYPE_DATE,
+			Type: &proto.TypeInfo{Type: proto.Type_TYPE_DATE},
 		}))
 }
 
@@ -51,11 +51,11 @@ var exampleModel *proto.Model = &proto.Model{
 	Fields: []*proto.Field{
 		{
 			Name: "Name",
-			Type: proto.FieldType_FIELD_TYPE_STRING,
+			Type: &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 		},
 		{
 			Name: "Age",
-			Type: proto.FieldType_FIELD_TYPE_INT,
+			Type: &proto.TypeInfo{Type: proto.Type_TYPE_INT},
 		},
 	},
 }
