@@ -1,3 +1,10 @@
+# [0.22.0](https://github.com/teamkeel/keel/compare/v0.21.0...v0.22.0) (2022-06-29)
+
+
+### Features
+
+* add parser and proto generation support for 'with' syntax ([2fb533a](https://github.com/teamkeel/keel/commit/2fb533a77513f4ddfbde432c19fae9bf2a128824))
+
 # [0.21.0](https://github.com/teamkeel/keel/compare/v0.20.0...v0.21.0) (2022-06-29)
 
 
