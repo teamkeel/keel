@@ -6,6 +6,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/gql/resolvers"
 )
 
 // A Maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
@@ -91,7 +92,7 @@ func (mk *Maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (m
 		if err != nil {
 			return nil, err
 		}
-		field := newField(field.Name, outputType, NewFieldResolver(field).Resolve)
+		field := newField(field.Name, outputType, resolvers.NewFieldResolver(field).Resolve)
 		fields[field.Name] = field
 	}
 	modelOutputType = newObject(model.Name, fields)
@@ -132,7 +133,7 @@ func (mk *Maker) addGetOp(
 	if err != nil {
 		return err
 	}
-	field := newFieldWithArgs(op.Name, args, modelOutputType, NewGetOperationResolver(op).Resolve)
+	field := newFieldWithArgs(op.Name, args, modelOutputType, resolvers.NewGetOperationResolver(op, model).Resolve)
 	addTo.queries[op.Name] = field
 	return nil
 }

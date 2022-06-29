@@ -45,7 +45,7 @@ func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
 	require.Nil(t, err)
 	bodyStr := string(responseBody)
 
-	const expected = "{\"data\":{\"getAuthor\":{\"name\":\"harriet\"}}}"
+	const expected = "{\"data\":{\"getAuthor\":{\"name\":\"Harriet\"}}}"
 	require.Equal(t, expected, bodyStr)
 }
 

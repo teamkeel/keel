@@ -8,7 +8,7 @@ import (
 )
 
 func TestModelNames(t *testing.T) {
-	require.Equal(t, []string{"ModelA", "ModelB"}, ModelNames(referenceSchema))
+	require.Equal(t, []string{"ModelA", "ModelB", "ModelC"}, ModelNames(referenceSchema))
 }
 
 func TestFieldNames(t *testing.T) {
