@@ -8,6 +8,10 @@
       ["@semantic-release/npm", {
         "npmPublish": false
       }],
+      ["@semantic-release/npm", {
+        "pkgRoot": "wasm",
+        "tarballDir": false
+      }],
       "@semantic-release/git"
     ]
 }
