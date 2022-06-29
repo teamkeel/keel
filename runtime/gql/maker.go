@@ -140,56 +140,36 @@ func (mk *Maker) addGetOp(
 
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *Maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
-	if outputType, ok := mk.isFieldTypeDirectlyMappableType(field.Type); ok {
-		return outputType, nil
+	switch field.Type.Type {
+	case proto.Type_TYPE_STRING:
+		return graphql.String, nil
+
+	case proto.Type_TYPE_INT:
+		return graphql.Int, nil
+
+	case proto.Type_TYPE_ID:
+		return graphql.String, nil
+
+	case proto.Type_TYPE_DATETIME:
+		return graphql.String, nil
 	}
 	return nil, fmt.Errorf("cannot yet make output type for a: %v", field)
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
 func (mk *Maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
-	if inputType, ok := mk.toOperationInputType(op.Type); ok {
-		return inputType, nil
-	}
-	return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
-}
-
-// isFieldTypeDirectlyMappableType attempts to map the field type in the given proto.FieldType
-// to a suitable built-in graphql.Output type. It returns a boolean to indicate if such a mapping
-// can be found, and so, it also returns that mapped type.
-func (mk *Maker) isFieldTypeDirectlyMappableType(keelType proto.FieldType) (graphql.Output, bool) {
-	switch keelType {
-	case proto.FieldType_FIELD_TYPE_STRING:
-		return graphql.String, true
-
-	case proto.FieldType_FIELD_TYPE_INT:
-		return graphql.Int, true
-
-	case proto.FieldType_FIELD_TYPE_ID:
-		return graphql.String, true
-
-	case proto.FieldType_FIELD_TYPE_DATETIME:
-		return graphql.String, true
-	}
-	return nil, false
-}
-
-// toOperationInputType attempts to map the type in the given proto.OperationInputType
-// to a suitable built-in graphql.Input type. It returns a boolean to indicate if such a mapping
-// can be found, and so, it also returns that mapped type.
-func (mk *Maker) toOperationInputType(keelType proto.OperationInputType) (graphql.Input, bool) {
-	switch keelType {
-	// Special case, when specifying a field - we expect its name.
-	case proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD:
-		return graphql.String, true
+	switch op.Type.Type {
+	// Special case, when specifying a model - we expect the model's name.
+	case proto.Type_TYPE_MODEL:
+		return graphql.String, nil
 
 	// General (scalar) cases.
-	case proto.OperationInputType_OPERATION_INPUT_TYPE_BOOL:
-		return graphql.Boolean, true
-	case proto.OperationInputType_OPERATION_INPUT_TYPE_STRING:
-		return graphql.String, true
+	case proto.Type_TYPE_BOOL:
+		return graphql.Boolean, nil
+	case proto.Type_TYPE_STRING:
+		return graphql.String, nil
 	}
-	return nil, false
+	return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
 }
 
 // makeArgs generates a graphql.FieldConfigArgument to reflect the inputs of the given
