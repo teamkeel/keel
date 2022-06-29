@@ -3,11 +3,12 @@ package proto
 import (
 	"testing"
 
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 )
 
 func TestModelNames(t *testing.T) {
-	require.Equal(t, []string{"ModelA", "ModelB"}, ModelNames(referenceSchema))
+	require.Equal(t, []string{"ModelA", "ModelB", "ModelC"}, ModelNames(referenceSchema))
 }
 
 func TestFieldNames(t *testing.T) {
@@ -16,6 +17,14 @@ func TestFieldNames(t *testing.T) {
 
 func TestFindModel(t *testing.T) {
 	require.Equal(t, "ModelA", FindModel(referenceSchema.Models, "ModelA").Name)
+}
+
+func TestFindModels(t *testing.T) {
+	modelsFound := FindModels(referenceSchema.Models, []string{"ModelA", "ModelC"})
+	namesOfFoundModels := lo.Map(modelsFound, func(m *Model, _ int) string {
+		return m.Name
+	})
+	require.Equal(t, []string{"ModelA", "ModelC"}, namesOfFoundModels)
 }
 
 func TestFindField(t *testing.T) {
@@ -41,6 +50,13 @@ var referenceSchema *Schema = &Schema{
 			Fields: []*Field{
 				{Name: "Field2"},
 				{Name: "Field3"},
+			},
+		},
+		{
+			Name: "ModelC",
+			Fields: []*Field{
+				{Name: "Field42"},
+				{Name: "Field43"},
 			},
 		},
 	},
