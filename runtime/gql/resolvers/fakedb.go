@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-func fetchDbRowThatMatchParamsAndFilters(
+func fetchDbRow(
 	model *proto.Model,
 	whereExpressions []*proto.Expression,
 	queryParams graphql.ResolveParams) (map[string]any, error) {

@@ -26,7 +26,7 @@ func NewMaker(proto *proto.Schema) *Maker {
 func (mk *Maker) Make() (map[string]*graphql.Schema, error) {
 	outputSchemas := map[string]*graphql.Schema{}
 	for _, api := range mk.proto.Apis {
-		gSchema, err := mk.makeSchemaForOneAPI(api)
+		gSchema, err := mk.newSchema(api)
 		if err != nil {
 			return nil, err
 		}
@@ -35,8 +35,8 @@ func (mk *Maker) Make() (map[string]*graphql.Schema, error) {
 	return outputSchemas, nil
 }
 
-// makeSchemaForOneAPI returns a graphql.Schema that implements the given API.
-func (mk *Maker) makeSchemaForOneAPI(api *proto.Api) (*graphql.Schema, error) {
+// newSchema returns a graphql.Schema that implements the given API.
+func (mk *Maker) newSchema(api *proto.Api) (*graphql.Schema, error) {
 	// The graphql top level query contents will be comprised ONLY of the
 	// OPERATIONS from the keel schema. But to find these we have to traverse the
 	// schema, first by model, then by said model's operations. As a side effect
@@ -148,7 +148,7 @@ func (mk *Maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
 func (mk *Maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
-	if inputType, ok := mk.isOperationInputTypeDirectlyMappableType(op.Type); ok {
+	if inputType, ok := mk.toOperationInputType(op.Type); ok {
 		return inputType, nil
 	}
 	return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
@@ -174,10 +174,10 @@ func (mk *Maker) isFieldTypeDirectlyMappableType(keelType proto.FieldType) (grap
 	return nil, false
 }
 
-// isOperationInputTypeDirectlyMappableType attempts to map the type in the given proto.OperationInputType
+// toOperationInputType attempts to map the type in the given proto.OperationInputType
 // to a suitable built-in graphql.Input type. It returns a boolean to indicate if such a mapping
 // can be found, and so, it also returns that mapped type.
-func (mk *Maker) isOperationInputTypeDirectlyMappableType(keelType proto.OperationInputType) (graphql.Input, bool) {
+func (mk *Maker) toOperationInputType(keelType proto.OperationInputType) (graphql.Input, bool) {
 	switch keelType {
 	// Special case, when specifying a field - we expect its name.
 	case proto.OperationInputType_OPERATION_INPUT_TYPE_FIELD:
