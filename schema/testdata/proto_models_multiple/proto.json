@@ -1,70 +1,90 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Model1",
-      "fields": [
+      "name":  "Model1",
+      "fields":  [
         {
-          "modelName": "Model1",
-          "name": "id",
-          "type": "FIELD_TYPE_ID",
-          "primaryKey": true
+          "modelName":  "Model1",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "primaryKey":  true
         },
         {
-          "modelName": "Model1",
-          "name": "createdAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Model1",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         },
         {
-          "modelName": "Model1",
-          "name": "updatedAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Model1",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         }
       ]
     },
     {
-      "name": "Model2",
-      "fields": [
+      "name":  "Model2",
+      "fields":  [
         {
-          "modelName": "Model2",
-          "name": "id",
-          "type": "FIELD_TYPE_ID",
-          "primaryKey": true
+          "modelName":  "Model2",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "primaryKey":  true
         },
         {
-          "modelName": "Model2",
-          "name": "createdAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Model2",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         },
         {
-          "modelName": "Model2",
-          "name": "updatedAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Model2",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         }
       ]
     },
     {
-      "name": "Identity",
-      "fields": [
+      "name":  "Identity",
+      "fields":  [
         {
-          "modelName": "Identity",
-          "name": "username",
-          "type": "FIELD_TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "username",
+          "type":  {
+            "type":  "TYPE_STRING"
+          }
         },
         {
-          "modelName": "Identity",
-          "name": "id",
-          "type": "FIELD_TYPE_ID",
-          "primaryKey": true
+          "modelName":  "Identity",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "primaryKey":  true
         },
         {
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         },
         {
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": "FIELD_TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          }
         }
       ]
     }

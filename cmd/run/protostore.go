@@ -71,7 +71,9 @@ func makeTableForLastKnownProto(db *sql.DB) error {
 	fields := []*proto.Field{
 		{
 			Name: columnForTheJson,
-			Type: proto.FieldType_FIELD_TYPE_STRING,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_STRING,
+			},
 		},
 	}
 	sql := migrations.CreateTableIfNotExists(tableForProtobuf, fields)
