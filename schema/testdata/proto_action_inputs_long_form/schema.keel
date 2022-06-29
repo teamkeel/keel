@@ -3,6 +3,11 @@ model Person {
         name Text
     }
     operations {
-        create createPerson(name: Text)
+        get getPerson(personId: id) {
+            @where(person.id == personId)
+        }
+        create createPerson() with(name: Text) {
+            @set(person.name = name)
+        }
     }
 }

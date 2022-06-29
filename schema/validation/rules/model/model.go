@@ -10,7 +10,6 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	field_validation "github.com/teamkeel/keel/schema/validation/rules/field"
 )
 
 var (
@@ -150,33 +149,8 @@ func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, input := range action.Inputs {
-				last := input.Type.Fragments[0].Fragment
-
-				// long-form input definition e.g. (foo: Text)
-				if input.Label != nil {
-					if _, ok := field_validation.BuiltInFieldTypes[last]; ok {
-						continue
-					}
-
-					// TODO: this error needs to be better as it talks about
-					// the model and that isn't relevant here
-					errors = append(
-						errors,
-						errorhandling.NewValidationError(errorhandling.ErrorInvalidActionInput,
-							errorhandling.TemplateLiterals{
-								Literals: map[string]string{
-									"Input": last,
-								},
-							},
-							input.Type,
-						),
-					)
-				}
-
-				// TODO: support dot-notation here
-				fieldName := input.Type.Fragments[len(input.Type.Fragments)-1].Fragment
-				field := query.ModelField(model, fieldName)
-				if field != nil {
+				resolvedType := query.ResolveInputType(asts, input, model)
+				if resolvedType != "" {
 					continue
 				}
 
@@ -185,7 +159,7 @@ func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 					fieldNames = append(fieldNames, field.Name.Value)
 				}
 
-				hint := errorhandling.NewCorrectionHint(fieldNames, fieldName)
+				hint := errorhandling.NewCorrectionHint(fieldNames, input.Type.ToString())
 
 				errors = append(
 					errors,
@@ -193,7 +167,7 @@ func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 						errorhandling.ErrorInvalidActionInput,
 						errorhandling.TemplateLiterals{
 							Literals: map[string]string{
-								"Input":     fieldName,
+								"Input":     input.Type.ToString(),
 								"Suggested": hint.ToString(),
 							},
 						},
