@@ -1,0 +1,13 @@
+model Person {
+    fields {
+        faveColours Text[]
+    }
+}
+
+===
+
+model Person {
+    fields {
+        faveColours Text[]
+    }
+}

@@ -1,0 +1,10 @@
+model Post {
+  fields {
+    title Text
+  }
+
+  @permission(
+    expression: post.title == 12,
+    actions: [get]
+  )
+}

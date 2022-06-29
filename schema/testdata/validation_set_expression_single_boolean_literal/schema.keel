@@ -1,0 +1,12 @@
+model Post {
+  fields {
+    published Boolean
+  }
+
+  operations {
+    create publishPost(id) {
+      @set(true)
+    }
+  }
+}
+

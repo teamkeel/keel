@@ -1,0 +1,22 @@
+role Staff {
+    emails {
+        "david@myorg.com"
+        "sally@myorg.com"
+    }
+    domains {
+        "myorg.com"
+    }
+}
+
+===
+
+role Staff {
+    domains {
+        "myorg.com"
+    }
+
+    emails {
+        "david@myorg.com"
+        "sally@myorg.com"
+    }
+}

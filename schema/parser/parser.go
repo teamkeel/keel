@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"strings"
 	"text/scanner"
 
 	"github.com/alecthomas/participle/v2"
@@ -30,6 +32,7 @@ type ModelNode struct {
 
 	Name     NameNode            `@@`
 	Sections []*ModelSectionNode `"{" @@* "}"`
+	BuiltIn  bool
 }
 
 func (model *ModelNode) ToString() string {
@@ -62,8 +65,9 @@ type FieldNode struct {
 
 	Name       NameNode         `@@`
 	Type       string           `@Ident`
-	Repeated   bool             `@( "[" "]" )?`
-	Attributes []*AttributeNode `( "{" @@+ "}" )?`
+	Repeated   bool             `( @( "[" "]" )`
+	Optional   bool             `| @( "?" ))?`
+	Attributes []*AttributeNode `( "{" @@+ "}" | @@+ )?`
 
 	// Some fields are added implicitly after parsing the schema
 	// For these fields this value is set to true so we can distinguish
@@ -131,7 +135,7 @@ type AttributeNode struct {
 type AttributeArgumentNode struct {
 	node.Node
 
-	Name       NameNode                `(@@ ":")?`
+	Label      *NameNode               `(@@ ":")?`
 	Expression *expressions.Expression `@@`
 }
 
@@ -147,7 +151,10 @@ type ActionNode struct {
 type ActionArgumentNode struct {
 	node.Node
 
-	Name NameNode `@@`
+	Label    *NameNode         `(@@ ":")?`
+	Type     expressions.Ident `@@`
+	Repeated bool              `( @( "[" "]" )`
+	Optional bool              `| @( "?" ))?`
 }
 
 type EnumNode struct {
@@ -161,6 +168,25 @@ type EnumValueNode struct {
 	node.Node
 
 	Name NameNode `@@`
+}
+
+type Error struct {
+	err participle.Error
+}
+
+func (e Error) Error() string {
+	msg := e.err.Error()
+	pos := e.err.Position()
+
+	// error messages start with "{filename}:{line}:{column}:" and we don't
+	// really need that bit so we can remove it
+	return strings.TrimPrefix(msg, fmt.Sprintf("%s:%d:%d:", pos.Filename, pos.Line, pos.Column))
+}
+
+// Implement node.Node interface
+func (e Error) GetPositionRange() (start lexer.Position, end lexer.Position) {
+	pos := e.err.Position()
+	return pos, pos
 }
 
 func Parse(s *reader.SchemaFile) (*AST, error) {
@@ -184,6 +210,16 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 
 	err = parser.ParseString(s.FileName, s.Contents, schema)
 	if err != nil {
+
+		// If the error is a participle.Error (which it should be)
+		// then return an error that also implements the node.Node
+		// interface so that we can later on turn it into a validation
+		// error
+		perr, ok := err.(participle.Error)
+		if ok {
+			return nil, Error{perr}
+		}
+
 		return nil, err
 	}
 

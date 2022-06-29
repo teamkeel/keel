@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E021",
-        "end_pos": {
-            "column": 56,
-            "filename": "testdata/validation_operation_where_expression_unresolvable_rhs/schema.keel",
-            "line": 13,
-            "offset": 255
-        },
-        "hint": "Did you mean 'profile' instead?",
-        "message": "relationship 'context' not found",
-        "pos": {
-            "column": 40,
-            "filename": "testdata/validation_operation_where_expression_unresolvable_rhs/schema.keel",
-            "line": 13,
-            "offset": 239
-        },
-        "short_message": "relationship 'context' not found"
+{
+  "Errors": [
+    {
+      "message": "context not found",
+      "short_message": "context not found",
+      "hint": "Did you mean ctx, or profile?",
+      "code": "E021",
+      "pos": {
+        "filename": "testdata/validation_operation_where_expression_unresolvable_rhs/schema.keel",
+        "offset": 239,
+        "line": 13,
+        "column": 40
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_where_expression_unresolvable_rhs/schema.keel",
+        "offset": 246,
+        "line": 13,
+        "column": 47
       }
-    ]
-  }
+    }
+  ]
+}

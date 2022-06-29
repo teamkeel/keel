@@ -29,3 +29,5 @@ node_modules
 .launch.json
 
 /cmd/keel/keel
+
+wasm/*.wasm

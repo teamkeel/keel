@@ -1,68 +1,104 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "a",
-          "type":  "FIELD_TYPE_IDENTITY"
+          "modelName": "Foo",
+          "name": "a",
+          "type": "FIELD_TYPE_IDENTITY"
         },
         {
-          "modelName":  "Foo",
-          "name":  "b",
-          "type":  "FIELD_TYPE_STRING"
+          "modelName": "Foo",
+          "name": "b",
+          "type": "FIELD_TYPE_STRING"
         },
         {
-          "modelName":  "Foo",
-          "name":  "c",
-          "type":  "FIELD_TYPE_DATE"
+          "modelName": "Foo",
+          "name": "c",
+          "type": "FIELD_TYPE_DATE"
         },
         {
-          "modelName":  "Foo",
-          "name":  "d",
-          "type":  "FIELD_TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "d",
+          "type": "FIELD_TYPE_DATETIME"
         },
         {
-          "modelName":  "Foo",
-          "name":  "e",
-          "type":  "FIELD_TYPE_BOOL"
+          "modelName": "Foo",
+          "name": "e",
+          "type": "FIELD_TYPE_BOOL"
         },
         {
-          "modelName":  "Foo",
-          "name":  "f",
-          "type":  "FIELD_TYPE_IMAGE"
+          "modelName": "Foo",
+          "name": "f",
+          "type": "FIELD_TYPE_IMAGE"
         },
         {
-          "modelName":  "Foo",
-          "name":  "g",
-          "type":  "FIELD_TYPE_ENUM",
-          "enumName":  "Beatles"
+          "modelName": "Foo",
+          "name": "g",
+          "type": "FIELD_TYPE_ENUM",
+          "enumName": "Beatles"
         },
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  "FIELD_TYPE_ID",
-          "unique":  true
+          "modelName": "Foo",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Foo",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Foo",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
         }
       ]
     }
   ],
-  "enums":  [
+  "enums": [
     {
-      "name":  "Beatles",
-      "values":  [
+      "name": "Beatles",
+      "values": [
         {
-          "name":  "John"
+          "name": "John"
         },
         {
-          "name":  "Paul"
+          "name": "Paul"
         },
         {
-          "name":  "George"
+          "name": "George"
         },
         {
-          "name":  "Ringo"
+          "name": "Ringo"
         }
       ]
     }

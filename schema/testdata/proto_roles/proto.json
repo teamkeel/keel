@@ -1,18 +1,46 @@
 {
-  "roles":  [
+  "models": [
     {
-      "name":  "Admin",
-      "domains":  [
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
+        }
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "name": "Admin",
+      "domains": [
         "domain1.com",
         "domain2.zyz"
       ],
-      "emails":  [
+      "emails": [
         "person1@bbc.com",
         "person2@keel.xyz"
       ]
     },
     {
-      "name":  "Other"
+      "name": "Other"
     }
   ]
 }

@@ -1,0 +1,65 @@
+model person {
+    fields {
+        Name Text
+        FavouriteColour colour
+        ALLCAPS Number
+    }
+
+    operations {
+        create CreatePerson(Name, FavouriteColour, ALLCAPS)
+    }
+}
+
+enum colour {
+    RED
+    GREEN
+    blue
+}
+
+role staff {
+    domains {
+        "foo@bar.com"
+    }
+}
+
+api web {
+    @graphql
+
+    models {
+        person
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+        favouriteColour Colour
+        allcaps Number
+    }
+
+    operations {
+        create createPerson(name, favouriteColour, allcaps)
+    }
+}
+
+enum Colour {
+    Red
+    Green
+    Blue
+}
+
+role Staff {
+    domains {
+        "foo@bar.com"
+    }
+}
+
+api Web {
+    @graphql
+
+    models {
+        Person
+    }
+}

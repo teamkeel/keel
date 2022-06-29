@@ -18,7 +18,7 @@ en:
   E005:
     short_message: "{{ .Input }} is not a valid input"
     message: "Action inputs must be one of the fields defined in the model"
-    hint: "Did you mean {{ .Suggested }}?"
+    hint: "{{ .Suggested }}"
   E006:
     short_message: "cannot use {{ .Name }}"
     message: "You have a reserved field name {{ .Name }}"
@@ -76,22 +76,53 @@ en:
     message: "You have a duplicate definition for 'enum {{ .Name }}'"
     hint: "Please remove one of the definitions"
   E020:
-    short_message: "{{ .Type }} '{{ .Fragment }}' not found"
-    message: "{{ .Type }} '{{ .Fragment }}' not found on '{{ .Parent }}' model"
+    short_message: "'{{ .Fragment }}' not found"
+    message: "'{{ .Fragment }}' not found on '{{ .Parent }}' model"
     hint: "{{ .Suggestion }}"
   E021:
-    short_message: "{{ .Type }} '{{ .Root }}' not found"
-    message: "{{ .Type }} '{{ .Root }}' not found"
-    hint: "Did you mean '{{ .Model }}' instead?"
+    short_message: "{{ .Root }} not found"
+    message: "{{ .Root }} not found"
+    hint: "{{ .Suggestions }}"
   E022:
-    short_message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
-    message: "Operator '{{ .Operator }}' not permitted on {{ .Area }}"
-    hint: "Did you mean '{{ .Suggestion }}'?"
+    short_message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
+    message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
+    hint: "{{ .Suggestion }}"
   E023:
-    short_message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
-    message: "Values such as '{{ .Value }}' not permitted on {{ .Area }}"
-    hint: "Please assign a value e.g 'a.b = b.a'"
+    short_message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
+    message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
+    hint: "Please assign a value. Did you mean '{{ .Suggestion }}'?"
   E024:
-    short_message: "Too many arguments provided to '{{ .Area }}'"
-    message: "Too many arguments provided to '{{ .Area }}'"
-    hint: "{{ if .NoArgs }}{{ .Area }} doesn't accept any arguments{{ else }}{{ .Area }} only accepts {{ .Count }} argument(s){{ end }}"
+    short_message: "Too many arguments provided to '{{ .Attribute }}'"
+    message: "Too many arguments provided to '{{ .Attribute }}'"
+    hint: "{{ if .NoArgs }}{{ .Attribute }} doesn't accept any arguments{{ else }}{{ .Attribute }} only accepts {{ .Count }} argument(s){{ end }}"
+  E025:
+    short_message: "Invalid syntax"
+    message: "{{ .Message }}"
+  E026:
+    short_message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
+    message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
+    hint: "Please make sure that you are evaluating entities of the same type"
+  E027:
+    short_message: "Cannot compare '{{ .LHS }}' and '{{ .RHS }}' with operator '{{ .Operator }}'"
+    message: "Cannot compare '{{ .LHS }}' and '{{ .RHS }}' with operator '{{ .Operator }}'"
+    hint: "{{ .Suggestion }}"
+  E028:
+    short_message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
+    message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
+    hint: "Only boolean literals are allowed e.g true or false"
+  E029:
+    short_message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is an array of {{ .RHSType }}s"
+    message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is an array of {{ .RHSType }}s"
+    hint: "Left hand side {{ .LHS }} can only be compared to an array of {{ .LHSType }}s"
+  E030:
+    short_message: "You can only use operators 'in' or 'not in' when checking for inclusion of {{ .LHS }} in {{ .RHS }}"
+    message: "{{ .RHS }} is an array of {{ .RHSType }}. Only 'in' or 'not in' can be used"
+    hint: "Change '{{ .Operator }}' to either 'in' or 'not in'."
+  E031:
+    short_message: "Both sides of the expression cannot be an array"
+    message: "Both sides of the expression cannot be an array"
+    hint: "Left hand side of expression ('{{ .LHS }}') produced more than one result because one of the relationships was a collection."
+  E032:
+    short_message: "Cannot have mixed types in an array literal"
+    message: "Cannot have mixed types in an array literal"
+    hint: "Expected {{ .Item }} to be of type {{ .Type }}"

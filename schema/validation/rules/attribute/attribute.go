@@ -7,8 +7,8 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
-	"github.com/teamkeel/keel/schema/relationships"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/schema/validation/rules/expression"
 	"github.com/teamkeel/keel/util/collection"
 )
 
@@ -58,7 +58,7 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 	var supportedAttributes = map[string][]string{
 		parser.KeywordModel:     {parser.AttributePermission},
 		parser.KeywordApi:       {parser.AttributeGraphQL},
-		parser.KeywordField:     {parser.AttributeUnique, parser.AttributeOptional},
+		parser.KeywordField:     {parser.AttributeUnique},
 		parser.KeywordOperation: {parser.AttributeSet, parser.AttributeWhere, parser.AttributePermission},
 		parser.KeywordFunction:  {parser.AttributePermission},
 	}
@@ -132,22 +132,6 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-type Operator struct {
-	Type   string
-	Symbol string
-}
-
-var supportedOpsForSetWhere map[string]Operator = map[string]Operator{
-	parser.AttributeSet: {
-		Type:   expressions.AssignmentCondition,
-		Symbol: "=",
-	},
-	parser.AttributeWhere: {
-		Type:   expressions.LogicalCondition,
-		Symbol: "==",
-	},
-}
-
 func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, operation := range query.ModelActions(model) {
@@ -163,75 +147,42 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 				argLength := len(attr.Arguments)
 
 				if argLength == 0 || argLength >= 2 {
-					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorTooManyArguments,
-						errorhandling.TemplateLiterals{
-							Literals: map[string]string{
-								"Area":  fmt.Sprintf("@%s", attr.Name.Value),
-								"Value": attr.Name.Value,
-								"Count": fmt.Sprint(1),
-							},
-						},
-						attr,
-					))
-				}
-
-				arg := attr.Arguments[0]
-
-				conditions := arg.Expression.Conditions()
-
-				for _, cond := range conditions {
-					t := cond.Type()
-					lhs, operator, rhs := cond.ToFragments()
-
-					operatorForAttribute := supportedOpsForSetWhere[attr.Name.Value]
-
-					// Handle erroneous value conditions separately
-					// as they do not have an operator to act on
-					if t == expressions.ValueCondition {
-						errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenValueCondition,
+					errors = append(errors,
+						errorhandling.NewValidationError(
+							errorhandling.ErrorTooManyArguments,
 							errorhandling.TemplateLiterals{
 								Literals: map[string]string{
-									"Area":  fmt.Sprintf("@%s", attr.Name.Value),
-									"Value": cond.ToString(),
+									"Attribute": fmt.Sprintf("@%s", attr.Name.Value),
+									"Value":     attr.Name.Value,
+									"Count":     fmt.Sprint(1),
 								},
 							},
-							cond,
+							attr,
 						))
-
-						continue
-					}
-
-					// Check that assignment operator is used in @set attribute
-					if t != operatorForAttribute.Type {
-						errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
-							errorhandling.TemplateLiterals{
-								Literals: map[string]string{
-									"Operator":   operator.Symbol,
-									"Area":       fmt.Sprintf("@%s", attr.Name.Value),
-									"Suggestion": operatorForAttribute.Symbol,
-									"Condition":  cond.ToString(),
-								},
-							},
-							operator,
-						))
-					}
-
-					// Check lhs & rhs existence
-					if lhs != nil {
-						relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
-
-						if err != nil && relationships != nil {
-							errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-						}
-					}
-					if rhs != nil {
-						relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
-
-						if err != nil && relationships != nil {
-							errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-						}
-					}
+					continue
 				}
+
+				expr := attr.Arguments[0].Expression
+
+				rules := []expression.Rule{expression.PreventValueConditionRule}
+
+				if attr.Name.Value == parser.AttributeSet {
+					rules = append(rules, expression.OperatorAssignmentRule)
+				} else {
+					rules = append(rules, expression.OperatorLogicalRule)
+				}
+
+				expressionErrs := expression.ValidateExpression(
+					asts,
+					expr,
+					rules,
+					expression.RuleContext{
+						Model:     model,
+						Attribute: attr,
+					},
+				)
+
+				errors = append(errors, expressionErrs...)
 			}
 		}
 	}
@@ -253,7 +204,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 	hasRoles := false
 
 	for _, arg := range attr.Arguments {
-		switch arg.Name.Value {
+		switch arg.Label.Value {
 		case "actions":
 			// The 'actions' argument should not be provided if the permission attribute
 			// is defined inside an action as that implicitly means the permission only
@@ -280,42 +231,20 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 		case "expression":
 			hasExpression = true
 
-			conditions := arg.Expression.Conditions()
+			expressionErrors := expression.ValidateExpression(
+				asts,
+				arg.Expression,
+				[]expression.Rule{
+					expression.OperatorLogicalRule,
+				},
+				expression.RuleContext{
+					Model:     model,
+					Attribute: attr,
+				},
+			)
 
-			for _, cond := range conditions {
-				t := cond.Type()
-
-				// Check that the expression uses the logical comparison operator
-				if t != expressions.LogicalCondition {
-					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorForbiddenExpressionOperation,
-						errorhandling.TemplateLiterals{
-							Literals: map[string]string{
-								"Operator":   cond.Operator.Symbol,
-								"Area":       "@permission",
-								"Suggestion": "==",
-								"Condition":  cond.ToString(),
-							},
-						},
-						arg,
-					))
-				}
-
-				// check that the lhs and rhs resolve
-				if cond.LHS != nil {
-					relationships, err := relationships.TryResolveOperand(asts, cond.LHS)
-
-					if err != nil && relationships != nil {
-						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-					}
-				}
-				if cond.RHS != nil {
-					relationships, err := relationships.TryResolveOperand(asts, cond.RHS)
-
-					if err != nil && relationships != nil {
-						errors = append(errors, errorhandling.NewRelationshipValidationError(asts, model, relationships))
-					}
-				}
-
+			if expressionErrors != nil {
+				errors = append(errors, expressionErrors...)
 			}
 		case "roles":
 			hasRoles = true
@@ -325,7 +254,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			}
 			errors = append(errors, validateIdentArray(model, arg.Expression, allowedIdents)...)
 		default:
-			if arg.Name.Value == "" {
+			if arg.Label.Value == "" {
 				// All arguments to @permission should have a label
 				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorAttributeRequiresNamedArguments,
 					errorhandling.TemplateLiterals{
@@ -343,11 +272,11 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"AttributeName":      "permission",
-							"ArgumentName":       arg.Name.Value,
+							"ArgumentName":       arg.Label.Value,
 							"ValidArgumentNames": "actions, expression, or roles",
 						},
 					},
-					arg.Name,
+					arg.Label,
 				))
 			}
 		}
@@ -448,9 +377,9 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
 					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorTooManyArguments,
 						errorhandling.TemplateLiterals{
 							Literals: map[string]string{
-								"Area":   fmt.Sprintf("@%s", attr.Name.Value),
-								"Value":  attr.Name.Value,
-								"NoArgs": "true",
+								"Attribute": fmt.Sprintf("@%s", attr.Name.Value),
+								"Value":     attr.Name.Value,
+								"NoArgs":    "true",
 							},
 						},
 						attr,

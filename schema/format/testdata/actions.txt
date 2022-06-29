@@ -1,0 +1,24 @@
+model Person {
+    fields {
+        name  Text
+    }
+    operations {
+        get getPerson(id)
+        update updatePerson(id, name)
+        list listPeople(name)
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+    }
+
+    operations {
+        get getPerson(id)
+        update updatePerson(id, name)
+        list listPeople(name)
+    }
+}

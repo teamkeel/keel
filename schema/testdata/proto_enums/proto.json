@@ -1,31 +1,59 @@
 {
-  "enums":  [
+  "models": [
     {
-      "name":  "Planets",
-      "values":  [
+      "name": "Identity",
+      "fields": [
         {
-          "name":  "Mercury"
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
         },
         {
-          "name":  "Venus"
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
         },
         {
-          "name":  "Earth"
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
         },
         {
-          "name":  "Mars"
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "Planets",
+      "values": [
+        {
+          "name": "Mercury"
         },
         {
-          "name":  "Jupiter"
+          "name": "Venus"
         },
         {
-          "name":  "Saturn"
+          "name": "Earth"
         },
         {
-          "name":  "Uranus"
+          "name": "Mars"
         },
         {
-          "name":  "Neptune"
+          "name": "Jupiter"
+        },
+        {
+          "name": "Saturn"
+        },
+        {
+          "name": "Uranus"
+        },
+        {
+          "name": "Neptune"
         }
       ]
     }

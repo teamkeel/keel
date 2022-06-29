@@ -1,3 +1,80 @@
+# [0.20.0](https://github.com/teamkeel/keel/compare/v0.19.0...v0.20.0) (2022-06-28)
+
+
+### Features
+
+* validate that lhs singular types match the rhs array type of T ([#88](https://github.com/teamkeel/keel/issues/88)) ([5b7300e](https://github.com/teamkeel/keel/commit/5b7300e374ca27265d598e7f4af50a149e42c7d1))
+
+# [0.19.0](https://github.com/teamkeel/keel/compare/v0.18.0...v0.19.0) (2022-06-28)
+
+
+### Features
+
+* trimmed validation output ([da6f9c0](https://github.com/teamkeel/keel/commit/da6f9c00bf6493612290bec0c4f24181117a0589))
+
+# [0.18.0](https://github.com/teamkeel/keel/compare/v0.17.0...v0.18.0) (2022-06-28)
+
+
+### Features
+
+* support enum resolution in expressions ([#87](https://github.com/teamkeel/keel/issues/87)) ([30a3a18](https://github.com/teamkeel/keel/commit/30a3a18bb478e9bc8975473797d4ce3627cf4b1f))
+
+# [0.17.0](https://github.com/teamkeel/keel/compare/v0.16.0...v0.17.0) (2022-06-28)
+
+
+### Features
+
+* support the long-form definition of action inputs ([8e3c7b2](https://github.com/teamkeel/keel/commit/8e3c7b23263fb75e44203de1d559a5e7e26cb6e6))
+
+# [0.16.0](https://github.com/teamkeel/keel/compare/v0.15.1...v0.16.0) (2022-06-27)
+
+
+### Features
+
+* check operator is acceptable based on attribute prior to typechecking lhs and rhs ([#85](https://github.com/teamkeel/keel/issues/85)) ([a582b97](https://github.com/teamkeel/keel/commit/a582b97c40f877fb0ff9014cad7f66a3407b9891))
+
+## [0.15.1](https://github.com/teamkeel/keel/compare/v0.15.0...v0.15.1) (2022-06-27)
+
+
+### Bug Fixes
+
+* fix missing continue in attribute validation ([d81c1e9](https://github.com/teamkeel/keel/commit/d81c1e9e83e94e8060b16e1733062c2c7638abcc))
+
+# [0.15.0](https://github.com/teamkeel/keel/compare/v0.14.0...v0.15.0) (2022-06-27)
+
+
+### Features
+
+* add formatting for schema ([7d69eb6](https://github.com/teamkeel/keel/commit/7d69eb6b18505c9e635ac84144a2dc33d9bb9f20))
+
+# [0.14.0](https://github.com/teamkeel/keel/compare/v0.13.0...v0.14.0) (2022-06-27)
+
+
+### Features
+
+* implement initial type checking of expressions ([#83](https://github.com/teamkeel/keel/issues/83)) ([2672b58](https://github.com/teamkeel/keel/commit/2672b588227e7ffd36498c18ac97d6183c24ff2b))
+
+# [0.13.0](https://github.com/teamkeel/keel/compare/v0.12.0...v0.13.0) (2022-06-24)
+
+
+### Features
+
+* turn parser errors into validation errors ([a295e4b](https://github.com/teamkeel/keel/commit/a295e4be35154de27a88d30b00a182f92cd3537d))
+
+# [0.12.0](https://github.com/teamkeel/keel/compare/v0.11.0...v0.12.0) (2022-06-24)
+
+
+### Features
+
+* add wasm module ([5ed57a0](https://github.com/teamkeel/keel/commit/5ed57a00cbd7db767fe4cb234baedd568553ffa0))
+
+# [0.11.0](https://github.com/teamkeel/keel/compare/v0.10.1...v0.11.0) (2022-06-24)
+
+
+### Features
+
+* add support for optional syntax on field types ([131decc](https://github.com/teamkeel/keel/commit/131decc21b87561967c9d7cd35a52bf3d3c2d7cb))
+
 ## [0.10.1](https://github.com/teamkeel/keel/compare/v0.10.0...v0.10.1) (2022-06-21)
 
 

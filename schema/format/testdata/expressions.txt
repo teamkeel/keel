@@ -1,0 +1,28 @@
+model Person {
+    fields {
+        identity Identity
+    }
+    operations {
+        create createPerson() {
+            @set(
+                person.identity 
+                = 
+                ctx.identity
+            )
+        }
+    }
+}
+
+===
+
+model Person {
+    fields {
+        identity Identity
+    }
+
+    operations {
+        create createPerson() {
+            @set(person.identity = ctx.identity)
+        }
+    }
+}

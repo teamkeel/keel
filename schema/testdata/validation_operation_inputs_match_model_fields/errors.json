@@ -3,7 +3,7 @@
     {
       "message": "Action inputs must be one of the fields defined in the model",
       "short_message": "blah is not a valid input",
-      "hint": "Did you mean profile, or id?",
+      "hint": "Did you mean one of profile, id, createdAt, or updatedAt?",
       "code": "E005",
       "pos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",

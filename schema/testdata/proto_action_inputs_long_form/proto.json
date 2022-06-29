@@ -1,0 +1,70 @@
+{
+  "models": [
+    {
+      "name": "Person",
+      "fields": [
+        {
+          "modelName": "Person",
+          "name": "name",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Person",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Person",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Person",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "Person",
+          "name": "createPerson",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+              "name": "name",
+              "type": "OPERATION_INPUT_TYPE_STRING"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "username",
+          "type": "FIELD_TYPE_STRING"
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": "FIELD_TYPE_ID",
+          "primaryKey": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": "FIELD_TYPE_DATETIME"
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": "FIELD_TYPE_DATETIME"
+        }
+      ]
+    }
+  ]
+}

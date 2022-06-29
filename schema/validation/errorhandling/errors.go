@@ -4,17 +4,12 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"os"
 	"strings"
 	"text/template"
 
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/schema/node"
-	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
-	"github.com/teamkeel/keel/schema/relationships"
-	"github.com/teamkeel/keel/util/collection"
 	"github.com/teamkeel/keel/util/str"
 
 	"gopkg.in/yaml.v3"
@@ -22,30 +17,38 @@ import (
 
 // error codes
 const (
-	ErrorUpperCamel                       = "E001"
-	ErrorActionNameLowerCamel             = "E002"
-	ErrorFieldNamesUniqueInModel          = "E003"
-	ErrorOperationsUniqueGlobally         = "E004"
-	ErrorInvalidActionInput               = "E005"
-	ErrorReservedFieldName                = "E006"
-	ErrorReservedModelName                = "E007"
-	ErrorOperationInputFieldNotUnique     = "E008"
-	ErrorUnsupportedFieldType             = "E009"
-	ErrorUniqueModelsGlobally             = "E010"
-	ErrorUnsupportedAttributeType         = "E011"
-	ErrorFieldNameLowerCamel              = "E012"
-	ErrorInvalidAttributeArgument         = "E013"
-	ErrorAttributeRequiresNamedArguments  = "E014"
-	ErrorAttributeMissingRequiredArgument = "E015"
-	ErrorInvalidValue                     = "E016"
-	ErrorUniqueAPIGlobally                = "E017"
-	ErrorUniqueRoleGlobally               = "E018"
-	ErrorUniqueEnumGlobally               = "E019"
-	ErrorUnresolvableExpression           = "E020"
-	ErrorUnresolvedRootModel              = "E021"
-	ErrorForbiddenExpressionOperation     = "E022"
-	ErrorForbiddenValueCondition          = "E023"
-	ErrorTooManyArguments                 = "E024"
+	ErrorUpperCamel                         = "E001"
+	ErrorActionNameLowerCamel               = "E002"
+	ErrorFieldNamesUniqueInModel            = "E003"
+	ErrorOperationsUniqueGlobally           = "E004"
+	ErrorInvalidActionInput                 = "E005"
+	ErrorReservedFieldName                  = "E006"
+	ErrorReservedModelName                  = "E007"
+	ErrorOperationInputFieldNotUnique       = "E008"
+	ErrorUnsupportedFieldType               = "E009"
+	ErrorUniqueModelsGlobally               = "E010"
+	ErrorUnsupportedAttributeType           = "E011"
+	ErrorFieldNameLowerCamel                = "E012"
+	ErrorInvalidAttributeArgument           = "E013"
+	ErrorAttributeRequiresNamedArguments    = "E014"
+	ErrorAttributeMissingRequiredArgument   = "E015"
+	ErrorInvalidValue                       = "E016"
+	ErrorUniqueAPIGlobally                  = "E017"
+	ErrorUniqueRoleGlobally                 = "E018"
+	ErrorUniqueEnumGlobally                 = "E019"
+	ErrorUnresolvableExpression             = "E020"
+	ErrorUnresolvedRootModel                = "E021"
+	ErrorForbiddenExpressionOperation       = "E022"
+	ErrorForbiddenValueCondition            = "E023"
+	ErrorTooManyArguments                   = "E024"
+	ErrorInvalidSyntax                      = "E025"
+	ErrorExpressionTypeMismatch             = "E026"
+	ErrorForbiddenOperator                  = "E027"
+	ErrorNonBooleanValueCondition           = "E028"
+	ErrorExpressionArrayWrongType           = "E029"
+	ErrorExpressionArrayMismatchingOperator = "E030"
+	ErrorExpressionForbiddenArrayLHS        = "E031"
+	ErrorExpressionMixedTypesInArrayLiteral = "E032"
 )
 
 type ErrorDetails struct {
@@ -75,7 +78,7 @@ type LexerPos struct {
 
 var red, blue, yellow, cyan color.Color = *color.New(color.FgRed), *color.New(color.FgHiBlue), *color.New(color.FgHiYellow), *color.New(color.FgCyan)
 
-func (e *ValidationError) Error() string {
+func (e ValidationError) Error() string {
 	return fmt.Sprintf("%s - on line: %v", e.Message, e.Pos.Line)
 }
 
@@ -83,31 +86,6 @@ func (e *ValidationError) Unwrap() error { return e }
 
 type ValidationErrors struct {
 	Errors []*ValidationError
-}
-
-func (v ValidationErrors) MatchingSchemas() map[string]reader.SchemaFile {
-	paths := []string{}
-	schemaFiles := map[string]reader.SchemaFile{}
-
-	for _, err := range v.Errors {
-		if collection.Contains(paths, err.Pos.Filename) {
-			continue
-		}
-
-		paths = append(paths, err.Pos.Filename)
-	}
-
-	for _, path := range paths {
-		fileBytes, err := os.ReadFile(path)
-
-		if err != nil {
-			panic(err)
-		}
-
-		schemaFiles[path] = reader.SchemaFile{FileName: path, Contents: string(fileBytes)}
-	}
-
-	return schemaFiles
 }
 
 func (v ValidationErrors) Error() string {
@@ -121,7 +99,7 @@ func (v ValidationErrors) Error() string {
 }
 
 // Returns the console flavoured output format for a set of validation errors
-func (v ValidationErrors) ToConsole() string {
+func (v ValidationErrors) ToConsole(sources []reader.SchemaFile) (string, error) {
 	errorCount := len(v.Errors)
 	errorsPartial := ""
 	if errorCount > 1 {
@@ -133,17 +111,19 @@ func (v ValidationErrors) ToConsole() string {
 	statusMessage := red.Sprint("INVALID\n")
 	errorCountMessage := yellow.Sprintf("%d validation %s:", len(v.Errors), errorsPartial)
 
-	schemaPreview := v.ToAnnotatedSchema()
+	schemaPreview, err := v.ToAnnotatedSchema(sources)
+	if err != nil {
+		return "", err
+	}
 
-	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview)
+	return fmt.Sprintf("%s\n%s\n%s", statusMessage, errorCountMessage, schemaPreview), nil
 }
 
 // Returns a visual representation of a schema file, annotated with error highlighting and messages
-func (v ValidationErrors) ToAnnotatedSchema() string {
+func (v ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) (string, error) {
 	schemaString := ""
 
-	matchingSchemas := v.MatchingSchemas()
-
+	bufferLines := 5
 	gutterAmount := 5
 	newLine := func() {
 		schemaString += "\n"
@@ -153,109 +133,126 @@ func (v ValidationErrors) ToAnnotatedSchema() string {
 		errorStartLine := err.Pos.Line
 		errorEndLine := err.EndPos.Line
 
-		if match, ok := matchingSchemas[err.Pos.Filename]; ok {
-			lines := strings.Split(match.Contents, "\n")
-			codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
-			midPointPosition := codeStartCol + err.Pos.Column + ((err.EndPos.Column - err.Pos.Column) / 2)
-			tokenLength := err.EndPos.Column - err.Pos.Column
+		var source string
+		for _, s := range sources {
+			if s.FileName == err.Pos.Filename {
+				source = s.Contents
+				break
+			}
+		}
 
-			for lineIndex, line := range lines {
-				// Render line numbers in gutter
-				outputLine := blue.Sprint(str.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+		// kind of feels like this should be an error...
+		if source == "" {
+			return "", fmt.Errorf("no source file provided for %s", err.Pos.Filename)
+		}
 
-				// If the error line doesn't match the currently enumerated line
-				// then we can render the whole line without any colorization
-				if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
-					outputLine += fmt.Sprintf("%s\n", line)
+		lines := strings.Split(source, "\n")
+		codeStartCol := len(fmt.Sprintf("%d", len(lines))) + gutterAmount
+		midPointPosition := codeStartCol + err.Pos.Column + ((err.EndPos.Column - err.Pos.Column) / 2)
+		tokenLength := err.EndPos.Column - err.Pos.Column
 
-					schemaString += outputLine
+		for lineIndex, line := range lines {
+			// Render line numbers in gutter
+			outputLine := blue.Sprint(str.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+
+			// If this line isn't close enough to an error let's ignore it
+			if (lineIndex+1) < (errorStartLine-bufferLines) || (lineIndex+1) > (errorEndLine+bufferLines) {
+				continue
+			}
+
+			// If the error line doesn't match the currently enumerated line
+			// then we can render the whole line without any colorization
+			if (lineIndex+1) < errorStartLine || (lineIndex+1) > errorEndLine {
+				outputLine += fmt.Sprintf("%s\n", line)
+
+				schemaString += outputLine
+				continue
+			}
+
+			chars := strings.Split(line, "")
+
+			// Enumerate over the characters in the line
+			for charIdx, char := range chars {
+
+				// Check if the character index is less than or greater than the corresponding start and end column
+				// If so, then render the char without any colorization
+				if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
+					outputLine += char
 					continue
 				}
 
-				chars := strings.Split(line, "")
-
-				// Enumerate over the characters in the line
-				for charIdx, char := range chars {
-
-					// Check if the character index is less than or greater than the corresponding start and end column
-					// If so, then render the char without any colorization
-					if (charIdx+1) < err.Pos.Column || (charIdx+1) > err.EndPos.Column-1 {
-						outputLine += char
-						continue
-					}
-
-					outputLine += red.Sprint(char)
-				}
-
-				schemaString += fmt.Sprintf("%s\n", outputLine)
-
-				// Begin closures to render unicode arrows / hints / messages
-				indent := func(length int) {
-					counter := 1
-
-					for counter < length {
-						schemaString += " "
-						counter += 1
-					}
-				}
-
-				underline := func() {
-					indent(codeStartCol + err.Pos.Column)
-
-					counter := 0
-
-					for counter < tokenLength {
-						if counter == tokenLength/2 {
-							schemaString += yellow.Sprint("\u252C")
-						} else {
-							schemaString += yellow.Sprint("\u2500")
-
-						}
-						counter++
-					}
-				}
-
-				arrowDown := func() {
-					newLine()
-					indent(midPointPosition)
-					schemaString += yellow.Sprint("\u2570")
-					schemaString += yellow.Sprint("\u2500")
-				}
-
-				message := func() {
-					schemaString += yellow.Sprintf(" %s", err.ErrorDetails.Message)
-				}
-
-				hint := func() {
-					if err.ErrorDetails.Hint != "" {
-						schemaString += cyan.Sprint(err.ErrorDetails.Hint)
-					}
-				}
-
-				underline()
-				arrowDown()
-				message()
-				newLine()
-
-				// Line up hint with the error message above (taking into account unicode arrows)
-				hintOffset := 3
-				indent(midPointPosition + hintOffset)
-				hint()
-				newLine()
+				outputLine += red.Sprint(char)
 			}
 
-			schemaString += red.Add(color.Italic).Sprintf("\u21B3 %s", err.Pos.Filename)
+			schemaString += fmt.Sprintf("%s\n", outputLine)
+
+			// Begin closures to render unicode arrows / hints / messages
+			indent := func(length int) {
+				counter := 1
+
+				for counter < length {
+					schemaString += " "
+					counter += 1
+				}
+			}
+
+			underline := func() {
+				indent(codeStartCol + err.Pos.Column)
+
+				counter := 0
+
+				for counter < tokenLength {
+					if counter == tokenLength/2 {
+						schemaString += yellow.Sprint("\u252C")
+					} else {
+						schemaString += yellow.Sprint("\u2500")
+
+					}
+					counter++
+				}
+			}
+
+			arrowDown := func() {
+				newLine()
+				indent(midPointPosition)
+				schemaString += yellow.Sprint("\u2570")
+				schemaString += yellow.Sprint("\u2500")
+			}
+
+			message := func() {
+				schemaString += fmt.Sprintf(" %s %s", yellow.Sprint(err.ErrorDetails.Message), red.Sprintf("(%s)", err.Code))
+			}
+
+			hint := func() {
+				if err.ErrorDetails.Hint != "" {
+					schemaString += cyan.Sprint(err.ErrorDetails.Hint)
+				}
+			}
+
+			underline()
+			arrowDown()
+			message()
 			newLine()
+
+			// Line up hint with the error message above (taking into account unicode arrows)
+			hintOffset := 3
+			indent(midPointPosition + hintOffset)
+			hint()
 			newLine()
 		}
+
+		schemaString += red.Add(color.Italic).Sprintf("\u21B3 %s", err.Pos.Filename)
+		newLine()
+		newLine()
+
 	}
 
-	return schemaString
+	return schemaString, nil
 }
 
 func (e ValidationErrors) Unwrap() error { return e }
 
-func NewValidationError(code string, data TemplateLiterals, position node.ParserNode) error {
+func NewValidationError(code string, data TemplateLiterals, position node.ParserNode) *ValidationError {
 	start, end := position.GetPositionRange()
 
 	return &ValidationError{
@@ -275,56 +272,6 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 			Column:   end.Column,
 		},
 	}
-}
-
-func NewRelationshipValidationError(asts []*parser.AST, context interface{}, relationships *relationships.Relationships) error {
-	unresolved := relationships.UnresolvedFragment()
-	suggestion := ""
-
-	if len(relationships.Fragments) == 1 {
-		// If there is only one fragment in the relationship
-		// then it means that the root model was unresolvable
-		// So therefore the suggestion should be the context (downcased)
-		if model, ok := context.(*parser.ModelNode); ok {
-			suggestion = strings.ToLower(model.Name.Value)
-		}
-
-		literals := map[string]string{
-			"Type":  "relationship",
-			"Root":  unresolved.Current,
-			"Model": suggestion,
-		}
-
-		return NewValidationError(ErrorUnresolvedRootModel,
-			TemplateLiterals{
-				Literals: literals,
-			},
-			unresolved,
-		)
-	}
-
-	// If more than one fragment, then we need to resolve the second fragment's parent
-	// And find the field names on the parent in order to build up the suggestion hint
-	// e.g Given the condition post.autho it should suggest post.author instead
-	parentModel := query.Model(asts, unresolved.Parent)
-	fieldsOnParent := query.ModelFieldNames(parentModel)
-
-	correctionHint := NewCorrectionHint(fieldsOnParent, unresolved.Current)
-
-	literals := map[string]string{
-		"Type":       "relationship",
-		"Fragment":   unresolved.Current,
-		"Parent":     unresolved.Parent,
-		"Suggestion": correctionHint.ToString(),
-	}
-
-	return NewValidationError(ErrorUnresolvableExpression,
-		TemplateLiterals{
-			Literals: literals,
-		},
-		unresolved.Node,
-	)
-
 }
 
 //go:embed errors.yml

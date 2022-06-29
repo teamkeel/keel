@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "Operator '=' not permitted on @where",
+      "short_message": "Operator '=' not permitted on @where",
+      "hint": "Did you mean ==?",
+      "code": "E022",
+      "pos": {
+        "filename": "testdata/validation_unresolvable_lhs_with_incorrect_operator/schema.keel",
+        "offset": 126,
+        "line": 9,
+        "column": 26
+      },
+      "end_pos": {
+        "filename": "testdata/validation_unresolvable_lhs_with_incorrect_operator/schema.keel",
+        "offset": 127,
+        "line": 9,
+        "column": 27
+      }
+    }
+  ]
+}

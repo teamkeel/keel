@@ -44,14 +44,17 @@ var validateCmd = &cobra.Command{
 		if err != nil {
 			errs, ok := err.(errorhandling.ValidationErrors)
 			if ok {
-				return c.outputFormatter.Write(errs.ToConsole())
+				out, err := errs.ToConsole(schema.SchemaFiles())
+				if err != nil {
+					panic(err)
+				}
+				return c.outputFormatter.Write(out)
 			} else {
-				return fmt.Errorf("error making schema: %v", err)
+				panic(err)
 			}
 		}
 
 		c.outputFormatter.Write([]byte(color.New(color.FgGreen).Sprint("VALID\n")))
-
 		return nil
 	},
 }
