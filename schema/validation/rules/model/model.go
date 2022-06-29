@@ -149,7 +149,7 @@ func UniqueOperationNamesRule(asts []*parser.AST) (errors []error) {
 func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
-			for _, input := range action.Arguments {
+			for _, input := range action.Inputs {
 				last := input.Type.Fragments[0].Fragment
 
 				// long-form input definition e.g. (foo: Text)
@@ -222,7 +222,7 @@ func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
 				continue
 			}
 
-			for _, arg := range action.Arguments {
+			for _, arg := range action.Inputs {
 				// TODO: support dot-notation here
 				fieldName := arg.Type.Fragments[len(arg.Type.Fragments)-1].Fragment
 				field := query.ModelField(model, fieldName)

@@ -159,77 +159,80 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 		Implementation: impl,
 		Type:           scm.mapToOperationType(parserFunction.Type),
 	}
-	inputs, setExprs, whereExprs := scm.makeArguments(parserFunction, modelName)
-	protoOp.Inputs = inputs
-	protoOp.SetExpressions = setExprs
-	protoOp.WhereExpressions = whereExprs
+
+	model := query.Model(scm.asts, modelName)
+
+	for _, input := range parserFunction.Inputs {
+		protoInput, expr := scm.makeOperationInput(input, model, false)
+		protoOp.Inputs = append(protoOp.Inputs, protoInput)
+		if expr != nil {
+			protoOp.WhereExpressions = append(protoOp.WhereExpressions, expr)
+		}
+	}
+
+	for _, input := range parserFunction.With {
+		protoInput, expr := scm.makeOperationInput(input, model, true)
+		protoOp.Inputs = append(protoOp.Inputs, protoInput)
+		if expr != nil {
+			protoOp.SetExpressions = append(protoOp.SetExpressions, expr)
+		}
+	}
+
 	scm.applyFunctionAttributes(parserFunction, protoOp, modelName)
 
 	return protoOp
 }
 
-func (scm *Builder) makeArguments(
-	parserFunction *parser.ActionNode,
-	modelName string,
+func (scm *Builder) makeOperationInput(
+	input *parser.ActionInputNode,
+	model *parser.ModelNode,
+	isWithInput bool,
 ) (
-	inputs []*proto.OperationInput,
-	setExprs []*proto.Expression,
-	whereExprs []*proto.Expression,
+	inputs *proto.OperationInput,
+	expr *proto.Expression,
 ) {
-	for _, parserArg := range parserFunction.Arguments {
-		idents := parserArg.Type.Fragments
+	idents := input.Type.Fragments
 
-		if parserArg.Label == nil {
-
-			// if accessing a field on a related model prepend the related field
-			// e.g. if type is `post.author.name` then the input is called `authorName`
-			name := idents[len(idents)-1].Fragment
-			if len(idents) > 1 {
-				name = idents[len(idents)-2].Fragment + strcase.ToCamel(name)
-			}
-
-			model := query.Model(scm.asts, modelName)
-			var field *parser.FieldNode
-			expr := ""
-			for i, ident := range idents {
-				if i > 0 {
-					expr += "."
-				}
-				expr += ident.Fragment
-
-				field = query.ModelField(model, ident.Fragment)
-				model = query.Model(scm.asts, field.Type)
-			}
-
-			expr += " = " + name
-
-			// TODO: add expr to either setExprs or whereExprs depending
-			// on whether the inputs are in the with() section
-
-			typeInfo := scm.parserFieldToProtoTypeInfo(field)
-
-			inputs = append(inputs, &proto.OperationInput{
-				Name:     name,
-				Type:     typeInfo,
-				Optional: parserArg.Optional,
-			})
-
-			// TODO: make set expressions
-		} else {
-			protoType := scm.parserTypeToProtoType(idents[0].Fragment)
-
-			inputs = append(inputs, &proto.OperationInput{
-				Name: parserArg.Label.Value,
-				Type: &proto.TypeInfo{
-					Type:     protoType,
-					Repeated: parserArg.Repeated,
-				},
-				Optional: parserArg.Optional,
-			})
+	if input.Label == nil {
+		// if accessing a field on a related model prepend the related field
+		// e.g. if type is `post.author.name` then the input is called `authorName`
+		name := idents[len(idents)-1].Fragment
+		if len(idents) > 1 {
+			name = idents[len(idents)-2].Fragment + strcase.ToCamel(name)
 		}
+
+		var field *parser.FieldNode
+		expr = &proto.Expression{
+			Source: strcase.ToLowerCamel(model.Name.Value),
+		}
+
+		for _, ident := range idents {
+			expr.Source += "." + ident.Fragment
+
+			field = query.ModelField(model, ident.Fragment)
+			model = query.Model(scm.asts, field.Type)
+		}
+
+		expr.Source += " = " + name
+
+		return &proto.OperationInput{
+			Name:     name,
+			Type:     scm.parserFieldToProtoTypeInfo(field),
+			Optional: input.Optional,
+		}, expr
 	}
 
-	return inputs, setExprs, whereExprs
+	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
+
+	return &proto.OperationInput{
+		Name: input.Label.Value,
+		Type: &proto.TypeInfo{
+			Type:     protoType,
+			Repeated: input.Repeated,
+		},
+		Optional: input.Optional,
+	}, nil
+
 }
 
 func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
