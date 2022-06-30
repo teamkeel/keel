@@ -134,3 +134,15 @@ en:
     short_message: "create actions must accept all required fields that have no default value"
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add {{ .FieldName }} to the with() inputs"
+  E035:
+    short_message: "{{ .Input }} is not a unique field"
+    message: "{{ .Input }} is not a unique field. {{ .OperationType }} operations take only unique inputs"
+    hint: ""
+  E036:
+    short_message: "{{ .Ident }} is not a unique field"
+    message: "{{ .Ident }} is not a unique field. {{ .OperationType }} operations can only filter on unique fields"
+    hint: ""
+  E037:
+    short_message: "only equality operators are allowed in get and update operations"
+    message: "The {{ .Operator }} operator is not allowed in a {{ .OperationType }} operation, only equality operators ('==' and 'in') are allowed"
+    hint: ""

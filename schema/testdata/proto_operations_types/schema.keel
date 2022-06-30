@@ -1,7 +1,10 @@
 model Foo {
+    fields {
+        name Text?
+    }
     operations {
         create opA()
-        update opB()
+        update opB(id) with (name)
         get opC(id)
         list opD()
     }
