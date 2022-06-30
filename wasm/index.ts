@@ -3,7 +3,7 @@ import { GoExec, KeelAPI, ValidationResult, ValidateOptions, ValidationError } f
 import transformKeys from './lib/transformKeys';
 
 // necessary to avoid ambient module relative import issue when generating typings
-import * as _ from "./lib/wasm_exec_node.js"
+import "./lib/wasm_exec_node.js"
 
 const instantiate = async () : Promise<KeelAPI> => {
   const go: GoExec = new (globalThis as any).Go();
