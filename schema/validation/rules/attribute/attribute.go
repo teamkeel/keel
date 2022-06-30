@@ -177,8 +177,10 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 					expr,
 					rules,
 					expression.RuleContext{
-						Model:     model,
-						Attribute: attr,
+						Model:       model,
+						Attribute:   attr,
+						ReadInputs:  operation.Inputs,
+						WriteInputs: operation.With,
 					},
 				)
 

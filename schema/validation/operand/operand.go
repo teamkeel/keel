@@ -29,12 +29,19 @@ type ExpressionScopeEntity struct {
 	Object    *ExpressionObjectEntity
 	Model     *parser.ModelNode
 	Field     *parser.FieldNode
+	Input     *ExpressionInputEntity
 	Literal   *expressions.Operand
 	Enum      *parser.EnumNode
 	EnumValue *parser.EnumValueNode
 	Array     []*ExpressionScopeEntity
 
 	Parent *ExpressionScopeEntity
+}
+
+type ExpressionInputEntity struct {
+	Name       string // The name of the input as it can be referenced in an expression
+	Type       string // will be a valid field type e.g. Text, Boolean, Number etc...
+	AllowWrite bool   // true if this input value can be used to write values
 }
 
 func (e *ExpressionScopeEntity) Type() string {
@@ -62,6 +69,10 @@ func (e *ExpressionScopeEntity) Type() string {
 		// We have already validated by this point that the array has all matching types
 		// so we know the first item in the array is representative of all items in the array
 		return e.Array[0].Type()
+	}
+
+	if e.Input != nil {
+		return e.Input.Type
 	}
 
 	return ""
@@ -98,6 +109,14 @@ func (e *ExpressionScopeEntity) BaseType() string {
 		return expressions.TypeArray
 	}
 
+	if e.Input != nil {
+		t := e.Type()
+		if t == parser.FieldTypeText {
+			return expressions.TypeString
+		}
+		return t
+	}
+
 	return ""
 }
 
@@ -125,7 +144,7 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 	case e.Model != nil:
 		operators = append(operators, expressions.OperatorEquals)
 		operators = append(operators, expressions.OperatorAssignment)
-	case e.Field != nil:
+	case e.Field != nil || e.Input != nil:
 		baseType := e.BaseType()
 
 		switch baseType {
@@ -174,7 +193,7 @@ func (e *ExpressionScopeEntity) Value() string {
 		return e.Enum.Name.Value
 	}
 
-	return ""
+	return e.Type()
 }
 
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
@@ -332,6 +351,10 @@ fragments:
 
 				scope = &ExpressionScope{}
 
+				continue fragments
+			case e.Input != nil && e.Input.Name == fragment.Fragment:
+				entity = e
+				scope = &ExpressionScope{}
 				continue fragments
 			}
 		}

@@ -13,7 +13,6 @@ const (
 // another user-defined model
 const (
 	FieldTypeID       = "ID"        // a uuid or similar
-	FieldTypeIdentity = "Identity"  // represents the abstraction of a user/service account etc.
 	FieldTypeText     = "Text"      // a string
 	FieldTypeNumber   = "Number"    // an integer
 	FieldTypeDate     = "Date"      // a date with no time element
@@ -21,8 +20,23 @@ const (
 	FieldTypeBoolean  = "Boolean"   // a boolean
 	FieldTypeImage    = "Image"     // an image file
 	FieldTypeCurrency = "Currency"  // a currency value
-	FieldTypeEnum     = "Enum"      // a field that can only contain a set of known values
 )
+
+var BuiltInTypes = map[string]bool{
+	FieldTypeID:       true,
+	FieldTypeText:     true,
+	FieldTypeNumber:   true,
+	FieldTypeDate:     true,
+	FieldTypeDatetime: true,
+	FieldTypeBoolean:  true,
+	FieldTypeImage:    true,
+	FieldTypeCurrency: true,
+}
+
+func IsBuiltInFieldType(s string) bool {
+	_, ok := BuiltInTypes[s]
+	return ok
+}
 
 // Possible action types, applies to both "operations" and "functions"
 const (

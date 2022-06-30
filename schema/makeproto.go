@@ -192,49 +192,46 @@ func (scm *Builder) makeOperationInput(
 	expr *proto.Expression,
 ) {
 	idents := input.Type.Fragments
+	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
 
-	if input.Label == nil {
-		// if accessing a field on a related model prepend the related field
-		// e.g. if type is `post.author.name` then the input is called `authorName`
-		name := idents[len(idents)-1].Fragment
-		if len(idents) > 1 {
-			name = idents[len(idents)-2].Fragment + strcase.ToCamel(name)
+	if protoType == proto.Type_TYPE_UNKNOWN {
+		var field *parser.FieldNode
+		currModel := model
+
+		for _, ident := range idents {
+			field = query.ModelField(currModel, ident.Fragment)
+			currModel = query.Model(scm.asts, field.Type)
 		}
 
-		var field *parser.FieldNode
+		protoType = scm.parserFieldToProtoTypeInfo(field).Type
+	}
+
+	if input.Label == nil {
 		expr = &proto.Expression{
 			Source: strcase.ToLowerCamel(model.Name.Value),
 		}
 
 		for _, ident := range idents {
 			expr.Source += "." + ident.Fragment
-
-			field = query.ModelField(model, ident.Fragment)
-			model = query.Model(scm.asts, field.Type)
 		}
 
-		expr.Source += " = " + name
-
-		return &proto.OperationInput{
-			Name:     name,
-			Type:     scm.parserFieldToProtoTypeInfo(field),
-			Optional: input.Optional,
-		}, expr
+		expr.Source += " = " + input.Name()
 	}
 
-	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
-
-	return &proto.OperationInput{
-		Name: input.Label.Value,
+	protoInput := &proto.OperationInput{
+		Name: input.Name(),
 		Type: &proto.TypeInfo{
 			Type:     protoType,
 			Repeated: input.Repeated,
 		},
 		Optional: input.Optional,
-	}, nil
+	}
+
+	return protoInput, expr
 
 }
 
+// parserType could be a built-in type or a user-defined model or enum
 func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 	switch parserType {
 	case parser.FieldTypeText:
@@ -250,6 +247,16 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 	case parser.FieldTypeDatetime:
 		return proto.Type_TYPE_DATETIME
 	default:
+		model := query.Model(scm.asts, parserType)
+		if model != nil {
+			return proto.Type_TYPE_MODEL
+		}
+
+		enum := query.Enum(scm.asts, parserType)
+		if enum != nil {
+			return proto.Type_TYPE_ENUM
+		}
+
 		return proto.Type_TYPE_UNKNOWN
 	}
 }
@@ -260,23 +267,15 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
-	if protoType == proto.Type_TYPE_UNKNOWN {
-		model := query.Model(scm.asts, field.Type)
-		if model != nil {
-			modelName = &wrapperspb.StringValue{
-				Value: model.Name.Value,
-			}
-			protoType = proto.Type_TYPE_MODEL
+	if protoType == proto.Type_TYPE_MODEL {
+		modelName = &wrapperspb.StringValue{
+			Value: query.Model(scm.asts, field.Type).Name.Value,
 		}
 	}
 
-	if protoType == proto.Type_TYPE_UNKNOWN {
-		enum := query.Enum(scm.asts, field.Type)
-		if enum != nil {
-			enumName = &wrapperspb.StringValue{
-				Value: enum.Name.Value,
-			}
-			protoType = proto.Type_TYPE_ENUM
+	if protoType == proto.Type_TYPE_ENUM {
+		enumName = &wrapperspb.StringValue{
+			Value: query.Enum(scm.asts, field.Type).Name.Value,
 		}
 	}
 
