@@ -1,3 +1,10 @@
+# [0.35.0](https://github.com/teamkeel/keel/compare/v0.34.1...v0.35.0) (2022-06-30)
+
+
+### Features
+
+* add two neww validation rules for create actions ([bee72ff](https://github.com/teamkeel/keel/commit/bee72ff9916c063c2012972cde52db4150980f75))
+
 ## [0.34.1](https://github.com/teamkeel/keel/compare/v0.34.0...v0.34.1) (2022-06-30)
 
 
