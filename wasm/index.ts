@@ -16,14 +16,15 @@ const instantiate = async () : Promise<KeelAPI> => {
 const keel = async () : Promise<KeelAPI> => {
   const api = await instantiate();
 
-  const validate = (schemaString: string, opts?: ValidateOptions) : ValidationResult => {
+  const validate = async (schemaString: string, opts: ValidateOptions) : Promise<ValidationResult> => {
     const result = api.validate(schemaString, opts) as any;
-
     const { validationErrors: { Errors: errors }, ast } = result
 
+    const transformedErrors = await errors.map((err: any) => transformKeys(err));
+
     return {
-      errors: errors.map((e: any) => transformKeys(e) as ValidationError),
-      ast: transformKeys(ast)
+      errors: transformedErrors,
+      ast: ast
     }
   }
 
@@ -33,5 +34,11 @@ const keel = async () : Promise<KeelAPI> => {
 
   return { validate, format }
 }
+
+// keel().then(async (k) => {
+//   const { errors } = await k.validate("model   post {  }", { color: true })
+
+//   console.log(errors)
+// })
 
 export default keel

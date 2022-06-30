@@ -5,7 +5,7 @@ export interface GoExec {
 
 export interface KeelAPI {
   format: (schemaString: string) => string
-  validate: (schemaString: string, options?: ValidateOptions) => ValidationResult
+  validate: (schemaString: string, options: ValidateOptions) => Promise<ValidationResult>
 }
 
 export interface ValidateOptions {
