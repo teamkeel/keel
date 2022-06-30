@@ -1,3 +1,10 @@
+# [0.33.0](https://github.com/teamkeel/keel/compare/v0.32.0...v0.33.0) (2022-06-30)
+
+
+### Features
+
+* update esbuild deps to be dev dependencies ([#108](https://github.com/teamkeel/keel/issues/108)) ([8117aeb](https://github.com/teamkeel/keel/commit/8117aebbbd716e175860ed3915f11c16f535971b))
+
 # [0.32.0](https://github.com/teamkeel/keel/compare/v0.31.0...v0.32.0) (2022-06-30)
 
 
