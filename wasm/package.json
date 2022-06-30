@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node build.mjs",
     "start": "node dist/index.js",
-    "prepack": "cd .. && make wasm"
+    "prepack": "cd .. && make wasm",
+    "prepublishOnly": "npm run build"
   },
   "author": "Adam Bull (adam@keel.xyz)",
   "dependencies": {
@@ -19,5 +20,8 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }
