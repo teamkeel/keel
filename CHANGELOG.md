@@ -1,3 +1,10 @@
+# [0.31.0](https://github.com/teamkeel/keel/compare/v0.30.0...v0.31.0) (2022-06-30)
+
+
+### Features
+
+* generate wasm typescript wrapper typings ([#105](https://github.com/teamkeel/keel/issues/105)) ([3c8f386](https://github.com/teamkeel/keel/commit/3c8f386e1bf100aed7bf1bf1ace146764801a429))
+
 # [0.30.0](https://github.com/teamkeel/keel/compare/v0.29.0...v0.30.0) (2022-06-30)
 
 
