@@ -33,7 +33,7 @@ jobs:
         run: cd wasm && npm ci
 
       - name: Generate wasm binary
-        run: cd .. && make wasm
+        run: make wasm
 
       - name: Semantic release
         env:
