@@ -1,3 +1,10 @@
+# [0.32.0](https://github.com/teamkeel/keel/compare/v0.31.0...v0.32.0) (2022-06-30)
+
+
+### Features
+
+* define types manually to avoid ambient module relative import issues temporarily ([#106](https://github.com/teamkeel/keel/issues/106)) ([b86dc04](https://github.com/teamkeel/keel/commit/b86dc04799c88ba5ff485a937aae9a7a066a8080))
+
 # [0.31.0](https://github.com/teamkeel/keel/compare/v0.30.0...v0.31.0) (2022-06-30)
 
 
