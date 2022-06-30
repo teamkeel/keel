@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Cannot query field \"getEnourmousWealth\" on type \"Query\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 5
+            }
+        ]
+    }
+]

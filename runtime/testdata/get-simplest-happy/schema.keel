@@ -1,0 +1,16 @@
+model Author {
+  fields {
+    name Text {
+      @unique
+    }
+  }
+  operations {
+    get getAuthor(name)
+  }
+}
+
+api Web {
+  models {
+    Author
+  }
+}
