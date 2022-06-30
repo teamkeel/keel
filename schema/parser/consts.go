@@ -62,6 +62,7 @@ const (
 	AttributeSet        = "set"
 	AttributeGraphQL    = "graphql"
 	AttributePrimaryKey = "primaryKey"
+	AttributeDefault    = "default"
 )
 
 const (

@@ -40,6 +40,8 @@ var validatorFuncs = []validationFunc{
 	model.UniqueOperationNamesRule,
 	model.ValidActionInputsRule,
 	model.GetOperationUniqueLookupRule,
+	model.CreateOperationNoReadInputsRule,
+	model.CreateOperationRequiredWriteInputsRule,
 	// Begin fields
 	field.ReservedNameRule,
 	field.ValidFieldTypesRule,

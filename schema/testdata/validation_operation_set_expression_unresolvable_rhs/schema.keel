@@ -9,7 +9,7 @@ model Profile {
     }
 
     operations {
-        create createProfile(username) {
+        create createProfile() with (username) {
             @set(profile.identity = context.identity)
         }
     }

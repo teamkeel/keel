@@ -135,6 +135,9 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 					{
 						Name: parser.AttributeNameToken{Value: "primaryKey"},
 					},
+					{
+						Name: parser.AttributeNameToken{Value: "default"},
+					},
 				},
 			},
 			{
@@ -143,7 +146,13 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 					Value: parser.ImplicitFieldNameCreatedAt,
 				},
 				Type: parser.FieldTypeDatetime,
-				// TODO: add @default(now())
+				Attributes: []*parser.AttributeNode{
+					{
+						Name: parser.AttributeNameToken{
+							Value: "default",
+						},
+					},
+				},
 			},
 			{
 				BuiltIn: true,
@@ -151,7 +160,13 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 					Value: parser.ImplicitFieldNameUpdatedAt,
 				},
 				Type: parser.FieldTypeDatetime,
-				// TODO: add default(now())
+				Attributes: []*parser.AttributeNode{
+					{
+						Name: parser.AttributeNameToken{
+							Value: "default",
+						},
+					},
+				},
 			},
 		}
 
