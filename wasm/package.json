@@ -4,7 +4,8 @@
   "description": "Provides wasm binaries for the Keel CLI",
   "main": "dist/index.js",
   "scripts": {
-    "build": "node build.mjs",
+    "build": "node build.mjs && npm run copy-types",
+    "copy-types": "cp index.d.ts dist/",
     "start": "node dist/index.js",
     "prepublishOnly": "npm run build"
   },
