@@ -1,3 +1,10 @@
+# [0.37.0](https://github.com/teamkeel/keel/compare/v0.36.0...v0.37.0) (2022-06-30)
+
+
+### Features
+
+* update typings ([#113](https://github.com/teamkeel/keel/issues/113)) ([e187e46](https://github.com/teamkeel/keel/commit/e187e463e166d6d40bd1d08b2aaba733be7bfa26))
+
 # [0.36.0](https://github.com/teamkeel/keel/compare/v0.35.0...v0.36.0) (2022-06-30)
 
 
