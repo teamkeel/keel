@@ -1,3 +1,10 @@
+# [0.28.0](https://github.com/teamkeel/keel/compare/v0.27.0...v0.28.0) (2022-06-30)
+
+
+### Features
+
+* install esbuild ([#101](https://github.com/teamkeel/keel/issues/101)) ([fbfcc27](https://github.com/teamkeel/keel/commit/fbfcc278ef6fca0c62e3282d040954740b6809a0))
+
 # [0.27.0](https://github.com/teamkeel/keel/compare/v0.26.0...v0.27.0) (2022-06-30)
 
 
