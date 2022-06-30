@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "create actions must accept all required fields that have no default value",
+      "short_message": "create actions must accept all required fields that have no default value",
+      "hint": "maybe add age to the with() inputs",
+      "code": "E034",
+      "pos": {
+        "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
+        "offset": 103,
+        "line": 7,
+        "column": 16
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
+        "offset": 115,
+        "line": 7,
+        "column": 28
+      }
+    }
+  ]
+}

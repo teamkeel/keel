@@ -1,3 +1,59 @@
+# [0.42.0](https://github.com/teamkeel/keel/compare/v0.41.0...v0.42.0) (2022-06-30)
+
+
+### Features
+
+* guard against no errors returned from validate call ([#118](https://github.com/teamkeel/keel/issues/118)) ([0bfb2f4](https://github.com/teamkeel/keel/commit/0bfb2f47cdaee5dd147f099911d8459d1fc04ab7))
+
+# [0.41.0](https://github.com/teamkeel/keel/compare/v0.40.0...v0.41.0) (2022-06-30)
+
+
+### Features
+
+* remove comment and trigger new npm release ([#117](https://github.com/teamkeel/keel/issues/117)) ([e8e7f1f](https://github.com/teamkeel/keel/commit/e8e7f1f1589f579645a95c12d169827f53e9d2d1))
+
+# [0.40.0](https://github.com/teamkeel/keel/compare/v0.39.0...v0.40.0) (2022-06-30)
+
+
+### Features
+
+* update ts wrapper to fix bugs ([#116](https://github.com/teamkeel/keel/issues/116)) ([58fa219](https://github.com/teamkeel/keel/commit/58fa219bc375b583ffa852af9faecd390c812dd2))
+
+# [0.39.0](https://github.com/teamkeel/keel/compare/v0.38.0...v0.39.0) (2022-06-30)
+
+
+### Features
+
+* update typings ([#115](https://github.com/teamkeel/keel/issues/115)) ([cfbdd76](https://github.com/teamkeel/keel/commit/cfbdd76cc2f32e1a43bd87925a0d82885c615f31))
+
+# [0.38.0](https://github.com/teamkeel/keel/compare/v0.37.0...v0.38.0) (2022-06-30)
+
+
+### Features
+
+* update validate function typing ([#114](https://github.com/teamkeel/keel/issues/114)) ([9ba4daf](https://github.com/teamkeel/keel/commit/9ba4daff10e716a9ce8cb8a5aa07bb4e7e1f23b2))
+
+# [0.37.0](https://github.com/teamkeel/keel/compare/v0.36.0...v0.37.0) (2022-06-30)
+
+
+### Features
+
+* update typings ([#113](https://github.com/teamkeel/keel/issues/113)) ([e187e46](https://github.com/teamkeel/keel/commit/e187e463e166d6d40bd1d08b2aaba733be7bfa26))
+
+# [0.36.0](https://github.com/teamkeel/keel/compare/v0.35.0...v0.36.0) (2022-06-30)
+
+
+### Features
+
+* update typings for wasm module ([#111](https://github.com/teamkeel/keel/issues/111)) ([e0ae3a9](https://github.com/teamkeel/keel/commit/e0ae3a910586c63825dadc711cca5e91c1ee9765))
+
+# [0.35.0](https://github.com/teamkeel/keel/compare/v0.34.1...v0.35.0) (2022-06-30)
+
+
+### Features
+
+* add two neww validation rules for create actions ([bee72ff](https://github.com/teamkeel/keel/commit/bee72ff9916c063c2012972cde52db4150980f75))
+
 ## [0.34.1](https://github.com/teamkeel/keel/compare/v0.34.0...v0.34.1) (2022-06-30)
 
 

@@ -54,55 +54,49 @@ func AttributeLocationsRule(asts []*parser.AST) []error {
 	return errors
 }
 
-func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) []error {
-	var supportedAttributes = map[string][]string{
-		parser.KeywordModel:     {parser.AttributePermission},
-		parser.KeywordApi:       {parser.AttributeGraphQL},
-		parser.KeywordField:     {parser.AttributeUnique},
-		parser.KeywordOperation: {parser.AttributeSet, parser.AttributeWhere, parser.AttributePermission},
-		parser.KeywordFunction:  {parser.AttributePermission},
-	}
+var attributeLocations = map[string][]string{
+	parser.KeywordModel:     {parser.AttributePermission},
+	parser.KeywordApi:       {parser.AttributeGraphQL},
+	parser.KeywordField:     {parser.AttributeUnique, parser.AttributeDefault, parser.AttributePrimaryKey},
+	parser.KeywordOperation: {parser.AttributeSet, parser.AttributeWhere, parser.AttributePermission},
+	parser.KeywordFunction:  {parser.AttributePermission},
+}
 
-	var builtIns = map[string][]string{
-		parser.KeywordModel:     {},
-		parser.KeywordApi:       {},
-		parser.KeywordOperation: {},
-		parser.KeywordFunction:  {},
-		parser.KeywordField:     {parser.AttributePrimaryKey},
-	}
+func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) []error {
 
 	errors := make([]error, 0)
 
 	for _, attr := range attributes {
-		if collection.Contains(builtIns[definedOn], attr.Name.Value) {
+
+		allowedAttributes := attributeLocations[definedOn]
+
+		if collection.Contains(allowedAttributes, attr.Name.Value) {
 			continue
 		}
 
-		if !collection.Contains(supportedAttributes[definedOn], attr.Name.Value) {
-			hintOptions := supportedAttributes[definedOn]
+		hintOptions := []string{}
 
-			for i, hint := range hintOptions {
-				hintOptions[i] = fmt.Sprintf("@%s", hint)
-			}
-
-			hint := errorhandling.NewCorrectionHint(hintOptions, attr.Name.Value)
-			suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
-
-			errors = append(
-				errors,
-				errorhandling.NewValidationError(errorhandling.ErrorUnsupportedAttributeType,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Name":        attr.Name.Value,
-							"ParentName":  parentName,
-							"DefinedOn":   definedOn,
-							"Suggestions": suggestions,
-						},
-					},
-					attr.Name,
-				),
-			)
+		for _, allowed := range allowedAttributes {
+			hintOptions = append(hintOptions, fmt.Sprintf("@%s", allowed))
 		}
+
+		hint := errorhandling.NewCorrectionHint(hintOptions, attr.Name.Value)
+		suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
+
+		errors = append(
+			errors,
+			errorhandling.NewValidationError(errorhandling.ErrorUnsupportedAttributeType,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Name":        attr.Name.Value,
+						"ParentName":  parentName,
+						"DefinedOn":   definedOn,
+						"Suggestions": suggestions,
+					},
+				},
+				attr.Name,
+			),
+		)
 	}
 
 	return errors

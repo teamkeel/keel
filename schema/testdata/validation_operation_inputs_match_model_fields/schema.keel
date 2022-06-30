@@ -1,17 +1,9 @@
 model Person {
   fields {
-    profile Profile
+    name Text
   }
 
   operations {
-    create createPerson(blah) {
-      @set(person.profile.identity = ctx.identity)
-    }
-  }
-}
-
-model Profile {
-  fields {
-    identity Identity
+    create createPerson() with (name, blah)
   }
 }

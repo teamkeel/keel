@@ -49,6 +49,8 @@ const (
 	ErrorExpressionArrayMismatchingOperator = "E030"
 	ErrorExpressionForbiddenArrayLHS        = "E031"
 	ErrorExpressionMixedTypesInArrayLiteral = "E032"
+	ErrorCreateOperationNoInputs            = "E033"
+	ErrorCreateOperationMissingInput        = "E034"
 )
 
 type ErrorDetails struct {
@@ -62,7 +64,7 @@ type TemplateLiterals struct {
 }
 
 type ValidationError struct {
-	ErrorDetails
+	*ErrorDetails
 
 	Code   string   `json:"code" regexp:"\\d+"`
 	Pos    LexerPos `json:"pos,omitempty"`
@@ -275,52 +277,43 @@ func NewValidationError(code string, data TemplateLiterals, position node.Parser
 }
 
 //go:embed errors.yml
-var fileBytes []byte
+var errorsYaml []byte
 
-// Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
-func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) ErrorDetails {
-	m := make(map[string]map[string]interface{})
+var errorDetailsByCode map[string]map[string]*ErrorDetails
 
-	err := yaml.Unmarshal(fileBytes, &m)
-
-	if err != nil {
-		panic(err)
-	}
-
-	slice := m[locale][code]
-
-	sliceYaml, err := yaml.Marshal(slice)
+func init() {
+	err := yaml.Unmarshal(errorsYaml, &errorDetailsByCode)
 
 	if err != nil {
 		panic(err)
 	}
+}
 
-	template, err := template.New(code).Parse(string(sliceYaml))
-
+func renderTemplate(tmpl string, data map[string]string) string {
+	template, err := template.New("template").Parse(tmpl)
 	if err != nil {
 		panic(err)
 	}
 
 	var buf bytes.Buffer
-	err = template.Execute(&buf, literals.Literals)
-
+	err = template.Execute(&buf, data)
 	if err != nil {
 		panic(err)
 	}
 
-	interpolatedBytes := buf.Bytes()
+	return buf.String()
+}
 
-	o := make(map[string]string)
-
-	err = yaml.Unmarshal(interpolatedBytes, &o)
-
-	if err != nil {
-		panic(err)
+// Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
+func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) *ErrorDetails {
+	errorDetails, ok := errorDetailsByCode[locale][code]
+	if !ok {
+		panic(fmt.Sprintf("no error details for error code: %s", code))
 	}
 
-	return ErrorDetails{
-		Message:      o["message"],
-		ShortMessage: o["short_message"],
-		Hint:         o["hint"],
+	return &ErrorDetails{
+		Message:      renderTemplate(errorDetails.Message, literals.Literals),
+		ShortMessage: renderTemplate(errorDetails.ShortMessage, literals.Literals),
+		Hint:         renderTemplate(errorDetails.Hint, literals.Literals),
 	}
 }

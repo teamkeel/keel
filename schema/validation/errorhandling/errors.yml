@@ -126,3 +126,11 @@ en:
     short_message: "Cannot have mixed types in an array literal"
     message: "Cannot have mixed types in an array literal"
     hint: "Expected {{ .Item }} to be of type {{ .Type }}"
+  E033:
+    short_message: "create actions cannot take read inputs"
+    message: "create actions cannot take read inputs"
+    hint: "maybe add {{ .Input }} to the with() inputs"
+  E034:
+    short_message: "create actions must accept all required fields that have no default value"
+    message: "create actions must accept all required fields that have no default value"
+    hint: "maybe add {{ .FieldName }} to the with() inputs"

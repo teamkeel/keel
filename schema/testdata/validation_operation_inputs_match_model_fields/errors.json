@@ -3,19 +3,19 @@
     {
       "message": "Action inputs must be one of the fields defined in the model",
       "short_message": "blah is not a valid input",
-      "hint": "Did you mean one of profile, id, createdAt, or updatedAt?",
+      "hint": "Did you mean one of name, id, createdAt, or updatedAt?",
       "code": "E005",
       "pos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
-        "offset": 90,
+        "offset": 98,
         "line": 7,
-        "column": 25
+        "column": 39
       },
       "end_pos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
-        "offset": 94,
+        "offset": 102,
         "line": 7,
-        "column": 29
+        "column": 43
       }
     }
   ]

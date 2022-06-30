@@ -1,0 +1,9 @@
+model Person {
+    fields {
+        name Text
+        age Number
+    }
+    operations {
+        create createPerson() with (name)
+    }
+}

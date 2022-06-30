@@ -56,12 +56,10 @@
           ],
           "setExpressions": [
             {
-              "source": "foo.f1 = true"
-            }
-          ],
-          "whereExpressions": [
-            {
               "source": "foo.f2 = f2"
+            },
+            {
+              "source": "foo.f1 = true"
             }
           ]
         }

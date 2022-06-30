@@ -7,13 +7,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",
-        "offset": 218,
+        "offset": 226,
         "line": 13,
         "column": 13
       },
       "end_pos": {
         "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",
-        "offset": 223,
+        "offset": 231,
         "line": 13,
         "column": 18
       }

@@ -1,29 +1,38 @@
 import wasm from './keel.wasm'
+import { GoExec, KeelAPI, ValidationResult, ValidateOptions, ValidationError } from './typings'
+import transformKeys from './lib/transformKeys';
+
+// necessary to avoid ambient module relative import issue when generating typings
 import "./lib/wasm_exec_node.js"
-
-interface GoExec {
-	run: (instance: WebAssembly.Instance) => void
-	importObject: any
-}
-
-interface ValidateOptions {
-  color: boolean
-}
-
-interface KeelAPI {
-  format: (schemaString: string) => string
-  validate: (schemaString: string, options?: ValidateOptions) => string
-}
 
 const instantiate = async () : Promise<KeelAPI> => {
   const go: GoExec = new (globalThis as any).Go();
   const { instance } = await WebAssembly.instantiate(wasm, go.importObject);
   go.run(instance);
-  const keel: KeelAPI = (globalThis as any).keel;
 
-  return keel;
+  return (globalThis as any).keel as KeelAPI;
 };
 
-// usage: instantiate().then((keel) => console.log(keel.validate("model   Post {}")))
+const keel = async () : Promise<KeelAPI> => {
+  const api = await instantiate();
 
-export default instantiate
+  const validate = async (schemaString: string, opts: ValidateOptions) : Promise<ValidationResult> => {
+    const result = api.validate(schemaString, opts) as any;
+    const { validationErrors: { Errors: errors }, ast } = result
+
+    const transformedErrors = await (errors || []).map((err: any) => transformKeys(err));
+
+    return {
+      errors: transformedErrors,
+      ast: ast
+    }
+  }
+
+  const format = (schemaString: string) : string => {
+    return api.format(schemaString);
+  }
+
+  return { validate, format }
+}
+
+export default keel

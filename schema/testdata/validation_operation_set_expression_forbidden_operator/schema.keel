@@ -9,7 +9,7 @@ model Profile {
     }
 
     operations {
-        create createProfile(username) {
+        update createProfile(id) with (username) {
             @set(profile.identity == ctx.identity)
         }
     }

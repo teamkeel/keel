@@ -4,7 +4,7 @@ model Profile {
     }
 
     operations {
-        update updateStatus(status)
+        update updateStatus(id) with (status)
     }
 }
 
@@ -14,6 +14,6 @@ model Order {
     }
 
     operations {
-        update updateStatus(status)
+        update updateStatus(id) with (status)
     }
 }

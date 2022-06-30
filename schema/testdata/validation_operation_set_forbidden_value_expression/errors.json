@@ -7,13 +7,13 @@
       "code": "E023",
       "pos": {
         "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
-        "offset": 223,
+        "offset": 232,
         "line": 13,
         "column": 18
       },
       "end_pos": {
         "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
-        "offset": 239,
+        "offset": 248,
         "line": 13,
         "column": 34
       }
