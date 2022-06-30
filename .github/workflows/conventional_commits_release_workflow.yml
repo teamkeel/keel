@@ -29,6 +29,9 @@ jobs:
       - name: Install semantic release git plugin
         run: npm install @semantic-release/git -D
 
+      - name: Install wasm publish dependencies
+        run: cd wasm && npm ci
+
       - name: Semantic release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
