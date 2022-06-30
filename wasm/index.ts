@@ -20,7 +20,7 @@ const keel = async () : Promise<KeelAPI> => {
     const result = api.validate(schemaString, opts) as any;
     const { validationErrors: { Errors: errors }, ast } = result
 
-    const transformedErrors = await errors.map((err: any) => transformKeys(err));
+    const transformedErrors = await (errors || []).map((err: any) => transformKeys(err));
 
     return {
       errors: transformedErrors,
