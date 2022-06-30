@@ -1,5 +1,8 @@
 import { build } from 'esbuild';
-import watPlugin from 'esbuild-plugin-wat'
+import watPlugin from 'esbuild-plugin-wat';
+import NpmDts from 'npm-dts';
+
+const { Generator } = NpmDts;
 
 build({
   outdir: 'dist',
@@ -9,4 +12,9 @@ build({
   plugins: [
     watPlugin()
   ]
-})
+});
+
+new Generator({
+  entry: 'typings.ts',
+  output: 'dist/index.d.ts'
+}).generate();
