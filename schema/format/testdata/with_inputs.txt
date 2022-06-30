@@ -1,0 +1,40 @@
+model Person {
+    fields {
+        name Text
+        age Number?
+    }
+    operations {
+        update updatePersonName(id) with (name)
+        update otherUpdatePerson(personId: id) with (personName: name) {
+            @where(person.id = personId)
+            @set(person.name = personName)
+        }
+        create newPerson() with (name, age)
+        create otherNewPerson() with (personName: name, personAge: age) {
+            @set(person.name = personName)
+            @set(person.age = personAge)
+        }
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+        age Number?
+    }
+
+    operations {
+        update updatePersonName(id) with (name)
+        update otherUpdatePerson(personId: id) with (personName: name) {
+            @where(person.id = personId)
+            @set(person.name = personName)
+        }
+        create newPerson() with (name, age)
+        create otherNewPerson() with (personName: name, personAge: age) {
+            @set(person.name = personName)
+            @set(person.age = personAge)
+        }
+    }
+}
