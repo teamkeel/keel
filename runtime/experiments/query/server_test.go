@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -13,6 +14,8 @@ func TestServer(t *testing.T) {
 	s := NewServer()
 	defer s.Shutdown(context.Background())
 	go s.ListenAndServe()
+
+	time.Sleep(500 * time.Millisecond)
 
 	resp, err := http.Get(`http://localhost:8080/graphql?query={user(id:"1"){name}}`)
 	require.Nil(t, err)

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -14,6 +15,8 @@ func TestServer(t *testing.T) {
 	s := NewServer()
 	defer s.Shutdown(context.Background())
 	go s.ListenAndServe()
+
+	time.Sleep(500 * time.Millisecond)
 
 	posturl := "http://localhost:8080/graphql"
 	requestBody := []byte(`{ "query": "mutation { createTodo(text:\"My New todo\") { id text done } }" }'`)
