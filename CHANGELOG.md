@@ -1,3 +1,10 @@
+# [0.42.0](https://github.com/teamkeel/keel/compare/v0.41.0...v0.42.0) (2022-06-30)
+
+
+### Features
+
+* guard against no errors returned from validate call ([#118](https://github.com/teamkeel/keel/issues/118)) ([0bfb2f4](https://github.com/teamkeel/keel/commit/0bfb2f47cdaee5dd147f099911d8459d1fc04ab7))
+
 # [0.41.0](https://github.com/teamkeel/keel/compare/v0.40.0...v0.41.0) (2022-06-30)
 
 
