@@ -1,3 +1,10 @@
+# [0.36.0](https://github.com/teamkeel/keel/compare/v0.35.0...v0.36.0) (2022-06-30)
+
+
+### Features
+
+* update typings for wasm module ([#111](https://github.com/teamkeel/keel/issues/111)) ([e0ae3a9](https://github.com/teamkeel/keel/commit/e0ae3a910586c63825dadc711cca5e91c1ee9765))
+
 # [0.35.0](https://github.com/teamkeel/keel/compare/v0.34.1...v0.35.0) (2022-06-30)
 
 
