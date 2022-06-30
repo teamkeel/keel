@@ -1,3 +1,11 @@
+# [0.29.0](https://github.com/teamkeel/keel/compare/v0.28.0...v0.29.0) (2022-06-30)
+
+
+### Features
+
+* fix wasm generation ([#103](https://github.com/teamkeel/keel/issues/103)) ([c05fd1a](https://github.com/teamkeel/keel/commit/c05fd1a4b1fdd2bf46f0ef3492aaaf2333bba684))
+* generate wasm binary prior to build ([#102](https://github.com/teamkeel/keel/issues/102)) ([82e2ee1](https://github.com/teamkeel/keel/commit/82e2ee1b7f9105456ccb67500d2148f764c937e6))
+
 # [0.28.0](https://github.com/teamkeel/keel/compare/v0.27.0...v0.28.0) (2022-06-30)
 
 
