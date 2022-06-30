@@ -1,3 +1,10 @@
+# [0.41.0](https://github.com/teamkeel/keel/compare/v0.40.0...v0.41.0) (2022-06-30)
+
+
+### Features
+
+* remove comment and trigger new npm release ([#117](https://github.com/teamkeel/keel/issues/117)) ([e8e7f1f](https://github.com/teamkeel/keel/commit/e8e7f1f1589f579645a95c12d169827f53e9d2d1))
+
 # [0.40.0](https://github.com/teamkeel/keel/compare/v0.39.0...v0.40.0) (2022-06-30)
 
 
