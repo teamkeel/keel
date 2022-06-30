@@ -1,3 +1,10 @@
+## [0.34.1](https://github.com/teamkeel/keel/compare/v0.34.0...v0.34.1) (2022-06-30)
+
+
+### Bug Fixes
+
+* intermittent test failure in CI ([#109](https://github.com/teamkeel/keel/issues/109)) ([74b409e](https://github.com/teamkeel/keel/commit/74b409e5dcb4188687dd3627ad3c4d84dcfc15e2))
+
 # [0.34.0](https://github.com/teamkeel/keel/compare/v0.33.0...v0.34.0) (2022-06-30)
 
 
