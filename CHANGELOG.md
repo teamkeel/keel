@@ -1,3 +1,10 @@
+# [0.30.0](https://github.com/teamkeel/keel/compare/v0.29.0...v0.30.0) (2022-06-30)
+
+
+### Features
+
+* fix main entry script to point to dist/ ([#104](https://github.com/teamkeel/keel/issues/104)) ([93b1172](https://github.com/teamkeel/keel/commit/93b117207d4473ae0c4e7b85fd128e115931e7d7))
+
 # [0.29.0](https://github.com/teamkeel/keel/compare/v0.28.0...v0.29.0) (2022-06-30)
 
 
