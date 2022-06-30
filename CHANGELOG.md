@@ -1,3 +1,10 @@
+# [0.26.0](https://github.com/teamkeel/keel/compare/v0.25.0...v0.26.0) (2022-06-30)
+
+
+### Features
+
+* make wasm npm package public ([#99](https://github.com/teamkeel/keel/issues/99)) ([7513c81](https://github.com/teamkeel/keel/commit/7513c81d573710cd188aa5e40a07039961ece615))
+
 # [0.25.0](https://github.com/teamkeel/keel/compare/v0.24.0...v0.25.0) (2022-06-30)
 
 
