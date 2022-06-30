@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema"
@@ -27,6 +28,9 @@ func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
 
 	defer svr.Shutdown(context.Background())
 	go svr.ListenAndServe()
+
+	// Avoid intermittend test failures - noted on CI
+	time.Sleep(500 * time.Millisecond)
 
 	posturl := "http://localhost:8080/graphql/Web"
 	req, err := http.NewRequest("POST", posturl, bytes.NewBuffer([]byte(exampleQuery)))
