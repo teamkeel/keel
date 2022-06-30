@@ -1,3 +1,10 @@
+# [0.34.0](https://github.com/teamkeel/keel/compare/v0.33.0...v0.34.0) (2022-06-30)
+
+
+### Features
+
+* support with() syntax in schema formatter ([127ebf3](https://github.com/teamkeel/keel/commit/127ebf36362a646872a2a034fd70ef9a06fcb170))
+
 # [0.33.0](https://github.com/teamkeel/keel/compare/v0.32.0...v0.33.0) (2022-06-30)
 
 
