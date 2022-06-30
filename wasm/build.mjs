@@ -15,6 +15,6 @@ build({
 });
 
 new Generator({
-  entry: 'typings.ts',
+  entry: 'index.ts',
   output: 'dist/index.d.ts'
 }).generate();
