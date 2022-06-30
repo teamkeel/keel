@@ -6,6 +6,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/schema/validation/operand"
 	"github.com/teamkeel/keel/util/collection"
@@ -13,8 +14,10 @@ import (
 )
 
 type RuleContext struct {
-	Model     *parser.ModelNode
-	Attribute *parser.AttributeNode
+	Model       *parser.ModelNode
+	ReadInputs  []*parser.ActionInputNode
+	WriteInputs []*parser.ActionInputNode
+	Attribute   *parser.AttributeNode
 }
 
 type Rule func(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error
@@ -316,38 +319,47 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 	lhs := cond.LHS
 	rhs := cond.RHS
 
-	resolvedLhs, lhsErr := operand.ResolveOperand(
-		asts,
-		lhs,
-		operand.DefaultExpressionScope(asts).Merge(
-			&operand.ExpressionScope{
-				Entities: []*operand.ExpressionScopeEntity{
-					{
-						Model: context.Model,
-					},
-				},
+	scope := &operand.ExpressionScope{
+		Entities: []*operand.ExpressionScopeEntity{
+			{
+				Model: context.Model,
 			},
-		),
-	)
+		},
+	}
+
+	inputs := append([]*parser.ActionInputNode{}, context.ReadInputs...)
+	inputs = append(inputs, context.WriteInputs...)
+
+	for i, input := range inputs {
+		// inputs using short-hand syntax that refer to relationships
+		// don't get added to the scope
+		if input.Label == nil && len(input.Type.Fragments) > 1 {
+			continue
+		}
+
+		resolvedType := query.ResolveInputType(asts, input, context.Model)
+		if resolvedType == "" {
+			continue
+		}
+		scope.Entities = append(scope.Entities, &operand.ExpressionScopeEntity{
+			Input: &operand.ExpressionInputEntity{
+				Name:       input.Name(),
+				Type:       resolvedType,
+				AllowWrite: i >= len(context.ReadInputs),
+			},
+		})
+	}
+
+	scope = operand.DefaultExpressionScope(asts).Merge(scope)
+
+	resolvedLhs, lhsErr := operand.ResolveOperand(asts, lhs, scope)
 
 	if lhsErr != nil {
 		errors = append(errors, lhsErr)
 	}
 
 	if rhs != nil {
-		resolvedRhs, rhsErr := operand.ResolveOperand(
-			asts,
-			rhs,
-			operand.DefaultExpressionScope(asts).Merge(
-				&operand.ExpressionScope{
-					Entities: []*operand.ExpressionScopeEntity{
-						{
-							Model: context.Model,
-						},
-					},
-				},
-			),
-		)
+		resolvedRhs, rhsErr := operand.ResolveOperand(asts, rhs, scope)
 
 		if rhsErr != nil {
 			errors = append(errors, rhsErr)

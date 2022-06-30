@@ -7,6 +7,7 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
@@ -156,6 +157,23 @@ type ActionInputNode struct {
 	Type     expressions.Ident `@@`
 	Repeated bool              `( @( "[" "]" )`
 	Optional bool              `| @( "?" ))?`
+}
+
+func (a *ActionInputNode) Name() string {
+	if a.Label != nil {
+		return a.Label.Value
+	}
+
+	frags := a.Type.Fragments
+
+	// if label is not provided then it's computed from the type
+	// e.g. if type is `post.author.name` then the input is called `authorName`
+	name := frags[len(frags)-1].Fragment
+	if len(frags) > 1 {
+		name = frags[len(frags)-2].Fragment + strcase.ToCamel(name)
+	}
+
+	return name
 }
 
 type EnumNode struct {

@@ -2,7 +2,6 @@ package query
 
 import (
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/util/str"
 )
 
 func APIs(asts []*parser.AST) (res []*parser.APINode) {
@@ -182,15 +181,30 @@ func ModelFieldNames(model *parser.ModelNode) []string {
 	return names
 }
 
-// Finds a model by either singular or pluralized name
-func FuzzyFindModel(asts []*parser.AST, modelName string) *parser.ModelNode {
-	if str.IsPlural(modelName) {
-		lookupValue := str.AsTitle(str.Singularize(modelName))
-		return Model(asts, lookupValue)
-	} else if str.IsSingular(modelName) {
-		lookupValue := str.AsTitle(modelName)
-		return Model(asts, lookupValue)
-	} else {
-		return nil
+// ResolveInputType returns a string represention of the type of the give input
+// If the input is explicitly typed using a built in type that type is returned
+//   example: (foo: Text) -> Text is returned
+// If `i` refers to a field on the parent model (or a nested field) then the type of that field is returned
+//   example: (foo: some.field) -> The type of `field` on the model referrred to by `some` is returned
+func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentModel *parser.ModelNode) string {
+	// handle built-in type
+	if parser.IsBuiltInFieldType(input.Type.ToString()) {
+		return input.Type.ToString()
 	}
+
+	// follow the idents of the type from the current model to wherever it leads...
+	model := parentModel
+	var field *parser.FieldNode
+	for _, fragment := range input.Type.Fragments {
+		if model == nil {
+			return ""
+		}
+		field = ModelField(model, fragment.Fragment)
+		if field == nil {
+			return ""
+		}
+		model = Model(asts, field.Type)
+	}
+
+	return field.Type
 }
