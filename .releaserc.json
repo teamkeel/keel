@@ -9,8 +9,7 @@
         "npmPublish": false
       }],
       ["@semantic-release/npm", {
-        "pkgRoot": "wasm",
-        "tarballDir": false
+        "pkgRoot": "wasm"
       }],
       "@semantic-release/git"
     ]
