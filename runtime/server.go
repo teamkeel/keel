@@ -1,13 +1,10 @@
 package runtime
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/graphql-go/graphql"
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/gql"
 )
 
@@ -23,26 +20,20 @@ import (
 // JSON serialised form for that to make it suitable be be delivered
 // from a deployment script.
 //
-// TODO have the entry point function pick up the schema from an environment variable,
-// then delegate to an internal function that accepts a string as an argument.
+// For the GraphQL heaving lifting it uses the handlers provided by /runtime/gql/.
 func NewServer(schemaProtoJSON string) (*http.Server, error) {
-	var schema proto.Schema
-	if err := json.Unmarshal([]byte(schemaProtoJSON), &schema); err != nil {
-		return nil, fmt.Errorf("error unmarshalling the schema: %v", err)
-	}
-	gSchemaMaker := gql.NewMaker(&schema)
-	gSchemas, err := gSchemaMaker.Make()
+	plainHandlers, err := gql.NewHandlersFromJSON(schemaProtoJSON)
 	if err != nil {
 		return nil, err
 	}
 
-	for apiName, gSchema := range gSchemas {
-		handler, err := newHandler(gSchema)
+	for apiName, gqlHandler := range plainHandlers {
+		httpHandler, err := newHTTPHandler(gqlHandler)
 		if err != nil {
 			panic(err.Error())
 		}
 		serveAt := fmt.Sprintf("/graphql/%s", apiName)
-		http.Handle(serveAt, handler)
+		http.Handle(serveAt, httpHandler)
 	}
 	s := &http.Server{
 		Addr: ":8080",
@@ -51,18 +42,20 @@ func NewServer(schemaProtoJSON string) (*http.Server, error) {
 }
 
 // A handler is an HTTP request handler, that expects incoming requests to
-// contain a GraphQL query embedded in a JSON object. It replies with the
-// results of executing that query against the graphql.Schema passed to the
-// handler at construction time.
+// contain a GraphQL query embedded in a JSON object. It is a simple wrapper
+// over a gql.Handler that adds only parsing the incoming JSON request,
+// and returning the result wrapped in JSON.
 type handler struct {
-	schema *graphql.Schema
+	// gqlHandler is the (non HTTP) GraphQL handler that it delegates to.
+	gqlHandler *gql.Handler
 }
 
-func newHandler(gSchema *graphql.Schema) (*handler, error) {
-	return &handler{schema: gSchema}, nil
+func newHTTPHandler(gqlHandler *gql.Handler) (*handler, error) {
+	return &handler{gqlHandler: gqlHandler}, nil
 }
 
 func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// Unpack the JSON request to access the GraphQL query string.
 	var params struct {
 		Query         string                 `json:"query"`
 		OperationName string                 `json:"operationName"`
@@ -78,13 +71,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("XXXX json decoded params is: %+v\n", params)
 	fmt.Printf("XXXX isolated query string is: %s\n", params.Query)
 
-	result := graphql.Do(graphql.Params{
-		Schema:         *h.schema,
-		Context:        context.Background(),
-		RequestString:  params.Query,
-		VariableValues: params.Variables,
-	})
+	// Delegate all the heavy lifting to a plain (non HTTP) handler.
+	result := h.gqlHandler.Handle(params.Query)
 
+	// And JSON encode the response.
 	responseJSON, err := json.Marshal(result)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

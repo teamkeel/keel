@@ -15,7 +15,7 @@ import (
 
 func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
 
-	schemaDir := filepath.Join(".", "testdata")
+	schemaDir := filepath.Join(".", "testdata", "get-simplest")
 	s2m := schema.Builder{}
 	protoSchema, err := s2m.MakeFromDirectory(schemaDir)
 	require.NoError(t, err)
