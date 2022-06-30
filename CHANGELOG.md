@@ -1,3 +1,10 @@
+# [0.25.0](https://github.com/teamkeel/keel/compare/v0.24.0...v0.25.0) (2022-06-30)
+
+
+### Features
+
+* install specific version of go in github action ([#98](https://github.com/teamkeel/keel/issues/98)) ([6e49261](https://github.com/teamkeel/keel/commit/6e49261d203bead26dc67dd3362756fc618e1234))
+
 # [0.24.0](https://github.com/teamkeel/keel/compare/v0.23.0...v0.24.0) (2022-06-30)
 
 
