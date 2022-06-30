@@ -1,3 +1,10 @@
+# [0.38.0](https://github.com/teamkeel/keel/compare/v0.37.0...v0.38.0) (2022-06-30)
+
+
+### Features
+
+* update validate function typing ([#114](https://github.com/teamkeel/keel/issues/114)) ([9ba4daf](https://github.com/teamkeel/keel/commit/9ba4daff10e716a9ce8cb8a5aa07bb4e7e1f23b2))
+
 # [0.37.0](https://github.com/teamkeel/keel/compare/v0.36.0...v0.37.0) (2022-06-30)
 
 
