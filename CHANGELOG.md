@@ -1,3 +1,10 @@
+# [0.27.0](https://github.com/teamkeel/keel/compare/v0.26.0...v0.27.0) (2022-06-30)
+
+
+### Features
+
+* specify prepublish build ([#100](https://github.com/teamkeel/keel/issues/100)) ([b64939b](https://github.com/teamkeel/keel/commit/b64939b6f9e7037fe478bdf524ff953a23541e8d))
+
 # [0.26.0](https://github.com/teamkeel/keel/compare/v0.25.0...v0.26.0) (2022-06-30)
 
 
