@@ -2,7 +2,7 @@
   "name": "@teamkeel/wasm",
   "version": "0.0.1",
   "description": "Provides wasm binaries for the Keel CLI",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "node build.mjs",
     "start": "node dist/index.js",
