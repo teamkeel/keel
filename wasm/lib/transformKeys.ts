@@ -5,5 +5,5 @@ function snakeToCamel(key: string) {
 }
 
 export default (obj: Record<string, any>) : Record<string, any> => {
-  return deepMapKeys(obj, (_, key) => snakeToCamel(key))
+  return deepMapKeys(obj, (key, value) => snakeToCamel(key))
 }
