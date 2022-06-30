@@ -35,10 +35,4 @@ const keel = async () : Promise<KeelAPI> => {
   return { validate, format }
 }
 
-// keel().then(async (k) => {
-//   const { errors } = await k.validate("model   post {  }", { color: true })
-
-//   console.log(errors)
-// })
-
 export default keel
