@@ -1,3 +1,12 @@
+# [0.24.0](https://github.com/teamkeel/keel/compare/v0.23.0...v0.24.0) (2022-06-30)
+
+
+### Features
+
+* publish wasm on npm ([#93](https://github.com/teamkeel/keel/issues/93)) ([f195909](https://github.com/teamkeel/keel/commit/f19590979454395689aeba85aa9037ed615b5894))
+* remove tarBallDirectory ([#96](https://github.com/teamkeel/keel/issues/96)) ([ce1c762](https://github.com/teamkeel/keel/commit/ce1c7623000d85e49a7577be82e485590189f98f))
+* update conventional commits release workflow with NPM_TOKEN env value ([#97](https://github.com/teamkeel/keel/issues/97)) ([8b34d77](https://github.com/teamkeel/keel/commit/8b34d77573e894a0c17f6910e664a7f2c48b90cd))
+
 # [0.23.0](https://github.com/teamkeel/keel/compare/v0.22.0...v0.23.0) (2022-06-29)
 
 
