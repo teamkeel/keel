@@ -1,3 +1,10 @@
+# [0.40.0](https://github.com/teamkeel/keel/compare/v0.39.0...v0.40.0) (2022-06-30)
+
+
+### Features
+
+* update ts wrapper to fix bugs ([#116](https://github.com/teamkeel/keel/issues/116)) ([58fa219](https://github.com/teamkeel/keel/commit/58fa219bc375b583ffa852af9faecd390c812dd2))
+
 # [0.39.0](https://github.com/teamkeel/keel/compare/v0.38.0...v0.39.0) (2022-06-30)
 
 
