@@ -9,21 +9,21 @@ import (
 	"github.com/teamkeel/keel/runtime/gql/resolvers"
 )
 
-// A Maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
+// A maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
 // of the APIs defined in the keel schema provided at construction time.
-type Maker struct {
+type maker struct {
 	proto *proto.Schema
 }
 
-func NewMaker(proto *proto.Schema) *Maker {
-	return &Maker{
+func newMaker(proto *proto.Schema) *maker {
+	return &maker{
 		proto: proto,
 	}
 }
 
 // The graphql.Schema(s) are returned in a map, keyed on the name of the
 // API name they belong to.
-func (mk *Maker) Make() (map[string]*graphql.Schema, error) {
+func (mk *maker) make() (map[string]*graphql.Schema, error) {
 	outputSchemas := map[string]*graphql.Schema{}
 	for _, api := range mk.proto.Apis {
 		gSchema, err := mk.newSchema(api)
@@ -36,7 +36,7 @@ func (mk *Maker) Make() (map[string]*graphql.Schema, error) {
 }
 
 // newSchema returns a graphql.Schema that implements the given API.
-func (mk *Maker) newSchema(api *proto.Api) (*graphql.Schema, error) {
+func (mk *maker) newSchema(api *proto.Api) (*graphql.Schema, error) {
 	// The graphql top level query contents will be comprised ONLY of the
 	// OPERATIONS from the keel schema. But to find these we have to traverse the
 	// schema, first by model, then by said model's operations. As a side effect
@@ -84,7 +84,7 @@ func (mk *Maker) newSchema(api *proto.Api) (*graphql.Schema, error) {
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
 // the given fieldsUnderConstruction container.
-func (mk *Maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (modelOutputType graphql.Output, err error) {
+func (mk *maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (modelOutputType graphql.Output, err error) {
 	// todo - don't add it, if we already did earlier
 	fields := graphql.Fields{}
 	for _, field := range model.Fields {
@@ -103,7 +103,7 @@ func (mk *Maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (m
 // addOperation generates the graphql field object to represent the given proto.Operation.
 // This field will eventually live in the top level graphql Query type, but at this stage
 // the function just accumulates them in the given fieldsUnderConstruction container.
-func (mk *Maker) addOperation(
+func (mk *maker) addOperation(
 	op *proto.Operation,
 	modelOutputType graphql.Output,
 	model *proto.Model,
@@ -124,7 +124,7 @@ func (mk *Maker) addOperation(
 }
 
 // addGetOp is just a helper for addOperation - that is dedicated to operations of type GET.
-func (mk *Maker) addGetOp(
+func (mk *maker) addGetOp(
 	op *proto.Operation,
 	modelOutputType graphql.Output,
 	model *proto.Model,
@@ -139,7 +139,7 @@ func (mk *Maker) addGetOp(
 }
 
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
-func (mk *Maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
+func (mk *maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
 	switch field.Type.Type {
 	case proto.Type_TYPE_STRING:
 		return graphql.String, nil
@@ -157,7 +157,7 @@ func (mk *Maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
-func (mk *Maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
+func (mk *maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 	switch op.Type.Type {
 	// Special case, when specifying a model - we expect the model's name.
 	case proto.Type_TYPE_MODEL:
@@ -174,7 +174,7 @@ func (mk *Maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 
 // makeArgs generates a graphql.FieldConfigArgument to reflect the inputs of the given
 // proto.Operation - which can be used as the Args field in a graphql.Field.
-func (mk *Maker) makeArgs(op *proto.Operation) (graphql.FieldConfigArgument, error) {
+func (mk *maker) makeArgs(op *proto.Operation) (graphql.FieldConfigArgument, error) {
 	res := graphql.FieldConfigArgument{}
 	for _, input := range op.Inputs {
 		inputType, err := mk.inputTypeFor(input)
