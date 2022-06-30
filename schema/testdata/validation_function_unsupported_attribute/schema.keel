@@ -4,7 +4,7 @@ model Profile {
   }
 
   functions {
-    create createProfile(username) {
+    create createProfile() with (username) {
       @unknown
     }
   }

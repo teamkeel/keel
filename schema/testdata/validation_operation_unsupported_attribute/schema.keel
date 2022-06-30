@@ -1,6 +1,6 @@
 model Profile {
     fields {
-        identity Identity {
+        email Text {
             @unique
         }
         username Text {
@@ -9,7 +9,7 @@ model Profile {
     }
 
     operations {
-        create createProfile(username) {
+        create createProfile() with (username, email) {
             @save(profile.identity = ctx.identity)
         }
     }

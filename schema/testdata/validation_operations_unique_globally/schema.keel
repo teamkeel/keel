@@ -4,7 +4,7 @@ model Profile {
   }
 
   operations {
-    create createProfile(username)
-    create createProfile(username)
+    create createProfile() with (username)
+    create createProfile() with (username)
   }
 }

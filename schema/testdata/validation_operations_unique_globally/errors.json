@@ -7,13 +7,13 @@
       "code": "E004",
       "pos": {
         "filename": "testdata/validation_operations_unique_globally/schema.keel",
-        "offset": 111,
+        "offset": 119,
         "line": 8,
         "column": 12
       },
       "end_pos": {
         "filename": "testdata/validation_operations_unique_globally/schema.keel",
-        "offset": 124,
+        "offset": 132,
         "line": 8,
         "column": 25
       }

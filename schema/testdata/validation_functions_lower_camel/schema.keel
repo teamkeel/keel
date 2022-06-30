@@ -1,14 +1,9 @@
 model Profile {
   fields {
-      identity Identity {
-          @unique
-      }
-      username Text {
-          @unique
-      }
+      username Text
   }
 
   functions {
-    create CREATE_PROFILE(username)
+    create CREATE_PROFILE() with (username)
   }
 }

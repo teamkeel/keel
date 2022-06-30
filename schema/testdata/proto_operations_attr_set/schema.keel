@@ -4,7 +4,7 @@ model Foo {
     f2 Text
   }
   operations {
-    create createPost(f2) {
+    create createPost() with (f2) {
       @set(foo.f1 = true)
     }
   }

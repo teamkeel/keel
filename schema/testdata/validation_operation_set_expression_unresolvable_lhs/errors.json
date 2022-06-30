@@ -7,13 +7,13 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
-        "offset": 231,
+        "offset": 241,
         "line": 13,
         "column": 26
       },
       "end_pos": {
         "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
-        "offset": 238,
+        "offset": 248,
         "line": 13,
         "column": 33
       }

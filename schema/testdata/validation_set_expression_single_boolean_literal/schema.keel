@@ -4,7 +4,7 @@ model Post {
   }
 
   operations {
-    create publishPost(id) {
+    create publishPost() with (published) {
       @set(true)
     }
   }
