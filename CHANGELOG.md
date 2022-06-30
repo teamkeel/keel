@@ -1,3 +1,10 @@
+# [0.39.0](https://github.com/teamkeel/keel/compare/v0.38.0...v0.39.0) (2022-06-30)
+
+
+### Features
+
+* update typings ([#115](https://github.com/teamkeel/keel/issues/115)) ([cfbdd76](https://github.com/teamkeel/keel/commit/cfbdd76cc2f32e1a43bd87925a0d82885c615f31))
+
 # [0.38.0](https://github.com/teamkeel/keel/compare/v0.37.0...v0.38.0) (2022-06-30)
 
 
