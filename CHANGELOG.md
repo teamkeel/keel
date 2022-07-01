@@ -1,3 +1,10 @@
+# [0.44.0](https://github.com/teamkeel/keel/compare/v0.43.0...v0.44.0) (2022-07-01)
+
+
+### Features
+
+* add validation for unused inputs ([4431776](https://github.com/teamkeel/keel/commit/4431776cb657a86b3048352cea1027e37958407e))
+
 # [0.43.0](https://github.com/teamkeel/keel/compare/v0.42.0...v0.43.0) (2022-07-01)
 
 
