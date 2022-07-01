@@ -2,7 +2,7 @@
   "Errors": [
     {
       "message": "post.authors.name is an array of Text. Only 'in' or 'not in' can be used",
-      "short_message": "You can only use operators 'in' or 'not in' when checking for inclusion of \"bob\" in post.authors.name",
+      "short_message": "You can only use operators 'in' or 'not in' when comparing to an array",
       "hint": "Change '\u003e' to either 'in' or 'not in'.",
       "code": "E030",
       "pos": {

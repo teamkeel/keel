@@ -1,0 +1,16 @@
+model Account {
+    fields {
+        identity Identity @unique
+    }
+
+    operations {
+        create createAccount() {
+            @set(account.identity = ctx.identity)
+        }
+    }
+
+    @permission(
+        expression: account.identity == ctx.identity,
+        actions: [create]
+    )
+}
