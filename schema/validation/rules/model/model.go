@@ -277,14 +277,15 @@ func CreateOperationNoReadInputsRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-// CreateOperationRequiredWriteInputsRule validates that all create actions
+// CreateOperationRequiredFieldsRule validates that all create actions
 // accept all required fields (that don't have default values) as write inputs
-func CreateOperationRequiredWriteInputsRule(asts []*parser.AST) (errors []error) {
+func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 
 		requiredFields := []*parser.FieldNode{}
 		for _, field := range query.ModelFields(model) {
-			if field.Optional {
+			// Optional and repeated fields are not required
+			if field.Optional || field.Repeated {
 				continue
 			}
 			if query.FieldHasAttribute(field, parser.AttributeDefault) {
@@ -368,7 +369,9 @@ func CreateOperationRequiredWriteInputsRule(asts []*parser.AST) (errors []error)
 	return errors
 }
 
-func UpdateOperationUniqueInputsRule(asts []*parser.AST) []error {
+// UpdateOperationUniqueConstraintRule checks that all update operations
+// are filtering on unique fields only
+func UpdateOperationUniqueConstraintRule(asts []*parser.AST) []error {
 	var errors []error
 
 	for _, model := range query.Models(asts) {
@@ -384,9 +387,9 @@ func UpdateOperationUniqueInputsRule(asts []*parser.AST) []error {
 	return errors
 }
 
-// GET operations must take a unique field as an input or filter on a unique field
-// using @where
-func GetOperationUniqueInputsRule(asts []*parser.AST) []error {
+// GetOperationUniqueConstraintRule checks that all get operations
+// are filtering on unique fields only
+func GetOperationUniqueConstraintRule(asts []*parser.AST) []error {
 	var errors []error
 
 	for _, model := range query.Models(asts) {
