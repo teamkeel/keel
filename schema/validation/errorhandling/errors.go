@@ -24,7 +24,7 @@ const (
 	ErrorInvalidActionInput                 = "E005"
 	ErrorReservedFieldName                  = "E006"
 	ErrorReservedModelName                  = "E007"
-	ErrorOperationInputFieldNotUnique       = "E008"
+	ErrorOperationMissingUniqueInput        = "E008"
 	ErrorUnsupportedFieldType               = "E009"
 	ErrorUniqueModelsGlobally               = "E010"
 	ErrorUnsupportedAttributeType           = "E011"
@@ -51,6 +51,9 @@ const (
 	ErrorExpressionMixedTypesInArrayLiteral = "E032"
 	ErrorCreateOperationNoInputs            = "E033"
 	ErrorCreateOperationMissingInput        = "E034"
+	ErrorOperationInputNotUnique            = "E035"
+	ErrorOperationWhereNotUnique            = "E036"
+	ErrorNonDirectComparisonOperatorUsed    = "E037"
 )
 
 type ErrorDetails struct {

@@ -1,0 +1,11 @@
+model Person {
+    fields {
+        name Text
+        age Number
+    }
+    operations {
+        update updateName() with (name) {
+            @where(person.age == 21)
+        }
+    }
+}

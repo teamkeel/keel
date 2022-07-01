@@ -1,0 +1,40 @@
+{
+  "Errors": [
+    {
+      "message": "age is not a unique field. update operations take only unique inputs",
+      "short_message": "age is not a unique field",
+      "hint": "",
+      "code": "E035",
+      "pos": {
+        "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
+        "offset": 114,
+        "line": 7,
+        "column": 27
+      },
+      "end_pos": {
+        "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
+        "offset": 117,
+        "line": 7,
+        "column": 30
+      }
+    },
+    {
+      "message": "Operation updateName must either take a unique field as input or filter on a unique field using a @where attribute",
+      "short_message": "updateName does not specify a unique field to lookup by",
+      "hint": "Did you mean to add 'id' as an input?",
+      "code": "E008",
+      "pos": {
+        "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
+        "offset": 103,
+        "line": 7,
+        "column": 16
+      },
+      "end_pos": {
+        "filename": "testdata/validation_actions_update_non_unique_input/schema.keel",
+        "offset": 113,
+        "line": 7,
+        "column": 26
+      }
+    }
+  ]
+}

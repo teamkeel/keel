@@ -1,3 +1,10 @@
+# [0.43.0](https://github.com/teamkeel/keel/compare/v0.42.0...v0.43.0) (2022-07-01)
+
+
+### Features
+
+* add validation for update operation inputs ([717c82a](https://github.com/teamkeel/keel/commit/717c82a0d8f6570037a6f1ca9a8cc3958f5939d4))
+
 # [0.42.0](https://github.com/teamkeel/keel/compare/v0.41.0...v0.42.0) (2022-06-30)
 
 
