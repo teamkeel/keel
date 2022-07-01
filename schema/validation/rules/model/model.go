@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -149,13 +150,13 @@ func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, input := range action.Inputs {
-				err := validateInput(asts, input, model)
+				err := validateInput(asts, input, model, action)
 				if err != nil {
 					errors = append(errors, err)
 				}
 			}
 			for _, input := range action.With {
-				err := validateInput(asts, input, model)
+				err := validateInput(asts, input, model, action)
 				if err != nil {
 					errors = append(errors, err)
 				}
@@ -166,28 +167,75 @@ func ValidActionInputsRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *parser.ModelNode) error {
+func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode) error {
 	resolvedType := query.ResolveInputType(asts, input, model)
-	if resolvedType != "" {
+
+	// If type cannot be resolved report error
+	if resolvedType == "" {
+		fieldNames := []string{}
+		for _, field := range query.ModelFields(model) {
+			fieldNames = append(fieldNames, field.Name.Value)
+		}
+
+		hint := errorhandling.NewCorrectionHint(fieldNames, input.Type.ToString())
+
+		return errorhandling.NewValidationError(
+			errorhandling.ErrorInvalidActionInput,
+			errorhandling.TemplateLiterals{
+				Literals: map[string]string{
+					"Input":     input.Type.ToString(),
+					"Suggested": hint.ToString(),
+				},
+			},
+			input.Type,
+		)
+	}
+
+	// if not explicitly labelled then we don't need to check for the input being used
+	// as inputs using short-hand syntax are implicitly used
+	if input.Label == nil {
 		return nil
 	}
 
-	fieldNames := []string{}
-	for _, field := range query.ModelFields(model) {
-		fieldNames = append(fieldNames, field.Name.Value)
+	isUsed := false
+
+	for _, attr := range action.Attributes {
+		if !lo.Contains([]string{parser.AttributeWhere, parser.AttributeSet}, attr.Name.Value) {
+			continue
+		}
+
+		if len(attr.Arguments) == 0 {
+			continue
+		}
+
+		expr := attr.Arguments[0].Expression
+		if expr == nil {
+			continue
+		}
+
+		for _, cond := range expr.Conditions() {
+			for _, operand := range []*expressions.Operand{cond.LHS, cond.RHS} {
+				if operand.Ident != nil && operand.ToString() == input.Label.Value {
+					// we've found a usage of the input
+					isUsed = true
+				}
+			}
+		}
 	}
 
-	hint := errorhandling.NewCorrectionHint(fieldNames, input.Type.ToString())
+	if isUsed {
+		return nil
+	}
 
+	// No usages of the input - report error
 	return errorhandling.NewValidationError(
-		errorhandling.ErrorInvalidActionInput,
+		errorhandling.ErrorUnusedInput,
 		errorhandling.TemplateLiterals{
 			Literals: map[string]string{
-				"Input":     input.Type.ToString(),
-				"Suggested": hint.ToString(),
+				"InputName": input.Label.Value,
 			},
 		},
-		input.Type,
+		input.Label,
 	)
 }
 

@@ -54,6 +54,7 @@ const (
 	ErrorOperationInputNotUnique            = "E035"
 	ErrorOperationWhereNotUnique            = "E036"
 	ErrorNonDirectComparisonOperatorUsed    = "E037"
+	ErrorUnusedInput                        = "E038"
 )
 
 type ErrorDetails struct {
@@ -292,8 +293,8 @@ func init() {
 	}
 }
 
-func renderTemplate(tmpl string, data map[string]string) string {
-	template, err := template.New("template").Parse(tmpl)
+func renderTemplate(name string, tmpl string, data map[string]string) string {
+	template, err := template.New(name).Parse(tmpl)
 	if err != nil {
 		panic(err)
 	}
@@ -309,14 +310,14 @@ func renderTemplate(tmpl string, data map[string]string) string {
 
 // Takes an error code like E001, finds the relevant copy in the errors.yml file and interpolates the literals into the yaml template.
 func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLiterals) *ErrorDetails {
-	errorDetails, ok := errorDetailsByCode[locale][code]
+	ed, ok := errorDetailsByCode[locale][code]
 	if !ok {
 		panic(fmt.Sprintf("no error details for error code: %s", code))
 	}
 
 	return &ErrorDetails{
-		Message:      renderTemplate(errorDetails.Message, literals.Literals),
-		ShortMessage: renderTemplate(errorDetails.ShortMessage, literals.Literals),
-		Hint:         renderTemplate(errorDetails.Hint, literals.Literals),
+		Message:      renderTemplate(fmt.Sprintf("%s-%s", code, "message"), ed.Message, literals.Literals),
+		ShortMessage: renderTemplate(fmt.Sprintf("%s-%s", code, "short-message"), ed.ShortMessage, literals.Literals),
+		Hint:         renderTemplate(fmt.Sprintf("%s-%s", code, "hint"), ed.Hint, literals.Literals),
 	}
 }
