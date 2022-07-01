@@ -1,0 +1,38 @@
+model Order {
+    fields {
+        items Item[]
+        promoCode Text
+    }
+    operations {
+        list listOrders(items.price, code: promoCode) {
+            @where(order.promoCode == code)
+        }
+    }
+}
+
+model Item {
+    fields {
+        price Number
+    }
+}
+
+===
+
+model Order {
+    fields {
+        items Item[]
+        promoCode Text
+    }
+
+    operations {
+        list listOrders(items.price, code: promoCode) {
+            @where(order.promoCode == code)
+        }
+    }
+}
+
+model Item {
+    fields {
+        price Number
+    }
+}
