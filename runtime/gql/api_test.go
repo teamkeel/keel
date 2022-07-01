@@ -6,8 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
+	"github.com/graphql-go/graphql"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema"
 )
@@ -17,8 +19,8 @@ import (
 // That directory has a sub directory for each test case.
 // Each such directory should contain:
 //	o  The keel schema to use
-//  o  The graphql request to send
-//  o  Either the expected returned data, or the expected returned errors.
+//  o  The graphql request(s) to send (in sequence)
+//  o  Either the expected returned data, or the expected returned errors (for the last of those requests)
 func TestHandlersSuite(t *testing.T) {
 	testCasesParent := "../testdata"
 	subDirs, err := ioutil.ReadDir(testCasesParent)
@@ -44,12 +46,21 @@ func runTestCase(t *testing.T, dirPath string) {
 
 	handlers, err := NewHandlersFromJSON(string(protoJSON))
 	require.NoError(t, err)
-	chosenHandler, ok := handlers["Web"]
+	chosenHandler, ok := handlers["Web"] // There is one handler per each API defined in the Keel schema.
 	require.True(t, ok)
 
-	// Ask the handler to respond to the query.
-	request := fileContents(t, filepath.Join(dirPath, requestFile))
-	result := chosenHandler.Handle(string(request))
+	// Fetch the list of GraphQL queries required for this test case, and execute them
+	// in turn. If there are more than one, the earlier ones will be setup for the final one, and
+	// therefore, we are only interested in the result from the last one.
+	gqlRequests := assembleRequests(t, dirPath, requestFile)
+	var result *graphql.Result
+	finalRequest := len(gqlRequests) - 1
+	for i, req := range gqlRequests {
+		result = chosenHandler.Handle(string(req))
+		if i != finalRequest { // All but the last request must always work without error.
+			require.Equal(t, 0, len(result.Errors))
+		}
+	}
 
 	if expectingHappyPath(t, dirPath) {
 		expectedData := fileContents(t, filepath.Join(dirPath, expectedDataFile))
@@ -90,6 +101,18 @@ func fileContents(t *testing.T, filePath string) []byte {
 	return data
 }
 
+// 	request := fileContents(t, filepath.Join(dirPath, requestFile))
+
+// assembleRequests expects to find 1 or more graphql requests in the request file -
+// delimitted by a special reserved string token. It returns the requests thus
+// delimited as strings.
+func assembleRequests(t *testing.T, dirPath string, requestFile string) (requests []string) {
+	contents := string(fileContents(t, filepath.Join(dirPath, requestFile)))
+	return strings.Split(contents, requestDelim)
+}
+
 const expectedDataFile string = "response.json"
 const expectedErrorsFile string = "errors.json"
 const requestFile string = "request.gql"
+
+const requestDelim string = `--nextrequest--`
