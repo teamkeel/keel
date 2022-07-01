@@ -320,98 +320,182 @@ func CreateOperationRequiredWriteInputsRule(asts []*parser.AST) (errors []error)
 	return errors
 }
 
-// GET operations must take a unique field as an input or filter on a unique field
-// using @where
-func GetOperationUniqueLookupRule(asts []*parser.AST) []error {
+func UpdateOperationUniqueInputsRule(asts []*parser.AST) []error {
 	var errors []error
 
 	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
+			if action.Type != parser.ActionTypeUpdate {
+				continue
+			}
+			errs := requireUniqueLookup(asts, action, model)
+			errors = append(errors, errs...)
+		}
+	}
 
-	actions:
+	return errors
+}
+
+// GET operations must take a unique field as an input or filter on a unique field
+// using @where
+func GetOperationUniqueInputsRule(asts []*parser.AST) []error {
+	var errors []error
+
+	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			if action.Type != parser.ActionTypeGet {
 				continue
 			}
+			errs := requireUniqueLookup(asts, action, model)
+			errors = append(errors, errs...)
+		}
+	}
 
-			for _, arg := range action.Inputs {
-				// TODO: support dot-notation here
-				fieldName := arg.Type.Fragments[len(arg.Type.Fragments)-1].Fragment
+	return errors
+}
+
+func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *parser.ModelNode) (errors []error) {
+
+	hasUniqueLookup := false
+
+	// check for inputs that refer to non-unique fields
+	for _, arg := range action.Inputs {
+		field := query.ResolveInputField(asts, arg, model)
+
+		// if input type cannot be resolved to a field e.g. it's a built-in
+		// type like Text then we can't check for uniqueness
+		if field == nil {
+			continue
+		}
+
+		// If the input refers to a unique field then we're all good
+		if query.FieldIsUnique(field) {
+			hasUniqueLookup = true
+			continue
+		}
+
+		// input refers to a non-unique field - this is an error
+		errors = append(
+			errors,
+			errorhandling.NewValidationError(errorhandling.ErrorOperationInputNotUnique,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Input":         arg.Type.ToString(),
+						"OperationType": action.Type,
+					},
+				},
+				arg,
+			),
+		)
+	}
+
+	// check for @where attributes that filter on non-unique fields
+	for _, attr := range action.Attributes {
+		if attr.Name.Value != parser.AttributeWhere {
+			continue
+		}
+
+		if len(attr.Arguments) == 0 {
+			continue
+		}
+
+		if attr.Arguments[0].Expression == nil {
+			continue
+		}
+
+		conds := attr.Arguments[0].Expression.Conditions()
+
+		for _, condition := range conds {
+			// If it's not a logical condition it will be caught by the
+			// @where attribute validation
+			if condition.Type() != expressions.LogicalCondition {
+				continue
+			}
+
+			operator := condition.Operator.Symbol
+
+			// Only "==" and "in" are direct comparison operators, anything else
+			// doesn't make sense for a unique lookup e.g. age > 5
+			if operator != expressions.OperatorEquals && operator != expressions.OperatorIn {
+				errors = append(
+					errors,
+					errorhandling.NewValidationError(errorhandling.ErrorNonDirectComparisonOperatorUsed,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Operator":      operator,
+								"OperationType": action.Type,
+							},
+						},
+						condition.Operator,
+					),
+				)
+				continue
+			}
+
+			// we always check the LHS
+			operands := []*expressions.Operand{condition.LHS}
+
+			// if it's an equal operator we can check both sides
+			if operator == expressions.OperatorEquals {
+				operands = append(operands, condition.RHS)
+			}
+
+			for _, op := range operands {
+				if op.Ident == nil || len(op.Ident.Fragments) != 2 {
+					continue
+				}
+
+				modelName, fieldName := op.Ident.Fragments[0].Fragment, op.Ident.Fragments[1].Fragment
+
+				if modelName != strcase.ToLowerCamel(model.Name.Value) {
+					continue
+				}
+
 				field := query.ModelField(model, fieldName)
 				if field == nil {
 					continue
 				}
 
-				// action has a unique field, go to next action
+				// we've found a @where that is filtering on a unique
+				// field using a direct comparison operator
 				if query.FieldIsUnique(field) {
-					continue actions
-				}
-
-			}
-
-			// no input was for a unique field so we need to check if there is a @where
-			// attribute with a LHS that is for a unique field
-			for _, attr := range action.Attributes {
-				if attr.Name.Value != parser.AttributeWhere {
+					hasUniqueLookup = true
 					continue
 				}
 
-				if len(attr.Arguments) != 1 {
-					continue
-				}
-
-				if attr.Arguments[0].Expression == nil {
-					continue
-				}
-
-				conds := attr.Arguments[0].Expression.Conditions()
-
-				for _, condition := range conds {
-					if condition.RHS == nil {
-						continue
-					}
-
-					if condition.LHS.Ident == nil {
-						continue
-					}
-
-					for _, op := range []*expressions.Operand{condition.LHS, condition.RHS} {
-						if len(op.Ident.Fragments) != 2 {
-							continue
-						}
-
-						modelName, fieldName := op.Ident.Fragments[0].Fragment, op.Ident.Fragments[1].Fragment
-
-						if modelName != strcase.ToLowerCamel(model.Name.Value) {
-							continue
-						}
-
-						field := query.ModelField(model, fieldName)
-						if field == nil {
-							continue
-						}
-
-						// action has a @where filtering on a unique field - go to next action
-						if query.FieldIsUnique(field) {
-							continue actions
-						}
-					}
-				}
-			}
-
-			// we did not find a unique field - this action is invalid
-			errors = append(
-				errors,
-				errorhandling.NewValidationError(errorhandling.ErrorOperationInputFieldNotUnique,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Name": action.Name.Value,
+				// @where attribute that has a condition on a non-unique field
+				// this is an error
+				errors = append(
+					errors,
+					errorhandling.NewValidationError(errorhandling.ErrorOperationWhereNotUnique,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Ident":         op.Ident.ToString(),
+								"OperationType": action.Type,
+							},
 						},
-					},
-					action.Name,
-				),
-			)
-		}
+						op.Ident,
+					),
+				)
 
+			}
+
+		}
+	}
+
+	// we did not find a unique field - this action is invalid
+	if !hasUniqueLookup {
+		errors = append(
+			errors,
+			errorhandling.NewValidationError(errorhandling.ErrorOperationMissingUniqueInput,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Name": action.Name.Value,
+					},
+				},
+				action.Name,
+			),
+		)
 	}
 
 	return errors

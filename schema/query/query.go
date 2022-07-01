@@ -192,19 +192,33 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 		return input.Type.ToString()
 	}
 
+	field := ResolveInputField(asts, input, parentModel)
+	if field != nil {
+		return field.Type
+	}
+
+	return ""
+}
+
+// ResolveInputField returns the field that the input's type references
+func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parentModel *parser.ModelNode) (field *parser.FieldNode) {
+	// handle built-in type
+	if parser.IsBuiltInFieldType(input.Type.ToString()) {
+		return nil
+	}
+
 	// follow the idents of the type from the current model to wherever it leads...
 	model := parentModel
-	var field *parser.FieldNode
 	for _, fragment := range input.Type.Fragments {
 		if model == nil {
-			return ""
+			return nil
 		}
 		field = ModelField(model, fragment.Fragment)
 		if field == nil {
-			return ""
+			return nil
 		}
 		model = Model(asts, field.Type)
 	}
 
-	return field.Type
+	return field
 }

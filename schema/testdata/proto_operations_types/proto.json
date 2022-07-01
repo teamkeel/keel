@@ -5,6 +5,14 @@
       "fields": [
         {
           "modelName": "Foo",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Foo",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -37,7 +45,31 @@
           "modelName": "Foo",
           "name": "opB",
           "type": "OPERATION_TYPE_UPDATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO"
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+              "name": "id",
+              "type": {
+                "type": "TYPE_ID"
+              }
+            },
+            {
+              "name": "name",
+              "type": {
+                "type": "TYPE_STRING"
+              }
+            }
+          ],
+          "setExpressions": [
+            {
+              "source": "foo.name = name"
+            }
+          ],
+          "whereExpressions": [
+            {
+              "source": "foo.id = id"
+            }
+          ]
         },
         {
           "modelName": "Foo",

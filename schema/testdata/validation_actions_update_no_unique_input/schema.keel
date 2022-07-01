@@ -1,0 +1,8 @@
+model Person {
+    fields {
+        name Text
+    }
+    operations {
+        update updateName() with (name)
+    }
+}
