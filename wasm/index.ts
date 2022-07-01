@@ -2,7 +2,6 @@ import wasm from './keel.wasm'
 import { GoExec, KeelAPI, ValidationResult, ValidateOptions, ValidationError } from './typings'
 import transformKeys from './lib/transformKeys';
 
-// necessary to avoid ambient module relative import issue when generating typings
 import "./lib/wasm_exec_node.js"
 
 const instantiate = async () : Promise<KeelAPI> => {
@@ -16,11 +15,11 @@ const instantiate = async () : Promise<KeelAPI> => {
 const keel = async () : Promise<KeelAPI> => {
   const api = await instantiate();
 
-  const validate = async (schemaString: string, opts: ValidateOptions) : Promise<ValidationResult> => {
+  const validate = (schemaString: string, opts: ValidateOptions) : ValidationResult => {
     const result = api.validate(schemaString, opts) as any;
     const { validationErrors: { Errors: errors }, ast } = result
 
-    const transformedErrors = await (errors || []).map((err: any) => transformKeys(err));
+    const transformedErrors = (errors || []).map((err: ValidationError) => transformKeys(err));
 
     return {
       errors: transformedErrors,
