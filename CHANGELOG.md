@@ -1,3 +1,10 @@
+## [0.44.1](https://github.com/teamkeel/keel/compare/v0.44.0...v0.44.1) (2022-07-01)
+
+
+### Bug Fixes
+
+* fix typings of wasm npm module ([#121](https://github.com/teamkeel/keel/issues/121)) ([3be0dc3](https://github.com/teamkeel/keel/commit/3be0dc36e319acb68d6e441baae0723601022636))
+
 # [0.44.0](https://github.com/teamkeel/keel/compare/v0.43.0...v0.44.0) (2022-07-01)
 
 
