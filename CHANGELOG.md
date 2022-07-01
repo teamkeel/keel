@@ -1,3 +1,10 @@
+## [0.44.2](https://github.com/teamkeel/keel/compare/v0.44.1...v0.44.2) (2022-07-01)
+
+
+### Bug Fixes
+
+* fix some errors in the todo schema example and dont require repeated fields to be set in a create operation ([6f72f79](https://github.com/teamkeel/keel/commit/6f72f79ea259514f3ccc0c1247d97696487b85cd))
+
 ## [0.44.1](https://github.com/teamkeel/keel/compare/v0.44.0...v0.44.1) (2022-07-01)
 
 
