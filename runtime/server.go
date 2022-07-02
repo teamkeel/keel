@@ -63,13 +63,10 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
 		// todo - how to surface the error details?
-		fmt.Printf("XXXX request is malformed json: %v", err)
+		fmt.Printf("error request is malformed json: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	fmt.Printf("XXXX json decoded params is: %+v\n", params)
-	fmt.Printf("XXXX isolated query string is: %s\n", params.Query)
 
 	// Delegate all the heavy lifting to a plain (non HTTP) handler.
 	result := h.gqlHandler.Handle(params.Query)
@@ -80,7 +77,6 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("XXXX json response:\n%s\n", string(responseJSON))
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(responseJSON)
 }

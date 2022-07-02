@@ -1,8 +1,6 @@
 package resolvers
 
 import (
-	"fmt"
-
 	"github.com/graphql-go/graphql"
 )
 
@@ -18,6 +16,5 @@ func NewModelResolver() *ModelResolver {
 }
 
 func (mr *ModelResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
-	fmt.Printf("XXXX model resolver fired\n")
 	return "Not yet implemented", nil
 }
