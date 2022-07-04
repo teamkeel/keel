@@ -1,3 +1,10 @@
+# [0.45.0](https://github.com/teamkeel/keel/compare/v0.44.4...v0.45.0) (2022-07-04)
+
+
+### Features
+
+* gql create ([#125](https://github.com/teamkeel/keel/issues/125)) ([e5b66aa](https://github.com/teamkeel/keel/commit/e5b66aaa4100feaadd651fa1857e75dcefb4a201))
+
 ## [0.44.4](https://github.com/teamkeel/keel/compare/v0.44.3...v0.44.4) (2022-07-04)
 
 
