@@ -1,0 +1,11 @@
+[
+    {
+        "message": "Cannot query field \"createHomoSapien\" on type \"Mutation\".",
+        "locations": [
+            {
+                "line": 2,
+                "column": 5
+            }
+        ]
+    }
+]
