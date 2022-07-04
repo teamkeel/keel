@@ -165,40 +165,39 @@ func printActionsBlock(writer *Writer, actions []*parser.ActionNode) {
 				lowerCamel(op.Name.Value),
 			)
 
-			writer.Write("(")
-			for i, arg := range op.Inputs {
-				if i > 0 {
-					writer.Write(", ")
-				}
-
-				if arg.Label != nil {
-					writer.Write("%s: ", arg.Label.Value)
-				}
-
-				writer.Write(lowerCamel(arg.Type.ToString()))
-			}
-			writer.Write(")")
+			printOperationInputs(writer, op.Inputs)
 
 			if len(op.With) > 0 {
-				writer.Write(" with (")
-				for i, arg := range op.With {
-					if i > 0 {
-						writer.Write(", ")
-					}
-
-					if arg.Label != nil {
-						writer.Write("%s: ", arg.Label.Value)
-					}
-
-					writer.Write(lowerCamel(arg.Type.ToString()))
-				}
-				writer.Write(")")
+				writer.Write(" with ")
+				printOperationInputs(writer, op.With)
 			}
 
 			printAttributesBlock(writer, op.Attributes)
 		}
 
 	})
+}
+
+func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode) {
+	writer.Write("(")
+	for i, arg := range inputs {
+		if i > 0 {
+			writer.Write(", ")
+		}
+
+		if arg.Label != nil {
+			writer.Write("%s: ", arg.Label.Value)
+			writer.Write(arg.Type.ToString())
+		} else {
+			for j, fragment := range arg.Type.Fragments {
+				if j > 0 {
+					writer.Write(".")
+				}
+				writer.Write(lowerCamel(fragment.Fragment))
+			}
+		}
+	}
+	writer.Write(")")
 }
 
 func printRole(writer *Writer, role *parser.RoleNode) {
