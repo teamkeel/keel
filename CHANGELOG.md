@@ -1,3 +1,10 @@
+## [0.44.3](https://github.com/teamkeel/keel/compare/v0.44.2...v0.44.3) (2022-07-04)
+
+
+### Bug Fixes
+
+* fix handling of repeated fields in expression validation ([#122](https://github.com/teamkeel/keel/issues/122)) ([cba2cba](https://github.com/teamkeel/keel/commit/cba2cba0e541117625dd1d9dc2ac0c24484dcf59))
+
 ## [0.44.2](https://github.com/teamkeel/keel/compare/v0.44.1...v0.44.2) (2022-07-01)
 
 
