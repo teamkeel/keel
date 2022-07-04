@@ -24,19 +24,19 @@ func (o *Operand) ToString() string {
 	}
 
 	switch o.Type() {
-	case "Number":
+	case TypeNumber:
 		return fmt.Sprintf("%d", *o.Number)
-	case "String":
+	case TypeText:
 		return *o.String
-	case "Null":
+	case TypeNull:
 		return "null"
-	case "Boolean":
+	case TypeBoolean:
 		if o.False {
 			return "false"
 		} else {
 			return "true"
 		}
-	case "Array":
+	case TypeArray:
 		r := "["
 		for i, el := range o.Array.Values {
 			if i > 0 {
@@ -45,7 +45,7 @@ func (o *Operand) ToString() string {
 			r += el.ToString()
 		}
 		return r + "]"
-	case "Ident":
+	case TypeIdent:
 		return o.Ident.ToString()
 	default:
 		return ""
@@ -53,14 +53,18 @@ func (o *Operand) ToString() string {
 }
 
 var (
-	TypeNumber = "Number"
-	TypeString = "String"
-	// Text is the string type for fields, whereas String is the type for literal strings
+	// These intentionally match the parser field types
+	// TODO: maybe refactor so we can use the same constants
+	//       refactoring required as the parser depends on this package
+	//       so this package can't depend on the parser consts
+	TypeNumber  = "Number"
 	TypeText    = "Text"
-	TypeNull    = "Null"
 	TypeBoolean = "Boolean"
-	TypeArray   = "Array"
-	TypeIdent   = "Ident"
+
+	// These are unique to expressions
+	TypeNull  = "Null"
+	TypeArray = "Array"
+	TypeIdent = "Ident"
 )
 
 func (o *Operand) Type() string {
@@ -68,7 +72,7 @@ func (o *Operand) Type() string {
 	case o.Number != nil:
 		return TypeNumber
 	case o.String != nil:
-		return TypeString
+		return TypeText
 	case o.Null:
 		return TypeNull
 	case o.False:
