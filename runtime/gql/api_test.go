@@ -30,7 +30,17 @@ func TestHandlersSuite(t *testing.T) {
 		if !dir.IsDir() {
 			continue
 		}
-		dirPath := filepath.Join(testCasesParent, dir.Name())
+		dirName := dir.Name()
+
+		// This is isolate just one of the tests during development
+		var isolateDir string
+		isolateDir = "get-simplest-happy"
+		isolateDir = ""
+		if isolateDir != "" && dirName != isolateDir {
+			continue
+		}
+
+		dirPath := filepath.Join(testCasesParent, dirName)
 		t.Logf("Starting test for directory: %s\n", dirPath)
 
 		t.Run(dir.Name(), func(t *testing.T) {

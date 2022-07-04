@@ -5,7 +5,7 @@ model Person {
     }
 
     operations {
-        get getPerson(id)
+        get getPerson(email)
         create createPerson() with (email, phone)
     }
 }

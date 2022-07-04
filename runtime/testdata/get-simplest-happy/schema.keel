@@ -1,16 +1,16 @@
 model Author {
-  fields {
-    name Text {
-      @unique
+    fields {
+        name Text @unique
+        eyes Text
     }
-  }
-  operations {
-    get getAuthor(name)
-  }
+
+    operations {
+        get getAuthor(name)
+    }
 }
 
 api Web {
-  models {
-    Author
-  }
+    models {
+        Author
+    }
 }

@@ -24,21 +24,22 @@ func NewCreateOperationResolver(op *proto.Operation, model *proto.Model) *Create
 
 func (r *CreateOperationResolver) Resolve(p graphql.ResolveParams) (any, error) {
 
-	// We'll populate a ModelMap to represent the resolved model field values, and
+	// We'll populate a map[string]any to represent the resolved model field values, and
 	// use that map, to write a record into the database, and as the return value
 	// from the resolver.
-	var modelMap ModelMap
 
-	var err error
-
-	if modelMap, err = zeroValueForModel(r.model); err != nil {
+	modelMap, err := zeroValueForModel(r.model)
+	if err != nil {
 		return nil, err
 	}
-	if err = modelMap.setFieldsFromInputValues(p); err != nil {
+	if err = setFieldsFromInputValues(modelMap, p); err != nil {
 		return nil, err
 	}
 
 	fieldValuesFromDB, err := createRecordInDatabase(r.model, modelMap)
+	if err != nil {
+		return nil, err
+	}
 	for fieldName, fieldValue := range fieldValuesFromDB {
 		modelMap[fieldName] = fieldValue
 	}
@@ -46,13 +47,13 @@ func (r *CreateOperationResolver) Resolve(p graphql.ResolveParams) (any, error) 
 	return modelMap, nil
 }
 
-func createRecordInDatabase(model *proto.Model, modelMap ModelMap) (valuesFromDb ModelMap, err error) {
+func createRecordInDatabase(model *proto.Model, modelMap map[string]any) (valuesFromDb map[string]any, err error) {
 	// this is where we write a record to the database.
 
 	// and return the field values that are created as a side effect.
 
 	// We'll just give it an "id" value as an illustration for now.
-	return ModelMap{
+	return map[string]any{
 		"id": uuid.NewString(),
 	}, nil
 }
