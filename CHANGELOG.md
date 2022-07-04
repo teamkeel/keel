@@ -1,3 +1,10 @@
+## [0.44.4](https://github.com/teamkeel/keel/compare/v0.44.3...v0.44.4) (2022-07-04)
+
+
+### Bug Fixes
+
+* fix formatter for short-hand inputs that use dot-notation ([#123](https://github.com/teamkeel/keel/issues/123)) ([8e68f90](https://github.com/teamkeel/keel/commit/8e68f9076097b8e664da42670715095bde7cf569))
+
 ## [0.44.3](https://github.com/teamkeel/keel/compare/v0.44.2...v0.44.3) (2022-07-04)
 
 
