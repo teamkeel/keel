@@ -1,5 +1,5 @@
 mutation {
-    createPerson(email: "foo@bar.com", phone: "123456778") { email, phone, id, createdAt }
+    createPerson(email: "foo@bar.com", phone: "123456778") { email, phone }
 }
 
 --nextrequest--

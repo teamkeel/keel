@@ -34,7 +34,7 @@ func TestHandlersSuite(t *testing.T) {
 
 		// This is isolate just one of the tests during development
 		var isolateDir string
-		isolateDir = "get-simplest-happy"
+		isolateDir = "create-simplest-happy"
 		isolateDir = ""
 		if isolateDir != "" && dirName != isolateDir {
 			continue
