@@ -30,7 +30,19 @@ func TestHandlersSuite(t *testing.T) {
 		if !dir.IsDir() {
 			continue
 		}
-		dirPath := filepath.Join(testCasesParent, dir.Name())
+		dirName := dir.Name()
+
+		// This is isolate just one of the tests during development
+		var isolateDir string
+		isolateDir = "create-simplest-happy"
+		isolateDir = ""
+		if isolateDir != "" && dirName != isolateDir {
+			continue
+		}
+
+		dirPath := filepath.Join(testCasesParent, dirName)
+		t.Logf("Starting test for directory: %s\n", dirPath)
+
 		t.Run(dir.Name(), func(t *testing.T) {
 			runTestCase(t, dirPath)
 		})
@@ -38,6 +50,7 @@ func TestHandlersSuite(t *testing.T) {
 }
 
 func runTestCase(t *testing.T, dirPath string) {
+
 	s2m := schema.Builder{}
 	protoSchema, err := s2m.MakeFromDirectory(dirPath)
 	require.NoError(t, err)
@@ -58,7 +71,9 @@ func runTestCase(t *testing.T, dirPath string) {
 	for i, req := range gqlRequests {
 		result = chosenHandler.Handle(string(req))
 		if i != finalRequest { // All but the last request must always work without error.
-			require.Equal(t, 0, len(result.Errors))
+			if len(result.Errors) != 0 {
+				t.Fatalf("error encountered on one of the set-up gql requests: %v", result.Errors)
+			}
 		}
 	}
 

@@ -66,12 +66,11 @@ func (mk *maker) newSchema(api *proto.Api) (*graphql.Schema, error) {
 		}
 	}
 
-	queryType := newObject("Query", fieldsUnderConstruction.queries)
-	//mutationType := newObject("Mutation", fieldsUnderConstruction.mutations)
 	gSchema, err := graphql.NewSchema(
 		graphql.SchemaConfig{
-			Query:    queryType,
-			Mutation: nil,
+			Query: newObject("Query", fieldsUnderConstruction.queries),
+			// graphql won't accept a mutation object that has zero fields.
+			Mutation: lo.Ternary(len(fieldsUnderConstruction.mutations) > 0, newObject("Mutation", fieldsUnderConstruction.mutations), nil),
 			Types:    fieldsUnderConstruction.models,
 		},
 	)
@@ -117,6 +116,10 @@ func (mk *maker) addOperation(
 		if err := mk.addGetOp(op, modelOutputType, model, addTo); err != nil {
 			return err
 		}
+	case proto.OperationType_OPERATION_TYPE_CREATE:
+		if err := mk.addCreateOp(op, modelOutputType, model, addTo); err != nil {
+			return err
+		}
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
@@ -135,6 +138,24 @@ func (mk *maker) addGetOp(
 	}
 	field := newFieldWithArgs(op.Name, args, modelOutputType, resolvers.NewGetOperationResolver(op, model).Resolve)
 	addTo.queries[op.Name] = field
+	return nil
+}
+
+// addCreateOp is just a helper for addOperation - that is dedicated to operations of type CREATE.
+func (mk *maker) addCreateOp(
+	// todo see if the family of addXXXOp methods diverge more than they do now - and if so DRY up the code.
+	// At the moment the only difference between the two we have is which element of the addTo container
+	// they append to.
+	op *proto.Operation,
+	modelOutputType graphql.Output,
+	model *proto.Model,
+	addTo *fieldsUnderConstruction) error {
+	args, err := mk.makeArgs(op)
+	if err != nil {
+		return err
+	}
+	field := newFieldWithArgs(op.Name, args, modelOutputType, resolvers.NewCreateOperationResolver(op, model).Resolve)
+	addTo.mutations[op.Name] = field
 	return nil
 }
 
@@ -164,6 +185,8 @@ func (mk *maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 		return graphql.String, nil
 
 	// General (scalar) cases.
+	case proto.Type_TYPE_ID:
+		return graphql.ID, nil
 	case proto.Type_TYPE_BOOL:
 		return graphql.Boolean, nil
 	case proto.Type_TYPE_STRING:

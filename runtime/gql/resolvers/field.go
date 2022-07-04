@@ -22,9 +22,7 @@ func NewFieldResolver(field *proto.Field) *FieldResolver {
 }
 
 func (r *FieldResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
-	fmt.Printf("XXXX field resolver fired\n")
 	// Expects to be able to retreive the value for this field from the source object.
-	fmt.Printf("XXXX source obj given as: \n%v\n", p.Source)
 
 	asMap, ok := p.Source.(map[string]any)
 	if !ok {

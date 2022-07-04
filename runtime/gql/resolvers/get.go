@@ -1,8 +1,6 @@
 package resolvers
 
 import (
-	"fmt"
-
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
 )
@@ -24,9 +22,6 @@ func NewGetOperationResolver(op *proto.Operation, model *proto.Model) *GetOperat
 }
 
 func (r *GetOperationResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
-
-	fmt.Printf("XXXX operation resolver fired\n")
-
 	// Fetch the data to populate the containerToReturn with.
 	containerToReturn, err := r.fetch(p)
 	if err != nil {

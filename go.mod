@@ -7,6 +7,7 @@ require (
 	github.com/docker/docker v20.10.16+incompatible
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.4
+	github.com/google/uuid v1.3.0
 	github.com/graphql-go/graphql v0.8.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c

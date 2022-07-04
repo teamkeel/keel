@@ -1,0 +1,9 @@
+mutation {
+    createPerson(email: "foo@bar.com", phone: "123456778") { email, phone }
+}
+
+--nextrequest--
+
+query {
+    getPerson(email: "foo@bar.com") { phone, createdAt }
+}
