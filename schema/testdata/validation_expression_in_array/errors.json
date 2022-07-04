@@ -1,21 +1,21 @@
 {
   "Errors": [
     {
-      "message": "\"bob\" is a String and post.authors.name is an array of Numbers",
-      "short_message": "\"bob\" is a String and post.authors.name is an array of Numbers",
-      "hint": "Left hand side \"bob\" can only be compared to an array of Strings",
-      "code": "E029",
+      "message": "\"bob\" is Text and post.authors.name is an array of Number",
+      "short_message": "\"bob\" is Text and post.authors.name is an array of Number",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
       "pos": {
         "filename": "testdata/validation_expression_in_array/schema.keel",
-        "offset": 81,
+        "offset": 95,
         "line": 7,
-        "column": 17
+        "column": 21
       },
       "end_pos": {
         "filename": "testdata/validation_expression_in_array/schema.keel",
-        "offset": 107,
+        "offset": 121,
         "line": 7,
-        "column": 43
+        "column": 47
       }
     }
   ]

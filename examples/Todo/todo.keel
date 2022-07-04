@@ -1,184 +1,174 @@
 model Account {
-	fields {
-		identity Identity {
-			@unique
-		}
-		name Text
-		email Text {
-			@unique
-		}
-		teams TeamMember[] 
-	}
+    fields {
+        identity Identity @unique
+        name Text
+        email Text @unique
+        teams TeamMember[]
+    }
 
-	@permission(
-		expression: account.identity == ctx.identity,
-		actions: [get, update]
-	)
-	@permission(
-		expression: true,
-		actions: [create]
-	)
+    operations {
+        create createAccount() with (name, email) {
+            @set(account.identity = ctx.identity)
+        }
+        update updateAccountDetails(id) with (name, email)
+        get myAccount() {
+            @where(account.identity == ctx.identity)
+        }
+    }
 
-	operations {
-		create createAccount() with (name, email) {
-			@set(account.identity = ctx.identity)
-		}
-		update updateAccountDetails(id) with (name, email)
-		get myAccount() {
-			@where(account.identity == ctx.identity)
-		}
-	}
+    @permission(
+        expression: account.identity == ctx.identity,
+        actions: [get, update]
+    )
+    @permission(
+        expression: true,
+        actions: [create]
+    )
 }
 
 model Team {
-	fields {
-		name Text
-		members TeamMember[]
-		projects Project[]
-	}
+    fields {
+        name Text
+        members TeamMember[]
+        projects Project[]
+    }
 
-	@permission(
-		expression: ctx.identity in team.members.account.identity,
-		actions: [create, get, list, update, delete]
-	)
+    operations {
+        list myTeams() {
+            @where(ctx.identity in team.members.account.identity)
+        }
+        get getTeam(id)
+        delete deleteTeam(id)
+        create createTeam() with (name)
+    }
 
-	operations {
-		list myTeams() {
-			@where(ctx.identity in team.members.account.identity)
-		}
-		get getTeam(id)
-		delete deleteTeam(id)
-		create createTeam() with (name)
-	}
+    @permission(
+        expression: ctx.identity in team.members.account.identity,
+        actions: [create, get, list, update, delete]
+    )
 }
 
 model TeamMember {
-	fields {
-		account Account
-		team Team
-		role TeamRoles {
-			@default(TeamRoles.Member)
-		}
-	}
+    fields {
+        account Account
+        team Team
+        role TeamRoles @default(TeamRoles.Member)
+    }
 
-	@unique([account, team])
+    operations {
+        create addToTeam() with (account, team, role)
+        update updateTeamRole(id) with (account, team, role)
+        delete removeFromTeam(account, team)
+    }
 
-	@permission(
-		expression: teamMember.account.identity == ctx.identity,
-		actions: [create, update, delete]
-	)
-
-	operations {
-		create addToTeam() with (account, team, role)
-		update updateTeamRole(id) with (account, team, role)
-		delete removeFromTeam(account, team)
-	}
+    @unique([account, team])
+    @permission(
+        expression: teamMember.account.identity == ctx.identity,
+        actions: [create, update, delete]
+    )
 }
 
 enum TeamRoles {
-	Member
-	Admin
+    Member
+    Admin
 }
 
-
 model Project {
-	fields {
-		name Text
-		team Team
-		tasks Task[]
-	}
+    fields {
+        name Text
+        team Team
+        tasks Task[]
+    }
 
-	@permission(
-		expression: ctx.identity in project.team.members.account.identity,
-		actions: [create, list, delete]
-	)
+    operations {
+        create createProject() with (name, team)
+        list listProjects(team)
+        delete deleteProject(id)
+    }
 
-	operations {
-		create createProject() with (name, team)
-		list listProjects(team) 
-		delete deleteProject(id)
-	}
+    @permission(
+        expression: ctx.identity in project.team.members.account.identity,
+        actions: [create, list, delete]
+    )
 }
 
 model Task {
-	fields {
-		title Text
-		description Text?
-		creator Account
-		project Project
-		completed Boolean {
-			@default(false)
-		}
-		completedAt Timestamp?
-		assignedTo Account?
-		dueDate Date?
-		estimate Number?
-		comments Comment[]
-	}
+    fields {
+        title Text
+        description Text?
+        creator Account
+        project Project
+        completed Boolean @default(false)
+        completedAt Timestamp?
+        assignedTo Account?
+        dueDate Date?
+        estimate Number?
+        comments Comment[]
+    }
 
-	@permission(
-		expression: ctx.identity in task.project.team.members.account.identity,
-		actions: [get, list, update, delete]
-	)
+    operations {
+        list openTasks(projectId) {
+            @where(task.completed == false)
+        }
+        list completedTasks(projectId, completedAt) {
+            @where(task.completed == true)
+        }
+        update completeTask(id) {
+            @set(task.completed = true)
+            @set(task.completedAt = ctx.now)
+        }
+        update unCompleteTask(id) {
+            @set(task.completed = false)
+            @set(task.completedAt = null)
+        }
+        update assignTask(id) with (assignedTo) {
+            @validate(task.assignedTo in task.project.team.members.accounts)
+        }
+        update updateTask(id) with (title, description)
+        create createTask() with (title, description, creator, project, dueDate)
+        update setEstimate(id) with (estimate)
+        update setDueDate(id) with (dueDate)
+        update moveTasks(id) with (project)
+    }
 
-	operations {
-		list openTasks(project.id) {
-			@where(task.completed == false)
-		}
-		list completedTasks(project.id, completedAt?) {
-			@where(task.completed == true)
-		}
-		update completeTask(id) {
-			@set(task.completed = true)
-			@set(task.completedAt = ctx.now)
-		}
-		update unCompleteTask(id) {
-			@set(task.completed = false)
-			@set(task.completedAt = null)
-		}
-		update assignTask(id) with (assignedTo) {
-			@validate(task.assignedTo in task.project.team.members.accounts)
-		}
-		update updateTask(id) with(title, description)
-		create createTask() with (title, description, creator, project, dueDate?)
-		update setEstimate(id) with(estimate)
-		update setDueDate(id) with (dueDate)
-		update moveTasks(id) with(project)
-	}
+    @permission(
+        expression: ctx.identity in task.project.team.members.account.identity,
+        actions: [get, list, update, delete]
+    )
 }
 
 model Comment {
-	fields {
-		task Task
-		author Account
-		text Text
-	}
+    fields {
+        task Task
+        author Account
+        text Text
+    }
 
-	@permission(
-		expression: ctx.identity in comment.task.team.members.account.identity,
-		actions: [create]
-	)
-	@permission(
-		expression: comment.author.identity == ctx.identity,
-		actions: [update, delete]
-	)
+    operations {
+        create createComment() with (task, text, author)
+        update updateComment(id) with (text)
+        delete deleteComment(id)
+    }
 
-	operations {
-		create createComment() with (task, text, author)
-		update updateComment(id) with(text)
-		delete deleteComment(id)
-	}
+    @permission(
+        expression: ctx.identity in comment.task.project.team.members.account.identity,
+        actions: [create]
+    )
+    @permission(
+        expression: comment.author.identity == ctx.identity,
+        actions: [update, delete]
+    )
 }
 
 api Web {
-	@graphql
+    @graphql
 
-	models {
-		Account
-		Team
-		TeamMember
-		Project
-		Task
-		Comment
-	}
+    models {
+        Account
+        Team
+        TeamMember
+        Project
+        Task
+        Comment
+    }
 }
