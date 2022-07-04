@@ -45,7 +45,6 @@ const (
 	ErrorExpressionTypeMismatch             = "E026"
 	ErrorForbiddenOperator                  = "E027"
 	ErrorNonBooleanValueCondition           = "E028"
-	ErrorExpressionArrayWrongType           = "E029"
 	ErrorExpressionArrayMismatchingOperator = "E030"
 	ErrorExpressionForbiddenArrayLHS        = "E031"
 	ErrorExpressionMixedTypesInArrayLiteral = "E032"

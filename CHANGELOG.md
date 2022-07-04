@@ -1,3 +1,17 @@
+## [0.44.4](https://github.com/teamkeel/keel/compare/v0.44.3...v0.44.4) (2022-07-04)
+
+
+### Bug Fixes
+
+* fix formatter for short-hand inputs that use dot-notation ([#123](https://github.com/teamkeel/keel/issues/123)) ([8e68f90](https://github.com/teamkeel/keel/commit/8e68f9076097b8e664da42670715095bde7cf569))
+
+## [0.44.3](https://github.com/teamkeel/keel/compare/v0.44.2...v0.44.3) (2022-07-04)
+
+
+### Bug Fixes
+
+* fix handling of repeated fields in expression validation ([#122](https://github.com/teamkeel/keel/issues/122)) ([cba2cba](https://github.com/teamkeel/keel/commit/cba2cba0e541117625dd1d9dc2ac0c24484dcf59))
+
 ## [0.44.2](https://github.com/teamkeel/keel/compare/v0.44.1...v0.44.2) (2022-07-01)
 
 

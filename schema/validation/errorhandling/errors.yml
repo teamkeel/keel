@@ -103,8 +103,8 @@ en:
     message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
     hint: "Please make sure that you are evaluating entities of the same type"
   E027:
-    short_message: "Cannot compare '{{ .LHS }}' and '{{ .RHS }}' with operator '{{ .Operator }}'"
-    message: "Cannot compare '{{ .LHS }}' and '{{ .RHS }}' with operator '{{ .Operator }}'"
+    short_message: "Cannot compare {{ .Type }} with operator '{{ .Operator }}'"
+    message: "Cannot compare {{ .Type }} with operator '{{ .Operator }}'"
     hint: "{{ .Suggestion }}"
   E028:
     short_message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
@@ -115,7 +115,7 @@ en:
     message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is an array of {{ .RHSType }}s"
     hint: "Left hand side {{ .LHS }} can only be compared to an array of {{ .LHSType }}s"
   E030:
-    short_message: "You can only use operators 'in' or 'not in' when checking for inclusion of {{ .LHS }} in {{ .RHS }}"
+    short_message: "You can only use operators 'in' or 'not in' when comparing to an array"
     message: "{{ .RHS }} is an array of {{ .RHSType }}. Only 'in' or 'not in' can be used"
     hint: "Change '{{ .Operator }}' to either 'in' or 'not in'."
   E031:

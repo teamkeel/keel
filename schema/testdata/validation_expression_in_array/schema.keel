@@ -1,16 +1,16 @@
 model Post {
-  fields {
-    authors Author[]
-  }
+    fields {
+        authors Author[]
+    }
 
-  @permission(
-    expression: "bob" in post.authors.name,
-    actions: [get]
-  )
+    @permission(
+        expression: "bob" in post.authors.name,
+        actions: [get]
+    )
 }
 
 model Author {
-  fields {
-    name Number
-  }
+    fields {
+        name Number
+    }
 }

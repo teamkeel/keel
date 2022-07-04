@@ -1,8 +1,8 @@
 {
   "Errors": [
     {
-      "message": "Cannot compare 'username' and '\"adaam2\"' with operator '\u003e='",
-      "short_message": "Cannot compare 'username' and '\"adaam2\"' with operator '\u003e='",
+      "message": "Cannot compare Text with operator '\u003e='",
+      "short_message": "Cannot compare Text with operator '\u003e='",
       "hint": "Did you mean ==?",
       "code": "E027",
       "pos": {

@@ -6,7 +6,6 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"github.com/teamkeel/keel/util/str"
 )
 
 type ExpressionScope struct {
@@ -62,13 +61,11 @@ func (e *ExpressionScopeEntity) Type() string {
 	}
 
 	if e.EnumValue != nil {
-		return e.Parent.Value()
+		return e.Parent.Enum.Name.Value
 	}
 
 	if e.Array != nil {
-		// We have already validated by this point that the array has all matching types
-		// so we know the first item in the array is representative of all items in the array
-		return e.Array[0].Type()
+		return expressions.TypeArray
 	}
 
 	if e.Input != nil {
@@ -78,49 +75,12 @@ func (e *ExpressionScopeEntity) Type() string {
 	return ""
 }
 
-func (e *ExpressionScopeEntity) BaseType() string {
-	if e.Object != nil {
-		return e.Object.Name
-	}
-
-	if e.Model != nil {
-		return e.Model.Name.Value
-	}
-
-	if e.Field != nil {
-		if e.Field.Repeated {
-			return expressions.TypeArray
-		}
-		if e.Field.Type == expressions.TypeText {
-			return expressions.TypeString
-		}
-		return e.Field.Type
-	}
-
-	if e.Literal != nil {
-		return e.Literal.Type()
-	}
-
-	if e.EnumValue != nil {
-		return e.Parent.Value()
-	}
-
-	if e.Array != nil {
-		return expressions.TypeArray
-	}
-
-	if e.Input != nil {
-		t := e.Type()
-		if t == parser.FieldTypeText {
-			return expressions.TypeString
-		}
-		return t
-	}
-
-	return ""
-}
-
 func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
+	if e.IsRepeated() {
+		operators = append(operators, expressions.ArrayOperators...)
+		return operators
+	}
+
 	switch {
 	case e.Literal != nil:
 		t := e.Literal.Type()
@@ -135,7 +95,7 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 		case expressions.TypeNull:
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.AssignmentCondition)
-		case expressions.TypeString:
+		case expressions.TypeText:
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
 		case expressions.TypeArray:
@@ -145,10 +105,8 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 		operators = append(operators, expressions.OperatorEquals)
 		operators = append(operators, expressions.OperatorAssignment)
 	case e.Field != nil || e.Input != nil:
-		baseType := e.BaseType()
-
-		switch baseType {
-		case expressions.TypeString:
+		switch e.Type() {
+		case expressions.TypeText, parser.FieldTypeText:
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
 		case expressions.TypeBoolean:
@@ -158,8 +116,6 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
 			operators = append(operators, expressions.NumericalOperators...)
-		case expressions.TypeArray:
-			operators = append(operators, expressions.ArrayOperators...)
 		default:
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
@@ -170,30 +126,6 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 	}
 
 	return operators
-}
-
-func (e *ExpressionScopeEntity) Value() string {
-	if e.Object != nil {
-		return e.Object.Name
-	}
-
-	if e.Model != nil {
-		return e.Model.Name.Value
-	}
-
-	if e.Field != nil {
-		return e.Field.Name.Value
-	}
-
-	if e.Literal != nil {
-		return e.Literal.ToString()
-	}
-
-	if e.Enum != nil {
-		return e.Enum.Name.Value
-	}
-
-	return e.Type()
 }
 
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
@@ -221,52 +153,84 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 	}
 }
 
-func scopeFromModel(parent *ExpressionScope, model *parser.ModelNode, repeated bool) *ExpressionScope {
+// IsRepeated returns true if the entity is a repeated value
+// This can be because it is a literal array e.g. [1,2,3]
+// or because it's a repeated field or at least one parent
+// entity is a repeated field e.g. order.items.product.price
+// would be a list of prices (assuming order.items is an
+// array of items)
+func (e *ExpressionScopeEntity) IsRepeated() bool {
+	entity := e
+	if len(entity.Array) > 0 {
+		return true
+	}
+	if entity.Field != nil && entity.Field.Repeated {
+		return true
+	}
+	for entity.Parent != nil {
+		entity = entity.Parent
+		if entity.Field != nil && entity.Field.Repeated {
+			return true
+		}
+	}
+	return false
+}
+
+func scopeFromModel(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity, model *parser.ModelNode) *ExpressionScope {
 	newEntities := []*ExpressionScopeEntity{}
 
 	for _, field := range query.ModelFields(model) {
-		// Set the repeated value based first and foremost on whether the field is repeated in the schema
-		// otherwise use the parent repeated value
-		field.Repeated = field.Repeated || repeated
 		newEntities = append(newEntities, &ExpressionScopeEntity{
-			Field: field,
+			Field:  field,
+			Parent: parentEntity,
 		})
 	}
 
 	return &ExpressionScope{
 		Entities: newEntities,
-		Parent:   parent,
+		Parent:   parentScope,
 	}
 }
 
-func scopeFromObject(parent *ExpressionScope, obj *ExpressionObjectEntity) *ExpressionScope {
+func scopeFromObject(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity) *ExpressionScope {
 	newEntities := []*ExpressionScopeEntity{}
 
-	for _, field := range obj.Fields {
-		newEntities = append(newEntities, field)
+	for _, field := range parentEntity.Object.Fields {
+		newEntities = append(newEntities, &ExpressionScopeEntity{
+			// copy all fields across
+			Model:     field.Model,
+			Object:    field.Object,
+			Field:     field.Field,
+			Input:     field.Input,
+			Literal:   field.Literal,
+			Enum:      field.Enum,
+			EnumValue: field.EnumValue,
+			Array:     field.Array,
+
+			// set parent
+			Parent: parentEntity,
+		})
 	}
 
 	return &ExpressionScope{
 		Entities: newEntities,
-		Parent:   parent,
+		Parent:   parentScope,
 	}
 }
 
-func scopeFromEnum(parent *ExpressionScope, enum *parser.EnumNode) *ExpressionScope {
+func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity) *ExpressionScope {
 	newEntities := []*ExpressionScopeEntity{}
 
-	for _, value := range enum.Values {
+	for _, value := range parentEntity.Enum.Values {
 		newEntities = append(newEntities, &ExpressionScopeEntity{
 			EnumValue: value,
-			Parent: &ExpressionScopeEntity{
-				Enum: enum,
-			},
+			Parent:    parentEntity,
 		})
 	}
 
 	return &ExpressionScope{
 		Entities: newEntities,
-		Parent:   parent,
+		Parent:   parentScope,
 	}
 }
 
@@ -312,10 +276,10 @@ fragments:
 	for _, fragment := range operand.Ident.Fragments {
 		for _, e := range scope.Entities {
 			switch {
-			case e.Model != nil && e.Model.Name.Value == str.AsTitle(str.Singularize(fragment.Fragment)):
+			case e.Model != nil && strcase.ToLowerCamel(e.Model.Name.Value) == fragment.Fragment:
 				entity = e
 
-				scope = scopeFromModel(scope, e.Model, false)
+				scope = scopeFromModel(scope, e, e.Model)
 
 				continue fragments
 			case e.Field != nil && e.Field.Name.Value == fragment.Fragment:
@@ -325,36 +289,39 @@ fragments:
 
 				if model == nil {
 					// Did not find the model matching the field
-					scope = &ExpressionScope{}
-				} else if e.Field.Repeated {
-					// Found a field which is a collection type
-					scope = scopeFromModel(scope, model, true)
+					scope = &ExpressionScope{
+						Parent: scope,
+					}
 				} else {
-					// Found a field that is singular
-					scope = scopeFromModel(scope, model, false)
+					scope = scopeFromModel(scope, e, model)
 				}
+
 				continue fragments
 			case e.Object != nil && e.Object.Name == fragment.Fragment:
 				entity = e
 
-				scope = scopeFromObject(scope, e.Object)
+				scope = scopeFromObject(scope, e)
 
 				continue fragments
 			case e.Enum != nil && e.Enum.Name.Value == fragment.Fragment:
 				entity = e
 
-				scope = scopeFromEnum(scope, e.Enum)
+				scope = scopeFromEnum(scope, e)
 
 				continue fragments
 			case e.EnumValue != nil && e.EnumValue.Name.Value == fragment.Fragment:
 				entity = e
 
-				scope = &ExpressionScope{}
+				scope = &ExpressionScope{
+					Parent: scope,
+				}
 
 				continue fragments
 			case e.Input != nil && e.Input.Name == fragment.Fragment:
 				entity = e
-				scope = &ExpressionScope{}
+				scope = &ExpressionScope{
+					Parent: scope,
+				}
 				continue fragments
 			}
 		}
