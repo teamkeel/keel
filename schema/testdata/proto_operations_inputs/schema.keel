@@ -2,6 +2,7 @@ model Foo {
     fields {
         f1 Text
     }
+
     operations {
         get opA(id)
         list opB(f1)

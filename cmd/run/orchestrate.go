@@ -12,7 +12,7 @@ import (
 // CommandImplementation is the main call-to-action function for the run command.
 // Its responsibility is to orchestrate the command's behaviour.
 func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
-	fmt.Printf("Starting PostgreSQL")
+	fmt.Printf("Starting PostgreSQL\n")
 	db, err := postgres.BringUpPostgresLocally()
 	if err != nil {
 		return fmt.Errorf("could not bring up postgres locally: %v", err)
@@ -28,7 +28,7 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// We refresh the migrations as the command comes up, (before we start the watcher),
 	// to make sure the database reflects the current user's schema.
 	schemaDir, _ := cmd.Flags().GetString("dir")
-	if err := doMigrationBasedOnSchemaChanges(db, schemaDir); err != nil {
+	if _, err := doMigrationBasedOnSchemaChanges(db, schemaDir); err != nil {
 		return err
 	}
 
