@@ -1,0 +1,17 @@
+model Person {
+    fields {
+        email Text @unique
+        phone Text
+    }
+
+    operations {
+        get getPerson(email)
+        create createPerson() with (email, phone)
+    }
+}
+
+api Web {
+    models {
+        Person
+    }
+}

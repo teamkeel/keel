@@ -1,0 +1,3 @@
+mutation {
+    createHomoSapien(email: "foo@bar.com", phone: "123456778") { email, phone }
+}
