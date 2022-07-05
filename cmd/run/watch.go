@@ -48,14 +48,25 @@ func NewSchemaChangedHandler(schemaDir string, db *sql.DB) *SchemaChangedHandler
 	}
 }
 
-// Handle is the callback function that receives change events.
+// Handle is the callback function that receives notifications that a schema file has changed.
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 	fmt.Printf("File changed: %s\n", schemaThatHasChanged)
 
-	// Deliberately ignoring errors returned by this call in the context of
-	// the handler, because they get printed when they occur, and because the handler
-	// is called from the watching goroutine, it has nothing to return them to.
-	doMigrationBasedOnSchemaChanges(h.db, h.schemaDir)
+	// TODO stop the existing GraphQL API server - because it is now in disrepute.
+
+	// migrate the database to the changed schema
+	newSchemaJSON, err := doMigrationBasedOnSchemaChanges(h.db, h.schemaDir)
+	if err != nil {
+		fmt.Printf("error: database migrations failed with error: %v", err)
+		return
+	}
+
+	// And start a new GraphQL API server - serving the operations defined in the
+	// new schema.
+	if err := startAPIServerAsync(newSchemaJSON); err != nil {
+		fmt.Printf("error: could not start your API server: %v", err)
+		return
+	}
 }
 
 func isRelevantEventType(op fsnotify.Op) bool {

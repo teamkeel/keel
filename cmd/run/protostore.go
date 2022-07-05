@@ -35,17 +35,20 @@ func initDBIfNecessary(db *sql.DB) error {
 
 // saveProtoToDb updates the database's store of the last known
 // schema with the given schema.
-func saveProtoToDb(p *proto.Schema, db *sql.DB) error {
+func saveProtoToDb(p *proto.Schema, db *sql.DB) (newProtoJSON string, err error) {
 	b, err := json.Marshal(p)
 	if err != nil {
-		return fmt.Errorf("could not save protobuf (json marshal): %v", err)
+		return "", fmt.Errorf("could not save protobuf (json marshal): %v", err)
 	}
-	updateSQL := migrations.UpdateSingleStringColumn(tableForProtobuf, columnForTheJson, string(b))
+	newProtoJSON = string(b)
+	updateSQL := migrations.UpdateSingleStringColumn(tableForProtobuf, columnForTheJson, newProtoJSON)
 
-	if _, err := db.Exec(updateSQL); err != nil {
-		return fmt.Errorf("error saving last-known protobuf: %v", err)
+	sqlResult, err := db.Exec(updateSQL)
+	if err != nil {
+		return "", fmt.Errorf("error saving last-known protobuf: %v", err)
 	}
-	return nil
+	_ = sqlResult
+	return newProtoJSON, nil
 }
 
 // fetchProtoFromDb provides the last-known good schema from the database.

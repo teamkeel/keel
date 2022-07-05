@@ -12,8 +12,9 @@
             "program": "${fileDirname}",
             "args": [
                 "run",
-                "-d", "../../schema/testdata/kitchen_sink",
-             ]
+                "-d",
+                "../../schema/testdata/proto_operations_inputs",
+            ]
         }
     ]
 }
