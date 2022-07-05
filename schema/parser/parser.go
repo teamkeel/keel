@@ -13,10 +13,19 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 )
 
+type GenericNode interface {
+	node.ParserNode
+	fmt.Stringer
+}
+
 type AST struct {
 	node.Node
 
-	Declarations []*DeclarationNode `@@+`
+	Declarations []*DeclarationNode `@@*`
+}
+
+func (ast *AST) String() string {
+	return "AST"
 }
 
 type DeclarationNode struct {
@@ -24,8 +33,12 @@ type DeclarationNode struct {
 
 	Model *ModelNode `("model" @@`
 	Role  *RoleNode  `| "role" @@`
-	API   *APINode   `| "api" @@)`
-	Enum  *EnumNode  `| @@`
+	API   *APINode   `| "api" @@`
+	Enum  *EnumNode  `| "enum" @@)`
+}
+
+func (ast *DeclarationNode) String() string {
+	return "DeclarationNode"
 }
 
 type ModelNode struct {
@@ -36,17 +49,21 @@ type ModelNode struct {
 	BuiltIn  bool
 }
 
-func (model *ModelNode) ToString() string {
-	return model.Name.Value
+func (ast *ModelNode) String() string {
+	return "ModelNode"
 }
 
 type ModelSectionNode struct {
 	node.Node
 
-	Fields     []*FieldNode   `( "fields" "{" @@+ "}"`
-	Functions  []*ActionNode  `| "functions" "{" @@+ "}"`
-	Operations []*ActionNode  `| "operations" "{" @@+ "}"`
+	Fields     []*FieldNode   `( "fields" "{" @@* "}"`
+	Functions  []*ActionNode  `| "functions" "{" @@* "}"`
+	Operations []*ActionNode  `| "operations" "{" @@* "}"`
 	Attribute  *AttributeNode `| @@)`
+}
+
+func (ast *ModelSectionNode) String() string {
+	return "ModelSectionNode"
 }
 
 type NameNode struct {
@@ -55,10 +72,18 @@ type NameNode struct {
 	Value string `@Ident`
 }
 
+func (ast *NameNode) String() string {
+	return "NameNode"
+}
+
 type AttributeNameToken struct {
 	node.Node
 
 	Value string `"@" @Ident`
+}
+
+func (ast *AttributeNameToken) String() string {
+	return "AttributeNameToken"
 }
 
 type FieldNode struct {
@@ -76,7 +101,7 @@ type FieldNode struct {
 	BuiltIn bool
 }
 
-func (field *FieldNode) ToString() string {
+func (field *FieldNode) String() string {
 	return field.Name.Value
 }
 
@@ -87,11 +112,19 @@ type APINode struct {
 	Sections []*APISectionNode `"{" @@* "}"`
 }
 
+func (ast *APINode) String() string {
+	return "APINode"
+}
+
 type APISectionNode struct {
 	node.Node
 
 	Models    []*ModelsNode  `("models" "{" @@* "}"`
 	Attribute *AttributeNode `| @@)`
+}
+
+func (ast *APISectionNode) String() string {
+	return "APISectionNode"
 }
 
 type RoleNode struct {
@@ -101,11 +134,19 @@ type RoleNode struct {
 	Sections []*RoleSectionNode `"{" @@* "}"`
 }
 
+func (ast *RoleNode) String() string {
+	return "RoleNode"
+}
+
 type RoleSectionNode struct {
 	node.Node
 
 	Domains []*DomainNode `("domains" "{" @@* "}"`
 	Emails  []*EmailsNode `| "emails" "{" @@* "}")`
+}
+
+func (ast *RoleSectionNode) String() string {
+	return "RoleSectionNode"
 }
 
 type DomainNode struct {
@@ -114,16 +155,28 @@ type DomainNode struct {
 	Domain string `@String`
 }
 
+func (ast *DomainNode) String() string {
+	return "DomainNode"
+}
+
 type EmailsNode struct {
 	node.Node
 
 	Email string `@String`
 }
 
+func (ast *EmailsNode) String() string {
+	return "EmailsNode"
+}
+
 type ModelsNode struct {
 	node.Node
 
 	Name NameNode `@@`
+}
+
+func (ast *ModelsNode) String() string {
+	return "ModelsNode"
 }
 
 type AttributeNode struct {
@@ -133,11 +186,19 @@ type AttributeNode struct {
 	Arguments []*AttributeArgumentNode `( "(" @@ ( "," @@ )* ")" )?`
 }
 
+func (ast *AttributeNode) String() string {
+	return "AttributeNode"
+}
+
 type AttributeArgumentNode struct {
 	node.Node
 
 	Label      *NameNode               `(@@ ":")?`
 	Expression *expressions.Expression `@@`
+}
+
+func (ast *AttributeArgumentNode) String() string {
+	return "AttributeArgumentNode"
 }
 
 type ActionNode struct {
@@ -150,6 +211,10 @@ type ActionNode struct {
 	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
 
+func (ast *ActionNode) String() string {
+	return "ActionNode"
+}
+
 type ActionInputNode struct {
 	node.Node
 
@@ -157,6 +222,10 @@ type ActionInputNode struct {
 	Type     expressions.Ident `@@`
 	Repeated bool              `( @( "[" "]" )`
 	Optional bool              `| @( "?" ))?`
+}
+
+func (ast *ActionInputNode) String() string {
+	return "ActionInputNode"
 }
 
 func (a *ActionInputNode) Name() string {
@@ -179,14 +248,22 @@ func (a *ActionInputNode) Name() string {
 type EnumNode struct {
 	node.Node
 
-	Name   NameNode         `"enum" @@`
-	Values []*EnumValueNode `"{" @@+ "}"`
+	Name   NameNode         `@@`
+	Values []*EnumValueNode `"{" @@* "}"`
+}
+
+func (ast *EnumNode) String() string {
+	return "EnumNode"
 }
 
 type EnumValueNode struct {
 	node.Node
 
 	Name NameNode `@@`
+}
+
+func (ast *EnumValueNode) String() string {
+	return "EnumValueNode"
 }
 
 type Error struct {
@@ -206,6 +283,21 @@ func (e Error) Error() string {
 func (e Error) GetPositionRange() (start lexer.Position, end lexer.Position) {
 	pos := e.err.Position()
 	return pos, pos
+}
+
+func (e Error) InRange(position node.Position) bool {
+	// Just use Node's implementation of InRange
+	return node.Node{Pos: e.err.Position()}.InRange(position)
+}
+
+func (e Error) GetTokens() []lexer.Token {
+	return []lexer.Token{}
+}
+
+func (e Error) HasEndPosition() bool {
+	// Just use Node's implementation of InRange
+	return node.Node{Pos: e.err.Position()}.HasEndPosition()
+
 }
 
 func Parse(s *reader.SchemaFile) (*AST, error) {
@@ -236,10 +328,10 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 		// error
 		perr, ok := err.(participle.Error)
 		if ok {
-			return nil, Error{perr}
+			return schema, Error{perr}
 		}
 
-		return nil, err
+		return schema, err
 	}
 
 	return schema, nil

@@ -2,11 +2,19 @@ package parser
 
 // Keywords
 const (
-	KeywordModel     = "model"
-	KeywordApi       = "api"
-	KeywordField     = "field"
-	KeywordOperation = "operation"
-	KeywordFunction  = "function"
+	KeywordModel      = "model"
+	KeywordModels     = "models"
+	KeywordApi        = "api"
+	KeywordField      = "field"
+	KeywordFields     = "fields"
+	KeywordOperations = "operations"
+	KeywordFunctions  = "functions"
+	KeywordOperation  = "operation"
+	KeywordFunction   = "function"
+	KeywordDomains    = "domains"
+	KeywordEmails     = "emails"
+	KeywordRole       = "role"
+	KeywordEnum       = "enum"
 )
 
 // Built in Keel types. Worth noting a field type can also reference

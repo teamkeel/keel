@@ -1,0 +1,15 @@
+model Post {
+  f
+}
+
+===
+
+line: 2
+column: 4
+
+===
+
+fields
+operations
+functions
+@permission

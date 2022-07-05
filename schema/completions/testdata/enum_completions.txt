@@ -1,0 +1,23 @@
+
+enum Planets {
+    Mercury
+    Venus
+    Earth
+    Mars
+    Jupiter
+    Saturn
+    Uranus
+    Neptune
+}
+
+===
+
+line: 1
+column: 1
+
+===
+
+model
+api
+role
+enum

@@ -1,0 +1,13 @@
+model Post {
+  fields {
+
+  }
+}
+
+===
+
+line: 3
+column: 1
+
+===
+
