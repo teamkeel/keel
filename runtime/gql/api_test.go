@@ -12,6 +12,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema"
+	"gorm.io/gorm"
 )
 
 // TestHandlerSuite is a table-driven test suite for the Handler type's behaviour.
@@ -57,7 +58,9 @@ func runTestCase(t *testing.T, dirPath string) {
 	protoJSON, err := json.Marshal(protoSchema)
 	require.NoError(t, err)
 
-	handlers, err := NewHandlersFromJSON(string(protoJSON))
+	var gormDB *gorm.DB = nil // todo provide a suitably initialised db to the this test fixture
+
+	handlers, err := NewHandlersFromJSON(string(protoJSON), gormDB)
 	require.NoError(t, err)
 	chosenHandler, ok := handlers["Web"] // There is one handler per each API defined in the Keel schema.
 	require.True(t, ok)
