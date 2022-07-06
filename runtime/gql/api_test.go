@@ -9,7 +9,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/graphql-go/graphql"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema"
 	"gorm.io/gorm"
@@ -21,7 +20,9 @@ import (
 // Each such directory should contain:
 //	o  The keel schema to use
 //  o  The graphql request(s) to send (in sequence)
-//  o  Either the expected returned data, or the expected returned errors (for the last of those requests)
+//  o  Either the expected responses for each request, or the expected returned errors (for the last of the requests)
+// The idea being that the first request might Create some data, and a second might query it.
+// Or more generally put, the later requests are dependent on the earlier ones.
 func TestHandlersSuite(t *testing.T) {
 	testCasesParent := "../testdata"
 	subDirs, err := ioutil.ReadDir(testCasesParent)
@@ -33,10 +34,9 @@ func TestHandlersSuite(t *testing.T) {
 		}
 		dirName := dir.Name()
 
-		// This is isolate just one of the tests during development
-		var isolateDir string
-		isolateDir = "create-simplest-error"
-		isolateDir = ""
+		// This is to make it quick and easy to isolate just one of the tests during development
+		var isolateDir string = ""
+		//isolateDir = "create-simplest-happy"
 		if isolateDir != "" && dirName != isolateDir {
 			continue
 		}
@@ -52,6 +52,7 @@ func TestHandlersSuite(t *testing.T) {
 
 func runTestCase(t *testing.T, dirPath string) {
 
+	// Make the proto schema from the Keel schema.
 	s2m := schema.Builder{}
 	protoSchema, err := s2m.MakeFromDirectory(dirPath)
 	require.NoError(t, err)
@@ -60,39 +61,57 @@ func runTestCase(t *testing.T, dirPath string) {
 
 	var gormDB *gorm.DB = nil // todo provide a suitably initialised db to the this test fixture
 
+	// Construct the handers we wish to test.
 	handlers, err := NewHandlersFromJSON(string(protoJSON), gormDB)
 	require.NoError(t, err)
 	chosenHandler, ok := handlers["Web"] // There is one handler per each API defined in the Keel schema.
 	require.True(t, ok)
 
-	// Fetch the list of GraphQL queries required for this test case, and execute them
-	// in turn. If there are more than one, the earlier ones will be setup for the final one, and
-	// therefore, we are only interested in the result from the last one.
-	gqlRequests := assembleRequests(t, dirPath, requestFile)
-	var result *graphql.Result
-	finalRequest := len(gqlRequests) - 1
-	for i, req := range gqlRequests {
-		result = chosenHandler.Handle(string(req))
-		if i != finalRequest { // All but the last request must always work without error.
-			if len(result.Errors) != 0 {
-				t.Fatalf("error encountered on one of the set-up gql requests: %v", result.Errors)
+	// Identify the sequence of GraphQL queries we want to execute.
+	gqlRequests := splitOutSections(t, dirPath, requestFile)
+
+	// Now we exercise the handler with each request in turn.
+	// The checking depends on if this test fixture has implied a happy path or error path check.
+
+	// For happy path tests, we expect the response to each request to match that specified
+	// in the test case, and expect no errors.
+	if expectingHappyPath(t, dirPath) {
+		t.Logf("Is happy path\n")
+		expectedDataResponses := splitOutSections(t, dirPath, expectedDataFile)
+		for i, req := range gqlRequests {
+			t.Logf("Doing request number: %d\n", i)
+			result := chosenHandler.Handle(string(req))
+			require.Equal(t, 0, len(result.Errors))
+
+			expectedData := expectedDataResponses[i]
+			actualData, err := json.MarshalIndent(result.Data, "", "  ")
+			if os.Getenv("DEBUG") != "" {
+				t.Logf("Actual data json is: \n%s\n", actualData)
+			}
+			require.NoError(t, err)
+			require.JSONEq(t, string(expectedData), string(actualData))
+		}
+	} else {
+
+		t.Logf("Is error path\n")
+		// For error checking tests, we expect all the requests except for the last one
+		// to run without errors, and for the last request to return an error as defined by the test case.
+		for i, req := range gqlRequests {
+			t.Logf("Doing request number: %d\n", i)
+			result := chosenHandler.Handle(string(req))
+			isFinalRequest := i == len(gqlRequests)-1
+			if isFinalRequest {
+				expectedErrors := fileContents(t, filepath.Join(dirPath, expectedErrorsFile))
+				actualErrors, err := json.MarshalIndent(result.Errors, "", "  ")
+				if os.Getenv("DEBUG") != "" {
+					t.Logf("Actual error json is: \n%s\n", actualErrors)
+				}
+				require.NoError(t, err)
+				require.JSONEq(t, string(expectedErrors), string(actualErrors))
+			} else {
+				require.Equal(t, 0, len(result.Errors))
 			}
 		}
-	}
-
-	if expectingHappyPath(t, dirPath) {
-		expectedData := fileContents(t, filepath.Join(dirPath, expectedDataFile))
-		actualData, err := json.MarshalIndent(result.Data, "", "  ")
-		require.NoError(t, err)
-		require.JSONEq(t, string(expectedData), string(actualData))
-	} else {
-		expectedErrors := fileContents(t, filepath.Join(dirPath, expectedErrorsFile))
-		actualErrors, err := json.MarshalIndent(result.Errors, "", "  ")
-		if os.Getenv("DEBUG") != "" {
-			t.Logf("Actual error json is: \n%s\n", actualErrors)
-		}
-		require.NoError(t, err)
-		require.JSONEq(t, string(expectedErrors), string(actualErrors))
 	}
 }
 
@@ -119,18 +138,15 @@ func fileContents(t *testing.T, filePath string) []byte {
 	return data
 }
 
-// 	request := fileContents(t, filepath.Join(dirPath, requestFile))
-
-// assembleRequests expects to find 1 or more graphql requests in the request file -
-// delimitted by a special reserved string token. It returns the requests thus
-// delimited as strings.
-func assembleRequests(t *testing.T, dirPath string, requestFile string) (requests []string) {
-	contents := string(fileContents(t, filepath.Join(dirPath, requestFile)))
-	return strings.Split(contents, requestDelim)
+// splitOutSections, reads the given file, and splits its contents into sections using
+// a dedicated delimiter.
+func splitOutSections(t *testing.T, dirPath string, file string) (sections []string) {
+	contents := string(fileContents(t, filepath.Join(dirPath, file)))
+	return strings.Split(contents, delimiter)
 }
 
 const expectedDataFile string = "response.json"
 const expectedErrorsFile string = "errors.json"
 const requestFile string = "request.gql"
 
-const requestDelim string = `--nextrequest--`
+const delimiter string = `--next section--`
