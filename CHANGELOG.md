@@ -1,3 +1,10 @@
+# [0.46.0](https://github.com/teamkeel/keel/compare/v0.45.0...v0.46.0) (2022-07-06)
+
+
+### Features
+
+* do API server stop/start lifecycle properly ([#128](https://github.com/teamkeel/keel/issues/128)) ([9a38a0c](https://github.com/teamkeel/keel/commit/9a38a0ca501317d7cec5e06ca53491c15a450cf6))
+
 # [0.45.0](https://github.com/teamkeel/keel/compare/v0.44.4...v0.45.0) (2022-07-04)
 
 
