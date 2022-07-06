@@ -20,19 +20,27 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 
 	// This sets up internal configuration and state in the database - only if it
 	// has not been done in an earlier run. It means that all subsequent code can
-	// then safely retreive the last-known protobuf used - which makes it simpler.
+	// then safely retreive the last-known protobuf used - which makes the code simpler.
 	if err := initDBIfNecessary(db); err != nil {
 		return fmt.Errorf("error initialising the database: %v", err)
 	}
 
-	// We refresh the migrations as the command comes up, (before we start the watcher),
-	// to make sure the database reflects the current user's schema.
+	// Before we enter schema-watching mode, we have to consider that this might be
+	// the first run ever, or the user's schema may have changed on disk *after* they last
+	// launched the Run command. So we do a migration just in case, and (providing the migration was
+	// successful, we also bring up their GraphQL API server representing the current state of the
+	// schema.
 	schemaDir, _ := cmd.Flags().GetString("dir")
-	if _, err := doMigrationBasedOnSchemaChanges(db, schemaDir); err != nil {
+	protoSchemaJSON, err := doMigrationBasedOnSchemaChanges(db, schemaDir)
+	if err != nil {
+		return err
+	}
+	handler := NewSchemaChangedHandler(schemaDir, db)
+	if err := handler.retartAPIServer(protoSchemaJSON); err != nil {
 		return err
 	}
 
-	// The run command remains passive now, until the user changes their schema, so we establish
+	// The run command remains quiescent now, until the user changes their schema, so we establish
 	// a watcher on the schema directorty.
 	directoryWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -40,7 +48,6 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	}
 	defer directoryWatcher.Close()
 
-	handler := NewSchemaChangedHandler(schemaDir, db)
 	// goroutine housekeeping note: This goroutine lives for as long as the Keel-Run command is running, and its
 	// resources are released when the command terminates (with CTRL-C).
 	go reactToSchemaChanges(directoryWatcher, handler)
@@ -58,6 +65,11 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// Block the main go routine to keep the process alive until the user kills it with CTRL-C.
 	ch := make(chan bool)
 	<-ch
+
+	// Todo - we must not forget housekeeping on close...
+	//
+	// - the dockerized database
+	// - the GraphQL API server
 
 	return nil
 }

@@ -11,15 +11,17 @@ import (
 // The Run command does this:
 //
 // - Starts Postgres locally in a docker container.
-// - If this is the first run ever, then perform initial database migrations.
+// - If this is the first run ever, then:
+//		-  perform initial database migrations
+//		-  generate and start a GraphQL server that embodies the APIs in the schema
 // - Setting up a watcher on the input schema directory with a handler that
 //   reacts to changes as follows:
-//
 // 		- Parse and validate the input schema files.
 // 		- Build the protobuffer schema representation.
 // 		- Analyse the differences between the new and previous schema
 //		- Generate the database migration SQL required
 // 		- Perform this migration on the running database.
+//      - Restarts the GraphQL API server
 
 var cobraCommandWrapper = &cobra.Command{
 	Use:   "run",

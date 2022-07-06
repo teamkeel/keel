@@ -3,6 +3,7 @@ package run
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/fsnotify/fsnotify"
@@ -36,7 +37,10 @@ func reactToSchemaChanges(watcher *fsnotify.Watcher, handler *SchemaChangedHandl
 
 // A SchemaChangedHandler knows how to react to changes taking place in a schema directory.
 type SchemaChangedHandler struct {
-	db        *sql.DB
+	db *sql.DB
+
+	// We retain a reference to the server, to support a later call to svr.Shutdown().
+	apiServer *http.Server
 	schemaDir string
 }
 
@@ -52,19 +56,16 @@ func NewSchemaChangedHandler(schemaDir string, db *sql.DB) *SchemaChangedHandler
 func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 	fmt.Printf("File changed: %s\n", schemaThatHasChanged)
 
-	// TODO stop the existing GraphQL API server - because it is now in disrepute.
-
-	// migrate the database to the changed schema
+	// Migrate the database to the changed schema
 	newSchemaJSON, err := doMigrationBasedOnSchemaChanges(h.db, h.schemaDir)
 	if err != nil {
 		fmt.Printf("error: database migrations failed with error: %v", err)
 		return
 	}
 
-	// And start a new GraphQL API server - serving the operations defined in the
-	// new schema.
-	if err := startAPIServerAsync(newSchemaJSON); err != nil {
-		fmt.Printf("error: could not start your API server: %v", err)
+	// And restart the API server
+	if err = h.retartAPIServer(newSchemaJSON); err != nil {
+		fmt.Printf("error: could not restart your API server: %v", err)
 		return
 	}
 }
