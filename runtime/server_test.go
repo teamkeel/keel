@@ -12,6 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema"
+	"gorm.io/gorm"
 )
 
 func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
@@ -23,7 +24,10 @@ func TestJustToDriveInitialCodingAndCompiling(t *testing.T) {
 	protoJSON, err := json.Marshal(protoSchema)
 	require.NoError(t, err)
 
-	svr, err := NewServer(string(protoJSON))
+	// todo set up the database properly
+	var gormDB *gorm.DB = nil
+
+	svr, err := NewServer(string(protoJSON), gormDB)
 	require.NoError(t, err)
 
 	defer svr.Shutdown(context.Background())

@@ -4,16 +4,18 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/teamkeel/keel/postgres"
+	keelpostgres "github.com/teamkeel/keel/postgres"
 
 	"github.com/fsnotify/fsnotify"
+	gormpostgres "gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 // CommandImplementation is the main call-to-action function for the run command.
 // Its responsibility is to orchestrate the command's behaviour.
 func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	fmt.Printf("Starting PostgreSQL\n")
-	db, err := postgres.BringUpPostgresLocally()
+	sqlDB, err := keelpostgres.BringUpPostgresLocally()
 	if err != nil {
 		return fmt.Errorf("could not bring up postgres locally: %v", err)
 	}
@@ -21,9 +23,15 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// This sets up internal configuration and state in the database - only if it
 	// has not been done in an earlier run. It means that all subsequent code can
 	// then safely retreive the last-known protobuf used - which makes the code simpler.
-	if err := initDBIfNecessary(db); err != nil {
+	if err := initDBIfNecessary(sqlDB); err != nil {
 		return fmt.Errorf("error initialising the database: %v", err)
 	}
+
+	// For what follows, we need to establish a gorm database connection - which we can compose with a shortcut,
+	// function that consumes our existing sql.DB connection.
+	gormDB, err := gorm.Open(gormpostgres.New(gormpostgres.Config{
+		Conn: sqlDB,
+	}), &gorm.Config{})
 
 	// Before we enter schema-watching mode, we have to consider that this might be
 	// the first run ever, or the user's schema may have changed on disk *after* they last
@@ -31,11 +39,11 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// successful, we also bring up their GraphQL API server representing the current state of the
 	// schema.
 	schemaDir, _ := cmd.Flags().GetString("dir")
-	protoSchemaJSON, err := doMigrationBasedOnSchemaChanges(db, schemaDir)
+	protoSchemaJSON, err := doMigrationBasedOnSchemaChanges(sqlDB, schemaDir)
 	if err != nil {
 		return err
 	}
-	handler := NewSchemaChangedHandler(schemaDir, db)
+	handler := NewSchemaChangedHandler(schemaDir, sqlDB, gormDB)
 	if err := handler.retartAPIServer(protoSchemaJSON); err != nil {
 		return err
 	}

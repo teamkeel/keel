@@ -18,7 +18,7 @@ func (h *SchemaChangedHandler) retartAPIServer(schemaJSON string) (err error) {
 		}
 	}
 
-	h.apiServer, err = runtime.NewServer(schemaJSON)
+	h.apiServer, err = runtime.NewServer(schemaJSON, h.gormDB)
 	if err != nil {
 		return err
 	}
@@ -26,9 +26,10 @@ func (h *SchemaChangedHandler) retartAPIServer(schemaJSON string) (err error) {
 	// todo put in note about goroutine housekeeping
 	go func() {
 		err := h.apiServer.ListenAndServe()
-		if err != nil {
-			fmt.Printf("server ListenAndServe terminated with this error: %v", err)
-		}
+		// todo: this is documented as always returning a non-nil error.
+		// but that includes our routine case, when we restart the server.
+		// So do we need to discrimate between this error case and other error cases?
+		_ = err
 	}()
 
 	fmt.Printf("Your GraphQL server has been restarted - serving your APIs at localhost:8080/graphql/<api-name>\n")
