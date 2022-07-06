@@ -66,5 +66,10 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	ch := make(chan bool)
 	<-ch
 
+	// Todo - we must not forget housekeeping on close...
+	//
+	// - the dockerized database
+	// - the GraphQL API server
+
 	return nil
 }
