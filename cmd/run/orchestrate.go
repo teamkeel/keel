@@ -15,7 +15,14 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 
 	schemaDir, _ := cmd.Flags().GetString("dir")
 
+	// Todo - the error handling here, means that if you launch the Run command with
+	// an invalid schema - it bombs out. Whereas before it survived and just waited
+	// in the watching loop (below) for the schema to become valid.
+	// Need to decide if it's ok to bomb out in this situation.
 	sqlDB, gormDB, protoSchemaJSON, err := localdb.BringUpLocalDBToMatchSchema(schemaDir)
+	if err != nil {
+		return err
+	}
 
 	handler := NewSchemaChangedHandler(schemaDir, sqlDB, gormDB)
 	if err := handler.retartAPIServer(protoSchemaJSON); err != nil {
