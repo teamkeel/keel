@@ -8,6 +8,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/migrations"
 	"gorm.io/gorm"
 )
 
@@ -60,7 +61,7 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 	fmt.Printf("File changed: %s\n", schemaThatHasChanged)
 
 	// Migrate the database to the changed schema
-	newSchemaJSON, err := doMigrationBasedOnSchemaChanges(h.sqlDB, h.schemaDir)
+	newSchemaJSON, err := migrations.DoMigrationBasedOnSchemaChanges(h.sqlDB, h.schemaDir)
 	if err != nil {
 		fmt.Printf("error: database migrations failed with error: %v", err)
 		return

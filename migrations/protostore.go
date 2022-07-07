@@ -1,19 +1,18 @@
-package run
+package migrations
 
 import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
 
-	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 )
 
-// initDBIfNecessary - sets up the storage for the last-known protobuf schema in the database (as JSON).
+// InitProtoSchemaStore - sets up the storage for the last-known protobuf schema in the database (as JSON).
 // The store comprises a dedicated, single-column table, that we expect to have just a single row.
 // If the database is already set up the way we need it to be - by virtue of some previous run,
 // the function is harmless and makes no changes.
-func initDBIfNecessary(db *sql.DB) error {
+func InitProtoSchemaStore(db *sql.DB) error {
 
 	// Make the proto table if it does not already exist.
 	if err := makeTableForLastKnownProto(db); err != nil {
@@ -33,15 +32,15 @@ func initDBIfNecessary(db *sql.DB) error {
 	return nil
 }
 
-// saveProtoToDb updates the database's store of the last known
+// SaveProtoToDb updates the database's store of the last known
 // schema with the given schema.
-func saveProtoToDb(p *proto.Schema, db *sql.DB) (newProtoJSON string, err error) {
+func SaveProtoToDb(p *proto.Schema, db *sql.DB) (newProtoJSON string, err error) {
 	b, err := json.Marshal(p)
 	if err != nil {
 		return "", fmt.Errorf("could not save protobuf (json marshal): %v", err)
 	}
 	newProtoJSON = string(b)
-	updateSQL := migrations.UpdateSingleStringColumn(tableForProtobuf, columnForTheJson, newProtoJSON)
+	updateSQL := UpdateSingleStringColumn(tableForProtobuf, columnForTheJson, newProtoJSON)
 
 	sqlResult, err := db.Exec(updateSQL)
 	if err != nil {
@@ -51,10 +50,10 @@ func saveProtoToDb(p *proto.Schema, db *sql.DB) (newProtoJSON string, err error)
 	return newProtoJSON, nil
 }
 
-// fetchProtoFromDb provides the last-known good schema from the database.
+// FetchProtoFromDb provides the last-known good schema from the database.
 // I.e. the one that was used to determine the most recent database migrations.
-func fetchProtoFromDb(db *sql.DB) (*proto.Schema, error) {
-	theSQL := migrations.SelectSingleColumn(tableForProtobuf, columnForTheJson)
+func FetchProtoFromDb(db *sql.DB) (*proto.Schema, error) {
+	theSQL := SelectSingleColumn(tableForProtobuf, columnForTheJson)
 	row := db.QueryRow(theSQL)
 	var theJSON string
 	if err := row.Scan(&theJSON); err != nil {
@@ -79,7 +78,7 @@ func makeTableForLastKnownProto(db *sql.DB) error {
 			},
 		},
 	}
-	sql := migrations.CreateTableIfNotExists(tableForProtobuf, fields)
+	sql := CreateTableIfNotExists(tableForProtobuf, fields)
 	if _, err := db.Exec(sql); err != nil {
 		return fmt.Errorf("error trying to create protobuf table: %v", err)
 	}
@@ -88,7 +87,7 @@ func makeTableForLastKnownProto(db *sql.DB) error {
 
 // isProtoTableEmpty returns true if the protobuf table has no rows.
 func isProtoTableEmpty(db *sql.DB) (bool, error) {
-	theSQL := migrations.SelectSingleColumn(tableForProtobuf, columnForTheJson)
+	theSQL := SelectSingleColumn(tableForProtobuf, columnForTheJson)
 	row := db.QueryRow(theSQL)
 	var theJSON string
 	err := row.Scan(&theJSON)
@@ -110,7 +109,7 @@ func insertInitialProtoRow(db *sql.DB) error {
 	if err != nil {
 		return nil
 	}
-	sql := migrations.InsertRowComprisingSingleString(tableForProtobuf, string(theJSON))
+	sql := InsertRowComprisingSingleString(tableForProtobuf, string(theJSON))
 	if _, err := db.Exec(sql); err != nil {
 		return err
 	}

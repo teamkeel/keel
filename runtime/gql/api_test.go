@@ -10,8 +10,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/localdb"
+	keelpostgres "github.com/teamkeel/keel/postgres"
 	"github.com/teamkeel/keel/schema"
-	"gorm.io/gorm"
 )
 
 // TestHandlerSuite is a table-driven test suite for the Handler type's behaviour.
@@ -28,6 +29,10 @@ func TestHandlersSuite(t *testing.T) {
 	subDirs, err := ioutil.ReadDir(testCasesParent)
 	require.NoError(t, err)
 
+	// We start a new postgres container for each case in the suite, and stop it again
+	// at the end of each case. So we want to start the suite with it stopped.
+	keelpostgres.StopThePostgresContainer()
+
 	for _, dir := range subDirs {
 		if !dir.IsDir() {
 			continue
@@ -36,7 +41,7 @@ func TestHandlersSuite(t *testing.T) {
 
 		// This is to make it quick and easy to isolate just one of the tests during development
 		var isolateDir string = ""
-		//isolateDir = "create-simplest-happy"
+		//isolateDir = "get-simplest-happy"
 		if isolateDir != "" && dirName != isolateDir {
 			continue
 		}
@@ -59,7 +64,13 @@ func runTestCase(t *testing.T, dirPath string) {
 	protoJSON, err := json.Marshal(protoSchema)
 	require.NoError(t, err)
 
-	var gormDB *gorm.DB = nil // todo provide a suitably initialised db to the this test fixture
+	// Bring up a suitable database (that is migrated to this schema)
+	sqlDB, gormDB, _, err := localdb.BringUpLocalDBToMatchSchema(dirPath)
+	require.NoError(t, err)
+	defer func() {
+		sqlDB.Close()
+		keelpostgres.StopThePostgresContainer()
+	}()
 
 	// Construct the handers we wish to test.
 	handlers, err := NewHandlersFromJSON(string(protoJSON), gormDB)

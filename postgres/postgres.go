@@ -25,6 +25,13 @@ import (
 // connection when done with it.
 //
 // It deploys it with Docker.
+
+// It re-uses any previously used container when it can - including that is the
+// incumbent database state.
+//
+// But it can also cope with a virgin run when even the required Docker image
+// is not in the local docker registery.
+//
 // It pulls the postres docker image if it is not already available locally.
 // It leaves the default superuser name untouched "postgres".
 // It sets the password for that user to "postgres".
@@ -43,7 +50,7 @@ func BringUpPostgresLocally() (*sql.DB, error) {
 // StopThePostgresContainer stops the postgres container - having checked first
 // that such a container exists, and it is running.
 func StopThePostgresContainer() error {
-	fmt.Printf("Stopping the postgres container... ")
+	fmt.Printf("Stopping the postgres container\n")
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return fmt.Errorf("could not construct docker client: %v", err)
@@ -68,7 +75,6 @@ func StopThePostgresContainer() error {
 	if err != nil {
 		return fmt.Errorf("error trying to stop the container: %v", err)
 	}
-	fmt.Printf("Stopped\n")
 	return nil
 }
 
