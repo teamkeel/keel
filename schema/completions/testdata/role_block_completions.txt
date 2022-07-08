@@ -1,0 +1,13 @@
+role Admin {
+
+}
+
+===
+
+line: 2
+column: 1
+
+===
+
+emails
+domains

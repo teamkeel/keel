@@ -8,9 +8,6 @@
     ],
     "allowJs": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "baseUrl": ".",
-    "skipLibCheck": true
+    "strict": true
   }
 }

@@ -8,6 +8,14 @@ import (
 
 type ParserNode interface {
 	GetPositionRange() (start lexer.Position, end lexer.Position)
+	InRange(position Position) bool
+	HasEndPosition() bool
+	GetTokens() []lexer.Token
+}
+
+type Position struct {
+	Column int `json:"column"`
+	Line   int `json:"line"`
 }
 
 type Node struct {
@@ -51,4 +59,111 @@ func (n Node) GetPositionRange() (start lexer.Position, end lexer.Position) {
 	end.Column = endPos.Column + tokenLength
 
 	return start, end
+}
+
+func (n Node) InRange(position Position) bool {
+	line := position.Line
+	column := position.Column
+
+	hasEndPos := n.EndPos.Column != 0 && n.EndPos.Line != 0
+
+	if hasEndPos {
+		// line before
+		if line < n.Pos.Line {
+			return false
+		}
+
+		// line after
+		if line > n.EndPos.Line {
+			return false
+		}
+
+		// if the line in the editor is the same line as the start of the tokens
+		if line == n.Pos.Line {
+			// if the column is less than the start pos
+			// then its not in range
+			return column < n.Pos.Column
+		}
+
+		// if the position is in-between the range of start and end lines,
+		// return true
+		if line > n.Pos.Line && line < n.EndPos.Line {
+			return true
+		}
+
+		// if the line is the same line as the last token
+		// and the col is less than the column of the end of the last token
+		// return true
+		if line == n.Pos.Line && column <= n.EndPos.Column {
+			return true
+		}
+
+		// otherwise the line is the same line,
+		// but the column value is greater than the column
+		// of the last token
+		return false
+	}
+
+	// if there is no end pos, we can only compare the start
+	if line == n.Pos.Line {
+		return column >= n.Pos.Column
+	} else if line < n.Pos.Line {
+		return false
+	}
+
+	return true
+}
+
+// Due to the way we have structured our parser fields
+// Collection blocks with no content such as fields {} return
+// no nodes which means we cant purely rely on node.inRange check
+// so it is necessary to examine the underlying tokens
+// emitted by the parser
+func BoundaryTokensInRange(position Position, start lexer.Token, end lexer.Token) bool {
+	col := position.Column
+	line := position.Line
+
+	// line before
+	if line < start.Pos.Line {
+		return false
+	}
+
+	// line after
+	if line > end.Pos.Line {
+		return false
+	}
+
+	// if the line in the editor is the same line as the start of the tokens
+	if line == start.Pos.Line {
+		// if the column is less than the start pos
+		// then its not in range
+		return col < start.Pos.Column
+	}
+
+	// if the position is in-between the range of start and end lines,
+	// return true
+	if line > start.Pos.Line && line < end.Pos.Line {
+		return true
+	}
+
+	// if the line is the same line as the last token
+	// and the col is less than the column of the end of the last token
+	// return true
+	if line == end.Pos.Line && col <= end.Pos.Column {
+		return true
+	}
+
+	// otherwise the line is the same line,
+	// but the column value is greater than the column
+	// of the last token
+	return false
+}
+
+func (n Node) HasEndPosition() bool {
+	// Nodes in parents and after where a syntax error have occured will have these values below
+	return n.EndPos.Filename != "" && n.EndPos.Column > 0 && n.EndPos.Line > 0
+}
+
+func (n Node) GetTokens() []lexer.Token {
+	return n.Tokens
 }

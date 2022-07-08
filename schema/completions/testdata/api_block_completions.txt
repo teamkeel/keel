@@ -1,0 +1,13 @@
+api Web {
+
+}
+
+===
+
+line: 2
+column: 1
+
+===
+
+@graphql
+models

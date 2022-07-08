@@ -4,25 +4,40 @@ export interface GoExec {
 }
 
 export interface KeelAPI {
-  format: (schemaString: string) => string
-  validate: (schemaString: string, options: ValidateOptions) => ValidationResult
+  format: (schemaString: string) => Promise<string>
+  validate: (schemaString: string, options: ValidateOptions) => Promise<ValidationResult>
+  completions: (schemaString: string, position: SimplePosition) => Promise<CompletionResult>
 }
 
 export interface ValidateOptions {
   color: boolean
 }
 
-export interface Pos {
+export interface SimplePosition {
 	column: number
-	filename: string
 	line: number
+}
+
+export interface Position extends SimplePosition {
+	filename: string
 	offset: number
+}
+
+export interface CompletionItem {
+  description: string
+  label: string
+  node: Node
+}
+
+export interface CompletionResult {
+  completions: CompletionItem[]
+  ast: any
 }
 
 export interface ValidationError {
   code: string
-  pos: Pos
-  endPos: Pos
+  pos: Position
+  endPos: Position
   hint: string
   shortMessage: string
   message: string

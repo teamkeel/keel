@@ -1,0 +1,17 @@
+model Post {
+  fields {
+    something Text {
+      @something
+    }
+  }
+}
+
+===
+
+line: 4
+column: 1
+
+===
+
+@unique
+@default

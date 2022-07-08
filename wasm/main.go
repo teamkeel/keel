@@ -8,7 +8,9 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/format"
+	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -18,14 +20,45 @@ func init() {
 	// we have to declare our functions in an init func otherwise they aren't
 	// available in JS land at the call time.
 	js.Global().Set("keel", js.ValueOf(map[string]interface{}{
-		"validate": js.FuncOf(validate),
-		"format":   js.FuncOf(formatSchema),
+		"validate":    js.FuncOf(validate),
+		"format":      js.FuncOf(formatSchema),
+		"completions": js.FuncOf(provideCompletions),
 	}))
 }
 
 func main() {
 	done := make(chan bool)
 	<-done
+}
+
+func provideCompletions(this js.Value, args []js.Value) interface{} {
+	line := args[1].Get("line").Int()
+	column := args[1].Get("column").Int()
+
+	// A partial ast is returned from parser.Parse if there is a parse error
+	// the partial ast will include anything up to the parse error.
+	ast, _ := parser.Parse(
+		&reader.SchemaFile{
+			FileName: "schema.keel",
+			Contents: args[0].String(),
+		},
+	)
+
+	completions := completions.ProvideCompletions(ast, node.Position{
+		Column: column,
+		Line:   line,
+	})
+
+	astMap, _ := toMap(ast)
+
+	var untypedCompletions []interface{} = toUntypedArray(completions)
+
+	return js.ValueOf(
+		map[string]interface{}{
+			"completions": js.ValueOf(untypedCompletions),
+			"ast":         astMap,
+		},
+	)
 }
 
 func formatSchema(this js.Value, args []js.Value) interface{} {
@@ -119,4 +152,23 @@ func toMap(v interface{}) (map[string]interface{}, error) {
 	var res map[string]interface{}
 	err = json.Unmarshal(b, &res)
 	return res, err
+}
+
+func toUntypedArray(items []*completions.CompletionItem) (i []interface{}) {
+	for _, item := range items {
+		b, err := json.Marshal(item)
+
+		if err != nil {
+			continue
+		}
+		var res interface{}
+		err = json.Unmarshal(b, &res)
+
+		if err != nil {
+			continue
+		}
+		i = append(i, res)
+	}
+
+	return i
 }

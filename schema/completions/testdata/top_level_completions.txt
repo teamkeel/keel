@@ -1,0 +1,17 @@
+model Post {
+  fields {
+
+  }
+}
+
+===
+
+line: 1
+column: 1
+
+===
+
+model
+api
+role
+enum
