@@ -1,3 +1,10 @@
+# [0.47.0](https://github.com/teamkeel/keel/compare/v0.46.0...v0.47.0) (2022-07-08)
+
+
+### Features
+
+* expose basic completions api via wasm binary ([#131](https://github.com/teamkeel/keel/issues/131)) ([90703d2](https://github.com/teamkeel/keel/commit/90703d2d996794d76b030dd8ba32159c56e146fc))
+
 # [0.46.0](https://github.com/teamkeel/keel/compare/v0.45.0...v0.46.0) (2022-07-06)
 
 
