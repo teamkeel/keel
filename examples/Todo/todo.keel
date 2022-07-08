@@ -1,5 +1,4 @@
 model Account {
-
     fields {
         identity Identity @unique
         name Text
@@ -160,7 +159,6 @@ model Comment {
         actions: [update, delete]
     )
 }
-
 
 api Web {
     @graphql
