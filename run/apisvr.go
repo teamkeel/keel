@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 )
 
 // restartAPIServer stops and then restarts the GraphQL API server referenced by
 // the handler's apiServer field. It is safe to call it when the server has not
 // been started yet.
-func (h *SchemaChangedHandler) retartAPIServer(schemaJSON string) (err error) {
+func (h *SchemaChangedHandler) retartAPIServer(schema *proto.Schema) (err error) {
 	if h.apiServer != nil {
 		err := h.apiServer.Shutdown(context.Background())
 		if err != nil {
@@ -18,7 +19,7 @@ func (h *SchemaChangedHandler) retartAPIServer(schemaJSON string) (err error) {
 		}
 	}
 
-	h.apiServer, err = runtime.NewServer(schemaJSON, h.gormDB)
+	h.apiServer, err = runtime.NewServer(schema, h.gormDB)
 	if err != nil {
 		return err
 	}

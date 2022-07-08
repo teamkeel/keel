@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/gql"
 	"gorm.io/gorm"
 )
@@ -22,8 +23,8 @@ import (
 // from a deployment script.
 //
 // For the GraphQL heaving lifting it uses the handlers provided by /runtime/gql/.
-func NewServer(schemaProtoJSON string, gormDB *gorm.DB) (*http.Server, error) {
-	plainHandlers, err := gql.NewHandlersFromJSON(schemaProtoJSON, gormDB)
+func NewServer(schema *proto.Schema, gormDB *gorm.DB) (*http.Server, error) {
+	plainHandlers, err := gql.NewHandlers(schema, gormDB)
 	if err != nil {
 		return nil, err
 	}

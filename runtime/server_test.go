@@ -2,7 +2,6 @@ package runtime
 
 import (
 	"context"
-	"encoding/json"
 	"path/filepath"
 	"testing"
 
@@ -23,14 +22,12 @@ func TestServer(t *testing.T) {
 	schemaDir := filepath.Join(".", "testdata", "get-simplest-happy")
 
 	s2m := schema.Builder{}
-	protoSchema, err := s2m.MakeFromDirectory(schemaDir)
-	require.NoError(t, err)
-	protoJSON, err := json.Marshal(protoSchema)
+	schema, err := s2m.MakeFromDirectory(schemaDir)
 	require.NoError(t, err)
 
 	var gormDB *gorm.DB = nil
 
-	svr, err := NewServer(string(protoJSON), gormDB)
+	svr, err := NewServer(schema, gormDB)
 	require.NoError(t, err)
 	defer svr.Shutdown(context.Background())
 
