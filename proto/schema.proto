@@ -96,6 +96,42 @@ message OperationInput {
 
     // Set to true if this input field is optional
     bool optional = 6;
+
+    // Indicates whether the input is used for reading or writing data
+    InputMode mode = 7;
+
+    // Indicates whether the behaviour of this input is handled by Keel
+    // or if it is explicitly expressed in the schema
+    InputBehaviour behaviour = 8;
+
+    // If `behaviour` is INPUT_BEHAVIOUR_IMPLICIT then this field indicates the path to the
+    // field (from the parent model) that should be filtered/updated.
+    // As an example if the parent model had a field called `item` which was a relationship to
+    // an `Item` model which itself had a field called `price`, and this input wanted to filter
+    // on the item price, then the value of `target` would be ["item", "price"]
+    repeated string target = 9;
+}
+
+enum InputMode {
+    INPUT_MODE_UNKNOWN = 0;
+
+    // Read inputs are used for filtering results in get, list, and update actions
+    INPUT_MODE_READ = 1;
+
+    // Write inputs are used to set fields on a model in a create or update action
+    INPUT_MODE_WRITE = 2;
+}
+
+enum InputBehaviour {
+    INPUT_BEHAVIOUR_UNKNOWN = 0;
+
+    // Implicit behaviour means the input will be used automatically by Keel to either
+    // filter the results or write data
+    INPUT_BEHAVIOUR_IMPLICIT = 1;
+
+    // Explicit behaviour means the input is used in one of the `set_expressions` or
+    // `where_expressions` of the `Operation`
+    INPUT_BEHAVIOUR_EXPLICIT = 2;
 }
 
 message Role {

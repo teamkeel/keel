@@ -41,10 +41,17 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
             {
+              "modelName": "Person",
+              "operationName": "getPerson",
               "name": "personId",
               "type": {
                 "type": "TYPE_ID"
-              }
+              },
+              "mode": "INPUT_MODE_READ",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
+                "id"
+              ]
             }
           ],
           "whereExpressions": [
@@ -60,10 +67,14 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
             {
+              "modelName": "Person",
+              "operationName": "createPerson",
               "name": "name",
               "type": {
                 "type": "TYPE_STRING"
-              }
+              },
+              "mode": "INPUT_MODE_WRITE",
+              "behaviour": "INPUT_BEHAVIOUR_EXPLICIT"
             }
           ],
           "setExpressions": [

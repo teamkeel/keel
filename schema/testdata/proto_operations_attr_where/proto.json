@@ -42,16 +42,20 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
             {
+              "modelName": "Foo",
+              "operationName": "operationA",
               "name": "f1",
               "type": {
                 "type": "TYPE_BOOL"
-              }
+              },
+              "mode": "INPUT_MODE_READ",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
+                "f1"
+              ]
             }
           ],
           "whereExpressions": [
-            {
-              "source": "foo.f1 = f1"
-            },
             {
               "source": "foo.f1 == true"
             }

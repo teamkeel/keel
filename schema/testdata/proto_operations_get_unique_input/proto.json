@@ -34,15 +34,17 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
             {
+              "modelName": "MyModel",
+              "operationName": "getMyModel",
               "name": "id",
               "type": {
                 "type": "TYPE_ID"
-              }
-            }
-          ],
-          "whereExpressions": [
-            {
-              "source": "myModel.id = id"
+              },
+              "mode": "INPUT_MODE_READ",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
+                "id"
+              ]
             }
           ]
         }
