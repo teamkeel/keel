@@ -1,7 +1,6 @@
 package run
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -23,12 +22,12 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// an invalid schema - it bombs out. Whereas before it survived and just waited
 	// in the watching loop (below) for the schema to become valid.
 	// Need to decide if it's ok to bomb out in this situation.
-	sqlDB, gormDB, protoSchemaJSON, err := bringUpLocalDBToMatchSchema(schemaDir)
+	gormDB, protoSchemaJSON, err := bringUpLocalDBToMatchSchema(schemaDir)
 	if err != nil {
 		return err
 	}
 
-	handler := NewSchemaChangedHandler(schemaDir, sqlDB, gormDB)
+	handler := NewSchemaChangedHandler(schemaDir, gormDB)
 	if err := handler.retartAPIServer(protoSchemaJSON); err != nil {
 		return err
 	}
@@ -73,24 +72,24 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 // if it has to do everything from scratch - including fetching the PostgreSQL image.
 //
 // It is good to use for the Keel Run command, but also to use in test fixtures.
-func bringUpLocalDBToMatchSchema(schemaDir string) (sqlDB *sql.DB, gormDB *gorm.DB, protoSchemaJSON string, err error) {
-	sqlDB, err = keelpostgres.BringUpPostgresLocally()
+func bringUpLocalDBToMatchSchema(schemaDir string) (gormDB *gorm.DB, protoSchemaJSON string, err error) {
+	sqlDB, err := keelpostgres.BringUpPostgresLocally()
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 	gormDB, err = gorm.Open(gormpostgres.New(gormpostgres.Config{
 		Conn: sqlDB,
 	}), &gorm.Config{})
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 	if err := migrations.InitProtoSchemaStore(sqlDB); err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 
 	protoSchemaJSON, err = migrations.DoMigrationBasedOnSchemaChanges(sqlDB, schemaDir)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
-	return sqlDB, gormDB, protoSchemaJSON, nil
+	return gormDB, protoSchemaJSON, nil
 }

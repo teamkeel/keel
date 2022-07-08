@@ -1,7 +1,6 @@
 package run
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -39,7 +38,6 @@ func reactToSchemaChanges(watcher *fsnotify.Watcher, handler *SchemaChangedHandl
 
 // A SchemaChangedHandler knows how to react to changes taking place in a schema directory.
 type SchemaChangedHandler struct {
-	sqlDB  *sql.DB
 	gormDB *gorm.DB
 
 	// We retain a reference to the server, to support a later call to svr.Shutdown().
@@ -48,9 +46,8 @@ type SchemaChangedHandler struct {
 }
 
 // NewSchemaChangedHandler provides a SchemaChangedHandler ready to use.
-func NewSchemaChangedHandler(schemaDir string, sqlDB *sql.DB, gormDB *gorm.DB) *SchemaChangedHandler {
+func NewSchemaChangedHandler(schemaDir string, gormDB *gorm.DB) *SchemaChangedHandler {
 	return &SchemaChangedHandler{
-		sqlDB:     sqlDB,
 		gormDB:    gormDB,
 		schemaDir: schemaDir,
 	}
@@ -61,7 +58,12 @@ func (h *SchemaChangedHandler) Handle(schemaThatHasChanged string) {
 	fmt.Printf("File changed: %s\n", schemaThatHasChanged)
 
 	// Migrate the database to the changed schema
-	newSchemaJSON, err := migrations.DoMigrationBasedOnSchemaChanges(h.sqlDB, h.schemaDir)
+	sqlDB, err := h.gormDB.DB()
+	if err != nil {
+		fmt.Printf("error: from gormDb.DB(): %v", err)
+		return
+	}
+	newSchemaJSON, err := migrations.DoMigrationBasedOnSchemaChanges(sqlDB, h.schemaDir)
 	if err != nil {
 		fmt.Printf("error: database migrations failed with error: %v", err)
 		return

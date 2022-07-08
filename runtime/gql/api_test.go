@@ -1,7 +1,6 @@
 package gql
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -68,7 +67,9 @@ func runTestCase(t *testing.T, dirPath string) {
 	require.NoError(t, err)
 
 	// Bring up a suitable database (that is migrated to this schema)
-	sqlDB, gormDB, _, err := bringUpLocalDBToMatchSchema(dirPath)
+	gormDB, _, err := bringUpLocalDBToMatchSchema(dirPath)
+	require.NoError(t, err)
+	sqlDB, err := gormDB.DB()
 	require.NoError(t, err)
 	defer func() {
 		sqlDB.Close()
@@ -165,26 +166,26 @@ func splitOutSections(t *testing.T, dirPath string, file string) (sections []str
 // if it has to do everything from scratch - including fetching the PostgreSQL image.
 //
 // It is good to use for the Keel Run command, but also to use in test fixtures.
-func bringUpLocalDBToMatchSchema(schemaDir string) (sqlDB *sql.DB, gormDB *gorm.DB, protoSchemaJSON string, err error) {
-	sqlDB, err = keelpostgres.BringUpPostgresLocally()
+func bringUpLocalDBToMatchSchema(schemaDir string) (gormDB *gorm.DB, protoSchemaJSON string, err error) {
+	sqlDB, err := keelpostgres.BringUpPostgresLocally()
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 	gormDB, err = gorm.Open(gormpostgres.New(gormpostgres.Config{
 		Conn: sqlDB,
 	}), &gorm.Config{})
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 	if err := migrations.InitProtoSchemaStore(sqlDB); err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
 
 	protoSchemaJSON, err = migrations.DoMigrationBasedOnSchemaChanges(sqlDB, schemaDir)
 	if err != nil {
-		return nil, nil, "", err
+		return nil, "", err
 	}
-	return sqlDB, gormDB, protoSchemaJSON, nil
+	return gormDB, protoSchemaJSON, nil
 }
 
 const expectedDataFile string = "response.json"

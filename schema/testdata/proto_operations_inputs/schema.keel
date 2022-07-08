@@ -7,6 +7,6 @@ model Foo {
         get opA(id)
         list opB(f1)
         update opC(id) with (f1)
-        create opF() with (f1)
+        create opD() with (f1)
     }
 }
