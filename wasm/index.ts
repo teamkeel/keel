@@ -1,7 +1,6 @@
 import wasm from './keel.wasm'
 import { GoExec, KeelAPI, ValidationResult, ValidateOptions, ValidationError, CompletionResult, SimplePosition } from './typings'
 import transformKeys from './lib/transformKeys';
-import util from 'util'
 
 const instantiate = async () : Promise<KeelAPI> => {
   // necessary to do dynamic import of js file here to avoid relative import error
@@ -14,11 +13,18 @@ const instantiate = async () : Promise<KeelAPI> => {
   return (globalThis as any).keel as KeelAPI;
 };
 
-const keel = async () : Promise<KeelAPI> => {
-  const api = await instantiate();
+const keel = () : KeelAPI => {
+  const validate = async (schemaString: string, opts: ValidateOptions) : Promise<ValidationResult> => {
+    const api = await instantiate();
 
-  const validate = (schemaString: string, opts: ValidateOptions) : ValidationResult => {
     const result = api.validate(schemaString, opts) as any;
+    if (!result || !result.validationErrors) {
+      return {
+        errors: [],
+        ast: null
+      }
+    }
+
     const { validationErrors: { Errors: errors }, ast } = result
 
     const transformedErrors = (errors || []).map((err: ValidationError) => transformKeys(err));
@@ -29,28 +35,19 @@ const keel = async () : Promise<KeelAPI> => {
     }
   }
 
-  const format = (schemaString: string) : string => {
+  const format = async (schemaString: string) : Promise<string> => {
+    const api = await instantiate();
+
     return api.format(schemaString);
   }
 
-  const completions = (schemaString: string, position: SimplePosition) : CompletionResult => {
+  const completions = async (schemaString: string, position: SimplePosition) : Promise<CompletionResult> => {
+    const api = await instantiate();
+
     return api.completions(schemaString, position);
   }
 
   return { validate, format, completions }
 }
-
-// keel().then((api) => {
-//   const { completions } = api.completions(
-//     `model Post {
-//       fields {
-
-//       }
-//     }`,
-//     { line: 1, column: 1 }
-//   );
-
-//   console.log(util.inspect(completions, {showHidden: false, depth: null, colors: true}))
-// })
 
 export default keel

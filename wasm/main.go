@@ -49,7 +49,6 @@ func provideCompletions(this js.Value, args []js.Value) interface{} {
 		Line:   line,
 	})
 
-	// completionsMap, _ := toMap(completions)
 	astMap, _ := toMap(ast)
 
 	var untypedCompletions []interface{} = toUntypedArray(completions)

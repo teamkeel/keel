@@ -4,9 +4,9 @@ export interface GoExec {
 }
 
 export interface KeelAPI {
-  format: (schemaString: string) => string
-  validate: (schemaString: string, options: ValidateOptions) => ValidationResult
-  completions: (schemaString: string, position: SimplePosition) => CompletionResult
+  format: (schemaString: string) => Promise<string>
+  validate: (schemaString: string, options: ValidateOptions) => Promise<ValidationResult>
+  completions: (schemaString: string, position: SimplePosition) => Promise<CompletionResult>
 }
 
 export interface ValidateOptions {
