@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	"github.com/teamkeel/keel/localdb"
 
 	"github.com/fsnotify/fsnotify"
 )
@@ -19,7 +18,7 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// an invalid schema - it bombs out. Whereas before it survived and just waited
 	// in the watching loop (below) for the schema to become valid.
 	// Need to decide if it's ok to bomb out in this situation.
-	sqlDB, gormDB, protoSchemaJSON, err := localdb.BringUpLocalDBToMatchSchema(schemaDir)
+	sqlDB, gormDB, protoSchemaJSON, err := BringUpLocalDBToMatchSchema(schemaDir)
 	if err != nil {
 		return err
 	}

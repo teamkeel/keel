@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/teamkeel/keel/cmd/run"
+	"github.com/teamkeel/keel/run"
 )
 
 // The Run command does this:

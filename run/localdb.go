@@ -1,4 +1,4 @@
-package localdb
+package run
 
 import (
 	"database/sql"

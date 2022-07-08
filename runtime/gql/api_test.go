@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/localdb"
 	keelpostgres "github.com/teamkeel/keel/postgres"
+	"github.com/teamkeel/keel/run"
 	"github.com/teamkeel/keel/schema"
 )
 
@@ -41,7 +41,7 @@ func TestHandlersSuite(t *testing.T) {
 
 		// This is to make it quick and easy to isolate just one of the tests during development
 		var isolateDir string = ""
-		//isolateDir = "get-simplest-happy"
+		isolateDir = "create-simplest-happy"
 		if isolateDir != "" && dirName != isolateDir {
 			continue
 		}
@@ -65,7 +65,7 @@ func runTestCase(t *testing.T, dirPath string) {
 	require.NoError(t, err)
 
 	// Bring up a suitable database (that is migrated to this schema)
-	sqlDB, gormDB, _, err := localdb.BringUpLocalDBToMatchSchema(dirPath)
+	sqlDB, gormDB, _, err := run.BringUpLocalDBToMatchSchema(dirPath)
 	require.NoError(t, err)
 	defer func() {
 		sqlDB.Close()
