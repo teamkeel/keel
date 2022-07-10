@@ -10,12 +10,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/migrations"
 	keelpostgres "github.com/teamkeel/keel/postgres"
-	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/run/rundb"
 	"github.com/teamkeel/keel/schema"
-	gormpostgres "gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 // TestHandlerSuite is a table-driven test suite for the Handler type's behaviour.
@@ -68,7 +65,8 @@ func runTestCase(t *testing.T, dirPath string) {
 	require.NoError(t, err)
 
 	// Bring up a suitable database (that is migrated to this schema)
-	gormDB, _, err := bringUpVirginDBToMatchSchema(dirPath)
+	retainData := false
+	gormDB, _, err := rundb.LaunchDB(dirPath, retainData)
 	require.NoError(t, err)
 	sqlDB, err := gormDB.DB()
 	require.NoError(t, err)
@@ -159,31 +157,6 @@ func fileContents(t *testing.T, filePath string) []byte {
 func splitOutSections(t *testing.T, dirPath string, file string) (sections []string) {
 	contents := string(fileContents(t, filepath.Join(dirPath, file)))
 	return strings.Split(contents, delimiter)
-}
-
-// bringUpVirginDBToMatchSchema brings up a local, dockerised PostgresSQL database,
-// that is fully migrated to match the given Keel Schema. Todo - comment about virgin-ness once concluded.
-func bringUpVirginDBToMatchSchema(schemaDir string) (gormDB *gorm.DB, schema *proto.Schema, err error) {
-	useFreshContainer := true
-	sqlDB, err := keelpostgres.BringUpPostgresLocally(useFreshContainer)
-	if err != nil {
-		return nil, nil, err
-	}
-	gormDB, err = gorm.Open(gormpostgres.New(gormpostgres.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
-	if err != nil {
-		return nil, nil, err
-	}
-	if err := migrations.InitProtoSchemaStore(sqlDB); err != nil {
-		return nil, nil, err
-	}
-
-	schema, err = migrations.DoMigrationBasedOnSchemaChanges(sqlDB, schemaDir)
-	if err != nil {
-		return nil, nil, err
-	}
-	return gormDB, schema, nil
 }
 
 const expectedDataFile string = "response.json"

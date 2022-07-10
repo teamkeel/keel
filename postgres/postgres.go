@@ -35,7 +35,8 @@ import (
 //
 // It sets the password for that user to "postgres".
 // It sets the default database name to "keel"
-func BringUpPostgresLocally(useFreshContainer bool) (*sql.DB, error) {
+func BringUpPostgresLocally(retainData bool) (*sql.DB, error) {
+	useFreshContainer := !retainData
 	if err := bringUpContainer(useFreshContainer); err != nil {
 		return nil, err
 	}

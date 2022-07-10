@@ -4,13 +4,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	gormpostgres "gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"github.com/teamkeel/keel/run/rundb"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/teamkeel/keel/migrations"
-	keelpostgres "github.com/teamkeel/keel/postgres"
-	"github.com/teamkeel/keel/proto"
 )
 
 // CommandImplementation is the main call-to-action function for the run command.
@@ -23,7 +19,8 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// an invalid schema - it bombs out. Whereas before it survived and just waited
 	// in the watching loop (below) for the schema to become valid.
 	// Need to decide if it's ok to bomb out in this situation.
-	gormDB, schema, err := bringUpLocalDBToMatchSchema(schemaDir)
+	retainData := true
+	gormDB, schema, err := rundb.LaunchDB(schemaDir, retainData)
 	if err != nil {
 		return err
 	}
@@ -65,31 +62,4 @@ func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
 	// - the GraphQL API server
 
 	return nil
-}
-
-// bringUpLocalDBToMatchSchema brings up a local, dockerised PostgresSQL database,
-// that is fully migrated to match the given Keel Schema. It re-uses the incumbent
-// container if it can (including therefore the incumbent database state), but also works
-// if it has to do everything from scratch - including fetching the PostgreSQL image.
-func bringUpLocalDBToMatchSchema(schemaDir string) (gormDB *gorm.DB, schema *proto.Schema, err error) {
-	useFreshContainer := false // Want to retain its current state.
-	sqlDB, err := keelpostgres.BringUpPostgresLocally(useFreshContainer)
-	if err != nil {
-		return nil, nil, err
-	}
-	gormDB, err = gorm.Open(gormpostgres.New(gormpostgres.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
-	if err != nil {
-		return nil, nil, err
-	}
-	if err := migrations.InitProtoSchemaStore(sqlDB); err != nil {
-		return nil, nil, err
-	}
-
-	newSchema, err := migrations.DoMigrationBasedOnSchemaChanges(sqlDB, schemaDir)
-	if err != nil {
-		return nil, nil, err
-	}
-	return gormDB, newSchema, nil
 }
