@@ -1,3 +1,10 @@
+# [0.48.0](https://github.com/teamkeel/keel/compare/v0.47.0...v0.48.0) (2022-07-10)
+
+
+### Features
+
+* regen and restart GraphQL server on each schema change ([#132](https://github.com/teamkeel/keel/issues/132)) ([87339a4](https://github.com/teamkeel/keel/commit/87339a4400b8cb3d9f6c011394595c72af9d97be))
+
 # [0.47.0](https://github.com/teamkeel/keel/compare/v0.46.0...v0.47.0) (2022-07-08)
 
 
