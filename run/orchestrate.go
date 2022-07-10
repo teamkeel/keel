@@ -4,47 +4,29 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	keelpostgres "github.com/teamkeel/keel/postgres"
+	"github.com/teamkeel/keel/run/rundb"
 
 	"github.com/fsnotify/fsnotify"
-	gormpostgres "gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 // CommandImplementation is the main call-to-action function for the run command.
 // Its responsibility is to orchestrate the command's behaviour.
 func CommandImplementation(cmd *cobra.Command, args []string) (err error) {
-	fmt.Printf("Starting PostgreSQL\n")
-	sqlDB, err := keelpostgres.BringUpPostgresLocally()
-	if err != nil {
-		return fmt.Errorf("could not bring up postgres locally: %v", err)
-	}
 
-	// This sets up internal configuration and state in the database - only if it
-	// has not been done in an earlier run. It means that all subsequent code can
-	// then safely retreive the last-known protobuf used - which makes the code simpler.
-	if err := initDBIfNecessary(sqlDB); err != nil {
-		return fmt.Errorf("error initialising the database: %v", err)
-	}
-
-	// For what follows, we need to establish a gorm database connection - which we can compose with a shortcut,
-	// function that consumes our existing sql.DB connection.
-	gormDB, err := gorm.Open(gormpostgres.New(gormpostgres.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
-
-	// Before we enter schema-watching mode, we have to consider that this might be
-	// the first run ever, or the user's schema may have changed on disk *after* they last
-	// launched the Run command. So we do a migration just in case, and (providing the migration was
-	// successful, we also bring up their GraphQL API server representing the current state of the
-	// schema.
 	schemaDir, _ := cmd.Flags().GetString("dir")
-	protoSchemaJSON, err := doMigrationBasedOnSchemaChanges(sqlDB, schemaDir)
+
+	// Todo - the error handling here, means that if you launch the Run command with
+	// an invalid schema - it bombs out. Whereas before it survived and just waited
+	// in the watching loop (below) for the schema to become valid.
+	// Need to decide if it's ok to bomb out in this situation.
+	retainData := true
+	gormDB, schema, err := rundb.LaunchDB(schemaDir, retainData)
 	if err != nil {
 		return err
 	}
-	handler := NewSchemaChangedHandler(schemaDir, sqlDB, gormDB)
-	if err := handler.retartAPIServer(protoSchemaJSON); err != nil {
+
+	handler := NewSchemaChangedHandler(schemaDir, gormDB)
+	if err := handler.retartAPIServer(schema); err != nil {
 		return err
 	}
 
