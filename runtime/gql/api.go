@@ -6,6 +6,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"gorm.io/gorm"
 )
 
@@ -31,9 +32,11 @@ type Handler struct {
 // GraphQL query string (i.e. not JSON).
 func (h *Handler) Handle(gqlQuery string) (result *graphql.Result) {
 
+	context := runtimectx.ContextWithDB(context.Background(), h.gormDB)
+
 	result = graphql.Do(graphql.Params{
 		Schema:         *h.gSchema,
-		Context:        context.Background(),
+		Context:        context,
 		RequestString:  gqlQuery,
 		VariableValues: map[string]any{},
 	})
@@ -45,7 +48,7 @@ func (h *Handler) Handle(gqlQuery string) (result *graphql.Result) {
 // The mapping is intended to make it easy for a client to register each of the
 // handlers at individual endpoints derived from the API name. E.g. "/graphql/api-1"
 func NewHandlers(pSchema *proto.Schema, gormDB *gorm.DB) (map[string]*Handler, error) {
-	gSchemaMaker := newMaker(pSchema)
+	gSchemaMaker := newMaker(pSchema, gormDB)
 	gSchemas, err := gSchemaMaker.make()
 	if err != nil {
 		return nil, err

@@ -7,17 +7,20 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/gql/resolvers"
+	"gorm.io/gorm"
 )
 
 // A maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
 // of the APIs defined in the keel schema provided at construction time.
 type maker struct {
 	proto *proto.Schema
+	db    *gorm.DB
 }
 
-func newMaker(proto *proto.Schema) *maker {
+func newMaker(proto *proto.Schema, db *gorm.DB) *maker {
 	return &maker{
 		proto: proto,
+		db:    db,
 	}
 }
 
@@ -154,7 +157,10 @@ func (mk *maker) addCreateOp(
 	if err != nil {
 		return err
 	}
-	field := newFieldWithArgs(op.Name, args, modelOutputType, resolvers.NewCreateOperationResolver(op, model).Resolve)
+	field := newFieldWithArgs(
+		op.Name,
+		args, modelOutputType,
+		resolvers.NewCreateOperationResolver(op, model).Resolve)
 	addTo.mutations[op.Name] = field
 	return nil
 }
