@@ -1,0 +1,8 @@
+model Person {
+    fields {
+        firstName Text
+        lastName Text
+    }
+
+    @unique([firstName, lastName])
+}

@@ -92,9 +92,9 @@ en:
     message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
     hint: "Please assign a value. Did you mean '{{ .Suggestion }}'?"
   E024:
-    short_message: "Too many arguments provided to '{{ .Attribute }}'"
-    message: "Too many arguments provided to '{{ .Attribute }}'"
-    hint: "{{ if .NoArgs }}{{ .Attribute }} doesn't accept any arguments{{ else }}{{ .Attribute }} only accepts {{ .Count }} argument(s){{ end }}"
+    short_message: "Wrong number of arguments provided to @{{ .AttributeName }}"
+    message: "{{ .ActualArgsCount }} argument(s) provided to @{{ .AttributeName }} but expected {{ .ExpectedArgsCount }}"
+    hint: '{{ if eq .Signature "()" }}@{{ .AttributeName }} doesn''t accept any arguments{{ else }}the signature of this attribute is @{{ .AttributeName }}{{ .Signature }}{{ end }}'
   E025:
     short_message: "Invalid syntax"
     message: "{{ .Message }}"

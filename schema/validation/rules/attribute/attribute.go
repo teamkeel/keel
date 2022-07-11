@@ -2,6 +2,7 @@ package attribute
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
@@ -55,7 +56,7 @@ func AttributeLocationsRule(asts []*parser.AST) []error {
 }
 
 var attributeLocations = map[string][]string{
-	parser.KeywordModel:     {parser.AttributePermission},
+	parser.KeywordModel:     {parser.AttributePermission, parser.AttributeUnique},
 	parser.KeywordApi:       {parser.AttributeGraphQL},
 	parser.KeywordField:     {parser.AttributeUnique, parser.AttributeDefault, parser.AttributePrimaryKey},
 	parser.KeywordOperation: {parser.AttributeSet, parser.AttributeWhere, parser.AttributePermission},
@@ -143,12 +144,13 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 				if argLength == 0 || argLength >= 2 {
 					errors = append(errors,
 						errorhandling.NewValidationError(
-							errorhandling.ErrorTooManyArguments,
+							errorhandling.ErrorIncorrectArguments,
 							errorhandling.TemplateLiterals{
 								Literals: map[string]string{
-									"Attribute": fmt.Sprintf("@%s", attr.Name.Value),
-									"Value":     attr.Name.Value,
-									"Count":     fmt.Sprint(1),
+									"AttributeName":     attr.Name.Value,
+									"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
+									"ExpectedArgsCount": "1",
+									"Signature":         "(expression)",
 								},
 							},
 							attr,
@@ -210,7 +212,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				for _, action := range query.ModelActions(model) {
 					allowedIdents = append(allowedIdents, action.Name.Value)
 				}
-				errors = append(errors, validateIdentArray(model, arg.Expression, allowedIdents)...)
+				errors = append(errors, validateIdentArray(arg.Expression, allowedIdents)...)
 			} else {
 				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidAttributeArgument,
 					errorhandling.TemplateLiterals{
@@ -248,7 +250,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			for _, role := range query.Roles(asts) {
 				allowedIdents = append(allowedIdents, role.Name.Value)
 			}
-			errors = append(errors, validateIdentArray(model, arg.Expression, allowedIdents)...)
+			errors = append(errors, validateIdentArray(arg.Expression, allowedIdents)...)
 		default:
 			if arg.Label.Value == "" {
 				// All arguments to @permission should have a label
@@ -307,12 +309,12 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 	return errors
 }
 
-func validateIdentArray(model *parser.ModelNode, expr *expressions.Expression, allowedIdents []string) (errors []error) {
+func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (errors []error) {
 	value, err := expressions.ToValue(expr)
 	if err != nil || value.Array == nil {
 		expected := ""
 		if len(allowedIdents) > 0 {
-			expected = "any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
+			expected = "an array containing any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
 		}
 		// Check expression is an array
 		errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidValue,
@@ -363,6 +365,8 @@ func validateIdentArray(model *parser.ModelNode, expr *expressions.Expression, a
 func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
 
 	for _, model := range query.Models(asts) {
+
+		// field level e.g. @unique
 		for _, field := range query.ModelFields(model) {
 			for _, attr := range field.Attributes {
 				if attr.Name.Value != parser.AttributeUnique {
@@ -370,17 +374,58 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
 				}
 
 				if len(attr.Arguments) > 0 {
-					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorTooManyArguments,
+					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorIncorrectArguments,
 						errorhandling.TemplateLiterals{
 							Literals: map[string]string{
-								"Attribute": fmt.Sprintf("@%s", attr.Name.Value),
-								"Value":     attr.Name.Value,
-								"NoArgs":    "true",
+								"AttributeName":     attr.Name.Value,
+								"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
+								"ExpectedArgsCount": "0",
+								"Signature":         "()",
 							},
 						},
 						attr,
 					))
 				}
+			}
+		}
+
+		// model level e.g. @unique([fieldOne, fieldTwo])
+		for _, attr := range query.ModelAttributes(model) {
+			if attr.Name.Value != parser.AttributeUnique {
+				continue
+			}
+
+			if len(attr.Arguments) != 1 {
+				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorIncorrectArguments,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"AttributeName":     attr.Name.Value,
+							"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
+							"ExpectedArgsCount": "1",
+							"Signature":         "([fieldName, otherFieldName])",
+						},
+					},
+					attr.Name,
+				))
+				continue
+			}
+
+			errs := validateIdentArray(attr.Arguments[0].Expression, query.ModelFieldNames(model))
+			if len(errs) > 0 {
+				errors = append(errors, errs...)
+				continue
+			}
+
+			value, _ := expressions.ToValue(attr.Arguments[0].Expression)
+			if len(value.Array.Values) < 2 {
+				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidValue,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Expected": "at least two field names to be provided",
+						},
+					},
+					attr.Arguments[0].Expression,
+				))
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package schema
 import (
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -136,6 +137,28 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		Name:      parserField.Name.Value,
 		Type:      typeInfo,
 		Optional:  parserField.Optional,
+	}
+
+	// Handle @unique attribute at model level which expresses
+	// unique constrains across multiple fields
+	model := query.Model(scm.asts, modelName)
+	for _, attr := range query.ModelAttributes(model) {
+		if attr.Name.Value != parser.AttributeUnique {
+			continue
+		}
+
+		value, _ := expressions.ToValue(attr.Arguments[0].Expression)
+		fieldNames := lo.Map(value.Array.Values, func(v *expressions.Operand, i int) string {
+			return v.Ident.ToString()
+		})
+
+		if !lo.Contains(fieldNames, parserField.Name.Value) {
+			continue
+		}
+
+		protoField.UniqueWith = lo.Filter(fieldNames, func(v string, i int) bool {
+			return v != parserField.Name.Value
+		})
 	}
 
 	scm.applyFieldAttributes(parserField, protoField)

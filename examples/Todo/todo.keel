@@ -107,10 +107,10 @@ model Task {
     }
 
     operations {
-        list openTasks(projectId) {
+        list openTasks(project.id) {
             @where(task.completed == false)
         }
-        list completedTasks(projectId, completedAt) {
+        list completedTasks(project.id, completedAt) {
             @where(task.completed == true)
         }
         update completeTask(id) {

@@ -40,7 +40,7 @@ const (
 	ErrorUnresolvedRootModel                = "E021"
 	ErrorForbiddenExpressionOperation       = "E022"
 	ErrorForbiddenValueCondition            = "E023"
-	ErrorTooManyArguments                   = "E024"
+	ErrorIncorrectArguments                 = "E024"
 	ErrorInvalidSyntax                      = "E025"
 	ErrorExpressionTypeMismatch             = "E026"
 	ErrorForbiddenOperator                  = "E027"

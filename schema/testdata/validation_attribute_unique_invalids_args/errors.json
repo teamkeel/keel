@@ -1,8 +1,8 @@
 {
   "Errors": [
     {
-      "message": "Too many arguments provided to '@unique'",
-      "short_message": "Too many arguments provided to '@unique'",
+      "message": "1 argument(s) provided to @unique but expected 0",
+      "short_message": "Wrong number of arguments provided to @unique",
       "hint": "@unique doesn't accept any arguments",
       "code": "E024",
       "pos": {

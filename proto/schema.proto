@@ -45,6 +45,11 @@ message Field {
     // Cannot be true if `type.repeated` is true
     bool unique = 5;
 
+    // If set then this field is part of a compount unique constraint with the
+    // fields listed. The fields must be part of the same model and they must
+    // list this field in their unique_with value.
+    repeated string unique_with = 8;
+
     // If true then this field will be set as the primary key for the parent model
     bool primary_key = 7;
 }

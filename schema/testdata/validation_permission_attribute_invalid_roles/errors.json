@@ -19,8 +19,8 @@
       }
     },
     {
-      "message": "Invalid value, expected any of the following identifiers - Admin",
-      "short_message": "Invalid value, expected any of the following identifiers - Admin",
+      "message": "Invalid value, expected an array containing any of the following identifiers - Admin",
+      "short_message": "Invalid value, expected an array containing any of the following identifiers - Admin",
       "hint": "",
       "code": "E016",
       "pos": {
@@ -37,8 +37,8 @@
       }
     },
     {
-      "message": "Invalid value, expected any of the following identifiers - Admin",
-      "short_message": "Invalid value, expected any of the following identifiers - Admin",
+      "message": "Invalid value, expected an array containing any of the following identifiers - Admin",
+      "short_message": "Invalid value, expected an array containing any of the following identifiers - Admin",
       "hint": "",
       "code": "E016",
       "pos": {
