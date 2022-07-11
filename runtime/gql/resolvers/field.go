@@ -5,6 +5,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
+	"gorm.io/gorm"
 )
 
 // A FieldResolver provides a Resolve method that matches the signature needed for
@@ -13,10 +14,12 @@ import (
 // Resolve method gets called.
 type FieldResolver struct {
 	field *proto.Field
+	db    *gorm.DB
 }
 
-func NewFieldResolver(field *proto.Field) *FieldResolver {
+func NewFieldResolver(db *gorm.DB, field *proto.Field) *FieldResolver {
 	return &FieldResolver{
+		db:    db,
 		field: field,
 	}
 }

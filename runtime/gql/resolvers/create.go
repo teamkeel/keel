@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
+	"gorm.io/gorm"
 )
 
 // A CreateOperationResolver provides a Resolve method that matches the signature needed for
@@ -13,14 +14,27 @@ import (
 type CreateOperationResolver struct {
 	op    *proto.Operation
 	model *proto.Model
+	db    *gorm.DB
 }
 
-func NewCreateOperationResolver(op *proto.Operation, model *proto.Model) *CreateOperationResolver {
+func NewCreateOperationResolver(db *gorm.DB, op *proto.Operation, model *proto.Model) *CreateOperationResolver {
 	return &CreateOperationResolver{
+		db:    db,
 		op:    op,
 		model: model,
 	}
 }
+
+// func Create(ctx context.Context, args map[string]any) (map[string]any, error) {
+// 	// do stuff
+// }
+
+// runtime
+//   graphql
+//     actions.create()
+//   rpc
+//     actions.create()
+//   actions
 
 func (r *CreateOperationResolver) Resolve(p graphql.ResolveParams) (any, error) {
 
@@ -36,7 +50,7 @@ func (r *CreateOperationResolver) Resolve(p graphql.ResolveParams) (any, error) 
 		return nil, err
 	}
 
-	fieldValuesFromDB, err := createRecordInDatabase(r.model, modelMap)
+	fieldValuesFromDB, err := r.createRecordInDatabase(r.model, modelMap)
 	if err != nil {
 		return nil, err
 	}
@@ -47,8 +61,22 @@ func (r *CreateOperationResolver) Resolve(p graphql.ResolveParams) (any, error) 
 	return modelMap, nil
 }
 
-func createRecordInDatabase(model *proto.Model, modelMap map[string]any) (valuesFromDb map[string]any, err error) {
+func (r CreateOperationResolver) createRecordInDatabase(model *proto.Model, modelMap map[string]any) (valuesFromDb map[string]any, err error) {
 	// this is where we write a record to the database.
+	q := r.db.Table(model.Name)
+	_ = q
+
+	/*
+		foo, bar := r.db.Insert()
+		foo, bar := q.Insert()
+
+			q := db.Table(inflection.Plural(strcase.ToSnake(model.Name)))
+
+						selects := []string{}
+						for _, field := range model.Fields {
+							selects = append(selects, strcase.ToSnake(field.Name))
+						}
+	*/
 
 	// and return the field values that are created as a side effect.
 
