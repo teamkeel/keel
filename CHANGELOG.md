@@ -1,3 +1,10 @@
+# [0.49.0](https://github.com/teamkeel/keel/compare/v0.48.0...v0.49.0) (2022-07-11)
+
+
+### Features
+
+* update proto schema to better represent different input behaviours ([4ae9793](https://github.com/teamkeel/keel/commit/4ae9793dfde444f7eac7f0fc32752a8f5412e2d4))
+
 # [0.48.0](https://github.com/teamkeel/keel/compare/v0.47.0...v0.48.0) (2022-07-10)
 
 
