@@ -8,6 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
+// model
+// operation
+// args
+
+//func Create(ctx context.Context, model *proto.Model, op *proto.Operation, args map[string]any) (map[string]any, error) {
 func Create(ctx context.Context, model *proto.Model, args map[string]any) (map[string]any, error) {
 	// We'll populate a map[string]any to represent the resolved model field values, and
 	// use that map, to write a record into the database, and as the return value.
@@ -15,6 +20,18 @@ func Create(ctx context.Context, model *proto.Model, args map[string]any) (map[s
 	if err != nil {
 		return nil, err
 	}
+
+	// for _, in := range op.Inputs {
+	// 	arg, ok := args[in.Name]
+	// 	if !ok {
+	// 		continue
+	// 	}
+
+	// 	// check for inplicit
+	// 	// use target to set
+	// 	modelMap[in.Name] = arg
+	// }
+
 	if err = setFieldsFromInputValues(modelMap, args); err != nil {
 		return nil, err
 	}
