@@ -48,16 +48,20 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
             {
+              "modelName": "Foo",
+              "operationName": "createPost",
               "name": "f2",
               "type": {
                 "type": "TYPE_STRING"
-              }
+              },
+              "mode": "INPUT_MODE_WRITE",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
+                "f2"
+              ]
             }
           ],
           "setExpressions": [
-            {
-              "source": "foo.f2 = f2"
-            },
             {
               "source": "foo.f1 = true"
             }

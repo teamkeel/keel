@@ -3,7 +3,6 @@ package schema
 import (
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -163,19 +162,13 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 	model := query.Model(scm.asts, modelName)
 
 	for _, input := range parserFunction.Inputs {
-		protoInput, expr := scm.makeOperationInput(input, model, false)
+		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_READ)
 		protoOp.Inputs = append(protoOp.Inputs, protoInput)
-		if expr != nil {
-			protoOp.WhereExpressions = append(protoOp.WhereExpressions, expr)
-		}
 	}
 
 	for _, input := range parserFunction.With {
-		protoInput, expr := scm.makeOperationInput(input, model, true)
+		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_WRITE)
 		protoOp.Inputs = append(protoOp.Inputs, protoInput)
-		if expr != nil {
-			protoOp.SetExpressions = append(protoOp.SetExpressions, expr)
-		}
 	}
 
 	scm.applyFunctionAttributes(parserFunction, protoOp, modelName)
@@ -184,21 +177,26 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 }
 
 func (scm *Builder) makeOperationInput(
-	input *parser.ActionInputNode,
 	model *parser.ModelNode,
-	isWithInput bool,
-) (
-	inputs *proto.OperationInput,
-	expr *proto.Expression,
-) {
+	op *parser.ActionNode,
+	input *parser.ActionInputNode,
+	mode proto.InputMode,
+) (inputs *proto.OperationInput) {
+
 	idents := input.Type.Fragments
 	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
 
+	behaviour := proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT
+	target := []string{}
+
 	if protoType == proto.Type_TYPE_UNKNOWN {
+		behaviour = proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
+
 		var field *parser.FieldNode
 		currModel := model
 
 		for _, ident := range idents {
+			target = append(target, ident.Fragment)
 			field = query.ModelField(currModel, ident.Fragment)
 			currModel = query.Model(scm.asts, field.Type)
 		}
@@ -206,29 +204,19 @@ func (scm *Builder) makeOperationInput(
 		protoType = scm.parserFieldToProtoTypeInfo(field).Type
 	}
 
-	if input.Label == nil {
-		expr = &proto.Expression{
-			Source: strcase.ToLowerCamel(model.Name.Value),
-		}
-
-		for _, ident := range idents {
-			expr.Source += "." + ident.Fragment
-		}
-
-		expr.Source += " = " + input.Name()
-	}
-
-	protoInput := &proto.OperationInput{
-		Name: input.Name(),
+	return &proto.OperationInput{
+		ModelName:     model.Name.Value,
+		OperationName: op.Name.Value,
+		Name:          input.Name(),
 		Type: &proto.TypeInfo{
 			Type:     protoType,
 			Repeated: input.Repeated,
 		},
-		Optional: input.Optional,
+		Optional:  input.Optional,
+		Mode:      mode,
+		Behaviour: behaviour,
+		Target:    target,
 	}
-
-	return protoInput, expr
-
 }
 
 // parserType could be a built-in type or a user-defined model or enum

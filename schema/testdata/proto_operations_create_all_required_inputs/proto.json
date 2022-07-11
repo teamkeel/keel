@@ -58,15 +58,17 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
             {
+              "modelName": "Person",
+              "operationName": "createPerson",
               "name": "name",
               "type": {
                 "type": "TYPE_STRING"
-              }
-            }
-          ],
-          "setExpressions": [
-            {
-              "source": "person.name = name"
+              },
+              "mode": "INPUT_MODE_WRITE",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
+                "name"
+              ]
             }
           ]
         }
