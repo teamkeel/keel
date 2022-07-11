@@ -130,7 +130,9 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 				Name: parser.NameNode{
 					Value: parser.ImplicitFieldNameId,
 				},
-				Type: parser.FieldTypeID,
+				Type: parser.TypeNode{
+					Value: parser.FieldTypeID,
+				},
 				Attributes: []*parser.AttributeNode{
 					{
 						Name: parser.AttributeNameToken{Value: "primaryKey"},
@@ -145,7 +147,9 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 				Name: parser.NameNode{
 					Value: parser.ImplicitFieldNameCreatedAt,
 				},
-				Type: parser.FieldTypeDatetime,
+				Type: parser.TypeNode{
+					Value: parser.FieldTypeDatetime,
+				},
 				Attributes: []*parser.AttributeNode{
 					{
 						Name: parser.AttributeNameToken{
@@ -159,7 +163,9 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 				Name: parser.NameNode{
 					Value: parser.ImplicitFieldNameUpdatedAt,
 				},
-				Type: parser.FieldTypeDatetime,
+				Type: parser.TypeNode{
+					Value: parser.FieldTypeDatetime,
+				},
 				Attributes: []*parser.AttributeNode{
 					{
 						Name: parser.AttributeNameToken{
@@ -210,7 +216,9 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Name: parser.NameNode{
 			Value: "username",
 		},
-		Type: "Text",
+		Type: parser.TypeNode{
+			Value: "Text",
+		},
 	}
 	section := &parser.ModelSectionNode{
 		Fields: []*parser.FieldNode{field},

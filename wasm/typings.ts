@@ -26,6 +26,7 @@ export interface Position extends SimplePosition {
 export interface CompletionItem {
   description: string
   label: string
+  kind: number; // vscode item kind enum => int mapping
   node: Node
 }
 

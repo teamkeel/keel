@@ -79,10 +79,14 @@ func (n Node) InRange(position Position) bool {
 		}
 
 		// if the line in the editor is the same line as the start of the tokens
-		if line == n.Pos.Line {
+		if line == n.Pos.Line && column < n.Pos.Column {
 			// if the column is less than the start pos
 			// then its not in range
-			return column < n.Pos.Column
+			return false
+		}
+
+		if line == n.Pos.Line && column >= n.Pos.Column && line == n.EndPos.Line {
+			return true
 		}
 
 		// if the position is in-between the range of start and end lines,
@@ -94,7 +98,7 @@ func (n Node) InRange(position Position) bool {
 		// if the line is the same line as the last token
 		// and the col is less than the column of the end of the last token
 		// return true
-		if line == n.Pos.Line && column <= n.EndPos.Column {
+		if line == n.EndPos.Line && column <= n.EndPos.Column {
 			return true
 		}
 

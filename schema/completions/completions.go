@@ -8,6 +8,37 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 )
 
+// All of the CompletionItem kinds from VSCode completions API
+var (
+	KindText          = 0
+	KindMethod        = 1
+	KindFunction      = 2
+	KindConstructor   = 3
+	KindField         = 4
+	KindVariable      = 5
+	KindClass         = 6
+	KindInterface     = 7
+	KindModule        = 8
+	KindProperty      = 9
+	KindUnit          = 10
+	KindValue         = 11
+	KindEnum          = 12
+	KindKeyword       = 13
+	KindSnippet       = 14
+	KindColor         = 15
+	KindReference     = 17
+	KindFile          = 16
+	KindFolder        = 18
+	KindEnumMember    = 19
+	KindConstant      = 20
+	KindStruct        = 21
+	KindEvent         = 22
+	KindOperator      = 23
+	KindTypeParameter = 24
+	KindUser          = 25
+	KindIssue         = 26
+)
+
 type PositionalContext struct {
 	Completions []*CompletionItem `json:"completions"`
 }
@@ -15,6 +46,7 @@ type PositionalContext struct {
 type CompletionItem struct {
 	Description string `json:"description"`
 	Label       string `json:"label"`
+	Kind        int    `json:"kind"`
 	Node        Node   `json:"node"`
 }
 
@@ -72,6 +104,17 @@ func ProvideCompletions(ast *parser.AST, position node.Position) (completions []
 
 						// inside of field blocks, provide attribute suggestions
 						for _, field := range section.Fields {
+							// doesnt have a type yet
+							if field.Type.Value == "" {
+								fieldTypeInRange := field.Type.InRange(position)
+								if fieldTypeInRange {
+									clearCompletions()
+
+									completions = append(completions, fieldTypeCompletions(&field.Name)...)
+								}
+								continue
+							}
+
 							fieldInRange := field.InRange(position)
 
 							if fieldInRange {
@@ -97,6 +140,11 @@ func ProvideCompletions(ast *parser.AST, position node.Position) (completions []
 			// todo: dont think there are any completions to provide for enum values
 
 		default:
+			decInRange := declaration.InRange(position)
+
+			if !decInRange {
+				return completions
+			}
 			// if there is a syntax error within, it will fail to parse further
 			// so we need to check the first token of the containing section
 
@@ -127,14 +175,29 @@ func modelNamesForApiModelsCompletions(ast *parser.AST) (completions []*Completi
 	return completions
 }
 
+func fieldTypeCompletions(node parser.GenericNode) (completions []*CompletionItem) {
+	baseTypes := []string{
+		parser.FieldTypeID,
+		parser.FieldTypeBoolean,
+		parser.FieldTypeText,
+		parser.FieldTypeCurrency,
+		parser.FieldTypeDatetime,
+		parser.FieldTypeDate,
+		parser.FieldTypeImage,
+		parser.FieldTypeNumber,
+	}
+
+	return stringArrayToCompletionsArray(baseTypes, node, KindTypeParameter)
+}
+
 func inFieldsBlockCompletions(node parser.GenericNode) (completions []*CompletionItem) {
 	keywords := []string{fmt.Sprintf("@%s", parser.AttributeUnique), fmt.Sprintf("@%s", parser.AttributeDefault)}
-	return stringArrayToCompletionsArray(keywords, node)
+	return stringArrayToCompletionsArray(keywords, node, KindKeyword)
 }
 
 func roleKeywordCompletions(node parser.GenericNode) (completions []*CompletionItem) {
 	keywords := []string{parser.KeywordEmails, parser.KeywordDomains}
-	return stringArrayToCompletionsArray(keywords, node)
+	return stringArrayToCompletionsArray(keywords, node, KindKeyword)
 }
 
 func modelKeywordCompletions(node parser.GenericNode) (completions []*CompletionItem) {
@@ -144,12 +207,12 @@ func modelKeywordCompletions(node parser.GenericNode) (completions []*Completion
 		parser.KeywordOperations,
 		fmt.Sprintf("@%s", parser.AttributePermission),
 	}
-	return stringArrayToCompletionsArray(keywords, node)
+	return stringArrayToCompletionsArray(keywords, node, KindKeyword)
 }
 
 func apiKeywordCompletions(node parser.GenericNode) (completions []*CompletionItem) {
 	keywords := []string{parser.KeywordModels, fmt.Sprintf("@%s", parser.AttributeGraphQL)}
-	return stringArrayToCompletionsArray(keywords, node)
+	return stringArrayToCompletionsArray(keywords, node, KindKeyword)
 }
 
 func topLevelKeywordCompletions(node parser.GenericNode) (completions []*CompletionItem) {
@@ -171,22 +234,11 @@ func topLevelKeywordCompletions(node parser.GenericNode) (completions []*Complet
 	return completions
 }
 
-func keywordMatchingFirstToken(keyword string, node parser.GenericNode) bool {
-	tokens := node.GetTokens()
-
-	if len(tokens) >= 1 {
-		if tokens[0].Value == keyword {
-			return true
-		}
-	}
-
-	return false
-}
-
-func stringArrayToCompletionsArray(arr []string, node parser.GenericNode) (completions []*CompletionItem) {
+func stringArrayToCompletionsArray(arr []string, node parser.GenericNode, kind int) (completions []*CompletionItem) {
 	for _, item := range arr {
 		completions = append(completions, &CompletionItem{
 			Label:       item,
+			Kind:        kind,
 			Node:        buildNode(node),
 			Description: fmt.Sprintf("Available in %s", node.String()),
 		})

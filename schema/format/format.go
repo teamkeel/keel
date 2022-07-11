@@ -96,7 +96,10 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 			writer.Write("fields")
 			writer.Block(func() {
 				for _, field := range fields {
-					fieldType := camel(field.Type)
+					if field.Type.Value == "" {
+						continue
+					}
+					fieldType := camel(field.Type.Value)
 					if field.Optional {
 						fieldType += "?"
 					}

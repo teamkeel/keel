@@ -194,7 +194,7 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 
 	field := ResolveInputField(asts, input, parentModel)
 	if field != nil {
-		return field.Type
+		return field.Type.Value
 	}
 
 	return ""
@@ -217,7 +217,7 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 		if field == nil {
 			return nil
 		}
-		model = Model(asts, field.Type)
+		model = Model(asts, field.Type.Value)
 	}
 
 	return field

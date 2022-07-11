@@ -200,7 +200,7 @@ func (scm *Builder) makeOperationInput(
 
 		for _, ident := range idents {
 			field = query.ModelField(currModel, ident.Fragment)
-			currModel = query.Model(scm.asts, field.Type)
+			currModel = query.Model(scm.asts, field.Type.Value)
 		}
 
 		protoType = scm.parserFieldToProtoTypeInfo(field).Type
@@ -263,19 +263,19 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 
 func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.TypeInfo {
 
-	protoType := scm.parserTypeToProtoType(field.Type)
+	protoType := scm.parserTypeToProtoType(field.Type.Value)
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
 	if protoType == proto.Type_TYPE_MODEL {
 		modelName = &wrapperspb.StringValue{
-			Value: query.Model(scm.asts, field.Type).Name.Value,
+			Value: query.Model(scm.asts, field.Type.Value).Name.Value,
 		}
 	}
 
 	if protoType == proto.Type_TYPE_ENUM {
 		enumName = &wrapperspb.StringValue{
-			Value: query.Enum(scm.asts, field.Type).Name.Value,
+			Value: query.Enum(scm.asts, field.Type.Value).Name.Value,
 		}
 	}
 

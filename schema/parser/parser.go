@@ -56,7 +56,7 @@ func (ast *ModelNode) String() string {
 type ModelSectionNode struct {
 	node.Node
 
-	Fields     []*FieldNode   `( "fields" "{" @@* "}"`
+	Fields     []*FieldNode   `( "fields" "{" @@? "}"`
 	Functions  []*ActionNode  `| "functions" "{" @@* "}"`
 	Operations []*ActionNode  `| "operations" "{" @@* "}"`
 	Attribute  *AttributeNode `| @@)`
@@ -90,7 +90,7 @@ type FieldNode struct {
 	node.Node
 
 	Name       NameNode         `@@`
-	Type       string           `@Ident`
+	Type       TypeNode         `@@?`
 	Repeated   bool             `( @( "[" "]" )`
 	Optional   bool             `| @( "?" ))?`
 	Attributes []*AttributeNode `( "{" @@+ "}" | @@+ )?`
@@ -103,6 +103,16 @@ type FieldNode struct {
 
 func (field *FieldNode) String() string {
 	return field.Name.Value
+}
+
+type TypeNode struct {
+	node.Node
+
+	Value string `" " @Ident`
+}
+
+func (t *TypeNode) String() string {
+	return t.Value
 }
 
 type APINode struct {

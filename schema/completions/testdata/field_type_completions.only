@@ -1,0 +1,21 @@
+model Post {
+  fields {
+    myField 
+  }
+}
+
+===
+
+line: 3
+column: 13
+
+===
+
+ID
+Boolean
+Text
+Currency
+Timestamp
+Date
+Image
+Number

@@ -53,7 +53,7 @@ func (e *ExpressionScopeEntity) Type() string {
 	}
 
 	if e.Field != nil {
-		return e.Field.Type
+		return e.Field.Type.Value
 	}
 
 	if e.Literal != nil {
@@ -285,7 +285,7 @@ fragments:
 			case e.Field != nil && e.Field.Name.Value == fragment.Fragment:
 				entity = e
 
-				model := query.Model(asts, e.Field.Type)
+				model := query.Model(asts, e.Field.Type.Value)
 
 				if model == nil {
 					// Did not find the model matching the field
@@ -388,7 +388,7 @@ fragments:
 				fragment,
 			)
 		} else if entity.Field != nil {
-			parentModel := query.Model(asts, entity.Field.Type)
+			parentModel := query.Model(asts, entity.Field.Type.Value)
 			fieldNames := query.ModelFieldNames(parentModel)
 			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
 			err = errorhandling.NewValidationError(
@@ -396,7 +396,7 @@ fragments:
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
 						"Fragment":   fragment.Fragment,
-						"Parent":     entity.Field.Type,
+						"Parent":     entity.Field.Type.Value,
 						"Suggestion": suggestions.ToString(),
 					},
 				},

@@ -55,6 +55,7 @@ func FieldNamingRule(asts []*parser.AST) (errors []error) {
 			if field.BuiltIn {
 				continue
 			}
+
 			if strcase.ToLowerCamel(field.Name.Value) != field.Name.Value {
 				errors = append(
 					errors,
@@ -109,12 +110,15 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errors []error) {
 func ValidFieldTypesRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
-
-			if parser.IsBuiltInFieldType(field.Type) {
+			// todo: pull between supporting "incomplete" fields for autocomplete and keeping validations working as they should?
+			if field.Type.Value == "" {
+				continue
+			}
+			if parser.IsBuiltInFieldType(field.Type.Value) {
 				continue
 			}
 
-			if query.IsUserDefinedType(asts, field.Type) {
+			if query.IsUserDefinedType(asts, field.Type.Value) {
 				continue
 			}
 
@@ -126,7 +130,7 @@ func ValidFieldTypesRule(asts []*parser.AST) (errors []error) {
 			// todo feed hint suggestions into validation error somehow.
 			sort.Strings(validTypes)
 
-			hint := errorhandling.NewCorrectionHint(validTypes, field.Type)
+			hint := errorhandling.NewCorrectionHint(validTypes, field.Type.Value)
 
 			suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
 
@@ -136,7 +140,7 @@ func ValidFieldTypesRule(asts []*parser.AST) (errors []error) {
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"Name":        field.Name.Value,
-							"Type":        field.Type,
+							"Type":        field.Type.Value,
 							"Suggestions": suggestions,
 						},
 					},
