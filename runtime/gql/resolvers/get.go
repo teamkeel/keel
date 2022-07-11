@@ -3,6 +3,7 @@ package resolvers
 import (
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 )
 
 // A GetOperationResolver provides a Resolve method that matches the signature needed for
@@ -21,23 +22,10 @@ func NewGetOperationResolver(op *proto.Operation, model *proto.Model) *GetOperat
 	}
 }
 
-func (r *GetOperationResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
-	// Fetch the data to populate the containerToReturn with.
-	containerToReturn, err := r.fetch(p)
+func (r *GetOperationResolver) Resolve(p graphql.ResolveParams) (any, error) {
+	res, err := actions.Get(p.Context, r.model, p.Args, r.op.WhereExpressions)
 	if err != nil {
 		return nil, err
 	}
-
-	return containerToReturn, nil
-}
-
-func (r *GetOperationResolver) fetch(queryParams graphql.ResolveParams) (map[string]any, error) {
-	// This is where we will talk to the database (or a storage abstraction).
-	// But for now - we'll fake it.
-
-	record, err := fetchDbRow(r.model, r.op.WhereExpressions, queryParams)
-	if err != nil {
-		return nil, err
-	}
-	return record, nil
+	return res, nil
 }

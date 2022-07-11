@@ -1,9 +1,8 @@
-package resolvers
+package actions
 
 import (
 	"fmt"
 
-	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -63,8 +62,8 @@ func zeroValueForField(fieldType proto.Type) (zeroValue, error) {
 	}
 }
 
-func setFieldsFromInputValues(modelMap map[string]any, resolveParams graphql.ResolveParams) error {
-	for paramName, paramValue := range resolveParams.Args {
+func setFieldsFromInputValues(modelMap map[string]any, args map[string]any) error {
+	for paramName, paramValue := range args {
 		modelMap[paramName] = paramValue
 	}
 	return nil

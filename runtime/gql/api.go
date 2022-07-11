@@ -6,6 +6,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"gorm.io/gorm"
 )
 
@@ -31,9 +32,11 @@ type Handler struct {
 // GraphQL query string (i.e. not JSON).
 func (h *Handler) Handle(gqlQuery string) (result *graphql.Result) {
 
+	context := runtimectx.ContextWithDB(context.Background(), h.gormDB)
+
 	result = graphql.Do(graphql.Params{
 		Schema:         *h.gSchema,
-		Context:        context.Background(),
+		Context:        context,
 		RequestString:  gqlQuery,
 		VariableValues: map[string]any{},
 	})

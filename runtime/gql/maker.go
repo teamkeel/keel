@@ -94,7 +94,7 @@ func (mk *maker) addModel(model *proto.Model, addTo *fieldsUnderConstruction) (m
 		if err != nil {
 			return nil, err
 		}
-		field := newField(field.Name, outputType, resolvers.NewFieldResolver(mk.db, field).Resolve)
+		field := newField(field.Name, outputType, resolvers.NewFieldResolver(field).Resolve)
 		fields[field.Name] = field
 	}
 	modelOutputType = newObject(model.Name, fields)
@@ -160,7 +160,7 @@ func (mk *maker) addCreateOp(
 	field := newFieldWithArgs(
 		op.Name,
 		args, modelOutputType,
-		resolvers.NewCreateOperationResolver(mk.db, op, model).Resolve)
+		resolvers.NewCreateOperationResolver(op, model).Resolve)
 	addTo.mutations[op.Name] = field
 	return nil
 }

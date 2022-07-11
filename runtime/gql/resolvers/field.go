@@ -1,11 +1,9 @@
 package resolvers
 
 import (
-	"fmt"
-
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
-	"gorm.io/gorm"
+	"github.com/teamkeel/keel/runtime/actions"
 )
 
 // A FieldResolver provides a Resolve method that matches the signature needed for
@@ -14,26 +12,19 @@ import (
 // Resolve method gets called.
 type FieldResolver struct {
 	field *proto.Field
-	db    *gorm.DB
 }
 
-func NewFieldResolver(db *gorm.DB, field *proto.Field) *FieldResolver {
+func NewFieldResolver(field *proto.Field) *FieldResolver {
 	return &FieldResolver{
-		db:    db,
 		field: field,
 	}
 }
 
 func (r *FieldResolver) Resolve(p graphql.ResolveParams) (interface{}, error) {
 	// Expects to be able to retreive the value for this field from the source object.
-
-	asMap, ok := p.Source.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("cannot coerce the source object to map[string]any")
+	field, err := actions.Field(p.Info.FieldName, p.Source)
+	if err != nil {
+		return nil, err
 	}
-	value, ok := asMap[r.field.Name]
-	if !ok {
-		return nil, fmt.Errorf("the source map does not contain field: %s", r.field.Name)
-	}
-	return value, nil
+	return field, nil
 }
