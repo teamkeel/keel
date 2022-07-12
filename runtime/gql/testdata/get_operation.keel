@@ -1,0 +1,11 @@
+model Person {
+    operations {
+        get getPerson(id)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}
