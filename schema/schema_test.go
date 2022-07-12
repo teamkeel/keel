@@ -2,7 +2,9 @@ package schema_test
 
 import (
 	"encoding/json"
+	"io/fs"
 	"io/ioutil"
+	"strings"
 	"testing"
 
 	"github.com/nsf/jsondiff"
@@ -24,6 +26,17 @@ func TestSchema(t *testing.T) {
 	testdataDir := "./testdata"
 	testCases, err := ioutil.ReadDir(testdataDir)
 	require.NoError(t, err)
+
+	toRun := []fs.FileInfo{}
+	for _, testCase := range testCases {
+		if strings.HasSuffix(testCase.Name(), ".only") {
+			toRun = append(toRun, testCase)
+		}
+	}
+
+	if len(toRun) > 0 {
+		testCases = toRun
+	}
 
 	for _, testCase := range testCases {
 		if !testCase.IsDir() {

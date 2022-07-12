@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        author Author
+    }
+}
+
+model Author {
+    fields {
+        post Post
+    }
+}

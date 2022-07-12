@@ -8,6 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/enum"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
 	"github.com/teamkeel/keel/schema/validation/rules/model"
+	"github.com/teamkeel/keel/schema/validation/rules/relationships"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
 )
 
@@ -59,6 +60,8 @@ var validatorFuncs = []validationFunc{
 	api.UniqueAPINamesRule,
 	// Enum
 	enum.UniqueEnumsRule,
+	// Relationships
+	relationships.InvalidOneToOneRelationshipRule,
 }
 
 func (v *Validator) RunAllValidators() error {
