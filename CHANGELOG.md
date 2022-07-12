@@ -1,3 +1,10 @@
+# [0.50.0](https://github.com/teamkeel/keel/compare/v0.49.0...v0.50.0) (2022-07-12)
+
+
+### Features
+
+* support [@unique](https://github.com/unique) attribute at model level for compount unique constraints ([88b17cb](https://github.com/teamkeel/keel/commit/88b17cbb9b5cdd5762abe844993d55d791b6f959))
+
 # [0.49.0](https://github.com/teamkeel/keel/compare/v0.48.0...v0.49.0) (2022-07-11)
 
 
