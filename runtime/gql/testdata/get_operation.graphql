@@ -1,0 +1,17 @@
+type Query {
+  getPerson(input: GetPersonInput!): Person
+}
+
+input GetPersonInput {
+  id: ID!
+}
+
+type Person {
+  createdAt: Timestamp!
+  id: ID!
+  updatedAt: Timestamp!
+}
+
+type Timestamp {
+  seconds: Int!
+}

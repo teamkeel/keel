@@ -25,6 +25,11 @@ import (
 // The idea being that the first request might Create some data, and a second might query it.
 // Or more generally put, the later requests are dependent on the earlier ones.
 func TestHandlersSuite(t *testing.T) {
+
+	// While we may have some integration tests for the runtime for now we're focussing
+	// on testing individual bits so skipping these for now
+	t.Skip()
+
 	testCasesParent := "../testdata"
 	subDirs, err := ioutil.ReadDir(testCasesParent)
 	require.NoError(t, err)

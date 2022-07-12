@@ -1,0 +1,17 @@
+model Person {
+    fields {
+        someBoolean Boolean
+        someNumber Number
+        someText Text
+    }
+
+    operations {
+        get getPerson(id)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

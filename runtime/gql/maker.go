@@ -2,25 +2,23 @@ package gql
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/gql/resolvers"
-	"gorm.io/gorm"
 )
 
 // A maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
 // of the APIs defined in the keel schema provided at construction time.
 type maker struct {
 	proto *proto.Schema
-	db    *gorm.DB
 }
 
-func newMaker(proto *proto.Schema, db *gorm.DB) *maker {
+func newMaker(proto *proto.Schema) *maker {
 	return &maker{
 		proto: proto,
-		db:    db,
 	}
 }
 
@@ -135,10 +133,29 @@ func (mk *maker) addGetOp(
 	modelOutputType graphql.Output,
 	model *proto.Model,
 	addTo *fieldsUnderConstruction) error {
-	args, err := mk.makeArgs(op)
-	if err != nil {
-		return err
+
+	operationInputType := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name:   strings.ToUpper(op.Name[0:1]) + op.Name[1:] + "Input",
+		Fields: graphql.InputObjectConfigFieldMap{},
+	})
+
+	for _, in := range op.Inputs {
+		inputType, err := mk.inputTypeFor(in)
+		if err != nil {
+			return err
+		}
+
+		operationInputType.AddFieldConfig(in.Name, &graphql.InputObjectFieldConfig{
+			Type: inputType,
+		})
 	}
+
+	args := graphql.FieldConfigArgument{
+		"input": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(operationInputType),
+		},
+	}
+
 	field := newFieldWithArgs(op.Name, args, modelOutputType, resolvers.NewGetOperationResolver(op, model).Resolve)
 	addTo.queries[op.Name] = field
 	return nil
@@ -165,40 +182,74 @@ func (mk *maker) addCreateOp(
 	return nil
 }
 
+var timestampType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Timestamp",
+	Fields: graphql.Fields{
+		"seconds": &graphql.Field{
+			Name: "seconds",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(graphql.ResolveParams) (interface{}, error) {
+				// TODO: implement this
+				panic("not implemented")
+			},
+		},
+		// TODO: add `fromNow` and `formatted` fields
+	},
+})
+
+var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
+	proto.Type_TYPE_ID:       graphql.ID,
+	proto.Type_TYPE_STRING:   graphql.String,
+	proto.Type_TYPE_INT:      graphql.Int,
+	proto.Type_TYPE_BOOL:     graphql.Boolean,
+	proto.Type_TYPE_DATETIME: timestampType,
+}
+
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
-	switch field.Type.Type {
-	case proto.Type_TYPE_STRING:
-		return graphql.String, nil
-
-	case proto.Type_TYPE_INT:
-		return graphql.Int, nil
-
-	case proto.Type_TYPE_ID:
-		return graphql.String, nil
-
-	case proto.Type_TYPE_DATETIME:
-		return graphql.String, nil
+	out, ok := protoTypeToGraphQLOutput[field.Type.Type]
+	if !ok {
+		return out, fmt.Errorf("cannot yet make output type for a: %v", field)
 	}
-	return nil, fmt.Errorf("cannot yet make output type for a: %v", field)
+
+	if !field.Optional {
+		out = graphql.NewNonNull(out)
+	}
+
+	if field.Type.Repeated {
+		out = graphql.NewList(out)
+		out = graphql.NewNonNull(out)
+	}
+
+	return out, nil
+}
+
+var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
+	proto.Type_TYPE_ID:     graphql.ID,
+	proto.Type_TYPE_STRING: graphql.String,
+	proto.Type_TYPE_INT:    graphql.Int,
+	proto.Type_TYPE_BOOL:   graphql.Boolean,
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
 func (mk *maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
-	switch op.Type.Type {
-	// Special case, when specifying a model - we expect the model's name.
-	case proto.Type_TYPE_MODEL:
-		return graphql.String, nil
+	var in graphql.Input
 
-	// General (scalar) cases.
-	case proto.Type_TYPE_ID:
-		return graphql.ID, nil
-	case proto.Type_TYPE_BOOL:
-		return graphql.Boolean, nil
-	case proto.Type_TYPE_STRING:
-		return graphql.String, nil
+	in, ok := protoTypeToGraphQLInput[op.Type.Type]
+	if !ok {
+		return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
 	}
-	return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
+
+	if !op.Optional {
+		in = graphql.NewNonNull(in)
+	}
+
+	if op.Type.Repeated {
+		in = graphql.NewList(in)
+		in = graphql.NewNonNull(in)
+	}
+
+	return in, nil
 }
 
 // makeArgs generates a graphql.FieldConfigArgument to reflect the inputs of the given
