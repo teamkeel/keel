@@ -43,6 +43,18 @@ func FindModel(models []*Model, name string) *Model {
 	return model
 }
 
+// FindOperation locates the operation of the given name in the given model.
+// It panics if there is no model of that name.
+func FindOperation(models *Model, name string) *Operation {
+	op, _, found := lo.FindIndexOf(models.Operations, func(op *Operation) bool {
+		return op.Name == name
+	})
+	if !found {
+		panic("There is no operation of that name")
+	}
+	return op
+}
+
 // FindModels locates and returns the models whose names match up with those
 // specified in the given names to find.
 func FindModels(allModels []*Model, namesToFind []string) (foundModels []*Model) {

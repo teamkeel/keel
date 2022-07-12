@@ -1,0 +1,15 @@
+model Person {
+    fields {
+        name Text @unique
+    }
+
+    operations {
+        create createPerson() with (name)
+    }
+}
+
+api Web {
+    models {
+        Person
+    }
+}
