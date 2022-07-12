@@ -1,0 +1,46 @@
+tldr:
+
+		o  may as well create first
+		o  use pg timestamp in database
+		o  ok for actions to return timestamps to resolvers, but
+		   inputs must match those types defined in design doc
+		o  re-use the docker compose from backend for db
+		o  have dedicated sql
+		o  copy backend for drop tables
+
+	*  receive model and op schema info
+	*  receive packaged inputs from requests as Args
+	*  construct modelmap in terms of:
+		*  zero value
+		*  for each of the inputs allowed in the schema
+			*  fetch from args or skip
+			*  use value of arg to update modelmap
+			*  insert it into table
+	*  code infra needed
+		*  to execute
+			*  db insertion of modelmap into table
+			*  corrected scalar type mapping
+		*  to test want to start tdd
+			*  suite/case thing
+			*  suite bring up db (dedicated to these tests)
+			*  case
+				*  drop existing tables
+				*  migrate
+	*  remind schema ref re create
+		*  implicit inputs, e.g. create createAuthor(name)
+		*  or explicit, e.g. create createPerson(firstname: Text)
+		*  but these two variants are normalised in the proto
+		*  will receive inputs for all non defaultable fields
+	*  re-read gql gen spec
+		*  Timestamp and Date field types
+			*  need to be clear on input, what to store, what to return
+		*  enums - out of scope for first cut
+
+	o   questions for Jon
+		o  date and timestamp input/write/return content
+		o  good idea to do Create first because Get tests will need fixtures
+		   that create?
+		o  test infra - why suggest docker compose - what does compose
+		   give us in this situation?
+		o  brainstorm test suite - scope and operation
+		o  sql unify
