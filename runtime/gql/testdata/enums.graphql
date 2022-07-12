@@ -1,0 +1,25 @@
+type Query {
+  getPerson(input: GetPersonInput!): Person
+}
+
+input GetPersonInput {
+  id: ID!
+}
+
+enum Occupation {
+  Astronaut
+  Doctor
+  Firefighter
+  Teacher
+}
+
+type Person {
+  createdAt: Timestamp!
+  id: ID!
+  occupation: Occupation!
+  updatedAt: Timestamp!
+}
+
+type Timestamp {
+  seconds: Int!
+}

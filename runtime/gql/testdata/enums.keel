@@ -1,0 +1,22 @@
+model Person {
+    fields {
+        occupation Occupation
+    }
+
+    operations {
+        get getPerson(id)
+    }
+}
+
+enum Occupation {
+    Teacher
+    Doctor
+    Firefighter
+    Astronaut
+}
+
+api Test {
+    models {
+        Person
+    }
+}
