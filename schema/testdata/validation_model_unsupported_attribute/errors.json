@@ -3,7 +3,7 @@
     {
       "message": "model 'Person' has an unrecognised attribute @whatisthis",
       "short_message": "Unrecognised attribute whatisthis",
-      "hint": "Did you mean @permission?",
+      "hint": "Did you mean @permission, or @unique?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_model_unsupported_attribute/schema.keel",

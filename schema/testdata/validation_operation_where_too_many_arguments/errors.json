@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E024",
-        "hint": "@where only accepts 1 argument(s)",
-        "message": "Too many arguments provided to '@where'",
-        "end_pos": {
-          "column": 83,
-          "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
-          "line": 13,
-          "offset": 282
-        },
-        "pos": {
-          "column": 13,
-          "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
-          "line": 13,
-          "offset": 212
-        },
-        "short_message": "Too many arguments provided to '@where'"
+{
+  "Errors": [
+    {
+      "message": "2 argument(s) provided to @where but expected 1",
+      "short_message": "Wrong number of arguments provided to @where",
+      "hint": "the signature of this attribute is @where(expression)",
+      "code": "E024",
+      "pos": {
+        "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
+        "offset": 212,
+        "line": 13,
+        "column": 13
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
+        "offset": 282,
+        "line": 13,
+        "column": 83
       }
-    ]
-  }
+    }
+  ]
+}
