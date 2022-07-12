@@ -19,6 +19,10 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
+# IntelliJ
+.idea/
+*.iml
+
 # Go workspace file
 go.work
 
