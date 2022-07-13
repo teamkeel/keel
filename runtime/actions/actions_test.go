@@ -3,9 +3,6 @@ package actions
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
-	"io/ioutil"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -14,15 +11,13 @@ import (
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/schema/reader"
 	gormpostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-// TestSuite is table driven test for Create and Get etc. functions.
-// The table is implied implied by a set of directories in ./testdata.
-// Each directory requires two files: a keel schema, and meta.json file.
-// The meta.json file contains various sections that define test set up and inputs
-// or expected behaviour.
+// TestSuite is table driven test for Create and Get etc.
 //
 // The tests are dependent on a PostgreSQL service - see connectPg() below.
 func TestSuite(t *testing.T) {
@@ -30,42 +25,36 @@ func TestSuite(t *testing.T) {
 
 	context := runtimectx.ContextWithDB(context.Background(), db)
 	_ = context
-	testCases, err := ioutil.ReadDir("./testdata")
-	require.NoError(t, err)
 
-	for _, dir := range testCases {
-		if !dir.IsDir() {
-			continue
-		}
-		dirName := dir.Name()
-		dirFullPath := filepath.Join("./testdata", dirName)
-		t.Logf("Processing dir: %s", dirName)
-
-		runTestCase(t, context, dirFullPath)
+	for _, tc := range testCases {
+		runTestCase(t, context, tc)
 	}
 }
 
 // runTestCase is a helper for TestSuite that performs the tests on
-// a given directory.
-func runTestCase(t *testing.T, ctx context.Context, dirFullPath string) {
+// the given test case.
+func runTestCase(t *testing.T, ctx context.Context, testCase TestCase) {
 
-	fixture := fixtureData(t, dirFullPath)
-
+	// Acquire a connect to Postgres, and clear down any existing tables.
 	db := runtimectx.GetDB(ctx)
 	resetDB(t, db)
 
-	emptySchema := &proto.Schema{}
+	schema := makeProtoSchema(t, testCase.KeelSchema)
+
+	// Migrate the DB to this schema.
 	sqlDB, err := db.DB()
 	require.NoError(t, err)
-	schema, err := migrations.PerformMigration(emptySchema, sqlDB, dirFullPath)
+	err = migrations.PerformInitialMigration(sqlDB, schema)
 	require.NoError(t, err)
 
-	model := proto.FindModel(schema.Models, fixture.meta.ModelName)
-	operation := proto.FindOperation(model, fixture.meta.OperationName)
+	// Acquire the test parameters.
+	model := proto.FindModel(schema.Models, testCase.ModelName)
+	operation := proto.FindOperation(model, testCase.OperationName)
 
+	// Call the operation function that is under test.
 	switch operation.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		res, err := Create(ctx, model, fixture.meta.OperationInputs)
+		res, err := Create(ctx, model, testCase.OperationInputs)
 		require.NoError(t, err)
 
 		_ = res
@@ -76,6 +65,21 @@ func runTestCase(t *testing.T, ctx context.Context, dirFullPath string) {
 	// todo
 	// check response
 	// check apply the sql query
+}
+
+// makeProtoSchema generates a proto.Schema fom the Keel schema in the given
+// string.
+func makeProtoSchema(t *testing.T, keelSchema string) *proto.Schema {
+	builder := schema.Builder{}
+	proto, err := builder.MakeFromInputs(&reader.Inputs{
+		SchemaFiles: []reader.SchemaFile{
+			{
+				Contents: keelSchema,
+			},
+		},
+	})
+	require.NoError(t, err)
+	return proto
 }
 
 // connectPg establishes a connection to a local PostgreSQL service, which
@@ -101,42 +105,10 @@ func connectPg(t *testing.T) *gorm.DB {
 	return nil
 }
 
-// fixtureData composes a FixtureData by reading files in the given directory.
-func fixtureData(t *testing.T, dirPath string) FixtureData {
-	fd := FixtureData{}
-
-	b, err := ioutil.ReadFile(filepath.Join(dirPath, "schema.keel"))
-	require.NoError(t, err)
-	fd.schemaJSON = string(b)
-
-	b, err = ioutil.ReadFile(filepath.Join(dirPath, "meta.json"))
-	require.NoError(t, err)
-	var meta Meta
-	err = json.Unmarshal(b, &meta)
-	require.NoError(t, err)
-
-	require.True(t, len(meta.ModelName) > 2)
-	require.True(t, len(meta.OperationName) > 2)
-	require.True(t, len(meta.OperationInputs) > 0)
-	require.True(t, len(meta.ExpectedActionResponse) > 2)
-
-	// todo: decide what or if to check the other meta.json fields
-
-	fd.meta = meta
-
-	return fd
-}
-
-// FixtureData encapsulates all the test fixture definition for the
-// tests on a given test directory.
-type FixtureData struct {
-	schemaJSON string
-	meta       Meta
-}
-
-// Meta identifies various artefacts from a schema that should be used in
+// TestCase provides a Schema, and identifies various artefacts from it that should be used in
 // a test, along with some request / expected responses for that test.
-type Meta struct {
+type TestCase struct {
+	KeelSchema             string
 	ModelName              string
 	OperationName          string
 	OperationInputs        map[string]any

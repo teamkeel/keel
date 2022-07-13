@@ -50,3 +50,19 @@ func PerformMigration(oldProto *proto.Schema, db *sql.DB, schemaDir string) (new
 	}
 	return newSchema, nil
 }
+
+// PerformInitialMigration performs an initial migration on the database to make it
+// match the given schema. It assumes the database has no tables in to start with, and
+// should not be used unless this is known.
+func PerformInitialMigration(db *sql.DB, schema *proto.Schema) error {
+	oldSchema := &proto.Schema{}
+	migrationsSQL, err := MakeMigrationsFromSchemaDifference(oldSchema, schema)
+	if err != nil {
+		return fmt.Errorf("could not generate SQL for migrations: %v", err)
+	}
+	_, err = db.Exec(migrationsSQL)
+	if err != nil {
+		return fmt.Errorf("error trying to perform database migration: %v", err)
+	}
+	return nil
+}

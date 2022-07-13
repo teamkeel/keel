@@ -1,8 +1,0 @@
-{
-    "ModelName": "Person",
-    "OperationName": "createPerson",
-    "OperationInputs": {
-        "foo": 42
-    },
-    "ExpectedActionResponse": "wontbethis"
-}
