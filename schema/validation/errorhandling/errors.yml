@@ -154,3 +154,7 @@ en:
     short_message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
     message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
     hint: "It is not clear where the foreign key should be placed. Remove the explicit reference from one side."
+  E040:
+    short_message: "Walking backwards in an expression is not permitted"
+    message: "Walking backwards in an expression is not permitted"
+    hint: "'{{ .Fragment }}' references the current model"

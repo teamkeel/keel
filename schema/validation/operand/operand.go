@@ -6,6 +6,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/util/str"
 )
 
 type ExpressionScope struct {
@@ -264,6 +265,26 @@ func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *Exp
 			return entity, nil
 		}
 
+	}
+
+	// check for walking backwards
+	fragmentCount := len(operand.Ident.Fragments)
+
+	for i, fragment := range operand.Ident.Fragments {
+		if fragmentCount >= i+3 && str.Singularize(fragment.Fragment) == str.Singularize(operand.Ident.Fragments[i+2].Fragment) {
+			err = errorhandling.NewValidationError(
+				errorhandling.ErrorInvalidBackwardsExpressionTraversal,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Fragment": operand.Ident.Fragments[i+2].Fragment,
+						"Root":     operand.Ident.Fragments[0].Fragment,
+					},
+				},
+				operand.Ident.Fragments[i+2],
+			)
+
+			return nil, err
+		}
 	}
 
 	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything

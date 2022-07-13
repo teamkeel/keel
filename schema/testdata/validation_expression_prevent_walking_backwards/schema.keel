@@ -1,0 +1,17 @@
+model Post {
+    fields {
+        title Text
+        author Author
+    }
+
+    @permission(
+        expression: post.author.posts.title == "foo",
+        actions: [get]
+    )
+}
+
+model Author {
+    fields {
+        posts Post[]
+    }
+}

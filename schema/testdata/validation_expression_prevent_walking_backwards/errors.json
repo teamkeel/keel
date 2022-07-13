@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "Walking backwards in an expression is not permitted",
+      "short_message": "Walking backwards in an expression is not permitted",
+      "hint": "'posts' references the current model",
+      "code": "E040",
+      "pos": {
+        "filename": "testdata/validation_expression_prevent_walking_backwards/schema.keel",
+        "offset": 123,
+        "line": 8,
+        "column": 33
+      },
+      "end_pos": {
+        "filename": "testdata/validation_expression_prevent_walking_backwards/schema.keel",
+        "offset": 128,
+        "line": 8,
+        "column": 38
+      }
+    }
+  ]
+}
