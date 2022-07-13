@@ -1,7 +1,7 @@
 {
   "Errors": [
     {
-      "message": "'auth' not found on 'Post' model",
+      "message": "'auth' not found on 'Post'",
       "short_message": "'auth' not found",
       "hint": "Did you mean author?",
       "code": "E020",

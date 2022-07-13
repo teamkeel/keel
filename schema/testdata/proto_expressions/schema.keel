@@ -1,0 +1,22 @@
+model Person {
+    fields {
+        name Text
+        public Boolean
+        dateOfDeath Date?
+        identity Identity
+    }
+
+    operations {
+        list getPeople(name) {
+            @permission(expression: person.public == true)
+            @where(person.public == true)
+        }
+        create createPerson() with (name) {
+            @set(person.identity = ctx.identity)
+            @set(person.public = true)
+        }
+        update kill(id) {
+            @set(person.dateOfDeath = ctx.now)
+        }
+    }
+}

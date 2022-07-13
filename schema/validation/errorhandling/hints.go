@@ -2,6 +2,7 @@ package errorhandling
 
 import (
 	"fmt"
+	"strings"
 
 	levenshtein "github.com/ka-weihe/fast-levenshtein"
 	"github.com/teamkeel/keel/formatting"
@@ -24,7 +25,7 @@ func NewCorrectionHint(referenceCollection []string, query string) *CorrectionHi
 	for _, item := range referenceCollection {
 		attributeNames = append(attributeNames, item)
 
-		if levenshtein.Distance(query, item) < 2 {
+		if levenshtein.Distance(query, item) < 2 || strings.HasPrefix(item, query) {
 			matches = append(matches, item)
 		}
 	}

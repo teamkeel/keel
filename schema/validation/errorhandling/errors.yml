@@ -77,12 +77,8 @@ en:
     hint: "Please remove one of the definitions"
   E020:
     short_message: "'{{ .Fragment }}' not found"
-    message: "'{{ .Fragment }}' not found on '{{ .Parent }}' model"
+    message: "'{{ .Fragment }}' not found{{ if .Parent }} on '{{ .Parent }}'{{ end }}"
     hint: "{{ .Suggestion }}"
-  E021:
-    short_message: "{{ .Root }} not found"
-    message: "{{ .Root }} not found"
-    hint: "{{ .Suggestions }}"
   E022:
     short_message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
