@@ -1,7 +1,7 @@
 {
   "Errors": [
     {
-      "message": "'autho' not found on 'Post' model",
+      "message": "'autho' not found on 'Post'",
       "short_message": "'autho' not found",
       "hint": "Did you mean author?",
       "code": "E020",

@@ -1,7 +1,7 @@
 {
   "Errors": [
     {
-      "message": "'postCod' not found on 'Address' model",
+      "message": "'postCod' not found on 'Address'",
       "short_message": "'postCod' not found",
       "hint": "Did you mean postCode?",
       "code": "E020",

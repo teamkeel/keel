@@ -3,6 +3,7 @@ package expression
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -172,7 +173,7 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 				errorhandling.ErrorForbiddenOperator,
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
-						"Type":       resolvedLHS.Type(),
+						"Type":       resolvedLHS.GetType(),
 						"Operator":   condition.Operator.Symbol,
 						"Suggestion": corrections.ToString(),
 					},
@@ -189,7 +190,7 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 					errorhandling.TemplateLiterals{
 						Literals: map[string]string{
 							"RHS":      condition.RHS.ToString(),
-							"RHSType":  resolvedRHS.Type(),
+							"RHSType":  resolvedRHS.GetType(),
 							"Operator": condition.Operator.Symbol,
 						},
 					},
@@ -214,22 +215,33 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *expressions.Condition,
 	}
 
 	// Simple case: LHS and RHS are the same
-	if resolvedLHS.Type() == resolvedRHS.Type() {
+	if resolvedLHS.GetType() == resolvedRHS.GetType() {
 		return nil
+	}
+
+	// Possibly this only applies to Date and Timestamp but this handles
+	// cases where two different types are compatible
+	comparable := [][]string{
+		{parser.FieldTypeDate, parser.FieldTypeDatetime},
+	}
+	for _, c := range comparable {
+		if lo.Contains(c, resolvedLHS.GetType()) && lo.Contains(c, resolvedRHS.GetType()) {
+			return nil
+		}
 	}
 
 	// If RHS is an array then we check the type of it's items
 	// If they match the LHS then that is ok
-	if resolvedRHS.Type() == expressions.TypeArray {
+	if resolvedRHS.GetType() == expressions.TypeArray {
 		var arrayType string
 		valid := true
 		for i, item := range resolvedRHS.Array {
 			if i == 0 {
-				arrayType = item.Type()
+				arrayType = item.GetType()
 				continue
 			}
 
-			if arrayType != item.Type() {
+			if arrayType != item.GetType() {
 				valid = false
 				errors = append(errors,
 					errorhandling.NewValidationError(
@@ -252,24 +264,24 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *expressions.Condition,
 
 		// Now we know the RHS is an array of type T we can check if
 		// the LHS is also of type T
-		if arrayType == resolvedLHS.Type() {
+		if arrayType == resolvedLHS.GetType() {
 			return nil
 		}
 	}
 
-	lhsType := resolvedLHS.Type()
+	lhsType := resolvedLHS.GetType()
 	if resolvedLHS.IsRepeated() {
 		if resolvedLHS.Array != nil {
-			lhsType = "an array of " + resolvedLHS.Array[0].Type()
+			lhsType = "an array of " + resolvedLHS.Array[0].GetType()
 		} else {
 			lhsType = "an array of " + lhsType
 		}
 	}
 
-	rhsType := resolvedRHS.Type()
+	rhsType := resolvedRHS.GetType()
 	if resolvedRHS.IsRepeated() {
 		if resolvedRHS.Array != nil {
-			rhsType = "an array of " + resolvedRHS.Array[0].Type()
+			rhsType = "an array of " + resolvedRHS.Array[0].GetType()
 		} else {
 			rhsType = "an array of " + rhsType
 		}
@@ -302,6 +314,7 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 	scope := &operand.ExpressionScope{
 		Entities: []*operand.ExpressionScopeEntity{
 			{
+				Name:  strcase.ToLowerCamel(context.Model.Name.Value),
 				Model: context.Model,
 			},
 		},
@@ -310,7 +323,7 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 	inputs := append([]*parser.ActionInputNode{}, context.ReadInputs...)
 	inputs = append(inputs, context.WriteInputs...)
 
-	for i, input := range inputs {
+	for _, input := range inputs {
 		// inputs using short-hand syntax that refer to relationships
 		// don't get added to the scope
 		if input.Label == nil && len(input.Type.Fragments) > 1 {
@@ -322,11 +335,8 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 			continue
 		}
 		scope.Entities = append(scope.Entities, &operand.ExpressionScopeEntity{
-			Input: &operand.ExpressionInputEntity{
-				Name:       input.Name(),
-				Type:       resolvedType,
-				AllowWrite: i >= len(context.ReadInputs),
-			},
+			Name: input.Name(),
+			Type: resolvedType,
 		})
 	}
 

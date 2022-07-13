@@ -1,7 +1,7 @@
 package operand
 
 import (
-	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -21,29 +21,25 @@ func (a *ExpressionScope) Merge(b *ExpressionScope) *ExpressionScope {
 
 type ExpressionObjectEntity struct {
 	Name   string
-	Fields map[string]*ExpressionScopeEntity
+	Fields []*ExpressionScopeEntity
 }
 
 type ExpressionScopeEntity struct {
+	Name string
+
 	Object    *ExpressionObjectEntity
 	Model     *parser.ModelNode
 	Field     *parser.FieldNode
-	Input     *ExpressionInputEntity
 	Literal   *expressions.Operand
 	Enum      *parser.EnumNode
 	EnumValue *parser.EnumValueNode
 	Array     []*ExpressionScopeEntity
+	Type      string
 
 	Parent *ExpressionScopeEntity
 }
 
-type ExpressionInputEntity struct {
-	Name       string // The name of the input as it can be referenced in an expression
-	Type       string // will be a valid field type e.g. Text, Boolean, Number etc...
-	AllowWrite bool   // true if this input value can be used to write values
-}
-
-func (e *ExpressionScopeEntity) Type() string {
+func (e *ExpressionScopeEntity) GetType() string {
 	if e.Object != nil {
 		return e.Object.Name
 	}
@@ -68,8 +64,8 @@ func (e *ExpressionScopeEntity) Type() string {
 		return expressions.TypeArray
 	}
 
-	if e.Input != nil {
-		return e.Input.Type
+	if e.Type != "" {
+		return e.Type
 	}
 
 	return ""
@@ -104,8 +100,8 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 	case e.Model != nil:
 		operators = append(operators, expressions.OperatorEquals)
 		operators = append(operators, expressions.OperatorAssignment)
-	case e.Field != nil || e.Input != nil:
-		switch e.Type() {
+	case e.Field != nil || e.Type != "":
+		switch e.GetType() {
 		case expressions.TypeText, parser.FieldTypeText:
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
@@ -120,9 +116,6 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 			operators = append(operators, expressions.OperatorEquals)
 			operators = append(operators, expressions.OperatorAssignment)
 		}
-	case e.Object != nil:
-		operators = append(operators, expressions.OperatorEquals)
-		operators = append(operators, expressions.OperatorAssignment)
 	}
 
 	return operators
@@ -131,11 +124,17 @@ func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 	entities := []*ExpressionScopeEntity{
 		{
+			Name: "ctx",
 			Object: &ExpressionObjectEntity{
-				Name: "ctx",
-				Fields: map[string]*ExpressionScopeEntity{
-					"identity": {
+				Name: "Context",
+				Fields: []*ExpressionScopeEntity{
+					{
+						Name:  "identity",
 						Model: query.Model(asts, "Identity"),
+					},
+					{
+						Name: "now",
+						Type: parser.FieldTypeDatetime,
 					},
 				},
 			},
@@ -144,6 +143,7 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 
 	for _, enum := range query.Enums(asts) {
 		entities = append(entities, &ExpressionScopeEntity{
+			Name: enum.Name.Value,
 			Enum: enum,
 		})
 	}
@@ -181,6 +181,7 @@ func scopeFromModel(parentScope *ExpressionScope, parentEntity *ExpressionScopeE
 
 	for _, field := range query.ModelFields(model) {
 		newEntities = append(newEntities, &ExpressionScopeEntity{
+			Name:   field.Name.Value,
 			Field:  field,
 			Parent: parentEntity,
 		})
@@ -195,21 +196,13 @@ func scopeFromModel(parentScope *ExpressionScope, parentEntity *ExpressionScopeE
 func scopeFromObject(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity) *ExpressionScope {
 	newEntities := []*ExpressionScopeEntity{}
 
-	for _, field := range parentEntity.Object.Fields {
-		newEntities = append(newEntities, &ExpressionScopeEntity{
-			// copy all fields across
-			Model:     field.Model,
-			Object:    field.Object,
-			Field:     field.Field,
-			Input:     field.Input,
-			Literal:   field.Literal,
-			Enum:      field.Enum,
-			EnumValue: field.EnumValue,
-			Array:     field.Array,
-
-			// set parent
-			Parent: parentEntity,
-		})
+	for _, entity := range parentEntity.Object.Fields {
+		// create a shallow copy by getting the _value_ of entity
+		entityCopy := *entity
+		// update parent (this does _not_ mutate entity)
+		entityCopy.Parent = parentEntity
+		// then add a pointer to the _copy_
+		newEntities = append(newEntities, &entityCopy)
 	}
 
 	return &ExpressionScope{
@@ -223,6 +216,7 @@ func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEn
 
 	for _, value := range parentEntity.Enum.Values {
 		newEntities = append(newEntities, &ExpressionScopeEntity{
+			Name:      value.Name.Value,
 			EnumValue: value,
 			Parent:    parentEntity,
 		})
@@ -275,16 +269,14 @@ func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *Exp
 fragments:
 	for _, fragment := range operand.Ident.Fragments {
 		for _, e := range scope.Entities {
+			if e.Name != fragment.Fragment {
+				continue
+			}
+
 			switch {
-			case e.Model != nil && strcase.ToLowerCamel(e.Model.Name.Value) == fragment.Fragment:
-				entity = e
-
+			case e.Model != nil:
 				scope = scopeFromModel(scope, e, e.Model)
-
-				continue fragments
-			case e.Field != nil && e.Field.Name.Value == fragment.Fragment:
-				entity = e
-
+			case e.Field != nil:
 				model := query.Model(asts, e.Field.Type)
 
 				if model == nil {
@@ -295,114 +287,47 @@ fragments:
 				} else {
 					scope = scopeFromModel(scope, e, model)
 				}
-
-				continue fragments
-			case e.Object != nil && e.Object.Name == fragment.Fragment:
-				entity = e
-
+			case e.Object != nil:
 				scope = scopeFromObject(scope, e)
-
-				continue fragments
-			case e.Enum != nil && e.Enum.Name.Value == fragment.Fragment:
-				entity = e
-
+			case e.Enum != nil:
 				scope = scopeFromEnum(scope, e)
-
-				continue fragments
-			case e.EnumValue != nil && e.EnumValue.Name.Value == fragment.Fragment:
-				entity = e
-
+			case e.EnumValue != nil:
 				scope = &ExpressionScope{
 					Parent: scope,
 				}
-
-				continue fragments
-			case e.Input != nil && e.Input.Name == fragment.Fragment:
-				entity = e
+			case e.Type != "":
 				scope = &ExpressionScope{
 					Parent: scope,
 				}
-				continue fragments
 			}
+
+			entity = e
+			continue fragments
 		}
 
-		// entity in this case is the last resolved parent
-		if entity == nil {
-			// The first fragment didn't match anything in the scope
-			inScope := []string{}
+		// Suggest the names of all things in scope
+		inScope := lo.Map(scope.Entities, func(e *ExpressionScopeEntity, _ int) string {
+			return e.Name
+		})
 
-			// Suggest all of the top level things that are in the scope, e.g ctx, {modelName}, any input parameters
-			for _, entity := range scope.Entities {
-				if entity.Model != nil {
-					inScope = append(inScope, strcase.ToLowerCamel(entity.Model.Name.Value))
-				}
+		suggestions := errorhandling.NewCorrectionHint(inScope, fragment.Fragment)
 
-				if entity.Object != nil {
-					inScope = append(inScope, entity.Object.Name)
-				}
-
-				// todo: input parameters + genericize
-			}
-
-			hint := errorhandling.NewCorrectionHint(inScope, fragment.Fragment)
-			err = errorhandling.NewValidationError(
-				errorhandling.ErrorUnresolvedRootModel,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Root":        fragment.Fragment,
-						"Suggestions": hint.ToString(),
-					},
-				},
-				fragment,
-			)
-		} else if entity.Model != nil {
-			fieldNames := query.ModelFieldNames(entity.Model)
-			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
-			err = errorhandling.NewValidationError(
-				errorhandling.ErrorUnresolvableExpression,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Fragment":   fragment.Fragment,
-						"Parent":     entity.Model.Name.Value,
-						"Suggestion": suggestions.ToString(),
-					},
-				},
-				fragment,
-			)
-		} else if entity.Object != nil {
-			fieldNames := []string{}
-
-			for key := range entity.Object.Fields {
-				fieldNames = append(fieldNames, key)
-			}
-			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
-			err = errorhandling.NewValidationError(
-				errorhandling.ErrorUnresolvableExpression,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Fragment":   fragment.Fragment,
-						"Parent":     entity.Object.Name,
-						"Suggestion": suggestions.ToString(),
-					},
-				},
-				fragment,
-			)
-		} else if entity.Field != nil {
-			parentModel := query.Model(asts, entity.Field.Type)
-			fieldNames := query.ModelFieldNames(parentModel)
-			suggestions := errorhandling.NewCorrectionHint(fieldNames, fragment.Fragment)
-			err = errorhandling.NewValidationError(
-				errorhandling.ErrorUnresolvableExpression,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Fragment":   fragment.Fragment,
-						"Parent":     entity.Field.Type,
-						"Suggestion": suggestions.ToString(),
-					},
-				},
-				fragment,
-			)
+		parent := ""
+		if entity != nil {
+			parent = entity.GetType()
 		}
+
+		err = errorhandling.NewValidationError(
+			errorhandling.ErrorUnresolvableExpression,
+			errorhandling.TemplateLiterals{
+				Literals: map[string]string{
+					"Fragment":   fragment.Fragment,
+					"Parent":     parent,
+					"Suggestion": suggestions.ToString(),
+				},
+			},
+			fragment,
+		)
 
 		return nil, err
 	}
