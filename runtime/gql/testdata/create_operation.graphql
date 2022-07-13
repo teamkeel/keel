@@ -2,6 +2,14 @@ type Query {
   getPerson(input: GetPersonInput!): Person
 }
 
+type Mutation {
+  createPerson(input: CreatePersonInput!): Person!
+}
+
+input CreatePersonInput {
+  name: String!
+}
+
 input GetPersonInput {
   id: ID!
 }
@@ -9,17 +17,10 @@ input GetPersonInput {
 type Person {
   createdAt: Timestamp!
   id: ID!
-  occupation: Occupation!
+  name: String!
   updatedAt: Timestamp!
 }
 
 type Timestamp {
   seconds: Int!
-}
-
-enum Occupation {
-  Astronaut
-  Doctor
-  Firefighter
-  Teacher
 }

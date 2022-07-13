@@ -3,6 +3,7 @@ package gql
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"sort"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/testutil"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema"
@@ -78,7 +80,15 @@ func TestMaker(t *testing.T) {
 			var introspectionResult IntrospectionQueryResult
 			json.Unmarshal(b, &introspectionResult)
 
-			assert.Equal(t, tc.graphql, toSchemaString(&introspectionResult))
+			expected := tc.graphql
+			actual := toSchemaString(&introspectionResult)
+			assert.Equal(t, expected, actual)
+
+			if expected != actual {
+				// Print the actual result for easier debugging
+				fmt.Println("Actual GraphQL schema:")
+				fmt.Println(actual)
+			}
 		})
 	}
 }
@@ -139,14 +149,29 @@ type IntrospectionQueryResult struct {
 func toSchemaString(r *IntrospectionQueryResult) string {
 	result := []string{}
 
-	sort.Slice(r.Schema.Types, func(i, j int) bool {
-		if r.Schema.Types[i].Name == "Query" {
-			return true
+	sort.Slice(r.Schema.Types, func(a, b int) bool {
+		aType := r.Schema.Types[a]
+		bType := r.Schema.Types[b]
+
+		// Make sure Query and Mutation come at the top of the generated
+		// schema with Query first and Mutation second
+		typeNameOrder := []string{"Mutation", "Query"}
+		aIndex := lo.IndexOf(typeNameOrder, aType.Name)
+		bIndex := lo.IndexOf(typeNameOrder, bType.Name)
+		if aIndex != -1 || bIndex != -1 {
+			return aIndex > bIndex
 		}
-		if r.Schema.Types[j].Name == "Query" {
-			return false
+
+		// Then order by input types, types, and enums
+		kindOrder := []string{"ENUM", "OBJECT", "INPUT_OBJECT"}
+		aIndex = lo.IndexOf(kindOrder, aType.Kind)
+		bIndex = lo.IndexOf(kindOrder, bType.Kind)
+		if aIndex != bIndex {
+			return aIndex > bIndex
 		}
-		return r.Schema.Types[i].Name < r.Schema.Types[j].Name
+
+		// Order same kind by name
+		return aType.Name < bType.Name
 	})
 
 	for _, t := range r.Schema.Types {
