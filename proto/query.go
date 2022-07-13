@@ -1,6 +1,8 @@
 package proto
 
 import (
+	"fmt"
+
 	"github.com/samber/lo"
 )
 
@@ -38,7 +40,7 @@ func FindModel(models []*Model, name string) *Model {
 		return m.Name == name
 	})
 	if !found {
-		panic("There is no model of that name")
+		panic(fmt.Sprintf("There is no model with the name: %s", name))
 	}
 	return model
 }
@@ -50,7 +52,7 @@ func FindOperation(models *Model, name string) *Operation {
 		return op.Name == name
 	})
 	if !found {
-		panic("There is no operation of that name")
+		panic(fmt.Sprintf("There is no operation with the name: %s", name))
 	}
 	return op
 }
@@ -73,5 +75,5 @@ func FindField(models []*Model, modelName string, fieldName string) *Field {
 			return field
 		}
 	}
-	panic("No such field exists in the given model")
+	panic(fmt.Sprintf("There is no <%s> field in model: %s", fieldName, modelName))
 }

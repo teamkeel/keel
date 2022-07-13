@@ -7,9 +7,3 @@ model Person {
         create createPerson() with (name)
     }
 }
-
-api Web {
-    models {
-        Person
-    }
-}
