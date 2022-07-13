@@ -54,6 +54,7 @@ const (
 	ErrorOperationWhereNotUnique            = "E036"
 	ErrorNonDirectComparisonOperatorUsed    = "E037"
 	ErrorUnusedInput                        = "E038"
+	ErrorInvalidOneToOneRelationship        = "E039"
 )
 
 type ErrorDetails struct {

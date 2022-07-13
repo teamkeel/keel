@@ -15,10 +15,23 @@ func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	return res
 }
 
-func Models(asts []*parser.AST) (res []*parser.ModelNode) {
+type ModelFilter func(m *parser.ModelNode) bool
+
+func ExcludeBuiltInModels(m *parser.ModelNode) bool {
+	return !m.BuiltIn
+}
+
+func Models(asts []*parser.AST, filters ...ModelFilter) (res []*parser.ModelNode) {
 	for _, ast := range asts {
+	models:
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
+				for _, filter := range filters {
+					if !filter(decl.Model) {
+						continue models
+					}
+				}
+
 				res = append(res, decl.Model)
 			}
 		}
@@ -26,10 +39,18 @@ func Models(asts []*parser.AST) (res []*parser.ModelNode) {
 	return res
 }
 
-func ModelNames(asts []*parser.AST) (res []string) {
+func ModelNames(asts []*parser.AST, filters ...ModelFilter) (res []string) {
 	for _, ast := range asts {
+
+	models:
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil {
+				for _, filter := range filters {
+					if !filter(decl.Model) {
+						continue models
+					}
+				}
+
 				res = append(res, decl.Model.Name.Value)
 			}
 		}
