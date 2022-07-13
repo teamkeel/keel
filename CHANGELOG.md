@@ -1,3 +1,10 @@
+# [0.53.0](https://github.com/teamkeel/keel/compare/v0.52.0...v0.53.0) (2022-07-13)
+
+
+### Features
+
+* add support for input types in GraphQL resolvers ([2faf779](https://github.com/teamkeel/keel/commit/2faf7796a5e2afae61d9316b6e5a5e2940114ebc))
+
 # [0.52.0](https://github.com/teamkeel/keel/compare/v0.51.0...v0.52.0) (2022-07-13)
 
 
