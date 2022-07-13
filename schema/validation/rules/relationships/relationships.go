@@ -1,10 +1,10 @@
 package relationships
 
 import (
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"github.com/teamkeel/keel/util/collection"
 )
 
 func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errors []error) {
@@ -17,7 +17,7 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errors []error) {
 		}
 
 		for _, field := range query.ModelFields(model) {
-			if collection.Contains(allModelNames, field.Type) {
+			if lo.Contains(allModelNames, field.Type) {
 				otherModel := query.Model(asts, field.Type)
 
 				otherModelFields := query.ModelFields(otherModel)
