@@ -1,3 +1,10 @@
+# [0.51.0](https://github.com/teamkeel/keel/compare/v0.50.0...v0.51.0) (2022-07-13)
+
+
+### Features
+
+* validate invalid one-to-one relationships ([#140](https://github.com/teamkeel/keel/issues/140)) ([f303f24](https://github.com/teamkeel/keel/commit/f303f24da9b00ae29b823c2704754abde1aeeba7))
+
 # [0.50.0](https://github.com/teamkeel/keel/compare/v0.49.0...v0.50.0) (2022-07-12)
 
 
