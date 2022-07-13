@@ -1,3 +1,10 @@
+# [0.52.0](https://github.com/teamkeel/keel/compare/v0.51.0...v0.52.0) (2022-07-13)
+
+
+### Features
+
+* add enum support to graphql resolver generation ([a309815](https://github.com/teamkeel/keel/commit/a309815d4840d0cf2ac09d557934633307dde18f))
+
 # [0.51.0](https://github.com/teamkeel/keel/compare/v0.50.0...v0.51.0) (2022-07-13)
 
 
