@@ -22,6 +22,7 @@ import (
 // The tests are dependent on a PostgreSQL service - see connectPg() below.
 func TestSuite(t *testing.T) {
 	db := connectPg(t)
+	resetDB(t, db)
 
 	context := runtimectx.ContextWithDB(context.Background(), db)
 	_ = context
@@ -37,7 +38,7 @@ func runTestCase(t *testing.T, ctx context.Context, testCase TestCase) {
 
 	// Acquire a connect to Postgres, and clear down any existing tables.
 	db := runtimectx.GetDB(ctx)
-	resetDB(t, db)
+	defer resetDB(t, db)
 
 	schema := makeProtoSchema(t, testCase.KeelSchema)
 
