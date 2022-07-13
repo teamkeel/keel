@@ -16,6 +16,7 @@ require (
 	github.com/lib/pq v1.10.6
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/samber/lo v1.25.0
+	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/exp v0.0.0-20220706164943-b4a6d9510983

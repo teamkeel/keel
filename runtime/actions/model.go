@@ -2,9 +2,13 @@ package actions
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 )
+
+// todo - should this code be in the proto package?
 
 // zeroValueForModel provides a map[string]any that contains all the fields
 // that exist in the given proto.Model - with their value set to their
@@ -20,45 +24,37 @@ func zeroValueForModel(pModel *proto.Model) (map[string]any, error) {
 	return zeroValue, nil
 }
 
-// A zeroValue is similar to go's concept of a zero value, except that it offers not
-// only a "zero" value, but also an "illustrative" value.
-type zeroValue struct {
-	zero         any
-	illustrative any
-}
-
-// zeroValueForField provides a suitable zero value (and an illustrative value) for the
+// zeroValueForField provides a suitable zero value for the
 // given fieldType
-func zeroValueForField(fieldType proto.Type) (zeroValue, error) {
+func zeroValueForField(fieldType proto.Type) (zeroV any, err error) {
 	// todo these are just placeholders to make it compile at the moment, and need much more work.
 	switch fieldType {
 	case proto.Type_TYPE_STRING:
-		return zeroValue{"", "my-string"}, nil
+		return "", nil
 	case proto.Type_TYPE_BOOL:
-		return zeroValue{false, false}, nil
+		return false, nil
 	case proto.Type_TYPE_INT:
-		return zeroValue{0, 1234}, nil
+		return 0, nil
 	case proto.Type_TYPE_TIMESTAMP:
-		return zeroValue{"", "2014-11-12T11:45:26.371Z"}, nil
+		return time.Time{}, nil
 	case proto.Type_TYPE_DATE:
-		return zeroValue{"", "2014-11-12"}, nil
+		return time.Time{}, nil
 	case proto.Type_TYPE_ID:
-		return zeroValue{"", "e7a6d74c-8a08-49b5-85ae-d9816f1f15ca"}, nil
+		kid, err := ksuid.NewRandomWithTime(time.Now())
+		if err != nil {
+			return nil, err
+		}
+		return kid, nil
 	case proto.Type_TYPE_MODEL:
-		return zeroValue{"", "Person"}, nil
+		return "", nil
 	case proto.Type_TYPE_CURRENCY:
-		return zeroValue{"", "EUR"}, nil
+		return "", nil
 	case proto.Type_TYPE_DATETIME:
-		return zeroValue{"", "2014-11-12T11:45:26.371Z"}, nil
+		return time.Time{}, nil
 	case proto.Type_TYPE_ENUM:
-		return zeroValue{"unknownEnum", "XLARGE"}, nil
-	case proto.Type_TYPE_IDENTITY:
-		return zeroValue{"", "foo@bar.com"}, nil
-	case proto.Type_TYPE_IMAGE:
-		return zeroValue{"", "/some-images/flower.jpg"}, nil
-
+		return "", nil
 	default:
-		return zeroValue{}, fmt.Errorf("zero value for field type: %s not yet implemented", fieldType)
+		return nil, fmt.Errorf("zero value for field type: %s not yet implemented", fieldType)
 	}
 }
 
@@ -76,7 +72,7 @@ func fakeRow(model *proto.Model) (row map[string]any, err error) {
 		if err != nil {
 			return nil, err
 		}
-		row[field.Name] = zeroValue.illustrative
+		row[field.Name] = zeroValue
 	}
 	return row, nil
 }
