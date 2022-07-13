@@ -9,7 +9,6 @@ import (
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/schema/validation/operand"
-	"github.com/teamkeel/keel/util/collection"
 	"golang.org/x/exp/slices"
 )
 
@@ -165,7 +164,7 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 	}
 
 	if slices.Equal(allowedOperatorsLHS, allowedOperatorsRHS) {
-		if !collection.Contains(allowedOperatorsLHS, condition.Operator.Symbol) {
+		if !lo.Contains(allowedOperatorsLHS, condition.Operator.Symbol) {
 			collection := lo.Intersect(permittedOperators, allowedOperatorsLHS)
 			corrections := errorhandling.NewCorrectionHint(collection, condition.Operator.Symbol)
 
@@ -183,7 +182,7 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 		}
 	} else {
 		if resolvedRHS.IsRepeated() {
-			if !collection.Contains(allowedOperatorsRHS, condition.Operator.Symbol) {
+			if !lo.Contains(allowedOperatorsRHS, condition.Operator.Symbol) {
 
 				errors = append(errors, errorhandling.NewValidationError(
 					errorhandling.ErrorExpressionArrayMismatchingOperator,

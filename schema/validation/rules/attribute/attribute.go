@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/schema/validation/rules/expression"
-	"github.com/teamkeel/keel/util/collection"
 )
 
 // attributeLocationsRule checks that attributes are used in valid places
@@ -71,7 +71,7 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 
 		allowedAttributes := attributeLocations[definedOn]
 
-		if collection.Contains(allowedAttributes, attr.Name.Value) {
+		if lo.Contains(allowedAttributes, attr.Name.Value) {
 			continue
 		}
 
@@ -340,7 +340,7 @@ func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (e
 		if valid {
 			// If it is a single ident check it's an allowed value
 			name := item.Ident.Fragments[0].Fragment
-			valid = collection.Contains(allowedIdents, name)
+			valid = lo.Contains(allowedIdents, name)
 		}
 
 		if !valid {

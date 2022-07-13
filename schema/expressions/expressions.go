@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/alecthomas/participle/v2"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/node"
-	"github.com/teamkeel/keel/util/collection"
 )
 
 type Expression struct {
@@ -69,7 +69,7 @@ var (
 func (c *Condition) Type() string {
 	if c.Operator == nil && c.RHS == nil && c.LHS != nil {
 		return ValueCondition
-	} else if collection.Contains(equalityOperators, c.Operator.Symbol) {
+	} else if lo.Contains(equalityOperators, c.Operator.Symbol) {
 		return LogicalCondition
 	} else if (c.LHS.False || c.LHS.True) && c.RHS == nil {
 		return LogicalCondition
@@ -265,7 +265,7 @@ func ToEqualityCondition(expr *Expression) (*Condition, error) {
 		return nil, ErrNotEquality
 	}
 
-	if cond.Operator != nil && !collection.Contains(equalityOperators, cond.Operator.Symbol) {
+	if cond.Operator != nil && !lo.Contains(equalityOperators, cond.Operator.Symbol) {
 		return nil, ErrNotEquality
 	}
 
