@@ -182,6 +182,21 @@ func (mk *maker) addCreateOp(
 	return nil
 }
 
+func (mk *maker) addEnum(e *proto.Enum) *graphql.Enum {
+	values := graphql.EnumValueConfigMap{}
+
+	for _, v := range e.Values {
+		values[v.Name] = &graphql.EnumValueConfig{
+			Value: v.Name,
+		}
+	}
+
+	return graphql.NewEnum(graphql.EnumConfig{
+		Name:   e.Name,
+		Values: values,
+	})
+}
+
 var timestampType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Timestamp",
 	Fields: graphql.Fields{
@@ -206,10 +221,23 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 }
 
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
-func (mk *maker) outputTypeFor(field *proto.Field) (graphql.Output, error) {
-	out, ok := protoTypeToGraphQLOutput[field.Type.Type]
-	if !ok {
-		return out, fmt.Errorf("cannot yet make output type for a: %v", field)
+func (mk *maker) outputTypeFor(field *proto.Field) (out graphql.Output, err error) {
+	switch field.Type.Type {
+
+	case proto.Type_TYPE_ENUM:
+		for _, e := range mk.proto.Enums {
+			if e.Name == field.Type.EnumName.Value {
+				out = mk.addEnum(e)
+				break
+			}
+		}
+
+	default:
+		var ok bool
+		out, ok = protoTypeToGraphQLOutput[field.Type.Type]
+		if !ok {
+			return out, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+		}
 	}
 
 	if !field.Optional {

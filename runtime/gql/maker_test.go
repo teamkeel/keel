@@ -119,7 +119,9 @@ type IntrospectionQueryResult struct {
 			Name string `json:"name"`
 		} `json:"queryType"`
 		Types []struct {
-			EnumValues    interface{} `json:"enumValues"`
+			EnumValues []struct {
+				Name string
+			} `json:"enumValues"`
 			Fields        []Field     `json:"fields"`
 			InputFields   []Field     `json:"inputFields"`
 			Interfaces    interface{} `json:"interfaces"`
@@ -158,6 +160,7 @@ func toSchemaString(r *IntrospectionQueryResult) string {
 		keyword, ok := map[string]string{
 			"OBJECT":       "type",
 			"INPUT_OBJECT": "input",
+			"ENUM":         "enum",
 		}[t.Kind]
 		if !ok {
 			continue
@@ -169,40 +172,54 @@ func toSchemaString(r *IntrospectionQueryResult) string {
 		b.WriteString(t.Name)
 		b.WriteString(" {\n")
 
-		sort.Slice(t.Fields, func(i, j int) bool {
-			return t.Fields[i].Name < t.Fields[j].Name
-		})
-
-		fields := t.Fields
-		if t.Kind == "INPUT_OBJECT" {
-			fields = t.InputFields
-		}
-
-		for _, field := range fields {
-			b.WriteString("  ")
-			b.WriteString(field.Name)
-
-			sort.Slice(field.Args, func(i, j int) bool {
-				return field.Args[i].Name < field.Args[j].Name
+		if t.Kind == "ENUM" {
+			values := t.EnumValues
+			sort.Slice(values, func(i, j int) bool {
+				return values[i].Name < values[j].Name
 			})
 
-			if len(field.Args) > 0 {
-				b.WriteString("(")
-				for i, arg := range field.Args {
-					if i > 0 {
-						b.WriteString(", ")
-					}
-					b.WriteString(arg.Name)
-					b.WriteString(": ")
-					b.WriteString(arg.Type.String())
-				}
-				b.WriteString(")")
+			for _, v := range values {
+				b.WriteString("  ")
+				b.WriteString(v.Name)
+				b.WriteString("\n")
+			}
+		} else {
+			fields := t.Fields
+			if t.Kind == "INPUT_OBJECT" {
+				fields = t.InputFields
 			}
 
-			b.WriteString(": ")
-			b.WriteString(field.Type.String())
-			b.WriteString("\n")
+			sort.Slice(fields, func(i, j int) bool {
+				return fields[i].Name < fields[j].Name
+			})
+
+			for _, field := range fields {
+				b.WriteString("  ")
+				b.WriteString(field.Name)
+
+				sort.Slice(field.Args, func(i, j int) bool {
+					return field.Args[i].Name < field.Args[j].Name
+				})
+
+				if len(field.Args) > 0 {
+					b.WriteString("(")
+					for i, arg := range field.Args {
+						if i > 0 {
+							b.WriteString(", ")
+						}
+						b.WriteString(arg.Name)
+						b.WriteString(": ")
+						b.WriteString(arg.Type.String())
+					}
+					b.WriteString(")")
+				}
+
+				b.WriteString(": ")
+				b.WriteString(field.Type.String())
+				b.WriteString("\n")
+			}
 		}
+
 		b.WriteString("}")
 
 		result = append(result, b.String())
