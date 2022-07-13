@@ -1,3 +1,10 @@
+# [0.54.0](https://github.com/teamkeel/keel/compare/v0.53.0...v0.54.0) (2022-07-13)
+
+
+### Features
+
+* add ctx.now as a way of getting the current time in an expression ([834bad2](https://github.com/teamkeel/keel/commit/834bad21b8289c494ec8ef685b832db5da807bf2))
+
 # [0.53.0](https://github.com/teamkeel/keel/compare/v0.52.0...v0.53.0) (2022-07-13)
 
 
