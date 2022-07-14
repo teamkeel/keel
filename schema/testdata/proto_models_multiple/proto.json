@@ -9,13 +9,19 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "primaryKey":  true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
+          }
         },
         {
           "modelName":  "Model1",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
@@ -23,6 +29,9 @@
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ]
@@ -36,13 +45,19 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "primaryKey":  true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
+          }
         },
         {
           "modelName":  "Model2",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
@@ -50,6 +65,9 @@
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ]
@@ -70,13 +88,19 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "primaryKey":  true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
+          }
         },
         {
           "modelName":  "Identity",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
@@ -84,6 +108,9 @@
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ]

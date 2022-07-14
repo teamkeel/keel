@@ -52,6 +52,19 @@ message Field {
 
     // If true then this field will be set as the primary key for the parent model
     bool primary_key = 7;
+
+    // This describes how the default value of this field should be created
+    DefaultValue default_value = 9;
+}
+
+message DefaultValue {
+    // If true then a "zero" value is used for the field, for example
+    // a string has a zero value of "" and a date has a zero value of
+    // today
+    bool use_zero_value = 1;
+
+    // This can be used to explicitly set the default value
+    Expression expression = 2;
 }
 
 message Operation {
