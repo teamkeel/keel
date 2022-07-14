@@ -1,3 +1,10 @@
+# [0.56.0](https://github.com/teamkeel/keel/compare/v0.55.0...v0.56.0) (2022-07-14)
+
+
+### Features
+
+* add default value information to proto fields ([f46d485](https://github.com/teamkeel/keel/commit/f46d485e5d3f572c638424336f24157722a1e79c))
+
 # [0.55.0](https://github.com/teamkeel/keel/compare/v0.54.0...v0.55.0) (2022-07-14)
 
 
