@@ -308,11 +308,10 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 				scanner.ScanFloats |
 				scanner.ScanChars |
 				scanner.ScanStrings |
-				scanner.ScanRawStrings |
 				scanner.ScanComments
 	})
 
-	parser, err := participle.Build(&AST{}, participle.Lexer(lex))
+	parser, err := participle.Build(&AST{}, participle.Lexer(lex), participle.Elide("Comment"))
 	if err != nil {
 		return nil, err
 	}

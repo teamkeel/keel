@@ -1,0 +1,140 @@
+// Comment 1
+model Person { // Comment 2
+    // Comment 3
+    fields { // Comment 4
+        // Comment 5
+        name Text // Comment 6
+        // Comment 7
+        age Number @default(10) // Comment 7 - 1
+        home Planet { // Comment 7 - 2
+            // Comment 7 - 3
+            @default(Planets.Earth) // Comment 7 - 4
+            // Comment 7 - 5
+        } // Comment 7 - 6
+    }
+    // Comment 8
+    operations { // Comment 9
+        // Comment 10
+        get getPerson(id) // Comment 11
+        // Comment 12
+    }
+    // Comment 13
+    @permission(
+        // Comment 14
+        expression: person.name == "", // Comment 15
+        actions: [get]
+    ) // Comment 16
+   // Comment 17
+} // Comment 18
+
+// Comment 19
+enum Planets { // Comment 20
+    // Comment 21
+    Earth // Comment 22
+    // Comment 23
+    Mars // Comment 24
+    // Comment 25
+}
+
+// Comment 26
+role Staff { // Comment 27
+    domains { // Comment 28
+        "bar.com" // Comment 29
+    } // Comment 30
+    emails { // Comment 31
+        "foo@bar.com" // Comment 32
+    } // Comment 33
+}
+
+// Comment 34
+api Web { // Comment 35
+    models { // Comment 36
+        Person // Comment 37
+    } // Comment 38
+}
+
+===
+
+// Comment 1
+model Person {
+    // Comment 2
+    // Comment 3
+    fields {
+        // Comment 4
+        // Comment 5
+        name Text
+        // Comment 6
+        // Comment 7
+        age Number @default(10)
+        // Comment 7 - 1
+        home Planet {
+            // Comment 7 - 2
+            // Comment 7 - 3
+            @default(Planets.Earth)
+            // Comment 7 - 4
+            // Comment 7 - 5
+        }
+        // Comment 7 - 6
+    }
+
+    // Comment 8
+    operations {
+        // Comment 9
+        // Comment 10
+        get getPerson(id)
+        // Comment 11
+        // Comment 12
+    }
+
+    // Comment 13
+    @permission(
+        // Comment 14
+        expression: person.name == "",
+        // Comment 15
+        actions: [get]
+    )
+    // Comment 16
+    // Comment 17
+}
+
+// Comment 18
+// Comment 19
+enum Planets {
+    // Comment 20
+    // Comment 21
+    Earth
+    // Comment 22
+    // Comment 23
+    Mars
+    // Comment 24
+    // Comment 25
+}
+
+// Comment 26
+role Staff {
+    // Comment 27
+    domains {
+        // Comment 28
+        "bar.com"
+        // Comment 29
+    }
+
+    // Comment 30
+    emails {
+        // Comment 31
+        "foo@bar.com"
+        // Comment 32
+    }
+    // Comment 33
+}
+
+// Comment 34
+api Web {
+    // Comment 35
+    models {
+        // Comment 36
+        Person
+        // Comment 37
+    }
+    // Comment 38
+}
