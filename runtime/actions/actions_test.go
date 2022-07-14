@@ -24,11 +24,10 @@ func TestSuite(t *testing.T) {
 	db := connectPg(t)
 	resetDB(t, db)
 
-	context := runtimectx.ContextWithDB(context.Background(), db)
-	_ = context
+	ctx := runtimectx.WithDB(context.Background(), db)
 
 	for _, tc := range testCases {
-		runTestCase(t, context, tc)
+		runTestCase(t, ctx, tc)
 	}
 }
 
@@ -41,6 +40,8 @@ func runTestCase(t *testing.T, ctx context.Context, testCase TestCase) {
 	defer resetDB(t, db)
 
 	schema := makeProtoSchema(t, testCase.KeelSchema)
+
+	ctx = runtimectx.WithSchema(ctx, schema)
 
 	// Migrate the DB to this schema.
 	sqlDB, err := db.DB()
@@ -55,7 +56,7 @@ func runTestCase(t *testing.T, ctx context.Context, testCase TestCase) {
 	// Call the operation function that is under test.
 	switch operation.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		res, err := Create(ctx, model, testCase.OperationInputs)
+		res, err := Create(ctx, operation, testCase.OperationInputs)
 		require.NoError(t, err)
 
 		_ = res

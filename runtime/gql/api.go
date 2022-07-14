@@ -24,6 +24,7 @@ import (
 // You ask a Handler to respond to a GraphQL request by calling its Handle method.
 type Handler struct {
 	gSchema *graphql.Schema
+	pSchema *proto.Schema
 	gormDB  *gorm.DB
 }
 
@@ -32,11 +33,12 @@ type Handler struct {
 // GraphQL query string (i.e. not JSON).
 func (h *Handler) Handle(gqlQuery string) (result *graphql.Result) {
 
-	context := runtimectx.ContextWithDB(context.Background(), h.gormDB)
+	ctx := runtimectx.WithDB(context.Background(), h.gormDB)
+	ctx = runtimectx.WithSchema(ctx, h.pSchema)
 
 	result = graphql.Do(graphql.Params{
 		Schema:         *h.gSchema,
-		Context:        context,
+		Context:        ctx,
 		RequestString:  gqlQuery,
 		VariableValues: map[string]any{},
 	})
@@ -57,6 +59,7 @@ func NewHandlers(pSchema *proto.Schema, gormDB *gorm.DB) (map[string]*Handler, e
 	for apiName, s := range gSchemas {
 		handler := &Handler{
 			gSchema: s,
+			pSchema: pSchema,
 			gormDB:  gormDB,
 		}
 		handlers[apiName] = handler

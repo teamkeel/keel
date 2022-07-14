@@ -4,9 +4,12 @@ import (
 	"context"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
 func Get(ctx context.Context, model *proto.Model, args map[string]any, where []*proto.Expression) (interface{}, error) {
+	schema := runtimectx.GetSchema(ctx)
+
 	// We will use the where clauses to filter the rows
 	// to return like this:
 	for _, where := range where {
@@ -22,7 +25,7 @@ func Get(ctx context.Context, model *proto.Model, args map[string]any, where []*
 	}
 
 	// Fake a row for now
-	row, err := fakeRow(model)
+	row, err := fakeRow(model, schema.Enums)
 	if err != nil {
 		return nil, err
 	}
