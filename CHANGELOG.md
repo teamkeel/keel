@@ -1,3 +1,10 @@
+# [0.55.0](https://github.com/teamkeel/keel/compare/v0.54.0...v0.55.0) (2022-07-14)
+
+
+### Features
+
+* add grahpql input type generation for update operations ([6bef878](https://github.com/teamkeel/keel/commit/6bef8782fec4934695169b82b6bc7121472eb6f4))
+
 # [0.54.0](https://github.com/teamkeel/keel/compare/v0.53.0...v0.54.0) (2022-07-13)
 
 
