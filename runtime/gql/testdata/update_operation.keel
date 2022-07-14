@@ -1,0 +1,16 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    operations {
+        get getPerson(id)
+        update updatePerson(id) with (name)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}
