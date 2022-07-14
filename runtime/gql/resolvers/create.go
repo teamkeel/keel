@@ -23,7 +23,7 @@ func NewCreateOperationResolver(op *proto.Operation, model *proto.Model) *Create
 }
 
 func (r *CreateOperationResolver) Resolve(p graphql.ResolveParams) (any, error) {
-	res, err := actions.Create(p.Context, r.model, p.Args)
+	res, err := actions.Create(p.Context, r.op, p.Args)
 	if err != nil {
 		return nil, err
 	}

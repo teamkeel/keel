@@ -13,10 +13,12 @@ import (
 // args
 
 //func Create(ctx context.Context, model *proto.Model, op *proto.Operation, args map[string]any) (map[string]any, error) {
-func Create(ctx context.Context, model *proto.Model, args map[string]any) (map[string]any, error) {
+func Create(ctx context.Context, operation *proto.Operation, args map[string]any) (map[string]any, error) {
+	schema := runtimectx.GetSchema(ctx)
+	model := proto.FindModel(schema.Models, operation.ModelName)
 	// We'll populate a map[string]any to represent the resolved model field values, and
 	// use that map, to write a record into the database, and as the return value.
-	modelMap, err := zeroValueForModel(model)
+	modelMap, err := zeroValueForModel(model, schema)
 	if err != nil {
 		return nil, err
 	}
