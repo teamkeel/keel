@@ -1,3 +1,10 @@
+# [0.57.0](https://github.com/teamkeel/keel/compare/v0.56.0...v0.57.0) (2022-07-14)
+
+
+### Features
+
+* add comment support to parser and formatter ([746afef](https://github.com/teamkeel/keel/commit/746afeffe375259414e259a73921357bcdee582a))
+
 # [0.56.0](https://github.com/teamkeel/keel/compare/v0.55.0...v0.56.0) (2022-07-14)
 
 
