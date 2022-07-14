@@ -1,0 +1,35 @@
+type Query {
+  getPerson(input: GetPersonInput!): Person
+}
+
+type Mutation {
+  updatePerson(input: UpdatePersonInput!): Person!
+}
+
+input GetPersonInput {
+  id: ID!
+}
+
+input UpdatePersonInput {
+  values: UpdatePersonValuesInput!
+  where: UpdatePersonQueryInput!
+}
+
+input UpdatePersonQueryInput {
+  id: ID!
+}
+
+input UpdatePersonValuesInput {
+  name: String!
+}
+
+type Person {
+  createdAt: Timestamp!
+  id: ID!
+  name: String!
+  updatedAt: Timestamp!
+}
+
+type Timestamp {
+  seconds: Int!
+}

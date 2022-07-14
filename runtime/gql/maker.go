@@ -150,6 +150,11 @@ func (mk *maker) addOperation(model *proto.Model, op *proto.Operation) error {
 		field.Type = graphql.NewNonNull(field.Type)
 
 		mk.mutation.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_UPDATE:
+		// update returns a non-null type (or an error)
+		field.Type = graphql.NewNonNull(field.Type)
+
+		mk.mutation.AddFieldConfig(op.Name, field)
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
@@ -259,21 +264,60 @@ func (mk *maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 // proto.Operation - which can be used as the Args field in a graphql.Field.
 func (mk *maker) makeInputType(op *proto.Operation) (*graphql.InputObject, error) {
 
-	operationInputType := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   strings.ToUpper(op.Name[0:1]) + op.Name[1:] + "Input",
+	inputTypePrefix := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
+
+	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name:   inputTypePrefix + "Input",
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
-	for _, in := range op.Inputs {
-		inputType, err := mk.inputTypeFor(in)
-		if err != nil {
-			return nil, err
+	switch op.Type {
+	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_CREATE:
+		for _, in := range op.Inputs {
+			fieldType, err := mk.inputTypeFor(in)
+			if err != nil {
+				return nil, err
+			}
+
+			inputType.AddFieldConfig(in.Name, &graphql.InputObjectFieldConfig{
+				Type: fieldType,
+			})
+		}
+	case proto.OperationType_OPERATION_TYPE_UPDATE:
+		where := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   inputTypePrefix + "QueryInput",
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
+		values := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   inputTypePrefix + "ValuesInput",
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
+
+		for _, in := range op.Inputs {
+			fieldType, err := mk.inputTypeFor(in)
+			if err != nil {
+				return nil, err
+			}
+
+			field := &graphql.InputObjectFieldConfig{
+				Type: fieldType,
+			}
+
+			switch in.Mode {
+			case proto.InputMode_INPUT_MODE_READ:
+				where.AddFieldConfig(in.Name, field)
+			case proto.InputMode_INPUT_MODE_WRITE:
+				values.AddFieldConfig(in.Name, field)
+			}
 		}
 
-		operationInputType.AddFieldConfig(in.Name, &graphql.InputObjectFieldConfig{
-			Type: inputType,
+		inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(where),
+		})
+		inputType.AddFieldConfig("values", &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(values),
 		})
 	}
 
-	return operationInputType, nil
+	return inputType, nil
 }
