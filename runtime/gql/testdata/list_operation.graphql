@@ -1,0 +1,89 @@
+type Query {
+  getPerson(input: GetPersonInput!): Person
+  listPeople(input: ListPeopleInput!): PersonConnection!
+}
+
+input DateInput {
+  day: Int!
+  month: Int!
+  year: Int!
+}
+
+input DateQueryInput {
+  after: DateInput
+  before: DateInput
+  equals: DateInput
+  onOrAfter: DateInput
+  onOrBefore: DateInput
+}
+
+input GetPersonInput {
+  id: ID!
+}
+
+input ListPeopleInput {
+  after: String
+  first: Int
+  where: ListPeopleQueryInput!
+}
+
+input ListPeopleQueryInput {
+  dateOfBirth: DateQueryInput!
+  name: StringQueryInput!
+  occupation: OccupationQueryInput!
+}
+
+input OccupationQueryInput {
+  equals: Occupation
+  oneOf: [Occupation!]
+}
+
+input StringQueryInput {
+  contains: String
+  endsWith: String
+  equals: String
+  oneOf: [String!]
+  startsWith: String
+}
+
+type Date {
+  day: Int!
+  month: Int!
+  year: Int!
+}
+
+type PageInfo {
+  endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  totalCount: Int!
+}
+
+type Person {
+  createdAt: Timestamp!
+  dateOfBirth: Date!
+  id: ID!
+  name: String!
+  occupation: Occupation!
+  updatedAt: Timestamp!
+}
+
+type PersonConnection {
+  edges: [PersonEdge!]!
+  pageInfo: PageInfo!
+}
+
+type PersonEdge {
+  node: Person!
+}
+
+type Timestamp {
+  seconds: Int!
+}
+
+enum Occupation {
+  Astronaut
+  Doctor
+  Teacher
+}

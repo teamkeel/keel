@@ -212,6 +212,9 @@ func (scm *Builder) makeOperationInput(
 	behaviour := proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT
 	target := []string{}
 
+	var modelName *wrapperspb.StringValue
+	var enumName *wrapperspb.StringValue
+
 	if protoType == proto.Type_TYPE_UNKNOWN {
 		behaviour = proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
 
@@ -225,6 +228,18 @@ func (scm *Builder) makeOperationInput(
 		}
 
 		protoType = scm.parserFieldToProtoTypeInfo(field).Type
+
+		if protoType == proto.Type_TYPE_MODEL {
+			modelName = &wrapperspb.StringValue{
+				Value: field.Type,
+			}
+		}
+
+		if protoType == proto.Type_TYPE_ENUM {
+			enumName = &wrapperspb.StringValue{
+				Value: field.Type,
+			}
+		}
 	}
 
 	return &proto.OperationInput{
@@ -232,8 +247,10 @@ func (scm *Builder) makeOperationInput(
 		OperationName: op.Name.Value,
 		Name:          input.Name(),
 		Type: &proto.TypeInfo{
-			Type:     protoType,
-			Repeated: input.Repeated,
+			Type:      protoType,
+			Repeated:  input.Repeated,
+			ModelName: modelName,
+			EnumName:  enumName,
 		},
 		Optional:  input.Optional,
 		Mode:      mode,
