@@ -334,6 +334,18 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 			protoField.Unique = true
 		case parser.AttributePrimaryKey:
 			protoField.PrimaryKey = true
+		case parser.AttributeDefault:
+			defaultValue := &proto.DefaultValue{}
+			if len(fieldAttribute.Arguments) == 1 {
+				expr := fieldAttribute.Arguments[0].Expression
+				source, _ := expressions.ToString(expr)
+				defaultValue.Expression = &proto.Expression{
+					Source: source,
+				}
+			} else {
+				defaultValue.UseZeroValue = true
+			}
+			protoField.DefaultValue = defaultValue
 		}
 	}
 }
