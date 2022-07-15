@@ -17,6 +17,7 @@ type maker struct {
 	query    *graphql.Object
 	mutation *graphql.Object
 	types    map[string]*graphql.Object
+	enums    map[string]*graphql.Enum
 }
 
 func newMaker(proto *proto.Schema) *maker {
@@ -31,6 +32,7 @@ func newMaker(proto *proto.Schema) *maker {
 			Fields: graphql.Fields{},
 		}),
 		types: map[string]*graphql.Object{},
+		enums: map[string]*graphql.Enum{},
 	}
 }
 
@@ -117,7 +119,7 @@ func (mk *maker) addModel(model *proto.Model) (*graphql.Object, error) {
 
 // addOperation generates the graphql field object to represent the given proto.Operation
 func (mk *maker) addOperation(model *proto.Model, op *proto.Operation) error {
-	operationInputType, err := mk.makeInputType(op)
+	operationInputType, err := mk.makeOperationInputType(op)
 	if err != nil {
 		return err
 	}
@@ -155,6 +157,12 @@ func (mk *maker) addOperation(model *proto.Model, op *proto.Operation) error {
 		field.Type = graphql.NewNonNull(field.Type)
 
 		mk.mutation.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_LIST:
+		// for list types we need to wrap the output type in the
+		// connection type which allows for pagination
+		field.Type = mk.makeConnectionType(model, outputType)
+
+		mk.query.AddFieldConfig(op.Name, field)
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
@@ -162,7 +170,63 @@ func (mk *maker) addOperation(model *proto.Model, op *proto.Operation) error {
 	return nil
 }
 
+var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "PageInfo",
+	Fields: graphql.Fields{
+		"hasPreviousPage": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.Boolean),
+		},
+		"hasNextPage": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.Boolean),
+		},
+		"startCursor": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"endCursor": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+		"totalCount": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.Int),
+		},
+	},
+})
+
+func (mk *maker) makeConnectionType(model *proto.Model, itemType graphql.Output) graphql.Output {
+	edgeType := graphql.NewObject(graphql.ObjectConfig{
+		Name: model.Name + "Edge",
+		Fields: graphql.Fields{
+			"node": &graphql.Field{
+				Type: graphql.NewNonNull(
+					itemType,
+				),
+			},
+		},
+	})
+
+	connection := graphql.NewObject(graphql.ObjectConfig{
+		Name: model.Name + "Connection",
+		Fields: graphql.Fields{
+			"edges": &graphql.Field{
+				Type: graphql.NewNonNull(
+					graphql.NewList(
+						graphql.NewNonNull(edgeType),
+					),
+				),
+			},
+			"pageInfo": &graphql.Field{
+				Type: graphql.NewNonNull(pageInfoType),
+			},
+		},
+	})
+
+	return graphql.NewNonNull(connection)
+}
+
 func (mk *maker) addEnum(e *proto.Enum) *graphql.Enum {
+	if out, ok := mk.enums[e.Name]; ok {
+		return out
+	}
+
 	values := graphql.EnumValueConfigMap{}
 
 	for _, v := range e.Values {
@@ -171,10 +235,12 @@ func (mk *maker) addEnum(e *proto.Enum) *graphql.Enum {
 		}
 	}
 
-	return graphql.NewEnum(graphql.EnumConfig{
+	enum := graphql.NewEnum(graphql.EnumConfig{
 		Name:   e.Name,
 		Values: values,
 	})
+	mk.enums[e.Name] = enum
+	return enum
 }
 
 var timestampType = graphql.NewObject(graphql.ObjectConfig{
@@ -192,12 +258,44 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
+var dateType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Date",
+	Fields: graphql.Fields{
+		"year": &graphql.Field{
+			Name: "year",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(graphql.ResolveParams) (interface{}, error) {
+				// TODO: implement this
+				panic("not implemented")
+			},
+		},
+		"month": &graphql.Field{
+			Name: "month",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(graphql.ResolveParams) (interface{}, error) {
+				// TODO: implement this
+				panic("not implemented")
+			},
+		},
+		"day": &graphql.Field{
+			Name: "day",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(graphql.ResolveParams) (interface{}, error) {
+				// TODO: implement this
+				panic("not implemented")
+			},
+		},
+		// TODO: add `fromNow` and `formatted` fields
+	},
+})
+
 var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_ID:       graphql.ID,
 	proto.Type_TYPE_STRING:   graphql.String,
 	proto.Type_TYPE_INT:      graphql.Int,
 	proto.Type_TYPE_BOOL:     graphql.Boolean,
 	proto.Type_TYPE_DATETIME: timestampType,
+	proto.Type_TYPE_DATE:     dateType,
 }
 
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
@@ -232,11 +330,37 @@ func (mk *maker) outputTypeFor(field *proto.Field) (out graphql.Output, err erro
 	return out, nil
 }
 
+var timestampInputType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "TimestampInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"seconds": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(graphql.Int),
+		},
+	},
+})
+
+var dateInputType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "DateInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"year": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(graphql.Int),
+		},
+		"month": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(graphql.Int),
+		},
+		"day": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(graphql.Int),
+		},
+	},
+})
+
 var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
-	proto.Type_TYPE_ID:     graphql.ID,
-	proto.Type_TYPE_STRING: graphql.String,
-	proto.Type_TYPE_INT:    graphql.Int,
-	proto.Type_TYPE_BOOL:   graphql.Boolean,
+	proto.Type_TYPE_ID:        graphql.ID,
+	proto.Type_TYPE_STRING:    graphql.String,
+	proto.Type_TYPE_INT:       graphql.Int,
+	proto.Type_TYPE_BOOL:      graphql.Boolean,
+	proto.Type_TYPE_TIMESTAMP: timestampInputType,
+	proto.Type_TYPE_DATE:      dateInputType,
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
@@ -260,9 +384,150 @@ func (mk *maker) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 	return in, nil
 }
 
-// makeInputType generates an input type to reflect the inputs of the given
+var idQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "IDQueryInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"equals": &graphql.InputObjectFieldConfig{
+			Type: graphql.ID,
+		},
+		"oneOf": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewList(graphql.NewNonNull(graphql.ID)),
+		},
+	},
+})
+
+var stringQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "StringQueryInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"equals": &graphql.InputObjectFieldConfig{
+			Type: graphql.String,
+		},
+		"startsWith": &graphql.InputObjectFieldConfig{
+			Type: graphql.String,
+		},
+		"endsWith": &graphql.InputObjectFieldConfig{
+			Type: graphql.String,
+		},
+		"contains": &graphql.InputObjectFieldConfig{
+			Type: graphql.String,
+		},
+		"oneOf": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewList(graphql.NewNonNull(graphql.String)),
+		},
+	},
+})
+
+var intQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "IntQueryInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"equals": &graphql.InputObjectFieldConfig{
+			Type: graphql.Int,
+		},
+		"lt": &graphql.InputObjectFieldConfig{
+			Type: graphql.Int,
+		},
+		"lte": &graphql.InputObjectFieldConfig{
+			Type: graphql.Int,
+		},
+		"gt": &graphql.InputObjectFieldConfig{
+			Type: graphql.Int,
+		},
+		"gte": &graphql.InputObjectFieldConfig{
+			Type: graphql.Int,
+		},
+	},
+})
+
+var booleanQueryInput = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "BooleanQueryInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"equals": &graphql.InputObjectFieldConfig{
+			Type: graphql.Boolean,
+		},
+	},
+})
+
+var timestampQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "TimestampQueryInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"before": &graphql.InputObjectFieldConfig{
+			Type: timestampInputType,
+		},
+		"after": &graphql.InputObjectFieldConfig{
+			Type: timestampInputType,
+		},
+	},
+})
+
+var dateQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
+	Name: "DateQueryInput",
+	Fields: graphql.InputObjectConfigFieldMap{
+		"equals": &graphql.InputObjectFieldConfig{
+			Type: dateInputType,
+		},
+		"before": &graphql.InputObjectFieldConfig{
+			Type: dateInputType,
+		},
+		"onOrBefore": &graphql.InputObjectFieldConfig{
+			Type: dateInputType,
+		},
+		"after": &graphql.InputObjectFieldConfig{
+			Type: dateInputType,
+		},
+		"onOrAfter": &graphql.InputObjectFieldConfig{
+			Type: dateInputType,
+		},
+	},
+})
+
+var protoTypeToGraphQLQueryInput = map[proto.Type]graphql.Input{
+	proto.Type_TYPE_ID:        idQueryInputType,
+	proto.Type_TYPE_STRING:    stringQueryInputType,
+	proto.Type_TYPE_INT:       intQueryInputType,
+	proto.Type_TYPE_BOOL:      booleanQueryInput,
+	proto.Type_TYPE_TIMESTAMP: timestampQueryInputType,
+	proto.Type_TYPE_DATE:      dateQueryInputType,
+}
+
+// queryInputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
+func (mk *maker) queryInputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
+	var in graphql.Input
+
+	switch op.Type.Type {
+	case proto.Type_TYPE_ENUM:
+		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
+			return e.Name == op.Type.EnumName.Value
+		})
+		enumType := mk.addEnum(enum)
+		in = graphql.NewInputObject(graphql.InputObjectConfig{
+			Name: enum.Name + "QueryInput",
+			Fields: graphql.InputObjectConfigFieldMap{
+				"equals": &graphql.InputObjectFieldConfig{
+					Type: enumType,
+				},
+				"oneOf": &graphql.InputObjectFieldConfig{
+					Type: graphql.NewList(graphql.NewNonNull(enumType)),
+				},
+			},
+		})
+	default:
+		var ok bool
+		in, ok = protoTypeToGraphQLQueryInput[op.Type.Type]
+		if !ok {
+			return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
+		}
+	}
+
+	if !op.Optional {
+		in = graphql.NewNonNull(in)
+	}
+
+	return in, nil
+}
+
+// makeOperationInputType generates an input type to reflect the inputs of the given
 // proto.Operation - which can be used as the Args field in a graphql.Field.
-func (mk *maker) makeInputType(op *proto.Operation) (*graphql.InputObject, error) {
+func (mk *maker) makeOperationInputType(op *proto.Operation) (*graphql.InputObject, error) {
 
 	inputTypePrefix := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
 
@@ -316,6 +581,40 @@ func (mk *maker) makeInputType(op *proto.Operation) (*graphql.InputObject, error
 		})
 		inputType.AddFieldConfig("values", &graphql.InputObjectFieldConfig{
 			Type: graphql.NewNonNull(values),
+		})
+	case proto.OperationType_OPERATION_TYPE_LIST:
+		where := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   inputTypePrefix + "QueryInput",
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
+
+		for _, in := range op.Inputs {
+			var fieldType graphql.Input
+			var err error
+
+			if in.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+				fieldType, err = mk.queryInputTypeFor(in)
+			} else {
+				fieldType, err = mk.inputTypeFor(in)
+			}
+
+			if err != nil {
+				return nil, err
+			}
+
+			where.AddFieldConfig(in.Name, &graphql.InputObjectFieldConfig{
+				Type: fieldType,
+			})
+		}
+
+		inputType.AddFieldConfig("first", &graphql.InputObjectFieldConfig{
+			Type: graphql.Int,
+		})
+		inputType.AddFieldConfig("after", &graphql.InputObjectFieldConfig{
+			Type: graphql.String,
+		})
+		inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(where),
 		})
 	}
 
