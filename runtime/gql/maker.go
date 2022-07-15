@@ -10,18 +10,10 @@ import (
 	"github.com/teamkeel/keel/runtime/gql/resolvers"
 )
 
-// A maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
-// of the APIs defined in the keel schema provided at construction time.
-type maker struct {
-	proto    *proto.Schema
-	query    *graphql.Object
-	mutation *graphql.Object
-	types    map[string]*graphql.Object
-	enums    map[string]*graphql.Enum
-}
-
-func newMaker(proto *proto.Schema) *maker {
-	return &maker{
+// MakeSchemas creates a map of graphql.Schema objects where the keys
+// are the API names from the provided proto.Schema
+func MakeSchemas(proto *proto.Schema) (map[string]*graphql.Schema, error) {
+	m := &maker{
 		proto: proto,
 		query: graphql.NewObject(graphql.ObjectConfig{
 			Name:   "Query",
@@ -34,6 +26,18 @@ func newMaker(proto *proto.Schema) *maker {
 		types: map[string]*graphql.Object{},
 		enums: map[string]*graphql.Enum{},
 	}
+
+	return m.make()
+}
+
+// A maker exposes a Make method, that makes a set of graphql.Schema objects - one for each
+// of the APIs defined in the keel schema provided at construction time.
+type maker struct {
+	proto    *proto.Schema
+	query    *graphql.Object
+	mutation *graphql.Object
+	types    map[string]*graphql.Object
+	enums    map[string]*graphql.Enum
 }
 
 // The graphql.Schema(s) are returned in a map, keyed on the name of the
