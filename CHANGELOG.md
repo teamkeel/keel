@@ -1,3 +1,10 @@
+# [0.58.0](https://github.com/teamkeel/keel/compare/v0.57.0...v0.58.0) (2022-07-15)
+
+
+### Features
+
+* input types for list actions ([8523230](https://github.com/teamkeel/keel/commit/85232305118834801ef8f271fa4fb611c780a7fe))
+
 # [0.57.0](https://github.com/teamkeel/keel/compare/v0.56.0...v0.57.0) (2022-07-14)
 
 
