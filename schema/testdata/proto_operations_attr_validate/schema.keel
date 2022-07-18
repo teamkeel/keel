@@ -1,0 +1,11 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    operations {
+        create createPerson() with (name) {
+            @validate(name != "")
+        }
+    }
+}

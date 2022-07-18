@@ -71,54 +71,73 @@ func (e *ExpressionScopeEntity) GetType() string {
 	return ""
 }
 
-func (e *ExpressionScopeEntity) AllowedOperators() (operators []string) {
+var operatorsForType = map[string][]string{
+	parser.FieldTypeText: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+		expressions.OperatorAssignment,
+	},
+	parser.FieldTypeID: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+		expressions.OperatorAssignment,
+	},
+	parser.FieldTypeNumber: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+		expressions.OperatorGreaterThan,
+		expressions.OperatorGreaterThanOrEqualTo,
+		expressions.OperatorLessThan,
+		expressions.OperatorLessThanOrEqualTo,
+		expressions.OperatorAssignment,
+		expressions.OperatorIncrement,
+		expressions.OperatorDecrement,
+	},
+	parser.FieldTypeBoolean: {
+		expressions.OperatorAssignment,
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+	},
+	parser.FieldTypeDate: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+		expressions.OperatorGreaterThan,
+		expressions.OperatorGreaterThanOrEqualTo,
+		expressions.OperatorLessThan,
+		expressions.OperatorLessThanOrEqualTo,
+		expressions.OperatorAssignment,
+	},
+	parser.FieldTypeDatetime: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+		expressions.OperatorGreaterThan,
+		expressions.OperatorGreaterThanOrEqualTo,
+		expressions.OperatorLessThan,
+		expressions.OperatorLessThanOrEqualTo,
+		expressions.OperatorAssignment,
+	},
+
+	expressions.TypeArray: {
+		expressions.OperatorIn,
+		expressions.OperatorNotIn,
+	},
+}
+
+func (e *ExpressionScopeEntity) AllowedOperators() []string {
+	if e.Model != nil {
+		return []string{
+			expressions.OperatorEquals,
+			expressions.OperatorNotEquals,
+			expressions.AssignmentCondition,
+		}
+	}
+
+	t := e.GetType()
 	if e.IsRepeated() {
-		operators = append(operators, expressions.ArrayOperators...)
-		return operators
+		t = expressions.TypeArray
 	}
 
-	switch {
-	case e.Literal != nil:
-		t := e.Literal.Type()
-
-		switch t {
-		case expressions.TypeBoolean:
-			operators = append(operators, expressions.OperatorEquals)
-			operators = append(operators, expressions.OperatorAssignment)
-		case expressions.TypeNumber:
-			operators = append(operators, expressions.LogicalOperators...)
-			operators = append(operators, expressions.OperatorAssignment)
-		case expressions.TypeNull:
-			operators = append(operators, expressions.OperatorEquals)
-			operators = append(operators, expressions.AssignmentCondition)
-		case expressions.TypeText:
-			operators = append(operators, expressions.OperatorEquals)
-			operators = append(operators, expressions.OperatorAssignment)
-		case expressions.TypeArray:
-			operators = append(operators, expressions.ArrayOperators...)
-		}
-	case e.Model != nil:
-		operators = append(operators, expressions.OperatorEquals)
-		operators = append(operators, expressions.OperatorAssignment)
-	case e.Field != nil || e.Type != "":
-		switch e.GetType() {
-		case expressions.TypeText, parser.FieldTypeText:
-			operators = append(operators, expressions.OperatorEquals)
-			operators = append(operators, expressions.OperatorAssignment)
-		case expressions.TypeBoolean:
-			operators = append(operators, expressions.OperatorEquals)
-			operators = append(operators, expressions.OperatorAssignment)
-		case expressions.TypeNumber:
-			operators = append(operators, expressions.OperatorEquals)
-			operators = append(operators, expressions.OperatorAssignment)
-			operators = append(operators, expressions.NumericalOperators...)
-		default:
-			operators = append(operators, expressions.OperatorEquals)
-			operators = append(operators, expressions.OperatorAssignment)
-		}
-	}
-
-	return operators
+	return operatorsForType[t]
 }
 
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {

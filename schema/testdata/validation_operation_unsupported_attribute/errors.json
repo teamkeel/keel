@@ -3,7 +3,7 @@
     {
       "message": "operation 'createProfile' has an unrecognised attribute @save",
       "short_message": "Unrecognised attribute save",
-      "hint": "Did you mean @set, @where, or @permission?",
+      "hint": "Did you mean @set, @where, @permission, or @validate?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",

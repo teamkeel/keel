@@ -69,15 +69,13 @@ var (
 func (c *Condition) Type() string {
 	if c.Operator == nil && c.RHS == nil && c.LHS != nil {
 		return ValueCondition
-	} else if lo.Contains(equalityOperators, c.Operator.Symbol) {
-		return LogicalCondition
-	} else if (c.LHS.False || c.LHS.True) && c.RHS == nil {
-		return LogicalCondition
-	} else if c.Operator.Symbol == "=" {
+	}
+
+	if lo.Contains(AssignmentOperators, c.Operator.Symbol) {
 		return AssignmentCondition
 	}
 
-	panic("not a known condition type")
+	return LogicalCondition
 }
 
 type Operator struct {
@@ -107,31 +105,24 @@ var (
 	OperatorNotIn                = "notin"
 	OperatorIncrement            = "+="
 	OperatorDecrement            = "--"
-
-	// Collections
-	LogicalOperators = []string{
-		OperatorEquals,
-		OperatorNotEquals,
-	}
-
-	NumericalOperators = []string{
-		OperatorGreaterThan,
-		OperatorGreaterThanOrEqualTo,
-		OperatorLessThan,
-		OperatorLessThanOrEqualTo,
-	}
-
-	ArrayOperators = []string{
-		OperatorIn,
-		OperatorNotIn,
-	}
-
-	AssignmentOperators = []string{
-		OperatorAssignment,
-		OperatorIncrement,
-		OperatorDecrement,
-	}
 )
+
+var AssignmentOperators = []string{
+	OperatorAssignment,
+	OperatorIncrement,
+	OperatorDecrement,
+}
+
+var LogicalOperators = []string{
+	OperatorEquals,
+	OperatorNotEquals,
+	OperatorGreaterThan,
+	OperatorGreaterThanOrEqualTo,
+	OperatorLessThan,
+	OperatorLessThanOrEqualTo,
+	OperatorIn,
+	OperatorNotIn,
+}
 
 func (condition *Condition) ToString() string {
 	result := ""
@@ -243,38 +234,6 @@ func ToValue(expr *Expression) (*Operand, error) {
 	return cond.LHS, nil
 }
 
-func IsEquality(expr *Expression) bool {
-	v, _ := ToEqualityCondition(expr)
-	return v != nil
-}
-
-var ErrNotEquality = errors.New("expression does not check for equality")
-
-func ToEqualityCondition(expr *Expression) (*Condition, error) {
-	or := expr.Or[0]
-
-	and := or.And[0]
-
-	if and.Expression != nil {
-		return nil, ErrNotEquality
-	}
-
-	cond := and.Condition
-
-	if cond == nil {
-		return nil, ErrNotEquality
-	}
-
-	if cond.Operator != nil && !lo.Contains(equalityOperators, cond.Operator.Symbol) {
-		return nil, ErrNotEquality
-	}
-
-	if cond.LHS == nil || cond.RHS == nil {
-		return nil, ErrNotEquality
-	}
-	return cond, nil
-}
-
 var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
 
 func IsAssignment(expr *Expression) bool {
@@ -299,7 +258,7 @@ func ToAssignmentCondition(expr *Expression) (*Condition, error) {
 	}
 	cond := and.Condition
 
-	if cond.Operator == nil || cond.Operator.Symbol != "=" {
+	if cond.Operator == nil || !lo.Contains(AssignmentOperators, cond.Operator.Symbol) {
 		return nil, ErrNotAssignment
 	}
 

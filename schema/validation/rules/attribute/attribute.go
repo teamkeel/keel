@@ -56,11 +56,27 @@ func AttributeLocationsRule(asts []*parser.AST) []error {
 }
 
 var attributeLocations = map[string][]string{
-	parser.KeywordModel:     {parser.AttributePermission, parser.AttributeUnique},
-	parser.KeywordApi:       {parser.AttributeGraphQL},
-	parser.KeywordField:     {parser.AttributeUnique, parser.AttributeDefault, parser.AttributePrimaryKey},
-	parser.KeywordOperation: {parser.AttributeSet, parser.AttributeWhere, parser.AttributePermission},
-	parser.KeywordFunction:  {parser.AttributePermission},
+	parser.KeywordModel: {
+		parser.AttributePermission,
+		parser.AttributeUnique,
+	},
+	parser.KeywordApi: {
+		parser.AttributeGraphQL,
+	},
+	parser.KeywordField: {
+		parser.AttributeUnique,
+		parser.AttributeDefault,
+		parser.AttributePrimaryKey,
+	},
+	parser.KeywordOperation: {
+		parser.AttributeSet,
+		parser.AttributeWhere,
+		parser.AttributePermission,
+		parser.AttributeValidate,
+	},
+	parser.KeywordFunction: {
+		parser.AttributePermission,
+	},
 }
 
 func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) []error {
@@ -127,65 +143,92 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 	return errors
 }
 
-func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
+func ValidateAttributeRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
-		for _, operation := range query.ModelActions(model) {
-			if len(operation.Attributes) == 0 {
-				continue
-			}
-
-			for _, attr := range operation.Attributes {
-				if attr.Name.Value != parser.AttributeSet && attr.Name.Value != parser.AttributeWhere {
+		for _, action := range query.ModelActions(model) {
+			for _, attr := range action.Attributes {
+				if attr.Name.Value != parser.AttributeValidate {
 					continue
 				}
 
-				argLength := len(attr.Arguments)
-
-				if argLength == 0 || argLength >= 2 {
-					errors = append(errors,
-						errorhandling.NewValidationError(
-							errorhandling.ErrorIncorrectArguments,
-							errorhandling.TemplateLiterals{
-								Literals: map[string]string{
-									"AttributeName":     attr.Name.Value,
-									"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
-									"ExpectedArgsCount": "1",
-									"Signature":         "(expression)",
-								},
-							},
-							attr,
-						))
-					continue
-				}
-
-				expr := attr.Arguments[0].Expression
-
-				rules := []expression.Rule{expression.PreventValueConditionRule}
-
-				if attr.Name.Value == parser.AttributeSet {
-					rules = append(rules, expression.OperatorAssignmentRule)
-				} else {
-					rules = append(rules, expression.OperatorLogicalRule)
-				}
-
-				expressionErrs := expression.ValidateExpression(
-					asts,
-					expr,
-					rules,
-					expression.RuleContext{
-						Model:       model,
-						Attribute:   attr,
-						ReadInputs:  operation.Inputs,
-						WriteInputs: operation.With,
-					},
-				)
-
-				errors = append(errors, expressionErrs...)
+				errs := validateActionAttributeWithExpression(asts, model, action, attr)
+				errors = append(errors, errs...)
 			}
 		}
 	}
 
 	return errors
+}
+
+func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
+			for _, attr := range action.Attributes {
+				if attr.Name.Value != parser.AttributeSet && attr.Name.Value != parser.AttributeWhere {
+					continue
+				}
+
+				errs := validateActionAttributeWithExpression(asts, model, action, attr)
+				errors = append(errors, errs...)
+			}
+		}
+	}
+
+	return errors
+}
+
+// validateActionAttributeWithExpression validates attributes that have the
+// signature @attributeName(expression) and exist inside an action. This applies
+// to @set, @where, and @validate attributes
+func validateActionAttributeWithExpression(
+	asts []*parser.AST,
+	model *parser.ModelNode,
+	action *parser.ActionNode,
+	attr *parser.AttributeNode,
+) (errors []error) {
+
+	argLength := len(attr.Arguments)
+
+	if argLength == 0 || argLength >= 2 {
+		errors = append(errors,
+			errorhandling.NewValidationError(
+				errorhandling.ErrorIncorrectArguments,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"AttributeName":     attr.Name.Value,
+						"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
+						"ExpectedArgsCount": "1",
+						"Signature":         "(expression)",
+					},
+				},
+				attr,
+			))
+		return
+	}
+
+	expr := attr.Arguments[0].Expression
+
+	rules := []expression.Rule{expression.PreventValueConditionRule}
+
+	if attr.Name.Value == parser.AttributeSet {
+		rules = append(rules, expression.OperatorAssignmentRule)
+	} else {
+		rules = append(rules, expression.OperatorLogicalRule)
+	}
+
+	err := expression.ValidateExpression(
+		asts,
+		expr,
+		rules,
+		expression.RuleContext{
+			Model:       model,
+			Attribute:   attr,
+			ReadInputs:  action.Inputs,
+			WriteInputs: action.With,
+		},
+	)
+
+	return append(errors, err...)
 }
 
 var validActionKeywords = []string{

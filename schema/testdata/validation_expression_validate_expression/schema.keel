@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        published Boolean
+    }
+
+    operations {
+        create publishPost() with (published) {
+            @validate(published != "foo")
+        }
+    }
+}
