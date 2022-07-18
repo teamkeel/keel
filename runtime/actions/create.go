@@ -18,7 +18,7 @@ func Create(ctx context.Context, operation *proto.Operation, args map[string]any
 	model := proto.FindModel(schema.Models, operation.ModelName)
 	// We'll populate a map[string]any to represent the resolved model field values, and
 	// use that map, to write a record into the database, and as the return value.
-	modelMap, err := zeroValueForModel(model, schema)
+	modelMap, err := initialValueForModel(model, schema)
 	if err != nil {
 		return nil, err
 	}

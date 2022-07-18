@@ -13,22 +13,22 @@ import (
 func TestZeroFieldValuesSimpleEquality(t *testing.T) {
 	for _, tt := range equalityTable {
 		repeated := false
-		v, err := zeroValueForField(field(tt.protoType, repeated), someEnums)
+		v, err := initialValueForField(field(tt.protoType, repeated), someEnums)
 		require.NoError(t, err)
 		if tt.expectedHasOne != v {
-			t.Fatalf("For type %s, expected %v, got %v", tt.protoType, tt.expectedHasOne, v)
+			t.Fatalf("For type %s, expected %v, got %v, fixture is: ", tt.protoType, tt.expectedHasOne, v)
 		}
 
 		repeated = true
-		v, err = zeroValueForField(field(tt.protoType, repeated), someEnums)
+		v, err = initialValueForField(field(tt.protoType, repeated), someEnums)
 		require.NoError(t, err)
-		require.EqualValues(t, tt.expectedHasMany, v)
+		require.EqualValues(t, tt.expectedHasMany, v, "case is: %+v", tt)
 	}
 }
 
 func TestZeroFieldValueForID(t *testing.T) {
 	repeated := false
-	v, err := zeroValueForField(field(proto.Type_TYPE_ID, repeated), someEnums)
+	v, err := initialValueForField(field(proto.Type_TYPE_ID, repeated), someEnums)
 	require.NoError(t, err)
 	// Make sure it is a KSUID
 	id, ok := v.(ksuid.KSUID)
@@ -38,7 +38,7 @@ func TestZeroFieldValueForID(t *testing.T) {
 	require.Less(t, timeSinceMade, 5*time.Second)
 
 	repeated = true
-	v, err = zeroValueForField(field(proto.Type_TYPE_ID, repeated), someEnums)
+	v, err = initialValueForField(field(proto.Type_TYPE_ID, repeated), someEnums)
 	require.NoError(t, err)
 	ids, ok := v.([]ksuid.KSUID)
 	require.True(t, ok)
@@ -53,7 +53,7 @@ func TestZeroFieldValuesTimeBasedFields(t *testing.T) {
 	}
 	for _, fieldType := range toTest {
 		repeated := false
-		v, err := zeroValueForField(field(fieldType, repeated), someEnums)
+		v, err := initialValueForField(field(fieldType, repeated), someEnums)
 		require.NoError(t, err)
 		timeEncoded, ok := v.(time.Time)
 		require.True(t, ok)
@@ -61,7 +61,7 @@ func TestZeroFieldValuesTimeBasedFields(t *testing.T) {
 		require.Less(t, timeSinceMade, 5*time.Second)
 
 		repeated = true
-		v, err = zeroValueForField(field(fieldType, repeated), someEnums)
+		v, err = initialValueForField(field(fieldType, repeated), someEnums)
 		require.NoError(t, err)
 		times, ok := v.([]time.Time)
 		require.True(t, ok)
@@ -73,14 +73,14 @@ func TestZeroFieldValuesEnum(t *testing.T) {
 	repeated := false
 	enumField := field(proto.Type_TYPE_ENUM, repeated)
 	enumField.Type.EnumName = wrapperspb.String("fruits")
-	v, err := zeroValueForField(enumField, someEnums)
+	v, err := initialValueForField(enumField, someEnums)
 	require.NoError(t, err)
 	require.Equal(t, "apple", v)
 
 	repeated = true
 	enumField = field(proto.Type_TYPE_ENUM, repeated)
 	enumField.Type.EnumName = wrapperspb.String("fruits")
-	v, err = zeroValueForField(enumField, someEnums)
+	v, err = initialValueForField(enumField, someEnums)
 	require.NoError(t, err)
 	enumValues, ok := v.([]string)
 	require.True(t, ok)
@@ -89,8 +89,75 @@ func TestZeroFieldValuesEnum(t *testing.T) {
 
 func TestZeroFieldValueForTypeNotImplemented(t *testing.T) {
 	repeated := false
-	_, err := zeroValueForField(field(proto.Type_TYPE_IDENTITY, repeated), someEnums)
+	_, err := initialValueForField(field(proto.Type_TYPE_IDENTITY, repeated), someEnums)
 	require.EqualError(t, err, "zero value for field: TYPE_IDENTITY not yet implemented")
+}
+
+type defaultValueCase struct {
+	protoType    proto.Type
+	repeated     bool
+	defaultValue string
+	expected     any
+}
+
+func TestZeroFieldValueUsesDefaultExpression(t *testing.T) {
+	// These cases cover all the simple scalar type cases - IFF you accept the rules
+	// I've suggested here.
+	// https://www.notion.so/keelhq/Particular-Cases-for-Zero-and-Default-Values-for-Fields-1dbf740d9b7c42e9b672d90b7ea527ce
+	cases := []defaultValueCase{
+		{
+			protoType:    proto.Type_TYPE_STRING,
+			defaultValue: `"my default string"`,
+			expected:     `my default string`,
+		},
+		{
+			protoType:    proto.Type_TYPE_BOOL,
+			defaultValue: `false`,
+			expected:     false,
+		},
+		{
+			protoType:    proto.Type_TYPE_BOOL,
+			defaultValue: `true`,
+			expected:     true,
+		},
+		{
+			protoType:    proto.Type_TYPE_INT,
+			defaultValue: `42`,
+			expected:     int64(42),
+		},
+	}
+	for _, cs := range cases {
+		f := field(cs.protoType, cs.repeated)
+		f.DefaultValue = &proto.DefaultValue{
+			Expression: &proto.Expression{
+				Source: cs.defaultValue,
+			},
+		}
+		v, err := initialValueForField(f, someEnums)
+		if err != nil {
+			a := 1
+			_ = a
+		}
+		require.NoError(t, err)
+		require.Equal(t, cs.expected, v)
+	}
+}
+
+func TestToMakeSureWeFlagConfigurationsThatAreNotYetSupported(t *testing.T) {
+	repeated := false
+	f := field(proto.Type_TYPE_BOOL, repeated)
+	f.DefaultValue = &proto.DefaultValue{
+		Expression: &proto.Expression{
+			Source: "True == False",
+		},
+	}
+	_, err := initialValueForField(f, someEnums)
+	if err != nil {
+		a := 1
+		_ = a
+	}
+	require.EqualError(t, err, "expressions that are not simple values are not yet supported")
+
 }
 
 func TestZeroValueForModel(t *testing.T) {
@@ -104,17 +171,23 @@ func TestZeroValueForModel(t *testing.T) {
 			{
 				Type: &proto.TypeInfo{Type: proto.Type_TYPE_INT},
 				Name: "intField",
+				DefaultValue: &proto.DefaultValue{
+					UseZeroValue: true,
+				},
 			},
 			{
 				Type: &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 				Name: "stringField",
+				DefaultValue: &proto.DefaultValue{
+					UseZeroValue: true,
+				},
 			},
 		},
 	}
 	var schema *proto.Schema = &proto.Schema{
 		Enums: someEnums,
 	}
-	modelMap, err := zeroValueForModel(&model, schema)
+	modelMap, err := initialValueForModel(&model, schema)
 	require.NoError(t, err)
 	require.Equal(t, 0, modelMap["intField"])
 	require.Equal(t, "", modelMap["stringField"])
@@ -159,6 +232,9 @@ func field(fieldType proto.Type, repeated bool) *proto.Field {
 		Type: &proto.TypeInfo{
 			Type:     fieldType,
 			Repeated: repeated,
+		},
+		DefaultValue: &proto.DefaultValue{
+			UseZeroValue: true,
 		},
 	}
 }
