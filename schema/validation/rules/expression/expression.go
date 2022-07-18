@@ -199,24 +199,28 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *expressions.C
 	return errors
 }
 
-// Validates that all lhs and rhs operands of each condition in an expression match
+// OperandTypesMatchRule checks that the left-hand side and right-hand side are
+// compatible.
+//   - LHS and RHS are the same type
+//   - LHS and RHS are of _compatible_ types
+//   - LHS is of type T and RHS is an array of type T
+//   - LHS or RHS is an optional field and the other side is an explicit null
 func OperandTypesMatchRule(asts []*parser.AST, condition *expressions.Condition, context RuleContext) (errors []error) {
 
 	resolvedLHS, resolvedRHS, _ := resolveConditionOperands(asts, condition, context)
 
-	// if there is no lhs or rhs
-	// then we do not care about validating this rule for this condition
+	// If either side fails to resolve then no point checking compatibility
 	if resolvedLHS == nil || resolvedRHS == nil {
 		return nil
 	}
 
-	// Simple case: LHS and RHS are the same
+	// Case: LHS and RHS are the same type
 	if resolvedLHS.GetType() == resolvedRHS.GetType() {
 		return nil
 	}
 
-	// Possibly this only applies to Date and Timestamp but this handles
-	// cases where two different types are compatible
+	// Case: LHS and RHS are of _compatible_ types
+	// Possibly this only applies to Date and Timestamp
 	comparable := [][]string{
 		{parser.FieldTypeDate, parser.FieldTypeDatetime},
 	}
@@ -226,9 +230,10 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *expressions.Condition,
 		}
 	}
 
-	// If RHS is an array then we check the type of it's items
-	// If they match the LHS then that is ok
+	// Case: LHS is of type T and RHS is an array of type T
 	if resolvedRHS.GetType() == expressions.TypeArray {
+
+		// First check array contains only one type
 		var arrayType string
 		valid := true
 		for i, item := range resolvedRHS.Array {
@@ -263,6 +268,12 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *expressions.Condition,
 		if arrayType == resolvedLHS.GetType() {
 			return nil
 		}
+	}
+
+	// Case: LHS or RHS is an optional field and the other side is an explicit null
+	if resolvedLHS.IsOptional() && resolvedRHS.IsNull() ||
+		resolvedRHS.IsOptional() && resolvedLHS.IsNull() {
+		return nil
 	}
 
 	lhsType := resolvedLHS.GetType()

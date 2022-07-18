@@ -1,0 +1,14 @@
+model Post {
+    fields {
+        title Text?
+    }
+
+    operations {
+        update removeTitle(id) {
+            @set(post.title = null)
+        }
+        list listPostsWithNoTitle() {
+            @where(post.title == null)
+        }
+    }
+}
