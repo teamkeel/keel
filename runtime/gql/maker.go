@@ -164,7 +164,7 @@ func (mk *maker) addOperation(model *proto.Model, op *proto.Operation) error {
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
-		field.Type = mk.makeConnectionType(model, outputType)
+		field.Type = mk.makeConnectionType(outputType)
 
 		mk.query.AddFieldConfig(op.Name, field)
 	default:
@@ -195,9 +195,9 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 	},
 })
 
-func (mk *maker) makeConnectionType(model *proto.Model, itemType graphql.Output) graphql.Output {
+func (mk *maker) makeConnectionType(itemType graphql.Output) graphql.Output {
 	edgeType := graphql.NewObject(graphql.ObjectConfig{
-		Name: model.Name + "Edge",
+		Name: itemType.Name() + "Edge",
 		Fields: graphql.Fields{
 			"node": &graphql.Field{
 				Type: graphql.NewNonNull(
@@ -208,7 +208,7 @@ func (mk *maker) makeConnectionType(model *proto.Model, itemType graphql.Output)
 	})
 
 	connection := graphql.NewObject(graphql.ObjectConfig{
-		Name: model.Name + "Connection",
+		Name: itemType.Name() + "Connection",
 		Fields: graphql.Fields{
 			"edges": &graphql.Field{
 				Type: graphql.NewNonNull(
@@ -314,6 +314,13 @@ func (mk *maker) outputTypeFor(field *proto.Field) (out graphql.Output, err erro
 			}
 		}
 
+	case proto.Type_TYPE_MODEL:
+		for _, m := range mk.proto.Models {
+			if m.Name == field.Type.ModelName.Value {
+				out, err = mk.addModel(m)
+				break
+			}
+		}
 	default:
 		var ok bool
 		out, ok = protoTypeToGraphQLOutput[field.Type.Type]
@@ -322,12 +329,18 @@ func (mk *maker) outputTypeFor(field *proto.Field) (out graphql.Output, err erro
 		}
 	}
 
-	if !field.Optional {
-		out = graphql.NewNonNull(out)
+	if err != nil {
+		return out, err
 	}
 
 	if field.Type.Repeated {
-		out = graphql.NewList(out)
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			out = mk.makeConnectionType(out)
+		} else {
+			out = graphql.NewList(out)
+			out = graphql.NewNonNull(out)
+		}
+	} else if !field.Optional {
 		out = graphql.NewNonNull(out)
 	}
 
