@@ -97,6 +97,9 @@ message Operation {
     // Not valid if `type` is OPERATION_TYPE_CREATE
     // If there are multiple entries in this field they are AND'd.
     repeated Expression where_expressions = 8;
+
+    // A list of expressions that perform some kind of validation (likely on the inputs)
+    repeated Expression validation_expressions = 9;
 }
 
 message OperationInput {

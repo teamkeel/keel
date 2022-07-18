@@ -194,7 +194,7 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 		protoOp.Inputs = append(protoOp.Inputs, protoInput)
 	}
 
-	scm.applyFunctionAttributes(parserFunction, protoOp, modelName)
+	scm.applyActionAttributes(parserFunction, protoOp, modelName)
 
 	return protoOp
 }
@@ -324,8 +324,8 @@ func (scm *Builder) applyModelAttribute(parserModel *parser.ModelNode, protoMode
 	}
 }
 
-func (scm *Builder) applyFunctionAttributes(parserFunction *parser.ActionNode, protoOperation *proto.Operation, modelName string) {
-	for _, attribute := range parserFunction.Attributes {
+func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoOperation *proto.Operation, modelName string) {
+	for _, attribute := range action.Attributes {
 		switch attribute.Name.Value {
 		case parser.AttributePermission:
 			perm := scm.permissionAttributeToProtoPermission(attribute)
@@ -340,6 +340,10 @@ func (scm *Builder) applyFunctionAttributes(parserFunction *parser.ActionNode, p
 			expr, _ := expressions.ToString(attribute.Arguments[0].Expression)
 			set := &proto.Expression{Source: expr}
 			protoOperation.SetExpressions = append(protoOperation.SetExpressions, set)
+		case parser.AttributeValidate:
+			expr, _ := expressions.ToString(attribute.Arguments[0].Expression)
+			set := &proto.Expression{Source: expr}
+			protoOperation.ValidationExpressions = append(protoOperation.ValidationExpressions, set)
 		}
 	}
 }

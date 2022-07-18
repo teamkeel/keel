@@ -114,7 +114,7 @@ func TestIsAssignment(t *testing.T) {
 	}
 }
 
-func TestIsEquality(t *testing.T) {
+func TestLogicalExpressions(t *testing.T) {
 	fixtures := map[string]bool{
 		"a":       false,
 		"1":       false,
@@ -145,8 +145,13 @@ func TestIsEquality(t *testing.T) {
 			expr, err := expressions.Parse(input)
 			assert.NoError(t, err)
 
-			actual := expressions.IsEquality(expr)
-			assert.Equal(t, expected, actual)
+			for _, cond := range expr.Conditions() {
+				if expected {
+					assert.Equal(t, expressions.LogicalCondition, cond.Type())
+				} else {
+					assert.NotEqual(t, expressions.LogicalCondition, cond.Type())
+				}
+			}
 		})
 	}
 }

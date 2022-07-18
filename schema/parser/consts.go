@@ -71,6 +71,7 @@ const (
 	AttributeGraphQL    = "graphql"
 	AttributePrimaryKey = "primaryKey"
 	AttributeDefault    = "default"
+	AttributeValidate   = "validate"
 )
 
 const (

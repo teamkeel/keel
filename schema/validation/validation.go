@@ -53,6 +53,7 @@ var validatorFuncs = []validationFunc{
 	attribute.AttributeLocationsRule,
 	attribute.PermissionAttributeRule,
 	attribute.SetWhereAttributeRule,
+	attribute.ValidateAttributeRule,
 	attribute.UniqueAttributeArgsRule,
 	// Role
 	role.UniqueRoleNamesRule,

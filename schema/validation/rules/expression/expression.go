@@ -81,10 +81,6 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *expressions.Expressi
 func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression, context RuleContext) (errors []error) {
 	conditions := expression.Conditions()
 
-	permittedOperators := append(expressions.LogicalOperators, expressions.LogicalOperators...)
-	permittedOperators = append(permittedOperators, expressions.ArrayOperators...)
-	permittedOperators = append(permittedOperators, expressions.NumericalOperators...)
-
 	for _, condition := range conditions {
 		// If there is no operator, then it means there is no rhs
 		if condition.Operator == nil {
@@ -110,7 +106,7 @@ func OperatorLogicalRule(asts []*parser.AST, expression *expressions.Expression,
 			continue
 		}
 
-		errors = append(errors, runSideEffectOperandRules(asts, condition, context, permittedOperators)...)
+		errors = append(errors, runSideEffectOperandRules(asts, condition, context, expressions.LogicalOperators)...)
 	}
 
 	return errors
