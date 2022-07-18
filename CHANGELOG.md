@@ -1,3 +1,10 @@
+# [0.59.0](https://github.com/teamkeel/keel/compare/v0.58.0...v0.59.0) (2022-07-18)
+
+
+### Features
+
+* add support [@validate](https://github.com/validate) attribute inside actions ([0bba4fe](https://github.com/teamkeel/keel/commit/0bba4fe73b68988f4be13efeee1af0c7475b196c))
+
 # [0.58.0](https://github.com/teamkeel/keel/compare/v0.57.0...v0.58.0) (2022-07-15)
 
 
