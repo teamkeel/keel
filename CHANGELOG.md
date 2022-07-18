@@ -1,3 +1,10 @@
+# [0.60.0](https://github.com/teamkeel/keel/compare/v0.59.0...v0.60.0) (2022-07-18)
+
+
+### Features
+
+* extract graphql schema language generation from tests to use in wasm binary ([d991c21](https://github.com/teamkeel/keel/commit/d991c216f93b0d8e867627749deae59592d78bdf))
+
 # [0.59.0](https://github.com/teamkeel/keel/compare/v0.58.0...v0.59.0) (2022-07-18)
 
 
