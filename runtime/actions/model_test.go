@@ -69,28 +69,20 @@ func TestBuiltInDefaultForTimeOrientedFields(t *testing.T) {
 	}
 }
 
-func TestBuiltInDefaultForEnumFields(t *testing.T) {
+func TestBuiltInDefaultForEnumIsNil(t *testing.T) {
 	repeated := false
 	enumField := field(proto.Type_TYPE_ENUM, repeated)
 	enumField.Type.EnumName = wrapperspb.String("fruits")
 	v, err := builtinDefault(enumField, someEnums)
 	require.NoError(t, err)
-	require.Equal(t, "apple", v)
+	require.Nil(t, v)
 
 	repeated = true
 	enumField = field(proto.Type_TYPE_ENUM, repeated)
 	enumField.Type.EnumName = wrapperspb.String("fruits")
 	v, err = builtinDefault(enumField, someEnums)
 	require.NoError(t, err)
-	enumValues, ok := v.([]string)
-	require.True(t, ok)
-	require.Len(t, enumValues, 0)
-}
-
-func TestBuiltInDefaultForTypeNotSupportedYet(t *testing.T) {
-	repeated := false
-	_, err := builtinDefault(field(proto.Type_TYPE_IDENTITY, repeated), someEnums)
-	require.EqualError(t, err, "zero value for field: TYPE_IDENTITY not yet implemented")
+	require.Nil(t, v)
 }
 
 type defaultValueCase struct {
@@ -124,6 +116,21 @@ func TestSchemaDefaults(t *testing.T) {
 			protoType:    proto.Type_TYPE_INT,
 			defaultValue: `42`,
 			expected:     int64(42),
+		},
+		{
+			protoType:    proto.Type_TYPE_DATE,
+			defaultValue: `"1994-11-05T13:15:30Z"`,
+			expected:     `1994-11-05T13:15:30Z`,
+		},
+		{
+			protoType:    proto.Type_TYPE_TIMESTAMP,
+			defaultValue: `"1994-11-05T13:15:30Z"`,
+			expected:     `1994-11-05T13:15:30Z`,
+		},
+		{
+			protoType:    proto.Type_TYPE_DATETIME,
+			defaultValue: `"1994-11-05T13:15:30Z"`,
+			expected:     `1994-11-05T13:15:30Z`,
 		},
 	}
 	for _, cs := range cases {
@@ -187,6 +194,15 @@ func TestTheWrapperDropsThroughToBuiltInDefault(t *testing.T) {
 	v, err := initialValueForField(f, someEnums)
 	require.NoError(t, err)
 	require.Equal(t, "", v)
+}
+
+func TestTheWrapperUsesNilWhenADefaultIsNotAvailable(t *testing.T) {
+	repeated := false
+	f := field(proto.Type_TYPE_MODEL, repeated)
+	f.DefaultValue = nil
+	v, err := initialValueForField(f, someEnums)
+	require.NoError(t, err)
+	require.Nil(t, v)
 }
 
 func TestZeroValueForModel(t *testing.T) {

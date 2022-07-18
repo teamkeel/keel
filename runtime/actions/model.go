@@ -109,23 +109,11 @@ func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
 	case fType == proto.Type_TYPE_DATETIME && rpt:
 		return []time.Time{}, nil
 
-	case fType == proto.Type_TYPE_ENUM && !rpt:
-		return defaultForEnum(field, enums), nil
-	case fType == proto.Type_TYPE_ENUM && rpt:
-		return []string{}, nil
-
 	default:
-		return nil, fmt.Errorf("zero value for field: %s not yet implemented", fType)
+		// When we cannot provide a built-in default - we assing nil as the value
+		// to use.
+		return nil, nil
 	}
-}
-
-func defaultForEnum(field *proto.Field, enums []*proto.Enum) string {
-	for _, enum := range enums {
-		if field.Type.EnumName.Value == enum.Name {
-			return enum.Values[0].Name
-		}
-	}
-	return ""
 }
 
 func setFieldsFromInputValues(modelMap map[string]any, args map[string]any) error {
