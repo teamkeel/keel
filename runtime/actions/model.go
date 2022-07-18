@@ -10,8 +10,8 @@ import (
 )
 
 // initialValueForModel provides a map[string]any that corresponds to all the fields
-// that exist in the given proto.Model - with their value set to their default value if
-// one is specified for this field in the schema, or failing that our built-in "zero value" for
+// that exist in the given proto.Model - with their value set to schema-default value if
+// one is specified for this field in the schema, or failing that our built-in default value for
 // the corresponding type. E.g. emtpy string for string fields, or integer zero for a Number field.
 func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string]any, error) {
 	zeroValue := map[string]any{}
@@ -25,8 +25,8 @@ func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string
 }
 
 // initialValueForField provides a suitable initial value for the
-// given field. It first tries to use the default value specified in the schema for this field.
-// After that it tries to use our built-in or zero value for the field's type.
+// given field. It first tries to use its schema-default.
+// After that it tries to use our built-in default for the field's type.
 // But it can also return nil without an error when it cannot do either of those things.
 func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, err error) {
 	zeroV = nil
@@ -34,14 +34,14 @@ func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, e
 	switch {
 	case field.DefaultValue != nil && field.DefaultValue.Expression != nil:
 		{
-			v, err := evalDefaultValueExpression(field) // Will need more arguments / context later.
+			v, err := schemaDefault(field) // Will need more arguments / context later.
 			if err != nil {
 				return nil, err
 			}
 			return v, nil
 		}
 	case field.DefaultValue != nil && field.DefaultValue.UseZeroValue:
-		v, err := evalZeroValue(field, enums)
+		v, err := builtinDefault(field, enums)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +53,7 @@ func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, e
 	}
 }
 
-func evalZeroValue(field *proto.Field, enums []*proto.Enum) (any, error) {
+func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
 	fType := field.Type.Type
 	rpt := field.Type.Repeated
 	now := time.Now()
@@ -135,7 +135,7 @@ func setFieldsFromInputValues(modelMap map[string]any, args map[string]any) erro
 	return nil
 }
 
-func evalDefaultValueExpression(field *proto.Field) (any, error) {
+func schemaDefault(field *proto.Field) (any, error) {
 	source := field.DefaultValue.Expression.Source
 	expr, err := expressions.Parse(source)
 	if err != nil {
