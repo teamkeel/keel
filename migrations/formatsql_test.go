@@ -66,20 +66,18 @@ func TestSelectSingleColumn(t *testing.T) {
 
 const expectedCreateTable string = `CREATE TABLE "Person"(
 "Name" TEXT,
-"Age" integer
+"Age" INTEGER
 );`
 
 const expectedCreateTableIfNotExists string = `CREATE TABLE if not exists "my-model-name"(
-"my-field-name" bool
+"my-field-name" BOOL
 );`
 
 const expectedDropTable string = `DROP TABLE "Person";`
 
-const expectedCreateField string = `ALTER TABLE "Person"
-ADD "myNewField" DATE;`
+const expectedCreateField string = `ALTER TABLE "Person" ADD COLUMN "myNewField" DATE;`
 
-const expectedDropField string = `ALTER TABLE "Person"
-DROP "Age";`
+const expectedDropField string = `ALTER TABLE "Person" DROP COLUMN "Age";`
 
 const expectedSingleColumn string = `SELECT "some-column" FROM "my-table";`
 

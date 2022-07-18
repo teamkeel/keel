@@ -1,0 +1,24 @@
+model Person {
+    fields {
+        name Text
+        age Number
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+    }
+}
+
+===
+
+ALTER TABLE "Person" DROP COLUMN "age";
+
+=== 
+
+[
+  { "Model": "Person", "Field": "age", "Type": "REMOVED" }
+]

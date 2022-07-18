@@ -8,15 +8,13 @@ import (
 )
 
 func TestModelsDroppedOrAdded(t *testing.T) {
-	diffs, err := ProtoDeltas(modelsAB, modelsBC)
-	require.NoError(t, err)
+	diffs := NewDifferences(modelsAB, modelsBC)
 	require.Equal(t, []string{"ModelC"}, diffs.ModelsAdded)
 	require.Equal(t, []string{"ModelA"}, diffs.ModelsRemoved)
 }
 
 func TestFieldsDroppedOrAdded(t *testing.T) {
-	diffs, err := ProtoDeltas(fieldsAB, fieldsBC)
-	require.NoError(t, err)
+	diffs := NewDifferences(fieldsAB, fieldsBC)
 	require.Equal(t, []string{"FieldC"}, diffs.FieldsAdded["ModelA"])
 	require.Equal(t, []string{"FieldA"}, diffs.FieldsRemoved["ModelA"])
 }

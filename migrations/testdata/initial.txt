@@ -1,0 +1,29 @@
+===
+
+model Person {
+    fields {
+        name Text
+    }
+}
+
+===
+
+CREATE TABLE "Identity"(
+"username" TEXT,
+"id" TEXT,
+"createdAt" TIMESTAMP,
+"updatedAt" TIMESTAMP
+);
+CREATE TABLE "Person"(
+"name" TEXT,
+"id" TEXT,
+"createdAt" TIMESTAMP,
+"updatedAt" TIMESTAMP
+);
+
+=== 
+
+[
+  { "Model": "Identity", "Field": "", "Type": "ADDED" },
+  { "Model": "Person", "Field": "", "Type": "ADDED" }
+]

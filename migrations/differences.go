@@ -5,10 +5,28 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-// ProtoDeltas provides information about the differences between the two
+// Differences encapsulates the differences between two proto.Proto objects,
+// for the purposes of informing database migrations.
+type Differences struct {
+	ModelsAdded   []string
+	ModelsRemoved []string
+
+	// FieldsAdded refers to models that exist in both the old and new schemas, but which
+	// have been newly introduced in the new schema. The map is keyed on model names.
+	FieldsAdded map[string][]string
+
+	// FieldsRemoved refers to models that exist in both the old and new schemas, but which
+	// have been removed in the new schema. The map is keyed on model names.
+	FieldsRemoved map[string][]string
+}
+
+// NewDifferences provides information about the differences between the two
 // given schemas.
-func ProtoDeltas(old, new *proto.Schema) (*Differences, error) {
-	diffs := NewDifferences()
+func NewDifferences(old, new *proto.Schema) *Differences {
+	diffs := &Differences{
+		FieldsAdded:   map[string][]string{},
+		FieldsRemoved: map[string][]string{},
+	}
 
 	oldModels := proto.ModelNames(old)
 	newModels := proto.ModelNames(new)
@@ -24,7 +42,7 @@ func ProtoDeltas(old, new *proto.Schema) (*Differences, error) {
 		diffs.FieldsRemoved[modelName], diffs.FieldsAdded[modelName] = lo.Difference(oldFieldNames, newFieldNames)
 	}
 
-	return diffs, nil
+	return diffs
 }
 
 func modelsPresentInBothOldAndNew(old, new *proto.Schema) []string {
