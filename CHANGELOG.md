@@ -1,3 +1,10 @@
+# [0.64.0](https://github.com/teamkeel/keel/compare/v0.63.0...v0.64.0) (2022-07-19)
+
+
+### Features
+
+* generate typescript model + enum type definitions ([#159](https://github.com/teamkeel/keel/issues/159)) ([9f1b80d](https://github.com/teamkeel/keel/commit/9f1b80d660c4a46ea9caca9a5f8b468936560634))
+
 # [0.63.0](https://github.com/teamkeel/keel/compare/v0.62.0...v0.63.0) (2022-07-19)
 
 
