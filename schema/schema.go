@@ -43,6 +43,17 @@ func (scm *Builder) MakeFromFile(filename string) (*proto.Schema, error) {
 	return scm.makeFromInputs(allInputFiles)
 }
 
+func (scm *Builder) MakeFromString(schemaString string) (*proto.Schema, error) {
+	scm.schemaFiles = append(scm.schemaFiles, reader.SchemaFile{
+		Contents: schemaString,
+		FileName: "schema.keel",
+	})
+
+	return scm.makeFromInputs(&reader.Inputs{
+		SchemaFiles: scm.schemaFiles,
+	})
+}
+
 // MakeFromFile constructs a proto.Schema from the given inputs
 func (scm *Builder) MakeFromInputs(inputs *reader.Inputs) (*proto.Schema, error) {
 	scm.schemaFiles = inputs.SchemaFiles
