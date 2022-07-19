@@ -13,7 +13,7 @@ import (
 	"github.com/teamkeel/keel/schema"
 )
 
-func TestModelGeneration(t *testing.T) {
+func TestCodeGeneration(t *testing.T) {
 	testCases, err := ioutil.ReadDir("testdata")
 	require.NoError(t, err)
 
@@ -57,8 +57,12 @@ func TestModelGeneration(t *testing.T) {
 				result := generator.GenerateEnums()
 
 				assert.Equal(t, strings.Trim(parts[1], "\n"), strings.Trim(result, "\n"))
+			} else if strings.HasPrefix(testCase.Name(), "api") {
+				result := generator.GenerateAPIs()
+
+				assert.Equal(t, strings.Trim(parts[1], "\n"), strings.Trim(result, "\n"))
 			} else {
-				t.Fatal("Test case names must follow convention XXX_name where XXX is one of model, enum")
+				t.Fatal("Test case names must follow convention XXX_name where XXX is one of model, enum, api")
 			}
 		})
 	}
