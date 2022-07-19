@@ -1,0 +1,24 @@
+model Person {
+    fields {
+        name Text
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+        age Number
+    }
+}
+
+===
+
+ALTER TABLE "Person" ADD COLUMN "age" INTEGER;
+
+=== 
+
+[
+  { "Model": "Person", "Field": "age", "Type": "ADDED" }
+]

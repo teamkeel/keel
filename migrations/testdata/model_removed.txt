@@ -1,0 +1,29 @@
+model Person {
+  fields {
+    name Text
+  }
+}
+
+model Animal {
+  fields {
+    name Text
+  }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+    }
+}
+
+===
+
+DROP TABLE "Animal";
+
+=== 
+
+[
+  { "Model": "Animal", "Field": "", "Type": "REMOVED" }
+]

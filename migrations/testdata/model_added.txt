@@ -1,0 +1,34 @@
+model Person {
+    fields {
+      name Text
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+    }
+}
+
+model Animal {
+    fields {
+        name Text
+    }
+}
+
+===
+
+CREATE TABLE "Animal"(
+"name" TEXT,
+"id" TEXT,
+"createdAt" TIMESTAMP,
+"updatedAt" TIMESTAMP
+);
+
+=== 
+
+[
+  { "Model": "Animal", "Field": "", "Type": "ADDED" }
+]

@@ -6,10 +6,21 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
+var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
+	proto.Type_TYPE_ID:        "TEXT",
+	proto.Type_TYPE_STRING:    "TEXT",
+	proto.Type_TYPE_INT:       "INTEGER",
+	proto.Type_TYPE_BOOL:      "BOOL",
+	proto.Type_TYPE_TIMESTAMP: "TIMESTAMP",
+	proto.Type_TYPE_DATETIME:  "TIMESTAMP",
+	proto.Type_TYPE_DATE:      "DATE",
+	proto.Type_TYPE_MODEL:     "TEXT", // id of the target
+	proto.Type_TYPE_ENUM:      "TEXT",
+}
+
 func createTable(model *proto.Model) string {
-	output := fmt.Sprintf("CREATE TABLE \"%s\"(\n", model.Name) // todo - we should normalise model names
+	output := fmt.Sprintf("CREATE TABLE \"%s\"(\n", model.Name)
 	for i, field := range model.Fields {
-		// todo: field names need to be normalised / standardised for use in the database.
 		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type.Type])
 		if i != len(model.Fields)-1 {
 			f += ","
@@ -22,9 +33,8 @@ func createTable(model *proto.Model) string {
 }
 
 func CreateTableIfNotExists(name string, fields []*proto.Field) string {
-	output := fmt.Sprintf("CREATE TABLE if not exists \"%s\"(\n", name) // todo - we should normalise model names
+	output := fmt.Sprintf("CREATE TABLE if not exists \"%s\"(\n", name)
 	for i, field := range fields {
-		// todo: field names need to be normalised / standardised for use in the database.
 		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type.Type])
 		if i != len(fields)-1 {
 			f += ","
@@ -41,14 +51,14 @@ func dropTable(name string) string {
 }
 
 func createField(modelName string, field *proto.Field) string {
-	output := fmt.Sprintf("ALTER TABLE \"%s\"\n", modelName)
-	output += fmt.Sprintf("ADD \"%s\" %s;", field.Name, PostgresFieldTypes[field.Type.Type])
+	output := fmt.Sprintf("ALTER TABLE \"%s\" ", modelName)
+	output += fmt.Sprintf("ADD COLUMN \"%s\" %s;", field.Name, PostgresFieldTypes[field.Type.Type])
 	return output
 }
 
 func dropField(modelName string, fieldName string) string {
-	output := fmt.Sprintf("ALTER TABLE \"%s\"\n", modelName)
-	output += fmt.Sprintf("DROP \"%s\";", fieldName)
+	output := fmt.Sprintf("ALTER TABLE \"%s\" ", modelName)
+	output += fmt.Sprintf("DROP COLUMN \"%s\";", fieldName)
 	return output
 }
 

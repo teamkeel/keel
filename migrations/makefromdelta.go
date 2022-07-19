@@ -1,16 +1,12 @@
 package migrations
 
 import (
-	"fmt"
-
 	"github.com/teamkeel/keel/proto"
 )
 
 func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQL string, err error) {
-	differences, err := ProtoDeltas(oldProto, newProto)
-	if err != nil {
-		return "", fmt.Errorf("could not analyse differences: %v", err)
-	}
+	differences := NewDifferences(oldProto, newProto)
+
 	// Are there any new tables?
 	for _, newModelName := range differences.ModelsAdded {
 		model := proto.FindModel(newProto.Models, newModelName)
