@@ -1,3 +1,11 @@
+# [0.61.0](https://github.com/teamkeel/keel/compare/v0.60.0...v0.61.0) (2022-07-19)
+
+
+### Features
+
+* add support for relationships in graphql schema ([7efc97e](https://github.com/teamkeel/keel/commit/7efc97eeff8bd9a7dba5eede3fbe08c95f633c94))
+* allow comparing and assigning null in expressions ([4bbff82](https://github.com/teamkeel/keel/commit/4bbff826a2ad9a45bec0cbdced83cf9804ed385e))
+
 # [0.60.0](https://github.com/teamkeel/keel/compare/v0.59.0...v0.60.0) (2022-07-18)
 
 
