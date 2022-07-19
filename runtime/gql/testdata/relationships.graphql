@@ -1,0 +1,43 @@
+type Query {
+  getOrder(input: GetOrderInput!): Order
+}
+
+input GetOrderInput {
+  id: ID!
+}
+
+type Order {
+  createdAt: Timestamp!
+  id: ID!
+  items: OrderItemConnection!
+  updatedAt: Timestamp!
+}
+
+type OrderItem {
+  createdAt: Timestamp!
+  id: ID!
+  order: Order!
+  price: Int!
+  updatedAt: Timestamp!
+}
+
+type OrderItemConnection {
+  edges: [OrderItemEdge!]!
+  pageInfo: PageInfo!
+}
+
+type OrderItemEdge {
+  node: OrderItem!
+}
+
+type PageInfo {
+  endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  totalCount: Int!
+}
+
+type Timestamp {
+  seconds: Int!
+}

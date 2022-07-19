@@ -1,0 +1,23 @@
+model Order {
+    fields {
+        items OrderItem[]
+    }
+
+    operations {
+        get getOrder(id)
+    }
+}
+
+model OrderItem {
+    fields {
+        order Order
+        price Number
+    }
+}
+
+api Test {
+    models {
+        Order
+        OrderItem
+    }
+}
