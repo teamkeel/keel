@@ -135,7 +135,7 @@ func schemaDefault(field *proto.Field) (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		return toNative(v), nil
+		return toNative(v, field.Type.Type), nil
 	default:
 		return nil, fmt.Errorf("expressions that are not simple values are not yet supported")
 	}

@@ -93,9 +93,12 @@ type defaultValueCase struct {
 }
 
 func TestSchemaDefaults(t *testing.T) {
-	// These cases cover all the simple scalar type cases - IFF you accept the rules
-	// I've suggested here.
-	// https://www.notion.so/keelhq/Particular-Cases-for-Zero-and-Default-Values-for-Fields-1dbf740d9b7c42e9b672d90b7ea527ce
+
+	const aTimestamp string = "2006-01-02T15:04:05Z"
+	const layout string = time.RFC3339
+	stampAsTime, err := time.Parse(layout, "2006-01-02T15:04:05Z")
+	require.NoError(t, err)
+
 	cases := []defaultValueCase{
 		{
 			protoType:    proto.Type_TYPE_STRING,
@@ -119,18 +122,18 @@ func TestSchemaDefaults(t *testing.T) {
 		},
 		{
 			protoType:    proto.Type_TYPE_DATE,
-			defaultValue: `"1994-11-05T13:15:30Z"`,
-			expected:     `1994-11-05T13:15:30Z`,
-		},
-		{
-			protoType:    proto.Type_TYPE_TIMESTAMP,
-			defaultValue: `"1994-11-05T13:15:30Z"`,
-			expected:     `1994-11-05T13:15:30Z`,
+			defaultValue: `"30/06/2011"`,
+			expected:     time.Date(2011, 6, 30, 0, 0, 0, 0, time.Local),
 		},
 		{
 			protoType:    proto.Type_TYPE_DATETIME,
-			defaultValue: `"1994-11-05T13:15:30Z"`,
-			expected:     `1994-11-05T13:15:30Z`,
+			defaultValue: `"` + aTimestamp + `"`,
+			expected:     stampAsTime,
+		},
+		{
+			protoType:    proto.Type_TYPE_TIMESTAMP,
+			defaultValue: `"` + aTimestamp + `"`,
+			expected:     stampAsTime,
 		},
 	}
 	for _, cs := range cases {
