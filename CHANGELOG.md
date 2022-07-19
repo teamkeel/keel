@@ -1,3 +1,10 @@
+# [0.65.0](https://github.com/teamkeel/keel/compare/v0.64.0...v0.65.0) (2022-07-19)
+
+
+### Features
+
+* run command ([f43ab41](https://github.com/teamkeel/keel/commit/f43ab4127815d36464a4fc16c8bf00907250a637))
+
 # [0.64.0](https://github.com/teamkeel/keel/compare/v0.63.0...v0.64.0) (2022-07-19)
 
 
