@@ -35,11 +35,13 @@ import (
 //
 // It sets the password for that user to "postgres".
 // It sets the default database name to "keel"
-func BringUpPostgresLocally(retainData bool) (*sql.DB, error) {
+func Start(retainData bool) (*sql.DB, error) {
 	useFreshContainer := !retainData
-	if err := bringUpContainer(useFreshContainer); err != nil {
+	err := bringUpContainer(useFreshContainer)
+	if err != nil {
 		return nil, err
 	}
+
 	connection, err := establishConnection()
 	if err != nil {
 		return nil, err
@@ -47,9 +49,9 @@ func BringUpPostgresLocally(retainData bool) (*sql.DB, error) {
 	return connection, nil
 }
 
-// StopThePostgresContainer stops the postgres container - having checked first
+// Stop stops the postgres container - having checked first
 // that such a container exists, and it is running.
-func StopThePostgresContainer() error {
+func Stop() error {
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return err
@@ -59,6 +61,7 @@ func StopThePostgresContainer() error {
 		return err
 	}
 	if container == nil {
+		fmt.Println("no postgres container to stop")
 		return nil
 	}
 	running, err := isContainerRunning(dockerClient, container)
@@ -66,12 +69,14 @@ func StopThePostgresContainer() error {
 		return err
 	}
 	if !running {
+		fmt.Println("postgres not running")
 		return nil
 	}
 	stopTimeout := time.Duration(5 * time.Second)
 	// Note that ContainerStop() gracefully stops the container by choice, but then forcibly after the timeout.
 	err = dockerClient.ContainerStop(context.Background(), container.ID, &stopTimeout)
 	if err != nil {
+		fmt.Println("error stopping container", err)
 		return err
 	}
 	return nil
@@ -89,6 +94,7 @@ func bringUpContainer(useFreshContainer bool) error {
 	}
 
 	if postgresImage == nil {
+		fmt.Println("pulling postgres")
 		reader, err := dockerClient.ImagePull(context.Background(), postgresImageName, types.ImagePullOptions{})
 		if err != nil {
 			return err
@@ -97,6 +103,8 @@ func bringUpContainer(useFreshContainer bool) error {
 		// ImagePull() is async - and the suggested protocol for waiting for it to complete is
 		// to read from the returned reader, until you reach EOF.
 		awaitReadCompletion(reader)
+	} else {
+		fmt.Println("image found")
 	}
 
 	postgresContainer, err := findPostgresContainer(dockerClient)
@@ -104,32 +112,51 @@ func bringUpContainer(useFreshContainer bool) error {
 		return err
 	}
 
+	if postgresContainer == nil {
+		fmt.Println("No postgres container found")
+	} else {
+		fmt.Println("Postgres container found")
+	}
+
 	// If we want to create a fresh container, but there is already one registered
 	// with that name, we have to remove it first to be able to re create it.
 	if postgresContainer != nil && useFreshContainer {
-		if err := removeContainer(dockerClient, postgresContainer); err != nil {
+		fmt.Println("Removing existing container")
+		err = dockerClient.ContainerRemove(
+			context.Background(),
+			postgresContainer.ID,
+			types.ContainerRemoveOptions{
+				RemoveVolumes: true,
+				Force:         true,
+			})
+
+		if err != nil {
 			return err
 		}
 	}
 
 	if postgresContainer == nil || useFreshContainer {
+		fmt.Println("Creating postgres container")
 		containerConfig := &container.Config{
 			Image: postgresImageName,
 			Env: []string{
 				"POSTGRES_PASSWORD=postgres",
-				"POSTGRES_DB=keel",
+				"POSTGRES_DB=postgres",
+				"POSTGRES_USER=postgres",
 			},
 		}
 
-		if _, err := dockerClient.ContainerCreate(
+		_, err = dockerClient.ContainerCreate(
 			context.Background(),
 			containerConfig,
 			makeHostConfig(),
 			nil,
 			nil,
-			keelPostgresContainerName); err != nil {
+			keelPostgresContainerName)
+		if err != nil {
 			return err
 		}
+
 		postgresContainer, _ = findPostgresContainer(dockerClient)
 	}
 
@@ -140,6 +167,7 @@ func bringUpContainer(useFreshContainer bool) error {
 	}
 
 	if !isRunning {
+		fmt.Println("Starting postgres container")
 		err := dockerClient.ContainerStart(
 			context.Background(),
 			postgresContainer.ID,
@@ -148,6 +176,7 @@ func bringUpContainer(useFreshContainer bool) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -179,6 +208,7 @@ func findPostgresContainer(dockerClient *client.Client) (container *types.Contai
 			return &c, nil
 		}
 	}
+
 	return nil, nil
 }
 
@@ -188,19 +218,6 @@ func isContainerRunning(dockerClient *client.Client, container *types.Container)
 		return false, err
 	}
 	return containerJSON.State.Running, nil
-}
-
-func removeContainer(dockerClient *client.Client, container *types.Container) error {
-	if err := dockerClient.ContainerRemove(
-		context.Background(),
-		container.ID,
-		types.ContainerRemoveOptions{
-			RemoveVolumes: true,
-			Force:         true,
-		}); err != nil {
-		return err
-	}
-	return nil
 }
 
 // awaitReadCompletion reads from the given reader until it reaches EOF.
@@ -243,8 +260,8 @@ func makeHostConfig() *container.HostConfig {
 // It makes a series of attempts over a small time span to give postgres the
 // change to be ready.
 func establishConnection() (*sql.DB, error) {
-	psqlInfo := "host=localhost port=5432 user=postgres password=postgres dbname=keel sslmode=disable"
-	db, err := sql.Open("postgres", psqlInfo)
+	connString := "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
+	db, err := sql.Open("postgres", connString)
 	if err != nil {
 		return nil, err
 	}
@@ -257,6 +274,7 @@ func establishConnection() (*sql.DB, error) {
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
+
 	fmt.Printf("\n")
 	if pingError != nil {
 		return nil, fmt.Errorf("could not ping the database, despite several retries: %v", pingError)
@@ -266,5 +284,4 @@ func establishConnection() (*sql.DB, error) {
 
 const postgresImageName string = "postgres"
 const postgresTag string = "latest"
-
-const keelPostgresContainerName string = "keel-postgres"
+const keelPostgresContainerName string = "keel-run-postgres"
