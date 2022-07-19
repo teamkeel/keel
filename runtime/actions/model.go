@@ -116,7 +116,7 @@ func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
 	}
 }
 
-func setFieldsFromInputValues(modelMap map[string]any, args map[string]any) error {
+func setFieldsFromInputs(modelMap map[string]any, args map[string]any) error {
 	for paramName, paramValue := range args {
 		modelMap[paramName] = paramValue
 	}

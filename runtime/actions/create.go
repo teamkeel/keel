@@ -34,9 +34,14 @@ func Create(ctx context.Context, operation *proto.Operation, args map[string]any
 	// 	modelMap[in.Name] = arg
 	// }
 
-	if err = setFieldsFromInputValues(modelMap, args); err != nil {
+	if err = setFieldsFromInputs(modelMap, args); err != nil {
 		return nil, err
 	}
+
+	// db.Table(model.Name).Create(modelMap).Error
+
+	// var myMap map[string]any
+	// db.Table(model.Name).Where("id = ?", someID).First(myMap).Error
 
 	err = createRecordInDatabase(runtimectx.GetDB(ctx), model, modelMap)
 	if err != nil {

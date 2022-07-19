@@ -10,8 +10,8 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func TestBuiltInDefaultForEqualities(t *testing.T) {
-	for _, tt := range equalityTable {
+func TestBuiltInDefaultEqualities(t *testing.T) {
+	for _, tt := range equalities {
 		repeated := false
 		v, err := builtinDefault(field(tt.protoType, repeated), someEnums)
 		require.NoError(t, err)
@@ -26,7 +26,7 @@ func TestBuiltInDefaultForEqualities(t *testing.T) {
 	}
 }
 
-func TestBuiltInDefaultForIDFields(t *testing.T) {
+func TestBuiltInDefaultForID(t *testing.T) {
 	repeated := false
 	v, err := builtinDefault(field(proto.Type_TYPE_ID, repeated), someEnums)
 	require.NoError(t, err)
@@ -45,7 +45,7 @@ func TestBuiltInDefaultForIDFields(t *testing.T) {
 	require.Len(t, ids, 0)
 }
 
-func TestBuiltInDefaultForTimeOrientedFields(t *testing.T) {
+func TestBuiltInDefaultForTimeFields(t *testing.T) {
 	toTest := []proto.Type{
 		proto.Type_TYPE_DATE,
 		proto.Type_TYPE_DATETIME,
@@ -96,7 +96,7 @@ func TestSchemaDefaults(t *testing.T) {
 
 	const aTimestamp string = "2006-01-02T15:04:05Z"
 	const layout string = time.RFC3339
-	stampAsTime, err := time.Parse(layout, "2006-01-02T15:04:05Z")
+	stampAsTime, err := time.Parse(layout, aTimestamp)
 	require.NoError(t, err)
 
 	cases := []defaultValueCase{
@@ -144,33 +144,25 @@ func TestSchemaDefaults(t *testing.T) {
 			},
 		}
 		v, err := schemaDefault(f)
-		if err != nil {
-			a := 1
-			_ = a
-		}
 		require.NoError(t, err)
 		require.Equal(t, cs.expected, v)
 	}
 }
 
-func TestToMakeSureWeFlagConfigurationsThatAreNotYetSupported(t *testing.T) {
+func TestErrorNotYetSupported(t *testing.T) {
 	repeated := false
 	f := field(proto.Type_TYPE_BOOL, repeated)
 	f.DefaultValue = &proto.DefaultValue{
 		Expression: &proto.Expression{
-			Source: "True == False",
+			Source: "True == False", // We haven't implemented the evaluation of expressions that are not simple values.
 		},
 	}
 	_, err := schemaDefault(f)
-	if err != nil {
-		a := 1
-		_ = a
-	}
 	require.EqualError(t, err, "expressions that are not simple values are not yet supported")
 
 }
 
-func TestTheWrapperUsesSchemaDefaultInPreferenceToBuiltInDefault(t *testing.T) {
+func TestInitialValueForFieldPrefersSchemaDefault(t *testing.T) {
 	// set up field with both default expr and use-zero
 	repeated := false
 	f := field(proto.Type_TYPE_STRING, repeated)
@@ -186,7 +178,7 @@ func TestTheWrapperUsesSchemaDefaultInPreferenceToBuiltInDefault(t *testing.T) {
 	require.Equal(t, "hello expression", v)
 }
 
-func TestTheWrapperDropsThroughToBuiltInDefault(t *testing.T) {
+func TestInitialValueForFieldUsesZeroValueWhenNoSchemaDefault(t *testing.T) {
 	// set up field with only use-zero
 	repeated := false
 	f := field(proto.Type_TYPE_STRING, repeated)
@@ -199,7 +191,7 @@ func TestTheWrapperDropsThroughToBuiltInDefault(t *testing.T) {
 	require.Equal(t, "", v)
 }
 
-func TestTheWrapperUsesNilWhenADefaultIsNotAvailable(t *testing.T) {
+func TestInitialValueForFieldUsesNilWhenNoDefaultIsAvailable(t *testing.T) {
 	repeated := false
 	f := field(proto.Type_TYPE_MODEL, repeated)
 	f.DefaultValue = nil
@@ -247,7 +239,7 @@ type equality struct {
 	expectedHasMany any
 }
 
-var equalityTable []equality = []equality{
+var equalities []equality = []equality{
 	{
 		protoType:       proto.Type_TYPE_STRING,
 		expectedHasOne:  "",
