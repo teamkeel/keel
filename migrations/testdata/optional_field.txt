@@ -9,13 +9,13 @@ model Person {
 model Person {
     fields {
         name Text
-        age Number
+        age Number?
     }
 }
 
 ===
 
-ALTER TABLE "Person" ADD COLUMN "age" INTEGER NOT NULL;
+ALTER TABLE "Person" ADD COLUMN "age" INTEGER;
 
 === 
 

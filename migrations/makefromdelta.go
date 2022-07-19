@@ -11,13 +11,13 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 	for _, newModelName := range differences.ModelsAdded {
 		model := proto.FindModel(newProto.Models, newModelName)
 		theSQL += "\n"
-		theSQL += createTable(model)
+		theSQL += createTableStmt(model)
 	}
 
 	// Have any tables disappeared?
 	for _, droppedModel := range differences.ModelsRemoved {
 		theSQL += "\n"
-		theSQL += dropTable(droppedModel)
+		theSQL += dropTableStmt(droppedModel)
 	}
 
 	// Have any fields been added to models that are present in both old and new schema?
@@ -25,7 +25,7 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 		for _, fieldName := range fieldsAdded {
 			field := proto.FindField(newProto.Models, modelName, fieldName)
 			theSQL += "\n"
-			theSQL += createField(modelName, field)
+			theSQL += addColumnStmt(modelName, field)
 		}
 	}
 
@@ -34,7 +34,7 @@ func MakeMigrationsFromSchemaDifference(oldProto, newProto *proto.Schema) (theSQ
 		for _, fieldName := range fieldsRemoved {
 			field := proto.FindField(oldProto.Models, modelName, fieldName)
 			theSQL += "\n"
-			theSQL += dropField(modelName, field.Name)
+			theSQL += dropColumnStmt(modelName, field.Name)
 		}
 	}
 
