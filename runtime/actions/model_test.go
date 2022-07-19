@@ -10,25 +10,25 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
-func TestZeroFieldValuesSimpleEquality(t *testing.T) {
-	for _, tt := range equalityTable {
+func TestBuiltInDefaultEqualities(t *testing.T) {
+	for _, tt := range equalities {
 		repeated := false
-		v, err := zeroValueForField(field(tt.protoType, repeated), someEnums)
+		v, err := builtinDefault(field(tt.protoType, repeated), someEnums)
 		require.NoError(t, err)
 		if tt.expectedHasOne != v {
-			t.Fatalf("For type %s, expected %v, got %v", tt.protoType, tt.expectedHasOne, v)
+			t.Fatalf("For type %s, expected %v, got %v, fixture is: ", tt.protoType, tt.expectedHasOne, v)
 		}
 
 		repeated = true
-		v, err = zeroValueForField(field(tt.protoType, repeated), someEnums)
+		v, err = builtinDefault(field(tt.protoType, repeated), someEnums)
 		require.NoError(t, err)
-		require.EqualValues(t, tt.expectedHasMany, v)
+		require.EqualValues(t, tt.expectedHasMany, v, "case is: %+v", tt)
 	}
 }
 
-func TestZeroFieldValueForID(t *testing.T) {
+func TestBuiltInDefaultForID(t *testing.T) {
 	repeated := false
-	v, err := zeroValueForField(field(proto.Type_TYPE_ID, repeated), someEnums)
+	v, err := builtinDefault(field(proto.Type_TYPE_ID, repeated), someEnums)
 	require.NoError(t, err)
 	// Make sure it is a KSUID
 	id, ok := v.(ksuid.KSUID)
@@ -38,14 +38,14 @@ func TestZeroFieldValueForID(t *testing.T) {
 	require.Less(t, timeSinceMade, 5*time.Second)
 
 	repeated = true
-	v, err = zeroValueForField(field(proto.Type_TYPE_ID, repeated), someEnums)
+	v, err = builtinDefault(field(proto.Type_TYPE_ID, repeated), someEnums)
 	require.NoError(t, err)
 	ids, ok := v.([]ksuid.KSUID)
 	require.True(t, ok)
 	require.Len(t, ids, 0)
 }
 
-func TestZeroFieldValuesTimeBasedFields(t *testing.T) {
+func TestBuiltInDefaultForTimeFields(t *testing.T) {
 	toTest := []proto.Type{
 		proto.Type_TYPE_DATE,
 		proto.Type_TYPE_DATETIME,
@@ -53,7 +53,7 @@ func TestZeroFieldValuesTimeBasedFields(t *testing.T) {
 	}
 	for _, fieldType := range toTest {
 		repeated := false
-		v, err := zeroValueForField(field(fieldType, repeated), someEnums)
+		v, err := builtinDefault(field(fieldType, repeated), someEnums)
 		require.NoError(t, err)
 		timeEncoded, ok := v.(time.Time)
 		require.True(t, ok)
@@ -61,7 +61,7 @@ func TestZeroFieldValuesTimeBasedFields(t *testing.T) {
 		require.Less(t, timeSinceMade, 5*time.Second)
 
 		repeated = true
-		v, err = zeroValueForField(field(fieldType, repeated), someEnums)
+		v, err = builtinDefault(field(fieldType, repeated), someEnums)
 		require.NoError(t, err)
 		times, ok := v.([]time.Time)
 		require.True(t, ok)
@@ -69,28 +69,135 @@ func TestZeroFieldValuesTimeBasedFields(t *testing.T) {
 	}
 }
 
-func TestZeroFieldValuesEnum(t *testing.T) {
+func TestBuiltInDefaultForEnumIsNil(t *testing.T) {
 	repeated := false
 	enumField := field(proto.Type_TYPE_ENUM, repeated)
 	enumField.Type.EnumName = wrapperspb.String("fruits")
-	v, err := zeroValueForField(enumField, someEnums)
+	v, err := builtinDefault(enumField, someEnums)
 	require.NoError(t, err)
-	require.Equal(t, "apple", v)
+	require.Nil(t, v)
 
 	repeated = true
 	enumField = field(proto.Type_TYPE_ENUM, repeated)
 	enumField.Type.EnumName = wrapperspb.String("fruits")
-	v, err = zeroValueForField(enumField, someEnums)
+	v, err = builtinDefault(enumField, someEnums)
 	require.NoError(t, err)
-	enumValues, ok := v.([]string)
-	require.True(t, ok)
-	require.Len(t, enumValues, 0)
+	require.Nil(t, v)
 }
 
-func TestZeroFieldValueForTypeNotImplemented(t *testing.T) {
+type defaultValueCase struct {
+	protoType    proto.Type
+	repeated     bool
+	defaultValue string
+	expected     any
+}
+
+func TestSchemaDefaults(t *testing.T) {
+
+	const aTimestamp string = "2006-01-02T15:04:05Z"
+	const layout string = time.RFC3339
+	stampAsTime, err := time.Parse(layout, aTimestamp)
+	require.NoError(t, err)
+
+	cases := []defaultValueCase{
+		{
+			protoType:    proto.Type_TYPE_STRING,
+			defaultValue: `"my default string"`,
+			expected:     `my default string`,
+		},
+		{
+			protoType:    proto.Type_TYPE_BOOL,
+			defaultValue: `false`,
+			expected:     false,
+		},
+		{
+			protoType:    proto.Type_TYPE_BOOL,
+			defaultValue: `true`,
+			expected:     true,
+		},
+		{
+			protoType:    proto.Type_TYPE_INT,
+			defaultValue: `42`,
+			expected:     int64(42),
+		},
+		{
+			protoType:    proto.Type_TYPE_DATE,
+			defaultValue: `"30/06/2011"`,
+			expected:     time.Date(2011, 6, 30, 0, 0, 0, 0, time.Local),
+		},
+		{
+			protoType:    proto.Type_TYPE_DATETIME,
+			defaultValue: `"` + aTimestamp + `"`,
+			expected:     stampAsTime,
+		},
+		{
+			protoType:    proto.Type_TYPE_TIMESTAMP,
+			defaultValue: `"` + aTimestamp + `"`,
+			expected:     stampAsTime,
+		},
+	}
+	for _, cs := range cases {
+		f := field(cs.protoType, cs.repeated)
+		f.DefaultValue = &proto.DefaultValue{
+			Expression: &proto.Expression{
+				Source: cs.defaultValue,
+			},
+		}
+		v, err := schemaDefault(f)
+		require.NoError(t, err)
+		require.Equal(t, cs.expected, v)
+	}
+}
+
+func TestErrorNotYetSupported(t *testing.T) {
 	repeated := false
-	_, err := zeroValueForField(field(proto.Type_TYPE_IDENTITY, repeated), someEnums)
-	require.EqualError(t, err, "zero value for field: TYPE_IDENTITY not yet implemented")
+	f := field(proto.Type_TYPE_BOOL, repeated)
+	f.DefaultValue = &proto.DefaultValue{
+		Expression: &proto.Expression{
+			Source: "True == False", // We haven't implemented the evaluation of expressions that are not simple values.
+		},
+	}
+	_, err := schemaDefault(f)
+	require.EqualError(t, err, "expressions that are not simple values are not yet supported")
+
+}
+
+func TestInitialValueForFieldPrefersSchemaDefault(t *testing.T) {
+	// set up field with both default expr and use-zero
+	repeated := false
+	f := field(proto.Type_TYPE_STRING, repeated)
+	f.DefaultValue = &proto.DefaultValue{
+		Expression: &proto.Expression{
+			Source: `"hello expression"`,
+		},
+		UseZeroValue: true,
+	}
+	// Make sure it uses the schema-default
+	v, err := initialValueForField(f, someEnums)
+	require.NoError(t, err)
+	require.Equal(t, "hello expression", v)
+}
+
+func TestInitialValueForFieldUsesZeroValueWhenNoSchemaDefault(t *testing.T) {
+	// set up field with only use-zero
+	repeated := false
+	f := field(proto.Type_TYPE_STRING, repeated)
+	f.DefaultValue = &proto.DefaultValue{
+		Expression:   nil,
+		UseZeroValue: true,
+	}
+	v, err := initialValueForField(f, someEnums)
+	require.NoError(t, err)
+	require.Equal(t, "", v)
+}
+
+func TestInitialValueForFieldUsesNilWhenNoDefaultIsAvailable(t *testing.T) {
+	repeated := false
+	f := field(proto.Type_TYPE_MODEL, repeated)
+	f.DefaultValue = nil
+	v, err := initialValueForField(f, someEnums)
+	require.NoError(t, err)
+	require.Nil(t, v)
 }
 
 func TestZeroValueForModel(t *testing.T) {
@@ -104,17 +211,23 @@ func TestZeroValueForModel(t *testing.T) {
 			{
 				Type: &proto.TypeInfo{Type: proto.Type_TYPE_INT},
 				Name: "intField",
+				DefaultValue: &proto.DefaultValue{
+					UseZeroValue: true,
+				},
 			},
 			{
 				Type: &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 				Name: "stringField",
+				DefaultValue: &proto.DefaultValue{
+					UseZeroValue: true,
+				},
 			},
 		},
 	}
 	var schema *proto.Schema = &proto.Schema{
 		Enums: someEnums,
 	}
-	modelMap, err := zeroValueForModel(&model, schema)
+	modelMap, err := initialValueForModel(&model, schema)
 	require.NoError(t, err)
 	require.Equal(t, 0, modelMap["intField"])
 	require.Equal(t, "", modelMap["stringField"])
@@ -126,7 +239,7 @@ type equality struct {
 	expectedHasMany any
 }
 
-var equalityTable []equality = []equality{
+var equalities []equality = []equality{
 	{
 		protoType:       proto.Type_TYPE_STRING,
 		expectedHasOne:  "",
@@ -159,6 +272,9 @@ func field(fieldType proto.Type, repeated bool) *proto.Field {
 		Type: &proto.TypeInfo{
 			Type:     fieldType,
 			Repeated: repeated,
+		},
+		DefaultValue: &proto.DefaultValue{
+			UseZeroValue: true,
 		},
 	}
 }

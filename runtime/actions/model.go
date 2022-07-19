@@ -6,32 +6,54 @@ import (
 
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/expressions"
 )
 
-// todo - should this code be in the proto package?
-
-// zeroValueForModel provides a map[string]any that contains all the fields
-// that exist in the given proto.Model - with their value set to their
-// default, or in (go-speak) zero-values.
-func zeroValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string]any, error) {
+// initialValueForModel provides a map[string]any that corresponds to all the fields
+// that exist in the given proto.Model - with their value set to schema-default value if
+// one is specified for this field in the schema, or failing that our built-in default value for
+// the corresponding type. E.g. emtpy string for string fields, or integer zero for a Number field.
+func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string]any, error) {
 	zeroValue := map[string]any{}
 	var err error
 	for _, field := range pModel.Fields {
-		if zeroValue[field.Name], err = zeroValueForField(field, schema.Enums); err != nil {
+		if zeroValue[field.Name], err = initialValueForField(field, schema.Enums); err != nil {
 			return nil, err
 		}
 	}
 	return zeroValue, nil
 }
 
-// zeroValueForField provides a suitable zero value for the
-// given fieldType
-func zeroValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, err error) {
+// initialValueForField provides a suitable initial value for the
+// given field. It first tries to use its schema-default.
+// After that it tries to use our built-in default for the field's type.
+// But it can also return nil without an error when it cannot do either of those things.
+func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, err error) {
 	zeroV = nil
 
-	// todo if the field has a default value use it - and return.
-	// nb. defer this because default is not yet accessible from proto.Field
+	switch {
+	case field.DefaultValue != nil && field.DefaultValue.Expression != nil:
+		{
+			v, err := schemaDefault(field) // Will need more arguments / context later.
+			if err != nil {
+				return nil, err
+			}
+			return v, nil
+		}
+	case field.DefaultValue != nil && field.DefaultValue.UseZeroValue:
+		v, err := builtinDefault(field, enums)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
+	default:
+		// We cannot provide a sensibly initialized value, but that is not an error, because the
+		// value will likely be provided later from the operation input values.
+		return nil, nil
+	}
+}
 
+func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
 	fType := field.Type.Type
 	rpt := field.Type.Repeated
 	now := time.Now()
@@ -87,36 +109,42 @@ func zeroValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, err 
 	case fType == proto.Type_TYPE_DATETIME && rpt:
 		return []time.Time{}, nil
 
-	case fType == proto.Type_TYPE_ENUM && !rpt:
-		return defaultForEnum(field, enums), nil
-	case fType == proto.Type_TYPE_ENUM && rpt:
-		return []string{}, nil
-
 	default:
-		return nil, fmt.Errorf("zero value for field: %s not yet implemented", fType)
+		// When we cannot provide a built-in default - we assing nil as the value
+		// to use.
+		return nil, nil
 	}
 }
 
-func defaultForEnum(field *proto.Field, enums []*proto.Enum) string {
-	for _, enum := range enums {
-		if field.Type.EnumName.Value == enum.Name {
-			return enum.Values[0].Name
-		}
-	}
-	return ""
-}
-
-func setFieldsFromInputValues(modelMap map[string]any, args map[string]any) error {
+func setFieldsFromInputs(modelMap map[string]any, args map[string]any) error {
 	for paramName, paramValue := range args {
 		modelMap[paramName] = paramValue
 	}
 	return nil
 }
 
+func schemaDefault(field *proto.Field) (any, error) {
+	source := field.DefaultValue.Expression.Source
+	expr, err := expressions.Parse(source)
+	if err != nil {
+		return nil, fmt.Errorf("cannot Parse this expression: %s", source)
+	}
+	switch {
+	case expressions.IsValue(expr):
+		v, err := expressions.ToValue(expr)
+		if err != nil {
+			return nil, err
+		}
+		return toNative(v, field.Type.Type), nil
+	default:
+		return nil, fmt.Errorf("expressions that are not simple values are not yet supported")
+	}
+}
+
 func fakeRow(model *proto.Model, enums []*proto.Enum) (row map[string]any, err error) {
 	row = map[string]any{}
 	for _, field := range model.Fields {
-		zeroValue, err := zeroValueForField(field, enums)
+		zeroValue, err := initialValueForField(field, enums)
 		if err != nil {
 			return nil, err
 		}

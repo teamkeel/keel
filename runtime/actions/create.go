@@ -18,7 +18,7 @@ func Create(ctx context.Context, operation *proto.Operation, args map[string]any
 	model := proto.FindModel(schema.Models, operation.ModelName)
 	// We'll populate a map[string]any to represent the resolved model field values, and
 	// use that map, to write a record into the database, and as the return value.
-	modelMap, err := zeroValueForModel(model, schema)
+	modelMap, err := initialValueForModel(model, schema)
 	if err != nil {
 		return nil, err
 	}
@@ -34,9 +34,14 @@ func Create(ctx context.Context, operation *proto.Operation, args map[string]any
 	// 	modelMap[in.Name] = arg
 	// }
 
-	if err = setFieldsFromInputValues(modelMap, args); err != nil {
+	if err = setFieldsFromInputs(modelMap, args); err != nil {
 		return nil, err
 	}
+
+	// db.Table(model.Name).Create(modelMap).Error
+
+	// var myMap map[string]any
+	// db.Table(model.Name).Where("id = ?", someID).First(myMap).Error
 
 	err = createRecordInDatabase(runtimectx.GetDB(ctx), model, modelMap)
 	if err != nil {
