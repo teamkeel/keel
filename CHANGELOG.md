@@ -1,3 +1,10 @@
+# [0.63.0](https://github.com/teamkeel/keel/compare/v0.62.0...v0.63.0) (2022-07-19)
+
+
+### Features
+
+* set required fields to be NOT NULL ([173f6a7](https://github.com/teamkeel/keel/commit/173f6a781bc0cec3f93a34dddeba7989996053d5))
+
 # [0.62.0](https://github.com/teamkeel/keel/compare/v0.61.0...v0.62.0) (2022-07-19)
 
 
