@@ -1,3 +1,10 @@
+# [0.62.0](https://github.com/teamkeel/keel/compare/v0.61.0...v0.62.0) (2022-07-19)
+
+
+### Features
+
+* new migrations API ([5dce2eb](https://github.com/teamkeel/keel/commit/5dce2ebf09e8792d7f565c492a298395d483d9b9))
+
 # [0.61.0](https://github.com/teamkeel/keel/compare/v0.60.0...v0.61.0) (2022-07-19)
 
 
