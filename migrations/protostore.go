@@ -78,7 +78,7 @@ func makeTableForLastKnownProto(db *sql.DB) error {
 			},
 		},
 	}
-	sql := CreateTableIfNotExists(tableForProtobuf, fields)
+	sql := createTableIfNotExistsStmt(tableForProtobuf, fields)
 	if _, err := db.Exec(sql); err != nil {
 		return fmt.Errorf("error trying to create protobuf table: %v", err)
 	}

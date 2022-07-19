@@ -3,6 +3,7 @@ package migrations
 import (
 	"fmt"
 
+	"github.com/lib/pq"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -18,45 +19,56 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_ENUM:      "TEXT",
 }
 
-func createTable(model *proto.Model) string {
+func createTableStmt(model *proto.Model) string {
 	output := fmt.Sprintf("CREATE TABLE \"%s\"(\n", model.Name)
 	for i, field := range model.Fields {
-		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type.Type])
-		if i != len(model.Fields)-1 {
-			f += ","
+		output += fieldDefinition(field)
+		if i < len(model.Fields)-1 {
+			output += ","
 		}
-		f += "\n"
-		output += f
+		output += "\n"
 	}
 	output += ");"
 	return output
 }
 
-func CreateTableIfNotExists(name string, fields []*proto.Field) string {
+func createTableIfNotExistsStmt(name string, fields []*proto.Field) string {
 	output := fmt.Sprintf("CREATE TABLE if not exists \"%s\"(\n", name)
 	for i, field := range fields {
-		f := fmt.Sprintf("\"%s\" %s", field.Name, PostgresFieldTypes[field.Type.Type])
-		if i != len(fields)-1 {
-			f += ","
+		output += fieldDefinition(field)
+		if i < len(fields)-1 {
+			output += ","
 		}
-		f += "\n"
-		output += f
+		output += "\n"
 	}
 	output += ");"
 	return output
 }
 
-func dropTable(name string) string {
+func dropTableStmt(name string) string {
 	return fmt.Sprintf("DROP TABLE \"%s\";", name)
 }
 
-func createField(modelName string, field *proto.Field) string {
-	output := fmt.Sprintf("ALTER TABLE \"%s\" ", modelName)
-	output += fmt.Sprintf("ADD COLUMN \"%s\" %s;", field.Name, PostgresFieldTypes[field.Type.Type])
+func addColumnStmt(modelName string, field *proto.Field) string {
+	output := fmt.Sprintf("ALTER TABLE %s ADD COLUMN ", pq.QuoteIdentifier(modelName))
+	output += fieldDefinition(field) + ";"
 	return output
 }
 
-func dropField(modelName string, fieldName string) string {
+func fieldDefinition(field *proto.Field) string {
+	output := fmt.Sprintf("%s %s", pq.QuoteIdentifier(field.Name), PostgresFieldTypes[field.Type.Type])
+	if !field.Optional {
+		output += " NOT NULL"
+	}
+
+	if field.Unique {
+		output += " UNIQUE"
+	}
+
+	return output
+}
+
+func dropColumnStmt(modelName string, fieldName string) string {
 	output := fmt.Sprintf("ALTER TABLE \"%s\" ", modelName)
 	output += fmt.Sprintf("DROP COLUMN \"%s\";", fieldName)
 	return output

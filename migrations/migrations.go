@@ -88,7 +88,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 	// Create new tables added to the schema
 	for _, newModelName := range differences.ModelsAdded {
 		model := proto.FindModel(newSchema.Models, newModelName)
-		sql.WriteString(createTable(model))
+		sql.WriteString(createTableStmt(model))
 		sql.WriteString("\n")
 		changes = append(changes, &DatabaseChange{
 			Model: newModelName,
@@ -98,7 +98,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 
 	// Drop tables no longer in the schema
 	for _, droppedModel := range differences.ModelsRemoved {
-		sql.WriteString(dropTable(droppedModel))
+		sql.WriteString(dropTableStmt(droppedModel))
 		sql.WriteString("\n")
 		changes = append(changes, &DatabaseChange{
 			Model: droppedModel,
@@ -110,7 +110,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 	for modelName, fieldsAdded := range differences.FieldsAdded {
 		for _, fieldName := range fieldsAdded {
 			field := proto.FindField(newSchema.Models, modelName, fieldName)
-			sql.WriteString(createField(modelName, field))
+			sql.WriteString(addColumnStmt(modelName, field))
 			sql.WriteString("\n")
 			changes = append(changes, &DatabaseChange{
 				Model: modelName,
@@ -123,7 +123,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 	// Drop fields that are no longer in the schema
 	for modelName, fieldsRemoved := range differences.FieldsRemoved {
 		for _, fieldName := range fieldsRemoved {
-			sql.WriteString(dropField(modelName, fieldName))
+			sql.WriteString(dropColumnStmt(modelName, fieldName))
 			sql.WriteString("\n")
 			changes = append(changes, &DatabaseChange{
 				Model: modelName,

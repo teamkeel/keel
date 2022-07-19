@@ -21,10 +21,10 @@ model Animal {
 ===
 
 CREATE TABLE "Animal"(
-"name" TEXT,
-"id" TEXT,
-"createdAt" TIMESTAMP,
-"updatedAt" TIMESTAMP
+"name" TEXT NOT NULL,
+"id" TEXT NOT NULL,
+"createdAt" TIMESTAMP NOT NULL,
+"updatedAt" TIMESTAMP NOT NULL
 );
 
 === 

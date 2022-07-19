@@ -9,16 +9,16 @@ model Person {
 ===
 
 CREATE TABLE "Identity"(
-"username" TEXT,
-"id" TEXT,
-"createdAt" TIMESTAMP,
-"updatedAt" TIMESTAMP
+"username" TEXT NOT NULL,
+"id" TEXT NOT NULL,
+"createdAt" TIMESTAMP NOT NULL,
+"updatedAt" TIMESTAMP NOT NULL
 );
 CREATE TABLE "Person"(
-"name" TEXT,
-"id" TEXT,
-"createdAt" TIMESTAMP,
-"updatedAt" TIMESTAMP
+"name" TEXT NOT NULL,
+"id" TEXT NOT NULL,
+"createdAt" TIMESTAMP NOT NULL,
+"updatedAt" TIMESTAMP NOT NULL
 );
 
 === 

@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreateTable(t *testing.T) {
-	require.Equal(t, expectedCreateTable, createTable(exampleModel))
+	require.Equal(t, expectedCreateTable, createTableStmt(exampleModel))
 }
 
 func TestCreateTableIfNotExists(t *testing.T) {
@@ -18,15 +18,15 @@ func TestCreateTableIfNotExists(t *testing.T) {
 			Type: &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
 		},
 	}
-	require.Equal(t, expectedCreateTableIfNotExists, CreateTableIfNotExists("my-model-name", fields))
+	require.Equal(t, expectedCreateTableIfNotExists, createTableIfNotExistsStmt("my-model-name", fields))
 }
 
 func TestDropTable(t *testing.T) {
-	require.Equal(t, expectedDropTable, dropTable("Person"))
+	require.Equal(t, expectedDropTable, dropTableStmt("Person"))
 }
 
 func TestCreateField(t *testing.T) {
-	require.Equal(t, expectedCreateField, createField(
+	require.Equal(t, expectedCreateField, addColumnStmt(
 		exampleModel.Name,
 		&proto.Field{
 			Name: "myNewField",
@@ -35,7 +35,7 @@ func TestCreateField(t *testing.T) {
 }
 
 func TestDropField(t *testing.T) {
-	require.Equal(t, expectedDropField, dropField("Person", "Age"))
+	require.Equal(t, expectedDropField, dropColumnStmt("Person", "Age"))
 }
 
 func TestInsertRowComprisingSingleString(t *testing.T) {
@@ -65,17 +65,17 @@ func TestSelectSingleColumn(t *testing.T) {
 }
 
 const expectedCreateTable string = `CREATE TABLE "Person"(
-"Name" TEXT,
-"Age" INTEGER
+"Name" TEXT NOT NULL,
+"Age" INTEGER NOT NULL
 );`
 
 const expectedCreateTableIfNotExists string = `CREATE TABLE if not exists "my-model-name"(
-"my-field-name" BOOL
+"my-field-name" BOOL NOT NULL
 );`
 
 const expectedDropTable string = `DROP TABLE "Person";`
 
-const expectedCreateField string = `ALTER TABLE "Person" ADD COLUMN "myNewField" DATE;`
+const expectedCreateField string = `ALTER TABLE "Person" ADD COLUMN "myNewField" DATE NOT NULL;`
 
 const expectedDropField string = `ALTER TABLE "Person" DROP COLUMN "Age";`
 
