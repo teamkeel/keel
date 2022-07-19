@@ -39,6 +39,14 @@ type ExpressionScopeEntity struct {
 	Parent *ExpressionScopeEntity
 }
 
+func (e *ExpressionScopeEntity) IsNull() bool {
+	return e.Literal != nil && e.Literal.Null
+}
+
+func (e *ExpressionScopeEntity) IsOptional() bool {
+	return e.Field != nil && e.Field.Optional
+}
+
 func (e *ExpressionScopeEntity) GetType() string {
 	if e.Object != nil {
 		return e.Object.Name

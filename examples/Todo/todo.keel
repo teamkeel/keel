@@ -122,7 +122,7 @@ model Task {
             @set(task.completedAt = null)
         }
         update assignTask(id) with (assignedTo) {
-            @validate(task.assignedTo in task.project.team.members.accounts)
+            @validate(task.assignedTo in task.project.team.members.account)
         }
         update updateTask(id) with (title, description)
         create createTask() with (title, description, creator, project, dueDate)
