@@ -1,0 +1,15 @@
+enum TheBeatles {
+  John
+  Paul
+  Ringo
+  George
+}
+
+===
+
+export enum TheBeatles {
+  John,
+  Paul,
+  Ringo,
+  George
+}

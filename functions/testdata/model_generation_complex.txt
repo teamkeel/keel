@@ -1,0 +1,40 @@
+model Post {
+  fields {
+    title Text
+    author Author
+  }
+}
+
+model Author {
+  fields {
+    name Text
+    posts Post[]
+  }
+}
+
+===
+
+type Timestamp = string
+
+export interface Post {
+  title: string
+  author: Author
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Author {
+  name: string
+  posts: Post[]
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Identity {
+  username: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}

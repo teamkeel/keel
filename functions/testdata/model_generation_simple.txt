@@ -1,0 +1,23 @@
+model Post {
+  fields {
+    title Text
+  }
+}
+
+===
+
+type Timestamp = string
+
+export interface Post {
+  title: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Identity {
+  username: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
