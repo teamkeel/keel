@@ -1,10 +1,12 @@
 // package postgres exists to keep all-things postgres in one place.
-package postgres
+package database
 
 import (
 	"context"
 	"fmt"
 	"io"
+	"net"
+	"strconv"
 	"strings"
 	"time"
 
@@ -17,6 +19,22 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/samber/lo"
 )
+
+type ErrPortInUse struct {
+	Port string
+}
+
+func (e ErrPortInUse) Error() string {
+	return fmt.Sprintf("port %s is in use", e.Port)
+}
+
+type ConnectionInfo struct {
+	Host     string
+	Port     string
+	Username string
+	Password string
+	Database string
+}
 
 // BringUpPostgresLocally spins up a PostgreSQL server locally and returns
 // a connection to it.
@@ -35,18 +53,18 @@ import (
 //
 // It sets the password for that user to "postgres".
 // It sets the default database name to "keel"
-func Start(retainData bool) (*sql.DB, error) {
-	useFreshContainer := !retainData
-	err := bringUpContainer(useFreshContainer)
+func Start(useExistingContainer bool) (*sql.DB, *ConnectionInfo, error) {
+	connectionInfo, err := bringUpContainer(useExistingContainer)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	connection, err := establishConnection()
+	sqlDB, err := checkConnection(connectionInfo)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return connection, nil
+
+	return sqlDB, connectionInfo, nil
 }
 
 // Stop stops the postgres container - having checked first
@@ -56,12 +74,11 @@ func Stop() error {
 	if err != nil {
 		return err
 	}
-	container, err := findPostgresContainer(dockerClient)
+	container, err := findContainer(dockerClient)
 	if err != nil {
 		return err
 	}
 	if container == nil {
-		fmt.Println("no postgres container to stop")
 		return nil
 	}
 	running, err := isContainerRunning(dockerClient, container)
@@ -69,59 +86,48 @@ func Stop() error {
 		return err
 	}
 	if !running {
-		fmt.Println("postgres not running")
 		return nil
 	}
 	stopTimeout := time.Duration(5 * time.Second)
 	// Note that ContainerStop() gracefully stops the container by choice, but then forcibly after the timeout.
 	err = dockerClient.ContainerStop(context.Background(), container.ID, &stopTimeout)
 	if err != nil {
-		fmt.Println("error stopping container", err)
 		return err
 	}
 	return nil
 }
 
-func bringUpContainer(useFreshContainer bool) error {
+func bringUpContainer(useExistingContainer bool) (*ConnectionInfo, error) {
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	postgresImage, err := findPostresImageLocally(dockerClient)
+	postgresImage, err := findImage(dockerClient)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if postgresImage == nil {
-		fmt.Println("pulling postgres")
-		reader, err := dockerClient.ImagePull(context.Background(), postgresImageName, types.ImagePullOptions{})
+		fmt.Println("Pulling postgres Docker image...")
+		reader, err := dockerClient.ImagePull(context.Background(), postgresImageName+":"+postgresTag, types.ImagePullOptions{})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer reader.Close()
 		// ImagePull() is async - and the suggested protocol for waiting for it to complete is
 		// to read from the returned reader, until you reach EOF.
 		awaitReadCompletion(reader)
-	} else {
-		fmt.Println("image found")
 	}
 
-	postgresContainer, err := findPostgresContainer(dockerClient)
+	postgresContainer, err := findContainer(dockerClient)
 	if err != nil {
-		return err
-	}
-
-	if postgresContainer == nil {
-		fmt.Println("No postgres container found")
-	} else {
-		fmt.Println("Postgres container found")
+		return nil, err
 	}
 
 	// If we want to create a fresh container, but there is already one registered
 	// with that name, we have to remove it first to be able to re create it.
-	if postgresContainer != nil && useFreshContainer {
-		fmt.Println("Removing existing container")
+	if postgresContainer != nil && !useExistingContainer {
 		err = dockerClient.ContainerRemove(
 			context.Background(),
 			postgresContainer.ID,
@@ -131,12 +137,29 @@ func bringUpContainer(useFreshContainer bool) error {
 			})
 
 		if err != nil {
-			return err
+			return nil, err
 		}
+
+		postgresContainer = nil
 	}
 
-	if postgresContainer == nil || useFreshContainer {
-		fmt.Println("Creating postgres container")
+	var port string
+	usingExistingContainer := postgresContainer != nil
+
+	if postgresContainer != nil {
+		container, err := dockerClient.ContainerInspect(context.Background(), postgresContainer.ID)
+		if err != nil {
+			return nil, err
+		}
+
+		// find the port this container is bound to
+		for p, bindings := range container.HostConfig.PortBindings {
+			if p.Proto() == "tcp" && p.Port() == "5432" && len(bindings) > 0 {
+				port = bindings[0].HostPort
+			}
+		}
+
+	} else {
 		containerConfig := &container.Config{
 			Image: postgresImageName,
 			Env: []string{
@@ -146,45 +169,60 @@ func bringUpContainer(useFreshContainer bool) error {
 			},
 		}
 
+		// get a free port
+		port, err = getFreePort()
+		if err != nil {
+			return nil, err
+		}
+
 		_, err = dockerClient.ContainerCreate(
 			context.Background(),
 			containerConfig,
-			makeHostConfig(),
+			makeHostConfig(port),
 			nil,
 			nil,
 			keelPostgresContainerName)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		postgresContainer, _ = findPostgresContainer(dockerClient)
+		postgresContainer, _ = findContainer(dockerClient)
 	}
 
 	// See if container is running
 	isRunning, err := isContainerRunning(dockerClient, postgresContainer)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !isRunning {
-		fmt.Println("Starting postgres container")
 		err := dockerClient.ContainerStart(
 			context.Background(),
 			postgresContainer.ID,
 			types.ContainerStartOptions{})
 		if err != nil {
-			return err
+			if usingExistingContainer && strings.Contains(err.Error(), "port is already allocated") {
+				return nil, ErrPortInUse{port}
+			}
+			return nil, err
 		}
 	}
 
-	return nil
+	return &ConnectionInfo{
+		Username: "postgres",
+		Password: "postgres",
+		Database: "postgres",
+		Host:     "0.0.0.0",
+		Port:     port,
+	}, nil
 }
 
-func findPostresImageLocally(dockerClient *client.Client) (*types.ImageSummary, error) {
+func findImage(dockerClient *client.Client) (*types.ImageSummary, error) {
 	images, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
 		return nil, err
 	}
+
 	searchFor := strings.Join([]string{postgresImageName, postgresTag}, ":")
 	for _, image := range images {
 		tags := image.RepoTags
@@ -195,7 +233,7 @@ func findPostresImageLocally(dockerClient *client.Client) (*types.ImageSummary, 
 	return nil, nil
 }
 
-func findPostgresContainer(dockerClient *client.Client) (container *types.Container, err error) {
+func findContainer(dockerClient *client.Client) (container *types.Container, err error) {
 	listOptions := types.ContainerListOptions{
 		All: true,
 	}
@@ -237,15 +275,16 @@ func awaitReadCompletion(r io.Reader) {
 				panic(fmt.Sprintf("error from read operation: %v", err))
 
 			}
+			fmt.Printf("\n")
 			return
 		}
 	}
 }
 
-func makeHostConfig() *container.HostConfig {
+func makeHostConfig(port string) *container.HostConfig {
 	portBinding := nat.PortBinding{
 		HostIP:   "",
-		HostPort: "5432",
+		HostPort: port,
 	}
 	portMap := nat.PortMap{
 		nat.Port("5432/tcp"): []nat.PortBinding{portBinding},
@@ -256,12 +295,12 @@ func makeHostConfig() *container.HostConfig {
 	return hostConfig
 }
 
-// establishConnection connects to the database, veryifies the connection and returns the connection.
+// checkConnection connects to the database, veryifies the connection and returns the connection.
 // It makes a series of attempts over a small time span to give postgres the
 // change to be ready.
-func establishConnection() (*sql.DB, error) {
-	connString := "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"
-	db, err := sql.Open("postgres", connString)
+func checkConnection(info *ConnectionInfo) (*sql.DB, error) {
+	connString := "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable"
+	db, err := sql.Open("postgres", fmt.Sprintf(connString, info.Host, info.Port, info.Username, info.Password, info.Database))
 	if err != nil {
 		return nil, err
 	}
@@ -282,6 +321,38 @@ func establishConnection() (*sql.DB, error) {
 	return db, nil
 }
 
+// getFreePort finds an available port we can run Postgres on.
+// It prefers the standard Postgres port of 5432 but if that is
+// already in use then it will return a random free port
+func getFreePort() (string, error) {
+	var err error
+	var port string
+
+	for _, v := range []string{"5432", "0"} {
+		v := v
+		port, err = func() (string, error) {
+			addr, err := net.ResolveTCPAddr("tcp", ":"+v)
+			if err != nil {
+				return "", err
+			}
+
+			listener, err := net.ListenTCP("tcp", addr)
+			if err != nil {
+				return "", err
+			}
+			defer listener.Close()
+
+			port := listener.Addr().(*net.TCPAddr).Port
+			return strconv.FormatInt(int64(port), 10), nil
+		}()
+		if port != "" {
+			return port, nil
+		}
+	}
+
+	return port, err
+}
+
 const postgresImageName string = "postgres"
-const postgresTag string = "latest"
+const postgresTag string = "14.2"
 const keelPostgresContainerName string = "keel-run-postgres"
