@@ -68,7 +68,7 @@ func (gen *CodeGenerator) GenerateModels() (r string) {
 	return r
 }
 
-var APIName = "Keel"
+var APIName = "API"
 
 var (
 	ActionCreate   = "create"
