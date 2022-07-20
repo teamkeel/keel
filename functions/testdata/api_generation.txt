@@ -1,0 +1,27 @@
+model Post {
+  fields {
+    title Text
+    published Boolean
+  }
+}
+
+===
+
+export interface API {
+  models: {
+    Post: PostApi
+  }
+}
+
+export interface PostInputs {
+  title: string
+  published: boolean
+}
+
+export interface PostApi {
+  create: (inputs: PostInputs) => Promise<Post>
+  delete: (id: string) => Promise<boolean>
+  find: (p: Partial<Post>) => Promise<Post>
+  update: (id: string, inputs: PostInputs) => Promise<Post>
+  findMany: (p: Partial<Post>) => Promise<Post[]>
+}

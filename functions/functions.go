@@ -3,6 +3,7 @@ package functions
 import (
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -23,6 +24,8 @@ func (gen *CodeGenerator) Generate() (r string) {
 	r += gen.GenerateModels()
 	// Generates all enums defined in a schema
 	r += gen.GenerateEnums()
+	// Generates Models API definitions for all models
+	r += gen.GenerateAPIs()
 
 	return r
 }
@@ -52,21 +55,91 @@ func (gen *CodeGenerator) GenerateEnums() (r string) {
 
 func (gen *CodeGenerator) GenerateModels() (r string) {
 	for _, model := range gen.schema.Models {
-		r += fmt.Sprintf("export interface %s {\n", model.Name)
 
-		for _, field := range model.Fields {
+		r += newTSInterface(model.Name, func(acc string) string {
+			for _, field := range model.Fields {
+				acc += newTSInterfaceProperty(field.Name, protoTypeToTypeScriptType(field))
+			}
 
-			r += fmt.Sprintf("  %s: %s\n", field.Name, ProtoTypeToTypeScriptType(field))
-		}
-
-		r += "}\n\n"
+			return acc
+		})
 	}
 
 	return r
 }
 
-func (gen *CodeGenerator) GenerateAPIs() string {
-	return ""
+var APIName = "API"
+
+var (
+	ActionCreate   = "create"
+	ActionDelete   = "delete"
+	ActionFind     = "find"
+	ActionFindMany = "findMany"
+	ActionUpdate   = "update"
+)
+
+var ExcludedInputs = []string{"id", "updatedAt", "createdAt"}
+
+func (gen *CodeGenerator) GenerateAPIs() (r string) {
+	r += newTSInterface(APIName, func(acc string) string {
+		acc += "  models: {\n"
+
+		for _, model := range gen.schema.Models {
+			if model.Name == TSTypeIdentity {
+				continue
+			}
+			acc += "  " + newTSInterfaceProperty(model.Name, fmt.Sprintf("%sApi", model.Name))
+		}
+
+		acc += "  }\n"
+
+		return acc
+	})
+
+	for _, model := range gen.schema.Models {
+		if model.Name == TSTypeIdentity {
+			continue
+		}
+
+		// Inputs for creating, excludes ID, createdAt, updatedAt
+		r += newTSInterface(fmt.Sprintf("%sInputs", model.Name), func(acc string) string {
+
+			for _, field := range model.Fields {
+				if lo.Contains(ExcludedInputs, field.Name) {
+					continue
+				}
+
+				acc += newTSInterfaceProperty(field.Name, protoTypeToTypeScriptType(field))
+			}
+			return acc
+		})
+
+		r += newTSInterface(fmt.Sprintf("%sApi", model.Name), func(acc string) string {
+			acc += newTSInterfaceProperty(ActionCreate, fmt.Sprintf("(inputs: %sInputs) => Promise<%s>", model.Name, model.Name))
+			acc += newTSInterfaceProperty(ActionDelete, "(id: string) => Promise<boolean>")
+			acc += newTSInterfaceProperty(ActionFind, fmt.Sprintf("(p: Partial<%s>) => Promise<%s>", model.Name, model.Name))
+			acc += newTSInterfaceProperty(ActionUpdate, fmt.Sprintf("(id: string, inputs: %sInputs) => Promise<%s>", model.Name, model.Name))
+			acc += newTSInterfaceProperty(ActionFindMany, fmt.Sprintf("(p: Partial<%s>) => Promise<%s[]>", model.Name, model.Name))
+
+			return acc
+		})
+	}
+
+	return r
+}
+
+func newTSInterface(name string, bodyFunc func(acc string) string) (r string) {
+	r += fmt.Sprintf("export interface %s {\n", name)
+
+	r += bodyFunc("")
+
+	r += "}\n\n"
+
+	return r
+}
+
+func newTSInterfaceProperty(name string, t string) string {
+	return fmt.Sprintf("  %s: %s\n", name, t)
 }
 
 var (
@@ -76,9 +149,10 @@ var (
 	TSTypeNumber    = "number"
 	TSTypeDate      = "Date"
 	TSTypeTimestamp = "Timestamp"
+	TSTypeIdentity  = "Identity"
 )
 
-func ProtoTypeToTypeScriptType(f *proto.Field) string {
+func protoTypeToTypeScriptType(f *proto.Field) string {
 	switch f.Type.Type {
 	case proto.Type_TYPE_UNKNOWN:
 		return TSTypeUnknown
@@ -105,8 +179,6 @@ func ProtoTypeToTypeScriptType(f *proto.Field) string {
 		return TSTypeDate
 	case proto.Type_TYPE_ENUM:
 		return f.Type.EnumName.Value
-	case proto.Type_TYPE_IDENTITY:
-		return "Identity"
 	// case proto.Type_TYPE_IMAGE:
 	// 	return "Image"
 	default:
