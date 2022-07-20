@@ -1,3 +1,10 @@
+# [0.66.0](https://github.com/teamkeel/keel/compare/v0.65.0...v0.66.0) (2022-07-20)
+
+
+### Features
+
+* generate stub api type definitions for models ([#161](https://github.com/teamkeel/keel/issues/161)) ([5d03e83](https://github.com/teamkeel/keel/commit/5d03e833cd5007351f37f66c3a08bcd0a8457755))
+
 # [0.65.0](https://github.com/teamkeel/keel/compare/v0.64.0...v0.65.0) (2022-07-19)
 
 
