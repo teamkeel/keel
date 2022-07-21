@@ -1,3 +1,10 @@
+# [0.67.0](https://github.com/teamkeel/keel/compare/v0.66.0...v0.67.0) (2022-07-21)
+
+
+### Features
+
+* improved handling of database setup in run command ([daab4b5](https://github.com/teamkeel/keel/commit/daab4b5c5e495b6a105d63dd8ab00439c3f0b5bc))
+
 # [0.66.0](https://github.com/teamkeel/keel/compare/v0.65.0...v0.66.0) (2022-07-20)
 
 
