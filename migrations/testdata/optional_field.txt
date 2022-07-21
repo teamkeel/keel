@@ -15,7 +15,7 @@ model Person {
 
 ===
 
-ALTER TABLE "Person" ADD COLUMN "age" INTEGER;
+ALTER TABLE "person" ADD COLUMN "age" INTEGER;
 
 === 
 

@@ -8,17 +8,17 @@ model Person {
 
 ===
 
-CREATE TABLE "Identity"(
+CREATE TABLE "identity" (
 "username" TEXT NOT NULL,
 "id" TEXT NOT NULL,
-"createdAt" TIMESTAMP NOT NULL,
-"updatedAt" TIMESTAMP NOT NULL
+"created_at" TIMESTAMP NOT NULL,
+"updated_at" TIMESTAMP NOT NULL
 );
-CREATE TABLE "Person"(
+CREATE TABLE "person" (
 "name" TEXT NOT NULL,
 "id" TEXT NOT NULL,
-"createdAt" TIMESTAMP NOT NULL,
-"updatedAt" TIMESTAMP NOT NULL
+"created_at" TIMESTAMP NOT NULL,
+"updated_at" TIMESTAMP NOT NULL
 );
 
 === 

@@ -20,7 +20,7 @@ model Person {
 
 ===
 
-DROP TABLE "Animal";
+DROP TABLE "animal";
 
 === 
 

@@ -78,10 +78,10 @@ var newProto proto.Schema = proto.Schema{
 }
 
 const expected string = `
-CREATE TABLE "Human"(
-"Name" TEXT NOT NULL,
-"Age" INTEGER NOT NULL
+CREATE TABLE "human" (
+"name" TEXT NOT NULL,
+"age" INTEGER NOT NULL
 );
-DROP TABLE "Person";
-ALTER TABLE "Address" ADD COLUMN "City" TEXT NOT NULL;
-ALTER TABLE "Address" DROP COLUMN "Postcode";`
+DROP TABLE "person";
+ALTER TABLE "address" ADD COLUMN "city" TEXT NOT NULL;
+ALTER TABLE "address" DROP COLUMN "postcode";`
