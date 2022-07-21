@@ -1,3 +1,10 @@
+# [0.68.0](https://github.com/teamkeel/keel/compare/v0.67.0...v0.68.0) (2022-07-21)
+
+
+### Features
+
+* support basic runtime codegeneration ([#163](https://github.com/teamkeel/keel/issues/163)) ([542324e](https://github.com/teamkeel/keel/commit/542324e19d96511caeee25289901896602cc0d19))
+
 # [0.67.0](https://github.com/teamkeel/keel/compare/v0.66.0...v0.67.0) (2022-07-21)
 
 
