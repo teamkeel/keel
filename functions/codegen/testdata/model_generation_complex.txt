@@ -14,7 +14,7 @@ model Author {
 
 ===
 
-type Timestamp = string
+export type Timestamp = string
 
 export interface Post {
   title: string

@@ -1,0 +1,23 @@
+model Post {
+  fields {
+    title Text
+  }
+
+  functions {
+    create createPost() with(title)
+    update updatePost(id) with(title)
+  }
+}
+
+===
+
+import createPost from '../functions/createPost'
+import updatePost from '../functions/updatePost'
+
+
+startServer({
+  functions: {
+    createPost,
+    updatePost
+  },
+})

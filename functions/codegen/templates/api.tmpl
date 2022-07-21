@@ -1,0 +1,9 @@
+
+
+export interface {{ .Name }}Api {
+  create: (inputs: {{ .Name }}Inputs) => Promise<{{ .Name }}>
+  delete: (id: string) => Promise<boolean>
+  find: (p: Partial<{{ .Name }}>) => Promise<{{ .Name }}>
+  update: (id: string, inputs: {{ .Name }}Inputs) => Promise<{{ .Name }}>
+  findMany: (p: Partial<{{ .Name }}>) => Promise<{{ .Name }}[]>
+}

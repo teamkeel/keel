@@ -1,0 +1,27 @@
+model Post {
+  fields {
+    title Text
+    published Boolean
+    author Author
+  }
+}
+
+model Author {
+  fields {
+    name Text
+    posts Post[]
+  }
+}
+
+===
+
+export interface PostInputs {
+  title: string
+  published: boolean
+  author: Author
+}
+
+export interface AuthorInputs {
+  name: string
+  posts: Post[]
+}
