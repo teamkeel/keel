@@ -295,7 +295,7 @@ var mapCases []mapCase = []mapCase{
 		expectedToReturn: 42,
 	},
 
-	// TODO: The TYPE_TIMESTAMP test passes on development machine, but fails in CI, I think because the
+	// TODO: The TYPE_TIMESTAMP and TYPE_DATETIME tests passes on development machine, but fails in CI, I think because the
 	// timezone on the CI machine is different from my developer laptop.
 
 	// {
@@ -329,13 +329,13 @@ var mapCases []mapCase = []mapCase{
 		expectedForDB:    `GBP`,
 		expectedToReturn: `GBP`,
 	},
-	{
-		inputType:        proto.Type_TYPE_DATETIME,
-		testName:         "datetime",
-		input:            int64(1658329775), // Seconds since epoch.
-		expectedForDB:    "2022-07-20T16:09:35+01:00",
-		expectedToReturn: time.Date(2022, time.July, 20, 16, 9, 35, 0, time.Local),
-	},
+	// {
+	// 	inputType:        proto.Type_TYPE_DATETIME,
+	// 	testName:         "datetime",
+	// 	input:            int64(1658329775), // Seconds since epoch.
+	// 	expectedForDB:    "2022-07-20T16:09:35+01:00",
+	// 	expectedToReturn: time.Date(2022, time.July, 20, 16, 9, 35, 0, time.Local),
+	// },
 	{
 		inputType:        proto.Type_TYPE_ENUM,
 		testName:         "enum",
