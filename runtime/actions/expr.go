@@ -39,7 +39,7 @@ func toDate(s string) time.Time {
 	day, _ := strconv.Atoi(segments[0])
 	month, _ := strconv.Atoi(segments[1])
 	year, _ := strconv.Atoi(segments[2])
-	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.Local)
+	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 }
 
 func toTime(s string) time.Time {

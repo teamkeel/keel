@@ -2,74 +2,61 @@ package actions
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"gorm.io/gorm"
 )
-
-// model
-// operation
-// args
 
 //func Create(ctx context.Context, model *proto.Model, op *proto.Operation, args map[string]any) (map[string]any, error) {
 func Create(ctx context.Context, operation *proto.Operation, args map[string]any) (map[string]any, error) {
 	schema := runtimectx.GetSchema(ctx)
 	model := proto.FindModel(schema.Models, operation.ModelName)
-	// We'll populate a map[string]any to represent the resolved model field values, and
-	// use that map, to write a record into the database, and as the return value.
-	modelMap, err := initialValueForModel(model, schema)
+	db := runtimectx.GetDB(ctx)
+
+	// This map is what we will write to the database.
+	dbRecord, err := initialValueForModel(model, schema)
 	if err != nil {
 		return nil, err
 	}
+	// This map is much the same, but for some field types, the values must be typed differently.
+	// For example a DATETIME gets inserted into a Postgres TIMESTAMP column, but the Create function
+	// is expected to return a time.Time for it.
+	toReturn := map[string]any{}
+	for k, v := range dbRecord {
+		toReturn[k] = v
+	}
 
-	// for _, in := range op.Inputs {
-	// 	arg, ok := args[in.Name]
-	// 	if !ok {
-	// 		continue
-	// 	}
+	// Now overwrite the fields for which Inputs have been given accordingly.
+	for _, input := range operation.Inputs {
+		switch input.Behaviour {
+		case proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT:
+			modelFieldName := input.Target[0]
 
-	// 	// check for inplicit
-	// 	// use target to set
-	// 	modelMap[in.Name] = arg
-	// }
+			// If this argument is missing it must be optional.
+			v, ok := args[input.Name]
+			if !ok {
+				continue
+			}
+			dbValue, retValue, err := toMap(v, input.Type.Type)
+			if err != nil {
+				return nil, err
+			}
+			dbRecord[modelFieldName] = dbValue
+			toReturn[modelFieldName] = retValue
+		default:
+			return nil, fmt.Errorf("input behaviour %s is not yet supported for Create", input.Behaviour)
+		}
+	}
 
-	if err = setFieldsFromInputs(modelMap, args); err != nil {
+	// Write a row to the database.
+	if err := db.Table(model.Name).Create(dbRecord).Error; err != nil {
 		return nil, err
 	}
 
-	// db.Table(model.Name).Create(modelMap).Error
-
+	// for future reference, this is how you would do a GET
 	// var myMap map[string]any
 	// db.Table(model.Name).Where("id = ?", someID).First(myMap).Error
 
-	err = createRecordInDatabase(runtimectx.GetDB(ctx), model, modelMap)
-	if err != nil {
-		return nil, err
-	}
-
-	return modelMap, nil
-}
-
-func createRecordInDatabase(db *gorm.DB, model *proto.Model, modelMap map[string]any) error {
-	// this is where we write a record to the database.
-	q := db.Table(model.Name)
-	_ = q
-
-	/*
-		foo, bar := r.db.Insert()
-		foo, bar := q.Insert()
-
-			q := db.Table(inflection.Plural(strcase.ToSnake(model.Name)))
-
-						selects := []string{}
-						for _, field := range model.Fields {
-							selects = append(selects, strcase.ToSnake(field.Name))
-						}
-	*/
-
-	// and return the field values that are created as a side effect.
-
-	// We'll just give it an "id" value as an illustration for now.
-	return nil
+	return toReturn, nil
 }

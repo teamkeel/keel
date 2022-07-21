@@ -2,6 +2,8 @@ package actions
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
@@ -116,13 +118,6 @@ func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
 	}
 }
 
-func setFieldsFromInputs(modelMap map[string]any, args map[string]any) error {
-	for paramName, paramValue := range args {
-		modelMap[paramName] = paramValue
-	}
-	return nil
-}
-
 func schemaDefault(field *proto.Field) (any, error) {
 	source := field.DefaultValue.Expression.Source
 	expr, err := expressions.Parse(source)
@@ -151,4 +146,41 @@ func fakeRow(model *proto.Model, enums []*proto.Enum) (row map[string]any, err e
 		row[field.Name] = zeroValue
 	}
 	return row, nil
+}
+
+// toMap provides two values in potentially different forms for the given proto.OperationInput.
+// The first is good to insert into the corresponding DB column. The second is good return from
+// the top level Action functions like Create.
+func toMap(in any, inputType proto.Type) (forDB any, toReturn any, err error) {
+	switch inputType {
+
+	// Start with some special cases that require some intervention.
+
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+
+		// The input is seconds-since Jan 1st 1970
+		seconds, ok := in.(int64)
+		if !ok {
+			return nil, nil, fmt.Errorf("cannot cast %+v to int64", in)
+		}
+		tm := time.Unix(seconds, 0)
+		return tm.Format(time.RFC3339), tm, nil
+
+	case proto.Type_TYPE_DATE:
+		// The input is of the form 18/03/2011
+		s, ok := in.(string)
+		if !ok {
+			return nil, nil, fmt.Errorf("cannot cast %+v to string", in)
+		}
+		segs := strings.Split(s, `/`)
+		day, _ := strconv.Atoi(segs[0])
+		month, _ := strconv.Atoi(segs[1])
+		year, _ := strconv.Atoi(segs[2])
+		date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+		return date.Format(time.UnixDate), date, nil
+
+	// The general case is to return the input unchanged.
+	default:
+		return in, in, nil
+	}
 }
