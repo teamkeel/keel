@@ -5,18 +5,20 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
-	"github.com/teamkeel/keel/cmd/postgres"
+	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"gorm.io/gorm"
 
-	gormpostgres "gorm.io/driver/postgres"
+	"gorm.io/driver/postgres"
 )
 
 // The Run command does this:
@@ -28,20 +30,25 @@ import (
 // - Starts an HTTP server which when the Keel schema files are currently
 //   valid delegates the requests to the runtime handler. When there are
 //   validation errors in the schema files then an error is returned.
-
-var cobraCommandWrapper = &cobra.Command{
+var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run your Keel App locally",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		schemaDir, _ := cmd.Flags().GetString("dir")
 
-		dbConn, err := postgres.Start(true)
+		useExistingContainer := !runCmdFlagReset
+		dbConn, dbConnInfo, err := database.Start(useExistingContainer)
 		if err != nil {
+			if portErr, ok := err.(database.ErrPortInUse); ok {
+				color.Red("Unable to start database: %s\n", portErr.Error())
+				color.Yellow("To create a fresh database container on a different port re-run this command with --reset\n\n")
+				return nil
+			}
 			panic(err)
 		}
-		defer postgres.Stop()
+		defer database.Stop()
 
-		db, err := gorm.Open(gormpostgres.New(gormpostgres.Config{
+		db, err := gorm.Open(postgres.New(postgres.Config{
 			Conn: dbConn,
 		}), &gorm.Config{})
 		if err != nil {
@@ -53,11 +60,15 @@ var cobraCommandWrapper = &cobra.Command{
 			panic(err)
 		}
 
-		reloadSchema := func() {
+		reloadSchema := func(changedFile string) {
 			clearTerminal()
-			printRunHeader(schemaDir)
+			printRunHeader(schemaDir, dbConnInfo)
 
-			fmt.Println("Loading schema ...")
+			if changedFile != "" {
+				fmt.Println("Detected change to:", changedFile)
+			}
+
+			fmt.Println("📂 Loading schema files")
 			b := &schema.Builder{}
 			protoSchema, err := b.MakeFromDirectory(schemaDir)
 			if err != nil {
@@ -72,23 +83,25 @@ var cobraCommandWrapper = &cobra.Command{
 				}
 
 				fmt.Println(out)
-				fmt.Println("Schema has errors 🚨")
+				fmt.Println("🚨 Schema has errors")
 				return
 			}
 
-			fmt.Println("Schema is valid ✅")
+			fmt.Println("✅ Schema is valid")
 
 			m := migrations.New(protoSchema, currSchema)
 			if m.SQL != "" {
-				fmt.Println("Applying migrations 💿")
+				fmt.Println("💿 Applying migrations")
 				err = m.Apply(db)
 				if err != nil {
 					panic(err)
 				}
+
+				printMigrationChanges(m.Changes)
 			}
 
 			currSchema = protoSchema
-			fmt.Println("You're reading to roll 🎉")
+			fmt.Println("🎉 You're ready to roll")
 		}
 
 		stopWatcher, err := onSchemaFileChanges(schemaDir, reloadSchema)
@@ -102,14 +115,15 @@ var cobraCommandWrapper = &cobra.Command{
 			w.Write([]byte("Hello"))
 		})
 
-		reloadSchema()
+		reloadSchema("")
 
-		// Todo - we must not forget housekeeping on close...
-		//
-		// - the dockerized database
-		// - the GraphQL API server
+		go http.ListenAndServe(":"+runCmdFlagPort, nil)
 
-		return http.ListenAndServe(":8000", nil)
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
+		<-c
+		fmt.Println("\n👋 Bye bye")
+		return nil
 	},
 }
 
@@ -122,14 +136,48 @@ func clearTerminal() {
 	}
 }
 
-func printRunHeader(dir string) {
-	fmt.Printf("Waiting for schema files to change in %s ...\n", dir)
+func printRunHeader(dir string, dbConnInfo *database.ConnectionInfo) {
+	fmt.Printf("Watching schema files in: %s\n", color.CyanString(dir))
+
+	psql := color.CyanString("psql postgresql://%s:%s@%s:%s/%s",
+		dbConnInfo.Username,
+		dbConnInfo.Password,
+		dbConnInfo.Host,
+		dbConnInfo.Port,
+		dbConnInfo.Database)
+
+	endpoint := color.CyanString("http://localhost:%s\n", runCmdFlagPort)
+
+	fmt.Printf("Connect to the database: %s\n", psql)
+	fmt.Printf("Application running at: %s\n", endpoint)
 	fmt.Printf("Press CTRL-C to exit\n\n")
+}
+
+func printMigrationChanges(changes []*migrations.DatabaseChange) {
+	var t string
+
+	for _, ch := range changes {
+		fmt.Printf(" - ")
+		switch ch.Type {
+		case migrations.ChangeTypeAdded:
+			t = color.YellowString(ch.Type)
+		case migrations.ChangeTypeRemoved:
+			t = color.RedString(ch.Type)
+		case migrations.ChangeTypeModified:
+			t = color.GreenString(ch.Type)
+		}
+		fmt.Printf(" %s %s", t, ch.Model)
+		if ch.Field != "" {
+			fmt.Printf(".%s", ch.Field)
+		}
+		fmt.Printf("\n")
+	}
+	fmt.Printf("\n")
 }
 
 // reactToSchemaChanges should be called in its own goroutine. It has a blocking
 // channel select loop that waits for and receives file system events, or errors.
-func onSchemaFileChanges(dir string, cb func()) (func() error, error) {
+func onSchemaFileChanges(dir string, cb func(changedFile string)) (func() error, error) {
 	// The run command remains quiescent now, until the user changes their schema, so we establish
 	// a watcher on the schema directorty.
 	watcher, err := fsnotify.NewWatcher()
@@ -147,10 +195,13 @@ func onSchemaFileChanges(dir string, cb func()) (func() error, error) {
 				case !isRelevantEventType(event.Op):
 					// Ignore
 				default:
-					cb()
+					cb(event.Name)
 				}
 
-			case err := <-watcher.Errors:
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					return
+				}
 				fmt.Printf("error received on watcher error channel: %v\n", err)
 				// If we get an internal error from the watcher - we simply report the details
 				// and allow the watching to continue. We leave it to the user to decide if
@@ -175,11 +226,18 @@ func isRelevantEventType(op fsnotify.Op) bool {
 	return lo.Contains(relevant, op)
 }
 
+var runCmdFlagReset bool
+var runCmdFlagPort string
+
 func init() {
-	rootCmd.AddCommand(cobraCommandWrapper)
+	rootCmd.AddCommand(runCmd)
+
 	defaultDir, err := os.Getwd()
 	if err != nil {
-		panic(fmt.Errorf("os.Getwd() errored: %v", err))
+		panic(err)
 	}
-	cobraCommandWrapper.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "schema directory to run")
+
+	runCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "the directory containing the Keel schema files")
+	runCmd.Flags().BoolVar(&runCmdFlagReset, "reset", false, "if set the database will be reset")
+	runCmd.Flags().StringVar(&runCmdFlagPort, "port", "8000", "the port to run the Keel application on")
 }
