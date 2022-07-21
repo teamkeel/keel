@@ -20,11 +20,11 @@ model Animal {
 
 ===
 
-CREATE TABLE "Animal"(
+CREATE TABLE "animal" (
 "name" TEXT NOT NULL,
 "id" TEXT NOT NULL,
-"createdAt" TIMESTAMP NOT NULL,
-"updatedAt" TIMESTAMP NOT NULL
+"created_at" TIMESTAMP NOT NULL,
+"updated_at" TIMESTAMP NOT NULL
 );
 
 === 

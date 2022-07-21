@@ -14,11 +14,11 @@ func TestCreateTable(t *testing.T) {
 func TestCreateTableIfNotExists(t *testing.T) {
 	fields := []*proto.Field{
 		{
-			Name: "my-field-name",
+			Name: "myFieldName",
 			Type: &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
 		},
 	}
-	require.Equal(t, expectedCreateTableIfNotExists, createTableIfNotExistsStmt("my-model-name", fields))
+	require.Equal(t, expectedCreateTableIfNotExists, createTableIfNotExistsStmt("MyModelName", fields))
 }
 
 func TestDropTable(t *testing.T) {
@@ -64,20 +64,20 @@ func TestSelectSingleColumn(t *testing.T) {
 	require.Equal(t, expectedSingleColumn, SelectSingleColumn("my-table", "some-column"))
 }
 
-const expectedCreateTable string = `CREATE TABLE "Person"(
-"Name" TEXT NOT NULL,
-"Age" INTEGER NOT NULL
+const expectedCreateTable string = `CREATE TABLE "person" (
+"name" TEXT NOT NULL,
+"age" INTEGER NOT NULL
 );`
 
-const expectedCreateTableIfNotExists string = `CREATE TABLE if not exists "my-model-name"(
-"my-field-name" BOOL NOT NULL
+const expectedCreateTableIfNotExists string = `CREATE TABLE if not exists "my_model_name" (
+"my_field_name" BOOL NOT NULL
 );`
 
-const expectedDropTable string = `DROP TABLE "Person";`
+const expectedDropTable string = `DROP TABLE "person";`
 
-const expectedCreateField string = `ALTER TABLE "Person" ADD COLUMN "myNewField" DATE NOT NULL;`
+const expectedCreateField string = `ALTER TABLE "person" ADD COLUMN "my_new_field" DATE NOT NULL;`
 
-const expectedDropField string = `ALTER TABLE "Person" DROP COLUMN "Age";`
+const expectedDropField string = `ALTER TABLE "person" DROP COLUMN "age";`
 
 const expectedSingleColumn string = `SELECT "some-column" FROM "my-table";`
 
