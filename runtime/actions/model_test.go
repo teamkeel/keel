@@ -86,6 +86,7 @@ func TestBuiltInDefaultForEnumIsNil(t *testing.T) {
 }
 
 type defaultValueCase struct {
+	name         string
 	protoType    proto.Type
 	repeated     bool
 	defaultValue string
@@ -101,51 +102,60 @@ func TestSchemaDefaults(t *testing.T) {
 
 	cases := []defaultValueCase{
 		{
+			name:         "string",
 			protoType:    proto.Type_TYPE_STRING,
 			defaultValue: `"my default string"`,
 			expected:     `my default string`,
 		},
 		{
+			name:         "false",
 			protoType:    proto.Type_TYPE_BOOL,
 			defaultValue: `false`,
 			expected:     false,
 		},
 		{
+			name:         "true",
 			protoType:    proto.Type_TYPE_BOOL,
 			defaultValue: `true`,
 			expected:     true,
 		},
 		{
+			name:         "int",
 			protoType:    proto.Type_TYPE_INT,
 			defaultValue: `42`,
 			expected:     int64(42),
 		},
 		{
+			name:         "date",
 			protoType:    proto.Type_TYPE_DATE,
 			defaultValue: `"30/06/2011"`,
-			expected:     time.Date(2011, 6, 30, 0, 0, 0, 0, time.Local),
+			expected:     time.Date(2011, time.June, 30, 0, 0, 0, 0, time.UTC),
 		},
 		{
+			name:         "datetime",
 			protoType:    proto.Type_TYPE_DATETIME,
 			defaultValue: `"` + aTimestamp + `"`,
 			expected:     stampAsTime,
 		},
 		{
+			name:         "timestamp",
 			protoType:    proto.Type_TYPE_TIMESTAMP,
 			defaultValue: `"` + aTimestamp + `"`,
 			expected:     stampAsTime,
 		},
 	}
 	for _, cs := range cases {
-		f := field(cs.protoType, cs.repeated)
-		f.DefaultValue = &proto.DefaultValue{
-			Expression: &proto.Expression{
-				Source: cs.defaultValue,
-			},
-		}
-		v, err := schemaDefault(f)
-		require.NoError(t, err)
-		require.Equal(t, cs.expected, v)
+		t.Run(cs.name, func(t *testing.T) {
+			f := field(cs.protoType, cs.repeated)
+			f.DefaultValue = &proto.DefaultValue{
+				Expression: &proto.Expression{
+					Source: cs.defaultValue,
+				},
+			}
+			v, err := schemaDefault(f)
+			require.NoError(t, err)
+			require.Equal(t, cs.expected, v)
+		})
 	}
 }
 
