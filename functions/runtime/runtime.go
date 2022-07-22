@@ -2,11 +2,15 @@ package runtime
 
 import (
 	"errors"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 
+	"github.com/evanw/esbuild/pkg/api"
 	"github.com/teamkeel/keel/functions/codegen"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
@@ -37,12 +41,63 @@ func NewRuntime(workingDir string, outDir string) (*Runtime, error) {
 	}, nil
 }
 
+// Generate generates the typescript codefiles based on the schema
 func (r *Runtime) Generate() (filePath string, err error) {
 	src := r.generator.GenerateClientCode()
 
 	filePath, err = r.makeModule(path.Join(r.OutDir, "index.ts"), src)
 
 	return filePath, err
+}
+
+// Bundle transpiles all TypeScript in a working directory using
+// esbuild, and outputs the JavaScript equivalent to the OutDir
+func (r *Runtime) Bundle() []error {
+	buildResult := api.Build(api.BuildOptions{
+		EntryPoints: []string{
+			path.Join(r.WorkingDir, DEV_DIRECTORY, "index.ts"),
+		},
+		Bundle:   true,
+		Outdir:   filepath.Join(r.OutDir, "dist"),
+		Write:    true,
+		Platform: api.PlatformNode,
+		LogLevel: api.LogLevelInfo,
+	})
+
+	if len(buildResult.Errors) > 0 {
+		return r.buildResultErrors(buildResult.Errors)
+	}
+
+	return nil
+}
+
+func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
+	serverDistPath := filepath.Join(r.OutDir, "dist", "index.js")
+
+	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
+		panic(".keel/dist/index.js has not been generated")
+	}
+
+	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
+
+		fmt.Print(err)
+	}
+
+	cmd := exec.Command("node", filepath.Join(DEV_DIRECTORY, "dist", "index.js"))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
+	cmd.Dir = r.WorkingDir
+	cmd.Start()
+
+	onBoot(cmd.Process)
+
+	return nil
+}
+
+func (r *Runtime) buildResultErrors(errs []api.Message) (e []error) {
+	for _, err := range errs {
+		e = append(e, errors.New(err.Text))
+	}
+	return e
 }
 
 func (r *Runtime) makeModule(path string, code string) (string, error) {
@@ -78,4 +133,19 @@ func buildSchema(workingDir string) (*proto.Schema, error) {
 	proto, err := builder.MakeFromString(string(schemaBytes))
 
 	return proto, err
+}
+
+func copyLogs(r io.Reader) {
+	buf := make([]byte, 80)
+
+	for {
+		n, err := r.Read(buf)
+		if n > 0 {
+			fmt.Print(string(buf[0:n]))
+		}
+
+		if err != nil {
+			break
+		}
+	}
 }
