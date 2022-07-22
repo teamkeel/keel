@@ -11,6 +11,8 @@ import (
 func GetDB(ctx context.Context) *gorm.DB {
 	v := ctx.Value(dbKey)
 	if v == nil {
+		// todo - if this remains connected after some more work on Create action, then
+		// convert it to returning an error
 		panic(fmt.Sprintf("Context does not have key: %s", dbKey))
 	}
 	return v.(*gorm.DB)
@@ -19,6 +21,8 @@ func GetDB(ctx context.Context) *gorm.DB {
 func GetSchema(ctx context.Context) *proto.Schema {
 	v := ctx.Value(schemaKey)
 	if v == nil {
+		// todo - if this remains connected after some more work on Create action, then
+		// convert it to returning an error
 		panic(fmt.Sprintf("Context does not have key: %s", schemaKey))
 	}
 	return v.(*proto.Schema)
