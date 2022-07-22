@@ -4,10 +4,14 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"syscall/js"
 
 	"github.com/fatih/color"
-	"github.com/teamkeel/keel/runtime/gql"
+	"github.com/graphql-go/graphql/testutil"
+	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/format"
@@ -97,7 +101,7 @@ func getGraphQLSchemas(this js.Value, args []js.Value) any {
 	return newPromise(func() (any, error) {
 		builder := schema.Builder{}
 
-		proto, err := builder.MakeFromInputs(&reader.Inputs{
+		protoSchema, err := builder.MakeFromInputs(&reader.Inputs{
 			SchemaFiles: []reader.SchemaFile{
 				{
 					FileName: "schema.keel",
@@ -109,17 +113,40 @@ func getGraphQLSchemas(this js.Value, args []js.Value) any {
 			return nil, err
 		}
 
-		schemas, err := gql.MakeSchemas(proto)
+		res := map[string]any{}
+
+		var api *proto.Api
+		for _, v := range protoSchema.Apis {
+			if v.Type == proto.ApiType_API_TYPE_GRAPHQL {
+				api = v
+				break
+			}
+		}
+
+		if api == nil {
+			return res, nil
+		}
+
+		handler := runtime.NewHandler(protoSchema)
+
+		body, err := json.Marshal(map[string]string{
+			"query": testutil.IntrospectionQuery,
+		})
 		if err != nil {
 			return nil, err
 		}
 
-		res := map[string]any{}
-		for _, api := range proto.Apis {
-			gqlSchema := schemas[api.Name]
-			res[api.Name] = gql.ToSchemaLanguage(*gqlSchema)
+		response, err := handler(&runtime.Request{
+			URL: url.URL{
+				Path: "/Test",
+			},
+			Body: body,
+		})
+		if response.Status != 200 {
+			return nil, fmt.Errorf("error introspecting graphql schema: %s", response.Body)
 		}
 
+		res[api.Name] = runtime.ToGraphQLSchemaLanguage(response)
 		return res, nil
 	})
 }

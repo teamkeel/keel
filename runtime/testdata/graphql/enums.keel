@@ -1,8 +1,6 @@
 model Person {
     fields {
-        someBoolean Boolean?
-        someNumber Number?
-        someText Text?
+        occupation Occupation
     }
 
     operations {
@@ -10,7 +8,16 @@ model Person {
     }
 }
 
+enum Occupation {
+    Teacher
+    Doctor
+    Firefighter
+    Astronaut
+}
+
 api Test {
+    @graphql
+
     models {
         Person
     }
