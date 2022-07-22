@@ -1,3 +1,10 @@
+## [0.68.1](https://github.com/teamkeel/keel/compare/v0.68.0...v0.68.1) (2022-07-22)
+
+
+### Bug Fixes
+
+* time-based inputs ([995d725](https://github.com/teamkeel/keel/commit/995d725d52d0792b272822cd0eaa1d31632a74f6))
+
 # [0.68.0](https://github.com/teamkeel/keel/compare/v0.67.0...v0.68.0) (2022-07-21)
 
 
