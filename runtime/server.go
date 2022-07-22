@@ -32,7 +32,7 @@ func NewServer(schema *proto.Schema, gormDB *gorm.DB) (*http.Server, error) {
 	for apiName, gqlHandler := range plainHandlers {
 		httpHandler, err := newHTTPHandler(gqlHandler)
 		if err != nil {
-			panic(err.Error())
+			return nil, err
 		}
 		serveAt := fmt.Sprintf("/graphql/%s", apiName)
 		http.Handle(serveAt, httpHandler)

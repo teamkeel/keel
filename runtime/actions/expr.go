@@ -10,27 +10,27 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 )
 
-func toNative(v *expressions.Operand, fieldType proto.Type) any {
+func toNative(v *expressions.Operand, fieldType proto.Type) (any, error) {
 	switch {
 	case v.False:
-		return false
+		return false, nil
 	case v.True:
-		return true
+		return true, nil
 	case v.Number != nil:
-		return *v.Number
+		return *v.Number, nil
 	case v.String != nil:
 		v := *v.String
 		v = strings.TrimPrefix(v, `"`)
 		v = strings.TrimSuffix(v, `"`)
 		switch fieldType {
 		case proto.Type_TYPE_DATE:
-			return toDate(v)
+			return toDate(v), nil
 		case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-			return toTime(v)
+			return toTime(v), nil
 		}
-		return v
+		return v, nil
 	default:
-		panic(fmt.Sprintf("toNative() does yet support this expression operand: %+v", v))
+		return nil, fmt.Errorf("toNative() does yet support this expression operand: %+v", v)
 	}
 }
 
