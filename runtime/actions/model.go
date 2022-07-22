@@ -2,8 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/segmentio/ksuid"
@@ -148,39 +146,68 @@ func fakeRow(model *proto.Model, enums []*proto.Enum) (row map[string]any, err e
 	return row, nil
 }
 
-// toMap provides two values in potentially different forms for the given proto.OperationInput.
-// The first is good to insert into the corresponding DB column. The second is good return from
-// the top level Action functions like Create.
-func toMap(in any, inputType proto.Type) (forDB any, toReturn any, err error) {
+// toMap provides casts / interprets the given proto.OperationInput value, into a value that
+// is good to insert into the corresponding DB column (using Gorm).
+func toMap(in any, inputType proto.Type) (any, error) {
 	switch inputType {
 
 	// Start with some special cases that require some intervention.
 
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 
-		// The input is seconds-since Jan 1st 1970
-		seconds, ok := in.(int64)
+		// The input is expected to be a map[string]any, that contains a "seconds" field.
+		obj, ok := in.(map[string]any)
 		if !ok {
-			return nil, nil, fmt.Errorf("cannot cast %+v to int64", in)
+			return nil, fmt.Errorf("cannot cast %+v to a TimestampInput", in)
 		}
-		tm := time.Unix(seconds, 0)
-		return tm.Format(time.RFC3339), tm, nil
+		seconds, ok := obj["seconds"]
+		if !ok {
+			return nil, fmt.Errorf("this input object: %v, does not have a seconds key", obj)
+		}
+		asInt64, ok := seconds.(int64)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this seconds value: %+v to an int64", seconds)
+		}
+		return time.Unix(asInt64, 0), nil
 
 	case proto.Type_TYPE_DATE:
-		// The input is of the form 18/03/2011
-		s, ok := in.(string)
+		// The input is expected to be a map[string]any, that contains a year,month,day fields.
+		obj, ok := in.(map[string]any)
 		if !ok {
-			return nil, nil, fmt.Errorf("cannot cast %+v to string", in)
+			return nil, fmt.Errorf("cannot cast %+v to a DateInput", in)
 		}
-		segs := strings.Split(s, `/`)
-		day, _ := strconv.Atoi(segs[0])
-		month, _ := strconv.Atoi(segs[1])
-		year, _ := strconv.Atoi(segs[2])
+		var year int
+		var month int
+		var day int
+
+		if err := parseInt("year", obj, &year); err != nil {
+			return nil, err
+		}
+		if err := parseInt("month", obj, &month); err != nil {
+			return nil, err
+		}
+		if err := parseInt("day", obj, &day); err != nil {
+			return nil, err
+		}
+
 		date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-		return date.Format(time.UnixDate), date, nil
+		return date, nil
 
 	// The general case is to return the input unchanged.
 	default:
-		return in, in, nil
+		return in, nil
 	}
+}
+
+func parseInt(key string, source map[string]any, dest *int) error {
+	v, ok := source[key]
+	if !ok {
+		return fmt.Errorf("this input object: %v, does not have a %s key", source, key)
+	}
+	asInt, ok := v.(int)
+	if !ok {
+		return fmt.Errorf("cannot cast this value: %+v to an int", v)
+	}
+	*dest = asInt
+	return nil
 }

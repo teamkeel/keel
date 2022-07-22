@@ -14,8 +14,7 @@ func Create(ctx context.Context, operation *proto.Operation, args map[string]any
 	model := proto.FindModel(schema.Models, operation.ModelName)
 	db := runtimectx.GetDB(ctx)
 
-	// This map is what we will write to the database.
-	dbRecord, err := initialValueForModel(model, schema)
+	modelMap, err := initialValueForModel(model, schema)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +22,7 @@ func Create(ctx context.Context, operation *proto.Operation, args map[string]any
 	// For example a DATETIME gets inserted into a Postgres TIMESTAMP column, but the Create function
 	// is expected to return a time.Time for it.
 	toReturn := map[string]any{}
-	for k, v := range dbRecord {
+	for k, v := range modelMap {
 		toReturn[k] = v
 	}
 
@@ -38,19 +37,18 @@ func Create(ctx context.Context, operation *proto.Operation, args map[string]any
 			if !ok {
 				continue
 			}
-			dbValue, retValue, err := toMap(v, input.Type.Type)
+			v, err := toMap(v, input.Type.Type)
 			if err != nil {
 				return nil, err
 			}
-			dbRecord[modelFieldName] = dbValue
-			toReturn[modelFieldName] = retValue
+			modelMap[modelFieldName] = v
 		default:
 			return nil, fmt.Errorf("input behaviour %s is not yet supported for Create", input.Behaviour)
 		}
 	}
 
 	// Write a row to the database.
-	if err := db.Table(model.Name).Create(dbRecord).Error; err != nil {
+	if err := db.Table(model.Name).Create(modelMap).Error; err != nil {
 		return nil, err
 	}
 

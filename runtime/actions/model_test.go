@@ -246,10 +246,9 @@ func TestZeroValueForModel(t *testing.T) {
 func TestToMapHappy(t *testing.T) {
 	for _, mapCase := range mapCases {
 		t.Run(mapCase.testName, func(t *testing.T) {
-			forDB, toReturn, err := toMap(mapCase.input, mapCase.inputType)
+			v, err := toMap(mapCase.input, mapCase.inputType)
 			require.NoError(t, err)
-			require.Equal(t, mapCase.expectedForDB, forDB)
-			require.Equal(t, mapCase.expectedToReturn, toReturn)
+			require.Equal(t, mapCase.expected, v)
 		})
 	}
 }
@@ -258,104 +257,94 @@ func TestToMapError(t *testing.T) {
 	// Most malformed input errors should never get passed schema validation,
 	// but this test bypasses that to make sure errors in general are emitted by toMap() as
 	// they should be.
-	dateIsWrongType := 42 // Should be string
-	_, _, err := toMap(dateIsWrongType, proto.Type_TYPE_DATE)
-	require.EqualError(t, err, `cannot cast 42 to string`)
+	dateIsWrongType := 42 // Should be a map[string]any representing a DateInput
+	_, err := toMap(dateIsWrongType, proto.Type_TYPE_DATE)
+	require.EqualError(t, err, `cannot cast 42 to a DateInput`)
 }
 
 type mapCase struct {
-	testName         string
-	input            any
-	inputType        proto.Type
-	expectedForDB    any
-	expectedToReturn any
+	testName  string
+	input     any
+	inputType proto.Type
+	expected  any
 }
 
 var mapCases []mapCase = []mapCase{
 	// These are ordered to match the order of the inputType enums
 	{
-		inputType:        proto.Type_TYPE_STRING,
-		testName:         "string",
-		input:            "Jill",
-		expectedForDB:    "Jill",
-		expectedToReturn: "Jill",
+		inputType: proto.Type_TYPE_STRING,
+		testName:  "string",
+		input:     "Jill",
+		expected:  "Jill",
 	},
 	{
-		inputType:        proto.Type_TYPE_BOOL,
-		testName:         "bool",
-		input:            true,
-		expectedForDB:    true,
-		expectedToReturn: true,
+		inputType: proto.Type_TYPE_BOOL,
+		testName:  "bool",
+		input:     true,
+		expected:  true,
 	},
 	{
-		inputType:        proto.Type_TYPE_INT,
-		testName:         "int",
-		input:            42,
-		expectedForDB:    42,
-		expectedToReturn: 42,
+		inputType: proto.Type_TYPE_INT,
+		testName:  "int",
+		input:     42,
+		expected:  42,
 	},
-
-	// TODO: The TYPE_TIMESTAMP and TYPE_DATETIME tests passes on development machine, but fails in CI, I think because the
-	// timezone on the CI machine is different from my developer laptop.
-
-	// {
-
-	// 	inputType:     proto.Type_TYPE_TIMESTAMP,
-	// 	testName:      "timestamp",
-	// 	input:         int64(1658329775), // Seconds since epoch.
-	// 	expectedForDB: "2022-07-20T16:09:35+01:00",
-	// 	expectedToReturn: time.Date(2022, time.July, 20, 16, 9, 35, 0, time.Local),
-	// },
-
 	{
-		inputType:        proto.Type_TYPE_DATE,
-		testName:         "date",
-		input:            `20/07/2022`,
-		expectedForDB:    "Wed Jul 20 00:00:00 UTC 2022",
-		expectedToReturn: time.Date(2022, time.July, 20, 0, 0, 0, 0, time.UTC),
+		inputType: proto.Type_TYPE_TIMESTAMP,
+		testName:  "timestamp",
+		input: map[string]any{
+			"seconds": int64(1658329775),
+		},
+		expected: time.Unix(int64(1658329775), 0),
+	},
+	{
+		inputType: proto.Type_TYPE_DATE,
+		testName:  "date",
+		input: map[string]any{
+			"year":  2022,
+			"month": 7,
+			"day":   20,
+		},
+		expected: time.Date(2022, time.Month(7), 20, 0, 0, 0, 0, time.UTC),
 	},
 	// skipping type proto.Type_TYPE_ID, because you cannot set an ID field using a Create request.
 	{
-		inputType:        proto.Type_TYPE_MODEL,
-		testName:         "model",
-		input:            `Person`,
-		expectedForDB:    `Person`,
-		expectedToReturn: `Person`,
+		inputType: proto.Type_TYPE_MODEL,
+		testName:  "model",
+		input:     `Person`,
+		expected:  `Person`,
 	},
 	{
-		inputType:        proto.Type_TYPE_CURRENCY,
-		testName:         "currency",
-		input:            `GBP`,
-		expectedForDB:    `GBP`,
-		expectedToReturn: `GBP`,
-	},
-	// {
-	// 	inputType:        proto.Type_TYPE_DATETIME,
-	// 	testName:         "datetime",
-	// 	input:            int64(1658329775), // Seconds since epoch.
-	// 	expectedForDB:    "2022-07-20T16:09:35+01:00",
-	// 	expectedToReturn: time.Date(2022, time.July, 20, 16, 9, 35, 0, time.Local),
-	// },
-	{
-		inputType:        proto.Type_TYPE_ENUM,
-		testName:         "enum",
-		input:            `apple`,
-		expectedForDB:    `apple`,
-		expectedToReturn: `apple`,
+		inputType: proto.Type_TYPE_CURRENCY,
+		testName:  "currency",
+		input:     `GBP`,
+		expected:  `GBP`,
 	},
 	{
-		inputType:        proto.Type_TYPE_IDENTITY,
-		testName:         "identity",
-		input:            `foo@bar.com`,
-		expectedForDB:    `foo@bar.com`,
-		expectedToReturn: `foo@bar.com`,
+		inputType: proto.Type_TYPE_DATETIME,
+		testName:  "datetime",
+		input: map[string]any{
+			"seconds": int64(1658329775),
+		},
+		expected: time.Unix(int64(1658329775), 0),
 	},
 	{
-		inputType:        proto.Type_TYPE_IMAGE,
-		testName:         "image",
-		input:            `someurl/cat.png`,
-		expectedForDB:    `someurl/cat.png`,
-		expectedToReturn: `someurl/cat.png`,
+		inputType: proto.Type_TYPE_ENUM,
+		testName:  "enum",
+		input:     `apple`,
+		expected:  `apple`,
+	},
+	{
+		inputType: proto.Type_TYPE_IDENTITY,
+		testName:  "identity",
+		input:     `foo@bar.com`,
+		expected:  `foo@bar.com`,
+	},
+	{
+		inputType: proto.Type_TYPE_IMAGE,
+		testName:  "image",
+		input:     `someurl/cat.png`,
+		expected:  `someurl/cat.png`,
 	},
 }
 
