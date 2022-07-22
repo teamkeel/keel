@@ -2,9 +2,7 @@ package actions
 
 import (
 	"context"
-	"database/sql"
 	"testing"
-	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -13,7 +11,6 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
-	gormpostgres "gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -27,15 +24,9 @@ func TestSuite(t *testing.T) {
 
 	t.Skip()
 
-	db := connectPg(t)
-	resetDB(t, db)
-
-	ctx := runtimectx.WithDB(context.Background(), db)
-
-	for _, tc := range testCases {
-		runTestCase(t, ctx, tc)
-	}
 }
+
+var _ = runTestCase
 
 // runTestCase is a helper for TestSuite that performs the tests on
 // the given test case.
@@ -88,29 +79,6 @@ func makeProtoSchema(t *testing.T, keelSchema string) *proto.Schema {
 	})
 	require.NoError(t, err)
 	return proto
-}
-
-// connectPg establishes a connection to a local PostgreSQL service, which
-// it expects to find running on port 8081. The /docker.compose file facilitates
-// this. (docker compose up).
-func connectPg(t *testing.T) *gorm.DB {
-	psqlInfo := "host=localhost port=8001 user=postgres password=postgres dbname=keel sslmode=disable"
-	sqlDB, err := sql.Open("postgres", psqlInfo)
-	require.NoError(t, err)
-	gormDB, err := gorm.Open(gormpostgres.New(gormpostgres.Config{
-		Conn: sqlDB,
-	}), &gorm.Config{})
-	require.NoError(t, err)
-
-	for i := 0; i < 10; i++ {
-		pingError := sqlDB.Ping()
-		if pingError == nil {
-			return gormDB
-		}
-		time.Sleep(250 * time.Millisecond)
-	}
-	t.Fatalf("Failed to ping db")
-	return nil
 }
 
 // TestCase provides a Schema, and identifies various artefacts from it that should be used in
