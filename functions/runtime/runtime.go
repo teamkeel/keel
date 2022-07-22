@@ -86,7 +86,11 @@ func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
 	cmd := exec.Command("node", filepath.Join(DEV_DIRECTORY, "dist", "index.js"))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
 	cmd.Dir = r.WorkingDir
-	cmd.Start()
+	err := cmd.Start()
+
+	if err != nil {
+		return err
+	}
 
 	onBoot(cmd.Process)
 

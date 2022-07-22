@@ -78,7 +78,7 @@ func TestAllCases(t *testing.T) {
 			require.Len(t, errs, 0)
 
 			port := 3001
-			_ = runtime.RunServer(port, func(p *os.Process) {
+			err = runtime.RunServer(port, func(p *os.Process) {
 				for {
 
 					time.Sleep(time.Second / 2)
@@ -120,6 +120,8 @@ func TestAllCases(t *testing.T) {
 					}
 				}
 			})
+
+			assert.NoError(t, err)
 		})
 	}
 }
