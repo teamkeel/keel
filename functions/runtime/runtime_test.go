@@ -56,11 +56,18 @@ func TestAllCases(t *testing.T) {
 		}
 
 		t.Run(testCase.Name(), func(t *testing.T) {
+			// The base working directory - in this case, the test case directory
 			workingDir := filepath.Join("testdata", testCase.Name())
+
+			// Directory where the generated typescript code will be placed
 			outDir := filepath.Join("testdata", testCase.Name(), runtime.DEV_DIRECTORY)
 
+			// We need to install deps specified in the test case's package.json
+			// as these are not installed by default.
 			npmInstall := exec.Command("npm", "install")
 			npmInstall.Dir = workingDir
+
+			// .Run() waits for the npm install command to complete
 			npmInstall.Run()
 
 			runtime, err := runtime.NewRuntime(workingDir, outDir)
@@ -73,7 +80,7 @@ func TestAllCases(t *testing.T) {
 
 			assert.True(t, typecheckResult, output)
 
-			errs := runtime.Bundle()
+			errs := runtime.Bundle(true)
 
 			require.Len(t, errs, 0)
 
@@ -84,7 +91,7 @@ func TestAllCases(t *testing.T) {
 					time.Sleep(time.Second / 2)
 
 					values := map[string]string{
-						"name": "something",
+						"title": "something",
 					}
 					j, err := json.Marshal(values)
 
@@ -113,7 +120,7 @@ func TestAllCases(t *testing.T) {
 						if err != nil {
 							t.Fail()
 						}
-						assert.Equal(t, body.Post.Title, "a post")
+						assert.Equal(t, "something", body.Post.Title)
 
 						p.Kill()
 						break

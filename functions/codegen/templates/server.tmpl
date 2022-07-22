@@ -1,8 +1,13 @@
 
+interface CustomFunction {
+  call: any
+  contextModel: string
+}
+
 // Config represents the configuration values
 // to be passed to the Custom Code runtime server
 interface Config {
-  functions: Record<string, any>
+  functions: Record<string, CustomFunction>
 }
 
 import { createServer, IncomingMessage, ServerResponse } from 'http'
@@ -34,18 +39,20 @@ const startServer = (config: Config) => {
 
       const json = JSON.parse(data)
 
-      const fn = config.functions[normalisedPathname]
+      const { call, contextModel } = config.functions[normalisedPathname]
+
+      // todo: place all models here
       const api = {
         models: {
-          Post: {
+          [contextModel]: {
             create: async () => ({
               id: 123,
-              title: 'a post'
+              title: json.title
             })
           }
         }
       }
-      const result = await fn(json, api)
+      const result = await call(json, api)
       res.write(JSON.stringify(result))
       res.end()
     }

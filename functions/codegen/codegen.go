@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"sort"
 	"text/template"
 
 	"github.com/samber/lo"
@@ -86,17 +87,17 @@ func (gen *CodeGenerator) GenerateModels() (r string) {
 	renderFields := func(fields []*proto.Field) (acc string) {
 		for i, field := range fields {
 			if i == 0 {
-				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": field.Name,
 					"Type": protoTypeToTypeScriptType(field),
 				}))
 			} else if i < len(fields)-1 {
-				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": field.Name,
 					"Type": protoTypeToTypeScriptType(field),
 				}))
 			} else {
-				acc += fmt.Sprintf("  %s", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": field.Name,
 					"Type": protoTypeToTypeScriptType(field),
 				}))
@@ -133,17 +134,17 @@ func (gen *CodeGenerator) GenerateAPIs() (r string) {
 			}
 
 			if i == 0 {
-				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": model.Name,
 					"Type": fmt.Sprintf("%sApi", model.Name),
 				}))
 			} else if i < len(modelsToUse)-1 {
-				acc += fmt.Sprintf("    %s\n", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("    %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": model.Name,
 					"Type": fmt.Sprintf("%sApi", model.Name),
 				}))
 			} else {
-				acc += fmt.Sprintf("    %s", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("    %s", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": model.Name,
 					"Type": fmt.Sprintf("%sApi", model.Name),
 				}))
@@ -180,12 +181,12 @@ func (gen *CodeGenerator) GenerateInputs() (r string) {
 
 		for i, field := range fieldsToUse {
 			if i < len(fieldsToUse)-1 {
-				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": field.Name,
 					"Type": protoTypeToTypeScriptType(field),
 				}))
 			} else {
-				acc += fmt.Sprintf("  %s", renderTemplate(TemplateInterfaceProperty, map[string]interface{}{
+				acc += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": field.Name,
 					"Type": protoTypeToTypeScriptType(field),
 				}))
@@ -216,13 +217,51 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 				return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 			})
 
+			renderEntries := func(entries map[string]interface{}) (acc string) {
+				keys := make([]string, 0)
+				for k := range entries {
+					keys = append(keys, k)
+				}
+				sort.Strings(keys)
+
+				var i int = 0
+
+				for _, key := range keys {
+					entry := entries[key]
+					contents := renderTemplate(TemplateProperty, map[string]interface{}{
+						"Name": key,
+						"Type": entry,
+					})
+
+					if i == 0 {
+						acc += fmt.Sprintf("%s,", contents)
+					} else if i < len(functions)-1 {
+						acc += fmt.Sprintf(" %s,", contents)
+					} else {
+						acc += fmt.Sprintf(" %s", contents)
+					}
+
+					i++
+				}
+
+				return acc
+			}
+
 			for i, op := range functions {
+				tmp := renderTemplate(TemplateObject, map[string]interface{}{
+					"Name": op.Name,
+					"Entries": renderEntries(map[string]interface{}{
+						"contextModel": fmt.Sprintf("'%s'", op.ModelName),
+						"call":         op.Name,
+					}),
+				})
+
 				if i == 0 {
-					acc += fmt.Sprintf("%s,\n", op.Name)
+					acc += fmt.Sprintf("%s,", tmp)
 				} else if i < len(functions)-1 {
-					acc += fmt.Sprintf("    %s,\n", op.Name)
+					acc += fmt.Sprintf(" %s,", tmp)
 				} else {
-					acc += fmt.Sprintf("    %s", op.Name)
+					acc += fmt.Sprintf(" %s", tmp)
 				}
 			}
 		}
@@ -300,16 +339,17 @@ func protoTypeToTypeScriptType(f *proto.Field) string {
 }
 
 var (
-	TemplateKeelApi           = "keel_api"
-	TemplateApi               = "api"
-	TemplateEnum              = "enum"
-	TemplateEnumValue         = "enum_value"
-	TemplateInterfaceProperty = "interface_property"
-	TemplateInterface         = "interface"
-	TemplateTypeAlias         = "type_alias"
-	TemplateHandler           = "handler"
-	TemplateServer            = "server"
-	TemplateImport            = "import"
+	TemplateKeelApi   = "keel_api"
+	TemplateApi       = "api"
+	TemplateEnum      = "enum"
+	TemplateEnumValue = "enum_value"
+	TemplateProperty  = "property"
+	TemplateInterface = "interface"
+	TemplateTypeAlias = "type_alias"
+	TemplateHandler   = "handler"
+	TemplateServer    = "server"
+	TemplateImport    = "import"
+	TemplateObject    = "object"
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {

@@ -3,7 +3,6 @@ package runtime
 import (
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -52,14 +51,14 @@ func (r *Runtime) Generate() (filePath string, err error) {
 
 // Bundle transpiles all TypeScript in a working directory using
 // esbuild, and outputs the JavaScript equivalent to the OutDir
-func (r *Runtime) Bundle() []error {
+func (r *Runtime) Bundle(write bool) []error {
 	buildResult := api.Build(api.BuildOptions{
 		EntryPoints: []string{
 			path.Join(r.WorkingDir, DEV_DIRECTORY, "index.ts"),
 		},
 		Bundle:   true,
 		Outdir:   filepath.Join(r.OutDir, "dist"),
-		Write:    true,
+		Write:    write,
 		Platform: api.PlatformNode,
 		LogLevel: api.LogLevelInfo,
 	})
@@ -137,19 +136,4 @@ func buildSchema(workingDir string) (*proto.Schema, error) {
 	proto, err := builder.MakeFromString(string(schemaBytes))
 
 	return proto, err
-}
-
-func copyLogs(r io.Reader) {
-	buf := make([]byte, 80)
-
-	for {
-		n, err := r.Read(buf)
-		if n > 0 {
-			fmt.Print(string(buf[0:n]))
-		}
-
-		if err != nil {
-			break
-		}
-	}
 }

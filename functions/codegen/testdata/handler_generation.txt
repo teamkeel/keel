@@ -16,8 +16,5 @@ import updatePost from '../functions/updatePost'
 
 
 startServer({
-  functions: {
-    createPost,
-    updatePost
-  },
+  functions: { createPost: { call: createPost, contextModel: 'Post' }, updatePost: { call: updatePost, contextModel: 'Post' }  },
 })
