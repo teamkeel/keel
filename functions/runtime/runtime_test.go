@@ -67,6 +67,10 @@ func TestAllCases(t *testing.T) {
 			_, err = runtime.Generate()
 			require.NoError(t, err)
 
+			err = runtime.BootstrapPackageJson()
+
+			require.NoError(t, err)
+
 			typecheckResult, output := typecheck(workingDir)
 
 			assert.True(t, typecheckResult, output)
@@ -92,7 +96,7 @@ func TestAllCases(t *testing.T) {
 						panic(err)
 					}
 
-					res, err := http.Post(fmt.Sprintf("http://localhost:%d/createPost", port), "application/json", bytes.NewBuffer(j))
+					res, err := http.Post(fmt.Sprintf("http://0.0.0.0:%d/createPost", port), "application/json", bytes.NewBuffer(j))
 
 					if err != nil {
 						panic(err)
