@@ -22,6 +22,24 @@ type Runtime struct {
 	generator  codegen.CodeGenerator
 }
 
+type Position struct {
+	Line   int
+	Column int
+}
+
+type PackageJsonChange struct {
+	Location Position
+	Content  string
+}
+
+var DEV_DEPENDENCIES = map[string]string{
+	"@types/node": "^18.0.6",
+	"typescript":  "^4.7.4",
+}
+
+// We don't require any dependencies at the minute
+var DEPENDENCIES = map[string]string{}
+
 var SCHEMA_FILE = "schema.keel"
 var DEV_DIRECTORY = ".keel"
 
@@ -51,7 +69,24 @@ func (r *Runtime) Generate() (filePath string, err error) {
 
 // Bundle transpiles all TypeScript in a working directory using
 // esbuild, and outputs the JavaScript equivalent to the OutDir
-func (r *Runtime) Bundle(write bool) []error {
+func (r *Runtime) Bundle(write bool) (errs []error) {
+	// NPM install all dependencies from the working directories'
+	// package.json file so we can bundle the code
+	npmInstall := exec.Command("npm", "install")
+
+	// The location where we want to install is the working directory path of the target app
+	npmInstall.Dir = r.WorkingDir
+
+	// .Run() waits for the npm install command to complete
+	err := npmInstall.Run()
+
+	if err != nil {
+		return []error{err}
+	}
+
+	// Run esbuild on the generated entrypoint code
+	// The entrypoint references the users custom functions
+	// so these will be bundled in addition to any generated code
 	buildResult := api.Build(api.BuildOptions{
 		EntryPoints: []string{
 			path.Join(r.WorkingDir, DEV_DIRECTORY, "index.ts"),
@@ -92,6 +127,24 @@ func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
 	}
 
 	onBoot(cmd.Process)
+
+	return nil
+}
+
+func (r *Runtime) BootstrapPackageJson() error {
+	path := filepath.Join(r.WorkingDir, "package.json")
+
+	packageJson, err := NewPackageJson(path)
+
+	if err != nil {
+		return err
+	}
+
+	err = packageJson.Inject(DEV_DEPENDENCIES, DEPENDENCIES)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
