@@ -1,3 +1,0 @@
-query {
-    getAuthor(name: "fred") { eyes }
-}

@@ -1,9 +1,0 @@
-mutation {
-    createPerson(email: "foo@bar.com", phone: "123456778") { email, phone }
-}
-
---next section--
-
-query {
-    getPerson(email: "foo@bar.com") { phone, createdAt }
-}

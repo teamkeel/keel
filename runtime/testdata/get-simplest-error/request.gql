@@ -1,3 +1,0 @@
-query {
-    getEnourmousWealth(name: "fred") { name }
-}

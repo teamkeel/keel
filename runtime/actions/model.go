@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/expressions"
@@ -17,7 +18,8 @@ func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string
 	zeroValue := map[string]any{}
 	var err error
 	for _, field := range pModel.Fields {
-		if zeroValue[field.Name], err = initialValueForField(field, schema.Enums); err != nil {
+
+		if zeroValue[strcase.ToSnake(field.Name)], err = initialValueForField(field, schema.Enums); err != nil {
 			return nil, err
 		}
 	}
