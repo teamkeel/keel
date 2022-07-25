@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
+	functionsruntime "github.com/teamkeel/keel/functions/runtime"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/schema"
@@ -108,6 +110,18 @@ var runCmd = &cobra.Command{
 				}
 
 				printMigrationChanges(m.Changes)
+			}
+
+			customFunctionRuntime, err := functionsruntime.NewRuntime(protoSchema, schemaDir, filepath.Join(schemaDir, functionsruntime.DEV_DIRECTORY))
+
+			if err != nil {
+				panic(err)
+			}
+
+			err = customFunctionRuntime.Scaffold()
+
+			if err == nil {
+				fmt.Printf("🤟 Generated custom functions\n")
 			}
 
 			currSchema = protoSchema

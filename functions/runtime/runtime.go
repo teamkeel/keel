@@ -22,17 +22,10 @@ type Runtime struct {
 	generator  codegen.CodeGenerator
 }
 
-var SCHEMA_FILE = "schema.keel"
 var DEV_DIRECTORY = ".keel"
 var FUNCTIONS_DIRECTORY = "functions"
 
-func NewRuntime(workingDir string, outDir string) (*Runtime, error) {
-	schema, err := buildSchema(workingDir)
-
-	if err != nil {
-		return nil, err
-	}
-
+func NewRuntime(schema *proto.Schema, workingDir string, outDir string) (*Runtime, error) {
 	return &Runtime{
 		WorkingDir: workingDir,
 		OutDir:     outDir,
@@ -101,25 +94,42 @@ func (r *Runtime) Bundle(write bool) (errs []error) {
 func (r *Runtime) Scaffold() error {
 	generator := codegen.NewCodeGenerator(r.Schema)
 
+	functionsDir := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY)
+
+	if _, err := os.Stat(functionsDir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(functionsDir, 0700)
+
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, model := range r.Schema.Models {
 		for _, op := range model.Operations {
+			// fmt.Printf("%s (%s)\n", op.Name, proto.OperationImplementation_name[int32(op.Implementation)])
 			if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-				path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", op.Name))
+
+				path, err := filepath.Abs(filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", op.Name)))
+
+				if err != nil {
+					return err
+				}
 
 				if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 					src := generator.GenerateFunction(model.Name)
 
-					if err != nil {
-						return err
-					}
-
-					err = os.WriteFile(path, []byte(src), 0644)
-
-					fmt.Printf("Scaffolded function %s (%s)", op.Name, path)
+					f, err := os.Create(path)
 
 					if err != nil {
 						return err
 					}
+
+					_, err = f.WriteString(src)
+
+					if err != nil {
+						return err
+					}
+
 				}
 			}
 		}
@@ -179,11 +189,11 @@ func (r *Runtime) makeModule(path string, code string) (string, error) {
 	return path, nil
 }
 
-func buildSchema(workingDir string) (*proto.Schema, error) {
-	if _, err := os.Stat(filepath.Join(workingDir, SCHEMA_FILE)); errors.Is(err, os.ErrNotExist) {
+func buildSchema(schemaPath string) (*proto.Schema, error) {
+	if _, err := os.Stat(schemaPath); errors.Is(err, os.ErrNotExist) {
 		return nil, err
 	}
-	schemaBytes, err := ioutil.ReadFile(filepath.Join(workingDir, SCHEMA_FILE))
+	schemaBytes, err := ioutil.ReadFile(schemaPath)
 
 	if err != nil {
 		return nil, err

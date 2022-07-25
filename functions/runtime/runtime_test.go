@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/functions/runtime"
+	"github.com/teamkeel/keel/schema"
 )
 
 type PostResponse struct {
@@ -53,11 +54,22 @@ func TestAllCases(t *testing.T) {
 		t.Run(testCase.Name(), func(t *testing.T) {
 			// The base working directory - in this case, the test case directory
 			workingDir := filepath.Join("testdata", testCase.Name())
+			schemaPath := filepath.Join("testdata", testCase.Name(), "schema.keel")
+
+			b, err := os.ReadFile(schemaPath)
+
+			require.NoError(t, err)
+
+			builder := schema.Builder{}
+
+			proto, err := builder.MakeFromString(string(b))
+
+			require.NoError(t, err)
 
 			// Directory where the generated typescript code will be placed
 			outDir := filepath.Join("testdata", testCase.Name(), runtime.DEV_DIRECTORY)
 
-			runtime, err := runtime.NewRuntime(workingDir, outDir)
+			runtime, err := runtime.NewRuntime(proto, workingDir, outDir)
 			require.NoError(t, err)
 
 			err = runtime.InstallDeps()
