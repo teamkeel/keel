@@ -83,11 +83,10 @@ func (r *Runtime) ScaffoldFunction(name string, model string) error {
 			return err
 		}
 
-		err = os.WriteFile(path, []byte(src), 0644)
-
+		return os.WriteFile(path, []byte(src), 0644)
 	}
 
-	return fmt.Errorf("function %s already exists in location %s. Skipping...", name, path)
+	return nil
 }
 
 func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
