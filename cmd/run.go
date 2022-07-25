@@ -121,7 +121,7 @@ var runCmd = &cobra.Command{
 			err = customFunctionRuntime.Scaffold()
 
 			if err == nil {
-				fmt.Printf("🤟 Generated custom functions\n")
+				fmt.Println("🤟 Generated custom functions")
 			}
 
 			currSchema = protoSchema
