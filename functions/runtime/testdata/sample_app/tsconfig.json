@@ -11,6 +11,5 @@
     "paths": {
       "@teamkeel/sdk": [".keel/index.ts"]
     },
-  },
-  "include": ["./keel"]
+  }
 }
