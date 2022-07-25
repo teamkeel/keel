@@ -54,6 +54,8 @@ var validateCmd = &cobra.Command{
 			}
 		}
 
+		// cant check below if there are validation erorrs on schema
+
 		// analyzer := functions.NewStaticAnalyser(inputDir)
 
 		// err = analyzer.Analyse()

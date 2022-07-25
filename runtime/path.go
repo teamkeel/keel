@@ -7,10 +7,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func assertValueAtPath(t *testing.T, d map[string]any, path string, v any) {
-	require.Equal(t, v, getValueAtPath(t, d, path))
-}
-
 // getValueAtPath splits a path like "foo.bar.baz" into dot-delimited segments (the keys).
 // Then it tries to drill into the given map (recursively) using those keys.
 // It returns the value thus found.

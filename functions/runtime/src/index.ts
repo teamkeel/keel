@@ -45,9 +45,7 @@ const startRuntimeServer = (config: Config) => {
 
   const port = process.env.PORT && parseInt(process.env.PORT, 10) || 3001
 
-  server.listen(port, 'localhost', 2, () => {
-    console.log('server listening')
-  })
+  server.listen(port)
 }
 
 export default startRuntimeServer

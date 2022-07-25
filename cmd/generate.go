@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/functions"
+	"github.com/teamkeel/keel/schema"
 )
 
 var NODE_MODULE_DIR string = ".keel"
@@ -32,7 +33,15 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		r, err := functions.NewRuntime(schemaDir)
+		b := schema.Builder{}
+
+		schema, err := b.MakeFromDirectory(schemaDir)
+
+		if err != nil {
+			fmt.Println("⛔️ Could not read schema file")
+		}
+
+		r, err := functions.NewRuntime(schema, schemaDir)
 
 		if err != nil {
 			fmt.Println("⛔️ Internal runtime error (a)")

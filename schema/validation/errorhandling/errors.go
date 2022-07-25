@@ -10,7 +10,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
-	"github.com/teamkeel/keel/util/str"
+	"github.com/teamkeel/keel/util"
 
 	"gopkg.in/yaml.v3"
 )
@@ -160,7 +160,7 @@ func (v ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) (string
 
 		for lineIndex, line := range lines {
 			// Render line numbers in gutter
-			outputLine := blue.Sprint(str.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
+			outputLine := blue.Sprint(util.PadRight(fmt.Sprintf("%d", lineIndex+1), codeStartCol))
 
 			// If this line isn't close enough to an error let's ignore it
 			if (lineIndex+1) < (errorStartLine-bufferLines) || (lineIndex+1) > (errorEndLine+bufferLines) {
