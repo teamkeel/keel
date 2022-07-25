@@ -20,11 +20,6 @@ import (
 	"github.com/teamkeel/keel/functions/runtime"
 )
 
-// Tests:
-// - Run tsc against generated "whole thing"
-// - Run code with node.js
-// - Throw some requests at the server and assert that the right response is returned
-
 type PostResponse struct {
 	ID    int    `json:"id"`
 	Title string `json:"title"`
@@ -62,15 +57,11 @@ func TestAllCases(t *testing.T) {
 			// Directory where the generated typescript code will be placed
 			outDir := filepath.Join("testdata", testCase.Name(), runtime.DEV_DIRECTORY)
 
-			// We need to install deps specified in the test case's package.json
-			// as these are not installed by default.
-			npmInstall := exec.Command("npm", "install")
-			npmInstall.Dir = workingDir
-
-			// .Run() waits for the npm install command to complete
-			npmInstall.Run()
-
 			runtime, err := runtime.NewRuntime(workingDir, outDir)
+			require.NoError(t, err)
+
+			err = runtime.InstallDeps()
+
 			require.NoError(t, err)
 
 			_, err = runtime.Generate()
@@ -86,14 +77,16 @@ func TestAllCases(t *testing.T) {
 
 			port := 3001
 			err = runtime.RunServer(port, func(p *os.Process) {
+				// Loop until we receive a 200 status from the node server
+				// If there is never a 200, then the test will timeout after prescribed timeout period, and fail
 				for {
-
 					time.Sleep(time.Second / 2)
 
-					values := map[string]string{
+					expected := map[string]string{
 						"title": "something",
 					}
-					j, err := json.Marshal(values)
+
+					j, err := json.Marshal(expected)
 
 					if err != nil {
 						panic(err)
@@ -104,7 +97,9 @@ func TestAllCases(t *testing.T) {
 					if err != nil {
 						panic(err)
 					}
+
 					defer res.Body.Close()
+
 					b, err := io.ReadAll(res.Body)
 
 					if err != nil {
@@ -118,11 +113,16 @@ func TestAllCases(t *testing.T) {
 						err := json.Unmarshal(b, &body)
 
 						if err != nil {
-							t.Fail()
+							assert.Fail(t, "Could not unmarshal JSON response from node server")
 						}
-						assert.Equal(t, "something", body.Post.Title)
 
+						actual := body.Post
+
+						assert.Equal(t, expected["title"], actual.Title)
+
+						// Kill the node server after assertion is successful
 						p.Kill()
+
 						break
 					}
 				}
@@ -133,15 +133,16 @@ func TestAllCases(t *testing.T) {
 	}
 }
 
+// Runs tsc against a tsconfig.json located in a particular directory
+// returns bool, stdout string
 func typecheck(workingDir string) (bool, string) {
-	command := exec.Command("tsc", "-p", "tsconfig.json", "--noEmit")
+	command := exec.Command("node_modules/.bin/tsc", "-p", "tsconfig.json", "--noEmit")
 	command.Dir = workingDir
-	outputBytes, err := command.Output()
+	outputBytes, err := command.CombinedOutput()
 
 	if err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			return exitError.ExitCode() == 0, string(outputBytes)
-		}
+		return false, string(outputBytes)
 	}
+
 	return true, string(outputBytes)
 }

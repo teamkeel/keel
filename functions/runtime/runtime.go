@@ -50,9 +50,36 @@ func (r *Runtime) Generate() (filePath string, err error) {
 	return filePath, err
 }
 
+func (r *Runtime) InstallDeps() error {
+	// NPM install all dependencies from the working directories'
+	// package.json file so we can bundle the code
+	npmInstall := exec.Command("npm", "install")
+
+	// The location where we want to install is the working directory path of the target app
+	npmInstall.Dir = r.WorkingDir
+
+	// .Run() waits for the npm install command to complete
+	err := npmInstall.Run()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Bundle transpiles all TypeScript in a working directory using
 // esbuild, and outputs the JavaScript equivalent to the OutDir
-func (r *Runtime) Bundle(write bool) []error {
+func (r *Runtime) Bundle(write bool) (errs []error) {
+	err := r.InstallDeps()
+
+	if err != nil {
+		return []error{err}
+	}
+
+	// Run esbuild on the generated entrypoint code
+	// The entrypoint references the users custom functions
+	// so these will be bundled in addition to any generated code
 	buildResult := api.Build(api.BuildOptions{
 		EntryPoints: []string{
 			path.Join(r.WorkingDir, DEV_DIRECTORY, "index.ts"),

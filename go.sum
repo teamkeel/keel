@@ -19,6 +19,10 @@ github.com/alecthomas/repr v0.0.0-20181024024818-d37bc2a10ba1/go.mod h1:xTS7Pm1p
 github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883/go.mod h1:rCTlJbsFo29Kk6CurOXKm700vrz8f0KW0JNfpkRJY/8=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0 h1:jfIu9sQUG6Ig+0+Ap1h4unLjW6YQJpKZVmUzxsD4E/Q=
 github.com/arbovm/levenshtein v0.0.0-20160628152529-48b4e1c0c4d0/go.mod h1:t2tdKJDJF9BV14lnkjHmOQgcvEKgtqs5a1N3LNdJhGE=
+github.com/aybabtme/flatjson v0.1.1 h1:8niARfVgFMuWFP8TuUtifslpI5r5J+vFRACzdqq7rk4=
+github.com/aybabtme/flatjson v0.1.1/go.mod h1:2oPC+j5XSGNN4+4zllTuLZ4z31CeflutT0Jw3dJBOxE=
+github.com/aybabtme/orderedjson v0.1.0 h1:cWe8j5xRWhP70MmEPTpicyUwG+A/15y+hdhtJpLyWF0=
+github.com/aybabtme/orderedjson v0.1.0/go.mod h1:7zJ7kWvWuzOKY/RhqjU4wlK2GLXM8N+Jj8B/OR+0sMY=
 github.com/cockroachdb/apd v1.1.0 h1:3LFP3629v+1aKXU5Q37mxmRxX/pIu1nijXydLShEq5I=
 github.com/cockroachdb/apd v1.1.0/go.mod h1:8Sl8LxpKi29FqWXR16WEFZRNSz3SoPzUzeMeY4+DwBQ=
 github.com/coreos/go-systemd v0.0.0-20190321100706-95778dfbb74e/go.mod h1:F5haX7vjVVG0kc13fIWeqUViNPyEJxv/OmvnBo0Yme4=

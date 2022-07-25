@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/99designs/gqlgen v0.17.13
 	github.com/alecthomas/participle/v2 v2.0.0-alpha8
+	github.com/aybabtme/orderedjson v0.1.0
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/fatih/color v1.7.0
@@ -27,6 +28,8 @@ require (
 	gorm.io/driver/postgres v1.3.8
 	gorm.io/gorm v1.23.8
 )
+
+require github.com/aybabtme/flatjson v0.1.1 // indirect
 
 require (
 	github.com/Microsoft/go-winio v0.5.2 // indirect
