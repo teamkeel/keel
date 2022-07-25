@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strconv"
 
 	"github.com/aybabtme/orderedjson"
@@ -21,42 +22,44 @@ type PackageJson struct {
 	Contents string `json:"-"`
 
 	// Dev + normal dependencies defined in the json file
-	Dependencies    *Dependencies `json:"dependencies"`
-	DevDependencies *Dependencies `json:"devDependencies"`
+	Dependencies    Dependencies `json:"dependencies"`
+	DevDependencies Dependencies `json:"devDependencies"`
 }
 
 // Instantiates an in memory representation of a package.json file.
 // The relevant entries (devDependencies / dependencies) we are
 // interested in are unmarshalled into memory
 func NewPackageJson(path string) (*PackageJson, error) {
+	p := PackageJson{
+		Path: path,
+	}
+
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		fmt.Println("No package.json found, creating...")
 
 		cmd := exec.Command("npm", "init", "-y")
+		cmd.Dir = filepath.Dir(path)
 
 		err := cmd.Run()
 
 		if err != nil {
 			return nil, err
 		}
-	}
 
-	p := PackageJson{
-		Path: path,
-	}
+		err = p.ReadIntoMemory()
 
-	bytes, err := os.ReadFile(p.Path)
+		if err != nil {
+			return nil, err
+		}
 
-	if err != nil {
-		return nil, err
-	}
+		p.Dependencies = map[string]string{}
+		p.DevDependencies = map[string]string{}
 
-	p.Contents = string(bytes)
+		err = p.Write()
 
-	err = json.Unmarshal(bytes, &p)
-
-	if err != nil {
-		return nil, err
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &p, nil
@@ -79,11 +82,29 @@ func (p *PackageJson) Install() error {
 	return nil
 }
 
+func (p *PackageJson) ReadIntoMemory() error {
+	bytes, err := os.ReadFile(p.Path)
+
+	if err != nil {
+		return err
+	}
+
+	p.Contents = string(bytes)
+
+	err = json.Unmarshal(bytes, &p)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Inject devDependencies into the package.json file
 // Where there are matching packages already, the version we inject overwrites the original
 func (p *PackageJson) Inject(devDeps map[string]string, deps map[string]string) error {
 	if p.DevDependencies != nil {
-		d := *p.DevDependencies
+		d := p.DevDependencies
 
 		for packageName, version := range devDeps {
 			if originalVersion, found := d[packageName]; found {
@@ -92,10 +113,18 @@ func (p *PackageJson) Inject(devDeps map[string]string, deps map[string]string) 
 				d[packageName] = version
 			}
 		}
+	} else {
+		var d = map[string]string{}
+
+		for packageName, version := range devDeps {
+			d[packageName] = version
+		}
+
+		p.DevDependencies = d
 	}
 
 	if p.Dependencies != nil {
-		d := *p.Dependencies
+		d := p.Dependencies
 
 		for packageName, version := range deps {
 			if originalVersion, found := d[packageName]; found {
@@ -104,6 +133,14 @@ func (p *PackageJson) Inject(devDeps map[string]string, deps map[string]string) 
 				d[packageName] = version
 			}
 		}
+	} else {
+		var d = map[string]string{}
+
+		for packageName, version := range deps {
+			d[packageName] = version
+		}
+
+		p.Dependencies = d
 	}
 
 	err := p.Write()
@@ -129,6 +166,7 @@ var (
 func (p *PackageJson) Write() error {
 	var originalPackageJson orderedjson.Map
 	var mutatedPackageJson orderedjson.Map
+
 	err := json.Unmarshal([]byte(p.Contents), &originalPackageJson)
 
 	if err != nil {
@@ -186,6 +224,8 @@ func (p *PackageJson) Write() error {
 	if err != nil {
 		return err
 	}
+
+	p.Contents = prettyJSON.String()
 
 	fmt.Println("Wrote changes to package.json")
 	return nil
