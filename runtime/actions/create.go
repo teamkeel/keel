@@ -1,22 +1,16 @@
 package actions
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/runtimectx"
+	"gorm.io/gorm"
 
 	"github.com/iancoleman/strcase"
 )
 
-func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
+func Create(db *gorm.DB, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
 	model := proto.FindModel(schema.Models, operation.ModelName)
-	db, err := runtimectx.GetDB(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	modelMap, err := initialValueForModel(model, schema)
 	if err != nil {
 		return nil, err

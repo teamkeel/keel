@@ -138,7 +138,7 @@ var runCmd = &cobra.Command{
 				return
 			}
 
-			handler := runtime.NewHandler(currSchema)
+			handler := runtime.NewHandler(db, currSchema)
 
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {

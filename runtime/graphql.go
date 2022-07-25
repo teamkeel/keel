@@ -9,11 +9,13 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
+	"gorm.io/gorm"
 )
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
 // are the API names from the provided proto.Schema
-func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, error) {
+func NewGraphQLSchema(db *gorm.DB, proto *proto.Schema, api *proto.Api) (*graphql.Schema, error) {
 	m := &graphqlSchemaBuilder{
 		proto: proto,
 		query: graphql.NewObject(graphql.ObjectConfig{
@@ -28,7 +30,7 @@ func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, err
 		enums: map[string]*graphql.Enum{},
 	}
 
-	return m.build(api)
+	return m.build(api, proto, db)
 }
 
 // A graphqlSchemaBuilder exposes a Make method, that makes a set of graphql.Schema objects - one for each
@@ -42,7 +44,7 @@ type graphqlSchemaBuilder struct {
 }
 
 // build returns a graphql.Schema that implements the given API.
-func (mk *graphqlSchemaBuilder) build(api *proto.Api) (*graphql.Schema, error) {
+func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema, db *gorm.DB) (*graphql.Schema, error) {
 	// The graphql top level query contents will be comprised ONLY of the
 	// OPERATIONS from the keel schema. But to find these we have to traverse the
 	// schema, first by model, then by said model's operations. As a side effect
@@ -57,7 +59,7 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api) (*graphql.Schema, error) {
 		for _, op := range model.Operations {
 			switch op.Implementation {
 			case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
-				err := mk.addOperation(model, op)
+				err := mk.addOperation(db, op, schema)
 				if err != nil {
 					return nil, err
 				}
@@ -108,7 +110,12 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 }
 
 // addOperation generates the graphql field object to represent the given proto.Operation
-func (mk *graphqlSchemaBuilder) addOperation(model *proto.Model, op *proto.Operation) error {
+func (mk *graphqlSchemaBuilder) addOperation(
+	db *gorm.DB,
+	op *proto.Operation,
+	schema *proto.Schema) error {
+
+	model := proto.FindModel(schema.Models, op.ModelName)
 	operationInputType, err := mk.makeOperationInputType(op)
 	if err != nil {
 		return err
@@ -135,6 +142,13 @@ func (mk *graphqlSchemaBuilder) addOperation(model *proto.Model, op *proto.Opera
 	case proto.OperationType_OPERATION_TYPE_GET:
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			result, err := actions.Create(db, op, schema, p.Args)
+			if err != nil {
+				return nil, err
+			}
+			return result, nil
+		}
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
 

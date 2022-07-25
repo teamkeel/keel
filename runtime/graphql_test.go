@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
+	"gorm.io/gorm"
 )
 
 func TestGraphQL(t *testing.T) {
@@ -59,7 +60,10 @@ func TestGraphQL(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			handler := runtime.NewHandler(protoSchema)
+			// This test can manage without providing an actual DB instance
+			var unusedDB *gorm.DB = nil
+
+			handler := runtime.NewHandler(unusedDB, protoSchema)
 
 			body, err := json.Marshal(map[string]string{
 				"query": testutil.IntrospectionQuery,
