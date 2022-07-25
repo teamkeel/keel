@@ -245,6 +245,20 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 	hasRoles := false
 
 	for _, arg := range attr.Arguments {
+		if arg.Label == nil || arg.Label.Value == "" {
+			// All arguments to @permission should have a label
+			errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorAttributeRequiresNamedArguments,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"AttributeName":      "permission",
+						"ValidArgumentNames": "actions, expression, or roles",
+					},
+				},
+				arg,
+			))
+			continue
+		}
+
 		switch arg.Label.Value {
 		case "actions":
 			// The 'actions' argument should not be provided if the permission attribute
@@ -295,31 +309,17 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			}
 			errors = append(errors, validateIdentArray(arg.Expression, allowedIdents)...)
 		default:
-			if arg.Label.Value == "" {
-				// All arguments to @permission should have a label
-				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorAttributeRequiresNamedArguments,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"AttributeName":      "permission",
-							"ValidArgumentNames": "actions, expression, or roles",
-						},
+			// Unknown argument
+			errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidAttributeArgument,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"AttributeName":      "permission",
+						"ArgumentName":       arg.Label.Value,
+						"ValidArgumentNames": "actions, expression, or roles",
 					},
-					arg,
-				))
-				continue
-			} else {
-				// Unknown argument
-				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidAttributeArgument,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"AttributeName":      "permission",
-							"ArgumentName":       arg.Label.Value,
-							"ValidArgumentNames": "actions, expression, or roles",
-						},
-					},
-					arg.Label,
-				))
-			}
+				},
+				arg.Label,
+			))
 		}
 	}
 
