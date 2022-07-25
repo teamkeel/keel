@@ -1,4 +1,4 @@
-package runtime
+package nodedeps
 
 import (
 	"bytes"
@@ -14,6 +14,14 @@ import (
 	"github.com/aybabtme/orderedjson"
 	"github.com/samber/lo"
 )
+
+var DEV_DEPENDENCIES = map[string]string{
+	"@types/node": "^18.0.6",
+	"typescript":  "^4.7.4",
+}
+
+// We don't require any dependencies at the minute
+var DEPENDENCIES = map[string]string{}
 
 type Dependencies = map[string]string
 
@@ -74,6 +82,16 @@ func NewPackageJson(path string) (*PackageJson, error) {
 	}
 
 	return &p, nil
+}
+
+func (r *PackageJson) Bootstrap() error {
+	err := r.Inject(DEV_DEPENDENCIES, DEPENDENCIES)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Runs npm install on the current *written* state of the package.json file, causing node_modules to be populated, and the lockfile to be updated

@@ -22,14 +22,6 @@ type Runtime struct {
 	generator  codegen.CodeGenerator
 }
 
-var DEV_DEPENDENCIES = map[string]string{
-	"@types/node": "^18.0.6",
-	"typescript":  "^4.7.4",
-}
-
-// We don't require any dependencies at the minute
-var DEPENDENCIES = map[string]string{}
-
 var SCHEMA_FILE = "schema.keel"
 var DEV_DIRECTORY = ".keel"
 
@@ -117,24 +109,6 @@ func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
 	}
 
 	onBoot(cmd.Process)
-
-	return nil
-}
-
-func (r *Runtime) BootstrapPackageJson() error {
-	path := filepath.Join(r.WorkingDir, "package.json")
-
-	packageJson, err := NewPackageJson(path)
-
-	if err != nil {
-		return err
-	}
-
-	err = packageJson.Inject(DEV_DEPENDENCIES, DEPENDENCIES)
-
-	if err != nil {
-		return err
-	}
 
 	return nil
 }

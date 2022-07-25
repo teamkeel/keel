@@ -1,8 +1,7 @@
-package runtime_test
+package nodedeps_test
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -11,7 +10,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/functions/runtime"
+	"github.com/teamkeel/keel/functions/runtime/nodedeps"
 )
 
 var TestCases = []string{
@@ -32,25 +31,15 @@ func TestAllTestCases(t *testing.T) {
 		t.Run(testCase.Name(), func(t *testing.T) {
 
 			workingDir := filepath.Join("testdata", testCase.Name())
-			outDir := filepath.Join("testdata", testCase.Name(), "tmp")
-
-			r, err := runtime.NewRuntime(workingDir, outDir)
-
-			require.NoError(t, err)
-
-			_, err = r.Generate()
-
-			require.NoError(t, err)
-
-			err = r.BootstrapPackageJson()
-
-			require.NoError(t, err)
-
 			packageJsonPath := filepath.Join(workingDir, "package.json")
 
-			if _, err := os.Stat(packageJsonPath); errors.Is(err, os.ErrNotExist) {
-				assert.Fail(t, "package.json not created")
-			}
+			packageJson, err := nodedeps.NewPackageJson(packageJsonPath)
+
+			require.NoError(t, err)
+
+			err = packageJson.Bootstrap()
+
+			require.NoError(t, err)
 
 			b, err := os.ReadFile(packageJsonPath)
 
@@ -68,7 +57,7 @@ func TestAllTestCases(t *testing.T) {
 				assert.Fail(t, "devDeps not in expected format")
 			}
 
-			assert.ObjectsAreEqual(devDeps, runtime.DEV_DEPENDENCIES)
+			assert.ObjectsAreEqual(devDeps, nodedeps.DEV_DEPENDENCIES)
 		})
 	}
 }
