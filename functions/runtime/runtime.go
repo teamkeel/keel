@@ -22,16 +22,6 @@ type Runtime struct {
 	generator  codegen.CodeGenerator
 }
 
-type Position struct {
-	Line   int
-	Column int
-}
-
-type PackageJsonChange struct {
-	Location Position
-	Content  string
-}
-
 var DEV_DEPENDENCIES = map[string]string{
 	"@types/node": "^18.0.6",
 	"typescript":  "^4.7.4",
