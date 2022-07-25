@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 	"gorm.io/driver/postgres"
@@ -83,7 +84,7 @@ func TestCreate(t *testing.T) {
 			require.NoError(t, m.Apply(testDB))
 
 			// Call the Create Operation.
-			response, err := Create(testDB, createOp, schema, args)
+			response, err := Create(runtimectx.NewContext(testDB), createOp, schema, args)
 			require.NoError(t, err)
 
 			// Check we got the correct return value.

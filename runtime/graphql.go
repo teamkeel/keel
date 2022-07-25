@@ -143,11 +143,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			result, err := actions.Create(db, op, schema, p.Args)
-			if err != nil {
-				return nil, err
-			}
-			return result, nil
+			return actions.Create(p.Context, op, schema, p.Args)
 		}
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
