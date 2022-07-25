@@ -1,0 +1,58 @@
+{
+  "Errors": [
+    {
+      "message": "permission requires all arguments to be named, for example @permission(roles: [MyRole])",
+      "short_message": "permission requires all arguments to be named",
+      "hint": "Valid argument names for permission are actions, expression, or roles",
+      "code": "E014",
+      "pos": {
+        "filename": "testdata/validation_permission_attribute_invalid_args/schema.keel",
+        "offset": 81,
+        "line": 6,
+        "column": 17
+      },
+      "end_pos": {
+        "filename": "testdata/validation_permission_attribute_invalid_args/schema.keel",
+        "offset": 85,
+        "line": 6,
+        "column": 21
+      }
+    },
+    {
+      "message": "The @permission attribute is missing required argument actions",
+      "short_message": "The @permission attribute is missing required argument actions",
+      "hint": "",
+      "code": "E015",
+      "pos": {
+        "filename": "testdata/validation_permission_attribute_invalid_args/schema.keel",
+        "offset": 69,
+        "line": 6,
+        "column": 5
+      },
+      "end_pos": {
+        "filename": "testdata/validation_permission_attribute_invalid_args/schema.keel",
+        "offset": 80,
+        "line": 6,
+        "column": 16
+      }
+    },
+    {
+      "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "short_message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "hint": "",
+      "code": "E015",
+      "pos": {
+        "filename": "testdata/validation_permission_attribute_invalid_args/schema.keel",
+        "offset": 69,
+        "line": 6,
+        "column": 5
+      },
+      "end_pos": {
+        "filename": "testdata/validation_permission_attribute_invalid_args/schema.keel",
+        "offset": 80,
+        "line": 6,
+        "column": 16
+      }
+    }
+  ]
+}
