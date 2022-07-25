@@ -72,7 +72,7 @@ func (r *Runtime) Bundle(write bool) []error {
 }
 
 func (r *Runtime) ScaffoldFunction(name string, model string) error {
-	path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts"))
+	path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", name))
 
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		generator := codegen.NewCodeGenerator(r.Schema)
