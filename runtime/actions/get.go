@@ -4,11 +4,9 @@ import (
 	"context"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
-func Get(ctx context.Context, model *proto.Model, args map[string]any, where []*proto.Expression) (interface{}, error) {
-	schema := runtimectx.GetSchema(ctx)
+func Get(ctx context.Context, model *proto.Model, schema *proto.Schema, args map[string]any, where []*proto.Expression) (interface{}, error) {
 
 	// We will use the where clauses to filter the rows
 	// to return like this:

@@ -10,11 +10,12 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
-//func Create(ctx context.Context, model *proto.Model, op *proto.Operation, args map[string]any) (map[string]any, error) {
-func Create(ctx context.Context, operation *proto.Operation, args map[string]any) (map[string]any, error) {
-	schema := runtimectx.GetSchema(ctx)
+func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
 	model := proto.FindModel(schema.Models, operation.ModelName)
-	db := runtimectx.GetDB(ctx)
+	db, err := runtimectx.GetDB(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	modelMap, err := initialValueForModel(model, schema)
 	if err != nil {
