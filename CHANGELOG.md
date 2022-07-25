@@ -1,3 +1,10 @@
+# [0.69.0](https://github.com/teamkeel/keel/compare/v0.68.1...v0.69.0) (2022-07-25)
+
+
+### Features
+
+* connect run command to runtime ([33a7e4f](https://github.com/teamkeel/keel/commit/33a7e4fd443dbed9eac4bbe3e78bd91794d0ce53))
+
 ## [0.68.1](https://github.com/teamkeel/keel/compare/v0.68.0...v0.68.1) (2022-07-22)
 
 
