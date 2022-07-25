@@ -68,8 +68,12 @@ func TestCodeGeneration(t *testing.T) {
 				result := generator.GenerateEntryPoint()
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
+			} else if strings.HasPrefix(testCase.Name(), "custom_function_") {
+				result := generator.GenerateFunction(proto.Models[0].Name)
+
+				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else {
-				t.Fatal("Test case names must follow convention XXX_name where XXX is one of model, enum, api")
+				t.Fatal("Test case names must follow convention XXX_name where XXX is one of model, enum, api, handler, inputs or custom_function")
 			}
 		})
 	}

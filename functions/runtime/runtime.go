@@ -24,6 +24,7 @@ type Runtime struct {
 
 var SCHEMA_FILE = "schema.keel"
 var DEV_DIRECTORY = ".keel"
+var FUNCTIONS_DIRECTORY = "functions"
 
 func NewRuntime(workingDir string, outDir string) (*Runtime, error) {
 	schema, err := buildSchema(workingDir)
@@ -65,6 +66,36 @@ func (r *Runtime) Bundle(write bool) []error {
 
 	if len(buildResult.Errors) > 0 {
 		return r.buildResultErrors(buildResult.Errors)
+	}
+
+	return nil
+}
+
+func (r *Runtime) Scaffold() error {
+	generator := codegen.NewCodeGenerator(r.Schema)
+
+	for _, model := range r.Schema.Models {
+		for _, op := range model.Operations {
+			if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+				path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", op.Name))
+
+				if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+					src := generator.GenerateFunction(model.Name)
+
+					if err != nil {
+						return err
+					}
+
+					err = os.WriteFile(path, []byte(src), 0644)
+
+					fmt.Printf("Scaffolded function %s (%s)", op.Name, path)
+
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
 	}
 
 	return nil

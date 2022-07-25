@@ -1,0 +1,17 @@
+model Author {
+  fields {
+    name Text
+  }
+
+  functions {
+    create createAuthor() with(name)
+  }
+}
+
+===
+
+import { AuthorInputs, API } from '@teamkeel/sdk'
+
+export default async (inputs: AuthorInputs, api: API) => {
+  // Build your universe
+}
