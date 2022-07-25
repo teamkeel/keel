@@ -1,0 +1,67 @@
+enum Something {
+    Hello
+}
+model Post {
+    fields {
+        title Text
+    }
+
+    operations {
+        get getPost(id)
+    }
+
+    functions {
+        create createPost() with (title)
+    }
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+    }
+}
+
+===
+
+export type Timestamp = string
+
+export interface Post {
+  title: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Identity {
+  username: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+export declare enum Something {
+  Hello = 0
+}export interface GetPostInput {
+  id: string
+}
+export interface CreatePostInput {
+  title: string
+}
+declare type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => Promise<Post>
+
+export declare const CreatePost : (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => Promise<Post>
+export interface API {
+  models: {
+    Post: PostApi
+
+  }
+}
+
+export interface PostApi {
+  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
+  delete: (id: string) => Promise<boolean>
+  find: (p: Partial<Post>) => Promise<Post>
+  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
+  findMany: (p: Partial<Post>) => Promise<Post[]>
+}

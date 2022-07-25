@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path"
 	"path/filepath"
 
@@ -58,22 +57,11 @@ func (r *Runtime) GenerateClient() error {
 }
 
 func (r *Runtime) GenerateClientTypings() error {
-	cmd := exec.Command(
-		"npx",
-		"tsc",
-		"index.ts",
-		"--declaration",
-		"--emitDeclarationOnly",
-		"--declarationDir",
-		"../dist",
-	)
+	src := r.generator.GenerateClientTypings()
 
-	cmd.Dir = filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "src")
-
-	o, err := cmd.CombinedOutput()
+	_, err := r.makeModule(filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "dist", "index.d.ts"), src)
 
 	if err != nil {
-		fmt.Print(string(o))
 		return err
 	}
 
