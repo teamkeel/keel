@@ -12,5 +12,5 @@
       "@teamkeel/sdk": [".keel/index.ts"]
     },
   },
-  "include": ["./keel"]
+  "include": ["./keel/*.ts"]
 }

@@ -38,6 +38,10 @@ func TestAllTestCases(t *testing.T) {
 
 			require.NoError(t, err)
 
+			_, err = r.Generate()
+
+			require.NoError(t, err)
+
 			err = r.BootstrapPackageJson()
 
 			require.NoError(t, err)
