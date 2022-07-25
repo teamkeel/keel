@@ -72,14 +72,14 @@ func (r *Runtime) Bundle(write bool) []error {
 }
 
 func (r *Runtime) Scaffold() error {
+	generator := codegen.NewCodeGenerator(r.Schema)
+
 	for _, model := range r.Schema.Models {
 		for _, op := range model.Operations {
 			if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 				path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", op.Name))
 
 				if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-					generator := codegen.NewCodeGenerator(r.Schema)
-
 					src := generator.GenerateFunction(model.Name)
 
 					if err != nil {
