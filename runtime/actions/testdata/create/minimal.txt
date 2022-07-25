@@ -1,0 +1,25 @@
+model Person {
+    fields {
+        email Text
+    }
+
+    operations {
+        create createPerson() with (email)
+    }
+}
+
+api Web {
+    models {
+        Person
+    }
+}
+
+===
+
+createPerson
+
+===
+
+{
+    "email": "foo@bar.com"
+}

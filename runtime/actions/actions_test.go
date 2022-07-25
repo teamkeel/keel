@@ -2,126 +2,138 @@ package actions
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
+	"time"
 
-	_ "github.com/lib/pq"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-// TestSuite is table driven test for Create and Get etc.
-//
-// The tests are dependent on a PostgreSQL service - see connectPg() below.
-func TestSuite(t *testing.T) {
+const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
 
-	// todo this needs re-writing to follow the db housekeeping approach
-	// used by Jon elsewhere - so skipping at the moment.
-
-	t.Skip()
-
-}
-
-var _ = runTestCase
-
-// runTestCase is a helper for TestSuite that performs the tests on
-// the given test case.
-func runTestCase(t *testing.T, ctx context.Context, testCase TestCase) {
-
-	// Acquire a connect to Postgres, and clear down any existing tables.
-	db := runtimectx.GetDB(ctx)
-	defer resetDB(t, db)
-
-	schema := makeProtoSchema(t, testCase.KeelSchema)
-
-	ctx = runtimectx.WithSchema(ctx, schema)
-
-	// Migrate the DB to this schema.
-	sqlDB, err := db.DB()
-	require.NoError(t, err)
-	err = migrations.PerformInitialMigration(sqlDB, schema)
+func TestCreate(t *testing.T) {
+	testCases, err := ioutil.ReadDir(filepath.Join(".", "testdata", "create"))
 	require.NoError(t, err)
 
-	// Acquire the test parameters.
-	model := proto.FindModel(schema.Models, testCase.ModelName)
-	operation := proto.FindOperation(model, testCase.OperationName)
+	// We connect to the "main" database here only so we can create a new database
+	// for each sub-test
+	mainDB, err := gorm.Open(
+		postgres.Open(fmt.Sprintf(dbConnString, "keel")),
+		&gorm.Config{})
+	require.NoError(t, err)
 
-	// Call the operation function that is under test.
-	switch operation.Type {
-	case proto.OperationType_OPERATION_TYPE_CREATE:
-		res, err := Create(ctx, operation, testCase.OperationInputs)
-		require.NoError(t, err)
+	for _, testCase := range testCases {
+		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
+			// Make a database name for this test
+			re := regexp.MustCompile(`[^\w]`)
+			dbName := strings.ToLower(re.ReplaceAllString(t.Name(), ""))
 
-		_ = res
-	default:
-		t.Fatalf("operation type: %s, not yet supported", operation.Type)
+			// Drop the database if it already exists. The normal dropping of it at the end of the
+			// test case is bypassed if you quit a debug run of the test in VS Code.
+			require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
+
+			// Create the database and drop at the end of the test
+			err = mainDB.Exec("CREATE DATABASE " + dbName).Error
+			require.NoError(t, err)
+			defer func() {
+				require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
+			}()
+
+			// Connect to the newly created test database and close connection
+			// at the end of the test. We need to explicitly close the connection
+			// so the mainDB connection can drop the database.
+			testDB, err := gorm.Open(
+				postgres.Open(fmt.Sprintf(dbConnString, dbName)),
+				&gorm.Config{})
+			require.NoError(t, err)
+			defer func() {
+				conn, err := testDB.DB()
+				require.NoError(t, err)
+				conn.Close()
+			}()
+
+			// Access the test instructions.
+			contents, err := ioutil.ReadFile(filepath.Join("testdata", "create", testCase.Name()))
+			require.NoError(t, err)
+			parts := strings.Split(string(contents), "===")
+			parts = lo.Map(parts, func(s string, _ int) string {
+				return strings.TrimSpace(s)
+			})
+			require.Len(t, parts, 3, "create test file should contain three sections separated by '==='")
+			keelSchema, operationName, inputArgsJSON := parts[0], parts[1], parts[2]
+
+			// Compose the things we need to call the Create function.
+			schema := protoSchema(t, keelSchema)
+			createOp := findOp(t, schema, operationName)
+			args := inputArgs(t, inputArgsJSON)
+			ctx := runtimectx.WithDB(context.Background(), testDB)
+			ctx = runtimectx.WithSchema(ctx, schema)
+
+			// Migrate the database to this schema, in readiness for the Create Action.
+			m := migrations.New(schema, nil)
+			require.NoError(t, m.Apply(testDB))
+
+			// Call the Create Operation.
+			response, err := Create(ctx, createOp, args)
+			require.NoError(t, err)
+
+			// Check we got the correct return value.
+			// Todo hard-coded placeholder for just the one test case.
+			require.Equal(t, "foo@bar.com", response["email"])
+			require.IsType(t, time.Time{}, response["created_at"])
+
+			// Check the correct row got added to the database.
+			// Todo hard-coded placeholder for just the one test case.
+			row := map[string]any{}
+			require.NoError(t, testDB.Table("person").Where("email = ?", "foo@bar.com").Find(row).Error)
+			require.Equal(t, "foo@bar.com", row["email"])
+			require.IsType(t, time.Time{}, row["created_at"])
+		})
 	}
-
-	// todo
-	// check response
-	// check apply the sql query
 }
 
-// makeProtoSchema generates a proto.Schema fom the Keel schema in the given
-// string.
-func makeProtoSchema(t *testing.T, keelSchema string) *proto.Schema {
-	builder := schema.Builder{}
-	proto, err := builder.MakeFromInputs(&reader.Inputs{
+func protoSchema(t *testing.T, s string) *proto.Schema {
+	builder := &schema.Builder{}
+	schema, err := builder.MakeFromInputs(&reader.Inputs{
 		SchemaFiles: []reader.SchemaFile{
 			{
-				Contents: keelSchema,
+				Contents: s,
 			},
 		},
 	})
 	require.NoError(t, err)
-	return proto
+	return schema
 }
 
-// TestCase provides a Schema, and identifies various artefacts from it that should be used in
-// a test, along with some request / expected responses for that test.
-type TestCase struct {
-	KeelSchema             string
-	ModelName              string
-	OperationName          string
-	OperationInputs        map[string]any
-	ExpectedActionResponse string
-
-	// This is an arbitrary SQL query that the test should make to the database
-	// after the Action has been run, to acquire data that can be used to verify the
-	// correct operation of mutation operations.
-	InterrogationSQL    string
-	ExpectedSQLResponse string
-}
-
-// resetDB drops all the public tables from the database.
-func resetDB(t *testing.T, db *gorm.DB) {
-	var tables []string
-	err := db.Table("pg_tables").
-		Where("schemaname = 'public'").
-		Pluck("tablename", &tables).Error
-	require.NoError(t, err)
-	if len(tables) == 0 {
-		return
-	}
-	t.Logf("Resetting db by deleting all existng tables: %s", tables)
-
-	dropSQL := `DROP TABLE `
-	for i, tbl := range tables {
-		dropSQL += doubleQuoteString(tbl)
-		if i != len(tables)-1 {
-			dropSQL += `, `
+func findOp(t *testing.T, schema *proto.Schema, operationName string) *proto.Operation {
+	// Only reliable if there are no duplicate operation names in the schema!
+	for _, model := range schema.Models {
+		for _, op := range model.Operations {
+			if op.Name == operationName {
+				return op
+			}
 		}
 	}
-	dropSQL += `;`
-	err = db.Exec(dropSQL).Error
-	require.NoError(t, err)
+	t.Fatalf("cannot find operation: %s", operationName)
+	return nil
 }
 
-func doubleQuoteString(s string) string {
-	const dq string = `"`
-	return dq + s + dq
+func inputArgs(t *testing.T, inputArgs string) map[string]any {
+	args := map[string]any{}
+	err := json.Unmarshal([]byte(inputArgs), &args)
+	require.NoError(t, err)
+	return args
 }
