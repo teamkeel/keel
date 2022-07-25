@@ -47,6 +47,15 @@ func (gen *CodeGenerator) GenerateBaseTypes() (r string) {
 	return r
 }
 
+func (gen *CodeGenerator) GenerateFunction(model string) string {
+	return renderTemplate(
+		TemplateCustomFunction,
+		map[string]interface{}{
+			"Model": model,
+		},
+	)
+}
+
 func (gen *CodeGenerator) GenerateServer() (r string) {
 	return renderTemplate(TemplateServer, map[string]interface{}{})
 }
@@ -339,17 +348,18 @@ func protoTypeToTypeScriptType(f *proto.Field) string {
 }
 
 var (
-	TemplateKeelApi   = "keel_api"
-	TemplateApi       = "api"
-	TemplateEnum      = "enum"
-	TemplateEnumValue = "enum_value"
-	TemplateProperty  = "property"
-	TemplateInterface = "interface"
-	TemplateTypeAlias = "type_alias"
-	TemplateHandler   = "handler"
-	TemplateServer    = "server"
-	TemplateImport    = "import"
-	TemplateObject    = "object"
+	TemplateKeelApi        = "keel_api"
+	TemplateApi            = "api"
+	TemplateEnum           = "enum"
+	TemplateEnumValue      = "enum_value"
+	TemplateProperty       = "property"
+	TemplateInterface      = "interface"
+	TemplateTypeAlias      = "type_alias"
+	TemplateHandler        = "handler"
+	TemplateServer         = "server"
+	TemplateImport         = "import"
+	TemplateObject         = "object"
+	TemplateCustomFunction = "custom_function"
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {

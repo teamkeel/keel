@@ -24,6 +24,7 @@ type Runtime struct {
 
 var SCHEMA_FILE = "schema.keel"
 var DEV_DIRECTORY = ".keel"
+var FUNCTIONS_DIRECTORY = "functions"
 
 func NewRuntime(workingDir string, outDir string) (*Runtime, error) {
 	schema, err := buildSchema(workingDir)
@@ -68,6 +69,25 @@ func (r *Runtime) Bundle(write bool) []error {
 	}
 
 	return nil
+}
+
+func (r *Runtime) ScaffoldFunction(name string, model string) error {
+	path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts"))
+
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+		generator := codegen.NewCodeGenerator(r.Schema)
+
+		src := generator.GenerateFunction(model)
+
+		if err != nil {
+			return err
+		}
+
+		err = os.WriteFile(path, []byte(src), 0644)
+
+	}
+
+	return fmt.Errorf("function %s already exists in location %s. Skipping...", name, path)
 }
 
 func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
