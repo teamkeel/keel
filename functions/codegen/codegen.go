@@ -7,6 +7,7 @@ import (
 	"sort"
 	"text/template"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
@@ -97,18 +98,21 @@ func (gen *CodeGenerator) GenerateModels() (r string) {
 		for i, field := range fields {
 			if i == 0 {
 				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": field.Name,
-					"Type": protoTypeToTypeScriptType(field),
+					"Name":     field.Name,
+					"Type":     protoTypeToTypeScriptType(field.Type),
+					"Optional": field.Optional,
 				}))
 			} else if i < len(fields)-1 {
 				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": field.Name,
-					"Type": protoTypeToTypeScriptType(field),
+					"Name":     field.Name,
+					"Type":     protoTypeToTypeScriptType(field.Type),
+					"Optional": field.Optional,
 				}))
 			} else {
 				acc += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": field.Name,
-					"Type": protoTypeToTypeScriptType(field),
+					"Name":     field.Name,
+					"Type":     protoTypeToTypeScriptType(field.Type),
+					"Optional": field.Optional,
 				}))
 			}
 		}
@@ -127,8 +131,6 @@ func (gen *CodeGenerator) GenerateModels() (r string) {
 }
 
 var APIName = "API"
-
-var ExcludedInputs = []string{"id", "updatedAt", "createdAt"}
 
 func (gen *CodeGenerator) GenerateAPIs() (r string) {
 	renderModelApiDefs := func(models []*proto.Model) (acc string) {
@@ -182,22 +184,29 @@ func (gen *CodeGenerator) GenerateAPIs() (r string) {
 }
 
 func (gen *CodeGenerator) GenerateInputs() (r string) {
-	// render input type interfaces
-	renderInputFields := func(fields []*proto.Field) (acc string) {
-		fieldsToUse := lo.Filter(fields, func(field *proto.Field, _ int) bool {
-			return !lo.Contains(ExcludedInputs, field.Name)
-		})
+	renderInputFields := func(inputs []*proto.OperationInput, filter func(input *proto.OperationInput) bool) (acc string) {
+		filtered := []*proto.OperationInput{}
 
-		for i, field := range fieldsToUse {
-			if i < len(fieldsToUse)-1 {
+		for _, input := range inputs {
+			if !filter(input) {
+				continue
+			}
+
+			filtered = append(filtered, input)
+		}
+
+		for i, input := range filtered {
+			if i < len(filtered)-1 {
 				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": field.Name,
-					"Type": protoTypeToTypeScriptType(field),
+					"Name":     input.Name,
+					"Type":     protoTypeToTypeScriptType(input.Type),
+					"Optional": input.Optional,
 				}))
 			} else {
 				acc += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": field.Name,
-					"Type": protoTypeToTypeScriptType(field),
+					"Name":     input.Name,
+					"Type":     protoTypeToTypeScriptType(input.Type),
+					"Optional": input.Optional,
 				}))
 			}
 		}
@@ -210,10 +219,47 @@ func (gen *CodeGenerator) GenerateInputs() (r string) {
 			continue
 		}
 
-		r += renderTemplate(TemplateInterface, map[string]interface{}{
-			"Name":       fmt.Sprintf("%sInputs", model.Name),
-			"Properties": renderInputFields(model.Fields),
-		})
+		for _, op := range model.Operations {
+			inputs := op.GetInputs()
+
+			switch op.Type {
+			case proto.OperationType_OPERATION_TYPE_CREATE:
+				r += renderTemplate(TemplateCreateInput, map[string]interface{}{
+					"Name": strcase.ToCamel(op.Name),
+					"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+						return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+					}),
+				})
+			case proto.OperationType_OPERATION_TYPE_UPDATE:
+				r += renderTemplate(TemplateUpdateInput, map[string]interface{}{
+					"Name": strcase.ToCamel(op.Name),
+					"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+						return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+					}),
+					"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+						return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+					}),
+				})
+			case proto.OperationType_OPERATION_TYPE_GET:
+				r += renderTemplate(TemplateGetInput, map[string]interface{}{
+					"Name": strcase.ToCamel(op.Name),
+					"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+						return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+					}),
+				})
+			case proto.OperationType_OPERATION_TYPE_LIST:
+				r += renderTemplate(TemplateListInput, map[string]interface{}{
+					"Name": strcase.ToCamel(op.Name),
+					"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+						return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+					}),
+					"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+						return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+					}),
+				})
+			}
+
+		}
 	}
 
 	return r
@@ -313,8 +359,13 @@ var (
 	TSTypeIdentity  = "Identity"
 )
 
-func protoTypeToTypeScriptType(f *proto.Field) string {
-	switch f.Type.Type {
+type Typer interface {
+	GetType() proto.Type
+	IsRepeated() bool
+}
+
+func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
+	switch t.GetType() {
 	case proto.Type_TYPE_UNKNOWN:
 		return TSTypeUnknown
 	case proto.Type_TYPE_STRING:
@@ -330,16 +381,16 @@ func protoTypeToTypeScriptType(f *proto.Field) string {
 	case proto.Type_TYPE_ID:
 		return TSTypeString
 	case proto.Type_TYPE_MODEL:
-		if f.Type.Repeated {
-			return fmt.Sprintf("%s[]", f.Type.ModelName.Value)
+		if t.Repeated {
+			return fmt.Sprintf("%s[]", t.ModelName.Value)
 		}
-		return f.Type.ModelName.Value
+		return t.ModelName.Value
 	// case proto.Type_TYPE_CURRENCY:
 	// 	return "Currency"
 	case proto.Type_TYPE_DATETIME:
 		return TSTypeDate
 	case proto.Type_TYPE_ENUM:
-		return f.Type.EnumName.Value
+		return t.EnumName.Value
 	// case proto.Type_TYPE_IMAGE:
 	// 	return "Image"
 	default:
@@ -360,6 +411,10 @@ var (
 	TemplateImport         = "import"
 	TemplateObject         = "object"
 	TemplateCustomFunction = "custom_function"
+	TemplateUpdateInput    = "update_input"
+	TemplateCreateInput    = "create_input"
+	TemplateGetInput       = "get_input"
+	TemplateListInput      = "list_input"
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {
