@@ -1,6 +1,7 @@
 package runtime_test
 
 import (
+	"encoding/json"
 	"errors"
 	"io/ioutil"
 	"os"
@@ -15,6 +16,7 @@ import (
 
 var TestCases = []string{
 	"non_existent_package_json",
+	"existing_package_json",
 }
 
 func TestAllTestCases(t *testing.T) {
@@ -32,11 +34,11 @@ func TestAllTestCases(t *testing.T) {
 			workingDir := filepath.Join("testdata", testCase.Name())
 			outDir := filepath.Join("testdata", testCase.Name(), "tmp")
 
-			runtime, err := runtime.NewRuntime(workingDir, outDir)
+			r, err := runtime.NewRuntime(workingDir, outDir)
 
 			require.NoError(t, err)
 
-			err = runtime.BootstrapPackageJson()
+			err = r.BootstrapPackageJson()
 
 			require.NoError(t, err)
 
@@ -45,6 +47,24 @@ func TestAllTestCases(t *testing.T) {
 			if _, err := os.Stat(packageJsonPath); errors.Is(err, os.ErrNotExist) {
 				assert.Fail(t, "package.json not created")
 			}
+
+			b, err := os.ReadFile(packageJsonPath)
+
+			require.NoError(t, err)
+
+			packageJsonContents := map[string]interface{}{}
+
+			err = json.Unmarshal(b, &packageJsonContents)
+
+			require.NoError(t, err)
+
+			devDeps, ok := packageJsonContents["devDependencies"].(map[string]interface{})
+
+			if !ok {
+				assert.Fail(t, "devDeps not in expected format")
+			}
+
+			assert.ObjectsAreEqual(devDeps, runtime.DEV_DEPENDENCIES)
 		})
 	}
 }
