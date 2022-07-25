@@ -1,3 +1,10 @@
+# [0.71.0](https://github.com/teamkeel/keel/compare/v0.70.0...v0.71.0) (2022-07-25)
+
+
+### Features
+
+* reconcile client applications' package.json required dependencies automatically ([#170](https://github.com/teamkeel/keel/issues/170)) ([0873c0a](https://github.com/teamkeel/keel/commit/0873c0add3a2f30d8b3396d049f88bbd2bb7d54d))
+
 # [0.70.0](https://github.com/teamkeel/keel/compare/v0.69.0...v0.70.0) (2022-07-25)
 
 
