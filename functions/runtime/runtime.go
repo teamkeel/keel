@@ -71,19 +71,31 @@ func (r *Runtime) Bundle(write bool) []error {
 	return nil
 }
 
-func (r *Runtime) ScaffoldFunction(name string, model string) error {
-	path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", name))
+func (r *Runtime) Scaffold() error {
+	for _, model := range r.Schema.Models {
+		for _, op := range model.Operations {
+			if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+				path := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", op.Name))
 
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		generator := codegen.NewCodeGenerator(r.Schema)
+				if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+					generator := codegen.NewCodeGenerator(r.Schema)
 
-		src := generator.GenerateFunction(model)
+					src := generator.GenerateFunction(model.Name)
 
-		if err != nil {
-			return err
+					if err != nil {
+						return err
+					}
+
+					err = os.WriteFile(path, []byte(src), 0644)
+
+					fmt.Printf("Scaffolded function %s (%s)", op.Name, path)
+
+					if err != nil {
+						return err
+					}
+				}
+			}
 		}
-
-		return os.WriteFile(path, []byte(src), 0644)
 	}
 
 	return nil
