@@ -46,6 +46,24 @@ func newPromise(fn func() (any, error)) any {
 		reject := args[1]
 
 		go func() {
+			// handle panics
+			defer func() {
+				if r := recover(); r != nil {
+					msg := "panic"
+					switch r.(type) {
+					case string:
+						msg = r.(string)
+					case error:
+						e := r.(error)
+						msg = e.Error()
+					}
+					// err should be an instance of `error`, eg `errors.New("some error")`
+					errorConstructor := js.Global().Get("Error")
+					errorObject := errorConstructor.New(msg)
+					reject.Invoke(errorObject)
+				}
+			}()
+
 			data, err := fn()
 			if err != nil {
 				// err should be an instance of `error`, eg `errors.New("some error")`
@@ -98,6 +116,7 @@ func provideCompletions(this js.Value, args []js.Value) any {
 // a map of GraphQL schemas where the keys are the names of
 // any api's in the Keel schema that used the @graphql attribute
 func getGraphQLSchemas(this js.Value, args []js.Value) any {
+
 	return newPromise(func() (any, error) {
 		builder := schema.Builder{}
 
