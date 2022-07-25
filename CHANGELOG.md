@@ -1,3 +1,10 @@
+# [0.70.0](https://github.com/teamkeel/keel/compare/v0.69.0...v0.70.0) (2022-07-25)
+
+
+### Features
+
+* provide scaffolding for function codegen ([#172](https://github.com/teamkeel/keel/issues/172)) ([3b41fd4](https://github.com/teamkeel/keel/commit/3b41fd44dc4b405bd97b80d6a32c1fd1208b4375))
+
 # [0.69.0](https://github.com/teamkeel/keel/compare/v0.68.1...v0.69.0) (2022-07-25)
 
 
