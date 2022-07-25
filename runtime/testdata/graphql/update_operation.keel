@@ -1,21 +1,17 @@
 model Person {
     fields {
-        occupation Occupation
+        name Text
     }
 
     operations {
         get getPerson(id)
+        update updatePerson(id) with (name)
     }
 }
 
-enum Occupation {
-    Teacher
-    Doctor
-    Firefighter
-    Astronaut
-}
-
 api Test {
+    @graphql
+
     models {
         Person
     }

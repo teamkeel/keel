@@ -3,6 +3,7 @@ module github.com/teamkeel/keel
 go 1.18
 
 require (
+	github.com/99designs/gqlgen v0.17.13
 	github.com/alecthomas/participle/v2 v2.0.0-alpha8
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/docker/go-connections v0.4.0
@@ -18,7 +19,7 @@ require (
 	github.com/samber/lo v1.25.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.5.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	golang.org/x/exp v0.0.0-20220706164943-b4a6d9510983
 	golang.org/x/text v0.3.7
 	google.golang.org/protobuf v1.28.0
@@ -45,8 +46,8 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect
-	github.com/mattn/go-colorable v0.1.6 // indirect
-	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
@@ -56,7 +57,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519 // indirect
-	golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 // indirect
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	gotest.tools/v3 v3.3.0 // indirect

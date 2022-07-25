@@ -2,18 +2,22 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
 	"strings"
+	"sync"
 
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/migrations"
+	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"gorm.io/gorm"
@@ -55,12 +59,17 @@ var runCmd = &cobra.Command{
 			panic(err)
 		}
 
+		var mutex sync.Mutex
+
 		currSchema, err := migrations.GetCurrentSchema(db)
 		if err != nil {
 			panic(err)
 		}
 
 		reloadSchema := func(changedFile string) {
+			mutex.Lock()
+			defer mutex.Unlock()
+
 			clearTerminal()
 			printRunHeader(schemaDir, dbConnInfo)
 
@@ -84,6 +93,7 @@ var runCmd = &cobra.Command{
 
 				fmt.Println(out)
 				fmt.Println("🚨 Schema has errors")
+				currSchema = nil
 				return
 			}
 
@@ -111,8 +121,45 @@ var runCmd = &cobra.Command{
 		defer stopWatcher()
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			mutex.Lock()
+			defer mutex.Unlock()
+
 			fmt.Printf("Request: %s %s\n", r.Method, r.URL.Path)
-			w.Write([]byte("Hello"))
+
+			if strings.HasSuffix(r.URL.Path, "/graphiql") {
+				handler := playground.Handler("GraphiQL", strings.TrimSuffix(r.URL.Path, "/graphiql"))
+				handler(w, r)
+				return
+			}
+
+			if currSchema == nil {
+				w.WriteHeader(400)
+				w.Write([]byte("Cannot serve requests when schema contains errors"))
+				return
+			}
+
+			handler := runtime.NewHandler(currSchema)
+
+			body, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				w.WriteHeader(400)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			response, err := handler(&runtime.Request{
+				Context: r.Context(),
+				URL:     *r.URL,
+				Body:    body,
+			})
+			if err != nil {
+				w.WriteHeader(400)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			w.WriteHeader(response.Status)
+			w.Write(response.Body)
 		})
 
 		reloadSchema("")
