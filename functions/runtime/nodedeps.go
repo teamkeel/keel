@@ -13,10 +13,6 @@ import (
 	"github.com/aybabtme/orderedjson"
 )
 
-type Version struct {
-	RawVersion string
-}
-
 type Dependencies = map[string]string
 
 type PackageJson struct {
