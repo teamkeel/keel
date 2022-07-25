@@ -49,9 +49,7 @@ func (r *Runtime) Generate() (filePath string, err error) {
 	return filePath, err
 }
 
-// Bundle transpiles all TypeScript in a working directory using
-// esbuild, and outputs the JavaScript equivalent to the OutDir
-func (r *Runtime) Bundle(write bool) (errs []error) {
+func (r *Runtime) InstallDeps() error {
 	// NPM install all dependencies from the working directories'
 	// package.json file so we can bundle the code
 	npmInstall := exec.Command("npm", "install")
@@ -61,6 +59,18 @@ func (r *Runtime) Bundle(write bool) (errs []error) {
 
 	// .Run() waits for the npm install command to complete
 	err := npmInstall.Run()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Bundle transpiles all TypeScript in a working directory using
+// esbuild, and outputs the JavaScript equivalent to the OutDir
+func (r *Runtime) Bundle(write bool) (errs []error) {
+	err := r.InstallDeps()
 
 	if err != nil {
 		return []error{err}

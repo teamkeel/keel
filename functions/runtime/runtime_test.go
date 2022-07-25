@@ -60,6 +60,10 @@ func TestAllCases(t *testing.T) {
 			runtime, err := runtime.NewRuntime(workingDir, outDir)
 			require.NoError(t, err)
 
+			err = runtime.InstallDeps()
+
+			require.NoError(t, err)
+
 			_, err = runtime.Generate()
 			require.NoError(t, err)
 
