@@ -7,16 +7,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/functions/runtime/nodedeps"
 )
-
-var TestCases = []string{
-	"non_existent_package_json",
-	"existing_package_json",
-}
 
 func TestAllTestCases(t *testing.T) {
 	testCases, err := ioutil.ReadDir("testdata")
@@ -24,10 +18,6 @@ func TestAllTestCases(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
-		if !lo.Contains(TestCases, testCase.Name()) {
-			continue
-		}
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 
 			workingDir := filepath.Join("testdata", testCase.Name())

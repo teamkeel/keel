@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "ES2015",
+      "DOM"
+    ],
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "paths": {
+      "@teamkeel/sdk": [".keel/index.ts"]
+    }
+  }
+}
