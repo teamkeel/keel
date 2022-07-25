@@ -1,3 +1,11 @@
+## [0.71.1](https://github.com/teamkeel/keel/compare/v0.71.0...v0.71.1) (2022-07-25)
+
+
+### Bug Fixes
+
+* fix validation for permission attribute ([ab0c6bd](https://github.com/teamkeel/keel/commit/ab0c6bdf1c86e5e753e53d9461b99c1e6f2c6bcf))
+* handle panics in wasm binary promise handler ([9123b53](https://github.com/teamkeel/keel/commit/9123b530be0ce3ebe22f84f13d153951d828d124))
+
 # [0.71.0](https://github.com/teamkeel/keel/compare/v0.70.0...v0.71.0) (2022-07-25)
 
 
