@@ -30,9 +30,6 @@ type Response struct {
 }
 
 func TestAllCases(t *testing.T) {
-	// todo: reinstate
-	t.Skip()
-
 	testCases, err := ioutil.ReadDir("testdata")
 	require.NoError(t, err)
 
@@ -63,8 +60,17 @@ func TestAllCases(t *testing.T) {
 			runtime, err := runtime.NewRuntime(workingDir, outDir)
 			require.NoError(t, err)
 
+			err = runtime.ReconcilePackageJson()
+			require.NoError(t, err)
+
 			err = runtime.InstallDeps()
 
+			require.NoError(t, err)
+
+			err = runtime.BuildSDK()
+			require.NoError(t, err)
+
+			err = runtime.LinkSDK()
 			require.NoError(t, err)
 
 			_, err = runtime.Generate()

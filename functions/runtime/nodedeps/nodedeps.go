@@ -17,7 +17,7 @@ import (
 
 var DEV_DEPENDENCIES = map[string]string{
 	"@types/node":   "^18.0.6",
-	"@teamkeel/sdk": "^0.0.1",
+	"@teamkeel/sdk": "^0.76.0",
 	"typescript":    "^4.7.4",
 }
 
@@ -296,8 +296,7 @@ func (p *PackageJson) Write() error {
 	}
 
 	// Update the lockfile
-	// todo: reinstate after package publish
-	// err = p.Install()
+	err = p.Install()
 
 	if err != nil {
 		return err

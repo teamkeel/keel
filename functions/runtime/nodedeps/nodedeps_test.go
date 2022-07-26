@@ -29,7 +29,6 @@ func TestAllTestCases(t *testing.T) {
 		}
 
 		t.Run(testCase.Name(), func(t *testing.T) {
-
 			workingDir := filepath.Join("testdata", testCase.Name())
 			packageJsonPath := filepath.Join(workingDir, "package.json")
 
