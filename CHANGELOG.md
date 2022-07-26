@@ -1,3 +1,10 @@
+# [0.78.0](https://github.com/teamkeel/keel/compare/v0.77.0...v0.78.0) (2022-07-26)
+
+
+### Features
+
+* support delete action type ([cb747df](https://github.com/teamkeel/keel/commit/cb747df9d2aa55823eb915a4cff0b64293c88cb0))
+
 # [0.77.0](https://github.com/teamkeel/keel/compare/v0.76.0...v0.77.0) (2022-07-26)
 
 
