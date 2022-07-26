@@ -18,6 +18,7 @@ import (
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"gorm.io/gorm"
@@ -148,7 +149,7 @@ var runCmd = &cobra.Command{
 			}
 
 			response, err := handler(&runtime.Request{
-				Context: r.Context(),
+				Context: runtimectx.NewContext(db),
 				URL:     *r.URL,
 				Body:    body,
 			})

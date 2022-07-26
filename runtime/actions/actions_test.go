@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -79,14 +78,13 @@ func TestCreate(t *testing.T) {
 			schema := protoSchema(t, keelSchema)
 			createOp := findOp(t, schema, operationName)
 			args := inputArgs(t, inputArgsJSON)
-			ctx := runtimectx.WithDB(context.Background(), testDB)
 
 			// Migrate the database to this schema, in readiness for the Create Action.
 			m := migrations.New(schema, nil)
 			require.NoError(t, m.Apply(testDB))
 
 			// Call the Create Operation.
-			response, err := Create(ctx, createOp, schema, args)
+			response, err := Create(runtimectx.NewContext(testDB), createOp, schema, args)
 			require.NoError(t, err)
 
 			// Check we got the correct return value.
