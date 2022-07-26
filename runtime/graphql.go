@@ -11,12 +11,11 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
-	"gorm.io/gorm"
 )
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
 // are the API names from the provided proto.Schema
-func NewGraphQLSchema(db *gorm.DB, proto *proto.Schema, api *proto.Api) (*graphql.Schema, error) {
+func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, error) {
 	m := &graphqlSchemaBuilder{
 		proto: proto,
 		query: graphql.NewObject(graphql.ObjectConfig{
@@ -31,7 +30,7 @@ func NewGraphQLSchema(db *gorm.DB, proto *proto.Schema, api *proto.Api) (*graphq
 		enums: map[string]*graphql.Enum{},
 	}
 
-	return m.build(api, proto, db)
+	return m.build(api, proto)
 }
 
 // A graphqlSchemaBuilder exposes a Make method, that makes a set of graphql.Schema objects - one for each
@@ -45,7 +44,7 @@ type graphqlSchemaBuilder struct {
 }
 
 // build returns a graphql.Schema that implements the given API.
-func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema, db *gorm.DB) (*graphql.Schema, error) {
+func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*graphql.Schema, error) {
 	// The graphql top level query contents will be comprised ONLY of the
 	// OPERATIONS from the keel schema. But to find these we have to traverse the
 	// schema, first by model, then by said model's operations. As a side effect
@@ -60,7 +59,7 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema, db *
 		for _, op := range model.Operations {
 			switch op.Implementation {
 			case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
-				err := mk.addOperation(db, op, schema)
+				err := mk.addOperation(op, schema)
 				if err != nil {
 					return nil, err
 				}
@@ -112,7 +111,6 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 
 // addOperation generates the graphql field object to represent the given proto.Operation
 func (mk *graphqlSchemaBuilder) addOperation(
-	db *gorm.DB,
 	op *proto.Operation,
 	schema *proto.Schema) error {
 

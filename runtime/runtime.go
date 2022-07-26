@@ -30,7 +30,7 @@ func NewHandler(db *gorm.DB, s *proto.Schema) Handler {
 	for _, api := range s.Apis {
 		switch api.Type {
 		case proto.ApiType_API_TYPE_GRAPHQL:
-			handlers["/"+api.Name] = NewGraphQLHandler(db, s, api)
+			handlers["/"+api.Name] = NewGraphQLHandler(s, api)
 		default:
 			panic(fmt.Sprintf("api type %s not supported", api.Type.String()))
 		}
@@ -49,8 +49,8 @@ func NewHandler(db *gorm.DB, s *proto.Schema) Handler {
 	}
 }
 
-func NewGraphQLHandler(db *gorm.DB, s *proto.Schema, api *proto.Api) Handler {
-	gqlSchema, err := NewGraphQLSchema(db, s, api)
+func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
+	gqlSchema, err := NewGraphQLSchema(s, api)
 	if err != nil {
 		panic(err)
 	}
