@@ -321,7 +321,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 	}
 
 	renderImports := func(sch *proto.Schema) (acc string) {
-		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+		acc += fmt.Sprintf("\n%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 			"Name": "{ startRuntimeServer }",
 			"Path": "@teamkeel/sdk",
 		}))
