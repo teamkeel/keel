@@ -6,7 +6,7 @@
 # a schema file.
 
 # To use local executable (e.g go build cmd/keel/main.go), do:
-# npm install --postinstall_keel_generate --postinstall_keel_use_local_executable
+# npm install --postinstall_keel_use_local_executable
 
 src_dir="$npm_config_local_prefix"
 
