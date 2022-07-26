@@ -1,3 +1,10 @@
+# [0.74.0](https://github.com/teamkeel/keel/compare/v0.73.0...v0.74.0) (2022-07-26)
+
+
+### Features
+
+* include correct esbuild dep ([#181](https://github.com/teamkeel/keel/issues/181)) ([992183c](https://github.com/teamkeel/keel/commit/992183c0c80f8c90fa8e83a3771e230eb046fcdd))
+
 # [0.73.0](https://github.com/teamkeel/keel/compare/v0.72.0...v0.73.0) (2022-07-26)
 
 
