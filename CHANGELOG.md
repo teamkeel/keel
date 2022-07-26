@@ -1,3 +1,10 @@
+# [0.75.0](https://github.com/teamkeel/keel/compare/v0.74.0...v0.75.0) (2022-07-26)
+
+
+### Features
+
+* pin esbuild deps ([#182](https://github.com/teamkeel/keel/issues/182)) ([840a32a](https://github.com/teamkeel/keel/commit/840a32a2472e8f4a18fdc16031a684745ab830bf))
+
 # [0.74.0](https://github.com/teamkeel/keel/compare/v0.73.0...v0.74.0) (2022-07-26)
 
 
