@@ -139,7 +139,7 @@ var runCmd = &cobra.Command{
 				return
 			}
 
-			handler := runtime.NewHandler(db, currSchema)
+			handler := runtime.NewHandler(currSchema)
 
 			body, err := ioutil.ReadAll(r.Body)
 			if err != nil {

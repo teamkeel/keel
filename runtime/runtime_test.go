@@ -63,7 +63,7 @@ func TestRuntime(t *testing.T) {
 	require.NoError(t, m.Apply(testDB))
 
 	// todo This call should'nt need testDB
-	handler := NewHandler(testDB, schema)
+	handler := NewHandler(schema)
 	reqBody := queryAsJSONPayload(t, experimentMutation, map[string]any{"name": "fred"})
 	request := Request{
 		Context: runtimectx.NewContext(testDB),

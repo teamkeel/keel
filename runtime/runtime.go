@@ -8,7 +8,6 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
-	"gorm.io/gorm"
 )
 
 type Request struct {
@@ -24,7 +23,7 @@ type Response struct {
 
 type Handler func(r *Request) (*Response, error)
 
-func NewHandler(db *gorm.DB, s *proto.Schema) Handler {
+func NewHandler(s *proto.Schema) Handler {
 	handlers := map[string]Handler{}
 
 	for _, api := range s.Apis {
