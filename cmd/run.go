@@ -124,6 +124,26 @@ var runCmd = &cobra.Command{
 				fmt.Println("🤟 Generated custom functions")
 			}
 
+			_, err = customFunctionRuntime.Generate()
+
+			if err != nil {
+				panic(err)
+			}
+
+			errs := customFunctionRuntime.Bundle(true)
+
+			if len(errs) > 0 {
+				panic(errs)
+			}
+
+			_, err = customFunctionRuntime.RunServer(3001, func(_ *os.Process) {
+				fmt.Println("👾 Custom code runtime ready")
+			})
+
+			if err != nil {
+				panic(err)
+			}
+
 			currSchema = protoSchema
 			fmt.Println("🎉 You're ready to roll")
 		}
@@ -183,6 +203,7 @@ var runCmd = &cobra.Command{
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		<-c
+
 		fmt.Println("\n👋 Bye bye")
 		return nil
 	},

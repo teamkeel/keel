@@ -88,7 +88,8 @@ func TestAllCases(t *testing.T) {
 			require.Len(t, errs, 0)
 
 			port := 3001
-			err = runtime.RunServer(port, func(p *os.Process) {
+
+			_, err = runtime.RunServer(port, func(p *os.Process) {
 				// Loop until we receive a 200 status from the node server
 				// If there is never a 200, then the test will timeout after prescribed timeout period, and fail
 				for {

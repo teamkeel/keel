@@ -22,7 +22,7 @@ type Runtime struct {
 	generator  codegen.CodeGenerator
 }
 
-var DEV_DIRECTORY = ".keel"
+var DEV_DIRECTORY = ".keel_generated"
 var FUNCTIONS_DIRECTORY = "functions"
 
 func NewRuntime(schema *proto.Schema, workingDir string, outDir string) (*Runtime, error) {
@@ -81,7 +81,7 @@ func (r *Runtime) Bundle(write bool) (errs []error) {
 		Outdir:   filepath.Join(r.OutDir, "dist"),
 		Write:    write,
 		Platform: api.PlatformNode,
-		LogLevel: api.LogLevelInfo,
+		LogLevel: api.LogLevelError,
 	})
 
 	if len(buildResult.Errors) > 0 {
@@ -106,9 +106,7 @@ func (r *Runtime) Scaffold() error {
 
 	for _, model := range r.Schema.Models {
 		for _, op := range model.Operations {
-			// fmt.Printf("%s (%s)\n", op.Name, proto.OperationImplementation_name[int32(op.Implementation)])
 			if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-
 				path, err := filepath.Abs(filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY, fmt.Sprintf("%s.ts", op.Name)))
 
 				if err != nil {
@@ -138,11 +136,11 @@ func (r *Runtime) Scaffold() error {
 	return nil
 }
 
-func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
+func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) (*os.Process, error) {
 	serverDistPath := filepath.Join(r.OutDir, "dist", "index.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
-		panic(".keel/dist/index.js has not been generated")
+		panic(".keel_generated/dist/index.js has not been generated")
 	}
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
@@ -156,12 +154,12 @@ func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
 	err := cmd.Start()
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	onBoot(cmd.Process)
 
-	return nil
+	return cmd.Process, nil
 }
 
 func (r *Runtime) buildResultErrors(errs []api.Message) (e []error) {
