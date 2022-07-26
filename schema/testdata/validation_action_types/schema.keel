@@ -1,0 +1,9 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    operations {
+        foo something()
+    }
+}

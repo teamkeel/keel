@@ -204,7 +204,7 @@ func (ast *AttributeArgumentNode) String() string {
 type ActionNode struct {
 	node.Node
 
-	Type       string             `@Ident`
+	Type       NameNode           `@@`
 	Name       NameNode           `@@`
 	Inputs     []*ActionInputNode `"(" ( @@ ( "," @@ )* )? ")"`
 	With       []*ActionInputNode `( "with" "(" ( @@ ( "," @@ )* ) ")" )?`

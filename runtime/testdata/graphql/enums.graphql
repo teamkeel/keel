@@ -2,6 +2,14 @@ type Query {
   getPerson(input: GetPersonInput!): Person
 }
 
+type Mutation {
+  createPerson(input: CreatePersonInput!): Person!
+}
+
+input CreatePersonInput {
+  occupation: Occupation!
+}
+
 input GetPersonInput {
   id: ID!
 }

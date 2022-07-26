@@ -73,7 +73,7 @@ func TestSchema(t *testing.T) {
 				require.NoError(t, err)
 
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
-				require.NotNil(t, err)
+				require.NotNil(t, err, "expected there to be validation errors")
 
 				expectedJSON = expectedErrors
 				actualJSON, err = json.Marshal(err)

@@ -179,7 +179,7 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 		ModelName:      modelName,
 		Name:           parserFunction.Name.Value,
 		Implementation: impl,
-		Type:           scm.mapToOperationType(parserFunction.Type),
+		Type:           scm.mapToOperationType(parserFunction.Type.Value),
 	}
 
 	model := query.Model(scm.asts, modelName)
@@ -403,6 +403,8 @@ func (scm *Builder) mapToOperationType(parsedOperation string) proto.OperationTy
 		return proto.OperationType_OPERATION_TYPE_GET
 	case parser.ActionTypeList:
 		return proto.OperationType_OPERATION_TYPE_LIST
+	case parser.ActionTypeDelete:
+		return proto.OperationType_OPERATION_TYPE_DELETE
 	default:
 		return proto.OperationType_OPERATION_TYPE_UNKNOWN
 	}

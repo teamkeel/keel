@@ -68,12 +68,12 @@ func TestModelWithFunctions(t *testing.T) {
 	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
 
-	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Functions[0].Type)
+	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Functions[0].Type.Value)
 	assert.Equal(t, "createAuthor", schema.Declarations[0].Model.Sections[1].Functions[0].Name.Value)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[0].Inputs, 1)
 	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[1].Functions[0].Inputs[0].Type.Fragments[0].Fragment)
 
-	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[1].Functions[1].Type)
+	assert.Equal(t, "get", schema.Declarations[0].Model.Sections[1].Functions[1].Type.Value)
 	assert.Equal(t, "author", schema.Declarations[0].Model.Sections[1].Functions[1].Name.Value)
 	assert.Len(t, schema.Declarations[0].Model.Sections[1].Functions[1].Inputs, 1)
 	assert.Equal(t, "id", schema.Declarations[0].Model.Sections[1].Functions[1].Inputs[0].Type.Fragments[0].Fragment)

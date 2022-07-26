@@ -38,6 +38,7 @@ var validatorFuncs = []validationFunc{
 	model.UniqueModelNamesRule,
 	// Begin sub actions of model
 	model.ActionNamingRule,
+	model.ActionTypesRule,
 	model.UniqueOperationNamesRule,
 	model.ValidActionInputsRule,
 	model.GetOperationUniqueConstraintRule,
