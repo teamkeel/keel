@@ -1,3 +1,10 @@
+# [0.72.0](https://github.com/teamkeel/keel/compare/v0.71.1...v0.72.0) (2022-07-26)
+
+
+### Features
+
+* generate input interfaces from input definitions in schema ([#176](https://github.com/teamkeel/keel/issues/176)) ([013c947](https://github.com/teamkeel/keel/commit/013c947880c3a993aa3114d8761ab0c63e8b36b5))
+
 ## [0.71.1](https://github.com/teamkeel/keel/compare/v0.71.0...v0.71.1) (2022-07-25)
 
 
