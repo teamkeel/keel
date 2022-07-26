@@ -1,3 +1,10 @@
+# [0.77.0](https://github.com/teamkeel/keel/compare/v0.76.0...v0.77.0) (2022-07-26)
+
+
+### Features
+
+* adds sdk postinstall script to generate dynamic code  ([#186](https://github.com/teamkeel/keel/issues/186)) ([216ea53](https://github.com/teamkeel/keel/commit/216ea5321328fbcf974935549fb850642b0bd740))
+
 # [0.76.0](https://github.com/teamkeel/keel/compare/v0.75.0...v0.76.0) (2022-07-26)
 
 
