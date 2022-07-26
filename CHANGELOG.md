@@ -1,3 +1,10 @@
+# [0.76.0](https://github.com/teamkeel/keel/compare/v0.75.0...v0.76.0) (2022-07-26)
+
+
+### Features
+
+* add sdk dep install to workflow ([#183](https://github.com/teamkeel/keel/issues/183)) ([ce7048f](https://github.com/teamkeel/keel/commit/ce7048f1c0d576b8c2b9bd6b959dfab382f7e0d8))
+
 # [0.75.0](https://github.com/teamkeel/keel/compare/v0.74.0...v0.75.0) (2022-07-26)
 
 
