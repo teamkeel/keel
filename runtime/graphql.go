@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -143,7 +144,13 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			return actions.Create(p.Context, op, schema, p.Args)
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+
+			return actions.Create(p.Context, op, schema, inputMap)
 		}
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
