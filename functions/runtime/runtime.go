@@ -83,7 +83,7 @@ func (r *Runtime) BuildSDK() error {
 
 // DEV ONLY
 func (r *Runtime) LinkSDK() error {
-	cmd := exec.Command("npm", "link", "../../../../sdk")
+	cmd := exec.Command("npm", "link", "../../../sdk")
 	cmd.Dir = r.WorkingDir
 
 	o, err := cmd.CombinedOutput()

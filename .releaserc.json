@@ -12,7 +12,7 @@
         "pkgRoot": "wasm"
       }],
       ["@semantic-release/npm", {
-        "pkgRoot": "sdk"
+        "pkgRoot": "functions/sdk"
       }],
       "@semantic-release/git"
     ]

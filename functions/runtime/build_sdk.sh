@@ -2,7 +2,7 @@
 
 echo "$PWD"
 
-cd ../../sdk
+cd ../sdk
 
 npm i
 npm run build
