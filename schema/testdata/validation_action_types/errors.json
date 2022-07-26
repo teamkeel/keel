@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "foo is not a valid action type. Valid types are get, create, update, list, or delete",
+      "short_message": "invalid action type",
+      "hint": "",
+      "code": "E040",
+      "pos": {
+        "filename": "testdata/validation_action_types/schema.keel",
+        "offset": 78,
+        "line": 7,
+        "column": 9
+      },
+      "end_pos": {
+        "filename": "testdata/validation_action_types/schema.keel",
+        "offset": 81,
+        "line": 7,
+        "column": 12
+      }
+    }
+  ]
+}

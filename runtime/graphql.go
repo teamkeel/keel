@@ -367,9 +367,18 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
 	var in graphql.Input
 
-	in, ok := protoTypeToGraphQLInput[op.Type.Type]
-	if !ok {
-		return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
+	switch op.Type.Type {
+	case proto.Type_TYPE_ENUM:
+		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
+			return e.Name == op.Type.EnumName.Value
+		})
+		in = mk.addEnum(enum)
+	default:
+		var ok bool
+		in, ok = protoTypeToGraphQLInput[op.Type.Type]
+		if !ok {
+			return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
+		}
 	}
 
 	if !op.Optional {

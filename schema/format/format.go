@@ -278,7 +278,7 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 				writer.Comments(op, func() {
 					writer.Write(
 						"%s %s",
-						lowerCamel(op.Type),
+						lowerCamel(op.Type.Value),
 						lowerCamel(op.Name.Value),
 					)
 

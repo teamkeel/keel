@@ -7,6 +7,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -110,6 +111,37 @@ func ActionNamingRule(asts []*parser.AST) (errors []error) {
 							},
 						},
 						action.Name,
+					),
+				)
+			}
+		}
+	}
+
+	return errors
+}
+
+var validActionTypes = []string{
+	parser.ActionTypeGet,
+	parser.ActionTypeCreate,
+	parser.ActionTypeUpdate,
+	parser.ActionTypeList,
+	parser.ActionTypeDelete,
+}
+
+func ActionTypesRule(asts []*parser.AST) (errors []error) {
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
+			if !lo.Contains(validActionTypes, action.Type.Value) {
+				errors = append(
+					errors,
+					errorhandling.NewValidationError(errorhandling.ErrorInvalidActionType,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Type":       action.Type.Value,
+								"ValidTypes": formatting.HumanizeList(validActionTypes, formatting.DelimiterOr),
+							},
+						},
+						action.Type,
 					),
 				)
 			}
@@ -244,7 +276,7 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 func CreateOperationNoReadInputsRule(asts []*parser.AST) (errors []error) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
-			if action.Type != parser.ActionTypeCreate {
+			if action.Type.Value != parser.ActionTypeCreate {
 				continue
 			}
 
@@ -295,7 +327,7 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errors []error) {
 		}
 
 		for _, action := range query.ModelActions(model) {
-			if action.Type != parser.ActionTypeCreate {
+			if action.Type.Value != parser.ActionTypeCreate {
 				continue
 			}
 
@@ -376,7 +408,7 @@ func UpdateOperationUniqueConstraintRule(asts []*parser.AST) []error {
 
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
-			if action.Type != parser.ActionTypeUpdate {
+			if action.Type.Value != parser.ActionTypeUpdate {
 				continue
 			}
 			errs := requireUniqueLookup(asts, action, model)
@@ -394,7 +426,7 @@ func GetOperationUniqueConstraintRule(asts []*parser.AST) []error {
 
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
-			if action.Type != parser.ActionTypeGet {
+			if action.Type.Value != parser.ActionTypeGet {
 				continue
 			}
 			errs := requireUniqueLookup(asts, action, model)
@@ -432,7 +464,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 				errorhandling.TemplateLiterals{
 					Literals: map[string]string{
 						"Input":         arg.Type.ToString(),
-						"OperationType": action.Type,
+						"OperationType": action.Type.Value,
 					},
 				},
 				arg,
@@ -474,7 +506,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 						errorhandling.TemplateLiterals{
 							Literals: map[string]string{
 								"Operator":      operator,
-								"OperationType": action.Type,
+								"OperationType": action.Type.Value,
 							},
 						},
 						condition.Operator,
@@ -522,7 +554,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 						errorhandling.TemplateLiterals{
 							Literals: map[string]string{
 								"Ident":         op.Ident.ToString(),
-								"OperationType": action.Type,
+								"OperationType": action.Type.Value,
 							},
 						},
 						op.Ident,
