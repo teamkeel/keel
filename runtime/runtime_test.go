@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
@@ -20,6 +21,80 @@ import (
 
 const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
 
+// keel schema + build + migrations
+// database setup (optional)
+// graphql operation (query or mutation)
+// graphql operation variables (JSON, optional)
+// assert against the response data (optional)
+// assert against the response errors (optional)
+// assert against the database
+
+type testCase struct {
+	name           string
+	schema         string
+	databaseSetup  func(t *testing.T, db *gorm.DB)
+	gqlOperation   string
+	variables      map[string]any
+	assertData     func(t *testing.T, data map[string]any)
+	assertErrors   func(t *testing.T, errors []gqlerrors.FormattedError)
+	assertDatabase func(t *testing.T, db *gorm.DB, data map[string]any)
+}
+
+var testCases = []testCase{
+	{
+		name: "create_operation",
+		schema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					get getPerson(id)
+					create createPerson() with (name)
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			assertValueAtPath(t, data, "createPerson.name", "Fred")
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := getValueAtPath(data, "createPerson.id")
+
+			var name string
+			err := db.Table("person").Where("id = ?", id).Pluck("name", &name).Error
+			require.NoError(t, err)
+			require.Equal(t, "Fred", name)
+		},
+	},
+}
+
+func assertValueAtPath(t *testing.T, d map[string]any, path string, v any) {
+	require.Equal(t, v, getValueAtPath(d, "createPerson.name"))
+}
+
+func getValueAtPath(d map[string]any, path string) any {
+	return ""
+}
+
 func TestRuntime(t *testing.T) {
 	// We connect to the "main" database here only so we can create a new database
 	// for each sub-test
@@ -28,59 +103,66 @@ func TestRuntime(t *testing.T) {
 		&gorm.Config{})
 	require.NoError(t, err)
 
-	// Make a database name for this test
-	re := regexp.MustCompile(`[^\w]`)
-	dbName := strings.ToLower(re.ReplaceAllString("experimentTest", ""))
+	for _, tCase := range testCases {
 
-	// Drop the database if it already exists. The normal dropping of it at the end of the
-	// test case is bypassed if you quit a debug run of the test in VS Code.
-	require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
+		_ = tCase
 
-	// Create the database and drop at the end of the test
-	err = mainDB.Exec("CREATE DATABASE " + dbName).Error
-	require.NoError(t, err)
-	defer func() {
-		require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
-	}()
+		t.Run(tCase.name, func(t *testing.T) {
 
-	// Connect to the newly created test database and close connection
-	// at the end of the test. We need to explicitly close the connection
-	// so the mainDB connection can drop the database.
-	testDB, err := gorm.Open(
-		postgres.Open(fmt.Sprintf(dbConnString, dbName)),
-		&gorm.Config{})
-	require.NoError(t, err)
-	defer func() {
-		conn, err := testDB.DB()
-		require.NoError(t, err)
-		conn.Close()
-	}()
+			// Make a database name for this test
+			re := regexp.MustCompile(`[^\w]`)
+			dbName := strings.ToLower(re.ReplaceAllString(tCase.name, ""))
 
-	schema := protoSchema(t, experimentalSchema)
+			// Drop the database if it already exists. The normal dropping of it at the end of the
+			// test case is bypassed if you quit a debug run of the test in VS Code.
+			require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
 
-	// Migrate the database to this schema, in readiness for the Create Action.
-	m := migrations.New(schema, nil)
-	require.NoError(t, m.Apply(testDB))
+			// Create the database and drop at the end of the test
+			err = mainDB.Exec("CREATE DATABASE " + dbName).Error
+			require.NoError(t, err)
+			defer func() {
+				require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
+			}()
 
-	// todo This call should'nt need testDB
-	handler := NewHandler(schema)
-	reqBody := queryAsJSONPayload(t, experimentMutation, map[string]any{"name": "fred"})
-	request := Request{
-		Context: runtimectx.NewContext(testDB),
-		URL: url.URL{
-			Path: "/Test",
-		},
-		Body: []byte(reqBody),
+			// Connect to the newly created test database and close connection
+			// at the end of the test. We need to explicitly close the connection
+			// so the mainDB connection can drop the database.
+			testDB, err := gorm.Open(
+				postgres.Open(fmt.Sprintf(dbConnString, dbName)),
+				&gorm.Config{})
+			require.NoError(t, err)
+			defer func() {
+				conn, err := testDB.DB()
+				require.NoError(t, err)
+				conn.Close()
+			}()
+
+			schema := protoSchema(t, tCase.schema)
+
+			// Migrate the database to this schema, in readiness for the Create Action.
+			m := migrations.New(schema, nil)
+			require.NoError(t, m.Apply(testDB))
+
+			handler := NewHandler(schema)
+			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
+			request := Request{
+				Context: runtimectx.NewContext(testDB),
+				URL: url.URL{
+					Path: "/Test",
+				},
+				Body: []byte(reqBody),
+			}
+
+			response, err := handler(&request)
+			respString := string(response.Body)
+			_ = respString
+			require.NoError(t, err)
+
+			_ = response
+
+			// Do some assertions
+		})
 	}
-
-	response, err := handler(&request)
-	respString := string(response.Body)
-	_ = respString
-	require.NoError(t, err)
-
-	_ = response
-
-	// Do some assertions
 }
 
 func protoSchema(t *testing.T, s string) *proto.Schema {
@@ -95,35 +177,6 @@ func protoSchema(t *testing.T, s string) *proto.Schema {
 	require.NoError(t, err)
 	return schema
 }
-
-var experimentalSchema string = `
-model Person {
-    fields {
-        name Text
-    }
-
-    operations {
-        get getPerson(id)
-        create createPerson() with (name)
-    }
-}
-
-api Test {
-    @graphql
-
-    models {
-        Person
-    }
-}
-`
-
-const experimentMutation string = `
-mutation someMutation($name: String!) {
-	createPerson(input: {name: $name}) {
-	  name
-	}
-}
-`
 
 func queryAsJSONPayload(t *testing.T, mutationString string, vars map[string]any) (asJSON string) {
 	d := map[string]any{
