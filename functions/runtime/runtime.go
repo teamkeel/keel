@@ -11,6 +11,7 @@ import (
 
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/teamkeel/keel/functions/codegen"
+	"github.com/teamkeel/keel/functions/runtime/nodedeps"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -23,7 +24,7 @@ type Runtime struct {
 }
 
 var SCHEMA_FILE = "schema.keel"
-var DEV_DIRECTORY = ".keel"
+var DEV_DIRECTORY = "keel_generated"
 var FUNCTIONS_DIRECTORY = "functions"
 
 func NewRuntime(workingDir string, outDir string) (*Runtime, error) {
@@ -48,6 +49,52 @@ func (r *Runtime) Generate() (filePath string, err error) {
 	filePath, err = r.makeModule(path.Join(r.OutDir, "index.ts"), src)
 
 	return filePath, err
+}
+
+func (r *Runtime) ReconcilePackageJson() error {
+	packageJson, err := nodedeps.NewPackageJson(filepath.Join(r.WorkingDir, "package.json"))
+
+	if err != nil {
+		return err
+	}
+
+	err = packageJson.Bootstrap()
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// DEV ONLY
+func (r *Runtime) BuildSDK() error {
+	cmd := exec.Command("sh", "./build_sdk.sh")
+	o, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Print(string(o))
+
+		return err
+	}
+
+	return nil
+}
+
+// DEV ONLY
+func (r *Runtime) LinkSDK() error {
+	cmd := exec.Command("npm", "link", "../../../sdk")
+	cmd.Dir = r.WorkingDir
+
+	o, err := cmd.CombinedOutput()
+
+	if err != nil {
+		fmt.Print(string(o))
+
+		return err
+	}
+
+	return nil
 }
 
 func (r *Runtime) InstallDeps() error {

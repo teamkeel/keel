@@ -7,12 +7,7 @@
     ],
     "baseUrl": "./",
     "esModuleInterop": true,
-    "moduleResolution": "node",
-    "paths": {
-      "~/*": [
-        "./*"
-      ]
-    }
+    "moduleResolution": "node"
   },
   "include": [
     "**/*.ts"

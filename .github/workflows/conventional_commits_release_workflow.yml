@@ -33,7 +33,7 @@ jobs:
         run: cd wasm && npm ci
 
       - name: Install sdk publish dependencies
-        run: cd sdk && npm ci
+        run: cd functions/sdk && npm ci
 
       - name: Generate wasm binary
         run: make wasm

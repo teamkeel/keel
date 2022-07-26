@@ -1,4 +1,4 @@
-import { CreatePostInput, API } from '@teamkeel/sdk'
+import { CreatePostInput, API } from '../keel_generated'
 
 export default async (inputs: CreatePostInput, api: API) => {
   const { Post } = api.models
