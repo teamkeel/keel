@@ -1,33 +1,15 @@
-
-interface CustomFunction {
-  call: any
-  contextModel: string
-}
-
-// Config represents the configuration values
-// to be passed to the Custom Code runtime server
-interface Config {
-  functions: Record<string, CustomFunction>
-}
-
 import { createServer, IncomingMessage, ServerResponse } from 'http'
-
-declare global {
-  namespace NodeJS {
-    interface ProcessEnv {
-      PORT?: string;
-    }
-  }
-}
-
 import url from 'url'
 
-const startServer = (config: Config) => {
+import { Config } from "~/types"
+
+const startRuntimeServer = (config: Config) => {
   const listener = async (req: IncomingMessage, res: ServerResponse) => {
     if (req.method === 'POST') {
-      const parts = url.parse(req.url)
+      const parts = url.parse(req.url!)
       const { pathname } = parts
-      const normalisedPathname = pathname.replace(/\//, "")
+
+      const normalisedPathname = pathname!.replace(/\//, "")
 
       const buffers = [];
 
@@ -60,7 +42,11 @@ const startServer = (config: Config) => {
   
   const server = createServer(listener)
 
-  server.listen(parseInt(process.env.PORT, 10), 'localhost', 2, () => {
+  const port = process.env.PORT && parseInt(process.env.PORT, 10) || 3001
+
+  server.listen(port, 'localhost', 2, () => {
     console.log('server listening')
   })
 }
+
+export default startRuntimeServer

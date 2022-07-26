@@ -31,7 +31,6 @@ func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	r += gen.GenerateEnums()
 	r += gen.GenerateInputs()
 	r += gen.GenerateAPIs()
-	r += gen.GenerateServer()
 	r += gen.GenerateEntryPoint()
 
 	return r
@@ -55,10 +54,6 @@ func (gen *CodeGenerator) GenerateFunction(model string) string {
 			"Model": model,
 		},
 	)
-}
-
-func (gen *CodeGenerator) GenerateServer() (r string) {
-	return renderTemplate(TemplateServer, map[string]interface{}{})
 }
 
 func (gen *CodeGenerator) GenerateEnums() (r string) {
@@ -277,6 +272,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 				for k := range entries {
 					keys = append(keys, k)
 				}
+
 				sort.Strings(keys)
 
 				var i int = 0
@@ -325,6 +321,11 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 	}
 
 	renderImports := func(sch *proto.Schema) (acc string) {
+		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+			"Name": "{ startRuntimeServer }",
+			"Path": "@teamkeel/sdk",
+		}))
+
 		for _, model := range sch.Models {
 			functions := lo.Filter(model.Operations, func(o *proto.Operation, _ int) bool {
 				return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
@@ -407,7 +408,6 @@ var (
 	TemplateInterface      = "interface"
 	TemplateTypeAlias      = "type_alias"
 	TemplateHandler        = "handler"
-	TemplateServer         = "server"
 	TemplateImport         = "import"
 	TemplateObject         = "object"
 	TemplateCustomFunction = "custom_function"

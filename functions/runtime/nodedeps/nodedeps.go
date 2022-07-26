@@ -16,8 +16,9 @@ import (
 )
 
 var DEV_DEPENDENCIES = map[string]string{
-	"@types/node": "^18.0.6",
-	"typescript":  "^4.7.4",
+	"@types/node":   "^18.0.6",
+	"@teamkeel/sdk": "^0.0.1",
+	"typescript":    "^4.7.4",
 }
 
 // We don't require any dependencies at the minute
@@ -102,9 +103,10 @@ func (p *PackageJson) Install() error {
 	workDir := path.Dir(p.Path)
 	npmInstall.Dir = workDir
 
-	err := npmInstall.Run()
+	o, err := npmInstall.CombinedOutput()
 
 	if err != nil {
+		fmt.Print(string(o))
 		return err
 	}
 
@@ -294,7 +296,8 @@ func (p *PackageJson) Write() error {
 	}
 
 	// Update the lockfile
-	err = p.Install()
+	// todo: reinstate after package publish
+	// err = p.Install()
 
 	if err != nil {
 		return err

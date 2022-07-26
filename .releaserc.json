@@ -11,6 +11,9 @@
       ["@semantic-release/npm", {
         "pkgRoot": "wasm"
       }],
+      ["@semantic-release/npm", {
+        "pkgRoot": "sdk"
+      }],
       "@semantic-release/git"
     ]
 }

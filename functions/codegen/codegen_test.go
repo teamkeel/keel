@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/functions/codegen"
 	"github.com/teamkeel/keel/schema"
 )
@@ -27,6 +28,15 @@ func TestCodeGeneration(t *testing.T) {
 
 	if len(toRun) > 0 {
 		testCases = toRun
+	}
+
+	var permittedTestCaseTypes = []string{
+		"model",
+		"enum",
+		"inputs",
+		"api",
+		"handler",
+		"custom_function",
 	}
 
 	for _, testCase := range testCases {
@@ -73,7 +83,7 @@ func TestCodeGeneration(t *testing.T) {
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else {
-				t.Fatal("Test case names must follow convention XXX_name where XXX is one of model, enum, api, handler, inputs or custom_function")
+				t.Fatalf("Test case names must follow convention XXX_name where XXX is one of %s", formatting.HumanizeList(permittedTestCaseTypes, formatting.DelimiterOr))
 			}
 		})
 	}
