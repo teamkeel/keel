@@ -23,17 +23,17 @@ export interface API {
 }
 
 export interface PostApi {
-  create: (inputs: PostInputs) => Promise<Post>
+  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
   delete: (id: string) => Promise<boolean>
   find: (p: Partial<Post>) => Promise<Post>
-  update: (id: string, inputs: PostInputs) => Promise<Post>
+  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
   findMany: (p: Partial<Post>) => Promise<Post[]>
 }
 
 export interface AuthorApi {
-  create: (inputs: AuthorInputs) => Promise<Author>
+  create: (inputs: Partial<Omit<Author, "id" | "createdAt" | "updatedAt">>) => Promise<Author>
   delete: (id: string) => Promise<boolean>
   find: (p: Partial<Author>) => Promise<Author>
-  update: (id: string, inputs: AuthorInputs) => Promise<Author>
+  update: (id: string, inputs: Partial<Omit<Author, "id" | "createdAt" | "updatedAt">>) => Promise<Author>
   findMany: (p: Partial<Author>) => Promise<Author[]>
 }

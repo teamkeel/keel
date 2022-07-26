@@ -1,27 +1,34 @@
 model Post {
   fields {
     title Text
-    published Boolean
-    author Author
+    publishedAt Date?
   }
-}
 
-model Author {
-  fields {
-    name Text
-    posts Post[]
+  operations {
+    create createPost() with (title, publishedAt?)
+    update updatePostTitle(id) with(title)
+    list listPosts(from: Date, to: Date) {
+      @where(post.publishedAt >= from and post.publishedAt <= to)
+    }
   }
 }
 
 ===
 
-export interface PostInputs {
+export interface CreatePostInput {
   title: string
-  published: boolean
-  author: Author
+  publishedAt?: Date
 }
 
-export interface AuthorInputs {
-  name: string
-  posts: Post[]
+export interface UpdatePostTitleInput {
+  where: {
+    id: string
+  }
+
+  values: {
+    title: string
+  }
+}
+export interface ListPostsInput {
+  // todo
 }
