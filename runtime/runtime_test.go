@@ -88,13 +88,20 @@ func TestRuntime(t *testing.T) {
 				require.NoError(t, json.Unmarshal([]byte(body), &r))
 				tCase.assertData(t, r.Data)
 			}
+
+			// Do the specified assertion on the errors returned, if one is specified.
+			if tCase.assertErrors != nil {
+				var r respFields
+				require.NoError(t, json.Unmarshal([]byte(body), &r))
+				tCase.assertErrors(t, r.Errors)
+			}
 		})
 	}
 }
 
 type respFields struct {
-	Data   map[string]any `json:"data"`
-	Errors []error        `json:"errors"`
+	Data   map[string]any             `json:"data"`
+	Errors []gqlerrors.FormattedError `json:"errors"`
 }
 
 const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
@@ -175,6 +182,41 @@ var testCases = []testCase{
 			err := db.Table("person").Where("id = ?", id).Pluck("name", &name).Error
 			require.NoError(t, err)
 			require.Equal(t, "Fred", name)
+		},
+	},
+
+	{
+		name: "create_operation_errors",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					get getPerson(id)
+					create createPerson() with (name)
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					nosuchfield
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "Cannot query field \"nosuchfield\" on type \"Person\".", errors[0].Message)
 		},
 	},
 }
