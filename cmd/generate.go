@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/teamkeel/keel/functions/runtime"
+	"github.com/teamkeel/keel/functions"
 )
 
 var NODE_MODULE_DIR string = ".keel"
@@ -16,13 +15,19 @@ var generateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		schemaDir, _ := cmd.Flags().GetString("dir")
 
-		r, err := runtime.NewRuntime(schemaDir, filepath.Join(schemaDir, "node_modules", NODE_MODULE_DIR))
+		r, err := functions.NewRuntime(schemaDir)
 
 		if err != nil {
 			return err
 		}
 
-		_, err = r.Generate()
+		err = r.GenerateClient()
+
+		if err != nil {
+			return err
+		}
+
+		err = r.GenerateHandler()
 
 		if err != nil {
 			return err

@@ -1,4 +1,4 @@
-package nodedeps_test
+package functions_test
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/functions/runtime/nodedeps"
+	"github.com/teamkeel/keel/functions"
 )
 
 var TestCases = []string{
@@ -19,9 +19,10 @@ var TestCases = []string{
 }
 
 func TestAllTestCases(t *testing.T) {
+	// todo: reinstate test
 	t.Skip()
 
-	testCases, err := ioutil.ReadDir("testdata")
+	testCases, err := ioutil.ReadDir("nodedeps_testdata")
 
 	require.NoError(t, err)
 
@@ -31,10 +32,10 @@ func TestAllTestCases(t *testing.T) {
 		}
 
 		t.Run(testCase.Name(), func(t *testing.T) {
-			workingDir := filepath.Join("testdata", testCase.Name())
+			workingDir := filepath.Join("nodedeps_testdata", testCase.Name())
 			packageJsonPath := filepath.Join(workingDir, "package.json")
 
-			packageJson, err := nodedeps.NewPackageJson(packageJsonPath)
+			packageJson, err := functions.NewPackageJson(packageJsonPath)
 
 			require.NoError(t, err)
 
@@ -58,7 +59,7 @@ func TestAllTestCases(t *testing.T) {
 				assert.Fail(t, "devDeps not in expected format")
 			}
 
-			assert.ObjectsAreEqual(devDeps, nodedeps.DEV_DEPENDENCIES)
+			assert.ObjectsAreEqual(devDeps, functions.DEV_DEPENDENCIES)
 		})
 	}
 }

@@ -1,1 +1,2 @@
-keel_generated/
+dist/
+node_modules/

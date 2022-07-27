@@ -1,4 +1,4 @@
-package codegen
+package functions
 
 import (
 	"bytes"
@@ -16,7 +16,7 @@ type CodeGenerator struct {
 	schema *proto.Schema
 }
 
-//go:embed templates/*.tmpl
+//go:embed codegen_templates/*.tmpl
 var templates embed.FS
 
 func NewCodeGenerator(schema *proto.Schema) *CodeGenerator {
@@ -31,7 +31,7 @@ func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	r += gen.GenerateEnums()
 	r += gen.GenerateInputs()
 	r += gen.GenerateAPIs()
-	r += gen.GenerateEntryPoint()
+	// r += gen.GenerateEntryPoint()
 
 	return r
 }
@@ -334,7 +334,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 			for _, op := range functions {
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 					"Name": op.Name,
-					"Path": fmt.Sprintf("../functions/%s", op.Name),
+					"Path": fmt.Sprintf("../../../functions/%s", op.Name),
 				}))
 			}
 		}
@@ -418,7 +418,7 @@ var (
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {
-	template, err := template.ParseFS(templates, fmt.Sprintf("templates/%s.tmpl", name))
+	template, err := template.ParseFS(templates, fmt.Sprintf("codegen_templates/%s.tmpl", name))
 	if err != nil {
 		panic(err)
 	}

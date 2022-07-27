@@ -1,4 +1,4 @@
-package nodedeps
+package functions
 
 import (
 	"bytes"
@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strconv"
 
@@ -16,9 +15,10 @@ import (
 )
 
 var DEV_DEPENDENCIES = map[string]string{
-	"@types/node":   "^18.0.6",
-	"@teamkeel/sdk": "^0.76.0",
-	"typescript":    "^4.7.4",
+	"@types/node":       "^18.0.6",
+	"typescript":        "^4.7.4",
+	"@teamkeel/runtime": "^0.17.0",
+	"@teamkeel/sdk":     "^0.17.0",
 }
 
 // We don't require any dependencies at the minute
@@ -86,7 +86,7 @@ func NewPackageJson(path string) (*PackageJson, error) {
 }
 
 func (r *PackageJson) Bootstrap() error {
-	err := r.Inject(DEV_DEPENDENCIES, DEPENDENCIES)
+	err := r.Inject(DEV_DEPENDENCIES, true)
 
 	if err != nil {
 		return err
@@ -99,9 +99,7 @@ func (r *PackageJson) Bootstrap() error {
 // Call .Write() beforehand to persist any changes made.
 func (p *PackageJson) Install() error {
 	npmInstall := exec.Command("npm", "install")
-
-	workDir := path.Dir(p.Path)
-	npmInstall.Dir = workDir
+	npmInstall.Dir = filepath.Dir(p.Path)
 
 	o, err := npmInstall.CombinedOutput()
 
@@ -136,45 +134,49 @@ func (p *PackageJson) ReadIntoMemory() error {
 
 // Inject devDependencies into the package.json file
 // Where there are matching packages already, the version we inject overwrites the original
-func (p *PackageJson) Inject(devDeps map[string]string, deps map[string]string) error {
-	if p.DevDependencies != nil {
-		d := p.DevDependencies
+func (p *PackageJson) Inject(deps map[string]string, dev bool) error {
+	if dev {
+		if p.DevDependencies != nil {
+			d := p.DevDependencies
 
-		for packageName, version := range devDeps {
-			if originalVersion, found := d[packageName]; found {
-				d[packageName] = originalVersion
-			} else {
+			for packageName, version := range deps {
+				if _, found := d[packageName]; found {
+					d[packageName] = version
+				} else {
+					d[packageName] = version
+				}
+			}
+		} else {
+			var d = map[string]string{}
+
+			for packageName, version := range deps {
 				d[packageName] = version
 			}
-		}
-	} else {
-		var d = map[string]string{}
 
-		for packageName, version := range devDeps {
-			d[packageName] = version
+			p.DevDependencies = d
 		}
-
-		p.DevDependencies = d
 	}
 
-	if p.Dependencies != nil {
-		d := p.Dependencies
+	if !dev {
+		if p.Dependencies != nil {
+			d := p.Dependencies
 
-		for packageName, version := range deps {
-			if originalVersion, found := d[packageName]; found {
-				d[packageName] = originalVersion
-			} else {
+			for packageName, version := range deps {
+				if originalVersion, found := d[packageName]; found {
+					d[packageName] = originalVersion
+				} else {
+					d[packageName] = version
+				}
+			}
+		} else {
+			var d = map[string]string{}
+
+			for packageName, version := range deps {
 				d[packageName] = version
 			}
-		}
-	} else {
-		var d = map[string]string{}
 
-		for packageName, version := range deps {
-			d[packageName] = version
+			p.Dependencies = d
 		}
-
-		p.Dependencies = d
 	}
 
 	err := p.Write()
