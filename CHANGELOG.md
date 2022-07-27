@@ -1,3 +1,10 @@
+## [0.79.2](https://github.com/teamkeel/keel/compare/v0.79.1...v0.79.2) (2022-07-27)
+
+
+### Bug Fixes
+
+* handle actions that have no inputs in graphql ([e816082](https://github.com/teamkeel/keel/commit/e816082ec5f102dee779a90512f7b3c2d26c8d74))
+
 ## [0.79.1](https://github.com/teamkeel/keel/compare/v0.79.0...v0.79.1) (2022-07-27)
 
 
