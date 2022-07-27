@@ -3,7 +3,7 @@
     {
       "message": "field something has an unsupported type Unknown",
       "short_message": "Unknown isn't supported",
-      "hint": "Did you mean one of Boolean, Currency, Date, ID, Identity, Image, Number, Post, Text, or Timestamp?",
+      "hint": "Did you mean one of Boolean, Date, ID, Identity, Number, Post, Text, or Timestamp?",
       "code": "E009",
       "pos": {
         "filename": "testdata/validation_unsupported_field_type/schema.keel",

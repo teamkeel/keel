@@ -86,28 +86,16 @@ func provideCompletions(this js.Value, args []js.Value) any {
 	line := args[1].Get("line").Int()
 	column := args[1].Get("column").Int()
 
-	// A partial ast is returned from parser.Parse if there is a parse error
-	// the partial ast will include anything up to the parse error.
-	ast, _ := parser.Parse(
-		&reader.SchemaFile{
-			FileName: "schema.keel",
-			Contents: args[0].String(),
-		},
-	)
-
-	completions := completions.ProvideCompletions(ast, node.Position{
+	completions := completions.Completions(args[0].String(), &node.Position{
 		Column: column,
 		Line:   line,
 	})
 
-	astMap, _ := toMap(ast)
-
-	var untypedCompletions []any = toUntypedArray(completions)
+	untypedCompletions := toUntypedArray(completions)
 
 	return js.ValueOf(
 		map[string]any{
 			"completions": js.ValueOf(untypedCompletions),
-			"ast":         astMap,
 		},
 	)
 }
