@@ -115,16 +115,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	schema *proto.Schema) error {
 
 	model := proto.FindModel(schema.Models, op.ModelName)
-	operationInputType, err := mk.makeOperationInputType(op)
-	if err != nil {
-		return err
-	}
-
-	args := graphql.FieldConfigArgument{
-		"input": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(operationInputType),
-		},
-	}
 
 	outputType, err := mk.addModel(model)
 	if err != nil {
@@ -133,8 +123,22 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 	field := &graphql.Field{
 		Name: op.Name,
-		Args: args,
 		Type: outputType,
+	}
+
+	// Only add args if there are inputs for this operation
+	if len(op.Inputs) > 0 {
+		operationInputType, err := mk.makeOperationInputType(op)
+		if err != nil {
+			return err
+		}
+
+		field.Args = graphql.FieldConfigArgument{
+			"input": &graphql.ArgumentConfig{
+				Type: graphql.NewNonNull(operationInputType),
+			},
+		}
+
 	}
 
 	switch op.Type {
@@ -157,6 +161,11 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
 		// update returns a non-null type (or an error)
 		field.Type = graphql.NewNonNull(field.Type)
+
+		mk.mutation.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_DELETE:
+		// update returns a non-null type (or an error)
+		field.Type = graphql.ID
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
@@ -392,7 +401,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.
 		var ok bool
 		in, ok = protoTypeToGraphQLInput[op.Type.Type]
 		if !ok {
-			return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
+			return nil, fmt.Errorf("operation %s has unsupposed input type %s", op.OperationName, op.Type.Type.String())
 		}
 	}
 
@@ -538,7 +547,7 @@ func (mk *graphqlSchemaBuilder) queryInputTypeFor(op *proto.OperationInput) (gra
 		var ok bool
 		in, ok = protoTypeToGraphQLQueryInput[op.Type.Type]
 		if !ok {
-			return nil, fmt.Errorf("cannot yet make input type for a: %v", op.Type)
+			return nil, fmt.Errorf("operation %s has unsupported input type %s", op.OperationName, op.Type)
 		}
 	}
 
@@ -561,7 +570,9 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	})
 
 	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_CREATE:
+	case proto.OperationType_OPERATION_TYPE_GET,
+		proto.OperationType_OPERATION_TYPE_CREATE,
+		proto.OperationType_OPERATION_TYPE_DELETE:
 		for _, in := range op.Inputs {
 			fieldType, err := mk.inputTypeFor(in)
 			if err != nil {
@@ -582,6 +593,11 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
+		// Update operations could have no read or no write inputs if the filtering
+		// and updating is happening in @where or @set expressions
+		hasReadInputs := false
+		hasWriteInputs := false
+
 		for _, in := range op.Inputs {
 			fieldType, err := mk.inputTypeFor(in)
 			if err != nil {
@@ -594,18 +610,25 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 
 			switch in.Mode {
 			case proto.InputMode_INPUT_MODE_READ:
+				hasReadInputs = true
 				where.AddFieldConfig(in.Name, field)
 			case proto.InputMode_INPUT_MODE_WRITE:
+				hasWriteInputs = true
 				values.AddFieldConfig(in.Name, field)
 			}
 		}
 
-		inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(where),
-		})
-		inputType.AddFieldConfig("values", &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(values),
-		})
+		if hasReadInputs {
+			inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(where),
+			})
+		}
+
+		if hasWriteInputs {
+			inputType.AddFieldConfig("values", &graphql.InputObjectFieldConfig{
+				Type: graphql.NewNonNull(values),
+			})
+		}
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		where := graphql.NewInputObject(graphql.InputObjectConfig{
 			Name:   inputTypePrefix + "QueryInput",

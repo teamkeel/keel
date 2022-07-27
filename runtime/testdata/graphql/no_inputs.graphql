@@ -1,0 +1,46 @@
+type Query {
+  getBeatle: Beatle
+  listBeatles: BeatleConnection!
+}
+
+type Mutation {
+  createBeatle: Beatle!
+  deleteBeatle: ID
+  switchBeatle: Beatle!
+}
+
+type Beatle {
+  createdAt: Timestamp!
+  id: ID!
+  identity: Identity!
+  name: String!
+  updatedAt: Timestamp!
+}
+
+type BeatleConnection {
+  edges: [BeatleEdge!]!
+  pageInfo: PageInfo!
+}
+
+type BeatleEdge {
+  node: Beatle!
+}
+
+type Identity {
+  createdAt: Timestamp!
+  id: ID!
+  updatedAt: Timestamp!
+  username: String!
+}
+
+type PageInfo {
+  endCursor: String!
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String!
+  totalCount: Int!
+}
+
+type Timestamp {
+  seconds: Int!
+}
