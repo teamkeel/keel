@@ -17,8 +17,8 @@ import (
 var DEV_DEPENDENCIES = map[string]string{
 	"@types/node":       "^18.0.6",
 	"typescript":        "^4.7.4",
-	"@teamkeel/runtime": "^0.17.0",
-	"@teamkeel/sdk":     "^0.17.0",
+	"@teamkeel/runtime": "^0.79.0",
+	"@teamkeel/sdk":     "^0.79.0",
 }
 
 // We don't require any dependencies at the minute

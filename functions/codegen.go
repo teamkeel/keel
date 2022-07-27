@@ -31,7 +31,6 @@ func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	r += gen.GenerateEnums()
 	r += gen.GenerateInputs()
 	r += gen.GenerateAPIs()
-	// r += gen.GenerateEntryPoint()
 
 	return r
 }
@@ -322,8 +321,8 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 
 	renderImports := func(sch *proto.Schema) (acc string) {
 		acc += fmt.Sprintf("\n%s\n", renderTemplate(TemplateImport, map[string]interface{}{
-			"Name": "{ startRuntimeServer }",
-			"Path": "@teamkeel/sdk",
+			"Name": "startRuntimeServer",
+			"Path": "@teamkeel/runtime",
 		}))
 
 		for _, model := range sch.Models {

@@ -11,7 +11,7 @@ model Post {
 
 ===
 
-import { startRuntimeServer } from '@teamkeel/sdk'
+import startRuntimeServer from '@teamkeel/runtime'
 import createPost from '../../../functions/createPost'
 import updatePost from '../../../functions/updatePost'
 
