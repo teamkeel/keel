@@ -14,6 +14,9 @@
       ["@semantic-release/npm", {
         "pkgRoot": "functions/sdk"
       }],
+      ["@semantic-release/npm", {
+        "pkgRoot": "functions/runtime"
+      }],
       "@semantic-release/git"
     ]
 }
