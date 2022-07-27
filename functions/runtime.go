@@ -79,9 +79,10 @@ func (r *Runtime) Bundle(write bool) (errs []error) {
 	buildResult := api.Build(api.BuildOptions{
 		EntryPoints: []string{
 			path.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "index.ts"),
+			path.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "handler.ts"),
 		},
 		Bundle:         true,
-		Outdir:         filepath.Join(r.WorkingDir, "dist"),
+		Outdir:         filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "dist"),
 		Write:          write,
 		AllowOverwrite: true,
 		Platform:       api.PlatformNode,
@@ -126,18 +127,14 @@ func (r *Runtime) Scaffold() error {
 }
 
 func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
-	serverDistPath := filepath.Join(r.WorkingDir, "node_modules", ".keel", "dist", "index.js")
-
-	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
-		panic("client code has not been generated")
-	}
+	serverDistPath := filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
 		fmt.Print(err)
 		return err
 	}
 
-	cmd := exec.Command("node", filepath.Join(r.WorkingDir, "node_modules", ".keel", "dist", "index.js"))
+	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
 	cmd.Dir = r.WorkingDir
 	err := cmd.Start()
