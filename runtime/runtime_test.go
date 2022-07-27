@@ -95,6 +95,13 @@ func TestRuntime(t *testing.T) {
 				require.NoError(t, json.Unmarshal([]byte(body), &r))
 				tCase.assertErrors(t, r.Errors)
 			}
+
+			// Do the specified assertion on the resultant database contents, if one is specified.
+			if tCase.assertDatabase != nil {
+				var r respFields
+				require.NoError(t, json.Unmarshal([]byte(body), &r))
+				tCase.assertDatabase(t, testDB, r.Data)
+			}
 		})
 	}
 }
