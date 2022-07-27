@@ -1,3 +1,11 @@
+# [0.79.0](https://github.com/teamkeel/keel/compare/v0.78.0...v0.79.0) (2022-07-27)
+
+
+### Features
+
+* adds runtime to releaserc.json ([#191](https://github.com/teamkeel/keel/issues/191)) ([16b8032](https://github.com/teamkeel/keel/commit/16b803280f73ab96ea99aad03568b980d60720fb))
+* publish new npm modules ([#190](https://github.com/teamkeel/keel/issues/190)) ([ffe5cfb](https://github.com/teamkeel/keel/commit/ffe5cfbc0dce149cd88e5ef4c076c51797629237))
+
 # [0.78.0](https://github.com/teamkeel/keel/compare/v0.77.0...v0.78.0) (2022-07-26)
 
 
