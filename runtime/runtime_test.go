@@ -79,15 +79,22 @@ func TestRuntime(t *testing.T) {
 
 			// Call the handler, and capture the response.
 			response, err := handler(&request)
-			respString := string(response.Body)
-			_ = respString
+			body := string(response.Body)
 			require.NoError(t, err)
 
-			_ = response
-
-			// Do some assertions
+			// Do the specified assertion on the data returned, if one is specified.
+			if tCase.assertData != nil {
+				var r respFields
+				require.NoError(t, json.Unmarshal([]byte(body), &r))
+				tCase.assertData(t, r.Data)
+			}
 		})
 	}
+}
+
+type respFields struct {
+	Data   map[string]any `json:"data"`
+	Errors []error        `json:"errors"`
 }
 
 const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
@@ -128,7 +135,7 @@ type testCase struct {
 
 var testCases = []testCase{
 	{
-		name: "create_operation",
+		name: "create_operation_happy",
 		keelSchema: `
 			model Person {
 				fields {
