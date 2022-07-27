@@ -72,7 +72,7 @@ func (r *Runtime) ReconcilePackageJson() error {
 
 // Bundle transpiles all TypeScript in a working directory using
 // esbuild, and outputs the JavaScript equivalent to the OutDir
-func (r *Runtime) Bundle(write bool) (errs []error) {
+func (r *Runtime) Bundle(write bool) (api.BuildResult, []error) {
 	// Run esbuild on the generated entrypoint code
 	// The entrypoint references the users custom functions
 	// so these will be bundled in addition to any generated code
@@ -86,14 +86,14 @@ func (r *Runtime) Bundle(write bool) (errs []error) {
 		Write:          write,
 		AllowOverwrite: true,
 		Platform:       api.PlatformNode,
-		LogLevel:       api.LogLevelInfo,
+		LogLevel:       api.LogLevelError,
 	})
 
 	if len(buildResult.Errors) > 0 {
-		return r.buildResultErrors(buildResult.Errors)
+		return buildResult, r.buildResultErrors(buildResult.Errors)
 	}
 
-	return nil
+	return buildResult, nil
 }
 
 func (r *Runtime) Scaffold() error {
@@ -159,7 +159,7 @@ func (r *Runtime) makeModule(path string, code string) (string, error) {
 	dir := filepath.Dir(path)
 
 	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(dir, os.ModePerm)
+		err := os.MkdirAll(dir, os.ModePerm)
 
 		if err != nil {
 			return "", err
@@ -176,18 +176,9 @@ func (r *Runtime) makeModule(path string, code string) (string, error) {
 }
 
 func buildSchema(workingDir string) (*proto.Schema, error) {
-	if _, err := os.Stat(filepath.Join(workingDir, SCHEMA_FILE)); errors.Is(err, os.ErrNotExist) {
-		return nil, err
-	}
-	schemaBytes, err := ioutil.ReadFile(filepath.Join(workingDir, SCHEMA_FILE))
-
-	if err != nil {
-		return nil, err
-	}
-
 	builder := schema.Builder{}
 
-	proto, err := builder.MakeFromString(string(schemaBytes))
+	proto, err := builder.MakeFromDirectory(workingDir)
 
 	return proto, err
 }

@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
 
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/functions"
 )
@@ -33,6 +36,28 @@ var generateCmd = &cobra.Command{
 			return err
 		}
 
+		result, errs := r.Bundle(true)
+
+		if len(errs) > 0 {
+			return err
+		}
+
+		fmt.Println("🔨 Generating code...")
+
+		fmt.Println("---")
+
+		for _, f := range result.OutputFiles {
+			lastFragment := filepath.Base(f.Path)
+
+			if err != nil {
+				return err
+			}
+			fmt.Printf("⚡️ Generated %s [%s]\n", lastFragment, color.New(color.FgCyan).Sprint(f.Path))
+		}
+
+		fmt.Println("---")
+
+		fmt.Println("✅ Generation complete")
 		return nil
 	},
 }

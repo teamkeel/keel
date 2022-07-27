@@ -72,7 +72,7 @@ func TestAllCases(t *testing.T) {
 
 			assert.True(t, typecheckResult, output)
 
-			errs := runtime.Bundle(true)
+			_, errs := runtime.Bundle(true)
 
 			require.Len(t, errs, 0)
 
