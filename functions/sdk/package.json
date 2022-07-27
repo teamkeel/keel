@@ -5,8 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "node build.mjs",
-    "prepublishOnly": "npm run build",
-    "postinstall": "sh ./scripts/postinstall.sh"
+    "prepublishOnly": "npm run build"
   },
   "publishConfig": {
     "access": "public"

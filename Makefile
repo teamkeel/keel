@@ -13,7 +13,7 @@ testdata:
 	@cd ./schema && go run ./tools/generate_testdata.go ./testdata
 
 test:
-	go test ./... -count=1
+	KEEL_FUNCTIONS_SDK_PATH=$(pwd)/functions/sdk go test ./... -count=1
 
 testpretty:
 	go test ./... -count=1 -json | gotestpretty

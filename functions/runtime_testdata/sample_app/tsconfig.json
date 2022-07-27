@@ -8,5 +8,8 @@
     "baseUrl": "./",
     "esModuleInterop": true, 
     "moduleResolution": "node"
-  }
+  },
+  "exclude": [
+    "node_modules"
+  ]
 }

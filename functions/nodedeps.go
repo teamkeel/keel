@@ -1,4 +1,4 @@
-package nodedeps
+package functions
 
 import (
 	"bytes"
@@ -13,11 +13,12 @@ import (
 
 	"github.com/aybabtme/orderedjson"
 	"github.com/samber/lo"
+	"golang.org/x/exp/maps"
 )
 
 var DEV_DEPENDENCIES = map[string]string{
 	"@types/node":   "^18.0.6",
-	"@teamkeel/sdk": "^0.76.0",
+	"@teamkeel/sdk": "^0.17.0",
 	"typescript":    "^4.7.4",
 }
 
@@ -86,7 +87,7 @@ func NewPackageJson(path string) (*PackageJson, error) {
 }
 
 func (r *PackageJson) Bootstrap() error {
-	err := r.Inject(DEV_DEPENDENCIES, DEPENDENCIES)
+	err := r.Inject(r.fetchDefaultDependencies(), true)
 
 	if err != nil {
 		return err
@@ -136,45 +137,49 @@ func (p *PackageJson) ReadIntoMemory() error {
 
 // Inject devDependencies into the package.json file
 // Where there are matching packages already, the version we inject overwrites the original
-func (p *PackageJson) Inject(devDeps map[string]string, deps map[string]string) error {
-	if p.DevDependencies != nil {
-		d := p.DevDependencies
+func (p *PackageJson) Inject(deps map[string]string, dev bool) error {
+	if dev {
+		if p.DevDependencies != nil {
+			d := p.DevDependencies
 
-		for packageName, version := range devDeps {
-			if originalVersion, found := d[packageName]; found {
-				d[packageName] = originalVersion
-			} else {
+			for packageName, version := range deps {
+				if _, found := d[packageName]; found {
+					d[packageName] = version
+				} else {
+					d[packageName] = version
+				}
+			}
+		} else {
+			var d = map[string]string{}
+
+			for packageName, version := range deps {
 				d[packageName] = version
 			}
-		}
-	} else {
-		var d = map[string]string{}
 
-		for packageName, version := range devDeps {
-			d[packageName] = version
+			p.DevDependencies = d
 		}
-
-		p.DevDependencies = d
 	}
 
-	if p.Dependencies != nil {
-		d := p.Dependencies
+	if !dev {
+		if p.Dependencies != nil {
+			d := p.Dependencies
 
-		for packageName, version := range deps {
-			if originalVersion, found := d[packageName]; found {
-				d[packageName] = originalVersion
-			} else {
+			for packageName, version := range deps {
+				if originalVersion, found := d[packageName]; found {
+					d[packageName] = originalVersion
+				} else {
+					d[packageName] = version
+				}
+			}
+		} else {
+			var d = map[string]string{}
+
+			for packageName, version := range deps {
 				d[packageName] = version
 			}
-		}
-	} else {
-		var d = map[string]string{}
 
-		for packageName, version := range deps {
-			d[packageName] = version
+			p.Dependencies = d
 		}
-
-		p.Dependencies = d
 	}
 
 	err := p.Write()
@@ -306,4 +311,16 @@ func (p *PackageJson) Write() error {
 
 	fmt.Println("Wrote changes to package.json")
 	return nil
+}
+
+func (n *PackageJson) fetchDefaultDependencies() map[string]string {
+	deps := map[string]string{}
+
+	maps.Copy(deps, DEV_DEPENDENCIES)
+
+	if os.Getenv("KEEL_FUNCTIONS_SDK_PATH") != "" {
+		deps["@teamkeel/sdk"] = "file:" + os.Getenv("KEEL_FUNCTIONS_SDK_PATH")
+	}
+
+	return deps
 }

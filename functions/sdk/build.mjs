@@ -7,6 +7,7 @@ build({
   outdir: 'dist',
   bundle: true,
   platform: 'node',
+  allowOverwrite: true,
   entryPoints: ['index.ts']
 });
 

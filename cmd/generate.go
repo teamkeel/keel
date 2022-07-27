@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/functions/runtime"
@@ -16,13 +15,13 @@ var generateCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		schemaDir, _ := cmd.Flags().GetString("dir")
 
-		r, err := runtime.NewRuntime(schemaDir, filepath.Join(schemaDir, "node_modules", NODE_MODULE_DIR))
+		r, err := runtime.NewRuntime(schemaDir)
 
 		if err != nil {
 			return err
 		}
 
-		_, err = r.Generate()
+		err = r.Generate()
 
 		if err != nil {
 			return err

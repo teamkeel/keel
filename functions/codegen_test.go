@@ -1,4 +1,4 @@
-package codegen_test
+package functions_test
 
 import (
 	"io/fs"
@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/functions/codegen"
+	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/schema"
 )
 
 func TestCodeGeneration(t *testing.T) {
-	testCases, err := ioutil.ReadDir("testdata")
+	testCases, err := ioutil.ReadDir("codegen_testdata")
 	require.NoError(t, err)
 
 	toRun := []fs.FileInfo{}
@@ -41,7 +41,7 @@ func TestCodeGeneration(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
-			b, err := ioutil.ReadFile(filepath.Join("testdata", testCase.Name()))
+			b, err := ioutil.ReadFile(filepath.Join("codegen_testdata", testCase.Name()))
 			require.NoError(t, err)
 
 			parts := strings.Split(string(b), "===")
@@ -56,7 +56,7 @@ func TestCodeGeneration(t *testing.T) {
 
 			require.NoError(t, err)
 
-			generator := codegen.NewCodeGenerator(proto)
+			generator := functions.NewCodeGenerator(proto)
 
 			if strings.HasPrefix(testCase.Name(), "model_") {
 				result := generator.GenerateBaseTypes() + generator.GenerateModels()

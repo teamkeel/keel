@@ -1,4 +1,4 @@
-package runtime
+package functions
 
 import (
 	"errors"
@@ -10,24 +10,20 @@ import (
 	"path/filepath"
 
 	"github.com/evanw/esbuild/pkg/api"
-	"github.com/teamkeel/keel/functions/codegen"
-	"github.com/teamkeel/keel/functions/runtime/nodedeps"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
 
 type Runtime struct {
-	OutDir     string
 	Schema     *proto.Schema
 	WorkingDir string
-	generator  codegen.CodeGenerator
+	generator  CodeGenerator
 }
 
 var SCHEMA_FILE = "schema.keel"
-var DEV_DIRECTORY = "keel_generated"
 var FUNCTIONS_DIRECTORY = "functions"
 
-func NewRuntime(workingDir string, outDir string) (*Runtime, error) {
+func NewRuntime(workingDir string) (*Runtime, error) {
 	schema, err := buildSchema(workingDir)
 
 	if err != nil {
@@ -36,23 +32,22 @@ func NewRuntime(workingDir string, outDir string) (*Runtime, error) {
 
 	return &Runtime{
 		WorkingDir: workingDir,
-		OutDir:     outDir,
 		Schema:     schema,
-		generator:  *codegen.NewCodeGenerator(schema),
+		generator:  *NewCodeGenerator(schema),
 	}, nil
 }
 
 // Generate generates the typescript codefiles based on the schema
-func (r *Runtime) Generate() (filePath string, err error) {
+func (r *Runtime) Generate() error {
 	src := r.generator.GenerateClientCode()
 
-	filePath, err = r.makeModule(path.Join(r.OutDir, "index.ts"), src)
+	_, err := r.makeModule(filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "index.ts"), src)
 
-	return filePath, err
+	return err
 }
 
 func (r *Runtime) ReconcilePackageJson() error {
-	packageJson, err := nodedeps.NewPackageJson(filepath.Join(r.WorkingDir, "package.json"))
+	packageJson, err := NewPackageJson(filepath.Join(r.WorkingDir, "package.json"))
 
 	if err != nil {
 		return err
@@ -67,75 +62,22 @@ func (r *Runtime) ReconcilePackageJson() error {
 	return nil
 }
 
-// DEV ONLY
-func (r *Runtime) BuildSDK() error {
-	cmd := exec.Command("sh", "./build_sdk.sh")
-	o, err := cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Print(string(o))
-
-		return err
-	}
-
-	return nil
-}
-
-// DEV ONLY
-func (r *Runtime) LinkSDK() error {
-	cmd := exec.Command("npm", "link", "../../../sdk")
-	cmd.Dir = r.WorkingDir
-
-	o, err := cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Print(string(o))
-
-		return err
-	}
-
-	return nil
-}
-
-func (r *Runtime) InstallDeps() error {
-	// NPM install all dependencies from the working directories'
-	// package.json file so we can bundle the code
-	npmInstall := exec.Command("npm", "install")
-
-	// The location where we want to install is the working directory path of the target app
-	npmInstall.Dir = r.WorkingDir
-
-	// .Run() waits for the npm install command to complete
-	err := npmInstall.Run()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Bundle transpiles all TypeScript in a working directory using
 // esbuild, and outputs the JavaScript equivalent to the OutDir
 func (r *Runtime) Bundle(write bool) (errs []error) {
-	err := r.InstallDeps()
-
-	if err != nil {
-		return []error{err}
-	}
-
 	// Run esbuild on the generated entrypoint code
 	// The entrypoint references the users custom functions
 	// so these will be bundled in addition to any generated code
 	buildResult := api.Build(api.BuildOptions{
 		EntryPoints: []string{
-			path.Join(r.WorkingDir, DEV_DIRECTORY, "index.ts"),
+			path.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "index.ts"),
 		},
-		Bundle:   true,
-		Outdir:   filepath.Join(r.OutDir, "dist"),
-		Write:    write,
-		Platform: api.PlatformNode,
-		LogLevel: api.LogLevelInfo,
+		Bundle:         true,
+		Outdir:         filepath.Join(r.WorkingDir, "dist"),
+		Write:          write,
+		AllowOverwrite: true,
+		Platform:       api.PlatformNode,
+		LogLevel:       api.LogLevelInfo,
 	})
 
 	if len(buildResult.Errors) > 0 {
@@ -146,7 +88,7 @@ func (r *Runtime) Bundle(write bool) (errs []error) {
 }
 
 func (r *Runtime) Scaffold() error {
-	generator := codegen.NewCodeGenerator(r.Schema)
+	generator := NewCodeGenerator(r.Schema)
 
 	for _, model := range r.Schema.Models {
 		for _, op := range model.Operations {
@@ -176,18 +118,18 @@ func (r *Runtime) Scaffold() error {
 }
 
 func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
-	serverDistPath := filepath.Join(r.OutDir, "dist", "index.js")
+	serverDistPath := filepath.Join(r.WorkingDir, "node_modules", ".keel", "dist", "index.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
-		panic(".keel/dist/index.js has not been generated")
+		panic("client code has not been generated")
 	}
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
-
 		fmt.Print(err)
+		return err
 	}
 
-	cmd := exec.Command("node", filepath.Join(DEV_DIRECTORY, "dist", "index.js"))
+	cmd := exec.Command("node", filepath.Join(r.WorkingDir, "node_modules", ".keel", "dist", "index.js"))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
 	cmd.Dir = r.WorkingDir
 	err := cmd.Start()
@@ -209,8 +151,10 @@ func (r *Runtime) buildResultErrors(errs []api.Message) (e []error) {
 }
 
 func (r *Runtime) makeModule(path string, code string) (string, error) {
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
-		err := os.Mkdir(filepath.Dir(path), os.ModePerm)
+	dir := filepath.Dir(path)
+
+	if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
+		err := os.Mkdir(dir, os.ModePerm)
 
 		if err != nil {
 			return "", err
