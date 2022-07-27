@@ -1,7 +1,7 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http'
 import url from 'url'
 
-import { Config } from "../../types"
+import { Config } from "./types"
 
 const startRuntimeServer = (config: Config) => {
   const listener = async (req: IncomingMessage, res: ServerResponse) => {
