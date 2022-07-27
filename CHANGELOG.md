@@ -1,3 +1,10 @@
+## [0.79.1](https://github.com/teamkeel/keel/compare/v0.79.0...v0.79.1) (2022-07-27)
+
+
+### Bug Fixes
+
+* fix runtime export ([#192](https://github.com/teamkeel/keel/issues/192)) ([f0a45fa](https://github.com/teamkeel/keel/commit/f0a45fab063036817765db7c4bdf77128fc659a5))
+
 # [0.79.0](https://github.com/teamkeel/keel/compare/v0.78.0...v0.79.0) (2022-07-27)
 
 
