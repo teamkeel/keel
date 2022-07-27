@@ -1,0 +1,34 @@
+model Beatle {
+    fields {
+        identity Identity @unique
+        name Text @unique
+    }
+
+    // This is testing that operations with no inputs
+    // are handled correctly
+    operations {
+        get getBeatle() {
+            @where(beatle.name == "John Lennon")
+        }
+        list listBeatles()
+        update switchBeatle() {
+            @where(beatle.identity == ctx.identity)
+            @set(beatle.name = "Ringo Starr")
+        }
+        create createBeatle() {
+            @set(beatle.identity = ctx.identity)
+            @set(beatle.name = "John Lennon")
+        }
+        delete deleteBeatle() {
+            @where(beatle.identity == ctx.identity)
+        }
+    }
+}
+
+api Test {
+    @graphql
+
+    models {
+        Beatle
+    }
+}
