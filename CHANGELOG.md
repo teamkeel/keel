@@ -1,3 +1,10 @@
+# [0.80.0](https://github.com/teamkeel/keel/compare/v0.79.2...v0.80.0) (2022-07-27)
+
+
+### Features
+
+* generate command output & integration test fixes ([#193](https://github.com/teamkeel/keel/issues/193)) ([54c3036](https://github.com/teamkeel/keel/commit/54c303647383f1764b5c3b7efd3d30ba0a3707ca))
+
 ## [0.79.2](https://github.com/teamkeel/keel/compare/v0.79.1...v0.79.2) (2022-07-27)
 
 
