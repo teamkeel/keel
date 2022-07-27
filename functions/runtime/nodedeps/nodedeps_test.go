@@ -19,6 +19,8 @@ var TestCases = []string{
 }
 
 func TestAllTestCases(t *testing.T) {
+	t.Skip()
+
 	testCases, err := ioutil.ReadDir("testdata")
 
 	require.NoError(t, err)
