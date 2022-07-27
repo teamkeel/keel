@@ -38,10 +38,18 @@ func NewRuntime(workingDir string) (*Runtime, error) {
 }
 
 // Generate generates the typescript codefiles based on the schema
-func (r *Runtime) Generate() error {
+func (r *Runtime) GenerateClient() error {
 	src := r.generator.GenerateClientCode()
 
 	_, err := r.makeModule(filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "index.ts"), src)
+
+	return err
+}
+
+func (r *Runtime) GenerateHandler() error {
+	src := r.generator.GenerateEntryPoint()
+
+	_, err := r.makeModule(filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "handler.ts"), src)
 
 	return err
 }

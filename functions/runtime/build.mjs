@@ -8,11 +8,14 @@ build({
   bundle: true,
   platform: 'node',
   allowOverwrite: true,
-  entryPoints: ['index.ts']
+  entryPoints: ['src/index.ts'],
+  external: [
+    '../client'
+  ]
 });
 
 new Generator({
-  entry: 'index.ts',
+  entry: 'src/index.ts',
   output: 'dist/index.d.ts',
   force: true
 }, true, true).generate();

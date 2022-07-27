@@ -1,18 +1,14 @@
 {
+  "dependencies": {},
   "devDependencies": {
-    "@teamkeel/sdk": "file:/Users/adambull/dev/keel/functions/sdk",
+    "@teamkeel/runtime": "^0.17.0",
+    "@teamkeel/sdk": "^0.17.0",
     "@types/node": "^18.0.6",
     "typescript": "^4.7.4"
   },
-  "dependencies": {},
-  "name": "existing_package_json",
+  "name": "sample_app",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "author": ""
 }

@@ -7,19 +7,18 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strconv"
 
 	"github.com/aybabtme/orderedjson"
 	"github.com/samber/lo"
-	"golang.org/x/exp/maps"
 )
 
 var DEV_DEPENDENCIES = map[string]string{
-	"@types/node":   "^18.0.6",
-	"@teamkeel/sdk": "^0.17.0",
-	"typescript":    "^4.7.4",
+	"@types/node":       "^18.0.6",
+	"typescript":        "^4.7.4",
+	"@teamkeel/runtime": "^0.17.0",
+	"@teamkeel/sdk":     "^0.17.0",
 }
 
 // We don't require any dependencies at the minute
@@ -87,7 +86,7 @@ func NewPackageJson(path string) (*PackageJson, error) {
 }
 
 func (r *PackageJson) Bootstrap() error {
-	err := r.Inject(r.fetchDefaultDependencies(), true)
+	err := r.Inject(DEV_DEPENDENCIES, true)
 
 	if err != nil {
 		return err
@@ -100,9 +99,7 @@ func (r *PackageJson) Bootstrap() error {
 // Call .Write() beforehand to persist any changes made.
 func (p *PackageJson) Install() error {
 	npmInstall := exec.Command("npm", "install")
-
-	workDir := path.Dir(p.Path)
-	npmInstall.Dir = workDir
+	npmInstall.Dir = filepath.Dir(p.Path)
 
 	o, err := npmInstall.CombinedOutput()
 
@@ -311,16 +308,4 @@ func (p *PackageJson) Write() error {
 
 	fmt.Println("Wrote changes to package.json")
 	return nil
-}
-
-func (n *PackageJson) fetchDefaultDependencies() map[string]string {
-	deps := map[string]string{}
-
-	maps.Copy(deps, DEV_DEPENDENCIES)
-
-	if os.Getenv("KEEL_FUNCTIONS_SDK_PATH") != "" {
-		deps["@teamkeel/sdk"] = "file:" + os.Getenv("KEEL_FUNCTIONS_SDK_PATH")
-	}
-
-	return deps
 }

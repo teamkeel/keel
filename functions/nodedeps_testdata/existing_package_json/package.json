@@ -1,6 +1,7 @@
 {
   "devDependencies": {
-    "@teamkeel/sdk": "file:/Users/adambull/dev/keel/functions/sdk",
+    "@teamkeel/runtime": "^0.17.0",
+    "@teamkeel/sdk": "^0.17.0",
     "@types/node": "^18.0.6",
     "typescript": "^4.7.4"
   },

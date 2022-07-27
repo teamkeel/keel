@@ -31,7 +31,7 @@ func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	r += gen.GenerateEnums()
 	r += gen.GenerateInputs()
 	r += gen.GenerateAPIs()
-	r += gen.GenerateEntryPoint()
+	// r += gen.GenerateEntryPoint()
 
 	return r
 }
