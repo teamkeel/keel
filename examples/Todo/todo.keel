@@ -7,13 +7,14 @@ model Account {
     }
 
     operations {
-        create createAccount() with (name, email) {
-            @set(account.identity = ctx.identity)
-        }
         update updateAccountDetails(id) with (name, email)
         get myAccount() {
             @where(account.identity == ctx.identity)
         }
+    }
+
+    functions {
+        create createAccount() with(name, email, teams, identity)
     }
 
     @permission(

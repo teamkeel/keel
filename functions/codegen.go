@@ -46,11 +46,11 @@ func (gen *CodeGenerator) GenerateBaseTypes() (r string) {
 	return r
 }
 
-func (gen *CodeGenerator) GenerateFunction(model string) string {
+func (gen *CodeGenerator) GenerateFunction(operationName string) string {
 	return renderTemplate(
 		TemplateCustomFunction,
 		map[string]interface{}{
-			"Model": model,
+			"Name": strcase.ToCamel(operationName),
 		},
 	)
 }
@@ -333,7 +333,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 			for _, op := range functions {
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 					"Name": op.Name,
-					"Path": fmt.Sprintf("../../../functions/%s", op.Name),
+					"Path": fmt.Sprintf("../../../../functions/%s", op.Name),
 				}))
 			}
 		}
