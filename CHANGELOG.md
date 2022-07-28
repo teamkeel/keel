@@ -1,3 +1,10 @@
+# [0.81.0](https://github.com/teamkeel/keel/compare/v0.80.0...v0.81.0) (2022-07-28)
+
+
+### Features
+
+* fully fledged generate command ([#195](https://github.com/teamkeel/keel/issues/195)) ([fff8239](https://github.com/teamkeel/keel/commit/fff8239005c51cc56ebf1b7efda4de2a20502c85))
+
 # [0.80.0](https://github.com/teamkeel/keel/compare/v0.79.2...v0.80.0) (2022-07-27)
 
 
