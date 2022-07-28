@@ -1,3 +1,10 @@
+## [0.83.1](https://github.com/teamkeel/keel/compare/v0.83.0...v0.83.1) (2022-07-28)
+
+
+### Bug Fixes
+
+* use npx version of tsc when generating client typings ([#199](https://github.com/teamkeel/keel/issues/199)) ([a805a1d](https://github.com/teamkeel/keel/commit/a805a1daf582502e143ce4c4593e1841ecb1b57a))
+
 # [0.83.0](https://github.com/teamkeel/keel/compare/v0.82.0...v0.83.0) (2022-07-28)
 
 
