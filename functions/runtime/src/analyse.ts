@@ -4,6 +4,6 @@ export interface AnalyseOptions {
   path: string
 }
 
-export default (opts: AnalyseOptions) => {
+export default async (opts: AnalyseOptions) => {
   return parseFiles([opts.path], { collectParameters: true })
 }

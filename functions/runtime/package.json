@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node build.mjs",
     "prepublishOnly": "npm run build",
-    "start:cli": "npm run build && node dist/cli.js"
+    "start:cli": "npm run build && node dist/cli.js --debug"
   },
   "publishConfig": {
     "access": "public"
