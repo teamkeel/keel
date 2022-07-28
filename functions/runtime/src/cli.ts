@@ -4,7 +4,7 @@ import analyse from './analyse'
 
 program
   .version('0.0.1')
-  .description('Statically analyses a custom function directory')
+  .description('Statically analyses a custom function file')
   .argument('<string>', 'Path to file')
   .option('-d, --debug', 'Debug mode')
   .action(async (path, opts) => {
