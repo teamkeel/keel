@@ -1,0 +1,13 @@
+
+{
+  "compilerOptions": {
+    "lib": [
+      "ES2015",
+      "DOM"
+    ],
+    "baseUrl": "./",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "moduleResolution": "node"
+  }
+}
