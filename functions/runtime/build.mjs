@@ -8,7 +8,10 @@ build({
   bundle: true,
   platform: 'node',
   allowOverwrite: true,
-  entryPoints: ['src/index.ts'],
+  entryPoints: [
+    'src/index.ts',
+    'src/analyse.ts'
+  ],
   external: [
     '../client'
   ]
