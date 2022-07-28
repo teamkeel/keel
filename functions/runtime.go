@@ -66,6 +66,7 @@ func (r *Runtime) GenerateClient() error {
 
 func (r *Runtime) GenerateClientTypings() error {
 	cmd := exec.Command(
+		"npx",
 		"tsc",
 		"index.ts",
 		"--declaration",
