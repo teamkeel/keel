@@ -1,3 +1,10 @@
+# [0.82.0](https://github.com/teamkeel/keel/compare/v0.81.0...v0.82.0) (2022-07-28)
+
+
+### Features
+
+* adds static analysis package to runtime npm package ([#196](https://github.com/teamkeel/keel/issues/196)) ([a2c59d1](https://github.com/teamkeel/keel/commit/a2c59d165451305766029bc60167a6f92c45c161))
+
 # [0.81.0](https://github.com/teamkeel/keel/compare/v0.80.0...v0.81.0) (2022-07-28)
 
 
