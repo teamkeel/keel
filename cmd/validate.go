@@ -54,6 +54,14 @@ var validateCmd = &cobra.Command{
 			}
 		}
 
+		// analyzer := functions.NewStaticAnalyser(inputDir)
+
+		// err = analyzer.Analyse()
+
+		// if err != nil {
+		// 	return c.outputFormatter.Write(err)
+		// }
+
 		c.outputFormatter.Write([]byte(color.New(color.FgGreen).Sprint("VALID\n")))
 		return nil
 	},
