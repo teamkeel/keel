@@ -13,6 +13,7 @@ import (
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	rtt "github.com/teamkeel/keel/runtime/runtimetest"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 	"gorm.io/driver/postgres"
@@ -179,12 +180,12 @@ var testCases = []testCase{
 			"name": "Fred",
 		},
 		assertData: func(t *testing.T, data map[string]any) {
-			assertValueAtPath(t, data, "createPerson.name", "Fred")
+			rtt.AssertValueAtPath(t, data, "createPerson.name", "Fred")
 		},
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 		},
 		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
-			id := getValueAtPath(t, data, "createPerson.id")
+			id := rtt.GetValueAtPath(t, data, "createPerson.id")
 			var name string
 			err := db.Table("person").Where("id = ?", id).Pluck("name", &name).Error
 			require.NoError(t, err)
@@ -224,6 +225,56 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "Cannot query field \"nosuchfield\" on type \"Person\".", errors[0].Message)
+		},
+	},
+	{
+		name: "get_operation_happy",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					get getPerson(id)
+					create createPerson() with (name)
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				{
+					"name": "Sue",
+					"id":   "41",
+				},
+				{
+					"name": "Fred",
+					"id":   "42",
+				},
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("Person").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query GetPerson($id: String!) {
+				getPerson(input: {id: $id}) {
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"id": "42",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getPerson.name", "Fred")
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 		},
 	},
 }

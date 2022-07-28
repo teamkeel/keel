@@ -1,4 +1,4 @@
-package runtime
+package runtimetest
 
 import (
 	"testing"
@@ -15,17 +15,17 @@ func TestValueAtPath(t *testing.T) {
 		},
 	}
 	// General case.
-	v := getValueAtPath(t, theMap, "foo.bar.baz")
+	v := GetValueAtPath(t, theMap, "foo.bar.baz")
 	require.Equal(t, 42, v)
 
 	// Two segments
-	v = getValueAtPath(t, theMap, "foo.bar")
+	v = GetValueAtPath(t, theMap, "foo.bar")
 	asMap, ok := v.(map[string]any)
 	require.True(t, ok)
 	require.Equal(t, 42, asMap["baz"])
 
 	// One segment
-	v = getValueAtPath(t, theMap, "foo")
+	v = GetValueAtPath(t, theMap, "foo")
 	asMap, ok = v.(map[string]any)
 	require.True(t, ok)
 	require.Equal(t, map[string]any{

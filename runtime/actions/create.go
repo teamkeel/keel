@@ -47,9 +47,5 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		return nil, err
 	}
 
-	// for future reference, this is how you would do a GET
-	// var myMap map[string]any
-	// db.Table(model.Name).Where("id = ?", someID).First(myMap).Error
-
 	return modelMap, nil
 }

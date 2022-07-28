@@ -1,4 +1,4 @@
-package runtime
+package runtimetest
 
 import (
 	"strings"
@@ -7,14 +7,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func assertValueAtPath(t *testing.T, d map[string]any, path string, v any) {
-	require.Equal(t, v, getValueAtPath(t, d, path))
+func AssertValueAtPath(t *testing.T, d map[string]any, path string, v any) {
+	require.Equal(t, v, GetValueAtPath(t, d, path))
 }
 
 // getValueAtPath splits a path like "foo.bar.baz" into dot-delimited segments (the keys).
 // Then it tries to drill into the given map (recursively) using those keys.
 // It returns the value thus found.
-func getValueAtPath(t *testing.T, theMap map[string]any, path string) any {
+func GetValueAtPath(t *testing.T, theMap map[string]any, path string) any {
 	require.NotEqual(t, path, "", "path must not be empty string")
 	keys := strings.Split(path, ".")
 
@@ -30,5 +30,5 @@ func getValueAtPath(t *testing.T, theMap map[string]any, path string) any {
 	subMap, ok := v.(map[string]any)
 	require.True(t, ok, "cannot cast this value: %v to a map[string]any", v)
 	remainingPath := strings.Join(keys[1:], ".")
-	return getValueAtPath(t, subMap, remainingPath)
+	return GetValueAtPath(t, subMap, remainingPath)
 }

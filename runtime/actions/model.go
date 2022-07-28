@@ -136,18 +136,6 @@ func schemaDefault(field *proto.Field) (any, error) {
 	}
 }
 
-func fakeRow(model *proto.Model, enums []*proto.Enum) (row map[string]any, err error) {
-	row = map[string]any{}
-	for _, field := range model.Fields {
-		zeroValue, err := initialValueForField(field, enums)
-		if err != nil {
-			return nil, err
-		}
-		row[field.Name] = zeroValue
-	}
-	return row, nil
-}
-
 // toMap provides casts / interprets the given proto.OperationInput value, into a value that
 // is good to insert into the corresponding DB column (using Gorm).
 func toMap(in any, inputType proto.Type) (any, error) {
