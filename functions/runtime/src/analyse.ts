@@ -5,5 +5,5 @@ export interface AnalyseOptions {
 }
 
 export default (opts: AnalyseOptions) => {
-  return parseFiles([opts.path])
+  return parseFiles([opts.path], { collectParameters: true })
 }

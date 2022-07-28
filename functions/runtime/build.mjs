@@ -10,7 +10,8 @@ build({
   allowOverwrite: true,
   entryPoints: [
     'src/index.ts',
-    'src/analyse.ts'
+    'src/analyse.ts',
+    'src/cli.ts'
   ],
   external: [
     '../client'
