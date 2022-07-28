@@ -1,3 +1,10 @@
+# [0.83.0](https://github.com/teamkeel/keel/compare/v0.82.0...v0.83.0) (2022-07-28)
+
+
+### Features
+
+* update static analysis runtime cli to process directories ([#197](https://github.com/teamkeel/keel/issues/197)) ([2001e7f](https://github.com/teamkeel/keel/commit/2001e7f68d87b86e5152a57dbe7fdc15fcde2e7a))
+
 # [0.82.0](https://github.com/teamkeel/keel/compare/v0.81.0...v0.82.0) (2022-07-28)
 
 
