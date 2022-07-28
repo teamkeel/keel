@@ -27,6 +27,8 @@ func Get(
 		return nil, fmt.Errorf("missing argument: %s", expectedInput.Name)
 	}
 
+	// do we need to unpack the inputValue from the arg?
+
 	// Todo: some argument types need mapping to different database types
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
@@ -35,11 +37,11 @@ func Get(
 	if err != nil {
 		return nil, err
 	}
+
 	result := map[string]any{}
-
 	w := fmt.Sprintf("%s = ?", expectedInput.Name)
-
-	if err := db.Table(strcase.ToSnake(model.Name)).Where(w, inputValue).First(result).Error; err != nil {
+	tableName := strcase.ToSnake(model.Name)
+	if err := db.Table(tableName).Where(w, inputValue).Find(&result).Error; err != nil {
 		return nil, err
 	}
 	return result, nil

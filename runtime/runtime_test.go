@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/stretchr/testify/require"
@@ -30,11 +31,18 @@ func TestRuntime(t *testing.T) {
 
 	for _, tCase := range testCases {
 
+		// todo remove this XXXX
+		// if tCase.name != "get_operation_happy" {
+		// 	continue
+		// }
+
 		t.Run(tCase.name, func(t *testing.T) {
 
 			// Make a database name for this test
 			re := regexp.MustCompile(`[^\w]`)
 			dbName := strings.ToLower(re.ReplaceAllString(tCase.name, ""))
+
+			t.Logf("XXXX database name for this test: %s\n", dbName)
 
 			// Drop the database if it already exists. The normal dropping of it at the end of the
 			// test case is bypassed if you quit a debug run of the test in VS Code.
@@ -78,30 +86,37 @@ func TestRuntime(t *testing.T) {
 				Body: []byte(reqBody),
 			}
 
+			// Apply the database prior-set up mandated by this test case.
+			if tCase.databaseSetup != nil {
+				tCase.databaseSetup(t, testDB)
+			}
+
 			// Call the handler, and capture the response.
 			response, err := handler(&request)
-			body := string(response.Body)
 			require.NoError(t, err)
+			body := string(response.Body)
+			bodyFields := respFields{}
+			require.NoError(t, json.Unmarshal([]byte(body), &bodyFields))
+
+			// Unless there is a specific assertion for the error returned,
+			// check there is no error
+			if tCase.assertErrors == nil {
+				require.Len(t, bodyFields.Errors, 0, "response has unexpected errors: %+v", bodyFields.Errors)
+			}
 
 			// Do the specified assertion on the data returned, if one is specified.
 			if tCase.assertData != nil {
-				var r respFields
-				require.NoError(t, json.Unmarshal([]byte(body), &r))
-				tCase.assertData(t, r.Data)
+				tCase.assertData(t, bodyFields.Data)
 			}
 
 			// Do the specified assertion on the errors returned, if one is specified.
 			if tCase.assertErrors != nil {
-				var r respFields
-				require.NoError(t, json.Unmarshal([]byte(body), &r))
-				tCase.assertErrors(t, r.Errors)
+				tCase.assertErrors(t, bodyFields.Errors)
 			}
 
 			// Do the specified assertion on the resultant database contents, if one is specified.
 			if tCase.assertDatabase != nil {
-				var r respFields
-				require.NoError(t, json.Unmarshal([]byte(body), &r))
-				tCase.assertDatabase(t, testDB, r.Data)
+				tCase.assertDatabase(t, testDB, bodyFields.Data)
 			}
 		})
 	}
@@ -249,20 +264,24 @@ var testCases = []testCase{
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
 				{
-					"name": "Sue",
-					"id":   "41",
+					"name":       "Sue",
+					"id":         "41",
+					"created_at": time.Now(),
+					"updated_at": time.Now(),
 				},
 				{
-					"name": "Fred",
-					"id":   "42",
+					"name":       "Fred",
+					"id":         "42",
+					"created_at": time.Now(),
+					"updated_at": time.Now(),
 				},
 			}
 			for _, row := range rows {
-				require.NoError(t, db.Table("Person").Create(row).Error)
+				require.NoError(t, db.Table("person").Create(row).Error)
 			}
 		},
 		gqlOperation: `
-			query GetPerson($id: String!) {
+			query GetPerson($id: ID!) {
 				getPerson(input: {id: $id}) {
 					name
 				}
@@ -273,8 +292,6 @@ var testCases = []testCase{
 		},
 		assertData: func(t *testing.T, data map[string]any) {
 			rtt.AssertValueAtPath(t, data, "getPerson.name", "Fred")
-		},
-		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 		},
 	},
 }
