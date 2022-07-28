@@ -77,20 +77,24 @@ var generateCmd = &cobra.Command{
 		}
 
 		sr, err := r.Scaffold()
+
+		if err != nil {
+			fmt.Println("⛔️ Internal runtime error (c)")
+			fmt.Print(err)
+			return
+		}
 		fmt.Printf("Generated the following files:\n\n")
 
 		fmt.Printf("--- %s ---\n", color.New(color.FgHiYellow).Sprint("Functions"))
 
-		if sr == nil {
-			fmt.Println(err)
+		if len(sr.CreatedFunctions) == 0 && sr.FunctionsCount > 0 {
+			fmt.Println("✅  No new functions to generate")
+		} else if sr.FunctionsCount == 0 {
+			fmt.Println("✅  No custom functions defined")
 		} else {
-			if sr.FunctionsCount == 0 {
-				fmt.Println("ℹ️  No custom functions to scaffold")
-			} else {
-				for _, f := range sr.CreatedFunctions {
-					fileName := filepath.Base(f)
-					fmt.Printf("⚡️ Generated %s %s\n", color.New(color.FgCyan).Sprint(fileName), color.New(color.Faint).Sprintf("[%s]", f))
-				}
+			for _, f := range sr.CreatedFunctions {
+				fileName := filepath.Base(f)
+				fmt.Printf("⚡️ Generated %s %s\n", color.New(color.FgCyan).Sprint(fileName), color.New(color.Faint).Sprintf("[%s]", f))
 			}
 		}
 
@@ -106,7 +110,7 @@ var generateCmd = &cobra.Command{
 		for _, f := range result.OutputFiles {
 			lastFragment := filepath.Base(f.Path)
 
-			fmt.Printf("⚡️ Generated %s %s\n", color.New(color.FgCyan).Sprint(lastFragment), color.New(color.Faint).Sprintf("[%s]", f.Path))
+			fmt.Printf("⚡️ Updated %s %s\n", color.New(color.FgCyan).Sprint(lastFragment), color.New(color.Faint).Sprintf("[%s]", f.Path))
 		}
 
 		fmt.Println("---")

@@ -61,13 +61,7 @@ func (r *Runtime) GenerateClient() error {
 		return err
 	}
 
-	err = r.GenerateClientTypings()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return r.GenerateClientTypings()
 }
 
 func (r *Runtime) GenerateClientTypings() error {
@@ -200,7 +194,7 @@ func (r *Runtime) Scaffold() (s *ScaffoldResult, e error) {
 	if len(funcs) == 0 {
 		return &ScaffoldResult{
 			FunctionsCount: 0,
-		}, errors.New("no functions to generate")
+		}, nil
 	}
 
 	sr := &ScaffoldResult{

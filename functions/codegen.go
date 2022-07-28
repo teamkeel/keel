@@ -333,6 +333,16 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 			for _, op := range functions {
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 					"Name": op.Name,
+					// We need to refer to the users functions directory,
+					// which will be a few levels above the @teamkeel/client/dist directory.
+					// The hierarchy is as follows:
+					// project/
+					//   functions/
+					//   node_modules/
+					//     @teamkeel/
+					//       client/
+					//         dist/
+					//           handler.js
 					"Path": fmt.Sprintf("../../../../functions/%s", op.Name),
 				}))
 			}
