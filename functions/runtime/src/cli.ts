@@ -11,7 +11,7 @@ program
     const result = await analyse({ path }) 
 
     if (opts.debug) {
-      console.log(util.inspect(result, { showHidden: false, colors: true, depth: 5 }))
+      console.log(util.inspect(result, { showHidden: false, colors: true, depth: null }))
     } else {
       console.log('%j', result)
     }
