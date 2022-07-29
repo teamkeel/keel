@@ -1,3 +1,10 @@
+# [0.84.0](https://github.com/teamkeel/keel/compare/v0.83.2...v0.84.0) (2022-07-29)
+
+
+### Features
+
+* provide friendly wrapper functions to custom code files to abstract away internal types ([#200](https://github.com/teamkeel/keel/issues/200)) ([19f7fb8](https://github.com/teamkeel/keel/commit/19f7fb83917607e0ee3b76f805a9cbc01529e62e))
+
 ## [0.83.2](https://github.com/teamkeel/keel/compare/v0.83.1...v0.83.2) (2022-07-29)
 
 
