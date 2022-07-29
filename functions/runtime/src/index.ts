@@ -2,8 +2,11 @@ import { createServer, IncomingMessage, ServerResponse } from 'http'
 import url from 'url'
 
 import { Config } from "./types"
+import buildApi from './api'
 
 const startRuntimeServer = (config: Config) => {
+  const { functions, models } = config
+
   const listener = async (req: IncomingMessage, res: ServerResponse) => {
     if (req.method === 'POST') {
       const parts = url.parse(req.url!)
@@ -21,22 +24,14 @@ const startRuntimeServer = (config: Config) => {
 
       const json = JSON.parse(data)
 
-      const { call, contextModel } = config.functions[normalisedPathname]
+      const { call } = functions[normalisedPathname]
 
-      // todo: place all models here
-      const api = {
-        models: {
-          [contextModel]: {
-            create: async () => ({
-              id: 123,
-              title: json.title
-            })
-          }
-        }
-      }
-      const result = await call(json, api)
+      const result = await call(json, buildApi(models))
+
       console.log(JSON.stringify(result))
+      
       res.write(JSON.stringify(result))
+      
       res.end()
     }
   }
