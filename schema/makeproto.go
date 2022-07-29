@@ -45,7 +45,6 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 	}
 	for _, section := range parserModel.Sections {
 		switch {
-
 		case section.Fields != nil:
 			fields := scm.makeFields(section.Fields, protoModel.Name)
 			protoModel.Fields = append(protoModel.Fields, fields...)
@@ -61,7 +60,8 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 		case section.Attribute != nil:
 			scm.applyModelAttribute(parserModel, protoModel, section.Attribute)
 		default:
-			panic("unrecognized case")
+			// this is possible if the user defines an empty block in the schema e.g. "fields {}"
+			// this isn't really an error so we can just ignore these sections
 		}
 	}
 
