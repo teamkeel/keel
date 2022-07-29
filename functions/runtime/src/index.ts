@@ -35,6 +35,7 @@ const startRuntimeServer = (config: Config) => {
         }
       }
       const result = await call(json, api)
+      console.log(JSON.stringify(result))
       res.write(JSON.stringify(result))
       res.end()
     }
