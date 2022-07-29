@@ -256,3 +256,20 @@ func TestEnum(t *testing.T) {
 	assert.Equal(t, "Earth", schema.Declarations[0].Enum.Values[2].Name.Value)
 	assert.Equal(t, "Mars", schema.Declarations[0].Enum.Values[3].Name.Value)
 }
+
+func TestAttributeArgsParsing(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Person {
+		@permission
+		@permission()
+		@permission(expression: true, actions: [get])	
+	}`})
+
+	model := schema.Declarations[0].Model
+	assert.Equal(t, "permission", model.Sections[0].Attribute.Name.Value)
+	assert.Equal(t, "permission", model.Sections[1].Attribute.Name.Value)
+	assert.Equal(t, "permission", model.Sections[2].Attribute.Name.Value)
+	assert.Len(t, model.Sections[0].Attribute.Arguments, 0)
+	assert.Len(t, model.Sections[1].Attribute.Arguments, 0)
+	assert.Len(t, model.Sections[2].Attribute.Arguments, 2)
+}
