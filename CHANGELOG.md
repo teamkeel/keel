@@ -1,3 +1,10 @@
+## [0.83.2](https://github.com/teamkeel/keel/compare/v0.83.1...v0.83.2) (2022-07-29)
+
+
+### Bug Fixes
+
+* use module.exports for compatibility with esbuild ([#201](https://github.com/teamkeel/keel/issues/201)) ([c44b903](https://github.com/teamkeel/keel/commit/c44b903e330e39b234eae42a0bf37e07b0837fd7))
+
 ## [0.83.1](https://github.com/teamkeel/keel/compare/v0.83.0...v0.83.1) (2022-07-28)
 
 
