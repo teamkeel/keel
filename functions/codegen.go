@@ -30,6 +30,7 @@ func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	r += gen.GenerateModels()
 	r += gen.GenerateEnums()
 	r += gen.GenerateInputs()
+	r += gen.GenerateWrappers()
 	r += gen.GenerateAPIs()
 
 	return r
@@ -53,6 +54,59 @@ func (gen *CodeGenerator) GenerateFunction(operationName string) string {
 			"Name": strcase.ToCamel(operationName),
 		},
 	)
+}
+
+func (gen *CodeGenerator) GenerateWrappers() (str string) {
+	fns := proto.FilterOperations(gen.schema, func(op *proto.Operation) bool {
+		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	})
+
+	for _, fn := range fns {
+		switch fn.Type {
+		case proto.OperationType_OPERATION_TYPE_CREATE:
+			str += renderTemplate(
+				TemplateFuncWrapperCreate,
+				map[string]interface{}{
+					"Name":  strcase.ToCamel(fn.Name),
+					"Model": fn.ModelName,
+				},
+			)
+		case proto.OperationType_OPERATION_TYPE_DELETE:
+			str += renderTemplate(
+				TemplateFuncWrapperDelete,
+				map[string]interface{}{
+					"Name":  strcase.ToCamel(fn.Name),
+					"Model": fn.ModelName,
+				},
+			)
+		case proto.OperationType_OPERATION_TYPE_LIST:
+			str += renderTemplate(
+				TemplateFuncWrapperList,
+				map[string]interface{}{
+					"Name":  strcase.ToCamel(fn.Name),
+					"Model": fn.ModelName,
+				},
+			)
+		case proto.OperationType_OPERATION_TYPE_UPDATE:
+			str += renderTemplate(
+				TemplateFuncWrapperUpdate,
+				map[string]interface{}{
+					"Name":  strcase.ToCamel(fn.Name),
+					"Model": fn.ModelName,
+				},
+			)
+		case proto.OperationType_OPERATION_TYPE_GET:
+			str += renderTemplate(
+				TemplateFuncWrapperGet,
+				map[string]interface{}{
+					"Name":  strcase.ToCamel(fn.Name),
+					"Model": fn.ModelName,
+				},
+			)
+		}
+	}
+
+	return str
 }
 
 func (gen *CodeGenerator) GenerateEnums() (r string) {
@@ -409,21 +463,26 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 }
 
 var (
-	TemplateKeelApi        = "keel_api"
-	TemplateApi            = "api"
-	TemplateEnum           = "enum"
-	TemplateEnumValue      = "enum_value"
-	TemplateProperty       = "property"
-	TemplateInterface      = "interface"
-	TemplateTypeAlias      = "type_alias"
-	TemplateHandler        = "handler"
-	TemplateImport         = "import"
-	TemplateObject         = "object"
-	TemplateCustomFunction = "custom_function"
-	TemplateUpdateInput    = "update_input"
-	TemplateCreateInput    = "create_input"
-	TemplateGetInput       = "get_input"
-	TemplateListInput      = "list_input"
+	TemplateKeelApi           = "keel_api"
+	TemplateApi               = "api"
+	TemplateEnum              = "enum"
+	TemplateEnumValue         = "enum_value"
+	TemplateProperty          = "property"
+	TemplateInterface         = "interface"
+	TemplateTypeAlias         = "type_alias"
+	TemplateHandler           = "handler"
+	TemplateImport            = "import"
+	TemplateObject            = "object"
+	TemplateCustomFunction    = "custom_function"
+	TemplateUpdateInput       = "update_input"
+	TemplateCreateInput       = "create_input"
+	TemplateGetInput          = "get_input"
+	TemplateListInput         = "list_input"
+	TemplateFuncWrapperCreate = "func_wrapper_create"
+	TemplateFuncWrapperDelete = "func_wrapper_delete"
+	TemplateFuncWrapperUpdate = "func_wrapper_update"
+	TemplateFuncWrapperList   = "func_wrapper_list"
+	TemplateFuncWrapperGet    = "func_wrapper_get"
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {

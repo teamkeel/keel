@@ -57,6 +57,20 @@ func FindOperation(models *Model, name string) *Operation {
 	return op
 }
 
+func FilterOperations(p *Schema, filter func(op *Operation) bool) (ops []*Operation) {
+	for _, model := range p.Models {
+		operations := model.Operations
+
+		for _, o := range operations {
+			if filter(o) {
+				ops = append(ops, o)
+			}
+		}
+	}
+
+	return ops
+}
+
 // FindModels locates and returns the models whose names match up with those
 // specified in the given names to find.
 func FindModels(allModels []*Model, namesToFind []string) (foundModels []*Model) {

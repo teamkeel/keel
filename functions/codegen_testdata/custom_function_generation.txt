@@ -10,8 +10,8 @@ model Author {
 
 ===
 
-import { CreateAuthorInput, API } from '@teamkeel/sdk'
+import { CreateAuthor } from '@teamkeel/sdk'
 
-export default async (inputs: CreateAuthorInput, api: API) => {
-  // Build your universe
-}
+export default CreateAuthor(async (inputs, api) => {
+  // Build something awesome
+})

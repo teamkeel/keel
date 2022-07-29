@@ -25,10 +25,6 @@ type PostResponse struct {
 	Title string `json:"title"`
 }
 
-type Response struct {
-	Post PostResponse `json:"post"`
-}
-
 func TestAllCases(t *testing.T) {
 	testCases, err := ioutil.ReadDir("runtime_testdata")
 	require.NoError(t, err)
@@ -125,14 +121,14 @@ func TestAllCases(t *testing.T) {
 					}
 
 					if res.StatusCode == 200 {
-						body := Response{}
+						body := PostResponse{}
 						err := json.Unmarshal(b, &body)
 
 						if err != nil {
 							assert.Fail(t, "Could not unmarshal JSON response from node server")
 						}
 
-						actual := body.Post
+						actual := body
 
 						assert.Equal(t, expected["title"], actual.Title)
 

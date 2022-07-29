@@ -3,12 +3,9 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"strings"
 
 	"github.com/fatih/color"
-	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/functions"
 )
@@ -21,25 +18,17 @@ var generateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		schemaDir, _ := cmd.Flags().GetString("dir")
 
-		missing, err := keelDependenciesFulfilled(schemaDir)
+		packageJson, err := functions.NewPackageJson(filepath.Join(schemaDir, "package.json"))
 
 		if err != nil {
-			fmt.Println("⛔️ There is an issue with the package.json")
-			fmt.Println(err)
+			fmt.Println("⛔️ Could not create package.json automatically")
 			return
 		}
 
-		if len(missing) > 0 {
-			fmt.Println("In order to generate code, you need to install the following npm packages:")
+		err = packageJson.Bootstrap()
 
-			for _, item := range missing {
-				fmt.Printf("- %s\n", color.New(color.FgCyan).Sprint(item))
-			}
-
-			fmt.Println("Run the following command:")
-
-			packageList := strings.Join(missing, " ")
-			fmt.Println(color.New(color.FgGreen).Sprintf("npm install %s --save-dev", packageList))
+		if err != nil {
+			fmt.Println("⛔️ Could not bootstrap package.json")
 			return
 		}
 
@@ -133,38 +122,4 @@ func init() {
 var REQUIRED_DEPS = []string{
 	"@teamkeel/runtime",
 	"@teamkeel/sdk",
-}
-
-func keelDependenciesFulfilled(schemaDir string) (missing []string, err error) {
-	list := exec.Command("npm", "ls", "--parseable")
-	list.Dir = schemaDir
-
-	exhausted := REQUIRED_DEPS
-
-	output, err := list.CombinedOutput()
-	if err != nil {
-		return []string{}, err
-	}
-
-	outputStr := string(output)
-
-	splitStr := strings.Split(outputStr, "\n")
-
-	for _, s := range splitStr {
-		parts := strings.Split(s, "/")
-
-		if len(parts) >= 2 {
-			interestingParts := parts[len(parts)-2:]
-
-			packageName := strings.Join(interestingParts, "/")
-
-			if lo.Contains(exhausted, packageName) {
-				i := lo.IndexOf(exhausted, packageName)
-
-				exhausted = append(exhausted[:i], exhausted[i+1:]...)
-			}
-		}
-	}
-
-	return exhausted, nil
 }

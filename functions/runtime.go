@@ -156,7 +156,10 @@ func (r *Runtime) Bundle(write bool) (api.BuildResult, []error) {
 		Outdir:   filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "dist"),
 		Write:    write,
 		Platform: api.PlatformNode,
-		LogLevel: api.LogLevelSilent,
+		LogLevel: api.LogLevelError,
+		External: []string{
+			"@teamkeel/sdk",
+		},
 	})
 
 	if len(buildResult.Errors) > 0 {

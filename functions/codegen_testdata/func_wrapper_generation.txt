@@ -1,0 +1,41 @@
+model Post {
+  fields {
+    title Text
+  }
+
+  functions {
+    create createPost() with(title)
+    update updatePost(id) with(title)
+    delete deletePost(id)
+    list listPosts()
+    get getPost(id)
+  }
+}
+
+===
+
+type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => Promise<Post>
+
+export const CreatePost = (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => {
+  return callback(inputs, api);
+};
+type UpdatePostCallbackFunction = (inputs: UpdatePostInput, api: API) => Promise<Post>
+
+export const UpdatePost = (callback: UpdatePostCallbackFunction) => (inputs: UpdatePostInput, api: API) => {
+  return callback(inputs, api);
+};
+type DeletePostCallbackFunction = (inputs: DeletePostInput, api: API) => Promise<boolean>
+
+export const DeletePost = (callback: DeletePostCallbackFunction) => (inputs: DeletePostInput, api: API) => {
+  return callback(inputs, api);
+};
+type ListPostsCallbackFunction = (inputs: ListPostsInput, api: API) => Promise<Post[]>
+
+export const ListPosts = (callback: ListPostsCallbackFunction) => (inputs: ListPostsInput, api: API) => {
+  return callback(inputs, api);
+};
+type GetPostCallbackFunction = (inputs: GetPostInput, api: API) => Promise<Post>
+
+export const GetPost = (callback: GetPostCallbackFunction) => (inputs: GetPostInput, api: API) => {
+  return callback(inputs, api);
+};

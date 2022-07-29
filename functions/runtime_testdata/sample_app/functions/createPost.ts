@@ -1,13 +1,12 @@
-import { CreatePostInput, API } from '@teamkeel/sdk'
+import { CreatePost } from '@teamkeel/sdk'
 
-export default async (inputs: CreatePostInput, api: API) => {
+export default CreatePost(async (inputs, api) => {
   const { Post } = api.models
 
   const post = await Post.create(inputs);
 
   console.log(post.title)
 
-  return {
-    post
-  }
-}
+  return post
+})
+
