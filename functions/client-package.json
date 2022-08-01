@@ -1,0 +1,11 @@
+{
+  "name": "@teamkeel/client",
+  "version": "0.0.1",
+  "description": "Wrapper module for auto-generated code",
+  "main": "dist/index.js",
+  "author": "Adam Bull (adam@keel.xyz)",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ]
+}

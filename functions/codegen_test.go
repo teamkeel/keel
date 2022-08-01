@@ -37,6 +37,7 @@ func TestCodeGeneration(t *testing.T) {
 		"api",
 		"handler",
 		"custom_function",
+		"func_wrapper",
 	}
 
 	for _, testCase := range testCases {
@@ -79,7 +80,11 @@ func TestCodeGeneration(t *testing.T) {
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else if strings.HasPrefix(testCase.Name(), "custom_function_") {
-				result := generator.GenerateFunction(proto.Models[0].Name)
+				result := generator.GenerateFunction(proto.Models[0].Operations[0].Name)
+
+				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
+			} else if strings.HasPrefix(testCase.Name(), "func_wrapper_") {
+				result := generator.GenerateWrappers()
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else {

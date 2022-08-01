@@ -1,0 +1,5 @@
+type {{ .Name }}CallbackFunction = (inputs: {{ .Name }}Input, api: API) => Promise<{{ .Model }}[]>
+
+export const {{ .Name }} = (callback: {{ .Name }}CallbackFunction) => (inputs: {{ .Name }}Input, api: API) => {
+  return callback(inputs, api);
+};

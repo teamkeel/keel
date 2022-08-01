@@ -1,3 +1,45 @@
+# [0.84.0](https://github.com/teamkeel/keel/compare/v0.83.2...v0.84.0) (2022-07-29)
+
+
+### Features
+
+* provide friendly wrapper functions to custom code files to abstract away internal types ([#200](https://github.com/teamkeel/keel/issues/200)) ([19f7fb8](https://github.com/teamkeel/keel/commit/19f7fb83917607e0ee3b76f805a9cbc01529e62e))
+
+## [0.83.2](https://github.com/teamkeel/keel/compare/v0.83.1...v0.83.2) (2022-07-29)
+
+
+### Bug Fixes
+
+* use module.exports for compatibility with esbuild ([#201](https://github.com/teamkeel/keel/issues/201)) ([c44b903](https://github.com/teamkeel/keel/commit/c44b903e330e39b234eae42a0bf37e07b0837fd7))
+
+## [0.83.1](https://github.com/teamkeel/keel/compare/v0.83.0...v0.83.1) (2022-07-28)
+
+
+### Bug Fixes
+
+* use npx version of tsc when generating client typings ([#199](https://github.com/teamkeel/keel/issues/199)) ([a805a1d](https://github.com/teamkeel/keel/commit/a805a1daf582502e143ce4c4593e1841ecb1b57a))
+
+# [0.83.0](https://github.com/teamkeel/keel/compare/v0.82.0...v0.83.0) (2022-07-28)
+
+
+### Features
+
+* update static analysis runtime cli to process directories ([#197](https://github.com/teamkeel/keel/issues/197)) ([2001e7f](https://github.com/teamkeel/keel/commit/2001e7f68d87b86e5152a57dbe7fdc15fcde2e7a))
+
+# [0.82.0](https://github.com/teamkeel/keel/compare/v0.81.0...v0.82.0) (2022-07-28)
+
+
+### Features
+
+* adds static analysis package to runtime npm package ([#196](https://github.com/teamkeel/keel/issues/196)) ([a2c59d1](https://github.com/teamkeel/keel/commit/a2c59d165451305766029bc60167a6f92c45c161))
+
+# [0.81.0](https://github.com/teamkeel/keel/compare/v0.80.0...v0.81.0) (2022-07-28)
+
+
+### Features
+
+* fully fledged generate command ([#195](https://github.com/teamkeel/keel/issues/195)) ([fff8239](https://github.com/teamkeel/keel/commit/fff8239005c51cc56ebf1b7efda4de2a20502c85))
+
 # [0.80.0](https://github.com/teamkeel/keel/compare/v0.79.2...v0.80.0) (2022-07-27)
 
 
