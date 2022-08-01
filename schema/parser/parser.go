@@ -182,8 +182,13 @@ func (ast *ModelsNode) String() string {
 type AttributeNode struct {
 	node.Node
 
-	Name      AttributeNameToken       `@@`
-	Arguments []*AttributeArgumentNode `( "(" @@ ( "," @@ )* ")" )?`
+	Name AttributeNameToken `@@`
+
+	// This supports:
+	// - no parenthesis at all
+	// - empty parenthesis
+	// - parenthesis with args
+	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
 }
 
 func (ast *AttributeNode) String() string {
