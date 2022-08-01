@@ -1,3 +1,12 @@
+## [0.84.1](https://github.com/teamkeel/keel/compare/v0.84.0...v0.84.1) (2022-08-01)
+
+
+### Bug Fixes
+
+* dont panic on empty section ([824878d](https://github.com/teamkeel/keel/commit/824878df04f8d9710bc0e61c2f2a1d9c59da028d))
+* handle optional and repeated fields in schema formatter ([9207446](https://github.com/teamkeel/keel/commit/92074462e01e6682fffacbc493c0806e3227bcf9))
+* make schema parser more flexible with attribute argument syntax ([fa4d4db](https://github.com/teamkeel/keel/commit/fa4d4dbbd02af122f08655975b533c9a67aa5579))
+
 # [0.84.0](https://github.com/teamkeel/keel/compare/v0.83.2...v0.84.0) (2022-07-29)
 
 
