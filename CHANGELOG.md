@@ -1,3 +1,10 @@
+# [0.85.0](https://github.com/teamkeel/keel/compare/v0.84.1...v0.85.0) (2022-08-01)
+
+
+### Features
+
+* implement completions using text/scanner tokenisation ([789b116](https://github.com/teamkeel/keel/commit/789b116e3d56dd294586c7b703770e68ed482cb6))
+
 ## [0.84.1](https://github.com/teamkeel/keel/compare/v0.84.0...v0.84.1) (2022-08-01)
 
 
