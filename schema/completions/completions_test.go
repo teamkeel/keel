@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/node"
@@ -17,6 +18,7 @@ func TestCompletions(t *testing.T) {
 		name     string
 		schema   string
 		expected []string
+		isolate  bool
 	}
 
 	cases := []testCase{
@@ -768,6 +770,85 @@ func TestCompletions(t *testing.T) {
 			`,
 			expected: []string{"Staff"},
 		},
+		{
+			name: "model-name-completion",
+			schema: `
+			model Person {
+				fields {
+					author Author
+				}
+			}
+
+			model A<Cursor>
+			`,
+			expected: []string{"Author"},
+		},
+		{
+			name: "enum-name-completion",
+			schema: `
+			model Person {
+				fields {
+					author Author
+				}
+			}
+
+			enum A<Cursor>
+			`,
+			expected: []string{"Author"},
+		},
+		{
+			name: "role-name-completion-nadda",
+			schema: `
+			model Person {
+				fields {
+					author Author
+				}
+			}
+
+			role A<Cursor>
+			`,
+			expected: []string{},
+		},
+		{
+			name: "model-name-completion-predefined-enum",
+			schema: `
+			enum Author {
+
+			}
+			model Person {
+				fields {
+					author Author
+				}
+			}
+
+			model A<Cursor>
+			`,
+			expected: []string{},
+		},
+		{
+			name: "enum-name-completion-predefined-model",
+			schema: `
+			model Author {
+
+			}
+			model Person {
+				fields {
+					author Author
+				}
+			}
+
+			enum A<Cursor>
+			`,
+			expected: []string{},
+		},
+	}
+
+	isolated := lo.Filter(cases, func(tc testCase, i int) bool {
+		return tc.isolate
+	})
+
+	if len(isolated) > 0 {
+		cases = isolated
 	}
 
 	for _, tc := range cases {

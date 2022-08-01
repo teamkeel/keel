@@ -69,19 +69,49 @@ func Completions(schema string, pos *node.Position) []*CompletionItem {
 		// models block inside an api block - complete with model names
 		return getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordModel)
 	default:
-		// If no enclosing block then we're at the top-level of the schema
+		// If no enclosing block then we're at the top-level of the schema, or we are defining
+		// a top level named block
 
 		// if the previous token is one of the top level keywords then the current token
 		// is a name and we can't provide any completions for that
+
+		lastToken := tokenAtPos.ValueAt(-1)
+
 		_, ok := lo.Find(topLevelKeywords, func(v *CompletionItem) bool {
-			return v.Label == tokenAtPos.ValueAt(-1)
+			return v.Label == lastToken
 		})
+
 		if ok {
-			return []*CompletionItem{}
+			if lastToken == parser.KeywordModel || lastToken == parser.KeywordEnum {
+				return getUndefinedFieldCompletions(ast, tokenAtPos)
+			} else {
+				// api / role etc - no name completions possible
+				return []*CompletionItem{}
+			}
 		}
 
 		return topLevelKeywords
 	}
+}
+
+func getUndefinedFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) (items []*CompletionItem) {
+	for _, model := range query.Models([]*parser.AST{ast}) {
+		for _, field := range query.ModelFields(model) {
+			// check that model exists
+			model := query.Model([]*parser.AST{ast}, field.Type)
+
+			enum := query.Enum([]*parser.AST{ast}, field.Type)
+
+			if model == nil && enum == nil {
+				items = append(items, &CompletionItem{
+					Label: field.Type,
+					Kind:  KindType,
+				})
+			}
+		}
+	}
+
+	return items
 }
 
 func getFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
