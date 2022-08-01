@@ -1,3 +1,10 @@
+# [0.86.0](https://github.com/teamkeel/keel/compare/v0.85.0...v0.86.0) (2022-08-01)
+
+
+### Features
+
+* autocomplete model and enum names based on undefined types in other models ([#207](https://github.com/teamkeel/keel/issues/207)) ([5575638](https://github.com/teamkeel/keel/commit/557563877576b766d8cfb6f88a2f183e32c2aab6))
+
 # [0.85.0](https://github.com/teamkeel/keel/compare/v0.84.1...v0.85.0) (2022-08-01)
 
 
