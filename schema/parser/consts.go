@@ -15,6 +15,7 @@ const (
 	KeywordEmails     = "emails"
 	KeywordRole       = "role"
 	KeywordEnum       = "enum"
+	KeywordWith       = "with"
 )
 
 // Built in Keel types. Worth noting a field type can also reference
@@ -26,8 +27,6 @@ const (
 	FieldTypeDate     = "Date"      // a date with no time element
 	FieldTypeDatetime = "Timestamp" // a UTC unix timestamp
 	FieldTypeBoolean  = "Boolean"   // a boolean
-	FieldTypeImage    = "Image"     // an image file
-	FieldTypeCurrency = "Currency"  // a currency value
 )
 
 var BuiltInTypes = map[string]bool{
@@ -37,8 +36,6 @@ var BuiltInTypes = map[string]bool{
 	FieldTypeDate:     true,
 	FieldTypeDatetime: true,
 	FieldTypeBoolean:  true,
-	FieldTypeImage:    true,
-	FieldTypeCurrency: true,
 }
 
 func IsBuiltInFieldType(s string) bool {
@@ -54,6 +51,14 @@ const (
 	ActionTypeList   = "list"
 	ActionTypeDelete = "delete"
 )
+
+var ActionTypes = []string{
+	ActionTypeGet,
+	ActionTypeUpdate,
+	ActionTypeCreate,
+	ActionTypeList,
+	ActionTypeDelete,
+}
 
 // All models get a field named "id" implicitly. This set of constants provides
 // the set of this, and other similar implicit fields.

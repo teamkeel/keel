@@ -1,103 +1,812 @@
 package completions_test
 
 import (
-	"io/fs"
-	"io/ioutil"
-	"path/filepath"
-	"strconv"
+	"sort"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/reader"
 )
 
 func TestCompletions(t *testing.T) {
-	testCases, err := ioutil.ReadDir("testdata")
-	require.NoError(t, err)
 
-	toRun := []fs.FileInfo{}
-	for _, testCase := range testCases {
-
-		if strings.HasSuffix(testCase.Name(), ".only") {
-			toRun = append(toRun, testCase)
-		}
+	type testCase struct {
+		name     string
+		schema   string
+		expected []string
 	}
 
-	if len(toRun) > 0 {
-		testCases = toRun
-	}
-
-	for _, testCase := range testCases {
-		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
-			b, err := ioutil.ReadFile(filepath.Join("testdata", testCase.Name()))
-			require.NoError(t, err)
-
-			parts := strings.Split(string(b), "===")
-			require.Equal(t, 3, len(parts), "fixture file should contain 3 sections seperated by \"===\"")
-
-			ast, _ := parser.Parse(&reader.SchemaFile{
-				Contents: string(parts[0]),
-			})
-
-			lineColPart := parts[1]
-
-			lines := strings.Split(lineColPart, "\n")
-
-			line := 0
-			column := 0
-
-			for _, l := range lines {
-				if strings.HasPrefix(l, "line:") {
-					lineStr := strings.Replace(l, "line:", "", 1)
-
-					lineParse, err := strconv.Atoi(strings.TrimSpace(lineStr))
-					require.NoError(t, err)
-
-					line = lineParse
-				}
-
-				if strings.HasPrefix(l, "column:") {
-					columnStr := strings.Replace(l, "column:", "", 1)
-
-					columnParse, err := strconv.Atoi(strings.TrimSpace(columnStr))
-					require.NoError(t, err)
-
-					column = columnParse
+	cases := []testCase{
+		{
+			name:     "model-name-no-completions",
+			schema:   "model Per<Cursor>",
+			expected: []string{},
+		},
+		{
+			name: "field-name-no-completions",
+			schema: `
+			model A {
+				fields {
+					te<Cursor>
 				}
 			}
+			`,
+			expected: []string{},
+		},
+		{
+			name: "field-name-no-completions-previous-optional",
+			schema: `
+			model A {
+				fields {
+					some Number?
+					te<Cursor>
+				}
+			}
+			`,
+			expected: []string{},
+		},
+		{
+			name: "field-name-no-completions-previous-list",
+			schema: `
+			model A {
+				fields {
+					some Number[]
+					te<Cursor>
+				}
+			}
+			`,
+			expected: []string{},
+		},
+		{
+			name: "field-name-no-completions-whitespace",
+			schema: `
+			model A {
+				fields {
+					<Cursor>
+				}
+			}
+			`,
+			expected: []string{},
+		},
+		{
+			name:     "top-level-keyword",
+			schema:   "mod<Cursor>",
+			expected: []string{"api", "enum", "model", "role"},
+		},
+		{
+			name: "top-level-keyword-not-first",
+			schema: `
+			model A {
 
-			res := completions.ProvideCompletions(ast, node.Position{
-				Line:   line,
-				Column: column,
-			})
+            }
 
-			deleteEmpty := func(strs []string) (ret []string) {
-				for _, str := range strs {
-					if len(strings.TrimSpace(str)) > 0 {
-						ret = append(ret, str)
+            m<Cursor>`,
+			expected: []string{"api", "enum", "model", "role"},
+		},
+		{
+			name:     "top-level-keyword-whitespace",
+			schema:   `<Cursor>`,
+			expected: []string{"api", "enum", "model", "role"},
+		},
+		{
+			name: "top-level-keyword-whitespace-partial-schema",
+			schema: `
+			model A {}
+
+			<Cursor>
+
+			model B {}
+			`,
+			expected: []string{"api", "enum", "model", "role"},
+		},
+		{
+			name: "model-block-keywords",
+			schema: `
+			model A {
+              f<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "model-block-keywords-whitespace",
+			schema: `
+			model A {
+			  <Cursor>
+			}`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "fields-keyword",
+			schema: `
+			model A {
+              fi<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "model-attributes",
+			schema: `
+			model A {
+              @<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "permission-attribute",
+			schema: `
+			model A {
+              @p<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "field-type",
+			schema: `
+			model Foo {
+              fields {
+                name Te<Cursor>
+			  }
+            }`,
+			expected: []string{"Foo", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp"},
+		},
+		{
+			name: "field-type-whitespace",
+			schema: `
+			model Foo {
+              fields {
+                name <Cursor>
+			  }
+            }`,
+			expected: []string{"Foo", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp"},
+		},
+		{
+			name: "field-type-previous-optional",
+			schema: `
+			model Foo {
+              fields {
+				optionalNumber Number?
+				myField <Cursor>
+			  }
+            }`,
+			expected: []string{"Foo", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp"},
+		},
+		{
+			name: "field-type-previous-list",
+			schema: `
+			model Foo {
+              fields {
+				optionalNumber Number[]
+				myField <Cursor>
+			  }
+            }`,
+			expected: []string{"Foo", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp"},
+		},
+		{
+			name: "field-type-complex",
+			schema: `
+			model Foo {
+              fields {
+				optionalNumber Number[]
+				things Text[]
+				some Boolean @default(false)
+				other Boolean {
+					@default(1 != 1)
+				}
+				myField <Cursor>
+			  }
+            }`,
+			expected: []string{"Foo", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp"},
+		},
+		{
+			name: "field-type-model",
+			schema: `
+			model Author {}
+			
+			model Book {
+				fields {
+					author Au<Cursor>
+				}	
+			}`,
+			expected: []string{"Author", "Book", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp"},
+		},
+		{
+			name: "field-type-enum",
+			schema: `
+			model Book {
+				fields {
+					category Ca<Cursor>
+				}
+			}
+			
+			enum Category {
+				Romance
+				Horror	
+			}`,
+			expected: []string{"Book", "Category", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp"},
+		},
+		{
+			name: "field-attributes",
+			schema: `
+			model A {
+              fields {
+                name Text @u<Cursor>
+			  }
+            }`,
+			expected: []string{"@unique", "@default"},
+		},
+		{
+			name: "field-attributes-block",
+			schema: `
+			model A {
+              fields {
+                name Text {
+                  @un<Cursor>
+				}
+			  }
+            }`,
+			expected: []string{"@unique", "@default"},
+		},
+		{
+			name: "field-attributes-block-whitespace",
+			schema: `
+			model A {
+				fields {
+					name Text {
+						<Cursor>
 					}
 				}
-
-				return ret
-			}
-
-			labelsOnly := func(completions []*completions.CompletionItem) (strs []string) {
-				for _, c := range completions {
-					strs = append(strs, c.Label)
+			}`,
+			expected: []string{"@unique", "@default"},
+		},
+		{
+			name: "field-attributes-bare-at",
+			schema: `model Person {
+				fields {
+					name Text @<Cursor>
 				}
+			}`,
+			expected: []string{"@unique", "@default"},
+		},
+		{
+			name: "field-attributes-whitespace",
+			schema: `
+			model Person {
+				fields {
+					name Text <Cursor>
+				}
+			}`,
+			expected: []string{"@unique", "@default"},
+		},
+		{
+			name: "functions-keyword",
+			schema: `
+			model A {
+              fields {
+				name Text
+			  }
 
-				return strs
+              fun<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "create-keyword",
+			schema: `
+			model A {
+              operations {
+                c<Cursor>
+			  }
+            }`,
+			expected: append([]string{"with"}, parser.ActionTypes...),
+		},
+		{
+			name: "create-keyword-not-first",
+			schema: `
+			model A {
+              operations {
+                get getA(id)
+                crea<Cursor>
+			  }
+            }`,
+			expected: append([]string{"with"}, parser.ActionTypes...),
+		},
+		{
+			name: "get-keyword",
+			schema: `
+			model A {
+              operations {
+                get getA(id)
+                g<Cursor>
+			  }
+            }`,
+			expected: append([]string{"with"}, parser.ActionTypes...),
+		},
+		{
+			name: "with-keyword",
+			schema: `
+			model A {
+              operations {
+                create createA() wi<Cursor>
+			  }
+            }`,
+			expected: append([]string{"with"}, parser.ActionTypes...),
+		},
+		{
+			name: "with-keyword-whitespace",
+			schema: `
+			model A {
+              operations {
+                create createA() <Cursor>
+			  }
+            }`,
+			expected: append([]string{"with"}, parser.ActionTypes...),
+		},
+		{
+			name: "action-attributes",
+			schema: `
+			model A {
+			  fields {
+				name Text
+			  }
+              operations {
+                create createA() with (name) {
+                  @se<Cursor>
+				}
+			  }
+            }`,
+			expected: []string{"@permission", "@set", "@validate", "@where"},
+		},
+		{
+			name: "action-attributes-bare-at",
+			schema: `
+			model A {
+			  fields {
+				name Text
+			  }
+              operations {
+                create createA() with (name) {
+                  @<Cursor>
+				}
+			  }
+            }`,
+			expected: []string{"@permission", "@set", "@validate", "@where"},
+		},
+		{
+			name: "action-attributes-whitespace",
+			schema: `
+			model A {
+			  fields {
+				name Text
+			  }
+              operations {
+                create createA() with (name) {
+                  <Cursor>
+				}
+			  }
+            }`,
+			expected: []string{"@permission", "@set", "@validate", "@where"},
+		},
+		{
+			name: "role-keyword",
+			schema: `
+			r<Cursor>`,
+			expected: []string{"api", "enum", "model", "role"},
+		},
+		{
+			name: "domains-keyword",
+			schema: `
+			role Staff {
+				dom<Cursor>	
+			}`,
+			expected: []string{"domains", "emails"},
+		},
+		{
+			name: "emails-keyword",
+			schema: `
+			role Staff {
+				e<Cursor>	
+			}`,
+			expected: []string{"domains", "emails"},
+		},
+		{
+			name: "api-keyword",
+			schema: `
+			a<Cursor>`,
+			expected: []string{"api", "enum", "model", "role"},
+		},
+		{
+			name: "models-keyword",
+			schema: `
+			api Test {
+				mo<Cursor>
+			}
+			`,
+			expected: []string{"@graphql", "models"},
+		},
+		{
+			name: "api-attributes",
+			schema: `
+			api Test {
+				@<Cursor>
+			}
+			`,
+			expected: []string{"@graphql", "models"},
+		},
+		{
+			name: "api-model-names",
+			schema: `
+			model Person {}
+
+			api Test {
+				models {
+					P<Cursor>
+				}
+			}
+			`,
+			expected: []string{"Person"},
+		},
+		{
+			name: "actions-input-field-name",
+			schema: `
+			model A {
+			  fields {
+				name Text @unique
+			  }
+              operations {
+                get getA(na<Cursor>)
+			  }
+            }`,
+			expected: []string{"createdAt", "id", "name", "updatedAt"},
+		},
+		{
+			name: "actions-input-with-field-name",
+			schema: `
+			model A {
+			  fields {
+				name Text @unique
+				nickName Text
+			  }
+              operations {
+                create createA() with (n<Cursor>`,
+			expected: []string{"createdAt", "id", "name", "nickName", "updatedAt"},
+		},
+		{
+			name: "actions-input-not-first",
+			schema: `
+			model A {
+			  fields {
+				name Text @unique
+				birthday Date
+			  }
+              operations {
+                create createA() with (name, bi<Cursor>`,
+			expected: []string{"birthday", "createdAt", "id", "name", "updatedAt"},
+		},
+		{
+			name: "actions-input-built-in-fields",
+			schema: `
+			model A {
+              operations {
+                get getA(i<Cursor>`,
+			expected: []string{"createdAt", "id", "updatedAt"},
+		},
+		{
+			name: "actions-input-long-form-type",
+			schema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					create createPerson() with (name: Te<Cursor>)
+				}
+			}
+			`,
+			expected: []string{
+				"Boolean", "Date", "ID", "Identity", "Number", "Text", "Timestamp", "createdAt", "id", "name", "updatedAt",
+			},
+		},
+		{
+			name: "actions-input-nested-field",
+			schema: `
+			model Author {}
+
+			model Book {
+				fields {
+					author Author
+				}
+				operations {
+					list booksByAuthor(author.<Cursor>)
+				}
+			}
+			`,
+			expected: []string{"createdAt", "id", "updatedAt"},
+		},
+		{
+			name: "actions-input-nested-field",
+			schema: `
+			model Publisher {
+				fields {
+					name Text
+				}
 			}
 
-			expected := deleteEmpty(strings.Split(parts[2], "\n"))
-			actual := labelsOnly(res)
+			model Author {
+				fields {
+					publisher Publisher
+				}
+			}
 
-			assert.ElementsMatch(t, expected, actual)
+			model Book {
+				fields {
+					author Author
+				}
+				operations {
+					list booksByPublisher(author.publisher.<Cursor>)
+				}
+			}
+			`,
+			expected: []string{"createdAt", "id", "name", "updatedAt"},
+		},
+		{
+			name: "actions-input-nested-field-partial",
+			schema: `
+			model Publisher {
+				fields {
+					name Text
+				}
+			}
+
+			model Author {
+				fields {
+					publisher Publisher
+				}
+			}
+
+			model Book {
+				fields {
+					author Author
+				}
+				operations {
+					list booksByPublisher(author.publisher.na<Cursor>)
+				}
+			}
+			`,
+			expected: []string{"createdAt", "id", "name", "updatedAt"},
+		},
+		{
+			name: "actions-input-unresolvable",
+			schema: `
+			model Foo {
+				operations {
+					list listFoos(no.idea.what.im.doing<Cursor>)
+				}
+			}
+			`,
+			expected: []string{},
+		},
+		{
+			name: "set-expression",
+			schema: `
+			model Person {
+				operations {
+					create createPerson() {
+						@set(p<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{"person", "ctx"},
+		},
+		{
+			name: "set-expression-model-attribute",
+			schema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					create createPerson() {
+						@set(person.<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{"id", "createdAt", "updatedAt", "name"},
+		},
+		{
+			name: "set-expression-ctx-fields",
+			schema: `
+			model Person {
+				fields {
+					identity Identity
+				}
+				operations {
+					create createPerson() {
+						@set(person.identity = ctx.<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{"identity", "now"},
+		},
+		{
+			name: "set-expression-unresolvable",
+			schema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					create createPerson() {
+						@set(total.nonsense.<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{},
+		},
+		{
+			name: "where-expression",
+			schema: `
+			model Person {
+				operations {
+					get getPerson() {
+						@where(p<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{"person", "ctx"},
+		},
+		{
+			name: "validate-expression",
+			schema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					update updatePerson(id) with (name) {
+						@validate(p<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{"person", "ctx"},
+		},
+		{
+			name: "model-permission-attribute-labels",
+			schema: `
+			model Person {
+				@permission(<Cursor>)
+			}	
+			`,
+			expected: []string{"expression", "roles", "actions"},
+		},
+		{
+			name: "action-permission-attribute-labels",
+			schema: `
+			model Person {
+				operations {
+					create createPerson() {
+						@permission(<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{"expression", "roles"},
+		},
+		{
+			name: "permission-attribute-expression",
+			schema: `
+			model Person {
+				@permission(
+					expression: p<Cursor>
+				)
+			}
+			`,
+			expected: []string{"person", "ctx"},
+		},
+		{
+			name: "permission-attribute-expression-whitespace",
+			schema: `
+			model Person {
+				@permission(
+					expression: <Cursor>
+				)
+			}
+			`,
+			expected: []string{"person", "ctx"},
+		},
+		{
+			name: "permission-attribute-model-fields",
+			schema: `
+			model Person {
+				@permission(
+					expression: person.<Cursor>
+				)
+			}
+			`,
+			expected: []string{"id", "createdAt", "updatedAt"},
+		},
+		{
+			name: "permission-attribute-actions",
+			schema: `
+			model Person {
+				@permission(
+					actions: [<Cursor>]
+				)
+			}
+			`,
+			expected: parser.ActionTypes,
+		},
+		{
+			name: "permission-attribute-actions-many",
+			schema: `
+			model Person {
+				@permission(
+					actions: [get, update, cr<Cursor>]
+				)
+			}
+			`,
+			expected: parser.ActionTypes,
+		},
+		{
+			name: "permission-attribute-roles",
+			schema: `
+			model Person {
+				@permission(
+					roles: [<Cursor>]
+				)
+			}
+
+			role Staff {}
+			`,
+			expected: []string{"Staff"},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			var pos *node.Position
+
+			// find position of <Cursor> marker
+			lines := strings.Split(tc.schema, "\n")
+			for i, line := range lines {
+				idx := strings.Index(line, "<Cursor>")
+				if idx == -1 {
+					continue
+				}
+				pos = &node.Position{
+					Line:   i + 1,
+					Column: idx + 1,
+				}
+				break
+			}
+
+			if pos == nil {
+				t.Fatal("no <Cursor> marker in schema")
+			}
+
+			// remove cursor marker from schema
+			schema := strings.Replace(tc.schema, "<Cursor>", "", 1)
+
+			results := completions.Completions(schema, pos)
+			values := []string{}
+			for _, r := range results {
+				values = append(values, r.Label)
+			}
+
+			// we don't care about order, just that the values match
+			sort.Strings(tc.expected)
+			sort.Strings(values)
+
+			assert.EqualValues(t, tc.expected, values)
 		})
 	}
+
 }
