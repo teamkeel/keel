@@ -16,15 +16,21 @@ func Get(
 	args map[string]any) (interface{}, error) {
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
-	expectedInput := operation.Inputs[0] // Always exactly one for a Get
+
+	// If there is a where clause, there can be no inputs, but we are not
+	// dealing with that case.
+	expectedInput := operation.Inputs[0]
+
+	// todo - where clause
 
 	// todo: do we need name case coercion of the name?
 
 	// todo: remind self if should be looking at target, not name, and when so? Or is it already resolved in proto.
 
-	inputValue, ok := args[expectedInput.Name]
+	expectedInputIdentifier := expectedInput.Target[0]
+	inputValue, ok := args[expectedInputIdentifier]
 	if !ok {
-		return nil, fmt.Errorf("missing argument: %s", expectedInput.Name)
+		return nil, fmt.Errorf("missing argument: %s", expectedInputIdentifier)
 	}
 
 	// do we need to unpack the inputValue from the arg?
@@ -39,8 +45,9 @@ func Get(
 	}
 
 	result := map[string]any{}
-	w := fmt.Sprintf("%s = ?", expectedInput.Name)
 	tableName := strcase.ToSnake(model.Name)
+	columnName := strcase.ToSnake(expectedInputIdentifier)
+	w := fmt.Sprintf("%s = ?", columnName)
 	if err := db.Table(tableName).Where(w, inputValue).Find(&result).Error; err != nil {
 		return nil, err
 	}
