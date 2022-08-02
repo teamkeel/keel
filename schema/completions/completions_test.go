@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/node"
@@ -18,7 +17,6 @@ func TestCompletions(t *testing.T) {
 		name     string
 		schema   string
 		expected []string
-		isolate  bool
 	}
 
 	cases := []testCase{
@@ -841,14 +839,26 @@ func TestCompletions(t *testing.T) {
 			`,
 			expected: []string{},
 		},
-	}
-
-	isolated := lo.Filter(cases, func(tc testCase, i int) bool {
-		return tc.isolate
-	})
-
-	if len(isolated) > 0 {
-		cases = isolated
+		{
+			name: "suggested-function-name-completion",
+			schema: `
+			model Post {
+				fields {
+					title Text
+				}
+			}
+			model PostExtended {
+				fields {
+					title Text
+				}
+			
+				functions {
+					create c<Cursor>
+				}
+			}
+			`,
+			expected: []string{"createPostExtended"},
+		},
 	}
 
 	for _, tc := range cases {

@@ -1,6 +1,7 @@
 package completions
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/iancoleman/strcase"
@@ -28,6 +29,10 @@ const (
 	KindKeyword   = "keyword"
 	KindLabel     = "label"
 	KindAttribute = "attribute"
+)
+
+const (
+	DescriptionSuggested = "Suggested"
 )
 
 func Completions(schema string, pos *node.Position) []*CompletionItem {
@@ -235,8 +240,17 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 	}
 
 	// current token is action name - can't auto-complete
+
 	if lo.Contains(parser.ActionTypes, tokenAtPos.ValueAt(-1)) {
-		return []*CompletionItem{}
+		modelName := getParentModelName(tokenAtPos)
+		actionType := tokenAtPos.ValueAt(-1)
+
+		suggestion := fmt.Sprintf("%s%s", actionType, strcase.ToCamel(modelName))
+		return []*CompletionItem{{
+			Label:       suggestion,
+			Kind:        KindLabel,
+			Description: DescriptionSuggested,
+		}}
 	}
 
 	// action block keywords
