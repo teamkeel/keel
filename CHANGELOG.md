@@ -1,3 +1,10 @@
+# [0.87.0](https://github.com/teamkeel/keel/compare/v0.86.0...v0.87.0) (2022-08-02)
+
+
+### Features
+
+* suggest action names ([#208](https://github.com/teamkeel/keel/issues/208)) ([2f75b81](https://github.com/teamkeel/keel/commit/2f75b815015a11bcd8a6ed38f58b517d8c5fe3bf))
+
 # [0.86.0](https://github.com/teamkeel/keel/compare/v0.85.0...v0.86.0) (2022-08-01)
 
 
