@@ -143,7 +143,16 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+			return actions.Get(p.Context, op, schema, inputMap)
+		}
 		mk.query.AddFieldConfig(op.Name, field)
+
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
