@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/functions"
+	"github.com/teamkeel/keel/testhelpers"
 )
 
 var TestCases = []string{
@@ -29,34 +30,38 @@ func TestAllTestCases(t *testing.T) {
 		}
 
 		t.Run(testCase.Name(), func(t *testing.T) {
-			workingDir := filepath.Join("nodedeps_testdata", testCase.Name())
-			packageJsonPath := filepath.Join(workingDir, "package.json")
+			testDir := filepath.Join("nodedeps_testdata", testCase.Name())
 
-			packageJson, err := functions.NewPackageJson(packageJsonPath)
+			testhelpers.WithTmpDir(testDir, func(tmpDir string) {
+				packageJsonPath := filepath.Join(tmpDir, "package.json")
 
-			require.NoError(t, err)
+				packageJson, err := functions.NewPackageJson(packageJsonPath)
 
-			err = packageJson.Bootstrap()
+				require.NoError(t, err)
 
-			require.NoError(t, err)
+				err = packageJson.Bootstrap()
 
-			b, err := os.ReadFile(packageJsonPath)
+				require.NoError(t, err)
 
-			require.NoError(t, err)
+				b, err := os.ReadFile(packageJsonPath)
 
-			packageJsonContents := map[string]interface{}{}
+				require.NoError(t, err)
 
-			err = json.Unmarshal(b, &packageJsonContents)
+				packageJsonContents := map[string]interface{}{}
 
-			require.NoError(t, err)
+				err = json.Unmarshal(b, &packageJsonContents)
 
-			devDeps, ok := packageJsonContents["devDependencies"].(map[string]interface{})
+				require.NoError(t, err)
 
-			if !ok {
-				assert.Fail(t, "devDeps not in expected format")
-			}
+				devDeps, ok := packageJsonContents["devDependencies"].(map[string]interface{})
 
-			assert.ObjectsAreEqual(devDeps, functions.DEV_DEPENDENCIES)
+				if !ok {
+					assert.Fail(t, "devDeps not in expected format")
+				}
+
+				assert.ObjectsAreEqual(devDeps, functions.DEV_DEPENDENCIES)
+			})
+
 		})
 	}
 }
