@@ -29,7 +29,10 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require github.com/aybabtme/flatjson v0.1.1 // indirect
+require (
+	github.com/aybabtme/flatjson v0.1.1 // indirect
+	github.com/otiai10/copy v1.7.0 // indirect
+)
 
 require (
 	github.com/Microsoft/go-winio v0.5.2 // indirect
