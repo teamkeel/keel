@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"testing"
 	"time"
 
@@ -29,18 +27,6 @@ type PostResponse struct {
 func TestAllCases(t *testing.T) {
 	testCases, err := ioutil.ReadDir("runtime_testdata")
 	require.NoError(t, err)
-
-	toRun := []fs.FileInfo{}
-
-	for _, testCase := range testCases {
-		if strings.HasSuffix(testCase.Name(), ".only") {
-			toRun = append(toRun, testCase)
-		}
-	}
-
-	if len(toRun) > 0 {
-		testCases = toRun
-	}
 
 	for _, testCase := range testCases {
 		if !testCase.IsDir() {

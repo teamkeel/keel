@@ -7,28 +7,18 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/testhelpers"
 )
 
-var TestCases = []string{
-	"non_existent_package_json",
-	"existing_package_json",
-}
-
-func TestAllTestCases(t *testing.T) {
+func TestNodeDeps(t *testing.T) {
 	testCases, err := ioutil.ReadDir("nodedeps_testdata")
 
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
-		if !lo.Contains(TestCases, testCase.Name()) {
-			continue
-		}
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 			testDir := filepath.Join("nodedeps_testdata", testCase.Name())
 
@@ -61,7 +51,6 @@ func TestAllTestCases(t *testing.T) {
 
 				assert.ObjectsAreEqual(devDeps, functions.DEV_DEPENDENCIES)
 			})
-
 		})
 	}
 }

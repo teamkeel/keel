@@ -1,7 +1,6 @@
 package functions_test
 
 import (
-	"io/fs"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -17,18 +16,6 @@ import (
 func TestCodeGeneration(t *testing.T) {
 	testCases, err := ioutil.ReadDir("codegen_testdata")
 	require.NoError(t, err)
-
-	toRun := []fs.FileInfo{}
-
-	for _, testCase := range testCases {
-		if strings.HasSuffix(testCase.Name(), ".only") {
-			toRun = append(toRun, testCase)
-		}
-	}
-
-	if len(toRun) > 0 {
-		testCases = toRun
-	}
 
 	var permittedTestCaseTypes = []string{
 		"model",
