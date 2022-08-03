@@ -1,0 +1,18 @@
+model Publisher {
+}
+
+model Author {
+    fields {
+        publisher Publisher
+    }
+}
+
+model Book {
+    fields {
+        author Author @unique
+    }
+
+    operations {
+        get getByPublisher(author.publisher.id)
+    }
+}

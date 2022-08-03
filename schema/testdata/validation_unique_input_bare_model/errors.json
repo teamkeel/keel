@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "author refers to the model Author which can't be used as an input to a get action",
+      "short_message": "",
+      "hint": "did you mean author.id?",
+      "code": "E041",
+      "pos": {
+        "filename": "testdata/validation_unique_input_bare_model/schema.keel",
+        "offset": 122,
+        "line": 10,
+        "column": 25
+      },
+      "end_pos": {
+        "filename": "testdata/validation_unique_input_bare_model/schema.keel",
+        "offset": 128,
+        "line": 10,
+        "column": 31
+      }
+    }
+  ]
+}

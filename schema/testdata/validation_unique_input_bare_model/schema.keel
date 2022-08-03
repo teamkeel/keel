@@ -1,0 +1,12 @@
+model Author {
+}
+
+model Book {
+    fields {
+        author Author @unique
+    }
+
+    operations {
+        get getByAuthor(author)
+    }
+}
