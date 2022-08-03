@@ -17,24 +17,6 @@
         "line": 8,
         "column": 37
       }
-    },
-    {
-      "message": "Operation updateName must either take a unique field as input or filter on a unique field using a @where attribute",
-      "short_message": "updateName does not specify a unique field to lookup by",
-      "hint": "Did you mean to add 'id' as an input?",
-      "code": "E008",
-      "pos": {
-        "filename": "testdata/validation_actions_update_invalid_where_operator/schema.keel",
-        "offset": 116,
-        "line": 7,
-        "column": 16
-      },
-      "end_pos": {
-        "filename": "testdata/validation_actions_update_invalid_where_operator/schema.keel",
-        "offset": 126,
-        "line": 7,
-        "column": 26
-      }
     }
   ]
 }

@@ -443,33 +443,13 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 
 	// check for inputs that refer to non-unique fields
 	for _, arg := range action.Inputs {
-		field := query.ResolveInputField(asts, arg, model)
-
-		// if input type cannot be resolved to a field e.g. it's a built-in
-		// type like Text then we can't check for uniqueness
-		if field == nil {
-			continue
+		isUnique, err := validateInputIsUnique(asts, action, arg, model)
+		if err != nil {
+			errors = append(errors, err)
 		}
-
-		// If the input refers to a unique field then we're all good
-		if query.FieldIsUnique(field) {
+		if isUnique {
 			hasUniqueLookup = true
-			continue
 		}
-
-		// input refers to a non-unique field - this is an error
-		errors = append(
-			errors,
-			errorhandling.NewValidationError(errorhandling.ErrorOperationInputNotUnique,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Input":         arg.Type.ToString(),
-						"OperationType": action.Type.Value,
-					},
-				},
-				arg,
-			),
-		)
 	}
 
 	// check for @where attributes that filter on non-unique fields
@@ -566,8 +546,10 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 		}
 	}
 
-	// we did not find a unique field - this action is invalid
-	if !hasUniqueLookup {
+	// If we did not find a unique field make sure there is an error on the
+	// action. This might happen if the action is defined with no inputs or
+	// @where clauses e.g. `get getMyThing()`
+	if !hasUniqueLookup && len(errors) == 0 {
 		errors = append(
 			errors,
 			errorhandling.NewValidationError(errorhandling.ErrorOperationMissingUniqueInput,
@@ -582,4 +564,56 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 	}
 
 	return errors
+}
+
+func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input *parser.ActionInputNode, model *parser.ModelNode) (isUnique bool, err *errorhandling.ValidationError) {
+	// handle built-in type e.g. not referencing a field name
+	// for example `get getMyThing(name: Text)`
+	if parser.IsBuiltInFieldType(input.Type.ToString()) {
+		return false, nil
+	}
+
+	var field *parser.FieldNode
+
+	for _, fragment := range input.Type.Fragments {
+		if model == nil {
+			return false, nil
+		}
+		field = query.ModelField(model, fragment.Fragment)
+		if field == nil {
+			return false, nil
+		}
+		if !query.FieldIsUnique(field) {
+			// input refers to a non-unique field - this is an error
+			return false, errorhandling.NewValidationError(errorhandling.ErrorOperationInputNotUnique,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Input":         fragment.Fragment,
+						"OperationType": action.Type.Value,
+					},
+				},
+				fragment,
+			)
+		}
+		model = query.Model(asts, field.Type)
+	}
+
+	// If we have a model at the end of this it means that the input
+	// is referring to the "bare" model and not a specific field of that
+	// model. This is an error for unique inputs.
+	if model != nil {
+		// input refers to a non-unique field - this is an error
+		return false, errorhandling.NewValidationError(errorhandling.ErrorModelNotAllowedAsInput,
+			errorhandling.TemplateLiterals{
+				Literals: map[string]string{
+					"ActionType": action.Type.Value,
+					"Input":      input.Type.ToString(),
+					"ModelName":  model.Name.Value,
+				},
+			},
+			input,
+		)
+	}
+
+	return true, nil
 }

@@ -55,6 +55,7 @@ const (
 	ErrorUnusedInput                        = "E038"
 	ErrorInvalidOneToOneRelationship        = "E039"
 	ErrorInvalidActionType                  = "E040"
+	ErrorModelNotAllowedAsInput             = "E041"
 )
 
 type ErrorDetails struct {
