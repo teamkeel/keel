@@ -1,0 +1,3 @@
+declare type {{ .Name }}CallbackFunction = (inputs: {{ .Name }}Input, api: API) => Promise<{{ .Model }}[]>
+
+export declare const {{ .Name }} : (callback: {{ .Name }}CallbackFunction) => (inputs: {{ .Name }}Input, api: API) => Promise<{{ .Model }}[]>

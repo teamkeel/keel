@@ -1,0 +1,24 @@
+enum Something {
+    Hello
+}
+model Post {
+    fields {
+        title Text
+    }
+
+    operations {
+        get getPost(id)
+    }
+
+    functions {
+        create createPost() with (title)
+    }
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+    }
+}

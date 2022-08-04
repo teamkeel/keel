@@ -38,14 +38,13 @@ func TestAllCases(t *testing.T) {
 		t.Run(testCase.Name(), func(t *testing.T) {
 			// The base working directory - in this case, the test case directory
 			testDir := filepath.Join("runtime_testdata", testCase.Name())
-
 			builder := schema.Builder{}
-			proto, err := builder.MakeFromDirectory(testDir)
 
+			schema, err := builder.MakeFromDirectory(testDir)
 			require.NoError(t, err)
 
 			testhelpers.WithTmpDir(testDir, func(workingDir string) {
-				runtime, err := functions.NewRuntime(proto, workingDir)
+				runtime, err := functions.NewRuntime(schema, workingDir)
 				require.NoError(t, err)
 
 				// Checks if the correct dependencies are listed in the target app's package.json

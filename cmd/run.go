@@ -221,7 +221,7 @@ var runCmd = &cobra.Command{
 			}
 
 			ctx := r.Context()
-			ctx = runtimectx.NewContext(ctx, db)
+			ctx = runtimectx.WithDatabase(ctx, db)
 			ctx = runtime.WithFunctionsClient(ctx, nodeClient)
 
 			response, err := handler(&runtime.Request{

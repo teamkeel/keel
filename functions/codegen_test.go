@@ -25,6 +25,7 @@ func TestCodeGeneration(t *testing.T) {
 		"handler",
 		"custom_function",
 		"func_wrapper",
+		"typings",
 	}
 
 	for _, testCase := range testCases {
@@ -51,15 +52,15 @@ func TestCodeGeneration(t *testing.T) {
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else if strings.HasPrefix(testCase.Name(), "enum_") {
-				result := generator.GenerateEnums()
+				result := generator.GenerateEnums(false)
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else if strings.HasPrefix(testCase.Name(), "inputs_") {
-				result := generator.GenerateInputs()
+				result := generator.GenerateInputs(false)
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else if strings.HasPrefix(testCase.Name(), "api_") {
-				result := generator.GenerateAPIs()
+				result := generator.GenerateAPIs(false)
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else if strings.HasPrefix(testCase.Name(), "handler_") {
@@ -70,8 +71,12 @@ func TestCodeGeneration(t *testing.T) {
 				result := generator.GenerateFunction(proto.Models[0].Operations[0].Name)
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
+			} else if strings.HasPrefix(testCase.Name(), "typings_") {
+				result := generator.GenerateClientTypings()
+
+				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else if strings.HasPrefix(testCase.Name(), "func_wrapper_") {
-				result := generator.GenerateWrappers()
+				result := generator.GenerateWrappers(false)
 
 				assert.Equal(t, strings.TrimSpace(parts[1]), strings.TrimSpace(result))
 			} else {

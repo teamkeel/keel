@@ -85,7 +85,7 @@ func TestCreate(t *testing.T) {
 			require.NoError(t, m.Apply(testDB))
 
 			// Call the Create Operation.
-			response, err := Create(runtimectx.NewContext(context.Background(), testDB), createOp, schema, args)
+			response, err := Create(runtimectx.WithDatabase(context.Background(), testDB), createOp, schema, args)
 			require.NoError(t, err)
 
 			// Check we got the correct return value.

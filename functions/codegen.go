@@ -28,10 +28,21 @@ func NewCodeGenerator(schema *proto.Schema) *CodeGenerator {
 func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	r += gen.GenerateBaseTypes()
 	r += gen.GenerateModels()
-	r += gen.GenerateEnums()
-	r += gen.GenerateInputs()
-	r += gen.GenerateWrappers()
-	r += gen.GenerateAPIs()
+	r += gen.GenerateEnums(false)
+	r += gen.GenerateInputs(false)
+	r += gen.GenerateWrappers(false)
+	r += gen.GenerateAPIs(false)
+
+	return r
+}
+
+func (gen *CodeGenerator) GenerateClientTypings() (r string) {
+	r += gen.GenerateBaseTypes()
+	r += gen.GenerateModels()
+	r += gen.GenerateEnums(true)
+	r += gen.GenerateInputs(true)
+	r += gen.GenerateWrappers(true)
+	r += gen.GenerateAPIs(true)
 
 	return r
 }
@@ -56,7 +67,7 @@ func (gen *CodeGenerator) GenerateFunction(operationName string) string {
 	)
 }
 
-func (gen *CodeGenerator) GenerateWrappers() (str string) {
+func (gen *CodeGenerator) GenerateWrappers(typings bool) (str string) {
 	fns := proto.FilterOperations(gen.schema, func(op *proto.Operation) bool {
 		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 	})
@@ -64,78 +75,144 @@ func (gen *CodeGenerator) GenerateWrappers() (str string) {
 	for _, fn := range fns {
 		switch fn.Type {
 		case proto.OperationType_OPERATION_TYPE_CREATE:
-			str += renderTemplate(
-				TemplateFuncWrapperCreate,
-				map[string]interface{}{
-					"Name":  strcase.ToCamel(fn.Name),
-					"Model": fn.ModelName,
-				},
-			)
+			if typings {
+				str += renderTemplate(
+					TemplateFuncWrapperCreateTypings,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			} else {
+				str += renderTemplate(
+					TemplateFuncWrapperCreate,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			}
 		case proto.OperationType_OPERATION_TYPE_DELETE:
-			str += renderTemplate(
-				TemplateFuncWrapperDelete,
-				map[string]interface{}{
-					"Name":  strcase.ToCamel(fn.Name),
-					"Model": fn.ModelName,
-				},
-			)
+			if typings {
+				str += renderTemplate(
+					TemplateFuncWrapperDeleteTypings,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			} else {
+				str += renderTemplate(
+					TemplateFuncWrapperDelete,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			}
 		case proto.OperationType_OPERATION_TYPE_LIST:
-			str += renderTemplate(
-				TemplateFuncWrapperList,
-				map[string]interface{}{
-					"Name":  strcase.ToCamel(fn.Name),
-					"Model": fn.ModelName,
-				},
-			)
+			if typings {
+				str += renderTemplate(
+					TemplateFuncWrapperListTypings,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			} else {
+				str += renderTemplate(
+					TemplateFuncWrapperList,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			}
 		case proto.OperationType_OPERATION_TYPE_UPDATE:
-			str += renderTemplate(
-				TemplateFuncWrapperUpdate,
-				map[string]interface{}{
-					"Name":  strcase.ToCamel(fn.Name),
-					"Model": fn.ModelName,
-				},
-			)
+			if typings {
+				str += renderTemplate(
+					TemplateFuncWrapperUpdateTypings,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			} else {
+				str += renderTemplate(
+					TemplateFuncWrapperUpdate,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			}
 		case proto.OperationType_OPERATION_TYPE_GET:
-			str += renderTemplate(
-				TemplateFuncWrapperGet,
-				map[string]interface{}{
-					"Name":  strcase.ToCamel(fn.Name),
-					"Model": fn.ModelName,
-				},
-			)
+			if typings {
+				str += renderTemplate(
+					TemplateFuncWrapperGetTypings,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			} else {
+				str += renderTemplate(
+					TemplateFuncWrapperGet,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			}
 		}
 	}
 
 	return str
 }
 
-func (gen *CodeGenerator) GenerateEnums() (r string) {
+func (gen *CodeGenerator) GenerateEnums(typings bool) (r string) {
 	for _, enum := range gen.schema.Enums {
 
 		renderValues := func(values []*proto.EnumValue) (v string) {
 			for i, value := range values {
 				lastItem := i == len(values)-1
 
-				if lastItem {
-					v += renderTemplate(TemplateEnumValue, map[string]interface{}{
+				templateResult := ""
+
+				if typings {
+					templateResult = renderTemplate(TemplateEnumValueTyping, map[string]interface{}{
 						"Value": value.Name,
-						"Comma": false,
+						"Index": i,
+						"Comma": !lastItem,
 					})
 				} else {
-					v += fmt.Sprintf("%s\n", renderTemplate(TemplateEnumValue, map[string]interface{}{
+					templateResult = renderTemplate(TemplateEnumValue, map[string]interface{}{
 						"Value": value.Name,
-						"Comma": true,
-					}))
+						"Comma": !lastItem,
+					})
+				}
+
+				if lastItem {
+					v += templateResult
+				} else {
+					v += fmt.Sprintf("%s\n", templateResult)
 				}
 			}
 
 			return v
 		}
 
-		r += renderTemplate(TemplateEnum, map[string]interface{}{
-			"Name":   enum.Name,
-			"Values": renderValues(enum.Values),
-		})
+		if typings {
+			r += renderTemplate(TemplateEnumTyping, map[string]interface{}{
+				"Name":   enum.Name,
+				"Values": renderValues(enum.Values),
+			})
+		} else {
+			r += renderTemplate(TemplateEnum, map[string]interface{}{
+				"Name":   enum.Name,
+				"Values": renderValues(enum.Values),
+			})
+		}
 	}
 
 	return r
@@ -180,7 +257,7 @@ func (gen *CodeGenerator) GenerateModels() (r string) {
 
 var APIName = "API"
 
-func (gen *CodeGenerator) GenerateAPIs() (r string) {
+func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 	renderModelApiDefs := func(models []*proto.Model) (acc string) {
 		modelsToUse := lo.Filter(models, func(model *proto.Model, _ int) bool {
 			return model.Name != TSTypeIdentity
@@ -213,25 +290,38 @@ func (gen *CodeGenerator) GenerateAPIs() (r string) {
 		return acc
 	}
 
-	r += renderTemplate(TemplateKeelApi, map[string]interface{}{
-		"Name":      APIName,
-		"ModelApis": renderModelApiDefs(gen.schema.Models),
-	})
+	if typings {
+		r += renderTemplate(TemplateKeelApiTypings, map[string]interface{}{
+			"Name":      APIName,
+			"ModelApis": renderModelApiDefs(gen.schema.Models),
+		})
+	} else {
+		r += renderTemplate(TemplateKeelApi, map[string]interface{}{
+			"Name":      APIName,
+			"ModelApis": renderModelApiDefs(gen.schema.Models),
+		})
+	}
 
 	for _, model := range gen.schema.Models {
 		if model.Name == TSTypeIdentity {
 			continue
 		}
 
-		r += renderTemplate(TemplateApi, map[string]interface{}{
-			"Name": model.Name,
-		})
+		if typings {
+			r += renderTemplate(TemplateApiTyping, map[string]interface{}{
+				"Name": model.Name,
+			})
+		} else {
+			r += renderTemplate(TemplateApi, map[string]interface{}{
+				"Name": model.Name,
+			})
+		}
 	}
 
 	return r
 }
 
-func (gen *CodeGenerator) GenerateInputs() (r string) {
+func (gen *CodeGenerator) GenerateInputs(typings bool) (r string) {
 	renderInputFields := func(inputs []*proto.OperationInput, filter func(input *proto.OperationInput) bool) (acc string) {
 		filtered := []*proto.OperationInput{}
 
@@ -272,41 +362,82 @@ func (gen *CodeGenerator) GenerateInputs() (r string) {
 
 			switch op.Type {
 			case proto.OperationType_OPERATION_TYPE_CREATE:
-				r += renderTemplate(TemplateCreateInput, map[string]interface{}{
-					"Name": strcase.ToCamel(op.Name),
-					"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-						return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
-					}),
-				})
+				if typings {
+					r += renderTemplate(TemplateCreateInputTypings, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+						}),
+					})
+				} else {
+					r += renderTemplate(TemplateCreateInput, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+						}),
+					})
+				}
 			case proto.OperationType_OPERATION_TYPE_UPDATE:
-				r += renderTemplate(TemplateUpdateInput, map[string]interface{}{
-					"Name": strcase.ToCamel(op.Name),
-					"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-						return input.GetMode() == proto.InputMode_INPUT_MODE_READ
-					}),
-					"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-						return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
-					}),
-				})
+				if typings {
+					r += renderTemplate(TemplateUpdateInputTypings, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+						"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+						}),
+					})
+				} else {
+					r += renderTemplate(TemplateUpdateInput, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+						"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+						}),
+					})
+				}
 			case proto.OperationType_OPERATION_TYPE_GET:
-				r += renderTemplate(TemplateGetInput, map[string]interface{}{
-					"Name": strcase.ToCamel(op.Name),
-					"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-						return input.GetMode() == proto.InputMode_INPUT_MODE_READ
-					}),
-				})
+				if typings {
+					r += renderTemplate(TemplateGetInputTypings, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+					})
+				} else {
+					r += renderTemplate(TemplateGetInput, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+					})
+				}
 			case proto.OperationType_OPERATION_TYPE_LIST:
-				r += renderTemplate(TemplateListInput, map[string]interface{}{
-					"Name": strcase.ToCamel(op.Name),
-					"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-						return input.GetMode() == proto.InputMode_INPUT_MODE_READ
-					}),
-					"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-						return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
-					}),
-				})
+				if typings {
+					r += renderTemplate(TemplateListInputTypings, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+						"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+						}),
+					})
+				} else {
+					r += renderTemplate(TemplateListInput, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+						"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
+						}),
+					})
+				}
 			}
-
 		}
 	}
 
@@ -483,6 +614,21 @@ var (
 	TemplateFuncWrapperUpdate = "func_wrapper_update"
 	TemplateFuncWrapperList   = "func_wrapper_list"
 	TemplateFuncWrapperGet    = "func_wrapper_get"
+
+	// Typing templates - used to generate index.d.ts file
+	TemplateApiTyping                = "api_typings"
+	TemplateCreateInputTypings       = "create_input_typings"
+	TemplateGetInputTypings          = "get_input_typings"
+	TemplateListInputTypings         = "list_input_typings"
+	TemplateUpdateInputTypings       = "update_input_typings"
+	TemplateEnumTyping               = "enum_typing"
+	TemplateEnumValueTyping          = "enum_value_typing"
+	TemplateFuncWrapperCreateTypings = "func_wrapper_create_typings"
+	TemplateFuncWrapperDeleteTypings = "func_wrapper_delete_typings"
+	TemplateFuncWrapperUpdateTypings = "func_wrapper_update_typings"
+	TemplateFuncWrapperListTypings   = "func_wrapper_list_typings"
+	TemplateFuncWrapperGetTypings    = "func_wrapper_get_typings"
+	TemplateKeelApiTypings           = "keel_api_typings"
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {
