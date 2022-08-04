@@ -131,13 +131,6 @@ var runCmd = &cobra.Command{
 			panic(err)
 		}
 
-		// First time around, we want to generate client typings
-		// and the node js handling code based on the currSchema
-		generate(currSchema)
-
-		// Then spawn a node server
-		nodeProcess = spawnNodeProcess()
-
 		reloadSchema := func(changedFile string) {
 			mutex.Lock()
 			defer mutex.Unlock()
@@ -246,6 +239,9 @@ var runCmd = &cobra.Command{
 		})
 
 		reloadSchema("")
+
+		// Then spawn a node server
+		nodeProcess = spawnNodeProcess()
 
 		go http.ListenAndServe(":"+runCmdFlagPort, nil)
 
