@@ -1,12 +1,19 @@
 package cmd
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -16,11 +23,13 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/util"
 	"gorm.io/gorm"
 
 	"gorm.io/driver/postgres"
@@ -61,6 +70,42 @@ var runCmd = &cobra.Command{
 		}
 
 		var mutex sync.Mutex
+		var nodePort int
+		var nodeProcess *os.Process
+		var nodeClient = &HttpFunctionsClient{
+			port: nodePort,
+		}
+
+		spawnNodeProcess := func() *os.Process {
+			if nodeProcess != nil {
+				err = nodeProcess.Kill()
+			}
+
+			p, err := util.GetFreePort()
+
+			if err != nil {
+				panic(err)
+			}
+
+			freePort, err := strconv.Atoi(p)
+
+			if err != nil {
+				panic(err)
+			}
+
+			nodeProcess, err = RunServer(schemaDir, freePort)
+
+			if err != nil {
+				panic(err)
+			}
+
+			nodePort = freePort
+			nodeClient.port = nodePort
+
+			return nodeProcess
+		}
+
+		nodeProcess = spawnNodeProcess()
 
 		currSchema, err := migrations.GetCurrentSchema(db)
 		if err != nil {
@@ -111,6 +156,33 @@ var runCmd = &cobra.Command{
 				printMigrationChanges(m.Changes)
 			}
 
+			customFunctionRuntime, err := functions.NewRuntime(protoSchema, schemaDir)
+
+			if err != nil {
+				panic(err)
+			}
+
+			// todo: note instead of auto generation
+			// _, err = customFunctionRuntime.Scaffold()
+
+			// if err == nil {
+			// 	fmt.Println("🤟 Generated custom functions")
+			// }
+
+			err = customFunctionRuntime.GenerateClient()
+
+			if err != nil {
+				panic(err)
+			}
+
+			_, errs := customFunctionRuntime.Bundle(true)
+
+			if len(errs) > 0 {
+				panic(errs)
+			}
+
+			spawnNodeProcess()
+
 			currSchema = protoSchema
 			fmt.Println("🎉 You're ready to roll")
 		}
@@ -148,8 +220,12 @@ var runCmd = &cobra.Command{
 				return
 			}
 
+			ctx := r.Context()
+			ctx = runtimectx.NewContext(ctx, db)
+			ctx = runtime.WithFunctionsClient(ctx, nodeClient)
+
 			response, err := handler(&runtime.Request{
-				Context: runtimectx.NewContext(db),
+				Context: ctx,
 				URL:     *r.URL,
 				Body:    body,
 			})
@@ -170,6 +246,10 @@ var runCmd = &cobra.Command{
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		<-c
+
+		if nodeProcess != nil {
+			nodeProcess.Kill()
+		}
 		fmt.Println("\n👋 Bye bye")
 		return nil
 	},
@@ -229,6 +309,7 @@ func onSchemaFileChanges(dir string, cb func(changedFile string)) (func() error,
 	// The run command remains quiescent now, until the user changes their schema, so we establish
 	// a watcher on the schema directorty.
 	watcher, err := fsnotify.NewWatcher()
+
 	if err != nil {
 		return nil, err
 	}
@@ -238,12 +319,14 @@ func onSchemaFileChanges(dir string, cb func(changedFile string)) (func() error,
 			select {
 			case event := <-watcher.Events:
 				switch {
-				case !strings.HasSuffix(event.Name, ".keel"):
-					// Ignore
+				case strings.HasSuffix(event.Name, ".keel"):
+					cb(event.Name)
+				case strings.HasSuffix(event.Name, ".ts"):
+					cb(event.Name)
 				case !isRelevantEventType(event.Op):
 					// Ignore
 				default:
-					cb(event.Name)
+
 				}
 
 			case err, ok := <-watcher.Errors:
@@ -261,6 +344,12 @@ func onSchemaFileChanges(dir string, cb func(changedFile string)) (func() error,
 	// The watcher documentation suggests we tell the watcher about the directory to watch,
 	// AFTER we have constructed it, and registered a handler.
 	err = watcher.Add(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	err = watcher.Add(filepath.Join(dir, "functions"))
+
 	if err != nil {
 		return nil, err
 	}
@@ -288,4 +377,67 @@ func init() {
 	runCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "the directory containing the Keel schema files")
 	runCmd.Flags().BoolVar(&runCmdFlagReset, "reset", false, "if set the database will be reset")
 	runCmd.Flags().StringVar(&runCmdFlagPort, "port", "8000", "the port to run the Keel application on")
+}
+
+type HttpFunctionsClient struct {
+	port int
+}
+
+func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, body map[string]any) (map[string]any, error) {
+	b, err := json.Marshal(body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%d/%s", h.port, actionName), bytes.NewReader(b))
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := http.DefaultClient.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	b, err = ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	response := map[string]any{}
+
+	json.Unmarshal(b, &response)
+
+	return response, nil
+}
+
+func RunServer(workingDir string, port int) (*os.Process, error) {
+	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
+
+	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
+		fmt.Print(err)
+		return nil, err
+	}
+
+	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
+	cmd.Dir = workingDir
+
+	var buf bytes.Buffer
+	w := io.MultiWriter(os.Stdout, &buf)
+
+	cmd.Stdout = w
+	cmd.Stderr = w
+
+	err := cmd.Start()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd.Process, nil
 }

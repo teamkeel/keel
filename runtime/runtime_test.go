@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -79,7 +80,7 @@ func TestRuntime(t *testing.T) {
 			// Assemble the query to send from the test case data.
 			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
 			request := Request{
-				Context: runtimectx.NewContext(testDB),
+				Context: runtimectx.NewContext(context.Background(), testDB),
 				URL: url.URL{
 					Path: "/Test",
 				},

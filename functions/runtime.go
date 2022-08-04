@@ -14,7 +14,6 @@ import (
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema"
 )
 
 type Runtime struct {
@@ -37,15 +36,9 @@ type FunctionImplementation struct {
 var SCHEMA_FILE = "schema.keel"
 var FUNCTIONS_DIRECTORY = "functions"
 
-func NewRuntime(workingDir string) (*Runtime, error) {
-	schema, err := buildSchema(workingDir)
-
-	if err != nil {
-		return nil, err
-	}
-
+func NewRuntime(schema *proto.Schema, workDir string) (*Runtime, error) {
 	return &Runtime{
-		WorkingDir: workingDir,
+		WorkingDir: workDir,
 		Schema:     schema,
 		generator:  *NewCodeGenerator(schema),
 	}, nil
@@ -223,28 +216,6 @@ func (r *Runtime) Scaffold() (s *ScaffoldResult, e error) {
 	return sr, nil
 }
 
-func (r *Runtime) RunServer(port int, onBoot func(process *os.Process)) error {
-	serverDistPath := filepath.Join(r.WorkingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
-
-	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
-		fmt.Print(err)
-		return err
-	}
-
-	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
-	cmd.Dir = r.WorkingDir
-	err := cmd.Start()
-
-	if err != nil {
-		return err
-	}
-
-	onBoot(cmd.Process)
-
-	return nil
-}
-
 func (r *Runtime) buildResultErrors(errs []api.Message) (e []error) {
 	for _, err := range errs {
 		e = append(e, errors.New(err.Text))
@@ -270,12 +241,4 @@ func (r *Runtime) makeModule(path string, code string) (string, error) {
 	}
 
 	return path, nil
-}
-
-func buildSchema(workingDir string) (*proto.Schema, error) {
-	builder := schema.Builder{}
-
-	proto, err := builder.MakeFromDirectory(workingDir)
-
-	return proto, err
 }
