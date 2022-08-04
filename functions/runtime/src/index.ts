@@ -34,11 +34,34 @@ const startRuntimeServer = (config: Config) => {
           }
         }
       }
-      const result = await call(json, api)
-      console.log(JSON.stringify(result))
-      res.write(JSON.stringify(result))
-      res.end()
+      
+      try {
+        const result = await call(json, api)
+
+        if (!result) {
+          throw new Error(`No value returned from ${normalisedPathname}`)
+        }
+
+        res.write(JSON.stringify(result))
+      } catch(e) {
+        if (e instanceof Error) {
+          const { message } = e
+
+          res.statusCode = 500
+          res.write(JSON.stringify({ message }))
+        } else {
+          res.write(JSON.stringify({ message: 'An unknown error occurred' }))
+        }
+      }
+    } else {
+      res.statusCode = 400
+
+      res.write(JSON.stringify({
+        message: 'Only POST requests are permitted'
+      }))
     }
+
+    res.end()
   }
   
   const server = createServer(listener)

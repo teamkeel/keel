@@ -25,6 +25,7 @@ import (
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/migrations"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
@@ -76,11 +77,29 @@ var runCmd = &cobra.Command{
 			port: nodePort,
 		}
 
+		generate := func(protoSchema *proto.Schema) {
+			customFunctionRuntime, err := functions.NewRuntime(protoSchema, schemaDir)
+
+			if err != nil {
+				panic(err)
+			}
+
+			err = customFunctionRuntime.GenerateClient()
+
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		// We run a Node.js server in the background to handle requests to the
+		// Functions runtime, which in turn routes requests so that they can be
+		// passed to individual custom functions
 		spawnNodeProcess := func() *os.Process {
 			if nodeProcess != nil {
 				err = nodeProcess.Kill()
 			}
 
+			// Retrieves a free tcp to host the node server on
 			p, err := util.GetFreePort()
 
 			if err != nil {
@@ -99,13 +118,13 @@ var runCmd = &cobra.Command{
 				panic(err)
 			}
 
+			// Update the references that are in the upper scope so that can be referrred back
+			// to by other things.
 			nodePort = freePort
 			nodeClient.port = nodePort
 
 			return nodeProcess
 		}
-
-		nodeProcess = spawnNodeProcess()
 
 		currSchema, err := migrations.GetCurrentSchema(db)
 		if err != nil {
@@ -126,6 +145,7 @@ var runCmd = &cobra.Command{
 			fmt.Println("📂 Loading schema files")
 			b := &schema.Builder{}
 			protoSchema, err := b.MakeFromDirectory(schemaDir)
+
 			if err != nil {
 				errs, ok := err.(errorhandling.ValidationErrors)
 				if !ok {
@@ -156,31 +176,10 @@ var runCmd = &cobra.Command{
 				printMigrationChanges(m.Changes)
 			}
 
-			customFunctionRuntime, err := functions.NewRuntime(protoSchema, schemaDir)
-
-			if err != nil {
-				panic(err)
-			}
-
-			// todo: note instead of auto generation
-			// _, err = customFunctionRuntime.Scaffold()
-
-			// if err == nil {
-			// 	fmt.Println("🤟 Generated custom functions")
-			// }
-
-			err = customFunctionRuntime.GenerateClient()
-
-			if err != nil {
-				panic(err)
-			}
-
-			_, errs := customFunctionRuntime.Bundle(true)
-
-			if len(errs) > 0 {
-				panic(errs)
-			}
-
+			// Every time the schema changes, we want to run codegen again
+			generate(protoSchema)
+			// kill the old node server hosting the old code, and
+			// spawn a new node server for the new version of the code
 			spawnNodeProcess()
 
 			currSchema = protoSchema
@@ -241,12 +240,16 @@ var runCmd = &cobra.Command{
 
 		reloadSchema("")
 
+		// Then spawn a node server
+		nodeProcess = spawnNodeProcess()
+
 		go http.ListenAndServe(":"+runCmdFlagPort, nil)
 
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		<-c
 
+		// Kill the Functions node server when the command exits
 		if nodeProcess != nil {
 			nodeProcess.Kill()
 		}

@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	_ "embed"
 
@@ -53,7 +54,37 @@ func (r *Runtime) GenerateClient() error {
 		return err
 	}
 
-	return r.GenerateClientTypings()
+	err = r.GenerateClientTypings()
+
+	if err != nil {
+		return err
+	}
+
+	err = r.GenerateClientPackageJson()
+
+	if err != nil {
+		return err
+	}
+
+	err = r.GenerateHandler()
+
+	if err != nil {
+		return err
+	}
+
+	_, errs := r.Bundle(true)
+
+	if len(errs) > 0 {
+		var errors []string
+
+		for _, err := range errs {
+			errors = append(errors, err.Error())
+		}
+
+		return fmt.Errorf(strings.Join(errors, ","))
+	}
+
+	return nil
 }
 
 func (r *Runtime) GenerateClientTypings() error {
