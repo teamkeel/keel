@@ -123,6 +123,8 @@ func TestRuntime(t *testing.T) {
 	}
 }
 
+// respFields is a container to into which a hanlder's response' body can be
+// JSON unmarshalled.
 type respFields struct {
 	Data   map[string]any             `json:"data"`
 	Errors []gqlerrors.FormattedError `json:"errors"`
@@ -130,6 +132,8 @@ type respFields struct {
 
 const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
 
+// protoSchema returns a proto.Schema that has been built from the given
+// keel schema.
 func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromInputs(&reader.Inputs{
@@ -143,6 +147,8 @@ func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 	return schema
 }
 
+// queryAsJSONPayload packages up the given gql mutation, alongside the corresponding input
+// variables, as JSON that is good to use as the body for a runtime.Request.
 func queryAsJSONPayload(t *testing.T, mutationString string, vars map[string]any) (asJSON string) {
 	d := map[string]any{
 		"query":     mutationString,
@@ -153,6 +159,8 @@ func queryAsJSONPayload(t *testing.T, mutationString string, vars map[string]any
 	return string(b)
 }
 
+// testCase encapsulates the data required to define one particular test case
+// as used by the TestRuntime() test suite.
 type testCase struct {
 	name           string
 	keelSchema     string
@@ -164,26 +172,26 @@ type testCase struct {
 	assertDatabase func(t *testing.T, db *gorm.DB, data map[string]any)
 }
 
+// initRow makes a map to represent a database row - that is good to use inside the
+// databaseSetup part of a testCase, all it does is augment the map you give it with
+// created_at and updated_at fields.
+func initRow(with map[string]any) map[string]any {
+	res := map[string]any{
+		"created_at": time.Now(),
+		"updated_at": time.Now(),
+	}
+	for k, v := range with {
+		res[k] = v
+	}
+	return res
+}
+
+// testCases is a list of testCase that is good for the top level test suite to
+// iterate over.
 var testCases = []testCase{
 	{
-		name: "create_operation_happy",
-		keelSchema: `
-			model Person {
-				fields {
-					name Text
-				}
-				operations {
-					get getPerson(id)
-					create createPerson() with (name)
-				}
-			}
-			api Test {
-				@graphql
-				models {
-					Person
-				}
-			}
-		`,
+		name:       "create_operation_happy",
+		keelSchema: basicSchema,
 		gqlOperation: `
 			mutation CreatePerson($name: String!) {
 				createPerson(input: {name: $name}) {
@@ -210,24 +218,8 @@ var testCases = []testCase{
 	},
 
 	{
-		name: "create_operation_errors",
-		keelSchema: `
-			model Person {
-				fields {
-					name Text
-				}
-				operations {
-					get getPerson(id)
-					create createPerson() with (name)
-				}
-			}
-			api Test {
-				@graphql
-				models {
-					Person
-				}
-			}
-		`,
+		name:       "create_operation_errors",
+		keelSchema: basicSchema,
 		gqlOperation: `
 			mutation CreatePerson($name: String!) {
 				createPerson(input: {name: $name}) {
@@ -244,38 +236,18 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name: "get_operation_happy",
-		keelSchema: `
-			model Person {
-				fields {
-					name Text
-				}
-				operations {
-					get getPerson(id)
-					create createPerson() with (name)
-				}
-			}
-			api Test {
-				@graphql
-				models {
-					Person
-				}
-			}
-		`,
+		name:       "get_operation_happy",
+		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
-				{
-					"name":       "Sue",
-					"id":         "41",
-					"created_at": time.Now(),
-					"updated_at": time.Now(),
-				},
-				{
-					"name":       "Fred",
-					"id":         "42",
-					"created_at": time.Now(),
-					"updated_at": time.Now(),
-				},
+				initRow(map[string]any{
+					"name": "Sue",
+					"id":   "41",
+				}),
+				initRow(map[string]any{
+					"name": "Fred",
+					"id":   "42",
+				}),
 			}
 			for _, row := range rows {
 				require.NoError(t, db.Table("person").Create(row).Error)
@@ -296,3 +268,22 @@ var testCases = []testCase{
 		},
 	},
 }
+
+// basicSchema is a DRY, simplest possible, schema that can be used in test cases.
+const basicSchema string = `
+	model Person {
+		fields {
+			name Text
+		}
+		operations {
+			get getPerson(id)
+			create createPerson() with (name)
+		}
+	}
+	api Test {
+		@graphql
+		models {
+			Person
+		}
+	}
+`

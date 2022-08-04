@@ -17,6 +17,7 @@ require (
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 	github.com/lib/pq v1.10.6
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
+	github.com/otiai10/copy v1.7.0
 	github.com/samber/lo v1.25.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.5.0
@@ -29,10 +30,7 @@ require (
 	gorm.io/gorm v1.23.8
 )
 
-require (
-	github.com/aybabtme/flatjson v0.1.1 // indirect
-	github.com/otiai10/copy v1.7.0 // indirect
-)
+require github.com/aybabtme/flatjson v0.1.1 // indirect
 
 require (
 	github.com/Microsoft/go-winio v0.5.2 // indirect
