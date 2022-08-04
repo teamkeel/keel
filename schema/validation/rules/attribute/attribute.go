@@ -15,30 +15,29 @@ import (
 
 // attributeLocationsRule checks that attributes are used in valid places
 // For example it's invalid to use a @where attribute inside a model definition
-func AttributeLocationsRule(asts []*parser.AST) []error {
-	var errors []error
+func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
-				errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value)...)
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value))
 			}
 
 			if section.Operations != nil {
 				for _, op := range section.Operations {
-					errors = append(errors, checkAttributes(op.Attributes, "operation", op.Name.Value)...)
+					errs.Concat(checkAttributes(op.Attributes, "operation", op.Name.Value))
 				}
 			}
 
 			if section.Functions != nil {
 				for _, function := range section.Functions {
-					errors = append(errors, checkAttributes(function.Attributes, "function", function.Name.Value)...)
+					errs.Concat(checkAttributes(function.Attributes, "function", function.Name.Value))
 				}
 			}
 
 			if section.Fields != nil {
 				for _, field := range section.Fields {
-					errors = append(errors, checkAttributes(field.Attributes, "field", field.Name.Value)...)
+					errs.Concat(checkAttributes(field.Attributes, "field", field.Name.Value))
 				}
 			}
 		}
@@ -47,12 +46,12 @@ func AttributeLocationsRule(asts []*parser.AST) []error {
 	for _, api := range query.APIs(asts) {
 		for _, section := range api.Sections {
 			if section.Attribute != nil {
-				errors = append(errors, checkAttributes([]*parser.AttributeNode{section.Attribute}, "api", api.Name.Value)...)
+				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "api", api.Name.Value))
 			}
 		}
 	}
 
-	return errors
+	return
 }
 
 var attributeLocations = map[string][]string{
@@ -79,9 +78,7 @@ var attributeLocations = map[string][]string{
 	},
 }
 
-func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) []error {
-
-	errors := make([]error, 0)
+func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) (errs errorhandling.ValidationErrors) {
 
 	for _, attr := range attributes {
 
@@ -100,33 +97,28 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 		hint := errorhandling.NewCorrectionHint(hintOptions, attr.Name.Value)
 		suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
 
-		errors = append(
-			errors,
-			errorhandling.NewValidationError(errorhandling.ErrorUnsupportedAttributeType,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Name":        attr.Name.Value,
-						"ParentName":  parentName,
-						"DefinedOn":   definedOn,
-						"Suggestions": suggestions,
-					},
-				},
-				attr.Name,
-			),
+		errs.Append(errorhandling.ErrorUnsupportedAttributeType,
+			map[string]string{
+				"Name":        attr.Name.Value,
+				"ParentName":  parentName,
+				"DefinedOn":   definedOn,
+				"Suggestions": suggestions,
+			},
+			attr.Name,
 		)
 	}
 
-	return errors
+	return
 }
 
-func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
+func PermissionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, attr := range query.ModelAttributes(model) {
 			if attr.Name.Value != parser.AttributePermission {
 				continue
 			}
 
-			errors = append(errors, validatePermissionAttribute(asts, attr, model, nil)...)
+			errs.Concat(validatePermissionAttribute(asts, attr, model, nil))
 		}
 
 		for _, action := range query.ModelActions(model) {
@@ -135,15 +127,15 @@ func PermissionAttributeRule(asts []*parser.AST) (errors []error) {
 					continue
 				}
 
-				errors = append(errors, validatePermissionAttribute(asts, attr, model, action)...)
+				errs.Concat(validatePermissionAttribute(asts, attr, model, action))
 			}
 		}
 	}
 
-	return errors
+	return
 }
 
-func ValidateAttributeRule(asts []*parser.AST) (errors []error) {
+func ValidateAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, attr := range action.Attributes {
@@ -151,16 +143,17 @@ func ValidateAttributeRule(asts []*parser.AST) (errors []error) {
 					continue
 				}
 
-				errs := validateActionAttributeWithExpression(asts, model, action, attr)
-				errors = append(errors, errs...)
+				errs.Concat(
+					validateActionAttributeWithExpression(asts, model, action, attr),
+				)
 			}
 		}
 	}
 
-	return errors
+	return
 }
 
-func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
+func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, attr := range action.Attributes {
@@ -168,13 +161,14 @@ func SetWhereAttributeRule(asts []*parser.AST) (errors []error) {
 					continue
 				}
 
-				errs := validateActionAttributeWithExpression(asts, model, action, attr)
-				errors = append(errors, errs...)
+				errs.Concat(
+					validateActionAttributeWithExpression(asts, model, action, attr),
+				)
 			}
 		}
 	}
 
-	return errors
+	return
 }
 
 // validateActionAttributeWithExpression validates attributes that have the
@@ -185,24 +179,21 @@ func validateActionAttributeWithExpression(
 	model *parser.ModelNode,
 	action *parser.ActionNode,
 	attr *parser.AttributeNode,
-) (errors []error) {
+) (errs errorhandling.ValidationErrors) {
 
 	argLength := len(attr.Arguments)
 
 	if argLength == 0 || argLength >= 2 {
-		errors = append(errors,
-			errorhandling.NewValidationError(
-				errorhandling.ErrorIncorrectArguments,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"AttributeName":     attr.Name.Value,
-						"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
-						"ExpectedArgsCount": "1",
-						"Signature":         "(expression)",
-					},
-				},
-				attr,
-			))
+		errs.Append(
+			errorhandling.ErrorIncorrectArguments,
+			map[string]string{
+				"AttributeName":     attr.Name.Value,
+				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
+				"ExpectedArgsCount": "1",
+				"Signature":         "(expression)",
+			},
+			attr,
+		)
 		return
 	}
 
@@ -227,8 +218,12 @@ func validateActionAttributeWithExpression(
 			WriteInputs: action.With,
 		},
 	)
+	for _, e := range err {
+		// TODO: remove case when expression.ValidateExpression returns correct type
+		errs.AppendError(e.(*errorhandling.ValidationError))
+	}
 
-	return append(errors, err...)
+	return
 }
 
 var validActionKeywords = []string{
@@ -239,7 +234,7 @@ var validActionKeywords = []string{
 	parser.ActionTypeDelete,
 }
 
-func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode, model *parser.ModelNode, action *parser.ActionNode) (errors []error) {
+func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode, model *parser.ModelNode, action *parser.ActionNode) (errs errorhandling.ValidationErrors) {
 	hasActions := false
 	hasExpression := false
 	hasRoles := false
@@ -247,15 +242,13 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 	for _, arg := range attr.Arguments {
 		if arg.Label == nil || arg.Label.Value == "" {
 			// All arguments to @permission should have a label
-			errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorAttributeRequiresNamedArguments,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"AttributeName":      "permission",
-						"ValidArgumentNames": "actions, expression, or roles",
-					},
+			errs.Append(errorhandling.ErrorAttributeRequiresNamedArguments,
+				map[string]string{
+					"AttributeName":      "permission",
+					"ValidArgumentNames": "actions, expression, or roles",
 				},
 				arg,
-			))
+			)
 			continue
 		}
 
@@ -269,18 +262,17 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				for _, action := range query.ModelActions(model) {
 					allowedIdents = append(allowedIdents, action.Name.Value)
 				}
-				errors = append(errors, validateIdentArray(arg.Expression, allowedIdents)...)
+				errs.Concat(validateIdentArray(arg.Expression, allowedIdents))
+
 			} else {
-				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidAttributeArgument,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"AttributeName": "permission",
-							"ArgumentName":  "actions",
-							"Location":      "action",
-						},
+				errs.Append(errorhandling.ErrorInvalidAttributeArgument,
+					map[string]string{
+						"AttributeName": "permission",
+						"ArgumentName":  "actions",
+						"Location":      "action",
 					},
 					arg,
-				))
+				)
 			}
 			hasActions = true
 		case "expression":
@@ -297,9 +289,9 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 					Attribute: attr,
 				},
 			)
-
-			if expressionErrors != nil {
-				errors = append(errors, expressionErrors...)
+			for _, err := range expressionErrors {
+				// TODO: remove cast when expression.ValidateExpression returns correct type
+				errs.AppendError(err.(*errorhandling.ValidationError))
 			}
 		case "roles":
 			hasRoles = true
@@ -307,52 +299,46 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			for _, role := range query.Roles(asts) {
 				allowedIdents = append(allowedIdents, role.Name.Value)
 			}
-			errors = append(errors, validateIdentArray(arg.Expression, allowedIdents)...)
+			errs.Concat(validateIdentArray(arg.Expression, allowedIdents))
 		default:
 			// Unknown argument
-			errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidAttributeArgument,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"AttributeName":      "permission",
-						"ArgumentName":       arg.Label.Value,
-						"ValidArgumentNames": "actions, expression, or roles",
-					},
+			errs.Append(errorhandling.ErrorInvalidAttributeArgument,
+				map[string]string{
+					"AttributeName":      "permission",
+					"ArgumentName":       arg.Label.Value,
+					"ValidArgumentNames": "actions, expression, or roles",
 				},
 				arg.Label,
-			))
+			)
 		}
 	}
 
 	// Missing actions argument which is required
 	if action == nil && !hasActions {
-		errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorAttributeMissingRequiredArgument,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"AttributeName": "permission",
-					"ArgumentName":  "actions",
-				},
+		errs.Append(errorhandling.ErrorAttributeMissingRequiredArgument,
+			map[string]string{
+				"AttributeName": "permission",
+				"ArgumentName":  "actions",
 			},
 			attr.Name,
-		))
+		)
 	}
 
 	// One of expression or roles must be provided
 	if !hasExpression && !hasRoles {
-		errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorAttributeMissingRequiredArgument,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"AttributeName": "permission",
-					"ArgumentName":  `"expression" or "roles"`,
-				},
+		errs.Append(errorhandling.ErrorAttributeMissingRequiredArgument,
+			map[string]string{
+				"AttributeName": "permission",
+				"ArgumentName":  `"expression" or "roles"`,
 			},
 			attr.Name,
-		))
+		)
 	}
 
-	return errors
+	return
 }
 
-func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (errors []error) {
+func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
 	value, err := expressions.ToValue(expr)
 	if err != nil || value.Array == nil {
 		expected := ""
@@ -360,14 +346,12 @@ func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (e
 			expected = "an array containing any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
 		}
 		// Check expression is an array
-		errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidValue,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"Expected": expected,
-				},
+		errs.Append(errorhandling.ErrorInvalidValue,
+			map[string]string{
+				"Expected": expected,
 			},
 			expr,
-		))
+		)
 		return
 	}
 
@@ -391,21 +375,21 @@ func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (e
 			if len(allowedIdents) > 0 {
 				expected = "any of the following identifiers - " + formatting.HumanizeList(allowedIdents, formatting.DelimiterOr)
 			}
-			errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidValue,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Expected": expected,
-					},
+			errs.Append(errorhandling.ErrorInvalidValue,
+
+				map[string]string{
+					"Expected": expected,
 				},
+
 				item,
-			))
+			)
 		}
 	}
 
-	return errors
+	return
 }
 
-func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
+func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 
@@ -417,17 +401,15 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
 				}
 
 				if len(attr.Arguments) > 0 {
-					errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorIncorrectArguments,
-						errorhandling.TemplateLiterals{
-							Literals: map[string]string{
-								"AttributeName":     attr.Name.Value,
-								"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
-								"ExpectedArgsCount": "0",
-								"Signature":         "()",
-							},
+					errs.Append(errorhandling.ErrorIncorrectArguments,
+						map[string]string{
+							"AttributeName":     attr.Name.Value,
+							"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
+							"ExpectedArgsCount": "0",
+							"Signature":         "()",
 						},
 						attr,
-					))
+					)
 				}
 			}
 		}
@@ -439,39 +421,35 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errors []error) {
 			}
 
 			if len(attr.Arguments) != 1 {
-				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorIncorrectArguments,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"AttributeName":     attr.Name.Value,
-							"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
-							"ExpectedArgsCount": "1",
-							"Signature":         "([fieldName, otherFieldName])",
-						},
+				errs.Append(errorhandling.ErrorIncorrectArguments,
+					map[string]string{
+						"AttributeName":     attr.Name.Value,
+						"ActualArgsCount":   strconv.FormatInt(int64(len(attr.Arguments)), 10),
+						"ExpectedArgsCount": "1",
+						"Signature":         "([fieldName, otherFieldName])",
 					},
 					attr.Name,
-				))
+				)
 				continue
 			}
 
-			errs := validateIdentArray(attr.Arguments[0].Expression, query.ModelFieldNames(model))
-			if len(errs) > 0 {
-				errors = append(errors, errs...)
+			e := validateIdentArray(attr.Arguments[0].Expression, query.ModelFieldNames(model))
+			errs.Concat(e)
+			if len(e.Errors) > 0 {
 				continue
 			}
 
 			value, _ := expressions.ToValue(attr.Arguments[0].Expression)
 			if len(value.Array.Values) < 2 {
-				errors = append(errors, errorhandling.NewValidationError(errorhandling.ErrorInvalidValue,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Expected": "at least two field names to be provided",
-						},
+				errs.Append(errorhandling.ErrorInvalidValue,
+					map[string]string{
+						"Expected": "at least two field names to be provided",
 					},
 					attr.Arguments[0].Expression,
-				))
+				)
 			}
 		}
 	}
 
-	return errors
+	return
 }

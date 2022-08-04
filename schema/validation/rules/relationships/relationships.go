@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errors []error) {
+func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	processed := map[string]bool{}
 	allModelNames := query.ModelNames(asts)
 
@@ -34,16 +34,14 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errors []error) {
 						continue
 					}
 
-					errors = append(errors, errorhandling.NewValidationError(
+					errs.Append(
 						errorhandling.ErrorInvalidOneToOneRelationship,
-						errorhandling.TemplateLiterals{
-							Literals: map[string]string{
-								"ModelA": model.Name.Value,
-								"ModelB": field.Type,
-							},
+						map[string]string{
+							"ModelA": model.Name.Value,
+							"ModelB": field.Type,
 						},
 						field,
-					))
+					)
 
 					processed[model.Name.Value] = true
 					processed[otherModel.Name.Value] = true
@@ -52,5 +50,5 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errors []error) {
 		}
 	}
 
-	return errors
+	return
 }
