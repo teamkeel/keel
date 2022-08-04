@@ -419,6 +419,47 @@ func UpdateOperationUniqueConstraintRule(asts []*parser.AST) []error {
 	return errors
 }
 
+func ListActionModelInputsRule(asts []*parser.AST) []error {
+	var errors []error
+
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
+			if action.Type.Value != parser.ActionTypeList {
+				continue
+			}
+
+			for _, input := range action.Inputs {
+				resolvedType := query.ResolveInputType(asts, input, model)
+				if resolvedType == "" {
+					continue
+				}
+
+				m := query.Model(asts, resolvedType)
+				if m == nil {
+					continue
+				}
+
+				// error - cannot use a model field as an input to a list action
+				errors = append(
+					errors,
+					errorhandling.NewValidationError(errorhandling.ErrorModelNotAllowedAsInput,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Input":      input.Type.ToString(),
+								"ActionType": action.Type.Value,
+								"ModelName":  m.Name.Value,
+							},
+						},
+						input.Type,
+					),
+				)
+			}
+		}
+	}
+
+	return errors
+}
+
 // GetOperationUniqueConstraintRule checks that all get operations
 // are filtering on unique fields only
 func GetOperationUniqueConstraintRule(asts []*parser.AST) []error {
