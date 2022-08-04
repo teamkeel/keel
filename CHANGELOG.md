@@ -1,3 +1,10 @@
+# [0.88.0](https://github.com/teamkeel/keel/compare/v0.87.0...v0.88.0) (2022-08-04)
+
+
+### Features
+
+* hook up custom code runtime to run command ([#213](https://github.com/teamkeel/keel/issues/213)) ([dd2a9e7](https://github.com/teamkeel/keel/commit/dd2a9e75e97aaf99b7836f740d89fd4d7620c9fd))
+
 # [0.87.0](https://github.com/teamkeel/keel/compare/v0.86.0...v0.87.0) (2022-08-02)
 
 
