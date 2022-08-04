@@ -95,6 +95,25 @@ type ValidationErrors struct {
 	Errors []*ValidationError
 }
 
+func (v *ValidationErrors) Append(code string, data map[string]string, node node.ParserNode) {
+	v.Errors = append(v.Errors, NewValidationError(code,
+		TemplateLiterals{
+			Literals: data,
+		},
+		node,
+	))
+}
+
+func (v *ValidationErrors) AppendError(e *ValidationError) {
+	if e != nil {
+		v.Errors = append(v.Errors, e)
+	}
+}
+
+func (v *ValidationErrors) Concat(verrs ValidationErrors) {
+	v.Errors = append(v.Errors, verrs.Errors...)
+}
+
 func (v ValidationErrors) Error() string {
 	str := ""
 

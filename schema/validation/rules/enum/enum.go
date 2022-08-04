@@ -6,21 +6,16 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func UniqueEnumsRule(asts []*parser.AST) (errors []error) {
+func UniqueEnumsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	seenEnumNames := map[string]bool{}
 
 	for _, enum := range query.Enums(asts) {
 		if _, ok := seenEnumNames[enum.Name.Value]; ok {
-			errors = append(
-				errors,
-				errorhandling.NewValidationError(errorhandling.ErrorUniqueEnumGlobally,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Name": enum.Name.Value,
-						},
-					},
-					enum.Name,
-				),
+			errs.Append(errorhandling.ErrorUniqueEnumGlobally,
+				map[string]string{
+					"Name": enum.Name.Value,
+				},
+				enum.Name,
 			)
 
 			continue
@@ -29,5 +24,5 @@ func UniqueEnumsRule(asts []*parser.AST) (errors []error) {
 		seenEnumNames[enum.Name.Value] = true
 	}
 
-	return errors
+	return
 }

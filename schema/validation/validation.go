@@ -29,7 +29,7 @@ func NewValidator(asts []*parser.AST) *Validator {
 // of *parser.Schema objects - to match up with a user's schema likely
 // being written across N files.
 
-type validationFunc func(asts []*parser.AST) []error
+type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
 	// Begin base model validations
@@ -67,23 +67,16 @@ var validatorFuncs = []validationFunc{
 	relationships.InvalidOneToOneRelationshipRule,
 }
 
-func (v *Validator) RunAllValidators() error {
-	var errors []*errorhandling.ValidationError
+func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
+	errs = &errorhandling.ValidationErrors{}
 
 	for _, vf := range validatorFuncs {
-		err := vf(v.asts)
-
-		for _, e := range err {
-			if verrs, ok := e.(*errorhandling.ValidationError); ok {
-				errors = append(errors, verrs)
-			}
-		}
+		errs.Concat(vf(v.asts))
 	}
 
-	if len(errors) > 0 {
-		errors := errorhandling.ValidationErrors{Errors: errors}
-		return errors
+	if len(errs.Errors) == 0 {
+		return nil
 	}
 
-	return nil
+	return errs
 }

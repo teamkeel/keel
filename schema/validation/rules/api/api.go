@@ -6,21 +6,18 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func UniqueAPINamesRule(asts []*parser.AST) (errors []error) {
+func UniqueAPINamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	seenAPINames := map[string]bool{}
 
 	for _, api := range query.APIs(asts) {
 		if _, ok := seenAPINames[api.Name.Value]; ok {
-			errors = append(
-				errors,
-				errorhandling.NewValidationError(errorhandling.ErrorUniqueAPIGlobally,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"Name": api.Name.Value,
-						},
-					},
-					api.Name,
-				),
+			errs.Append(errorhandling.ErrorUniqueAPIGlobally,
+
+				map[string]string{
+					"Name": api.Name.Value,
+				},
+
+				api.Name,
 			)
 
 			continue
@@ -29,5 +26,5 @@ func UniqueAPINamesRule(asts []*parser.AST) (errors []error) {
 		seenAPINames[api.Name.Value] = true
 	}
 
-	return errors
+	return
 }
