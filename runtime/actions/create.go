@@ -46,6 +46,13 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 	if err := db.Table(strcase.ToSnake(model.Name)).Create(modelMap).Error; err != nil {
 		return nil, err
 	}
+	return toLowerCamelMap(modelMap), nil
+}
 
-	return modelMap, nil
+func toLowerCamelMap(m map[string]any) map[string]any {
+	res := map[string]any{}
+	for key, value := range m {
+		res[strcase.ToLowerCamel(key)] = value
+	}
+	return res
 }

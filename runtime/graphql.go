@@ -400,6 +400,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_INT:       graphql.Int,
 	proto.Type_TYPE_BOOL:      graphql.Boolean,
 	proto.Type_TYPE_TIMESTAMP: timestampInputType,
+	proto.Type_TYPE_DATETIME:  timestampInputType,
 	proto.Type_TYPE_DATE:      dateInputType,
 }
 

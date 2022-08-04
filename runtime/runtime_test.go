@@ -33,9 +33,9 @@ func TestRuntime(t *testing.T) {
 	for _, tCase := range testCases {
 
 		// todo remove this XXXX
-		// if tCase.name != "get_operation_error" {
-		// 	continue
-		// }
+		if tCase.name != "create_all_field_types" {
+			continue
+		}
 
 		t.Run(tCase.name, func(t *testing.T) {
 
@@ -205,6 +205,29 @@ const basicSchema string = `
 	}
 `
 
+// multiSchema is a schema with a model that exhibits all the simple field types.
+const multiSchema string = `
+	model Multi {
+		fields {
+			aText Text
+			aBool Boolean
+			aNumber Number
+			aDate Date
+			aTimestamp Timestamp
+		}
+		operations {
+			get getMulti(id)
+			create createMulti() with (aText, aBool, aNumber, aDate, aTimestamp)
+		}
+	}
+	api Test {
+		@graphql
+		models {
+			Multi
+		}
+	}
+`
+
 // testCases is a list of testCase that is good for the top level test suite to
 // iterate over.
 var testCases = []testCase{
@@ -301,6 +324,53 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "No records found for Get() operation", errors[0].Message)
+		},
+	},
+	{
+		name:       "create_all_field_types",
+		keelSchema: multiSchema,
+		gqlOperation: `
+			mutation CreateMulti(
+					$aText: String!
+					$aBool: Boolean!
+					$aNumber: Int!
+					$aDate: DateInput!
+					$aTimestamp: TimestampInput!
+				) {
+				createMulti(input: {
+						aText: $aText
+						aBool: $aBool
+						aNumber: $aNumber
+						aDate: $aDate
+						aTimestamp: $aTimestamp
+					}) {
+					id
+					aText
+				}
+			}
+		`,
+		variables: map[string]any{
+			"aText":   "Petunia",
+			"aBool":   true,
+			"aNumber": 8086,
+			"aDate": map[string]any{
+				"year":  2001,
+				"month": 7,
+				"day":   21,
+			},
+			"aTimestamp": map[string]any{
+				"seconds": int64(87654321),
+			},
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createMulti.aText", "Petunia")
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := rtt.GetValueAtPath(t, data, "createMulti.id")
+			var aText string
+			err := db.Table("multi").Where("id = ?", id).Pluck("a_text", &aText).Error
+			require.NoError(t, err)
+			require.Equal(t, "Petunia", aText)
 		},
 	},
 }
