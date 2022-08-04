@@ -49,31 +49,9 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		err = r.GenerateClientPackageJson()
-
-		if err != nil {
-			fmt.Println("⛔️ Could not generate @teamkeel/client package.json")
-			fmt.Println(err)
-
-			return
-		}
-
-		err = r.GenerateClient()
-
-		if err != nil {
-			fmt.Println("⛔️ Internal runtime error (b)")
-			fmt.Print(err)
-			return
-		}
-
-		err = r.GenerateHandler()
-
-		if err != nil {
-			fmt.Println("⛔️ Internal runtime error (c)")
-			fmt.Print(err)
-			return
-		}
-
+		// We need to scaffold out any custom functions first
+		// prior to generating the rest of the client code, which
+		// references the custom functions via imports.
 		sr, err := r.Scaffold()
 
 		if err != nil {
@@ -81,6 +59,16 @@ var generateCmd = &cobra.Command{
 			fmt.Print(err)
 			return
 		}
+
+		err = r.GenerateClient()
+
+		if err != nil {
+			fmt.Println("⛔️ Could not generate @teamkeel/client")
+			fmt.Println(err)
+
+			return
+		}
+
 		fmt.Printf("Generated the following files:\n\n")
 
 		fmt.Printf("--- %s ---\n", color.New(color.FgHiYellow).Sprint("Functions"))
