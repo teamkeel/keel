@@ -181,13 +181,14 @@ func (gen *CodeGenerator) GenerateEnums(typings bool) (r string) {
 
 				if typings {
 					templateResult = renderTemplate(TemplateEnumValueTyping, map[string]interface{}{
-						"Value": value.Name,
-						"Index": i,
+						"Key":   value.Name,
+						"Value": strcase.ToLowerCamel(value.Name),
 						"Comma": !lastItem,
 					})
 				} else {
 					templateResult = renderTemplate(TemplateEnumValue, map[string]interface{}{
-						"Value": value.Name,
+						"Key":   value.Name,
+						"Value": strcase.ToLowerCamel(value.Name),
 						"Comma": !lastItem,
 					})
 				}
