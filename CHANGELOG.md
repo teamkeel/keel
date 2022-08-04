@@ -1,3 +1,10 @@
+## [0.88.1](https://github.com/teamkeel/keel/compare/v0.88.0...v0.88.1) (2022-08-04)
+
+
+### Bug Fixes
+
+* fix few minor bugs with the runtime / functions codegen interaction ([#219](https://github.com/teamkeel/keel/issues/219)) ([5d47c72](https://github.com/teamkeel/keel/commit/5d47c72e8d83b2aea1b2fe5cf8f8ad523e2ebd06))
+
 # [0.88.0](https://github.com/teamkeel/keel/compare/v0.87.0...v0.88.0) (2022-08-04)
 
 
