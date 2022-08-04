@@ -1,0 +1,12 @@
+model Book {
+    fields {
+        author Author
+    }
+
+    operations {
+        list listBooks(author)
+    }
+}
+
+model Author {
+}

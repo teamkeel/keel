@@ -154,6 +154,6 @@ en:
     short_message: "invalid action type"
     message: "{{ .Type }} is not a valid action type. Valid types are {{ .ValidTypes }}"
   E041:
-    short_messae: "models are not allowed as inputs to {{ .ActionType }} actions"
+    short_message: "models are not allowed as inputs to {{ .ActionType }} actions"
     message: "{{ .Input }} refers to the model {{ .ModelName }} which can't be used as an input to a {{ .ActionType }} action"
     hint: "did you mean {{ .Input }}.id?"

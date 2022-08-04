@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "author refers to the model Author which can't be used as an input to a list action",
+      "short_message": "models are not allowed as inputs to list actions",
+      "hint": "did you mean author.id?",
+      "code": "E041",
+      "pos": {
+        "filename": "testdata/validation_actions_list_no_bare_model/schema.keel",
+        "offset": 95,
+        "line": 7,
+        "column": 24
+      },
+      "end_pos": {
+        "filename": "testdata/validation_actions_list_no_bare_model/schema.keel",
+        "offset": 101,
+        "line": 7,
+        "column": 30
+      }
+    }
+  ]
+}
