@@ -5,8 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -18,6 +16,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/util"
 )
 
 type ErrPortInUse struct {
@@ -170,7 +169,7 @@ func bringUpContainer(useExistingContainer bool) (*ConnectionInfo, error) {
 		}
 
 		// get a free port
-		port, err = getFreePort()
+		port, err = util.GetFreePort("5432")
 		if err != nil {
 			return nil, err
 		}
@@ -319,38 +318,6 @@ func checkConnection(info *ConnectionInfo) (*sql.DB, error) {
 		return nil, fmt.Errorf("could not ping the database, despite several retries: %v", pingError)
 	}
 	return db, nil
-}
-
-// getFreePort finds an available port we can run Postgres on.
-// It prefers the standard Postgres port of 5432 but if that is
-// already in use then it will return a random free port
-func getFreePort() (string, error) {
-	var err error
-	var port string
-
-	for _, v := range []string{"5432", "0"} {
-		v := v
-		port, err = func() (string, error) {
-			addr, err := net.ResolveTCPAddr("tcp", ":"+v)
-			if err != nil {
-				return "", err
-			}
-
-			listener, err := net.ListenTCP("tcp", addr)
-			if err != nil {
-				return "", err
-			}
-			defer listener.Close()
-
-			port := listener.Addr().(*net.TCPAddr).Port
-			return strconv.FormatInt(int64(port), 10), nil
-		}()
-		if port != "" {
-			return port, nil
-		}
-	}
-
-	return port, err
 }
 
 const postgresImageName string = "postgres"

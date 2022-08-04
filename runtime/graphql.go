@@ -53,18 +53,14 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	namesOfModelsUsedByAPI := lo.Map(api.ApiModels, func(m *proto.ApiModel, _ int) string {
 		return m.ModelName
 	})
+
 	modelInstances := proto.FindModels(mk.proto.Models, namesOfModelsUsedByAPI)
 
 	for _, model := range modelInstances {
 		for _, op := range model.Operations {
-			switch op.Implementation {
-			case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
-				err := mk.addOperation(op, schema)
-				if err != nil {
-					return nil, err
-				}
-			default:
-				return nil, fmt.Errorf("operations with implementation %s are not supported", op.Implementation.String())
+			err := mk.addOperation(op, schema)
+			if err != nil {
+				return nil, err
 			}
 		}
 	}
@@ -138,7 +134,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Type: graphql.NewNonNull(operationInputType),
 			},
 		}
-
 	}
 
 	switch op.Type {
@@ -185,6 +180,18 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		mk.query.AddFieldConfig(op.Name, field)
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
+	}
+
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+
+			return CallFunction(p.Context, op.Name, inputMap)
+		}
 	}
 
 	return nil
@@ -409,6 +416,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.
 	default:
 		var ok bool
 		in, ok = protoTypeToGraphQLInput[op.Type.Type]
+
 		if !ok {
 			return nil, fmt.Errorf("operation %s has unsupposed input type %s", op.OperationName, op.Type.Type.String())
 		}

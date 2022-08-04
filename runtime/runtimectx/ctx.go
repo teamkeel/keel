@@ -20,8 +20,8 @@ func GetDB(ctx context.Context) (*gorm.DB, error) {
 	return db, nil
 }
 
-func NewContext(db *gorm.DB) context.Context {
-	return context.WithValue(context.Background(), dbKey, db)
+func NewContext(ctx context.Context, db *gorm.DB) context.Context {
+	return context.WithValue(ctx, dbKey, db)
 }
 
 const dbKey string = "database"
