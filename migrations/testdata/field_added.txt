@@ -9,16 +9,20 @@ model Person {
 model Person {
     fields {
         name Text
-        age Number
+        magicNumber Number @unique
+        optionalFlag Boolean?
     }
 }
 
 ===
 
-ALTER TABLE "person" ADD COLUMN "age" INTEGER NOT NULL;
+ALTER TABLE "person" ADD COLUMN "magic_number" INTEGER NOT NULL;
+ALTER TABLE "person" ADD CONSTRAINT person_magic_number_udx UNIQUE ("magic_number");
+ALTER TABLE "person" ADD COLUMN "optional_flag" BOOL;
 
 === 
 
 [
-  { "Model": "Person", "Field": "age", "Type": "ADDED" }
+  { "Model": "Person", "Field": "magicNumber", "Type": "ADDED" },
+  { "Model": "Person", "Field": "optionalFlag", "Type": "ADDED" }
 ]

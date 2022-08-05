@@ -1,8 +1,17 @@
 ===
 
+enum MyEnum {
+    Value
+}
+
 model Person {
     fields {
-        name Text
+        text Text
+        bool Boolean
+        number Number
+        enum MyEnum
+        date Date
+        timestamp Timestamp
     }
 }
 
@@ -16,7 +25,12 @@ CREATE TABLE "identity" (
 );
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
-"name" TEXT NOT NULL,
+"text" TEXT NOT NULL,
+"bool" BOOL NOT NULL,
+"number" INTEGER NOT NULL,
+"enum" TEXT NOT NULL,
+"date" DATE NOT NULL,
+"timestamp" TIMESTAMP NOT NULL,
 "id" TEXT NOT NULL,
 "created_at" TIMESTAMP NOT NULL,
 "updated_at" TIMESTAMP NOT NULL

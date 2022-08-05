@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/lib/pq"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"google.golang.org/protobuf/encoding/protojson"
 	"gorm.io/gorm"
@@ -80,55 +81,74 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 		currSchema = &proto.Schema{}
 	}
 
-	sql := strings.Builder{}
+	statements := []string{}
+
 	changes := []*DatabaseChange{}
 
-	differences := NewDifferences(currSchema, newSchema)
+	currModels := proto.ModelNames(currSchema)
+	newModels := proto.ModelNames(newSchema)
+	modelsInCommon := lo.Intersect(newModels, currModels)
 
-	// Create new tables added to the schema
-	for _, newModelName := range differences.ModelsAdded {
-		model := proto.FindModel(newSchema.Models, newModelName)
-		sql.WriteString(createTableStmt(model))
-		sql.WriteString("\n")
+	// Models added or removed.
+	modelsAdded, modelsRemoved := lo.Difference(newModels, currModels)
+
+	for _, modelName := range modelsAdded {
+		model := proto.FindModel(newSchema.Models, modelName)
+		statements = append(statements, createTableStmt(model))
 		changes = append(changes, &DatabaseChange{
-			Model: newModelName,
+			Model: modelName,
 			Type:  ChangeTypeAdded,
 		})
 	}
 
-	// Drop tables no longer in the schema
-	for _, droppedModel := range differences.ModelsRemoved {
-		sql.WriteString(dropTableStmt(droppedModel))
-		sql.WriteString("\n")
+	for _, modelName := range modelsRemoved {
+		statements = append(statements, dropTableStmt(modelName))
 		changes = append(changes, &DatabaseChange{
-			Model: droppedModel,
+			Model: modelName,
 			Type:  ChangeTypeRemoved,
 		})
 	}
 
-	// Add new fields to existing model
-	for modelName, fieldsAdded := range differences.FieldsAdded {
+	// Fields added or removed
+	for _, modelName := range modelsInCommon {
+		currFieldNames := proto.FieldNames(proto.FindModel(currSchema.Models, modelName))
+		newFieldNames := proto.FieldNames(proto.FindModel(newSchema.Models, modelName))
+		fieldsAdded, fieldsRemoved := lo.Difference(newFieldNames, currFieldNames)
+
 		for _, fieldName := range fieldsAdded {
 			field := proto.FindField(newSchema.Models, modelName, fieldName)
-			sql.WriteString(addColumnStmt(modelName, field))
-			sql.WriteString("\n")
+			statements = append(statements, addColumnStmt(modelName, field))
 			changes = append(changes, &DatabaseChange{
 				Model: modelName,
 				Field: fieldName,
 				Type:  ChangeTypeAdded,
 			})
 		}
-	}
 
-	// Drop fields that are no longer in the schema
-	for modelName, fieldsRemoved := range differences.FieldsRemoved {
 		for _, fieldName := range fieldsRemoved {
-			sql.WriteString(dropColumnStmt(modelName, fieldName))
-			sql.WriteString("\n")
+			statements = append(statements, dropColumnStmt(modelName, fieldName))
 			changes = append(changes, &DatabaseChange{
 				Model: modelName,
 				Field: fieldName,
 				Type:  ChangeTypeRemoved,
+			})
+		}
+
+		fieldsInCommon := lo.Intersect(newFieldNames, currFieldNames)
+		for _, fieldName := range fieldsInCommon {
+			newField := proto.FindField(newSchema.Models, modelName, fieldName)
+			currField := proto.FindField(currSchema.Models, modelName, fieldName)
+
+			alterSQL := alterColumnStmt(modelName, newField, currField)
+			if alterSQL == "" {
+				continue
+			}
+
+			statements = append(statements, alterSQL)
+			changes = append(changes, &DatabaseChange{
+				Model: modelName,
+				Field: fieldName,
+				Type:  ChangeTypeModified,
 			})
 		}
 	}
@@ -136,7 +156,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 	return &Migrations{
 		Schema:  newSchema,
 		Changes: changes,
-		SQL:     strings.TrimSpace(sql.String()),
+		SQL:     strings.TrimSpace(strings.Join(statements, "\n")),
 	}
 }
 

@@ -26,6 +26,7 @@ CREATE TABLE "animal" (
 "created_at" TIMESTAMP NOT NULL,
 "updated_at" TIMESTAMP NOT NULL
 );
+ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");
 
 === 
 
