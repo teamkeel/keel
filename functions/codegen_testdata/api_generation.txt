@@ -2,14 +2,6 @@ model Post {
   fields {
     title Text
     published Boolean
-    author Author
-  }
-}
-
-model Author {
-  fields {
-    name Text
-    posts Post[]
   }
 }
 
@@ -18,22 +10,44 @@ model Author {
 export interface API {
   models: {
     Post: PostApi
-    Author: AuthorApi
+
   }
 }
 
-export interface PostApi {
-  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
-  delete: (id: string) => Promise<boolean>
-  find: (p: Partial<Post>) => Promise<Post>
-  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
-  findMany: (p: Partial<Post>) => Promise<Post[]>
-}
+export type PostQuery = Partial<{
+  title?: QueryConstraints.StringConstraint
+id?: QueryConstraints.StringConstraint
+createdAt?: QueryConstraints.DateConstraint
+updatedAt?: QueryConstraints.DateConstraint
+}>
 
-export interface AuthorApi {
-  create: (inputs: Partial<Omit<Author, "id" | "createdAt" | "updatedAt">>) => Promise<Author>
-  delete: (id: string) => Promise<boolean>
-  find: (p: Partial<Author>) => Promise<Author>
-  update: (id: string, inputs: Partial<Omit<Author, "id" | "createdAt" | "updatedAt">>) => Promise<Author>
-  findMany: (p: Partial<Author>) => Promise<Author[]>
+export class PostApi {
+  private readonly db : Query<Post>;
+
+  constructor(pool: DatabasePool) {
+    this.db = new Query<Post>({
+      tableName: 'post',
+      pool
+    })
+  }
+
+  create = (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
+    return this.db.create(inputs);
+  }
+
+  where = (conditions: PostQuery) : any => {
+    return this.db.where(conditions);
+  }
+
+  delete = (id: string) : Promise<boolean> => {
+    return this.db.delete(id);
+  }
+
+  find = (p: Partial<Post>) : Promise<Post> => {
+    return this.db.findOne(p);
+  }
+
+  update = (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
+    return this.db.update(id, inputs);
+  }
 }

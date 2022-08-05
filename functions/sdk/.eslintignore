@@ -1,0 +1,3 @@
+**/*.js
+dist/*.js
+dist/*.d.ts
