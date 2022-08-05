@@ -41,7 +41,7 @@ export interface Identity {
   updatedAt: Date
 }
 export declare enum Something {
-  Hello = "hello"
+  Hello = "Hello"
 }export interface GetPostInput {
   id: string
 }
