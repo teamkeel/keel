@@ -8,8 +8,8 @@ enum TheBeatles {
 ===
 
 export enum TheBeatles {
-  John,
-  Paul,
-  Ringo,
-  George
+  John = "John",
+  Paul = "Paul",
+  Ringo = "Ringo",
+  George = "George"
 }
