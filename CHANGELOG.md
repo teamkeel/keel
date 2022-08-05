@@ -1,3 +1,10 @@
+## [0.88.2](https://github.com/teamkeel/keel/compare/v0.88.1...v0.88.2) (2022-08-05)
+
+
+### Bug Fixes
+
+* use string values for enums instead of index values ([#220](https://github.com/teamkeel/keel/issues/220)) ([974569c](https://github.com/teamkeel/keel/commit/974569c428234bf4dbf5f4297017503fe91100b4))
+
 ## [0.88.1](https://github.com/teamkeel/keel/compare/v0.88.0...v0.88.1) (2022-08-04)
 
 
