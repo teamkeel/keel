@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/iancoleman/strcase"
@@ -48,8 +49,18 @@ func Get(
 	tableName := strcase.ToSnake(model.Name)
 	columnName := strcase.ToSnake(expectedInputIdentifier)
 	w := fmt.Sprintf("%s = ?", columnName)
-	if err := db.Table(tableName).Where(w, inputValue).Find(&result).Error; err != nil {
-		return nil, err
+	tx := db.Table(tableName).Where(w, inputValue).Find(&result)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	// TODO.
+	// The gorm docs say that Find() should raise ErrRecordNotFound, but when used as
+	// above it does not - for reasons I don't understand.
+	// However it seems the RowsAffected field can tell us.
+	//
+	// See: https://gorm.io/docs/query.html#Retrieving-a-single-object
+	if tx.RowsAffected == 0 {
+		return nil, errors.New("No records found for Get() operation")
 	}
 	return result, nil
 }

@@ -33,7 +33,7 @@ func TestRuntime(t *testing.T) {
 	for _, tCase := range testCases {
 
 		// todo remove this XXXX
-		// if tCase.name != "get_operation_happy" {
+		// if tCase.name != "get_operation_error" {
 		// 	continue
 		// }
 
@@ -186,6 +186,25 @@ func initRow(with map[string]any) map[string]any {
 	return res
 }
 
+// basicSchema is a DRY, simplest possible, schema that can be used in test cases.
+const basicSchema string = `
+	model Person {
+		fields {
+			name Text
+		}
+		operations {
+			get getPerson(id)
+			create createPerson() with (name)
+		}
+	}
+	api Test {
+		@graphql
+		models {
+			Person
+		}
+	}
+`
+
 // testCases is a list of testCase that is good for the top level test suite to
 // iterate over.
 var testCases = []testCase{
@@ -205,8 +224,6 @@ var testCases = []testCase{
 		},
 		assertData: func(t *testing.T, data map[string]any) {
 			rtt.AssertValueAtPath(t, data, "createPerson.name", "Fred")
-		},
-		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 		},
 		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
 			id := rtt.GetValueAtPath(t, data, "createPerson.id")
@@ -267,23 +284,23 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getPerson.name", "Fred")
 		},
 	},
-}
 
-// basicSchema is a DRY, simplest possible, schema that can be used in test cases.
-const basicSchema string = `
-	model Person {
-		fields {
-			name Text
-		}
-		operations {
-			get getPerson(id)
-			create createPerson() with (name)
-		}
-	}
-	api Test {
-		@graphql
-		models {
-			Person
-		}
-	}
-`
+	{
+		name:       "get_operation_error",
+		keelSchema: basicSchema,
+		gqlOperation: `
+			query GetPerson($id: ID!) {
+				getPerson(input: {id: $id}) {
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"id": "42",
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "No records found for Get() operation", errors[0].Message)
+		},
+	},
+}
