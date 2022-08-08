@@ -17,14 +17,15 @@ declare module '@teamkeel/sdk/constraints' {
       equal?: number;
       notEqual?: number;
   } | EqualityConstraint;
+  export type DateConstraint = Date;
   export type BooleanConstraint = EqualityConstraint;
 
 }
 declare module '@teamkeel/sdk/index' {
-  import Query from '@teamkeel/sdk/query';
-  import * as Constraints from '@teamkeel/sdk/constraints';
+  import Query, { ChainableQuery } from '@teamkeel/sdk/query';
+  import * as QueryConstraints from '@teamkeel/sdk/constraints';
   export * from '@teamkeel/client';
-  export { Query, Constraints };
+  export { Query, QueryConstraints, ChainableQuery };
 
 }
 declare module '@teamkeel/sdk/query' {

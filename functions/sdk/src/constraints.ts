@@ -41,6 +41,7 @@ export type NumberConstraint = number | {
 
 export type BooleanConstraint =  EqualityConstraint
 
+export type DateConstraint = Date
 // todo:
 // - Date
 // - Enum
