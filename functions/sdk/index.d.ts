@@ -24,7 +24,9 @@ declare module '@teamkeel/sdk/constraints' {
 declare module '@teamkeel/sdk/index' {
   import Query, { ChainableQuery } from '@teamkeel/sdk/query';
   import * as QueryConstraints from '@teamkeel/sdk/constraints';
-  export * from '../../client';
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //@ts-ignore
+  export * from '@teamkeel/client';
   export { Query, QueryConstraints, ChainableQuery };
 
 }
