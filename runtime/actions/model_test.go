@@ -247,6 +247,10 @@ func TestToMapHappy(t *testing.T) {
 	for _, mapCase := range mapCases {
 		t.Run(mapCase.testName, func(t *testing.T) {
 			v, err := toMap(mapCase.input, mapCase.inputType)
+			if err != nil {
+				a := 1
+				_ = a
+			}
 			require.NoError(t, err)
 			require.Equal(t, mapCase.expected, v)
 		})
@@ -293,7 +297,7 @@ var mapCases []mapCase = []mapCase{
 		inputType: proto.Type_TYPE_TIMESTAMP,
 		testName:  "timestamp",
 		input: map[string]any{
-			"seconds": int64(1658329775),
+			"seconds": int(1658329775),
 		},
 		expected: time.Unix(int64(1658329775), 0),
 	},
@@ -324,7 +328,7 @@ var mapCases []mapCase = []mapCase{
 		inputType: proto.Type_TYPE_DATETIME,
 		testName:  "datetime",
 		input: map[string]any{
-			"seconds": int64(1658329775),
+			"seconds": int(1658329775),
 		},
 		expected: time.Unix(int64(1658329775), 0),
 	},

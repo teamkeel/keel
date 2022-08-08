@@ -353,10 +353,16 @@ var testCases = []testCase{
 		},
 		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
 			id := rtt.GetValueAtPath(t, data, "createMulti.id")
-			var aText string
-			err := db.Table("multi").Where("id = ?", id).Pluck("a_text", &aText).Error
+			record := map[string]any{}
+			err := db.Table("multi").Where("id = ?", id).Find(&record).Error
 			require.NoError(t, err)
-			require.Equal(t, "Petunia", aText)
+
+			require.Equal(t, "Petunia", record["a_text"])
+			require.Equal(t, true, record["a_bool"])
+			require.Equal(t, int32(8086), record["a_number"])
+			rtt.AssertIsTimeNow(t, record["created_at"])
+			rtt.AssertIsTimeNow(t, record["updated_at"])
+			rtt.AssertKSUIDIsNow(t, record["id"])
 		},
 	},
 }
