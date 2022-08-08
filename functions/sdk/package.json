@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "Adam Bull (adam@keel.xyz)",
   "license": "ISC",
-  "typings": "index.d.ts",
+  "typings": "dist/index.d.ts",
   "publishConfig": {
     "access": "public"
   },
