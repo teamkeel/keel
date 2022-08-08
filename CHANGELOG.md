@@ -1,3 +1,10 @@
+## [0.89.1](https://github.com/teamkeel/keel/compare/v0.89.0...v0.89.1) (2022-08-08)
+
+
+### Bug Fixes
+
+* sdk typings ([#225](https://github.com/teamkeel/keel/issues/225)) ([eea174b](https://github.com/teamkeel/keel/commit/eea174b5bfe27f01a2a2c4b26c730c0050ec1dc3))
+
 # [0.89.0](https://github.com/teamkeel/keel/compare/v0.88.2...v0.89.0) (2022-08-08)
 
 
