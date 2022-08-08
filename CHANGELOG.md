@@ -1,3 +1,10 @@
+# [0.89.0](https://github.com/teamkeel/keel/compare/v0.88.2...v0.89.0) (2022-08-08)
+
+
+### Features
+
+* codegen model api implementation ([#222](https://github.com/teamkeel/keel/issues/222)) ([0de87ff](https://github.com/teamkeel/keel/commit/0de87ffad4d2425b3740b3077c853f2c295e247d))
+
 ## [0.88.2](https://github.com/teamkeel/keel/compare/v0.88.1...v0.88.2) (2022-08-05)
 
 
