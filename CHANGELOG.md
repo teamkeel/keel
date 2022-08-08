@@ -1,3 +1,10 @@
+## [0.89.4](https://github.com/teamkeel/keel/compare/v0.89.3...v0.89.4) (2022-08-08)
+
+
+### Bug Fixes
+
+* use full module path ([#228](https://github.com/teamkeel/keel/issues/228)) ([bdb06db](https://github.com/teamkeel/keel/commit/bdb06db293b36fa973a59d91a5581e4888f7c861))
+
 ## [0.89.3](https://github.com/teamkeel/keel/compare/v0.89.2...v0.89.3) (2022-08-08)
 
 
