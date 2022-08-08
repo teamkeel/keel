@@ -27,9 +27,6 @@ type PostResponse struct {
 }
 
 func TestAllCases(t *testing.T) {
-	// todo: reinstate
-	t.Skip()
-
 	testCases, err := ioutil.ReadDir("runtime_testdata")
 	require.NoError(t, err)
 
@@ -72,16 +69,16 @@ func TestAllCases(t *testing.T) {
 
 				require.NoError(t, err)
 
-				// Check that the whole project, including generated code, typechecks
-				typecheckResult, output := typecheck(workingDir)
-
-				assert.True(t, typecheckResult, output)
-
 				// Bundle all of the generated typescript code in @teamkeel/client
 				// necessary to run the node server
 				_, errs := runtime.Bundle(true)
 
 				require.Len(t, errs, 0)
+
+				// Check that the whole project, including generated code, typechecks
+				typecheckResult, output := typecheck(workingDir)
+
+				assert.True(t, typecheckResult, output)
 
 				port := 3002
 
@@ -165,7 +162,7 @@ func RunServer(workingDir string, port int) (*os.Process, error) {
 		return nil, err
 	}
 
-	cmd := exec.Command("node", serverDistPath)
+	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
 	cmd.Dir = workingDir
 
