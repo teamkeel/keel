@@ -1,3 +1,10 @@
+## [0.89.2](https://github.com/teamkeel/keel/compare/v0.89.1...v0.89.2) (2022-08-08)
+
+
+### Bug Fixes
+
+* fix package.json typings reference ([#226](https://github.com/teamkeel/keel/issues/226)) ([489e5ee](https://github.com/teamkeel/keel/commit/489e5eec2f4f36d8802d041f1b9fe9668de1fc72))
+
 ## [0.89.1](https://github.com/teamkeel/keel/compare/v0.89.0...v0.89.1) (2022-08-08)
 
 
