@@ -1,3 +1,10 @@
+## [0.89.3](https://github.com/teamkeel/keel/compare/v0.89.2...v0.89.3) (2022-08-08)
+
+
+### Bug Fixes
+
+* typings ([#227](https://github.com/teamkeel/keel/issues/227)) ([89d87e7](https://github.com/teamkeel/keel/commit/89d87e7c93b0cde22e0c9755393df4e377311940))
+
 ## [0.89.2](https://github.com/teamkeel/keel/compare/v0.89.1...v0.89.2) (2022-08-08)
 
 
