@@ -247,10 +247,6 @@ func TestToMapHappy(t *testing.T) {
 	for _, mapCase := range mapCases {
 		t.Run(mapCase.testName, func(t *testing.T) {
 			v, err := toMap(mapCase.input, mapCase.inputType)
-			if err != nil {
-				a := 1
-				_ = a
-			}
 			require.NoError(t, err)
 			require.Equal(t, mapCase.expected, v)
 		})
