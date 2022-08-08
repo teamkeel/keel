@@ -26,6 +26,8 @@ api Web {
 ===
 
 export type Timestamp = string
+import { QueryConstraints, ChainableQuery } from '@teamkeel/sdk';
+import { DatabasePool } from 'slonik';
 
 export interface Post {
   title: string
