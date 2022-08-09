@@ -588,7 +588,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 		return acc
 	}
 
-	renderApi := func(schema *proto.Schema) (acc string) {
+	renderModelApis := func(schema *proto.Schema) (acc string) {
 		modelsToUse := lo.Filter(schema.Models, func(model *proto.Model, _ int) bool {
 			return model.Name != TSTypeIdentity
 		})
@@ -618,6 +618,12 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 		}
 
 		return acc
+	}
+
+	renderApi := func(schema *proto.Schema) (acc string) {
+		return renderTemplate(TemplateHandlerApi, map[string]interface{}{
+			"ModelAPIs": renderModelApis(schema),
+		})
 	}
 
 	r += renderTemplate(TemplateHandler, map[string]interface{}{
@@ -715,6 +721,7 @@ var (
 	TemplateFuncWrapperListTypings   = "func_wrapper_list_typings"
 	TemplateFuncWrapperGetTypings    = "func_wrapper_get_typings"
 	TemplateKeelApiTypings           = "keel_api_typings"
+	TemplateHandlerApi               = "handler_api"
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {

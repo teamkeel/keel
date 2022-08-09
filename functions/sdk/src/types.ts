@@ -23,3 +23,9 @@ export type Constraints = StringConstraint | BooleanConstraint | NumberConstrain
 export type Input<T> = Record<keyof T, unknown>
 
 export type Conditions<T> = Partial<Record<keyof T, Constraints>>
+
+export interface BuiltInFields {
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
