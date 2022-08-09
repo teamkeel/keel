@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
@@ -30,7 +31,16 @@ func Identifier(v string) string {
 	return pq.QuoteIdentifier(strcase.ToSnake(v))
 }
 
+func UniqueConstraintName(modelName string, fieldName string) string {
+	return fmt.Sprintf("%s_%s_udx", strcase.ToSnake(modelName), strcase.ToSnake(fieldName))
+}
+
+func PrimaryKeyConstraintName(modelName string, fieldName string) string {
+	return fmt.Sprintf("%s_%s_pkey", strcase.ToSnake(modelName), strcase.ToSnake(fieldName))
+}
+
 func createTableStmt(model *proto.Model) string {
+	statements := []string{}
 	output := fmt.Sprintf("CREATE TABLE %s (\n", Identifier(model.Name))
 	for i, field := range model.Fields {
 		output += fieldDefinition(field)
@@ -40,20 +50,26 @@ func createTableStmt(model *proto.Model) string {
 		output += "\n"
 	}
 	output += ");"
-	return output
-}
+	statements = append(statements, output)
 
-func createTableIfNotExistsStmt(name string, fields []*proto.Field) string {
-	output := fmt.Sprintf("CREATE TABLE if not exists %s (\n", Identifier(name))
-	for i, field := range fields {
-		output += fieldDefinition(field)
-		if i < len(fields)-1 {
-			output += ","
+	for _, field := range model.Fields {
+		if field.Unique {
+			statements = append(statements, fmt.Sprintf(
+				"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
+				Identifier(model.Name),
+				UniqueConstraintName(model.Name, field.Name),
+				Identifier(field.Name)))
 		}
-		output += "\n"
+		if field.PrimaryKey {
+			statements = append(statements, fmt.Sprintf(
+				"ALTER TABLE %s ADD CONSTRAINT %s PRIMARY KEY (%s);",
+				Identifier(model.Name),
+				PrimaryKeyConstraintName(model.Name, field.Name),
+				Identifier(field.Name)))
+		}
 	}
-	output += ");"
-	return output
+
+	return strings.Join(statements, "\n")
 }
 
 func dropTableStmt(name string) string {
@@ -61,19 +77,61 @@ func dropTableStmt(name string) string {
 }
 
 func addColumnStmt(modelName string, field *proto.Field) string {
-	output := fmt.Sprintf("ALTER TABLE %s ADD COLUMN ", Identifier(modelName))
-	output += fieldDefinition(field) + ";"
-	return output
+	statements := []string{}
+
+	statements = append(statements,
+		fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), fieldDefinition(field)),
+	)
+
+	if field.Unique {
+		statements = append(statements,
+			fmt.Sprintf(
+				"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
+				Identifier(modelName),
+				UniqueConstraintName(modelName, field.Name),
+				Identifier(field.Name)),
+		)
+	}
+
+	return strings.Join(statements, "\n")
+}
+
+func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.Field) string {
+	stmts := []string{}
+
+	if newField.Optional != currField.Optional {
+		output := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(currField.Name))
+
+		if newField.Optional && !currField.Optional {
+			output += " DROP NOT NULL"
+		}
+		if !newField.Optional && currField.Optional {
+			output += " SET NOT NULL"
+		}
+		output += ";"
+		stmts = append(stmts, output)
+	}
+
+	if newField.Unique != currField.Unique {
+		constraintName := UniqueConstraintName(modelName, newField.Name)
+		output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
+		if !newField.Unique {
+			output += fmt.Sprintf("DROP CONSTRAINT %s", constraintName)
+		} else {
+			output += fmt.Sprintf("ADD CONSTRAINT %s UNIQUE (%s)", constraintName, Identifier(newField.Name))
+		}
+		output += ";"
+		stmts = append(stmts, output)
+	}
+
+	return strings.Join(stmts, "\n")
 }
 
 func fieldDefinition(field *proto.Field) string {
 	output := fmt.Sprintf("%s %s", Identifier(field.Name), PostgresFieldTypes[field.Type.Type])
+
 	if !field.Optional {
 		output += " NOT NULL"
-	}
-
-	if field.Unique {
-		output += " UNIQUE"
 	}
 
 	return output
@@ -99,5 +157,3 @@ func UpdateSingleStringColumn(tableName string, column string, newValue string) 
 	output := fmt.Sprintf("UPDATE \"%s\" SET \"%s\"='%s';", tableName, column, newValue)
 	return output
 }
-
-// todo - export all these functions and needs making more coherent - a right raggle taggle mix it's become

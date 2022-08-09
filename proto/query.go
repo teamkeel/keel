@@ -1,7 +1,7 @@
 package proto
 
 import (
-	"fmt"
+	"sort"
 
 	"github.com/samber/lo"
 )
@@ -9,17 +9,21 @@ import (
 // ModelNames provides a (sorted) list of all the Model names used in the
 // given schema.
 func ModelNames(p *Schema) []string {
-	return sortedStrings(lo.Map(p.Models, func(x *Model, _ int) string {
+	names := lo.Map(p.Models, func(x *Model, _ int) string {
 		return x.Name
-	}))
+	})
+	sort.Strings(names)
+	return names
 }
 
 // FieldNames provides a (sorted) list of the fields in the model of
 // the given name.
 func FieldNames(m *Model) []string {
-	return lo.Map(m.Fields, func(x *Field, _ int) string {
+	names := lo.Map(m.Fields, func(x *Field, _ int) string {
 		return x.Name
 	})
+	sort.Strings(names)
+	return names
 }
 
 // ModelsExists returns true if the given schema contains a
@@ -34,27 +38,11 @@ func ModelExists(models []*Model, name string) bool {
 }
 
 // FindModel locates the model of the given name.
-// It panics if there is no model of that name.
 func FindModel(models []*Model, name string) *Model {
-	model, _, found := lo.FindIndexOf(models, func(m *Model) bool {
+	model, _ := lo.Find(models, func(m *Model) bool {
 		return m.Name == name
 	})
-	if !found {
-		panic(fmt.Sprintf("There is no model with the name: %s", name))
-	}
 	return model
-}
-
-// FindOperation locates the operation of the given name in the given model.
-// It panics if there is no model of that name.
-func FindOperation(models *Model, name string) *Operation {
-	op, _, found := lo.FindIndexOf(models.Operations, func(op *Operation) bool {
-		return op.Name == name
-	})
-	if !found {
-		panic(fmt.Sprintf("There is no operation with the name: %s", name))
-	}
-	return op
 }
 
 func FilterOperations(p *Schema, filter func(op *Operation) bool) (ops []*Operation) {
@@ -89,5 +77,5 @@ func FindField(models []*Model, modelName string, fieldName string) *Field {
 			return field
 		}
 	}
-	panic(fmt.Sprintf("There is no <%s> field in model: %s", fieldName, modelName))
+	return nil
 }
