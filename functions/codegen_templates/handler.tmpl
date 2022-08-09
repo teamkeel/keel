@@ -1,10 +1,16 @@
 {{ .Imports }}
 
 import { sql } from 'slonik'
+import {
+  createQueryLoggingInterceptor
+} from 'slonik-interceptor-query-logging';
 
 const cs = process.env.DB_CONN
+const interceptors = [
+  createQueryLoggingInterceptor()
+]
 
-createPool(cs).then(async(pool) => {
+createPool(cs, { interceptors }).then(async(pool) => {
   startRuntimeServer({
     functions: { {{ .Functions }}  },
     api: { {{ .API }} }
