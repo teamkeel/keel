@@ -27,6 +27,7 @@ func NewCodeGenerator(schema *proto.Schema) *CodeGenerator {
 
 func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	r += gen.GenerateBaseTypes()
+	r += gen.GenerateBaseImports()
 	r += gen.GenerateModels()
 	r += gen.GenerateEnums(false)
 	r += gen.GenerateInputs(false)
@@ -517,8 +518,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 				tmp := renderTemplate(TemplateObject, map[string]interface{}{
 					"Name": op.Name,
 					"Entries": renderEntries(map[string]interface{}{
-						"contextModel": fmt.Sprintf("'%s'", op.ModelName),
-						"call":         op.Name,
+						"call": op.Name,
 					}),
 				})
 
@@ -541,12 +541,33 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 			"Path": "@teamkeel/runtime",
 		}))
 
-		for _, model := range sch.Models {
+		acc += fmt.Sprintf("\n%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+			"Name": "{ createPool }",
+			"Path": "slonik",
+		}))
+
+		acc += fmt.Sprintf("\n%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+			"Name": "{ API }",
+			"Path": "@teamkeel/sdk",
+		}))
+
+		models := lo.Filter(sch.Models, func(m *proto.Model, _ int) bool {
+			return m.Name != TSTypeIdentity
+		})
+
+		for _, model := range models {
+			acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+				"Name": fmt.Sprintf("{ %sApi }", model.Name),
+				"Path": "@teamkeel/sdk",
+			}))
+
+			// Filter out any operations that use the default implementation
 			functions := lo.Filter(model.Operations, func(o *proto.Operation, _ int) bool {
 				return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 			})
 
 			for _, op := range functions {
+				// Add the imports to each custom code srcfile
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 					"Name": op.Name,
 					// We need to refer to the users functions directory,
@@ -567,9 +588,42 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 		return acc
 	}
 
+	renderApi := func(schema *proto.Schema) (acc string) {
+		modelsToUse := lo.Filter(schema.Models, func(model *proto.Model, _ int) bool {
+			return model.Name != TSTypeIdentity
+		})
+
+		for i, model := range modelsToUse {
+			// we do not want to expose the API for interacting with the identities table
+			if model.Name == TSTypeIdentity {
+				continue
+			}
+
+			if i == 0 {
+				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name": model.Name,
+					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
+				}))
+			} else if i < len(modelsToUse)-1 {
+				acc += fmt.Sprintf("    %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name": model.Name,
+					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
+				}))
+			} else {
+				acc += fmt.Sprintf("    %s", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name": model.Name,
+					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
+				}))
+			}
+		}
+
+		return acc
+	}
+
 	r += renderTemplate(TemplateHandler, map[string]interface{}{
 		"Functions": renderFunctions(gen.schema),
 		"Imports":   renderImports(gen.schema),
+		"API":       renderApi(gen.schema),
 	})
 
 	return r

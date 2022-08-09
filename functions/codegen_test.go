@@ -45,7 +45,7 @@ func TestCodeGeneration(t *testing.T) {
 
 			require.NoError(t, err)
 
-			generator := functions.NewCodeGenerator(proto)
+			generator := functions.NewCodeGenerator(proto, "XXX")
 
 			if strings.HasPrefix(testCase.Name(), "model_") {
 				result := generator.GenerateBaseTypes() + generator.GenerateModels()
