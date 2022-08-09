@@ -87,23 +87,7 @@ const isComplexConstraint = (constraint: Constraints): boolean => {
   return constraint instanceof Object && constraint.constructor === Object;
 };
 
-export const buildCreateStatement = <T>(tableName: string, inputs: Partial<T>, builtInFields: BuiltInFields) : TaggedTemplateLiteralInvocation => {
-  const values = [];
-  const cols = [];
-
-  //  const query = import_slonik.sql`INSERT INTO ${import_slonik.sql.identifier([tableName])} (${import_slonik.sql.}) VALUES (${import_slonik.}) RETURNING id`;
-  
-  // todo: make below less undesirable
-  Object.entries(inputs).forEach(([key, value]) => {
-    cols.push(key);
-    values.push(value);
-  });
-
-  Object.entries(builtInFields).forEach(([key, value]) => {
-    cols.push(key);
-    values.push(value);
-  });
-
+export const buildCreateStatement = <T>(tableName: string, inputs: Partial<T>) : TaggedTemplateLiteralInvocation => {
   return sql`
     INSERT INTO ${sql.identifier([tableName])} (${sql.join(Object.keys(inputs).map(f => sql.identifier([f])), sql`, `)})
     VALUES (${sql.join(Object.values(inputs), sql`, `)})

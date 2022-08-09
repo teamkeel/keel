@@ -90,7 +90,9 @@ export default class Query<T> {
       updatedAt: now
     };
 
-    const query = buildCreateStatement(this.tableName, inputs, builtIns);
+    const values = { ...inputs, ...builtIns };
+
+    const query = buildCreateStatement(this.tableName, values);
 
     const result = await this.pool.connect(async (connection) => {
       return connection.query(query);
