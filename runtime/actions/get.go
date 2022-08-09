@@ -62,5 +62,5 @@ func Get(
 	if tx.RowsAffected == 0 {
 		return nil, errors.New("No records found for Get() operation")
 	}
-	return result, nil
+	return toLowerCamelMap(result), nil
 }
