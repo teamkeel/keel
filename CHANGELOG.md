@@ -1,3 +1,10 @@
+## [0.90.3](https://github.com/teamkeel/keel/compare/v0.90.2...v0.90.3) (2022-08-09)
+
+
+### Bug Fixes
+
+* serialize dates as iso strings ([#235](https://github.com/teamkeel/keel/issues/235)) ([eeb6e78](https://github.com/teamkeel/keel/commit/eeb6e78bbef4a8c786f71a709f04f4abced96c60))
+
 ## [0.90.2](https://github.com/teamkeel/keel/compare/v0.90.1...v0.90.2) (2022-08-09)
 
 
