@@ -1,4 +1,5 @@
 import { DatabasePool, TaggedTemplateLiteralInvocation } from 'slonik';
+import KSUID from 'ksuid';
 import {
   buildCreateStatement,
   buildSelectStatement,
@@ -10,7 +11,8 @@ import {
   ChainedQueryOpts,
   SqlOptions,
   QueryOpts,
-  Input
+  Input,
+  BuiltInFields
 } from './types';
 
 export class ChainableQuery<T> {
@@ -80,7 +82,15 @@ export default class Query<T> {
   }
 
   create = async (inputs: Partial<T>) : Promise<T> => {
-    const query = buildCreateStatement(this.tableName, inputs);
+    const now = new Date();
+    const ksuid = await KSUID.random(now);
+    const builtIns : BuiltInFields = {
+      id: ksuid.string,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const query = buildCreateStatement(this.tableName, inputs, builtIns);
 
     const result = await this.pool.connect(async (connection) => {
       return connection.query(query);
