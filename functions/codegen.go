@@ -299,18 +299,6 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 		return acc
 	}
 
-	if typings {
-		r += renderTemplate(TemplateKeelApiTypings, map[string]interface{}{
-			"Name":      APIName,
-			"ModelApis": renderModelApiDefs(gen.schema.Models),
-		})
-	} else {
-		r += renderTemplate(TemplateKeelApi, map[string]interface{}{
-			"Name":      APIName,
-			"ModelApis": renderModelApiDefs(gen.schema.Models),
-		})
-	}
-
 	getFieldConstraintType := func(model *proto.Model, field *proto.Field) string {
 		if field.Type.Type == proto.Type_TYPE_ENUM {
 			return "QueryConstraints.EnumConstraint"
@@ -348,6 +336,18 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 				"QueryConstraints": buildQueryConstraints(model),
 			})
 		}
+	}
+
+	if typings {
+		r += renderTemplate(TemplateKeelApiTypings, map[string]interface{}{
+			"Name":      APIName,
+			"ModelApis": renderModelApiDefs(gen.schema.Models),
+		})
+	} else {
+		r += renderTemplate(TemplateKeelApi, map[string]interface{}{
+			"Name":      APIName,
+			"ModelApis": renderModelApiDefs(gen.schema.Models),
+		})
 	}
 
 	return r
