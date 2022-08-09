@@ -36,7 +36,9 @@ export class ChainableQuery<T> {
   all = async () : Promise<T[]> => {
     const sql = buildSelectStatement<T>(this.tableName, this.conditions);
 
-    const result = await this.pool.query(sql);
+    const result = await this.pool.connect(async (connection) => {
+      return connection.query(sql);
+    });
 
     return result.rows as T[];
   };
@@ -45,7 +47,9 @@ export class ChainableQuery<T> {
   findOne = async () : Promise<T> => {
     const sql = buildSelectStatement<T>(this.tableName, this.conditions);
 
-    const result = await this.pool.query(sql);
+    const result = await this.pool.connect(async (connection) => {
+      return connection.query(sql);
+    });
 
     return result.rows[0];
   };
@@ -78,7 +82,9 @@ export default class Query<T> {
   create = async (inputs: Partial<T>) : Promise<T> => {
     const query = buildCreateStatement(this.tableName, inputs);
 
-    const result = await this.pool.query(query);
+    const result = await this.pool.connect(async (connection) => {
+      return connection.query(query);
+    });
 
     // todo: better typing here
     return {
@@ -101,7 +107,9 @@ export default class Query<T> {
   delete = async (id: string) : Promise<boolean> => {
     const query = buildDeleteStatement(this.tableName, id);
 
-    const result = await this.pool.query(query);
+    const result = await this.pool.connect(async (connection) => {
+      return connection.query(query);
+    });
 
     return result.rowCount === 1;
   };
@@ -109,7 +117,9 @@ export default class Query<T> {
   findOne = async (conditions: Conditions<T>) : Promise<T> => {
     const query = buildSelectStatement<T>(this.tableName, [conditions]);
 
-    const result = await this.pool.query(query);
+    const result = await this.pool.connect(async (connection) => {
+      return connection.query(query);
+    });
 
     return result.rows[0];
   };
@@ -118,7 +128,9 @@ export default class Query<T> {
     // todo type below correctly.
     const query = buildUpdateStatement(this.tableName, id, inputs as any);
 
-    await this.pool.query(query);
+    await this.pool.connect(async (connection) => {
+      return connection.query(query);
+    });
 
     // todo: return whole object
     return inputs as T;
@@ -127,7 +139,9 @@ export default class Query<T> {
   all = async () : Promise<T[]> => {
     const sql = buildSelectStatement(this.tableName, this.conditions);
 
-    const result = await this.pool.query(sql);
+    const result = await this.pool.connect(async (connection) => {
+      return connection.query(sql);
+    });
 
     return result.rows as T[];
   };

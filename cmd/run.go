@@ -53,6 +53,7 @@ var runCmd = &cobra.Command{
 
 		useExistingContainer := !runCmdFlagReset
 		dbConn, dbConnInfo, err := database.Start(useExistingContainer)
+
 		if err != nil {
 			if portErr, ok := err.(database.ErrPortInUse); ok {
 				color.Red("Unable to start database: %s\n", portErr.Error())
@@ -112,7 +113,7 @@ var runCmd = &cobra.Command{
 				panic(err)
 			}
 
-			nodeProcess, err = RunServer(schemaDir, freePort)
+			nodeProcess, err = RunServer(schemaDir, freePort, dbConnInfo.String())
 
 			if err != nil {
 				panic(err)
@@ -418,7 +419,7 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, bo
 	return response, nil
 }
 
-func RunServer(workingDir string, port int) (*os.Process, error) {
+func RunServer(workingDir string, port int, dbConnectionString string) (*os.Process, error) {
 	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
@@ -428,6 +429,9 @@ func RunServer(workingDir string, port int) (*os.Process, error) {
 
 	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
+	cmd.Env = append(cmd.Env, "ROARR_LOG=true")
+	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+
 	cmd.Dir = workingDir
 
 	var buf bytes.Buffer

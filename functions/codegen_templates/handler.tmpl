@@ -1,4 +1,12 @@
 {{ .Imports }}
-startRuntimeServer({
-  functions: { {{ .Functions }}  },
+
+import { sql } from 'slonik'
+
+const cs = process.env.DB_CONN
+
+createPool(cs).then(async(pool) => {
+  startRuntimeServer({
+    functions: { {{ .Functions }}  },
+    api: { {{ .API }} }
+  })
 })

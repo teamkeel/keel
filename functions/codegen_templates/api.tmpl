@@ -13,12 +13,16 @@ export class {{ .Name }}Api {
     })
   }
 
-  create = (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
-    return this.db.create(inputs);
+  create = async (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
+    const result = await this.db.create(inputs);
+  
+    console.log(result);
+
+    return result;
   }
 
   where = (conditions: {{ .Name }}Query) : any => {
-    return this.db.where(conditions);
+    return this.db.where(conditions as any);
   }
 
   delete = (id: string) : Promise<boolean> => {
@@ -26,14 +30,14 @@ export class {{ .Name }}Api {
   }
 
   find = (query: {{ .Name }}Query) : Promise<{{ .Name }}> => {
-    return this.db.findOne(query);
+    return this.db.findOne(query as any);
   }
 
   update = (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
-    return this.db.update(id, inputs);
+    return this.db.update(id, inputs as any);
   }
 
   findMany = (query: {{ .Name }}Query) : Promise<{{ .Name }}[]> => {
-    return this.db.where(query).all();
+    return this.db.where(query as any).all();
   }
 }

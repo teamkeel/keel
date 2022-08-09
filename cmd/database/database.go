@@ -35,6 +35,17 @@ type ConnectionInfo struct {
 	Database string
 }
 
+func (dbConnInfo *ConnectionInfo) String() string {
+	return fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s/%s",
+		dbConnInfo.Username,
+		dbConnInfo.Password,
+		dbConnInfo.Host,
+		dbConnInfo.Port,
+		dbConnInfo.Database,
+	)
+}
+
 // BringUpPostgresLocally spins up a PostgreSQL server locally and returns
 // a connection to it.
 //

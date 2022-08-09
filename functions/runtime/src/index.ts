@@ -3,7 +3,7 @@ import url from 'url'
 
 import { Config } from "./types"
 
-const startRuntimeServer = (config: Config) => {
+const startRuntimeServer = ({ functions, api }: Config) => {
   const listener = async (req: IncomingMessage, res: ServerResponse) => {
     if (req.method === 'POST') {
       const parts = url.parse(req.url!)
@@ -21,19 +21,7 @@ const startRuntimeServer = (config: Config) => {
 
       const json = JSON.parse(data)
 
-      const { call, contextModel } = config.functions[normalisedPathname]
-
-      // todo: place all models here
-      const api = {
-        models: {
-          [contextModel]: {
-            create: async () => ({
-              id: 123,
-              title: json.title
-            })
-          }
-        }
-      }
+      const { call } = functions[normalisedPathname]
       
       try {
         const result = await call(json, api)
