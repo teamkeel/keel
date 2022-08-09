@@ -1,9 +1,39 @@
 
+export type {{ .Name }}Query = Partial<{
+  {{ .QueryConstraints }}
+}>
 
-export interface {{ .Name }}Api {
-  create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>
-  delete: (id: string) => Promise<boolean>
-  find: (p: Partial<{{ .Name }}>) => Promise<{{ .Name }}>
-  update: (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>
-  findMany: (p: Partial<{{ .Name }}>) => Promise<{{ .Name }}[]>
+export class {{ .Name }}Api {
+  private readonly db : Query<{{ .Name }}>;
+
+  constructor(pool: DatabasePool) {
+    this.db = new Query<{{ .Name }}>({
+      tableName: '{{ .TableName }}',
+      pool
+    })
+  }
+
+  create = (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
+    return this.db.create(inputs);
+  }
+
+  where = (conditions: {{ .Name }}Query) : any => {
+    return this.db.where(conditions);
+  }
+
+  delete = (id: string) : Promise<boolean> => {
+    return this.db.delete(id);
+  }
+
+  find = (query: {{ .Name }}Query) : Promise<{{ .Name }}> => {
+    return this.db.findOne(query);
+  }
+
+  update = (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
+    return this.db.update(id, inputs);
+  }
+
+  findMany = (query: {{ .Name }}Query) : Promise<{{ .Name }}[]> => {
+    return this.db.where(query).all();
+  }
 }

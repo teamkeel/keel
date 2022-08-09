@@ -1,3 +1,38 @@
+## [0.89.4](https://github.com/teamkeel/keel/compare/v0.89.3...v0.89.4) (2022-08-08)
+
+
+### Bug Fixes
+
+* use full module path ([#228](https://github.com/teamkeel/keel/issues/228)) ([bdb06db](https://github.com/teamkeel/keel/commit/bdb06db293b36fa973a59d91a5581e4888f7c861))
+
+## [0.89.3](https://github.com/teamkeel/keel/compare/v0.89.2...v0.89.3) (2022-08-08)
+
+
+### Bug Fixes
+
+* typings ([#227](https://github.com/teamkeel/keel/issues/227)) ([89d87e7](https://github.com/teamkeel/keel/commit/89d87e7c93b0cde22e0c9755393df4e377311940))
+
+## [0.89.2](https://github.com/teamkeel/keel/compare/v0.89.1...v0.89.2) (2022-08-08)
+
+
+### Bug Fixes
+
+* fix package.json typings reference ([#226](https://github.com/teamkeel/keel/issues/226)) ([489e5ee](https://github.com/teamkeel/keel/commit/489e5eec2f4f36d8802d041f1b9fe9668de1fc72))
+
+## [0.89.1](https://github.com/teamkeel/keel/compare/v0.89.0...v0.89.1) (2022-08-08)
+
+
+### Bug Fixes
+
+* sdk typings ([#225](https://github.com/teamkeel/keel/issues/225)) ([eea174b](https://github.com/teamkeel/keel/commit/eea174b5bfe27f01a2a2c4b26c730c0050ec1dc3))
+
+# [0.89.0](https://github.com/teamkeel/keel/compare/v0.88.2...v0.89.0) (2022-08-08)
+
+
+### Features
+
+* codegen model api implementation ([#222](https://github.com/teamkeel/keel/issues/222)) ([0de87ff](https://github.com/teamkeel/keel/commit/0de87ffad4d2425b3740b3077c853f2c295e247d))
+
 ## [0.88.2](https://github.com/teamkeel/keel/compare/v0.88.1...v0.88.2) (2022-08-05)
 
 

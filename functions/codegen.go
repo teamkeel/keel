@@ -38,11 +38,18 @@ func (gen *CodeGenerator) GenerateClientCode() (r string) {
 
 func (gen *CodeGenerator) GenerateClientTypings() (r string) {
 	r += gen.GenerateBaseTypes()
+	r += gen.GenerateBaseImports()
 	r += gen.GenerateModels()
 	r += gen.GenerateEnums(true)
 	r += gen.GenerateInputs(true)
 	r += gen.GenerateWrappers(true)
 	r += gen.GenerateAPIs(true)
+
+	return r
+}
+
+func (gen *CodeGenerator) GenerateBaseImports() (r string) {
+	r += renderTemplate(TemplateBaseImports, map[string]interface{}{})
 
 	return r
 }
@@ -303,6 +310,26 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 		})
 	}
 
+	getFieldConstraintType := func(model *proto.Model, field *proto.Field) string {
+		if field.Type.Type == proto.Type_TYPE_ENUM {
+			return "QueryConstraints.EnumConstraint"
+		}
+
+		return fmt.Sprintf("QueryConstraints.%sConstraint", strcase.ToCamel(protoTypeToTypeScriptType(field.Type)))
+	}
+
+	buildQueryConstraints := func(model *proto.Model) (r string) {
+		for _, field := range model.Fields {
+			r += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+				"Name":     field.Name,
+				"Type":     getFieldConstraintType(model, field),
+				"Optional": true,
+			}))
+		}
+
+		return r
+	}
+
 	for _, model := range gen.schema.Models {
 		if model.Name == TSTypeIdentity {
 			continue
@@ -310,11 +337,14 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 
 		if typings {
 			r += renderTemplate(TemplateApiTyping, map[string]interface{}{
-				"Name": model.Name,
+				"Name":             model.Name,
+				"QueryConstraints": buildQueryConstraints(model),
 			})
 		} else {
 			r += renderTemplate(TemplateApi, map[string]interface{}{
-				"Name": model.Name,
+				"Name":             model.Name,
+				"TableName":        strcase.ToSnake(model.Name),
+				"QueryConstraints": buildQueryConstraints(model),
 			})
 		}
 	}
@@ -615,6 +645,7 @@ var (
 	TemplateFuncWrapperUpdate = "func_wrapper_update"
 	TemplateFuncWrapperList   = "func_wrapper_list"
 	TemplateFuncWrapperGet    = "func_wrapper_get"
+	TemplateBaseImports       = "base_imports"
 
 	// Typing templates - used to generate index.d.ts file
 	TemplateApiTyping                = "api_typings"

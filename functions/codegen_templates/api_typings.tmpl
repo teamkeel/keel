@@ -1,9 +1,15 @@
 
+export declare type {{ .Name }}Query = Partial<{
+  {{ .QueryConstraints }}
+}>
 
-export interface {{ .Name }}Api {
-  create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>
-  delete: (id: string) => Promise<boolean>
-  find: (p: Partial<{{ .Name }}>) => Promise<{{ .Name }}>
-  update: (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>
-  findMany: (p: Partial<{{ .Name }}>) => Promise<{{ .Name }}[]>
+export declare class {{ .Name }}Api {
+  private readonly db;
+  constructor(pool: DatabasePool);
+  create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
+  where: (conditions: {{ .Name }}Query) => ChainableQuery<{{ .Name }}>;
+  delete: (id: string) => Promise<boolean>;
+  find: (query: {{ .Name }}Query) => Promise<{{ .Name }}>;
+  update: (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
+  findMany: (query: {{ .Name }}Query) => Promise<{{ .Name }}[]>;
 }

@@ -370,7 +370,6 @@ var testCases = []testCase{
 			rtt.AssertKSUIDIsNow(t, record["id"])
 		},
 	},
-
 	{
 		name:       "get_all_field_types",
 		keelSchema: multiSchema,
