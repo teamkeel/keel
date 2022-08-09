@@ -3,14 +3,8 @@
 import { sql } from 'slonik'
 
 const cs = process.env.DB_CONN
-const pool = createPool(cs)
 
-pool.then(async(pool) => {
-  pool.connect(async(conn) => {
-    const result = await conn.query(sql`SELECT * from posts`);
-    console.log(result.rows)
-  });
-  
+createPool(cs).then(async(pool) => {
   startRuntimeServer({
     functions: { {{ .Functions }}  },
     api: { {{ .API }} }
