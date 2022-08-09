@@ -26,6 +26,6 @@ export type Conditions<T> = Partial<Record<keyof T, Constraints>>
 
 export interface BuiltInFields {
   id: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 }
