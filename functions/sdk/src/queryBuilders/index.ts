@@ -3,11 +3,9 @@ import {
   ValueExpression,
   TaggedTemplateLiteralInvocation
 } from 'slonik';
-import {
-  BuiltInFields,
-  Conditions,
-  Constraints
-} from '../types';
+import { Conditions, Constraints } from '../types';
+
+import toSnakeCase from '../util/snakeCaser';
 
 const ENDS_WITH = 'endsWith';
 const CONTAINS = 'contains';
@@ -29,6 +27,7 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
   
       Object.entries(condition).forEach(([field, constraints]) => {
         const isComplex = isComplexConstraint(constraints);
+        field = toSnakeCase(field);
   
         if (isComplex) {
           Object.entries(constraints).forEach(([operation, value]) => {
@@ -89,23 +88,23 @@ const isComplexConstraint = (constraint: Constraints): boolean => {
 
 export const buildCreateStatement = <T>(tableName: string, inputs: Partial<T>) : TaggedTemplateLiteralInvocation => {
   return sql`
-    INSERT INTO ${sql.identifier([tableName])} (${sql.join(Object.keys(inputs).map(f => sql.identifier([f])), sql`, `)})
+    INSERT INTO ${sql.identifier([toSnakeCase(tableName)])} (${sql.join(Object.keys(inputs).map(toSnakeCase).map(f => sql.identifier([f])), sql`, `)})
     VALUES (${sql.join(Object.values(inputs), sql`, `)})
     RETURNING id`;
 };
 
 export const buildUpdateStatement = <T>(tableName: string, id: string, inputs: Partial<T>) : TaggedTemplateLiteralInvocation<T> => {
   const values = Object.entries(inputs).map(([key, value]) => {
-    return sql`${key} = ${value as any}`;
+    return sql`${toSnakeCase(key)} = ${value as any}`;
   });
 
-  const query = sql`UPDATE ${sql.identifier([tableName])} SET ${sql.join(values, sql`,`)} WHERE id = ${id}`;
+  const query = sql`UPDATE ${sql.identifier([toSnakeCase(tableName)])} SET ${sql.join(values, sql`,`)} WHERE id = ${id}`;
 
   return query;
 };
 
 export const buildDeleteStatement = <T>(tableName: string, id: string) : TaggedTemplateLiteralInvocation<T> => {
-  const query = sql`DELETE FROM ${sql.identifier([tableName])} WHERE id = ${id} RETURNING id`;
+  const query = sql`DELETE FROM ${sql.identifier([toSnakeCase(tableName)])} WHERE id = ${id} RETURNING id`;
 
   return query;
 };
