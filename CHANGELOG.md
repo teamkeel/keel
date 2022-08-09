@@ -1,3 +1,10 @@
+# [0.90.0](https://github.com/teamkeel/keel/compare/v0.89.4...v0.90.0) (2022-08-09)
+
+
+### Features
+
+* work on database connection setup ([#232](https://github.com/teamkeel/keel/issues/232)) ([fdfffe8](https://github.com/teamkeel/keel/commit/fdfffe8f4071a519b2a83f07bc675cc73292d4da))
+
 ## [0.89.4](https://github.com/teamkeel/keel/compare/v0.89.3...v0.89.4) (2022-08-08)
 
 
