@@ -1,3 +1,10 @@
+## [0.90.2](https://github.com/teamkeel/keel/compare/v0.90.1...v0.90.2) (2022-08-09)
+
+
+### Bug Fixes
+
+* fix sql generation for create statements ([#234](https://github.com/teamkeel/keel/issues/234)) ([096a5cc](https://github.com/teamkeel/keel/commit/096a5cc7e597c3389d83399c57c3de069e159f25))
+
 ## [0.90.1](https://github.com/teamkeel/keel/compare/v0.90.0...v0.90.1) (2022-08-09)
 
 
