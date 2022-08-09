@@ -59,11 +59,21 @@ export interface API {
 
   }
 }
+export declare type PostQuery = Partial<{
+  title?: QueryConstraints.StringConstraint
+id?: QueryConstraints.StringConstraint
+createdAt?: QueryConstraints.DateConstraint
+updatedAt?: QueryConstraints.DateConstraint
 
-export interface PostApi {
-  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
-  delete: (id: string) => Promise<boolean>
-  find: (p: Partial<Post>) => Promise<Post>
-  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>
-  findMany: (p: Partial<Post>) => Promise<Post[]>
+}>
+
+export declare class PostApi {
+  private readonly db;
+  constructor(pool: DatabasePool);
+  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
+  where: (conditions: PostQuery) => ChainableQuery<Post>;
+  delete: (id: string) => Promise<boolean>;
+  find: (query: PostQuery) => Promise<Post>;
+  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
+  findMany: (query: PostQuery) => Promise<Post[]>;
 }
