@@ -13,12 +13,13 @@ export interface API {
 
   }
 }
-
 export type PostQuery = Partial<{
   title?: QueryConstraints.StringConstraint
+published?: QueryConstraints.BooleanConstraint
 id?: QueryConstraints.StringConstraint
 createdAt?: QueryConstraints.DateConstraint
 updatedAt?: QueryConstraints.DateConstraint
+
 }>
 
 export class PostApi {
@@ -43,11 +44,15 @@ export class PostApi {
     return this.db.delete(id);
   }
 
-  find = (p: Partial<Post>) : Promise<Post> => {
-    return this.db.findOne(p);
+  find = (query: PostQuery) : Promise<Post> => {
+    return this.db.findOne(query);
   }
 
   update = (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
     return this.db.update(id, inputs);
+  }
+
+  findMany = (query: PostQuery) : Promise<Post[]> => {
+    return this.db.where(query).all();
   }
 }

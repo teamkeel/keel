@@ -1,9 +1,9 @@
 
-export declare type {{ .Name }}Query = Partial<{
+export type {{ .Name }}Query = Partial<{
   {{ .QueryConstraints }}
 }>
 
-export declare class {{ .Name }}Api {
+export class {{ .Name }}Api {
   private readonly db : Query<{{ .Name }}>;
 
   constructor(pool: DatabasePool) {
@@ -20,7 +20,7 @@ export declare class {{ .Name }}Api {
   where = (conditions: {{ .Name }}Query) : any => {
     return this.db.where(conditions);
   }
-  
+
   delete = (id: string) : Promise<boolean> => {
     return this.db.delete(id);
   }
@@ -28,11 +28,11 @@ export declare class {{ .Name }}Api {
   find = (query: {{ .Name }}Query) : Promise<{{ .Name }}> => {
     return this.db.findOne(query);
   }
-  
+
   update = (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
-    return this.db.update(inputs);
+    return this.db.update(id, inputs);
   }
-  
+
   findMany = (query: {{ .Name }}Query) : Promise<{{ .Name }}[]> => {
     return this.db.where(query).all();
   }

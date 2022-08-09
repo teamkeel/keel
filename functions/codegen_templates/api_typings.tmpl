@@ -1,9 +1,9 @@
 
-export interface {{ .Name }}Query {
+export declare type {{ .Name }}Query = Partial<{
   {{ .QueryConstraints }}
-}
+}>
 
-export class {{ .Name }}Api {
+export declare class {{ .Name }}Api {
   private readonly db;
   constructor(pool: DatabasePool);
   create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
