@@ -1,3 +1,10 @@
+## [0.90.1](https://github.com/teamkeel/keel/compare/v0.90.0...v0.90.1) (2022-08-09)
+
+
+### Bug Fixes
+
+* hook up runtime to db ([#233](https://github.com/teamkeel/keel/issues/233)) ([73fc00a](https://github.com/teamkeel/keel/commit/73fc00a550b5e5d4918fb65ac05830c08f26f455))
+
 # [0.90.0](https://github.com/teamkeel/keel/compare/v0.89.4...v0.90.0) (2022-08-09)
 
 
