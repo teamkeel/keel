@@ -1,3 +1,10 @@
+## [0.90.4](https://github.com/teamkeel/keel/compare/v0.90.3...v0.90.4) (2022-08-09)
+
+
+### Bug Fixes
+
+* add query logging ([#236](https://github.com/teamkeel/keel/issues/236)) ([5c65b15](https://github.com/teamkeel/keel/commit/5c65b15b629682326b19b8ebb2b5ad5499ec112d))
+
 ## [0.90.3](https://github.com/teamkeel/keel/compare/v0.90.2...v0.90.3) (2022-08-09)
 
 
