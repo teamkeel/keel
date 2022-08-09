@@ -154,11 +154,11 @@ func toMap(in any, inputType proto.Type) (any, error) {
 		if !ok {
 			return nil, fmt.Errorf("this input object: %v, does not have a seconds key", obj)
 		}
-		asInt64, ok := seconds.(int64)
+		asInt, ok := seconds.(int)
 		if !ok {
-			return nil, fmt.Errorf("cannot cast this seconds value: %+v to an int64", seconds)
+			return nil, fmt.Errorf("cannot cast this seconds value: %+v to an int", seconds)
 		}
-		return time.Unix(asInt64, 0), nil
+		return time.Unix(int64(asInt), 0), nil
 
 	case proto.Type_TYPE_DATE:
 		// The input is expected to be a map[string]any, that contains a year,month,day fields.

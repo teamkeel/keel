@@ -10,7 +10,6 @@ require (
 	github.com/docker/go-connections v0.4.0
 	github.com/fatih/color v1.7.0
 	github.com/fsnotify/fsnotify v1.5.4
-	github.com/gertd/go-pluralize v0.2.1
 	github.com/graphql-go/graphql v0.8.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c
@@ -23,14 +22,16 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/exp v0.0.0-20220706164943-b4a6d9510983
-	golang.org/x/text v0.3.7
 	google.golang.org/protobuf v1.28.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/postgres v1.3.8
 	gorm.io/gorm v1.23.8
 )
 
-require github.com/aybabtme/flatjson v0.1.1 // indirect
+require (
+	github.com/aybabtme/flatjson v0.1.1 // indirect
+	golang.org/x/text v0.3.7 // indirect
+)
 
 require (
 	github.com/Microsoft/go-winio v0.5.2 // indirect

@@ -33,7 +33,7 @@ func TestRuntime(t *testing.T) {
 	for _, tCase := range testCases {
 
 		// todo remove this XXXX
-		// if tCase.name != "get_operation_error" {
+		// if tCase.name != "create_all_field_types" {
 		// 	continue
 		// }
 
@@ -205,6 +205,27 @@ const basicSchema string = `
 	}
 `
 
+// multiSchema is a schema with a model that exhibits all the simple field types.
+const multiSchema string = `
+	model Multi {
+		fields {
+			aText Text
+			aBool Boolean
+			aNumber Number
+		}
+		operations {
+			get getMulti(id)
+			create createMulti() with (aText, aBool, aNumber)
+		}
+	}
+	api Test {
+		@graphql
+		models {
+			Multi
+		}
+	}
+`
+
 // testCases is a list of testCase that is good for the top level test suite to
 // iterate over.
 var testCases = []testCase{
@@ -301,6 +322,47 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "No records found for Get() operation", errors[0].Message)
+		},
+	},
+	{
+		name:       "create_all_field_types",
+		keelSchema: multiSchema,
+		gqlOperation: `
+			mutation CreateMulti(
+					$aText: String!
+					$aBool: Boolean!
+					$aNumber: Int!
+				) {
+				createMulti(input: {
+						aText: $aText
+						aBool: $aBool
+						aNumber: $aNumber
+					}) {id aText aBool aNumber}
+			}
+		`,
+		variables: map[string]any{
+			"aText":   "Petunia",
+			"aBool":   true,
+			"aNumber": 8086,
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createMulti.aText", "Petunia")
+			rtt.AssertValueAtPath(t, data, "createMulti.aBool", true)
+			rtt.AssertValueAtPath(t, data, "createMulti.aNumber", float64(8086))
+			// todo assert time-based field types - currently don't work properly / not implemented in gql
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := rtt.GetValueAtPath(t, data, "createMulti.id")
+			record := map[string]any{}
+			err := db.Table("multi").Where("id = ?", id).Find(&record).Error
+			require.NoError(t, err)
+
+			require.Equal(t, "Petunia", record["a_text"])
+			require.Equal(t, true, record["a_bool"])
+			require.Equal(t, int32(8086), record["a_number"])
+			rtt.AssertIsTimeNow(t, record["created_at"])
+			rtt.AssertIsTimeNow(t, record["updated_at"])
+			rtt.AssertKSUIDIsNow(t, record["id"])
 		},
 	},
 }

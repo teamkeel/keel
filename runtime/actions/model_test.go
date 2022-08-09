@@ -293,7 +293,7 @@ var mapCases []mapCase = []mapCase{
 		inputType: proto.Type_TYPE_TIMESTAMP,
 		testName:  "timestamp",
 		input: map[string]any{
-			"seconds": int64(1658329775),
+			"seconds": int(1658329775),
 		},
 		expected: time.Unix(int64(1658329775), 0),
 	},
@@ -324,7 +324,7 @@ var mapCases []mapCase = []mapCase{
 		inputType: proto.Type_TYPE_DATETIME,
 		testName:  "datetime",
 		input: map[string]any{
-			"seconds": int64(1658329775),
+			"seconds": int(1658329775),
 		},
 		expected: time.Unix(int64(1658329775), 0),
 	},
