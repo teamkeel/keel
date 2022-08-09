@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/graphql-go/graphql/gqlerrors"
+	"github.com/iancoleman/strcase"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
@@ -32,11 +34,14 @@ func TestRuntime(t *testing.T) {
 
 	for _, tCase := range testCases {
 
-		// todo remove this XXXX
-		// if tCase.name != "create_all_field_types" {
-		// 	continue
-		// }
+		// If there's an env var set to isolate one test - then only
+		// run that one.
+		isolate := os.Getenv("ISOLATE-TEST")
+		if isolate != "" && tCase.name != isolate {
+			continue
+		}
 
+		// Run this test case.
 		t.Run(tCase.name, func(t *testing.T) {
 
 			// Make a database name for this test
@@ -181,7 +186,7 @@ func initRow(with map[string]any) map[string]any {
 		"updated_at": time.Now(),
 	}
 	for k, v := range with {
-		res[k] = v
+		res[strcase.ToSnake(k)] = v
 	}
 	return res
 }
@@ -363,6 +368,39 @@ var testCases = []testCase{
 			rtt.AssertIsTimeNow(t, record["created_at"])
 			rtt.AssertIsTimeNow(t, record["updated_at"])
 			rtt.AssertKSUIDIsNow(t, record["id"])
+		},
+	},
+
+	{
+		name:       "get_all_field_types",
+		keelSchema: multiSchema,
+		gqlOperation: `
+			query GetMulti($id: ID!) {
+				getMulti(input: {id: $id}) {
+					aText, aBool, aNumber,
+				}
+			}
+		`,
+		variables: map[string]any{
+			"id": "42",
+		},
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":      "42",
+					"aText":   "Petunia",
+					"aNumber": int(8086),
+					"aBool":   true,
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("multi").Create(row).Error)
+			}
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getMulti.aText", "Petunia")
+			rtt.AssertValueAtPath(t, data, "getMulti.aBool", true)
+			rtt.AssertValueAtPath(t, data, "getMulti.aNumber", float64(8086))
 		},
 	},
 }
