@@ -9,11 +9,14 @@ model Post {
 
 export type PostQuery = Partial<{
   title?: QueryConstraints.StringConstraint
-published?: QueryConstraints.BooleanConstraint
-id?: QueryConstraints.StringConstraint
-createdAt?: QueryConstraints.DateConstraint
-updatedAt?: QueryConstraints.DateConstraint
+  published?: QueryConstraints.BooleanConstraint
+  id?: QueryConstraints.StringConstraint
+  createdAt?: QueryConstraints.DateConstraint
+  updatedAt?: QueryConstraints.DateConstraint
+}>
 
+export type PostUniqueFields = Partial<{
+  id?: QueryConstraints.StringConstraint
 }>
 
 export class PostApi {
@@ -38,7 +41,7 @@ export class PostApi {
     return this.db.delete(id);
   }
 
-  findOne = (query: PostQuery) : Promise<Post> => {
+  findOne = (query: PostUniqueFields) : Promise<Post> => {
     return this.db.findOne(query as any);
   }
 
