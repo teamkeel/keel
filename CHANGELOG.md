@@ -1,3 +1,10 @@
+## [0.90.7](https://github.com/teamkeel/keel/compare/v0.90.6...v0.90.7) (2022-08-10)
+
+
+### Bug Fixes
+
+* small fixes for codegen-ed typings ([#240](https://github.com/teamkeel/keel/issues/240)) ([b212e68](https://github.com/teamkeel/keel/commit/b212e68ce02ba99f608fc40c43833f141b0998bc))
+
 ## [0.90.6](https://github.com/teamkeel/keel/compare/v0.90.5...v0.90.6) (2022-08-10)
 
 
