@@ -68,7 +68,7 @@ export declare class PostApi {
   create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
   where: (conditions: PostQuery) => ChainableQuery<Post>;
   delete: (id: string) => Promise<boolean>;
-  find: (query: PostQuery) => Promise<Post>;
+  findOne: (query: PostQuery) => Promise<Post>;
   update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
   findMany: (query: PostQuery) => Promise<Post[]>;
 }

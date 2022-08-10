@@ -9,7 +9,7 @@ export declare class {{ .Name }}Api {
   create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
   where: (conditions: {{ .Name }}Query) => ChainableQuery<{{ .Name }}>;
   delete: (id: string) => Promise<boolean>;
-  find: (query: {{ .Name }}Query) => Promise<{{ .Name }}>;
+  findOne: (query: {{ .Name }}Query) => Promise<{{ .Name }}>;
   update: (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
   findMany: (query: {{ .Name }}Query) => Promise<{{ .Name }}[]>;
 }
