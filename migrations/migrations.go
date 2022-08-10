@@ -51,7 +51,7 @@ func (m *Migrations) Apply(db *gorm.DB) error {
 	sql.WriteString(m.SQL)
 	sql.WriteString("\n")
 
-	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema BYTEA NOT NULL );\n")
+	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
 
 	b, err := protojson.Marshal(m.Schema)
