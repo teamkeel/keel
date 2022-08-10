@@ -7,12 +7,6 @@ model Post {
 
 ===
 
-export interface API {
-  models: {
-    Post: PostApi
-
-  }
-}
 export type PostQuery = Partial<{
   title?: QueryConstraints.StringConstraint
 published?: QueryConstraints.BooleanConstraint
@@ -32,27 +26,33 @@ export class PostApi {
     })
   }
 
-  create = (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
+  create = async (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
     return this.db.create(inputs);
   }
 
-  where = (conditions: PostQuery) : any => {
-    return this.db.where(conditions);
+  where = (conditions: PostQuery) : ChainableQuery<Post> => {
+    return this.db.where(conditions as any);
   }
 
   delete = (id: string) : Promise<boolean> => {
     return this.db.delete(id);
   }
 
-  find = (query: PostQuery) : Promise<Post> => {
-    return this.db.findOne(query);
+  findOne = (query: PostQuery) : Promise<Post> => {
+    return this.db.findOne(query as any);
   }
 
   update = (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
-    return this.db.update(id, inputs);
+    return this.db.update(id, inputs as any);
   }
 
   findMany = (query: PostQuery) : Promise<Post[]> => {
-    return this.db.where(query).all();
+    return this.db.where(query as any).all();
+  }
+}
+export interface API {
+  models: {
+    post: PostApi
+
   }
 }

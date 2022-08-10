@@ -14,14 +14,10 @@ export class {{ .Name }}Api {
   }
 
   create = async (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
-    const result = await this.db.create(inputs);
-  
-    console.log(result);
-
-    return result;
+    return this.db.create(inputs);
   }
 
-  where = (conditions: {{ .Name }}Query) : any => {
+  where = (conditions: {{ .Name }}Query) : ChainableQuery<{{ .Name }}> => {
     return this.db.where(conditions as any);
   }
 
@@ -29,7 +25,7 @@ export class {{ .Name }}Api {
     return this.db.delete(id);
   }
 
-  find = (query: {{ .Name }}Query) : Promise<{{ .Name }}> => {
+  findOne = (query: {{ .Name }}Query) : Promise<{{ .Name }}> => {
     return this.db.findOne(query as any);
   }
 

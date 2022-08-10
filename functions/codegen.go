@@ -280,17 +280,17 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 
 			if i == 0 {
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": model.Name,
+					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("%sApi", model.Name),
 				}))
 			} else if i < len(modelsToUse)-1 {
 				acc += fmt.Sprintf("    %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": model.Name,
+					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("%sApi", model.Name),
 				}))
 			} else {
 				acc += fmt.Sprintf("    %s", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": model.Name,
+					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("%sApi", model.Name),
 				}))
 			}
@@ -339,15 +339,15 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 	}
 
 	if typings {
-		r += renderTemplate(TemplateKeelApiTypings, map[string]interface{}{
+		r += fmt.Sprintf("\n%s\n", renderTemplate(TemplateKeelApiTypings, map[string]interface{}{
 			"Name":      APIName,
 			"ModelApis": renderModelApiDefs(gen.schema.Models),
-		})
+		}))
 	} else {
-		r += renderTemplate(TemplateKeelApi, map[string]interface{}{
+		r += fmt.Sprintf("\n%s\n", renderTemplate(TemplateKeelApi, map[string]interface{}{
 			"Name":      APIName,
 			"ModelApis": renderModelApiDefs(gen.schema.Models),
-		})
+		}))
 	}
 
 	return r
@@ -536,19 +536,14 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 	}
 
 	renderImports := func(sch *proto.Schema) (acc string) {
-		acc += fmt.Sprintf("\n%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 			"Name": "startRuntimeServer",
 			"Path": "@teamkeel/runtime",
 		}))
 
-		acc += fmt.Sprintf("\n%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 			"Name": "{ createPool }",
 			"Path": "slonik",
-		}))
-
-		acc += fmt.Sprintf("\n%s\n", renderTemplate(TemplateImport, map[string]interface{}{
-			"Name": "{ API }",
-			"Path": "@teamkeel/sdk",
 		}))
 
 		models := lo.Filter(sch.Models, func(m *proto.Model, _ int) bool {
@@ -599,19 +594,14 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 				continue
 			}
 
-			if i == 0 {
-				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": model.Name,
+			if i == len(modelsToUse)-1 {
+				acc += renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
-				}))
-			} else if i < len(modelsToUse)-1 {
-				acc += fmt.Sprintf("    %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": model.Name,
-					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
-				}))
+				})
 			} else {
-				acc += fmt.Sprintf("    %s", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": model.Name,
+				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
 				}))
 			}

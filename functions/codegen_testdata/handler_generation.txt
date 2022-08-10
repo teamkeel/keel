@@ -12,19 +12,26 @@ model Post {
 ===
 
 import startRuntimeServer from '@teamkeel/runtime'
-
 import { createPool } from 'slonik'
-
-import { API } from '@teamkeel/sdk'
 import { PostApi } from '@teamkeel/sdk'
 import createPost from '../../../../functions/createPost'
 import updatePost from '../../../../functions/updatePost'
 
+import {
+  createQueryLoggingInterceptor
+} from 'slonik-interceptor-query-logging';
 
-const pool = createPool('postgres://')
+const cs = process.env.DB_CONN
+const env = process.env.NODE_ENV
 
-startRuntimeServer({
-  functions: { createPost: { call: createPost, }, updatePost: { call: updatePost, }  },
-  api: { Post: new PostApi(pool)
- }
+const interceptors = [
+  createQueryLoggingInterceptor()
+]
+
+createPool(cs, { interceptors }).then(async(pool) => {
+  // CODEGEN: pool is used in the .API template variable
+  startRuntimeServer({
+    functions: { createPost: { call: createPost, }, updatePost: { call: updatePost, }  },
+    api: { models: { post: new PostApi(pool) } }
+  })
 })
