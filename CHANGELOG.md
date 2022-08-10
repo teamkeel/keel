@@ -1,3 +1,10 @@
+## [0.90.6](https://github.com/teamkeel/keel/compare/v0.90.5...v0.90.6) (2022-08-10)
+
+
+### Bug Fixes
+
+* fix ORM api & add query logging ([#238](https://github.com/teamkeel/keel/issues/238)) ([9727579](https://github.com/teamkeel/keel/commit/9727579508d960f9184ffc97b74bfd31406a2317))
+
 ## [0.90.5](https://github.com/teamkeel/keel/compare/v0.90.4...v0.90.5) (2022-08-10)
 
 
