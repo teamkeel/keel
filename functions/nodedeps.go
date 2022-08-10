@@ -18,7 +18,7 @@ var DEV_DEPENDENCIES = map[string]string{
 	"@types/node":       "^18.0.6",
 	"typescript":        "^4.7.4",
 	"@teamkeel/runtime": "*",
-	"@teamkeel/sdk":     "0.90.4",
+	"@teamkeel/sdk":     "*",
 	"@roarr/cli":        "^5.4.0",
 }
 

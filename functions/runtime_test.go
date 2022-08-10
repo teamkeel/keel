@@ -22,13 +22,13 @@ import (
 )
 
 type PostResponse struct {
-	ID    int    `json:"id"`
-	Title string `json:"title"`
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 func TestAllCases(t *testing.T) {
-	// todo: reinstate
-	t.Skip()
 	testCases, err := ioutil.ReadDir("runtime_testdata")
 	require.NoError(t, err)
 
@@ -84,9 +84,17 @@ func TestAllCases(t *testing.T) {
 
 				port := 3002
 
+				dbConnString := fmt.Sprintf(
+					"postgresql://%s:%s@%s:%s/%s",
+					"postgres",
+					"postgres",
+					"localhost",
+					"8001",
+					"keel",
+				)
 				// Runs the node. js server
 				// the entry point will be {app}/node_modules/@teamkeel/client/dist/handler.js
-				process, err := RunServer(workingDir, port)
+				process, err := RunServer(workingDir, port, dbConnString)
 
 				require.NoError(t, err)
 
@@ -96,6 +104,7 @@ func TestAllCases(t *testing.T) {
 					time.Sleep(time.Second / 2)
 
 					expected := map[string]string{
+						"id":    "123",
 						"title": "something",
 					}
 
@@ -130,6 +139,7 @@ func TestAllCases(t *testing.T) {
 						actual := body
 
 						assert.Equal(t, expected["title"], actual.Title)
+						assert.Equal(t, expected["id"], actual.ID)
 
 						// Kill the node server after assertion is successful
 						process.Kill()
@@ -156,7 +166,7 @@ func typecheck(workingDir string) (bool, string) {
 	return true, string(outputBytes)
 }
 
-func RunServer(workingDir string, port int) (*os.Process, error) {
+func RunServer(workingDir string, port int, dbConnString string) (*os.Process, error) {
 	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
@@ -166,6 +176,7 @@ func RunServer(workingDir string, port int) (*os.Process, error) {
 
 	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnString))
 	cmd.Dir = workingDir
 
 	var buf bytes.Buffer
