@@ -15,11 +15,13 @@ const GREATER_THAN = 'greaterThan';
 const LESS_THAN = 'lessThan';
 const GREATER_THAN_OR_EQUAL_TO = 'greaterThanOrEqualTo';
 const LESS_THAN_OR_EQUAL_TO = 'lessThanOrEqualTo';
+const NOT_EQUAL = 'notEqual';
+const EQUAL = 'equal';
 
 export const buildSelectStatement = <T>(tableName: string, conditions: Conditions<T>[]) : TaggedTemplateLiteralInvocation<T> => {
   const ands : ValueExpression[] = [];
   const hasConditions = conditions.length > 0;
-  const baseQuery = sql`SELECT * FROM ${sql.identifier([tableName])}`;
+  const baseQuery = sql`SELECT * FROM ${sql.identifier([toSnakeCase(tableName)])}`;
 
   if (hasConditions) {
     conditions.forEach((condition) => {
@@ -27,42 +29,55 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
   
       Object.entries(condition).forEach(([field, constraints]) => {
         const isComplex = isComplexConstraint(constraints);
-        field = toSnakeCase(field);
+        const fullyQualifiedField = sql.identifier([toSnakeCase(tableName), toSnakeCase(field)]);
   
         if (isComplex) {
           Object.entries(constraints).forEach(([operation, value]) => {
             switch(operation) {
             case STARTS_WITH:
-              ors.push(sql`${field} ILIKE '${value}%'`);
+              // % is part of the parameter value, so needs to be interpolated
+              // instead of placed in the main body of the sql:
+              // https://github.com/brianc/node-postgres/issues/503#issuecomment-32055380
+              ors.push(sql`${fullyQualifiedField} ILIKE ${`${value}%`}`);
               break;
             case ENDS_WITH:
-              ors.push(sql`${field} ILIKE '%${value}'`);
+              ors.push(sql`${fullyQualifiedField} ILIKE ${`%${value}`}`);
               break;
             case CONTAINS:
-              ors.push(sql`${field} ILIKE '%${value}%'`);
+              ors.push(sql`${fullyQualifiedField} ILIKE ${`%${value}%`}`);
               break;
             case ONE_OF:
               // todo: join with correct type
               if (Array.isArray(value) && value.length > 0) {
-                ors.push(sql`${field} IN (${sql.join(value, sql`,`)})`);
+                ors.push(sql`${fullyQualifiedField} IN (${sql.join(value, sql`,`)})`);
               }
               break;
             case GREATER_THAN:
-              ors.push(sql`${field} > ${value}`);
+              ors.push(sql`${fullyQualifiedField} > ${value}`);
               break;
             case LESS_THAN:
-              ors.push(sql`${field} < ${value}`);
+              ors.push(sql`${fullyQualifiedField} < ${value}`);
               break;
             case LESS_THAN_OR_EQUAL_TO:
-              ors.push(sql`${field} <= ${value}`);
+              ors.push(sql`${fullyQualifiedField} <= ${value}`);
               break;
             case GREATER_THAN_OR_EQUAL_TO:
-              ors.push(sql`${field} >= ${value}`);
+              ors.push(sql`${fullyQualifiedField} >= ${value}`);
               break;
+            case NOT_EQUAL:
+              ors.push(sql`${fullyQualifiedField} != ${value}`);
+              break;
+            case EQUAL:
+              ors.push(sql`${fullyQualifiedField} = ${value}`);
+              break;
+            default:
+                // todo: handle unrecognised
             }
+
           });
         } else {
-          ors.push(sql`${sql.identifier([field])} = ${constraints as ValueExpression}`);
+          // todo: make this better
+          ors.push(sql`${fullyQualifiedField} = ${constraints as ValueExpression}`);
         }
       });
   
