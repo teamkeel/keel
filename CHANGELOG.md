@@ -1,3 +1,10 @@
+## [0.90.5](https://github.com/teamkeel/keel/compare/v0.90.4...v0.90.5) (2022-08-10)
+
+
+### Bug Fixes
+
+* revert to TEXT column type for keel schema ([#237](https://github.com/teamkeel/keel/issues/237)) ([29c6303](https://github.com/teamkeel/keel/commit/29c630315132dfd1c83bc02c609ce99280ee7517))
+
 ## [0.90.4](https://github.com/teamkeel/keel/compare/v0.90.3...v0.90.4) (2022-08-09)
 
 
