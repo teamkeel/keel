@@ -33,9 +33,9 @@ func TestRuntime(t *testing.T) {
 
 	for _, tCase := range testCases {
 
-		if tCase.name != "get_where" {
-			continue
-		}
+		// if tCase.name != "get_where" {
+		// 	continue
+		// }
 
 		// Run this test case.
 		t.Run(tCase.name, func(t *testing.T) {
@@ -213,8 +213,8 @@ const getWhere string = `
 			name Text @unique
 		}
 		operations {
-			get getPerson(name) {
-				@where(person.name == "Fred") // long-form filter criteria
+			get getPerson(name: Text) {
+				@where(person.name == name) // long-form filter criteria
 			}
 		}
 	}
@@ -342,7 +342,7 @@ var testCases = []testCase{
 		},
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "No records found for Get() operation", errors[0].Message)
+			require.Equal(t, "no records found for Get() operation", errors[0].Message)
 		},
 	},
 	{
@@ -418,19 +418,18 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getMulti.aNumber", float64(8086))
 		},
 	},
-
 	{
 		name:       "get_where",
 		keelSchema: getWhere,
 		gqlOperation: `
-	query GetPerson($name: String!) {
-		getPerson(input: {name: $String}) {
-			id, name,
+			query GetPerson($name: String!) {
+				getPerson(input: {name: $name}) {
+				id, name,
+			}
 		}
-	}
-	`,
+		`,
 		variables: map[string]any{
-			"name": "Fred",
+			"name": "Sue",
 		},
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -438,13 +437,24 @@ var testCases = []testCase{
 					"id":   "41",
 					"name": "Fred",
 				}),
+				initRow(map[string]any{
+					"id":   "42",
+					"name": "Sue",
+				}),
 			}
 			for _, row := range rows {
-				require.NoError(t, db.Table("multi").Create(row).Error)
+				require.NoError(t, db.Table("person").Create(row).Error)
 			}
 		},
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "getPerson.name", "Fred")
+			rtt.AssertValueAtPath(t, data, "getPerson.id", "42")
+			rtt.AssertValueAtPath(t, data, "getPerson.name", "Sue")
 		},
 	},
 }
+
+/*
+
+
+
+ */

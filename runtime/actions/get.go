@@ -16,40 +16,40 @@ func Get(
 	schema *proto.Schema,
 	args map[string]any) (interface{}, error) {
 
-	model := proto.FindModel(schema.Models, operation.ModelName)
-
-	// If there is a where clause, there can be no inputs, but we are not
-	// dealing with that case.
-	expectedInput := operation.Inputs[0]
-
-	// todo - where clause
-
-	// todo: do we need name case coercion of the name?
-
-	// todo: remind self if should be looking at target, not name, and when so? Or is it already resolved in proto.
-
-	expectedInputIdentifier := expectedInput.Target[0]
-	inputValue, ok := args[expectedInputIdentifier]
-	if !ok {
-		return nil, fmt.Errorf("missing argument: %s", expectedInputIdentifier)
-	}
-
-	// do we need to unpack the inputValue from the arg?
-
-	// Todo: some argument types need mapping to different database types
-
-	// Todo: should we validate the type of the values?, or let postgres object to them later?
-
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := map[string]any{}
+	model := proto.FindModel(schema.Models, operation.ModelName)
+
 	tableName := strcase.ToSnake(model.Name)
-	columnName := strcase.ToSnake(expectedInputIdentifier)
-	w := fmt.Sprintf("%s = ?", columnName)
-	tx := db.Table(tableName).Where(w, inputValue).Find(&result)
+	// Initialise a query on the table.
+	tx := db.Table(tableName)
+
+	// A Get operation (conceptually) needs exactly one filter on a unique field.
+	// But this can be in the form of an schema Input, or a schema Where clause.
+
+	switch {
+	case len(operation.Inputs) == 1:
+		input := operation.Inputs[0]
+		identifier := input.Target[0]
+		valueFromArg, ok := args[identifier]
+		if !ok {
+			return nil, fmt.Errorf("missing argument: %s", identifier)
+		}
+		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
+		tx = tx.Where(w, valueFromArg)
+	case len(operation.WhereExpressions) == 1:
+		return nil, errors.New("where expressions not implemented for Get operations")
+	default:
+		return nil, errors.New("get operation must have either one input or one where clause")
+	}
+
+	// Todo: should we validate the type of the values?, or let postgres object to them later?
+
+	result := map[string]any{}
+	tx = tx.Find(&result)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
@@ -60,7 +60,7 @@ func Get(
 	//
 	// See: https://gorm.io/docs/query.html#Retrieving-a-single-object
 	if tx.RowsAffected == 0 {
-		return nil, errors.New("No records found for Get() operation")
+		return nil, errors.New("no records found for Get() operation")
 	}
 	return toLowerCamelMap(result), nil
 }
