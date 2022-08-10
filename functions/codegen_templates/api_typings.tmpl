@@ -3,13 +3,17 @@ export declare type {{ .Name }}Query = Partial<{
   {{ .QueryConstraints }}
 }>
 
+export declare type {{ .Name }}UniqueFields = Partial<{
+  {{ .UniqueFields }}
+}>
+
 export declare class {{ .Name }}Api {
   private readonly db;
   constructor(pool: DatabasePool);
   create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
   where: (conditions: {{ .Name }}Query) => ChainableQuery<{{ .Name }}>;
   delete: (id: string) => Promise<boolean>;
-  findOne: (query: {{ .Name }}Query) => Promise<{{ .Name }}>;
+  findOne: (query: {{ .Name }}UniqueFields) => Promise<{{ .Name }}>;
   update: (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
   findMany: (query: {{ .Name }}Query) => Promise<{{ .Name }}[]>;
 }

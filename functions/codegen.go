@@ -308,12 +308,62 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 	}
 
 	buildQueryConstraints := func(model *proto.Model) (r string) {
-		for _, field := range model.Fields {
-			r += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-				"Name":     field.Name,
-				"Type":     getFieldConstraintType(model, field),
-				"Optional": true,
-			}))
+		for i, field := range model.Fields {
+			if i == 0 {
+				r += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name":     field.Name,
+					"Type":     getFieldConstraintType(model, field),
+					"Optional": true,
+				}))
+			} else if i < len(model.Fields)-1 {
+				r += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name":     field.Name,
+					"Type":     getFieldConstraintType(model, field),
+					"Optional": true,
+				}))
+			} else {
+				r += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name":     field.Name,
+					"Type":     getFieldConstraintType(model, field),
+					"Optional": true,
+				}))
+			}
+		}
+
+		return r
+	}
+
+	buildUniqueFields := func(model *proto.Model) (r string) {
+		uniqueFields := lo.Filter(model.Fields, func(f *proto.Field, i int) bool {
+			return f.Unique || f.PrimaryKey
+		})
+
+		for i, field := range uniqueFields {
+			if i == len(uniqueFields)-1 {
+				r += renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name":     field.Name,
+					"Type":     getFieldConstraintType(model, field),
+					"Optional": true,
+				})
+			} else if i == 0 {
+				r += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name":     field.Name,
+					"Type":     getFieldConstraintType(model, field),
+					"Optional": true,
+				}))
+			} else if i < len(model.Fields)-1 {
+				r += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name":     field.Name,
+					"Type":     getFieldConstraintType(model, field),
+					"Optional": true,
+				}))
+			} else {
+				r += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name":     field.Name,
+					"Type":     getFieldConstraintType(model, field),
+					"Optional": true,
+				}))
+			}
 		}
 
 		return r
@@ -328,12 +378,14 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 			r += renderTemplate(TemplateApiTyping, map[string]interface{}{
 				"Name":             model.Name,
 				"QueryConstraints": buildQueryConstraints(model),
+				"UniqueFields":     buildUniqueFields(model),
 			})
 		} else {
 			r += renderTemplate(TemplateApi, map[string]interface{}{
 				"Name":             model.Name,
 				"TableName":        strcase.ToSnake(model.Name),
 				"QueryConstraints": buildQueryConstraints(model),
+				"UniqueFields":     buildUniqueFields(model),
 			})
 		}
 	}

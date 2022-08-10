@@ -3,6 +3,10 @@ export type {{ .Name }}Query = Partial<{
   {{ .QueryConstraints }}
 }>
 
+export type {{ .Name }}UniqueFields = Partial<{
+  {{ .UniqueFields }}
+}>
+
 export class {{ .Name }}Api {
   private readonly db : Query<{{ .Name }}>;
 
@@ -25,7 +29,7 @@ export class {{ .Name }}Api {
     return this.db.delete(id);
   }
 
-  findOne = (query: {{ .Name }}Query) : Promise<{{ .Name }}> => {
+  findOne = (query: {{ .Name }}UniqueFields) : Promise<{{ .Name }}> => {
     return this.db.findOne(query as any);
   }
 
