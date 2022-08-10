@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -34,10 +33,7 @@ func TestRuntime(t *testing.T) {
 
 	for _, tCase := range testCases {
 
-		// If there's an env var set to isolate one test - then only
-		// run that one.
-		isolate := os.Getenv("ISOLATE-TEST")
-		if isolate != "" && tCase.name != isolate {
+		if tCase.name != "get_where" {
 			continue
 		}
 
@@ -195,11 +191,31 @@ func initRow(with map[string]any) map[string]any {
 const basicSchema string = `
 	model Person {
 		fields {
-			name Text
+			name Text 
 		}
 		operations {
-			get getPerson(id)
+			get getPerson(id) // short-form filter criterion
 			create createPerson() with (name)
+		}
+	}
+	api Test {
+		@graphql
+		models {
+			Person
+		}
+	}
+`
+
+// getWhere is a simple schema that contains a minimal WHERE clause.
+const getWhere string = `
+	model Person {
+		fields {
+			name Text @unique
+		}
+		operations {
+			get getPerson(name) {
+				@where(person.name == "Fred") // long-form filter criteria
+			}
 		}
 	}
 	api Test {
@@ -400,6 +416,35 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getMulti.aText", "Petunia")
 			rtt.AssertValueAtPath(t, data, "getMulti.aBool", true)
 			rtt.AssertValueAtPath(t, data, "getMulti.aNumber", float64(8086))
+		},
+	},
+
+	{
+		name:       "get_where",
+		keelSchema: getWhere,
+		gqlOperation: `
+	query GetPerson($name: String!) {
+		getPerson(input: {name: $String}) {
+			id, name,
+		}
+	}
+	`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":   "41",
+					"name": "Fred",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("multi").Create(row).Error)
+			}
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getPerson.name", "Fred")
 		},
 	},
 }
