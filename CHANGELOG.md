@@ -1,3 +1,10 @@
+## [0.91.1](https://github.com/teamkeel/keel/compare/v0.91.0...v0.91.1) (2022-08-11)
+
+
+### Bug Fixes
+
+* hook up logger - codegen & sdk logger typing fixes ([#242](https://github.com/teamkeel/keel/issues/242)) ([972b776](https://github.com/teamkeel/keel/commit/972b776710b032812203ded26a8f638a6add5cc6))
+
 # [0.91.0](https://github.com/teamkeel/keel/compare/v0.90.7...v0.91.0) (2022-08-11)
 
 
