@@ -1,3 +1,10 @@
+## [0.91.3](https://github.com/teamkeel/keel/compare/v0.91.2...v0.91.3) (2022-08-11)
+
+
+### Bug Fixes
+
+* format sql values correctly based on their type ([#244](https://github.com/teamkeel/keel/issues/244)) ([d18316a](https://github.com/teamkeel/keel/commit/d18316a64d125165c7c7f9bfdc43dcf6da60c160))
+
 ## [0.91.2](https://github.com/teamkeel/keel/compare/v0.91.1...v0.91.2) (2022-08-11)
 
 
