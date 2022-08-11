@@ -16,14 +16,16 @@ import {
   SqlOptions,
   QueryOpts,
   Input,
-  BuiltInFields
+  BuiltInFields,
+  OrderClauses
 } from './types';
 import Logger from './logger';
-import { LogLevel } from 'index';
+import { LogLevel } from './';
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
   private readonly conditions : Conditions<T>[];
+  private orderClauses: OrderClauses<T>;
   private readonly pool: DatabasePool;
   private readonly logger: Logger;
 
@@ -58,6 +60,12 @@ export class ChainableQuery<T extends IDer> {
     const result = await this.execute(sql);
 
     return result.rows[0];
+  };
+
+  order = (clauses: OrderClauses<T>) : ChainableQuery<T> => {
+    this.orderClauses = { ...this.orderClauses, ...clauses };
+
+    return this;
   };
 
   // Returns the SQL string representing the query
