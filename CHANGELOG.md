@@ -1,3 +1,10 @@
+# [0.92.0](https://github.com/teamkeel/keel/compare/v0.91.3...v0.92.0) (2022-08-11)
+
+
+### Features
+
+* implement order by in sql api ([#245](https://github.com/teamkeel/keel/issues/245)) ([cc9b853](https://github.com/teamkeel/keel/commit/cc9b8533c9818df59170fd27076ee9190ccbe079))
+
 ## [0.91.3](https://github.com/teamkeel/keel/compare/v0.91.2...v0.91.3) (2022-08-11)
 
 
