@@ -1,3 +1,10 @@
+# [0.91.0](https://github.com/teamkeel/keel/compare/v0.90.7...v0.91.0) (2022-08-11)
+
+
+### Features
+
+* adds basic logger implementation to sdk ([#241](https://github.com/teamkeel/keel/issues/241)) ([84a9b93](https://github.com/teamkeel/keel/commit/84a9b93888685a73c1ae722f75560b2192f24879))
+
 ## [0.90.7](https://github.com/teamkeel/keel/compare/v0.90.6...v0.90.7) (2022-08-10)
 
 
