@@ -1,3 +1,10 @@
+## [0.92.3](https://github.com/teamkeel/keel/compare/v0.92.2...v0.92.3) (2022-08-11)
+
+
+### Bug Fixes
+
+* do not use sql literal when building order by clauses ([#248](https://github.com/teamkeel/keel/issues/248)) ([f1cf3dd](https://github.com/teamkeel/keel/commit/f1cf3dd13432fc26dc031355e889337dca4799f6))
+
 ## [0.92.2](https://github.com/teamkeel/keel/compare/v0.92.1...v0.92.2) (2022-08-11)
 
 
