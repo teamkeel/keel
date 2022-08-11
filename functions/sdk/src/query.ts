@@ -181,8 +181,23 @@ const logSql = <T extends IDer>(query: TaggedTemplateLiteralInvocation<T>) : str
   const mutatedQuery = query.values.reduce((acc, cur, idx) => {
     const newObj = Object.assign({}, acc);
 
-    // todo: format values based on their type correctly (e.g quotes around strings, no quotes around ints etc)
-    const newSql = newObj.sql.replace(`$${idx + 1}`, cur.toString());
+    const v = typeof cur.valueOf();
+
+    let value = '';
+
+    switch(v) {
+    case 'number':
+    case 'boolean':
+      value = cur.toString();
+      break;
+    case 'string':
+      value = `'${cur}'`;
+      break;
+    default:
+      value = `'${JSON.stringify(cur)}'`;
+    }
+
+    const newSql = newObj.sql.replace(`$${idx + 1}`, value);
 
     return Object.assign(newObj, { sql: newSql });
   }, query);
