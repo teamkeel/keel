@@ -25,7 +25,7 @@ const EQUAL = 'equal';
 export const buildSelectStatement = <T>(tableName: string, conditions: Conditions<T>[], order?: OrderClauses<T>) : TaggedTemplateLiteralInvocation<T> => {
   const ands : ValueExpression[] = [];
   const hasConditions = conditions.length > 0;
-  const hasOrder = Object.keys(order).length > 0;
+  const hasOrder = Object.keys(order || {}).length > 0;
   let query = sql`SELECT * FROM ${sql.identifier([toSnakeCase(tableName)])}`;
 
   if (hasConditions) {

@@ -71,7 +71,8 @@ declare module '@teamkeel/sdk/query' {
     ChainedQueryOpts,
     SqlOptions,
     QueryOpts,
-    Input
+    Input,
+    OrderClauses
   } from '@teamkeel/sdk/types';
   export class ChainableQuery<T> {
     private readonly tableName;
@@ -80,6 +81,7 @@ declare module '@teamkeel/sdk/query' {
     constructor({ tableName, pool, conditions }: ChainedQueryOpts<T>);
     orWhere: (conditions: Conditions<T>) => ChainableQuery<T>;
     all: () => Promise<T[]>;
+    order: (clauses: OrderClauses<T>) => ChainableQuery<T>;
     findOne: () => Promise<T>;
     sql: ({ asAst }: SqlOptions) => string | TaggedTemplateLiteralInvocation<T>;
     private appendConditions;
@@ -87,6 +89,7 @@ declare module '@teamkeel/sdk/query' {
   export default class Query<T> {
     private readonly tableName;
     private readonly conditions;
+    private orderClauses;
     private readonly pool;
     constructor({ tableName, pool, logger }: QueryOpts);
     create: (inputs: Partial<T>) => Promise<T>;
@@ -131,7 +134,8 @@ declare module '@teamkeel/sdk/types' {
   export type Constraints = StringConstraint | BooleanConstraint | NumberConstraint;
   export type Input<T> = Record<keyof T, unknown>;
   export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
-
+  export type OrderDirection = 'asc' | 'desc'
+  export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>
 }
 declare module '@teamkeel/sdk' {
   import main = require('@teamkeel/sdk/index');

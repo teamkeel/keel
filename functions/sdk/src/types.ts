@@ -33,4 +33,4 @@ export interface BuiltInFields {
 }
 
 export type OrderDirection = 'ASC' | 'DESC'
-export type OrderClauses<T> = Record<keyof T, OrderDirection>
+export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>
