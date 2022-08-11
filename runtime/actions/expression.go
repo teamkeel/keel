@@ -11,7 +11,7 @@ import (
 // interpretExpression examines the given expression, in order to work out how a gorm WHERE clause
 // should be specified.
 //
-// The only form we support at the moment is this: "person.name == name"
+// The ONLY form we support at the moment in this infant version is this: "person.name == name"
 //
 // It returns a column and a value that is good to be used like this:
 // 		tx.Where(fmt.Sprintf("%s = ?", column), value)

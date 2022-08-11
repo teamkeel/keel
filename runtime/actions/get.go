@@ -12,6 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// Get implements a Keel Get Action.
+// In quick overview this means generating a SQL query
+// based on the Get operation's Inputs and Where clause,
+// running that query, and returning the results.
 func Get(
 	ctx context.Context,
 	operation *proto.Operation,
@@ -26,7 +30,8 @@ func Get(
 	model := proto.FindModel(schema.Models, operation.ModelName)
 
 	tableName := strcase.ToSnake(model.Name)
-	// Initialise a query on the table.
+
+	// Initialise a query on the table = to which we'll add Where clauses.
 	tx := db.Table(tableName)
 
 	// Add the WHERE clauses derived from IMPLICIT inputs.
@@ -42,6 +47,7 @@ func Get(
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
+	// Execute the SQL query.
 	result := []map[string]any{}
 	tx = tx.Find(&result)
 	if tx.Error != nil {
@@ -57,6 +63,8 @@ func Get(
 	return toLowerCamelMap(result[0]), nil
 }
 
+// addInputFilters adds Where clauses for all the operation inputs, which have type
+// IMPLICIT. E.g. "get getPerson(id)"
 func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
 	for _, input := range op.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
@@ -73,6 +81,11 @@ func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*go
 	return tx, nil
 }
 
+// addWhereFilters adds Where clauses for all the operation's Where clauses.
+// E.g.
+// 	get getPerson(name: Text) {
+//		@where(person.name == name)
+//	}
 func addWhereFilters(
 	op *proto.Operation,
 	schema *proto.Schema,
@@ -83,6 +96,8 @@ func addWhereFilters(
 		if err != nil {
 			return nil, err
 		}
+		// This call gives us the column and the value to use like this:
+		// tx.Where(fmt.Sprintf("%s = ?", column), value)
 		identifier, exprValue, err := interpretExpression(expr, op, schema, args)
 		if err != nil {
 			return nil, err
