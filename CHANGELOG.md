@@ -1,3 +1,10 @@
+## [0.92.2](https://github.com/teamkeel/keel/compare/v0.92.1...v0.92.2) (2022-08-11)
+
+
+### Bug Fixes
+
+* pass order clauses to query builder ([#247](https://github.com/teamkeel/keel/issues/247)) ([eff6ee6](https://github.com/teamkeel/keel/commit/eff6ee615bfa8bba913d43a3212ebe16b2815ef6))
+
 ## [0.92.1](https://github.com/teamkeel/keel/compare/v0.92.0...v0.92.1) (2022-08-11)
 
 
