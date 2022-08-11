@@ -99,7 +99,7 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
   }
 
   if (hasOrder) {
-    const orderClauses = Object.entries(order).map(([key, value]) => sql.literalValue(`${key} ${value}`));
+    const orderClauses = Object.entries(order).map(([key, value]) => `${key} ${value}`);
     const orderBy = sql.join(orderClauses, sql`,`);
     query = sql`${query} ORDER BY ${orderBy}`;
   }
