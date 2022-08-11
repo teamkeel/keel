@@ -8,6 +8,8 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/expressions"
+	"gorm.io/gorm"
 )
 
 func Get(
@@ -27,12 +29,39 @@ func Get(
 	// Initialise a query on the table.
 	tx := db.Table(tableName)
 
-	// A Get operation (conceptually) needs exactly one filter on a unique field.
-	// But this can be in the form of an schema Input, or a schema Where clause.
+	// Add the WHERE clauses derived from IMPLICIT inputs.
+	tx, err = addInputFilters(operation, args, tx)
+	if err != nil {
+		return nil, err
+	}
+	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
+	tx, err = addWhereFilters(operation, schema, args, tx)
+	if err != nil {
+		return nil, err
+	}
 
-	switch {
-	case len(operation.Inputs) == 1:
-		input := operation.Inputs[0]
+	// Todo: should we validate the type of the values?, or let postgres object to them later?
+
+	result := []map[string]any{}
+	tx = tx.Find(&result)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	n := len(result)
+	if n == 0 {
+		return nil, errors.New("no records found for Get() operation")
+	}
+	if n > 1 {
+		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
+	}
+	return toLowerCamelMap(result[0]), nil
+}
+
+func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
+	for _, input := range op.Inputs {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
 		identifier := input.Target[0]
 		valueFromArg, ok := args[identifier]
 		if !ok {
@@ -40,27 +69,26 @@ func Get(
 		}
 		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
 		tx = tx.Where(w, valueFromArg)
-	case len(operation.WhereExpressions) == 1:
-		return nil, errors.New("where expressions not implemented for Get operations")
-	default:
-		return nil, errors.New("get operation must have either one input or one where clause")
 	}
+	return tx, nil
+}
 
-	// Todo: should we validate the type of the values?, or let postgres object to them later?
-
-	result := map[string]any{}
-	tx = tx.Find(&result)
-	if tx.Error != nil {
-		return nil, tx.Error
+func addWhereFilters(
+	op *proto.Operation,
+	schema *proto.Schema,
+	args map[string]any,
+	tx *gorm.DB) (*gorm.DB, error) {
+	for _, e := range op.WhereExpressions {
+		expr, err := expressions.Parse(e.Source)
+		if err != nil {
+			return nil, err
+		}
+		identifier, exprValue, err := interpretExpression(expr, op, schema, args)
+		if err != nil {
+			return nil, err
+		}
+		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
+		tx = tx.Where(w, exprValue)
 	}
-	// TODO.
-	// The gorm docs say that Find() should raise ErrRecordNotFound, but when used as
-	// above it does not - for reasons I don't understand.
-	// However it seems the RowsAffected field can tell us.
-	//
-	// See: https://gorm.io/docs/query.html#Retrieving-a-single-object
-	if tx.RowsAffected == 0 {
-		return nil, errors.New("no records found for Get() operation")
-	}
-	return toLowerCamelMap(result), nil
+	return tx, nil
 }

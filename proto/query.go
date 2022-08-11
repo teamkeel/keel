@@ -79,3 +79,30 @@ func FindField(models []*Model, modelName string, fieldName string) *Field {
 	}
 	return nil
 }
+
+// ModelHasField returns true IFF the schema contains a model of the given name AND
+// that model has a field of the given name.
+func ModelHasField(schema *Schema, model string, field string) bool {
+	for _, m := range schema.Models {
+		if m.Name != model {
+			continue
+		}
+		for _, f := range m.Fields {
+			if f.Name == field {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// OperationHasInput returns true if the given Operation defines
+// an input of the given name.
+func OperationHasInput(op *Operation, name string) bool {
+	for _, input := range op.Inputs {
+		if input.Name == name {
+			return true
+		}
+	}
+	return false
+}

@@ -31,11 +31,17 @@ func TestRuntime(t *testing.T) {
 		&gorm.Config{})
 	require.NoError(t, err)
 
+	var skip string = "" // Name of test case you want to skip, or ""
+	var only = ""        // Name of test case you want isolated and alone, or ""
+
 	for _, tCase := range testCases {
 
-		// if tCase.name != "get_where" {
-		// 	continue
-		// }
+		if only != "" && tCase.name != only {
+			continue
+		}
+		if skip == tCase.name {
+			continue
+		}
 
 		// Run this test case.
 		t.Run(tCase.name, func(t *testing.T) {
@@ -214,7 +220,7 @@ const getWhere string = `
 		}
 		operations {
 			get getPerson(name: Text) {
-				@where(person.name == name) // long-form filter criteria
+				@where(person.name == name)
 			}
 		}
 	}
@@ -454,6 +460,7 @@ var testCases = []testCase{
 }
 
 /*
+
 
 
 
