@@ -1,3 +1,10 @@
+## [0.92.1](https://github.com/teamkeel/keel/compare/v0.92.0...v0.92.1) (2022-08-11)
+
+
+### Bug Fixes
+
+* order by fixes ([#246](https://github.com/teamkeel/keel/issues/246)) ([637c3e6](https://github.com/teamkeel/keel/commit/637c3e67b36b66557ed43a02774e246ff0166d90))
+
 # [0.92.0](https://github.com/teamkeel/keel/compare/v0.91.3...v0.92.0) (2022-08-11)
 
 
