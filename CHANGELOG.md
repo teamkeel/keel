@@ -1,3 +1,10 @@
+## [0.91.2](https://github.com/teamkeel/keel/compare/v0.91.1...v0.91.2) (2022-08-11)
+
+
+### Bug Fixes
+
+* colorization and query output format ([#243](https://github.com/teamkeel/keel/issues/243)) ([53b9de2](https://github.com/teamkeel/keel/commit/53b9de2257000c575703f53491382e924ea26ba1))
+
 ## [0.91.1](https://github.com/teamkeel/keel/compare/v0.91.0...v0.91.1) (2022-08-11)
 
 
