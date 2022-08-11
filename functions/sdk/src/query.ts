@@ -1,4 +1,8 @@
-import { DatabasePool, TaggedTemplateLiteralInvocation } from 'slonik';
+import {
+  DatabasePool,
+  QueryResult,
+  TaggedTemplateLiteralInvocation
+} from 'slonik';
 import KSUID from 'ksuid';
 import {
   buildCreateStatement,
@@ -14,16 +18,20 @@ import {
   Input,
   BuiltInFields
 } from './types';
+import Logger from './logger';
+import { LogLevel } from 'index';
 
-export class ChainableQuery<T> {
+export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
   private readonly conditions : Conditions<T>[];
   private readonly pool: DatabasePool;
+  private readonly logger: Logger;
 
-  constructor({ tableName, pool, conditions }: ChainedQueryOpts<T>) {
+  constructor({ tableName, pool, conditions, logger }: ChainedQueryOpts<T>) {
     this.tableName = tableName;
     this.conditions = conditions;
     this.pool = pool;
+    this.logger = logger;
   }
 
   // orWhere can be used to chain additional conditions to a pre-existent set of conditions
@@ -38,9 +46,7 @@ export class ChainableQuery<T> {
   all = async () : Promise<T[]> => {
     const sql = buildSelectStatement<T>(this.tableName, this.conditions);
 
-    const result = await this.pool.connect(async (connection) => {
-      return connection.query(sql);
-    });
+    const result = await this.execute(sql);
 
     return result.rows as T[];
   };
@@ -49,9 +55,7 @@ export class ChainableQuery<T> {
   findOne = async () : Promise<T> => {
     const sql = buildSelectStatement<T>(this.tableName, this.conditions);
 
-    const result = await this.pool.connect(async (connection) => {
-      return connection.query(sql);
-    });
+    const result = await this.execute(sql);
 
     return result.rows[0];
   };
@@ -68,17 +72,31 @@ export class ChainableQuery<T> {
   private appendConditions(conditions: Conditions<T>) : void {
     this.conditions.push(conditions);
   }
+
+  private execute = async (query: TaggedTemplateLiteralInvocation<T>) : Promise<QueryResult<T>> => {
+    this.logger.log(logSql<T>(query), LogLevel.Debug);
+
+    return this.pool.connect(async (connection) => {
+      return connection.query(query);
+    });
+  };
 }
 
-export default class Query<T> {
+interface IDer {
+  id: string
+}
+
+export default class Query<T extends IDer> {
   private readonly tableName: string;
   private readonly conditions : Conditions<T>[];
   private readonly pool: DatabasePool;
+  private readonly logger: Logger;
 
-  constructor({ tableName, pool }: QueryOpts) {
+  constructor({ tableName, pool, logger }: QueryOpts) {
     this.tableName = tableName;
     this.conditions = [];
     this.pool = pool;
+    this.logger = logger;
   }
 
   create = async (inputs: Partial<T>) : Promise<T> => {
@@ -94,9 +112,7 @@ export default class Query<T> {
 
     const query = buildCreateStatement(this.tableName, values);
 
-    const result = await this.pool.connect(async (connection) => {
-      return connection.query(query);
-    });
+    const result = await this.execute(query);
 
     // todo: better typing here
     return {
@@ -112,16 +128,15 @@ export default class Query<T> {
     return new ChainableQuery({
       tableName: this.tableName,
       pool: this.pool,
-      conditions: [conditions]
+      conditions: [conditions],
+      logger: this.logger
     });
   };
 
   delete = async (id: string) : Promise<boolean> => {
     const query = buildDeleteStatement(this.tableName, id);
 
-    const result = await this.pool.connect(async (connection) => {
-      return connection.query(query);
-    });
+    const result = await this.execute(query);
 
     return result.rowCount === 1;
   };
@@ -129,9 +144,7 @@ export default class Query<T> {
   findOne = async (conditions: Conditions<T>) : Promise<T> => {
     const query = buildSelectStatement<T>(this.tableName, [conditions]);
 
-    const result = await this.pool.connect(async (connection) => {
-      return connection.query(query);
-    });
+    const result = await this.execute(query);
 
     return result.rows[0];
   };
@@ -140,9 +153,7 @@ export default class Query<T> {
     // todo type below correctly.
     const query = buildUpdateStatement(this.tableName, id, inputs as any);
 
-    await this.pool.connect(async (connection) => {
-      return connection.query(query);
-    });
+    await this.execute(query);
 
     // todo: return whole object
     return inputs as T;
@@ -151,11 +162,30 @@ export default class Query<T> {
   all = async () : Promise<T[]> => {
     const sql = buildSelectStatement(this.tableName, this.conditions);
 
-    const result = await this.pool.connect(async (connection) => {
-      return connection.query(sql);
-    });
+    const result = await this.execute(sql);
 
     return result.rows as T[];
   };
+
+  private execute = (query: TaggedTemplateLiteralInvocation<T>) : Promise<QueryResult<T>> => {
+    this.logger.log(logSql<T>(query), LogLevel.Debug);
+
+    return this.pool.connect(async (connection) => {
+      const result = connection.query(query);
+      return result;
+    });
+  };
 }
 
+const logSql = <T extends IDer>(query: TaggedTemplateLiteralInvocation<T>) : string => {
+  const mutatedQuery = query.values.reduce((acc, cur, idx) => {
+    const newObj = Object.assign({}, acc);
+
+    // todo: format values based on their type correctly (e.g quotes around strings, no quotes around ints etc)
+    const newSql = newObj.sql.replace(`$${idx + 1}`, cur.toString());
+
+    return Object.assign(newObj, { sql: newSql });
+  }, query);
+  
+  return mutatedQuery.sql;
+};

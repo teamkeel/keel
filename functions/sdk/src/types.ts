@@ -4,10 +4,12 @@ import {
   NumberConstraint
 } from './constraints';
 import { DatabasePool } from 'slonik';
+import { Logger } from './';
 
 export interface QueryOpts {
   tableName: string;
   pool: DatabasePool;
+  logger: Logger
 }
 
 export interface ChainedQueryOpts<T> extends QueryOpts {

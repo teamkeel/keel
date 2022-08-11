@@ -88,7 +88,7 @@ declare module '@teamkeel/sdk/query' {
     private readonly tableName;
     private readonly conditions;
     private readonly pool;
-    constructor({ tableName, pool }: QueryOpts);
+    constructor({ tableName, pool, logger }: QueryOpts);
     create: (inputs: Partial<T>) => Promise<T>;
     where: (conditions: Conditions<T>) => ChainableQuery<T>;
     delete: (id: string) => Promise<boolean>;
@@ -115,10 +115,12 @@ declare module '@teamkeel/sdk/types' {
     BooleanConstraint,
     NumberConstraint
   } from '@teamkeel/sdk/constraints';
+  import { Logger } from '@teamkeel/sdk';
   import { DatabasePool } from 'slonik';
   export interface QueryOpts {
       tableName: string;
       pool: DatabasePool;
+      logger: Logger;
   }
   export interface ChainedQueryOpts<T> extends QueryOpts {
       conditions: Conditions<T>[];

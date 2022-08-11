@@ -101,7 +101,7 @@ const isComplexConstraint = (constraint: Constraints): boolean => {
   return constraint instanceof Object && constraint.constructor === Object;
 };
 
-export const buildCreateStatement = <T>(tableName: string, inputs: Partial<T>) : TaggedTemplateLiteralInvocation => {
+export const buildCreateStatement = <T>(tableName: string, inputs: Partial<T>) : TaggedTemplateLiteralInvocation<T> => {
   return sql`
     INSERT INTO ${sql.identifier([toSnakeCase(tableName)])} (${sql.join(Object.keys(inputs).map(toSnakeCase).map(f => sql.identifier([f])), sql`, `)})
     VALUES (${sql.join(Object.values(inputs), sql`, `)})
