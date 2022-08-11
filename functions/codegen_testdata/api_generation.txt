@@ -25,7 +25,8 @@ export class PostApi {
   constructor(pool: DatabasePool) {
     this.db = new Query<Post>({
       tableName: 'post',
-      pool
+      pool,
+      logger: queryLogger
     })
   }
 

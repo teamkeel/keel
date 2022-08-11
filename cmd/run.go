@@ -430,6 +430,7 @@ func RunServer(workingDir string, port int, dbConnectionString string) (*os.Proc
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 
 	cmd.Dir = workingDir
 

@@ -1,5 +1,7 @@
 import { Logger } from '@teamkeel/sdk'
 
+const queryLogger = new Logger()
+
 export interface API {
   models: {
     {{ .ModelApis }}
