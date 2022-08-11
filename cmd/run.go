@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -422,38 +423,23 @@ func RunServer(workingDir string, port int, dbConnectionString string) (*os.Proc
 	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
-		fmt.Print(err)
 		return nil, err
 	}
 
 	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
-	cmd.Env = append(cmd.Env, "ROARR_LOG=true")
 	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
 
 	cmd.Dir = workingDir
 
-	roar := exec.Command(filepath.Join("node_modules", ".bin", "roarr"), "pretty-print")
-	roar.Dir = workingDir
+	var buf bytes.Buffer
+	w := io.MultiWriter(os.Stdout, &buf)
 
-	cmdStdout, err := cmd.StdoutPipe()
+	cmd.Stdout = w
+	cmd.Stderr = w
 
-	if err != nil {
-		return nil, err
-	}
-
-	roar.Stdin = cmdStdout
-	roar.Stdout = os.Stdout
-	roar.Stderr = os.Stderr
-
-	err = roar.Start()
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = cmd.Start()
+	err := cmd.Start()
 
 	if err != nil {
 		return nil, err

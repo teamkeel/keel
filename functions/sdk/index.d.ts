@@ -24,11 +24,14 @@ declare module '@teamkeel/sdk/constraints' {
 declare module '@teamkeel/sdk/index' {
   import Query, { ChainableQuery } from '@teamkeel/sdk/query';
   import * as QueryConstraints from '@teamkeel/sdk/constraints';
-  import Logger from '@teamkeel/sdk/logger';
+  import Logger, {
+    ConsoleTransport,
+    Level as LogLevel
+  } from '@teamkeel/sdk/logger';
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   export * from '@teamkeel/client';
-  export { Query, QueryConstraints, ChainableQuery, Logger };
+  export { Query, QueryConstraints, ChainableQuery, Logger, ConsoleTransport, LogLevel };
 }
 
 declare module '@teamkeel/sdk/logger' {
@@ -44,7 +47,7 @@ declare module '@teamkeel/sdk/logger' {
     log: (msg: Msg, level: Level, options: LoggerOptions) => void
   }
   export interface LoggerOptions {
-    transport: Transport
+    transport?: Transport
     colorize?: boolean
   }
 
@@ -55,7 +58,7 @@ declare module '@teamkeel/sdk/logger' {
   export default class Logger {
     private readonly options : LoggerOptions;
   
-    constructor(opts: LoggerOptions);
+    constructor(opts?: LoggerOptions);
   
     log: (msg: Msg, level: Level) => void;
   }

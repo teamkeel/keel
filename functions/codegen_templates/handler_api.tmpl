@@ -1,1 +1,5 @@
-models: { {{ .ModelAPIs }} }
+models: { {{ .ModelAPIs }} },
+logger: new Logger({
+  colorize: true,
+  transport: new ConsoleTransport()
+})
