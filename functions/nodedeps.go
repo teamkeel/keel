@@ -19,7 +19,6 @@ var DEV_DEPENDENCIES = map[string]string{
 	"typescript":        "^4.7.4",
 	"@teamkeel/runtime": "*",
 	"@teamkeel/sdk":     "*",
-	"@roarr/cli":        "^5.4.0",
 }
 
 // We don't require any dependencies at the minute

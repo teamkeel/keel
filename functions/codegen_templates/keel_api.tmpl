@@ -1,5 +1,8 @@
+import { Logger } from '@teamkeel/sdk'
+
 export interface API {
   models: {
     {{ .ModelApis }}
-  }
+  },
+  logger: Logger
 }

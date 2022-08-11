@@ -49,12 +49,15 @@ func (gen *CodeGenerator) GenerateClientTypings() (r string) {
 	return r
 }
 
+// Static template where imports to various deps are declared
+// these imports will be used in many other places in the codegen
 func (gen *CodeGenerator) GenerateBaseImports() (r string) {
 	r += renderTemplate(TemplateBaseImports, map[string]interface{}{})
 
 	return r
 }
 
+// To contain shared types and low level implementation types.
 func (gen *CodeGenerator) GenerateBaseTypes() (r string) {
 	data := map[string]interface{}{
 		"Name":         "Timestamp",
@@ -75,6 +78,13 @@ func (gen *CodeGenerator) GenerateFunction(operationName string) string {
 	)
 }
 
+// 'Wrappers' is the collective term to describe utility functions to
+// create/delete/update/get/list entities of a particular model
+// e.g CreatePost(async(inputs, api)) => Promise<Post> is a wrapper func
+// that encapsulates the typings for inputs/api, and also enforces the return type
+// from the function.
+// These sorts of utility functions save the user from typing their custom functions
+// themselves
 func (gen *CodeGenerator) GenerateWrappers(typings bool) (str string) {
 	fns := proto.FilterOperations(gen.schema, func(op *proto.Operation) bool {
 		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
@@ -588,14 +598,22 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 	}
 
 	renderImports := func(sch *proto.Schema) (acc string) {
+		// Required dep for starting node server hosting custom code runtime
 		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 			"Name": "startRuntimeServer",
 			"Path": "@teamkeel/runtime",
 		}))
 
+		// Database pooling setup
 		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 			"Name": "{ createPool }",
 			"Path": "slonik",
+		}))
+
+		// Logger types
+		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+			"Name": "{ Logger, ConsoleTransport, LogLevel }",
+			"Path": "@teamkeel/sdk",
 		}))
 
 		models := lo.Filter(sch.Models, func(m *proto.Model, _ int) bool {
@@ -603,6 +621,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 		})
 
 		for _, model := range models {
+			// Import each model api by name
 			acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 				"Name": fmt.Sprintf("{ %sApi }", model.Name),
 				"Path": "@teamkeel/sdk",
@@ -692,6 +711,7 @@ type Typer interface {
 	IsRepeated() bool
 }
 
+// Maps the internal Keel field type to a corresponding valid typescript type
 func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 	switch t.GetType() {
 	case proto.Type_TYPE_UNKNOWN:
