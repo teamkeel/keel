@@ -74,7 +74,7 @@ export class ChainableQuery<T extends IDer> {
       return buildSelectStatement(this.tableName, this.conditions, this.orderClauses);
     }
 
-    return buildSelectStatement(this.tableName, this.conditions).sql;
+    return buildSelectStatement(this.tableName, this.conditions, this.orderClauses).sql;
   };
 
   private appendConditions(conditions: Conditions<T>) : void {
