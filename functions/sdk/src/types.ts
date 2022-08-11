@@ -31,3 +31,6 @@ export interface BuiltInFields {
   createdAt: string
   updatedAt: string
 }
+
+export type OrderDirection = 'ASC' | 'DESC'
+export type OrderClauses<T> = Record<keyof T, OrderDirection>

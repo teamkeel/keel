@@ -3,7 +3,11 @@ import {
   ValueExpression,
   TaggedTemplateLiteralInvocation
 } from 'slonik';
-import { Conditions, Constraints } from '../types';
+import {
+  Conditions,
+  Constraints,
+  OrderClauses
+} from '../types';
 
 import toSnakeCase from '../util/snakeCaser';
 
@@ -18,10 +22,11 @@ const LESS_THAN_OR_EQUAL_TO = 'lessThanOrEqualTo';
 const NOT_EQUAL = 'notEqual';
 const EQUAL = 'equal';
 
-export const buildSelectStatement = <T>(tableName: string, conditions: Conditions<T>[]) : TaggedTemplateLiteralInvocation<T> => {
+export const buildSelectStatement = <T>(tableName: string, conditions: Conditions<T>[], order?: OrderClauses<T>) : TaggedTemplateLiteralInvocation<T> => {
   const ands : ValueExpression[] = [];
   const hasConditions = conditions.length > 0;
-  const baseQuery = sql`SELECT * FROM ${sql.identifier([toSnakeCase(tableName)])}`;
+  const hasOrder = Object.keys(order).length > 0;
+  let query = sql`SELECT * FROM ${sql.identifier([toSnakeCase(tableName)])}`;
 
   if (hasConditions) {
     conditions.forEach((condition) => {
@@ -73,7 +78,6 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
             default:
                 // todo: handle unrecognised
             }
-
           });
         } else {
           // todo: make this better
@@ -91,10 +95,16 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
 
     const whereSqlToken = sql.join(ands, sql` OR `);
   
-    return sql`${baseQuery} WHERE ${whereSqlToken}`;
+    query = sql`${query} WHERE ${whereSqlToken}`;
   }
 
-  return baseQuery; 
+  if (hasOrder) {
+    const orderClauses = Object.entries(order).map(([key, value]) => sql.literalValue(`${key} ${value}`));
+    const orderBy = sql.join(orderClauses, sql`,`);
+    query = sql`${query} ORDER BY ${orderBy}`;
+  }
+
+  return query; 
 };
 
 const isComplexConstraint = (constraint: Constraints): boolean => {
