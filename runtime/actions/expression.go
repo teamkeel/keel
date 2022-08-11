@@ -8,8 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/expressions"
 )
 
-// interpretExpression examines the given expression, in order to work out how a gorm WHERE clause
-// should be specified.
+// interpretExpression examines the given expression, in order to work out how to construct a gorm WHERE clause.
 //
 // The ONLY form we support at the moment in this infant version is this: "person.name == name"
 //
@@ -60,8 +59,7 @@ func interpretExpression(
 
 	// Make sure the first fragment in the LHS is the name of the model of which this operation is part.
 	// e.g. "person" in the example above.
-	modelTarget := lhs.Ident.Fragments[0].Fragment
-	modelTarget = strcase.ToCamel(modelTarget)
+	modelTarget := strcase.ToCamel(lhs.Ident.Fragments[0].Fragment)
 	if modelTarget != operation.ModelName {
 		return "", nil, fmt.Errorf("can only handle the first LHS fragment referencing the Operation's model, have: %s", modelTarget)
 	}
