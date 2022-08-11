@@ -24,12 +24,43 @@ declare module '@teamkeel/sdk/constraints' {
 declare module '@teamkeel/sdk/index' {
   import Query, { ChainableQuery } from '@teamkeel/sdk/query';
   import * as QueryConstraints from '@teamkeel/sdk/constraints';
+  import Logger from '@teamkeel/sdk/logger';
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   export * from '@teamkeel/client';
-  export { Query, QueryConstraints, ChainableQuery };
-
+  export { Query, QueryConstraints, ChainableQuery, Logger };
 }
+
+declare module '@teamkeel/sdk/logger' {
+  export enum Level {
+    Info = 'info',
+    Error = 'error',
+    Debug = 'debug',
+    Warn = 'warn'
+  }
+  type Msg = string | boolean | undefined | null | number
+
+  export interface Transport {
+    log: (msg: Msg, level: Level, options: LoggerOptions) => void
+  }
+  export interface LoggerOptions {
+    transport: Transport
+    colorize?: boolean
+  }
+
+  export class ConsoleTransport implements Transport {
+    log: (msg: Msg, level: Level, options: LoggerOptions) => void;
+  }
+
+  export default class Logger {
+    private readonly options : LoggerOptions;
+  
+    constructor(opts: LoggerOptions);
+  
+    log: (msg: Msg, level: Level) => void;
+  }
+}
+
 declare module '@teamkeel/sdk/query' {
   import { TaggedTemplateLiteralInvocation } from 'slonik';
   import {
