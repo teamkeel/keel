@@ -54,9 +54,14 @@ export class PostApi {
     return this.db.where(query as any).all();
   }
 }
+import { Logger } from '@teamkeel/sdk'
+
+const queryLogger = new Logger()
+
 export interface API {
   models: {
     post: PostApi
 
-  }
+  },
+  logger: Logger
 }

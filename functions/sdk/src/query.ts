@@ -46,7 +46,7 @@ export class ChainableQuery<T extends IDer> {
   // All causes a query to be executed, and all of the results matching the conditions
   // will be returned
   all = async () : Promise<T[]> => {
-    const sql = buildSelectStatement<T>(this.tableName, this.conditions);
+    const sql = buildSelectStatement<T>(this.tableName, this.conditions, this.orderClauses);
 
     const result = await this.execute(sql);
 
@@ -71,10 +71,10 @@ export class ChainableQuery<T extends IDer> {
   // Returns the SQL string representing the query
   sql = ({ asAst }: SqlOptions) : string | TaggedTemplateLiteralInvocation<T> => {
     if (asAst) {
-      return buildSelectStatement(this.tableName, this.conditions);
+      return buildSelectStatement(this.tableName, this.conditions, this.orderClauses);
     }
 
-    return buildSelectStatement(this.tableName, this.conditions).sql;
+    return buildSelectStatement(this.tableName, this.conditions, this.orderClauses).sql;
   };
 
   private appendConditions(conditions: Conditions<T>) : void {
