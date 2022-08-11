@@ -32,6 +32,8 @@ const startRuntimeServer = ({ functions, api }: Config) => {
 
         res.write(JSON.stringify(result))
       } catch(e) {
+        console.error(e)
+        
         if (e instanceof Error) {
           const { message } = e
 
