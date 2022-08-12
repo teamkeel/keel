@@ -8,59 +8,102 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/expressions"
+	"gorm.io/gorm"
 )
 
+// Get implements a Keel Get Action.
+// In quick overview this means generating a SQL query
+// based on the Get operation's Inputs and Where clause,
+// running that query, and returning the results.
 func Get(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
 	args map[string]any) (interface{}, error) {
 
-	model := proto.FindModel(schema.Models, operation.ModelName)
-
-	// If there is a where clause, there can be no inputs, but we are not
-	// dealing with that case.
-	expectedInput := operation.Inputs[0]
-
-	// todo - where clause
-
-	// todo: do we need name case coercion of the name?
-
-	// todo: remind self if should be looking at target, not name, and when so? Or is it already resolved in proto.
-
-	expectedInputIdentifier := expectedInput.Target[0]
-	inputValue, ok := args[expectedInputIdentifier]
-	if !ok {
-		return nil, fmt.Errorf("missing argument: %s", expectedInputIdentifier)
-	}
-
-	// do we need to unpack the inputValue from the arg?
-
-	// Todo: some argument types need mapping to different database types
-
-	// Todo: should we validate the type of the values?, or let postgres object to them later?
-
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	result := map[string]any{}
+	model := proto.FindModel(schema.Models, operation.ModelName)
+
 	tableName := strcase.ToSnake(model.Name)
-	columnName := strcase.ToSnake(expectedInputIdentifier)
-	w := fmt.Sprintf("%s = ?", columnName)
-	tx := db.Table(tableName).Where(w, inputValue).Find(&result)
+
+	// Initialise a query on the table = to which we'll add Where clauses.
+	tx := db.Table(tableName)
+
+	// Add the WHERE clauses derived from IMPLICIT inputs.
+	tx, err = addInputFilters(operation, args, tx)
+	if err != nil {
+		return nil, err
+	}
+	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
+	tx, err = addWhereFilters(operation, schema, args, tx)
+	if err != nil {
+		return nil, err
+	}
+
+	// Todo: should we validate the type of the values?, or let postgres object to them later?
+
+	// Execute the SQL query.
+	result := []map[string]any{}
+	tx = tx.Find(&result)
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	// TODO.
-	// The gorm docs say that Find() should raise ErrRecordNotFound, but when used as
-	// above it does not - for reasons I don't understand.
-	// However it seems the RowsAffected field can tell us.
-	//
-	// See: https://gorm.io/docs/query.html#Retrieving-a-single-object
-	if tx.RowsAffected == 0 {
-		return nil, errors.New("No records found for Get() operation")
+	n := len(result)
+	if n == 0 {
+		return nil, errors.New("no records found for Get() operation")
 	}
-	return toLowerCamelMap(result), nil
+	if n > 1 {
+		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
+	}
+	return toLowerCamelMap(result[0]), nil
+}
+
+// addInputFilters adds Where clauses for all the operation inputs, which have type
+// IMPLICIT. E.g. "get getPerson(id)"
+func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
+	for _, input := range op.Inputs {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
+		identifier := input.Target[0]
+		valueFromArg, ok := args[identifier]
+		if !ok {
+			return nil, fmt.Errorf("missing argument: %s", identifier)
+		}
+		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
+		tx = tx.Where(w, valueFromArg)
+	}
+	return tx, nil
+}
+
+// addWhereFilters adds Where clauses for all the operation's Where clauses.
+// E.g.
+// 	get getPerson(name: Text) {
+//		@where(person.name == name)
+//	}
+func addWhereFilters(
+	op *proto.Operation,
+	schema *proto.Schema,
+	args map[string]any,
+	tx *gorm.DB) (*gorm.DB, error) {
+	for _, e := range op.WhereExpressions {
+		expr, err := expressions.Parse(e.Source)
+		if err != nil {
+			return nil, err
+		}
+		// This call gives us the column and the value to use like this:
+		// tx.Where(fmt.Sprintf("%s = ?", column), value)
+		identifier, exprValue, err := interpretExpression(expr, op, schema, args)
+		if err != nil {
+			return nil, err
+		}
+		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
+		tx = tx.Where(w, exprValue)
+	}
+	return tx, nil
 }

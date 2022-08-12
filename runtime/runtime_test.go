@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -32,12 +31,15 @@ func TestRuntime(t *testing.T) {
 		&gorm.Config{})
 	require.NoError(t, err)
 
+	var skip string = "" // Name of test case you want to skip, or ""
+	var only = ""        // Name of test case you want isolated and alone, or ""
+
 	for _, tCase := range testCases {
 
-		// If there's an env var set to isolate one test - then only
-		// run that one.
-		isolate := os.Getenv("ISOLATE-TEST")
-		if isolate != "" && tCase.name != isolate {
+		if only != "" && tCase.name != only {
+			continue
+		}
+		if skip == tCase.name {
 			continue
 		}
 
@@ -195,11 +197,31 @@ func initRow(with map[string]any) map[string]any {
 const basicSchema string = `
 	model Person {
 		fields {
-			name Text
+			name Text 
 		}
 		operations {
-			get getPerson(id)
+			get getPerson(id) // short-form filter criterion
 			create createPerson() with (name)
+		}
+	}
+	api Test {
+		@graphql
+		models {
+			Person
+		}
+	}
+`
+
+// getWhere is a simple schema that contains a minimal WHERE clause.
+const getWhere string = `
+	model Person {
+		fields {
+			name Text @unique
+		}
+		operations {
+			get getPerson(name: Text) {
+				@where(person.name == name)
+			}
 		}
 	}
 	api Test {
@@ -326,7 +348,7 @@ var testCases = []testCase{
 		},
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "No records found for Get() operation", errors[0].Message)
+			require.Equal(t, "no records found for Get() operation", errors[0].Message)
 		},
 	},
 	{
@@ -400,6 +422,39 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getMulti.aText", "Petunia")
 			rtt.AssertValueAtPath(t, data, "getMulti.aBool", true)
 			rtt.AssertValueAtPath(t, data, "getMulti.aNumber", float64(8086))
+		},
+	},
+	{
+		name:       "get_where",
+		keelSchema: getWhere,
+		gqlOperation: `
+			query GetPerson($name: String!) {
+				getPerson(input: {name: $name}) {
+				id, name,
+			}
+		}
+		`,
+		variables: map[string]any{
+			"name": "Sue",
+		},
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":   "41",
+					"name": "Fred",
+				}),
+				initRow(map[string]any{
+					"id":   "42",
+					"name": "Sue",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("person").Create(row).Error)
+			}
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getPerson.id", "42")
+			rtt.AssertValueAtPath(t, data, "getPerson.name", "Sue")
 		},
 	},
 }
