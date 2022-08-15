@@ -1,3 +1,10 @@
+## [0.92.4](https://github.com/teamkeel/keel/compare/v0.92.3...v0.92.4) (2022-08-15)
+
+
+### Bug Fixes
+
+* haschanges was the wrong way around ([f8ab479](https://github.com/teamkeel/keel/commit/f8ab479d5646188d73c35612c073f7cd4d8b0717))
+
 ## [0.92.3](https://github.com/teamkeel/keel/compare/v0.92.2...v0.92.3) (2022-08-11)
 
 
