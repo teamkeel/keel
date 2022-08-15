@@ -43,6 +43,11 @@ type Migrations struct {
 	SQL string
 }
 
+// HasChanges returns true if the migrations have changes to be applied
+func (m *Migrations) HasChanges() bool {
+	return m.SQL == ""
+}
+
 // Apply executes the migrations against the database
 func (m *Migrations) Apply(db *gorm.DB) error {
 
