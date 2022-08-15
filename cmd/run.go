@@ -167,7 +167,7 @@ var runCmd = &cobra.Command{
 			fmt.Println("✅ Schema is valid")
 
 			m := migrations.New(protoSchema, currSchema)
-			if m.SQL != "" {
+			if m.HasChanges() {
 				fmt.Println("💿 Applying migrations")
 				err = m.Apply(db)
 				if err != nil {
