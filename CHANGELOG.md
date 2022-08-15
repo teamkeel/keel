@@ -1,3 +1,10 @@
+## [0.92.5](https://github.com/teamkeel/keel/compare/v0.92.4...v0.92.5) (2022-08-15)
+
+
+### Bug Fixes
+
+* fix validate command ([aeb7fc1](https://github.com/teamkeel/keel/commit/aeb7fc1991d90937f454113217972751b6b8dc2b))
+
 ## [0.92.4](https://github.com/teamkeel/keel/compare/v0.92.3...v0.92.4) (2022-08-15)
 
 
