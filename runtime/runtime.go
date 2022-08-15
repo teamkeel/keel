@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/graphql-go/graphql"
+	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -65,6 +66,8 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 		if err != nil {
 			return nil, err
 		}
+
+		litter.Dump(params)
 
 		result := graphql.Do(graphql.Params{
 			Schema:         *gqlSchema,

@@ -173,6 +173,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+			return actions.List(p.Context, op, schema, inputMap)
+		}
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		field.Type = mk.makeConnectionType(outputType)

@@ -31,8 +31,8 @@ func TestRuntime(t *testing.T) {
 		&gorm.Config{})
 	require.NoError(t, err)
 
-	var skip string = "" // Name of test case you want to skip, or ""
-	var only = ""        // Name of test case you want isolated and alone, or ""
+	var skip string = ""              // Name of test case you want to skip, or ""
+	var only = "list_operation_happy" // Name of test case you want isolated and alone, or ""
 
 	for _, tCase := range testCases {
 
@@ -86,6 +86,7 @@ func TestRuntime(t *testing.T) {
 
 			// Assemble the query to send from the test case data.
 			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
+			fmt.Println(reqBody)
 			request := Request{
 				Context: runtimectx.WithDatabase(context.Background(), testDB),
 				URL: url.URL{
@@ -197,11 +198,12 @@ func initRow(with map[string]any) map[string]any {
 const basicSchema string = `
 	model Person {
 		fields {
-			name Text 
+			fibble Text 
 		}
 		operations {
-			get getPerson(id) // short-form filter criterion
-			create createPerson() with (name)
+			get getPerson(id)
+			create createPerson() with (fibble)
+			list listPeople(fibble)
 		}
 	}
 	api Test {
@@ -456,5 +458,49 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getPerson.id", "42")
 			rtt.AssertValueAtPath(t, data, "getPerson.name", "Sue")
 		},
+	},
+	{
+		name:       "list_operation_happy",
+		keelSchema: basicSchema,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"fibble": "Sue",
+					"id":     "41",
+				}),
+				initRow(map[string]any{
+					"fibble": "Fred",
+					"id":     "42",
+				}),
+				initRow(map[string]any{
+					"fibble": "Francis",
+					"id":     "43",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("person").Create(row).Error)
+			}
+		},
+		variables: map[string]any{
+			// "input": map[string]any{
+			// 	"first": 10,
+			// 	"where": map[string]any{
+			// 		"fibble": map[string]any{
+			// 			"startsWith": "Fr",
+			// 		},
+			// 	},
+			// },
+		},
+		gqlOperation: `
+			query ListPeople {
+				listPeople(input: { first: 10, where: { fibble: { equals: "Fr" } } })
+				{
+					edges {
+					  node {
+						id
+					  }
+					}
+				  }
+		 	}`,
 	},
 }

@@ -30,6 +30,7 @@ require (
 
 require (
 	github.com/aybabtme/flatjson v0.1.1 // indirect
+	github.com/sanity-io/litter v1.5.5 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
 
