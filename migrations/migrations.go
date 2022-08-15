@@ -45,7 +45,7 @@ type Migrations struct {
 
 // HasChanges returns true if the migrations have changes to be applied
 func (m *Migrations) HasChanges() bool {
-	return m.SQL == ""
+	return m.SQL != ""
 }
 
 // Apply executes the migrations against the database
