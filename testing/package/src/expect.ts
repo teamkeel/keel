@@ -1,4 +1,4 @@
-import { AssertionFailure } from "./errors"
+import { AssertionFailure } from './errors'
 
 const expect = {
   equal: (actual: any, expected: any) : void => {

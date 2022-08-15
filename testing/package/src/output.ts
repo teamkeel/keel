@@ -1,4 +1,4 @@
-import { TestName } from "types";
+import { TestName } from 'types'
 
 enum Status {
   Pass = 'pass',
@@ -15,18 +15,18 @@ export interface TestCaseResult {
 }
 
 export class TestResult {
-  private readonly testName: TestName;
-  private readonly status: Status;
-  private readonly actual: any;
-  private readonly expected: any;
+  private readonly testName: TestName
+  private readonly status: Status
+  private readonly actual: any
+  private readonly expected: any
 
   private constructor(status: Status, testName: string, actual?: any, expected?: any, err?: Error) {
-    this.testName = testName;
-    this.status = status;
+    this.testName = testName
+    this.status = status
     
     if (expected && actual) {
-      this.actual = actual;
-      this.expected = expected;
+      this.actual = actual
+      this.expected = expected
     }
   }
 
@@ -52,7 +52,7 @@ export class TestResult {
       base = { ...base, expected: this.expected, actual: this.actual }
     }
 
-    return base;
+    return base
   }
 
   toJSON = () => JSON.stringify(this.asObject())
