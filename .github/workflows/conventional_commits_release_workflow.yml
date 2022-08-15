@@ -38,6 +38,9 @@ jobs:
       - name: Install functions runtime publish dependencies
         run: cd functions/runtime && npm ci
 
+      - name: Install testing package publish dependencies
+        run: cd testing/package && npm ci
+
       - name: Generate wasm binary
         run: make wasm
 
