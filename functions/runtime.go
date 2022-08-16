@@ -13,6 +13,7 @@ import (
 
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -138,7 +139,7 @@ func (r *Runtime) GenerateClientPackageJson() error {
 }
 
 func (r *Runtime) ReconcilePackageJson() error {
-	packageJson, err := NewPackageJson(filepath.Join(r.WorkingDir, "package.json"))
+	packageJson, err := nodedeps.NewPackageJson(filepath.Join(r.WorkingDir, "package.json"))
 
 	if err != nil {
 		return err
