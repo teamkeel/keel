@@ -25,7 +25,7 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
+			packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"), nodedeps.PackageManagerPnpm)
 
 			require.NoError(t, err)
 
