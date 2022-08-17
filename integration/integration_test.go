@@ -39,6 +39,8 @@ func TestIntegration(t *gotest.T) {
 				// https://typestrong.org/ts-node/docs/swc/
 				"@swc/core":           "*",
 				"regenerator-runtime": "*",
+				"@types/node":         "*",
+				"typescript":          "*",
 			}, true)
 
 			require.NoError(t, err)
