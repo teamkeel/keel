@@ -47,8 +47,8 @@ func TestIntegration(t *gotest.T) {
 			require.NoError(t, err)
 
 			events := []*testing.Event{}
-			for event := range ch {
-				events = append(events, event)
+			for newEvents := range ch {
+				events = append(events, newEvents...)
 			}
 
 			actual, err := json.Marshal(events)

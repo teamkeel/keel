@@ -28,7 +28,7 @@ type Event struct {
 	TestName string `json:"testName"`
 }
 
-func Run(dir string) (<-chan *Event, error) {
+func Run(dir string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 
 	schema, err := builder.MakeFromDirectory(dir)
@@ -36,7 +36,7 @@ func Run(dir string) (<-chan *Event, error) {
 		return nil, err
 	}
 
-	ch := make(chan *Event)
+	ch := make(chan []*Event)
 
 	freePort, err := util.GetFreePort()
 
@@ -80,11 +80,9 @@ func Run(dir string) (<-chan *Event, error) {
 					}
 				}
 			default:
-				events := []Event{}
+				events := []*Event{}
 				json.Unmarshal(b, &events)
-				for _, e := range events {
-					ch <- &e
-				}
+				ch <- events
 				w.Write([]byte("ok"))
 			}
 		}),

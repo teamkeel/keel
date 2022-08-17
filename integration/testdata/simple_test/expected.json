@@ -1,3 +1,4 @@
 [
-  { "testName": "something", "status": "pass" }
+  { "testName": "it passes", "status": "pass" },
+  { "testName": "it fails", "status": "fail" }
 ]
