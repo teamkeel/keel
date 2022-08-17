@@ -15,10 +15,12 @@ import (
 )
 
 var DEV_DEPENDENCIES = map[string]string{
-	"@types/node":       "^18.0.6",
-	"typescript":        "^4.7.4",
-	"@teamkeel/runtime": "*",
-	"@teamkeel/sdk":     "*",
+	"@types/node":                      "^18.0.6",
+	"typescript":                       "^4.7.4",
+	"@teamkeel/runtime":                "*",
+	"@teamkeel/sdk":                    "*",
+	"slonik-interceptor-query-logging": "^1.4.7",
+	"slonik":                           "^27.0.0",
 }
 
 type PackageManager string
