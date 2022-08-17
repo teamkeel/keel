@@ -1,3 +1,10 @@
+# [0.94.0](https://github.com/teamkeel/keel/compare/v0.93.2...v0.94.0) (2022-08-17)
+
+
+### Features
+
+* bump all packages to next major ([#256](https://github.com/teamkeel/keel/issues/256)) ([cd32880](https://github.com/teamkeel/keel/commit/cd32880437e36b8ec48cfc9c0d45af11c2f614c1))
+
 ## [0.93.2](https://github.com/teamkeel/keel/compare/v0.93.1...v0.93.2) (2022-08-17)
 
 
