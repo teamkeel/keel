@@ -1,4 +1,4 @@
-import { TestName } from 'types'
+import { TestName } from './types'
 
 enum Status {
   Pass = 'pass',
