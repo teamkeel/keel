@@ -25,8 +25,10 @@ const (
 var TestIgnorePatterns []string = []string{"node_modules"}
 
 type Event struct {
-	Status   string `json:"status"`
-	TestName string `json:"testName"`
+	Status   string          `json:"status"`
+	TestName string          `json:"testName"`
+	Expected json.RawMessage `json:"expected,omitempty"`
+	Actual   json.RawMessage `json:"actual,omitempty"`
 }
 
 func Run(dir string) (<-chan []*Event, error) {
