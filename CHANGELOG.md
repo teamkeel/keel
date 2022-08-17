@@ -1,3 +1,10 @@
+## [0.93.1](https://github.com/teamkeel/keel/compare/v0.93.0...v0.93.1) (2022-08-17)
+
+
+### Bug Fixes
+
+* make testing package publish public ([#254](https://github.com/teamkeel/keel/issues/254)) ([373e621](https://github.com/teamkeel/keel/commit/373e6215039da471ac7cab21c85db85a21b5a0d5))
+
 # [0.93.0](https://github.com/teamkeel/keel/compare/v0.92.5...v0.93.0) (2022-08-16)
 
 
