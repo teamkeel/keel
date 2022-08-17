@@ -1,4 +1,4 @@
-import { TestCaseResult } from 'output'
+import { TestCaseResult } from './output'
 import fetch from 'node-fetch'
 
 export interface ReporterOptions {
