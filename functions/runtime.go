@@ -139,7 +139,7 @@ func (r *Runtime) GenerateClientPackageJson() error {
 }
 
 func (r *Runtime) ReconcilePackageJson() error {
-	packageJson, err := nodedeps.NewPackageJson(filepath.Join(r.WorkingDir, "package.json"))
+	packageJson, err := nodedeps.NewPackageJson(filepath.Join(r.WorkingDir, "package.json"), nodedeps.PackageManagerPnpm)
 
 	if err != nil {
 		return err

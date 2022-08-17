@@ -32,7 +32,7 @@ func TestNodeDeps(t *testing.T) {
 
 			packageJsonPath := filepath.Join(tmpDir, "package.json")
 
-			packageJson, err := nodedeps.NewPackageJson(packageJsonPath)
+			packageJson, err := nodedeps.NewPackageJson(packageJsonPath, nodedeps.PackageManagerPnpm)
 
 			require.NoError(t, err)
 

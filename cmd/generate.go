@@ -20,7 +20,7 @@ var generateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		schemaDir, _ := cmd.Flags().GetString("dir")
 
-		packageJson, err := nodedeps.NewPackageJson(filepath.Join(schemaDir, "package.json"))
+		packageJson, err := nodedeps.NewPackageJson(filepath.Join(schemaDir, "package.json"), nodedeps.PackageManagerPnpm)
 
 		if err != nil {
 			fmt.Println("⛔️ Could not create package.json automatically")
