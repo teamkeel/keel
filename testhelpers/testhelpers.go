@@ -2,15 +2,13 @@ package testhelpers
 
 import (
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	cp "github.com/otiai10/copy"
 )
 
-// WithTmpDir copies the contents of the src dir to a new temporary directory
-// The second parameter is a function where you can run your tests against the new tmp directory
-func WithTmpDir(dir string, testBody func(workingDir string)) (string, error) {
+// WithTmpDir copies the contents of the src dir to a new temporary directory, returning the tmp dir path
+func WithTmpDir(dir string) (string, error) {
 	base := filepath.Base(dir)
 
 	tmpDir, err := ioutil.TempDir("", base)
@@ -25,9 +23,5 @@ func WithTmpDir(dir string, testBody func(workingDir string)) (string, error) {
 		return "", err
 	}
 
-	testBody(tmpDir)
-
-	defer os.RemoveAll(tmpDir)
-
-	return "", nil
+	return tmpDir, nil
 }

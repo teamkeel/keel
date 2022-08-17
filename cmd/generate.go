@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/functions"
+	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/schema"
 )
 
@@ -19,7 +20,7 @@ var generateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		schemaDir, _ := cmd.Flags().GetString("dir")
 
-		packageJson, err := functions.NewPackageJson(filepath.Join(schemaDir, "package.json"))
+		packageJson, err := nodedeps.NewPackageJson(filepath.Join(schemaDir, "package.json"))
 
 		if err != nil {
 			fmt.Println("⛔️ Could not create package.json automatically")
