@@ -1,4 +1,4 @@
-import { test, expect, runAllTests } from '@teamkeel/testing'
+import { test, expect } from '@teamkeel/testing'
 
 test('it passes', () => {
   expect.equal(1, 1)
@@ -7,5 +7,3 @@ test('it passes', () => {
 test('it fails', () => {
   expect.equal(1, 2)
 })
-
-runAllTests({ parentPort: parseInt( process.env.HOST_PORT, 10) })

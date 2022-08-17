@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
@@ -104,6 +105,12 @@ func Run(dir string) (<-chan []*Event, error) {
 				continue
 			}
 
+			err := WrapTestFileWithShim(freePort, filepath.Join(dir, file))
+
+			if err != nil {
+				panic(err)
+			}
+
 			// We need to pass the skipIgnore flag to ts-node as by default
 			// ts-node does not transpile stuff in node_modules
 			// Given we are publishing a pure typescript module in the form of
@@ -116,9 +123,11 @@ func Run(dir string) (<-chan []*Event, error) {
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 
-			err := cmd.Run()
+			err = cmd.Run()
 
-			fmt.Print(err)
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		srv.Close()
