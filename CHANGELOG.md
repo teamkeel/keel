@@ -1,3 +1,10 @@
+## [0.93.2](https://github.com/teamkeel/keel/compare/v0.93.1...v0.93.2) (2022-08-17)
+
+
+### Bug Fixes
+
+* use common js setup for testing package ([#255](https://github.com/teamkeel/keel/issues/255)) ([f0f0cc6](https://github.com/teamkeel/keel/commit/f0f0cc65fc498d242ea2d53766e670fcc0913efd))
+
 ## [0.93.1](https://github.com/teamkeel/keel/compare/v0.93.0...v0.93.1) (2022-08-17)
 
 
