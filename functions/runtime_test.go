@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"testing"
 	"time"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
+	"github.com/teamkeel/keel/util"
 )
 
 type PostResponse struct {
@@ -29,7 +31,7 @@ type PostResponse struct {
 }
 
 func TestAllCases(t *testing.T) {
-	testCases, err := ioutil.ReadDir("runtime_testdata")
+	testCases, err := ioutil.ReadDir("testdata")
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
@@ -39,7 +41,7 @@ func TestAllCases(t *testing.T) {
 
 		t.Run(testCase.Name(), func(t *testing.T) {
 			// The base working directory - in this case, the test case directory
-			testDir := filepath.Join("runtime_testdata", testCase.Name())
+			testDir := filepath.Join("testdata", testCase.Name())
 			builder := schema.Builder{}
 
 			schema, err := builder.MakeFromDirectory(testDir)
@@ -65,7 +67,13 @@ func TestAllCases(t *testing.T) {
 
 			assert.True(t, typecheckResult, output)
 
-			port := 3002
+			p, err := util.GetFreePort()
+
+			require.NoError(t, err)
+
+			freePort, err := strconv.Atoi(p)
+
+			require.NoError(t, err)
 
 			dbConnString := fmt.Sprintf(
 				"postgresql://%s:%s@%s:%s/%s",
@@ -77,7 +85,7 @@ func TestAllCases(t *testing.T) {
 			)
 			// Runs the node. js server
 			// the entry point will be {app}/node_modules/@teamkeel/client/dist/handler.js
-			process, err := RunServer(workingDir, port, dbConnString)
+			process, err := RunServer(workingDir, freePort, dbConnString)
 
 			require.NoError(t, err)
 
@@ -97,7 +105,7 @@ func TestAllCases(t *testing.T) {
 					panic(err)
 				}
 
-				res, err := http.Post(fmt.Sprintf("http://localhost:%d/createPost", port), "application/json", bytes.NewBuffer(j))
+				res, err := http.Post(fmt.Sprintf("http://localhost:%d/createPost", freePort), "application/json", bytes.NewBuffer(j))
 
 				if err != nil {
 					panic(err)
