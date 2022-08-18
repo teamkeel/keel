@@ -67,5 +67,4 @@ func TestIntegration(t *gotest.T) {
 			assert.Fail(t, "actual test output did not match expected", explanation)
 		})
 	}
-
 }

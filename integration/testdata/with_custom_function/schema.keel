@@ -1,0 +1,10 @@
+model Person {
+    fields {
+        title Text
+    }
+
+    functions {
+        get getPerson(id)
+        create createPerson() with (title)
+    }
+}

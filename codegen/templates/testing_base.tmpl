@@ -1,0 +1,20 @@
+// We reuse various things from the client package for interacting with the db
+import * as Client from '@teamkeel/client'
+import { createPool, DatabasePool } from 'slonik'
+import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging'
+
+const cs = process.env.DB_CONN!;
+
+const interceptors = [
+  createQueryLoggingInterceptor()
+];
+
+let pool : DatabasePool | null = null
+
+const setupPool = async () => {
+  pool = await createPool(cs)
+}
+
+setupPool()
+
+{{ .TestingModelApis }}

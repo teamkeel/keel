@@ -1,8 +1,11 @@
 package testing
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -11,6 +14,8 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/samber/lo"
+	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -42,10 +47,16 @@ func Run(dir string) (<-chan []*Event, error) {
 
 	ch := make(chan []*Event)
 
-	freePort, err := util.GetFreePort()
+	reportingPort, err := util.GetFreePort()
 
 	if err != nil {
 		return nil, err
+	}
+
+	_, dbConnInfo, err := database.Start(false)
+
+	if err != nil {
+		panic(err)
 	}
 
 	customFunctionsRuntime, err := functions.NewRuntime(schema, dir)
@@ -60,7 +71,40 @@ func Run(dir string) (<-chan []*Event, error) {
 		return nil, err
 	}
 
-	// TODO: Generate custom function lib
+	var ops []*proto.Operation = []*proto.Operation{}
+
+	for _, model := range schema.Models {
+		ops = append(ops, model.Operations...)
+	}
+
+	hasCustomFunctions := lo.SomeBy(ops, func(o *proto.Operation) bool {
+		return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	})
+
+	var customFunctionRuntimeProcess *os.Process
+
+	if hasCustomFunctions {
+		customFunctionRuntimePort, err := util.GetFreePort()
+
+		if err != nil {
+			panic(err)
+		}
+
+		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, dbConnInfo.String())
+
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	injector := NewInjector(dir, schema)
+
+	err = injector.Inject()
+
+	if err != nil {
+		panic(err)
+	}
+
 	// TODO: Generate testing lib
 	// TODO: Start database using cmd/database.Start(true)
 	// TODO: Run migrations
@@ -68,7 +112,7 @@ func Run(dir string) (<-chan []*Event, error) {
 
 	// Server for node test process to talk to
 	srv := http.Server{
-		Addr: fmt.Sprintf(":%s", freePort),
+		Addr: fmt.Sprintf(":%s", reportingPort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			b, _ := ioutil.ReadAll(r.Body)
 
@@ -120,7 +164,7 @@ func Run(dir string) (<-chan []*Event, error) {
 				continue
 			}
 
-			err := WrapTestFileWithShim(freePort, filepath.Join(dir, file))
+			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
 
 			if err != nil {
 				panic(err)
@@ -133,7 +177,15 @@ func Run(dir string) (<-chan []*Event, error) {
 			// ref: https://github.com/TypeStrong/ts-node#skipping-node_modules
 			cmd := exec.Command("./node_modules/.bin/ts-node", "--skipIgnore", "--swc", file)
 			cmd.Env = os.Environ()
-			cmd.Env = append(cmd.Env, fmt.Sprintf("HOST_PORT=%s", freePort))
+
+			// The HOST_PORT is the port of the "reporting server" - the reporting server's job
+			// is to receive messages from the node process about passing / failing tests
+			cmd.Env = append(cmd.Env, fmt.Sprintf("HOST_PORT=%s", reportingPort))
+
+			// We need to pass across the connection string to the database
+			// so that slonik (query builder lib) can create a database pool which will be used
+			// by the generated Query API code
+			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnInfo.String()))
 			cmd.Dir = dir
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
@@ -145,9 +197,44 @@ func Run(dir string) (<-chan []*Event, error) {
 			}
 		}
 
+		// Cleanup
 		srv.Close()
+		if customFunctionRuntimeProcess != nil {
+			customFunctionRuntimeProcess.Kill()
+		}
+		database.Stop()
 		close(ch)
 	}()
 
 	return ch, nil
+}
+
+func RunServer(workingDir string, port string, dbConnectionString string) (*os.Process, error) {
+	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
+
+	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+
+	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
+
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%s", port))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
+
+	cmd.Dir = workingDir
+
+	var buf bytes.Buffer
+	w := io.MultiWriter(os.Stdout, &buf)
+
+	cmd.Stdout = w
+	cmd.Stderr = w
+
+	err := cmd.Start()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd.Process, nil
 }

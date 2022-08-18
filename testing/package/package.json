@@ -18,7 +18,9 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "node-fetch": "^2.6.7",
+    "slonik": "^30.1.2",
+    "slonik-interceptor-query-logging": "^1.4.7"
   },
   "publishConfig": {
     "access": "public"

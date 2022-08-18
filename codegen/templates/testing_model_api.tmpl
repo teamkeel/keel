@@ -1,0 +1,13 @@
+// We want to extend the base {{ .Name }}Api implementation from 
+// @teamkeel/client, but make it so that the database pool is already
+// initialised when you import the class from the @teamkeel/testing
+// package instead of its normal invocation via the handler
+
+class {{ .Name }}TestingApi extends Client.{{ .Name }}Api {
+  static init() {
+    return new Client.{{ .Name }}Api(pool!)
+  }
+}
+
+export const {{ .Name }} = {{ .Name }}TestingApi.init()
+
