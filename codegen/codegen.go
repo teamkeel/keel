@@ -1,4 +1,4 @@
-package functions
+package codegen
 
 import (
 	"bytes"
@@ -12,20 +12,20 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-type CodeGenerator struct {
+type Generator struct {
 	schema *proto.Schema
 }
 
-//go:embed codegen_templates/*.tmpl
+//go:embed templates/*.tmpl
 var templates embed.FS
 
-func NewCodeGenerator(schema *proto.Schema) *CodeGenerator {
-	return &CodeGenerator{
+func NewGenerator(schema *proto.Schema) *Generator {
+	return &Generator{
 		schema: schema,
 	}
 }
 
-func (gen *CodeGenerator) GenerateClientCode() (r string) {
+func (gen *Generator) GenerateClientCode() (r string) {
 	r += gen.GenerateBaseTypes()
 	r += gen.GenerateBaseImports()
 	r += gen.GenerateModels()
@@ -37,7 +37,7 @@ func (gen *CodeGenerator) GenerateClientCode() (r string) {
 	return r
 }
 
-func (gen *CodeGenerator) GenerateClientTypings() (r string) {
+func (gen *Generator) GenerateClientTypings() (r string) {
 	r += gen.GenerateBaseTypes()
 	r += gen.GenerateBaseImports()
 	r += gen.GenerateModels()
@@ -51,14 +51,14 @@ func (gen *CodeGenerator) GenerateClientTypings() (r string) {
 
 // Static template where imports to various deps are declared
 // these imports will be used in many other places in the codegen
-func (gen *CodeGenerator) GenerateBaseImports() (r string) {
+func (gen *Generator) GenerateBaseImports() (r string) {
 	r += renderTemplate(TemplateBaseImports, map[string]interface{}{})
 
 	return r
 }
 
 // To contain shared types and low level implementation types.
-func (gen *CodeGenerator) GenerateBaseTypes() (r string) {
+func (gen *Generator) GenerateBaseTypes() (r string) {
 	data := map[string]interface{}{
 		"Name":         "Timestamp",
 		"ResolvedType": "string",
@@ -69,7 +69,7 @@ func (gen *CodeGenerator) GenerateBaseTypes() (r string) {
 	return r
 }
 
-func (gen *CodeGenerator) GenerateFunction(operationName string) string {
+func (gen *Generator) GenerateFunction(operationName string) string {
 	return renderTemplate(
 		TemplateCustomFunction,
 		map[string]interface{}{
@@ -85,7 +85,7 @@ func (gen *CodeGenerator) GenerateFunction(operationName string) string {
 // from the function.
 // These sorts of utility functions save the user from typing their custom functions
 // themselves
-func (gen *CodeGenerator) GenerateWrappers(typings bool) (str string) {
+func (gen *Generator) GenerateWrappers(typings bool) (str string) {
 	fns := proto.FilterOperations(gen.schema, func(op *proto.Operation) bool {
 		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 	})
@@ -188,7 +188,7 @@ func (gen *CodeGenerator) GenerateWrappers(typings bool) (str string) {
 	return str
 }
 
-func (gen *CodeGenerator) GenerateEnums(typings bool) (r string) {
+func (gen *Generator) GenerateEnums(typings bool) (r string) {
 	for _, enum := range gen.schema.Enums {
 
 		renderValues := func(values []*proto.EnumValue) (v string) {
@@ -237,7 +237,7 @@ func (gen *CodeGenerator) GenerateEnums(typings bool) (r string) {
 	return r
 }
 
-func (gen *CodeGenerator) GenerateModels() (r string) {
+func (gen *Generator) GenerateModels() (r string) {
 	renderFields := func(fields []*proto.Field) (acc string) {
 		for i, field := range fields {
 			if i == 0 {
@@ -276,7 +276,7 @@ func (gen *CodeGenerator) GenerateModels() (r string) {
 
 var APIName = "API"
 
-func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
+func (gen *Generator) GenerateAPIs(typings bool) (r string) {
 	renderModelApiDefs := func(models []*proto.Model) (acc string) {
 		modelsToUse := lo.Filter(models, func(model *proto.Model, _ int) bool {
 			return model.Name != TSTypeIdentity
@@ -415,7 +415,7 @@ func (gen *CodeGenerator) GenerateAPIs(typings bool) (r string) {
 	return r
 }
 
-func (gen *CodeGenerator) GenerateInputs(typings bool) (r string) {
+func (gen *Generator) GenerateInputs(typings bool) (r string) {
 	renderInputFields := func(inputs []*proto.OperationInput, filter func(input *proto.OperationInput) bool) (acc string) {
 		filtered := []*proto.OperationInput{}
 
@@ -538,7 +538,7 @@ func (gen *CodeGenerator) GenerateInputs(typings bool) (r string) {
 	return r
 }
 
-func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
+func (gen *Generator) GenerateEntryPoint() (r string) {
 	renderFunctions := func(sch *proto.Schema) (acc string) {
 		for _, model := range sch.Models {
 			functions := lo.Filter(model.Operations, func(o *proto.Operation, _ int) bool {
@@ -612,7 +612,7 @@ func (gen *CodeGenerator) GenerateEntryPoint() (r string) {
 
 		// Logger types
 		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
-			"Name": "{ Logger, ConsoleTransport, LogLevel }",
+			"Name": "{ Logger }",
 			"Path": "@teamkeel/sdk",
 		}))
 
@@ -787,7 +787,7 @@ var (
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {
-	template, err := template.ParseFS(templates, fmt.Sprintf("codegen_templates/%s.tmpl", name))
+	template, err := template.ParseFS(templates, fmt.Sprintf("templates/%s.tmpl", name))
 	if err != nil {
 		panic(err)
 	}

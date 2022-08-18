@@ -29,7 +29,7 @@ type PostResponse struct {
 }
 
 func TestAllCases(t *testing.T) {
-	testCases, err := ioutil.ReadDir("runtime_testdata")
+	testCases, err := ioutil.ReadDir("testdata")
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
@@ -39,7 +39,7 @@ func TestAllCases(t *testing.T) {
 
 		t.Run(testCase.Name(), func(t *testing.T) {
 			// The base working directory - in this case, the test case directory
-			testDir := filepath.Join("runtime_testdata", testCase.Name())
+			testDir := filepath.Join("testdata", testCase.Name())
 			builder := schema.Builder{}
 
 			schema, err := builder.MakeFromDirectory(testDir)

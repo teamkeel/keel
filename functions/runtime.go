@@ -13,6 +13,7 @@ import (
 
 	"github.com/evanw/esbuild/pkg/api"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/proto"
 )
@@ -31,7 +32,7 @@ import (
 type Runtime struct {
 	Schema     *proto.Schema
 	WorkingDir string
-	generator  CodeGenerator
+	generator  codegen.Generator
 }
 
 type ScaffoldResult struct {
@@ -55,7 +56,7 @@ func NewRuntime(schema *proto.Schema, workDir string) (*Runtime, error) {
 	return &Runtime{
 		WorkingDir: workDir,
 		Schema:     schema,
-		generator:  *NewCodeGenerator(schema),
+		generator:  *codegen.NewGenerator(schema),
 	}, nil
 }
 
@@ -136,8 +137,6 @@ func (r *Runtime) Bootstrap() error {
 // Scaffolds out any custom functions defined in a schema that haven't had their corresponding
 // functions/{name}.ts files created yet.
 func (r *Runtime) Scaffold() (s *ScaffoldResult, e error) {
-	generator := NewCodeGenerator(r.Schema)
-
 	functionsDir := filepath.Join(r.WorkingDir, FUNCTIONS_DIRECTORY)
 
 	if _, err := os.Stat(functionsDir); errors.Is(err, os.ErrNotExist) {
@@ -179,7 +178,7 @@ func (r *Runtime) Scaffold() (s *ScaffoldResult, e error) {
 
 		if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 
-			src := generator.GenerateFunction(f.Op.Name)
+			src := r.generator.GenerateFunction(f.Op.Name)
 			err = os.WriteFile(path, []byte(src), 0644)
 
 			if err != nil {
