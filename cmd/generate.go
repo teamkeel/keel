@@ -61,7 +61,7 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		err = r.GenerateClient()
+		err = r.Bootstrap()
 
 		if err != nil {
 			fmt.Println("⛔️ Could not generate @teamkeel/client")
@@ -84,24 +84,6 @@ var generateCmd = &cobra.Command{
 				fmt.Printf("⚡️ Generated %s %s\n", color.New(color.FgCyan).Sprint(fileName), color.New(color.Faint).Sprintf("[%s]", f))
 			}
 		}
-
-		result, errs := r.Bundle(true)
-
-		if len(errs) > 0 {
-			fmt.Println("⛔️ Internal runtime error (d)")
-			fmt.Println(errs)
-		}
-
-		fmt.Printf("\n--- %s ---\n", color.New(color.FgHiGreen).Sprint("Runtime"))
-
-		for _, f := range result.OutputFiles {
-			lastFragment := filepath.Base(f.Path)
-
-			fmt.Printf("⚡️ Updated %s %s\n", color.New(color.FgCyan).Sprint(lastFragment), color.New(color.Faint).Sprintf("[%s]", f.Path))
-		}
-
-		fmt.Println("---")
-
 	},
 }
 

@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -42,6 +43,18 @@ func Run(dir string) (<-chan []*Event, error) {
 	ch := make(chan []*Event)
 
 	freePort, err := util.GetFreePort()
+
+	if err != nil {
+		return nil, err
+	}
+
+	customFunctionsRuntime, err := functions.NewRuntime(schema, dir)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = customFunctionsRuntime.Bootstrap()
 
 	if err != nil {
 		return nil, err

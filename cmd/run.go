@@ -85,7 +85,7 @@ var runCmd = &cobra.Command{
 				panic(err)
 			}
 
-			err = customFunctionRuntime.GenerateClient()
+			err = customFunctionRuntime.Bootstrap()
 
 			if err != nil {
 				panic(err)

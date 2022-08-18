@@ -56,33 +56,9 @@ func TestAllCases(t *testing.T) {
 			runtime, err := functions.NewRuntime(schema, workingDir)
 			require.NoError(t, err)
 
-			// Checks if the correct dependencies are listed in the target app's package.json
-			err = runtime.ReconcilePackageJson()
-			require.NoError(t, err)
-
-			// Generates client code files (typescript)
-			// output path will be {app}/node_modules/@teamkeel/client/src/index.ts
-			err = runtime.GenerateClient()
+			err = runtime.Bootstrap()
 
 			require.NoError(t, err)
-
-			// Generates runtime handler code (typescript)
-			// output path will be {app}/node_modules/@teamkeel/client/src/handler.ts
-			err = runtime.GenerateHandler()
-
-			require.NoError(t, err)
-
-			// Generates a package.json file in the ephemeral @teamkeel/client package
-			// required for resolution from other @teamkeel npm modules
-			err = runtime.GenerateClientPackageJson()
-
-			require.NoError(t, err)
-
-			// Bundle all of the generated typescript code in @teamkeel/client
-			// necessary to run the node server
-			_, errs := runtime.Bundle(true)
-
-			require.Len(t, errs, 0)
 
 			// Check that the whole project, including generated code, typechecks
 			typecheckResult, output := typecheck(workingDir)
