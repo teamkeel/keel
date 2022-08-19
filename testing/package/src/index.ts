@@ -33,7 +33,7 @@ function runAllTests({ parentPort }: RunnerOpts) {
   } 
 
   for (const { testName, fn } of tests) {
-    let result = null
+    let result : TestResult | undefined = undefined
 
     try {
       fn()
