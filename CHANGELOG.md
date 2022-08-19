@@ -1,3 +1,10 @@
+## [0.95.2](https://github.com/teamkeel/keel/compare/v0.95.1...v0.95.2) (2022-08-19)
+
+
+### Bug Fixes
+
+* small fix ([#264](https://github.com/teamkeel/keel/issues/264)) ([ffbb48e](https://github.com/teamkeel/keel/commit/ffbb48ea09de317aa8bd7b553409cee789d10ff4))
+
 ## [0.95.1](https://github.com/teamkeel/keel/compare/v0.95.0...v0.95.1) (2022-08-19)
 
 
