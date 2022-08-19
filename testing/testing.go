@@ -30,6 +30,8 @@ const (
 
 var TestIgnorePatterns []string = []string{"node_modules"}
 
+const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
+
 type Event struct {
 	Status   string          `json:"status"`
 	TestName string          `json:"testName"`
@@ -53,11 +55,11 @@ func Run(dir string) (<-chan []*Event, error) {
 		return nil, err
 	}
 
-	_, dbConnInfo, err := database.Start(true)
+	// _, dbConnInfo, err := database.Start(true)
 
-	if err != nil {
-		panic(err)
-	}
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	customFunctionsRuntime, err := functions.NewRuntime(schema, dir)
 
@@ -90,7 +92,7 @@ func Run(dir string) (<-chan []*Event, error) {
 			panic(err)
 		}
 
-		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, dbConnInfo.String())
+		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, dbConnString)
 
 		if err != nil {
 			panic(err)
@@ -185,7 +187,7 @@ func Run(dir string) (<-chan []*Event, error) {
 			// We need to pass across the connection string to the database
 			// so that slonik (query builder lib) can create a database pool which will be used
 			// by the generated Query API code
-			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnInfo.String()))
+			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", fmt.Sprintf(dbConnString, "postgres")))
 			cmd.Dir = dir
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
