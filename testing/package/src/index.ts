@@ -40,9 +40,14 @@ function runAllTests({ parentPort }: RunnerOpts) {
 
       result = TestResult.pass(testName)
     } catch (err) {
+      console.debug('exception caught')
       console.error(err)
       
-      if (err instanceof AssertionFailure) {
+      const isAssertionFailure = err instanceof AssertionFailure
+
+      console.debug(`'${testName}': assertion: ${isAssertionFailure}`)
+
+      if (isAssertionFailure) {
         const { actual, expected } = err as AssertionFailure
 
         console.debug('Assertion failure caught')
