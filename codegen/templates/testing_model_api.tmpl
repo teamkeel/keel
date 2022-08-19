@@ -4,8 +4,9 @@
 // package instead of its normal invocation via the handler
 
 class {{ .Name }}TestingApi extends Client.{{ .Name }}Api {
-  static init() {
-    return new Client.{{ .Name }}Api(pool!)
+  static async init() {
+    const pool = await createPool(cs, { interceptors })
+    return new Client.{{ .Name }}Api(pool)
   }
 }
 

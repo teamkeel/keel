@@ -9,12 +9,4 @@ const interceptors = [
   createQueryLoggingInterceptor()
 ];
 
-let pool : DatabasePool | null = null
-
-const setupPool = async () => {
-  pool = await createPool(cs)
-}
-
-setupPool()
-
 {{ .TestingModelApis }}
