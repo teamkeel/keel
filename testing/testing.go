@@ -53,7 +53,7 @@ func Run(dir string) (<-chan []*Event, error) {
 		return nil, err
 	}
 
-	_, dbConnInfo, err := database.Start(false)
+	_, dbConnInfo, err := database.Start(true)
 
 	if err != nil {
 		panic(err)
