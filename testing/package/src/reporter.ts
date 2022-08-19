@@ -14,9 +14,12 @@ export default class Reporter {
   }
 
   report = async (results: TestCaseResult[]) : Promise<boolean> => {
-    console.log(results)
     const response = await this.doRequest(results)
 
+    results.forEach((r) => {
+      console.log(`• reported results for ${r.testName}\n`)
+    })
+   
     return response.ok
   }
 

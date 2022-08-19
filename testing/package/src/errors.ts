@@ -7,5 +7,7 @@ export class AssertionFailure extends Error {
 
     this.actual = actual
     this.expected = expected
+
+    Object.setPrototypeOf(this, AssertionFailure.prototype)
   }
 }
