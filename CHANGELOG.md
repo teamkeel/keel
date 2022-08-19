@@ -1,3 +1,10 @@
+# [0.95.0](https://github.com/teamkeel/keel/compare/v0.94.0...v0.95.0) (2022-08-19)
+
+
+### Features
+
+* generate test flavoured variants of @teamkeel/client ([#262](https://github.com/teamkeel/keel/issues/262)) ([dcf73d0](https://github.com/teamkeel/keel/commit/dcf73d031a059c2a8248fc1c8bce9080c44ea146))
+
 # [0.94.0](https://github.com/teamkeel/keel/compare/v0.93.2...v0.94.0) (2022-08-17)
 
 
