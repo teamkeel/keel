@@ -32,7 +32,7 @@ const (
 
 var TestIgnorePatterns []string = []string{"node_modules"}
 
-const dbConnString = "postgres://postgres:postgres@0.0.0.0:8001/%s"
+const dbConnUri = "postgres://postgres:postgres@0.0.0.0:8001/%s"
 
 type Event struct {
 	Status   string          `json:"status"`
@@ -43,6 +43,8 @@ type Event struct {
 
 func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
+	shortDir := filepath.Base(dir)
+	dbName := testhelpers.DbNameForTestName(shortDir)
 
 	schema, err := builder.MakeFromDirectory(dir)
 	if err != nil {
@@ -88,7 +90,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 			panic(err)
 		}
 
-		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, fmt.Sprintf(dbConnString, dir))
+		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, fmt.Sprintf(dbConnUri, dbName))
 
 		if err != nil {
 			panic(err)
@@ -103,9 +105,6 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 		panic(err)
 	}
 
-	// TODO: Generate testing lib
-	// TODO: Start database using cmd/database.Start(true)
-	// TODO: Run migrations
 	// TODO: Start custom functions node process (if any custom functions defined)
 
 	// Server for node test process to talk to
@@ -162,7 +161,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 				continue
 			}
 
-			_ = testhelpers.SetupDatabaseForTestCase(t, schema, dir)
+			_ = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
 			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
 
@@ -185,7 +184,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 			// We need to pass across the connection string to the database
 			// so that slonik (query builder lib) can create a database pool which will be used
 			// by the generated Query API code
-			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", fmt.Sprintf(dbConnString, dir)))
+			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", fmt.Sprintf(dbConnUri, dbName)))
 			cmd.Dir = dir
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr

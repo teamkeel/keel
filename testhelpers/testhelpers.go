@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
 	cp "github.com/otiai10/copy"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
@@ -37,15 +38,11 @@ func WithTmpDir(dir string) (string, error) {
 
 const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
 
-func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, testName string) *gorm.DB {
+func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string) *gorm.DB {
 	mainDB, err := gorm.Open(
 		postgres.Open(fmt.Sprintf(dbConnString, "keel")),
 		&gorm.Config{})
 	require.NoError(t, err)
-
-	// Make a database name for this test
-	re := regexp.MustCompile(`[^\w]`)
-	dbName := strings.ToLower(re.ReplaceAllString(testName, ""))
 
 	t.Logf("XXXX database name for this test: %s\n", dbName)
 
@@ -56,9 +53,9 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, testName strin
 	// Create the database and drop at the end of the test
 	err = mainDB.Exec("CREATE DATABASE " + dbName).Error
 	require.NoError(t, err)
-	t.Cleanup(func() {
-		require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
-	})
+	// t.Cleanup(func() {
+	// 	require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
+	// })
 
 	// Connect to the newly created test database and close connection
 	// at the end of the test. We need to explicitly close the connection
@@ -76,7 +73,15 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, testName strin
 
 	// Migrate the database to this test case's schema.
 	m := migrations.New(schema, nil)
+
+	spew.Dump(m.Changes)
+
 	require.NoError(t, m.Apply(testDB))
 
 	return testDB
+}
+
+func DbNameForTestName(testName string) string {
+	re := regexp.MustCompile(`[^\w]`)
+	return strings.ToLower(re.ReplaceAllString(testName, ""))
 }

@@ -39,7 +39,7 @@ func TestRuntime(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
-			testDB := testhelpers.SetupDatabaseForTestCase(t, schema, tCase.name)
+			testDB := testhelpers.SetupDatabaseForTestCase(t, schema, testhelpers.DbNameForTestName(tCase.name))
 
 			// Construct the runtime API Handler.
 			handler := NewHandler(schema)
