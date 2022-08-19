@@ -19,6 +19,7 @@ var DEV_DEPENDENCIES = map[string]string{
 	"typescript":        "^4.7.4",
 	"@teamkeel/runtime": "*",
 	"@teamkeel/sdk":     "*",
+	"zod":               "^3.18.0",
 }
 
 // We don't require any dependencies at the minute
