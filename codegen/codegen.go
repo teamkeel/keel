@@ -25,6 +25,7 @@ func NewGenerator(schema *proto.Schema) *Generator {
 	}
 }
 
+//region client
 func (gen *Generator) GenerateClientCode() (r string) {
 	r += gen.GenerateBaseTypes()
 	r += gen.GenerateBaseImports()
@@ -660,10 +661,6 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 		})
 
 		for i, model := range modelsToUse {
-			// we do not want to expose the API for interacting with the identities table
-			if model.Name == TSTypeIdentity {
-				continue
-			}
 
 			if i == len(modelsToUse)-1 {
 				acc += renderTemplate(TemplateProperty, map[string]interface{}{
@@ -695,6 +692,38 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 
 	return r
 }
+
+//endregion client
+
+// Generates code for the @teamkeel/testing package
+// The testing package mostly reuses generated code
+// from the @teamkeel/client code generation above, but the invocation is
+// slightly different. Database pools for code-generated APIs that talk to
+// the database are constructed from within the testing package itself
+
+//region testing
+func (gen *Generator) GenerateTesting() (r string) {
+	renderApis := func(models []*proto.Model) (acc string) {
+		modelsToUse := lo.Filter(models, func(model *proto.Model, _ int) bool {
+			return model.Name != TSTypeIdentity
+		})
+
+		for _, m := range modelsToUse {
+			acc += renderTemplate(TemplateTestingModelApi, map[string]interface{}{
+				"Name": m.Name,
+			})
+		}
+		return acc
+	}
+
+	r += renderTemplate(TemplateTestingBase, map[string]interface{}{
+		"TestingModelApis": renderApis(gen.schema.Models),
+	})
+
+	return r
+}
+
+//endregion testing
 
 var (
 	TSTypeUnknown   = "unknown"
@@ -784,6 +813,10 @@ var (
 	TemplateFuncWrapperGetTypings    = "func_wrapper_get_typings"
 	TemplateKeelApiTypings           = "keel_api_typings"
 	TemplateHandlerApi               = "handler_api"
+
+	// Templates for the @teamkeel/testing package
+	TemplateTestingBase     = "testing_base"      // includes base imports used by testing package
+	TemplateTestingModelApi = "testing_model_api" // template for augmented version of the @teamkeel/client model apis
 )
 
 func renderTemplate(name string, data map[string]interface{}) string {

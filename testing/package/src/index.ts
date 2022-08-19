@@ -4,6 +4,11 @@ import { TestCaseResult, TestResult } from './output'
 import { expect } from './expect'
 import Reporter from './reporter'
 
+// generated.ts doesnt exist at this point, but IT WILL 😈
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+//@ts-ignore
+export * from './generated'
+
 const tests : Test[] = []
 
 function test(testName: TestName, fn: TestFunc) {
