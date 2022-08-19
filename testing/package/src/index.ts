@@ -40,7 +40,10 @@ function runAllTests({ parentPort }: RunnerOpts) {
 
       result = TestResult.pass(testName)
     } catch (err) {
+      console.error(err)
+
       if (err instanceof AssertionFailure) {
+        console.log('AssertionFailure caught')
         const { actual, expected } = err as AssertionFailure
 
         result = TestResult.fail(
@@ -52,7 +55,9 @@ function runAllTests({ parentPort }: RunnerOpts) {
         result = TestResult.exception(testName, err as Error)
       }
     } finally {
-      results.push(result!.asObject())
+      if (result) {
+        results.push(result.asObject())
+      }
     }
   }
 
