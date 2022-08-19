@@ -1,3 +1,10 @@
+## [0.95.5](https://github.com/teamkeel/keel/compare/v0.95.4...v0.95.5) (2022-08-19)
+
+
+### Bug Fixes
+
+* await result of fn() in try/catch block ([#267](https://github.com/teamkeel/keel/issues/267)) ([d851876](https://github.com/teamkeel/keel/commit/d8518762d70d272dc353af47e7bccb7d2fa66cac))
+
 ## [0.95.4](https://github.com/teamkeel/keel/compare/v0.95.3...v0.95.4) (2022-08-19)
 
 
