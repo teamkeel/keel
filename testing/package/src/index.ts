@@ -48,18 +48,11 @@ async function runAllTests({ parentPort }: RunnerOpts) {
       }
 
       result = TestResult.pass(testName)
-    } catch (err) {
-      console.debug('exception caught')
-      console.log(err)
-      
+    } catch (err) {      
       const isAssertionFailure = err instanceof AssertionFailure
-
-      console.debug(`'${testName}': assertion: ${isAssertionFailure}`)
 
       if (isAssertionFailure) {
         const { actual, expected } = err as AssertionFailure
-
-        console.debug('Assertion failure caught')
 
         result = TestResult.fail(
           testName,
