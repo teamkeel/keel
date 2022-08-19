@@ -1,3 +1,10 @@
+## [0.95.6](https://github.com/teamkeel/keel/compare/v0.95.5...v0.95.6) (2022-08-19)
+
+
+### Bug Fixes
+
+* setup and migrate database per test case ([#268](https://github.com/teamkeel/keel/issues/268)) ([298dc54](https://github.com/teamkeel/keel/commit/298dc546ae41d5d29e851144af382f2cb2850a04))
+
 ## [0.95.5](https://github.com/teamkeel/keel/compare/v0.95.4...v0.95.5) (2022-08-19)
 
 
