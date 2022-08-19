@@ -30,7 +30,7 @@ const (
 
 var TestIgnorePatterns []string = []string{"node_modules"}
 
-const dbConnString = "postgres://postgres:postgres@localhost:8001/postgres"
+const dbConnString = "postgres://postgres:postgres@0.0.0.0:8001/postgres"
 
 type Event struct {
 	Status   string          `json:"status"`
