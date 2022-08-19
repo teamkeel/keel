@@ -1,3 +1,10 @@
+## [0.95.7](https://github.com/teamkeel/keel/compare/v0.95.6...v0.95.7) (2022-08-19)
+
+
+### Bug Fixes
+
+* flaky test ([#269](https://github.com/teamkeel/keel/issues/269)) ([82d9dd3](https://github.com/teamkeel/keel/commit/82d9dd3812dc6bce13213545474fa8e874d308d0))
+
 ## [0.95.6](https://github.com/teamkeel/keel/compare/v0.95.5...v0.95.6) (2022-08-19)
 
 
