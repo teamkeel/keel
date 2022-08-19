@@ -1,3 +1,10 @@
+## [0.95.4](https://github.com/teamkeel/keel/compare/v0.95.3...v0.95.4) (2022-08-19)
+
+
+### Bug Fixes
+
+* do not console.error as this prints to stderr and causes test to exit too soon ([#266](https://github.com/teamkeel/keel/issues/266)) ([2c8f32b](https://github.com/teamkeel/keel/commit/2c8f32bcf6e0056fadf0a63c22d127fa2442b5d5))
+
 ## [0.95.3](https://github.com/teamkeel/keel/compare/v0.95.2...v0.95.3) (2022-08-19)
 
 
