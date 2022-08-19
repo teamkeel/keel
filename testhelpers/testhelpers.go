@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/davecgh/go-spew/spew"
 	cp "github.com/otiai10/copy"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
@@ -44,8 +43,6 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 		&gorm.Config{})
 	require.NoError(t, err)
 
-	t.Logf("XXXX database name for this test: %s\n", dbName)
-
 	// Drop the database if it already exists. The normal dropping of it at the end of the
 	// test case is bypassed if you quit a debug run of the test in VS Code.
 	require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
@@ -73,8 +70,6 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 
 	// Migrate the database to this test case's schema.
 	m := migrations.New(schema, nil)
-
-	spew.Dump(m.Changes)
 
 	require.NoError(t, m.Apply(testDB))
 

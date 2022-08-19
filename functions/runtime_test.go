@@ -31,6 +31,8 @@ type PostResponse struct {
 }
 
 func TestAllCases(t *testing.T) {
+	t.Skip("Skipping test - remove this once testing package can codegen actions")
+
 	testCases, err := ioutil.ReadDir("testdata")
 	require.NoError(t, err)
 
