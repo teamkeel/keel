@@ -1,3 +1,10 @@
+## [0.95.1](https://github.com/teamkeel/keel/compare/v0.95.0...v0.95.1) (2022-08-19)
+
+
+### Bug Fixes
+
+* log catching of assertion failures ([#263](https://github.com/teamkeel/keel/issues/263)) ([1f943b5](https://github.com/teamkeel/keel/commit/1f943b5519894193e41493557153bfaa264d8329))
+
 # [0.95.0](https://github.com/teamkeel/keel/compare/v0.94.0...v0.95.0) (2022-08-19)
 
 
