@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"testing"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/samber/lo"
@@ -21,6 +22,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
 )
 
@@ -30,7 +32,7 @@ const (
 
 var TestIgnorePatterns []string = []string{"node_modules"}
 
-const dbConnString = "postgres://postgres:postgres@0.0.0.0:8001/postgres"
+const dbConnString = "postgres://postgres:postgres@0.0.0.0:8001/%s"
 
 type Event struct {
 	Status   string          `json:"status"`
@@ -39,7 +41,7 @@ type Event struct {
 	Actual   json.RawMessage `json:"actual,omitempty"`
 }
 
-func Run(dir string) (<-chan []*Event, error) {
+func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 
 	schema, err := builder.MakeFromDirectory(dir)
@@ -54,12 +56,6 @@ func Run(dir string) (<-chan []*Event, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// _, dbConnInfo, err := database.Start(true)
-
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	customFunctionsRuntime, err := functions.NewRuntime(schema, dir)
 
@@ -92,7 +88,7 @@ func Run(dir string) (<-chan []*Event, error) {
 			panic(err)
 		}
 
-		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, dbConnString)
+		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, fmt.Sprintf(dbConnString, dir))
 
 		if err != nil {
 			panic(err)
@@ -166,6 +162,8 @@ func Run(dir string) (<-chan []*Event, error) {
 				continue
 			}
 
+			_ = testhelpers.SetupDatabaseForTestCase(t, schema, dir)
+
 			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
 
 			if err != nil {
@@ -187,7 +185,7 @@ func Run(dir string) (<-chan []*Event, error) {
 			// We need to pass across the connection string to the database
 			// so that slonik (query builder lib) can create a database pool which will be used
 			// by the generated Query API code
-			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnString))
+			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", fmt.Sprintf(dbConnString, dir)))
 			cmd.Dir = dir
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr

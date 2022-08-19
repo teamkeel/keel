@@ -43,7 +43,7 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			ch, err := testing.Run(workingDir)
+			ch, err := testing.Run(t, workingDir)
 			require.NoError(t, err)
 
 			events := []*testing.Event{}
