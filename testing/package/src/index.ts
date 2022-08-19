@@ -21,7 +21,7 @@ function test(testName: TestName, fn: TestFunc) {
 // global - reset with every instantiation of module.
 let results: TestCaseResult[] = []
 
-function runAllTests({ parentPort }: RunnerOpts) {
+async function runAllTests({ parentPort }: RunnerOpts) {
   const reporter = new Reporter({
     host: 'localhost',
     port: parentPort
@@ -36,7 +36,16 @@ function runAllTests({ parentPort }: RunnerOpts) {
     let result : TestResult | undefined = undefined
 
     try {
-      fn()
+      const t = fn()
+
+      // support both async and non async invocations
+      const isPromisified = t instanceof Promise
+
+      // if we do not await the result of the func,
+      // then the catch block will not catch the error
+      if (isPromisified) {
+        await t
+      }
 
       result = TestResult.pass(testName)
     } catch (err) {
