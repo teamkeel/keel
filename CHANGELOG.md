@@ -1,3 +1,10 @@
+## [0.95.8](https://github.com/teamkeel/keel/compare/v0.95.7...v0.95.8) (2022-08-20)
+
+
+### Bug Fixes
+
+* update tsconfig to allow for top level await in generated module ([#270](https://github.com/teamkeel/keel/issues/270)) ([aecece3](https://github.com/teamkeel/keel/commit/aecece35ff0379032ba4da0e8b96fcf2c959820c))
+
 ## [0.95.7](https://github.com/teamkeel/keel/compare/v0.95.6...v0.95.7) (2022-08-19)
 
 
