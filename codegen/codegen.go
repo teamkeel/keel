@@ -717,8 +717,31 @@ func (gen *Generator) GenerateTesting() (r string) {
 		return acc
 	}
 
+	renderActions := func(schema *proto.Schema) (r string) {
+		actions := lo.FlatMap(schema.Models, func(m *proto.Model, _ int) []*proto.Operation {
+			return m.Operations
+		})
+
+		for i, action := range actions {
+			if len(actions) == 1 || i == len(actions)-1 {
+				r += renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name": action.Name,
+					"Type": "() => {}",
+				})
+			} else {
+				r += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
+					"Name": action.Name,
+					"Type": "() => {}",
+				}))
+			}
+		}
+
+		return r
+	}
+
 	r += renderTemplate(TemplateTestingBase, map[string]interface{}{
 		"TestingModelApis": renderApis(gen.schema.Models),
+		"Actions":          renderActions(gen.schema),
 	})
 
 	return r

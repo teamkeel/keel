@@ -8,4 +8,11 @@ const cs = process.env.DB_CONN!;
 
 const queryLogger = new Logger()
 
+// Actions contains all of the Keel schema actions - both built-in actions
+// defined in an *operations* block and custom operations defined in a *functions*
+// block.
+export const Actions = {
+  {{ .Actions }}
+}
+
 {{ .TestingModelApis }}

@@ -1,7 +1,7 @@
-import { test, expect } from '@teamkeel/testing'
+import { test, expect, Actions } from '@teamkeel/testing'
 
 test('it passes', async () => {
-  // const p = await Person.create({ title: 'test '})
+  console.log(Actions)
   expect.equal(1, 1)
 })
 
