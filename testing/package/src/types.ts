@@ -9,4 +9,5 @@ export interface Test {
 export interface RunnerOpts {
   parentPort: number;
   host: string;
+  debug?: boolean
 }

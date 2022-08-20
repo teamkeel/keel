@@ -22,7 +22,7 @@ function test(testName: TestName, fn: TestFunc) {
 // global - reset with every instantiation of module.
 let results: TestResultData[] = []
 
-async function runAllTests({ parentPort, host = 'localhost' }: RunnerOpts) {
+async function runAllTests({ parentPort, host = 'localhost', debug }: RunnerOpts) {
   const reporter = new Reporter({
     host,
     port: parentPort
@@ -55,6 +55,10 @@ async function runAllTests({ parentPort, host = 'localhost' }: RunnerOpts) {
 
       result = TestResult.pass(testName)
     } catch (err) {
+      if (debug) {
+        console.debug(err)
+      }
+
       // If the above code throws, then we know something went wrong during execution
       // An AssertionFailure might have been thrown, but it could also be something
       // else, so we need to check with instance_of checks the type of error
@@ -77,6 +81,10 @@ async function runAllTests({ parentPort, host = 'localhost' }: RunnerOpts) {
       }
     } finally {
       if (result) {
+        if (debug) {
+          console.debug(result.asObject())
+        }
+
         results.push(result.asObject())
       }
     }
