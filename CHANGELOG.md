@@ -1,3 +1,10 @@
+# [0.97.0](https://github.com/teamkeel/keel/compare/v0.96.2...v0.97.0) (2022-08-20)
+
+
+### Features
+
+* setup action codegen for testing package ([#277](https://github.com/teamkeel/keel/issues/277)) ([6be4ce3](https://github.com/teamkeel/keel/commit/6be4ce3124c0defcf361ac23a5d8398823155be4))
+
 ## [0.96.2](https://github.com/teamkeel/keel/compare/v0.96.1...v0.96.2) (2022-08-20)
 
 
