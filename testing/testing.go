@@ -187,7 +187,6 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 			// by the generated Query API code
 			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", fmt.Sprintf(dbConnUri, dbName)))
 
-			cmd.Env = append(cmd.Env, "TS_NODE_TRANSPILE_ONLY=true")
 			cmd.Dir = dir
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr

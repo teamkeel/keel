@@ -718,7 +718,7 @@ func (gen *Generator) GenerateTesting() (r string) {
 	}
 
 	renderActions := func(schema *proto.Schema) (r string) {
-		actions := lo.FlatMap[*proto.Model, *proto.Operation](schema.Models, func(m *proto.Model, _ int) []*proto.Operation {
+		actions := lo.FlatMap(schema.Models, func(m *proto.Model, _ int) []*proto.Operation {
 			return m.Operations
 		})
 
