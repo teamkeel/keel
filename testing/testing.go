@@ -1,11 +1,9 @@
 package testing
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -39,6 +37,7 @@ type Event struct {
 	TestName string          `json:"testName"`
 	Expected json.RawMessage `json:"expected,omitempty"`
 	Actual   json.RawMessage `json:"actual,omitempty"`
+	Err      json.RawMessage `json:"err,omitempty"`
 }
 
 func Run(t *testing.T, dir string) (<-chan []*Event, error) {
@@ -225,11 +224,8 @@ func RunServer(workingDir string, port string, dbConnectionString string) (*os.P
 
 	cmd.Dir = workingDir
 
-	var buf bytes.Buffer
-	w := io.MultiWriter(os.Stdout, &buf)
-
-	cmd.Stdout = w
-	cmd.Stderr = w
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	err := cmd.Start()
 

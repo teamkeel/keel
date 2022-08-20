@@ -2,11 +2,10 @@
 import * as Client from '@teamkeel/client'
 import { createPool, DatabasePool } from 'slonik'
 import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging'
+import { QueryConstraints, ChainableQuery, Query, Logger } from '@teamkeel/sdk';
 
 const cs = process.env.DB_CONN!;
 
-const interceptors = [
-  createQueryLoggingInterceptor()
-];
+const queryLogger = new Logger()
 
 {{ .TestingModelApis }}

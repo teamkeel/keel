@@ -710,7 +710,8 @@ func (gen *Generator) GenerateTesting() (r string) {
 
 		for _, m := range modelsToUse {
 			acc += renderTemplate(TemplateTestingModelApi, map[string]interface{}{
-				"Name": m.Name,
+				"Name":      m.Name,
+				"TableName": strcase.ToSnake(m.Name),
 			})
 		}
 		return acc
