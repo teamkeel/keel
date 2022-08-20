@@ -1,10 +1,11 @@
 import { RunnerOpts, Test, TestFunc, TestName } from './types'
 import { AssertionFailure } from './errors'
-import { TestCaseResult, TestResult } from './output'
+import { TestResultData, TestResult } from './output'
 import { expect } from './expect'
 import Reporter from './reporter'
 
-// generated.ts doesnt exist at this point, but IT WILL 😈
+// generated.ts doesnt exist at this point, but once the node_module has been
+// injected with the generated code, IT WILL 😈
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 export * from './generated'
@@ -19,11 +20,11 @@ function test(testName: TestName, fn: TestFunc) {
 }
 
 // global - reset with every instantiation of module.
-let results: TestCaseResult[] = []
+let results: TestResultData[] = []
 
-async function runAllTests({ parentPort }: RunnerOpts) {
+async function runAllTests({ parentPort, host = 'localhost' }: RunnerOpts) {
   const reporter = new Reporter({
-    host: 'localhost',
+    host,
     port: parentPort
   })
   results = []
@@ -38,7 +39,12 @@ async function runAllTests({ parentPort }: RunnerOpts) {
     try {
       const t = fn()
 
-      // support both async and non async invocations
+      // support both async and non async invocations:
+      // i.e
+      // test('a non async test', () => {})
+      // and
+      // test('an async test', async () => {})
+      // will both be supported.
       const isPromisified = t instanceof Promise
 
       // if we do not await the result of the func,
@@ -48,7 +54,11 @@ async function runAllTests({ parentPort }: RunnerOpts) {
       }
 
       result = TestResult.pass(testName)
-    } catch (err) {      
+    } catch (err) {
+      // If the above code throws, then we know something went wrong during execution
+      // An AssertionFailure might have been thrown, but it could also be something
+      // else, so we need to check with instance_of checks the type of error
+
       const isAssertionFailure = err instanceof AssertionFailure
 
       if (isAssertionFailure) {
@@ -59,8 +69,11 @@ async function runAllTests({ parentPort }: RunnerOpts) {
           actual,
           expected,
         )
+      } else if (err instanceof Error) {
+        result = TestResult.exception(testName, err)
       } else {
-        result = TestResult.exception(testName, err as Error)
+        // if it's not an error, then wrap after stringifing
+        result = TestResult.exception(testName, new Error(JSON.stringify(err)))
       }
     } finally {
       if (result) {
