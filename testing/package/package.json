@@ -7,7 +7,6 @@
     "ts-node": "./node_modules/.bin/ts-node"
   },
   "author": "",
-  "type": "module",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.7.3",

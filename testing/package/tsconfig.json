@@ -2,8 +2,7 @@
   "compilerOptions": {
     "esModuleInterop": true,
     "moduleResolution": "Node",
-    "target": "ES2020",
-    "module": "ESNext",
+    "module": "CommonJS",
     "strict": true,
     "baseUrl": "./src"
   }
