@@ -1,3 +1,10 @@
+# [0.96.0](https://github.com/teamkeel/keel/compare/v0.95.10...v0.96.0) (2022-08-20)
+
+
+### Features
+
+* bump js package versions ([#273](https://github.com/teamkeel/keel/issues/273)) ([79033cd](https://github.com/teamkeel/keel/commit/79033cd6fb49bfc69e58bbb9f9f209e5181ac1ce))
+
 ## [0.95.10](https://github.com/teamkeel/keel/compare/v0.95.9...v0.95.10) (2022-08-20)
 
 
