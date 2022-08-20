@@ -89,7 +89,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 			panic(err)
 		}
 
-		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, fmt.Sprintf(dbConnUri, dbName))
+		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, reportingPort, fmt.Sprintf(dbConnUri, dbName))
 
 		if err != nil {
 			panic(err)
@@ -131,6 +131,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 							}
 							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 								// call node process
+
 							}
 						}
 					}
@@ -210,7 +211,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	return ch, nil
 }
 
-func RunServer(workingDir string, port string, dbConnectionString string) (*os.Process, error) {
+func RunServer(workingDir string, port string, parentPort string, dbConnectionString string) (*os.Process, error) {
 	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
@@ -221,6 +222,7 @@ func RunServer(workingDir string, port string, dbConnectionString string) (*os.P
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%s", port))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("HOST_PORT=%s", parentPort))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 
 	cmd.Dir = workingDir
