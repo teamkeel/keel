@@ -7,22 +7,27 @@ enum Status {
   Exception = 'exception'
 }
 
-export interface TestCaseResult {
-  testName: TestName;
-  status: Status;
-  expected?: any;
-  actual?: any;
+export interface TestResultData {
+  status: Status
+  testName: string
+  actual?: unknown
+  expected?: unknown
+  err?: Error
 }
 
 export class TestResult {
   private readonly testName: TestName
   private readonly status: Status
-  private readonly actual: any
-  private readonly expected: any
+  private readonly actual?: unknown
+  private readonly expected?: unknown
+  private readonly err?: Error
 
-  private constructor(status: Status, testName: string, actual?: any, expected?: any, err?: Error) {
+  private constructor({ testName, status, err, expected, actual }: TestResultData) {
     this.testName = testName
     this.status = status
+    if (err) {
+      this.err = err
+    }
     
     if (expected && actual) {
       this.actual = actual
@@ -30,26 +35,30 @@ export class TestResult {
     }
   }
 
-  static fail(testCase: string, actual: any, expected: any) {
-    return new TestResult(Status.Fail, testCase, actual, expected)
+  static fail(testName: string, actual: unknown, expected: unknown) {
+    return new TestResult({ status: Status.Fail, testName, actual, expected})
   }
 
-  static exception(testCase: string, err: Error) {
-    return new TestResult(Status.Exception, testCase, undefined, undefined, err)
+  static exception(testName: string, err: Error) {
+    return new TestResult({ status: Status.Exception, testName, err })
   }
 
-  static pass(testCase: string) {
-    return new TestResult(Status.Pass, testCase)
+  static pass(testName: string) {
+    return new TestResult({ status: Status.Pass, testName })
   }
 
-  asObject = () : TestCaseResult => {
-    let base: TestCaseResult = {
+  asObject = () : TestResultData => {
+    let base: TestResultData = {
       testName: this.testName,
       status: this.status
     }
 
     if (this.expected && this.actual) {
       base = { ...base, expected: this.expected, actual: this.actual }
+    }
+
+    if (this.err) {
+      base = { ...base, err: this.err }
     }
 
     return base
