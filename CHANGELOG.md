@@ -1,3 +1,10 @@
+## [0.97.1](https://github.com/teamkeel/keel/compare/v0.97.0...v0.97.1) (2022-08-20)
+
+
+### Bug Fixes
+
+* move generic param to method level ([#278](https://github.com/teamkeel/keel/issues/278)) ([2485a57](https://github.com/teamkeel/keel/commit/2485a57abf6fe28ed02ca14f178def8a59eb3864))
+
 # [0.97.0](https://github.com/teamkeel/keel/compare/v0.96.2...v0.97.0) (2022-08-20)
 
 
