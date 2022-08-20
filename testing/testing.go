@@ -160,6 +160,8 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 				continue
 			}
 
+			fmt.Println(dir)
+
 			_ = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
 			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
