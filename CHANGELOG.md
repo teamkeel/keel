@@ -1,3 +1,10 @@
+## [0.95.9](https://github.com/teamkeel/keel/compare/v0.95.8...v0.95.9) (2022-08-20)
+
+
+### Bug Fixes
+
+* set type module ([#271](https://github.com/teamkeel/keel/issues/271)) ([0ebb5f4](https://github.com/teamkeel/keel/commit/0ebb5f4ee85120c7869757b37c161d98c736a5bf))
+
 ## [0.95.8](https://github.com/teamkeel/keel/compare/v0.95.7...v0.95.8) (2022-08-20)
 
 
