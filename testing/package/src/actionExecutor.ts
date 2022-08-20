@@ -12,7 +12,7 @@ interface ExecuteArgs {
 }
 
 // Makes a request to the testing runtime host with 
-export default class ActionExecutor<ActionReturnType> {
+export default class ActionExecutor {
   private readonly parentPort: number;
   private readonly host: string;
 
@@ -21,7 +21,7 @@ export default class ActionExecutor<ActionReturnType> {
     this.host = host;
   }
 
-  execute = async ({ actionName, payload }: ExecuteArgs): Promise<ActionReturnType> => {
+  execute = async<ActionReturnType> ({ actionName, payload }: ExecuteArgs): Promise<ActionReturnType> => {
     const res = await fetch(`http://${this.host}:${this.parentPort}/action`, {
       method: "POST",
       body: JSON.stringify({ actionName, payload }),
