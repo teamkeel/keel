@@ -1,3 +1,10 @@
+## [0.96.1](https://github.com/teamkeel/keel/compare/v0.96.0...v0.96.1) (2022-08-20)
+
+
+### Bug Fixes
+
+* small tweaks to [@testing](https://github.com/testing) package ([#274](https://github.com/teamkeel/keel/issues/274)) ([d20926a](https://github.com/teamkeel/keel/commit/d20926acc84496ef8e5ed6247784fff59ef45759))
+
 # [0.96.0](https://github.com/teamkeel/keel/compare/v0.95.10...v0.96.0) (2022-08-20)
 
 
