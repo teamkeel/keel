@@ -1,14 +1,44 @@
-// We want to extend the base {{ .Name }}Api implementation from 
-// @teamkeel/client, but make it so that the database pool is already
-// initialised when you import the class from the @teamkeel/testing
-// package instead of its normal invocation via the handler
+class {{ .Name }}Api {
+  create = async (inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<Client.{{ .Name }}> => {
+    const q = await this.query()
+    return q.create(inputs);
+  }
 
-class {{ .Name }}TestingApi extends Client.{{ .Name }}Api {
-  static async init() {
-    const pool = await createPool(cs, { interceptors })
-    return new Client.{{ .Name }}Api(pool)
+  where = async (conditions: Client.{{ .Name }}Query) : Promise<ChainableQuery<Client.{{ .Name }}>> => {
+    const q = await this.query()
+    return q.where(conditions as any);
+  }
+
+  delete = async (id: string) : Promise<boolean> => {
+    const q = await this.query()
+    return q.delete(id);
+  }
+
+  findOne = async (query: Client.{{ .Name }}UniqueFields) : Promise<Client.{{ .Name }}> => {
+    const q = await this.query()
+    return q.findOne(query as any);
+  }
+
+  update = async (id: string, inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<Client.{{ .Name }}> => {
+    const q = await this.query()
+    return q.update(id, inputs as any);
+  }
+
+  findMany = async (query: Client.{{ .Name }}Query) : Promise<Client.{{ .Name }}[]> => {
+    const q = await this.query()
+    return q.where(query as any).all();
+  }
+
+  private query = async () : Promise<Query<Client.{{ .Name }}>> => {
+    const pool = await createPool(cs)
+
+    return new Query<Client.{{ .Name }}>({
+      tableName: '{{ .TableName }}',
+      pool,
+      logger: queryLogger
+    })
   }
 }
 
-export const {{ .Name }} = {{ .Name }}TestingApi.init()
+export const {{ .Name }} = new {{ .Name }}Api();
 
