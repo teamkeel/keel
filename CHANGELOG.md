@@ -1,3 +1,10 @@
+## [0.95.10](https://github.com/teamkeel/keel/compare/v0.95.9...v0.95.10) (2022-08-20)
+
+
+### Bug Fixes
+
+* remove top level await attempts ([#272](https://github.com/teamkeel/keel/issues/272)) ([c76b4e9](https://github.com/teamkeel/keel/commit/c76b4e90b0c878d9b7ec669b88814f98b316a9d3))
+
 ## [0.95.9](https://github.com/teamkeel/keel/compare/v0.95.8...v0.95.9) (2022-08-20)
 
 
