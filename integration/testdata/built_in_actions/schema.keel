@@ -1,0 +1,20 @@
+model Post {
+    fields {
+        title Text
+    }
+
+    operations {
+        create createPost() with (title)
+        get getPost(id)
+        update updatePost(id) with (title)
+        delete deletePost(id)
+    }
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+    }
+}

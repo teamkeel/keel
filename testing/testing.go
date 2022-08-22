@@ -23,6 +23,7 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
+	"gorm.io/gorm"
 )
 
 const (
@@ -50,6 +51,8 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
+
+	var db *gorm.DB
 
 	schema, err := builder.MakeFromDirectory(dir)
 	if err != nil {
@@ -126,13 +129,59 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 					for _, action := range model.Operations {
 						if action.Name == body.ActionName {
 							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
+								ctx := r.Context()
+								ctx = runtimectx.WithDatabase(ctx, db)
+
 								switch action.Type {
 								case proto.OperationType_OPERATION_TYPE_GET:
-									ctx := r.Context()
-									ctx = runtimectx.WithDatabase(ctx, nil)
-									actions.Get(ctx, action, schema, body.Payload)
+									res, err := actions.Get(ctx, action, schema, body.Payload)
+
+									if err != nil {
+										fmt.Print(err)
+
+										panic(err)
+									}
+
+									b, err := json.Marshal(res)
+
+									if err != nil {
+										panic(err)
+									}
+
+									w.Write(b)
+								case proto.OperationType_OPERATION_TYPE_CREATE:
+									res, err := actions.Create(ctx, action, schema, body.Payload)
+
+									if err != nil {
+										fmt.Print(err)
+
+										panic(err)
+									}
+
+									b, err := json.Marshal(res)
+
+									if err != nil {
+										panic(err)
+									}
+									w.Write(b)
+								default:
+									w.WriteHeader(400)
+
+									errorDetails := map[string]string{
+										"message": fmt.Sprintf("%s not yet implemented", action.Type),
+									}
+
+									b, err := json.Marshal(errorDetails)
+
+									if err != nil {
+										panic(err)
+									}
+									w.Write(b)
 								}
+
+								return
 							}
+
 							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 								// call node process
 								ctx := r.Context()
@@ -147,7 +196,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 								if err != nil {
 									resBody := map[string]interface{}{
-										"hello": err,
+										"message": err,
 									}
 
 									b, _ := json.Marshal(resBody)
@@ -187,7 +236,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 				continue
 			}
 
-			_ = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
+			db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
 			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
 
