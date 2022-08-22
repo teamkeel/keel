@@ -8,7 +8,16 @@ interface ActionExecutorArgs {
 interface ExecuteArgs {
   actionName: string;
 
-  payload: Record<string, any>
+  payload: Record<string, any>;
+}
+
+interface ActionFailure {
+  message: string;
+}
+
+interface ActionResponse<T> {
+  object: T;
+  error?: ActionFailure;
 }
 
 // Makes a request to the testing runtime host with 
@@ -21,12 +30,13 @@ export default class ActionExecutor {
     this.host = host;
   }
 
-  execute = async<ActionReturnType> ({ actionName, payload }: ExecuteArgs): Promise<ActionReturnType> => {
+  execute = async<ActionReturnType> ({ actionName, payload }: ExecuteArgs): Promise<ActionResponse<ActionReturnType>> => {
     const res = await fetch(`http://${this.host}:${this.parentPort}/action`, {
       method: "POST",
       body: JSON.stringify({ actionName, payload }),
     });
-    const json = (await res.json()) as ActionReturnType;
+    
+    const json = (await res.json()) as ActionResponse<ActionReturnType>;
 
     return json;
   };

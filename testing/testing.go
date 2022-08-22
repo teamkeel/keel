@@ -164,6 +164,19 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 										panic(err)
 									}
 									w.Write(b)
+								default:
+									w.WriteHeader(400)
+
+									errorDetails := map[string]string{
+										"message": fmt.Sprintf("%s not yet implemented", action.Type),
+									}
+
+									b, err := json.Marshal(errorDetails)
+
+									if err != nil {
+										panic(err)
+									}
+									w.Write(b)
 								}
 
 								return
