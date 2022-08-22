@@ -50,7 +50,8 @@ export class ConsoleTransport implements Transport {
   };
 }
 
-type Msg = string | boolean | undefined | null | number
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Msg = any
 
 // Usage: new Logger({ colorize: true }).log('foo', Level.Info);
 export default class Logger {

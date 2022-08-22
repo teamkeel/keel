@@ -41,7 +41,8 @@ declare module '@teamkeel/sdk/logger' {
     Debug = 'debug',
     Warn = 'warn'
   }
-  type Msg = string | boolean | undefined | null | number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type Msg = any
 
   export interface Transport {
     log: (msg: Msg, level: Level, options: LoggerOptions) => void
@@ -49,6 +50,7 @@ declare module '@teamkeel/sdk/logger' {
   export interface LoggerOptions {
     transport?: Transport
     colorize?: boolean
+    timestamps?: boolean
   }
 
   export class ConsoleTransport implements Transport {
