@@ -1,3 +1,4 @@
+import { Logger, LogLevel } from '@teamkeel/sdk';
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
 import { TestResultData, TestResult } from "./output";
@@ -95,4 +96,6 @@ async function runAllTests({
   reporter.report(results);
 }
 
-export { test, expect, runAllTests };
+const logger = new Logger({ colorize: true });
+
+export { test, expect, runAllTests, logger, LogLevel };
