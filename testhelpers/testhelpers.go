@@ -50,9 +50,10 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 	// Create the database and drop at the end of the test
 	err = mainDB.Exec("CREATE DATABASE " + dbName).Error
 	require.NoError(t, err)
-	// t.Cleanup(func() {
-	// 	require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
-	// })
+
+	t.Cleanup(func() {
+		require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
+	})
 
 	// Connect to the newly created test database and close connection
 	// at the end of the test. We need to explicitly close the connection
