@@ -3,7 +3,8 @@
     "@teamkeel/runtime": "*",
     "@teamkeel/sdk": "*",
     "@types/node": "^18.0.6",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "zod": "^3.18.0"
   },
   "dependencies": {},
   "name": "simple",
