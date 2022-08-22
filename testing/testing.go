@@ -196,7 +196,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 								if err != nil {
 									resBody := map[string]interface{}{
-										"error": err,
+										"message": err,
 									}
 
 									b, _ := json.Marshal(resBody)
