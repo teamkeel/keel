@@ -1,10 +1,11 @@
 import { test, expect, Actions } from '@teamkeel/testing'
 
 test('it passes', async () => {
-  console.log(Actions)
-  expect.equal(1, 1)
+  const result = await Actions.createPerson({ title: 'foo' })
+  expect.equal(result.title, 'foo')
 })
 
-test('it fails', () => {
-  expect.equal(1, 2)
+test('it fails', async () => {
+  const result = await Actions.createPerson({ title: 'bar' })
+  expect.equal(result.title, 'foo')
 })

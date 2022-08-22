@@ -17,6 +17,7 @@ import (
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
@@ -38,6 +39,11 @@ type Event struct {
 	Expected json.RawMessage `json:"expected,omitempty"`
 	Actual   json.RawMessage `json:"actual,omitempty"`
 	Err      json.RawMessage `json:"err,omitempty"`
+}
+
+type ActionRequest struct {
+	ActionName string         `json:"actionName"`
+	Payload    map[string]any `json:"payload"`
 }
 
 func Run(t *testing.T, dir string) (<-chan []*Event, error) {
@@ -81,15 +87,16 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	})
 
 	var customFunctionRuntimeProcess *os.Process
+	var customFunctionRuntimePort string
 
 	if hasCustomFunctions {
-		customFunctionRuntimePort, err := util.GetFreePort()
+		customFunctionRuntimePort, err = util.GetFreePort()
 
 		if err != nil {
 			panic(err)
 		}
 
-		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, fmt.Sprintf(dbConnUri, dbName))
+		customFunctionRuntimeProcess, err = RunServer(dir, customFunctionRuntimePort, reportingPort, fmt.Sprintf(dbConnUri, dbName))
 
 		if err != nil {
 			panic(err)
@@ -104,8 +111,6 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 		panic(err)
 	}
 
-	// TODO: Start custom functions node process (if any custom functions defined)
-
 	// Server for node test process to talk to
 	srv := http.Server{
 		Addr: fmt.Sprintf(":%s", reportingPort),
@@ -114,23 +119,45 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 			switch r.URL.Path {
 			case "/action":
-				var req map[string]any
-				json.Unmarshal(b, &req)
+				body := &ActionRequest{}
+				json.Unmarshal(b, body)
 
-				actionName := ""
 				for _, model := range schema.Models {
 					for _, action := range model.Operations {
-						if action.Name == actionName {
+						if action.Name == body.ActionName {
 							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
 								switch action.Type {
 								case proto.OperationType_OPERATION_TYPE_GET:
 									ctx := r.Context()
 									ctx = runtimectx.WithDatabase(ctx, nil)
-									actions.Get(ctx, action, schema, req)
+									actions.Get(ctx, action, schema, body.Payload)
 								}
 							}
 							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 								// call node process
+								ctx := r.Context()
+
+								client := &functions.HttpFunctionsClient{
+									Port: customFunctionRuntimePort,
+									Host: "0.0.0.0",
+								}
+
+								ctx = runtime.WithFunctionsClient(ctx, client)
+								res, err := client.Request(ctx, body.ActionName, body.Payload)
+
+								if err != nil {
+									resBody := map[string]interface{}{
+										"hello": err,
+									}
+
+									b, _ := json.Marshal(resBody)
+									w.Write(b)
+									return
+								}
+
+								b, _ := json.Marshal(res)
+
+								w.Write(b)
 							}
 						}
 					}
@@ -159,8 +186,6 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 			if strings.Contains(file, "node_modules") {
 				continue
 			}
-
-			fmt.Println(dir)
 
 			_ = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
@@ -210,7 +235,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	return ch, nil
 }
 
-func RunServer(workingDir string, port string, dbConnectionString string) (*os.Process, error) {
+func RunServer(workingDir string, port string, parentPort string, dbConnectionString string) (*os.Process, error) {
 	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
 
 	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
@@ -221,6 +246,7 @@ func RunServer(workingDir string, port string, dbConnectionString string) (*os.P
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%s", port))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("HOST_PORT=%s", parentPort))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 
 	cmd.Dir = workingDir

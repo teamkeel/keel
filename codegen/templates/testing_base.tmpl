@@ -1,18 +1,22 @@
 // We reuse various things from the client package for interacting with the db
-import * as Client from '@teamkeel/client'
-import { createPool, DatabasePool } from 'slonik'
-import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging'
+import * as Client from '@teamkeel/client';
+import { createPool, DatabasePool } from 'slonik';
+import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging';
 import { QueryConstraints, ChainableQuery, Query, Logger } from '@teamkeel/sdk';
+import ActionExecutor from './actionExecutor';
 
 const cs = process.env.DB_CONN!;
+const parentPort = process.env.HOST_PORT!;
 
-const queryLogger = new Logger()
+const queryLogger = new Logger();
+
+const actionExecutor = new ActionExecutor({ parentPort: parseInt(parentPort, 10), host: 'localhost' });
 
 // Actions contains all of the Keel schema actions - both built-in actions
 // defined in an *operations* block and custom operations defined in a *functions*
 // block.
 export const Actions = {
   {{ .Actions }}
-}
+};
 
 {{ .TestingModelApis }}

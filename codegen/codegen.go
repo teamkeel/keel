@@ -726,12 +726,12 @@ func (gen *Generator) GenerateTesting() (r string) {
 			if len(actions) == 1 || i == len(actions)-1 {
 				r += renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": action.Name,
-					"Type": "() => {}",
+					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
 				})
 			} else {
 				r += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": action.Name,
-					"Type": "() => {}",
+					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
 				}))
 			}
 		}
