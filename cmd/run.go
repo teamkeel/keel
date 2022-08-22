@@ -1,19 +1,13 @@
 package cmd
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -72,10 +66,10 @@ var runCmd = &cobra.Command{
 		}
 
 		var mutex sync.Mutex
-		var nodePort int
+		var nodePort string
 		var nodeProcess *os.Process
-		var nodeClient = &HttpFunctionsClient{
-			port: nodePort,
+		var nodeClient = &functions.HttpFunctionsClient{
+			Port: nodePort,
 		}
 
 		generate := func(protoSchema *proto.Schema) {
@@ -101,19 +95,13 @@ var runCmd = &cobra.Command{
 			}
 
 			// Retrieves a free tcp to host the node server on
-			p, err := util.GetFreePort()
+			freePort, err := util.GetFreePort()
 
 			if err != nil {
 				panic(err)
 			}
 
-			freePort, err := strconv.Atoi(p)
-
-			if err != nil {
-				panic(err)
-			}
-
-			nodeProcess, err = RunServer(schemaDir, freePort, dbConnInfo.String())
+			nodeProcess, err = functions.RunServer(schemaDir, freePort, dbConnInfo.String())
 
 			if err != nil {
 				panic(err)
@@ -122,7 +110,7 @@ var runCmd = &cobra.Command{
 			// Update the references that are in the upper scope so that can be referrred back
 			// to by other things.
 			nodePort = freePort
-			nodeClient.port = nodePort
+			nodeClient.Port = nodePort
 
 			return nodeProcess
 		}
@@ -381,70 +369,4 @@ func init() {
 	runCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "the directory containing the Keel schema files")
 	runCmd.Flags().BoolVar(&runCmdFlagReset, "reset", false, "if set the database will be reset")
 	runCmd.Flags().StringVar(&runCmdFlagPort, "port", "8000", "the port to run the Keel application on")
-}
-
-type HttpFunctionsClient struct {
-	port int
-}
-
-func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, body map[string]any) (map[string]any, error) {
-	b, err := json.Marshal(body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%d/%s", h.port, actionName), bytes.NewReader(b))
-
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := http.DefaultClient.Do(req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	b, err = ioutil.ReadAll(res.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	response := map[string]any{}
-
-	json.Unmarshal(b, &response)
-
-	return response, nil
-}
-
-func RunServer(workingDir string, port int, dbConnectionString string) (*os.Process, error) {
-	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
-
-	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
-		return nil, err
-	}
-
-	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
-
-	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
-
-	cmd.Dir = workingDir
-
-	var buf bytes.Buffer
-	w := io.MultiWriter(os.Stdout, &buf)
-
-	cmd.Stdout = w
-	cmd.Stderr = w
-
-	err := cmd.Start()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return cmd.Process, nil
 }

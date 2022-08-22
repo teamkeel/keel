@@ -1,10 +1,13 @@
 package functions
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
@@ -30,9 +33,11 @@ import (
 // type.
 
 type Runtime struct {
-	Schema     *proto.Schema
-	WorkingDir string
-	generator  codegen.Generator
+	Schema             *proto.Schema
+	WorkingDir         string
+	generator          codegen.Generator
+	port               int
+	dbConnectionString string
 }
 
 type ScaffoldResult struct {
@@ -132,6 +137,36 @@ func (r *Runtime) Bootstrap() error {
 	}
 
 	return nil
+}
+
+func RunServer(workingDir string, port string, dbConnectionString string) (*os.Process, error) {
+	serverDistPath := filepath.Join(workingDir, "node_modules", "@teamkeel", "client", "dist", "handler.js")
+
+	if _, err := os.Stat(serverDistPath); errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+
+	cmd := exec.Command("node", filepath.Join("node_modules", "@teamkeel", "client", "dist", "handler.js"))
+
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%s", port))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
+
+	cmd.Dir = workingDir
+
+	var buf bytes.Buffer
+	w := io.MultiWriter(os.Stdout, &buf)
+
+	cmd.Stdout = w
+	cmd.Stderr = w
+
+	err := cmd.Start()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return cmd.Process, nil
 }
 
 // Scaffolds out any custom functions defined in a schema that haven't had their corresponding

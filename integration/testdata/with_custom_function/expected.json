@@ -1,4 +1,4 @@
 [
   { "testName": "it passes", "status": "pass" },
-  { "testName": "it fails", "status": "fail", "expected": 2, "actual": 1 }
+  { "testName": "it fails", "status": "fail", "expected": "foo", "actual": "bar" }
 ]
