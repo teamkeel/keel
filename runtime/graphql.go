@@ -174,12 +174,15 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
-			inputMap, ok := input.(map[string]any)
-			if !ok {
-				return nil, errors.New("input not a map")
+			listInput, err := buildListInput(op, p.Args["input"])
+			if err != nil {
+				return nil, err
 			}
-			return actions.List(p.Context, op, schema, inputMap)
+			records, err := actions.List(p.Context, op, schema, listInput)
+			if err != nil {
+				return nil, err
+			}
+			return connectionResponse(records)
 		}
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
@@ -867,4 +870,84 @@ type IntrospectionQueryResult struct {
 			PossibleTypes interface{}          `json:"possibleTypes"`
 		} `json:"types"`
 	} `json:"__schema"`
+}
+
+// buildListInput consumes the dictionary that carries the LIST operation inputs on the
+// incoming request, and composes a corresponding actions.ListInput object that is good
+// to pass to the generic actions.List() function.
+func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.ListInput, error) {
+	page := actions.Page{}
+	wheres := []*actions.Where{}
+
+	argsMap, ok := requestInputArgs.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %+v to map[string]any", requestInputArgs)
+	}
+	whereInputs, ok := argsMap["where"]
+	if !ok {
+		return nil, fmt.Errorf("arguments map does not contain a where key: %v", argsMap)
+	}
+	whereInputsAsMap, ok := whereInputs.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
+	}
+
+	for argName, argValue := range whereInputsAsMap {
+		argValueAsMap, ok := argValue.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", argValue)
+		}
+		for operator, operand := range argValueAsMap {
+			_ = operator
+			stringQuery := actions.StringQuery{
+				Operator: actions.OperatorEquals, // todo this should be f(operand)
+				Operand:  operand,
+			}
+			where := &actions.Where{
+				Name:        argName,
+				StringQuery: &stringQuery,
+			}
+			wheres = append(wheres, where)
+		}
+	}
+	inp := &actions.ListInput{
+		Page:   page,
+		Wheres: wheres,
+	}
+	return inp, nil
+}
+
+// connectionResponse consumes the raw records returned by actions.List (and similar),
+// and wraps them into a Node+Edges structure that is good for the connections pattern.
+// See https://relay.dev/graphql/connections.htm
+func connectionResponse(records any) (resp any, err error) {
+	// todo
+	return map[string]any{
+		"edges": []any{
+			map[string]any{
+				"id": "placeholderId",
+				"node": map[string]any{
+					"madeUpField": 42,
+					"id":          "placeholderId",
+				},
+			},
+		},
+	}, nil
+	/*
+			think want one of these
+
+			edges { // mandatory field
+		        cursor
+		        node {
+		          id
+		          name
+		        }
+		      }
+			pageInfo { // mandatory field
+				hasNextPage
+			}
+
+
+
+	*/
 }

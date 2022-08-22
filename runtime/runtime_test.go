@@ -499,7 +499,7 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 			query ListPeople {
-				listPeople(input: { first: 10, where: { name: { equals: "Fr" } } })
+				listPeople(input: { first: 10, where: { name: { equals: "Fred" } } })
 				{
 					edges {
 					  node {
