@@ -29,7 +29,7 @@ export interface Transport {
 // The default (and only) transport implementation of Logger class
 // logs to STDOUT / STDERR
 export class ConsoleTransport implements Transport {
-  log = (msg: Msg, level: Level, options: LoggerOptions) : void => {
+  log = (msg: Msg, level: Level = Level.Info, options: LoggerOptions) : void => {
     if (options.timestamps) {
       const dateFormatOpts: Intl.DateTimeFormatOptions = {
         year: 'numeric', month: '2-digit', day: '2-digit',
