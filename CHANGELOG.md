@@ -1,3 +1,10 @@
+# [0.98.0](https://github.com/teamkeel/keel/compare/v0.97.1...v0.98.0) (2022-08-22)
+
+
+### Features
+
+* testing package logger ([#283](https://github.com/teamkeel/keel/issues/283)) ([a5e8b6a](https://github.com/teamkeel/keel/commit/a5e8b6ae26b0e7ec0a5ca72a8bcd9660a7b4ad7c))
+
 ## [0.97.1](https://github.com/teamkeel/keel/compare/v0.97.0...v0.97.1) (2022-08-20)
 
 
