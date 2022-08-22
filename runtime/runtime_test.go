@@ -12,6 +12,7 @@ import (
 
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/iancoleman/strcase"
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
@@ -86,7 +87,6 @@ func TestRuntime(t *testing.T) {
 
 			// Assemble the query to send from the test case data.
 			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
-			fmt.Println(reqBody)
 			request := Request{
 				Context: runtimectx.WithDatabase(context.Background(), testDB),
 				URL: url.URL{
@@ -107,9 +107,15 @@ func TestRuntime(t *testing.T) {
 			bodyFields := respFields{}
 			require.NoError(t, json.Unmarshal([]byte(body), &bodyFields))
 
+			litter.Dump("XXX Handler response Body is:\n")
+			litter.Dump(bodyFields)
+
 			// Unless there is a specific assertion for the error returned,
 			// check there is no error
 			if tCase.assertErrors == nil {
+				if len(bodyFields.Errors) != 0 {
+					t.Fatalf("response has unexpected errors: %s", litter.Sdump(bodyFields.Errors))
+				}
 				require.Len(t, bodyFields.Errors, 0, "response has unexpected errors: %+v", bodyFields.Errors)
 			}
 
@@ -198,12 +204,12 @@ func initRow(with map[string]any) map[string]any {
 const basicSchema string = `
 	model Person {
 		fields {
-			fibble Text 
+			name Text 
 		}
 		operations {
 			get getPerson(id)
-			create createPerson() with (fibble)
-			list listPeople(fibble)
+			create createPerson() with (name)
+			list listPeople(name)
 		}
 	}
 	api Test {
@@ -465,16 +471,16 @@ var testCases = []testCase{
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
 				initRow(map[string]any{
-					"fibble": "Sue",
-					"id":     "41",
+					"name": "Sue",
+					"id":   "41",
 				}),
 				initRow(map[string]any{
-					"fibble": "Fred",
-					"id":     "42",
+					"name": "Fred",
+					"id":   "42",
 				}),
 				initRow(map[string]any{
-					"fibble": "Francis",
-					"id":     "43",
+					"name": "Francis",
+					"id":   "43",
 				}),
 			}
 			for _, row := range rows {
@@ -482,18 +488,18 @@ var testCases = []testCase{
 			}
 		},
 		variables: map[string]any{
-			// "input": map[string]any{
-			// 	"first": 10,
-			// 	"where": map[string]any{
-			// 		"fibble": map[string]any{
-			// 			"startsWith": "Fr",
-			// 		},
-			// 	},
-			// },
+			"input": map[string]any{
+				"first": 10,
+				"where": map[string]any{
+					"name": map[string]any{
+						"startsWith": "Fr",
+					},
+				},
+			},
 		},
 		gqlOperation: `
 			query ListPeople {
-				listPeople(input: { first: 10, where: { fibble: { equals: "Fr" } } })
+				listPeople(input: { first: 10, where: { name: { equals: "Fr" } } })
 				{
 					edges {
 					  node {

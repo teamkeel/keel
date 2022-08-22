@@ -6,8 +6,10 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
+	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"gorm.io/gorm"
 )
 
 // List implements a Keel List Action.
@@ -18,7 +20,13 @@ func List(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
-	args map[string]any) (interface{}, error) {
+	inputs *ListInput) (interface{}, error) {
+
+	litter.Dump("XXXX operation passed to List action:")
+	litter.Dump(operation)
+
+	litter.Dump("XXXX inputs passed to List action:")
+	litter.Dump(inputs)
 
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
@@ -32,16 +40,21 @@ func List(
 	// Initialise a query on the table = to which we'll add Where clauses.
 	tx := db.Table(tableName)
 
-	// Add the WHERE clauses derived from IMPLICIT inputs.
-	tx, err = addInputFilters(operation, args, tx)
+	// Add the WHERE clauses derived from the inputs.
+	tx, err = addListInputFilters(operation, inputs, tx)
 	if err != nil {
 		return nil, err
 	}
+
+	// todo
 	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
-	tx, err = addWhereFilters(operation, schema, args, tx)
-	if err != nil {
-		return nil, err
-	}
+	// tx, err = addWhereFilters(operation, schema, args, tx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	litter.Dump("XXXX SQL generated for List action:")
+	litter.Dump(tx.Statement.SQL.String())
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
@@ -51,12 +64,44 @@ func List(
 	if tx.Error != nil {
 		return nil, tx.Error
 	}
-	n := len(result)
-	if n == 0 {
-		return nil, errors.New("no records found for Get() operation")
+	res := toLowerCamelMaps(result)
+
+	litter.Dump("XXXX Response being returned from List action:")
+	litter.Dump(res)
+
+	return res, nil
+}
+
+// addListInputFilters adds Where clauses to the given gorm.DB corresponding to the
+// given ListInput.
+func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB) (*gorm.DB, error) {
+	// We'll look at each of the fields specified as inputs by the operation in the schema,
+	// and then try to find these referenced by the where filters in the given ListInput.
+	for _, schemaInput := range op.Inputs {
+		if schemaInput.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			return nil, errors.New("not yet supported: explicit inputs for list actions")
+		}
+		expectedFieldName := schemaInput.Target[0]
+		var matchingWhere *Where
+		for _, where := range listInput.Wheres {
+			if where.Name == expectedFieldName {
+				matchingWhere = where
+				break
+			}
+		}
+		if matchingWhere == nil {
+			return nil, fmt.Errorf("operation expects a <%s> input, but none is present on the request.")
+		}
+		switch schemaInput.Type.Type {
+		case proto.Type_TYPE_STRING:
+			tx, err := addStringQuery(tx, matchingWhere.StringQuery)
+			if err != nil {
+				return nil, err
+			}
+			return tx, nil
+		default:
+			return nil, errors.New("not yet supported: field types other than string for List operation inputs")
+		}
 	}
-	if n > 1 {
-		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
-	}
-	return toLowerCamelMap(result[0]), nil
+	return tx, nil
 }
