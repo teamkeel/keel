@@ -96,6 +96,6 @@ async function runAllTests({
   reporter.report(results);
 }
 
-const logger = new Logger({ colorize: true });
+const logger = new Logger({ colorize: true, timestamps: false });
 
 export { test, expect, runAllTests, logger, LogLevel };
