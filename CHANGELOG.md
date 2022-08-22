@@ -1,3 +1,10 @@
+## [0.98.2](https://github.com/teamkeel/keel/compare/v0.98.1...v0.98.2) (2022-08-22)
+
+
+### Bug Fixes
+
+* log output ([#286](https://github.com/teamkeel/keel/issues/286)) ([b8308c1](https://github.com/teamkeel/keel/commit/b8308c17ae4ac9e06e96cae9b96425b1d77805df))
+
 ## [0.98.1](https://github.com/teamkeel/keel/compare/v0.98.0...v0.98.1) (2022-08-22)
 
 
