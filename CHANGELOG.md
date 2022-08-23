@@ -1,3 +1,10 @@
+# [0.102.0](https://github.com/teamkeel/keel/compare/v0.101.0...v0.102.0) (2022-08-23)
+
+
+### Features
+
+* support sql limit on non-unique hasOne ([#296](https://github.com/teamkeel/keel/issues/296)) ([2b3a7bb](https://github.com/teamkeel/keel/commit/2b3a7bb243fd47a0f858bf94b8e7018a227d3a11))
+
 # [0.101.0](https://github.com/teamkeel/keel/compare/v0.100.3...v0.101.0) (2022-08-23)
 
 
