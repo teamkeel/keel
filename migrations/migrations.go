@@ -173,7 +173,7 @@ func keelSchemaTableExists(db *gorm.DB) (bool, error) {
 	// to_regclass docs - https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE
 	// translates a textual relation name to its OID ... this function will
 	// return NULL rather than throwing an error if the name is not found.
-	err := db.Raw("SELECT to_regclass('keel_schema') name").Scan(&rows).Error
+	err := db.Raw("SELECT to_regclass('keel_schema') AS name").Scan(&rows).Error
 	if err != nil {
 		return false, err
 	}
