@@ -28,10 +28,20 @@ declare module '@teamkeel/sdk/index' {
     ConsoleTransport,
     Level as LogLevel
   } from '@teamkeel/sdk/logger';
+  import { Identity } from '@teamkeel/sdk/types';
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   export * from '@teamkeel/client';
-  export { Query, QueryConstraints, ChainableQuery, Logger, ConsoleTransport, LogLevel };
+  export {
+    Query,
+    QueryConstraints,
+    ChainableQuery,
+    Logger,
+    ConsoleTransport,
+    LogLevel,
+    Identity
+  };
 }
 
 declare module '@teamkeel/sdk/logger' {
@@ -138,6 +148,14 @@ declare module '@teamkeel/sdk/types' {
   export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
   export type OrderDirection = 'asc' | 'desc'
   export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>
+
+  // A generic Identity interface for usage in other npm packages
+  // without codegenerating the whole Identity interface
+  // We know that Identity will implement these fields
+  export interface Identity {
+    id: string;
+    email: string;
+  }
 }
 declare module '@teamkeel/sdk' {
   import main = require('@teamkeel/sdk/index');
