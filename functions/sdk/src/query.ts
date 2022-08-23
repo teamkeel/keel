@@ -199,6 +199,7 @@ const logSql = <T extends IDer>(query: TaggedTemplateLiteralInvocation<T>) : str
       value = cur.toString();
       break;
     case 'string':
+      // string covers some other types that are stringified such as date
       value = `'${cur}'`;
       break;
     default:

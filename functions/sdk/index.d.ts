@@ -17,9 +17,14 @@ declare module '@teamkeel/sdk/constraints' {
       equal?: number;
       notEqual?: number;
   } | EqualityConstraint;
-  export type DateConstraint = Date;
-  export type BooleanConstraint = EqualityConstraint;
-
+  export type DateConstraint = Date | {
+      equal?: Date
+      before?: Date
+      onOrBefore?: Date
+      after?: Date
+      onOrAfter?: Date
+  }
+  export type BooleanConstraint = boolean | EqualityConstraint;
 }
 declare module '@teamkeel/sdk/index' {
   import Query, { ChainableQuery } from '@teamkeel/sdk/query';
