@@ -43,9 +43,12 @@ export class ConsoleTransport implements Transport {
     if (options.colorize) {
       const color = LevelColorPalette[level];
 
-      console[level](color(msg));
+      // we do not want to console.error as this writes to the stderr
+      // which causes go exec.Command to fail
+      // so therefore we will use console.log for everything
+      console.log(color(msg));
     } else {
-      console[level](msg);
+      console.log(msg);
     }
   };
 }
