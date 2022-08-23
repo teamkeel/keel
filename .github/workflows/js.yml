@@ -17,4 +17,4 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run tests
         working-directory: ./functions/sdk
-        run: npm test
+        run: npm install && npm test
