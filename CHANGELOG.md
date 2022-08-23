@@ -1,3 +1,10 @@
+## [0.100.1](https://github.com/teamkeel/keel/compare/v0.100.0...v0.100.1) (2022-08-23)
+
+
+### Bug Fixes
+
+* log unrelated errors in testing package ([#290](https://github.com/teamkeel/keel/issues/290)) ([65343c4](https://github.com/teamkeel/keel/commit/65343c40e71dd758e3c78ee40c11f6072df17167))
+
 # [0.100.0](https://github.com/teamkeel/keel/compare/v0.99.1...v0.100.0) (2022-08-23)
 
 
