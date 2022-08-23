@@ -1,3 +1,10 @@
+## [0.100.2](https://github.com/teamkeel/keel/compare/v0.100.1...v0.100.2) (2022-08-23)
+
+
+### Bug Fixes
+
+* use stdout for logger error calls ([#291](https://github.com/teamkeel/keel/issues/291)) ([4ce76da](https://github.com/teamkeel/keel/commit/4ce76dad934c99bb0956ff6f12e30db58b2be0e2))
+
 ## [0.100.1](https://github.com/teamkeel/keel/compare/v0.100.0...v0.100.1) (2022-08-23)
 
 
