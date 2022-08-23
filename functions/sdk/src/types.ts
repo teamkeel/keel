@@ -34,3 +34,11 @@ export interface BuiltInFields {
 
 export type OrderDirection = 'ASC' | 'DESC'
 export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>
+
+// A generic Identity interface for usage in other npm packages
+// without codegenerating the whole Identity interface
+// We know that Identity will implement these fields
+export interface Identity {
+  id: string;
+  email: string;
+}
