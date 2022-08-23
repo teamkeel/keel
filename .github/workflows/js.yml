@@ -16,5 +16,5 @@ jobs:
           node-version: 16
       - uses: actions/checkout@v3
       - name: Run tests
-        working_directory: ./functions/sdk
+        working-directory: ./functions/sdk
         run: npm test
