@@ -8,9 +8,6 @@ import {
   Constraints,
   OrderClauses
 } from '../types';
-import Logger from '../logger';
-
-const queryValidator = new Logger({ colorize: true });
 
 import toSnakeCase from '../util/snakeCaser';
 import { LogLevel } from 'index';
@@ -37,7 +34,7 @@ const BEFORE = 'before';
 const AFTER = 'after';
 const ON_OR_AFTER = 'onOrAfter';
 
-export const buildSelectStatement = <T>(tableName: string, conditions: Conditions<T>[], order?: OrderClauses<T>) : TaggedTemplateLiteralInvocation<T> => {
+export const buildSelectStatement = <T>(tableName: string, conditions: Conditions<T>[], order?: OrderClauses<T>, limit?: number) : TaggedTemplateLiteralInvocation<T> => {
   const ands : ValueExpression[] = [];
   const hasConditions = conditions.length > 0;
   const hasOrder = Object.keys(order || {}).length > 0;
@@ -103,7 +100,6 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
               ors.push(sql`${fullyQualifiedField} <= ${dateParam(value)}`);
               break;
             default:
-              queryValidator.log(`Constraint '${operation}' on field '${fullyQualifiedField}' not permitted.`, LogLevel.Warn);
               throw new Error('Unrecognised constraint type');
             }
           });
@@ -120,9 +116,11 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
       ands.push(grouping);
     });
 
-    const whereSqlToken = sql.join(ands, sql` OR `);
+    const whereToken = sql.join(ands, sql` OR `);
+
+    const limitToken = limit ? sql` LIMIT ${limit}` : sql``;
   
-    query = sql`${query} WHERE ${whereSqlToken}`;
+    query = sql`${query} WHERE ${whereToken}${limitToken}`;
   }
 
   if (hasOrder) {

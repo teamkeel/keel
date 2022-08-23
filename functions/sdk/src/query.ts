@@ -55,7 +55,7 @@ export class ChainableQuery<T extends IDer> {
 
   // findOne returns one record even if multiple are returned in the result set
   findOne = async () : Promise<T> => {
-    const sql = buildSelectStatement<T>(this.tableName, this.conditions);
+    const sql = buildSelectStatement<T>(this.tableName, this.conditions, undefined, 1);
 
     const result = await this.execute(sql);
 

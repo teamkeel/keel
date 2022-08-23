@@ -1,0 +1,83 @@
+import { Conditions } from 'types';
+import {
+  buildSelectStatement,
+  buildDeleteStatement,
+  buildCreateStatement,
+  buildUpdateStatement
+} from './';
+
+interface Test {
+  foo: string;
+  bar: number;
+}
+
+test('buildSelectStatement', () => {
+  const query = buildSelectStatement<Test>(
+    'test',
+    [
+      {
+        foo: {
+          startsWith: 'bar'
+        }
+      },
+      {
+        bar: {
+          greaterThan: 1
+        }
+      }
+    ] as Conditions<Test>[]
+  );
+
+  const { sql, values } = query;
+
+  expect(sql).toEqual(
+    'SELECT * FROM "test" WHERE ("test"."foo" ILIKE $1) OR ("test"."bar" > $2)'
+  );
+
+  expect(values).toEqual(['bar%', 1]);
+});
+
+test('buildDeleteStatement', () => {
+  const id = 'jdssjdjsjj';
+
+  const { sql, values } = buildDeleteStatement<Test>('test', id);
+
+  expect(sql).toEqual(
+    'DELETE FROM "test" WHERE id = $1 RETURNING id'
+  );
+
+  expect(values).toEqual([id]);
+});
+
+test('buildCreateStatement', () => {
+  const t : Test = {
+    foo: 'bar',
+    bar: 1
+  };
+
+  const { sql, values } = buildCreateStatement<Test>('test', t);
+
+  expect(sql).toEqual(`
+    INSERT INTO "test" ("foo", "bar")
+    VALUES ($1, $2)
+    RETURNING id`
+  );
+
+  expect(values).toEqual(['bar', 1]);
+});
+
+test('buildUpdateStatement', () => {
+  const id = '18jsjsj';
+  const t : Test = {
+    foo: 'bar',
+    bar: 1
+  };
+
+  const { sql, values } = buildUpdateStatement<Test>('test', id, t);
+
+  expect(sql).toEqual(
+    'UPDATE "test" SET $1 = $2,$3 = $4 WHERE id = $5'
+  );
+
+  expect(values).toEqual(['foo', 'bar', 'bar', 1, id]);
+});
