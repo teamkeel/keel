@@ -1,4 +1,4 @@
-import { Conditions } from 'types';
+import { Conditions, OrderClauses } from 'types';
 import {
   buildSelectStatement,
   buildDeleteStatement,
@@ -80,4 +80,51 @@ test('buildUpdateStatement', () => {
   );
 
   expect(values).toEqual(['foo', 'bar', 'bar', 1, id]);
+});
+
+test('testLimit', () => {
+  const query = buildSelectStatement<Test>(
+    'test',
+    [
+      {
+        foo: {
+          startsWith: 'bar'
+        }
+      }
+    ] as Conditions<Test>[],
+    undefined,
+    1
+  );
+
+  const { sql, values } = query;
+
+  expect(sql).toEqual(
+    'SELECT * FROM "test" WHERE ("test"."foo" ILIKE $1) LIMIT $2'
+  );
+
+  expect(values).toEqual(['bar%', 1]);
+});
+
+test('testOrder', () => {
+  const query = buildSelectStatement<Test>(
+    'test',
+    [
+      {
+        foo: {
+          startsWith: 'bar'
+        }
+      }
+    ] as Conditions<Test>[],
+    {
+      foo: 'ASC'
+    } as OrderClauses<Test>
+  );
+
+  const { sql, values } = query;
+
+  expect(sql).toEqual(
+    'SELECT * FROM "test" WHERE ("test"."foo" ILIKE $1) ORDER BY $2'
+  );
+
+  expect(values).toEqual(['bar%', 'foo ASC']);
 });
