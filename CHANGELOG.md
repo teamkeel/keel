@@ -1,3 +1,10 @@
+# [0.99.0](https://github.com/teamkeel/keel/compare/v0.98.3...v0.99.0) (2022-08-23)
+
+
+### Features
+
+* adds Identity type to @teamkeel/sdk ([#287](https://github.com/teamkeel/keel/issues/287)) ([e2fceb9](https://github.com/teamkeel/keel/commit/e2fceb9b09d2d70451516fe755b659f30e18e3f6))
+
 ## [0.98.3](https://github.com/teamkeel/keel/compare/v0.98.2...v0.98.3) (2022-08-23)
 
 
