@@ -1,0 +1,21 @@
+model Post {
+  fields {
+    status PostStatus
+  }
+
+  operations {
+    update published(id) {
+      @set(post.status = OtherPostStatus.Something)
+    }
+  }
+}
+
+enum PostStatus {
+  Published
+  Draft
+}
+
+enum OtherPostStatus {
+  Something
+  Else
+}

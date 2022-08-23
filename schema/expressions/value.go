@@ -65,6 +65,7 @@ var (
 	TypeNull  = "Null"
 	TypeArray = "Array"
 	TypeIdent = "Ident"
+	TypeEnum  = "Enum"
 )
 
 func (o *Operand) Type() string {
