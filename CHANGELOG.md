@@ -1,3 +1,10 @@
+## [0.99.1](https://github.com/teamkeel/keel/compare/v0.99.0...v0.99.1) (2022-08-23)
+
+
+### Bug Fixes
+
+* incorrect import ([#288](https://github.com/teamkeel/keel/issues/288)) ([26c1136](https://github.com/teamkeel/keel/commit/26c1136fb7b56938337a0395618fa4ba1e060415))
+
 # [0.99.0](https://github.com/teamkeel/keel/compare/v0.98.3...v0.99.0) (2022-08-23)
 
 
