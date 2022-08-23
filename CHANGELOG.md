@@ -1,3 +1,10 @@
+## [0.98.3](https://github.com/teamkeel/keel/compare/v0.98.2...v0.98.3) (2022-08-23)
+
+
+### Bug Fixes
+
+* schema validation issue in the todo example ([#285](https://github.com/teamkeel/keel/issues/285)) ([35f5adf](https://github.com/teamkeel/keel/commit/35f5adf6e8dcde234c39b5d52419d41a42159022))
+
 ## [0.98.2](https://github.com/teamkeel/keel/compare/v0.98.1...v0.98.2) (2022-08-22)
 
 
