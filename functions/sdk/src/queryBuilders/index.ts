@@ -1,26 +1,41 @@
 import {
   sql,
   ValueExpression,
-  TaggedTemplateLiteralInvocation
+  TaggedTemplateLiteralInvocation,
 } from 'slonik';
 import {
   Conditions,
   Constraints,
   OrderClauses
 } from '../types';
+import Logger from '../logger';
+
+const queryValidator = new Logger({ colorize: true });
 
 import toSnakeCase from '../util/snakeCaser';
+import { LogLevel } from 'index';
 
+// StringConstraint
 const ENDS_WITH = 'endsWith';
 const CONTAINS = 'contains';
 const STARTS_WITH = 'startsWith';
 const ONE_OF = 'oneOf';
+
+// NumberConstraint
 const GREATER_THAN = 'greaterThan';
 const LESS_THAN = 'lessThan';
 const GREATER_THAN_OR_EQUAL_TO = 'greaterThanOrEqualTo';
 const LESS_THAN_OR_EQUAL_TO = 'lessThanOrEqualTo';
+
+// EqualityConstraint
 const NOT_EQUAL = 'notEqual';
 const EQUAL = 'equal';
+
+// DateConstraint
+const ON_OR_BEFORE = 'onOrBefore';
+const BEFORE = 'before';
+const AFTER = 'after';
+const ON_OR_AFTER = 'onOrAfter';
 
 export const buildSelectStatement = <T>(tableName: string, conditions: Conditions<T>[], order?: OrderClauses<T>) : TaggedTemplateLiteralInvocation<T> => {
   const ands : ValueExpression[] = [];
@@ -75,12 +90,24 @@ export const buildSelectStatement = <T>(tableName: string, conditions: Condition
             case EQUAL:
               ors.push(sql`${fullyQualifiedField} = ${value}`);
               break;
+            case BEFORE:
+              ors.push(sql`${fullyQualifiedField} < ${dateParam(value)}`);
+              break;
+            case AFTER:
+              ors.push(sql`${fullyQualifiedField} > ${dateParam(value)}`);
+              break;
+            case ON_OR_AFTER:
+              ors.push(sql`${fullyQualifiedField} >= ${dateParam(value)}`);
+              break;
+            case ON_OR_BEFORE:
+              ors.push(sql`${fullyQualifiedField} <= ${dateParam(value)}`);
+              break;
             default:
-                // todo: handle unrecognised
+              queryValidator.log(`Constraint '${operation}' on field '${fullyQualifiedField}' not permitted.`, LogLevel.Warn);
+              throw new Error('Unrecognised constraint type');
             }
           });
         } else {
-          // todo: make this better
           ors.push(sql`${fullyQualifiedField} = ${constraints as ValueExpression}`);
         }
       });
@@ -132,4 +159,8 @@ export const buildDeleteStatement = <T>(tableName: string, id: string) : TaggedT
   const query = sql`DELETE FROM ${sql.identifier([toSnakeCase(tableName)])} WHERE id = ${id} RETURNING id`;
 
   return query;
+};
+
+const dateParam = (d: Date) => {
+  return d.toISOString();
 };
