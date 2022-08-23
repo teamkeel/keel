@@ -1,3 +1,10 @@
+## [0.100.3](https://github.com/teamkeel/keel/compare/v0.100.2...v0.100.3) (2022-08-23)
+
+
+### Bug Fixes
+
+* use query syntax compatible with rds data api ([a549458](https://github.com/teamkeel/keel/commit/a549458dba67118ed4cf44d9ed7fc970cb8eafb3))
+
 ## [0.100.2](https://github.com/teamkeel/keel/compare/v0.100.1...v0.100.2) (2022-08-23)
 
 
