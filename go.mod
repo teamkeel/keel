@@ -1,6 +1,6 @@
 module github.com/teamkeel/keel
 
-go 1.18
+go 1.19
 
 require (
 	github.com/99designs/gqlgen v0.17.13
@@ -18,6 +18,7 @@ require (
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/otiai10/copy v1.7.0
 	github.com/samber/lo v1.25.0
+	github.com/sanity-io/litter v1.5.5
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.1
@@ -30,7 +31,6 @@ require (
 
 require (
 	github.com/aybabtme/flatjson v0.1.1 // indirect
-	github.com/sanity-io/litter v1.5.5 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
 

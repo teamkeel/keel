@@ -54,7 +54,7 @@ func List(
 	// }
 
 	litter.Dump("XXXX gorm generated for List action:")
-	litter.Dump(tx)
+	litter.Dump(tx.Statement)
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
@@ -92,33 +92,14 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 		if matchingWhere == nil {
 			return nil, fmt.Errorf("operation expects an input named: <%s>, but none is present on the request", expectedFieldName)
 		}
-		switch schemaInput.Type.Type {
-		case proto.Type_TYPE_STRING:
-			tx, err := addStringQuery(tx, expectedFieldName, matchingWhere.StringQuery)
-			if err != nil {
-				return nil, err
-			}
-			return tx, nil
-		default:
-			return nil, errors.New("so far, only string field types are supported for List operation inputs")
-		}
+		tx = addWhere(tx, expectedFieldName, matchingWhere)
 	}
 	return tx, nil
 }
 
-// addStringQuery updates the given gorm.DB tx with a where clause that represents the given
-// StringQuery.
-func addStringQuery(tx *gorm.DB, columnName string, stringQry *StringQuery) (*gorm.DB, error) {
-	switch stringQry.Operator {
-	case OperatorEquals:
-		stringOperand, ok := stringQry.Operand.(string)
-		if !ok {
-			return nil, fmt.Errorf("operand cannot be cast to string: %v", stringQry.Operand)
-		}
-		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
-		tx := tx.Where(w, stringOperand)
-		return tx, nil
-	default:
-		return nil, fmt.Errorf("this StringQuery.Operator is not yet supported: %v", stringQry.Operator)
-	}
+// addWhere updates the given gorm.DB tx with a where clause that represents the given
+// query.
+func addWhere(tx *gorm.DB, columnName string, where *Where) *gorm.DB {
+	w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
+	return tx.Where(w, where.Operand)
 }

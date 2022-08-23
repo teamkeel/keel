@@ -9,6 +9,7 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
+	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 )
@@ -182,7 +183,13 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			if err != nil {
 				return nil, err
 			}
-			return connectionResponse(records)
+			resp, err := connectionResponse(records)
+			if err != nil {
+				return nil, err
+			}
+			litter.Dump("XXXX connection pattern response")
+			litter.Dump(resp)
+			return resp, nil
 		}
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
@@ -872,7 +879,7 @@ type IntrospectionQueryResult struct {
 	} `json:"__schema"`
 }
 
-// buildListInput consumes the dictionary that carries the LIST operation inputs on the
+// buildListInput consumes the dictionary that carries the LIST operation input values on the
 // incoming request, and composes a corresponding actions.ListInput object that is good
 // to pass to the generic actions.List() function.
 func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.ListInput, error) {
@@ -899,13 +906,10 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.
 		}
 		for operator, operand := range argValueAsMap {
 			_ = operator
-			stringQuery := actions.StringQuery{
-				Operator: actions.OperatorEquals, // todo this should be f(operand)
-				Operand:  operand,
-			}
 			where := &actions.Where{
-				Name:        argName,
-				StringQuery: &stringQuery,
+				Name:     argName,
+				Operator: actions.OperatorEquals, // todo this should be f(operand),
+				Operand:  operand,
 			}
 			wheres = append(wheres, where)
 		}
@@ -917,22 +921,33 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.
 	return inp, nil
 }
 
-// connectionResponse consumes the raw records returned by actions.List (and similar),
-// and wraps them into a Node+Edges structure that is good for the connections pattern.
+// connectionResponse consumes the raw records returned by actions.List() (and similar),
+// and wraps them into a Node+Edges structure that is good for the connections pattern
+// return type and is expected by the GraphQL schema for the List operation.
 // See https://relay.dev/graphql/connections.htm
 func connectionResponse(records any) (resp any, err error) {
-	// todo
-	return map[string]any{
-		"edges": []any{
-			map[string]any{
-				"id": "placeholderId",
-				"node": map[string]any{
-					"madeUpField": 42,
-					"id":          "placeholderId",
-				},
+
+	recordsList, ok := records.([]map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %v to a []map[string]any", records)
+	}
+	edges := []map[string]any{}
+	for _, record := range recordsList {
+		_ = record
+		edge := map[string]any{
+			"id": "placeholderId",
+			"node": map[string]any{
+				"madeUpField": 42,
+				"id":          "placeholderId",
 			},
-		},
-	}, nil
+		}
+		edges = append(edges, edge)
+	}
+	resp = map[string]any{
+		"edges": edges,
+	}
+	return resp, nil
+
 	/*
 			think want one of these
 

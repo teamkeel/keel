@@ -107,7 +107,7 @@ func TestRuntime(t *testing.T) {
 			bodyFields := respFields{}
 			require.NoError(t, json.Unmarshal([]byte(body), &bodyFields))
 
-			litter.Dump("XXX Handler response Body is:\n")
+			litter.Dump("XXXX Handler response Body is:\n")
 			litter.Dump(bodyFields)
 
 			// Unless there is a specific assertion for the error returned,
