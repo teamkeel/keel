@@ -1,3 +1,10 @@
+# [0.101.0](https://github.com/teamkeel/keel/compare/v0.100.3...v0.101.0) (2022-08-23)
+
+
+### Features
+
+* support date constraints ([#294](https://github.com/teamkeel/keel/issues/294)) ([e40a990](https://github.com/teamkeel/keel/commit/e40a990e8ecc3bea4082ac9856f852c1a0982168))
+
 ## [0.100.3](https://github.com/teamkeel/keel/compare/v0.100.2...v0.100.3) (2022-08-23)
 
 
