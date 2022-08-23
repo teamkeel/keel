@@ -1,3 +1,10 @@
+# [0.100.0](https://github.com/teamkeel/keel/compare/v0.99.1...v0.100.0) (2022-08-23)
+
+
+### Features
+
+* add identity to action executor ([#289](https://github.com/teamkeel/keel/issues/289)) ([fb3389e](https://github.com/teamkeel/keel/commit/fb3389e3304d70879ac62770b22a14ac52822bbb))
+
 ## [0.99.1](https://github.com/teamkeel/keel/compare/v0.99.0...v0.99.1) (2022-08-23)
 
 
