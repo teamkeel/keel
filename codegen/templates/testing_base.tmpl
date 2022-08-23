@@ -2,7 +2,7 @@
 import * as Client from '@teamkeel/client';
 import { createPool, DatabasePool } from 'slonik';
 import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging';
-import { QueryConstraints, ChainableQuery, Query, Logger } from '@teamkeel/sdk';
+import { QueryConstraints, ChainableQuery, Query, Logger, Identity } from '@teamkeel/sdk';
 import ActionExecutor from './actionExecutor';
 
 const cs = process.env.DB_CONN!;
@@ -16,6 +16,11 @@ const actionExecutor = new ActionExecutor({ parentPort: parseInt(parentPort, 10)
 // defined in an *operations* block and custom operations defined in a *functions*
 // block.
 export const Actions = {
+  withIdentity: (identity: Identity) => {
+    return {
+      {{ .WithIdentityActions }}
+    }
+  },
   {{ .Actions }}
 };
 

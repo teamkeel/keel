@@ -661,14 +661,13 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 		})
 
 		for i, model := range modelsToUse {
-
-			if i == len(modelsToUse)-1 {
+			if len(modelsToUse) == 1 || i == len(modelsToUse)-1 {
 				acc += renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
 				})
 			} else {
-				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+				acc += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
 				}))
@@ -717,22 +716,36 @@ func (gen *Generator) GenerateTesting() (r string) {
 		return acc
 	}
 
-	renderActions := func(schema *proto.Schema) (r string) {
+	renderActions := func(schema *proto.Schema, withIdentity bool) (r string) {
 		actions := lo.FlatMap(schema.Models, func(m *proto.Model, _ int) []*proto.Operation {
 			return m.Operations
 		})
 
 		for i, action := range actions {
-			if len(actions) == 1 || i == len(actions)-1 {
-				r += renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": action.Name,
-					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
-				})
+			if withIdentity {
+				if len(actions) == 1 || i == len(actions)-1 {
+					r += renderTemplate(TemplateProperty, map[string]interface{}{
+						"Name": action.Name,
+						"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload, identity })", "any", action.Name),
+					})
+				} else {
+					r += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
+						"Name": action.Name,
+						"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload, identity })", "any", action.Name),
+					}))
+				}
 			} else {
-				r += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": action.Name,
-					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
-				}))
+				if len(actions) == 1 || i == len(actions)-1 {
+					r += renderTemplate(TemplateProperty, map[string]interface{}{
+						"Name": action.Name,
+						"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
+					})
+				} else {
+					r += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
+						"Name": action.Name,
+						"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
+					}))
+				}
 			}
 		}
 
@@ -740,8 +753,9 @@ func (gen *Generator) GenerateTesting() (r string) {
 	}
 
 	r += renderTemplate(TemplateTestingBase, map[string]interface{}{
-		"TestingModelApis": renderApis(gen.schema.Models),
-		"Actions":          renderActions(gen.schema),
+		"TestingModelApis":    renderApis(gen.schema.Models),
+		"Actions":             renderActions(gen.schema, false),
+		"WithIdentityActions": renderActions(gen.schema, true),
 	})
 
 	return r

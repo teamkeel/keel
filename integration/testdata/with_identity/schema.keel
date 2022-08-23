@@ -1,0 +1,21 @@
+model Customer {
+    fields {
+        name Text
+        identity Identity
+    }
+}
+
+model Order {
+    fields {
+        customer Customer
+    }
+
+    operations {
+        create createOrder() with (customer)
+    }
+
+    @permission(
+        actions: [create, update],
+        expression: order.customer.identity == ctx.identity
+    )
+}
