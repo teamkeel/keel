@@ -10,7 +10,6 @@ import {
 } from '../types';
 
 import toSnakeCase from '../util/snakeCaser';
-import { LogLevel } from 'index';
 
 // StringConstraint
 const ENDS_WITH = 'endsWith';
