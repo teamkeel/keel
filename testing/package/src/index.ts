@@ -11,6 +11,8 @@ import Reporter from "./reporter";
 //@ts-ignore
 export * from "./generated";
 
+const exceptionLogger = new Logger({ colorize: true })
+
 const tests: Test[] = [];
 
 function test(testName: TestName, fn: TestFunc) {
@@ -75,10 +77,16 @@ async function runAllTests({
 
         result = TestResult.fail(testName, actual, expected);
       } else if (err instanceof Error) {
+        // An unrelated error occurred inside of the .test() block
+        // which was an instanceof Error
         result = TestResult.exception(testName, err);
+
+        exceptionLogger.log(`ERR:\n${err}`, LogLevel.Error)
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
+
+        exceptionLogger.log(`ERR:\n${err}`, LogLevel.Error)
       }
     } finally {
       if (result) {
