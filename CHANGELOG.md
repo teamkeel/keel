@@ -1,3 +1,10 @@
+## [0.102.4](https://github.com/teamkeel/keel/compare/v0.102.3...v0.102.4) (2022-08-24)
+
+
+### Bug Fixes
+
+* log stack when catching err in tests ([#301](https://github.com/teamkeel/keel/issues/301)) ([a4720be](https://github.com/teamkeel/keel/commit/a4720bec5012500b859611a3dba96a64db42da37))
+
 ## [0.102.3](https://github.com/teamkeel/keel/compare/v0.102.2...v0.102.3) (2022-08-24)
 
 
