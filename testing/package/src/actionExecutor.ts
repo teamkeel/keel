@@ -19,7 +19,7 @@ interface ActionFailure {
 }
 
 interface ActionResponse<T> {
-  object: T;
+  object?: T;
   error?: ActionFailure;
 }
 

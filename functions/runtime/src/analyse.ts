@@ -1,9 +1,9 @@
-import { parseFiles } from '@structured-types/api';
+import { parseFiles } from "@structured-types/api";
 
 export interface AnalyseOptions {
-  path: string
+  path: string;
 }
 
 export default async (opts: AnalyseOptions) => {
-  return parseFiles([opts.path], { collectParameters: true })
-}
+  return parseFiles([opts.path], { collectParameters: true });
+};
