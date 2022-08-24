@@ -6,14 +6,7 @@ import {
 const cs = process.env.DB_CONN
 const env = process.env.NODE_ENV
 
-const interceptors = [
-  createQueryLoggingInterceptor()
-]
-
-createPool(cs, { interceptors }).then(async(pool) => {
-  // CODEGEN: pool is used in the .API template variable
-  startRuntimeServer({
-    functions: { {{ .Functions }}  },
-    api: { {{ .API }} }
-  })
+startRuntimeServer({
+  functions: { {{ .Functions }}  },
+  api: { {{ .API }} }
 })

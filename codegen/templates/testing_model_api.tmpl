@@ -4,9 +4,8 @@ class {{ .Name }}Api {
     return q.create(inputs);
   }
 
-  where = async (conditions: Client.{{ .Name }}Query) : Promise<ChainableQuery<Client.{{ .Name }}>> => {
-    const q = await this.query()
-    return q.where(conditions as any);
+  where = (conditions: Client.{{ .Name }}Query) : ChainableQuery<Client.{{ .Name }}> => {
+    return new ChainableQuery({ tableName: '{{ .TableName }}', connectionString: cs, conditions: [conditions], logger: queryLogger })
   }
 
   delete = async (id: string) : Promise<boolean> => {
@@ -30,11 +29,9 @@ class {{ .Name }}Api {
   }
 
   private query = async () : Promise<Query<Client.{{ .Name }}>> => {
-    const pool = await createPool(cs)
-
     return new Query<Client.{{ .Name }}>({
       tableName: '{{ .TableName }}',
-      pool,
+      connectionString: cs,
       logger: queryLogger
     })
   }

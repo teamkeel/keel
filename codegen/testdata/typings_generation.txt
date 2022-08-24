@@ -67,7 +67,7 @@ export declare type PostUniqueFields = Partial<{
 
 export declare class PostApi {
   private readonly db;
-  constructor(pool: DatabasePool);
+  constructor();
   create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
   where: (conditions: PostQuery) => ChainableQuery<Post>;
   delete: (id: string) => Promise<boolean>;
