@@ -1,4 +1,8 @@
 [
   { "testName": "create", "status": "pass" },
-  { "testName": "findOne", "status": "pass" }
+  { "testName": "update", "status": "pass" },
+  { "testName": "findOne", "status": "pass" },
+  { "testName": "findMany", "status": "pass" },
+  { "testName": "chained conditions", "status": "pass" },
+  { "testName": "order", "status": "pass" }
 ]
