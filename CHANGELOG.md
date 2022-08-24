@@ -1,3 +1,10 @@
+## [0.102.1](https://github.com/teamkeel/keel/compare/v0.102.0...v0.102.1) (2022-08-24)
+
+
+### Bug Fixes
+
+* adds date and enum constraints to generic constraint union type ([#298](https://github.com/teamkeel/keel/issues/298)) ([3cc3e36](https://github.com/teamkeel/keel/commit/3cc3e369464c2a0bff111e616fb041408cef1009))
+
 # [0.102.0](https://github.com/teamkeel/keel/compare/v0.101.0...v0.102.0) (2022-08-23)
 
 
