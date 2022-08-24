@@ -1,10 +1,10 @@
 export interface CustomFunction {
-  call: any;
+  call: any
 }
 
 // Config represents the configuration values
 // to be passed to the Custom Code runtime server
 export interface Config {
-  functions: Record<string, CustomFunction>;
-  api: unknown;
+  functions: Record<string, CustomFunction>
+  api: unknown
 }
