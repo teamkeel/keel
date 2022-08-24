@@ -18,3 +18,15 @@ test('findOne', async () => {
   expect.equal(one.title, 'apple')
 })
 
+test('findMany', async () => {
+  await Post.create({ title: 'fruit' })
+  await Post.create({ title: 'big fruit' })
+
+  const allFruit = await Post.where({
+    title: {
+      contains: 'fruit'
+    }
+  }).all()
+
+  expect.equal(allFruit.length, 2)
+})

@@ -1,4 +1,5 @@
 [
   { "testName": "create", "status": "pass" },
-  { "testName": "findOne", "status": "pass" }
+  { "testName": "findOne", "status": "pass" },
+  { "testName": "findMany", "status": "pass" }
 ]
