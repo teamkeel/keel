@@ -32,14 +32,14 @@ const startRuntimeServer = ({ functions, api }: Config) => {
           throw new Error(`No value returned from ${normalisedPathname}`);
         }
 
-        res.write(JSON.stringify(result));
+        res.write(JSON.stringify({ result }));
       } catch (e) {
         if (e instanceof Error) {
           const { message } = e;
 
-          res.write(JSON.stringify({ message }));
+          res.write(JSON.stringify({ error: message }));
         } else {
-          res.write(JSON.stringify({ message: "An unknown error occurred" }));
+          res.write(JSON.stringify({ error: "An unknown error occurred" }));
         }
 
         res.statusCode = 500;
