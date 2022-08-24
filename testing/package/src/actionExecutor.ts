@@ -1,11 +1,14 @@
 import fetch, { RequestInit } from "node-fetch";
-import { Identity } from '@teamkeel/sdk';
+import { Identity, Logger, LogLevel } from '@teamkeel/sdk';
+
+const logger = new Logger({ colorize: true })
 
 interface ActionExecutorArgs {
   parentPort: number;
   host?: string;
   protocol?: string;
   identity?: Identity;
+  debug?: boolean;
 }
 
 interface ExecuteArgs {
@@ -31,11 +34,13 @@ export default class ActionExecutor {
   private readonly parentPort: number;
   private readonly host: string;
   private readonly protocol: string;
+  private readonly debug?: boolean;
 
-  constructor({ parentPort, host, protocol }: ActionExecutorArgs) {
+  constructor({ parentPort, host, protocol, debug }: ActionExecutorArgs) {
     this.parentPort = parentPort;
     this.host = host || DEFAULT_HOST;
     this.protocol = protocol || DEFAULT_PROTOCOL;
+    this.debug = debug || false;
   }
 
   execute = async<ActionReturnType> (args: ExecuteArgs): Promise<ActionResponse<ActionReturnType>> => {
@@ -43,9 +48,18 @@ export default class ActionExecutor {
       method: "POST",
       body: JSON.stringify(args)
     }
+    const url = `${this.protocol}://${this.host}:${this.parentPort}/action`
+    const res = await fetch(url, requestInit);
 
-    const res = await fetch(`${this.protocol}://${this.host}:${this.parentPort}/action`, requestInit);
+    if (this.debug) {
+      logger.log(`Request to ${url}`, LogLevel.Debug)
+    }
+
     const json = (await res.json()) as ActionResponse<ActionReturnType>;
+  
+    if (this.debug) {
+      logger.log(json, LogLevel.Debug)
+    }
 
     return json;
   };
