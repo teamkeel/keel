@@ -1,3 +1,10 @@
+## [0.102.2](https://github.com/teamkeel/keel/compare/v0.102.1...v0.102.2) (2022-08-24)
+
+
+### Bug Fixes
+
+* export ChainableQuery from sdk package ([#299](https://github.com/teamkeel/keel/issues/299)) ([4d92dc0](https://github.com/teamkeel/keel/commit/4d92dc0bc7c78ec9150aa169b6d1dff1e40cb35d))
+
 ## [0.102.1](https://github.com/teamkeel/keel/compare/v0.102.0...v0.102.1) (2022-08-24)
 
 
