@@ -81,7 +81,7 @@ async function runAllTests({
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
 
-        exceptionLogger.log(`ERR:\n${err}`, LogLevel.Error)
+        exceptionLogger.log(`ERR:\n${err}\n${err.stack}`, LogLevel.Error)
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
