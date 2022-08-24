@@ -25,7 +25,7 @@ func NewGenerator(schema *proto.Schema) *Generator {
 	}
 }
 
-//region client
+// region client
 func (gen *Generator) GenerateClientCode() (r string) {
 	r += gen.GenerateBaseTypes()
 	r += gen.GenerateBaseImports()
@@ -605,12 +605,6 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 			"Path": "@teamkeel/runtime",
 		}))
 
-		// Database pooling setup
-		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
-			"Name": "{ createPool }",
-			"Path": "slonik",
-		}))
-
 		// Logger types
 		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 			"Name": "{ Logger }",
@@ -661,16 +655,15 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 		})
 
 		for i, model := range modelsToUse {
-
 			if i == len(modelsToUse)-1 {
 				acc += renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": strcase.ToLowerCamel(model.Name),
-					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
+					"Type": fmt.Sprintf("new %sApi()", model.Name),
 				})
 			} else {
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": strcase.ToLowerCamel(model.Name),
-					"Type": fmt.Sprintf("new %sApi(pool)", model.Name),
+					"Type": fmt.Sprintf("new %sApi()", model.Name),
 				}))
 			}
 		}
@@ -701,7 +694,7 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 // slightly different. Database pools for code-generated APIs that talk to
 // the database are constructed from within the testing package itself
 
-//region testing
+// region testing
 func (gen *Generator) GenerateTesting() (r string) {
 	renderApis := func(models []*proto.Model) (acc string) {
 		modelsToUse := lo.Filter(models, func(model *proto.Model, _ int) bool {

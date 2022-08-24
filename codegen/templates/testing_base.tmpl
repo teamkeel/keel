@@ -2,7 +2,7 @@
 import * as Client from '@teamkeel/client';
 import { createPool, DatabasePool } from 'slonik';
 import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging';
-import { QueryConstraints, ChainableQuery, Query, Logger } from '@teamkeel/sdk';
+import { QueryConstraints, Query, Logger, ChainableQuery } from '@teamkeel/sdk';
 import ActionExecutor from './actionExecutor';
 
 const cs = process.env.DB_CONN!;

@@ -1,4 +1,4 @@
 [
-  { "testName": "it passes", "status": "pass" },
-  { "testName": "it fails", "status": "fail", "expected": "orange", "actual": "apple" }
+  { "testName": "create", "status": "pass" },
+  { "testName": "findOne", "status": "pass" }
 ]
