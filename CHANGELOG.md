@@ -1,3 +1,10 @@
+## [0.102.10](https://github.com/teamkeel/keel/compare/v0.102.9...v0.102.10) (2022-08-24)
+
+
+### Bug Fixes
+
+* revert non working commit ([#309](https://github.com/teamkeel/keel/issues/309)) ([39aad8a](https://github.com/teamkeel/keel/commit/39aad8a1e247d45e32c728c87d255d2bc2455fd5))
+
 ## [0.102.6](https://github.com/teamkeel/keel/compare/v0.102.5...v0.102.6) (2022-08-24)
 
 
