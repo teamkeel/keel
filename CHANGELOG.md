@@ -1,3 +1,10 @@
+## [0.102.7](https://github.com/teamkeel/keel/compare/v0.102.6...v0.102.7) (2022-08-24)
+
+
+### Bug Fixes
+
+* npm package cleanup ([#306](https://github.com/teamkeel/keel/issues/306)) ([bcb31ba](https://github.com/teamkeel/keel/commit/bcb31ba794e6221b03e9907319d2877c670ab56f))
+
 ## [0.102.6](https://github.com/teamkeel/keel/compare/v0.102.5...v0.102.6) (2022-08-24)
 
 
