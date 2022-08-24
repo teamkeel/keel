@@ -1,4 +1,4 @@
-import Query from './query';
+import Query, { ChainableQuery } from './query';
 import * as Constraints from './constraints';
 import Logger, { ConsoleTransport, Level as LogLevel } from './logger';
 import { Identity } from './types';
@@ -11,6 +11,7 @@ export * from '../../client';
 
 export {
   Query,
+  ChainableQuery,
   Constraints,
   Logger,
   ConsoleTransport,
