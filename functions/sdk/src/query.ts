@@ -1,4 +1,5 @@
 import {
+  createPool,
   DatabasePool,
   QueryResult,
   TaggedTemplateLiteralInvocation
@@ -21,18 +22,19 @@ import {
 } from './types';
 import Logger from './logger';
 import { LogLevel } from './';
+import { ConnectionRoutine } from 'slonik/dist/src/types';
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
   private readonly conditions : Conditions<T>[];
   private orderClauses: OrderClauses<T>;
-  private readonly pool: DatabasePool;
+  private readonly connectionString: string;
   private readonly logger: Logger;
 
-  constructor({ tableName, pool, conditions, logger }: ChainedQueryOpts<T>) {
+  constructor({ tableName, connectionString, conditions, logger }: ChainedQueryOpts<T>) {
     this.tableName = tableName;
     this.conditions = conditions;
-    this.pool = pool;
+    this.connectionString = connectionString;
     this.logger = logger;
   }
 
@@ -84,9 +86,13 @@ export class ChainableQuery<T extends IDer> {
   private execute = async (query: TaggedTemplateLiteralInvocation<T>) : Promise<QueryResult<T>> => {
     this.logger.log(logSql<T>(query), LogLevel.Debug);
 
-    return this.pool.connect(async (connection) => {
+    return this.connect(async (connection) => {
       return connection.query(query);
     });
+  };
+
+  private connect = async (routine: ConnectionRoutine<QueryResult<T>>) => {
+    return (await createPool(this.connectionString)).connect(routine);
   };
 }
 
@@ -97,13 +103,13 @@ interface IDer {
 export default class Query<T extends IDer> {
   private readonly tableName: string;
   private readonly conditions : Conditions<T>[];
-  private readonly pool: DatabasePool;
+  private readonly connectionString: string;
   private readonly logger: Logger;
 
-  constructor({ tableName, pool, logger }: QueryOpts) {
+  constructor({ tableName, connectionString, logger }: QueryOpts) {
     this.tableName = tableName;
     this.conditions = [];
-    this.pool = pool;
+    this.connectionString = connectionString;
     this.logger = logger;
   }
 
@@ -135,7 +141,7 @@ export default class Query<T extends IDer> {
     // at the top level e.g Query.orWhere doesnt make much sense.
     return new ChainableQuery({
       tableName: this.tableName,
-      pool: this.pool,
+      connectionString: this.connectionString,
       conditions: [conditions],
       logger: this.logger
     });
@@ -154,6 +160,8 @@ export default class Query<T extends IDer> {
 
     const result = await this.execute(query);
 
+    // buildSelectStatement stil returns an array despite applying a LIMIT 1
+    // so return the first row anyhow.
     return result.rows[0];
   };
 
@@ -175,13 +183,17 @@ export default class Query<T extends IDer> {
     return result.rows as T[];
   };
 
-  private execute = (query: TaggedTemplateLiteralInvocation<T>) : Promise<QueryResult<T>> => {
+  private execute = async (query: TaggedTemplateLiteralInvocation<T>) : Promise<QueryResult<T>> => {
     this.logger.log(logSql<T>(query), LogLevel.Debug);
 
-    return this.pool.connect(async (connection) => {
+    return this.connect(async (connection) => {
       const result = connection.query(query);
       return result;
     });
+  };
+
+  private connect = async (routine: ConnectionRoutine<QueryResult<T>>) => {
+    return (await createPool(this.connectionString)).connect(routine);
   };
 }
 
