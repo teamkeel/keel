@@ -1,3 +1,10 @@
+## [0.102.9](https://github.com/teamkeel/keel/compare/v0.102.8...v0.102.9) (2022-08-24)
+
+
+### Bug Fixes
+
+* add debug logs to action executor ([#308](https://github.com/teamkeel/keel/issues/308)) ([6a9bb6e](https://github.com/teamkeel/keel/commit/6a9bb6e2eecebfe26a8b2c047844d73895825961))
+
 ## [0.102.8](https://github.com/teamkeel/keel/compare/v0.102.7...v0.102.8) (2022-08-24)
 
 
