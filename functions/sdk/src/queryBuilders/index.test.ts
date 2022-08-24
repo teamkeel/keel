@@ -76,10 +76,10 @@ test('buildUpdateStatement', () => {
   const { sql, values } = buildUpdateStatement<Test>('test', id, t);
 
   expect(sql).toEqual(
-    'UPDATE "test" SET $1 = $2,$3 = $4 WHERE id = $5'
+    'UPDATE "test" SET "foo" = $1,"bar" = $2 WHERE id = $3'
   );
 
-  expect(values).toEqual(['foo', 'bar', 'bar', 1, id]);
+  expect(values).toEqual(['bar', 1, id]);
 });
 
 test('testLimit', () => {

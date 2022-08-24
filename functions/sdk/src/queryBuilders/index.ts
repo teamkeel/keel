@@ -144,7 +144,7 @@ export const buildCreateStatement = <T>(tableName: string, inputs: Partial<T>) :
 
 export const buildUpdateStatement = <T>(tableName: string, id: string, inputs: Partial<T>) : TaggedTemplateLiteralInvocation<T> => {
   const values = Object.entries(inputs).map(([key, value]) => {
-    return sql`${toSnakeCase(key)} = ${value as any}`;
+    return sql`${sql.identifier([toSnakeCase(key)])} = ${value as any}`;
   });
 
   const query = sql`UPDATE ${sql.identifier([toSnakeCase(tableName)])} SET ${sql.join(values, sql`,`)} WHERE id = ${id}`;
