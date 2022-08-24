@@ -5,12 +5,11 @@ import {
   DateConstraint,
   EnumConstraint
 } from './constraints';
-import { DatabasePool } from 'slonik';
 import { Logger } from './';
 
 export interface QueryOpts {
   tableName: string;
-  pool: DatabasePool;
+  connectionString: string;
   logger: Logger
 }
 
