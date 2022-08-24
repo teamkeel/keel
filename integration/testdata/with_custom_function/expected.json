@@ -1,4 +1,4 @@
 [
-  { "testName": "it passes", "status": "pass" },
-  { "testName": "it fails", "status": "fail", "expected": "foo", "actual": "bar" }
+  { "testName": "creating a person", "status": "pass" },
+  { "testName": "fetching a person by id", "status": "pass" }
 ]
