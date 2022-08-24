@@ -1,3 +1,10 @@
+## [0.102.6](https://github.com/teamkeel/keel/compare/v0.102.5...v0.102.6) (2022-08-24)
+
+
+### Bug Fixes
+
+* wrap col names in sql idents ([#303](https://github.com/teamkeel/keel/issues/303)) ([59d6fe6](https://github.com/teamkeel/keel/commit/59d6fe61f2085a2b8a4b0a1d81efe97c79c53d5a))
+
 ## [0.102.5](https://github.com/teamkeel/keel/compare/v0.102.4...v0.102.5) (2022-08-24)
 
 
