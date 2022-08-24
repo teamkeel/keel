@@ -1,7 +1,9 @@
 import {
   StringConstraint,
   BooleanConstraint,
-  NumberConstraint
+  NumberConstraint,
+  DateConstraint,
+  EnumConstraint
 } from './constraints';
 import { DatabasePool } from 'slonik';
 import { Logger } from './';
@@ -20,7 +22,7 @@ export interface SqlOptions {
   asAst: boolean
 }
 
-export type Constraints = StringConstraint | BooleanConstraint | NumberConstraint
+export type Constraints = StringConstraint | BooleanConstraint | NumberConstraint | DateConstraint | EnumConstraint
 
 export type Input<T> = Record<keyof T, unknown>
 
