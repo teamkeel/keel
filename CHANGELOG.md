@@ -1,3 +1,10 @@
+## [0.102.5](https://github.com/teamkeel/keel/compare/v0.102.4...v0.102.5) (2022-08-24)
+
+
+### Bug Fixes
+
+* change testing model api to account for async chaining ([#302](https://github.com/teamkeel/keel/issues/302)) ([ac0403c](https://github.com/teamkeel/keel/commit/ac0403ca5d2afd3d89670c81fbb66dd6c39b5c8c))
+
 ## [0.102.4](https://github.com/teamkeel/keel/compare/v0.102.3...v0.102.4) (2022-08-24)
 
 
