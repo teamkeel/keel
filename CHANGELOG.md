@@ -1,3 +1,10 @@
+## [0.102.8](https://github.com/teamkeel/keel/compare/v0.102.7...v0.102.8) (2022-08-24)
+
+
+### Bug Fixes
+
+* change api for errors returned from action executor ([#307](https://github.com/teamkeel/keel/issues/307)) ([4e21a98](https://github.com/teamkeel/keel/commit/4e21a98e6391e799aad727965f5ceb5d508bec67))
+
 ## [0.102.7](https://github.com/teamkeel/keel/compare/v0.102.6...v0.102.7) (2022-08-24)
 
 
