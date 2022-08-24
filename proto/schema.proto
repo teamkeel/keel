@@ -100,6 +100,9 @@ message Operation {
 
     // A list of expressions that perform some kind of validation (likely on the inputs)
     repeated Expression validation_expressions = 9;
+
+    // For OPERATION_TYPE_CUSTOM operations which have a non-uniform response and which must be defined in code.
+    repeated OperationOutput outputs = 10;
 }
 
 message OperationInput {
@@ -131,6 +134,23 @@ message OperationInput {
     // an `Item` model which itself had a field called `price`, and this input wanted to filter
     // on the item price, then the value of `target` would be ["item", "price"]
     repeated string target = 9;
+
+    // For inputs of type TYPE_OBJECT
+    repeated OperationInput inputs = 10;
+}
+
+message OperationOutput {
+    // Name of the parent model
+    string model_name = 1;
+
+    // Name of the parent operation
+    string operation_name = 2;
+
+    // Name of the output. 
+    string name = 3;
+
+    // The type of this output. 
+    TypeInfo type = 4;
 }
 
 enum InputMode {
@@ -252,6 +272,10 @@ enum OperationImplementation {
     // Custom means the implementation of the operation is provided via custom code.
     // The code itself is not represented in this proto schema. 
     OPERATION_IMPLEMENTATION_CUSTOM = 2;
+
+    // Built-in operation, not specified in the keel schema, with specialised implemention 
+    // defined in each resolvers' implementation.
+    OPERATION_IMPLEMENTATION_BUILTIN = 3;
 }
 
 enum OperationType {
@@ -273,6 +297,10 @@ enum OperationType {
 
     // Delete a record and returns it's ID
     OPERATION_TYPE_DELETE = 5;
+
+    // Performs a custom operation and returns a response mode as defined in the 
+    // protobuf schema (i.e. not directly derived from schema models)
+    OPERATION_TYPE_CUSTOM = 6;
 }
 
 enum Type {
@@ -289,4 +317,5 @@ enum Type {
     TYPE_ENUM = 10;
     TYPE_IDENTITY = 11;
     TYPE_IMAGE = 12;
+    TYPE_OBJECT = 13;
 }

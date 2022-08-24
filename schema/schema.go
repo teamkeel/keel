@@ -200,33 +200,48 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
-	declarations.Declarations = append(declarations.Declarations,
-		&parser.DeclarationNode{
-			Model: &parser.ModelNode{
-				BuiltIn: true,
-				Name: parser.NameNode{
-					Value: "Identity",
-					Node: node.Node{
-						Pos: lexer.Position{
-							Filename: schemaFile.FileName,
-						},
+	declaration := &parser.DeclarationNode{
+		Model: &parser.ModelNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityModelName,
+				Node: node.Node{
+					Pos: lexer.Position{
+						Filename: schemaFile.FileName,
 					},
 				},
 			},
 		},
-	)
+	}
 
-	field := &parser.FieldNode{
+	uniqueAttributeNode := &parser.AttributeNode{
+		Name: parser.AttributeNameToken{
+			Value: parser.AttributeUnique,
+		},
+	}
+
+	emailField := &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
-			Value: "username",
+			Value: parser.ImplicitIdentityFieldNameEmail,
 		},
-		Type: "Text",
-	}
-	section := &parser.ModelSectionNode{
-		Fields: []*parser.FieldNode{field},
+		Type:       parser.FieldTypeText,
+		Attributes: []*parser.AttributeNode{uniqueAttributeNode},
 	}
 
-	model := declarations.Declarations[len(declarations.Declarations)-1].Model
-	model.Sections = append(model.Sections, section)
+	passwordField := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: parser.ImplicitIdentityFieldNamePassword,
+		},
+		// TODO: Secret data type
+		Type: parser.FieldTypeText,
+	}
+
+	section := &parser.ModelSectionNode{
+		Fields: []*parser.FieldNode{emailField, passwordField},
+	}
+
+	declaration.Model.Sections = append(declaration.Model.Sections, section)
+	declarations.Declarations = append(declarations.Declarations, declaration)
 }
