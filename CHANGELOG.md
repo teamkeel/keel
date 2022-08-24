@@ -1,3 +1,10 @@
+## [0.102.3](https://github.com/teamkeel/keel/compare/v0.102.2...v0.102.3) (2022-08-24)
+
+
+### Bug Fixes
+
+* change query class to delegate connection logic to methods in async context ([#300](https://github.com/teamkeel/keel/issues/300)) ([77de48f](https://github.com/teamkeel/keel/commit/77de48f78df8da76b6b246ca835a3024023bf0b1))
+
 ## [0.102.2](https://github.com/teamkeel/keel/compare/v0.102.1...v0.102.2) (2022-08-24)
 
 
