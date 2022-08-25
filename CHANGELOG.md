@@ -1,3 +1,10 @@
+## [0.102.17](https://github.com/teamkeel/keel/compare/v0.102.16...v0.102.17) (2022-08-25)
+
+
+### Bug Fixes
+
+* test ci ([#317](https://github.com/teamkeel/keel/issues/317)) ([c86e83b](https://github.com/teamkeel/keel/commit/c86e83b82e40e23384f3bfb62f609c297b917f1a))
+
 ## [0.102.16](https://github.com/teamkeel/keel/compare/v0.102.15...v0.102.16) (2022-08-25)
 
 
