@@ -515,5 +515,24 @@ var testCases = []testCase{
 					}
 				  }
 		 	}`,
+
+		assertData: func(t *testing.T, data map[string]any) {
+			// todo This is just some light sampling to support development at the moment.
+
+			litter.Dump("XXXX assertData input")
+			litter.Dump(data)
+
+			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.hasNextPage", true)
+			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.startCursor", "placeholder-start-cursor")
+
+			edges := rtt.GetValueAtPath(t, data, "listPeople.edges")
+			edgesList, ok := edges.([]any)
+			require.True(t, ok)
+			edge := edgesList[0]
+			edgeMap, ok := edge.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, edgeMap, "node.id", "42")
+			rtt.AssertValueAtPath(t, edgeMap, "node.name", "Fred")
+		},
 	},
 }
