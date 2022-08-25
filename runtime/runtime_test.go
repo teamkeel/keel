@@ -501,9 +501,16 @@ var testCases = []testCase{
 			query ListPeople {
 				listPeople(input: { first: 10, where: { name: { equals: "Fred" } } })
 				{
+					pageInfo {
+						hasNextPage
+						hasPreviousPage
+						startCursor
+						endCursor
+					}
 					edges {
 					  node {
 						id
+						name
 					  }
 					}
 				  }
