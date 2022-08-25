@@ -7,7 +7,6 @@ import Reporter from "./reporter";
 
 // generated.ts doesnt exist at this point, but once the node_module has been
 // injected with the generated code, IT WILL 😈
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 export * from "./generated";
 
