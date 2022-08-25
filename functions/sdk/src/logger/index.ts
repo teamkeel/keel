@@ -60,7 +60,6 @@ export class ConsoleTransport implements Transport {
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Msg = any;
 
 // Usage: new Logger({ colorize: true }).log('foo', Level.Info);

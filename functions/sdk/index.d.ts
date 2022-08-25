@@ -43,7 +43,6 @@ declare module "@teamkeel/sdk/index" {
   } from "@teamkeel/sdk/logger";
   import { Identity } from "@teamkeel/sdk/types";
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   export * from "@teamkeel/client";
   export {
@@ -64,7 +63,6 @@ declare module "@teamkeel/sdk/logger" {
     Debug = "debug",
     Warn = "warn",
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type Msg = any;
 
   export interface Transport {
