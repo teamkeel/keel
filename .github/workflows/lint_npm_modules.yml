@@ -29,9 +29,10 @@ jobs:
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
-        working-directory: ./functions/sdk
         with:
           prettier: true
+          prettier_directory: ./functions/sdk
+
   lint-runtime:
     name: Lint Runtime
     runs-on: ubuntu-latest
@@ -50,6 +51,6 @@ jobs:
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
-        working-directory: ./functions/runtime
         with:
           prettier: true
+          prettier_directory: ./functions/runtime

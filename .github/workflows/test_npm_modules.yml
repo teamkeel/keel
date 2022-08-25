@@ -1,4 +1,4 @@
-name: NPM packages
+name: Test NPM packages
 
 on: 
   push:
