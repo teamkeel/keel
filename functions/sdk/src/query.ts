@@ -2,15 +2,15 @@ import {
   createPool,
   DatabasePool,
   QueryResult,
-  TaggedTemplateLiteralInvocation
-} from 'slonik';
-import KSUID from 'ksuid';
+  TaggedTemplateLiteralInvocation,
+} from "slonik";
+import KSUID from "ksuid";
 import {
   buildCreateStatement,
   buildSelectStatement,
   buildUpdateStatement,
-  buildDeleteStatement
-} from './queryBuilders';
+  buildDeleteStatement,
+} from "./queryBuilders";
 import {
   Conditions,
   ChainedQueryOpts,
@@ -18,20 +18,25 @@ import {
   QueryOpts,
   Input,
   BuiltInFields,
-  OrderClauses
-} from './types';
-import Logger from './logger';
-import { LogLevel } from './';
-import { ConnectionRoutine } from 'slonik/dist/src/types';
+  OrderClauses,
+} from "./types";
+import Logger from "./logger";
+import { LogLevel } from "./";
+import { ConnectionRoutine } from "slonik/dist/src/types";
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
-  private readonly conditions : Conditions<T>[];
+  private readonly conditions: Conditions<T>[];
   private orderClauses: OrderClauses<T>;
   private readonly connectionString: string;
   private readonly logger: Logger;
 
-  constructor({ tableName, connectionString, conditions, logger }: ChainedQueryOpts<T>) {
+  constructor({
+    tableName,
+    connectionString,
+    conditions,
+    logger,
+  }: ChainedQueryOpts<T>) {
     this.tableName = tableName;
     this.conditions = conditions;
     this.connectionString = connectionString;
@@ -39,7 +44,7 @@ export class ChainableQuery<T extends IDer> {
   }
 
   // orWhere can be used to chain additional conditions to a pre-existent set of conditions
-  orWhere = (conditions: Conditions<T>) : ChainableQuery<T> => {
+  orWhere = (conditions: Conditions<T>): ChainableQuery<T> => {
     this.appendConditions(conditions);
 
     return this;
@@ -47,8 +52,12 @@ export class ChainableQuery<T extends IDer> {
 
   // All causes a query to be executed, and all of the results matching the conditions
   // will be returned
-  all = async () : Promise<T[]> => {
-    const sql = buildSelectStatement<T>(this.tableName, this.conditions, this.orderClauses);
+  all = async (): Promise<T[]> => {
+    const sql = buildSelectStatement<T>(
+      this.tableName,
+      this.conditions,
+      this.orderClauses
+    );
 
     const result = await this.execute(sql);
 
@@ -56,34 +65,51 @@ export class ChainableQuery<T extends IDer> {
   };
 
   // findOne returns one record even if multiple are returned in the result set
-  findOne = async () : Promise<T> => {
-    const sql = buildSelectStatement<T>(this.tableName, this.conditions, undefined, 1);
+  findOne = async (): Promise<T> => {
+    const sql = buildSelectStatement<T>(
+      this.tableName,
+      this.conditions,
+      undefined,
+      1
+    );
 
     const result = await this.execute(sql);
 
     return result.rows[0];
   };
 
-  order = (clauses: OrderClauses<T>) : ChainableQuery<T> => {
+  order = (clauses: OrderClauses<T>): ChainableQuery<T> => {
     this.orderClauses = { ...this.orderClauses, ...clauses };
 
     return this;
   };
 
   // Returns the SQL string representing the query
-  sql = ({ asAst }: SqlOptions) : string | TaggedTemplateLiteralInvocation<T> => {
+  sql = ({
+    asAst,
+  }: SqlOptions): string | TaggedTemplateLiteralInvocation<T> => {
     if (asAst) {
-      return buildSelectStatement(this.tableName, this.conditions, this.orderClauses);
+      return buildSelectStatement(
+        this.tableName,
+        this.conditions,
+        this.orderClauses
+      );
     }
 
-    return buildSelectStatement(this.tableName, this.conditions, this.orderClauses).sql;
+    return buildSelectStatement(
+      this.tableName,
+      this.conditions,
+      this.orderClauses
+    ).sql;
   };
 
-  private appendConditions(conditions: Conditions<T>) : void {
+  private appendConditions(conditions: Conditions<T>): void {
     this.conditions.push(conditions);
   }
 
-  private execute = async (query: TaggedTemplateLiteralInvocation<T>) : Promise<QueryResult<T>> => {
+  private execute = async (
+    query: TaggedTemplateLiteralInvocation<T>
+  ): Promise<QueryResult<T>> => {
     this.logger.log(logSql<T>(query), LogLevel.Debug);
 
     return this.connect(async (connection) => {
@@ -97,12 +123,12 @@ export class ChainableQuery<T extends IDer> {
 }
 
 interface IDer {
-  id: string
+  id: string;
 }
 
 export default class Query<T extends IDer> {
   private readonly tableName: string;
-  private readonly conditions : Conditions<T>[];
+  private readonly conditions: Conditions<T>[];
   private readonly connectionString: string;
   private readonly logger: Logger;
 
@@ -113,13 +139,13 @@ export default class Query<T extends IDer> {
     this.logger = logger;
   }
 
-  create = async (inputs: Partial<T>) : Promise<T> => {
+  create = async (inputs: Partial<T>): Promise<T> => {
     const now = new Date();
     const ksuid = await KSUID.random(now);
-    const builtIns : BuiltInFields = {
+    const builtIns: BuiltInFields = {
       id: ksuid.string,
       createdAt: now.toISOString(),
-      updatedAt: now.toISOString()
+      updatedAt: now.toISOString(),
     };
 
     const values = { ...inputs, ...builtIns };
@@ -131,11 +157,11 @@ export default class Query<T extends IDer> {
     // todo: better typing here
     return {
       ...inputs,
-      id: result.rows[0].id as string
+      id: result.rows[0].id as string,
     } as unknown as T;
   };
 
-  where = (conditions: Conditions<T>) : ChainableQuery<T> => {
+  where = (conditions: Conditions<T>): ChainableQuery<T> => {
     // ChainableQuery has a slightly different API to Query
     // as we do not want to expose methods that should only be chained
     // at the top level e.g Query.orWhere doesnt make much sense.
@@ -143,11 +169,11 @@ export default class Query<T extends IDer> {
       tableName: this.tableName,
       connectionString: this.connectionString,
       conditions: [conditions],
-      logger: this.logger
+      logger: this.logger,
     });
   };
 
-  delete = async (id: string) : Promise<boolean> => {
+  delete = async (id: string): Promise<boolean> => {
     const query = buildDeleteStatement(this.tableName, id);
 
     const result = await this.execute(query);
@@ -155,7 +181,7 @@ export default class Query<T extends IDer> {
     return result.rowCount === 1;
   };
 
-  findOne = async (conditions: Conditions<T>) : Promise<T> => {
+  findOne = async (conditions: Conditions<T>): Promise<T> => {
     const query = buildSelectStatement<T>(this.tableName, [conditions]);
 
     const result = await this.execute(query);
@@ -165,7 +191,7 @@ export default class Query<T extends IDer> {
     return result.rows[0];
   };
 
-  update = async (id: string, inputs: Input<T>) : Promise<T> => {
+  update = async (id: string, inputs: Input<T>): Promise<T> => {
     // todo type below correctly.
     const query = buildUpdateStatement(this.tableName, id, inputs as any);
 
@@ -175,7 +201,7 @@ export default class Query<T extends IDer> {
     return inputs as T;
   };
 
-  all = async () : Promise<T[]> => {
+  all = async (): Promise<T[]> => {
     const sql = buildSelectStatement(this.tableName, this.conditions);
 
     const result = await this.execute(sql);
@@ -183,7 +209,9 @@ export default class Query<T extends IDer> {
     return result.rows as T[];
   };
 
-  private execute = async (query: TaggedTemplateLiteralInvocation<T>) : Promise<QueryResult<T>> => {
+  private execute = async (
+    query: TaggedTemplateLiteralInvocation<T>
+  ): Promise<QueryResult<T>> => {
     this.logger.log(logSql<T>(query), LogLevel.Debug);
 
     return this.connect(async (connection) => {
@@ -197,31 +225,33 @@ export default class Query<T extends IDer> {
   };
 }
 
-const logSql = <T extends IDer>(query: TaggedTemplateLiteralInvocation<T>) : string => {
+const logSql = <T extends IDer>(
+  query: TaggedTemplateLiteralInvocation<T>
+): string => {
   const mutatedQuery = query.values.reduce((acc, cur, idx) => {
     const newObj = Object.assign({}, acc);
 
     const v = typeof cur.valueOf();
 
-    let value = '';
+    let value = "";
 
-    switch(v) {
-    case 'number':
-    case 'boolean':
-      value = cur.toString();
-      break;
-    case 'string':
-      // string covers some other types that are stringified such as date
-      value = `'${cur}'`;
-      break;
-    default:
-      value = `'${JSON.stringify(cur)}'`;
+    switch (v) {
+      case "number":
+      case "boolean":
+        value = cur.toString();
+        break;
+      case "string":
+        // string covers some other types that are stringified such as date
+        value = `'${cur}'`;
+        break;
+      default:
+        value = `'${JSON.stringify(cur)}'`;
     }
 
     const newSql = newObj.sql.replace(`$${idx + 1}`, value);
 
     return Object.assign(newObj, { sql: newSql });
   }, query);
-  
+
   return mutatedQuery.sql;
 };

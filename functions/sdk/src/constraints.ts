@@ -15,38 +15,46 @@
 // }
 
 export type EqualityConstraint = {
-  notEqual?: string
-  equal?: string
-}
+  notEqual?: string;
+  equal?: string;
+};
 
-export type StringConstraint = string | {
-  startsWith?: string
-  endsWith?: string
-  oneOf?: string[]
-  contains?: string
-  // todo: need to enforce usage of only one of 
-  // equal or not equal - it is not a simple union of the two
-} | EqualityConstraint
+export type StringConstraint =
+  | string
+  | {
+      startsWith?: string;
+      endsWith?: string;
+      oneOf?: string[];
+      contains?: string;
+      // todo: need to enforce usage of only one of
+      // equal or not equal - it is not a simple union of the two
+    }
+  | EqualityConstraint;
 
-export type NumberConstraint = number | {
-  greaterThan?: number
-  greaterThanOrEqualTo?: number
-  lessThan?: number
-  lessThanOrEqualTo?: number
-  // todo: need to enforce usage of only one of 
-  // equal or not equal - it is not a simple union of the two
-  equal?: number
-  notEqual?: number
-} | EqualityConstraint
+export type NumberConstraint =
+  | number
+  | {
+      greaterThan?: number;
+      greaterThanOrEqualTo?: number;
+      lessThan?: number;
+      lessThanOrEqualTo?: number;
+      // todo: need to enforce usage of only one of
+      // equal or not equal - it is not a simple union of the two
+      equal?: number;
+      notEqual?: number;
+    }
+  | EqualityConstraint;
 
-export type BooleanConstraint =  EqualityConstraint
+export type BooleanConstraint = EqualityConstraint;
 
-export type DateConstraint = Date | {
-  equal?: Date
-  before?: Date
-  onOrBefore?: Date
-  after?: Date
-  onOrAfter?: Date
-}
+export type DateConstraint =
+  | Date
+  | {
+      equal?: Date;
+      before?: Date;
+      onOrBefore?: Date;
+      after?: Date;
+      onOrAfter?: Date;
+    };
 
-export type EnumConstraint = string | EqualityConstraint
+export type EnumConstraint = string | EqualityConstraint;
