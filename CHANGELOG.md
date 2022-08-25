@@ -1,3 +1,10 @@
+## [0.102.18](https://github.com/teamkeel/keel/compare/v0.102.17...v0.102.18) (2022-08-25)
+
+
+### Bug Fixes
+
+* add tests for npm modules ([#321](https://github.com/teamkeel/keel/issues/321)) ([4b66dbd](https://github.com/teamkeel/keel/commit/4b66dbdf2d0cb002e26ff91f9aa2774aaaac24df))
+
 ## [0.102.17](https://github.com/teamkeel/keel/compare/v0.102.16...v0.102.17) (2022-08-25)
 
 
