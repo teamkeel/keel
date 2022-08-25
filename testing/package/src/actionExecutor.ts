@@ -18,8 +18,9 @@ interface ActionFailure {
   message: string;
 }
 
+// todo: update with proper types from sdk package
 interface ActionResponse<T> {
-  object: T;
+  result?: T;
   error?: ActionFailure;
 }
 

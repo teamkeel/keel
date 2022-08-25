@@ -1,4 +1,4 @@
-import { TestCaseResult } from "./output";
+import { TestResultData } from "./output";
 import fetch from "node-fetch";
 
 export interface ReporterOptions {
@@ -13,13 +13,13 @@ export default class Reporter {
     this.opts = opts;
   }
 
-  report = async (results: TestCaseResult[]): Promise<boolean> => {
+  report = async (results: TestResultData[]): Promise<boolean> => {
     const response = await this.doRequest(results);
 
     return response.ok;
   };
 
-  private async doRequest(results: TestCaseResult[]) {
+  private async doRequest(results: TestResultData[]) {
     const { port, host } = this.opts;
 
     return await fetch(`http://${host}:${port}/report`, {
