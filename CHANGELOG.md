@@ -1,3 +1,10 @@
+## [0.102.13](https://github.com/teamkeel/keel/compare/v0.102.12...v0.102.13) (2022-08-25)
+
+
+### Bug Fixes
+
+* cast check to pointer ([#312](https://github.com/teamkeel/keel/issues/312)) ([8a4ac29](https://github.com/teamkeel/keel/commit/8a4ac296c13a94077dc8d2cf82aa5332007f58ce))
+
 ## [0.102.12](https://github.com/teamkeel/keel/compare/v0.102.11...v0.102.12) (2022-08-25)
 
 
