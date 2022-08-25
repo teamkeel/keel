@@ -1,4 +1,4 @@
-import { Logger, LogLevel } from '@teamkeel/sdk';
+import { Logger, LogLevel } from "@teamkeel/sdk";
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
 import { TestResultData, TestResult } from "./output";
@@ -7,11 +7,10 @@ import Reporter from "./reporter";
 
 // generated.ts doesnt exist at this point, but once the node_module has been
 // injected with the generated code, IT WILL 😈
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
 export * from "./generated";
 
-const exceptionLogger = new Logger({ colorize: true })
+const exceptionLogger = new Logger({ colorize: true });
 
 const tests: Test[] = [];
 
@@ -81,12 +80,12 @@ async function runAllTests({
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
 
-        exceptionLogger.log(`ERR:\n${err}\n${err.stack}`, LogLevel.Error)
+        exceptionLogger.log(`ERR:\n${err}\n${err.stack}`, LogLevel.Error);
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
 
-        exceptionLogger.log(`ERR:\n${err}`, LogLevel.Error)
+        exceptionLogger.log(`ERR:\n${err}`, LogLevel.Error);
       }
     } finally {
       if (result) {

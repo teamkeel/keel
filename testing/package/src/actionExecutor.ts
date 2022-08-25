@@ -1,5 +1,5 @@
 import fetch, { RequestInit } from "node-fetch";
-import { Identity } from '@teamkeel/sdk';
+import { Identity } from "@teamkeel/sdk";
 
 interface ActionExecutorArgs {
   parentPort: number;
@@ -23,10 +23,10 @@ interface ActionResponse<T> {
   error?: ActionFailure;
 }
 
-const DEFAULT_HOST = 'localhost';
-const DEFAULT_PROTOCOL = 'http';
+const DEFAULT_HOST = "localhost";
+const DEFAULT_PROTOCOL = "http";
 
-// Makes a request to the testing runtime host with 
+// Makes a request to the testing runtime host with
 export default class ActionExecutor {
   private readonly parentPort: number;
   private readonly host: string;
@@ -38,13 +38,18 @@ export default class ActionExecutor {
     this.protocol = protocol || DEFAULT_PROTOCOL;
   }
 
-  execute = async<ActionReturnType> (args: ExecuteArgs): Promise<ActionResponse<ActionReturnType>> => {
-    const requestInit : RequestInit = {
+  execute = async <ActionReturnType>(
+    args: ExecuteArgs
+  ): Promise<ActionResponse<ActionReturnType>> => {
+    const requestInit: RequestInit = {
       method: "POST",
-      body: JSON.stringify(args)
-    }
+      body: JSON.stringify(args),
+    };
 
-    const res = await fetch(`${this.protocol}://${this.host}:${this.parentPort}/action`, requestInit);
+    const res = await fetch(
+      `${this.protocol}://${this.host}:${this.parentPort}/action`,
+      requestInit
+    );
     const json = (await res.json()) as ActionResponse<ActionReturnType>;
 
     return json;

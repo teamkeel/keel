@@ -1,43 +1,50 @@
-declare module '@teamkeel/sdk/constraints' {
+declare module "@teamkeel/sdk/constraints" {
   export type EqualityConstraint = {
-      notEqual?: string;
-      equal?: string;
+    notEqual?: string;
+    equal?: string;
   };
-  export type StringConstraint = string | {
-      startsWith?: string;
-      endsWith?: string;
-      oneOf?: string[];
-      contains?: string;
-  } | EqualityConstraint;
-  export type NumberConstraint = number | {
-      greaterThan?: number;
-      greaterThanOrEqualTo?: number;
-      lessThan?: number;
-      lessThanOrEqualTo?: number;
-      equal?: number;
-      notEqual?: number;
-  } | EqualityConstraint;
-  export type DateConstraint = Date | {
-      equal?: Date
-      before?: Date
-      onOrBefore?: Date
-      after?: Date
-      onOrAfter?: Date
-  }
+  export type StringConstraint =
+    | string
+    | {
+        startsWith?: string;
+        endsWith?: string;
+        oneOf?: string[];
+        contains?: string;
+      }
+    | EqualityConstraint;
+  export type NumberConstraint =
+    | number
+    | {
+        greaterThan?: number;
+        greaterThanOrEqualTo?: number;
+        lessThan?: number;
+        lessThanOrEqualTo?: number;
+        equal?: number;
+        notEqual?: number;
+      }
+    | EqualityConstraint;
+  export type DateConstraint =
+    | Date
+    | {
+        equal?: Date;
+        before?: Date;
+        onOrBefore?: Date;
+        after?: Date;
+        onOrAfter?: Date;
+      };
   export type BooleanConstraint = boolean | EqualityConstraint;
 }
-declare module '@teamkeel/sdk/index' {
-  import Query, { ChainableQuery } from '@teamkeel/sdk/query';
-  import * as QueryConstraints from '@teamkeel/sdk/constraints';
+declare module "@teamkeel/sdk/index" {
+  import Query, { ChainableQuery } from "@teamkeel/sdk/query";
+  import * as QueryConstraints from "@teamkeel/sdk/constraints";
   import Logger, {
     ConsoleTransport,
-    Level as LogLevel
-  } from '@teamkeel/sdk/logger';
-  import { Identity } from '@teamkeel/sdk/types';
+    Level as LogLevel,
+  } from "@teamkeel/sdk/logger";
+  import { Identity } from "@teamkeel/sdk/types";
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
-  export * from '@teamkeel/client';
+  export * from "@teamkeel/client";
   export {
     Query,
     QueryConstraints,
@@ -45,27 +52,26 @@ declare module '@teamkeel/sdk/index' {
     Logger,
     ConsoleTransport,
     LogLevel,
-    Identity
+    Identity,
   };
 }
 
-declare module '@teamkeel/sdk/logger' {
+declare module "@teamkeel/sdk/logger" {
   export enum Level {
-    Info = 'info',
-    Error = 'error',
-    Debug = 'debug',
-    Warn = 'warn'
+    Info = "info",
+    Error = "error",
+    Debug = "debug",
+    Warn = "warn",
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  type Msg = any
+  type Msg = any;
 
   export interface Transport {
-    log: (msg: Msg, level: Level, options: LoggerOptions) => void
+    log: (msg: Msg, level: Level, options: LoggerOptions) => void;
   }
   export interface LoggerOptions {
-    transport?: Transport
-    colorize?: boolean
-    timestamps?: boolean
+    transport?: Transport;
+    colorize?: boolean;
+    timestamps?: boolean;
   }
 
   export class ConsoleTransport implements Transport {
@@ -73,24 +79,24 @@ declare module '@teamkeel/sdk/logger' {
   }
 
   export default class Logger {
-    private readonly options : LoggerOptions;
-  
+    private readonly options: LoggerOptions;
+
     constructor(opts?: LoggerOptions);
-  
+
     log: (msg: Msg, level: Level) => void;
   }
 }
 
-declare module '@teamkeel/sdk/query' {
-  import { TaggedTemplateLiteralInvocation } from 'slonik';
+declare module "@teamkeel/sdk/query" {
+  import { TaggedTemplateLiteralInvocation } from "slonik";
   import {
     Conditions,
     ChainedQueryOpts,
     SqlOptions,
     QueryOpts,
     Input,
-    OrderClauses
-  } from '@teamkeel/sdk/types';
+    OrderClauses,
+  } from "@teamkeel/sdk/types";
   export class ChainableQuery<T> {
     private readonly tableName;
     private readonly conditions;
@@ -117,42 +123,56 @@ declare module '@teamkeel/sdk/query' {
     all: () => Promise<T[]>;
   }
   export {};
-
 }
 
-declare module '@teamkeel/sdk/queryBuilders/index' {
-  import { TaggedTemplateLiteralInvocation } from 'slonik';
-  import { Constraints } from '@teamkeel/sdk/types';
-  export const buildSelectStatement: <T>(tableName: string, conditions: Partial<Record<keyof T, Constraints>>[]) => TaggedTemplateLiteralInvocation<T>;
-  export const buildCreateStatement: <T>(tableName: string, inputs: Partial<T>) => TaggedTemplateLiteralInvocation;
-  export const buildUpdateStatement: <T>(tableName: string, id: string, inputs: Partial<T>) => TaggedTemplateLiteralInvocation<T>;
-  export const buildDeleteStatement: <T>(tableName: string, id: string) => TaggedTemplateLiteralInvocation<T>;
-
+declare module "@teamkeel/sdk/queryBuilders/index" {
+  import { TaggedTemplateLiteralInvocation } from "slonik";
+  import { Constraints } from "@teamkeel/sdk/types";
+  export const buildSelectStatement: <T>(
+    tableName: string,
+    conditions: Partial<Record<keyof T, Constraints>>[]
+  ) => TaggedTemplateLiteralInvocation<T>;
+  export const buildCreateStatement: <T>(
+    tableName: string,
+    inputs: Partial<T>
+  ) => TaggedTemplateLiteralInvocation;
+  export const buildUpdateStatement: <T>(
+    tableName: string,
+    id: string,
+    inputs: Partial<T>
+  ) => TaggedTemplateLiteralInvocation<T>;
+  export const buildDeleteStatement: <T>(
+    tableName: string,
+    id: string
+  ) => TaggedTemplateLiteralInvocation<T>;
 }
-declare module '@teamkeel/sdk/types' {
+declare module "@teamkeel/sdk/types" {
   import {
     StringConstraint,
     BooleanConstraint,
-    NumberConstraint
-  } from '@teamkeel/sdk/constraints';
-  import { Logger } from '@teamkeel/sdk';
-  import { DatabasePool } from 'slonik';
+    NumberConstraint,
+  } from "@teamkeel/sdk/constraints";
+  import { Logger } from "@teamkeel/sdk";
+  import { DatabasePool } from "slonik";
   export interface QueryOpts {
-      tableName: string;
-      pool: DatabasePool;
-      logger: Logger;
+    tableName: string;
+    pool: DatabasePool;
+    logger: Logger;
   }
   export interface ChainedQueryOpts<T> extends QueryOpts {
-      conditions: Conditions<T>[];
+    conditions: Conditions<T>[];
   }
   export interface SqlOptions {
-      asAst: boolean;
+    asAst: boolean;
   }
-  export type Constraints = StringConstraint | BooleanConstraint | NumberConstraint;
+  export type Constraints =
+    | StringConstraint
+    | BooleanConstraint
+    | NumberConstraint;
   export type Input<T> = Record<keyof T, unknown>;
   export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
-  export type OrderDirection = 'asc' | 'desc'
-  export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>
+  export type OrderDirection = "asc" | "desc";
+  export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>;
 
   // A generic Identity interface for usage in other npm packages
   // without codegenerating the whole Identity interface
@@ -162,7 +182,7 @@ declare module '@teamkeel/sdk/types' {
     email: string;
   }
 }
-declare module '@teamkeel/sdk' {
-  import main = require('@teamkeel/sdk/index');
+declare module "@teamkeel/sdk" {
+  import main = require("@teamkeel/sdk/index");
   export = main;
 }
