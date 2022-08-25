@@ -1,3 +1,10 @@
+## [0.102.11](https://github.com/teamkeel/keel/compare/v0.102.10...v0.102.11) (2022-08-25)
+
+
+### Bug Fixes
+
+* cover unexpected errors returned from wasm binary in typescript wrapper ([#310](https://github.com/teamkeel/keel/issues/310)) ([ef91a4a](https://github.com/teamkeel/keel/commit/ef91a4a5b8e5f3702fc9ea8c2d2eb5f7db97e5b9))
+
 ## [0.102.10](https://github.com/teamkeel/keel/compare/v0.102.9...v0.102.10) (2022-08-24)
 
 
