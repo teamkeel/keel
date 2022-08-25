@@ -1,3 +1,10 @@
+## [0.102.14](https://github.com/teamkeel/keel/compare/v0.102.13...v0.102.14) (2022-08-25)
+
+
+### Bug Fixes
+
+* use correct dir option ([#314](https://github.com/teamkeel/keel/issues/314)) ([cdf681d](https://github.com/teamkeel/keel/commit/cdf681d8293aad82639fb1cbf571c1035b49f5ba))
+
 ## [0.102.13](https://github.com/teamkeel/keel/compare/v0.102.12...v0.102.13) (2022-08-25)
 
 
