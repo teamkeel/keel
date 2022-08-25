@@ -1,3 +1,10 @@
+## [0.102.12](https://github.com/teamkeel/keel/compare/v0.102.11...v0.102.12) (2022-08-25)
+
+
+### Bug Fixes
+
+* debug wasm errors ([#311](https://github.com/teamkeel/keel/issues/311)) ([4b738ea](https://github.com/teamkeel/keel/commit/4b738ea72cd9c6173f5f9956b69954d4bad2773e))
+
 ## [0.102.11](https://github.com/teamkeel/keel/compare/v0.102.10...v0.102.11) (2022-08-25)
 
 
