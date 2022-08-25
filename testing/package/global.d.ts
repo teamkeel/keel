@@ -1,1 +1,1 @@
-import 'jest-fetch-mock'
+import "jest-fetch-mock";

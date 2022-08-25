@@ -4,9 +4,7 @@ module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
   verbose: true,
-  setupFiles: [
-    "./setupJest.js"
-  ],
+  setupFiles: ["./setupJest.js"],
   moduleNameMapper: {
     chalk: require.resolve("chalk"),
     "#ansi-styles": path.join(
