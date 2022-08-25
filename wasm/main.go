@@ -172,7 +172,8 @@ func formatSchema(this js.Value, args []js.Value) any {
 }
 
 // Type definition for this function:
-//   validate(schema: string, options?: {color: boolean})
+//
+//	validate(schema: string, options?: {color: boolean})
 func validate(this js.Value, args []js.Value) any {
 
 	if len(args) > 1 {
@@ -196,7 +197,7 @@ func validate(this js.Value, args []js.Value) any {
 	})
 
 	if err != nil {
-		errs, ok := err.(errorhandling.ValidationErrors)
+		errs, ok := err.(*errorhandling.ValidationErrors)
 		if ok {
 			validationErrors, err = toMap(errs)
 			if err != nil {
