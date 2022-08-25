@@ -1,3 +1,10 @@
+## [0.102.16](https://github.com/teamkeel/keel/compare/v0.102.15...v0.102.16) (2022-08-25)
+
+
+### Bug Fixes
+
+* test ([#316](https://github.com/teamkeel/keel/issues/316)) ([742b5aa](https://github.com/teamkeel/keel/commit/742b5aa30ae81be60fcb9eb0d2f7625a3a135e95))
+
 ## [0.102.15](https://github.com/teamkeel/keel/compare/v0.102.14...v0.102.15) (2022-08-25)
 
 
