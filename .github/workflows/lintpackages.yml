@@ -29,7 +29,7 @@ jobs:
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
-        working-directory: ./functions/sdk
+        prettier_directory: ./functions/sdk
         with:
           prettier: true
   lint-runtime:
@@ -50,6 +50,6 @@ jobs:
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
-        working-directory: ./functions/runtime
+        prettier_directory: ./functions/runtime
         with:
           prettier: true
