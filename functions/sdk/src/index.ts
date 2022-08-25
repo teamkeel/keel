@@ -14,7 +14,7 @@ export * from "../../client";
 
 // export all of the generic return types that are used by custom functions
 // these include different types of responses for different operations
-export * from './returnTypes';
+export * from "./returnTypes";
 
 export {
   Query,

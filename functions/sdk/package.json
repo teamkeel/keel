@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node build.mjs && cp index.d.ts dist/",
     "prepublishOnly": "npm run build",
-    "test": "jest"
+    "test": "jest",
+    "lint": "npx prettier --write ."
   },
   "keywords": [],
   "author": "Adam Bull (adam@keel.xyz)",

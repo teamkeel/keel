@@ -39,5 +39,5 @@ export interface FunctionListResponse<T> {
 
 export interface FunctionUpdateResponse<T> {
   result?: T;
-  errors?: FunctionError[]
+  errors?: FunctionError[];
 }
