@@ -26,7 +26,7 @@ jobs:
 
       - name: Install Node.js dependencies
         working-directory: ./functions/sdk
-        run: npm ci
+        run: npm install
         
 
       - name: Run linters
@@ -50,7 +50,7 @@ jobs:
 
       - name: Install Node.js dependencies
         working-directory: ./functions/runtime
-        run: npm ci
+        run: npm install
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
