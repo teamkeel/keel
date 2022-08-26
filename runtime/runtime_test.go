@@ -523,7 +523,7 @@ var testCases = []testCase{
 			litter.Dump(data)
 
 			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.hasNextPage", true)
-			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.startCursor", "placeholder-start-cursor")
+			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.startCursor", "abc123")
 
 			edges := rtt.GetValueAtPath(t, data, "listPeople.edges")
 			edgesList, ok := edges.([]any)

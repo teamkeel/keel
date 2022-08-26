@@ -933,18 +933,18 @@ func connectionResponse(records any) (resp any, err error) {
 	}
 	edges := []map[string]any{}
 	for _, record := range recordsList {
-		cursor := "placeholder-cursor" // will be an object
 		edge := map[string]any{
-			"cursor": cursor,
+			"cursor": record["id"],
 			"node":   record,
 		}
 		edges = append(edges, edge)
 	}
+	//n := len(edges)
 	pageInfo := map[string]any{
 		"hasNextPage":     true,  // placeholder
 		"hasPreviousPage": false, // placeholder
-		"startCursor":     "placeholder-start-cursor",
-		"endCursor":       "placeholder-end-cursor",
+		"startCursor":     "abc123",
+		"endCursor":       "abc987",
 	}
 	resp = map[string]any{
 		"pageInfo": pageInfo,
