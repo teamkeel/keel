@@ -1,3 +1,10 @@
+# [0.103.0](https://github.com/teamkeel/keel/compare/v0.102.21...v0.103.0) (2022-08-26)
+
+
+### Features
+
+* add custom function return type interfaces ([#320](https://github.com/teamkeel/keel/issues/320)) ([8aa8ddb](https://github.com/teamkeel/keel/commit/8aa8ddb529fc6021d0e479e786a2473adbcf90e2))
+
 ## [0.102.21](https://github.com/teamkeel/keel/compare/v0.102.20...v0.102.21) (2022-08-26)
 
 
