@@ -1,3 +1,10 @@
+## [0.102.21](https://github.com/teamkeel/keel/compare/v0.102.20...v0.102.21) (2022-08-26)
+
+
+### Bug Fixes
+
+* await for loop to finish before moving to next test ([#324](https://github.com/teamkeel/keel/issues/324)) ([40cf8b2](https://github.com/teamkeel/keel/commit/40cf8b22ea8597878b90d0e3e3331b49ac7155d1))
+
 ## [0.102.20](https://github.com/teamkeel/keel/compare/v0.102.19...v0.102.20) (2022-08-26)
 
 
