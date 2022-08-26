@@ -39,7 +39,7 @@ async function runAllTests({
     return;
   }
 
-  for (const { testName, fn } of tests) {
+  for await (const { testName, fn } of tests) {
     let result: TestResult | undefined = undefined;
 
     try {
