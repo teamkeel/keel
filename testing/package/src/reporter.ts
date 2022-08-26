@@ -15,7 +15,7 @@ export default class Reporter {
 
   report = async (results: TestResultData[]): Promise<boolean> => {
     const response = await this.testResultsRequest(results);
-    return response.ok
+    return response.ok;
   };
 
   private async testResultsRequest(results: TestResultData[]) {
