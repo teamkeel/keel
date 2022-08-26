@@ -1,3 +1,10 @@
+## [0.102.20](https://github.com/teamkeel/keel/compare/v0.102.19...v0.102.20) (2022-08-26)
+
+
+### Bug Fixes
+
+* await for reporter to report before moving to next test ([#323](https://github.com/teamkeel/keel/issues/323)) ([43c6bc3](https://github.com/teamkeel/keel/commit/43c6bc3762c40e499cd624a7fd4e397a874cc0c0))
+
 ## [0.102.19](https://github.com/teamkeel/keel/compare/v0.102.18...v0.102.19) (2022-08-26)
 
 
