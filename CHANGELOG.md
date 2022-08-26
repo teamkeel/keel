@@ -1,3 +1,10 @@
+## [0.102.19](https://github.com/teamkeel/keel/compare/v0.102.18...v0.102.19) (2022-08-26)
+
+
+### Bug Fixes
+
+* custom function handling of unknown json types ([#322](https://github.com/teamkeel/keel/issues/322)) ([3c71d6b](https://github.com/teamkeel/keel/commit/3c71d6b2c96f5022cb5b8419c187c2cf3bc8c4fb))
+
 ## [0.102.18](https://github.com/teamkeel/keel/compare/v0.102.17...v0.102.18) (2022-08-25)
 
 
