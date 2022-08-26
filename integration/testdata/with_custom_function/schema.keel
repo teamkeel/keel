@@ -8,5 +8,6 @@ model Person {
     functions {
         get getPerson(id)
         create createPerson() with (name, gender, nINumber)
+        list listPeople(gender)
     }
 }
