@@ -100,7 +100,10 @@ async function runAllTests({
 
   // report back to parent process with all
   // results for tests in the current file.
-  reporter.report(results);
+  // we want to await for it to complete prior to moving on
+  // because the report request also clears the database
+  // between individual test() cases
+  await reporter.report(results);
 }
 
 const logger = new Logger({ colorize: true, timestamps: false });

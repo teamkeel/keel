@@ -14,12 +14,11 @@ export default class Reporter {
   }
 
   report = async (results: TestResultData[]): Promise<boolean> => {
-    const response = await this.doRequest(results);
-
-    return response.ok;
+    const response = await this.testResultsRequest(results);
+    return response.ok
   };
 
-  private async doRequest(results: TestResultData[]) {
+  private async testResultsRequest(results: TestResultData[]) {
     const { port, host } = this.opts;
 
     return await fetch(`http://${host}:${port}/report`, {
