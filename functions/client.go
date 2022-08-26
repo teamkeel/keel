@@ -14,7 +14,7 @@ type HttpFunctionsClient struct {
 	Host string
 }
 
-func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, body map[string]any) (map[string]any, error) {
+func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, body map[string]any) (any, error) {
 	b, err := json.Marshal(body)
 
 	if err != nil {
@@ -39,7 +39,7 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, bo
 		return nil, err
 	}
 
-	response := map[string]any{}
+	var response interface{}
 
 	json.Unmarshal(b, &response)
 

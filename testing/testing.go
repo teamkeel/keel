@@ -137,46 +137,26 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 									res, err := actions.Get(ctx, action, schema, body.Payload)
 
 									if err != nil {
-										fmt.Print(err)
-
-										panic(err)
+										failedActionResponse(err, w)
+										break
 									}
 
-									b, err := json.Marshal(res)
+									successfulActionResponse(res, w)
 
-									if err != nil {
-										panic(err)
-									}
-
-									w.Write(b)
 								case proto.OperationType_OPERATION_TYPE_CREATE:
 									res, err := actions.Create(ctx, action, schema, body.Payload)
 
 									if err != nil {
-										fmt.Print(err)
-
-										panic(err)
+										failedActionResponse(err, w)
+										break
 									}
 
-									b, err := json.Marshal(res)
+									successfulActionResponse(res, w)
 
-									if err != nil {
-										panic(err)
-									}
-									w.Write(b)
 								default:
 									w.WriteHeader(400)
-
-									errorDetails := map[string]string{
-										"message": fmt.Sprintf("%s not yet implemented", action.Type),
-									}
-
-									b, err := json.Marshal(errorDetails)
-
-									if err != nil {
-										panic(err)
-									}
-									w.Write(b)
+									err := fmt.Errorf("%s not yet implemented", action.Type)
+									failedActionResponse(err, w)
 								}
 
 								return
@@ -195,18 +175,14 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 								res, err := client.Request(ctx, body.ActionName, body.Payload)
 
 								if err != nil {
-									resBody := map[string]interface{}{
-										"message": err,
-									}
-
-									b, _ := json.Marshal(resBody)
-									w.Write(b)
+									failedActionResponse(err, w)
 									return
 								}
 
-								b, _ := json.Marshal(res)
+								// todo: handle case where actions return:
+								// result: nil, error: not nil
 
-								w.Write(b)
+								successfulActionResponse(res, w)
 							}
 						}
 					}
@@ -311,4 +287,43 @@ func RunServer(workingDir string, port string, parentPort string, dbConnectionSt
 	}
 
 	return cmd.Process, nil
+}
+
+type ActionError struct {
+	Message string `json:"message"`
+}
+
+type ActionResponse struct {
+	Result interface{}  `json:"result"`
+	Error  *ActionError `json:"error"`
+}
+
+func successfulActionResponse(data interface{}, writer http.ResponseWriter) {
+	res := &ActionResponse{
+		Result: data,
+	}
+
+	b, err := json.Marshal(res)
+
+	if err != nil {
+		res.Error.Message = err.Error()
+	}
+
+	writer.Write(b)
+}
+
+func failedActionResponse(err error, writer http.ResponseWriter) {
+	res := &ActionResponse{
+		Error: &ActionError{
+			Message: err.Error(),
+		},
+	}
+
+	b, err := json.Marshal(res)
+
+	if err != nil {
+		res.Error.Message = err.Error()
+	}
+
+	writer.Write(b)
 }
