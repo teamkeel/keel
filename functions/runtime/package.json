@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node build.mjs",
     "prepublishOnly": "npm run build",
-    "start:cli": "npm run build && node dist/cli.js --debug"
+    "start:cli": "npm run build && node dist/cli.js --debug",
+    "lint": "npx prettier --write ."
   },
   "publishConfig": {
     "access": "public"
