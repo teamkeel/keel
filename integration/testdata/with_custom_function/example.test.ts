@@ -20,3 +20,15 @@ test('fetching person by unique NINumber field', async () => {
 
   expect.equal(res.id, person.id)
 })
+
+test('listing', async () => {
+  await Person.create({ name: 'fred', gender: 'male', nINumber: '000' })
+  await Person.create({ name: 'X11', gender: 'alien', nINumber: '920' })
+  await Person.create({ name: 'X22', gender: 'alien', nINumber: '902' })
+
+  const { result: aliens } = await Actions.listPeople({ gender: 'alien' })
+
+  const alienNames = aliens.map((a) => a.name)
+
+  expect.equal(alienNames, ['X11', 'X22'])
+})
