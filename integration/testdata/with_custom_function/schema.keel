@@ -1,0 +1,12 @@
+model Person {
+    fields {
+        name Text
+        gender Text
+        nINumber Text @unique
+    }
+
+    functions {
+        get getPerson(id)
+        create createPerson() with (name, gender, nINumber)
+    }
+}

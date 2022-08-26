@@ -1,0 +1,12 @@
+{{ .Imports }}
+import {
+  createQueryLoggingInterceptor
+} from 'slonik-interceptor-query-logging';
+
+const cs = process.env.DB_CONN
+const env = process.env.NODE_ENV
+
+startRuntimeServer({
+  functions: { {{ .Functions }}  },
+  api: { {{ .API }} }
+})

@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.17.13
 	github.com/alecthomas/participle/v2 v2.0.0-alpha8
 	github.com/aybabtme/orderedjson v0.1.0
+	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/fatih/color v1.7.0

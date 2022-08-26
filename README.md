@@ -4,21 +4,39 @@ keel-cli is a tool to build and deploy services
 
 ## Usage
 
-| Command           | Description                                                                                       |
-|-------------------|---------------------------------------------------------------------------------------------------|
-|  build            | Build the application ready for production deployment                                             |
-|  completion       | Generate the autocompletion script for the specified shell                                        |
-|  diff             | Read DB migrations directory, construct the schema and diff the two                               |
-|  help             | Help about any command                                                                            |
-|  run              | Run the application locally                                                                       |
-|  validate         | Validate the Keel schema                                                                          |
-|  generate         | Generates requisite types and runtime code for custom functions                                   |
+| Command    | Description                                                         |
+| ---------- | ------------------------------------------------------------------- |
+| build      | Build the application ready for production deployment               |
+| completion | Generate the autocompletion script for the specified shell          |
+| diff       | Read DB migrations directory, construct the schema and diff the two |
+| help       | Help about any command                                              |
+| run        | Run the application locally                                         |
+| validate   | Validate the Keel schema                                            |
+| generate   | Generates requisite types and runtime code for custom functions     |
 
 ## Development
 
-Requires Go 1.18.x
+You need the following installed:
 
-### Setting up
+- Go `brew install go`
+- Node - first install [`pnpm`](https://pnpm.io/installation) then run `pnpm env use --global lts`
+- Docker - https://docs.docker.com/desktop/install/mac-install/
+- libpq - `brew install libpq` and follow post-install Brew instructions on updating PATH
+
+A working setup will look something like this (paths will vary):
+
+```sh
+~/code/keel main $ which go
+/usr/local/go/bin/go
+~/code/keel main $ which node
+/Users/jonbretman/.nvm/versions/node/v16.16.0/bin/node
+~/code/keel main $ which docker
+/usr/local/bin/docker
+~/code/keel main $ which psql
+/opt/homebrew/opt/libpq/bin/psql
+```
+
+### Setting up conventional commits
 
 Run the following setup command:
 

@@ -3,10 +3,7 @@ package runtime
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/url"
-	"regexp"
-	"strings"
 	"testing"
 	"time"
 
@@ -14,23 +11,18 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
-	"gorm.io/driver/postgres"
+	"github.com/teamkeel/keel/testhelpers"
 	"gorm.io/gorm"
 )
 
 func TestRuntime(t *testing.T) {
 	// We connect to the "main" database here only so we can create a new database
 	// for each sub-test
-	mainDB, err := gorm.Open(
-		postgres.Open(fmt.Sprintf(dbConnString, "keel")),
-		&gorm.Config{})
-	require.NoError(t, err)
 
 	var skip string = ""              // Name of test case you want to skip, or ""
 	var only = "list_operation_happy" // Name of test case you want isolated and alone, or ""
@@ -46,41 +38,9 @@ func TestRuntime(t *testing.T) {
 
 		// Run this test case.
 		t.Run(tCase.name, func(t *testing.T) {
-
-			// Make a database name for this test
-			re := regexp.MustCompile(`[^\w]`)
-			dbName := strings.ToLower(re.ReplaceAllString(tCase.name, ""))
-
-			t.Logf("XXXX database name for this test: %s\n", dbName)
-
-			// Drop the database if it already exists. The normal dropping of it at the end of the
-			// test case is bypassed if you quit a debug run of the test in VS Code.
-			require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
-
-			// Create the database and drop at the end of the test
-			err = mainDB.Exec("CREATE DATABASE " + dbName).Error
-			require.NoError(t, err)
-			defer func() {
-				require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
-			}()
-
-			// Connect to the newly created test database and close connection
-			// at the end of the test. We need to explicitly close the connection
-			// so the mainDB connection can drop the database.
-			testDB, err := gorm.Open(
-				postgres.Open(fmt.Sprintf(dbConnString, dbName)),
-				&gorm.Config{})
-			require.NoError(t, err)
-			defer func() {
-				conn, err := testDB.DB()
-				require.NoError(t, err)
-				conn.Close()
-			}()
-
-			// Migrate the database to this test case's schema.
 			schema := protoSchema(t, tCase.keelSchema)
-			m := migrations.New(schema, nil)
-			require.NoError(t, m.Apply(testDB))
+
+			testDB := testhelpers.SetupDatabaseForTestCase(t, schema, testhelpers.DbNameForTestName(tCase.name))
 
 			// Construct the runtime API Handler.
 			handler := NewHandler(schema)
@@ -142,23 +102,6 @@ func TestRuntime(t *testing.T) {
 type respFields struct {
 	Data   map[string]any             `json:"data"`
 	Errors []gqlerrors.FormattedError `json:"errors"`
-}
-
-const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
-
-// protoSchema returns a proto.Schema that has been built from the given
-// keel schema.
-func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromInputs(&reader.Inputs{
-		SchemaFiles: []reader.SchemaFile{
-			{
-				Contents: keelSchema,
-			},
-		},
-	})
-	require.NoError(t, err)
-	return schema
 }
 
 // queryAsJSONPayload packages up the given gql mutation, alongside the corresponding input
@@ -535,4 +478,19 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, edgeMap, "node.name", "Fred")
 		},
 	},
+}
+
+// protoSchema returns a proto.Schema that has been built from the given
+// keel schema.
+func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
+	builder := &schema.Builder{}
+	schema, err := builder.MakeFromInputs(&reader.Inputs{
+		SchemaFiles: []reader.SchemaFile{
+			{
+				Contents: keelSchema,
+			},
+		},
+	})
+	require.NoError(t, err)
+	return schema
 }

@@ -1,18 +1,10 @@
-
 {
   "compilerOptions": {
-    "lib": [
-      "ES2015",
-      "DOM"
-    ],
+    "lib": ["ES2015", "DOM"],
     "baseUrl": "./",
     "esModuleInterop": true,
     "moduleResolution": "node"
   },
-  "include": [
-    "**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
-  ]
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules"]
 }

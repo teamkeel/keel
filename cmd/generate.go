@@ -8,6 +8,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/functions"
+	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/schema"
 )
 
@@ -19,7 +20,7 @@ var generateCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		schemaDir, _ := cmd.Flags().GetString("dir")
 
-		packageJson, err := functions.NewPackageJson(filepath.Join(schemaDir, "package.json"))
+		packageJson, err := nodedeps.NewPackageJson(filepath.Join(schemaDir, "package.json"))
 
 		if err != nil {
 			fmt.Println("⛔️ Could not create package.json automatically")
@@ -60,7 +61,7 @@ var generateCmd = &cobra.Command{
 			return
 		}
 
-		err = r.GenerateClient()
+		err = r.Bootstrap()
 
 		if err != nil {
 			fmt.Println("⛔️ Could not generate @teamkeel/client")
@@ -83,24 +84,6 @@ var generateCmd = &cobra.Command{
 				fmt.Printf("⚡️ Generated %s %s\n", color.New(color.FgCyan).Sprint(fileName), color.New(color.Faint).Sprintf("[%s]", f))
 			}
 		}
-
-		result, errs := r.Bundle(true)
-
-		if len(errs) > 0 {
-			fmt.Println("⛔️ Internal runtime error (d)")
-			fmt.Println(errs)
-		}
-
-		fmt.Printf("\n--- %s ---\n", color.New(color.FgHiGreen).Sprint("Runtime"))
-
-		for _, f := range result.OutputFiles {
-			lastFragment := filepath.Base(f.Path)
-
-			fmt.Printf("⚡️ Updated %s %s\n", color.New(color.FgCyan).Sprint(lastFragment), color.New(color.Faint).Sprintf("[%s]", f.Path))
-		}
-
-		fmt.Println("---")
-
 	},
 }
 

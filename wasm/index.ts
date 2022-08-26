@@ -18,9 +18,19 @@ const keel = () : KeelAPI => {
     const api = await instantiate();
 
     const result = api.validate(schemaString, opts) as any;
+
+    if (result.error) {
+      return {
+        errors: [result.error],
+        type: result.type,
+        ast: null
+      }
+    }
+
     if (!result || !result.validationErrors) {
       return {
-        errors: [],
+        errors: [result.error],
+        type: result.type,
         ast: null
       }
     }
@@ -31,6 +41,7 @@ const keel = () : KeelAPI => {
 
     return {
       errors: transformedErrors,
+      type: result.type,
       ast: ast
     }
   }

@@ -47,6 +47,14 @@ func (e *ExpressionScopeEntity) IsOptional() bool {
 	return e.Field != nil && e.Field.Optional
 }
 
+func (e *ExpressionScopeEntity) IsEnumField() bool {
+	return e.Parent != nil && e.Parent.Enum != nil && e.Field != nil
+}
+
+func (e *ExpressionScopeEntity) IsEnumValue() bool {
+	return e.Parent != nil && e.Parent.Enum != nil && e.EnumValue != nil
+}
+
 func (e *ExpressionScopeEntity) GetType() string {
 	if e.Object != nil {
 		return e.Object.Name
@@ -124,7 +132,9 @@ var operatorsForType = map[string][]string{
 		expressions.OperatorLessThanOrEqualTo,
 		expressions.OperatorAssignment,
 	},
-
+	expressions.TypeEnum: {
+		expressions.OperatorAssignment,
+	},
 	expressions.TypeArray: {
 		expressions.OperatorIn,
 		expressions.OperatorNotIn,
@@ -141,6 +151,11 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 	}
 
 	t := e.GetType()
+
+	if e.IsEnumField() || e.IsEnumValue() {
+		t = expressions.TypeEnum
+	}
+
 	if e.IsRepeated() {
 		t = expressions.TypeArray
 	}

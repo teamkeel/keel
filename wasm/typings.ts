@@ -52,5 +52,6 @@ export interface ValidationError {
 
 export interface ValidationResult {
   errors: ValidationError[];
+  type: any;
   ast: any;
 }

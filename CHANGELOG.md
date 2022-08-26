@@ -1,3 +1,360 @@
+## [0.102.21](https://github.com/teamkeel/keel/compare/v0.102.20...v0.102.21) (2022-08-26)
+
+
+### Bug Fixes
+
+* await for loop to finish before moving to next test ([#324](https://github.com/teamkeel/keel/issues/324)) ([40cf8b2](https://github.com/teamkeel/keel/commit/40cf8b22ea8597878b90d0e3e3331b49ac7155d1))
+
+## [0.102.20](https://github.com/teamkeel/keel/compare/v0.102.19...v0.102.20) (2022-08-26)
+
+
+### Bug Fixes
+
+* await for reporter to report before moving to next test ([#323](https://github.com/teamkeel/keel/issues/323)) ([43c6bc3](https://github.com/teamkeel/keel/commit/43c6bc3762c40e499cd624a7fd4e397a874cc0c0))
+
+## [0.102.19](https://github.com/teamkeel/keel/compare/v0.102.18...v0.102.19) (2022-08-26)
+
+
+### Bug Fixes
+
+* custom function handling of unknown json types ([#322](https://github.com/teamkeel/keel/issues/322)) ([3c71d6b](https://github.com/teamkeel/keel/commit/3c71d6b2c96f5022cb5b8419c187c2cf3bc8c4fb))
+
+## [0.102.18](https://github.com/teamkeel/keel/compare/v0.102.17...v0.102.18) (2022-08-25)
+
+
+### Bug Fixes
+
+* add tests for npm modules ([#321](https://github.com/teamkeel/keel/issues/321)) ([4b66dbd](https://github.com/teamkeel/keel/commit/4b66dbdf2d0cb002e26ff91f9aa2774aaaac24df))
+
+## [0.102.17](https://github.com/teamkeel/keel/compare/v0.102.16...v0.102.17) (2022-08-25)
+
+
+### Bug Fixes
+
+* test ci ([#317](https://github.com/teamkeel/keel/issues/317)) ([c86e83b](https://github.com/teamkeel/keel/commit/c86e83b82e40e23384f3bfb62f609c297b917f1a))
+
+## [0.102.16](https://github.com/teamkeel/keel/compare/v0.102.15...v0.102.16) (2022-08-25)
+
+
+### Bug Fixes
+
+* test ([#316](https://github.com/teamkeel/keel/issues/316)) ([742b5aa](https://github.com/teamkeel/keel/commit/742b5aa30ae81be60fcb9eb0d2f7625a3a135e95))
+
+## [0.102.15](https://github.com/teamkeel/keel/compare/v0.102.14...v0.102.15) (2022-08-25)
+
+
+### Bug Fixes
+
+* something ([#315](https://github.com/teamkeel/keel/issues/315)) ([a087141](https://github.com/teamkeel/keel/commit/a08714132ac26b1738479ff6b1cee63e2d8efae5))
+
+## [0.102.14](https://github.com/teamkeel/keel/compare/v0.102.13...v0.102.14) (2022-08-25)
+
+
+### Bug Fixes
+
+* use correct dir option ([#314](https://github.com/teamkeel/keel/issues/314)) ([cdf681d](https://github.com/teamkeel/keel/commit/cdf681d8293aad82639fb1cbf571c1035b49f5ba))
+
+## [0.102.13](https://github.com/teamkeel/keel/compare/v0.102.12...v0.102.13) (2022-08-25)
+
+
+### Bug Fixes
+
+* cast check to pointer ([#312](https://github.com/teamkeel/keel/issues/312)) ([8a4ac29](https://github.com/teamkeel/keel/commit/8a4ac296c13a94077dc8d2cf82aa5332007f58ce))
+
+## [0.102.12](https://github.com/teamkeel/keel/compare/v0.102.11...v0.102.12) (2022-08-25)
+
+
+### Bug Fixes
+
+* debug wasm errors ([#311](https://github.com/teamkeel/keel/issues/311)) ([4b738ea](https://github.com/teamkeel/keel/commit/4b738ea72cd9c6173f5f9956b69954d4bad2773e))
+
+## [0.102.11](https://github.com/teamkeel/keel/compare/v0.102.10...v0.102.11) (2022-08-25)
+
+
+### Bug Fixes
+
+* cover unexpected errors returned from wasm binary in typescript wrapper ([#310](https://github.com/teamkeel/keel/issues/310)) ([ef91a4a](https://github.com/teamkeel/keel/commit/ef91a4a5b8e5f3702fc9ea8c2d2eb5f7db97e5b9))
+
+## [0.102.10](https://github.com/teamkeel/keel/compare/v0.102.9...v0.102.10) (2022-08-24)
+
+
+### Bug Fixes
+
+* revert non working commit ([#309](https://github.com/teamkeel/keel/issues/309)) ([39aad8a](https://github.com/teamkeel/keel/commit/39aad8a1e247d45e32c728c87d255d2bc2455fd5))
+
+## [0.102.6](https://github.com/teamkeel/keel/compare/v0.102.5...v0.102.6) (2022-08-24)
+
+
+### Bug Fixes
+
+* wrap col names in sql idents ([#303](https://github.com/teamkeel/keel/issues/303)) ([59d6fe6](https://github.com/teamkeel/keel/commit/59d6fe61f2085a2b8a4b0a1d81efe97c79c53d5a))
+
+## [0.102.5](https://github.com/teamkeel/keel/compare/v0.102.4...v0.102.5) (2022-08-24)
+
+
+### Bug Fixes
+
+* change testing model api to account for async chaining ([#302](https://github.com/teamkeel/keel/issues/302)) ([ac0403c](https://github.com/teamkeel/keel/commit/ac0403ca5d2afd3d89670c81fbb66dd6c39b5c8c))
+
+## [0.102.4](https://github.com/teamkeel/keel/compare/v0.102.3...v0.102.4) (2022-08-24)
+
+
+### Bug Fixes
+
+* log stack when catching err in tests ([#301](https://github.com/teamkeel/keel/issues/301)) ([a4720be](https://github.com/teamkeel/keel/commit/a4720bec5012500b859611a3dba96a64db42da37))
+
+## [0.102.3](https://github.com/teamkeel/keel/compare/v0.102.2...v0.102.3) (2022-08-24)
+
+
+### Bug Fixes
+
+* change query class to delegate connection logic to methods in async context ([#300](https://github.com/teamkeel/keel/issues/300)) ([77de48f](https://github.com/teamkeel/keel/commit/77de48f78df8da76b6b246ca835a3024023bf0b1))
+
+## [0.102.2](https://github.com/teamkeel/keel/compare/v0.102.1...v0.102.2) (2022-08-24)
+
+
+### Bug Fixes
+
+* export ChainableQuery from sdk package ([#299](https://github.com/teamkeel/keel/issues/299)) ([4d92dc0](https://github.com/teamkeel/keel/commit/4d92dc0bc7c78ec9150aa169b6d1dff1e40cb35d))
+
+## [0.102.1](https://github.com/teamkeel/keel/compare/v0.102.0...v0.102.1) (2022-08-24)
+
+
+### Bug Fixes
+
+* adds date and enum constraints to generic constraint union type ([#298](https://github.com/teamkeel/keel/issues/298)) ([3cc3e36](https://github.com/teamkeel/keel/commit/3cc3e369464c2a0bff111e616fb041408cef1009))
+
+# [0.102.0](https://github.com/teamkeel/keel/compare/v0.101.0...v0.102.0) (2022-08-23)
+
+
+### Features
+
+* support sql limit on non-unique hasOne ([#296](https://github.com/teamkeel/keel/issues/296)) ([2b3a7bb](https://github.com/teamkeel/keel/commit/2b3a7bb243fd47a0f858bf94b8e7018a227d3a11))
+
+# [0.101.0](https://github.com/teamkeel/keel/compare/v0.100.3...v0.101.0) (2022-08-23)
+
+
+### Features
+
+* support date constraints ([#294](https://github.com/teamkeel/keel/issues/294)) ([e40a990](https://github.com/teamkeel/keel/commit/e40a990e8ecc3bea4082ac9856f852c1a0982168))
+
+## [0.100.3](https://github.com/teamkeel/keel/compare/v0.100.2...v0.100.3) (2022-08-23)
+
+
+### Bug Fixes
+
+* use query syntax compatible with rds data api ([a549458](https://github.com/teamkeel/keel/commit/a549458dba67118ed4cf44d9ed7fc970cb8eafb3))
+
+## [0.100.2](https://github.com/teamkeel/keel/compare/v0.100.1...v0.100.2) (2022-08-23)
+
+
+### Bug Fixes
+
+* use stdout for logger error calls ([#291](https://github.com/teamkeel/keel/issues/291)) ([4ce76da](https://github.com/teamkeel/keel/commit/4ce76dad934c99bb0956ff6f12e30db58b2be0e2))
+
+## [0.100.1](https://github.com/teamkeel/keel/compare/v0.100.0...v0.100.1) (2022-08-23)
+
+
+### Bug Fixes
+
+* log unrelated errors in testing package ([#290](https://github.com/teamkeel/keel/issues/290)) ([65343c4](https://github.com/teamkeel/keel/commit/65343c40e71dd758e3c78ee40c11f6072df17167))
+
+# [0.100.0](https://github.com/teamkeel/keel/compare/v0.99.1...v0.100.0) (2022-08-23)
+
+
+### Features
+
+* add identity to action executor ([#289](https://github.com/teamkeel/keel/issues/289)) ([fb3389e](https://github.com/teamkeel/keel/commit/fb3389e3304d70879ac62770b22a14ac52822bbb))
+
+## [0.99.1](https://github.com/teamkeel/keel/compare/v0.99.0...v0.99.1) (2022-08-23)
+
+
+### Bug Fixes
+
+* incorrect import ([#288](https://github.com/teamkeel/keel/issues/288)) ([26c1136](https://github.com/teamkeel/keel/commit/26c1136fb7b56938337a0395618fa4ba1e060415))
+
+# [0.99.0](https://github.com/teamkeel/keel/compare/v0.98.3...v0.99.0) (2022-08-23)
+
+
+### Features
+
+* adds Identity type to @teamkeel/sdk ([#287](https://github.com/teamkeel/keel/issues/287)) ([e2fceb9](https://github.com/teamkeel/keel/commit/e2fceb9b09d2d70451516fe755b659f30e18e3f6))
+
+## [0.98.3](https://github.com/teamkeel/keel/compare/v0.98.2...v0.98.3) (2022-08-23)
+
+
+### Bug Fixes
+
+* schema validation issue in the todo example ([#285](https://github.com/teamkeel/keel/issues/285)) ([35f5adf](https://github.com/teamkeel/keel/commit/35f5adf6e8dcde234c39b5d52419d41a42159022))
+
+## [0.98.2](https://github.com/teamkeel/keel/compare/v0.98.1...v0.98.2) (2022-08-22)
+
+
+### Bug Fixes
+
+* log output ([#286](https://github.com/teamkeel/keel/issues/286)) ([b8308c1](https://github.com/teamkeel/keel/commit/b8308c17ae4ac9e06e96cae9b96425b1d77805df))
+
+## [0.98.1](https://github.com/teamkeel/keel/compare/v0.98.0...v0.98.1) (2022-08-22)
+
+
+### Bug Fixes
+
+* logger tweaks ([#284](https://github.com/teamkeel/keel/issues/284)) ([1136b52](https://github.com/teamkeel/keel/commit/1136b5215e35fcbdb236e794f125fb30cd49f5a8))
+
+# [0.98.0](https://github.com/teamkeel/keel/compare/v0.97.1...v0.98.0) (2022-08-22)
+
+
+### Features
+
+* testing package logger ([#283](https://github.com/teamkeel/keel/issues/283)) ([a5e8b6a](https://github.com/teamkeel/keel/commit/a5e8b6ae26b0e7ec0a5ca72a8bcd9660a7b4ad7c))
+
+## [0.97.1](https://github.com/teamkeel/keel/compare/v0.97.0...v0.97.1) (2022-08-20)
+
+
+### Bug Fixes
+
+* move generic param to method level ([#278](https://github.com/teamkeel/keel/issues/278)) ([2485a57](https://github.com/teamkeel/keel/commit/2485a57abf6fe28ed02ca14f178def8a59eb3864))
+
+# [0.97.0](https://github.com/teamkeel/keel/compare/v0.96.2...v0.97.0) (2022-08-20)
+
+
+### Features
+
+* setup action codegen for testing package ([#277](https://github.com/teamkeel/keel/issues/277)) ([6be4ce3](https://github.com/teamkeel/keel/commit/6be4ce3124c0defcf361ac23a5d8398823155be4))
+
+## [0.96.2](https://github.com/teamkeel/keel/compare/v0.96.1...v0.96.2) (2022-08-20)
+
+
+### Bug Fixes
+
+* debug logs ([#275](https://github.com/teamkeel/keel/issues/275)) ([261e439](https://github.com/teamkeel/keel/commit/261e439b81be20f608df895b8342ec6d1d377d2b))
+
+## [0.96.1](https://github.com/teamkeel/keel/compare/v0.96.0...v0.96.1) (2022-08-20)
+
+
+### Bug Fixes
+
+* small tweaks to [@testing](https://github.com/testing) package ([#274](https://github.com/teamkeel/keel/issues/274)) ([d20926a](https://github.com/teamkeel/keel/commit/d20926acc84496ef8e5ed6247784fff59ef45759))
+
+# [0.96.0](https://github.com/teamkeel/keel/compare/v0.95.10...v0.96.0) (2022-08-20)
+
+
+### Features
+
+* bump js package versions ([#273](https://github.com/teamkeel/keel/issues/273)) ([79033cd](https://github.com/teamkeel/keel/commit/79033cd6fb49bfc69e58bbb9f9f209e5181ac1ce))
+
+## [0.95.10](https://github.com/teamkeel/keel/compare/v0.95.9...v0.95.10) (2022-08-20)
+
+
+### Bug Fixes
+
+* remove top level await attempts ([#272](https://github.com/teamkeel/keel/issues/272)) ([c76b4e9](https://github.com/teamkeel/keel/commit/c76b4e90b0c878d9b7ec669b88814f98b316a9d3))
+
+## [0.95.9](https://github.com/teamkeel/keel/compare/v0.95.8...v0.95.9) (2022-08-20)
+
+
+### Bug Fixes
+
+* set type module ([#271](https://github.com/teamkeel/keel/issues/271)) ([0ebb5f4](https://github.com/teamkeel/keel/commit/0ebb5f4ee85120c7869757b37c161d98c736a5bf))
+
+## [0.95.8](https://github.com/teamkeel/keel/compare/v0.95.7...v0.95.8) (2022-08-20)
+
+
+### Bug Fixes
+
+* update tsconfig to allow for top level await in generated module ([#270](https://github.com/teamkeel/keel/issues/270)) ([aecece3](https://github.com/teamkeel/keel/commit/aecece35ff0379032ba4da0e8b96fcf2c959820c))
+
+## [0.95.7](https://github.com/teamkeel/keel/compare/v0.95.6...v0.95.7) (2022-08-19)
+
+
+### Bug Fixes
+
+* flaky test ([#269](https://github.com/teamkeel/keel/issues/269)) ([82d9dd3](https://github.com/teamkeel/keel/commit/82d9dd3812dc6bce13213545474fa8e874d308d0))
+
+## [0.95.6](https://github.com/teamkeel/keel/compare/v0.95.5...v0.95.6) (2022-08-19)
+
+
+### Bug Fixes
+
+* setup and migrate database per test case ([#268](https://github.com/teamkeel/keel/issues/268)) ([298dc54](https://github.com/teamkeel/keel/commit/298dc546ae41d5d29e851144af382f2cb2850a04))
+
+## [0.95.5](https://github.com/teamkeel/keel/compare/v0.95.4...v0.95.5) (2022-08-19)
+
+
+### Bug Fixes
+
+* await result of fn() in try/catch block ([#267](https://github.com/teamkeel/keel/issues/267)) ([d851876](https://github.com/teamkeel/keel/commit/d8518762d70d272dc353af47e7bccb7d2fa66cac))
+
+## [0.95.4](https://github.com/teamkeel/keel/compare/v0.95.3...v0.95.4) (2022-08-19)
+
+
+### Bug Fixes
+
+* do not console.error as this prints to stderr and causes test to exit too soon ([#266](https://github.com/teamkeel/keel/issues/266)) ([2c8f32b](https://github.com/teamkeel/keel/commit/2c8f32bcf6e0056fadf0a63c22d127fa2442b5d5))
+
+## [0.95.3](https://github.com/teamkeel/keel/compare/v0.95.2...v0.95.3) (2022-08-19)
+
+
+### Bug Fixes
+
+* small fixes ([#265](https://github.com/teamkeel/keel/issues/265)) ([df5dcb7](https://github.com/teamkeel/keel/commit/df5dcb7052a542e8bc1dd959c6f45dd88bfedcb0))
+
+## [0.95.2](https://github.com/teamkeel/keel/compare/v0.95.1...v0.95.2) (2022-08-19)
+
+
+### Bug Fixes
+
+* small fix ([#264](https://github.com/teamkeel/keel/issues/264)) ([ffbb48e](https://github.com/teamkeel/keel/commit/ffbb48ea09de317aa8bd7b553409cee789d10ff4))
+
+## [0.95.1](https://github.com/teamkeel/keel/compare/v0.95.0...v0.95.1) (2022-08-19)
+
+
+### Bug Fixes
+
+* log catching of assertion failures ([#263](https://github.com/teamkeel/keel/issues/263)) ([1f943b5](https://github.com/teamkeel/keel/commit/1f943b5519894193e41493557153bfaa264d8329))
+
+# [0.95.0](https://github.com/teamkeel/keel/compare/v0.94.0...v0.95.0) (2022-08-19)
+
+
+### Features
+
+* generate test flavoured variants of @teamkeel/client ([#262](https://github.com/teamkeel/keel/issues/262)) ([dcf73d0](https://github.com/teamkeel/keel/commit/dcf73d031a059c2a8248fc1c8bce9080c44ea146))
+
+# [0.94.0](https://github.com/teamkeel/keel/compare/v0.93.2...v0.94.0) (2022-08-17)
+
+
+### Features
+
+* bump all packages to next major ([#256](https://github.com/teamkeel/keel/issues/256)) ([cd32880](https://github.com/teamkeel/keel/commit/cd32880437e36b8ec48cfc9c0d45af11c2f614c1))
+
+## [0.93.2](https://github.com/teamkeel/keel/compare/v0.93.1...v0.93.2) (2022-08-17)
+
+
+### Bug Fixes
+
+* use common js setup for testing package ([#255](https://github.com/teamkeel/keel/issues/255)) ([f0f0cc6](https://github.com/teamkeel/keel/commit/f0f0cc65fc498d242ea2d53766e670fcc0913efd))
+
+## [0.93.1](https://github.com/teamkeel/keel/compare/v0.93.0...v0.93.1) (2022-08-17)
+
+
+### Bug Fixes
+
+* make testing package publish public ([#254](https://github.com/teamkeel/keel/issues/254)) ([373e621](https://github.com/teamkeel/keel/commit/373e6215039da471ac7cab21c85db85a21b5a0d5))
+
+# [0.93.0](https://github.com/teamkeel/keel/compare/v0.92.5...v0.93.0) (2022-08-16)
+
+
+### Features
+
+* @teamkeel/testing package ([#252](https://github.com/teamkeel/keel/issues/252)) ([7e493a5](https://github.com/teamkeel/keel/commit/7e493a524df7e38981d33cdfb3e2d46dcc25203d))
+
+## [0.92.5](https://github.com/teamkeel/keel/compare/v0.92.4...v0.92.5) (2022-08-15)
+
+
+### Bug Fixes
+
+* fix validate command ([aeb7fc1](https://github.com/teamkeel/keel/commit/aeb7fc1991d90937f454113217972751b6b8dc2b))
+
 ## [0.92.4](https://github.com/teamkeel/keel/compare/v0.92.3...v0.92.4) (2022-08-15)
 
 

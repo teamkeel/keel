@@ -42,7 +42,7 @@ var validateCmd = &cobra.Command{
 		}
 
 		if err != nil {
-			errs, ok := err.(errorhandling.ValidationErrors)
+			errs, ok := err.(*errorhandling.ValidationErrors)
 			if ok {
 				out, err := errs.ToConsole(schema.SchemaFiles())
 				if err != nil {

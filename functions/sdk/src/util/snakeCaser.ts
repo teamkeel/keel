@@ -1,3 +1,3 @@
-import { snakeCase } from 'change-case';
+import { snakeCase } from "change-case";
 
-export default (input: string) : string => snakeCase(input);
+export default (input: string): string => snakeCase(input);

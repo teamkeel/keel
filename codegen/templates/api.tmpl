@@ -1,0 +1,44 @@
+
+export type {{ .Name }}Query = Partial<{
+  {{ .QueryConstraints }}
+}>
+
+export type {{ .Name }}UniqueFields = Partial<{
+  {{ .UniqueFields }}
+}>
+
+export class {{ .Name }}Api {
+  private readonly db : Query<{{ .Name }}>;
+
+  constructor() {
+    this.db = new Query<{{ .Name }}>({
+      tableName: '{{ .TableName }}',
+      connectionString: process.env.DB_CONN!,
+      logger: queryLogger
+    })
+  }
+
+  create = async (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
+    return this.db.create(inputs);
+  }
+
+  where = (conditions: {{ .Name }}Query) : ChainableQuery<{{ .Name }}> => {
+    return this.db.where(conditions as any);
+  }
+
+  delete = (id: string) : Promise<boolean> => {
+    return this.db.delete(id);
+  }
+
+  findOne = (query: {{ .Name }}UniqueFields) : Promise<{{ .Name }}> => {
+    return this.db.findOne(query as any);
+  }
+
+  update = (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
+    return this.db.update(id, inputs as any);
+  }
+
+  findMany = (query: {{ .Name }}Query) : Promise<{{ .Name }}[]> => {
+    return this.db.where(query as any).all();
+  }
+}

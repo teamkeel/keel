@@ -83,7 +83,7 @@ model Project {
 
     operations {
         create createProject() with (name, team)
-        list listProjects(team)
+        list listProjects(team.id)
         delete deleteProject(id)
     }
 

@@ -1,15 +1,19 @@
-import Query from './query';
-import * as Constraints from './constraints';
-import Logger, { ConsoleTransport, Level as LogLevel } from './logger';
+import Query, { ChainableQuery } from "./query";
+import * as Constraints from "./constraints";
+import Logger, { ConsoleTransport, Level as LogLevel } from "./logger";
+import { Identity } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// ../../client is code generated prior to the runtime starting
+// It will exist in the node_modules dir at @teamkeel/client
 //@ts-ignore
-export * from '../../client';
+export * from "../../client";
 
 export {
   Query,
+  ChainableQuery,
   Constraints,
   Logger,
   ConsoleTransport,
-  LogLevel
+  LogLevel,
+  Identity,
 };

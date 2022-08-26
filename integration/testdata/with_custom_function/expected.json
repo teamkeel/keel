@@ -1,0 +1,5 @@
+[
+  { "testName": "creating a person", "status": "pass" },
+  { "testName": "fetching a person by id", "status": "pass" },
+  { "testName": "fetching person by unique NINumber field", "status": "pass" }
+]

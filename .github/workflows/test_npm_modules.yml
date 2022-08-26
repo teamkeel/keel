@@ -1,0 +1,31 @@
+name: Test NPM packages
+
+on: 
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-sdk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/checkout@v3
+      - name: Run tests
+        working-directory: ./functions/sdk
+        run: npm install && npm test
+  test-testing:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/checkout@v3
+      - name: Run tests
+        working-directory: ./testing/package
+        run: npm install && npm test

@@ -1,0 +1,87 @@
+enum Something {
+    Hello
+}
+model Post {
+    fields {
+        title Text
+    }
+
+    operations {
+        get getPost(id)
+    }
+
+    functions {
+        create createPost() with (title)
+    }
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+    }
+}
+
+===
+
+export type Timestamp = string
+import { QueryConstraints, ChainableQuery, Query } from '@teamkeel/sdk';
+import { DatabasePool } from 'slonik';
+
+export interface Post {
+  title: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+export interface Identity {
+  username: string
+  id: string
+  createdAt: Date
+  updatedAt: Date
+}
+export declare enum Something {
+  Hello = "Hello"
+}export interface GetPostInput {
+  id: string
+}
+export interface CreatePostInput {
+  title: string
+}
+declare type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => Promise<Post>
+
+export declare const CreatePost : (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => Promise<Post>
+
+export declare type PostQuery = Partial<{
+  title?: QueryConstraints.StringConstraint
+  id?: QueryConstraints.StringConstraint
+  createdAt?: QueryConstraints.DateConstraint
+  updatedAt?: QueryConstraints.DateConstraint
+}>
+
+export declare type PostUniqueFields = Partial<{
+  id?: QueryConstraints.StringConstraint
+}>
+
+export declare class PostApi {
+  private readonly db;
+  constructor();
+  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
+  where: (conditions: PostQuery) => ChainableQuery<Post>;
+  delete: (id: string) => Promise<boolean>;
+  findOne: (query: PostUniqueFields) => Promise<Post>;
+  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
+  findMany: (query: PostQuery) => Promise<Post[]>;
+}
+
+import { Logger } from '@teamkeel/sdk'
+
+export interface API {
+  models: {
+    post: PostApi
+
+  },
+  logger: Logger
+}
