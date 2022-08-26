@@ -179,6 +179,9 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 									return
 								}
 
+								// todo: handle case where actions return:
+								// result: nil, error: not nil
+
 								successfulActionResponse(res, w)
 							}
 						}
