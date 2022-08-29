@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
-
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
 )
 
 type Request struct {
 	Context context.Context
-	URL     url.URL
+	Path    string
 	Body    []byte
 }
 
@@ -36,7 +34,7 @@ func NewHandler(s *proto.Schema) Handler {
 	}
 
 	return func(r *Request) (*Response, error) {
-		handler, ok := handlers[r.URL.Path]
+		handler, ok := handlers[r.Path]
 		if !ok {
 			return &Response{
 				Status: 404,
