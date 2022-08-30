@@ -1,6 +1,5 @@
 import {
   createPool,
-  DatabasePool,
   QueryResult,
   TaggedTemplateLiteralInvocation,
 } from "slonik";

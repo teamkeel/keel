@@ -24,6 +24,8 @@ export interface FunctionCreateResponse<T> {
 
 export interface FunctionGetResponse<T> {
   result?: T;
+
+  // todo: it doesnt make sense for ValidationError to be in the union below
   errors?: FunctionError[];
 }
 
