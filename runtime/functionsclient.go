@@ -9,6 +9,7 @@ import (
 
 type FunctionsClient interface {
 	Request(ctx context.Context, actionName string, opType proto.OperationType, body map[string]any) (any, error)
+	ToGraphQL(ctx context.Context, response any, opType proto.OperationType) (interface{}, error)
 }
 
 type functionsClientContextKey string
@@ -26,4 +27,13 @@ func CallFunction(ctx context.Context, actionName string, opType proto.Operation
 	}
 
 	return client.Request(ctx, actionName, opType, body)
+}
+
+func ToGraphQL(ctx context.Context, response any, opType proto.OperationType) (interface{}, error) {
+	client, ok := ctx.Value(functionsClientKey).(FunctionsClient)
+	if !ok {
+		return nil, errors.New("no functions client in context")
+	}
+
+	return client.ToGraphQL(ctx, response, opType)
 }

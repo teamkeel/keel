@@ -46,6 +46,10 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, op
 
 	json.Unmarshal(b, &response)
 
+	return response, nil
+}
+
+func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opType proto.OperationType) (interface{}, error) {
 	responseMap, ok := response.(map[string]any)
 
 	errs, hasErrors := responseMap["errors"].([]map[string]string)
@@ -83,5 +87,5 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, op
 		return success, nil
 	}
 
-	return response, nil
+	return nil, fmt.Errorf("unsupported operation type %s", opType)
 }
