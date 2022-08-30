@@ -28,6 +28,14 @@ api Web {
 export type Timestamp = string
 import { QueryConstraints, ChainableQuery, Query } from '@teamkeel/sdk';
 import { DatabasePool } from 'slonik';
+import {
+  FunctionError,
+  FunctionCreateResponse,
+  FunctionGetResponse,
+  FunctionDeleteResponse,
+  FunctionListResponse,
+  FunctionUpdateResponse
+} from '@teamkeel/sdk';
 
 export interface Post {
   title: string
@@ -50,9 +58,11 @@ export declare enum Something {
 export interface CreatePostInput {
   title: string
 }
-declare type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => Promise<Post>
+declare type CreatePostReturnType = Promise<FunctionCreateResponse<Post>>
 
-export declare const CreatePost : (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => Promise<Post>
+declare type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => CreatePostReturnType
+
+export declare const CreatePost : (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => CreatePostReturnType
 
 export declare type PostQuery = Partial<{
   title?: QueryConstraints.StringConstraint
