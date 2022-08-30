@@ -18,12 +18,14 @@ export interface ExecutionError {
 export type FunctionError = ValidationError | ExecutionError;
 
 export interface FunctionCreateResponse<T> {
-  result?: T;
+  object?: T;
   errors?: FunctionError[];
 }
 
 export interface FunctionGetResponse<T> {
-  result?: T;
+  object?: T;
+
+  // todo: it doesnt make sense for ValidationError to be in the union below
   errors?: FunctionError[];
 }
 
@@ -38,6 +40,6 @@ export interface FunctionListResponse<T> {
 }
 
 export interface FunctionUpdateResponse<T> {
-  result?: T;
+  object?: T;
   errors?: FunctionError[];
 }

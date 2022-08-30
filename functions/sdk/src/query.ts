@@ -1,6 +1,5 @@
 import {
   createPool,
-  DatabasePool,
   QueryResult,
   TaggedTemplateLiteralInvocation,
 } from "slonik";
@@ -20,6 +19,7 @@ import {
   BuiltInFields,
   OrderClauses,
 } from "./types";
+import * as ReturnTypes from "./returnTypes";
 import Logger from "./logger";
 import { LogLevel } from "./";
 import { ConnectionRoutine } from "slonik/dist/src/types";
@@ -52,7 +52,7 @@ export class ChainableQuery<T extends IDer> {
 
   // All causes a query to be executed, and all of the results matching the conditions
   // will be returned
-  all = async (): Promise<T[]> => {
+  all = async (): Promise<ReturnTypes.FunctionListResponse<T>> => {
     const sql = buildSelectStatement<T>(
       this.tableName,
       this.conditions,
@@ -61,11 +61,13 @@ export class ChainableQuery<T extends IDer> {
 
     const result = await this.execute(sql);
 
-    return result.rows as T[];
+    return {
+      collection: result.rows as T[],
+    };
   };
 
   // findOne returns one record even if multiple are returned in the result set
-  findOne = async (): Promise<T> => {
+  findOne = async (): Promise<ReturnTypes.FunctionGetResponse<T>> => {
     const sql = buildSelectStatement<T>(
       this.tableName,
       this.conditions,
@@ -75,7 +77,10 @@ export class ChainableQuery<T extends IDer> {
 
     const result = await this.execute(sql);
 
-    return result.rows[0];
+    return {
+      object: result.rows[0],
+      errors: [],
+    };
   };
 
   order = (clauses: OrderClauses<T>): ChainableQuery<T> => {
@@ -139,7 +144,9 @@ export default class Query<T extends IDer> {
     this.logger = logger;
   }
 
-  create = async (inputs: Partial<T>): Promise<T> => {
+  create = async (
+    inputs: Partial<T>
+  ): Promise<ReturnTypes.FunctionCreateResponse<T>> => {
     const now = new Date();
     const ksuid = await KSUID.random(now);
     const builtIns: BuiltInFields = {
@@ -154,11 +161,13 @@ export default class Query<T extends IDer> {
 
     const result = await this.execute(query);
 
-    // todo: better typing here
     return {
-      ...inputs,
-      id: result.rows[0].id as string,
-    } as unknown as T;
+      object: {
+        ...inputs,
+        id: result.rows[0].id as string,
+      } as unknown as T,
+      errors: [],
+    };
   };
 
   where = (conditions: Conditions<T>): ChainableQuery<T> => {
@@ -173,40 +182,59 @@ export default class Query<T extends IDer> {
     });
   };
 
-  delete = async (id: string): Promise<boolean> => {
+  delete = async (
+    id: string
+  ): Promise<ReturnTypes.FunctionDeleteResponse<T>> => {
     const query = buildDeleteStatement(this.tableName, id);
 
     const result = await this.execute(query);
 
-    return result.rowCount === 1;
+    return {
+      success: result.rowCount === 1,
+    };
   };
 
-  findOne = async (conditions: Conditions<T>): Promise<T> => {
+  findOne = async (
+    conditions: Conditions<T>
+  ): Promise<ReturnTypes.FunctionGetResponse<T>> => {
     const query = buildSelectStatement<T>(this.tableName, [conditions]);
 
     const result = await this.execute(query);
 
     // buildSelectStatement stil returns an array despite applying a LIMIT 1
     // so return the first row anyhow.
-    return result.rows[0];
+    return {
+      object: result.rows[0],
+      errors: [],
+    };
   };
 
-  update = async (id: string, inputs: Input<T>): Promise<T> => {
+  update = async (
+    id: string,
+    inputs: Input<T>
+  ): Promise<ReturnTypes.FunctionUpdateResponse<T>> => {
     // todo type below correctly.
     const query = buildUpdateStatement(this.tableName, id, inputs as any);
 
     await this.execute(query);
 
-    // todo: return whole object
-    return inputs as T;
+    return {
+      object: {
+        ...inputs,
+        id,
+      } as T,
+      errors: [],
+    };
   };
 
-  all = async (): Promise<T[]> => {
+  all = async (): Promise<ReturnTypes.FunctionListResponse<T>> => {
     const sql = buildSelectStatement(this.tableName, this.conditions);
 
     const result = await this.execute(sql);
 
-    return result.rows as T[];
+    return {
+      collection: result.rows as T[],
+    };
   };
 
   private execute = async (

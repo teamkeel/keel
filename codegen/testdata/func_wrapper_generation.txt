@@ -14,28 +14,38 @@ model Post {
 
 ===
 
-type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => Promise<Post>
+type CreatePostReturnType = Promise<FunctionCreateResponse<Post>>
 
-export const CreatePost = (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => {
+type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => CreatePostReturnType
+
+export const CreatePost = (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) : CreatePostReturnType => {
   return callback(inputs, api);
 };
-type UpdatePostCallbackFunction = (inputs: UpdatePostInput, api: API) => Promise<Post>
+type UpdatePostReturnType = Promise<FunctionUpdateResponse<Post>>
 
-export const UpdatePost = (callback: UpdatePostCallbackFunction) => (inputs: UpdatePostInput, api: API) => {
+type UpdatePostCallbackFunction = (inputs: UpdatePostInput, api: API) => UpdatePostReturnType
+
+export const UpdatePost = (callback: UpdatePostCallbackFunction) => (inputs: UpdatePostInput, api: API) : UpdatePostReturnType => {
   return callback(inputs, api);
 };
-type DeletePostCallbackFunction = (inputs: DeletePostInput, api: API) => Promise<boolean>
+declare type DeletePostReturnType = Promise<FunctionDeleteResponse<Post>>
 
-export const DeletePost = (callback: DeletePostCallbackFunction) => (inputs: DeletePostInput, api: API) => {
+type DeletePostCallbackFunction = (inputs: DeletePostInput, api: API) => DeletePostReturnType
+
+export const DeletePost = (callback: DeletePostCallbackFunction) => (inputs: DeletePostInput, api: API) : DeletePostReturnType => {
   return callback(inputs, api);
 };
-type ListPostsCallbackFunction = (inputs: ListPostsInput, api: API) => Promise<Post[]>
+type ListPostsReturnType = Promise<FunctionListResponse<Post[]>>
 
-export const ListPosts = (callback: ListPostsCallbackFunction) => (inputs: ListPostsInput, api: API) => {
+type ListPostsCallbackFunction = (inputs: ListPostsInput, api: API) => ListPostsReturnType
+
+export const ListPosts = (callback: ListPostsCallbackFunction) => (inputs: ListPostsInput, api: API) : ListPostsReturnType => {
   return callback(inputs, api);
 };
-type GetPostCallbackFunction = (inputs: GetPostInput, api: API) => Promise<Post>
+type GetPostReturnType = Promise<FunctionGetResponse<Post>>
 
-export const GetPost = (callback: GetPostCallbackFunction) => (inputs: GetPostInput, api: API) => {
+type GetPostCallbackFunction = (inputs: GetPostInput, api: API) => GetPostReturnType
+
+export const GetPost = (callback: GetPostCallbackFunction) => (inputs: GetPostInput, api: API) : GetPostReturnType => {
   return callback(inputs, api);
 };

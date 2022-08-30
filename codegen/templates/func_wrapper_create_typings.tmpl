@@ -1,3 +1,5 @@
-declare type {{ .Name }}CallbackFunction = (inputs: {{ .Name }}Input, api: API) => Promise<{{ .Model }}>
+declare type {{ .Name }}ReturnType = Promise<FunctionCreateResponse<{{ .Model }}>>
 
-export declare const {{ .Name }} : (callback: {{ .Name }}CallbackFunction) => (inputs: {{ .Name }}Input, api: API) => Promise<{{ .Model }}>
+declare type {{ .Name }}CallbackFunction = (inputs: {{ .Name }}Input, api: API) => {{ .Name }}ReturnType
+
+export declare const {{ .Name }} : (callback: {{ .Name }}CallbackFunction) => (inputs: {{ .Name }}Input, api: API) => {{ .Name }}ReturnType

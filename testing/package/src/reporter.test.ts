@@ -9,7 +9,7 @@ describe("reporter", () => {
   it("sends a request to the correct url", async () => {
     fetchMock.mockResponseOnce(
       JSON.stringify({
-        result: {
+        object: {
           title: "text",
         },
       })
@@ -23,7 +23,8 @@ describe("reporter", () => {
         status: "pass",
       },
     ] as TestResultData[];
-    const result = await reporter.report(testResults);
+
+    await reporter.report(testResults);
 
     expect(fetchMock.mock.calls[0][1]).toEqual({
       method: "POST",
