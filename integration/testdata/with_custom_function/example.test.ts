@@ -6,15 +6,15 @@ test('creating a person', async () => {
 })
 
 test('fetching a person by id', async () => {
-  const person = await Person.create({ name: 'bar', gender: 'male', nINumber: '123' })
+  const { object: person } = await Person.create({ name: 'bar', gender: 'male', nINumber: '123' })
   const { object } = await Actions.getPerson({ id: person.id })
 
   expect.equal(object.id, person.id)
   expect.equal(object.name, person.name)
 })
 
-test('fetching person by unique NINumber field', async () => {
-  const person = await Person.create({ name: 'bar', gender: 'male', nINumber: '333' })
+test('fetching person by additional unique field (not PK)', async () => {
+  const { object: person } = await Person.create({ name: 'bar', gender: 'male', nINumber: '333' })
 
   const { object } = await Actions.getPerson({ nINumber: '333' })
 
@@ -23,12 +23,12 @@ test('fetching person by unique NINumber field', async () => {
 
 test('listing', async () => {
   await Person.create({ name: 'fred', gender: 'male', nINumber: '000' })
-  await Person.create({ name: 'X11', gender: 'alien', nINumber: '920' })
-  await Person.create({ name: 'X22', gender: 'alien', nINumber: '902' })
+  const { object: x11 } = await Person.create({ name: 'X11', gender: 'alien', nINumber: '920' })
+  const { object: x22 } =  await Person.create({ name: 'X22', gender: 'alien', nINumber: '902' })
 
-  const { object: aliens } = await Actions.listPeople({ gender: 'alien' })
+  const { collection: aliens } = await Actions.listPeople({ gender: 'alien' })
 
   const alienNames = aliens.map((a) => a.name)
 
-  expect.equal(alienNames, ['X11', 'X22'])
+  expect.equal(alienNames, [x11.name, x22.name])
 })

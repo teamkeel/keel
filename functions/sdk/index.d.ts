@@ -100,15 +100,16 @@ declare module "@teamkeel/sdk/query" {
     Input,
     OrderClauses,
   } from "@teamkeel/sdk/types";
+  import * as ReturnTypes from "@teamkeel/sdk/returnTypes";
   export class ChainableQuery<T> {
     private readonly tableName;
     private readonly conditions;
     private readonly pool;
     constructor({ tableName, pool, conditions }: ChainedQueryOpts<T>);
     orWhere: (conditions: Conditions<T>) => ChainableQuery<T>;
-    all: () => Promise<T[]>;
+    all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
     order: (clauses: OrderClauses<T>) => ChainableQuery<T>;
-    findOne: () => Promise<T>;
+    findOne: () => Promise<ReturnTypes.FunctionGetResponse<T>>;
     sql: ({ asAst }: SqlOptions) => string | TaggedTemplateLiteralInvocation<T>;
     private appendConditions;
   }
@@ -118,12 +119,12 @@ declare module "@teamkeel/sdk/query" {
     private orderClauses;
     private readonly pool;
     constructor({ tableName, pool, logger }: QueryOpts);
-    create: (inputs: Partial<T>) => Promise<T>;
+    create: (inputs: Partial<T>) => Promise<ReturnTypes.FunctionCreateResponse<T>>;
     where: (conditions: Conditions<T>) => ChainableQuery<T>;
-    delete: (id: string) => Promise<boolean>;
-    findOne: (conditions: Conditions<T>) => Promise<T>;
-    update: (id: string, inputs: Input<T>) => Promise<T>;
-    all: () => Promise<T[]>;
+    delete: (id: string) => Promise<ReturnTypes.FunctionDeleteResponse<T>>;
+    findOne: (conditions: Conditions<T>) => Promise<ReturnTypes.FunctionGetResponse<T>>;
+    update: (id: string, inputs: Input<T>) => Promise<ReturnTypes.FunctionUpdateResponse<T>>;
+    all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
   }
   export {};
 }
