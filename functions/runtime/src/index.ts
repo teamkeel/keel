@@ -34,11 +34,11 @@ const startRuntimeServer = ({ functions, api }: Config) => {
             JSON.stringify({
               errors: [
                 {
-                  message: `No value returned from ${normalisedPathname}`
-                }
-              ]
+                  message: `No value returned from ${normalisedPathname}`,
+                },
+              ],
             })
-          )
+          );
 
           return;
         }
@@ -46,7 +46,7 @@ const startRuntimeServer = ({ functions, api }: Config) => {
         // successful result will be:
         // {
         //   object: XXX,
-        //   errors: [...] 
+        //   errors: [...]
         // }
         res.write(JSON.stringify(result));
       } catch (e) {
@@ -61,9 +61,9 @@ const startRuntimeServer = ({ functions, api }: Config) => {
             JSON.stringify({
               errors: [
                 {
-                  message
-                }
-              ]
+                  message,
+                },
+              ],
             })
           );
         } else {
@@ -71,9 +71,9 @@ const startRuntimeServer = ({ functions, api }: Config) => {
             JSON.stringify({
               errors: [
                 {
-                  message: "An unknown error occurred"
-                }
-              ]
+                  message: "An unknown error occurred",
+                },
+              ],
             })
           );
         }
@@ -86,8 +86,8 @@ const startRuntimeServer = ({ functions, api }: Config) => {
           errors: [
             {
               message: "Only POST requests are permitted",
-            }
-          ]
+            },
+          ],
         })
       );
     }
