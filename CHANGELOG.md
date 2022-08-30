@@ -1,3 +1,10 @@
+# [0.105.0](https://github.com/teamkeel/keel/compare/v0.104.1...v0.105.0) (2022-08-30)
+
+
+### Features
+
+* built-in authenticate() operation with graphql support ([#328](https://github.com/teamkeel/keel/issues/328)) ([f7b76fa](https://github.com/teamkeel/keel/commit/f7b76fa3219652d804f6105d85347bcabbaed103))
+
 ## [0.104.1](https://github.com/teamkeel/keel/compare/v0.104.0...v0.104.1) (2022-08-30)
 
 
