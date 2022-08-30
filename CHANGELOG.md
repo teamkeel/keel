@@ -1,3 +1,10 @@
+## [0.104.1](https://github.com/teamkeel/keel/compare/v0.104.0...v0.104.1) (2022-08-30)
+
+
+### Bug Fixes
+
+* update sdk type defs to reflect new query api return types ([#330](https://github.com/teamkeel/keel/issues/330)) ([67dedb9](https://github.com/teamkeel/keel/commit/67dedb9263f7b0b3601df1c5ed7aff64b68ab719))
+
 # [0.104.0](https://github.com/teamkeel/keel/compare/v0.103.0...v0.104.0) (2022-08-30)
 
 
