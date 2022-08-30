@@ -32,7 +32,6 @@ const startRuntimeServer = ({ functions, api }: Config) => {
         if (!result) {
           res.write(
             JSON.stringify({
-              result: null,
               errors: [
                 {
                   message: `No value returned from ${normalisedPathname}`
@@ -60,7 +59,6 @@ const startRuntimeServer = ({ functions, api }: Config) => {
 
           res.write(
             JSON.stringify({
-              object: null,
               errors: [
                 {
                   message
@@ -71,7 +69,6 @@ const startRuntimeServer = ({ functions, api }: Config) => {
         } else {
           res.write(
             JSON.stringify({
-              object: null,
               errors: [
                 {
                   message: "An unknown error occurred"
@@ -86,7 +83,6 @@ const startRuntimeServer = ({ functions, api }: Config) => {
 
       res.write(
         JSON.stringify({
-          object: null,
           errors: [
             {
               message: "Only POST requests are permitted",
