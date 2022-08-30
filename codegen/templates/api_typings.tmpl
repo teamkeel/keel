@@ -10,10 +10,10 @@ export declare type {{ .Name }}UniqueFields = Partial<{
 export declare class {{ .Name }}Api {
   private readonly db;
   constructor();
-  create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
+  create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<{{ .Name }}>>;
   where: (conditions: {{ .Name }}Query) => ChainableQuery<{{ .Name }}>;
-  delete: (id: string) => Promise<boolean>;
-  findOne: (query: {{ .Name }}UniqueFields) => Promise<{{ .Name }}>;
-  update: (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<{{ .Name }}>;
-  findMany: (query: {{ .Name }}Query) => Promise<{{ .Name }}[]>;
+  delete: (id: string) => Promise<FunctionDeleteResponse<{{ .Name }}>>;
+  findOne: (query: {{ .Name }}UniqueFields) => Promise<FunctionGetResponse<{{ .Name }}>>;
+  update: (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<{{ .Name }}>>;
+  findMany: (query: {{ .Name }}Query) => Promise<FunctionListResponse<{{ .Name }}>>;
 }

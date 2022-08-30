@@ -169,7 +169,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 								}
 
 								ctx = runtime.WithFunctionsClient(ctx, client)
-								res, err := client.Request(ctx, body.ActionName, body.Payload)
+								res, err := client.Request(ctx, body.ActionName, action.Type, body.Payload)
 
 								if err != nil {
 									// transport error with http request only

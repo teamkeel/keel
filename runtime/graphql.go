@@ -211,7 +211,13 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, errors.New("input not a map")
 			}
 
-			return CallFunction(p.Context, op.Name, inputMap)
+			res, err := CallFunction(p.Context, op.Name, op.Type, inputMap)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return ToGraphQL(p.Context, res, op.Type)
 		}
 	}
 

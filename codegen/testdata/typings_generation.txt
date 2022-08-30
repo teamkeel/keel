@@ -79,12 +79,12 @@ export declare type PostUniqueFields = Partial<{
 export declare class PostApi {
   private readonly db;
   constructor();
-  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
+  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<Post>>;
   where: (conditions: PostQuery) => ChainableQuery<Post>;
-  delete: (id: string) => Promise<boolean>;
-  findOne: (query: PostUniqueFields) => Promise<Post>;
-  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
-  findMany: (query: PostQuery) => Promise<Post[]>;
+  delete: (id: string) => Promise<FunctionDeleteResponse<Post>>;
+  findOne: (query: PostUniqueFields) => Promise<FunctionGetResponse<Post>>;
+  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<Post>>;
+  findMany: (query: PostQuery) => Promise<FunctionListResponse<Post>>;
 }
 
 import { Logger } from '@teamkeel/sdk'
