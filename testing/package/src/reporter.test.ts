@@ -23,7 +23,7 @@ describe("reporter", () => {
         status: "pass",
       },
     ] as TestResultData[];
-    
+
     await reporter.report(testResults);
 
     expect(fetchMock.mock.calls[0][1]).toEqual({
