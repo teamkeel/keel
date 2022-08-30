@@ -32,13 +32,13 @@ import (
 
 // The Run command does this:
 //
-// - Starts Postgres in a docker container.
-// - Loads the Keel schema files, validates them, and watches for changes
-// - When the Keel schema files are valid migrations are generated and run
-//   against the database and a new runtime handler is created
-// - Starts an HTTP server which when the Keel schema files are currently
-//   valid delegates the requests to the runtime handler. When there are
-//   validation errors in the schema files then an error is returned.
+//   - Starts Postgres in a docker container.
+//   - Loads the Keel schema files, validates them, and watches for changes
+//   - When the Keel schema files are valid migrations are generated and run
+//     against the database and a new runtime handler is created
+//   - Starts an HTTP server which when the Keel schema files are currently
+//     valid delegates the requests to the runtime handler. When there are
+//     validation errors in the schema files then an error is returned.
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run your Keel App locally",

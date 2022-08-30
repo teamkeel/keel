@@ -69,6 +69,16 @@ const (
 )
 
 const (
+	ImplicitIdentityModelName         = "Identity"
+	ImplicitIdentityFieldNameEmail    = "email"
+	ImplicitIdentityFieldNamePassword = "password"
+)
+
+const (
+	ImplicitAuthenticateOperationName = "authenticate"
+)
+
+const (
 	AttributeUnique     = "unique"
 	AttributePermission = "permission"
 	AttributeWhere      = "where"
