@@ -119,11 +119,18 @@ declare module "@teamkeel/sdk/query" {
     private orderClauses;
     private readonly pool;
     constructor({ tableName, pool, logger }: QueryOpts);
-    create: (inputs: Partial<T>) => Promise<ReturnTypes.FunctionCreateResponse<T>>;
+    create: (
+      inputs: Partial<T>
+    ) => Promise<ReturnTypes.FunctionCreateResponse<T>>;
     where: (conditions: Conditions<T>) => ChainableQuery<T>;
     delete: (id: string) => Promise<ReturnTypes.FunctionDeleteResponse<T>>;
-    findOne: (conditions: Conditions<T>) => Promise<ReturnTypes.FunctionGetResponse<T>>;
-    update: (id: string, inputs: Input<T>) => Promise<ReturnTypes.FunctionUpdateResponse<T>>;
+    findOne: (
+      conditions: Conditions<T>
+    ) => Promise<ReturnTypes.FunctionGetResponse<T>>;
+    update: (
+      id: string,
+      inputs: Input<T>
+    ) => Promise<ReturnTypes.FunctionUpdateResponse<T>>;
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
   }
   export {};
