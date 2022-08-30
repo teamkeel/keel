@@ -138,11 +138,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 									r := map[string]any{
 										"object": res,
-										"errors": []map[string]string{
-											{
-												"message": err.Error(),
-											},
-										},
+										"errors": serializeError(err),
 									}
 
 									WriteResponse(r, w)
@@ -151,11 +147,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 									r := map[string]any{
 										"object": res,
-										"errors": []map[string]string{
-											{
-												"message": err.Error(),
-											},
-										},
+										"errors": serializeError(err),
 									}
 
 									WriteResponse(r, w)
@@ -308,8 +300,23 @@ func WriteResponse(data interface{}, w http.ResponseWriter) {
 	b, err := json.Marshal(data)
 
 	if err != nil {
+		fmt.Print("banana")
+
+		fmt.Print(err)
 		panic(err)
 	}
 
 	w.Write(b)
+}
+
+func serializeError(err error) []map[string]string {
+	if err == nil {
+		return []map[string]string{}
+	}
+
+	return []map[string]string{
+		{
+			"message": err.Error(),
+		},
+	}
 }
