@@ -19,7 +19,7 @@ import {
   BuiltInFields,
   OrderClauses,
 } from "./types";
-import * as ReturnTypes from './returnTypes';
+import * as ReturnTypes from "./returnTypes";
 import Logger from "./logger";
 import { LogLevel } from "./";
 import { ConnectionRoutine } from "slonik/dist/src/types";
@@ -62,7 +62,7 @@ export class ChainableQuery<T extends IDer> {
     const result = await this.execute(sql);
 
     return {
-      collection: result.rows as T[]
+      collection: result.rows as T[],
     };
   };
 
@@ -79,7 +79,7 @@ export class ChainableQuery<T extends IDer> {
 
     return {
       object: result.rows[0],
-      errors: []
+      errors: [],
     };
   };
 
@@ -144,7 +144,9 @@ export default class Query<T extends IDer> {
     this.logger = logger;
   }
 
-  create = async (inputs: Partial<T>): Promise<ReturnTypes.FunctionCreateResponse<T>> => {
+  create = async (
+    inputs: Partial<T>
+  ): Promise<ReturnTypes.FunctionCreateResponse<T>> => {
     const now = new Date();
     const ksuid = await KSUID.random(now);
     const builtIns: BuiltInFields = {
@@ -164,8 +166,8 @@ export default class Query<T extends IDer> {
         ...inputs,
         id: result.rows[0].id as string,
       } as unknown as T,
-      errors: []
-    }
+      errors: [],
+    };
   };
 
   where = (conditions: Conditions<T>): ChainableQuery<T> => {
@@ -180,17 +182,21 @@ export default class Query<T extends IDer> {
     });
   };
 
-  delete = async (id: string): Promise<ReturnTypes.FunctionDeleteResponse<T>> => {
+  delete = async (
+    id: string
+  ): Promise<ReturnTypes.FunctionDeleteResponse<T>> => {
     const query = buildDeleteStatement(this.tableName, id);
 
     const result = await this.execute(query);
 
     return {
-      success: result.rowCount === 1
+      success: result.rowCount === 1,
     };
   };
 
-  findOne = async (conditions: Conditions<T>): Promise<ReturnTypes.FunctionGetResponse<T>> => {
+  findOne = async (
+    conditions: Conditions<T>
+  ): Promise<ReturnTypes.FunctionGetResponse<T>> => {
     const query = buildSelectStatement<T>(this.tableName, [conditions]);
 
     const result = await this.execute(query);
@@ -199,11 +205,14 @@ export default class Query<T extends IDer> {
     // so return the first row anyhow.
     return {
       object: result.rows[0],
-      errors: []
+      errors: [],
     };
   };
 
-  update = async (id: string, inputs: Input<T>): Promise<ReturnTypes.FunctionUpdateResponse<T>> => {
+  update = async (
+    id: string,
+    inputs: Input<T>
+  ): Promise<ReturnTypes.FunctionUpdateResponse<T>> => {
     // todo type below correctly.
     const query = buildUpdateStatement(this.tableName, id, inputs as any);
 
@@ -212,9 +221,9 @@ export default class Query<T extends IDer> {
     return {
       object: {
         ...inputs,
-        id
+        id,
       } as T,
-      errors: []
+      errors: [],
     };
   };
 
@@ -224,7 +233,7 @@ export default class Query<T extends IDer> {
     const result = await this.execute(sql);
 
     return {
-      collection: result.rows as T[]
+      collection: result.rows as T[],
     };
   };
 
