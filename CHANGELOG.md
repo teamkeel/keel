@@ -1,3 +1,10 @@
+# [0.104.0](https://github.com/teamkeel/keel/compare/v0.103.0...v0.104.0) (2022-08-30)
+
+
+### Features
+
+* update codegenned wrapper func to use new return types from sdk ([#329](https://github.com/teamkeel/keel/issues/329)) ([8467c93](https://github.com/teamkeel/keel/commit/8467c9394b988abfccb8fdbeb172ae237a0dbbfd))
+
 # [0.103.0](https://github.com/teamkeel/keel/compare/v0.102.21...v0.103.0) (2022-08-26)
 
 
