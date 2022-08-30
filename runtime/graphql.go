@@ -190,7 +190,8 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, errors.New("input not a map")
 			}
 
-			return CallFunction(p.Context, op.Name, inputMap)
+			return CallFunction(p.Context, op.Name, op.Type, inputMap)
+
 		}
 	}
 

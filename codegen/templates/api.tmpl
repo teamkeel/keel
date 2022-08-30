@@ -18,7 +18,7 @@ export class {{ .Name }}Api {
     })
   }
 
-  create = async (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
+  create = async (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<FunctionCreateResponse<{{ .Name }}>> => {
     return this.db.create(inputs);
   }
 
@@ -26,19 +26,19 @@ export class {{ .Name }}Api {
     return this.db.where(conditions as any);
   }
 
-  delete = (id: string) : Promise<boolean> => {
+  delete = (id: string) : Promise<FunctionDeleteResponse<{{ .Name }}>> => {
     return this.db.delete(id);
   }
 
-  findOne = (query: {{ .Name }}UniqueFields) : Promise<{{ .Name }}> => {
+  findOne = (query: {{ .Name }}UniqueFields) : Promise<FunctionGetResponse<{{ .Name }}>> => {
     return this.db.findOne(query as any);
   }
 
-  update = (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<{{ .Name }}> => {
+  update = (id: string, inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<FunctionUpdateResponse<{{ .Name }}>> => {
     return this.db.update(id, inputs as any);
   }
 
-  findMany = (query: {{ .Name }}Query) : Promise<{{ .Name }}[]> => {
+  findMany = (query: {{ .Name }}Query) : Promise<FunctionListResponse<{{ .Name }}>> => {
     return this.db.where(query as any).all();
   }
 }

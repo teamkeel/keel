@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/pkg/errors"
+	"github.com/teamkeel/keel/proto"
 )
 
 type HttpFunctionsClient struct {
@@ -14,7 +17,7 @@ type HttpFunctionsClient struct {
 	Host string
 }
 
-func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, body map[string]any) (any, error) {
+func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, opType proto.OperationType, body map[string]any) (any, error) {
 	b, err := json.Marshal(body)
 
 	if err != nil {
@@ -42,6 +45,43 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, bo
 	var response interface{}
 
 	json.Unmarshal(b, &response)
+
+	responseMap, ok := response.(map[string]any)
+
+	errs, hasErrors := responseMap["errors"].([]map[string]string)
+
+	if ok && hasErrors && len(errs) > 0 {
+		return nil, errors.New(errs[0]["message"])
+	}
+
+	// Handles returning a value / error given that different operations
+	// return different response shapes.
+	switch opType {
+	case proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_UPDATE:
+		object, hasObject := responseMap["object"]
+
+		if !hasObject {
+			panic(errors.New("unknown response from custom function runtime"))
+		}
+
+		return object, nil
+	case proto.OperationType_OPERATION_TYPE_LIST:
+		collection, hasCollection := responseMap["collection"]
+
+		if !hasCollection {
+			panic(errors.New("unknown response from custom function runtime"))
+		}
+
+		return collection, nil
+	case proto.OperationType_OPERATION_TYPE_DELETE:
+		success, hasSuccess := responseMap["success"]
+
+		if !hasSuccess {
+			panic(errors.New("unknown response from custom function runtime"))
+		}
+
+		return success, nil
+	}
 
 	return response, nil
 }
