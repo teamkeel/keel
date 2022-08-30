@@ -8,7 +8,7 @@ describe("execute an action", () => {
   it("succeeds", async () => {
     fetchMock.mockResponseOnce(
       JSON.stringify({
-        result: {
+        object: {
           title: "text",
         },
       })
@@ -26,7 +26,7 @@ describe("execute an action", () => {
 
     expect(fetchMock.mock.calls[0][0]).toEqual("http://localhost:123/action");
     expect(result).toEqual({
-      result: {
+      object: {
         title: "text",
       },
     });

@@ -207,12 +207,12 @@ declare module "@teamkeel/sdk/returnTypes" {
   export type FunctionError = ValidationError | ExecutionError;
 
   export interface FunctionCreateResponse<T> {
-    result?: T;
+    object?: T;
     errors?: FunctionError[];
   }
 
   export interface FunctionGetResponse<T> {
-    result?: T;
+    object?: T;
     errors?: FunctionError[];
   }
 
@@ -227,7 +227,7 @@ declare module "@teamkeel/sdk/returnTypes" {
   }
 
   export interface FunctionUpdateResponse<T> {
-    result?: T;
+    object?: T;
     errors?: FunctionError[];
   }
 }
