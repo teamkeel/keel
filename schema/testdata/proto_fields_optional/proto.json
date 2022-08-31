@@ -96,7 +96,7 @@
       ],
       "operations": [
         {
-          "implementation": "OPERATION_IMPLEMENTATION_BUILTIN",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
               {
                   "modelName": "Identity",
@@ -146,7 +146,7 @@
                   }
               }
           ],
-          "type": "OPERATION_TYPE_CUSTOM"
+          "type": "OPERATION_TYPE_AUTHENTICATE"
       }
       ]
     }

@@ -10,22 +10,30 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+var PrivateKey []byte = []byte("PLACEHOLDER_PRIVATE_KEY")
+
 type Identity struct {
 	Id       ksuid.KSUID
 	Email    string
 	Password string
 }
 
+type AuthenticateArgs struct {
+	CreateIfNotExists bool
+	Email             string
+	Password          string
+}
+
 // Authenticate will return the identity if it is successfully authenticated or when a new identity is created.
-func Authenticate(ctx context.Context, schema *proto.Schema, model *proto.Model, args map[string]any) (*Identity, error) {
+func Authenticate(ctx context.Context, schema *proto.Schema, model *proto.Model, args *AuthenticateArgs) (*Identity, error) {
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	identity := Identity{
-		Email:    args["emailPassword"].(map[string]interface{})["email"].(string),
-		Password: args["emailPassword"].(map[string]interface{})["password"].(string),
+		Email:    args.Email,
+		Password: args.Password,
 	}
 
 	var record map[string]any
@@ -50,7 +58,7 @@ func Authenticate(ctx context.Context, schema *proto.Schema, model *proto.Model,
 		} else {
 			return nil, nil
 		}
-	} else if args["createIfNotExists"] == true {
+	} else if args.CreateIfNotExists {
 		modelMap, err := initialValueForModel(model, schema)
 		if err != nil {
 			return nil, err

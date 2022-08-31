@@ -69,8 +69,8 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 		protoOp := proto.Operation{
 			ModelName:      parser.ImplicitIdentityModelName,
 			Name:           parser.ImplicitAuthenticateOperationName,
-			Implementation: proto.OperationImplementation_OPERATION_IMPLEMENTATION_BUILTIN,
-			Type:           proto.OperationType_OPERATION_TYPE_CUSTOM,
+			Implementation: proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO,
+			Type:           proto.OperationType_OPERATION_TYPE_AUTHENTICATE,
 			Inputs: []*proto.OperationInput{
 				{
 					ModelName:     parser.ImplicitIdentityModelName,

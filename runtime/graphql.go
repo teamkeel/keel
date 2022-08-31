@@ -195,7 +195,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		field.Type = mk.makeConnectionType(outputType)
 
 		mk.query.AddFieldConfig(op.Name, field)
-	case proto.OperationType_OPERATION_TYPE_CUSTOM:
+	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
 		// custom response type as defined in the protobuf schema
 		outputTypePrefix := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
 
@@ -209,6 +209,44 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Type: graphql.String,
 			})
 
+		}
+
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+
+			authArgs := actions.AuthenticateArgs{
+				CreateIfNotExists: inputMap["createIfNotExists"].(bool),
+				Email:             inputMap["emailPassword"].(map[string]any)["email"].(string),
+				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
+			}
+
+			identityAuthenticatedOrCreated, err := actions.Authenticate(p.Context, schema, model, &authArgs)
+
+			if err != nil {
+				return nil, err
+			}
+
+			if identityAuthenticatedOrCreated != nil {
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+					"id":  identityAuthenticatedOrCreated.Id,
+					"exp": time.Now().Add(time.Hour * 24).Unix(),
+				})
+
+				tokenString, err := token.SignedString(actions.PrivateKey)
+
+				if err != nil {
+					return nil, err
+				}
+
+				return map[string]any{"token": tokenString}, nil
+			} else {
+				return map[string]any{"token": nil}, nil
+			}
 		}
 
 		field.Type = ouput
@@ -233,42 +271,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			}
 
 			return ToGraphQL(p.Context, res, op.Type)
-		}
-	}
-
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_BUILTIN {
-		switch op.Name {
-		case "authenticate":
-			field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-				input := p.Args["input"]
-				inputMap, ok := input.(map[string]any)
-
-				if !ok {
-					return nil, errors.New("input not a map")
-				}
-
-				identityAuthenticatedOrCreated, err := actions.Authenticate(p.Context, schema, model, inputMap)
-
-				if err != nil {
-					return nil, err
-				}
-
-				if identityAuthenticatedOrCreated != nil {
-					token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-						"id":  identityAuthenticatedOrCreated.Id,
-						"exp": time.Now().Add(time.Hour * 24).Unix(),
-					})
-
-					var jwtKey = []byte("placeholder_key")
-					tokenString, _ := token.SignedString(jwtKey)
-
-					return map[string]any{"token": tokenString}, nil
-				} else {
-					return map[string]any{"token": nil}, nil
-				}
-			}
-		default:
-			return fmt.Errorf("addOperation() does not have custom built-in implementation for op.Name: %v", op.Name)
 		}
 	}
 
@@ -690,7 +692,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	case proto.OperationType_OPERATION_TYPE_GET,
 		proto.OperationType_OPERATION_TYPE_CREATE,
 		proto.OperationType_OPERATION_TYPE_DELETE,
-		proto.OperationType_OPERATION_TYPE_CUSTOM:
+		proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
 
 		for _, in := range op.Inputs {
 			fieldType, err := mk.inputTypeFor(in)
