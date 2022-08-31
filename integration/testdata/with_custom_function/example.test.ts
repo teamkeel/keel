@@ -32,3 +32,20 @@ test('listing', async () => {
 
   expect.equal(alienNames, [x11.name, x22.name])
 })
+
+test('deletion', async () => {
+  const { object: person } = await Person.create({ name: 'fred', gender: 'male', nINumber: '678' })
+
+  const { success } = await Actions.deletePerson({ id: person.id })
+
+  expect.equal(success, true)
+})
+
+test('updating', async () => {
+  const { object: person } = await Person.create({ name: 'fred', gender: 'male', nINumber: '678' })
+
+  const { object: updatedPerson } = await Actions.updatePerson({ ...person, name: 'paul' })
+
+  expect.equal(updatedPerson.name, 'paul')
+  expect.equal(updatedPerson.id, person.id)
+})

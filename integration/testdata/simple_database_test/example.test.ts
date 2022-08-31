@@ -14,7 +14,7 @@ test('update', async () => {
   expect.equal(updatedPost.title, 'star wars sucks!')
 })
 
-test('findOne', async () => {
+test('chained findOne', async () => {
   await Post.create({ title: 'apple' })
   await Post.create({ title: 'granny apple' })
 
@@ -27,7 +27,7 @@ test('findOne', async () => {
   expect.equal(one.title, 'apple')
 })
 
-test('findMany', async () => {
+test('simple all', async () => {
   await Post.create({ title: 'fruit' })
   await Post.create({ title: 'big fruit' })
 
@@ -40,7 +40,7 @@ test('findMany', async () => {
   expect.equal(collection.length, 2)
 })
 
-test('chained conditions', async () => {
+test('chained conditions with all', async () => {
   await Post.create({ title: 'melon' })
   await Post.create({ title: 'kiwi' })
 
@@ -67,4 +67,42 @@ test('order', async () => {
 
   expect.equal(collection.length, 2)
   expect.equal(collection[0].title, 'abc')
+})
+
+test('sql', async () => {
+  const sql = await Post.where({
+    title: {
+      contains: 'bc'
+    }
+  }).order({
+    title: 'desc'
+  }).sql({ asAst: false })
+
+  expect.equal(sql, 'SELECT * FROM "post" WHERE ("post"."title" ILIKE $1) ORDER BY $2')
+})
+
+test('findMany', async () => {
+  await Post.create({ title: 'io' })
+  await Post.create({ title: 'iota' })
+
+  const { collection } = await Post.findMany({
+    title: {
+      contains: 'io'
+    }
+  })
+
+  expect.equal(collection.length, 2)
+})
+
+test('findOne', async () => {
+  const { object: post } = await Post.create({ title: 'ghi' })
+  await Post.create({ title: 'hij' })
+
+  const { object } = await Post.findOne({
+    title: {
+      contains: 'hi'
+    }
+  })
+
+  expect.equal(post.id, object.id)
 })

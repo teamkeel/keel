@@ -1,8 +1,11 @@
 [
   { "testName": "create", "status": "pass" },
   { "testName": "update", "status": "pass" },
-  { "testName": "findOne", "status": "pass" },
+  { "testName": "chained findOne", "status": "pass" },
+  { "testName": "simple all", "status": "pass" },
+  { "testName": "chained conditions with all", "status": "pass" },
+  { "testName": "order", "status": "pass" },
+  { "testName": "sql", "status": "pass" },
   { "testName": "findMany", "status": "pass" },
-  { "testName": "chained conditions", "status": "pass" },
-  { "testName": "order", "status": "pass" }
+  { "testName": "findOne", "status": "pass" }
 ]
