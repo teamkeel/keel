@@ -9,5 +9,7 @@ model Person {
         get getPerson(id)
         create createPerson() with (name, gender, nINumber)
         list listPeople(gender)
+        delete deletePerson(id)
+        update updatePerson(id) with (name, gender, nINumber)
     }
 }

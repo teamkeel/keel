@@ -2,5 +2,7 @@
   { "testName": "creating a person", "status": "pass" },
   { "testName": "fetching a person by id", "status": "pass" },
   { "testName": "fetching person by additional unique field (not PK)", "status": "pass" },
-  { "testName": "listing", "status": "pass" }
+  { "testName": "listing", "status": "pass" },
+  { "testName": "deletion", "status": "pass" },
+  { "testName": "updating", "status": "pass" }
 ]

@@ -1,4 +1,4 @@
-import { test, expect, Post } from '@teamkeel/testing'
+import { test, expect } from '@teamkeel/testing'
 
 test('it passes', () => {
   expect.equal(1, 1)
