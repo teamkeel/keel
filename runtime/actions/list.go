@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
+	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"gorm.io/gorm"
@@ -45,6 +46,18 @@ func List(
 	// if err != nil {
 	// 	return nil, err
 	// }
+
+	// Where clause to implement the after/before paging request
+	tx = addAfterBefore(tx, inputs.Page)
+
+	// Now ordering
+	tx = addOrderByID(tx)
+
+	// Now the number of records limit
+	tx = addLimit(tx, inputs.Page)
+
+	litter.Dump("XXXX gorm composition")
+	litter.Dump(tx.Statement)
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
@@ -89,4 +102,28 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 func addWhere(tx *gorm.DB, columnName string, where *Where) *gorm.DB {
 	w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
 	return tx.Where(w, where.Operand)
+}
+
+func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {
+	switch {
+	case page.After != "":
+		return tx.Where("ID > ?", page.After)
+	case page.Before != "":
+		return tx.Where("ID < ?", page.Before)
+	}
+	return tx
+}
+
+func addOrderByID(tx *gorm.DB) *gorm.DB {
+	return tx.Order("id")
+}
+
+func addLimit(tx *gorm.DB, page Page) *gorm.DB {
+	switch {
+	case page.First != 0:
+		return tx.Limit(page.First)
+	case page.Last != 0:
+		return tx.Limit(page.Last)
+	}
+	return tx
 }
