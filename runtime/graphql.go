@@ -968,12 +968,14 @@ type IntrospectionQueryResult struct {
 // incoming request, and composes a corresponding actions.ListInput object that is good
 // to pass to the generic actions.List() function.
 func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.ListInput, error) {
-	page := actions.Page{}
-	wheres := []*actions.Where{}
 
 	argsMap, ok := requestInputArgs.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("cannot cast this: %+v to map[string]any", requestInputArgs)
+	}
+	page, err := parsePage(argsMap)
+	if err != nil {
+		return nil, err
 	}
 	whereInputs, ok := argsMap["where"]
 	if !ok {
@@ -984,6 +986,7 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.
 		return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
 	}
 
+	wheres := []*actions.Where{}
 	for argName, argValue := range whereInputsAsMap {
 		argValueAsMap, ok := argValue.(map[string]any)
 		if !ok {
@@ -1036,4 +1039,44 @@ func connectionResponse(records any) (resp any, err error) {
 		"edges":    edges,
 	}
 	return resp, nil
+}
+
+// parsePage extracts page mandate information from the given map and uses it to
+// compose an actions.Page.
+func parsePage(args map[string]any) (actions.Page, error) {
+	page := actions.Page{}
+
+	if first, ok := args["first"]; ok {
+		asInt, ok := first.(int)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to an int", first)
+		}
+		page.First = asInt
+	}
+
+	if last, ok := args["last"]; ok {
+		asInt, ok := last.(int)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to an int", last)
+		}
+		page.Last = asInt
+	}
+
+	if after, ok := args["after"]; ok {
+		asString, ok := after.(string)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to a string", after)
+		}
+		page.After = asString
+	}
+
+	if before, ok := args["before"]; ok {
+		asString, ok := before.(string)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to a string", before)
+		}
+		page.Before = asString
+	}
+
+	return page, nil
 }
