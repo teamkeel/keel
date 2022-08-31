@@ -19,6 +19,7 @@ require (
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/otiai10/copy v1.7.0
 	github.com/samber/lo v1.25.0
+	github.com/sanity-io/litter v1.5.5
 	github.com/segmentio/ksuid v1.0.4
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.7.1

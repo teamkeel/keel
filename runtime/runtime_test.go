@@ -9,6 +9,7 @@ import (
 
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/iancoleman/strcase"
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -69,6 +70,9 @@ func TestRuntime(t *testing.T) {
 			// Unless there is a specific assertion for the error returned,
 			// check there is no error
 			if tCase.assertErrors == nil {
+				if len(bodyFields.Errors) != 0 {
+					t.Fatalf("response has unexpected errors: %s", litter.Sdump(bodyFields.Errors))
+				}
 				require.Len(t, bodyFields.Errors, 0, "response has unexpected errors: %+v", bodyFields.Errors)
 			}
 
@@ -143,8 +147,9 @@ const basicSchema string = `
 			name Text 
 		}
 		operations {
-			get getPerson(id) // short-form filter criterion
+			get getPerson(id)
 			create createPerson() with (name)
+			list listPeople(name)
 		}
 	}
 	api Test {
@@ -398,6 +403,73 @@ var testCases = []testCase{
 		assertData: func(t *testing.T, data map[string]any) {
 			rtt.AssertValueAtPath(t, data, "getPerson.id", "42")
 			rtt.AssertValueAtPath(t, data, "getPerson.name", "Sue")
+		},
+	},
+	{
+		name:       "list_operation_happy",
+		keelSchema: basicSchema,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"name": "Sue",
+					"id":   "41",
+				}),
+				initRow(map[string]any{
+					"name": "Fred",
+					"id":   "42",
+				}),
+				initRow(map[string]any{
+					"name": "Francis",
+					"id":   "43",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("person").Create(row).Error)
+			}
+		},
+		variables: map[string]any{
+			"input": map[string]any{
+				"first": 10,
+				"where": map[string]any{
+					"name": map[string]any{
+						"startsWith": "Fr",
+					},
+				},
+			},
+		},
+		gqlOperation: `
+			query ListPeople {
+				listPeople(input: { first: 10, where: { name: { equals: "Fred" } } })
+				{
+					pageInfo {
+						hasNextPage
+						hasPreviousPage
+						startCursor
+						endCursor
+					}
+					edges {
+					  node {
+						id
+						name
+					  }
+					}
+				  }
+		 	}`,
+
+		assertData: func(t *testing.T, data map[string]any) {
+			// todo This is just some light sampling to support development at the moment.
+
+			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.hasNextPage", true)
+			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.startCursor", "abc123")
+
+			edges := rtt.GetValueAtPath(t, data, "listPeople.edges")
+			edgesList, ok := edges.([]any)
+			require.True(t, ok)
+			edge := edgesList[0]
+			edgeMap, ok := edge.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, edgeMap, "node.id", "42")
+			rtt.AssertValueAtPath(t, edgeMap, "node.name", "Fred")
 		},
 	},
 }
