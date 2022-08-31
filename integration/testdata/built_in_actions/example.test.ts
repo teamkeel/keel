@@ -5,6 +5,13 @@ test('create action', async () => {
   expect.equal(createdPost.title, 'foo')
 })
 
+test('create action (unrecognised fields)', async () => {
+  const { object: createdPost } = await Actions.createPost({ unknown: 'foo' })
+
+  // todo: replace with errors once we populate them
+  expect.equal(createdPost, null)
+})
+
 test('get action', async () => {
   const { object: post } = await Actions.createPost({ title: 'foo' })
   const { object: fetchedPost } = await Actions.getPost({ id: post.id })
