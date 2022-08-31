@@ -8,6 +8,7 @@ model Post {
         get getPost(id)
         update updatePost(id) with (title)
         delete deletePost(id)
+        list listPosts(title)
     }
 }
 
