@@ -67,9 +67,6 @@ func TestRuntime(t *testing.T) {
 			bodyFields := respFields{}
 			require.NoError(t, json.Unmarshal([]byte(body), &bodyFields))
 
-			litter.Dump("XXXX Handler response Body is:\n")
-			litter.Dump(bodyFields)
-
 			// Unless there is a specific assertion for the error returned,
 			// check there is no error
 			if tCase.assertErrors == nil {
@@ -461,9 +458,6 @@ var testCases = []testCase{
 
 		assertData: func(t *testing.T, data map[string]any) {
 			// todo This is just some light sampling to support development at the moment.
-
-			litter.Dump("XXXX assertData input")
-			litter.Dump(data)
 
 			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.hasNextPage", true)
 			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.startCursor", "abc123")

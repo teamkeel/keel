@@ -9,7 +9,6 @@ import (
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
-	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 )
@@ -187,8 +186,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			if err != nil {
 				return nil, err
 			}
-			litter.Dump("XXXX connection pattern response")
-			litter.Dump(resp)
 			return resp, nil
 		}
 		// for list types we need to wrap the output type in the

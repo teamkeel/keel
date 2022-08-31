@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
-	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"gorm.io/gorm"
@@ -21,12 +20,6 @@ func List(
 	operation *proto.Operation,
 	schema *proto.Schema,
 	inputs *ListInput) (interface{}, error) {
-
-	litter.Dump("XXXX operation passed to List action:")
-	litter.Dump(operation)
-
-	litter.Dump("XXXX inputs passed to List action:")
-	litter.Dump(inputs)
 
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
@@ -53,9 +46,6 @@ func List(
 	// 	return nil, err
 	// }
 
-	litter.Dump("XXXX gorm generated for List action:")
-	litter.Dump(tx.Statement)
-
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
 	// Execute the SQL query.
@@ -65,9 +55,6 @@ func List(
 		return nil, tx.Error
 	}
 	res := toLowerCamelMaps(result)
-
-	litter.Dump("XXXX Response being returned from List action:")
-	litter.Dump(res)
 
 	return res, nil
 }
