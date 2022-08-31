@@ -325,6 +325,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_DATE
 	case parser.FieldTypeDatetime:
 		return proto.Type_TYPE_DATETIME
+	case parser.FieldTypeSecret:
+		return proto.Type_TYPE_SECRET
 	default:
 		model := query.Model(scm.asts, parserType)
 		if model != nil {

@@ -112,7 +112,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	// if we have errors in parsing then no point running validation rules
 	if len(parseErrors.Errors) > 0 {
-		return nil, parseErrors
+		return nil, &parseErrors
 	}
 
 	v := validation.NewValidator(asts)
@@ -234,8 +234,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Name: parser.NameNode{
 			Value: parser.ImplicitIdentityFieldNamePassword,
 		},
-		// TODO: Secret data type
-		Type: parser.FieldTypeText,
+		Type: parser.FieldTypeSecret,
 	}
 
 	section := &parser.ModelSectionNode{
@@ -244,4 +243,19 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 
 	declaration.Model.Sections = append(declaration.Model.Sections, section)
 	declarations.Declarations = append(declarations.Declarations, declaration)
+
+	// Making the identity model and operations available on all APIs
+	for _, d := range declarations.Declarations {
+		if d.API != nil {
+			for _, s := range d.API.Sections {
+				if s.Models != nil {
+					s.Models = append(s.Models, &parser.ModelsNode{
+						Name: parser.NameNode{
+							Value: parser.ImplicitIdentityModelName,
+						},
+					})
+				}
+			}
+		}
+	}
 }

@@ -19,6 +19,7 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_DATE:      "DATE",
 	proto.Type_TYPE_MODEL:     "TEXT", // id of the target
 	proto.Type_TYPE_ENUM:      "TEXT",
+	proto.Type_TYPE_SECRET:    "TEXT",
 }
 
 // Identifier converts v into an identifier that can be used

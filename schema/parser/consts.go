@@ -27,6 +27,7 @@ const (
 	FieldTypeDate     = "Date"      // a date with no time element
 	FieldTypeDatetime = "Timestamp" // a UTC unix timestamp
 	FieldTypeBoolean  = "Boolean"   // a boolean
+	FieldTypeSecret   = "Secret"    // a hashed secret
 )
 
 var BuiltInTypes = map[string]bool{
@@ -36,6 +37,7 @@ var BuiltInTypes = map[string]bool{
 	FieldTypeDate:     true,
 	FieldTypeDatetime: true,
 	FieldTypeBoolean:  true,
+	FieldTypeSecret:   true,
 }
 
 func IsBuiltInFieldType(s string) bool {

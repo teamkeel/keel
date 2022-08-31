@@ -95,6 +95,10 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	mk.types[model.Name] = object
 
 	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_SECRET {
+			continue
+		}
+
 		outputType, err := mk.outputTypeFor(field)
 		if err != nil {
 			return nil, err
@@ -222,15 +226,15 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
 			}
 
-			identityAuthenticatedOrCreated, err := actions.Authenticate(p.Context, schema, model, &authArgs)
+			identityId, err := actions.Authenticate(p.Context, schema, &authArgs)
 
 			if err != nil {
 				return nil, err
 			}
 
-			if identityAuthenticatedOrCreated != nil {
+			if identityId != nil {
 				token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-					"id":  identityAuthenticatedOrCreated.Id,
+					"id":  identityId,
 					"exp": time.Now().Add(time.Hour * 24).Unix(),
 				})
 
@@ -400,6 +404,7 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_BOOL:     graphql.Boolean,
 	proto.Type_TYPE_DATETIME: timestampType,
 	proto.Type_TYPE_DATE:     dateType,
+	proto.Type_TYPE_SECRET:   graphql.String,
 }
 
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
@@ -421,6 +426,7 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 				break
 			}
 		}
+
 	default:
 		var ok bool
 		out, ok = protoTypeToGraphQLOutput[field.Type.Type]
@@ -479,6 +485,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_TIMESTAMP: timestampInputType,
 	proto.Type_TYPE_DATETIME:  timestampInputType,
 	proto.Type_TYPE_DATE:      dateInputType,
+	proto.Type_TYPE_SECRET:    graphql.String,
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.

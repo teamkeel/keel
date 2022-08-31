@@ -1,140 +1,140 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Foo",
-      "fields":  [
+      "name": "Foo",
+      "fields": [
         {
-          "modelName":  "Foo",
-          "name":  "f1",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Foo",
+          "name": "f1",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "modelName":  "Foo",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Foo",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Foo",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Foo",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Foo",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Foo",
-          "name":  "opA",
-          "type":  "OPERATION_TYPE_GET",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Foo",
+          "name": "opA",
+          "type": "OPERATION_TYPE_GET",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Foo",
-              "operationName":  "opA",
-              "name":  "id",
-              "type":  {
-                "type":  "TYPE_ID"
+              "modelName": "Foo",
+              "operationName": "opA",
+              "name": "id",
+              "type": {
+                "type": "TYPE_ID"
               },
-              "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
+              "mode": "INPUT_MODE_READ",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
                 "id"
               ]
             }
           ]
         },
         {
-          "modelName":  "Foo",
-          "name":  "opB",
-          "type":  "OPERATION_TYPE_LIST",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Foo",
+          "name": "opB",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Foo",
-              "operationName":  "opB",
-              "name":  "f1",
-              "type":  {
-                "type":  "TYPE_STRING"
+              "modelName": "Foo",
+              "operationName": "opB",
+              "name": "f1",
+              "type": {
+                "type": "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
+              "mode": "INPUT_MODE_READ",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
                 "f1"
               ]
             }
           ]
         },
         {
-          "modelName":  "Foo",
-          "name":  "opC",
-          "type":  "OPERATION_TYPE_UPDATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Foo",
+          "name": "opC",
+          "type": "OPERATION_TYPE_UPDATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Foo",
-              "operationName":  "opC",
-              "name":  "id",
-              "type":  {
-                "type":  "TYPE_ID"
+              "modelName": "Foo",
+              "operationName": "opC",
+              "name": "id",
+              "type": {
+                "type": "TYPE_ID"
               },
-              "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
+              "mode": "INPUT_MODE_READ",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
                 "id"
               ]
             },
             {
-              "modelName":  "Foo",
-              "operationName":  "opC",
-              "name":  "f1",
-              "type":  {
-                "type":  "TYPE_STRING"
+              "modelName": "Foo",
+              "operationName": "opC",
+              "name": "f1",
+              "type": {
+                "type": "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
                 "f1"
               ]
             }
           ]
         },
         {
-          "modelName":  "Foo",
-          "name":  "opD",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Foo",
+          "name": "opD",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Foo",
-              "operationName":  "opD",
-              "name":  "f1",
-              "type":  {
-                "type":  "TYPE_STRING"
+              "modelName": "Foo",
+              "operationName": "opD",
+              "name": "f1",
+              "type": {
+                "type": "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+              "target": [
                 "f1"
               ]
             }
@@ -143,109 +143,109 @@
       ]
     },
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "email",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
           },
           "unique": true
         },
         {
-          "modelName":  "Identity",
-          "name":  "password",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_SECRET"
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         }
       ],
       "operations": [
         {
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-              {
-                  "modelName": "Identity",
-                  "name": "createIfNotExists",
-                  "operationName": "authenticate",
-                  "optional": true,
-                  "type": {
-                      "type": "TYPE_BOOL"
-                  }
-              },
-              {
-                  "inputs": [
-                      {
-                          "modelName": "Identity",
-                          "name": "email",
-                          "operationName": "authenticate",
-                          "type": {
-                              "type": "TYPE_STRING"
-                          }
-                      },
-                      {
-                          "modelName": "Identity",
-                          "name": "password",
-                          "operationName": "authenticate",
-                          "type": {
-                              "type": "TYPE_STRING"
-                          }
-                      }
-                  ],
-                  "modelName": "Identity",
-                  "name": "emailPassword",
-                  "operationName": "authenticate",
-                  "type": {
-                      "type": "TYPE_OBJECT"
-                  }
-              }
-          ],
           "modelName": "Identity",
           "name": "authenticate",
-          "outputs": [
-              {
+          "type": "OPERATION_TYPE_AUTHENTICATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "createIfNotExists",
+              "type": {
+                "type": "TYPE_BOOL"
+              },
+              "optional": true
+            },
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "emailPassword",
+              "type": {
+                "type": "TYPE_OBJECT"
+              },
+              "inputs": [
+                {
                   "modelName": "Identity",
-                  "name": "token",
                   "operationName": "authenticate",
+                  "name": "email",
                   "type": {
-                      "type": "TYPE_STRING"
+                    "type": "TYPE_STRING"
                   }
-              }
+                },
+                {
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "password",
+                  "type": {
+                    "type": "TYPE_STRING"
+                  }
+                }
+              ]
+            }
           ],
-          "type": "OPERATION_TYPE_AUTHENTICATE"
-      }
+          "outputs": [
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "token",
+              "type": {
+                "type": "TYPE_STRING"
+              }
+            }
+          ]
+        }
       ]
     }
   ]

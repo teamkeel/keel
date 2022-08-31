@@ -6,16 +6,19 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/parser"
 
 	"github.com/iancoleman/strcase"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 var PrivateKey []byte = []byte("PLACEHOLDER_PRIVATE_KEY")
 
 type Identity struct {
-	Id       ksuid.KSUID
-	Email    string
-	Password string
+	Id       string `gorm:"column:id"`
+	Email    string `gorm:"column:email"`
+	Password string `gorm:"column:password"`
 }
 
 type AuthenticateArgs struct {
@@ -24,57 +27,82 @@ type AuthenticateArgs struct {
 	Password          string
 }
 
-// Authenticate will return the identity if it is successfully authenticated or when a new identity is created.
-func Authenticate(ctx context.Context, schema *proto.Schema, model *proto.Model, args *AuthenticateArgs) (*Identity, error) {
+const (
+	IdColumnName       string = "id"
+	EmailColumnName    string = "email"
+	PasswordColumnName string = "password"
+)
+
+// Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
+func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (*ksuid.KSUID, error) {
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	identity := Identity{
-		Email:    args.Email,
-		Password: args.Password,
+	identity, err := find(ctx, args.Email)
+
+	if err != nil {
+		return nil, err
 	}
 
-	var record map[string]any
-	result := db.Table(strcase.ToSnake(model.Name)).Limit(1).Where("email", identity.Email).Find(&record)
+	if identity != nil {
+		authenticated := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(args.Password)) == nil
+
+		if authenticated {
+			id, err := ksuid.Parse(identity.Id)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return &id, nil
+		} else {
+			return nil, nil
+		}
+	} else if args.CreateIfNotExists {
+		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(args.Password), bcrypt.DefaultCost)
+
+		if err != nil {
+			return nil, err
+		}
+
+		identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+
+		modelMap, err := initialValueForModel(identityModel, schema)
+		if err != nil {
+			return nil, err
+		}
+
+		modelMap[strcase.ToSnake(EmailColumnName)] = args.Email
+		modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
+
+		if err := db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error; err != nil {
+			return nil, err
+		}
+
+		id := modelMap[IdColumnName].(ksuid.KSUID)
+
+		return &id, nil
+	}
+
+	return nil, nil
+}
+
+func find(ctx context.Context, email string) (*Identity, error) {
+	db, _ := runtimectx.GetDB(ctx)
+
+	var identity Identity
+
+	result := db.Table(strcase.ToSnake(parser.ImplicitIdentityModelName)).Limit(1).Where(EmailColumnName, email).Find(&identity)
 
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
-	if record != nil {
-		id, err := ksuid.Parse(record["id"].(string))
-
-		if err != nil {
-			return nil, err
-		}
-
-		identity.Id = id
-
-		authenticated := identity.Email == record["email"] && identity.Password == record["password"]
-		if authenticated {
-			return &identity, nil
-		} else {
-			return nil, nil
-		}
-	} else if args.CreateIfNotExists {
-		modelMap, err := initialValueForModel(model, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		modelMap[strcase.ToSnake("email")] = identity.Email
-		modelMap[strcase.ToSnake("password")] = identity.Password
-
-		if err := db.Table(strcase.ToSnake(model.Name)).Create(modelMap).Error; err != nil {
-			return nil, err
-		}
-
-		identity.Id = modelMap["id"].(ksuid.KSUID)
-
-		return &identity, nil
+	if result.RowsAffected == 0 {
+		return nil, nil
 	}
 
-	return nil, nil
+	return &identity, nil
 }

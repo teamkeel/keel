@@ -3,6 +3,20 @@ type Query {
   listPeople(input: ListPeopleInput!): PersonConnection!
 }
 
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
 input DateInput {
   day: Int!
   month: Int!
@@ -44,6 +58,10 @@ input StringQueryInput {
   equals: String
   oneOf: [String!]
   startsWith: String
+}
+
+type AuthenticateResponse {
+  token: String
 }
 
 type Date {
