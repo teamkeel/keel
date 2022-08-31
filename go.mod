@@ -32,6 +32,7 @@ require (
 
 require (
 	github.com/aybabtme/flatjson v0.1.1 // indirect
+	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
 

@@ -65,6 +65,57 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 		}
 	}
 
+	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
+		protoOp := proto.Operation{
+			ModelName:      parser.ImplicitIdentityModelName,
+			Name:           parser.ImplicitAuthenticateOperationName,
+			Implementation: proto.OperationImplementation_OPERATION_IMPLEMENTATION_BUILTIN,
+			Type:           proto.OperationType_OPERATION_TYPE_CUSTOM,
+			Inputs: []*proto.OperationInput{
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "createIfNotExists",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+					Optional:      true,
+				},
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "emailPassword",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_OBJECT},
+					Optional:      false,
+					Inputs: []*proto.OperationInput{
+						{
+							ModelName:     parser.ImplicitIdentityModelName,
+							OperationName: parser.ImplicitAuthenticateOperationName,
+							Name:          "email",
+							Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+							Optional:      false,
+						},
+						{
+							ModelName:     parser.ImplicitIdentityModelName,
+							OperationName: parser.ImplicitAuthenticateOperationName,
+							Name:          "password",
+							Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+							Optional:      false,
+						},
+					},
+				},
+			},
+			Outputs: []*proto.OperationOutput{
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "token",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				},
+			},
+		}
+
+		protoModel.Operations = append(protoModel.Operations, &protoOp)
+	}
+
 	return protoModel
 }
 

@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
@@ -147,7 +150,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			return actions.Get(p.Context, op, schema, inputMap)
 		}
 		mk.query.AddFieldConfig(op.Name, field)
-
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
@@ -193,6 +195,25 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		field.Type = mk.makeConnectionType(outputType)
 
 		mk.query.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_CUSTOM:
+		// custom response type as defined in the protobuf schema
+		outputTypePrefix := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
+
+		ouput := graphql.NewObject(graphql.ObjectConfig{
+			Name:   outputTypePrefix + "Response",
+			Fields: graphql.Fields{},
+		})
+
+		for _, output := range op.Outputs {
+			ouput.AddFieldConfig(output.Name, &graphql.Field{
+				Type: graphql.String,
+			})
+
+		}
+
+		field.Type = ouput
+
+		mk.mutation.AddFieldConfig(op.Name, field)
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
@@ -205,7 +226,49 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, errors.New("input not a map")
 			}
 
-			return CallFunction(p.Context, op.Name, inputMap)
+			res, err := CallFunction(p.Context, op.Name, op.Type, inputMap)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return ToGraphQL(p.Context, res, op.Type)
+		}
+	}
+
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_BUILTIN {
+		switch op.Name {
+		case "authenticate":
+			field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+				input := p.Args["input"]
+				inputMap, ok := input.(map[string]any)
+
+				if !ok {
+					return nil, errors.New("input not a map")
+				}
+
+				identityAuthenticatedOrCreated, err := actions.Authenticate(p.Context, schema, model, inputMap)
+
+				if err != nil {
+					return nil, err
+				}
+
+				if identityAuthenticatedOrCreated != nil {
+					token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+						"id":  identityAuthenticatedOrCreated.Id,
+						"exp": time.Now().Add(time.Hour * 24).Unix(),
+					})
+
+					var jwtKey = []byte("placeholder_key")
+					tokenString, _ := token.SignedString(jwtKey)
+
+					return map[string]any{"token": tokenString}, nil
+				} else {
+					return map[string]any{"token": nil}, nil
+				}
+			}
+		default:
+			return fmt.Errorf("addOperation() does not have custom built-in implementation for op.Name: %v", op.Name)
 		}
 	}
 
@@ -429,6 +492,27 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.
 			return e.Name == op.Type.EnumName.Value
 		})
 		in = mk.addEnum(enum)
+	case proto.Type_TYPE_OBJECT:
+		operationNamePrefix := strings.ToUpper(op.OperationName[0:1]) + op.OperationName[1:]
+		inputObjectName := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
+
+		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   operationNamePrefix + inputObjectName + "Input",
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
+
+		for _, input := range op.Inputs {
+			inputField, err := mk.inputTypeFor(input)
+
+			if err != nil {
+				return nil, err
+			}
+
+			inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
+				Type: inputField,
+			})
+		}
+		in = inputObject
 	default:
 		var ok bool
 		in, ok = protoTypeToGraphQLInput[op.Type.Type]
@@ -605,7 +689,9 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET,
 		proto.OperationType_OPERATION_TYPE_CREATE,
-		proto.OperationType_OPERATION_TYPE_DELETE:
+		proto.OperationType_OPERATION_TYPE_DELETE,
+		proto.OperationType_OPERATION_TYPE_CUSTOM:
+
 		for _, in := range op.Inputs {
 			fieldType, err := mk.inputTypeFor(in)
 			if err != nil {

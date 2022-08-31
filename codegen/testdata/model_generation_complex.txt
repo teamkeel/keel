@@ -33,7 +33,8 @@ export interface Author {
 }
 
 export interface Identity {
-  username: string
+  email: string
+  password: string
   id: string
   createdAt: Date
   updatedAt: Date
