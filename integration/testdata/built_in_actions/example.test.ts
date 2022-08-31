@@ -1,4 +1,4 @@
-import { test, expect, Actions } from '@teamkeel/testing'
+import { test, expect, Actions, Post } from '@teamkeel/testing'
 
 test('create action', async () => {
   const { object: createdPost } = await Actions.createPost({ title: 'foo' })
@@ -27,4 +27,14 @@ test('get action (non unique)', async () => {
   // todo: until we return errors for 404s, we want to assert
   // that nothing is returned
   expect.equal(fetchedPost, null)
+})
+
+test('list action', async () => {
+  await Post.create({ title: 'apple' })
+  await Post.create({ title: 'apple' })
+
+  // todo: dont think this api lines up with custom functions
+  const { collection } = await Actions.listPosts({ title: { equal: 'apple' } })
+
+  expect.equal(collection.length, 2)
 })

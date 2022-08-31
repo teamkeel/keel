@@ -19,8 +19,11 @@ func List(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
-	inputs *ListInput) (interface{}, error) {
-
+	inputs interface{}) (interface{}, error) {
+	listInput, err := buildListInput(operation, inputs)
+	if err != nil {
+		return nil, err
+	}
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
 		return nil, err
@@ -34,7 +37,7 @@ func List(
 	tx := db.Table(tableName)
 
 	// Add the WHERE clauses derived from the inputs.
-	tx, err = addListInputFilters(operation, inputs, tx)
+	tx, err = addListInputFilters(operation, listInput, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -89,4 +92,46 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 func addWhere(tx *gorm.DB, columnName string, where *Where) *gorm.DB {
 	w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
 	return tx.Where(w, where.Operand)
+}
+
+// buildListInput consumes the dictionary that carries the LIST operation input values on the
+// incoming request, and composes a corresponding actions.ListInput object that is good
+// to pass to the generic actions.List() function.
+func buildListInput(operation *proto.Operation, requestInputArgs any) (*ListInput, error) {
+	page := Page{}
+	wheres := []*Where{}
+
+	argsMap, ok := requestInputArgs.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %+v to map[string]any", requestInputArgs)
+	}
+	whereInputs, ok := argsMap["where"]
+	if !ok {
+		return nil, fmt.Errorf("arguments map does not contain a where key: %v", argsMap)
+	}
+	whereInputsAsMap, ok := whereInputs.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
+	}
+
+	for argName, argValue := range whereInputsAsMap {
+		argValueAsMap, ok := argValue.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", argValue)
+		}
+		for operator, operand := range argValueAsMap {
+			_ = operator
+			where := &Where{
+				Name:     argName,
+				Operator: OperatorEquals, // todo this should be f(operand),
+				Operand:  operand,
+			}
+			wheres = append(wheres, where)
+		}
+	}
+	inp := &ListInput{
+		Page:   page,
+		Wheres: wheres,
+	}
+	return inp, nil
 }
