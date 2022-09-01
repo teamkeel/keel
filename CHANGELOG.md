@@ -1,3 +1,10 @@
+## [0.106.5](https://github.com/teamkeel/keel/compare/v0.106.4...v0.106.5) (2022-09-01)
+
+
+### Bug Fixes
+
+* action executor typings ([#342](https://github.com/teamkeel/keel/issues/342)) ([15cd224](https://github.com/teamkeel/keel/commit/15cd22480c8a4067fd09731ac025d2a11ce25c6e))
+
 ## [0.106.4](https://github.com/teamkeel/keel/compare/v0.106.3...v0.106.4) (2022-09-01)
 
 
