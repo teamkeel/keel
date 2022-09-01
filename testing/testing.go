@@ -321,8 +321,6 @@ func WriteResponse(data interface{}, w http.ResponseWriter) {
 	b, err := json.Marshal(data)
 
 	if err != nil {
-		fmt.Print("banana")
-
 		fmt.Print(err)
 		panic(err)
 	}
