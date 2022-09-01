@@ -35,7 +35,7 @@ type DeletePostCallbackFunction = (inputs: DeletePostInput, api: API) => DeleteP
 export const DeletePost = (callback: DeletePostCallbackFunction) => (inputs: DeletePostInput, api: API) : DeletePostReturnType => {
   return callback(inputs, api);
 };
-type ListPostsReturnType = Promise<FunctionListResponse<Post[]>>
+type ListPostsReturnType = Promise<FunctionListResponse<Post>>
 
 type ListPostsCallbackFunction = (inputs: ListPostsInput, api: API) => ListPostsReturnType
 
