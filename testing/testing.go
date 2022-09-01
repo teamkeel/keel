@@ -151,6 +151,15 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 									}
 
 									WriteResponse(r, w)
+								case proto.OperationType_OPERATION_TYPE_LIST:
+									res, err := actions.List(ctx, action, schema, map[string]any{"where": body.Payload})
+
+									r := map[string]any{
+										"collection": res,
+										"errors":     serializeError(err),
+									}
+
+									WriteResponse(r, w)
 								default:
 									w.WriteHeader(400)
 									panic(fmt.Sprintf("%s not yet implemented", action.Type))

@@ -176,11 +176,8 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			listInput, err := buildListInput(op, p.Args["input"])
-			if err != nil {
-				return nil, err
-			}
-			records, err := actions.List(p.Context, op, schema, listInput)
+			input := p.Args["input"]
+			records, err := actions.List(p.Context, op, schema, input)
 			if err != nil {
 				return nil, err
 			}
@@ -964,6 +961,7 @@ type IntrospectionQueryResult struct {
 	} `json:"__schema"`
 }
 
+<<<<<<< HEAD
 // buildListInput consumes the dictionary that carries the LIST operation input values on the
 // incoming request, and composes a corresponding actions.ListInput object that is good
 // to pass to the generic actions.List() function.
@@ -1012,6 +1010,8 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.
 	return inp, nil
 }
 
+=======
+>>>>>>> main
 // connectionResponse consumes the raw records returned by actions.List() (and similar),
 // and wraps them into a Node+Edges structure that is good for the connections pattern
 // return type and is expected by the GraphQL schema for the List operation.

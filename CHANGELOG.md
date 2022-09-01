@@ -1,3 +1,17 @@
+## [0.106.1](https://github.com/teamkeel/keel/compare/v0.106.0...v0.106.1) (2022-09-01)
+
+
+### Bug Fixes
+
+* revert zod changes ([#337](https://github.com/teamkeel/keel/issues/337)) ([12bae2d](https://github.com/teamkeel/keel/commit/12bae2d94c96366c6e86c2fd18538bb17839c0af))
+
+# [0.106.0](https://github.com/teamkeel/keel/compare/v0.105.0...v0.106.0) (2022-09-01)
+
+
+### Features
+
+* adds zod for schema validation for database queries ([#335](https://github.com/teamkeel/keel/issues/335)) ([8aed8d1](https://github.com/teamkeel/keel/commit/8aed8d1e4c4802f08518647dab664c7b95de80c4))
+
 # [0.105.0](https://github.com/teamkeel/keel/compare/v0.104.1...v0.105.0) (2022-08-30)
 
 
