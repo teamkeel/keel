@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
-	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"gorm.io/gorm"
@@ -56,9 +55,6 @@ func List(
 	// Now the number of records limit
 	tx = addLimit(tx, inputs.Page)
 
-	litter.Dump("XXXX gorm composition")
-	litter.Dump(tx.Statement)
-
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
 	// Execute the SQL query.
@@ -92,16 +88,32 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 		if matchingWhere == nil {
 			return nil, fmt.Errorf("operation expects an input named: <%s>, but none is present on the request", expectedFieldName)
 		}
-		tx = addWhere(tx, expectedFieldName, matchingWhere)
+		var err error
+		tx, err = addWhere(tx, expectedFieldName, matchingWhere)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return tx, nil
 }
 
 // addWhere updates the given gorm.DB tx with a where clause that represents the given
 // query.
-func addWhere(tx *gorm.DB, columnName string, where *Where) *gorm.DB {
-	w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
-	return tx.Where(w, where.Operand)
+func addWhere(tx *gorm.DB, columnName string, where *Where) (*gorm.DB, error) {
+	switch where.Operator {
+	case OperatorEquals:
+		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
+		return tx.Where(w, where.Operand), nil
+	case OperatorStartsWith:
+		operandStr, ok := where.Operand.(string)
+		if !ok {
+			return nil, fmt.Errorf("cannot case this: %v to a string", where.Operand)
+		}
+		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandStr+"%%"), nil
+	default:
+		return nil, fmt.Errorf("operator: %v is not yet supported", where.Operator)
+	}
 }
 
 func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {

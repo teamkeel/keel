@@ -38,10 +38,12 @@ type Where struct {
 	Operand  any
 }
 
-type Operator int
+type Operator string
 
 const (
-	OperatorEquals   = iota
-	OperatorLessThan = iota
-	OperatorContains = iota
+	OperatorUnknown    = "_unknown"
+	OperatorEquals     = "_equals"
+	OperatorLessThan   = "_lessthan"
+	OperatorContains   = "_contains"
+	OperatorStartsWith = "_startswith"
 )

@@ -992,11 +992,14 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*actions.
 		if !ok {
 			return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", argValue)
 		}
-		for operator, operand := range argValueAsMap {
-			_ = operator
+		for operatorStr, operand := range argValueAsMap {
+			op, err := operator(operatorStr)
+			if err != nil {
+				return nil, err
+			}
 			where := &actions.Where{
 				Name:     argName,
-				Operator: actions.OperatorEquals, // todo this should be f(operand),
+				Operator: op,
 				Operand:  operand,
 			}
 			wheres = append(wheres, where)
@@ -1019,20 +1022,28 @@ func connectionResponse(records any) (resp any, err error) {
 	if !ok {
 		return nil, fmt.Errorf("cannot cast this: %v to a []map[string]any", records)
 	}
+	var startCursor string
+	var endCursor string
 	edges := []map[string]any{}
-	for _, record := range recordsList {
+	for i, record := range recordsList {
 		edge := map[string]any{
 			"cursor": record["id"],
 			"node":   record,
 		}
 		edges = append(edges, edge)
+		if i == 0 {
+			startCursor, _ = record["id"].(string)
+		}
+		if i == len(edges)-1 {
+			endCursor, _ = record["id"].(string)
+		}
 	}
-	//n := len(edges)
+
 	pageInfo := map[string]any{
 		"hasNextPage":     true,  // placeholder
 		"hasPreviousPage": false, // placeholder
-		"startCursor":     "abc123",
-		"endCursor":       "abc987",
+		"startCursor":     startCursor,
+		"endCursor":       endCursor,
 	}
 	resp = map[string]any{
 		"pageInfo": pageInfo,
@@ -1079,4 +1090,17 @@ func parsePage(args map[string]any) (actions.Page, error) {
 	}
 
 	return page, nil
+}
+
+// operator converts the given string representation of an operator like
+// "eq" into the corresponding actions.Operator value.
+func operator(operatorStr string) (op actions.Operator, err error) {
+	switch operatorStr {
+	case "eq":
+		return actions.OperatorEquals, nil
+	case "startsWith":
+		return actions.OperatorStartsWith, nil
+	default:
+		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
+	}
 }
