@@ -108,7 +108,11 @@ declare module "@teamkeel/sdk/query" {
     private readonly tableName;
     private readonly conditions;
     private readonly connectionString: string;
-    constructor({ tableName, connectionString, conditions }: ChainedQueryOpts<T>);
+    constructor({
+      tableName,
+      connectionString,
+      conditions,
+    }: ChainedQueryOpts<T>);
     orWhere: (conditions: Conditions<T>) => ChainableQuery<T>;
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
     order: (clauses: OrderClauses<T>) => ChainableQuery<T>;
@@ -167,7 +171,7 @@ declare module "@teamkeel/sdk/types" {
     BooleanConstraint,
     NumberConstraint,
     DateConstraint,
-    EnumConstraint
+    EnumConstraint,
   } from "@teamkeel/sdk/constraints";
   import { Logger } from "@teamkeel/sdk";
   export interface QueryOpts {
