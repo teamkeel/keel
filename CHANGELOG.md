@@ -1,3 +1,10 @@
+## [0.106.2](https://github.com/teamkeel/keel/compare/v0.106.1...v0.106.2) (2022-09-01)
+
+
+### Bug Fixes
+
+* correct sdk typings ([#339](https://github.com/teamkeel/keel/issues/339)) ([74c17cd](https://github.com/teamkeel/keel/commit/74c17cd9af9fc23f6c998b10fd9b705c390eef6d))
+
 ## [0.106.1](https://github.com/teamkeel/keel/compare/v0.106.0...v0.106.1) (2022-09-01)
 
 
