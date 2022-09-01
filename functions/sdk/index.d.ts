@@ -1,5 +1,3 @@
-import { EqualityConstraint } from "constraints";
-
 declare module "@teamkeel/sdk/constraints" {
   export type EqualityConstraint = {
     notEqual?: string;
@@ -172,6 +170,7 @@ declare module "@teamkeel/sdk/types" {
     NumberConstraint,
     DateConstraint,
     EnumConstraint,
+    EqualityConstraint
   } from "@teamkeel/sdk/constraints";
   import { Logger } from "@teamkeel/sdk";
   export interface QueryOpts {
