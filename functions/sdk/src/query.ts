@@ -18,10 +18,8 @@ import {
   Input,
   BuiltInFields,
   OrderClauses,
-  ModelDefinition,
 } from "./types";
 import * as ReturnTypes from "./returnTypes";
-import { buildZodSchemaFromModelDefinition } from "./util/zodSchema";
 import Logger from "./logger";
 import { LogLevel } from "./";
 import { ConnectionRoutine } from "slonik/dist/src/types";
@@ -32,20 +30,17 @@ export class ChainableQuery<T extends IDer> {
   private orderClauses: OrderClauses<T>;
   private readonly connectionString: string;
   private readonly logger: Logger;
-  private readonly zodSchema: Zod.AnyZodObject;
 
   constructor({
     tableName,
     connectionString,
     conditions,
     logger,
-    zodSchema,
   }: ChainedQueryOpts<T>) {
     this.tableName = tableName;
     this.conditions = conditions;
     this.connectionString = connectionString;
     this.logger = logger;
-    this.zodSchema = zodSchema;
   }
 
   // orWhere can be used to chain additional conditions to a pre-existent set of conditions
@@ -60,7 +55,6 @@ export class ChainableQuery<T extends IDer> {
   all = async (): Promise<ReturnTypes.FunctionListResponse<T>> => {
     const sql = buildSelectStatement<T>(
       this.tableName,
-      this.zodSchema,
       this.conditions,
       this.orderClauses
     );
@@ -76,7 +70,6 @@ export class ChainableQuery<T extends IDer> {
   findOne = async (): Promise<ReturnTypes.FunctionGetResponse<T>> => {
     const sql = buildSelectStatement<T>(
       this.tableName,
-      this.zodSchema,
       this.conditions,
       undefined,
       1
@@ -103,7 +96,6 @@ export class ChainableQuery<T extends IDer> {
     if (asAst) {
       return buildSelectStatement(
         this.tableName,
-        this.zodSchema,
         this.conditions,
         this.orderClauses
       );
@@ -111,7 +103,6 @@ export class ChainableQuery<T extends IDer> {
 
     return buildSelectStatement(
       this.tableName,
-      this.zodSchema,
       this.conditions,
       this.orderClauses
     ).sql;
@@ -145,19 +136,12 @@ export default class Query<T extends IDer> {
   private readonly conditions: Conditions<T>[];
   private readonly connectionString: string;
   private readonly logger: Logger;
-  private readonly zodSchema: Zod.AnyZodObject;
 
-  constructor({
-    tableName,
-    connectionString,
-    logger,
-    modelDefinition,
-  }: QueryOpts<T>) {
+  constructor({ tableName, connectionString, logger }: QueryOpts) {
     this.tableName = tableName;
     this.conditions = [];
     this.connectionString = connectionString;
     this.logger = logger;
-    this.zodSchema = buildZodSchemaFromModelDefinition(modelDefinition);
   }
 
   create = async (
@@ -173,7 +157,7 @@ export default class Query<T extends IDer> {
 
     const values = { ...inputs, ...builtIns };
 
-    const query = buildCreateStatement(this.tableName, this.zodSchema, values);
+    const query = buildCreateStatement(this.tableName, values);
 
     const result = await this.execute(query);
 
@@ -195,14 +179,13 @@ export default class Query<T extends IDer> {
       connectionString: this.connectionString,
       conditions: [conditions],
       logger: this.logger,
-      zodSchema: this.zodSchema,
     });
   };
 
   delete = async (
     id: string
   ): Promise<ReturnTypes.FunctionDeleteResponse<T>> => {
-    const query = buildDeleteStatement(this.tableName, this.zodSchema, id);
+    const query = buildDeleteStatement(this.tableName, id);
 
     const result = await this.execute(query);
 
@@ -214,9 +197,7 @@ export default class Query<T extends IDer> {
   findOne = async (
     conditions: Conditions<T>
   ): Promise<ReturnTypes.FunctionGetResponse<T>> => {
-    const query = buildSelectStatement<T>(this.tableName, this.zodSchema, [
-      conditions,
-    ]);
+    const query = buildSelectStatement<T>(this.tableName, [conditions]);
 
     const result = await this.execute(query);
 
@@ -233,12 +214,7 @@ export default class Query<T extends IDer> {
     inputs: Input<T>
   ): Promise<ReturnTypes.FunctionUpdateResponse<T>> => {
     // todo type below correctly.
-    const query = buildUpdateStatement(
-      this.tableName,
-      this.zodSchema,
-      id,
-      inputs as any
-    );
+    const query = buildUpdateStatement(this.tableName, id, inputs as any);
 
     await this.execute(query);
 
@@ -252,11 +228,7 @@ export default class Query<T extends IDer> {
   };
 
   all = async (): Promise<ReturnTypes.FunctionListResponse<T>> => {
-    const sql = buildSelectStatement(
-      this.tableName,
-      this.zodSchema,
-      this.conditions
-    );
+    const sql = buildSelectStatement(this.tableName, this.conditions);
 
     const result = await this.execute(sql);
 

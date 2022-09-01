@@ -27,7 +27,6 @@ const ON_OR_AFTER = "onOrAfter";
 
 export const buildSelectStatement = <T>(
   tableName: string,
-  zodSchema: Zod.AnyZodObject,
   conditions: Conditions<T>[],
   order?: OrderClauses<T>,
   limit?: number
@@ -35,9 +34,7 @@ export const buildSelectStatement = <T>(
   const ands: ValueExpression[] = [];
   const hasConditions = conditions.length > 0;
   const hasOrder = Object.keys(order || {}).length > 0;
-  let query = sql.type(zodSchema)`SELECT * FROM ${sql.identifier([
-    toSnakeCase(tableName),
-  ])}`;
+  let query = sql`SELECT * FROM ${sql.identifier([toSnakeCase(tableName)])}`;
 
   if (hasConditions) {
     conditions.forEach((condition) => {
@@ -146,10 +143,9 @@ const isComplexConstraint = (constraint: Constraints): boolean => {
 
 export const buildCreateStatement = <T>(
   tableName: string,
-  zodSchema: Zod.AnyZodObject,
   inputs: Partial<T>
 ): TaggedTemplateLiteralInvocation<T> => {
-  return sql.type(zodSchema)`
+  return sql`
     INSERT INTO ${sql.identifier([toSnakeCase(tableName)])} (${sql.join(
     Object.keys(inputs)
       .map(toSnakeCase)
@@ -162,7 +158,6 @@ export const buildCreateStatement = <T>(
 
 export const buildUpdateStatement = <T>(
   tableName: string,
-  zodSchema: Zod.AnyZodObject,
   id: string,
   inputs: Partial<T>
 ): TaggedTemplateLiteralInvocation<T> => {
@@ -170,7 +165,7 @@ export const buildUpdateStatement = <T>(
     return sql`${sql.identifier([toSnakeCase(key)])} = ${value as any}`;
   });
 
-  const query = sql.type(zodSchema)`UPDATE ${sql.identifier([
+  const query = sql`UPDATE ${sql.identifier([
     toSnakeCase(tableName),
   ])} SET ${sql.join(values, sql`,`)} WHERE id = ${id}`;
 
@@ -179,10 +174,9 @@ export const buildUpdateStatement = <T>(
 
 export const buildDeleteStatement = <T>(
   tableName: string,
-  zodSchema: Zod.AnyZodObject,
   id: string
 ): TaggedTemplateLiteralInvocation<T> => {
-  const query = sql.type(zodSchema)`DELETE FROM ${sql.identifier([
+  const query = sql`DELETE FROM ${sql.identifier([
     toSnakeCase(tableName),
   ])} WHERE id = ${id} RETURNING id`;
 
