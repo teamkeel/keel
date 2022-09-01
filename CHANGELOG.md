@@ -1,3 +1,10 @@
+## [0.106.6](https://github.com/teamkeel/keel/compare/v0.106.5...v0.106.6) (2022-09-01)
+
+
+### Bug Fixes
+
+* integration tests ([#343](https://github.com/teamkeel/keel/issues/343)) ([5c6281c](https://github.com/teamkeel/keel/commit/5c6281cbdd0ef0a4d9f9ac7d019ecd42e6008723))
+
 ## [0.106.5](https://github.com/teamkeel/keel/compare/v0.106.4...v0.106.5) (2022-09-01)
 
 
