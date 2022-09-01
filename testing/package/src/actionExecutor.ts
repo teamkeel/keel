@@ -44,9 +44,9 @@ export default class ActionExecutor {
     this.protocol = protocol || DEFAULT_PROTOCOL;
   }
 
-  execute = async <R extends ReturnTypes<Model>, Model>(
+  execute = async <ReturnType>(
     args: ExecuteArgs
-  ): Promise<R> => {
+  ): Promise<ReturnType> => {
     const requestInit: RequestInit = {
       method: "POST",
       body: JSON.stringify(args),
@@ -59,7 +59,7 @@ export default class ActionExecutor {
 
     // the json from the /action endpoint will conform to the expected
     // return type for the given operation
-    const json = (await res.json());
+    const json = (await res.json()) as ReturnType;
 
     return json;
   };
