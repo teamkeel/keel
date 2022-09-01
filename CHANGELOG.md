@@ -1,3 +1,10 @@
+## [0.106.1](https://github.com/teamkeel/keel/compare/v0.106.0...v0.106.1) (2022-09-01)
+
+
+### Bug Fixes
+
+* revert zod changes ([#337](https://github.com/teamkeel/keel/issues/337)) ([12bae2d](https://github.com/teamkeel/keel/commit/12bae2d94c96366c6e86c2fd18538bb17839c0af))
+
 # [0.106.0](https://github.com/teamkeel/keel/compare/v0.105.0...v0.106.0) (2022-09-01)
 
 
