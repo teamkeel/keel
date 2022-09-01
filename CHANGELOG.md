@@ -1,3 +1,10 @@
+## [0.106.3](https://github.com/teamkeel/keel/compare/v0.106.2...v0.106.3) (2022-09-01)
+
+
+### Bug Fixes
+
+* ignore prettier on d.ts files ([#340](https://github.com/teamkeel/keel/issues/340)) ([1f9662f](https://github.com/teamkeel/keel/commit/1f9662f1e74727fe53e5646e941e38706f0720e2))
+
 ## [0.106.2](https://github.com/teamkeel/keel/compare/v0.106.1...v0.106.2) (2022-09-01)
 
 
