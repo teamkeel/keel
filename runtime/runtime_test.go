@@ -422,16 +422,6 @@ var testCases = []testCase{
 				}
 			}
 		},
-		variables: map[string]any{
-			"input": map[string]any{
-				"first": 10,
-				"where": map[string]any{
-					"name": map[string]any{
-						"startsWith": "Fr",
-					},
-				},
-			},
-		},
 		gqlOperation: `
 			query ListPeople {
 				listPeople(input: { first: 10, after: "Fred_0008_id", where: { name: { startsWith: "Fr" } } })

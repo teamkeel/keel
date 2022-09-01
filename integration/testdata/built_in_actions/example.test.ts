@@ -34,7 +34,7 @@ test('list action', async () => {
   await Post.create({ title: 'apple' })
 
   // todo: dont think this api lines up with custom functions
-  const { collection } = await Actions.listPosts({ title: { equal: 'apple' } })
+  const { collection } = await Actions.listPosts({ title: { eq: 'apple' } })
 
   expect.equal(collection.length, 2)
 })
