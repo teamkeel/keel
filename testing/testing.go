@@ -1,6 +1,7 @@
 package testing
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -47,6 +48,9 @@ type ActionRequest struct {
 	Payload    map[string]any `json:"payload"`
 }
 
+//go:embed tsconfig.json
+var sampleTsConfig string
+
 func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
@@ -55,6 +59,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	var db *gorm.DB
 
 	schema, err := builder.MakeFromDirectory(dir)
+
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +117,13 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 	if err != nil {
 		panic(err)
+	}
+
+	output, err := typecheck(dir)
+
+	if err != nil {
+		fmt.Print(output)
+		return nil, err
 	}
 
 	// Server for node test process to talk to
@@ -328,4 +340,23 @@ func serializeError(err error) []map[string]string {
 			"message": err.Error(),
 		},
 	}
+}
+
+func typecheck(dir string) (output string, err error) {
+	// todo: we need to generate a tsconfig to be able to run tsc for typechecking
+	// however, when we come to use the testing package in real projects, there may already
+	// be a tsconfig file that we need to respect
+	f, err := os.CreateTemp(dir, "tsconfig.json")
+	f.WriteString(sampleTsConfig)
+	defer f.Close()
+	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--project", f.Name())
+	cmd.Dir = dir
+
+	b, e := cmd.CombinedOutput()
+
+	if e != nil {
+		err = e
+	}
+
+	return string(b), err
 }

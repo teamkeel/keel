@@ -98,11 +98,9 @@ test('findOne', async () => {
   const { object: post } = await Post.create({ title: 'ghi' })
   await Post.create({ title: 'hij' })
 
-  const { object } = await Post.findOne({
-    title: {
-      contains: 'hi'
-    }
-  })
+  const { id } = post
+
+  const { object } = await Post.findOne({ id: id! })
 
   expect.equal(post.id, object.id)
 })

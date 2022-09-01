@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	gotest "testing"
@@ -24,6 +25,8 @@ func TestIntegration(t *gotest.T) {
 			workingDir, err := testhelpers.WithTmpDir(filepath.Join("./testdata", e.Name()))
 
 			require.NoError(t, err)
+
+			fmt.Println(workingDir)
 
 			packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
 

@@ -1,29 +1,29 @@
 class {{ .Name }}Api {
-  create = async (inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<Client.{{ .Name }}> => {
+  create = async (inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<ReturnTypes.FunctionCreateResponse<Client.{{ .Name }}>> => {
     const q = await this.query()
     return q.create(inputs);
   }
 
   where = (conditions: Client.{{ .Name }}Query) : ChainableQuery<Client.{{ .Name }}> => {
-    return new ChainableQuery({ tableName: '{{ .TableName }}', connectionString: cs, conditions: [conditions], logger: queryLogger })
+    return new ChainableQuery<Client.{{ .Name }}>({ tableName: '{{ .TableName }}', connectionString: cs, conditions: [conditions], logger: queryLogger })
   }
 
-  delete = async (id: string) : Promise<boolean> => {
+  delete = async (id: string) : Promise<ReturnTypes.FunctionDeleteResponse<Client.{{ .Name }}>> => {
     const q = await this.query()
     return q.delete(id);
   }
 
-  findOne = async (query: Client.{{ .Name }}UniqueFields) : Promise<Client.{{ .Name }}> => {
+  findOne = async (query: Client.{{ .Name }}UniqueFields) : Promise<ReturnTypes.FunctionGetResponse<Client.{{ .Name }}>> => {
     const q = await this.query()
     return q.findOne(query as any);
   }
 
-  update = async (id: string, inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<Client.{{ .Name }}> => {
+  update = async (id: string, inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<ReturnTypes.FunctionUpdateResponse<Client.{{ .Name }}>> => {
     const q = await this.query()
     return q.update(id, inputs as any);
   }
 
-  findMany = async (query: Client.{{ .Name }}Query) : Promise<Client.{{ .Name }}[]> => {
+  findMany = async (query: Client.{{ .Name }}Query) : Promise<ReturnTypes.FunctionListResponse<Client.{{ .Name }}>> => {
     const q = await this.query()
     return q.where(query as any).all();
   }

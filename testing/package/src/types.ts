@@ -1,4 +1,4 @@
-export type TestFunc = () => Promise<void>;
+export type TestFunc = () => void | Promise<void>;
 export type TestName = string;
 
 export interface Test {

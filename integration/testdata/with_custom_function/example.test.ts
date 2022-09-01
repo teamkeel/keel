@@ -44,7 +44,7 @@ test('deletion', async () => {
 test('updating', async () => {
   const { object: person } = await Person.create({ name: 'fred', gender: 'male', nINumber: '678' })
 
-  const { object: updatedPerson } = await Actions.updatePerson({ ...person, name: 'paul' })
+  const { object: updatedPerson } = await Actions.updatePerson({ where: { id: person.id }, values: { name: 'paul' }})
 
   expect.equal(updatedPerson.name, 'paul')
   expect.equal(updatedPerson.id, person.id)
