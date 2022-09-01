@@ -1,3 +1,5 @@
+import { EqualityConstraint } from "constraints";
+
 declare module "@teamkeel/sdk/constraints" {
   export type EqualityConstraint = {
     notEqual?: string;
@@ -33,6 +35,7 @@ declare module "@teamkeel/sdk/constraints" {
         onOrAfter?: Date;
       };
   export type BooleanConstraint = boolean | EqualityConstraint;
+  export type EnumConstraint = string | EqualityConstraint;
 }
 declare module "@teamkeel/sdk/index" {
   import Query, { ChainableQuery } from "@teamkeel/sdk/query";
@@ -104,8 +107,12 @@ declare module "@teamkeel/sdk/query" {
   export class ChainableQuery<T> {
     private readonly tableName;
     private readonly conditions;
-    private readonly pool;
-    constructor({ tableName, pool, conditions }: ChainedQueryOpts<T>);
+    private readonly connectionString: string;
+    constructor({
+      tableName,
+      connectionString,
+      conditions,
+    }: ChainedQueryOpts<T>);
     orWhere: (conditions: Conditions<T>) => ChainableQuery<T>;
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
     order: (clauses: OrderClauses<T>) => ChainableQuery<T>;
@@ -117,8 +124,9 @@ declare module "@teamkeel/sdk/query" {
     private readonly tableName;
     private readonly conditions;
     private orderClauses;
-    private readonly pool;
-    constructor({ tableName, pool, logger }: QueryOpts);
+    private readonly connectionString: string;
+
+    constructor({ tableName, connectionString, logger }: QueryOpts);
     create: (
       inputs: Partial<T>
     ) => Promise<ReturnTypes.FunctionCreateResponse<T>>;
@@ -162,12 +170,13 @@ declare module "@teamkeel/sdk/types" {
     StringConstraint,
     BooleanConstraint,
     NumberConstraint,
+    DateConstraint,
+    EnumConstraint,
   } from "@teamkeel/sdk/constraints";
   import { Logger } from "@teamkeel/sdk";
-  import { DatabasePool } from "slonik";
   export interface QueryOpts {
     tableName: string;
-    pool: DatabasePool;
+    connectionString: string;
     logger: Logger;
   }
   export interface ChainedQueryOpts<T> extends QueryOpts {
@@ -179,7 +188,10 @@ declare module "@teamkeel/sdk/types" {
   export type Constraints =
     | StringConstraint
     | BooleanConstraint
-    | NumberConstraint;
+    | NumberConstraint
+    | DateConstraint
+    | EnumConstraint
+    | EqualityConstraint;
   export type Input<T> = Record<keyof T, unknown>;
   export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
   export type OrderDirection = "asc" | "desc";
