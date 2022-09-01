@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"testing"
 	"time"
@@ -409,37 +410,21 @@ var testCases = []testCase{
 		name:       "list_operation_happy",
 		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
-			rows := []map[string]any{
-				initRow(map[string]any{
-					"name": "Sue",
-					"id":   "41",
-				}),
-				initRow(map[string]any{
-					"name": "Fred",
-					"id":   "42",
-				}),
-				initRow(map[string]any{
-					"name": "Francis",
-					"id":   "43",
-				}),
+			for _, nameStub := range []string{"Fred", "Sue"} {
+				for i := 0; i < 100; i++ {
+					name := fmt.Sprintf("%s_%d", nameStub, i)
+					id := fmt.Sprintf("%s_%04d_id", nameStub, i)
+					row := initRow(map[string]any{
+						"name": name,
+						"id":   id,
+					})
+					require.NoError(t, db.Table("person").Create(row).Error)
+				}
 			}
-			for _, row := range rows {
-				require.NoError(t, db.Table("person").Create(row).Error)
-			}
-		},
-		variables: map[string]any{
-			"input": map[string]any{
-				"first": 10,
-				"where": map[string]any{
-					"name": map[string]any{
-						"startsWith": "Fr",
-					},
-				},
-			},
 		},
 		gqlOperation: `
 			query ListPeople {
-				listPeople(input: { first: 10, where: { name: { equals: "Fred" } } })
+				listPeople(input: { first: 10, after: "Fred_0008_id", where: { name: { startsWith: "Fr" } } })
 				{
 					pageInfo {
 						hasNextPage
@@ -457,19 +442,22 @@ var testCases = []testCase{
 		 	}`,
 
 		assertData: func(t *testing.T, data map[string]any) {
-			// todo This is just some light sampling to support development at the moment.
-
-			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.hasNextPage", true)
-			rtt.AssertValueAtPath(t, data, "listPeople.pageInfo.startCursor", "abc123")
-
 			edges := rtt.GetValueAtPath(t, data, "listPeople.edges")
 			edgesList, ok := edges.([]any)
 			require.True(t, ok)
-			edge := edgesList[0]
-			edgeMap, ok := edge.(map[string]any)
+			// Check conformance with the request asking for the first 10, after id == "Fred_0008_id"
+			require.Len(t, edgesList, 10)
+			first := edgesList[0]
+			edge, ok := first.(map[string]any)
 			require.True(t, ok)
-			rtt.AssertValueAtPath(t, edgeMap, "node.id", "42")
-			rtt.AssertValueAtPath(t, edgeMap, "node.name", "Fred")
+			rtt.AssertValueAtPath(t, edge, "node.id", "Fred_0009_id")
+
+			// Check the correctness of the returned page metadata
+			pageInfo := rtt.GetValueAtPath(t, data, "listPeople.pageInfo")
+			pageInfoMap, ok := pageInfo.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "Fred_0009_id")
+			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "Fred_0018_id")
 		},
 	},
 }

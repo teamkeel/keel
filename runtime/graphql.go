@@ -971,24 +971,45 @@ func connectionResponse(records any) (resp any, err error) {
 	if !ok {
 		return nil, fmt.Errorf("cannot cast this: %v to a []map[string]any", records)
 	}
+	var startCursor string
+	var endCursor string
 	edges := []map[string]any{}
-	for _, record := range recordsList {
+	for i, record := range recordsList {
 		edge := map[string]any{
 			"cursor": record["id"],
 			"node":   record,
 		}
 		edges = append(edges, edge)
+		if i == 0 {
+			startCursor, _ = record["id"].(string)
+		}
+		if i == len(edges)-1 {
+			endCursor, _ = record["id"].(string)
+		}
 	}
-	//n := len(edges)
+
 	pageInfo := map[string]any{
 		"hasNextPage":     true,  // placeholder
 		"hasPreviousPage": false, // placeholder
-		"startCursor":     "abc123",
-		"endCursor":       "abc987",
+		"startCursor":     startCursor,
+		"endCursor":       endCursor,
 	}
 	resp = map[string]any{
 		"pageInfo": pageInfo,
 		"edges":    edges,
 	}
 	return resp, nil
+}
+
+// operator converts the given string representation of an operator like
+// "eq" into the corresponding actions.Operator value.
+func operator(operatorStr string) (op actions.Operator, err error) {
+	switch operatorStr {
+	case "eq":
+		return actions.OperatorEquals, nil
+	case "startsWith":
+		return actions.OperatorStartsWith, nil
+	default:
+		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
+	}
 }

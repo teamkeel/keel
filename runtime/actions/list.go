@@ -49,6 +49,15 @@ func List(
 	// 	return nil, err
 	// }
 
+	// Where clause to implement the after/before paging request
+	tx = addAfterBefore(tx, listInput.Page)
+
+	// Now ordering
+	tx = addOrderByID(tx)
+
+	// Now the number of records limit
+	tx = addLimit(tx, listInput.Page)
+
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
 	// Execute the SQL query.
@@ -82,28 +91,70 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 		if matchingWhere == nil {
 			return nil, fmt.Errorf("operation expects an input named: <%s>, but none is present on the request", expectedFieldName)
 		}
-		tx = addWhere(tx, expectedFieldName, matchingWhere)
+		var err error
+		tx, err = addWhere(tx, expectedFieldName, matchingWhere)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return tx, nil
 }
 
 // addWhere updates the given gorm.DB tx with a where clause that represents the given
 // query.
-func addWhere(tx *gorm.DB, columnName string, where *Where) *gorm.DB {
-	w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
-	return tx.Where(w, where.Operand)
+func addWhere(tx *gorm.DB, columnName string, where *Where) (*gorm.DB, error) {
+	switch where.Operator {
+	case OperatorEquals:
+		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
+		return tx.Where(w, where.Operand), nil
+	case OperatorStartsWith:
+		operandStr, ok := where.Operand.(string)
+		if !ok {
+			return nil, fmt.Errorf("cannot case this: %v to a string", where.Operand)
+		}
+		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandStr+"%%"), nil
+	default:
+		return nil, fmt.Errorf("operator: %v is not yet supported", where.Operator)
+	}
+}
+
+func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {
+	switch {
+	case page.After != "":
+		return tx.Where("ID > ?", page.After)
+	case page.Before != "":
+		return tx.Where("ID < ?", page.Before)
+	}
+	return tx
+}
+
+func addOrderByID(tx *gorm.DB) *gorm.DB {
+	return tx.Order("id")
+}
+
+func addLimit(tx *gorm.DB, page Page) *gorm.DB {
+	switch {
+	case page.First != 0:
+		return tx.Limit(page.First)
+	case page.Last != 0:
+		return tx.Limit(page.Last)
+	}
+	return tx
 }
 
 // buildListInput consumes the dictionary that carries the LIST operation input values on the
-// incoming request, and composes a corresponding actions.ListInput object that is good
-// to pass to the generic actions.List() function.
+// incoming request, and composes a corresponding ListInput object that is good
+// to pass to the generic List() function.
 func buildListInput(operation *proto.Operation, requestInputArgs any) (*ListInput, error) {
-	page := Page{}
-	wheres := []*Where{}
 
 	argsMap, ok := requestInputArgs.(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("cannot cast this: %+v to map[string]any", requestInputArgs)
+	}
+	page, err := parsePage(argsMap)
+	if err != nil {
+		return nil, err
 	}
 	whereInputs, ok := argsMap["where"]
 	if !ok {
@@ -114,16 +165,20 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*ListInpu
 		return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
 	}
 
+	wheres := []*Where{}
 	for argName, argValue := range whereInputsAsMap {
 		argValueAsMap, ok := argValue.(map[string]any)
 		if !ok {
 			return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", argValue)
 		}
-		for operator, operand := range argValueAsMap {
-			_ = operator
+		for operatorStr, operand := range argValueAsMap {
+			op, err := operator(operatorStr)
+			if err != nil {
+				return nil, err
+			}
 			where := &Where{
 				Name:     argName,
-				Operator: OperatorEquals, // todo this should be f(operand),
+				Operator: op,
 				Operand:  operand,
 			}
 			wheres = append(wheres, where)
@@ -134,4 +189,57 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*ListInpu
 		Wheres: wheres,
 	}
 	return inp, nil
+}
+
+// parsePage extracts page mandate information from the given map and uses it to
+// compose a Page.
+func parsePage(args map[string]any) (Page, error) {
+	page := Page{}
+
+	if first, ok := args["first"]; ok {
+		asInt, ok := first.(int)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to an int", first)
+		}
+		page.First = asInt
+	}
+
+	if last, ok := args["last"]; ok {
+		asInt, ok := last.(int)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to an int", last)
+		}
+		page.Last = asInt
+	}
+
+	if after, ok := args["after"]; ok {
+		asString, ok := after.(string)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to a string", after)
+		}
+		page.After = asString
+	}
+
+	if before, ok := args["before"]; ok {
+		asString, ok := before.(string)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to a string", before)
+		}
+		page.Before = asString
+	}
+
+	return page, nil
+}
+
+// operator converts the given string representation of an operator like
+// "eq" into the corresponding Operator value.
+func operator(operatorStr string) (op Operator, err error) {
+	switch operatorStr {
+	case "eq":
+		return OperatorEquals, nil
+	case "startsWith":
+		return OperatorStartsWith, nil
+	default:
+		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
+	}
 }
