@@ -1,3 +1,10 @@
+## [0.106.4](https://github.com/teamkeel/keel/compare/v0.106.3...v0.106.4) (2022-09-01)
+
+
+### Bug Fixes
+
+* update testing package to use return types from sdk  ([#341](https://github.com/teamkeel/keel/issues/341)) ([ae92ef5](https://github.com/teamkeel/keel/commit/ae92ef500868c54361cab1c89bd65a3131be68bc))
+
 ## [0.106.3](https://github.com/teamkeel/keel/compare/v0.106.2...v0.106.3) (2022-09-01)
 
 
