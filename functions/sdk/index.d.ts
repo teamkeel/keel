@@ -1,5 +1,3 @@
-import { EqualityConstraint } from "constraints";
-
 declare module "@teamkeel/sdk/constraints" {
   export type EqualityConstraint = {
     notEqual?: string;
