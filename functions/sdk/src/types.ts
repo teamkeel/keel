@@ -7,17 +7,14 @@ import {
 } from "./constraints";
 import { Logger } from "./";
 
-export interface QueryOpts<T> {
+export interface QueryOpts {
   tableName: string;
   connectionString: string;
   logger: Logger;
-  modelDefinition: ModelDefinition<T>;
 }
 
-export interface ChainedQueryOpts<T>
-  extends Omit<QueryOpts<T>, "modelDefinition"> {
+export interface ChainedQueryOpts<T> extends QueryOpts {
   conditions: Conditions<T>[];
-  zodSchema: Zod.AnyZodObject;
 }
 
 export interface SqlOptions {
@@ -51,7 +48,3 @@ export interface Identity {
   id: string;
   email: string;
 }
-
-export type ScalarTypes = "string" | "number" | "boolean" | "date";
-
-export type ModelDefinition<T> = Record<keyof T, ScalarTypes>;

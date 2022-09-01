@@ -1,4 +1,3 @@
-import { z } from "zod";
 import { Conditions, OrderClauses } from "types";
 import {
   buildSelectStatement,
@@ -13,11 +12,7 @@ interface Test {
 }
 
 test("buildSelectStatement", () => {
-  const zod = z.object({
-    foo: z.string(),
-    bar: z.number(),
-  });
-  const query = buildSelectStatement<Test>("test", zod, [
+  const query = buildSelectStatement<Test>("test", [
     {
       foo: {
         startsWith: "bar",
@@ -41,11 +36,8 @@ test("buildSelectStatement", () => {
 
 test("buildDeleteStatement", () => {
   const id = "jdssjdjsjj";
-  const zod = z.object({
-    foo: z.string(),
-    bar: z.number(),
-  });
-  const { sql, values } = buildDeleteStatement<Test>("test", zod, id);
+
+  const { sql, values } = buildDeleteStatement<Test>("test", id);
 
   expect(sql).toEqual('DELETE FROM "test" WHERE id = $1 RETURNING id');
 
@@ -57,11 +49,8 @@ test("buildCreateStatement", () => {
     foo: "bar",
     bar: 1,
   };
-  const zod = z.object({
-    foo: z.string(),
-    bar: z.number(),
-  });
-  const { sql, values } = buildCreateStatement<Test>("test", zod, t);
+
+  const { sql, values } = buildCreateStatement<Test>("test", t);
 
   expect(sql).toEqual(`
     INSERT INTO "test" ("foo", "bar")
@@ -77,11 +66,8 @@ test("buildUpdateStatement", () => {
     foo: "bar",
     bar: 1,
   };
-  const zod = z.object({
-    foo: z.string(),
-    bar: z.number(),
-  });
-  const { sql, values } = buildUpdateStatement<Test>("test", zod, id, t);
+
+  const { sql, values } = buildUpdateStatement<Test>("test", id, t);
 
   expect(sql).toEqual('UPDATE "test" SET "foo" = $1,"bar" = $2 WHERE id = $3');
 
@@ -89,13 +75,8 @@ test("buildUpdateStatement", () => {
 });
 
 test("testLimit", () => {
-  const zod = z.object({
-    foo: z.string(),
-    bar: z.number(),
-  });
   const query = buildSelectStatement<Test>(
     "test",
-    zod,
     [
       {
         foo: {
@@ -117,13 +98,8 @@ test("testLimit", () => {
 });
 
 test("testOrder", () => {
-  const zod = z.object({
-    foo: z.string(),
-    bar: z.number(),
-  });
   const query = buildSelectStatement<Test>(
     "test",
-    zod,
     [
       {
         foo: {
