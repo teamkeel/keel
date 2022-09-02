@@ -11,3 +11,7 @@ export interface RunnerOpts {
   host: string;
   debug?: boolean;
 }
+
+export type ScalarTypes = "string" | "boolean" | "date" | "number";
+
+export type ModelDefinition<T> = Record<keyof T, ScalarTypes>;
