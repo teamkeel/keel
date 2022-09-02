@@ -33,3 +33,5 @@ node_modules
 .launch.json
 
 wasm/*.wasm
+
+.env
