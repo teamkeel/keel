@@ -4,12 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
-	"strings"
 	gotest "testing"
 
-	"github.com/joho/godotenv"
 	"github.com/nsf/jsondiff"
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/testhelpers"
@@ -21,19 +18,15 @@ import (
 
 func TestIntegration(t *gotest.T) {
 
-	testToTarget := readTestToTargetFromEnv()
+	testToTarget := testing.ReadTestToTargetFromEnv()
 
 	entries, err := ioutil.ReadDir("./testdata")
 	require.NoError(t, err)
 
 	for _, e := range entries {
-		entryName := e.Name()
-		_ = entryName
 		if testToTarget != nil && e.Name() != testToTarget.Directory {
 			continue
 		}
-
-		fmt.Printf("XXXX targeting %s because %+v\n", entryName, testToTarget)
 
 		t.Run(e.Name(), func(t *gotest.T) {
 			workingDir, err := testhelpers.WithTmpDir(filepath.Join("./testdata", e.Name()))
@@ -61,7 +54,7 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			ch, err := testing.Run(t, workingDir)
+			ch, err := testing.Run(t, workingDir, testToTarget)
 			require.NoError(t, err)
 
 			events := []*testing.Event{}
@@ -84,31 +77,5 @@ func TestIntegration(t *gotest.T) {
 
 			assert.Fail(t, "actual test output did not match expected", explanation)
 		})
-	}
-}
-
-// TestToTarget models a test that should be targeted (i.e. isolated).
-type TestToTarget struct {
-	Directory string
-	File      string
-	CaseName  string
-}
-
-// readTestToTargetFromEnv provides either nil, or a well-formed TestToTarget object
-// depending on the value of the KEEL_TARGET_TEST environment variable.
-func readTestToTargetFromEnv() *TestToTarget {
-	godotenv.Load()
-	conf := os.Getenv("KEEL_TARGET_TEST")
-	if conf == "" {
-		return nil
-	}
-	segments := strings.Split(conf, "/")
-	if len(segments) != 3 {
-		panic(fmt.Sprintf("your KEEL_TARGET_TEST env var value: %s must have 3 slash-delimited segments", conf))
-	}
-	return &TestToTarget{
-		Directory: segments[0],
-		File:      segments[1],
-		CaseName:  segments[2],
 	}
 }

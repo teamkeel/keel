@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/joho/godotenv"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
@@ -51,7 +52,7 @@ type ActionRequest struct {
 //go:embed tsconfig.json
 var sampleTsConfig string
 
-func Run(t *testing.T, dir string) (<-chan []*Event, error) {
+func Run(t *testing.T, dir string, testToTarget *TestToTarget) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
@@ -240,6 +241,10 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 				continue
 			}
 
+			if testToTarget != nil && file != testToTarget.File {
+				continue
+			}
+
 			db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
 			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
@@ -357,4 +362,31 @@ func typecheck(dir string) (output string, err error) {
 	}
 
 	return string(b), err
+}
+
+// TestToTarget specifies a test case that should be targeted (i.e. isolated).
+type TestToTarget struct {
+	Directory string
+	File      string
+}
+
+// ReadTestToTargetFromEnv specifies information about a test case that should be
+// targeted. It returns a non-nil pointer to a TestToTarget value IFF
+// the KEEL_TARGET_TEST environment variable is: defined and is well formed in this form:
+// "built_in_actions/example.test.ts/get action (non unique)"
+// I.e. three slash-delimted segments specifying: a directory, a file, and a test case name.
+func ReadTestToTargetFromEnv() *TestToTarget {
+	godotenv.Load()
+	conf := os.Getenv("KEEL_TARGET_TEST")
+	if conf == "" {
+		return nil
+	}
+	segments := strings.Split(conf, "/")
+	if len(segments) != 2 {
+		panic(fmt.Sprintf("your KEEL_TARGET_TEST env var value: %s must have 2 slash-delimited segments", conf))
+	}
+	return &TestToTarget{
+		Directory: segments[0],
+		File:      segments[1],
+	}
 }
