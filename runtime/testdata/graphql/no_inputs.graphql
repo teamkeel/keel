@@ -4,9 +4,24 @@ type Query {
 }
 
 type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
   createBeatle: Beatle!
   deleteBeatle: ID
   switchBeatle: Beatle!
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
+type AuthenticateResponse {
+  token: String
 }
 
 type Beatle {
@@ -30,7 +45,6 @@ type Identity {
   createdAt: Timestamp!
   email: String!
   id: ID!
-  password: String!
   updatedAt: Timestamp!
 }
 

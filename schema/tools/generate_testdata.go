@@ -80,8 +80,7 @@ func main() {
 		s2m := schema.Builder{}
 		protoSchema, err := s2m.MakeFromDirectory(filepath.Join(testdataDir, subDir.Name()))
 		if err != nil {
-
-			verrs, ok := err.(errorhandling.ValidationErrors)
+			verrs, ok := err.(*errorhandling.ValidationErrors)
 			if !ok {
 				panic(fmt.Errorf("failed to make schema from directory: %v", err))
 			}

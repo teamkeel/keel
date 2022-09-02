@@ -82,7 +82,7 @@ func TestGraphQL(t *testing.T) {
 
 			if expected != actual {
 				// Print the actual result for easier debugging
-				fmt.Println("Actual GraphQL schema:")
+				fmt.Println("Actual GraphQL schema for", name, ":")
 				fmt.Println(actual)
 			}
 		})

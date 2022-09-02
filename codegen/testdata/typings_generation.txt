@@ -46,7 +46,7 @@ export interface Post {
 
 export interface Identity {
   email: string
-  password: string
+  password: unknown
   id: string
   createdAt: Date
   updatedAt: Date

@@ -2,8 +2,26 @@ type Query {
   getOrder(input: GetOrderInput!): Order
 }
 
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
 input GetOrderInput {
   id: ID!
+}
+
+type AuthenticateResponse {
+  token: String
 }
 
 type Order {
