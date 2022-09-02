@@ -1,3 +1,10 @@
+# [0.108.0](https://github.com/teamkeel/keel/compare/v0.107.0...v0.108.0) (2022-09-02)
+
+
+### Features
+
+* adds faker into testing package ([#345](https://github.com/teamkeel/keel/issues/345)) ([da46e10](https://github.com/teamkeel/keel/commit/da46e10c5eac6b5c87c28e29f0d108d13936b5a9))
+
 # [0.107.0](https://github.com/teamkeel/keel/compare/v0.106.7...v0.107.0) (2022-09-02)
 
 
