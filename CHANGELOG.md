@@ -1,3 +1,10 @@
+# [0.107.0](https://github.com/teamkeel/keel/compare/v0.106.7...v0.107.0) (2022-09-02)
+
+
+### Features
+
+* hashed secret data type ([#336](https://github.com/teamkeel/keel/issues/336)) ([599f188](https://github.com/teamkeel/keel/commit/599f1889761ac5f747a377b7ac8499daa1815844))
+
 ## [0.106.7](https://github.com/teamkeel/keel/compare/v0.106.6...v0.106.7) (2022-09-01)
 
 
