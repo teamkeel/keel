@@ -128,6 +128,8 @@ github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.4 h1:tHnRBy1i5F2Dh8BAFxqFzxKqqvezXrL2OW1TnX+Mlas=
 github.com/jinzhu/now v1.1.4/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=
+github.com/joho/godotenv v1.4.0 h1:3l4+N6zfMWnkbPEXKng2o2/MR5mSwTrBih4ZEkkz1lg=
+github.com/joho/godotenv v1.4.0/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c h1:1+Edq3YG954jgmyg++u4ga1wimqNwQvlxuOjkAPYjgo=
 github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c/go.mod h1:XGJ4Wo9sjsEIW3FBp9tlKF98nH40an1qh7dt0Nc+DsA=
 github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba h1:keZ4vJpYOVm6yrjLzZ6QgozbEBaT0GjfH30ihbO67+4=
