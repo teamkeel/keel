@@ -34,16 +34,16 @@ const (
 )
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
-func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (*ksuid.KSUID, error) {
+func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (*ksuid.KSUID, bool, error) {
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	identity, err := find(ctx, args.Email)
 
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 
 	if identity != nil {
@@ -53,40 +53,40 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 			id, err := ksuid.Parse(identity.Id)
 
 			if err != nil {
-				return nil, err
+				return nil, false, err
 			}
 
-			return &id, nil
+			return &id, false, nil
 		} else {
-			return nil, nil
+			return nil, false, nil
 		}
 	} else if args.CreateIfNotExists {
 		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(args.Password), bcrypt.DefaultCost)
 
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 		modelMap, err := initialValueForModel(identityModel, schema)
 		if err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		modelMap[strcase.ToSnake(EmailColumnName)] = args.Email
 		modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
 
 		if err := db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error; err != nil {
-			return nil, err
+			return nil, false, err
 		}
 
 		id := modelMap[IdColumnName].(ksuid.KSUID)
 
-		return &id, nil
+		return &id, true, nil
 	}
 
-	return nil, nil
+	return nil, false, nil
 }
 
 func find(ctx context.Context, email string) (*Identity, error) {

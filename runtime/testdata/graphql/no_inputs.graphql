@@ -21,6 +21,7 @@ input AuthenticateInput {
 }
 
 type AuthenticateResponse {
+  identityCreated: Boolean
   token: String
 }
 

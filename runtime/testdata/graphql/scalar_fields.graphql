@@ -21,6 +21,7 @@ input GetPersonInput {
 }
 
 type AuthenticateResponse {
+  identityCreated: Boolean
   token: String
 }
 

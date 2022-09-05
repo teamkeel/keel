@@ -35,6 +35,7 @@ input UpdatePersonValuesInput {
 }
 
 type AuthenticateResponse {
+  identityCreated: Boolean
   token: String
 }
 
