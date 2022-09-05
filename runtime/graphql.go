@@ -181,11 +181,11 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			records, err := actions.List(p.Context, op, schema, input)
+			records, hasNextPage, hasPrevPage, err := actions.List(p.Context, op, schema, input)
 			if err != nil {
 				return nil, err
 			}
-			resp, err := connectionResponse(records)
+			resp, err := connectionResponse(records, hasNextPage, hasPrevPage)
 			if err != nil {
 				return nil, err
 			}
@@ -972,7 +972,7 @@ type IntrospectionQueryResult struct {
 // and wraps them into a Node+Edges structure that is good for the connections pattern
 // return type and is expected by the GraphQL schema for the List operation.
 // See https://relay.dev/graphql/connections.htm
-func connectionResponse(records any) (resp any, err error) {
+func connectionResponse(records any, hasNextPage bool, hasPrevPage bool) (resp any, err error) {
 
 	recordsList, ok := records.([]map[string]any)
 	if !ok {
@@ -996,8 +996,8 @@ func connectionResponse(records any) (resp any, err error) {
 	}
 
 	pageInfo := map[string]any{
-		"hasNextPage":     true,  // placeholder
-		"hasPreviousPage": false, // placeholder
+		"hasNextPage":     hasNextPage,
+		"hasPreviousPage": hasPrevPage,
 		"startCursor":     startCursor,
 		"endCursor":       endCursor,
 	}

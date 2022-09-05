@@ -164,7 +164,10 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 									WriteResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_LIST:
-									res, err := actions.List(ctx, action, schema, map[string]any{"where": body.Payload})
+									res, hasNextPage, hasPreviousPage, err := actions.List(ctx, action, schema, map[string]any{"where": body.Payload})
+									_ = hasNextPage
+									_ = hasPreviousPage
+									// todo - use the returned hasNextPage info
 
 									r := map[string]any{
 										"collection": res,

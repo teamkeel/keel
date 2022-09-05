@@ -19,14 +19,14 @@ func List(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
-	inputs interface{}) (interface{}, error) {
+	inputs interface{}) (records interface{}, hasNextPage bool, hasPreviousPage bool, err error) {
 	listInput, err := buildListInput(operation, inputs)
 	if err != nil {
-		return nil, err
+		return nil, false, false, err
 	}
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
-		return nil, err
+		return nil, false, false, err
 	}
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
@@ -39,7 +39,7 @@ func List(
 	// Add the WHERE clauses derived from the inputs.
 	tx, err = addListInputFilters(operation, listInput, tx)
 	if err != nil {
-		return nil, err
+		return nil, false, false, err
 	}
 
 	// todo
@@ -55,8 +55,10 @@ func List(
 	// Now ordering
 	tx = addOrderByID(tx)
 
-	// Now the number of records limit
-	tx = addLimit(tx, listInput.Page)
+	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
+	// last-N before, x. The limit it applies one more than the number requested to help detect if
+	// there more pages available.
+	tx, numRequested := addLimit(tx, listInput.Page)
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
@@ -64,11 +66,25 @@ func List(
 	result := []map[string]any{}
 	tx = tx.Find(&result)
 	if tx.Error != nil {
-		return nil, tx.Error
+		return nil, false, false, tx.Error
 	}
 	res := toLowerCamelMaps(result)
 
-	return res, nil
+	// Reason over the results to judge if there is a next page and to return only
+	// the records requested (not the extra one).
+	switch {
+	case listInput.Page.After != "" && len(result) > listInput.Page.First:
+		hasNextPage = true
+		res = res[0 : numRequested-1]
+	case listInput.Page.Before != "" && len(result) > listInput.Page.Last:
+		hasPreviousPage = true
+		res = res[1 : listInput.Page.Last+1]
+	}
+
+	// todo, this is not a robust implementation - upgrade it to the lead() / lag() pattern that Tom suggested here:
+	// https://teamkeel.slack.com/archives/D03C08FGN5C/p1661959457265179
+
+	return res, hasNextPage, hasPreviousPage, nil
 }
 
 // addListInputFilters adds Where clauses to the given gorm.DB corresponding to the
@@ -133,14 +149,20 @@ func addOrderByID(tx *gorm.DB) *gorm.DB {
 	return tx.Order("id")
 }
 
-func addLimit(tx *gorm.DB, page Page) *gorm.DB {
+// addLimit puts a LIMIT clause on the query to return the number of records
+// specified by the Page mandate (plus 1). It adds one to make it possible to detect,
+// hasNextPage / hasPreviousPage.
+func addLimit(tx *gorm.DB, page Page) (txOut *gorm.DB, numRequested int) {
+	var n int
 	switch {
 	case page.First != 0:
-		return tx.Limit(page.First)
+		n = page.First + 1
+		return tx.Limit(n), n
 	case page.Last != 0:
-		return tx.Limit(page.Last)
+		n = page.Last + 1
+		return tx.Limit(n), n
 	}
-	return tx
+	return tx, n
 }
 
 // buildListInput consumes the dictionary that carries the LIST operation input values on the
