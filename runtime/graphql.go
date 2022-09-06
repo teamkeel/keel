@@ -206,8 +206,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		})
 
 		for _, output := range op.Outputs {
+
+			outputType := protoTypeToGraphQLOutput[output.Type.Type]
+			if outputType == nil {
+				return fmt.Errorf("cannot yet make output type for: %s", output.Type.Type.String())
+			}
+
 			ouput.AddFieldConfig(output.Name, &graphql.Field{
-				Type: graphql.String,
+				Type: outputType,
 			})
 
 		}
@@ -226,7 +232,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
 			}
 
-			identityId, err := actions.Authenticate(p.Context, schema, &authArgs)
+			identityId, identityCreated, err := actions.Authenticate(p.Context, schema, &authArgs)
 
 			if err != nil {
 				return nil, err
@@ -244,9 +250,12 @@ func (mk *graphqlSchemaBuilder) addOperation(
 					return nil, err
 				}
 
-				return map[string]any{"token": tokenString}, nil
+				return map[string]any{
+					"identityCreated": identityCreated,
+					"token":           tokenString,
+				}, nil
 			} else {
-				return map[string]any{"token": nil}, nil
+				return nil, errors.New("failed to authenticate")
 			}
 		}
 

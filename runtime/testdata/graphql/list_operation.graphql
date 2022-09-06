@@ -61,6 +61,7 @@ input StringQueryInput {
 }
 
 type AuthenticateResponse {
+  identityCreated: Boolean
   token: String
 }
 
