@@ -1,3 +1,10 @@
+## [0.108.1](https://github.com/teamkeel/keel/compare/v0.108.0...v0.108.1) (2022-09-06)
+
+
+### Bug Fixes
+
+* failed authenticate() response from gql ([#347](https://github.com/teamkeel/keel/issues/347)) ([ed175a0](https://github.com/teamkeel/keel/commit/ed175a0cacfa9e916f3a848fb8e86aa0470623f1))
+
 # [0.108.0](https://github.com/teamkeel/keel/compare/v0.107.0...v0.108.0) (2022-09-02)
 
 
