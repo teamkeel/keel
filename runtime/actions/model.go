@@ -183,8 +183,10 @@ func toMap(in any, inputType proto.Type) (any, error) {
 
 		date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 		return date, nil
-
 	case proto.Type_TYPE_SECRET:
+		return nil, fmt.Errorf("secret data type not yet implemented")
+
+	case proto.Type_TYPE_PASSWORD:
 		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(in.(string)), bcrypt.DefaultCost)
 
 		if err != nil {

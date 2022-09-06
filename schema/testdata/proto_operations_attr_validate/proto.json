@@ -86,7 +86,7 @@
           "modelName":  "Identity",
           "name":  "password",
           "type":  {
-            "type":  "TYPE_SECRET"
+            "type":  "TYPE_PASSWORD"
           }
         },
         {

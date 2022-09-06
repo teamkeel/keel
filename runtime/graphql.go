@@ -95,7 +95,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	mk.types[model.Name] = object
 
 	for _, field := range model.Fields {
-		if field.Type.Type == proto.Type_TYPE_SECRET {
+		// Passwords are omitted from GraphQL responses
+		if field.Type.Type == proto.Type_TYPE_PASSWORD {
 			continue
 		}
 
@@ -495,6 +496,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_DATETIME:  timestampInputType,
 	proto.Type_TYPE_DATE:      dateInputType,
 	proto.Type_TYPE_SECRET:    graphql.String,
+	proto.Type_TYPE_PASSWORD:  graphql.String,
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
