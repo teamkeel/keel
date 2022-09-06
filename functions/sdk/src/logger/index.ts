@@ -81,6 +81,7 @@ export default class Logger {
     }
   }
 
+  
   log = (msg: Msg, level: Level = Level.Info): void => {
     this.options.transport.log(msg, level, this.options);
   };

@@ -6,14 +6,11 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
@@ -240,12 +237,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			}
 
 			if identityId != nil {
-				token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-					"id":  identityId,
-					"exp": time.Now().Add(time.Hour * 24).Unix(),
-				})
-
-				tokenString, err := token.SignedString(actions.PrivateKey)
+				token, err := GenerateBearerToken(identityId)
 
 				if err != nil {
 					return nil, err
@@ -253,7 +245,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 				return map[string]any{
 					"identityCreated": identityCreated,
-					"token":           tokenString,
+					"token":           token,
 				}, nil
 			} else {
 				return nil, errors.New("failed to authenticate")

@@ -13,8 +13,6 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var PrivateKey []byte = []byte("PLACEHOLDER_PRIVATE_KEY")
-
 type Identity struct {
 	Id       string `gorm:"column:id"`
 	Email    string `gorm:"column:email"`
