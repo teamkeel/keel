@@ -107,17 +107,6 @@ func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {
 	return tx
 }
 
-// addOrderingAndLeadAndLag puts in a SELECT statement that asks for one extra row before and after the rows the
-// remainder of the query would return. Naturally it has to specify ordering for that to be meaningful. But we also
-// want the rows to be ordered (in the same way, i.e. by "id") to support page requests, so we deal with all
-// the ordering here in one place.
-func addOrderingAndLeadAndLag(tx *gorm.DB) *gorm.DB {
-	tx = tx.Select(`Select("*, CASE WHEN lead(1) OVER ( order by "id" ) is not null THEN true ELSE false END as hasNext,
-	CASE WHEN lag(1) OVER ( order by "id" ) is not null THEN true ELSE false END as hasPrevious"`)
-	tx = tx.Order("id")
-	return tx
-}
-
 // addLimit puts a LIMIT clause on the query to return the number of records
 // specified by the Page mandate (plus 1). It adds one to make it possible to detect,
 // hasNextPage / hasPreviousPage.
@@ -233,6 +222,27 @@ func operator(operatorStr string) (op Operator, err error) {
 	default:
 		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
 	}
+}
+
+// addOrderingAndLeadAndLag puts in a SELECT statement that asks for one extra row before and after the rows the
+// remainder of the query would return. Naturally it has to specify ordering for that to be meaningful. But we also
+// want the rows to be ordered (in the same way, i.e. by "id") to support page requests, so we deal with all
+// the ordering here in one place.
+func addOrderingAndLeadAndLag(tx *gorm.DB) *gorm.DB {
+
+	const by = "id"
+	selectArgs := `
+	 *,
+		CASE WHEN lead(1) OVER ( order by ? ) is not null THEN true ELSE false
+		END as hasNext
+		,
+		CASE WHEN lag(1) OVER ( order by ? ) is not null THEN true ELSE false
+		END as hasPrevious
+	`
+
+	tx = tx.Select(selectArgs, by, by)
+	tx = tx.Order(by)
+	return tx
 }
 
 func buildQuery(
