@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
@@ -96,6 +97,7 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 		if schemaInput.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			return nil, errors.New("not yet supported: explicit inputs for list actions")
 		}
+
 		expectedFieldName := schemaInput.Target[0]
 		var matchingWhere *Where
 		for _, where := range listInput.Wheres {
@@ -104,11 +106,16 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 				break
 			}
 		}
+		if matchingWhere == nil && schemaInput.Optional {
+			// If the input is optional we don't need a where input
+			continue
+		}
 		if matchingWhere == nil {
 			return nil, fmt.Errorf("operation expects an input named: <%s>, but none is present on the request", expectedFieldName)
 		}
+
 		var err error
-		tx, err = addWhere(tx, expectedFieldName, matchingWhere)
+		tx, err = addWhere(tx, expectedFieldName, matchingWhere, schemaInput.Type)
 		if err != nil {
 			return nil, err
 		}
@@ -118,18 +125,118 @@ func addListInputFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB)
 
 // addWhere updates the given gorm.DB tx with a where clause that represents the given
 // query.
-func addWhere(tx *gorm.DB, columnName string, where *Where) (*gorm.DB, error) {
+func addWhere(tx *gorm.DB, columnName string, where *Where, inputType *proto.TypeInfo) (*gorm.DB, error) {
 	switch where.Operator {
 	case OperatorEquals:
+		operand := where.Operand
+
+		if inputType.Type == proto.Type_TYPE_DATE || inputType.Type == proto.Type_TYPE_DATETIME || inputType.Type == proto.Type_TYPE_TIMESTAMP {
+			timeOperand, err := parseTimeOperand(where.Operand, inputType.Type)
+			if err != nil {
+				return nil, err
+			}
+			operand = timeOperand
+		}
+
 		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
-		return tx.Where(w, where.Operand), nil
+		return tx.Where(w, operand), nil
+
 	case OperatorStartsWith:
 		operandStr, ok := where.Operand.(string)
 		if !ok {
-			return nil, fmt.Errorf("cannot case this: %v to a string", where.Operand)
+			return nil, fmt.Errorf("cannot cast this: %v to a string", where.Operand)
 		}
 		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
 		return tx.Where(w, operandStr+"%%"), nil
+
+	case OperatorEndsWith:
+		operandStr, ok := where.Operand.(string)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to a string", where.Operand)
+		}
+		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
+		return tx.Where(w, "%%"+operandStr), nil
+
+	case OperatorContains:
+		operandStr, ok := where.Operand.(string)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to a string", where.Operand)
+		}
+		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
+		return tx.Where(w, "%%"+operandStr+"%%"), nil
+
+	case OperatorOneOf:
+		operandStrings, ok := where.Operand.([]interface{})
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to a []interface{}", where.Operand)
+		}
+		w := fmt.Sprintf("%s in ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandStrings), nil
+
+	case OperatorLessThan:
+		operandInt, ok := where.Operand.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to an int", where.Operand)
+		}
+		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandInt), nil
+
+	case OperatorLessThanEquals:
+		operandInt, ok := where.Operand.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to an int", where.Operand)
+		}
+		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandInt), nil
+
+	case OperatorGreaterThan:
+		operandInt, ok := where.Operand.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to an int", where.Operand)
+		}
+		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandInt), nil
+
+	case OperatorGreaterThanEquals:
+		operandInt, ok := where.Operand.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to an int", where.Operand)
+		}
+		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandInt), nil
+
+	case OperatorBefore:
+		operandTime, err := parseTimeOperand(where.Operand, inputType.Type)
+		if err != nil {
+			return nil, err
+		}
+		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandTime), nil
+
+	case OperatorAfter:
+		operandTime, err := parseTimeOperand(where.Operand, inputType.Type)
+		if err != nil {
+			return nil, err
+		}
+		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandTime), nil
+
+	case OperatorOnOrBefore:
+		operandTime, err := parseTimeOperand(where.Operand, inputType.Type)
+		if err != nil {
+			return nil, err
+		}
+		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandTime), nil
+
+	case OperatorOnOrAfter:
+		operandTime, err := parseTimeOperand(where.Operand, inputType.Type)
+		if err != nil {
+			return nil, err
+		}
+		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
+		return tx.Where(w, operandTime), nil
+
 	default:
 		return nil, fmt.Errorf("operator: %v is not yet supported", where.Operator)
 	}
@@ -213,6 +320,55 @@ func buildListInput(operation *proto.Operation, requestInputArgs any) (*ListInpu
 	return inp, nil
 }
 
+// praseTime extract and parses time for date/time based operators
+// Supports timestamps passed in map[seconds:int] and dates passesd as map[day:int month:int year:int]
+func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err error) {
+	operandMap, ok := operand.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %v to a map[string]interface{}", operand)
+	}
+
+	switch inputType {
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		seconds := operandMap["seconds"]
+		secondsInt, ok := seconds.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to int", seconds)
+		}
+		unix := time.Unix(int64(secondsInt), 0)
+		t = &unix
+
+	case proto.Type_TYPE_DATE:
+		day := operandMap["day"]
+		month := operandMap["month"]
+		year := operandMap["year"]
+
+		dayInt, ok := day.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast days: %v to int", day)
+		}
+		monthInt, ok := month.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast month: %v to int", month)
+		}
+		yearInt, ok := year.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast year: %v to int", year)
+		}
+
+		time, err := time.Parse("2006-01-02", fmt.Sprintf("%d-%02d-%02d", yearInt, monthInt, dayInt))
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse date %s", err)
+		}
+		t = &time
+
+	default:
+		return nil, fmt.Errorf("unknown time field type")
+	}
+
+	return t, nil
+}
+
 // parsePage extracts page mandate information from the given map and uses it to
 // compose a Page.
 func parsePage(args map[string]any) (Page, error) {
@@ -251,17 +407,4 @@ func parsePage(args map[string]any) (Page, error) {
 	}
 
 	return page, nil
-}
-
-// operator converts the given string representation of an operator like
-// "eq" into the corresponding Operator value.
-func operator(operatorStr string) (op Operator, err error) {
-	switch operatorStr {
-	case "eq":
-		return OperatorEquals, nil
-	case "startsWith":
-		return OperatorStartsWith, nil
-	default:
-		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
-	}
 }

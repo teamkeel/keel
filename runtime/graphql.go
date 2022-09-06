@@ -582,16 +582,16 @@ var intQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
 		"equals": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"lt": &graphql.InputObjectFieldConfig{
+		"lessThan": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"lte": &graphql.InputObjectFieldConfig{
+		"lessThanOrEquals": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"gt": &graphql.InputObjectFieldConfig{
+		"greaterThan": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"gte": &graphql.InputObjectFieldConfig{
+		"greaterThanOrEquals": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
 	},
@@ -645,6 +645,7 @@ var protoTypeToGraphQLQueryInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_INT:       intQueryInputType,
 	proto.Type_TYPE_BOOL:      booleanQueryInput,
 	proto.Type_TYPE_TIMESTAMP: timestampQueryInputType,
+	proto.Type_TYPE_DATETIME:  timestampQueryInputType,
 	proto.Type_TYPE_DATE:      dateQueryInputType,
 }
 
@@ -788,6 +789,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 		inputType.AddFieldConfig("after", &graphql.InputObjectFieldConfig{
 			Type: graphql.String,
 		})
+		// TODO this should be nullable if all inputs are optional
 		inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
 			Type: graphql.NewNonNull(where),
 		})
@@ -1009,17 +1011,4 @@ func connectionResponse(records any, hasNextPage bool, hasPrevPage bool) (resp a
 		"edges":    edges,
 	}
 	return resp, nil
-}
-
-// operator converts the given string representation of an operator like
-// "eq" into the corresponding actions.Operator value.
-func operator(operatorStr string) (op actions.Operator, err error) {
-	switch operatorStr {
-	case "eq":
-		return actions.OperatorEquals, nil
-	case "startsWith":
-		return actions.OperatorStartsWith, nil
-	default:
-		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
-	}
 }

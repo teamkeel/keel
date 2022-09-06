@@ -202,6 +202,33 @@ const multiSchema string = `
 	}
 `
 
+// Schema with all field types
+const fieldTypes string = `
+	model Thing {
+		fields {
+			text Text @unique
+			bool Boolean
+			timestamp Timestamp
+			date Date
+			number Number
+			enum Enums
+		}
+		operations {
+			list listThings(text?, bool?, date?, timestamp?, number?, enum?)
+		}
+	}
+	enum Enums {
+		Option1
+		Option2
+	}
+	api Test {
+		@graphql
+		models {
+			Thing
+		}
+	}
+`
+
 // testCases is a list of testCase that is good for the top level test suite to
 // iterate over.
 var testCases = []testCase{
@@ -466,6 +493,190 @@ var testCases = []testCase{
 			// you are going. I.e. in this case forwards.
 
 			// rtt.AssertValueAtPath(t, pageInfoMap, "hasPreviousPage", true)
+		},
+	},
+	{
+		name:       "list_inputs",
+		keelSchema: fieldTypes,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row1 := initRow(map[string]any{
+				"id":        "id_123",
+				"text":      "some-interesting-text",
+				"bool":      true,
+				"timestamp": "1970-01-01 00:00:10",
+				"date":      "2020-01-02",
+				"number":    10,
+				"enum":      "Option1",
+			})
+			require.NoError(t, db.Table("thing").Create(row1).Error)
+			// require.NoError(t, db.Table("person").Create(row2).Error)
+			// require.NoError(t, db.Table("person").Create(row3).Error)
+		},
+		gqlOperation: `
+		
+		fragment Fields on ThingConnection {
+			edges {
+				node {
+				text
+				bool
+				# timestamp {seconds}
+				# date {day, month, year}
+				number
+				enum
+				}
+			}
+		}
+
+		{
+		string_equals: listThings(input: {where: {text: {equals: "some-interesting-text"}}}) {
+			...Fields
+		},
+		string_startsWith: listThings(input: {where: {text: {startsWith: "some"}}}) {
+			...Fields
+		},
+		string_endWith: listThings(input: {where: {text: {endsWith: "-text"}}}) {
+			...Fields
+		},
+		string_contains: listThings(input: {where: {text: {contains: "interesting"}}}) {
+			...Fields
+		},
+		string_oneOf: listThings(input: {where: {text: {oneOf: ["some-interesting-text", "Another"]}}}) {
+			...Fields
+		},
+		number_equals: listThings(input: {where: {number: {equals: 10}}}) {
+			...Fields
+		},
+		number_gt: listThings(input: {where: {number: {greaterThan: 9}}}) {
+			...Fields
+		},
+		number_gte: listThings(input: {where: {number: {greaterThanOrEquals: 10}}}) {
+			...Fields
+		},
+		number_lt: listThings(input: {where: {number: {lessThan: 11}}}) {
+			...Fields
+		},
+		number_lte: listThings(input: {where: {number: {lessThanOrEquals: 10}}}) {
+			...Fields
+		},
+		enum_equals: listThings(input: {where: {enum: {equals: Option1}}}) {
+			...Fields
+		},
+		enum_oneOf: listThings(input: {where: {enum: {oneOf: [Option1]}}}) {
+			...Fields
+		},
+		timestamp_before: listThings(input: {
+			where: {
+			timestamp: {
+				before: {
+					seconds: 11
+				}
+			}
+			}
+		}) {
+			...Fields
+		},
+		timestamp_after: listThings(input: {
+			where: {
+			timestamp: {
+				after: {
+					seconds: 9
+				}
+			}
+			}
+		}) {
+			...Fields
+		},
+		date_before: listThings(input: {where: {date: {before: {
+			year: 2020,
+			month: 1,
+			day: 3
+		}}}}) {
+			...Fields
+		},
+		date_after: listThings(input: {where: {date: {after: {
+			year: 2020,
+			month: 1,
+			day: 1
+		}}}}) {
+			...Fields
+		},
+		date_onOrbefore: listThings(input: {where: {date: {onOrBefore: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		date_onOrAfter: listThings(input: {where: {date: {onOrAfter: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		date_onOrEquals: listThings(input: {where: {date: {equals: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		bool: listThings(input: {
+			where: {
+			bool: {
+					equals: true
+				}
+			}
+		}) {
+			...Fields
+		}
+		combined: listThings(input: {
+			where: {
+			bool: {
+					equals: true
+			},
+			enum: {
+				equals: Option1
+			}
+			}
+		}) {
+			...Fields
+		}
+		}`,
+		assertData: func(t *testing.T, data map[string]any) {
+
+			keys := []string{
+				"string_equals",
+				"string_startsWith",
+				"string_endWith",
+				"string_contains",
+				"string_oneOf",
+				"number_equals",
+				"number_gt",
+				"number_gte",
+				"number_lt",
+				"number_lte",
+				"enum_equals",
+				"enum_oneOf",
+				"timestamp_before",
+				"timestamp_after",
+				"date_before",
+				"date_after",
+				"date_onOrbefore",
+				"date_onOrAfter",
+				"date_onOrEquals",
+				"bool",
+				"combined",
+			}
+
+			for _, key := range keys {
+				edges := rtt.GetValueAtPath(t, data, key+".edges")
+				edgesList, ok := edges.([]any)
+				fmt.Println(key)
+				require.True(t, ok)
+				require.Len(t, edgesList, 1)
+			}
+
 		},
 	},
 }
