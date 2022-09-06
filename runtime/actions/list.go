@@ -31,58 +31,20 @@ func List(
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
 
-	tableName := strcase.ToSnake(model.Name)
-
-	// Initialise a query on the table = to which we'll add Where clauses.
-	tx := db.Table(tableName)
-
-	// SELECT one additional "lead" and "lag" row.
-	tx = addOrderingAndLeadAndLag(tx)
-
-	// Add the WHERE clauses derived from the inputs.
-	tx, err = addListInputFilters(operation, listInput, tx)
+	qry, err := buildQuery(db, model, operation, listInput)
 	if err != nil {
 		return nil, false, false, err
 	}
-
-	// todo
-	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
-	// tx, err = addWhereFilters(operation, schema, args, tx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// Where clause to implement the after/before paging request
-	tx = addAfterBefore(tx, listInput.Page)
-
-	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
-	// last-N before, x. The limit it applies one more than the number requested to help detect if
-	// there more pages available.
-	tx, numRequested := addLimit(tx, listInput.Page)
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
 	// Execute the SQL query.
 	result := []map[string]any{}
-	tx = tx.Find(&result)
-	if tx.Error != nil {
-		return nil, false, false, tx.Error
+	qry = qry.Find(&result)
+	if qry.Error != nil {
+		return nil, false, false, qry.Error
 	}
 	res := toLowerCamelMaps(result)
-
-	// Reason over the results to judge if there is a next page and to return only
-	// the records requested (not the extra one).
-	switch {
-	case listInput.Page.After != "" && len(result) > listInput.Page.First:
-		hasNextPage = true
-		res = res[0 : numRequested-1]
-	case listInput.Page.Before != "" && len(result) > listInput.Page.Last:
-		hasPreviousPage = true
-		res = res[1 : listInput.Page.Last+1]
-	}
-
-	// todo, this is not a robust implementation - upgrade it to the lead() / lag() pattern that Tom suggested here:
-	// https://teamkeel.slack.com/archives/D03C08FGN5C/p1661959457265179
 
 	return res, hasNextPage, hasPreviousPage, nil
 }
@@ -271,4 +233,43 @@ func operator(operatorStr string) (op Operator, err error) {
 	default:
 		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
 	}
+}
+
+func buildQuery(
+	db *gorm.DB,
+	model *proto.Model,
+	op *proto.Operation,
+	listInput *ListInput) (*gorm.DB, error) {
+
+	tableName := strcase.ToSnake(model.Name)
+
+	// Initialise a query on the table = to which we'll add Where clauses.
+	qry := db.Table(tableName)
+
+	// SELECT one additional "lead" and "lag" row.
+	qry = addOrderingAndLeadAndLag(qry)
+
+	// Add the WHERE clauses derived from the inputs.
+	qry, err := addListInputFilters(op, listInput, qry)
+	if err != nil {
+		return nil, err
+	}
+
+	// todo
+	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
+	// tx, err = addWhereFilters(operation, schema, args, tx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// Where clause to implement the after/before paging request
+	qry = addAfterBefore(qry, listInput.Page)
+
+	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
+	// last-N before, x. The limit it applies one more than the number requested to help detect if
+	// there more pages available.
+	qry, numRequested := addLimit(qry, listInput.Page)
+	_ = numRequested
+
+	return qry, nil
 }
