@@ -36,6 +36,9 @@ func List(
 	// Initialise a query on the table = to which we'll add Where clauses.
 	tx := db.Table(tableName)
 
+	// SELECT one additional "lead" and "lag" row.
+	tx = addOrderingAndLeadAndLag(tx)
+
 	// Add the WHERE clauses derived from the inputs.
 	tx, err = addListInputFilters(operation, listInput, tx)
 	if err != nil {
@@ -51,9 +54,6 @@ func List(
 
 	// Where clause to implement the after/before paging request
 	tx = addAfterBefore(tx, listInput.Page)
-
-	// Now ordering
-	tx = addOrderByID(tx)
 
 	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
 	// last-N before, x. The limit it applies one more than the number requested to help detect if
@@ -145,8 +145,15 @@ func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {
 	return tx
 }
 
-func addOrderByID(tx *gorm.DB) *gorm.DB {
-	return tx.Order("id")
+// addOrderingAndLeadAndLag puts in a SELECT statement that asks for one extra row before and after the rows the
+// remainder of the query would return. Naturally it has to specify ordering for that to be meaningful. But we also
+// want the rows to be ordered (in the same way, i.e. by "id") to support page requests, so we deal with all
+// the ordering here in one place.
+func addOrderingAndLeadAndLag(tx *gorm.DB) *gorm.DB {
+	tx = tx.Select(`Select("*, CASE WHEN lead(1) OVER ( order by "id" ) is not null THEN true ELSE false END as hasNext,
+	CASE WHEN lag(1) OVER ( order by "id" ) is not null THEN true ELSE false END as hasPrevious"`)
+	tx = tx.Order("id")
+	return tx
 }
 
 // addLimit puts a LIMIT clause on the query to return the number of records

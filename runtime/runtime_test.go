@@ -25,8 +25,8 @@ func TestRuntime(t *testing.T) {
 	// We connect to the "main" database here only so we can create a new database
 	// for each sub-test
 
-	var skip string = "" // Name of test case you want to skip, or ""
-	var only = ""        // Name of test case you want isolated and alone, or ""
+	var skip string = ""              // Name of test case you want to skip, or ""
+	var only = "list_operation_happy" // Name of test case you want isolated and alone, or ""
 
 	for _, tCase := range testCases {
 
