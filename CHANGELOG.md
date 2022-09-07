@@ -1,3 +1,10 @@
+## [0.111.5](https://github.com/teamkeel/keel/compare/v0.111.4...v0.111.5) (2022-09-07)
+
+
+### Bug Fixes
+
+* test pkg cli output ([#360](https://github.com/teamkeel/keel/issues/360)) ([a694343](https://github.com/teamkeel/keel/commit/a694343a50b333557244758564154cc7c537bf3a))
+
 ## [0.111.4](https://github.com/teamkeel/keel/compare/v0.111.3...v0.111.4) (2022-09-07)
 
 
