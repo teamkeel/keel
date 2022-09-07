@@ -458,7 +458,7 @@ var testCases = []testCase{
 			require.True(t, ok)
 			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "Fred_0009_id")
 			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "Fred_0018_id")
-			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", false)
 
 			// todo: the test below is commented out atm because
 			// the request asked for 10 records after, Fred_0008_id. But the implementation so far,

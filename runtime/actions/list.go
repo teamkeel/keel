@@ -44,6 +44,14 @@ func List(
 	if qry.Error != nil {
 		return nil, false, false, qry.Error
 	}
+
+	// Sort out the hasPreviousPage / hasNextPage values, and clean up the response.
+	if len(result) > 0 {
+		first := result[0]
+		last := result[len(result)-1]
+		hasNextPage = last["hasnext"].(bool)
+		hasPreviousPage = first["hasprevious"].(bool)
+	}
 	res := toLowerCamelMaps(result)
 
 	return res, hasNextPage, hasPreviousPage, nil
@@ -108,19 +116,16 @@ func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {
 }
 
 // addLimit puts a LIMIT clause on the query to return the number of records
-// specified by the Page mandate (plus 1). It adds one to make it possible to detect,
-// hasNextPage / hasPreviousPage.
-func addLimit(tx *gorm.DB, page Page) (txOut *gorm.DB, numRequested int) {
-	var n int
+// specified by the Page mandate.
+func addLimit(tx *gorm.DB, page Page) *gorm.DB {
 	switch {
 	case page.First != 0:
-		n = page.First + 1
-		return tx.Limit(n), n
+		return tx.Limit(page.First)
 	case page.Last != 0:
-		n = page.Last + 1
-		return tx.Limit(n), n
+		return tx.Limit(page.Last)
+	default:
+		return tx
 	}
-	return tx, n
 }
 
 // buildListInput consumes the dictionary that carries the LIST operation input values on the
@@ -276,10 +281,8 @@ func buildQuery(
 	qry = addAfterBefore(qry, listInput.Page)
 
 	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
-	// last-N before, x. The limit it applies one more than the number requested to help detect if
-	// there more pages available.
-	qry, numRequested := addLimit(qry, listInput.Page)
-	_ = numRequested
+	// last-N before x.
+	qry = addLimit(qry, listInput.Page)
 
 	return qry, nil
 }
