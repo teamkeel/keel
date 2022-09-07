@@ -66,6 +66,7 @@ declare module "@teamkeel/sdk/logger" {
     Error = "error",
     Debug = "debug",
     Warn = "warn",
+    Success = "success"
   }
   type Msg = any;
 
