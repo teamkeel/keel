@@ -5,6 +5,7 @@ export enum Level {
   Error = "error",
   Debug = "debug",
   Warn = "warn",
+  Success = "success"
 }
 
 export interface LoggerOptions {
@@ -20,6 +21,7 @@ const LevelColorPalette: LevelColors = {
   info: chalk.cyan,
   debug: chalk.magenta,
   warn: chalk.yellow,
+  success: chalk.green,
 };
 
 export interface Transport {
