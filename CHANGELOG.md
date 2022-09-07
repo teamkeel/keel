@@ -1,3 +1,10 @@
+## [0.111.3](https://github.com/teamkeel/keel/compare/v0.111.2...v0.111.3) (2022-09-07)
+
+
+### Bug Fixes
+
+* downgrade to chalk v4 to avoid esm issues ([#358](https://github.com/teamkeel/keel/issues/358)) ([5628779](https://github.com/teamkeel/keel/commit/56287791cb74bd740bbb72845445a3fac0d5ecc6))
+
 ## [0.111.2](https://github.com/teamkeel/keel/compare/v0.111.1...v0.111.2) (2022-09-07)
 
 
