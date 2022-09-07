@@ -10,7 +10,7 @@ import Reporter from "./reporter";
 //@ts-ignore
 export * from "./generated";
 
-const exceptionLogger = new Logger({ colorize: true });
+const runnerLogger = new Logger({ colorize: true });
 
 const tests: Test[] = [];
 
@@ -28,7 +28,14 @@ async function runAllTests({
   parentPort,
   host = "localhost",
   debug,
+  pattern = ""
 }: RunnerOpts) {
+  const hasPattern = pattern !== '';
+
+  if (hasPattern) {
+    runnerLogger.log(`[PATTERN] Filtering on ${pattern}\n`, LogLevel.Info)
+  }
+
   const reporter = new Reporter({
     host,
     port: parentPort,
@@ -40,6 +47,22 @@ async function runAllTests({
   }
 
   for await (const { testName, fn } of tests) {
+    if (hasPattern) {
+      const regex = new RegExp(pattern!);
+
+      if (!regex.test(testName)) {
+        if (debug) {
+          runnerLogger.log(`[PATTERN][EXCLUDE] ${testName}\n`, LogLevel.Warn);
+        }
+
+        continue;
+      }
+      
+      if (debug) {
+        runnerLogger.log(`[PATTERN][INCLUDE] ${testName}\n`, LogLevel.Info);
+      }
+    }
+
     let result: TestResult | undefined = undefined;
 
     try {
@@ -80,12 +103,12 @@ async function runAllTests({
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
 
-        exceptionLogger.log(`ERR:\n${err}\n${err.stack}`, LogLevel.Error);
+        runnerLogger.log(`ERR:\n${err}\n${err.stack}`, LogLevel.Error);
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
 
-        exceptionLogger.log(`ERR:\n${err}`, LogLevel.Error);
+        runnerLogger.log(`ERR:\n${err}`, LogLevel.Error);
       }
     } finally {
       if (result) {
