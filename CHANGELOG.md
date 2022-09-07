@@ -1,3 +1,10 @@
+## [0.112.1](https://github.com/teamkeel/keel/compare/v0.112.0...v0.112.1) (2022-09-07)
+
+
+### Bug Fixes
+
+* prettier ([#363](https://github.com/teamkeel/keel/issues/363)) ([74d8785](https://github.com/teamkeel/keel/commit/74d87852dd188721cef9f0ab141e221ae8b94b62))
+
 # [0.112.0](https://github.com/teamkeel/keel/compare/v0.111.6...v0.112.0) (2022-09-07)
 
 
