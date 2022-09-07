@@ -1,3 +1,10 @@
+## [0.111.2](https://github.com/teamkeel/keel/compare/v0.111.1...v0.111.2) (2022-09-07)
+
+
+### Bug Fixes
+
+* test result output ([#357](https://github.com/teamkeel/keel/issues/357)) ([d92217f](https://github.com/teamkeel/keel/commit/d92217f943bc61815fff01ff91944a9a4f868b1e))
+
 ## [0.111.1](https://github.com/teamkeel/keel/compare/v0.111.0...v0.111.1) (2022-09-07)
 
 
