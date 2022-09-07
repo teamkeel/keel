@@ -35,7 +35,7 @@
     "ksuid": "^3.0.0",
     "node-fetch": "^3.2.10",
     "pg-native": "^3.0.0",
-    "slonik": "^30.1.2",
+    "slonik": "30.1.2",
     "slonik-interceptor-query-logging": "^1.4.7"
   }
 }
