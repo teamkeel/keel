@@ -1,5 +1,5 @@
 import { Logger, LogLevel } from "@teamkeel/sdk";
-import chalk from 'chalk'
+import chalk from "chalk";
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
 import { TestResultData, TestResult } from "./output";
@@ -109,13 +109,16 @@ async function runAllTests({
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
-        console.log(`${chalk.bgRedBright(chalk.white("[ERROR]"))} ${testName}\n`);
+        console.log(
+          `${chalk.bgRedBright(chalk.white("[ERROR]"))} ${testName}\n`
+        );
         runnerLogger.log(`${err}\n${err.stack}`, LogLevel.Error);
-
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
-        console.log(`${chalk.bgRedBright(chalk.white("[ERROR]"))} ${testName}\n`);
+        console.log(
+          `${chalk.bgRedBright(chalk.white("[ERROR]"))} ${testName}\n`
+        );
         runnerLogger.log(`${err}`, LogLevel.Error);
       }
     } finally {
