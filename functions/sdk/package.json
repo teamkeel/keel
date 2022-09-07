@@ -30,7 +30,7 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
-    "chalk": "^5.0.1",
+    "chalk": "^4.1.2",
     "change-case": "^4.1.2",
     "ksuid": "^3.0.0",
     "node-fetch": "^3.2.10",
