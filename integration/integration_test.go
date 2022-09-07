@@ -2,6 +2,7 @@ package integration_test
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -15,6 +16,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
 
 func TestIntegration(t *gotest.T) {
 	entries, err := ioutil.ReadDir("./testdata")
@@ -47,7 +50,7 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			ch, err := testing.Run(t, workingDir)
+			ch, err := testing.Run(t, workingDir, *pattern)
 			require.NoError(t, err)
 
 			events := []*testing.Event{}
