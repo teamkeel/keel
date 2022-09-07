@@ -1,3 +1,10 @@
+# [0.113.0](https://github.com/teamkeel/keel/compare/v0.112.2...v0.113.0) (2022-09-07)
+
+
+### Features
+
+* testing package output ([#365](https://github.com/teamkeel/keel/issues/365)) ([6d5cf6d](https://github.com/teamkeel/keel/commit/6d5cf6d6370db900cbb1a0d2060c7ebb7fd1dc4a))
+
 ## [0.112.2](https://github.com/teamkeel/keel/compare/v0.112.1...v0.112.2) (2022-09-07)
 
 
