@@ -28,12 +28,12 @@ async function runAllTests({
   parentPort,
   host = "localhost",
   debug,
-  pattern = ""
+  pattern = "",
 }: RunnerOpts) {
-  const hasPattern = pattern !== '';
+  const hasPattern = pattern !== "";
 
   if (hasPattern) {
-    runnerLogger.log(`[PATTERN] Filtering on ${pattern}\n`, LogLevel.Info)
+    runnerLogger.log(`[PATTERN] Filtering on ${pattern}\n`, LogLevel.Info);
   }
 
   const reporter = new Reporter({
@@ -57,7 +57,7 @@ async function runAllTests({
 
         continue;
       }
-      
+
       if (debug) {
         runnerLogger.log(`[PATTERN][INCLUDE] ${testName}\n`, LogLevel.Info);
       }

@@ -12,9 +12,9 @@ export interface RunnerOpts {
   host: string;
 
   // Shows more detailed logs about reporting of
-  // test results, test pattern includes/excludes 
+  // test results, test pattern includes/excludes
   debug?: boolean;
-  
+
   // A regex pattern to filter test case names
   pattern?: string;
 }
