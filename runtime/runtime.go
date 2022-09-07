@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
@@ -36,7 +37,9 @@ func NewHandler(s *proto.Schema) Handler {
 	}
 
 	return func(r *Request) (*Response, error) {
-		handler, ok := handlers[r.URL.Path]
+		path := strings.TrimSuffix(r.URL.Path, "/")
+
+		handler, ok := handlers[path]
 		if !ok {
 			return &Response{
 				Status: 404,
