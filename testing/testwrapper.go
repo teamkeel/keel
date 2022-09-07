@@ -24,10 +24,18 @@ func WrapTestFileWithShim(parentPort string, filePath string, pattern string) er
 					runAllTests({ parentPort: %s, host: 'localhost', pattern: '%s' })
 				`,
 			parentPort,
-			fmt.Sprintf("^%s$", pattern),
+			buildPattern(pattern),
 		),
 	); err != nil {
 		return err
 	}
 	return nil
+}
+
+func buildPattern(pattern string) string {
+	if pattern == "" {
+		return ""
+	}
+
+	return fmt.Sprintf("^%s$", pattern)
 }
