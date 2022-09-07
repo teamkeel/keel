@@ -34,7 +34,7 @@ async function runAllTests({
   const hasPattern = pattern !== "";
 
   if (hasPattern) {
-    runnerLogger.log(`[PATTERN] Filtering on ${pattern}\n`, LogLevel.Info);
+    console.log(`${chalk.white.bgBlue("INFO")} Filtering on ${pattern}\n`);
   }
 
   const reporter = new Reporter({
@@ -52,19 +52,13 @@ async function runAllTests({
       const regex = new RegExp(pattern!);
 
       if (!regex.test(testName)) {
-        if (debug) {
-          runnerLogger.log(`[PATTERN][EXCLUDE] ${testName}\n`, LogLevel.Warn);
-        }
-
         continue;
       }
 
-      if (debug) {
-        runnerLogger.log(`[PATTERN][INCLUDE] ${testName}\n`, LogLevel.Info);
-      }
+      console.log(`${chalk.bgYellow.white("RUNS")} ${testName}\n`);
+    } else {
+      console.log(`${chalk.bgYellow.white("RUNS")} ${testName}\n`);
     }
-
-    console.log(`${chalk.bgYellow.white("RUNS")} ${testName}\n`);
 
     let result: TestResult | undefined = undefined;
 
