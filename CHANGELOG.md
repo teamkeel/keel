@@ -1,3 +1,10 @@
+## [0.111.1](https://github.com/teamkeel/keel/compare/v0.111.0...v0.111.1) (2022-09-07)
+
+
+### Bug Fixes
+
+* expose success log level in logger package ([#356](https://github.com/teamkeel/keel/issues/356)) ([1f484e8](https://github.com/teamkeel/keel/commit/1f484e8411ca8b071b574185341c4093ecb8ebda))
+
 # [0.111.0](https://github.com/teamkeel/keel/compare/v0.110.0...v0.111.0) (2022-09-07)
 
 
