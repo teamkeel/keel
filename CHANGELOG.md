@@ -1,3 +1,10 @@
+# [0.110.0](https://github.com/teamkeel/keel/compare/v0.109.0...v0.110.0) (2022-09-07)
+
+
+### Features
+
+* support isolation of tests via a pattern in testing package ([#354](https://github.com/teamkeel/keel/issues/354)) ([51877ef](https://github.com/teamkeel/keel/commit/51877ef1b6acc3b8a360718f51001ee1ad419e39))
+
 # [0.109.0](https://github.com/teamkeel/keel/compare/v0.108.1...v0.109.0) (2022-09-06)
 
 
