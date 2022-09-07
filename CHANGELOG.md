@@ -1,3 +1,10 @@
+# [0.111.0](https://github.com/teamkeel/keel/compare/v0.110.0...v0.111.0) (2022-09-07)
+
+
+### Features
+
+* hook up pattern flag to integration tests ([#355](https://github.com/teamkeel/keel/issues/355)) ([2ad0faa](https://github.com/teamkeel/keel/commit/2ad0faa8aef154eb8f064bd77968e9e0dc470038))
+
 # [0.110.0](https://github.com/teamkeel/keel/compare/v0.109.0...v0.110.0) (2022-09-07)
 
 
