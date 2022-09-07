@@ -1,4 +1,5 @@
 import { Logger, LogLevel } from "@teamkeel/sdk";
+import chalk from "chalk";
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
 import { TestResultData, TestResult } from "./output";
@@ -47,7 +48,7 @@ async function runAllTests({
   }
 
   for await (const { testName, fn } of tests) {
-    runnerLogger.log(`[TEST] ${testName}\n\n`, LogLevel.Warn);
+    runnerLogger.log(`\n[RUNS] ${testName}\n`, LogLevel.Warn);
 
     if (hasPattern) {
       const regex = new RegExp(pattern!);
@@ -85,6 +86,8 @@ async function runAllTests({
       }
 
       result = TestResult.pass(testName);
+
+      console.log(`${chalk.bgGreen(chalk.white("[PASS]"))} ${testName}\n`);
     } catch (err) {
       if (debug) {
         console.debug(err);
@@ -100,17 +103,23 @@ async function runAllTests({
         const { actual, expected } = err as AssertionFailure;
 
         result = TestResult.fail(testName, actual, expected);
+
+        console.log(`${chalk.bgRed(chalk.white("[FAIL]"))} ${testName}\n`);
       } else if (err instanceof Error) {
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
-
-        runnerLogger.log(`ERR:\n${err}\n${err.stack}`, LogLevel.Error);
+        console.log(
+          `${chalk.bgRedBright(chalk.white("[ERROR]"))} ${testName}\n`
+        );
+        runnerLogger.log(`${err}\n${err.stack}`, LogLevel.Error);
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
-
-        runnerLogger.log(`ERR:\n${err}`, LogLevel.Error);
+        console.log(
+          `${chalk.bgRedBright(chalk.white("[ERROR]"))} ${testName}\n`
+        );
+        runnerLogger.log(`${err}`, LogLevel.Error);
       }
     } finally {
       if (result) {
