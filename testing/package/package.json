@@ -23,7 +23,8 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
-    "@teamkeel/sdk": "*",
+    "@teamkeel/sdk": "^0.111.3",
+    "chalk": "^4.1.2",
     "lodash.isequal": "^4.5.0",
     "node-fetch": "^2.6.7",
     "slonik": "^30.1.2",
