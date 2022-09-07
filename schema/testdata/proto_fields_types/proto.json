@@ -7,7 +7,7 @@
           "modelName":  "Foo",
           "name":  "a",
           "type":  {
-            "type":  "TYPE_MODEL",
+            "type":  "TYPE_IDENTITY",
             "modelName":  "Identity"
           }
         },
