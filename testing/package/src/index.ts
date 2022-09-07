@@ -109,16 +109,12 @@ async function runAllTests({
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
-        console.log(
-          `${chalk.bgRedBright.white("ERROR")} ${testName}\n`
-        );
+        console.log(`${chalk.bgRedBright.white("ERROR")} ${testName}\n`);
         runnerLogger.log(`${err}\n${err.stack}`, LogLevel.Error);
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
-        console.log(
-          `${chalk.bgRedBright.white("ERROR")} ${testName}\n`
-        );
+        console.log(`${chalk.bgRedBright.white("ERROR")} ${testName}\n`);
         runnerLogger.log(`${err}`, LogLevel.Error);
       }
     } finally {
