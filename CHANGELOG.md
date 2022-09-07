@@ -1,3 +1,10 @@
+## [0.111.6](https://github.com/teamkeel/keel/compare/v0.111.5...v0.111.6) (2022-09-07)
+
+
+### Bug Fixes
+
+* test exclusion ([#361](https://github.com/teamkeel/keel/issues/361)) ([68271e9](https://github.com/teamkeel/keel/commit/68271e9a4cc7e5eba6586cf604ab82011cf8f1fc))
+
 ## [0.111.5](https://github.com/teamkeel/keel/compare/v0.111.4...v0.111.5) (2022-09-07)
 
 
