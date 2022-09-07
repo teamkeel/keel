@@ -5,7 +5,7 @@ export enum Level {
   Error = "error",
   Debug = "debug",
   Warn = "warn",
-  Success = "success"
+  Success = "success",
 }
 
 export interface LoggerOptions {
