@@ -1,3 +1,10 @@
+## [0.111.4](https://github.com/teamkeel/keel/compare/v0.111.3...v0.111.4) (2022-09-07)
+
+
+### Bug Fixes
+
+* update sdk in testing package ([#359](https://github.com/teamkeel/keel/issues/359)) ([87f569a](https://github.com/teamkeel/keel/commit/87f569a9c40cdec8d919baef987285e9aad6b946))
+
 ## [0.111.3](https://github.com/teamkeel/keel/compare/v0.111.2...v0.111.3) (2022-09-07)
 
 
