@@ -47,6 +47,8 @@ async function runAllTests({
   }
 
   for await (const { testName, fn } of tests) {
+    runnerLogger.log(`[TEST] ${testName}\n\n`, LogLevel.Warn);
+
     if (hasPattern) {
       const regex = new RegExp(pattern!);
 

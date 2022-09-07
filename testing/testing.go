@@ -51,7 +51,7 @@ type ActionRequest struct {
 //go:embed tsconfig.json
 var sampleTsConfig string
 
-func Run(t *testing.T, dir string) (<-chan []*Event, error) {
+func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
@@ -245,7 +245,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 			db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
-			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
+			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file), pattern)
 
 			if err != nil {
 				panic(err)

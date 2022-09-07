@@ -2,11 +2,13 @@ package integration_test
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	gotest "testing"
 
+	"github.com/alexflint/go-restructure/regex"
 	"github.com/nsf/jsondiff"
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/testhelpers"
@@ -15,6 +17,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
+
+type Expected struct {
+	TestName string `json:"testName"`
+	Status   string `json:"status"`
+	Actual   any    `json:"actual,omitempty"`
+	Expected any    `json:"expected,omitempty"`
+}
 
 func TestIntegration(t *gotest.T) {
 	entries, err := ioutil.ReadDir("./testdata")
@@ -47,7 +58,7 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			ch, err := testing.Run(t, workingDir)
+			ch, err := testing.Run(t, workingDir, *pattern)
 			require.NoError(t, err)
 
 			events := []*testing.Event{}
@@ -57,18 +68,47 @@ func TestIntegration(t *gotest.T) {
 
 			actual, err := json.Marshal(events)
 			require.NoError(t, err)
-
 			expected, err := ioutil.ReadFile(filepath.Join("./testdata", e.Name(), "expected.json"))
 			require.NoError(t, err)
 
-			opts := jsondiff.DefaultConsoleOptions()
+			if pattern != nil && *pattern != "" {
+				// subset of tests
 
-			diff, explanation := jsondiff.Compare(expected, actual, &opts)
-			if diff == jsondiff.FullMatch {
-				return
+				allExpected := []*Expected{}
+
+				err := json.Unmarshal(expected, &allExpected)
+
+				require.NoError(t, err)
+
+				filteredExpected := []*Expected{}
+
+				for _, e := range allExpected {
+					match, _ := regex.MatchString(fmt.Sprintf("^%s$", *pattern), e.TestName)
+
+					if match {
+						filteredExpected = append(filteredExpected, e)
+					}
+				}
+
+				b, err := json.Marshal(filteredExpected)
+
+				require.NoError(t, err)
+
+				CompareJson(t, b, actual)
+			} else {
+				CompareJson(t, expected, actual)
 			}
-
-			assert.Fail(t, "actual test output did not match expected", explanation)
 		})
 	}
+}
+
+func CompareJson(t *gotest.T, expected []byte, actual []byte) {
+	opts := jsondiff.DefaultConsoleOptions()
+
+	diff, explanation := jsondiff.Compare(expected, actual, &opts)
+	if diff == jsondiff.FullMatch {
+		return
+	}
+
+	assert.Fail(t, "actual test output did not match expected", explanation)
 }
