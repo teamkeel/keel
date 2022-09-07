@@ -48,8 +48,6 @@ async function runAllTests({
   }
 
   for await (const { testName, fn } of tests) {
-    console.log(`${chalk.bgYellow.white("RUNS")} ${testName}\n`);
-
     if (hasPattern) {
       const regex = new RegExp(pattern!);
 
@@ -65,6 +63,8 @@ async function runAllTests({
         runnerLogger.log(`[PATTERN][INCLUDE] ${testName}\n`, LogLevel.Info);
       }
     }
+
+    console.log(`${chalk.bgYellow.white("RUNS")} ${testName}\n`);
 
     let result: TestResult | undefined = undefined;
 
