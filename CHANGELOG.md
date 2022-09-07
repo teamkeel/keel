@@ -1,3 +1,10 @@
+# [0.112.0](https://github.com/teamkeel/keel/compare/v0.111.6...v0.112.0) (2022-09-07)
+
+
+### Features
+
+* verify jwt and set context with identity id ([#350](https://github.com/teamkeel/keel/issues/350)) ([32a7d1b](https://github.com/teamkeel/keel/commit/32a7d1b4693a0e0e7c177fe9c28f9801e1d1305d))
+
 ## [0.111.6](https://github.com/teamkeel/keel/compare/v0.111.5...v0.111.6) (2022-09-07)
 
 
