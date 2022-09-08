@@ -19,21 +19,21 @@ func List(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
-	inputs interface{}) (records interface{}, hasNextPage bool, hasPreviousPage bool, err error) {
+	inputs interface{}) (records interface{}, hasNextPage bool, err error) {
 	listInput, err := buildListInput(operation, inputs)
 	if err != nil {
-		return nil, false, false, err
+		return nil, false, err
 	}
 	db, err := runtimectx.GetDB(ctx)
 	if err != nil {
-		return nil, false, false, err
+		return nil, false, err
 	}
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
 
 	qry, err := buildQuery(db, model, operation, listInput)
 	if err != nil {
-		return nil, false, false, err
+		return nil, false, err
 	}
 
 	// Todo: should we validate the type of the values?, or let postgres object to them later?
@@ -42,19 +42,19 @@ func List(
 	result := []map[string]any{}
 	qry = qry.Find(&result)
 	if qry.Error != nil {
-		return nil, false, false, qry.Error
+		return nil, false, qry.Error
 	}
 
 	// Sort out the hasPreviousPage / hasNextPage values, and clean up the response.
 	if len(result) > 0 {
-		first := result[0]
 		last := result[len(result)-1]
 		hasNextPage = last["hasnext"].(bool)
-		hasPreviousPage = first["hasprevious"].(bool)
 	}
 	res := toLowerCamelMaps(result)
-
-	return res, hasNextPage, hasPreviousPage, nil
+	for _, row := range res {
+		delete(row, "hasnext")
+	}
+	return res, hasNextPage, nil
 }
 
 // addListInputFilters adds Where clauses to the given gorm.DB corresponding to the
@@ -229,23 +229,19 @@ func operator(operatorStr string) (op Operator, err error) {
 	}
 }
 
-// addOrderingAndLeadAndLag puts in a SELECT statement that asks for one extra row before and after the rows the
-// remainder of the query would return. Naturally it has to specify ordering for that to be meaningful. But we also
-// want the rows to be ordered (in the same way, i.e. by "id") to support page requests, so we deal with all
-// the ordering here in one place.
-func addOrderingAndLeadAndLag(tx *gorm.DB) *gorm.DB {
+// addOrderingAndLead puts in a SELECT statement that puts in the ORDER BY clause to support
+// paging. It also uses the SQL "lead(1)" idiom to deduces if each row has a following row, wich
+// we can then use to determine if a "next" page is available.
+func addOrderingAndLead(tx *gorm.DB) *gorm.DB {
 
 	const by = "id"
 	selectArgs := `
 	 *,
 		CASE WHEN lead(1) OVER ( order by ? ) is not null THEN true ELSE false
 		END as hasNext
-		,
-		CASE WHEN lag(1) OVER ( order by ? ) is not null THEN true ELSE false
-		END as hasPrevious
 	`
 
-	tx = tx.Select(selectArgs, by, by)
+	tx = tx.Select(selectArgs, by)
 	tx = tx.Order(by)
 	return tx
 }
@@ -261,8 +257,9 @@ func buildQuery(
 	// Initialise a query on the table = to which we'll add Where clauses.
 	qry := db.Table(tableName)
 
-	// SELECT one additional "lead" and "lag" row.
-	qry = addOrderingAndLeadAndLag(qry)
+	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
+	// that helps to determin "hasNextPage".
+	qry = addOrderingAndLead(qry)
 
 	// Add the WHERE clauses derived from the inputs.
 	qry, err := addListInputFilters(op, listInput, qry)

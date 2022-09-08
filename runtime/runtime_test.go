@@ -25,8 +25,8 @@ func TestRuntime(t *testing.T) {
 	// We connect to the "main" database here only so we can create a new database
 	// for each sub-test
 
-	var skip string = ""              // Name of test case you want to skip, or ""
-	var only = "list_operation_happy" // Name of test case you want isolated and alone, or ""
+	var skip string = ""                                 // Name of test case you want to skip, or ""
+	var only = "list_operation_generic_and_paging_logic" // Name of test case you want isolated and alone, or ""
 
 	for _, tCase := range testCases {
 
@@ -407,7 +407,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "list_operation_happy",
+		name:       "list_operation_generic_and_paging_logic",
 		keelSchema: basicSchema,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			for _, nameStub := range []string{"Fred", "Sue"} {
@@ -428,7 +428,6 @@ var testCases = []testCase{
 				{
 					pageInfo {
 						hasNextPage
-						hasPreviousPage
 						startCursor
 						endCursor
 					}
@@ -458,14 +457,10 @@ var testCases = []testCase{
 			require.True(t, ok)
 			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "Fred_0009_id")
 			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "Fred_0018_id")
-			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", false)
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
 
-			// todo: the test below is commented out atm because
-			// the request asked for 10 records after, Fred_0008_id. But the implementation so far,
-			// only sets the hasNextPage, hasPreviousPage values in the response, for the direction
-			// you are going. I.e. in this case forwards.
-
-			// rtt.AssertValueAtPath(t, pageInfoMap, "hasPreviousPage", true)
+			// todo - we should test hasNextPage when there isn't one - but defer until we switch over to
+			// the integration test framework.
 		},
 	},
 }
