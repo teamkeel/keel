@@ -421,7 +421,7 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 			}
 		}
 
-	case proto.Type_TYPE_MODEL:
+	case proto.Type_TYPE_MODEL, proto.Type_TYPE_IDENTITY:
 		for _, m := range mk.proto.Models {
 			if m.Name == field.Type.ModelName.Value {
 				out, err = mk.addModel(m)

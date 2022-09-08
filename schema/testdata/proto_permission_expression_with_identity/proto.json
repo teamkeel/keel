@@ -7,7 +7,7 @@
           "modelName":  "Account",
           "name":  "identity",
           "type":  {
-            "type":  "TYPE_MODEL",
+            "type":  "TYPE_IDENTITY",
             "modelName":  "Identity"
           },
           "unique":  true
