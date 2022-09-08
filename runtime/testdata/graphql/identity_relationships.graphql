@@ -25,13 +25,18 @@ type AuthenticateResponse {
   token: String
 }
 
+type Identity {
+  createdAt: Timestamp!
+  email: String!
+  id: ID!
+  updatedAt: Timestamp!
+}
+
 type Person {
   createdAt: Timestamp!
   id: ID!
-  someBoolean: Boolean
-  someNumber: Int
-  someText: String
   updatedAt: Timestamp!
+  user: Identity!
 }
 
 type Timestamp {

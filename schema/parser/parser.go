@@ -316,14 +316,12 @@ func Parse(s *reader.SchemaFile) (*AST, error) {
 				scanner.ScanComments
 	})
 
-	parser, err := participle.Build(&AST{}, participle.Lexer(lex), participle.Elide("Comment"))
+	parser, err := participle.Build[AST](participle.Lexer(lex), participle.Elide("Comment"))
 	if err != nil {
 		return nil, err
 	}
 
-	schema := &AST{}
-
-	err = parser.ParseString(s.FileName, s.Contents, schema)
+	schema, err := parser.ParseString(s.FileName, s.Contents)
 	if err != nil {
 
 		// If the error is a participle.Error (which it should be)

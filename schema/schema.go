@@ -234,7 +234,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Name: parser.NameNode{
 			Value: parser.ImplicitIdentityFieldNamePassword,
 		},
-		Type: parser.FieldTypeSecret,
+		Type: parser.FieldTypePassword,
 	}
 
 	section := &parser.ModelSectionNode{

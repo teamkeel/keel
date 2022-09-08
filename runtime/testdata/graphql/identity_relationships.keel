@@ -1,0 +1,16 @@
+model Person {
+    fields {
+        user Identity
+    }
+    operations {
+        get getPerson(id)
+    }
+}
+
+api Test {
+    @graphql
+
+    models {
+        Person
+    }
+}

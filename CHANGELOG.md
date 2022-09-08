@@ -1,3 +1,101 @@
+# [0.113.0](https://github.com/teamkeel/keel/compare/v0.112.2...v0.113.0) (2022-09-07)
+
+
+### Features
+
+* testing package output ([#365](https://github.com/teamkeel/keel/issues/365)) ([6d5cf6d](https://github.com/teamkeel/keel/commit/6d5cf6d6370db900cbb1a0d2060c7ebb7fd1dc4a))
+
+## [0.112.2](https://github.com/teamkeel/keel/compare/v0.112.1...v0.112.2) (2022-09-07)
+
+
+### Bug Fixes
+
+* test output ([#362](https://github.com/teamkeel/keel/issues/362)) ([7dfe5a6](https://github.com/teamkeel/keel/commit/7dfe5a6c0e36a9d1a7537320b95691f706a339c0))
+
+## [0.112.1](https://github.com/teamkeel/keel/compare/v0.112.0...v0.112.1) (2022-09-07)
+
+
+### Bug Fixes
+
+* prettier ([#363](https://github.com/teamkeel/keel/issues/363)) ([74d8785](https://github.com/teamkeel/keel/commit/74d87852dd188721cef9f0ab141e221ae8b94b62))
+
+# [0.112.0](https://github.com/teamkeel/keel/compare/v0.111.6...v0.112.0) (2022-09-07)
+
+
+### Features
+
+* verify jwt and set context with identity id ([#350](https://github.com/teamkeel/keel/issues/350)) ([32a7d1b](https://github.com/teamkeel/keel/commit/32a7d1b4693a0e0e7c177fe9c28f9801e1d1305d))
+
+## [0.111.6](https://github.com/teamkeel/keel/compare/v0.111.5...v0.111.6) (2022-09-07)
+
+
+### Bug Fixes
+
+* test exclusion ([#361](https://github.com/teamkeel/keel/issues/361)) ([68271e9](https://github.com/teamkeel/keel/commit/68271e9a4cc7e5eba6586cf604ab82011cf8f1fc))
+
+## [0.111.5](https://github.com/teamkeel/keel/compare/v0.111.4...v0.111.5) (2022-09-07)
+
+
+### Bug Fixes
+
+* test pkg cli output ([#360](https://github.com/teamkeel/keel/issues/360)) ([a694343](https://github.com/teamkeel/keel/commit/a694343a50b333557244758564154cc7c537bf3a))
+
+## [0.111.4](https://github.com/teamkeel/keel/compare/v0.111.3...v0.111.4) (2022-09-07)
+
+
+### Bug Fixes
+
+* update sdk in testing package ([#359](https://github.com/teamkeel/keel/issues/359)) ([87f569a](https://github.com/teamkeel/keel/commit/87f569a9c40cdec8d919baef987285e9aad6b946))
+
+## [0.111.3](https://github.com/teamkeel/keel/compare/v0.111.2...v0.111.3) (2022-09-07)
+
+
+### Bug Fixes
+
+* downgrade to chalk v4 to avoid esm issues ([#358](https://github.com/teamkeel/keel/issues/358)) ([5628779](https://github.com/teamkeel/keel/commit/56287791cb74bd740bbb72845445a3fac0d5ecc6))
+
+## [0.111.2](https://github.com/teamkeel/keel/compare/v0.111.1...v0.111.2) (2022-09-07)
+
+
+### Bug Fixes
+
+* test result output ([#357](https://github.com/teamkeel/keel/issues/357)) ([d92217f](https://github.com/teamkeel/keel/commit/d92217f943bc61815fff01ff91944a9a4f868b1e))
+
+## [0.111.1](https://github.com/teamkeel/keel/compare/v0.111.0...v0.111.1) (2022-09-07)
+
+
+### Bug Fixes
+
+* expose success log level in logger package ([#356](https://github.com/teamkeel/keel/issues/356)) ([1f484e8](https://github.com/teamkeel/keel/commit/1f484e8411ca8b071b574185341c4093ecb8ebda))
+
+# [0.111.0](https://github.com/teamkeel/keel/compare/v0.110.0...v0.111.0) (2022-09-07)
+
+
+### Features
+
+* hook up pattern flag to integration tests ([#355](https://github.com/teamkeel/keel/issues/355)) ([2ad0faa](https://github.com/teamkeel/keel/commit/2ad0faa8aef154eb8f064bd77968e9e0dc470038))
+
+# [0.110.0](https://github.com/teamkeel/keel/compare/v0.109.0...v0.110.0) (2022-09-07)
+
+
+### Features
+
+* support isolation of tests via a pattern in testing package ([#354](https://github.com/teamkeel/keel/issues/354)) ([51877ef](https://github.com/teamkeel/keel/commit/51877ef1b6acc3b8a360718f51001ee1ad419e39))
+
+# [0.109.0](https://github.com/teamkeel/keel/compare/v0.108.1...v0.109.0) (2022-09-06)
+
+
+### Features
+
+* hashing password secret data type ([#348](https://github.com/teamkeel/keel/issues/348)) ([dad5be9](https://github.com/teamkeel/keel/commit/dad5be92fdfd5046b199b7445ba03175171b333d))
+
+## [0.108.1](https://github.com/teamkeel/keel/compare/v0.108.0...v0.108.1) (2022-09-06)
+
+
+### Bug Fixes
+
+* failed authenticate() response from gql ([#347](https://github.com/teamkeel/keel/issues/347)) ([ed175a0](https://github.com/teamkeel/keel/commit/ed175a0cacfa9e916f3a848fb8e86aa0470623f1))
+
 # [0.108.0](https://github.com/teamkeel/keel/compare/v0.107.0...v0.108.0) (2022-09-02)
 
 

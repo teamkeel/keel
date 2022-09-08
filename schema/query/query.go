@@ -70,6 +70,14 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
+func IsModel(asts []*parser.AST, name string) bool {
+	return Model(asts, name) != nil
+}
+
+func IsIdentityModel(asts []*parser.AST, name string) bool {
+	return name == parser.ImplicitIdentityModelName
+}
+
 func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
 	for _, section := range model.Sections {
 		if section.Attribute != nil {
@@ -99,6 +107,10 @@ func Enum(asts []*parser.AST, name string) *parser.EnumNode {
 		}
 	}
 	return nil
+}
+
+func IsEnum(asts []*parser.AST, name string) bool {
+	return Enum(asts, name) != nil
 }
 
 func Roles(asts []*parser.AST) (res []*parser.RoleNode) {
@@ -204,9 +216,12 @@ func ModelFieldNames(model *parser.ModelNode) []string {
 
 // ResolveInputType returns a string represention of the type of the give input
 // If the input is explicitly typed using a built in type that type is returned
-//   example: (foo: Text) -> Text is returned
+//
+//	example: (foo: Text) -> Text is returned
+//
 // If `i` refers to a field on the parent model (or a nested field) then the type of that field is returned
-//   example: (foo: some.field) -> The type of `field` on the model referrred to by `some` is returned
+//
+//	example: (foo: some.field) -> The type of `field` on the model referrred to by `some` is returned
 func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentModel *parser.ModelNode) string {
 	// handle built-in type
 	if parser.IsBuiltInFieldType(input.Type.ToString()) {

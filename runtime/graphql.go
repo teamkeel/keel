@@ -6,14 +6,11 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
@@ -95,7 +92,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	mk.types[model.Name] = object
 
 	for _, field := range model.Fields {
-		if field.Type.Type == proto.Type_TYPE_SECRET {
+		// Passwords are omitted from GraphQL responses
+		if field.Type.Type == proto.Type_TYPE_PASSWORD {
 			continue
 		}
 
@@ -206,8 +204,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		})
 
 		for _, output := range op.Outputs {
+
+			outputType := protoTypeToGraphQLOutput[output.Type.Type]
+			if outputType == nil {
+				return fmt.Errorf("cannot yet make output type for: %s", output.Type.Type.String())
+			}
+
 			ouput.AddFieldConfig(output.Name, &graphql.Field{
-				Type: graphql.String,
+				Type: outputType,
 			})
 
 		}
@@ -226,27 +230,25 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
 			}
 
-			identityId, err := actions.Authenticate(p.Context, schema, &authArgs)
+			identityId, identityCreated, err := actions.Authenticate(p.Context, schema, &authArgs)
 
 			if err != nil {
 				return nil, err
 			}
 
 			if identityId != nil {
-				token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-					"id":  identityId,
-					"exp": time.Now().Add(time.Hour * 24).Unix(),
-				})
-
-				tokenString, err := token.SignedString(actions.PrivateKey)
+				token, err := GenerateBearerToken(identityId)
 
 				if err != nil {
 					return nil, err
 				}
 
-				return map[string]any{"token": tokenString}, nil
+				return map[string]any{
+					"identityCreated": identityCreated,
+					"token":           token,
+				}, nil
 			} else {
-				return map[string]any{"token": nil}, nil
+				return nil, errors.New("failed to authenticate")
 			}
 		}
 
@@ -419,7 +421,7 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 			}
 		}
 
-	case proto.Type_TYPE_MODEL:
+	case proto.Type_TYPE_MODEL, proto.Type_TYPE_IDENTITY:
 		for _, m := range mk.proto.Models {
 			if m.Name == field.Type.ModelName.Value {
 				out, err = mk.addModel(m)
@@ -486,6 +488,7 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_DATETIME:  timestampInputType,
 	proto.Type_TYPE_DATE:      dateInputType,
 	proto.Type_TYPE_SECRET:    graphql.String,
+	proto.Type_TYPE_PASSWORD:  graphql.String,
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.

@@ -107,6 +107,12 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 				{
 					ModelName:     parser.ImplicitIdentityModelName,
 					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "identityCreated",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+				},
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
 					Name:          "token",
 					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 				},
@@ -312,32 +318,30 @@ func (scm *Builder) makeOperationInput(
 
 // parserType could be a built-in type or a user-defined model or enum
 func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
-	switch parserType {
-	case parser.FieldTypeText:
+	switch {
+	case parserType == parser.FieldTypeText:
 		return proto.Type_TYPE_STRING
-	case parser.FieldTypeID:
+	case parserType == parser.FieldTypeID:
 		return proto.Type_TYPE_ID
-	case parser.FieldTypeBoolean:
+	case parserType == parser.FieldTypeBoolean:
 		return proto.Type_TYPE_BOOL
-	case parser.FieldTypeNumber:
+	case parserType == parser.FieldTypeNumber:
 		return proto.Type_TYPE_INT
-	case parser.FieldTypeDate:
+	case parserType == parser.FieldTypeDate:
 		return proto.Type_TYPE_DATE
-	case parser.FieldTypeDatetime:
+	case parserType == parser.FieldTypeDatetime:
 		return proto.Type_TYPE_DATETIME
-	case parser.FieldTypeSecret:
+	case parserType == parser.FieldTypeSecret:
 		return proto.Type_TYPE_SECRET
+	case parserType == parser.FieldTypePassword:
+		return proto.Type_TYPE_PASSWORD
+	case query.IsIdentityModel(scm.asts, parserType):
+		return proto.Type_TYPE_IDENTITY
+	case query.IsModel(scm.asts, parserType):
+		return proto.Type_TYPE_MODEL
+	case query.IsEnum(scm.asts, parserType):
+		return proto.Type_TYPE_ENUM
 	default:
-		model := query.Model(scm.asts, parserType)
-		if model != nil {
-			return proto.Type_TYPE_MODEL
-		}
-
-		enum := query.Enum(scm.asts, parserType)
-		if enum != nil {
-			return proto.Type_TYPE_ENUM
-		}
-
 		return proto.Type_TYPE_UNKNOWN
 	}
 }
@@ -348,7 +352,7 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
-	if protoType == proto.Type_TYPE_MODEL {
+	if protoType == proto.Type_TYPE_MODEL || protoType == proto.Type_TYPE_IDENTITY {
 		modelName = &wrapperspb.StringValue{
 			Value: query.Model(scm.asts, field.Type).Name.Value,
 		}

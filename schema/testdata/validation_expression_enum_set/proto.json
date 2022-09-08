@@ -87,7 +87,7 @@
           "modelName":  "Identity",
           "name":  "password",
           "type":  {
-            "type":  "TYPE_SECRET"
+            "type":  "TYPE_PASSWORD"
           }
         },
         {
@@ -166,6 +166,14 @@
             }
           ],
           "outputs":  [
+            {
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "identityCreated",
+              "type":  {
+                "type":  "TYPE_BOOL"
+              }
+            },
             {
               "modelName":  "Identity",
               "operationName":  "authenticate",
