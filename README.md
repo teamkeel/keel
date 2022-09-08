@@ -71,6 +71,44 @@ go test ./integration -run ^TestIntegration/built_in_actions -count=1 -v -patter
 
 The above will run all tests that begin with "get action".
 
+### Running / Isolating & Debugging Integration Tests in VSCode
+
+You can create run configurations in your VSCode launch.json similarly - which is useful to isolate
+one test and use VSCode debugger breakpoints in it.
+
+Note that in this case the "args" block specifies that will be passed to the command line
+"dlv" debugger which has a slightly different command line signature from the go test command.
+
+Ps. Note also the config to run the keel run command in the VSCode debugger.
+
+```
+  {
+    "name": "isolated integration test",
+    "type": "go",
+    "request": "launch",
+    "mode": "auto",
+    "program": "${fileDirname}",
+    "args": [
+        "-test.run",
+        "TestIntegration/built_in_actions",
+        "-pattern",
+        "list action",
+    ]
+  },
+  {
+      "name": "Execute Run Command",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${fileDirname}",
+      "args": [
+          "run",
+          "-d",
+          "../../schema/testdata/proto_operations_inputs",
+      ]
+  }
+```
+
 ### Gotchas
 
 - The database isn't yet cleared between individual `test()` blocks - this will be coming soon.

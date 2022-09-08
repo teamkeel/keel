@@ -5,6 +5,19 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "isolated integration test",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${fileDirname}",
+            "args": [
+                "-test.run",
+                "TestIntegration/built_in_actions",
+                "-pattern",
+                "list action",
+            ]
+        },
+        {
             "name": "Execute Run Command",
             "type": "go",
             "request": "launch",
