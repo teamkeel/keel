@@ -237,7 +237,7 @@ func addOrderingAndLead(tx *gorm.DB) *gorm.DB {
 	const by = "id"
 	selectArgs := `
 	 *,
-		CASE WHEN lead(1) OVER ( order by ? ) is not null THEN true ELSE false
+		CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
 		END as hasNext
 	`
 
