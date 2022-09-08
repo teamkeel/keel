@@ -74,7 +74,6 @@ type Date {
 type PageInfo {
   endCursor: String!
   hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
   startCursor: String!
   totalCount: Int!
 }

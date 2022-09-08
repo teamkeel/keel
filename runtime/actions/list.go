@@ -45,7 +45,7 @@ func List(
 		return nil, false, qry.Error
 	}
 
-	// Sort out the hasPreviousPage / hasNextPage values, and clean up the response.
+	// Sort out the hasNextPage value, and clean up the response.
 	if len(result) > 0 {
 		last := result[len(result)-1]
 		hasNextPage = last["hasnext"].(bool)
