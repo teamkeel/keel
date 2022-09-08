@@ -3,15 +3,17 @@ package actions
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/expressions"
 
 	"github.com/iancoleman/strcase"
 )
 
 func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
-	db, err := runtimectx.GetDB(ctx)
+	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +41,42 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 			modelMap[strcase.ToSnake(modelFieldName)] = v
 		default:
 			return nil, fmt.Errorf("input behaviour %s is not yet supported for Create", input.Behaviour)
+		}
+	}
+
+	for _, setExpressions := range operation.SetExpressions {
+		expression, err := expressions.Parse(setExpressions.Source)
+		if err != nil {
+			return nil, err
+		}
+
+		if expressions.IsAssignment(expression) {
+			assignment, err := expressions.ToAssignmentCondition(expression)
+			if err != nil {
+				return nil, err
+			}
+
+			fieldName := assignment.LHS.Ident.Fragments[1].Fragment
+			isLiteral, value := assignment.RHS.IsLiteralType()
+
+			if assignment.RHS.Type() == expressions.TypeText {
+				modelMap[strcase.ToSnake(fieldName)], _ = strconv.Unquote(value)
+			} else if assignment.RHS.Type() == expressions.TypeNull {
+				modelMap[strcase.ToSnake(fieldName)] = nil
+			} else if isLiteral {
+
+				modelMap[strcase.ToSnake(fieldName)] = value
+			} else if assignment.RHS.Ident != nil {
+				rhs := assignment.RHS.Ident
+
+				if rhs.Fragments[0].Fragment == "ctx" && rhs.Fragments[1].Fragment == "identity" {
+					modelMap[strcase.ToSnake(fieldName)], err = runtimectx.GetIdentity(ctx)
+
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
 		}
 	}
 

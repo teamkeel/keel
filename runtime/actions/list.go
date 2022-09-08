@@ -24,7 +24,7 @@ func List(
 	if err != nil {
 		return nil, false, false, err
 	}
-	db, err := runtimectx.GetDB(ctx)
+	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, false, false, err
 	}
