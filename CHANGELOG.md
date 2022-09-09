@@ -1,3 +1,10 @@
+# [0.114.0](https://github.com/teamkeel/keel/compare/v0.113.0...v0.114.0) (2022-09-09)
+
+
+### Features
+
+* list input types ([ebcfe46](https://github.com/teamkeel/keel/commit/ebcfe46710cd89acf41765e1469fc0fa2bc5fe17))
+
 # [0.113.0](https://github.com/teamkeel/keel/compare/v0.112.2...v0.113.0) (2022-09-07)
 
 
