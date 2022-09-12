@@ -1,5 +1,7 @@
 package actions
 
+import "fmt"
+
 // A ListInput defines part of an input to a LIST action. Specifically,
 // A filter - in terms of Where clauses, and also a mandate about which
 // page from the potential results is required.
@@ -41,9 +43,59 @@ type Where struct {
 type Operator string
 
 const (
-	OperatorUnknown    = "_unknown"
-	OperatorEquals     = "_equals"
-	OperatorLessThan   = "_lessthan"
-	OperatorContains   = "_contains"
-	OperatorStartsWith = "_startswith"
+	OperatorUnknown = "unknown"
+	OperatorEquals  = "equal"
+
+	// String
+	OperatorStartsWith = "startsWith"
+	OperatorEndsWith   = "endsWith"
+	OperatorContains   = "contains"
+	OperatorOneOf      = "oneOf"
+
+	// Numberic
+	OperatorLessThan          = "lessThan"
+	OperatorLessThanEquals    = "lessThanOrEqualTo"
+	OperatorGreaterThan       = "greaterThan"
+	OperatorGreaterThanEquals = "greaterThanOrEqualTo"
+
+	// Date
+	OperatorBefore     = "before"
+	OperatorAfter      = "after"
+	OperatorOnOrBefore = "onOrBefore"
+	OperatorOnOrAfter  = "onOrAfter"
 )
+
+// operator converts the given string representation of an operator like
+// "eq" into the corresponding Operator value.
+func operator(operatorStr string) (op Operator, err error) {
+	switch operatorStr {
+	case "equals":
+		return OperatorEquals, nil
+	case "startsWith":
+		return OperatorStartsWith, nil
+	case "endsWith":
+		return OperatorEndsWith, nil
+	case "contains":
+		return OperatorContains, nil
+	case "oneOf":
+		return OperatorOneOf, nil
+	case "lessThan":
+		return OperatorLessThan, nil
+	case "lessThanOrEquals":
+		return OperatorLessThanEquals, nil
+	case "greaterThan":
+		return OperatorGreaterThan, nil
+	case "greaterThanOrEquals":
+		return OperatorGreaterThanEquals, nil
+	case "before":
+		return OperatorBefore, nil
+	case "after":
+		return OperatorAfter, nil
+	case "onOrBefore":
+		return OperatorOnOrAfter, nil
+	case "onOrAfter":
+		return OperatorOnOrBefore, nil
+	default:
+		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
+	}
+}
