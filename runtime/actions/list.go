@@ -318,46 +318,74 @@ func addLimit(tx *gorm.DB, page Page) *gorm.DB {
 // to pass to the generic List() function.
 func buildListInput(operation *proto.Operation, argsMap map[string]any) (*ListInput, error) {
 
+	allOptionalInputs := true
+	for _, in := range operation.Inputs {
+		if !in.Optional {
+			allOptionalInputs = false
+		}
+	}
+
+	implicitFilters := []*ImplicitFilter{}
+	explicitFilters := []*ExplicitFilter{}
+
+	fmt.Printf("args: %v", argsMap)
+
+	if allOptionalInputs && argsMap == nil {
+		// No inputs and nothing required. Set default paging
+		return &ListInput{
+			Page:            Page{First: 50},
+			ImplicitFilters: implicitFilters,
+			ExplicitFilters: explicitFilters,
+		}, nil
+	}
+
 	page, err := parsePage(argsMap)
 	if err != nil {
 		return nil, err
 	}
 	whereInputs, ok := argsMap["where"]
 	if !ok {
-		return nil, fmt.Errorf("arguments map does not contain a where key: %v", argsMap)
-	}
-	whereInputsAsMap, ok := whereInputs.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
-	}
+		// We have some required inputs but there is no where key
+		if !allOptionalInputs {
+			return nil, fmt.Errorf("arguments map does not contain a where key: %v", argsMap)
+		}
+	} else {
+		whereInputsAsMap, ok := whereInputs.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
+		}
 
-	implicitFilters := []*ImplicitFilter{}
-	explicitFilters := []*ExplicitFilter{}
-	for argName, argValue := range whereInputsAsMap {
-		switch {
-		case isMap(argValue):
-			argValueAsMap := argValue.(map[string]any)
+		for argName, argValue := range whereInputsAsMap {
 
-			for operatorStr, operand := range argValueAsMap {
-				op, err := operator(operatorStr)
-				if err != nil {
-					return nil, err
+			switch {
+			case isMap(argValue):
+				argValueAsMap := argValue.(map[string]any)
+				if !ok {
+					return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", argValue)
 				}
-				implicitFilter := &ImplicitFilter{
-					Name:     argName,
-					Operator: op,
-					Operand:  operand,
+
+				for operatorStr, operand := range argValueAsMap {
+					op, err := operator(operatorStr)
+					if err != nil {
+						return nil, err
+					}
+					implicitFilter := &ImplicitFilter{
+						Name:     argName,
+						Operator: op,
+						Operand:  operand,
+					}
+					implicitFilters = append(implicitFilters, implicitFilter)
 				}
-				implicitFilters = append(implicitFilters, implicitFilter)
+			default:
+				explicitFilter := &ExplicitFilter{
+					Name:        argName,
+					ScalarValue: argValue,
+				}
+				explicitFilters = append(explicitFilters, explicitFilter)
 			}
-		default:
-			explicitFilter := &ExplicitFilter{
-				Name:        argName,
-				ScalarValue: argValue,
-			}
-			explicitFilters = append(explicitFilters, explicitFilter)
 		}
 	}
+
 	inp := &ListInput{
 		Page:            page,
 		ImplicitFilters: implicitFilters,

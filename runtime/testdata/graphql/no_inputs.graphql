@@ -1,6 +1,6 @@
 type Query {
   getBeatle: Beatle
-  listBeatles: BeatleConnection!
+  listBeatles(input: ListBeatlesInput): BeatleConnection!
 }
 
 type Mutation {
@@ -18,6 +18,11 @@ input AuthenticateEmailPasswordInput {
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: AuthenticateEmailPasswordInput!
+}
+
+input ListBeatlesInput {
+  after: String
+  first: Int
 }
 
 type AuthenticateResponse {
