@@ -296,7 +296,7 @@ func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err erro
 		if !ok {
 			return nil, fmt.Errorf("cannot cast this: %v to int", seconds)
 		}
-		unix := time.Unix(int64(secondsInt), 0)
+		unix := time.Unix(int64(secondsInt), 0).UTC()
 		t = &unix
 
 	case proto.Type_TYPE_DATE:
