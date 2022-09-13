@@ -2,14 +2,15 @@ package actions
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/expressions"
+	"golang.org/x/exp/slices"
 )
 
 // interpretExpressionGivenArgs examines the given expression, in order to work out how to construct a gorm WHERE clause.
@@ -159,27 +160,40 @@ func interpretExpressionField(
 	return fieldName, nil
 }
 
-// EvaluatePermissions will evaluate all the permission conditions on an operation
+// EvaluatePermissions will evaluate all the permission conditions defined on models and operations
 func EvaluatePermissions(
 	ctx context.Context,
 	op *proto.Operation,
 	schema *proto.Schema,
 	data map[string]any,
 ) (authorized bool, err error) {
-	if op.Permissions != nil {
-		for _, permission := range op.Permissions {
-			if permission.Expression != nil {
-				expression, err := expressions.Parse(permission.Expression.Source)
-				if err != nil {
-					return false, err
-				}
+	permissions := []*proto.PermissionRule{}
 
-				authorized, err := evaluateExpression(ctx, expression, op, schema, data)
-				if err != nil {
-					return false, err
-				} else if !authorized {
-					return false, errors.New("not authorized to access this operation")
-				}
+	model := proto.FindModel(schema.Models, op.ModelName)
+
+	modelPermissions := lo.Filter(model.Permissions, func(modelPermission *proto.PermissionRule, _ int) bool {
+		return slices.Contains(modelPermission.OperationsTypes, op.Type)
+	})
+
+	permissions = append(permissions, modelPermissions...)
+
+	if op.Permissions != nil {
+		permissions = append(permissions, op.Permissions...)
+	}
+
+	for _, permission := range permissions {
+		if permission.Expression != nil {
+			expression, err := expressions.Parse(permission.Expression.Source)
+			if err != nil {
+				return false, err
+			}
+
+			authorized, err := evaluateExpression(ctx, expression, op, schema, data)
+			if err != nil {
+				return false, err
+			}
+			if !authorized {
+				return false, nil
 			}
 		}
 	}
