@@ -1,3 +1,10 @@
+# [0.115.0](https://github.com/teamkeel/keel/compare/v0.114.0...v0.115.0) (2022-09-13)
+
+
+### Features
+
+* basic support for [@set](https://github.com/set) on create() ([#369](https://github.com/teamkeel/keel/issues/369)) ([d6f99a8](https://github.com/teamkeel/keel/commit/d6f99a8a553d99b48ae083c5001a339f90db4446))
+
 # [0.114.0](https://github.com/teamkeel/keel/compare/v0.113.0...v0.114.0) (2022-09-09)
 
 
