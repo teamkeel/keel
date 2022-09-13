@@ -2,12 +2,13 @@ package actions
 
 import "fmt"
 
-// A ListInput defines part of an input to a LIST action. Specifically,
+// A ListInput defines the input to a LIST action. Specifically,
 // A filter - in terms of Where clauses, and also a mandate about which
 // page from the potential results is required.
 type ListInput struct {
-	Page   Page
-	Wheres []*Where
+	Page            Page
+	ImplicitFilters []*ImplicitFilter
+	ExplicitFilters []*ExplicitFilter
 }
 
 // A Page describes which page you want from a list of records,
@@ -30,16 +31,26 @@ type Page struct {
 	Before string
 }
 
-// A Where specifies a filter for one column in a database row.
-// You specify the field of interest with Name.
-// And then you populate just the relevant one of XXXQuery attributes - according
-// to the type of the column.
-type Where struct {
-	Name     string
-	Operator Operator
-	Operand  any
+// An ImplicitInputFilter encapsulates a filter for one column in a database row, derived
+// from an implicit input carried by an incoming request.
+// Note that the implementation of the filter logic for IMPLICIT inputs is in Keel code.
+type ImplicitFilter struct {
+	Name     string   // Targeted field.
+	Operator Operator // E.g. "startsWith"
+	Operand  any      // E.g. "Fr"
 }
 
+// An ExplicitFilter encapsulates a filter for one column in a database row, derived
+// from an explicit input carried by an incoming request.
+// Note that the implementation of the filter logic for IMPLICIT inputs is in the explicit where
+// clause on the schema operation.
+type ExplicitFilter struct {
+	Name        string // Targeted field.
+	ScalarValue any    // E.g. "Smith"
+}
+
+// An Operator represents one of the built-in operators you can use in a filter for
+// implicit inputs.
 type Operator string
 
 const (

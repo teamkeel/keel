@@ -35,12 +35,12 @@ func Get(
 	tx := db.Table(tableName)
 
 	// Add the WHERE clauses derived from IMPLICIT inputs.
-	tx, err = addInputFilters(operation, args, tx)
+	tx, err = addGetImplicitInputFilters(operation, args, tx)
 	if err != nil {
 		return nil, err
 	}
 	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
-	tx, err = addWhereFilters(operation, schema, args, tx)
+	tx, err = addGetExplicitInputFilters(operation, schema, args, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -63,9 +63,9 @@ func Get(
 	return toLowerCamelMap(result[0]), nil
 }
 
-// addInputFilters adds Where clauses for all the operation inputs, which have type
+// addGetImplicitInputFilters adds Where clauses for all the operation inputs, which have type
 // IMPLICIT. E.g. "get getPerson(id)"
-func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
+func addGetImplicitInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
 	for _, input := range op.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
@@ -81,13 +81,13 @@ func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*go
 	return tx, nil
 }
 
-// addWhereFilters adds Where clauses for all the operation's Where clauses.
+// addGetExplicitInputFilters adds Where clauses for all the operation's Where clauses.
 // E.g.
 //
 //	get getPerson(name: Text) {
 //		@where(person.name == name)
 //	}
-func addWhereFilters(
+func addGetExplicitInputFilters(
 	op *proto.Operation,
 	schema *proto.Schema,
 	args map[string]any,
@@ -99,7 +99,7 @@ func addWhereFilters(
 		}
 		// This call gives us the column and the value to use like this:
 		// tx.Where(fmt.Sprintf("%s = ?", column), value)
-		identifier, exprValue, err := interpretExpression(expr, op, schema, args)
+		identifier, exprValue, err := interpretExpressionGivenArgs(expr, op, schema, args)
 		if err != nil {
 			return nil, err
 		}
