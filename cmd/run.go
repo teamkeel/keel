@@ -227,7 +227,7 @@ var runCmd = &cobra.Command{
 			}
 
 			ctx := r.Context()
-			ctx = runtime.WithIdentity(ctx, identityId)
+			ctx = runtimectx.WithIdentity(ctx, identityId)
 			ctx = runtimectx.WithDatabase(ctx, db)
 			ctx = runtime.WithFunctionsClient(ctx, nodeClient)
 

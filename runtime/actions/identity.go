@@ -33,7 +33,7 @@ const (
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
 func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (*ksuid.KSUID, bool, error) {
-	db, err := runtimectx.GetDB(ctx)
+	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, false, err
 	}
@@ -88,7 +88,7 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 }
 
 func find(ctx context.Context, email string) (*Identity, error) {
-	db, _ := runtimectx.GetDB(ctx)
+	db, _ := runtimectx.GetDatabase(ctx)
 
 	var identity Identity
 
