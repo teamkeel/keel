@@ -20,72 +20,40 @@ func List(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
-	inputs interface{}) (records interface{}, hasNextPage bool, hasPreviousPage bool, err error) {
+	inputs interface{}) (records interface{}, hasNextPage bool, err error) {
 	listInput, err := buildListInput(operation, inputs)
 	if err != nil {
-		return nil, false, false, err
+		return nil, false, err
 	}
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
-		return nil, false, false, err
+		return nil, false, err
 	}
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
 
-	tableName := strcase.ToSnake(model.Name)
-
-	// Initialise a query on the table = to which we'll add Where clauses.
-	tx := db.Table(tableName)
-
-	// Add the WHERE clauses derived from the inputs.
-	tx, err = addListInputFilters(operation, listInput, tx)
+	qry, err := buildQuery(db, model, operation, listInput)
 	if err != nil {
-		return nil, false, false, err
+		return nil, false, err
 	}
-
-	// todo
-	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
-	// tx, err = addWhereFilters(operation, schema, args, tx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// Where clause to implement the after/before paging request
-	tx = addAfterBefore(tx, listInput.Page)
-
-	// Now ordering
-	tx = addOrderByID(tx)
-
-	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
-	// last-N before, x. The limit it applies one more than the number requested to help detect if
-	// there more pages available.
-	tx, numRequested := addLimit(tx, listInput.Page)
-
-	// Todo: should we validate the type of the values?, or let postgres object to them later?
 
 	// Execute the SQL query.
 	result := []map[string]any{}
-	tx = tx.Find(&result)
-	if tx.Error != nil {
-		return nil, false, false, tx.Error
+	qry = qry.Find(&result)
+	if qry.Error != nil {
+		return nil, false, qry.Error
+	}
+
+	// Sort out the hasNextPage value, and clean up the response.
+	if len(result) > 0 {
+		last := result[len(result)-1]
+		hasNextPage = last["hasnext"].(bool)
 	}
 	res := toLowerCamelMaps(result)
-
-	// Reason over the results to judge if there is a next page and to return only
-	// the records requested (not the extra one).
-	switch {
-	case listInput.Page.After != "" && len(result) > listInput.Page.First:
-		hasNextPage = true
-		res = res[0 : numRequested-1]
-	case listInput.Page.Before != "" && len(result) > listInput.Page.Last:
-		hasPreviousPage = true
-		res = res[1 : listInput.Page.Last+1]
+	for _, row := range res {
+		delete(row, "hasnext")
 	}
-
-	// todo, this is not a robust implementation - upgrade it to the lead() / lag() pattern that Tom suggested here:
-	// https://teamkeel.slack.com/archives/D03C08FGN5C/p1661959457265179
-
-	return res, hasNextPage, hasPreviousPage, nil
+	return res, hasNextPage, nil
 }
 
 // addListInputFilters adds Where clauses to the given gorm.DB corresponding to the
@@ -252,24 +220,17 @@ func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {
 	return tx
 }
 
-func addOrderByID(tx *gorm.DB) *gorm.DB {
-	return tx.Order("id")
-}
-
 // addLimit puts a LIMIT clause on the query to return the number of records
-// specified by the Page mandate (plus 1). It adds one to make it possible to detect,
-// hasNextPage / hasPreviousPage.
-func addLimit(tx *gorm.DB, page Page) (txOut *gorm.DB, numRequested int) {
-	var n int
+// specified by the Page mandate.
+func addLimit(tx *gorm.DB, page Page) *gorm.DB {
 	switch {
 	case page.First != 0:
-		n = page.First + 1
-		return tx.Limit(n), n
+		return tx.Limit(page.First)
 	case page.Last != 0:
-		n = page.Last + 1
-		return tx.Limit(n), n
+		return tx.Limit(page.Last)
+	default:
+		return tx
 	}
-	return tx, n
 }
 
 // buildListInput consumes the dictionary that carries the LIST operation input values on the
@@ -335,7 +296,7 @@ func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err erro
 		if !ok {
 			return nil, fmt.Errorf("cannot cast this: %v to int", seconds)
 		}
-		unix := time.Unix(int64(secondsInt), 0)
+		unix := time.Unix(int64(secondsInt), 0).UTC()
 		t = &unix
 
 	case proto.Type_TYPE_DATE:
@@ -407,4 +368,59 @@ func parsePage(args map[string]any) (Page, error) {
 	}
 
 	return page, nil
+}
+
+// addOrderingAndLead puts in a SELECT statement that puts in the ORDER BY clause to support
+// paging. It also uses the SQL "lead(1)" idiom to deduces if each row has a following row, wich
+// we can then use to determine if a "next" page is available.
+func addOrderingAndLead(tx *gorm.DB) *gorm.DB {
+
+	const by = "id"
+	selectArgs := `
+	 *,
+		CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
+		END as hasNext
+	`
+
+	tx = tx.Select(selectArgs, by)
+	tx = tx.Order(by)
+	return tx
+}
+
+func buildQuery(
+	db *gorm.DB,
+	model *proto.Model,
+	op *proto.Operation,
+	listInput *ListInput) (*gorm.DB, error) {
+
+	tableName := strcase.ToSnake(model.Name)
+
+	// Initialise a query on the table = to which we'll add Where clauses.
+	qry := db.Table(tableName)
+
+	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
+	// that helps to determin "hasNextPage".
+	qry = addOrderingAndLead(qry)
+
+	// Add the WHERE clauses derived from the inputs.
+	qry, err := addListInputFilters(op, listInput, qry)
+	if err != nil {
+		return nil, err
+	}
+
+	// todo
+	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
+	// tx, err = addWhereFilters(operation, schema, args, tx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// Where clause to implement the after/before paging request
+	qry = addAfterBefore(qry, listInput.Page)
+
+	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
+	// last-N before x.
+	qry = addLimit(qry, listInput.Page)
+
+	return qry, nil
 }

@@ -179,11 +179,11 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			records, hasNextPage, hasPrevPage, err := actions.List(p.Context, op, schema, input)
+			records, hasNextPage, err := actions.List(p.Context, op, schema, input)
 			if err != nil {
 				return nil, err
 			}
-			resp, err := connectionResponse(records, hasNextPage, hasPrevPage)
+			resp, err := connectionResponse(records, hasNextPage)
 			if err != nil {
 				return nil, err
 			}
@@ -283,9 +283,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "PageInfo",
 	Fields: graphql.Fields{
-		"hasPreviousPage": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Boolean),
-		},
 		"hasNextPage": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.Boolean),
 		},
@@ -977,7 +974,7 @@ type IntrospectionQueryResult struct {
 // and wraps them into a Node+Edges structure that is good for the connections pattern
 // return type and is expected by the GraphQL schema for the List operation.
 // See https://relay.dev/graphql/connections.htm
-func connectionResponse(records any, hasNextPage bool, hasPrevPage bool) (resp any, err error) {
+func connectionResponse(records any, hasNextPage bool) (resp any, err error) {
 
 	recordsList, ok := records.([]map[string]any)
 	if !ok {
@@ -1001,10 +998,9 @@ func connectionResponse(records any, hasNextPage bool, hasPrevPage bool) (resp a
 	}
 
 	pageInfo := map[string]any{
-		"hasNextPage":     hasNextPage,
-		"hasPreviousPage": hasPrevPage,
-		"startCursor":     startCursor,
-		"endCursor":       endCursor,
+		"hasNextPage": hasNextPage,
+		"startCursor": startCursor,
+		"endCursor":   endCursor,
 	}
 	resp = map[string]any{
 		"pageInfo": pageInfo,

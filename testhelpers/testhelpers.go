@@ -3,6 +3,8 @@ package testhelpers
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -14,6 +16,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 // WithTmpDir copies the contents of the src dir to a new temporary directory, returning the tmp dir path
@@ -60,7 +63,15 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 	// so the mainDB connection can drop the database.
 	testDB, err := gorm.Open(
 		postgres.Open(fmt.Sprintf(dbConnString, dbName)),
-		&gorm.Config{})
+		&gorm.Config{
+			Logger: logger.New(
+				log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+				logger.Config{
+					LogLevel: logger.Info, // Log level
+					Colorful: true,        // Disable color
+				},
+			),
+		})
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
