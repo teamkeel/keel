@@ -3,7 +3,6 @@ package actions
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -50,33 +49,36 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 			return nil, err
 		}
 
-		if expressions.IsAssignment(expression) {
-			assignment, err := expressions.ToAssignmentCondition(expression)
+		assignment, err := expressions.ToAssignmentCondition(expression)
+		if err != nil {
+			return nil, err
+		}
+
+		lhsOperandType, err := GetOperandType(assignment.LHS, operation, schema)
+		if err != nil {
+			return nil, err
+		}
+
+		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
+		isLiteral, _ := assignment.RHS.IsLiteralType()
+
+		switch {
+		case isLiteral:
+			modelMap[strcase.ToSnake(fieldName)], err = toNative(assignment.RHS, lhsOperandType)
 			if err != nil {
 				return nil, err
 			}
-
-			fieldName := assignment.LHS.Ident.Fragments[1].Fragment
-			isLiteral, value := assignment.RHS.IsLiteralType()
-
-			if assignment.RHS.Type() == expressions.TypeText {
-				modelMap[strcase.ToSnake(fieldName)], _ = strconv.Unquote(value)
-			} else if assignment.RHS.Type() == expressions.TypeNull {
-				modelMap[strcase.ToSnake(fieldName)] = nil
-			} else if isLiteral {
-
-				modelMap[strcase.ToSnake(fieldName)] = value
-			} else if assignment.RHS.Ident != nil {
-				rhs := assignment.RHS.Ident
-
-				if rhs.Fragments[0].Fragment == "ctx" && rhs.Fragments[1].Fragment == "identity" {
-					modelMap[strcase.ToSnake(fieldName)], err = runtimectx.GetIdentity(ctx)
-
-					if err != nil {
-						return nil, err
-					}
+		case assignment.RHS.Type() == expressions.TypeIdent:
+			if assignment.RHS.Ident.IsContextIdentityField() {
+				modelMap[strcase.ToSnake(fieldName)], err = runtimectx.GetIdentity(ctx)
+				if err != nil {
+					return nil, err
 				}
+			} else {
+				return nil, fmt.Errorf("operand type not yet supported: %s", fieldName)
 			}
+		default:
+			return nil, fmt.Errorf("operand type not yet supported")
 		}
 	}
 

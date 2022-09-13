@@ -518,8 +518,16 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 	switch previousIdents[0] {
 	case "ctx":
 		return []*CompletionItem{
-			{Label: "identity", Description: "Identity", Kind: KindField},
-			{Label: "now", Description: "Timestamp", Kind: KindField},
+			{
+				Label:       "identity",
+				Description: "Identity",
+				Kind:        KindField,
+			},
+			{
+				Label:       "now",
+				Description: "Timestamp",
+				Kind:        KindField,
+			},
 		}
 
 	case expressionModelName:

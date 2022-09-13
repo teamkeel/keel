@@ -29,6 +29,8 @@ func toNative(v *expressions.Operand, fieldType proto.Type) (any, error) {
 			return toTime(v), nil
 		}
 		return v, nil
+	case v.Null:
+		return nil, nil
 	default:
 		return nil, fmt.Errorf("toNative() does yet support this expression operand: %+v", v)
 	}
