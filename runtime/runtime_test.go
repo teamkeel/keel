@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"testing"
 	"time"
 
@@ -50,10 +49,8 @@ func TestRuntime(t *testing.T) {
 			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
 			request := Request{
 				Context: runtimectx.WithDatabase(context.Background(), testDB),
-				URL: url.URL{
-					Path: "/Test",
-				},
-				Body: []byte(reqBody),
+				Path:    "/Test",
+				Body:    []byte(reqBody),
 			}
 
 			// Apply the database prior-set up mandated by this test case.

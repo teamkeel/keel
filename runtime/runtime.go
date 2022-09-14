@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"strings"
 
 	"github.com/graphql-go/graphql"
@@ -13,7 +12,7 @@ import (
 
 type Request struct {
 	Context context.Context
-	URL     url.URL
+	Path    string
 	Body    []byte
 }
 
@@ -37,7 +36,7 @@ func NewHandler(s *proto.Schema) Handler {
 	}
 
 	return func(r *Request) (*Response, error) {
-		path := strings.TrimSuffix(r.URL.Path, "/")
+		path := strings.TrimSuffix(r.Path, "/")
 
 		handler, ok := handlers[path]
 		if !ok {

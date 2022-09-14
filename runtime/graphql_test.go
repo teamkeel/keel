@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/url"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -67,9 +66,7 @@ func TestGraphQL(t *testing.T) {
 			require.NoError(t, err)
 
 			response, err := handler(&runtime.Request{
-				URL: url.URL{
-					Path: "/Test",
-				},
+				Path: "/Test",
 				Body: body,
 			})
 			require.NoError(t, err)

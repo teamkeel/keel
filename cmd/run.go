@@ -233,7 +233,7 @@ var runCmd = &cobra.Command{
 
 			response, err := handler(&runtime.Request{
 				Context: ctx,
-				URL:     *r.URL,
+				Path:    r.URL.Path,
 				Body:    body,
 			})
 
