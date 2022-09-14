@@ -52,9 +52,6 @@ type FunctionImplementation struct {
 }
 
 // todo: make this configurable in the future
-var SCHEMA_FILE = "schema.keel"
-
-// todo: make this configurable in the future
 var FUNCTIONS_DIRECTORY = "functions"
 
 func NewRuntime(schema *proto.Schema, workDir string) (*Runtime, error) {
