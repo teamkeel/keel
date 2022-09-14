@@ -3,11 +3,13 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/iancoleman/strcase"
+	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -66,6 +68,9 @@ func TestRuntime(t *testing.T) {
 			// Unless there is a specific assertion for the error returned,
 			// check there is no error
 			if tCase.assertErrors == nil {
+				if len(bodyFields.Errors) != 0 {
+					t.Fatalf("response has unexpected errors: %s", litter.Sdump(bodyFields.Errors))
+				}
 				require.Len(t, bodyFields.Errors, 0, "response has unexpected errors: %+v", bodyFields.Errors)
 			}
 
@@ -140,8 +145,9 @@ const basicSchema string = `
 			name Text 
 		}
 		operations {
-			get getPerson(id) // short-form filter criterion
+			get getPerson(id)
 			create createPerson() with (name)
+			list listPeople(name)
 		}
 	}
 	api Test {
@@ -189,6 +195,33 @@ const multiSchema string = `
 		@graphql
 		models {
 			Multi
+		}
+	}
+`
+
+// Schema with all field types
+const fieldTypes string = `
+	model Thing {
+		fields {
+			text Text @unique
+			bool Boolean
+			timestamp Timestamp
+			date Date
+			number Number
+			enum Enums
+		}
+		operations {
+			list listThings(text?, bool?, date?, timestamp?, number?, enum?)
+		}
+	}
+	enum Enums {
+		Option1
+		Option2
+	}
+	api Test {
+		@graphql
+		models {
+			Thing
 		}
 	}
 `
@@ -395,6 +428,250 @@ var testCases = []testCase{
 		assertData: func(t *testing.T, data map[string]any) {
 			rtt.AssertValueAtPath(t, data, "getPerson.id", "42")
 			rtt.AssertValueAtPath(t, data, "getPerson.name", "Sue")
+		},
+	},
+	{
+		name:       "list_operation_generic_and_paging_logic",
+		keelSchema: basicSchema,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			for _, nameStub := range []string{"Fred", "Sue"} {
+				for i := 0; i < 100; i++ {
+					name := fmt.Sprintf("%s_%d", nameStub, i)
+					id := fmt.Sprintf("%s_%04d_id", nameStub, i)
+					row := initRow(map[string]any{
+						"name": name,
+						"id":   id,
+					})
+					require.NoError(t, db.Table("person").Create(row).Error)
+				}
+			}
+		},
+		gqlOperation: `
+			query ListPeople {
+				listPeople(input: { first: 10, after: "Fred_0008_id", where: { name: { startsWith: "Fr" } } })
+				{
+					pageInfo {
+						hasNextPage
+						startCursor
+						endCursor
+					}
+					edges {
+					  node {
+						id
+						name
+					  }
+					}
+				  }
+		 	}`,
+
+		assertData: func(t *testing.T, data map[string]any) {
+			edges := rtt.GetValueAtPath(t, data, "listPeople.edges")
+			edgesList, ok := edges.([]any)
+			require.True(t, ok)
+			// Check conformance with the request asking for the first 10, after id == "Fred_0008_id"
+			require.Len(t, edgesList, 10)
+			first := edgesList[0]
+			edge, ok := first.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, edge, "node.id", "Fred_0009_id")
+
+			// Check the correctness of the returned page metadata
+			pageInfo := rtt.GetValueAtPath(t, data, "listPeople.pageInfo")
+			pageInfoMap, ok := pageInfo.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "Fred_0009_id")
+			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "Fred_0018_id")
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+
+			// todo - we should test hasNextPage when there isn't one - but defer until we switch over to
+			// the integration test framework.
+		},
+	},
+	{
+		name:       "list_inputs",
+		keelSchema: fieldTypes,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row1 := initRow(map[string]any{
+				"id":        "id_123",
+				"text":      "some-interesting-text",
+				"bool":      true,
+				"timestamp": "1970-01-01 00:00:10",
+				"date":      "2020-01-02",
+				"number":    10,
+				"enum":      "Option1",
+			})
+			require.NoError(t, db.Table("thing").Create(row1).Error)
+			// require.NoError(t, db.Table("person").Create(row2).Error)
+			// require.NoError(t, db.Table("person").Create(row3).Error)
+		},
+		gqlOperation: `
+		
+		fragment Fields on ThingConnection {
+			edges {
+				node {
+				text
+				bool
+				# timestamp {seconds}
+				# date {day, month, year}
+				number
+				enum
+				}
+			}
+		}
+
+		{
+		string_equals: listThings(input: {where: {text: {equals: "some-interesting-text"}}}) {
+			...Fields
+		},
+		string_startsWith: listThings(input: {where: {text: {startsWith: "some"}}}) {
+			...Fields
+		},
+		string_endWith: listThings(input: {where: {text: {endsWith: "-text"}}}) {
+			...Fields
+		},
+		string_contains: listThings(input: {where: {text: {contains: "interesting"}}}) {
+			...Fields
+		},
+		string_oneOf: listThings(input: {where: {text: {oneOf: ["some-interesting-text", "Another"]}}}) {
+			...Fields
+		},
+		number_equals: listThings(input: {where: {number: {equals: 10}}}) {
+			...Fields
+		},
+		number_gt: listThings(input: {where: {number: {greaterThan: 9}}}) {
+			...Fields
+		},
+		number_gte: listThings(input: {where: {number: {greaterThanOrEquals: 10}}}) {
+			...Fields
+		},
+		number_lt: listThings(input: {where: {number: {lessThan: 11}}}) {
+			...Fields
+		},
+		number_lte: listThings(input: {where: {number: {lessThanOrEquals: 10}}}) {
+			...Fields
+		},
+		enum_equals: listThings(input: {where: {enum: {equals: Option1}}}) {
+			...Fields
+		},
+		enum_oneOf: listThings(input: {where: {enum: {oneOf: [Option1]}}}) {
+			...Fields
+		},
+		timestamp_before: listThings(input: {
+			where: {
+			timestamp: {
+				before: {
+					seconds: 11
+				}
+			}
+			}
+		}) {
+			...Fields
+		},
+		timestamp_after: listThings(input: {
+			where: {
+			timestamp: {
+				after: {
+					seconds: 9
+				}
+			}
+			}
+		}) {
+			...Fields
+		},
+		date_before: listThings(input: {where: {date: {before: {
+			year: 2020,
+			month: 1,
+			day: 3
+		}}}}) {
+			...Fields
+		},
+		date_after: listThings(input: {where: {date: {after: {
+			year: 2020,
+			month: 1,
+			day: 1
+		}}}}) {
+			...Fields
+		},
+		date_onOrbefore: listThings(input: {where: {date: {onOrBefore: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		date_onOrAfter: listThings(input: {where: {date: {onOrAfter: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		date_onOrEquals: listThings(input: {where: {date: {equals: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		bool: listThings(input: {
+			where: {
+			bool: {
+					equals: true
+				}
+			}
+		}) {
+			...Fields
+		}
+		combined: listThings(input: {
+			where: {
+			bool: {
+					equals: true
+			},
+			enum: {
+				equals: Option1
+			}
+			}
+		}) {
+			...Fields
+		}
+		}`,
+		assertData: func(t *testing.T, data map[string]any) {
+
+			keys := []string{
+				"string_equals",
+				"string_startsWith",
+				"string_endWith",
+				"string_contains",
+				"string_oneOf",
+				"number_equals",
+				"number_gt",
+				"number_gte",
+				"number_lt",
+				"number_lte",
+				"enum_equals",
+				"enum_oneOf",
+				"timestamp_before",
+				"timestamp_after",
+				"date_before",
+				"date_after",
+				"date_onOrbefore",
+				"date_onOrAfter",
+				"date_onOrEquals",
+				"bool",
+				"combined",
+			}
+
+			for _, key := range keys {
+				edges := rtt.GetValueAtPath(t, data, key+".edges")
+				edgesList, ok := edges.([]any)
+				fmt.Println(key)
+				require.True(t, ok)
+				if len(edgesList) != 1 {
+					a := 1
+					_ = a
+				}
+				require.Len(t, edgesList, 1)
+			}
 		},
 	},
 }

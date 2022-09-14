@@ -532,7 +532,24 @@ func (gen *Generator) GenerateInputs(typings bool) (r string) {
 						}),
 					})
 				}
+			case proto.OperationType_OPERATION_TYPE_DELETE:
+				if typings {
+					r += renderTemplate(TemplateDeleteInputTypings, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+					})
+				} else {
+					r += renderTemplate(TemplateListInput, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+					})
+				}
 			}
+
 		}
 	}
 
@@ -716,15 +733,32 @@ func (gen *Generator) GenerateTesting() (r string) {
 		})
 
 		for i, action := range actions {
+			returnType := ""
+
+			switch action.Type {
+			case proto.OperationType_OPERATION_TYPE_CREATE:
+				returnType = fmt.Sprintf("ReturnTypes.FunctionCreateResponse<Client.%s>", action.ModelName)
+			case proto.OperationType_OPERATION_TYPE_DELETE:
+				returnType = fmt.Sprintf("ReturnTypes.FunctionDeleteResponse<Client.%s>", action.ModelName)
+			case proto.OperationType_OPERATION_TYPE_LIST:
+				returnType = fmt.Sprintf("ReturnTypes.FunctionListResponse<Client.%s>", action.ModelName)
+			case proto.OperationType_OPERATION_TYPE_UPDATE:
+				returnType = fmt.Sprintf("ReturnTypes.FunctionUpdateResponse<Client.%s>", action.ModelName)
+			case proto.OperationType_OPERATION_TYPE_GET:
+				returnType = fmt.Sprintf("ReturnTypes.FunctionGetResponse<Client.%s>", action.ModelName)
+			default:
+				continue
+			}
+
 			if len(actions) == 1 || i == len(actions)-1 {
 				r += renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": action.Name,
-					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
+					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", returnType, action.Name),
 				})
 			} else {
 				r += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": action.Name,
-					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", "any", action.Name),
+					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", returnType, action.Name),
 				}))
 			}
 		}
@@ -808,6 +842,7 @@ var (
 	TemplateCreateInput       = "create_input"
 	TemplateGetInput          = "get_input"
 	TemplateListInput         = "list_input"
+	TemplateDeleteInput       = "delete_input"
 	TemplateFuncWrapperCreate = "func_wrapper_create"
 	TemplateFuncWrapperDelete = "func_wrapper_delete"
 	TemplateFuncWrapperUpdate = "func_wrapper_update"
@@ -820,6 +855,7 @@ var (
 	TemplateCreateInputTypings       = "create_input_typings"
 	TemplateGetInputTypings          = "get_input_typings"
 	TemplateListInputTypings         = "list_input_typings"
+	TemplateDeleteInputTypings       = "delete_input_typings"
 	TemplateUpdateInputTypings       = "update_input_typings"
 	TemplateEnumTyping               = "enum_typing"
 	TemplateEnumValueTyping          = "enum_value_typing"

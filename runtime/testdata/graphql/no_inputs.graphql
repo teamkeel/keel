@@ -4,9 +4,25 @@ type Query {
 }
 
 type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
   createBeatle: Beatle!
   deleteBeatle: ID
   switchBeatle: Beatle!
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean
+  token: String
 }
 
 type Beatle {
@@ -28,15 +44,14 @@ type BeatleEdge {
 
 type Identity {
   createdAt: Timestamp!
+  email: String!
   id: ID!
   updatedAt: Timestamp!
-  username: String!
 }
 
 type PageInfo {
   endCursor: String!
   hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
   startCursor: String!
   totalCount: Int!
 }

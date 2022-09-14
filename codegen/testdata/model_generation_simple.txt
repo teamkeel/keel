@@ -16,7 +16,8 @@ export interface Post {
 }
 
 export interface Identity {
-  username: string
+  email: string
+  password: unknown
   id: string
   createdAt: Date
   updatedAt: Date

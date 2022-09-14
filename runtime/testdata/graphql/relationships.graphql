@@ -2,8 +2,27 @@ type Query {
   getOrder(input: GetOrderInput!): Order
 }
 
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
 input GetOrderInput {
   id: ID!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean
+  token: String
 }
 
 type Order {
@@ -33,7 +52,6 @@ type OrderItemEdge {
 type PageInfo {
   endCursor: String!
   hasNextPage: Boolean!
-  hasPreviousPage: Boolean!
   startCursor: String!
   totalCount: Int!
 }

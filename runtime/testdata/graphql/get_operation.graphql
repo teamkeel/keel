@@ -2,8 +2,27 @@ type Query {
   getPerson(input: GetPersonInput!): Person
 }
 
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
 input GetPersonInput {
   id: ID!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean
+  token: String
 }
 
 type Person {

@@ -1,10 +1,11 @@
-import chalk, { ChalkInstance } from "chalk";
+import chalk, { Chalk } from "chalk";
 
 export enum Level {
   Info = "info",
   Error = "error",
   Debug = "debug",
   Warn = "warn",
+  Success = "success",
 }
 
 export interface LoggerOptions {
@@ -13,13 +14,14 @@ export interface LoggerOptions {
   timestamps?: boolean;
 }
 
-type LevelColors = Record<Level, ChalkInstance>;
+type LevelColors = Record<Level, Chalk>;
 
 const LevelColorPalette: LevelColors = {
   error: chalk.red,
   info: chalk.cyan,
   debug: chalk.magenta,
   warn: chalk.yellow,
+  success: chalk.green,
 };
 
 export interface Transport {

@@ -1,3 +1,206 @@
+# [0.115.0](https://github.com/teamkeel/keel/compare/v0.114.0...v0.115.0) (2022-09-13)
+
+
+### Features
+
+* basic support for [@set](https://github.com/set) on create() ([#369](https://github.com/teamkeel/keel/issues/369)) ([d6f99a8](https://github.com/teamkeel/keel/commit/d6f99a8a553d99b48ae083c5001a339f90db4446))
+
+# [0.114.0](https://github.com/teamkeel/keel/compare/v0.113.0...v0.114.0) (2022-09-09)
+
+
+### Features
+
+* list input types ([ebcfe46](https://github.com/teamkeel/keel/commit/ebcfe46710cd89acf41765e1469fc0fa2bc5fe17))
+
+# [0.113.0](https://github.com/teamkeel/keel/compare/v0.112.2...v0.113.0) (2022-09-07)
+
+
+### Features
+
+* testing package output ([#365](https://github.com/teamkeel/keel/issues/365)) ([6d5cf6d](https://github.com/teamkeel/keel/commit/6d5cf6d6370db900cbb1a0d2060c7ebb7fd1dc4a))
+
+## [0.112.2](https://github.com/teamkeel/keel/compare/v0.112.1...v0.112.2) (2022-09-07)
+
+
+### Bug Fixes
+
+* test output ([#362](https://github.com/teamkeel/keel/issues/362)) ([7dfe5a6](https://github.com/teamkeel/keel/commit/7dfe5a6c0e36a9d1a7537320b95691f706a339c0))
+
+## [0.112.1](https://github.com/teamkeel/keel/compare/v0.112.0...v0.112.1) (2022-09-07)
+
+
+### Bug Fixes
+
+* prettier ([#363](https://github.com/teamkeel/keel/issues/363)) ([74d8785](https://github.com/teamkeel/keel/commit/74d87852dd188721cef9f0ab141e221ae8b94b62))
+
+# [0.112.0](https://github.com/teamkeel/keel/compare/v0.111.6...v0.112.0) (2022-09-07)
+
+
+### Features
+
+* verify jwt and set context with identity id ([#350](https://github.com/teamkeel/keel/issues/350)) ([32a7d1b](https://github.com/teamkeel/keel/commit/32a7d1b4693a0e0e7c177fe9c28f9801e1d1305d))
+
+## [0.111.6](https://github.com/teamkeel/keel/compare/v0.111.5...v0.111.6) (2022-09-07)
+
+
+### Bug Fixes
+
+* test exclusion ([#361](https://github.com/teamkeel/keel/issues/361)) ([68271e9](https://github.com/teamkeel/keel/commit/68271e9a4cc7e5eba6586cf604ab82011cf8f1fc))
+
+## [0.111.5](https://github.com/teamkeel/keel/compare/v0.111.4...v0.111.5) (2022-09-07)
+
+
+### Bug Fixes
+
+* test pkg cli output ([#360](https://github.com/teamkeel/keel/issues/360)) ([a694343](https://github.com/teamkeel/keel/commit/a694343a50b333557244758564154cc7c537bf3a))
+
+## [0.111.4](https://github.com/teamkeel/keel/compare/v0.111.3...v0.111.4) (2022-09-07)
+
+
+### Bug Fixes
+
+* update sdk in testing package ([#359](https://github.com/teamkeel/keel/issues/359)) ([87f569a](https://github.com/teamkeel/keel/commit/87f569a9c40cdec8d919baef987285e9aad6b946))
+
+## [0.111.3](https://github.com/teamkeel/keel/compare/v0.111.2...v0.111.3) (2022-09-07)
+
+
+### Bug Fixes
+
+* downgrade to chalk v4 to avoid esm issues ([#358](https://github.com/teamkeel/keel/issues/358)) ([5628779](https://github.com/teamkeel/keel/commit/56287791cb74bd740bbb72845445a3fac0d5ecc6))
+
+## [0.111.2](https://github.com/teamkeel/keel/compare/v0.111.1...v0.111.2) (2022-09-07)
+
+
+### Bug Fixes
+
+* test result output ([#357](https://github.com/teamkeel/keel/issues/357)) ([d92217f](https://github.com/teamkeel/keel/commit/d92217f943bc61815fff01ff91944a9a4f868b1e))
+
+## [0.111.1](https://github.com/teamkeel/keel/compare/v0.111.0...v0.111.1) (2022-09-07)
+
+
+### Bug Fixes
+
+* expose success log level in logger package ([#356](https://github.com/teamkeel/keel/issues/356)) ([1f484e8](https://github.com/teamkeel/keel/commit/1f484e8411ca8b071b574185341c4093ecb8ebda))
+
+# [0.111.0](https://github.com/teamkeel/keel/compare/v0.110.0...v0.111.0) (2022-09-07)
+
+
+### Features
+
+* hook up pattern flag to integration tests ([#355](https://github.com/teamkeel/keel/issues/355)) ([2ad0faa](https://github.com/teamkeel/keel/commit/2ad0faa8aef154eb8f064bd77968e9e0dc470038))
+
+# [0.110.0](https://github.com/teamkeel/keel/compare/v0.109.0...v0.110.0) (2022-09-07)
+
+
+### Features
+
+* support isolation of tests via a pattern in testing package ([#354](https://github.com/teamkeel/keel/issues/354)) ([51877ef](https://github.com/teamkeel/keel/commit/51877ef1b6acc3b8a360718f51001ee1ad419e39))
+
+# [0.109.0](https://github.com/teamkeel/keel/compare/v0.108.1...v0.109.0) (2022-09-06)
+
+
+### Features
+
+* hashing password secret data type ([#348](https://github.com/teamkeel/keel/issues/348)) ([dad5be9](https://github.com/teamkeel/keel/commit/dad5be92fdfd5046b199b7445ba03175171b333d))
+
+## [0.108.1](https://github.com/teamkeel/keel/compare/v0.108.0...v0.108.1) (2022-09-06)
+
+
+### Bug Fixes
+
+* failed authenticate() response from gql ([#347](https://github.com/teamkeel/keel/issues/347)) ([ed175a0](https://github.com/teamkeel/keel/commit/ed175a0cacfa9e916f3a848fb8e86aa0470623f1))
+
+# [0.108.0](https://github.com/teamkeel/keel/compare/v0.107.0...v0.108.0) (2022-09-02)
+
+
+### Features
+
+* adds faker into testing package ([#345](https://github.com/teamkeel/keel/issues/345)) ([da46e10](https://github.com/teamkeel/keel/commit/da46e10c5eac6b5c87c28e29f0d108d13936b5a9))
+
+# [0.107.0](https://github.com/teamkeel/keel/compare/v0.106.7...v0.107.0) (2022-09-02)
+
+
+### Features
+
+* hashed secret data type ([#336](https://github.com/teamkeel/keel/issues/336)) ([599f188](https://github.com/teamkeel/keel/commit/599f1889761ac5f747a377b7ac8499daa1815844))
+
+## [0.106.7](https://github.com/teamkeel/keel/compare/v0.106.6...v0.106.7) (2022-09-01)
+
+
+### Bug Fixes
+
+* integration tests  ([#344](https://github.com/teamkeel/keel/issues/344)) ([4e1dc43](https://github.com/teamkeel/keel/commit/4e1dc435fda17e13c50c45486f74b4975ec8dda1))
+
+## [0.106.6](https://github.com/teamkeel/keel/compare/v0.106.5...v0.106.6) (2022-09-01)
+
+
+### Bug Fixes
+
+* integration tests ([#343](https://github.com/teamkeel/keel/issues/343)) ([5c6281c](https://github.com/teamkeel/keel/commit/5c6281cbdd0ef0a4d9f9ac7d019ecd42e6008723))
+
+## [0.106.5](https://github.com/teamkeel/keel/compare/v0.106.4...v0.106.5) (2022-09-01)
+
+
+### Bug Fixes
+
+* action executor typings ([#342](https://github.com/teamkeel/keel/issues/342)) ([15cd224](https://github.com/teamkeel/keel/commit/15cd22480c8a4067fd09731ac025d2a11ce25c6e))
+
+## [0.106.4](https://github.com/teamkeel/keel/compare/v0.106.3...v0.106.4) (2022-09-01)
+
+
+### Bug Fixes
+
+* update testing package to use return types from sdk  ([#341](https://github.com/teamkeel/keel/issues/341)) ([ae92ef5](https://github.com/teamkeel/keel/commit/ae92ef500868c54361cab1c89bd65a3131be68bc))
+
+## [0.106.3](https://github.com/teamkeel/keel/compare/v0.106.2...v0.106.3) (2022-09-01)
+
+
+### Bug Fixes
+
+* ignore prettier on d.ts files ([#340](https://github.com/teamkeel/keel/issues/340)) ([1f9662f](https://github.com/teamkeel/keel/commit/1f9662f1e74727fe53e5646e941e38706f0720e2))
+
+## [0.106.2](https://github.com/teamkeel/keel/compare/v0.106.1...v0.106.2) (2022-09-01)
+
+
+### Bug Fixes
+
+* correct sdk typings ([#339](https://github.com/teamkeel/keel/issues/339)) ([74c17cd](https://github.com/teamkeel/keel/commit/74c17cd9af9fc23f6c998b10fd9b705c390eef6d))
+
+## [0.106.1](https://github.com/teamkeel/keel/compare/v0.106.0...v0.106.1) (2022-09-01)
+
+
+### Bug Fixes
+
+* revert zod changes ([#337](https://github.com/teamkeel/keel/issues/337)) ([12bae2d](https://github.com/teamkeel/keel/commit/12bae2d94c96366c6e86c2fd18538bb17839c0af))
+
+# [0.106.0](https://github.com/teamkeel/keel/compare/v0.105.0...v0.106.0) (2022-09-01)
+
+
+### Features
+
+* adds zod for schema validation for database queries ([#335](https://github.com/teamkeel/keel/issues/335)) ([8aed8d1](https://github.com/teamkeel/keel/commit/8aed8d1e4c4802f08518647dab664c7b95de80c4))
+
+# [0.105.0](https://github.com/teamkeel/keel/compare/v0.104.1...v0.105.0) (2022-08-30)
+
+
+### Features
+
+* built-in authenticate() operation with graphql support ([#328](https://github.com/teamkeel/keel/issues/328)) ([f7b76fa](https://github.com/teamkeel/keel/commit/f7b76fa3219652d804f6105d85347bcabbaed103))
+
+## [0.104.1](https://github.com/teamkeel/keel/compare/v0.104.0...v0.104.1) (2022-08-30)
+
+
+### Bug Fixes
+
+* update sdk type defs to reflect new query api return types ([#330](https://github.com/teamkeel/keel/issues/330)) ([67dedb9](https://github.com/teamkeel/keel/commit/67dedb9263f7b0b3601df1c5ed7aff64b68ab719))
+
+# [0.104.0](https://github.com/teamkeel/keel/compare/v0.103.0...v0.104.0) (2022-08-30)
+
+
+### Features
+
+* update codegenned wrapper func to use new return types from sdk ([#329](https://github.com/teamkeel/keel/issues/329)) ([8467c93](https://github.com/teamkeel/keel/commit/8467c9394b988abfccb8fdbeb172ae237a0dbbfd))
+
 # [0.103.0](https://github.com/teamkeel/keel/compare/v0.102.21...v0.103.0) (2022-08-26)
 
 

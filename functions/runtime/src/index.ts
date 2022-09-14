@@ -24,23 +24,58 @@ const startRuntimeServer = ({ functions, api }: Config) => {
       const { call } = functions[normalisedPathname];
 
       try {
+        // Call the custom function
+        // Every custom function has an enforced return type
         const result = await call(json, api);
 
+        // Handle if no value is returned by the custom function
         if (!result) {
-          throw new Error(`No value returned from ${normalisedPathname}`);
+          res.write(
+            JSON.stringify({
+              errors: [
+                {
+                  message: `No value returned from ${normalisedPathname}`,
+                },
+              ],
+            })
+          );
+
+          return;
         }
 
+        // successful result will be:
+        // {
+        //   object: XXX,
+        //   errors: [...]
+        // }
         res.write(JSON.stringify(result));
       } catch (e) {
+        // Catch unhandled errors
         console.error(e);
+        res.statusCode = 500;
 
         if (e instanceof Error) {
           const { message } = e;
 
-          res.statusCode = 500;
-          res.write(JSON.stringify({ message }));
+          res.write(
+            JSON.stringify({
+              errors: [
+                {
+                  message,
+                },
+              ],
+            })
+          );
         } else {
-          res.write(JSON.stringify({ message: "An unknown error occurred" }));
+          res.write(
+            JSON.stringify({
+              errors: [
+                {
+                  message: "An unknown error occurred",
+                },
+              ],
+            })
+          );
         }
       }
     } else {
@@ -48,7 +83,11 @@ const startRuntimeServer = ({ functions, api }: Config) => {
 
       res.write(
         JSON.stringify({
-          message: "Only POST requests are permitted",
+          errors: [
+            {
+              message: "Only POST requests are permitted",
+            },
+          ],
         })
       );
     }

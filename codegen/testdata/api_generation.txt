@@ -30,7 +30,7 @@ export class PostApi {
     })
   }
 
-  create = async (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
+  create = async (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<FunctionCreateResponse<Post>> => {
     return this.db.create(inputs);
   }
 
@@ -38,19 +38,19 @@ export class PostApi {
     return this.db.where(conditions as any);
   }
 
-  delete = (id: string) : Promise<boolean> => {
+  delete = (id: string) : Promise<FunctionDeleteResponse<Post>> => {
     return this.db.delete(id);
   }
 
-  findOne = (query: PostUniqueFields) : Promise<Post> => {
+  findOne = (query: PostUniqueFields) : Promise<FunctionGetResponse<Post>> => {
     return this.db.findOne(query as any);
   }
 
-  update = (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<Post> => {
+  update = (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) : Promise<FunctionUpdateResponse<Post>> => {
     return this.db.update(id, inputs as any);
   }
 
-  findMany = (query: PostQuery) : Promise<Post[]> => {
+  findMany = (query: PostQuery) : Promise<FunctionListResponse<Post>> => {
     return this.db.where(query as any).all();
   }
 }

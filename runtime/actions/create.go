@@ -3,15 +3,17 @@ package actions
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/expressions"
 
 	"github.com/iancoleman/strcase"
 )
 
 func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
-	db, err := runtimectx.GetDB(ctx)
+	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,6 +44,42 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		}
 	}
 
+	for _, setExpressions := range operation.SetExpressions {
+		expression, err := expressions.Parse(setExpressions.Source)
+		if err != nil {
+			return nil, err
+		}
+
+		if expressions.IsAssignment(expression) {
+			assignment, err := expressions.ToAssignmentCondition(expression)
+			if err != nil {
+				return nil, err
+			}
+
+			fieldName := assignment.LHS.Ident.Fragments[1].Fragment
+			isLiteral, value := assignment.RHS.IsLiteralType()
+
+			if assignment.RHS.Type() == expressions.TypeText {
+				modelMap[strcase.ToSnake(fieldName)], _ = strconv.Unquote(value)
+			} else if assignment.RHS.Type() == expressions.TypeNull {
+				modelMap[strcase.ToSnake(fieldName)] = nil
+			} else if isLiteral {
+
+				modelMap[strcase.ToSnake(fieldName)] = value
+			} else if assignment.RHS.Ident != nil {
+				rhs := assignment.RHS.Ident
+
+				if rhs.Fragments[0].Fragment == "ctx" && rhs.Fragments[1].Fragment == "identity" {
+					modelMap[strcase.ToSnake(fieldName)], err = runtimectx.GetIdentity(ctx)
+
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+		}
+	}
+
 	// Write a row to the database.
 	if err := db.Table(strcase.ToSnake(model.Name)).Create(modelMap).Error; err != nil {
 		return nil, err
@@ -49,10 +87,24 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 	return toLowerCamelMap(modelMap), nil
 }
 
+// toLowerCamelMap returns a copy of the given map, in which all
+// of the key strings are converted to LowerCamelCase.
+// It is good for converting identifiers typically used as database
+// table or column names, to the case requirements stipulated by the Keel schema.
 func toLowerCamelMap(m map[string]any) map[string]any {
 	res := map[string]any{}
 	for key, value := range m {
 		res[strcase.ToLowerCamel(key)] = value
+	}
+	return res
+}
+
+// toLowerCamelMaps is a convenience wrapper around toLowerCamelMap
+// that operates on a list of input maps - rather than just a single map.
+func toLowerCamelMaps(maps []map[string]any) []map[string]any {
+	res := []map[string]any{}
+	for _, m := range maps {
+		res = append(res, toLowerCamelMap(m))
 	}
 	return res
 }

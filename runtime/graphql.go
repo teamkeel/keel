@@ -92,6 +92,11 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	mk.types[model.Name] = object
 
 	for _, field := range model.Fields {
+		// Passwords are omitted from GraphQL responses
+		if field.Type.Type == proto.Type_TYPE_PASSWORD {
+			continue
+		}
+
 		outputType, err := mk.outputTypeFor(field)
 		if err != nil {
 			return nil, err
@@ -147,7 +152,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			return actions.Get(p.Context, op, schema, inputMap)
 		}
 		mk.query.AddFieldConfig(op.Name, field)
-
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
@@ -173,11 +177,84 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			records, hasNextPage, err := actions.List(p.Context, op, schema, input)
+			if err != nil {
+				return nil, err
+			}
+			resp, err := connectionResponse(records, hasNextPage)
+			if err != nil {
+				return nil, err
+			}
+			return resp, nil
+		}
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		field.Type = mk.makeConnectionType(outputType)
 
 		mk.query.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+		// custom response type as defined in the protobuf schema
+		outputTypePrefix := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
+
+		ouput := graphql.NewObject(graphql.ObjectConfig{
+			Name:   outputTypePrefix + "Response",
+			Fields: graphql.Fields{},
+		})
+
+		for _, output := range op.Outputs {
+
+			outputType := protoTypeToGraphQLOutput[output.Type.Type]
+			if outputType == nil {
+				return fmt.Errorf("cannot yet make output type for: %s", output.Type.Type.String())
+			}
+
+			ouput.AddFieldConfig(output.Name, &graphql.Field{
+				Type: outputType,
+			})
+
+		}
+
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+
+			authArgs := actions.AuthenticateArgs{
+				CreateIfNotExists: inputMap["createIfNotExists"].(bool),
+				Email:             inputMap["emailPassword"].(map[string]any)["email"].(string),
+				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
+			}
+
+			identityId, identityCreated, err := actions.Authenticate(p.Context, schema, &authArgs)
+
+			if err != nil {
+				return nil, err
+			}
+
+			if identityId != nil {
+				token, err := GenerateBearerToken(identityId)
+
+				if err != nil {
+					return nil, err
+				}
+
+				return map[string]any{
+					"identityCreated": identityCreated,
+					"token":           token,
+				}, nil
+			} else {
+				return nil, errors.New("failed to authenticate")
+			}
+		}
+
+		field.Type = ouput
+
+		mk.mutation.AddFieldConfig(op.Name, field)
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
@@ -190,7 +267,13 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, errors.New("input not a map")
 			}
 
-			return CallFunction(p.Context, op.Name, inputMap)
+			res, err := CallFunction(p.Context, op.Name, op.Type, inputMap)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return ToGraphQL(p.Context, res, op.Type)
 		}
 	}
 
@@ -200,9 +283,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "PageInfo",
 	Fields: graphql.Fields{
-		"hasPreviousPage": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Boolean),
-		},
 		"hasNextPage": &graphql.Field{
 			Type: graphql.NewNonNull(graphql.Boolean),
 		},
@@ -323,6 +403,7 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_BOOL:     graphql.Boolean,
 	proto.Type_TYPE_DATETIME: timestampType,
 	proto.Type_TYPE_DATE:     dateType,
+	proto.Type_TYPE_SECRET:   graphql.String,
 }
 
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
@@ -337,13 +418,14 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 			}
 		}
 
-	case proto.Type_TYPE_MODEL:
+	case proto.Type_TYPE_MODEL, proto.Type_TYPE_IDENTITY:
 		for _, m := range mk.proto.Models {
 			if m.Name == field.Type.ModelName.Value {
 				out, err = mk.addModel(m)
 				break
 			}
 		}
+
 	default:
 		var ok bool
 		out, ok = protoTypeToGraphQLOutput[field.Type.Type]
@@ -402,6 +484,8 @@ var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_TIMESTAMP: timestampInputType,
 	proto.Type_TYPE_DATETIME:  timestampInputType,
 	proto.Type_TYPE_DATE:      dateInputType,
+	proto.Type_TYPE_SECRET:    graphql.String,
+	proto.Type_TYPE_PASSWORD:  graphql.String,
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
@@ -414,6 +498,27 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.
 			return e.Name == op.Type.EnumName.Value
 		})
 		in = mk.addEnum(enum)
+	case proto.Type_TYPE_OBJECT:
+		operationNamePrefix := strings.ToUpper(op.OperationName[0:1]) + op.OperationName[1:]
+		inputObjectName := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
+
+		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   operationNamePrefix + inputObjectName + "Input",
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
+
+		for _, input := range op.Inputs {
+			inputField, err := mk.inputTypeFor(input)
+
+			if err != nil {
+				return nil, err
+			}
+
+			inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
+				Type: inputField,
+			})
+		}
+		in = inputObject
 	default:
 		var ok bool
 		in, ok = protoTypeToGraphQLInput[op.Type.Type]
@@ -474,16 +579,16 @@ var intQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
 		"equals": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"lt": &graphql.InputObjectFieldConfig{
+		"lessThan": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"lte": &graphql.InputObjectFieldConfig{
+		"lessThanOrEquals": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"gt": &graphql.InputObjectFieldConfig{
+		"greaterThan": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
-		"gte": &graphql.InputObjectFieldConfig{
+		"greaterThanOrEquals": &graphql.InputObjectFieldConfig{
 			Type: graphql.Int,
 		},
 	},
@@ -537,6 +642,7 @@ var protoTypeToGraphQLQueryInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_INT:       intQueryInputType,
 	proto.Type_TYPE_BOOL:      booleanQueryInput,
 	proto.Type_TYPE_TIMESTAMP: timestampQueryInputType,
+	proto.Type_TYPE_DATETIME:  timestampQueryInputType,
 	proto.Type_TYPE_DATE:      dateQueryInputType,
 }
 
@@ -590,7 +696,9 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET,
 		proto.OperationType_OPERATION_TYPE_CREATE,
-		proto.OperationType_OPERATION_TYPE_DELETE:
+		proto.OperationType_OPERATION_TYPE_DELETE,
+		proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+
 		for _, in := range op.Inputs {
 			fieldType, err := mk.inputTypeFor(in)
 			if err != nil {
@@ -678,6 +786,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 		inputType.AddFieldConfig("after", &graphql.InputObjectFieldConfig{
 			Type: graphql.String,
 		})
+		// TODO this should be nullable if all inputs are optional
 		inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
 			Type: graphql.NewNonNull(where),
 		})
@@ -859,4 +968,43 @@ type IntrospectionQueryResult struct {
 			PossibleTypes interface{}          `json:"possibleTypes"`
 		} `json:"types"`
 	} `json:"__schema"`
+}
+
+// connectionResponse consumes the raw records returned by actions.List() (and similar),
+// and wraps them into a Node+Edges structure that is good for the connections pattern
+// return type and is expected by the GraphQL schema for the List operation.
+// See https://relay.dev/graphql/connections.htm
+func connectionResponse(records any, hasNextPage bool) (resp any, err error) {
+
+	recordsList, ok := records.([]map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %v to a []map[string]any", records)
+	}
+	var startCursor string
+	var endCursor string
+	edges := []map[string]any{}
+	for i, record := range recordsList {
+		edge := map[string]any{
+			"cursor": record["id"],
+			"node":   record,
+		}
+		edges = append(edges, edge)
+		if i == 0 {
+			startCursor, _ = record["id"].(string)
+		}
+		if i == len(edges)-1 {
+			endCursor, _ = record["id"].(string)
+		}
+	}
+
+	pageInfo := map[string]any{
+		"hasNextPage": hasNextPage,
+		"startCursor": startCursor,
+		"endCursor":   endCursor,
+	}
+	resp = map[string]any{
+		"pageInfo": pageInfo,
+		"edges":    edges,
+	}
+	return resp, nil
 }

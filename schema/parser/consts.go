@@ -27,6 +27,8 @@ const (
 	FieldTypeDate     = "Date"      // a date with no time element
 	FieldTypeDatetime = "Timestamp" // a UTC unix timestamp
 	FieldTypeBoolean  = "Boolean"   // a boolean
+	FieldTypeSecret   = "Secret"    // an encrypted secret
+	FieldTypePassword = "Password"  // a hashed password
 )
 
 var BuiltInTypes = map[string]bool{
@@ -36,6 +38,8 @@ var BuiltInTypes = map[string]bool{
 	FieldTypeDate:     true,
 	FieldTypeDatetime: true,
 	FieldTypeBoolean:  true,
+	FieldTypeSecret:   true,
+	FieldTypePassword: true,
 }
 
 func IsBuiltInFieldType(s string) bool {
@@ -66,6 +70,16 @@ const (
 	ImplicitFieldNameId        = "id"
 	ImplicitFieldNameCreatedAt = "createdAt"
 	ImplicitFieldNameUpdatedAt = "updatedAt"
+)
+
+const (
+	ImplicitIdentityModelName         = "Identity"
+	ImplicitIdentityFieldNameEmail    = "email"
+	ImplicitIdentityFieldNamePassword = "password"
+)
+
+const (
+	ImplicitAuthenticateOperationName = "authenticate"
 )
 
 const (

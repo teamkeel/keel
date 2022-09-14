@@ -22,7 +22,7 @@ func Get(
 	schema *proto.Schema,
 	args map[string]any) (interface{}, error) {
 
-	db, err := runtimectx.GetDB(ctx)
+	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*go
 		identifier := input.Target[0]
 		valueFromArg, ok := args[identifier]
 		if !ok {
-			return nil, fmt.Errorf("missing argument: %s", identifier)
+			return nil, fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", identifier, args)
 		}
 		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
 		tx = tx.Where(w, valueFromArg)
@@ -83,7 +83,8 @@ func addInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*go
 
 // addWhereFilters adds Where clauses for all the operation's Where clauses.
 // E.g.
-// 	get getPerson(name: Text) {
+//
+//	get getPerson(name: Text) {
 //		@where(person.name == name)
 //	}
 func addWhereFilters(

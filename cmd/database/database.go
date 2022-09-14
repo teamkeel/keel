@@ -171,7 +171,7 @@ func bringUpContainer(useExistingContainer bool) (*ConnectionInfo, error) {
 
 	} else {
 		containerConfig := &container.Config{
-			Image: postgresImageName,
+			Image: postgresImageName + ":" + postgresTag,
 			Env: []string{
 				"POSTGRES_PASSWORD=postgres",
 				"POSTGRES_DB=postgres",

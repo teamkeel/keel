@@ -112,7 +112,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	// if we have errors in parsing then no point running validation rules
 	if len(parseErrors.Errors) > 0 {
-		return nil, parseErrors
+		return nil, &parseErrors
 	}
 
 	v := validation.NewValidator(asts)
@@ -200,33 +200,62 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
-	declarations.Declarations = append(declarations.Declarations,
-		&parser.DeclarationNode{
-			Model: &parser.ModelNode{
-				BuiltIn: true,
-				Name: parser.NameNode{
-					Value: "Identity",
-					Node: node.Node{
-						Pos: lexer.Position{
-							Filename: schemaFile.FileName,
-						},
+	declaration := &parser.DeclarationNode{
+		Model: &parser.ModelNode{
+			BuiltIn: true,
+			Name: parser.NameNode{
+				Value: parser.ImplicitIdentityModelName,
+				Node: node.Node{
+					Pos: lexer.Position{
+						Filename: schemaFile.FileName,
 					},
 				},
 			},
 		},
-	)
+	}
 
-	field := &parser.FieldNode{
+	uniqueAttributeNode := &parser.AttributeNode{
+		Name: parser.AttributeNameToken{
+			Value: parser.AttributeUnique,
+		},
+	}
+
+	emailField := &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
-			Value: "username",
+			Value: parser.ImplicitIdentityFieldNameEmail,
 		},
-		Type: "Text",
-	}
-	section := &parser.ModelSectionNode{
-		Fields: []*parser.FieldNode{field},
+		Type:       parser.FieldTypeText,
+		Attributes: []*parser.AttributeNode{uniqueAttributeNode},
 	}
 
-	model := declarations.Declarations[len(declarations.Declarations)-1].Model
-	model.Sections = append(model.Sections, section)
+	passwordField := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: parser.ImplicitIdentityFieldNamePassword,
+		},
+		Type: parser.FieldTypePassword,
+	}
+
+	section := &parser.ModelSectionNode{
+		Fields: []*parser.FieldNode{emailField, passwordField},
+	}
+
+	declaration.Model.Sections = append(declaration.Model.Sections, section)
+	declarations.Declarations = append(declarations.Declarations, declaration)
+
+	// Making the identity model and operations available on all APIs
+	for _, d := range declarations.Declarations {
+		if d.API != nil {
+			for _, s := range d.API.Sections {
+				if s.Models != nil {
+					s.Models = append(s.Models, &parser.ModelsNode{
+						Name: parser.NameNode{
+							Value: parser.ImplicitIdentityModelName,
+						},
+					})
+				}
+			}
+		}
+	}
 }

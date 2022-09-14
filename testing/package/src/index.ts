@@ -1,4 +1,5 @@
 import { Logger, LogLevel } from "@teamkeel/sdk";
+import chalk from "chalk";
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
 import { TestResultData, TestResult } from "./output";
@@ -10,7 +11,7 @@ import Reporter from "./reporter";
 //@ts-ignore
 export * from "./generated";
 
-const exceptionLogger = new Logger({ colorize: true });
+const runnerLogger = new Logger({ colorize: true });
 
 const tests: Test[] = [];
 
@@ -28,7 +29,14 @@ async function runAllTests({
   parentPort,
   host = "localhost",
   debug,
+  pattern = "",
 }: RunnerOpts) {
+  const hasPattern = pattern !== "";
+
+  if (hasPattern) {
+    console.log(`${chalk.white.bgBlue(" INFO ")} Filtering on ${pattern}\n`);
+  }
+
   const reporter = new Reporter({
     host,
     port: parentPort,
@@ -40,6 +48,18 @@ async function runAllTests({
   }
 
   for await (const { testName, fn } of tests) {
+    if (hasPattern) {
+      const regex = new RegExp(pattern!);
+
+      if (!regex.test(testName)) {
+        continue;
+      }
+
+      console.log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`);
+    } else {
+      console.log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`);
+    }
+
     let result: TestResult | undefined = undefined;
 
     try {
@@ -60,6 +80,8 @@ async function runAllTests({
       }
 
       result = TestResult.pass(testName);
+
+      console.log(`${chalk.bgGreen.white(" PASS ")} ${testName}\n`);
     } catch (err) {
       if (debug) {
         console.debug(err);
@@ -75,17 +97,19 @@ async function runAllTests({
         const { actual, expected } = err as AssertionFailure;
 
         result = TestResult.fail(testName, actual, expected);
+
+        console.log(`${chalk.bgRed.white(" FAIL ")} ${testName}\n`);
       } else if (err instanceof Error) {
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
-
-        exceptionLogger.log(`ERR:\n${err}\n${err.stack}`, LogLevel.Error);
+        console.log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`);
+        runnerLogger.log(`${err}\n${err.stack}`, LogLevel.Error);
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
-
-        exceptionLogger.log(`ERR:\n${err}`, LogLevel.Error);
+        console.log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`);
+        runnerLogger.log(`${err}`, LogLevel.Error);
       }
     } finally {
       if (result) {

@@ -1,6 +1,7 @@
 package testing
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -47,7 +48,10 @@ type ActionRequest struct {
 	Payload    map[string]any `json:"payload"`
 }
 
-func Run(t *testing.T, dir string) (<-chan []*Event, error) {
+//go:embed tsconfig.json
+var sampleTsConfig string
+
+func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
@@ -55,6 +59,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 	var db *gorm.DB
 
 	schema, err := builder.MakeFromDirectory(dir)
+
 	if err != nil {
 		return nil, err
 	}
@@ -114,6 +119,13 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 		panic(err)
 	}
 
+	output, err := typecheck(dir)
+
+	if err != nil {
+		fmt.Print(output)
+		return nil, err
+	}
+
 	// Server for node test process to talk to
 	srv := http.Server{
 		Addr: fmt.Sprintf(":%s", reportingPort),
@@ -136,27 +148,34 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 								case proto.OperationType_OPERATION_TYPE_GET:
 									res, err := actions.Get(ctx, action, schema, body.Payload)
 
-									if err != nil {
-										failedActionResponse(err, w)
-										break
+									r := map[string]any{
+										"object": res,
+										"errors": serializeError(err),
 									}
 
-									successfulActionResponse(res, w)
-
+									WriteResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_CREATE:
 									res, err := actions.Create(ctx, action, schema, body.Payload)
 
-									if err != nil {
-										failedActionResponse(err, w)
-										break
+									r := map[string]any{
+										"object": res,
+										"errors": serializeError(err),
 									}
 
-									successfulActionResponse(res, w)
+									WriteResponse(r, w)
+								case proto.OperationType_OPERATION_TYPE_LIST:
+									res, hasNextPage, err := actions.List(ctx, action, schema, map[string]any{"where": body.Payload})
 
+									r := map[string]any{
+										"collection":  res,
+										"hasNextPage": hasNextPage,
+										"errors":      serializeError(err),
+									}
+
+									WriteResponse(r, w)
 								default:
 									w.WriteHeader(400)
-									err := fmt.Errorf("%s not yet implemented", action.Type)
-									failedActionResponse(err, w)
+									panic(fmt.Sprintf("%s not yet implemented", action.Type))
 								}
 
 								return
@@ -172,17 +191,27 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 								}
 
 								ctx = runtime.WithFunctionsClient(ctx, client)
-								res, err := client.Request(ctx, body.ActionName, body.Payload)
+								res, err := client.Request(ctx, body.ActionName, action.Type, body.Payload)
 
 								if err != nil {
-									failedActionResponse(err, w)
+									// transport error with http request only
+									r := map[string]any{
+										"object": nil,
+										"errors": []map[string]string{
+											{
+												"message": err.Error(),
+											},
+										},
+									}
+
+									WriteResponse(r, w)
+
 									return
 								}
 
-								// todo: handle case where actions return:
-								// result: nil, error: not nil
-
-								successfulActionResponse(res, w)
+								// for custom functions, we just want to return whatever response
+								// shape is returned from the node handler
+								WriteResponse(res, w)
 							}
 						}
 					}
@@ -214,7 +243,7 @@ func Run(t *testing.T, dir string) (<-chan []*Event, error) {
 
 			db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
-			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file))
+			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file), pattern)
 
 			if err != nil {
 				panic(err)
@@ -289,41 +318,44 @@ func RunServer(workingDir string, port string, parentPort string, dbConnectionSt
 	return cmd.Process, nil
 }
 
-type ActionError struct {
-	Message string `json:"message"`
-}
-
-type ActionResponse struct {
-	Result interface{}  `json:"result"`
-	Error  *ActionError `json:"error"`
-}
-
-func successfulActionResponse(data interface{}, writer http.ResponseWriter) {
-	res := &ActionResponse{
-		Result: data,
-	}
-
-	b, err := json.Marshal(res)
+func WriteResponse(data interface{}, w http.ResponseWriter) {
+	b, err := json.Marshal(data)
 
 	if err != nil {
-		res.Error.Message = err.Error()
+		fmt.Print(err)
+		panic(err)
 	}
 
-	writer.Write(b)
+	w.Write(b)
 }
 
-func failedActionResponse(err error, writer http.ResponseWriter) {
-	res := &ActionResponse{
-		Error: &ActionError{
-			Message: err.Error(),
+func serializeError(err error) []map[string]string {
+	if err == nil {
+		return []map[string]string{}
+	}
+
+	return []map[string]string{
+		{
+			"message": err.Error(),
 		},
 	}
+}
 
-	b, err := json.Marshal(res)
+func typecheck(dir string) (output string, err error) {
+	// todo: we need to generate a tsconfig to be able to run tsc for typechecking
+	// however, when we come to use the testing package in real projects, there may already
+	// be a tsconfig file that we need to respect
+	f, err := os.CreateTemp(dir, "tsconfig.json")
+	f.WriteString(sampleTsConfig)
+	defer f.Close()
+	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--project", f.Name())
+	cmd.Dir = dir
 
-	if err != nil {
-		res.Error.Message = err.Error()
+	b, e := cmd.CombinedOutput()
+
+	if e != nil {
+		err = e
 	}
 
-	writer.Write(b)
+	return string(b), err
 }

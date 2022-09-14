@@ -65,6 +65,63 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 		}
 	}
 
+	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
+		protoOp := proto.Operation{
+			ModelName:      parser.ImplicitIdentityModelName,
+			Name:           parser.ImplicitAuthenticateOperationName,
+			Implementation: proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO,
+			Type:           proto.OperationType_OPERATION_TYPE_AUTHENTICATE,
+			Inputs: []*proto.OperationInput{
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "createIfNotExists",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+					Optional:      true,
+				},
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "emailPassword",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_OBJECT},
+					Optional:      false,
+					Inputs: []*proto.OperationInput{
+						{
+							ModelName:     parser.ImplicitIdentityModelName,
+							OperationName: parser.ImplicitAuthenticateOperationName,
+							Name:          "email",
+							Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+							Optional:      false,
+						},
+						{
+							ModelName:     parser.ImplicitIdentityModelName,
+							OperationName: parser.ImplicitAuthenticateOperationName,
+							Name:          "password",
+							Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+							Optional:      false,
+						},
+					},
+				},
+			},
+			Outputs: []*proto.OperationOutput{
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "identityCreated",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+				},
+				{
+					ModelName:     parser.ImplicitIdentityModelName,
+					OperationName: parser.ImplicitAuthenticateOperationName,
+					Name:          "token",
+					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				},
+			},
+		}
+
+		protoModel.Operations = append(protoModel.Operations, &protoOp)
+	}
+
 	return protoModel
 }
 
@@ -261,30 +318,30 @@ func (scm *Builder) makeOperationInput(
 
 // parserType could be a built-in type or a user-defined model or enum
 func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
-	switch parserType {
-	case parser.FieldTypeText:
+	switch {
+	case parserType == parser.FieldTypeText:
 		return proto.Type_TYPE_STRING
-	case parser.FieldTypeID:
+	case parserType == parser.FieldTypeID:
 		return proto.Type_TYPE_ID
-	case parser.FieldTypeBoolean:
+	case parserType == parser.FieldTypeBoolean:
 		return proto.Type_TYPE_BOOL
-	case parser.FieldTypeNumber:
+	case parserType == parser.FieldTypeNumber:
 		return proto.Type_TYPE_INT
-	case parser.FieldTypeDate:
+	case parserType == parser.FieldTypeDate:
 		return proto.Type_TYPE_DATE
-	case parser.FieldTypeDatetime:
+	case parserType == parser.FieldTypeDatetime:
 		return proto.Type_TYPE_DATETIME
+	case parserType == parser.FieldTypeSecret:
+		return proto.Type_TYPE_SECRET
+	case parserType == parser.FieldTypePassword:
+		return proto.Type_TYPE_PASSWORD
+	case query.IsIdentityModel(scm.asts, parserType):
+		return proto.Type_TYPE_IDENTITY
+	case query.IsModel(scm.asts, parserType):
+		return proto.Type_TYPE_MODEL
+	case query.IsEnum(scm.asts, parserType):
+		return proto.Type_TYPE_ENUM
 	default:
-		model := query.Model(scm.asts, parserType)
-		if model != nil {
-			return proto.Type_TYPE_MODEL
-		}
-
-		enum := query.Enum(scm.asts, parserType)
-		if enum != nil {
-			return proto.Type_TYPE_ENUM
-		}
-
 		return proto.Type_TYPE_UNKNOWN
 	}
 }
@@ -295,7 +352,7 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
-	if protoType == proto.Type_TYPE_MODEL {
+	if protoType == proto.Type_TYPE_MODEL || protoType == proto.Type_TYPE_IDENTITY {
 		modelName = &wrapperspb.StringValue{
 			Value: query.Model(scm.asts, field.Type).Name.Value,
 		}

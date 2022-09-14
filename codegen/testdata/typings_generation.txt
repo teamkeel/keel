@@ -28,6 +28,14 @@ api Web {
 export type Timestamp = string
 import { QueryConstraints, ChainableQuery, Query } from '@teamkeel/sdk';
 import { DatabasePool } from 'slonik';
+import {
+  FunctionError,
+  FunctionCreateResponse,
+  FunctionGetResponse,
+  FunctionDeleteResponse,
+  FunctionListResponse,
+  FunctionUpdateResponse
+} from '@teamkeel/sdk';
 
 export interface Post {
   title: string
@@ -37,7 +45,8 @@ export interface Post {
 }
 
 export interface Identity {
-  username: string
+  email: string
+  password: unknown
   id: string
   createdAt: Date
   updatedAt: Date
@@ -50,9 +59,11 @@ export declare enum Something {
 export interface CreatePostInput {
   title: string
 }
-declare type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => Promise<Post>
+declare type CreatePostReturnType = Promise<FunctionCreateResponse<Post>>
 
-export declare const CreatePost : (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => Promise<Post>
+declare type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => CreatePostReturnType
+
+export declare const CreatePost : (callback: CreatePostCallbackFunction) => (inputs: CreatePostInput, api: API) => CreatePostReturnType
 
 export declare type PostQuery = Partial<{
   title?: QueryConstraints.StringConstraint
@@ -68,12 +79,12 @@ export declare type PostUniqueFields = Partial<{
 export declare class PostApi {
   private readonly db;
   constructor();
-  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
+  create: (inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<Post>>;
   where: (conditions: PostQuery) => ChainableQuery<Post>;
-  delete: (id: string) => Promise<boolean>;
-  findOne: (query: PostUniqueFields) => Promise<Post>;
-  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<Post>;
-  findMany: (query: PostQuery) => Promise<Post[]>;
+  delete: (id: string) => Promise<FunctionDeleteResponse<Post>>;
+  findOne: (query: PostUniqueFields) => Promise<FunctionGetResponse<Post>>;
+  update: (id: string, inputs: Partial<Omit<Post, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<Post>>;
+  findMany: (query: PostQuery) => Promise<FunctionListResponse<Post>>;
 }
 
 import { Logger } from '@teamkeel/sdk'

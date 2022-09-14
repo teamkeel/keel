@@ -1,5 +1,12 @@
 import fetch, { RequestInit } from "node-fetch";
 import { Identity } from "@teamkeel/sdk";
+import {
+  FunctionCreateResponse,
+  FunctionDeleteResponse,
+  FunctionGetResponse,
+  FunctionUpdateResponse,
+  FunctionListResponse,
+} from "@teamkeel/sdk/returnTypes";
 
 interface ActionExecutorArgs {
   parentPort: number;
@@ -14,18 +21,17 @@ interface ExecuteArgs {
   payload: Record<string, any>;
 }
 
-interface ActionFailure {
-  message: string;
-}
-
-// todo: update with proper types from sdk package
-interface ActionResponse<T> {
-  result?: T;
-  error?: ActionFailure;
-}
-
 const DEFAULT_HOST = "localhost";
 const DEFAULT_PROTOCOL = "http";
+
+// The return type of the execute function can be one of the operation return types
+// the payload differs between different actions
+export type ReturnTypes<T> =
+  | FunctionCreateResponse<T>
+  | FunctionDeleteResponse<T>
+  | FunctionGetResponse<T>
+  | FunctionUpdateResponse<T>
+  | FunctionListResponse<T>;
 
 // Makes a request to the testing runtime host with
 export default class ActionExecutor {
@@ -39,9 +45,7 @@ export default class ActionExecutor {
     this.protocol = protocol || DEFAULT_PROTOCOL;
   }
 
-  execute = async <ActionReturnType>(
-    args: ExecuteArgs
-  ): Promise<ActionResponse<ActionReturnType>> => {
+  execute = async <ReturnType>(args: ExecuteArgs): Promise<ReturnType> => {
     const requestInit: RequestInit = {
       method: "POST",
       body: JSON.stringify(args),
@@ -51,7 +55,10 @@ export default class ActionExecutor {
       `${this.protocol}://${this.host}:${this.parentPort}/action`,
       requestInit
     );
-    const json = (await res.json()) as ActionResponse<ActionReturnType>;
+
+    // the json from the /action endpoint will conform to the expected
+    // return type for the given operation
+    const json = (await res.json()) as ReturnType;
 
     return json;
   };

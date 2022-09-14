@@ -8,6 +8,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/expressions"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // initialValueForModel provides a map[string]any that corresponds to all the fields
@@ -182,6 +183,17 @@ func toMap(in any, inputType proto.Type) (any, error) {
 
 		date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
 		return date, nil
+	case proto.Type_TYPE_SECRET:
+		return nil, fmt.Errorf("secret data type not yet implemented")
+
+	case proto.Type_TYPE_PASSWORD:
+		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(in.(string)), bcrypt.DefaultCost)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return string(hashedBytes), nil
 
 	// The general case is to return the input unchanged.
 	default:

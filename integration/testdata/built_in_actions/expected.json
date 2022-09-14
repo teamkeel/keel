@@ -1,4 +1,7 @@
 [
   { "testName": "create action", "status": "pass" },
-  { "testName": "get action", "status": "pass" }
+  { "testName": "create action (unrecognised fields)", "status": "pass" },
+  { "testName": "get action", "status": "pass" },
+  { "testName": "get action (non unique)", "status": "pass" },
+  { "testName": "list action", "status": "pass" }
 ]

@@ -77,9 +77,17 @@
       "fields":  [
         {
           "modelName":  "Identity",
-          "name":  "username",
+          "name":  "email",
           "type":  {
             "type":  "TYPE_STRING"
+          },
+          "unique":  true
+        },
+        {
+          "modelName":  "Identity",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_PASSWORD"
           }
         },
         {
@@ -112,6 +120,69 @@
           "defaultValue":  {
             "useZeroValue":  true
           }
+        }
+      ],
+      "operations":  [
+        {
+          "modelName":  "Identity",
+          "name":  "authenticate",
+          "type":  "OPERATION_TYPE_AUTHENTICATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
+            {
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "createIfNotExists",
+              "type":  {
+                "type":  "TYPE_BOOL"
+              },
+              "optional":  true
+            },
+            {
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "emailPassword",
+              "type":  {
+                "type":  "TYPE_OBJECT"
+              },
+              "inputs":  [
+                {
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "email",
+                  "type":  {
+                    "type":  "TYPE_STRING"
+                  }
+                },
+                {
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "password",
+                  "type":  {
+                    "type":  "TYPE_STRING"
+                  }
+                }
+              ]
+            }
+          ],
+          "outputs":  [
+            {
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "identityCreated",
+              "type":  {
+                "type":  "TYPE_BOOL"
+              }
+            },
+            {
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "token",
+              "type":  {
+                "type":  "TYPE_STRING"
+              }
+            }
+          ]
         }
       ]
     }

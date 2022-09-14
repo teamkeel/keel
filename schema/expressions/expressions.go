@@ -143,13 +143,12 @@ func (condition *Condition) ToString() string {
 }
 
 func Parse(source string) (*Expression, error) {
-	parser, err := participle.Build(&Expression{})
+	parser, err := participle.Build[Expression]()
 	if err != nil {
 		return nil, err
 	}
 
-	expr := &Expression{}
-	err = parser.ParseString("", source, expr)
+	expr, err := parser.ParseString("", source)
 	if err != nil {
 		return nil, err
 	}

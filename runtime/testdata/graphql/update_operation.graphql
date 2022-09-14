@@ -3,7 +3,18 @@ type Query {
 }
 
 type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
   updatePerson(input: UpdatePersonInput!): Person!
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
 }
 
 input GetPersonInput {
@@ -21,6 +32,11 @@ input UpdatePersonQueryInput {
 
 input UpdatePersonValuesInput {
   name: String!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean
+  token: String
 }
 
 type Person {
