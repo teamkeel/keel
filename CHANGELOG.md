@@ -1,3 +1,16 @@
+# [0.116.0](https://github.com/teamkeel/keel/compare/v0.115.0...v0.116.0) (2022-09-23)
+
+
+### Bug Fixes
+
+* delete unused var ([237e24d](https://github.com/teamkeel/keel/commit/237e24d0679a07e39c03de0e9c3b9bc0e227e7f4))
+* wasm main compilation ([#373](https://github.com/teamkeel/keel/issues/373)) ([abacb9e](https://github.com/teamkeel/keel/commit/abacb9e464817112b20ce5075fec58350a78070b))
+
+
+### Features
+
+* runtime request use path as a param ([879b14d](https://github.com/teamkeel/keel/commit/879b14db7437bad0ca42cf2329ba9b63a8e07547))
+
 # [0.115.0](https://github.com/teamkeel/keel/compare/v0.114.0...v0.115.0) (2022-09-13)
 
 
