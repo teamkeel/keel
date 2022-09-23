@@ -5,7 +5,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"syscall/js"
 
 	"github.com/fatih/color"
@@ -144,9 +143,7 @@ func getGraphQLSchemas(this js.Value, args []js.Value) any {
 		}
 
 		response, err := handler(&runtime.Request{
-			URL: url.URL{
-				Path: "/" + api.Name,
-			},
+			Path: "/" + api.Name,
 			Body: body,
 		})
 		if response.Status != 200 {
