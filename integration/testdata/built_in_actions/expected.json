@@ -3,5 +3,9 @@
   { "testName": "create action (unrecognised fields)", "status": "pass" },
   { "testName": "get action", "status": "pass" },
   { "testName": "get action (non unique)", "status": "pass" },
-  { "testName": "list action", "status": "pass" }
+  { "testName": "list action - equals", "status": "pass" },
+  { "testName": "list action - contains", "status": "pass" },
+  { "testName": "list action - startsWith", "status": "pass" },
+  { "testName": "list action - endsWith", "status": "pass" },
+  { "testName": "list action - oneOf", "status": "pass" }
 ]
