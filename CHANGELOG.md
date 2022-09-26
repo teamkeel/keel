@@ -1,3 +1,10 @@
+# [0.118.0](https://github.com/teamkeel/keel/compare/v0.117.0...v0.118.0) (2022-09-26)
+
+
+### Features
+
+* permission attribute support on the model definition ([#378](https://github.com/teamkeel/keel/issues/378)) ([8e8fb5e](https://github.com/teamkeel/keel/commit/8e8fb5ec4ba179ef6e0c2eff537596e1bd9de125))
+
 # [0.117.0](https://github.com/teamkeel/keel/compare/v0.116.0...v0.117.0) (2022-09-26)
 
 
