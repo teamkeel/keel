@@ -42,6 +42,10 @@ type BeatleEdge {
   node: Beatle!
 }
 
+type DeleteResponse {
+  success: Boolean!
+}
+
 type Identity {
   createdAt: Timestamp!
   email: String!

@@ -1,0 +1,46 @@
+type Query {
+  getPerson(input: GetPersonInput!): Person
+}
+
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  deletePerson(input: DeletePersonInput!): DeleteResponse
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
+input DeletePersonInput {
+  name: String!
+}
+
+input GetPersonInput {
+  id: ID!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean
+  token: String
+}
+
+type DeleteResponse {
+  success: Boolean!
+}
+
+type Person {
+  createdAt: Timestamp!
+  id: ID!
+  name: String!
+  updatedAt: Timestamp!
+}
+
+type Timestamp {
+  seconds: Int!
+}
