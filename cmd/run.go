@@ -363,6 +363,9 @@ func onSchemaFileChanges(dir string, cb func(changedFile string)) (func() error,
 	err = watcher.Add(filepath.Join(dir, "functions"))
 
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, errors.New("'functions' directory not found")
+		}
 		return nil, err
 	}
 
