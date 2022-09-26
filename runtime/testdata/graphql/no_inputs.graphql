@@ -6,7 +6,7 @@ type Query {
 type Mutation {
   authenticate(input: AuthenticateInput!): AuthenticateResponse
   createBeatle: Beatle!
-  deleteBeatle: ID
+  deleteBeatle: DeleteResponse
   switchBeatle: Beatle!
 }
 
