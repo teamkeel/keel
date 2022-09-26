@@ -1,3 +1,10 @@
+# [0.117.0](https://github.com/teamkeel/keel/compare/v0.116.0...v0.117.0) (2022-09-26)
+
+
+### Features
+
+* init permissions support for string, bool, int, identity on create() ([#371](https://github.com/teamkeel/keel/issues/371)) ([6182ec1](https://github.com/teamkeel/keel/commit/6182ec190c5e582eef6d537fcd6ee86aaf1c289f))
+
 # [0.116.0](https://github.com/teamkeel/keel/compare/v0.115.0...v0.116.0) (2022-09-23)
 
 
