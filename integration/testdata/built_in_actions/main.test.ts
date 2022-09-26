@@ -49,10 +49,10 @@ test('list action - contains', async () => {
 })
 
 test('list action - startsWith', async () => {
-  await Post.create({ title: 'foo' })
-  await Post.create({ title: 'foobar' })
+  await Post.create({ title: 'adam' })
+  await Post.create({ title: 'adamant' })
 
-  const { collection } = await Actions.listPosts({ title: { startsWith: 'foo' } })
+  const { collection } = await Actions.listPosts({ title: { startsWith: 'adam' } })
 
   expect.equal(collection.length, 2)
 })
