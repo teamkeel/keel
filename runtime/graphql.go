@@ -144,12 +144,31 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+
 			input := p.Args["input"]
 			inputMap, ok := input.(map[string]any)
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
-			return actions.Get(p.Context, op, schema, inputMap)
+
+			result, err := actions.Get(p.Context, op, schema, inputMap)
+			if err != nil {
+				return result, err
+			}
+
+			resultMap := result.(map[string]any)
+			if !ok {
+				return nil, errors.New("result not a map")
+			}
+
+			authorized, err := actions.EvaluatePermissions(p.Context, op, schema, resultMap)
+			if err != nil {
+				return nil, err
+			} else if !authorized {
+				return nil, errors.New("not authorized to access this operation")
+			}
+
+			return result, err
 		}
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:

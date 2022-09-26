@@ -3,6 +3,7 @@ package expressions
 import (
 	"fmt"
 
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/node"
 )
 
@@ -137,6 +138,27 @@ func (ident *Ident) ToString() string {
 	}
 
 	return ret
+}
+
+func (ident *Ident) IsContext() bool {
+	if len(ident.Fragments) == 2 {
+		return ident.Fragments[0].Fragment == runtimectx.ContextTarget
+	}
+	return false
+}
+
+func (ident *Ident) IsContextIdentityField() bool {
+	if ident.IsContext() {
+		return ident.Fragments[1].Fragment == runtimectx.ContextIdentityField
+	}
+	return false
+}
+
+func (ident *Ident) IsContextNowField() bool {
+	if ident.IsContext() {
+		return ident.Fragments[1].Fragment == runtimectx.ContextNowField
+	}
+	return false
 }
 
 type IdentFragment struct {
