@@ -49,8 +49,6 @@ func Delete(
 	return true, nil
 }
 
-// addGetImplicitInputFilters adds Where clauses for all the operation inputs, which have type
-// IMPLICIT. E.g. "get getPerson(id)"
 func addDeleteImplicitInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
 	for _, input := range op.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
