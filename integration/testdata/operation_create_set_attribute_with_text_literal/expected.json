@@ -1,0 +1,14 @@
+[
+    { "testName": "do not set optional", "status": "pass" },
+    { "testName": "set optional field with literal", "status": "pass" },
+    { "testName": "set optional field with empty literal", "status": "pass" },
+    { "testName": "set optional field with null", "status": "pass" },
+    { "testName": "do not set optional field with default value", "status": "pass" },
+    { "testName": "set optional field with default value with literal", "status": "pass" },
+    { "testName": "set optional field with default value with empty literal", "status": "pass" },
+    { "testName": "set optional field with default value with null", "status": "pass" },
+    { "testName": "do not set required field with default value", "status": "pass" },
+    { "testName": "set required field with default value with literal", "status": "pass" },
+    { "testName": "set required field with default value with empty literal", "status": "pass" }
+
+]

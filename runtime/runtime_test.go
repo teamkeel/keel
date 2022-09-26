@@ -780,4 +780,215 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, edge, "node.secondName", "Smith")
 		},
 	},
+	{
+		name: "operation_create_set_attribute_with_text_literal",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					nickname Text?
+				}
+				operations {
+					get getPerson(id)
+					create createPerson() with (name) {
+						@set(person.nickname = "Joe Soap")
+					}	
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+					nickname
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createPerson.nickname", "Joe Soap")
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := rtt.GetValueAtPath(t, data, "createPerson.id")
+			var name string
+			err := db.Table("person").Where("id = ?", id).Pluck("nickname", &name).Error
+			require.NoError(t, err)
+			require.Equal(t, "Joe Soap", name)
+		},
+	},
+	{
+		name: "operation_create_set_attribute_with_number_literal",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					age Number?
+				}
+				operations {
+					get getPerson(id)
+					create createPerson() with (name) {
+						@set(person.age = 1)
+					}
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+					age
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createPerson.age", 1.0)
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := rtt.GetValueAtPath(t, data, "createPerson.id")
+			var name string
+			err := db.Table("person").Where("id = ?", id).Pluck("age", &name).Error
+			require.NoError(t, err)
+			require.Equal(t, "1", name)
+		},
+	},
+	{
+		name: "operation_create_set_attribute_with_boolean_literal",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					hasFriends Boolean?
+				}
+				operations {
+					get getPerson(id)
+					create createPerson() with (name) {
+						@set(person.hasFriends = true)
+					}
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation CreatePerson($name: String!) {
+				createPerson(input: {name: $name}) {
+					id
+					name
+					hasFriends
+				}
+			}
+		`,
+		variables: map[string]any{
+			"name": "Fred",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createPerson.hasFriends", true)
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := rtt.GetValueAtPath(t, data, "createPerson.id")
+			var name string
+			err := db.Table("person").Where("id = ?", id).Pluck("has_friends", &name).Error
+			require.NoError(t, err)
+			require.Equal(t, "true", name)
+		},
+	},
+	{
+		name: "operation_authenticate_new_user",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					get getPerson(id)
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation {
+				authenticate(input: { 
+					createIfNotExists: true, 
+					emailPassword: { 
+						email: "newuser@keel.xyz", 
+						password: "1234"
+					}
+				}) {
+					identityCreated
+					token
+				}
+			}
+		`,
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "authenticate.identityCreated", true)
+			token := rtt.GetValueAtPath(t, data, "authenticate.token")
+			require.NotEmpty(t, token)
+
+		},
+	},
+	{
+		name: "operation_authenticate_createifnotexists_false",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+				}
+				operations {
+					get getPerson(id)
+				}
+			}
+			api Test {
+				@graphql
+				models {
+					Person
+				}
+			}
+		`,
+		gqlOperation: `
+			mutation {
+				authenticate(input: { 
+					createIfNotExists: false, 
+					emailPassword: { 
+						email: "newuser@keel.xyz", 
+						password: "1234"
+					}
+				}) {
+					identityCreated
+					token
+				}
+			}
+		`,
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "failed to authenticate", errors[0].Message)
+		},
+	},
 }

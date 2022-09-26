@@ -1,0 +1,42 @@
+model Thing {
+    fields {
+        optionalNoDefault Text?
+        optionalWithDefault Text? @default("default")
+        requiredWithDefault Text @default("default")
+    }
+    operations {
+        create createThingWithoutNickname()
+        create createThingWithExplicitSetOnOptionalNoDefaultField() {
+            @set(thing.optionalNoDefault = "explicit")
+        }
+        create createThingWithEmptyOnOptionalNoDefaultField() {
+            @set(thing.optionalNoDefault = "")
+        }
+        create createThingWithNullOnOptionalNoDefaultField() {
+            @set(thing.optionalNoDefault = null)
+        }
+        create createThingWithoutOnOptionalWithDefaultField() 
+        create createThingWithExplicitOnOptionaWithDefaultField()  {
+            @set(thing.optionalWithDefault = "explicit")
+        }
+        create createThingWithEmptyOnOptionalWithDefaultField() {
+            @set(thing.optionalWithDefault = "")
+        }
+        create createThingWithNullOnOptionalWithDefaultField() {
+            @set(thing.optionalWithDefault = null)
+        }
+        create createThingWithoutRequiredWithDefaultField() 
+        create createThingWithExplicitOnRequiredWithDefaultField() {
+            @set(thing.requiredWithDefault = "explicit")
+        }
+        create createThingWithEmptyOnRequiredWithDefaultField() {
+            @set(thing.requiredWithDefault = "")
+        }
+    }
+}
+api Test {
+    @graphql
+    models {
+        Thing
+    }
+}
