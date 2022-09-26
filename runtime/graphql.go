@@ -164,7 +164,8 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			authorized, err := actions.EvaluatePermissions(p.Context, op, schema, resultMap)
 			if err != nil {
 				return nil, err
-			} else if !authorized {
+			}
+			if !authorized {
 				return nil, errors.New("not authorized to access this operation")
 			}
 
