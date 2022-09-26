@@ -179,7 +179,11 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			records, hasNextPage, err := actions.List(p.Context, op, schema, input)
+			args, ok := input.(map[string]any)
+			if !ok {
+				return nil, err
+			}
+			records, hasNextPage, err := actions.List(p.Context, op, schema, args)
 			if err != nil {
 				return nil, err
 			}

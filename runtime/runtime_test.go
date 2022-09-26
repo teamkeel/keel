@@ -138,6 +138,21 @@ func initRow(with map[string]any) map[string]any {
 	return res
 }
 
+// protoSchema returns a proto.Schema that has been built from the given
+// keel schema.
+func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
+	builder := &schema.Builder{}
+	schema, err := builder.MakeFromInputs(&reader.Inputs{
+		SchemaFiles: []reader.SchemaFile{
+			{
+				Contents: keelSchema,
+			},
+		},
+	})
+	require.NoError(t, err)
+	return schema
+}
+
 // basicSchema is a DRY, simplest possible, schema that can be used in test cases.
 const basicSchema string = `
 	model Person {
@@ -167,6 +182,26 @@ const getWhere string = `
 		operations {
 			get getPerson(name: Text) {
 				@where(person.name == name)
+			}
+		}
+	}
+	api Test {
+		@graphql
+		models {
+			Person
+		}
+	}
+`
+
+const listImplicitAndExplicitInputs string = `
+	model Person {
+		fields {
+			firstName Text
+			secondName Text
+		}
+		operations {
+			list listPeople(firstName, secondName: Text) {
+				@where(person.secondName == secondName)
 			}
 		}
 	}
@@ -674,19 +709,75 @@ var testCases = []testCase{
 			}
 		},
 	},
-}
-
-// protoSchema returns a proto.Schema that has been built from the given
-// keel schema.
-func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
-	builder := &schema.Builder{}
-	schema, err := builder.MakeFromInputs(&reader.Inputs{
-		SchemaFiles: []reader.SchemaFile{
-			{
-				Contents: keelSchema,
-			},
+	{
+		name:       "list_impl_and_expl_inputs",
+		keelSchema: listImplicitAndExplicitInputs,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":          "41",
+					"first_name":  "Fred",
+					"second_name": "Smith",
+				}),
+				initRow(map[string]any{
+					"id":          "42",
+					"first_name":  "Francis",
+					"second_name": "Smith",
+				}),
+				initRow(map[string]any{
+					"id":          "43",
+					"first_name":  "Same",
+					"second_name": "Smith",
+				}),
+				initRow(map[string]any{
+					"id":          "44",
+					"first_name":  "Fred",
+					"second_name": "Bloggs",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("person").Create(row).Error)
+			}
 		},
-	})
-	require.NoError(t, err)
-	return schema
+		gqlOperation: `
+			query ListPeople {
+				listPeople(input: { where: {
+					firstName: { startsWith: "Fr" }
+					secondName: "Smith"
+				} }) 	   
+				{
+					pageInfo {
+						hasNextPage
+						startCursor
+						endCursor
+					}
+					edges {
+					  node {
+						id
+						firstName
+						secondName
+					  }
+					}
+				  }
+		 	}`,
+
+		assertData: func(t *testing.T, data map[string]any) {
+			edges := rtt.GetValueAtPath(t, data, "listPeople.edges")
+			edgesList, ok := edges.([]any)
+			require.True(t, ok)
+			require.Len(t, edgesList, 2)
+
+			record := edgesList[0]
+			edge, ok := record.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, edge, "node.firstName", "Fred")
+			rtt.AssertValueAtPath(t, edge, "node.secondName", "Smith")
+
+			record = edgesList[1]
+			edge, ok = record.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, edge, "node.firstName", "Francis")
+			rtt.AssertValueAtPath(t, edge, "node.secondName", "Smith")
+		},
+	},
 }
