@@ -30,12 +30,47 @@ test('get action (non unique)', async () => {
   expect.equal(fetchedPost, null)
 })
 
-test('list action', async () => {
+test('list action - equals', async () => {
   await Post.create({ title: 'apple' })
   await Post.create({ title: 'apple' })
 
-  // todo: dont think this api lines up with custom functions
   const { collection } = await Actions.listPosts({ title: { equals: 'apple' } })
+
+  expect.equal(collection.length, 2)
+})
+
+test('list action - contains', async () => {
+  await Post.create({ title: 'banan' })
+  await Post.create({ title: 'banana' })
+
+  const { collection } = await Actions.listPosts({ title: { contains: 'ana' } })
+
+  expect.equal(collection.length, 2)
+})
+
+test('list action - startsWith', async () => {
+  await Post.create({ title: 'adam' })
+  await Post.create({ title: 'adamant' })
+
+  const { collection } = await Actions.listPosts({ title: { startsWith: 'adam' } })
+
+  expect.equal(collection.length, 2)
+})
+
+test('list action - endsWith', async () => {
+  await Post.create({ title: 'star wars' })
+  await Post.create({ title: 'a post about star wars' })
+
+  const { collection } = await Actions.listPosts({ title: { endsWith: 'star wars' } })
+
+  expect.equal(collection.length, 2)
+})
+
+test('list action - oneOf', async () => {
+  await Post.create({ title: 'pear' })
+  await Post.create({ title: 'mango' })
+
+  const { collection } = await Actions.listPosts({ title: { oneOf: ['pear', 'mango'] } })
 
   expect.equal(collection.length, 2)
 })
