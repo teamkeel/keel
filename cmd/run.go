@@ -176,7 +176,7 @@ var runCmd = &cobra.Command{
 			fmt.Println("🎉 You're ready to roll")
 		}
 
-		stopWatcher, err := onSchemaFileChanges(schemaDir, reloadSchema)
+		stopWatcher, err := onSchemaFileChanges(schemaDir, hasCustomFunctions(currSchema), reloadSchema)
 		if err != nil {
 			panic(err)
 		}
@@ -317,7 +317,7 @@ func printMigrationChanges(changes []*migrations.DatabaseChange) {
 
 // reactToSchemaChanges should be called in its own goroutine. It has a blocking
 // channel select loop that waits for and receives file system events, or errors.
-func onSchemaFileChanges(dir string, cb func(changedFile string)) (func() error, error) {
+func onSchemaFileChanges(dir string, hasCustomFunctions bool, cb func(changedFile string)) (func() error, error) {
 	// The run command remains quiescent now, until the user changes their schema, so we establish
 	// a watcher on the schema directorty.
 	watcher, err := fsnotify.NewWatcher()
@@ -360,13 +360,32 @@ func onSchemaFileChanges(dir string, cb func(changedFile string)) (func() error,
 		return nil, err
 	}
 
-	err = watcher.Add(filepath.Join(dir, "functions"))
+	if hasCustomFunctions {
+		err = watcher.Add(filepath.Join(dir, "functions"))
 
-	if err != nil {
-		return nil, err
+		if err != nil {
+			if os.IsNotExist(err) {
+				// todo: maybe create this directory
+				return nil, errors.New("'functions' directory not found")
+			}
+
+			return nil, err
+		}
 	}
 
 	return watcher.Close, nil
+}
+
+func hasCustomFunctions(schema *proto.Schema) bool {
+	var ops []*proto.Operation
+
+	for _, model := range schema.Models {
+		ops = append(ops, model.Operations...)
+	}
+
+	return lo.SomeBy(ops, func(o *proto.Operation) bool {
+		return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	})
 }
 
 func isRelevantEventType(op fsnotify.Op) bool {
