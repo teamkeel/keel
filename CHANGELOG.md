@@ -1,3 +1,10 @@
+# [0.120.0](https://github.com/teamkeel/keel/compare/v0.119.0...v0.120.0) (2022-09-27)
+
+
+### Features
+
+* added authenticate response to runtime sdk ([#383](https://github.com/teamkeel/keel/issues/383)) ([41dd016](https://github.com/teamkeel/keel/commit/41dd0164b2f22fbd17ba349487ea39ea0cf4ff0c))
+
 # [0.119.0](https://github.com/teamkeel/keel/compare/v0.118.0...v0.119.0) (2022-09-27)
 
 
