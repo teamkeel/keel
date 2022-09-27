@@ -1,3 +1,10 @@
+# [0.121.0](https://github.com/teamkeel/keel/compare/v0.120.0...v0.121.0) (2022-09-27)
+
+
+### Features
+
+* update action ([#381](https://github.com/teamkeel/keel/issues/381)) ([0d70158](https://github.com/teamkeel/keel/commit/0d70158fd59d412230ace17d044127fc3abf6792))
+
 # [0.120.0](https://github.com/teamkeel/keel/compare/v0.119.0...v0.120.0) (2022-09-27)
 
 
