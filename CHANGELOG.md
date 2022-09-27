@@ -1,3 +1,10 @@
+# [0.127.0](https://github.com/teamkeel/keel/compare/v0.126.0...v0.127.0) (2022-09-27)
+
+
+### Features
+
+* log reset db events ([#390](https://github.com/teamkeel/keel/issues/390)) ([0269240](https://github.com/teamkeel/keel/commit/0269240074b895613e127b638491cfc05b5cd759))
+
 # [0.126.0](https://github.com/teamkeel/keel/compare/v0.125.0...v0.126.0) (2022-09-27)
 
 
