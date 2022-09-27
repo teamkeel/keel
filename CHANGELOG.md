@@ -1,3 +1,10 @@
+# [0.125.0](https://github.com/teamkeel/keel/compare/v0.124.0...v0.125.0) (2022-09-27)
+
+
+### Features
+
+* handle backend termination ([#388](https://github.com/teamkeel/keel/issues/388)) ([b070429](https://github.com/teamkeel/keel/commit/b070429918dd5b0892253c30c186e8e169cb8515))
+
 # [0.124.0](https://github.com/teamkeel/keel/compare/v0.123.0...v0.124.0) (2022-09-27)
 
 
