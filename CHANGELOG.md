@@ -1,3 +1,10 @@
+# [0.123.0](https://github.com/teamkeel/keel/compare/v0.122.0...v0.123.0) (2022-09-27)
+
+
+### Features
+
+* clear db ([#386](https://github.com/teamkeel/keel/issues/386)) ([30535ac](https://github.com/teamkeel/keel/commit/30535ac3e104b6f0ce03011102b43a78f1ec0b2d))
+
 # [0.122.0](https://github.com/teamkeel/keel/compare/v0.121.0...v0.122.0) (2022-09-27)
 
 
