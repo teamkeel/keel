@@ -1,3 +1,10 @@
+# [0.128.0](https://github.com/teamkeel/keel/compare/v0.127.0...v0.128.0) (2022-09-27)
+
+
+### Features
+
+* catch uncaught exceptions whilst resetting db ([#391](https://github.com/teamkeel/keel/issues/391)) ([110cd87](https://github.com/teamkeel/keel/commit/110cd87037cda20659b01d81bfb1cf208ed0e555))
+
 # [0.127.0](https://github.com/teamkeel/keel/compare/v0.126.0...v0.127.0) (2022-09-27)
 
 
