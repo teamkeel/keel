@@ -1,13 +1,15 @@
 model Post {
     fields {
         title Text
+        subTitle Text @unique
     }
 
     operations {
-        create createPost() with (title)
+        create createPost() with (title, subTitle)
         get getPost(id)
-        update updatePost(id) with (title)
+        update updatePost(id) with (title, subTitle)
         delete deletePost(id)
+        delete deletePostBySubTitle(subTitle)
         list listPosts(title)
     }
 }

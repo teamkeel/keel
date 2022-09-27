@@ -7,5 +7,7 @@
   { "testName": "list action - contains", "status": "pass" },
   { "testName": "list action - startsWith", "status": "pass" },
   { "testName": "list action - endsWith", "status": "pass" },
-  { "testName": "list action - oneOf", "status": "pass" }
+  { "testName": "list action - oneOf", "status": "pass" },
+  { "testName": "delete action", "status": "pass" },
+  { "testName": "delete action (other unique field)", "status": "pass" }
 ]

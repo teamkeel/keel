@@ -173,6 +173,15 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 									}
 
 									WriteResponse(r, w)
+								case proto.OperationType_OPERATION_TYPE_DELETE:
+									// todo: take into account error returned from here
+									res, _ := actions.Delete(ctx, action, schema, body.Payload)
+
+									r := map[string]any{
+										"success": res,
+									}
+
+									WriteResponse(r, w)
 								default:
 									w.WriteHeader(400)
 									panic(fmt.Sprintf("%s not yet implemented", action.Type))

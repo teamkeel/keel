@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -11,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/fatih/color"
@@ -27,6 +29,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/util"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"gorm.io/driver/postgres"
 )
@@ -59,9 +62,22 @@ var runCmd = &cobra.Command{
 		}
 		defer database.Stop()
 
+		// todo: unify db logging with custom functions
+		logger := logger.New(
+			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+			logger.Config{
+				SlowThreshold:             time.Second, // Slow SQL threshold
+				LogLevel:                  logger.Info, // Log level
+				IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+				Colorful:                  true,        // Disable color
+			},
+		)
+
 		db, err := gorm.Open(postgres.New(postgres.Config{
 			Conn: dbConn,
-		}), &gorm.Config{})
+		}), &gorm.Config{
+			Logger: logger,
+		})
 		if err != nil {
 			panic(err)
 		}

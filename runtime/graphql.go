@@ -13,6 +13,15 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 )
 
+var deleteResponseType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "DeleteResponse",
+	Fields: graphql.Fields{
+		"success": &graphql.Field{
+			Type: graphql.NewNonNull(graphql.Boolean),
+		},
+	},
+})
+
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
 // are the API names from the provided proto.Schema
 func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, error) {
@@ -192,8 +201,24 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_DELETE:
-		// update returns a non-null type (or an error)
-		field.Type = graphql.ID
+		field.Type = deleteResponseType
+
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+
+			success, err := actions.Delete(p.Context, op, schema, inputMap)
+
+			resp := map[string]interface{}{
+				"success": success,
+			}
+
+			return resp, err
+		}
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:

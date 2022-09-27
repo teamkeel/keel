@@ -1,0 +1,18 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    operations {
+        get getPerson(id)
+        delete deletePerson() with (name)
+    }
+}
+
+api Test {
+    @graphql
+
+    models {
+        Person
+    }
+}
