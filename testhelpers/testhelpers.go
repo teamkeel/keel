@@ -69,8 +69,8 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 			Logger: logger.New(
 				log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 				logger.Config{
-					LogLevel: logger.Info, // Log level
-					Colorful: true,        // Disable color
+					LogLevel: logger.Error, // Log level
+					Colorful: true,         // Disable color
 				},
 			),
 		})

@@ -241,7 +241,6 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 				w.Write([]byte("ok"))
 
 			case "/reset":
-				fmt.Print("reset db called")
 				db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 				w.Write([]byte("ok"))
 			}
