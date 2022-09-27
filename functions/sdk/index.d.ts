@@ -252,8 +252,8 @@ declare module "@teamkeel/sdk/returnTypes" {
   }
 
   export interface FunctionAuthenticateResponse<T> {
-    userId?: string;
-    isAuthenticated: boolean;
+    identityId?: string;
+    identityCreated: boolean;
     errors?: FunctionError[];
   }
 }
