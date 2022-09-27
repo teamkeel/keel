@@ -21,9 +21,15 @@ func WrapTestFileWithShim(parentPort string, filePath string, pattern string) er
 			`
 					import { runAllTests } from '@teamkeel/testing';
 
-					runAllTests({ parentPort: %s, host: 'localhost', pattern: '%s' })
+					runAllTests({
+						parentPort: %s,
+						filePath: '%s',
+						host: 'localhost',
+						pattern: '%s'
+					});
 				`,
 			parentPort,
+			filePath,
 			buildPattern(pattern),
 		),
 	); err != nil {

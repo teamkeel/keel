@@ -153,7 +153,7 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 										"errors": serializeError(err),
 									}
 
-									WriteResponse(r, w)
+									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_CREATE:
 									res, err := actions.Create(ctx, action, schema, body.Payload)
 
@@ -162,7 +162,7 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 										"errors": serializeError(err),
 									}
 
-									WriteResponse(r, w)
+									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_UPDATE:
 									res, err := actions.Update(ctx, action, schema, body.Payload)
 
@@ -171,7 +171,7 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 										"errors": serializeError(err),
 									}
 
-									WriteResponse(r, w)
+									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_LIST:
 									res, hasNextPage, err := actions.List(ctx, action, schema, map[string]any{"where": body.Payload})
 
@@ -181,7 +181,7 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 										"errors":      serializeError(err),
 									}
 
-									WriteResponse(r, w)
+									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_DELETE:
 									// todo: take into account error returned from here
 									res, _ := actions.Delete(ctx, action, schema, body.Payload)
@@ -190,7 +190,7 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 										"success": res,
 									}
 
-									WriteResponse(r, w)
+									writeResponse(r, w)
 								default:
 									w.WriteHeader(400)
 									panic(fmt.Sprintf("%s not yet implemented", action.Type))
@@ -222,22 +222,27 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 										},
 									}
 
-									WriteResponse(r, w)
+									writeResponse(r, w)
 
 									return
 								}
 
 								// for custom functions, we just want to return whatever response
 								// shape is returned from the node handler
-								WriteResponse(res, w)
+								writeResponse(res, w)
 							}
 						}
 					}
 				}
-			default:
+			case "/report":
 				events := []*Event{}
 				json.Unmarshal(b, &events)
 				ch <- events
+				w.Write([]byte("ok"))
+
+			case "/reset":
+				fmt.Print("reset db called")
+				db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 				w.Write([]byte("ok"))
 			}
 		}),
@@ -246,7 +251,6 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 
 	fs := os.DirFS(dir)
 
-	// todo: test.ts files only
 	testFiles, err := doublestar.Glob(fs, "**/*.test.ts")
 
 	if err != nil {
@@ -336,7 +340,7 @@ func RunServer(workingDir string, port string, parentPort string, dbConnectionSt
 	return cmd.Process, nil
 }
 
-func WriteResponse(data interface{}, w http.ResponseWriter) {
+func writeResponse(data interface{}, w http.ResponseWriter) {
 	b, err := json.Marshal(data)
 
 	if err != nil {
