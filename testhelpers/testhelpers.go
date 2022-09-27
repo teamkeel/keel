@@ -46,6 +46,8 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 		&gorm.Config{})
 	require.NoError(t, err)
 
+	require.NoError(t, mainDB.Exec("select pg_terminate_backend(pg_stat_activity.pid) from pg_stat_activity where datname = '"+dbName+"' and pg_stat_activity.pid <> pg_backend_pid();").Error)
+
 	// Drop the database if it already exists. The normal dropping of it at the end of the
 	// test case is bypassed if you quit a debug run of the test in VS Code.
 	require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
@@ -55,7 +57,7 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		require.NoError(t, mainDB.Exec("DROP DATABASE "+dbName).Error)
+		require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
 	})
 
 	// Connect to the newly created test database and close connection
