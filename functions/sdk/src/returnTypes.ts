@@ -43,3 +43,9 @@ export interface FunctionUpdateResponse<T> {
   object?: T;
   errors?: FunctionError[];
 }
+
+export interface FunctionAuthenticateResponse<T> {
+  userId?: string;
+  isAuthenticated: boolean;
+  errors?: FunctionError[];
+}
