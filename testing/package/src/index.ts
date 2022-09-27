@@ -120,7 +120,7 @@ async function runAllTests({
         results.push(result.asObject());
       }
 
-      await reporter.clearDatabase()
+      await reporter.clearDatabase();
     }
   }
 

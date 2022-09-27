@@ -17,13 +17,13 @@ export default class Reporter {
     const { port, host } = this.opts;
 
     const res = await fetch(`${this.buildHostUri()}/reset`, {
-      method: "POST"
-    })
+      method: "POST",
+    });
 
     if (!res.ok) {
-      throw new Error('could not clear database')
+      throw new Error("could not clear database");
     }
-  }
+  };
 
   report = async (results: TestResultData[]): Promise<boolean> => {
     const response = await this.testResultsRequest(results);
@@ -40,6 +40,6 @@ export default class Reporter {
   private buildHostUri = () => {
     const { port, host } = this.opts;
 
-    return `http://${host}:${port}`
-  }
+    return `http://${host}:${port}`;
+  };
 }
