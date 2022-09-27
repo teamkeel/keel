@@ -1,3 +1,10 @@
+# [0.122.0](https://github.com/teamkeel/keel/compare/v0.121.0...v0.122.0) (2022-09-27)
+
+
+### Features
+
+* fixed auth response in sdk ([#385](https://github.com/teamkeel/keel/issues/385)) ([2ab7902](https://github.com/teamkeel/keel/commit/2ab79021181bb1d00039418d32e92c7576181fc7))
+
 # [0.121.0](https://github.com/teamkeel/keel/compare/v0.120.0...v0.121.0) (2022-09-27)
 
 
