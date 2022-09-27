@@ -1,3 +1,10 @@
+# [0.124.0](https://github.com/teamkeel/keel/compare/v0.123.0...v0.124.0) (2022-09-27)
+
+
+### Features
+
+* reset db after each test run ([#387](https://github.com/teamkeel/keel/issues/387)) ([e9db86f](https://github.com/teamkeel/keel/commit/e9db86f1ef2c3e8cf4cf36550761587b0c8fff23))
+
 # [0.123.0](https://github.com/teamkeel/keel/compare/v0.122.0...v0.123.0) (2022-09-27)
 
 
