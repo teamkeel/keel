@@ -13,17 +13,33 @@ export default class Reporter {
     this.opts = opts;
   }
 
+  clearDatabase = async () => {
+    const { port, host } = this.opts;
+
+    const res = await fetch(`${this.buildHostUri()}/reset`, {
+      method: "POST"
+    })
+
+    if (!res.ok) {
+      throw new Error('could not clear database')
+    }
+  }
+
   report = async (results: TestResultData[]): Promise<boolean> => {
     const response = await this.testResultsRequest(results);
     return response.ok;
   };
 
   private async testResultsRequest(results: TestResultData[]) {
-    const { port, host } = this.opts;
-
-    return await fetch(`http://${host}:${port}/report`, {
+    return await fetch(`${this.buildHostUri()}/report`, {
       method: "POST",
       body: JSON.stringify(results),
     });
+  }
+
+  private buildHostUri = () => {
+    const { port, host } = this.opts;
+
+    return `http://${host}:${port}`
   }
 }
