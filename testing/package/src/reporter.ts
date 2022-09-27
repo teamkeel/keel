@@ -13,14 +13,12 @@ export default class Reporter {
     this.opts = opts;
   }
 
-  clearDatabase = async () => {
+  clearDatabase = async (): Promise<boolean> => {
     const res = await fetch(`${this.buildHostUri()}/reset`, {
       method: "POST",
     });
 
-    if (!res.ok) {
-      throw new Error("could not clear database");
-    }
+    return res.ok;
   };
 
   report = async (results: TestResultData[]): Promise<boolean> => {

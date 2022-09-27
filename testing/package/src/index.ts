@@ -31,8 +31,11 @@ async function runAllTests({
   parentPort,
   host = "localhost",
   debug,
+  filePath,
   pattern = "",
 }: RunnerOpts) {
+  console.log(`${chalk.white.bgBlue(" INFO ")} Running testfile ${filePath}\n`);
+
   const hasPattern = pattern !== "";
 
   if (hasPattern) {
@@ -49,7 +52,7 @@ async function runAllTests({
     return;
   }
 
-  for await (const { testName, fn } of tests) {
+  for (const { testName, fn } of tests) {
     if (hasPattern) {
       const regex = new RegExp(pattern!);
 
@@ -129,8 +132,24 @@ async function runAllTests({
 
         results.push(result.asObject());
       }
+    }
 
-      await reporter.clearDatabase();
+    const resetSuccess = await reporter.clearDatabase();
+
+    if (debug) {
+      if (resetSuccess) {
+        console.log(
+          `${chalk.bgBlueBright.white(
+            " INFO "
+          )} Reset database after ${testName}\n`
+        );
+      } else {
+        console.log(
+          `${chalk.bgRedBright.white(
+            " ERROR "
+          )} Could not reset database after ${testName}\n`
+        );
+      }
     }
   }
 
