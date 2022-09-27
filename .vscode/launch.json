@@ -5,29 +5,49 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "integ isolated",
+            "name": "Run / Debug integration test",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
-            "program": "${fileDirname}",
+            "mode": "test",
+            "program": "${workspaceFolder}/integration",
             "args": [
                 "-test.run",
-                "TestIntegration/built_in_actions",
+                "TestIntegration/${input:testCase}",
                 "-pattern",
-                "list action",
+                "${input:testName}",
             ]
         },
         {
             "name": "Execute Run Command",
             "type": "go",
             "request": "launch",
-            "mode": "auto",
-            "program": "${fileDirname}",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/keel/main.go",
             "args": [
                 "run",
                 "-d",
-                "../../schema/testdata/proto_operations_inputs",
+                "../../${input:directory}",
             ]
+        }
+    ],
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "testCase",
+            "description": "The test case directory to isolate (see integration/testdata for list of test case directories)",
+            "default": "built_in_actions"
+        },
+        {
+            "type": "promptString",
+            "id": "testName",
+            "default": "(.*)",
+            "description": "Regular expression pattern to isolate individual tests. Can just be the JS test case name if you don't want to do anything fancy."
+        },
+        {
+            "type": "promptString",
+            "id": "directory",
+            "default": "examples/simple",
+            "description": "Path to directory containing keel schema file. Do not prepend with ./ as the ../../ is appended before the input path"
         }
     ]
 }
