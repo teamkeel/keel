@@ -17,6 +17,9 @@ export interface RunnerOpts {
 
   // A regex pattern to filter test case names
   pattern?: string;
+
+  // The current filepath being processed
+  filePath: string;
 }
 
 export type ScalarTypes = "string" | "boolean" | "date" | "number";
