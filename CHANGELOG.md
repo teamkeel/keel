@@ -1,3 +1,10 @@
+# [0.119.0](https://github.com/teamkeel/keel/compare/v0.118.0...v0.119.0) (2022-09-27)
+
+
+### Features
+
+* adds support for built-in delete action ([#380](https://github.com/teamkeel/keel/issues/380)) ([1624b89](https://github.com/teamkeel/keel/commit/1624b8943815249c111d175857862cc4bdf26ab6))
+
 # [0.118.0](https://github.com/teamkeel/keel/compare/v0.117.0...v0.118.0) (2022-09-26)
 
 
