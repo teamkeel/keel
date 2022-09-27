@@ -1,3 +1,10 @@
+# [0.129.0](https://github.com/teamkeel/keel/compare/v0.128.0...v0.129.0) (2022-09-27)
+
+
+### Features
+
+* remove logs ([#392](https://github.com/teamkeel/keel/issues/392)) ([25220eb](https://github.com/teamkeel/keel/commit/25220eb1f9d258754259a04d8614528b766393d2))
+
 # [0.128.0](https://github.com/teamkeel/keel/compare/v0.127.0...v0.128.0) (2022-09-27)
 
 
