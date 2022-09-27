@@ -250,6 +250,12 @@ declare module "@teamkeel/sdk/returnTypes" {
     object?: T;
     errors?: FunctionError[];
   }
+
+  export interface FunctionAuthenticateResponse<T> {
+    userId?: string;
+    isAuthenticated: boolean;
+    errors?: FunctionError[];
+  }
 }
 
 declare module "@teamkeel/sdk" {
