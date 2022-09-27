@@ -1,6 +1,6 @@
 import { Logger, LogLevel } from "@teamkeel/sdk";
 import chalk from "chalk";
-import { BackendTerminatedError } from 'slonik'
+import { DatabaseError } from "pg-protocol";
 
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
@@ -101,10 +101,14 @@ async function runAllTests({
         result = TestResult.fail(testName, actual, expected);
 
         console.log(`${chalk.bgRed.white(" FAIL ")} ${testName}\n`);
-      } else if (err instanceof BackendTerminatedError) {
+      } else if (err instanceof DatabaseError) {
         // do nothing
 
-        console.log(`${chalk.bgBlueBright.white(" INFO ")} Connection terminated\n`);
+        console.log(
+          `${chalk.bgBlueBright.white(
+            " INFO "
+          )} Connection terminated during execution of ${testName}\n`
+        );
       } else if (err instanceof Error) {
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error
