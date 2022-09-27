@@ -1,3 +1,10 @@
+# [0.130.0](https://github.com/teamkeel/keel/compare/v0.129.0...v0.130.0) (2022-09-27)
+
+
+### Features
+
+* reset db ([#393](https://github.com/teamkeel/keel/issues/393)) ([19a16a4](https://github.com/teamkeel/keel/commit/19a16a490526ef32ae278b3ea43ce8f9f4591f08))
+
 # [0.129.0](https://github.com/teamkeel/keel/compare/v0.128.0...v0.129.0) (2022-09-27)
 
 
