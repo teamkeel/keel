@@ -196,7 +196,17 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		// update returns a non-null type (or an error)
+		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
+			input := p.Args["input"]
+			inputMap, ok := input.(map[string]any)
+
+			if !ok {
+				return nil, errors.New("input not a map")
+			}
+
+			return actions.Update(p.Context, op, schema, inputMap)
+		}
+
 		field.Type = graphql.NewNonNull(field.Type)
 
 		mk.mutation.AddFieldConfig(op.Name, field)
