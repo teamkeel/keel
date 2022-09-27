@@ -163,6 +163,15 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 									}
 
 									WriteResponse(r, w)
+								case proto.OperationType_OPERATION_TYPE_UPDATE:
+									res, err := actions.Update(ctx, action, schema, body.Payload)
+
+									r := map[string]any{
+										"object": res,
+										"errors": serializeError(err),
+									}
+
+									WriteResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_LIST:
 									res, hasNextPage, err := actions.List(ctx, action, schema, map[string]any{"where": body.Payload})
 

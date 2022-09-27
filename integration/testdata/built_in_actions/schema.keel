@@ -7,7 +7,7 @@ model Post {
     operations {
         create createPost() with (title, subTitle)
         get getPost(id)
-        update updatePost(id) with (title, subTitle)
+        update updatePost(id) with (title)
         delete deletePost(id)
         delete deletePostBySubTitle(subTitle)
         list listPosts(title)

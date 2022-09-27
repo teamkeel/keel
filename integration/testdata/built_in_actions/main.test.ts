@@ -90,3 +90,11 @@ test('delete action (other unique field)', async () => {
 
   expect.equal(success, true)
 })
+
+test('update action', async () => {
+  const { object: post } = await Post.create({ title: 'watermelon', subTitle: 'opm' })
+
+  const { object: updatedPost } = await Actions.updatePost({ where: { id: post.id }, values: { title: 'big watermelon' }})
+
+  expect.equal(updatedPost.title, 'big watermelon')
+})
