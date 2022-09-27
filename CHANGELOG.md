@@ -1,3 +1,10 @@
+# [0.126.0](https://github.com/teamkeel/keel/compare/v0.125.0...v0.126.0) (2022-09-27)
+
+
+### Features
+
+* catch pg-protocol error ([#389](https://github.com/teamkeel/keel/issues/389)) ([fd7c10e](https://github.com/teamkeel/keel/commit/fd7c10e1b302d46655b35d589c5759801cd0b1c7))
+
 # [0.125.0](https://github.com/teamkeel/keel/compare/v0.124.0...v0.125.0) (2022-09-27)
 
 
