@@ -1,0 +1,17 @@
+model Post {
+    fields {
+        title Text
+    }
+    operations {
+        create createPost() with (title)
+        get getPost(id) 
+    }
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+    }
+}

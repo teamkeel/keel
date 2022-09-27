@@ -34,7 +34,8 @@ import {
   FunctionGetResponse,
   FunctionDeleteResponse,
   FunctionListResponse,
-  FunctionUpdateResponse
+  FunctionUpdateResponse,
+  FunctionAuthenticateResponse
 } from '@teamkeel/sdk';
 
 export interface Post {
@@ -46,7 +47,7 @@ export interface Post {
 
 export interface Identity {
   email: string
-  password: unknown
+  password: string
   id: string
   createdAt: Date
   updatedAt: Date
@@ -59,6 +60,12 @@ export declare enum Something {
 export interface CreatePostInput {
   title: string
 }
+export interface AuthenticateInput {
+  createIfNotExists?: boolean
+  email: string
+  password: string
+}
+
 declare type CreatePostReturnType = Promise<FunctionCreateResponse<Post>>
 
 declare type CreatePostCallbackFunction = (inputs: CreatePostInput, api: API) => CreatePostReturnType
@@ -87,12 +94,36 @@ export declare class PostApi {
   findMany: (query: PostQuery) => Promise<FunctionListResponse<Post>>;
 }
 
+export declare type IdentityQuery = Partial<{
+  email?: QueryConstraints.StringConstraint
+  password?: QueryConstraints.StringConstraint
+  id?: QueryConstraints.StringConstraint
+  createdAt?: QueryConstraints.DateConstraint
+  updatedAt?: QueryConstraints.DateConstraint
+}>
+
+export declare type IdentityUniqueFields = Partial<{
+  email?: QueryConstraints.StringConstraint
+id?: QueryConstraints.StringConstraint
+}>
+
+export declare class IdentityApi {
+  private readonly db;
+  constructor();
+  create: (inputs: Partial<Omit<Identity, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<Identity>>;
+  where: (conditions: IdentityQuery) => ChainableQuery<Identity>;
+  delete: (id: string) => Promise<FunctionDeleteResponse<Identity>>;
+  findOne: (query: IdentityUniqueFields) => Promise<FunctionGetResponse<Identity>>;
+  update: (id: string, inputs: Partial<Omit<Identity, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<Identity>>;
+  findMany: (query: IdentityQuery) => Promise<FunctionListResponse<Identity>>;
+}
+
 import { Logger } from '@teamkeel/sdk'
 
 export interface API {
   models: {
     post: PostApi
-
+    identity: IdentityApi
   },
   logger: Logger
 }

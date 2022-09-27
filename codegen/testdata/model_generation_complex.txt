@@ -34,7 +34,7 @@ export interface Author {
 
 export interface Identity {
   email: string
-  password: unknown
+  password: string
   id: string
   createdAt: Date
   updatedAt: Date

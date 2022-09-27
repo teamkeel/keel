@@ -4,18 +4,19 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"path/filepath"
 	gotest "testing"
 
 	"github.com/alexflint/go-restructure/regex"
 	"github.com/nsf/jsondiff"
+	"github.com/samber/lo"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
@@ -32,7 +33,14 @@ func TestIntegration(t *gotest.T) {
 	entries, err := ioutil.ReadDir("./testdata")
 	require.NoError(t, err)
 
-	for _, e := range entries {
+	var skip string = "" // Name of the test directory you want to skip, or ""
+	var only = ""        // Name of the test directory you want isolated and alone, or ""
+
+	filteredEntries := lo.Filter(entries, func(entry fs.FileInfo, _ int) bool {
+		return (skip != "" && entry.Name() != skip) || (only != "" && entry.Name() == only)
+	})
+
+	for _, e := range filteredEntries {
 		t.Run(e.Name(), func(t *gotest.T) {
 			workingDir, err := testhelpers.WithTmpDir(filepath.Join("./testdata", e.Name()))
 
