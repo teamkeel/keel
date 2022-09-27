@@ -163,4 +163,11 @@ async function runAllTests({
 
 const logger = new Logger({ colorize: true, timestamps: false });
 
+process.on("uncaughtException", (err, next) => {
+  var date = new Date();
+  console.error(`+++++++ ${date} error found, logging event +++++++`);
+  console.error(err.stack);
+  return;
+});
+
 export { test, expect, runAllTests, logger, LogLevel };
