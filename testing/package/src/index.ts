@@ -1,5 +1,7 @@
 import { Logger, LogLevel } from "@teamkeel/sdk";
 import chalk from "chalk";
+import { BackendTerminatedError } from 'slonik'
+
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
 import { TestResultData, TestResult } from "./output";
@@ -99,6 +101,10 @@ async function runAllTests({
         result = TestResult.fail(testName, actual, expected);
 
         console.log(`${chalk.bgRed.white(" FAIL ")} ${testName}\n`);
+      } else if (err instanceof BackendTerminatedError) {
+        // do nothing
+
+        console.log(`${chalk.bgBlueBright.white(" INFO ")} Connection terminated\n`);
       } else if (err instanceof Error) {
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error

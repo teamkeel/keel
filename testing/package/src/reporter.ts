@@ -14,8 +14,6 @@ export default class Reporter {
   }
 
   clearDatabase = async () => {
-    const { port, host } = this.opts;
-
     const res = await fetch(`${this.buildHostUri()}/reset`, {
       method: "POST"
     })
