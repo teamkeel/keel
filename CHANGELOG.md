@@ -1,3 +1,10 @@
+# [0.133.0](https://github.com/teamkeel/keel/compare/v0.132.0...v0.133.0) (2022-09-28)
+
+
+### Features
+
+* identity support in testing library ([#401](https://github.com/teamkeel/keel/issues/401)) ([40c8d74](https://github.com/teamkeel/keel/commit/40c8d746762371782cf0dcdc9dfcd23de566549d))
+
 # [0.132.0](https://github.com/teamkeel/keel/compare/v0.131.0...v0.132.0) (2022-09-28)
 
 
