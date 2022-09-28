@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "You have a reserved action name 'authenticate'",
+      "short_message": "cannot use 'authenticate'",
+      "hint": "Try 'performAuthenticate' instead",
+      "code": "E042",
+      "pos": {
+        "filename": "testdata/validation_reserved_action_name_authenticate/schema.keel",
+        "offset": 84,
+        "line": 7,
+        "column": 16
+      },
+      "end_pos": {
+        "filename": "testdata/validation_reserved_action_name_authenticate/schema.keel",
+        "offset": 96,
+        "line": 7,
+        "column": 28
+      }
+    }
+  ]
+}

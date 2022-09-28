@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	reservedModelNames = []string{"query"}
+	reservedModelNames  = []string{"query"}
+	reservedActionNames = []string{"authenticate"}
 )
 
 func ModelNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
@@ -262,6 +263,26 @@ func CreateOperationNoReadInputsRule(asts []*parser.AST) (errs errorhandling.Val
 	}
 
 	return
+}
+
+// ReservedActionNameRule ensures that all actions (operations or functions) do not
+// use a reserved name
+func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	for _, model := range query.Models(asts) {
+		for _, op := range query.ModelActions(model) {
+			if lo.Contains(reservedActionNames, op.Name.Value) {
+				errs.Append(errorhandling.ErrorReservedActionName,
+					map[string]string{
+						"Name":       op.Name.Value,
+						"Suggestion": fmt.Sprintf("perform%s", strcase.ToCamel(op.Name.Value)),
+					},
+					op.Name,
+				)
+			}
+		}
+	}
+
+	return errs
 }
 
 // CreateOperationRequiredFieldsRule validates that all create actions

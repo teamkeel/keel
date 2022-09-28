@@ -157,3 +157,7 @@ en:
     short_message: "models are not allowed as inputs to {{ .ActionType }} actions"
     message: "{{ .Input }} refers to the model {{ .ModelName }} which can't be used as an input to a {{ .ActionType }} action"
     hint: "did you mean {{ .Input }}.id?"
+  E042:
+    short_message: "cannot use '{{ .Name }}'"
+    message: "You have a reserved action name '{{ .Name }}'"
+    hint: "Try '{{ .Suggestion }}' instead"
