@@ -90,7 +90,7 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
 // the given fieldsUnderConstruction container.
 func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, error) {
-	if out, ok := mk.types[model.Name]; ok {
+	if out, ok := mk.types[fmt.Sprintf("model-%s", model.Name)]; ok {
 		return out, nil
 	}
 
@@ -98,7 +98,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 		Name:   model.Name,
 		Fields: graphql.Fields{},
 	})
-	mk.types[model.Name] = object
+	mk.types[fmt.Sprintf("model-%s", model.Name)] = object
 
 	for _, field := range model.Fields {
 		// Passwords are omitted from GraphQL responses
@@ -234,14 +234,27 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
+
+			// If no inputs have been specified then we need to initialise an empty
+			// input map with no where conditions
+			if input == nil {
+				input = map[string]any{
+					"where": map[string]any{},
+				}
+			}
+
 			args, ok := input.(map[string]any)
+
 			if !ok {
 				return nil, err
 			}
+
 			records, hasNextPage, err := actions.List(p.Context, op, schema, args)
+
 			if err != nil {
 				return nil, err
 			}
+
 			resp, err := connectionResponse(records, hasNextPage)
 			if err != nil {
 				return nil, err
@@ -358,6 +371,10 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 })
 
 func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) graphql.Output {
+	if out, found := mk.types[fmt.Sprintf("connection-%s", itemType.Name())]; found {
+		return graphql.NewNonNull(out)
+	}
+
 	edgeType := graphql.NewObject(graphql.ObjectConfig{
 		Name: itemType.Name() + "Edge",
 		Fields: graphql.Fields{
@@ -384,6 +401,8 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 			},
 		},
 	})
+
+	mk.types[fmt.Sprintf("connection-%s", itemType.Name())] = connection
 
 	return graphql.NewNonNull(connection)
 }

@@ -1,0 +1,18 @@
+model Thing {
+    fields {
+        something Text
+    }
+
+    operations {
+        list listOne()
+        list listTwo()
+    }
+}
+
+api Test {
+    @graphql
+
+    models {
+        Thing
+    }
+}
