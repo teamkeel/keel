@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
@@ -246,8 +245,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 			args, ok := input.(map[string]any)
 
-			spew.Dump(input)
-
 			if !ok {
 				return nil, err
 			}
@@ -258,7 +255,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			spew.Dump(records)
 			resp, err := connectionResponse(records, hasNextPage)
 			if err != nil {
 				return nil, err
