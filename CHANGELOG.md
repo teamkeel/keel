@@ -1,3 +1,10 @@
+# [0.134.0](https://github.com/teamkeel/keel/compare/v0.133.1...v0.134.0) (2022-09-28)
+
+
+### Features
+
+* optional list inputs ([4baee43](https://github.com/teamkeel/keel/commit/4baee43a366c5845f099e1dc89a210258ac65101))
+
 ## [0.133.1](https://github.com/teamkeel/keel/compare/v0.133.0...v0.133.1) (2022-09-28)
 
 
