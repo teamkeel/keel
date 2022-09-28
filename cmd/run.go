@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
 	"github.com/samber/lo"
@@ -174,7 +173,6 @@ var runCmd = &cobra.Command{
 
 			m := migrations.New(protoSchema, currSchema)
 
-			spew.Dump(currSchema)
 			if m.HasChanges() {
 				fmt.Println("💿 Applying migrations")
 				err = m.Apply(db)
