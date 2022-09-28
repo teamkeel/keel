@@ -951,7 +951,6 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "authenticate.identityCreated", true)
 			token := rtt.GetValueAtPath(t, data, "authenticate.token")
 			require.NotEmpty(t, token)
-
 		},
 	},
 	{
@@ -989,6 +988,60 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "failed to authenticate", errors[0].Message)
+		},
+	},
+	{
+		name: "list_no_inputs",
+		keelSchema: `
+		model Thing {
+			fields {
+				text Text @unique
+				bool Boolean
+				timestamp Timestamp
+				date Date
+				number Number
+			}
+			operations {
+				list listThings()
+			}
+		}
+		api Test {
+			@graphql
+			models {
+				Thing
+			}
+		}
+	`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row1 := initRow(map[string]any{
+				"id":        "id_123",
+				"text":      "some-interesting-text",
+				"bool":      true,
+				"timestamp": "1970-01-01 00:00:10",
+				"date":      "2020-01-02",
+				"number":    10,
+			})
+			require.NoError(t, db.Table("thing").Create(row1).Error)
+		},
+		gqlOperation: `
+		
+		query {
+			listThings {
+				edges {
+					node {
+						text
+					}
+				}
+			}
+		}
+
+		`,
+		assertData: func(t *testing.T, data map[string]any) {
+			edges := rtt.GetValueAtPath(t, data, "listThings.edges")
+			edgesList, ok := edges.([]any)
+			require.True(t, ok)
+			require.Len(t, edgesList, 1)
+
 		},
 	},
 }

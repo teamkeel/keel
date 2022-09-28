@@ -137,17 +137,34 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	}
 
 	// Only add args if there are inputs for this operation
-	if len(op.Inputs) > 0 {
+	// Unles it's a list and then we need to add pagination
+	if len(op.Inputs) > 0 || op.Type == proto.OperationType_OPERATION_TYPE_LIST {
 		operationInputType, err := mk.makeOperationInputType(op)
 		if err != nil {
 			return err
 		}
 
-		field.Args = graphql.FieldConfigArgument{
-			"input": &graphql.ArgumentConfig{
-				Type: graphql.NewNonNull(operationInputType),
-			},
+		allOptionalInputs := true
+		for _, in := range op.Inputs {
+			if !in.Optional {
+				allOptionalInputs = false
+			}
 		}
+
+		if allOptionalInputs {
+			field.Args = graphql.FieldConfigArgument{
+				"input": &graphql.ArgumentConfig{
+					Type: operationInputType,
+				},
+			}
+		} else {
+			field.Args = graphql.FieldConfigArgument{
+				"input": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(operationInputType),
+				},
+			}
+		}
+
 	}
 
 	switch op.Type {
@@ -839,9 +856,14 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
+		allOptionalInputs := true
 		for _, in := range op.Inputs {
 			var fieldType graphql.Input
 			var err error
+
+			if !in.Optional {
+				allOptionalInputs = false
+			}
 
 			if in.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 				fieldType, err = mk.queryInputTypeFor(in)
@@ -864,10 +886,20 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 		inputType.AddFieldConfig("after", &graphql.InputObjectFieldConfig{
 			Type: graphql.String,
 		})
-		// TODO this should be nullable if all inputs are optional
-		inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(where),
-		})
+
+		if len(op.Inputs) > 0 {
+			// Nullable if all inputs are optional
+			if allOptionalInputs {
+				inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
+					Type: where,
+				})
+			} else {
+				inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
+					Type: graphql.NewNonNull(where),
+				})
+			}
+		}
+
 	}
 
 	return inputType, nil
