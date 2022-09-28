@@ -183,6 +183,24 @@ func (gen *Generator) GenerateWrappers(typings bool) (str string) {
 					},
 				)
 			}
+		case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+			if typings {
+				str += renderTemplate(
+					TemplateFuncWrapperAuthenticateTypings,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			} else {
+				str += renderTemplate(
+					TemplateFuncWrapperAuthenticate,
+					map[string]interface{}{
+						"Name":  strcase.ToCamel(fn.Name),
+						"Model": fn.ModelName,
+					},
+				)
+			}
 		}
 	}
 
@@ -279,22 +297,13 @@ var APIName = "API"
 
 func (gen *Generator) GenerateAPIs(typings bool) (r string) {
 	renderModelApiDefs := func(models []*proto.Model) (acc string) {
-		modelsToUse := lo.Filter(models, func(model *proto.Model, _ int) bool {
-			return model.Name != TSTypeIdentity
-		})
-
-		for i, model := range modelsToUse {
-			// we do not want to expose the API for interacting with the identities table
-			if model.Name == TSTypeIdentity {
-				continue
-			}
-
+		for i, model := range models {
 			if i == 0 {
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("%sApi", model.Name),
 				}))
-			} else if i < len(modelsToUse)-1 {
+			} else if i < len(models)-1 {
 				acc += fmt.Sprintf("    %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": strcase.ToLowerCamel(model.Name),
 					"Type": fmt.Sprintf("%sApi", model.Name),
@@ -381,10 +390,6 @@ func (gen *Generator) GenerateAPIs(typings bool) (r string) {
 	}
 
 	for _, model := range gen.schema.Models {
-		if model.Name == TSTypeIdentity {
-			continue
-		}
-
 		if typings {
 			r += renderTemplate(TemplateApiTyping, map[string]interface{}{
 				"Name":             model.Name,
@@ -416,42 +421,47 @@ func (gen *Generator) GenerateAPIs(typings bool) (r string) {
 	return r
 }
 
-func (gen *Generator) GenerateInputs(typings bool) (r string) {
-	renderInputFields := func(inputs []*proto.OperationInput, filter func(input *proto.OperationInput) bool) (acc string) {
-		filtered := []*proto.OperationInput{}
+func renderInputFields(inputs []*proto.OperationInput, filter func(input *proto.OperationInput) bool) (acc string) {
+	filtered := []*proto.OperationInput{}
 
-		for _, input := range inputs {
-			if !filter(input) {
-				continue
-			}
-
-			filtered = append(filtered, input)
-		}
-
-		for i, input := range filtered {
-			if i < len(filtered)-1 {
-				acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name":     input.Name,
-					"Type":     protoTypeToTypeScriptType(input.Type),
-					"Optional": input.Optional,
-				}))
-			} else {
-				acc += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name":     input.Name,
-					"Type":     protoTypeToTypeScriptType(input.Type),
-					"Optional": input.Optional,
-				}))
-			}
-		}
-
-		return acc
-	}
-
-	for _, model := range gen.schema.Models {
-		if model.Name == TSTypeIdentity {
+	for _, input := range inputs {
+		if !filter(input) {
 			continue
 		}
 
+		filtered = append(filtered, input)
+	}
+
+	for i, input := range filtered {
+
+		if input.Type.Type == proto.Type_TYPE_OBJECT {
+			acc += renderInputFields(input.Inputs, filter)
+			continue
+		}
+
+		tsType := protoTypeToTypeScriptType(input.Type)
+
+		if i < len(filtered)-1 {
+			acc += fmt.Sprintf("  %s\n", renderTemplate(TemplateProperty, map[string]interface{}{
+				"Name":     input.Name,
+				"Type":     tsType,
+				"Optional": input.Optional,
+			}))
+		} else {
+
+			acc += fmt.Sprintf("  %s", renderTemplate(TemplateProperty, map[string]interface{}{
+				"Name":     input.Name,
+				"Type":     tsType,
+				"Optional": input.Optional,
+			}))
+		}
+	}
+
+	return acc
+}
+
+func (gen *Generator) GenerateInputs(typings bool) (r string) {
+	for _, model := range gen.schema.Models {
 		for _, op := range model.Operations {
 			inputs := op.GetInputs()
 
@@ -540,11 +550,26 @@ func (gen *Generator) GenerateInputs(typings bool) (r string) {
 							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
 						}),
 					})
-				} else {
 					r += renderTemplate(TemplateListInput, map[string]interface{}{
 						"Name": strcase.ToCamel(op.Name),
 						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
 							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
+						}),
+					})
+				}
+			case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+				if typings {
+					r += renderTemplate(TemplateAuthenticateInput, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return true
+						}),
+					})
+				} else {
+					r += renderTemplate(TemplateAuthenticateInput, map[string]interface{}{
+						"Name": strcase.ToCamel(op.Name),
+						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
+							return true
 						}),
 					})
 				}
@@ -628,11 +653,7 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 			"Path": "@teamkeel/sdk",
 		}))
 
-		models := lo.Filter(sch.Models, func(m *proto.Model, _ int) bool {
-			return m.Name != TSTypeIdentity
-		})
-
-		for _, model := range models {
+		for _, model := range sch.Models {
 			// Import each model api by name
 			acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 				"Name": fmt.Sprintf("{ %sApi }", model.Name),
@@ -667,9 +688,7 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 	}
 
 	renderModelApis := func(schema *proto.Schema) (acc string) {
-		modelsToUse := lo.Filter(schema.Models, func(model *proto.Model, _ int) bool {
-			return model.Name != TSTypeIdentity
-		})
+		modelsToUse := schema.Models
 
 		for i, model := range modelsToUse {
 			if i == len(modelsToUse)-1 {
@@ -680,7 +699,7 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 			} else {
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateProperty, map[string]interface{}{
 					"Name": strcase.ToLowerCamel(model.Name),
-					"Type": fmt.Sprintf("new %sApi()", model.Name),
+					"Type": fmt.Sprintf("new %sApi(),", model.Name),
 				}))
 			}
 		}
@@ -714,11 +733,7 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 // region testing
 func (gen *Generator) GenerateTesting() (r string) {
 	renderApis := func(models []*proto.Model) (acc string) {
-		modelsToUse := lo.Filter(models, func(model *proto.Model, _ int) bool {
-			return model.Name != TSTypeIdentity
-		})
-
-		for _, m := range modelsToUse {
+		for _, m := range models {
 			acc += renderTemplate(TemplateTestingModelApi, map[string]interface{}{
 				"Name":      m.Name,
 				"TableName": strcase.ToSnake(m.Name),
@@ -746,6 +761,8 @@ func (gen *Generator) GenerateTesting() (r string) {
 				returnType = fmt.Sprintf("ReturnTypes.FunctionUpdateResponse<Client.%s>", action.ModelName)
 			case proto.OperationType_OPERATION_TYPE_GET:
 				returnType = fmt.Sprintf("ReturnTypes.FunctionGetResponse<Client.%s>", action.ModelName)
+			case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+				returnType = fmt.Sprintf("ReturnTypes.FunctionAuthenticateResponse<Client.%s>", action.ModelName)
 			default:
 				continue
 			}
@@ -821,51 +838,56 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 		return t.EnumName.Value
 	// case proto.Type_TYPE_IMAGE:
 	// 	return "Image"
+	case proto.Type_TYPE_PASSWORD: // todo: remove this and hide password fields going forward?
+		return TSTypeString
 	default:
 		return TSTypeUnknown
 	}
 }
 
 var (
-	TemplateKeelApi           = "keel_api"
-	TemplateApi               = "api"
-	TemplateEnum              = "enum"
-	TemplateEnumValue         = "enum_value"
-	TemplateProperty          = "property"
-	TemplateInterface         = "interface"
-	TemplateTypeAlias         = "type_alias"
-	TemplateHandler           = "handler"
-	TemplateImport            = "import"
-	TemplateObject            = "object"
-	TemplateCustomFunction    = "custom_function"
-	TemplateUpdateInput       = "update_input"
-	TemplateCreateInput       = "create_input"
-	TemplateGetInput          = "get_input"
-	TemplateListInput         = "list_input"
-	TemplateDeleteInput       = "delete_input"
-	TemplateFuncWrapperCreate = "func_wrapper_create"
-	TemplateFuncWrapperDelete = "func_wrapper_delete"
-	TemplateFuncWrapperUpdate = "func_wrapper_update"
-	TemplateFuncWrapperList   = "func_wrapper_list"
-	TemplateFuncWrapperGet    = "func_wrapper_get"
-	TemplateBaseImports       = "base_imports"
+	TemplateKeelApi                 = "keel_api"
+	TemplateApi                     = "api"
+	TemplateEnum                    = "enum"
+	TemplateEnumValue               = "enum_value"
+	TemplateProperty                = "property"
+	TemplateInterface               = "interface"
+	TemplateTypeAlias               = "type_alias"
+	TemplateHandler                 = "handler"
+	TemplateImport                  = "import"
+	TemplateObject                  = "object"
+	TemplateCustomFunction          = "custom_function"
+	TemplateUpdateInput             = "update_input"
+	TemplateCreateInput             = "create_input"
+	TemplateGetInput                = "get_input"
+	TemplateListInput               = "list_input"
+	TemplateDeleteInput             = "delete_input"
+	TemplateAuthenticateInput       = "authenticate_input"
+	TemplateFuncWrapperCreate       = "func_wrapper_create"
+	TemplateFuncWrapperDelete       = "func_wrapper_delete"
+	TemplateFuncWrapperUpdate       = "func_wrapper_update"
+	TemplateFuncWrapperList         = "func_wrapper_list"
+	TemplateFuncWrapperGet          = "func_wrapper_get"
+	TemplateFuncWrapperAuthenticate = "func_wrapper_authenticate"
+	TemplateBaseImports             = "base_imports"
 
 	// Typing templates - used to generate index.d.ts file
-	TemplateApiTyping                = "api_typings"
-	TemplateCreateInputTypings       = "create_input_typings"
-	TemplateGetInputTypings          = "get_input_typings"
-	TemplateListInputTypings         = "list_input_typings"
-	TemplateDeleteInputTypings       = "delete_input_typings"
-	TemplateUpdateInputTypings       = "update_input_typings"
-	TemplateEnumTyping               = "enum_typing"
-	TemplateEnumValueTyping          = "enum_value_typing"
-	TemplateFuncWrapperCreateTypings = "func_wrapper_create_typings"
-	TemplateFuncWrapperDeleteTypings = "func_wrapper_delete_typings"
-	TemplateFuncWrapperUpdateTypings = "func_wrapper_update_typings"
-	TemplateFuncWrapperListTypings   = "func_wrapper_list_typings"
-	TemplateFuncWrapperGetTypings    = "func_wrapper_get_typings"
-	TemplateKeelApiTypings           = "keel_api_typings"
-	TemplateHandlerApi               = "handler_api"
+	TemplateApiTyping                      = "api_typings"
+	TemplateCreateInputTypings             = "create_input_typings"
+	TemplateGetInputTypings                = "get_input_typings"
+	TemplateListInputTypings               = "list_input_typings"
+	TemplateDeleteInputTypings             = "delete_input_typings"
+	TemplateUpdateInputTypings             = "update_input_typings"
+	TemplateEnumTyping                     = "enum_typing"
+	TemplateEnumValueTyping                = "enum_value_typing"
+	TemplateFuncWrapperCreateTypings       = "func_wrapper_create_typings"
+	TemplateFuncWrapperDeleteTypings       = "func_wrapper_delete_typings"
+	TemplateFuncWrapperUpdateTypings       = "func_wrapper_update_typings"
+	TemplateFuncWrapperListTypings         = "func_wrapper_list_typings"
+	TemplateFuncWrapperGetTypings          = "func_wrapper_get_typings"
+	TemplateFuncWrapperAuthenticateTypings = "func_wrapper_authenticate_typings"
+	TemplateKeelApiTypings                 = "keel_api_typings"
+	TemplateHandlerApi                     = "handler_api"
 
 	// Templates for the @teamkeel/testing package
 	TemplateTestingBase     = "testing_base"      // includes base imports used by testing package

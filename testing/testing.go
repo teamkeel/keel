@@ -191,6 +191,31 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 									}
 
 									writeResponse(r, w)
+								case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+									authArgs := actions.AuthenticateArgs{
+										CreateIfNotExists: body.Payload["createIfNotExists"].(bool),
+										Email:             body.Payload["email"].(string),
+										Password:          body.Payload["password"].(string),
+									}
+
+									identityId, identityCreated, err := actions.Authenticate(ctx, schema, &authArgs)
+
+									var r map[string]any
+									if identityId == nil {
+										r = map[string]any{
+											"identityId":      nil,
+											"identityCreated": identityCreated,
+											"errors":          serializeError(err),
+										}
+									} else {
+										r = map[string]any{
+											"identityId":      identityId.String(),
+											"identityCreated": identityCreated,
+											"errors":          serializeError(err),
+										}
+									}
+
+									writeResponse(r, w)
 								default:
 									w.WriteHeader(400)
 									panic(fmt.Sprintf("%s not yet implemented", action.Type))
