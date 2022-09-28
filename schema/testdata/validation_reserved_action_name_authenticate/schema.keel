@@ -1,0 +1,17 @@
+model User {
+    fields {
+        email Text
+    }
+
+    operations {
+        create authenticate() with (email)
+    }
+}
+
+api Web {
+    @graphql
+
+    models {
+        User
+    }
+}
