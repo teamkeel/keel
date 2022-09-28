@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
@@ -234,14 +235,30 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
+
+			// If no inputs have been specified then we need to initialise an empty
+			// input map with no where conditions
+			if input == nil {
+				input = map[string]any{
+					"where": map[string]any{},
+				}
+			}
+
 			args, ok := input.(map[string]any)
+
+			spew.Dump(input)
+
 			if !ok {
 				return nil, err
 			}
+
 			records, hasNextPage, err := actions.List(p.Context, op, schema, args)
+
 			if err != nil {
 				return nil, err
 			}
+
+			spew.Dump(records)
 			resp, err := connectionResponse(records, hasNextPage)
 			if err != nil {
 				return nil, err
