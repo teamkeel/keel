@@ -33,7 +33,7 @@ func TestCodeGeneration(t *testing.T) {
 			b, err := ioutil.ReadFile(filepath.Join("testdata", testCase.Name()))
 			require.NoError(t, err)
 
-			parts := strings.Split(string(b), "===")
+			parts := strings.Split(string(b), "====")
 
 			require.Equal(t, 2, len(parts), "fixture file should contain 2 sections separated by ===")
 

@@ -5,7 +5,7 @@ model Post {
   }
 }
 
-===
+====
 
 export type PostQuery = Partial<{
   title?: QueryConstraints.StringConstraint

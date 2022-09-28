@@ -9,7 +9,7 @@ model Post {
   }
 }
 
-===
+====
 
 import startRuntimeServer from '@teamkeel/runtime'
 import { Logger } from '@teamkeel/sdk'

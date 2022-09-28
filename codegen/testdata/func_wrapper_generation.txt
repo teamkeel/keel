@@ -12,7 +12,7 @@ model Post {
   }
 }
 
-===
+====
 
 type CreatePostReturnType = Promise<FunctionCreateResponse<Post>>
 
