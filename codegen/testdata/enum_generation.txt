@@ -5,7 +5,7 @@ enum TheBeatles {
   George
 }
 
-===
+====
 
 export enum TheBeatles {
   John = "John",

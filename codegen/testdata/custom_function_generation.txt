@@ -8,7 +8,7 @@ model Author {
   }
 }
 
-===
+====
 
 import { CreateAuthor } from '@teamkeel/sdk'
 
