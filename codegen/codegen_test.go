@@ -35,7 +35,7 @@ func TestCodeGeneration(t *testing.T) {
 
 			parts := strings.Split(string(b), "====")
 
-			require.Equal(t, 2, len(parts), "fixture file should contain 2 sections separated by ===")
+			require.Equal(t, 2, len(parts), "fixture file should contain 2 sections separated by ====")
 
 			require.NoError(t, err)
 
