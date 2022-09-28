@@ -19,6 +19,7 @@ interface ExecuteArgs {
   actionName: string;
   identity?: Identity;
   payload: Record<string, any>;
+  identityId?: string; // todo: Replace with Identity model. Also probably not nullable since all generated actions require an authenticated context.
 }
 
 const DEFAULT_HOST = "localhost";
@@ -46,9 +47,15 @@ export default class ActionExecutor {
   }
 
   execute = async <ReturnType>(args: ExecuteArgs): Promise<ReturnType> => {
+    var headersInit: HeadersInit = {};
+    if (args.identityId != null) {
+       headersInit = { 'identityId': args.identityId};
+    }
+
     const requestInit: RequestInit = {
       method: "POST",
       body: JSON.stringify(args),
+      headers: headersInit,
     };
 
     const res = await fetch(
