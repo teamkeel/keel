@@ -97,7 +97,7 @@ declare module "@teamkeel/sdk/query" {
   import {
     Conditions,
     ChainedQueryOpts,
-    SqlOptions,
+    SqlOptions, 
     QueryOpts,
     Input,
     OrderClauses,

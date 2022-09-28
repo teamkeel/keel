@@ -60,7 +60,18 @@ func Get(
 	if n > 1 {
 		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
 	}
-	return toLowerCamelMap(result[0]), nil
+
+	resultMap := toLowerCamelMap(result[0])
+
+	authorized, err := EvaluatePermissions(ctx, operation, schema, result[0])
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errors.New("not authorized to access this operation")
+	}
+
+	return resultMap, nil
 }
 
 // addGetImplicitInputFilters adds Where clauses for all the operation inputs, which have type

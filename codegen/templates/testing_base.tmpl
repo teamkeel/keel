@@ -16,8 +16,24 @@ const actionExecutor = new ActionExecutor({ parentPort: parseInt(parentPort, 10)
 // Actions contains all of the Keel schema actions - both built-in actions
 // defined in an *operations* block and custom operations defined in a *functions*
 // block.
-export const Actions = {
-  {{ .Actions }}
-};
+class ActionsWithIdentity {
+  private identityId : string|undefined;
+
+  constructor(identityId: string|undefined) {
+    this.identityId = identityId;
+  }
+
+  {{ .AuthenticatedActions }}
+}
+
+export class Actions {
+  withIdentity = (id: string) => {
+    return new ActionsWithIdentity(id);
+  } 
+
+  {{ .UnauthenticatedActions }}
+}
+
+export const actions = new Actions();
 
 {{ .TestingModelApis }}
