@@ -1,3 +1,10 @@
+## [0.133.1](https://github.com/teamkeel/keel/compare/v0.133.0...v0.133.1) (2022-09-28)
+
+
+### Bug Fixes
+
+* run command ([#402](https://github.com/teamkeel/keel/issues/402)) ([1bd87c1](https://github.com/teamkeel/keel/commit/1bd87c162c6ba38f2669e8c6e0c7915c1e2bb355))
+
 # [0.133.0](https://github.com/teamkeel/keel/compare/v0.132.0...v0.133.0) (2022-09-28)
 
 
