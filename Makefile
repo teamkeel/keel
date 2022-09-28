@@ -18,5 +18,8 @@ test:
 testpretty:
 	go test ./... -count=1 -json | gotestpretty
 
+testintegration:
+	go test ./integration -count=1 -v
+
 wasm:
 	GOOS=js GOARCH=wasm go build -o ./wasm/keel.wasm ./wasm/main.go
