@@ -1,3 +1,10 @@
+# [0.132.0](https://github.com/teamkeel/keel/compare/v0.131.0...v0.132.0) (2022-09-28)
+
+
+### Features
+
+* integration test fix ([#397](https://github.com/teamkeel/keel/issues/397)) ([76a9bdb](https://github.com/teamkeel/keel/commit/76a9bdbe968ac410bf447607cb142263055f99bb))
+
 # [0.131.0](https://github.com/teamkeel/keel/compare/v0.130.0...v0.131.0) (2022-09-28)
 
 
