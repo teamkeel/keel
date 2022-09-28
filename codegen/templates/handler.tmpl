@@ -1,6 +1,4 @@
 {{ .Imports }}
-
-import { DatabaseError } from 'pg-protocol';
 import {
   createQueryLoggingInterceptor
 } from 'slonik-interceptor-query-logging';
@@ -38,9 +36,11 @@ const ADMIN_SHUTDOWN_CODE = '57P01';
 process.on("uncaughtException", (err, next) => {
   const { name } = err.constructor;
 
+  // err instanceof DatabaseError doesnt work when the DatabaseError is from a different package
   if (name === 'DatabaseError' && err.code === ADMIN_SHUTDOWN_CODE) {
     return;
   }
 
+  // If it's any other kind of uncaught exception then exit with a non zero exit code
   process.exit(1);
 });
