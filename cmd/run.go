@@ -48,7 +48,7 @@ var runCmd = &cobra.Command{
 	Short: "Run your Keel App locally",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		schemaDir, _ := cmd.Flags().GetString("dir")
-
+		b := &schema.Builder{}
 		useExistingContainer := !runCmdFlagReset
 		dbConn, dbConnInfo, err := database.Start(useExistingContainer)
 
@@ -149,7 +149,7 @@ var runCmd = &cobra.Command{
 			}
 
 			fmt.Println("📂 Loading schema files")
-			b := &schema.Builder{}
+
 			protoSchema, err := b.MakeFromDirectory(schemaDir)
 
 			if err != nil {
@@ -172,6 +172,7 @@ var runCmd = &cobra.Command{
 			fmt.Println("✅ Schema is valid")
 
 			m := migrations.New(protoSchema, currSchema)
+
 			if m.HasChanges() {
 				fmt.Println("💿 Applying migrations")
 				err = m.Apply(db)
@@ -191,12 +192,6 @@ var runCmd = &cobra.Command{
 			currSchema = protoSchema
 			fmt.Println("🎉 You're ready to roll")
 		}
-
-		stopWatcher, err := onSchemaFileChanges(schemaDir, hasCustomFunctions(currSchema), reloadSchema)
-		if err != nil {
-			panic(err)
-		}
-		defer stopWatcher()
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			mutex.Lock()
@@ -264,6 +259,16 @@ var runCmd = &cobra.Command{
 		})
 
 		reloadSchema("")
+
+		// this needs to be executed here because
+		// reloadSchema populates the currSchema
+		hasCustomFunctions := hasCustomFunctions(currSchema)
+
+		stopWatcher, err := onSchemaFileChanges(schemaDir, hasCustomFunctions, reloadSchema)
+		if err != nil {
+			panic(err)
+		}
+		defer stopWatcher()
 
 		// Then spawn a node server
 		nodeProcess = spawnNodeProcess()
