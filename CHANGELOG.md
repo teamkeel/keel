@@ -1,3 +1,10 @@
+# [0.131.0](https://github.com/teamkeel/keel/compare/v0.130.0...v0.131.0) (2022-09-28)
+
+
+### Features
+
+* added authenticate action to test framework ([#382](https://github.com/teamkeel/keel/issues/382)) ([b37a19f](https://github.com/teamkeel/keel/commit/b37a19f6ead4371dea0cb409ffc910bd6bd6bef7))
+
 # [0.130.0](https://github.com/teamkeel/keel/compare/v0.129.0...v0.130.0) (2022-09-27)
 
 
