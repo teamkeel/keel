@@ -507,6 +507,45 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 				return t.Unix(), nil
 			},
 		},
+		"year": &graphql.Field{
+			Name: "year",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				d, ok := p.Source.(time.Time)
+
+				if !ok {
+					return nil, fmt.Errorf("not a valid date")
+				}
+
+				return d.Year(), nil
+			},
+		},
+		"month": &graphql.Field{
+			Name: "month",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				d, ok := p.Source.(time.Time)
+
+				if !ok {
+					return nil, fmt.Errorf("not a valid date")
+				}
+
+				return int(d.Month()), nil
+			},
+		},
+		"day": &graphql.Field{
+			Name: "day",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				d, ok := p.Source.(time.Time)
+
+				if !ok {
+					return nil, fmt.Errorf("not a valid date")
+				}
+
+				return d.Day(), nil
+			},
+		},
 		"formatted": formattedDateType,
 		"fromNow":   &fromNowType,
 	},
