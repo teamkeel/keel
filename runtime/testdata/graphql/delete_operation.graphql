@@ -43,5 +43,6 @@ type Person {
 
 type Timestamp {
   formatted(format: String!): String!
+  fromNow: String!
   seconds: Int!
 }

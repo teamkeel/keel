@@ -8,6 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nleeper/goment"
+
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
@@ -434,6 +436,26 @@ func (mk *graphqlSchemaBuilder) addEnum(e *proto.Enum) *graphql.Enum {
 	return enum
 }
 
+var fromNowType = graphql.Field{
+	Name: "fromNow",
+	Type: graphql.NewNonNull(graphql.String),
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		t, ok := p.Source.(time.Time)
+
+		if !ok {
+			return nil, fmt.Errorf("not a valid time")
+		}
+
+		g, err := goment.New(t)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return g.FromNow(), nil
+	},
+}
+
 var formattedDateType = &graphql.Field{
 	Name:        "formatted",
 	Description: "Formatted timestamp. Uses standard datetime formats",
@@ -461,6 +483,7 @@ var formattedDateType = &graphql.Field{
 		// formats such as YYYY-mm-dd so therefore the library below
 		// provides a conversion inbetween standard date formats and go's
 		// layout format system
+		// n.b this might be bet
 		layout := GoDateFormat.ConvertFormat(formatArg)
 
 		return t.Format(layout), nil
@@ -485,7 +508,7 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"formatted": formattedDateType,
-		// TODO: add `fromNow`
+		"fromNow":   &fromNowType,
 	},
 })
 
@@ -505,6 +528,7 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 				return d.Year(), nil
 			},
 		},
+		"fromNow": &fromNowType,
 		"month": &graphql.Field{
 			Name: "month",
 			Type: graphql.NewNonNull(graphql.Int),
@@ -532,7 +556,6 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 			},
 		},
 		"formatted": formattedDateType,
-		// TODO: add `fromNow`
 	},
 })
 
