@@ -1,3 +1,10 @@
+# [0.135.0](https://github.com/teamkeel/keel/compare/v0.134.0...v0.135.0) (2022-09-29)
+
+
+### Features
+
+* graphql timestamp implementation ([#404](https://github.com/teamkeel/keel/issues/404)) ([88ddee7](https://github.com/teamkeel/keel/commit/88ddee71d1c6519f39955667d3bdc693e3d51ae1))
+
 # [0.134.0](https://github.com/teamkeel/keel/compare/v0.133.1...v0.134.0) (2022-09-28)
 
 
