@@ -1,3 +1,10 @@
+## [0.141.1](https://github.com/teamkeel/keel/compare/v0.141.0...v0.141.1) (2022-09-29)
+
+
+### Bug Fixes
+
+* replace date formatting library ([#412](https://github.com/teamkeel/keel/issues/412)) ([26a1b05](https://github.com/teamkeel/keel/commit/26a1b052c05c51a81c327f21e3c5dfedd4d2374f))
+
 # [0.141.0](https://github.com/teamkeel/keel/compare/v0.140.0...v0.141.0) (2022-09-29)
 
 
