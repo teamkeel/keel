@@ -38,6 +38,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/urfave/cli/v2 v2.14.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.0 // indirect
+	github.com/vigneshuvi/GoDateFormat v0.0.0-20210204121036-67364dc23c79 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/text v0.3.7 // indirect

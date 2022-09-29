@@ -12,6 +12,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/vigneshuvi/GoDateFormat"
 )
 
 var deleteResponseType = graphql.NewObject(graphql.ObjectConfig{
@@ -433,6 +434,39 @@ func (mk *graphqlSchemaBuilder) addEnum(e *proto.Enum) *graphql.Enum {
 	return enum
 }
 
+var formattedDateType = &graphql.Field{
+	Name:        "formatted",
+	Description: "Formatted timestamp. Uses standard datetime formats",
+	Type:        graphql.NewNonNull(graphql.String),
+	Args: graphql.FieldConfigArgument{
+		"format": &graphql.ArgumentConfig{
+			Type: graphql.NewNonNull(graphql.String),
+		},
+	},
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		t, ok := p.Source.(time.Time)
+
+		if !ok {
+			return nil, fmt.Errorf("not a valid time")
+		}
+
+		formatArg, ok := p.Args["format"].(string)
+
+		if !ok {
+			return nil, fmt.Errorf("no format argument provided")
+		}
+
+		// Go prefers to use layout as the basis for date formats
+		// However most users of the api will likely be used to date
+		// formats such as YYYY-mm-dd so therefore the library below
+		// provides a conversion inbetween standard date formats and go's
+		// layout format system
+		layout := GoDateFormat.ConvertFormat(formatArg)
+
+		return t.Format(layout), nil
+	},
+}
+
 var timestampType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Timestamp",
 	Fields: graphql.Fields{
@@ -441,16 +475,17 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Seconds since unix epoch",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				time, ok := p.Source.(time.Time)
+				t, ok := p.Source.(time.Time)
 
 				if !ok {
 					return nil, fmt.Errorf("not a valid time")
 				}
 
-				return time.Unix(), nil
+				return t.Unix(), nil
 			},
 		},
-		// TODO: add `fromNow` and `formatted` fields
+		"formatted": formattedDateType,
+		// TODO: add `fromNow`
 	},
 })
 
@@ -496,7 +531,8 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 				return d.Day(), nil
 			},
 		},
-		// TODO: add `fromNow` and `formatted` fields
+		"formatted": formattedDateType,
+		// TODO: add `fromNow`
 	},
 })
 
