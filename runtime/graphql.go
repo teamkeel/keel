@@ -463,7 +463,6 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 				return time.Unix(), nil
 			},
 		},
-		"fromNow": &graphql.Field{},
 		// TODO: add `fromNow` and `formatted` fields
 	},
 })
