@@ -1,3 +1,10 @@
+# [0.138.0](https://github.com/teamkeel/keel/compare/v0.137.0...v0.138.0) (2022-09-29)
+
+
+### Features
+
+* support formatted field for dates and timestamps ([#407](https://github.com/teamkeel/keel/issues/407)) ([143acd8](https://github.com/teamkeel/keel/commit/143acd8b9bde03b2041ff88ee198f267e4a102ac))
+
 # [0.137.0](https://github.com/teamkeel/keel/compare/v0.136.0...v0.137.0) (2022-09-29)
 
 
