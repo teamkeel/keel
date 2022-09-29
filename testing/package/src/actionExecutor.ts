@@ -49,7 +49,7 @@ export default class ActionExecutor {
   execute = async <ReturnType>(args: ExecuteArgs): Promise<ReturnType> => {
     var headersInit: HeadersInit = {};
     if (args.identityId != null) {
-       headersInit = { 'identityId': args.identityId};
+      headersInit = { identityId: args.identityId };
     }
 
     const requestInit: RequestInit = {
