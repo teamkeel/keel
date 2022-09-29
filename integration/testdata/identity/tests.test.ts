@@ -1,7 +1,7 @@
-import { test, expect, Actions } from '@teamkeel/testing'
+import { test, expect, actions, Post } from '@teamkeel/testing'
 
 test('create identity', async () => {
-  const { identityId, identityCreated } = await Actions.authenticate({ 
+  const { identityId, identityCreated } = await actions.authenticate({ 
     createIfNotExists: true, 
     email: 'user1@keel.xyz',
     password: '1234'})
@@ -10,7 +10,7 @@ test('create identity', async () => {
 })
 
 test('do not create identity', async () => {
-  const { identityId, identityCreated } = await Actions.authenticate({ 
+  const { identityId, identityCreated } = await actions.authenticate({ 
     createIfNotExists: false, 
     email: 'user2@keel.xyz',
     password: '1234'})
@@ -20,12 +20,12 @@ test('do not create identity', async () => {
 })
 
 test('authentication successful', async () => {
-  const { identityId: id1, identityCreated: created1 } = await Actions.authenticate({ 
+  const { identityId: id1, identityCreated: created1 } = await actions.authenticate({ 
     createIfNotExists: true, 
     email: 'user3@keel.xyz',
     password: '1234'})
 
-  const { identityId: id2, identityCreated: created2 } = await Actions.authenticate({ 
+  const { identityId: id2, identityCreated: created2 } = await actions.authenticate({ 
     createIfNotExists: true, 
     email: 'user3@keel.xyz',
     password: '1234'})
@@ -36,12 +36,12 @@ test('authentication successful', async () => {
 })
 
 test('authentication unsuccessful', async () => {
-  const { identityId: id1, identityCreated: created1, errors: errors1 } = await Actions.authenticate({ 
+  const { identityId: id1, identityCreated: created1, errors: errors1 } = await actions.authenticate({ 
     createIfNotExists: true, 
     email: 'user4@keel.xyz',
     password: '1234'})
 
-  const { identityId: id2, identityCreated: created2 } = await Actions.authenticate({ 
+  const { identityId: id2, identityCreated: created2 } = await actions.authenticate({ 
     createIfNotExists: true, 
     email: 'user4@keel.xyz',
     password: 'zzzz'})

@@ -742,12 +742,12 @@ func (gen *Generator) GenerateTesting() (r string) {
 		return acc
 	}
 
-	renderActions := func(schema *proto.Schema) (r string) {
+	renderAuthenticatedActions := func(schema *proto.Schema) (r string) {
 		actions := lo.FlatMap(schema.Models, func(m *proto.Model, _ int) []*proto.Operation {
 			return m.Operations
 		})
 
-		for i, action := range actions {
+		for _, action := range actions {
 			returnType := ""
 
 			switch action.Type {
@@ -761,31 +761,47 @@ func (gen *Generator) GenerateTesting() (r string) {
 				returnType = fmt.Sprintf("ReturnTypes.FunctionUpdateResponse<Client.%s>", action.ModelName)
 			case proto.OperationType_OPERATION_TYPE_GET:
 				returnType = fmt.Sprintf("ReturnTypes.FunctionGetResponse<Client.%s>", action.ModelName)
+			default:
+				continue
+			}
+
+			r += renderTemplate(TemplateInstanceProperty, map[string]interface{}{
+				"Name": action.Name,
+				"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload, identityId: this.identityId })", returnType, action.Name),
+			})
+		}
+
+		return r
+	}
+
+	renderUnauthenticatedActions := func(schema *proto.Schema) (r string) {
+		actions := lo.FlatMap(schema.Models, func(m *proto.Model, _ int) []*proto.Operation {
+			return m.Operations
+		})
+
+		for _, action := range actions {
+			returnType := ""
+
+			switch action.Type {
 			case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
 				returnType = fmt.Sprintf("ReturnTypes.FunctionAuthenticateResponse<Client.%s>", action.ModelName)
 			default:
 				continue
 			}
 
-			if len(actions) == 1 || i == len(actions)-1 {
-				r += renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": action.Name,
-					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", returnType, action.Name),
-				})
-			} else {
-				r += fmt.Sprintf("%s,\n", renderTemplate(TemplateProperty, map[string]interface{}{
-					"Name": action.Name,
-					"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", returnType, action.Name),
-				}))
-			}
+			r += renderTemplate(TemplateInstanceProperty, map[string]interface{}{
+				"Name": action.Name,
+				"Type": fmt.Sprintf("async (payload: any) => await actionExecutor.execute<%s>({ actionName: '%s', payload })", returnType, action.Name),
+			})
 		}
 
 		return r
 	}
 
 	r += renderTemplate(TemplateTestingBase, map[string]interface{}{
-		"TestingModelApis": renderApis(gen.schema.Models),
-		"Actions":          renderActions(gen.schema),
+		"TestingModelApis":       renderApis(gen.schema.Models),
+		"AuthenticatedActions":   renderAuthenticatedActions(gen.schema),
+		"UnauthenticatedActions": renderUnauthenticatedActions(gen.schema),
 	})
 
 	return r
@@ -851,6 +867,7 @@ var (
 	TemplateEnum                    = "enum"
 	TemplateEnumValue               = "enum_value"
 	TemplateProperty                = "property"
+	TemplateInstanceProperty        = "instance_property"
 	TemplateInterface               = "interface"
 	TemplateTypeAlias               = "type_alias"
 	TemplateHandler                 = "handler"

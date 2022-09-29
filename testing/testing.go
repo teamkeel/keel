@@ -15,6 +15,7 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/samber/lo"
+	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
@@ -137,12 +138,18 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 				body := &ActionRequest{}
 				json.Unmarshal(b, body)
 
+				identityIdHeader := r.Header.Get("identityId")
+				identityId, _ := ksuid.Parse(identityIdHeader)
+
 				for _, model := range schema.Models {
 					for _, action := range model.Operations {
 						if action.Name == body.ActionName {
 							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
 								ctx := r.Context()
 								ctx = runtimectx.WithDatabase(ctx, db)
+								if identityId != ksuid.Nil {
+									ctx = runtimectx.WithIdentity(ctx, &identityId)
+								}
 
 								switch action.Type {
 								case proto.OperationType_OPERATION_TYPE_GET:
@@ -200,6 +207,8 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 
 									identityId, identityCreated, err := actions.Authenticate(ctx, schema, &authArgs)
 
+									// todo: this doesn't nicely match what the user might expect to be returned from authenticate()
+									// do we refactor this to return a token?
 									var r map[string]any
 									if identityId == nil {
 										r = map[string]any{

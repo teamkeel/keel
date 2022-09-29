@@ -183,19 +183,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return result, err
 			}
 
-			resultMap := result.(map[string]any)
-			if !ok {
-				return nil, errors.New("result not a map")
-			}
-
-			authorized, err := actions.EvaluatePermissions(p.Context, op, schema, resultMap)
-			if err != nil {
-				return nil, err
-			}
-			if !authorized {
-				return nil, errors.New("not authorized to access this operation")
-			}
-
 			return result, err
 		}
 		mk.query.AddFieldConfig(op.Name, field)
