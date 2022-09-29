@@ -1,3 +1,10 @@
+# [0.136.0](https://github.com/teamkeel/keel/compare/v0.135.0...v0.136.0) (2022-09-29)
+
+
+### Features
+
+* implement gql date type sub fields ([#406](https://github.com/teamkeel/keel/issues/406)) ([113d308](https://github.com/teamkeel/keel/commit/113d308949c2416c1c1bcc9c60224cf3068a050e))
+
 # [0.135.0](https://github.com/teamkeel/keel/compare/v0.134.0...v0.135.0) (2022-09-29)
 
 
