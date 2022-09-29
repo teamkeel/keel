@@ -1,3 +1,10 @@
+# [0.140.0](https://github.com/teamkeel/keel/compare/v0.139.0...v0.140.0) (2022-09-29)
+
+
+### Features
+
+* fromNow ([#410](https://github.com/teamkeel/keel/issues/410)) ([56172e1](https://github.com/teamkeel/keel/commit/56172e12ffdf675f9beef3e5b1d4171b4682090e))
+
 # [0.139.0](https://github.com/teamkeel/keel/compare/v0.138.0...v0.139.0) (2022-09-29)
 
 
