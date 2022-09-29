@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
@@ -98,6 +99,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 		Name:   model.Name,
 		Fields: graphql.Fields{},
 	})
+
 	mk.types[fmt.Sprintf("model-%s", model.Name)] = object
 
 	for _, field := range model.Fields {
@@ -164,7 +166,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				},
 			}
 		}
-
 	}
 
 	switch op.Type {
@@ -449,13 +450,20 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Timestamp",
 	Fields: graphql.Fields{
 		"seconds": &graphql.Field{
-			Name: "seconds",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(graphql.ResolveParams) (interface{}, error) {
-				// TODO: implement this
-				panic("not implemented")
+			Name:        "seconds",
+			Description: "Seconds since unix epoch",
+			Type:        graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				time, ok := p.Source.(time.Time)
+
+				if !ok {
+					return nil, fmt.Errorf("not a valid time")
+				}
+
+				return time.Unix(), nil
 			},
 		},
+		"fromNow": &graphql.Field{},
 		// TODO: add `fromNow` and `formatted` fields
 	},
 })
@@ -524,6 +532,7 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 	default:
 		var ok bool
 		out, ok = protoTypeToGraphQLOutput[field.Type.Type]
+
 		if !ok {
 			return out, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
 		}
@@ -621,6 +630,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.
 		if !ok {
 			return nil, fmt.Errorf("operation %s has unsupposed input type %s", op.OperationName, op.Type.Type.String())
 		}
+
 	}
 
 	if !op.Optional {
