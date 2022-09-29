@@ -58,5 +58,6 @@ type PageInfo {
 
 type Timestamp {
   formatted(format: String!): String!
+  fromNow: String!
   seconds: Int!
 }
