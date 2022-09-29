@@ -291,10 +291,12 @@ var runCmd = &cobra.Command{
 func clearTerminal() {
 	cmd := exec.Command("clear")
 	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	if err != nil {
-		panic(err)
-	}
+
+	// We do not mind if the clear command fails
+	// because clear isn't implemented in some terminals
+	// and it fails in the VSCode debugger so we don't want
+	// to panic as we were doing originally.
+	cmd.Run()
 }
 
 func printRunHeader(dir string, dbConnInfo *database.ConnectionInfo) {
