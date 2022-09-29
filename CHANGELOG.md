@@ -1,3 +1,10 @@
+# [0.141.0](https://github.com/teamkeel/keel/compare/v0.140.0...v0.141.0) (2022-09-29)
+
+
+### Features
+
+* add date fields to timestamp ([#411](https://github.com/teamkeel/keel/issues/411)) ([6131163](https://github.com/teamkeel/keel/commit/6131163e2eb101c55451e477cb11adba433c98fb))
+
 # [0.140.0](https://github.com/teamkeel/keel/compare/v0.139.0...v0.140.0) (2022-09-29)
 
 
