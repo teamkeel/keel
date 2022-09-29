@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bykof/gostradamus"
 	"github.com/nleeper/goment"
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
-	"github.com/vigneshuvi/GoDateFormat"
 )
 
 var deleteResponseType = graphql.NewObject(graphql.ObjectConfig{
@@ -483,10 +483,10 @@ var formattedDateType = &graphql.Field{
 		// formats such as YYYY-mm-dd so therefore the library below
 		// provides a conversion inbetween standard date formats and go's
 		// layout format system
-		// n.b this might be bet
-		layout := GoDateFormat.ConvertFormat(formatArg)
+		// Format spec: https://github.com/bykof/gostradamus/blob/master/formatting.go#L11-L42
+		dateTime := gostradamus.DateTimeFromTime(t)
 
-		return t.Format(layout), nil
+		return dateTime.Format(formatArg), nil
 	},
 }
 
