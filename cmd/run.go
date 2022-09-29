@@ -17,6 +17,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
+	"github.com/rs/cors"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
@@ -254,6 +255,8 @@ var runCmd = &cobra.Command{
 				return
 			}
 
+			w.Header().Add("Content-Type", "application/json")
+
 			w.WriteHeader(response.Status)
 			w.Write(response.Body)
 		})
@@ -273,7 +276,8 @@ var runCmd = &cobra.Command{
 		// Then spawn a node server
 		nodeProcess = spawnNodeProcess()
 
-		go http.ListenAndServe(":"+runCmdFlagPort, nil)
+		handler := cors.Default().Handler(http.DefaultServeMux)
+		go http.ListenAndServe(":"+runCmdFlagPort, handler)
 
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
