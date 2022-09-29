@@ -66,5 +66,6 @@ type PageInfo {
 }
 
 type Timestamp {
+  formatted(format: String!): String!
   seconds: Int!
 }

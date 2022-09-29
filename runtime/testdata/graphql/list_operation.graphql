@@ -67,6 +67,7 @@ type AuthenticateResponse {
 
 type Date {
   day: Int!
+  formatted(format: String!): String!
   month: Int!
   year: Int!
 }
@@ -97,6 +98,7 @@ type PersonEdge {
 }
 
 type Timestamp {
+  formatted(format: String!): String!
   seconds: Int!
 }
 
