@@ -581,7 +581,13 @@ func (gen *Generator) GenerateInputs(typings bool) (r string) {
 	return r
 }
 
-func (gen *Generator) GenerateEntryPoint() (r string) {
+type EntryPointRenderArguments struct {
+	Functions string
+	Imports   string
+	API       string
+}
+
+func (gen *Generator) GenerateEntryPointRenderArguments() EntryPointRenderArguments {
 	renderFunctions := func(sch *proto.Schema) (acc string) {
 		for _, model := range sch.Models {
 			functions := lo.Filter(model.Operations, func(o *proto.Operation, _ int) bool {
@@ -713,10 +719,20 @@ func (gen *Generator) GenerateEntryPoint() (r string) {
 		})
 	}
 
+	return EntryPointRenderArguments{
+		Functions: renderFunctions(gen.schema),
+		Imports:   renderImports(gen.schema),
+		API:       renderApi(gen.schema),
+	}
+}
+
+func (gen *Generator) GenerateEntryPoint() (r string) {
+	renderArgs := gen.GenerateEntryPointRenderArguments()
+
 	r += renderTemplate(TemplateHandler, map[string]interface{}{
-		"Functions": renderFunctions(gen.schema),
-		"Imports":   renderImports(gen.schema),
-		"API":       renderApi(gen.schema),
+		"Functions": renderArgs.Functions,
+		"Imports":   renderArgs.Imports,
+		"API":       renderArgs.API,
 	})
 
 	return r
