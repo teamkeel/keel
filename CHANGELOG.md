@@ -1,3 +1,10 @@
+# [0.137.0](https://github.com/teamkeel/keel/compare/v0.136.0...v0.137.0) (2022-09-29)
+
+
+### Features
+
+* crude withIdentity(string) support in test framework ([#403](https://github.com/teamkeel/keel/issues/403)) ([5da1886](https://github.com/teamkeel/keel/commit/5da18868412e050db3011fb89f608bae6c4282ff))
+
 # [0.136.0](https://github.com/teamkeel/keel/compare/v0.135.0...v0.136.0) (2022-09-29)
 
 
