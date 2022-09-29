@@ -1,3 +1,10 @@
+# [0.139.0](https://github.com/teamkeel/keel/compare/v0.138.0...v0.139.0) (2022-09-29)
+
+
+### Features
+
+* separate codegen entrypoint from its args ([8621396](https://github.com/teamkeel/keel/commit/8621396167053fa99ce236699c317dd32193aef8))
+
 # [0.138.0](https://github.com/teamkeel/keel/compare/v0.137.0...v0.138.0) (2022-09-29)
 
 
