@@ -1,3 +1,10 @@
+# [0.144.0](https://github.com/teamkeel/keel/compare/v0.143.0...v0.144.0) (2022-09-30)
+
+
+### Features
+
+* local cors ([d93db30](https://github.com/teamkeel/keel/commit/d93db30fae3686022352584edb5973d4efbd8f7d))
+
 # [0.143.0](https://github.com/teamkeel/keel/compare/v0.142.0...v0.143.0) (2022-09-30)
 
 
