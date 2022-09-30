@@ -238,11 +238,12 @@ declare module "@teamkeel/sdk/returnTypes" {
 
   export interface FunctionDeleteResponse<T> {
     success: boolean;
+    errors?: FunctionError[];
   }
 
   export interface FunctionListResponse<T> {
     collection: T[];
-
+    errors?: FunctionError[];
     // todo: add type for pagination
   }
 
