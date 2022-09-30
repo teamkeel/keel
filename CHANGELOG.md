@@ -1,3 +1,10 @@
+# [0.145.0](https://github.com/teamkeel/keel/compare/v0.144.0...v0.145.0) (2022-09-30)
+
+
+### Features
+
+* permissions on delete() and integration tests ([#415](https://github.com/teamkeel/keel/issues/415)) ([8170b6e](https://github.com/teamkeel/keel/commit/8170b6e617b245463e59fafcd1e8842e06ab6fc6))
+
 # [0.144.0](https://github.com/teamkeel/keel/compare/v0.143.0...v0.144.0) (2022-09-30)
 
 
