@@ -1,3 +1,10 @@
+## [0.145.1](https://github.com/teamkeel/keel/compare/v0.145.0...v0.145.1) (2022-09-30)
+
+
+### Bug Fixes
+
+* bump to rerun tests ([5397469](https://github.com/teamkeel/keel/commit/53974693159d24f1c7dd4b461fda85fbf5843d99))
+
 # [0.145.0](https://github.com/teamkeel/keel/compare/v0.144.0...v0.145.0) (2022-09-30)
 
 
