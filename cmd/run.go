@@ -3,7 +3,6 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -206,59 +205,13 @@ var runCmd = &cobra.Command{
 				return
 			}
 
-			if currSchema == nil {
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write([]byte("Cannot serve requests when schema contains errors"))
-				return
-			}
-
-			handler := runtime.NewHandler(currSchema)
-
-			body, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
-				return
-			}
-
-			identityId, err := runtime.RetrieveIdentityClaim(r)
-
-			switch {
-			case errors.Is(err, runtime.ErrInvalidToken) || errors.Is(err, runtime.ErrTokenExpired):
-				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte("Valid bearer token required to authenticate"))
-				return
-			case errors.Is(err, runtime.ErrNoBearerPrefix):
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write([]byte(err.Error()))
-				return
-			case errors.Is(err, runtime.ErrInvalidIdentityClaim):
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
-				return
-			}
-
 			ctx := r.Context()
-			ctx = runtimectx.WithIdentity(ctx, identityId)
 			ctx = runtimectx.WithDatabase(ctx, db)
 			ctx = runtime.WithFunctionsClient(ctx, nodeClient)
+			r.WithContext(ctx)
 
-			response, err := handler(&runtime.Request{
-				Context: ctx,
-				Path:    r.URL.Path,
-				Body:    body,
-			})
-
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
-				return
-			}
-
-			w.Header().Add("Content-Type", "application/json")
-
-			w.WriteHeader(response.Status)
-			w.Write(response.Body)
+			handler := runtime.Serve(currSchema)
+			handler(w, r)
 		})
 
 		reloadSchema("")
