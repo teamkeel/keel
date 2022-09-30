@@ -3,11 +3,15 @@ package runtime
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
 type Request struct {
@@ -22,6 +26,62 @@ type Response struct {
 }
 
 type Handler func(r *Request) (*Response, error)
+
+func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if currSchema == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("Cannot serve requests when schema contains errors"))
+			return
+		}
+
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		handler := NewHandler(currSchema)
+
+		identityId, err := RetrieveIdentityClaim(r)
+
+		switch {
+		case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired):
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Valid bearer token required to authenticate"))
+			return
+		case errors.Is(err, ErrNoBearerPrefix):
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(err.Error()))
+			return
+		case errors.Is(err, ErrInvalidIdentityClaim):
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		ctx := r.Context()
+		ctx = runtimectx.WithIdentity(ctx, identityId)
+
+		response, err := handler(&Request{
+			Context: ctx,
+			Path:    r.URL.Path,
+			Body:    body,
+		})
+
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
+			return
+		}
+
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(response.Status)
+		w.Write(response.Body)
+	}
+
+}
 
 func NewHandler(s *proto.Schema) Handler {
 	handlers := map[string]Handler{}
