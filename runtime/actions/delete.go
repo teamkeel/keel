@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/iancoleman/strcase"
@@ -36,6 +37,31 @@ func Delete(
 	tx, err = addDeleteImplicitInputFilters(operation, args, tx)
 	if err != nil {
 		return false, err
+	}
+
+	// todo: reading the model can be removed once permissions can evaluate at the database-level
+	// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level
+	result := []map[string]any{}
+	tx = tx.Find(&result)
+	if tx.Error != nil {
+		return false, tx.Error
+	}
+	n := len(result)
+	if n == 0 {
+		return false, errors.New("no records found for Delete() operation")
+	}
+	if n > 1 {
+		return false, fmt.Errorf("Delete() operation should find only one record, it found: %d", n)
+	}
+
+	resultMap := toLowerCamelMap(result[0])
+
+	authorized, err := EvaluatePermissions(ctx, operation, schema, resultMap)
+	if err != nil {
+		return false, err
+	}
+	if !authorized {
+		return false, errors.New("not authorized to access this operation")
 	}
 
 	// Execute the SQL query.

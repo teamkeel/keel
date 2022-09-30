@@ -63,6 +63,8 @@ func Get(
 
 	resultMap := toLowerCamelMap(result[0])
 
+	// todo: permissions to evaluate at the database-level where applicable
+	// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level-where-applicable
 	authorized, err := EvaluatePermissions(ctx, operation, schema, result[0])
 	if err != nil {
 		return nil, err

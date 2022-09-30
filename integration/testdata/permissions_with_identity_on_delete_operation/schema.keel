@@ -1,0 +1,26 @@
+model Post {
+    fields {
+        identity Identity?
+
+        emptyIdentity Identity?
+    }
+
+    operations {
+        create createPostWithIdentity() {
+            @set(post.identity = ctx.identity)
+        }
+
+        create createPostWithoutIdentity()
+
+        delete deletePostRequiresSameIdentity() {
+            @permission(expression: post.identity == ctx.identity)
+        }
+    }
+}
+
+api Web {
+    @graphql
+    models {
+        Post
+    }
+}

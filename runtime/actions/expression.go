@@ -208,7 +208,7 @@ func evaluateExpression(
 	operation *proto.Operation,
 	schema *proto.Schema,
 	data map[string]any,
-) (hasPermission bool, err error) {
+) (result bool, err error) {
 
 	conditions := expression.Conditions()
 	if len(conditions) != 1 {
@@ -276,6 +276,9 @@ func GetOperandType(
 	target := operand.Ident.Fragments[0].Fragment
 	switch {
 	case strcase.ToCamel(target) == operation.ModelName:
+		// todo: evaluate at the database-level where applicable
+		// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level-where-applicable
+
 		modelTarget := strcase.ToCamel(target)
 		fieldName := operand.Ident.Fragments[1].Fragment
 
@@ -336,6 +339,7 @@ func evaluateOperandValue(
 			proto.Type_TYPE_BOOL:
 			return fieldValue, nil
 		case proto.Type_TYPE_INT:
+			// todo: unify these to a single type at the source?
 			switch v := fieldValue.(type) {
 			case int:
 				// Sourced from GraphQL input parameters.
