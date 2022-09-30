@@ -1,3 +1,10 @@
+# [0.142.0](https://github.com/teamkeel/keel/compare/v0.141.1...v0.142.0) (2022-09-30)
+
+
+### Features
+
+* permission support on create() ([#408](https://github.com/teamkeel/keel/issues/408)) ([a84a183](https://github.com/teamkeel/keel/commit/a84a18308111ea6f90c805757e9d358f9a208b77))
+
 ## [0.141.1](https://github.com/teamkeel/keel/compare/v0.141.0...v0.141.1) (2022-09-29)
 
 
