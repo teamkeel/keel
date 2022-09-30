@@ -1,3 +1,10 @@
+# [0.143.0](https://github.com/teamkeel/keel/compare/v0.142.0...v0.143.0) (2022-09-30)
+
+
+### Features
+
+* delete and list errors added in sdk ([#414](https://github.com/teamkeel/keel/issues/414)) ([cce1e9d](https://github.com/teamkeel/keel/commit/cce1e9dd4e3244bc6d1c4f5ffa818e2a3c772e17))
+
 # [0.142.0](https://github.com/teamkeel/keel/compare/v0.141.1...v0.142.0) (2022-09-30)
 
 
