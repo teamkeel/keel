@@ -1,3 +1,10 @@
+# [0.146.0](https://github.com/teamkeel/keel/compare/v0.145.1...v0.146.0) (2022-09-30)
+
+
+### Features
+
+* move cors to runtime ([feafb8d](https://github.com/teamkeel/keel/commit/feafb8d96580ac0c2e14fcf1212d2f9c4f537e66))
+
 ## [0.145.1](https://github.com/teamkeel/keel/compare/v0.145.0...v0.145.1) (2022-09-30)
 
 
