@@ -3,7 +3,6 @@ model Post {
         title Text?
         views Number?
         active Boolean?
-        identity Identity?
     }
 
     operations {
@@ -17,11 +16,6 @@ model Post {
 
         create createPostBooleanPermission() with (active) {
             @permission(expression: post.active == true)
-        }
-
-        create createPostIdentityPermission() {
-            @set(post.identity = ctx.identity)
-            @permission(expression: post.identity == ctx.identity)
         }
 
         create createPostTextNotNullPermission() with (title) {

@@ -191,10 +191,11 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_DELETE:
 									// todo: take into account error returned from here
-									res, _ := actions.Delete(ctx, action, schema, body.Payload)
+									res, err := actions.Delete(ctx, action, schema, body.Payload)
 
 									r := map[string]any{
 										"success": res,
+										"errors":  serializeError(err),
 									}
 
 									writeResponse(r, w)
