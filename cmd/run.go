@@ -16,7 +16,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/fatih/color"
 	"github.com/fsnotify/fsnotify"
-	"github.com/rs/cors"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
@@ -208,7 +207,7 @@ var runCmd = &cobra.Command{
 			ctx := r.Context()
 			ctx = runtimectx.WithDatabase(ctx, db)
 			ctx = runtime.WithFunctionsClient(ctx, nodeClient)
-			r.WithContext(ctx)
+			r = r.WithContext(ctx)
 
 			handler := runtime.Serve(currSchema)
 			handler(w, r)
@@ -229,8 +228,7 @@ var runCmd = &cobra.Command{
 		// Then spawn a node server
 		nodeProcess = spawnNodeProcess()
 
-		handler := cors.Default().Handler(http.DefaultServeMux)
-		go http.ListenAndServe(":"+runCmdFlagPort, handler)
+		go http.ListenAndServe(":"+runCmdFlagPort, http.DefaultServeMux)
 
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)

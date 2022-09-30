@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/graphql-go/graphql"
+	"github.com/rs/cors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
@@ -28,7 +29,7 @@ type Response struct {
 type Handler func(r *Request) (*Response, error)
 
 func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+	h := func(w http.ResponseWriter, r *http.Request) {
 		if currSchema == nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Cannot serve requests when schema contains errors"))
@@ -80,6 +81,9 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(response.Status)
 		w.Write(response.Body)
 	}
+
+	handler := http.HandlerFunc(h)
+	return cors.Default().Handler(handler).(http.HandlerFunc)
 
 }
 
