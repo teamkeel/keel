@@ -31,11 +31,12 @@ export interface FunctionGetResponse<T> {
 
 export interface FunctionDeleteResponse<T> {
   success: boolean;
+  errors?: FunctionError[];
 }
 
 export interface FunctionListResponse<T> {
   collection: T[];
-
+  errors?: FunctionError[];
   // todo: add type for pagination
 }
 
