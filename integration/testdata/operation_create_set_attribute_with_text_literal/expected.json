@@ -10,5 +10,4 @@
     { "testName": "do not set required field with default value", "status": "pass" },
     { "testName": "set required field with default value with literal", "status": "pass" },
     { "testName": "set required field with default value with empty literal", "status": "pass" }
-
 ]

@@ -40,11 +40,16 @@ func WithTmpDir(dir string) (string, error) {
 
 const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
 
+var mainDB *gorm.DB
+
 func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string) *gorm.DB {
-	mainDB, err := gorm.Open(
-		postgres.Open(fmt.Sprintf(dbConnString, "keel")),
-		&gorm.Config{})
-	require.NoError(t, err)
+	if mainDB == nil {
+		var err error
+		mainDB, err = gorm.Open(
+			postgres.Open(fmt.Sprintf(dbConnString, "keel")),
+			&gorm.Config{})
+		require.NoError(t, err)
+	}
 
 	require.NoError(t, mainDB.Exec("select pg_terminate_backend(pg_stat_activity.pid) from pg_stat_activity where datname = '"+dbName+"' and pg_stat_activity.pid <> pg_backend_pid();").Error)
 
@@ -53,7 +58,7 @@ func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string)
 	require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
 
 	// Create the database and drop at the end of the test
-	err = mainDB.Exec("CREATE DATABASE " + dbName).Error
+	err := mainDB.Exec("CREATE DATABASE " + dbName).Error
 	require.NoError(t, err)
 
 	t.Cleanup(func() {

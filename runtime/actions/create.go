@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
@@ -12,6 +13,7 @@ import (
 )
 
 func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
+
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
@@ -80,6 +82,14 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		default:
 			return nil, fmt.Errorf("operand type not yet supported")
 		}
+	}
+
+	authorized, err := EvaluatePermissions(ctx, operation, schema, toLowerCamelMap(modelMap))
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errors.New("not authorized to access this operation")
 	}
 
 	// Write a row to the database.

@@ -1,6 +1,18 @@
 [
-    { "testName": "create identity", "status": "pass" },
-    { "testName": "do not create identity", "status": "pass" },
-    { "testName": "authentication successful", "status": "pass" },
-    { "testName": "authentication unsuccessful", "status": "pass" }
+    {
+        "status": "pass",
+        "testName": "create identity"
+    },
+    {
+        "status": "pass",
+        "testName": "do not create identity"
+    },
+    {
+        "status": "pass",
+        "testName": "authentication successful"
+    },
+    {
+        "status": "pass",
+        "testName": "authentication unsuccessful"
+    }
 ]

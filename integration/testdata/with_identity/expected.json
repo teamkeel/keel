@@ -1,4 +1,10 @@
 [
-    { "testName": "authorization successful", "status": "pass" },
-    { "testName": "authorization failed", "status": "pass" }
+    {
+        "status": "pass",
+        "testName": "authorization successful"
+    },
+    {
+        "status": "pass",
+        "testName": "authorization failed"
+    }
 ]

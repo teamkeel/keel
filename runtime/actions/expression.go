@@ -336,13 +336,37 @@ func evaluateOperandValue(
 			proto.Type_TYPE_BOOL:
 			return fieldValue, nil
 		case proto.Type_TYPE_INT:
-			return int64(fieldValue.(int32)), nil // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
-		case proto.Type_TYPE_IDENTITY:
-			value, err := ksuid.Parse(fieldValue.(string))
-			if err != nil {
-				return nil, fmt.Errorf("cannot parse %s to ksuid", fieldValue)
+			switch v := fieldValue.(type) {
+			case int:
+				// Sourced from GraphQL input parameters.
+				return int64(fieldValue.(int)), nil
+			case float64:
+				// Sourced from integration test framework.
+				return int64(fieldValue.(float64)), nil
+			case int32:
+				// Sourced from database.
+				return int64(fieldValue.(int32)), nil // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
+			case int64:
+				// Sourced from a default set value on a field.
+				return fieldValue, nil
+			default:
+				return nil, fmt.Errorf("cannot yet parse %s to int64", v)
 			}
-			return value, nil
+		case proto.Type_TYPE_IDENTITY:
+			switch v := fieldValue.(type) {
+			case *ksuid.KSUID:
+				// Sourced from GraphQL input parameters.
+				return *fieldValue.(*ksuid.KSUID), nil
+			case string:
+				// Sourced from database.
+				value, err := ksuid.Parse(fieldValue.(string))
+				if err != nil {
+					return nil, fmt.Errorf("cannot parse %s to ksuid", fieldValue)
+				}
+				return value, nil
+			default:
+				return nil, fmt.Errorf("cannot yet parse %s to ksuid.KSUID", v)
+			}
 		default:
 			return nil, fmt.Errorf("cannot yet compare operand of type %s", operandType)
 		}

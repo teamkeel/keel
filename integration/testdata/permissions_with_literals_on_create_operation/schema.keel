@@ -1,0 +1,58 @@
+model Post {
+    fields {
+        title Text?
+        views Number?
+        active Boolean?
+        identity Identity?
+    }
+
+    operations {
+        create createPostTextPermission() with (title) {
+            @permission(expression: post.title == "hello")
+        }
+
+        create createPostNumberPermission() with (views) {
+            @permission(expression: post.views == 5)
+        }
+
+        create createPostBooleanPermission() with (active) {
+            @permission(expression: post.active == true)
+        }
+
+        create createPostIdentityPermission() {
+            @set(post.identity = ctx.identity)
+            @permission(expression: post.identity == ctx.identity)
+        }
+
+        create createPostTextNotNullPermission() with (title) {
+            @permission(expression: post.title != null)
+        }
+
+        create createPostTextNullPermission() {
+            @permission(expression: post.title != null)
+        }
+
+        create createPostNumberNotNullPermission() with (views) {
+            @permission(expression: post.views != null)
+        }
+
+        create createPostNumberNullPermission() {
+            @permission(expression: post.views != null)
+        }
+
+        create createPostBooleanNotNullPermission() with (active) {
+            @permission(expression: post.active != null)
+        }
+
+        create createPostBooleanNullPermission() {
+            @permission(expression: post.active != null)
+        }
+    }
+}
+
+api Web {
+    @graphql
+    models {
+        Post
+    }
+}

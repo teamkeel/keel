@@ -1,0 +1,14 @@
+[
+    {
+        "status": "pass",
+        "testName": "same identity permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "different identity permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "unset identity permission failure"
+    }
+]
