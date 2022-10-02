@@ -1,4 +1,4 @@
-import { MatcherTypes } from './types'
+import { MatcherTypes } from "./types";
 
 export class AssertionFailure extends Error {
   readonly actual: any;
