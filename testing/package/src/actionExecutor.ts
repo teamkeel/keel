@@ -13,12 +13,11 @@ interface ActionExecutorArgs {
   parentPort: number;
   host?: string;
   protocol?: string;
-  identity?: Identity;
 }
 
 interface ExecuteArgs {
   actionName: string;
-  identity?: Identity;
+  identityId?: string;
   payload: Record<string, any>;
 }
 
@@ -49,8 +48,11 @@ export default class ActionExecutor {
 
   execute = async <ReturnType>(args: ExecuteArgs): Promise<ReturnType> => {
     var headersInit: HeadersInit = {};
-    if (args.identity != null) {
-      headersInit = { identityId: args.identity.id };
+
+    const { identityId } = args;
+
+    if (identityId != null) {
+      headersInit = { identityId };
     }
 
     const requestInit: RequestInit = {
