@@ -1,3 +1,10 @@
+# [0.148.0](https://github.com/teamkeel/keel/compare/v0.147.2...v0.148.0) (2022-10-02)
+
+
+### Features
+
+* test framework withIdentity() improvements ([#421](https://github.com/teamkeel/keel/issues/421)) ([4e3a1a3](https://github.com/teamkeel/keel/commit/4e3a1a311fd0f1667b6fcad0be986cc2412844f8))
+
 ## [0.147.2](https://github.com/teamkeel/keel/compare/v0.147.1...v0.147.2) (2022-10-02)
 
 
