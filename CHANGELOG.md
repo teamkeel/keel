@@ -1,3 +1,10 @@
+# [0.147.0](https://github.com/teamkeel/keel/compare/v0.146.0...v0.147.0) (2022-10-02)
+
+
+### Features
+
+* upgrading sdk withIdentity(model) ([#420](https://github.com/teamkeel/keel/issues/420)) ([eff0eb5](https://github.com/teamkeel/keel/commit/eff0eb581b4e3c59270520c2f97524c54d27e547))
+
 # [0.146.0](https://github.com/teamkeel/keel/compare/v0.145.1...v0.146.0) (2022-09-30)
 
 
