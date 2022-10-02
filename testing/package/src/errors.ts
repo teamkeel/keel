@@ -1,3 +1,5 @@
+import { MatcherTypes } from './types'
+
 export class AssertionFailure extends Error {
   readonly actual: any;
   readonly expected: any;

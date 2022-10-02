@@ -1,6 +1,6 @@
 import isEqual from "lodash.isequal";
 
-import { Matchers, Value, AssertionFunction } from './types'
+import { ActionError, ActionResult, Matchers, Value } from './types'
 import { AssertionFailure } from "./errors";
 
 type Expect = (actual: Value) => Matchers
@@ -26,35 +26,56 @@ const expect : Expect = (actual: Value) => ({
     }
   },
   // todo: narrow error type below after sdk publish
-  toHaveError: (error: Value) : void => {
+  toHaveError: (error: ActionError) : void => {
+    const actionResult = actual as unknown as ActionResult
+  
+    if (!actionResult.errors) {
+      throw new AssertionFailure(null, error)
+    }
 
+    const match = actionResult.errors.find((e) => {
+      // todo: this needs to be formalised once
+      // error payload is developed further.
+      // e.g factor in error code etc
+      return e.message === error.message
+    });
+
+    if (!match) {
+      throw new AssertionFailure(actionResult.errors, actionResult.errors.concat(error))
+    }
   },
   // Checks for both null and undefined
   toBeEmpty: () : void => {
-
+    if (actual !== undefined && actual !== null) {
+      throw new AssertionFailure(actual, null)
+    }
   },
   // Checks the actual value isnt null or undefined
   notToBeEmpty: () : void => {
-
-  },
-  toBeTrue: () : void => {
-
-  },
-  toBeFalse: () : void => {
-
-  },
-  // toMatchArray will check that actual and expected contain the same elements
-  // without worrying about order.
-  toMatchArray: () : void => {
-
+    if (actual === undefined || actual === null) {
+      throw new AssertionFailure(actual, actual)
+    }
   },
   // toContain will check for existence of item in actual array
-  toContain: () : void => {
+  toContain: (item: Value) : void => {
+    if (!Array.isArray(actual)) {
+      throw new Error('actual is not an array')
+    }
 
+    const match = actual.find((i) => isEqual(i, item))
+    
+    if (!match) {
+      throw new AssertionFailure(actual, actual.concat(item))
+    }
   },
-  satisfy: (assertionFunc: AssertionFunction) : void => {
-    if (!assertionFunc(actual)) {
-      throw new AssertionFailure(actual)
+  notToContain: (item: Value) : void => {
+    if (!Array.isArray(actual)) {
+      throw new Error('actual is not an array')
+    }
+    const match = actual.find((i) => isEqual(i, item))
+    
+    if (match) {
+      throw new AssertionFailure(actual, actual.concat(item))
     }
   }
 })

@@ -1,8 +1,8 @@
 export type TestFunc = () => void | Promise<void>;
 export type TestName = string;
 
-const matcherTypes = <const> ['toEqual', 'notToEqual', 'toHaveError'];
-type MatcherTypes = typeof matcherTypes[number];
+const matcherTypes = <const> ['toEqual', 'notToEqual', 'toHaveError', 'toBeEmpty', 'notToBeEmpty', 'toContain', 'notToContain'];
+export type MatcherTypes = typeof matcherTypes[number];
 type MatcherFunc = any
 export type Matchers = Record<MatcherTypes, MatcherFunc> 
 
@@ -11,9 +11,18 @@ export interface Test {
   fn: TestFunc;
 }
 
+// todo: use sdk types for action results + errors
+export interface ActionError {
+  message: string
+}
+
+export interface ActionResult {
+  errors: ActionError[]
+}
+
 export type AssertionFunction = (actual: Value) => boolean
 
-export type Value = boolean | number | string | null | JsonArray | JsonMap;
+export type Value = boolean | number | string | null | undefined | JsonArray | JsonMap;
 interface JsonMap { [key: string]: Value; }
 interface JsonArray extends Array<Value> {}
 
