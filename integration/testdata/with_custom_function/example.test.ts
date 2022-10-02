@@ -2,7 +2,6 @@ import { test, expect, actions, Person, logger } from '@teamkeel/testing'
 
 test('creating a person', async () => {
   const { object } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPerson({ name: 'foo', gender: 'female', nINumber: '282' })
 
   expect.equal(object.name, 'foo')
@@ -11,7 +10,6 @@ test('creating a person', async () => {
 test('fetching a person by id', async () => {
   const { object: person } = await Person.create({ name: 'bar', gender: 'male', nINumber: '123' })
   const { object } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .getPerson({ id: person.id })
 
   expect.equal(object.id, person.id)
@@ -22,7 +20,6 @@ test('fetching person by additional unique field (not PK)', async () => {
   const { object: person } = await Person.create({ name: 'bar', gender: 'male', nINumber: '333' })
 
   const { object } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .getPerson({ nINumber: '333' })
 
   expect.equal(object.id, person.id)
@@ -34,7 +31,6 @@ test('listing', async () => {
   const { object: x22 } =  await Person.create({ name: 'X22', gender: 'alien', nINumber: '902' })
 
   const { collection: aliens } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .listPeople({ gender: 'alien' })
 
   const alienNames = aliens.map((a) => a.name)
@@ -46,7 +42,6 @@ test('deletion', async () => {
   const { object: person } = await Person.create({ name: 'fred', gender: 'male', nINumber: '678' })
 
   const { success } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePerson({ id: person.id })
 
   expect.equal(success, true)
@@ -56,7 +51,6 @@ test('updating', async () => {
   const { object: person } = await Person.create({ name: 'fred', gender: 'male', nINumber: '678' })
 
   const { object: updatedPerson } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .updatePerson({ where: { id: person.id }, values: { name: 'paul' }})
 
   expect.equal(updatedPerson.name, 'paul')

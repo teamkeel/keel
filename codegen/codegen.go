@@ -808,7 +808,7 @@ func (gen *Generator) GenerateTesting() (r string) {
 
 			switch action.Type {
 			case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-				returnType = fmt.Sprintf("ReturnTypes.FunctionAuthenticateResponse<Client.%s>", action.ModelName)
+				returnType = "ReturnTypes.FunctionAuthenticateResponse"
 			default:
 				continue
 			}

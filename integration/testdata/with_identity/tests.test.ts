@@ -9,11 +9,11 @@ test('authorization successful', async () => {
   const { object: identity } = await Identity.findOne({ id: identityId })
 
   const { object: post } = await actions
-    .withIdentity(identity!)
+    .withIdentity(identity)
     .createPost({ title: 'temp' });
 
   const { errors } = await actions
-    .withIdentity(identity!)
+    .withIdentity(identity)
     .getPost({ id: post.id });
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -23,20 +23,16 @@ test('authorization successful', async () => {
 test('authorization failed', async () => {
   const { identityId: id1 } = await actions.authenticate({ 
     createIfNotExists: true, 
-    email: 'user@keel.xyz',
+    email: 'user1@keel.xyz',
     password: '1234'})
 
   const { identityId: id2 } = await actions.authenticate({ 
     createIfNotExists: true, 
-    email: 'user@keel.xyz',
+    email: 'user2@keel.xyz',
     password: '1234'})
 
   const { object: identity1 } = await Identity.findOne({ id: id1 })
   const { object: identity2 } = await Identity.findOne({ id: id2 })
-
-console.log(identity1)
-console.log(identity1.id)
-
 
   const { object: post } = await actions
     .withIdentity(identity1)

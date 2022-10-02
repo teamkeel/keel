@@ -1,8 +1,19 @@
-import { test, expect, actions, Post } from '@teamkeel/testing'
+import { test, expect, actions, Post, Identity } from '@teamkeel/testing'
+
+const newIdentity = async () => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user@keel.xyz',
+    password: '1234'})
+
+  const { object: identity } = await Identity.findOne({ id: identityId })
+  
+  return identity
+} 
 
 test('same identity permission successful', async () => {
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(await newIdentity())  
     .createPostWithIdentityRequiresSameIdentity({ })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -11,7 +22,7 @@ test('same identity permission successful', async () => {
 
 test('different identity permission successful', async () => {
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(await newIdentity())  
     .createPostWithIdentityRequiresDifferentIdentity({ })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -20,7 +31,7 @@ test('different identity permission successful', async () => {
 
 test('unset identity permission failure', async () => {
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(await newIdentity())  
     .createPostWithoutIdentityRequiresSameIdentity({ })
 
   var authorizationFailed = hasAuthorizationError(errors)
