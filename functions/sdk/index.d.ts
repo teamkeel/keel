@@ -252,8 +252,7 @@ declare module "@teamkeel/sdk/returnTypes" {
     errors?: FunctionError[];
   }
 
-  // todo: should this be moved to codegen?
-  export interface FunctionAuthenticateResponse<T> {
+  export interface FunctionAuthenticateResponse {
     identityId?: string;
     identityCreated: boolean;
     errors?: FunctionError[];
