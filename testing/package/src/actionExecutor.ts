@@ -6,6 +6,7 @@ import {
   FunctionGetResponse,
   FunctionUpdateResponse,
   FunctionListResponse,
+  FunctionAuthenticateResponse,
 } from "@teamkeel/sdk/returnTypes";
 
 interface ActionExecutorArgs {
@@ -19,7 +20,6 @@ interface ExecuteArgs {
   actionName: string;
   identity?: Identity;
   payload: Record<string, any>;
-  identityId?: string; // todo: Replace with Identity model. Also probably not nullable since all generated actions require an authenticated context.
 }
 
 const DEFAULT_HOST = "localhost";
@@ -32,7 +32,8 @@ export type ReturnTypes<T> =
   | FunctionDeleteResponse<T>
   | FunctionGetResponse<T>
   | FunctionUpdateResponse<T>
-  | FunctionListResponse<T>;
+  | FunctionListResponse<T>
+  | FunctionAuthenticateResponse;
 
 // Makes a request to the testing runtime host with
 export default class ActionExecutor {
@@ -48,8 +49,8 @@ export default class ActionExecutor {
 
   execute = async <ReturnType>(args: ExecuteArgs): Promise<ReturnType> => {
     var headersInit: HeadersInit = {};
-    if (args.identityId != null) {
-      headersInit = { identityId: args.identityId };
+    if (args.identity != null) {
+      headersInit = { identityId: args.identity.id };
     }
 
     const requestInit: RequestInit = {
