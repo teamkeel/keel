@@ -17,21 +17,25 @@ const actionExecutor = new ActionExecutor({ parentPort: parseInt(parentPort, 10)
 // defined in an *operations* block and custom operations defined in a *functions*
 // block.
 class ActionsWithIdentity {
-  private identityId : string|undefined;
+  private identity : Client.Identity;
 
-  constructor(identityId: string|undefined) {
-    this.identityId = identityId;
+  constructor(identity: Client.Identity|undefined) {
+    if (identity === undefined) {
+      throw new Error('Identity cannot be null in ActionsWithIdentity.');
+    }
+
+    this.identity = identity;
   }
 
-  {{ .AuthenticatedActions }}
+  {{ .ActionsWithIdentity }}
 }
 
 export class Actions {
-  withIdentity = (id: string) => {
-    return new ActionsWithIdentity(id);
+  withIdentity = (identity: Client.Identity|undefined) => {
+    return new ActionsWithIdentity(identity);
   } 
 
-  {{ .UnauthenticatedActions }}
+  {{ .Actions }}
 }
 
 export const actions = new Actions();

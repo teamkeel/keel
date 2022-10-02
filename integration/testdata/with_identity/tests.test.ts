@@ -1,12 +1,19 @@
-import { test, expect, actions, Post } from '@teamkeel/testing'
+import { test, expect, actions, Post, Identity } from '@teamkeel/testing'
 
 test('authorization successful', async () => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user@keel.xyz',
+    password: '1234'})
+
+  const { object: identity } = await Identity.findOne({ id: identityId })
+
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')
-    .createPost({title: 'temp'});
+    .withIdentity(identity)
+    .createPost({ title: 'temp' });
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')
+    .withIdentity(identity)
     .getPost({ id: post.id });
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -14,12 +21,25 @@ test('authorization successful', async () => {
 })
 
 test('authorization failed', async () => {
+  const { identityId: id1 } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user1@keel.xyz',
+    password: '1234'})
+
+  const { identityId: id2 } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user2@keel.xyz',
+    password: '1234'})
+
+  const { object: identity1 } = await Identity.findOne({ id: id1 })
+  const { object: identity2 } = await Identity.findOne({ id: id2 })
+
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')
-    .createPost({title: 'temp'});
+    .withIdentity(identity1)
+    .createPost({ title: 'temp' });
 
   const { errors } = await actions
-    .withIdentity('2FQqdDYm47mEjgEGsUTtVYbDmuM')
+    .withIdentity(identity2)
     .getPost({ id: post.id });
 
   var authorizationFailed = hasAuthorizationError(errors)

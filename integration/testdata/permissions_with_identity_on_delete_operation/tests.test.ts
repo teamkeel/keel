@@ -1,12 +1,25 @@
-import { test, expect, actions, Post } from '@teamkeel/testing'
+import { test, expect, actions, Post, Identity } from '@teamkeel/testing'
+
+const newIdentity = async (email : string) => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: email,
+    password: '1234'})
+
+  const { object: identity } = await Identity.findOne({ id: identityId })
+  
+  return identity
+} 
 
 test('same identity permission successful', async () => {
+  var identity = await newIdentity('user@keel.xyz')
+
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(identity)  
     .createPostWithIdentity({ })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(identity)  
     .deletePostRequiresSameIdentity({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -14,12 +27,15 @@ test('same identity permission successful', async () => {
 })
 
 test('different identity permission failure', async () => {
+  var identity1 = await newIdentity('user1@keel.xyz')
+  var identity2 = await newIdentity('user2@keel.xyz')
+
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(identity1)  
     .createPostWithIdentity({ })
 
   const { errors } = await actions
-    .withIdentity('2FQqdDYm47mEjgEGsUTtVYbDmuM')  
+    .withIdentity(identity2)  
     .deletePostRequiresSameIdentity({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -27,12 +43,14 @@ test('different identity permission failure', async () => {
 })
 
 test('unset identity permission failure', async () => {
+  var identity = await newIdentity('user@keel.xyz')
+
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(identity)  
     .createPostWithoutIdentity({ })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
+    .withIdentity(identity)  
     .deletePostRequiresSameIdentity({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)

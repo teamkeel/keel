@@ -2,11 +2,9 @@ import { test, expect, actions, Post } from '@teamkeel/testing'
 
 test('text permission successful', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithTitle({ title: "hello" })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostTextPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -15,11 +13,9 @@ test('text permission successful', async () => {
 
 test('text permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithTitle({ title: "not hello" })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostTextPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -28,11 +24,9 @@ test('text permission failed', async () => {
 
 test('number permission successful', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithViews({ views: 5 })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostNumberPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -41,11 +35,9 @@ test('number permission successful', async () => {
 
 test('number permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithViews({ views: 500 })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostNumberPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -54,11 +46,9 @@ test('number permission failed', async () => {
 
 test('boolean permission successful', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithActive({ active: true })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostBooleanPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -67,11 +57,9 @@ test('boolean permission successful', async () => {
 
 test('boolean permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithActive({ active: false })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostBooleanPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -80,11 +68,9 @@ test('boolean permission failed', async () => {
 
 test('text not null permission successful', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithTitle({ title: "hello" })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostTextNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -93,11 +79,9 @@ test('text not null permission successful', async () => {
 
 test('text not null permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithTitle({ title: null })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostTextNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -106,11 +90,9 @@ test('text not null permission failed', async () => {
 
 test('text not null from default permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPost({})
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostTextNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -119,11 +101,9 @@ test('text not null from default permission failed', async () => {
 
 test('number not null permission successful', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithViews({ views: 5 })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostNumberNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -132,11 +112,9 @@ test('number not null permission successful', async () => {
 
 test('number not null permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithViews({ views: null })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostNumberNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -145,11 +123,9 @@ test('number not null permission failed', async () => {
 
 test('number not null from default permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPost({})
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostNumberNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -158,11 +134,9 @@ test('number not null from default permission failed', async () => {
 
 test('boolean not null permission successful', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithActive({ active: true })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostBooleanNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -171,11 +145,9 @@ test('boolean not null permission successful', async () => {
 
 test('boolean not null permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPostWithActive({ active: null })
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostBooleanNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
@@ -184,11 +156,9 @@ test('boolean not null permission failed', async () => {
 
 test('boolean not null from default permission failed', async () => {
   const { object: post } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .createPost({})
 
   const { errors } = await actions
-    .withIdentity('0ujsszgFvbiEr7CDgE3z8MAUPFt')  
     .deletePostBooleanNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)

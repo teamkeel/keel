@@ -33,6 +33,7 @@ func TestIntegration(t *gotest.T) {
 	for _, e := range entries {
 		t.Run(e.Name(), func(t *gotest.T) {
 			workingDir, err := testhelpers.WithTmpDir(filepath.Join("./testdata", e.Name()))
+			fmt.Println(workingDir)
 
 			require.NoError(t, err)
 
