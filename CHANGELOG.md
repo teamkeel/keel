@@ -1,3 +1,10 @@
+## [0.147.1](https://github.com/teamkeel/keel/compare/v0.147.0...v0.147.1) (2022-10-02)
+
+
+### Bug Fixes
+
+* fix mismatching types ([#422](https://github.com/teamkeel/keel/issues/422)) ([ba65f09](https://github.com/teamkeel/keel/commit/ba65f096282ddb8a98d70c8f61ff3482760c3b86))
+
 # [0.147.0](https://github.com/teamkeel/keel/compare/v0.146.0...v0.147.0) (2022-10-02)
 
 
