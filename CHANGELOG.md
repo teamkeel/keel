@@ -1,3 +1,10 @@
+## [0.147.2](https://github.com/teamkeel/keel/compare/v0.147.1...v0.147.2) (2022-10-02)
+
+
+### Reverts
+
+* Revert "fix: fix mismatching types (#422)" (#423) ([0126592](https://github.com/teamkeel/keel/commit/01265920c79bbeeca073fccfcff05b694ac50db6)), closes [#422](https://github.com/teamkeel/keel/issues/422) [#423](https://github.com/teamkeel/keel/issues/423)
+
 ## [0.147.1](https://github.com/teamkeel/keel/compare/v0.147.0...v0.147.1) (2022-10-02)
 
 
