@@ -17,32 +17,36 @@ export interface ExecutionError {
 
 export type FunctionError = ValidationError | ExecutionError;
 
-export interface FunctionResponse {
+export interface FunctionCreateResponse<T> {
+  object?: T;
   errors?: FunctionError[];
 }
 
-export interface FunctionCreateResponse<T> extends FunctionResponse {
+export interface FunctionGetResponse<T> {
   object?: T;
+
+  // todo: it doesnt make sense for ValidationError to be in the union below
+  errors?: FunctionError[];
 }
 
-export interface FunctionGetResponse<T> extends FunctionResponse {
-  object?: T;
-}
-
-export interface FunctionDeleteResponse<T> extends FunctionResponse {
+export interface FunctionDeleteResponse<T> {
   success: boolean;
   errors?: FunctionError[];
 }
 
-export interface FunctionListResponse<T> extends FunctionResponse {
+export interface FunctionListResponse<T> {
   collection: T[];
+  errors?: FunctionError[];
+  // todo: add type for pagination
 }
 
-export interface FunctionUpdateResponse<T> extends FunctionResponse {
+export interface FunctionUpdateResponse<T> {
   object?: T;
+  errors?: FunctionError[];
 }
 
 export interface FunctionAuthenticateResponse {
   identityId?: string;
   identityCreated: boolean;
+  errors?: FunctionError[];
 }
