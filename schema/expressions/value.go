@@ -10,7 +10,7 @@ import (
 type Operand struct {
 	node.Node
 
-	Number *int  `  @('-'? Int)`
+	Number *int64  `  @('-'? Int)`
 	String *string `| @String`
 	Null   bool    `| @"null"`
 	True   bool    `| @"true"`
