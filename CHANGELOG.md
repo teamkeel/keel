@@ -1,3 +1,10 @@
+# [0.150.0](https://github.com/teamkeel/keel/compare/v0.149.0...v0.150.0) (2022-10-03)
+
+
+### Features
+
+* testing package type fixes ([#425](https://github.com/teamkeel/keel/issues/425)) ([f25c9c0](https://github.com/teamkeel/keel/commit/f25c9c06e8f9c3d0c8096224b7dc88543bc0af3b))
+
 # [0.149.0](https://github.com/teamkeel/keel/compare/v0.148.0...v0.149.0) (2022-10-03)
 
 
