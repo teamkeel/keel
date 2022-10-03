@@ -46,7 +46,7 @@ func Update(
 		return nil, fmt.Errorf("values not provided")
 	}
 
-	setArgs, err := SetExpressionInputsToModelMap(operation, args, schema, ctx)
+	setArgs, err := SetExpressionInputsToModelMap(operation, values, schema, ctx)
 
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func Update(
 
 	maps.DeleteFunc(values, func(k string, v any) bool {
 		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
-			return f.Name == k
+			return strcase.ToSnake(f.Name) == k
 		})
 
 		return !match

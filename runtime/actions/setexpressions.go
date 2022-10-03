@@ -12,14 +12,8 @@ import (
 
 // Given an operation with set expressions, will return a model map with any explicit
 // args into a map[string]any
-func SetExpressionInputsToModelMap(operation *proto.Operation, args map[string]any, schema *proto.Schema, ctx context.Context) (map[string]any, error) {
+func SetExpressionInputsToModelMap(operation *proto.Operation, values map[string]any, schema *proto.Schema, ctx context.Context) (map[string]any, error) {
 	modelMap := map[string]any{}
-
-	argValues, ok := args["values"].(map[string]any)
-
-	if !ok {
-		return nil, fmt.Errorf("arguments not in an acceptable format")
-	}
 
 	for _, setExpression := range operation.SetExpressions {
 		expression, err := expressions.Parse(setExpression.Source)
@@ -57,7 +51,7 @@ func SetExpressionInputsToModelMap(operation *proto.Operation, args map[string]a
 
 				rhsIdent := assignment.RHS.Ident
 
-				if match, ok := argValues[rhsIdent.ToString()]; ok {
+				if match, ok := values[rhsIdent.ToString()]; ok {
 					modelMap[strcase.ToSnake(fieldName)] = match
 
 					continue

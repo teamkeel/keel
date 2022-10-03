@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"golang.org/x/exp/maps"
@@ -53,6 +54,14 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 
 	// todo: clashing keys between implicit / explicit args (is this possible?)
 	maps.Copy(modelMap, setArgs)
+
+	maps.DeleteFunc(modelMap, func(k string, v any) bool {
+		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
+			return strcase.ToSnake(f.Name) == k
+		})
+
+		return !match
+	})
 
 	authorized, err := EvaluatePermissions(ctx, operation, schema, toLowerCamelMap(modelMap))
 	if err != nil {
