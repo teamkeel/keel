@@ -82,16 +82,16 @@ export class TestResult {
       // so we need to serialize their properties
       // See https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
       const { stack, message, name } = obj.err;
-      return JSON.stringify({
+      return {
         ...obj,
         err: {
           message,
           stack,
           name,
         },
-      });
+      };
     }
 
-    return JSON.stringify(this.asObject());
+    return this.asObject();
   };
 }
