@@ -35,7 +35,7 @@ test('get action (non unique)', async () => {
 
   // todo: until we return errors for 404s, we want to assert
   // that nothing is returned
-  expect(fetchedPost).toBeEmpty(null)
+  expect(fetchedPost).toBeEmpty()
 })
 
 test('list action - equals', async () => {
