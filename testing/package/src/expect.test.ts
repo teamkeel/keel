@@ -112,7 +112,7 @@ describe("expect", () => {
       ).not.toThrowError();
     });
 
-    it("does not throw when there is a different error", () => {
+    it("throws when there is a different error", () => {
       const actionResult = {
         errors: [
           {
@@ -124,6 +124,36 @@ describe("expect", () => {
       expect(() =>
         keelExpect(actionResult).toHaveAuthorizationError()
       ).toThrowError();
+    });
+  });
+
+  describe("notToHaveAuthorizationError", () => {
+    it("throws when there is an auth error", () => {
+      const actionResult = {
+        errors: [
+          {
+            message: "not authorized to access this operation",
+          },
+        ],
+      };
+
+      expect(() =>
+        keelExpect(actionResult).notToHaveAuthorizationError()
+      ).toThrowError();
+    });
+
+    it("does not throw when there is a different error", () => {
+      const actionResult = {
+        errors: [
+          {
+            message: "oops something went wrong",
+          },
+        ],
+      };
+
+      expect(() =>
+        keelExpect(actionResult).notToHaveAuthorizationError()
+      ).not.toThrowError();
     });
   });
 

@@ -18,12 +18,11 @@ test('same identity permission successful', async () => {
     .withIdentity(identity)  
     .createPostWithIdentity({ })
 
-  const { errors } = await actions
+  expect(
+    await actions
     .withIdentity(identity)  
     .deletePostRequiresSameIdentity({ id: post.id })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+  ).notToHaveAuthorizationError()
 })
 
 test('different identity permission failure', async () => {
@@ -34,12 +33,11 @@ test('different identity permission failure', async () => {
     .withIdentity(identity1)  
     .createPostWithIdentity({ })
 
-  const { errors } = await actions
+  expect(
+    await actions
     .withIdentity(identity2)  
     .deletePostRequiresSameIdentity({ id: post.id })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError(true)
 })
 
 test('unset identity permission failure', async () => {
@@ -49,28 +47,13 @@ test('unset identity permission failure', async () => {
     .withIdentity(identity)  
     .createPostWithoutIdentity({ })
 
-  const { errors } = await actions
+  expect(
+    await actions
     .withIdentity(identity)  
     .deletePostRequiresSameIdentity({ id: post.id })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 // todo:  permission test against null.  Requires this fix:  https://linear.app/keel/issue/DEV-195/permissions-support-null-operand-with-identity-type
 
 // todo:  permission test against another identity field.  Requires this fix: https://linear.app/keel/issue/DEV-196/permissions-support-identity-type-operand-with-identity-comparison
-
-function hasAuthorizationError(errors?): boolean {
-  if (errors == null)
-    return false;
-
-  var hasError = false
-   errors.forEach(function(error) {
-    if(error.message == 'not authorized to access this operation') {
-      hasError = true
-    }
-  });
-  
-  return hasError;
-}

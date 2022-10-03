@@ -1,135 +1,106 @@
 import { test, expect, actions, Post } from '@teamkeel/testing'
 
 test('text permission successful', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostTextPermission({ title: "hello" })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+  ).notToHaveAuthorizationError()
 })
 
 test('text permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostTextPermission({ title: "not hello" })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError(true)
 })
 
 test('number permission successful', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostNumberPermission({ views: 5 })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+  ).notToHaveAuthorizationError()
 })
 
 test('number permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostNumberPermission({ views: 500 })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 test('boolean permission successful', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostBooleanPermission({ active: true })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+  ).notToHaveAuthorizationError()
 })
 
 test('boolean permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostBooleanPermission({ active: false })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 test('text not null permission successful', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostTextNotNullPermission({ title: "hello" })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+  ).notToHaveAuthorizationError()
 })
 
 test('text not null permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostTextNotNullPermission({ title: null })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 test('text null permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostTextNullPermission({})
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 test('number not null permission successful', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostNumberNotNullPermission({ views: 5 })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+  ).notToHaveAuthorizationError()
 })
 
 test('number not null permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostNumberNotNullPermission({ views: null })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 test('number null permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostNumberNullPermission({})
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 test('boolean not null permission successful', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostBooleanNotNullPermission({ active: true })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+  ).notToHaveAuthorizationError()
 })
 
 test('boolean not null permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostBooleanNotNullPermission({ active: null })
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
 
 test('boolean null permission failed', async () => {
-  const { errors } = await actions
+  expect(
+    await actions
     .createPostBooleanNullPermission({})
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+  ).toHaveAuthorizationError()
 })
-
-function hasAuthorizationError(errors?): boolean {
-  if (errors == null)
-    return false;
-
-  var hasError = false
-   errors.forEach(function(error) {
-    if(error.message == 'not authorized to access this operation') {
-      hasError = true
-    }
-  });
-  
-  return hasError;
-}

@@ -12,12 +12,11 @@ test('authorization successful', async () => {
     .withIdentity(identity)
     .createPost({ title: 'temp' });
 
-  const { errors } = await actions
+  expect(
+    await actions
     .withIdentity(identity)
-    .getPost({ id: post.id });
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(false)
+    .getPost({ id: post.id })
+  ).notToHaveAuthorizationError()
 })
 
 test('authorization failed', async () => {
@@ -38,24 +37,9 @@ test('authorization failed', async () => {
     .withIdentity(identity1)
     .createPost({ title: 'temp' });
 
-  const { errors } = await actions
+  expect(
+    await actions
     .withIdentity(identity2)
-    .getPost({ id: post.id });
-
-  var authorizationFailed = hasAuthorizationError(errors)
-  expect(authorizationFailed).toEqual(true)
+    .getPost({ id: post.id })
+  ).toHaveAuthorizationError()
 })
-
-function hasAuthorizationError(errors?): boolean {
-  if (errors == null)
-    return false;
-
-  var hasError = false
-   errors.forEach(function(error) {
-    if(error.message == 'not authorized to access this operation') {
-      hasError = true
-    }
-  });
-  
-  return hasError;
-}
