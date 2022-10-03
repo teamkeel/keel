@@ -68,26 +68,30 @@ describe("expect", () => {
       const actionResult = {
         errors: [
           {
-            message: "not authorized to access this operation"
-          }
-        ]
-      }
+            message: "not authorized to access this operation",
+          },
+        ],
+      };
 
-      expect(() => keelExpect(actionResult).toHaveAuthorizationError()).not.toThrowError()
-    })
+      expect(() =>
+        keelExpect(actionResult).toHaveAuthorizationError()
+      ).not.toThrowError();
+    });
 
-    it('does not throw when there is a different error', () => {
+    it("does not throw when there is a different error", () => {
       const actionResult = {
         errors: [
           {
-            message: "oops something went wrong"
-          }
-        ]
-      }
+            message: "oops something went wrong",
+          },
+        ],
+      };
 
-      expect(() => keelExpect(actionResult).toHaveAuthorizationError()).toThrowError()
-    })
-  })
+      expect(() =>
+        keelExpect(actionResult).toHaveAuthorizationError()
+      ).toThrowError();
+    });
+  });
 
   describe("toBeEmpty", () => {
     it("throws when not null / undefined", () => {
