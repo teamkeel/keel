@@ -1,11 +1,11 @@
 import isEqual from "lodash.isequal";
 
-import { ActionError, ActionResult, Matchers, Value } from "./types";
+import { ActionError, ActionResult, Matchers } from "./types";
 import { AssertionFailure } from "./errors";
 
-type Expect = (actual: Value) => Matchers;
+type Expect = (actual: any) => Matchers;
 
-const expect: Expect = (actual: Value) => ({
+const expect: Expect = (actual: any) => ({
   toEqual: (expected: any): void => {
     // Lodash's isEqual checks equality for many different types:
     // arrays, booleans, dates, errors, maps, numbers, objects, regexes, sets, strings, symbols
@@ -17,7 +17,7 @@ const expect: Expect = (actual: Value) => ({
       throw new AssertionFailure(actual, expected);
     }
   },
-  notToEqual: (expected: Value): void => {
+  notToEqual: (expected: any): void => {
     if (isEqual(actual, expected)) {
       // We throw an AssertionFailure error here
       // This error is caught by a try/catch in the test method
@@ -60,7 +60,7 @@ const expect: Expect = (actual: Value) => ({
     }
   },
   // toContain will check for existence of item in actual array
-  toContain: (item: Value): void => {
+  toContain: (item: any): void => {
     if (!Array.isArray(actual)) {
       throw new Error("actual is not an array");
     }
@@ -71,7 +71,7 @@ const expect: Expect = (actual: Value) => ({
       throw new AssertionFailure(actual, actual.concat(item));
     }
   },
-  notToContain: (item: Value): void => {
+  notToContain: (item: any): void => {
     if (!Array.isArray(actual)) {
       throw new Error("actual is not an array");
     }
