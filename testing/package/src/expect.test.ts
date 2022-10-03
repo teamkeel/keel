@@ -63,6 +63,40 @@ describe("expect", () => {
     });
   });
 
+  describe("notToHaveError", () => {
+    it("throws on matching error", () => {
+      const actionResult = {
+        errors: [
+          {
+            message: "foo",
+          },
+        ],
+      };
+
+      expect(() =>
+        keelExpect(actionResult).notToHaveError({ message: "foo" })
+      ).toThrowError();
+    });
+
+    it("does not throw when there is no match", () => {
+      const actionResult = {
+        errors: [
+          {
+            message: "something went wrong",
+          },
+        ],
+      };
+
+      const error = {
+        message: "another error",
+      };
+
+      expect(() =>
+        keelExpect(actionResult).notToHaveError(error)
+      ).not.toThrowError();
+    });
+  });
+
   describe("toHaveAuthorizationError", () => {
     it("does not throw when there is an auth error", () => {
       const actionResult = {

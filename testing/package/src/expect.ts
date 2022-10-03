@@ -25,7 +25,6 @@ const expect: Expect = (actual: any) => ({
       throw new AssertionFailure(actual, expected);
     }
   },
-  // todo: narrow error type below after sdk publish
   toHaveError: (error: ActionError): void => {
     const actionResult = actual as unknown as ActionResult;
 
@@ -47,8 +46,36 @@ const expect: Expect = (actual: any) => ({
       );
     }
   },
+  notToHaveError: (error: ActionError): void => {
+    const actionResult = actual as unknown as ActionResult;
+
+    const match = actionResult.errors.find((e) => {
+      // todo: this needs to be formalised once
+      // error payload is developed further.
+      // e.g factor in error code etc
+      return e.message === error.message;
+    });
+
+    if (match) {
+      throw new AssertionFailure(
+        actionResult.errors,
+        actionResult.errors.concat(error)
+      );
+    }
+  },
+  // toHaveAuthorizationError will throw an error if there is not a matching error
+  // in the action response errors payload matching the message
   toHaveAuthorizationError: (): void => {
     expect(actual).toHaveError({
+      // todo: introduce error code for auth errors
+      message: "not authorized to access this operation",
+    });
+  },
+  // notToHaveAuthorizationError will throw an error if there is an error
+  // in the action response errors payload matching the message
+  notToHaveAuthorizationError: (): void => {
+    expect(actual).notToHaveError({
+      // todo: introduce error code for auth errors
       message: "not authorized to access this operation",
     });
   },
@@ -76,6 +103,7 @@ const expect: Expect = (actual: any) => ({
       throw new AssertionFailure(actual, actual.concat(item));
     }
   },
+  // notToContain will throw an error if the actual array contains the item
   notToContain: (item: any): void => {
     if (!Array.isArray(actual)) {
       throw new Error("actual is not an array");
