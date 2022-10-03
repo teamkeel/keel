@@ -27,7 +27,7 @@ func TestRoundTrip(t *testing.T) {
 		"mixed or/and":           "a == b or a < c and a > d",
 		"parenthesis":            "(a == b or a < c) and a > d",
 		"dot notation":           "a.b.c == d.e.f",
-		"negative set": "a = -1",
+		"negative integer":       "a = -1",
 	}
 
 	for name, fixture := range fixtures {
