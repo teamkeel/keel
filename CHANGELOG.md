@@ -1,3 +1,10 @@
+# [0.151.0](https://github.com/teamkeel/keel/compare/v0.150.0...v0.151.0) (2022-10-03)
+
+
+### Features
+
+* `toHaveAuthorizationError` matcher ([#427](https://github.com/teamkeel/keel/issues/427)) ([0a864b0](https://github.com/teamkeel/keel/commit/0a864b014315a91863432d9125feef0e172b183c))
+
 # [0.150.0](https://github.com/teamkeel/keel/compare/v0.149.0...v0.150.0) (2022-10-03)
 
 
