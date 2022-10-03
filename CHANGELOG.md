@@ -1,3 +1,10 @@
+# [0.155.0](https://github.com/teamkeel/keel/compare/v0.154.0...v0.155.0) (2022-10-03)
+
+
+### Features
+
+* better error capturing in test framework ([#435](https://github.com/teamkeel/keel/issues/435)) ([5188e18](https://github.com/teamkeel/keel/commit/5188e189efd4872cf8e119fae401bba46e614a45))
+
 # [0.154.0](https://github.com/teamkeel/keel/compare/v0.153.0...v0.154.0) (2022-10-03)
 
 
