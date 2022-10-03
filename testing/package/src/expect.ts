@@ -47,6 +47,11 @@ const expect: Expect = (actual: any) => ({
       );
     }
   },
+  toHaveAuthorizationError: () : void => {
+    expect(actual).toHaveError({
+      message: 'not authorized to access this operation'
+    })
+  },
   // Checks for both null and undefined
   toBeEmpty: (): void => {
     if (actual !== undefined && actual !== null) {

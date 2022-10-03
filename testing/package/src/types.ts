@@ -5,6 +5,7 @@ const matcherTypes = <const>[
   "toEqual",
   "notToEqual",
   "toHaveError",
+  "toHaveAuthorizationError",
   "toBeEmpty",
   "notToBeEmpty",
   "toContain",
