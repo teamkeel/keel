@@ -28,21 +28,6 @@ export interface ActionResult {
   errors: ActionError[];
 }
 
-export type AssertionFunction = (actual: Value) => boolean;
-
-export type Value =
-  | boolean
-  | number
-  | string
-  | null
-  | undefined
-  | JsonArray
-  | JsonMap;
-interface JsonMap {
-  [key: string]: Value;
-}
-interface JsonArray extends Array<Value> {}
-
 export interface RunnerOpts {
   // The port + host of the go host http server
   parentPort: number;
