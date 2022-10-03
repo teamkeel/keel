@@ -1,3 +1,10 @@
+# [0.149.0](https://github.com/teamkeel/keel/compare/v0.148.0...v0.149.0) (2022-10-03)
+
+
+### Features
+
+* more expectation types ([#416](https://github.com/teamkeel/keel/issues/416)) ([b7ebdef](https://github.com/teamkeel/keel/commit/b7ebdeff57fa3948c1b13297d28ea773e73cdda0))
+
 # [0.148.0](https://github.com/teamkeel/keel/compare/v0.147.2...v0.148.0) (2022-10-02)
 
 
