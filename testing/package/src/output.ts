@@ -41,15 +41,15 @@ export class TestResult {
     }
   }
 
-  static fail(testName: string, actual: unknown, expected: unknown) {
+  static fail(testName: string, actual: unknown, expected: unknown) : TestResult {
     return new TestResult({ status: Status.Fail, testName, actual, expected });
   }
 
-  static exception(testName: string, err: Error) {
+  static exception(testName: string, err: Error) : TestResult {
     return new TestResult({ status: Status.Exception, testName, err });
   }
 
-  static pass(testName: string) {
+  static pass(testName: string) : TestResult {
     return new TestResult({ status: Status.Pass, testName });
   }
 

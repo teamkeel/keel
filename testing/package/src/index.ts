@@ -25,7 +25,7 @@ function test(testName: TestName, fn: TestFunc) {
 }
 
 // global - reset with every instantiation of module.
-let results: TestResultData[] = [];
+let results: TestResult[] = [];
 
 async function runAllTests({
   parentPort,
@@ -130,7 +130,7 @@ async function runAllTests({
           console.debug(result.asObject());
         }
 
-        results.push(result.asObject());
+        results.push(result);
       }
     }
 
