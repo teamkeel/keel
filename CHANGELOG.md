@@ -1,3 +1,10 @@
+# [0.153.0](https://github.com/teamkeel/keel/compare/v0.152.0...v0.153.0) (2022-10-03)
+
+
+### Features
+
+* negative number operand ([#431](https://github.com/teamkeel/keel/issues/431)) ([357c03b](https://github.com/teamkeel/keel/commit/357c03b87a13a2f5d980c899f5e455a362eca9a1))
+
 # [0.152.0](https://github.com/teamkeel/keel/compare/v0.151.0...v0.152.0) (2022-10-03)
 
 
