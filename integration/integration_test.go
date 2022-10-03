@@ -37,6 +37,8 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
+			fmt.Printf("Tmp test directory: %s\n", workingDir)
+
 			packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
 
 			require.NoError(t, err)
