@@ -1,4 +1,4 @@
-import { TestResultData } from "./output";
+import { TestResult } from "./output";
 import fetch from "node-fetch";
 
 export interface ReporterOptions {
@@ -21,14 +21,15 @@ export default class Reporter {
     return res.ok;
   };
 
-  report = async (results: TestResultData[]): Promise<boolean> => {
+  report = async (results: TestResult[]): Promise<boolean> => {
     const response = await this.testResultsRequest(results);
     return response.ok;
   };
 
-  private async testResultsRequest(results: TestResultData[]) {
+  private async testResultsRequest(results: TestResult[]) {
     return await fetch(`${this.buildHostUri()}/report`, {
       method: "POST",
+      // JSON.stringify will call TestResult.toJSON for each result in the array
       body: JSON.stringify(results),
     });
   }

@@ -41,15 +41,19 @@ export class TestResult {
     }
   }
 
-  static fail(testName: string, actual: unknown, expected: unknown) {
+  static fail(
+    testName: string,
+    actual: unknown,
+    expected: unknown
+  ): TestResult {
     return new TestResult({ status: Status.Fail, testName, actual, expected });
   }
 
-  static exception(testName: string, err: Error) {
+  static exception(testName: string, err: Error): TestResult {
     return new TestResult({ status: Status.Exception, testName, err });
   }
 
-  static pass(testName: string) {
+  static pass(testName: string): TestResult {
     return new TestResult({ status: Status.Pass, testName });
   }
 
@@ -78,17 +82,16 @@ export class TestResult {
       // so we need to serialize their properties
       // See https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
       const { stack, message, name } = obj.err;
-
-      return JSON.stringify({
+      return {
         ...obj,
         err: {
           message,
           stack,
           name,
         },
-      });
+      };
     }
 
-    return JSON.stringify(this.asObject());
+    return this.asObject();
   };
 }
