@@ -1,9 +1,0 @@
-model Post {
-    fields {
-        title Text
-    }
-
-    functions {
-        create createPost() with (title)
-    }
-}

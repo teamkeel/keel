@@ -5,15 +5,14 @@ test('create action', async () => {
   const { object: createdPost } = await actions
     .createPost({ title: 'foo', subTitle: 'abc' })
 
-  expect.equal(createdPost.title, 'foo')
+  expect(createdPost.title).toEqual('foo')
 })
 
 test('create action (unrecognised fields)', async () => {
   const { object: createdPost } = await actions
     .createPost({ unknown: 'foo' })
 
-  // todo: replace with errors once we populate them
-  expect.equal(createdPost, null)
+  expect(createdPost).toBeEmpty()
 })
 
 test('get action', async () => {
@@ -23,7 +22,7 @@ test('get action', async () => {
   const { object: fetchedPost } = await actions
     .getPost({ id: post.id })
 
-  expect.equal(fetchedPost.id, post.id)
+  expect(fetchedPost.id).toEqual(post.id)
 })
 
 // This test verifies that you can't fetch by a field not specified in action inputs
@@ -36,7 +35,7 @@ test('get action (non unique)', async () => {
 
   // todo: until we return errors for 404s, we want to assert
   // that nothing is returned
-  expect.equal(fetchedPost, null)
+  expect(fetchedPost).toBeEmpty(null)
 })
 
 test('list action - equals', async () => {
@@ -46,7 +45,7 @@ test('list action - equals', async () => {
   const { collection } = await actions
     .listPosts({ title: { equals: 'apple' } })
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('list action - contains', async () => {
@@ -56,7 +55,7 @@ test('list action - contains', async () => {
   const { collection } = await actions
     .listPosts({ title: { contains: 'ana' } })
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('list action - startsWith', async () => {
@@ -66,7 +65,7 @@ test('list action - startsWith', async () => {
   const { collection } = await actions
     .listPosts({ title: { startsWith: 'adam' } })
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('list action - endsWith', async () => {
@@ -76,7 +75,7 @@ test('list action - endsWith', async () => {
   const { collection } = await actions
     .listPosts({ title: { endsWith: 'star wars' } })
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('list action - oneOf', async () => {
@@ -86,7 +85,7 @@ test('list action - oneOf', async () => {
   const { collection } = await actions
     .listPosts({ title: { oneOf: ['pear', 'mango'] } })
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('delete action', async () => {
@@ -95,7 +94,7 @@ test('delete action', async () => {
   const { success } = await actions
     .deletePost({ id: post.id })
 
-  expect.equal(success, true)
+  expect(success).toEqual(true)
 })
 
 test('delete action (other unique field)', async () => {
@@ -104,7 +103,7 @@ test('delete action (other unique field)', async () => {
   const { success } = await actions
     .deletePostBySubTitle({ subTitle: post.subTitle })
 
-  expect.equal(success, true)
+  expect(success).toEqual(true)
 })
 
 test('update action', async () => {
@@ -113,5 +112,5 @@ test('update action', async () => {
   const { object: updatedPost } = await actions
     .updatePost({ where: { id: post.id }, values: { title: 'big watermelon' }})
 
-  expect.equal(updatedPost.title, 'big watermelon')
+  expect(updatedPost.title).toEqual('big watermelon')
 })

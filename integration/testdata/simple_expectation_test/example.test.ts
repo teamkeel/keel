@@ -1,10 +1,9 @@
 import { test, expect } from '@teamkeel/testing'
 
 test('it passes', () => {
-  expect.equal(1, 1)
+  expect(1).toEqual(1)
 })
 
 test('it fails', () => {
-  expect.equal(1, 2)
+  expect(1).toEqual(2)
 })
-

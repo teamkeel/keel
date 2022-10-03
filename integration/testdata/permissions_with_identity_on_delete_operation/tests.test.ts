@@ -23,7 +23,7 @@ test('same identity permission successful', async () => {
     .deletePostRequiresSameIdentity({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('different identity permission failure', async () => {
@@ -39,7 +39,7 @@ test('different identity permission failure', async () => {
     .deletePostRequiresSameIdentity({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('unset identity permission failure', async () => {
@@ -54,7 +54,7 @@ test('unset identity permission failure', async () => {
     .deletePostRequiresSameIdentity({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 // todo:  permission test against null.  Requires this fix:  https://linear.app/keel/issue/DEV-195/permissions-support-null-operand-with-identity-type

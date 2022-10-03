@@ -3,7 +3,7 @@ import { test, expect, Post } from '@teamkeel/testing'
 test('create', async () => {
   const { object: post } = await Post.create({ title: 'apple' })
 
-  expect.equal(post.title, 'apple')
+  expect(post.title).toEqual('apple')
 })
 
 test('update', async () => {
@@ -11,7 +11,7 @@ test('update', async () => {
 
   const { object: updatedPost } = await Post.update(post.id, { title: 'star wars sucks!' })
 
-  expect.equal(updatedPost.title, 'star wars sucks!')
+  expect(updatedPost.title).toEqual('star wars sucks!')
 })
 
 test('chained findOne', async () => {
@@ -24,7 +24,7 @@ test('chained findOne', async () => {
     }
   }).findOne()
 
-  expect.equal(one.title, 'apple')
+  expect(one.title).toEqual('apple')
 })
 
 test('simple all', async () => {
@@ -37,7 +37,7 @@ test('simple all', async () => {
     }
   }).all()
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('chained conditions with all', async () => {
@@ -50,7 +50,7 @@ test('chained conditions with all', async () => {
     title: 'kiwi'
   }).all()
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('order', async () => {
@@ -65,8 +65,8 @@ test('order', async () => {
     title: 'desc'
   }).all()
 
-  expect.equal(collection.length, 2)
-  expect.equal(collection[0].title, 'abc')
+  expect(collection.length).toEqual(2)
+  expect(collection[0].title).toEqual('abc')
 })
 
 test('sql', async () => {
@@ -78,7 +78,7 @@ test('sql', async () => {
     title: 'desc'
   }).sql({ asAst: false })
 
-  expect.equal(sql, 'SELECT * FROM "post" WHERE ("post"."title" ILIKE $1) ORDER BY $2')
+  expect(sql).toEqual('SELECT * FROM "post" WHERE ("post"."title" ILIKE $1) ORDER BY $2')
 })
 
 test('findMany', async () => {
@@ -91,7 +91,7 @@ test('findMany', async () => {
     }
   })
 
-  expect.equal(collection.length, 2)
+  expect(collection.length).toEqual(2)
 })
 
 test('findOne', async () => {
@@ -102,5 +102,5 @@ test('findOne', async () => {
 
   const { object } = await Post.findOne({ id: id! })
 
-  expect.equal(post.id, object.id)
+  expect(post.id).toEqual(object.id)
 })

@@ -17,7 +17,7 @@ test('authorization successful', async () => {
     .getPost({ id: post.id });
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('authorization failed', async () => {
@@ -43,7 +43,7 @@ test('authorization failed', async () => {
     .getPost({ id: post.id });
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 function hasAuthorizationError(errors?): boolean {

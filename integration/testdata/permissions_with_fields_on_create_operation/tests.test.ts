@@ -5,7 +5,7 @@ test('text permission successful', async () => {
     .createPostTextPermission({ title: "hello" })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('text permission failed', async () => {
@@ -13,7 +13,7 @@ test('text permission failed', async () => {
     .createPostTextPermission({ title: "not hello" })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('number permission successful', async () => {
@@ -21,7 +21,7 @@ test('number permission successful', async () => {
     .createPostNumberPermission({ views: 5 })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('number permission failed', async () => {
@@ -29,7 +29,7 @@ test('number permission failed', async () => {
     .createPostNumberPermission({ views: 500 })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('boolean permission successful', async () => {
@@ -37,7 +37,7 @@ test('boolean permission successful', async () => {
     .createPostBooleanPermission({ active: true })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('boolean permission failed', async () => {
@@ -45,7 +45,7 @@ test('boolean permission failed', async () => {
     .createPostBooleanPermission({ active: false })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('text not null permission successful', async () => {
@@ -53,7 +53,7 @@ test('text not null permission successful', async () => {
     .createPostTextNotNullPermission({ title: "hello" })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('text not null permission failed', async () => {
@@ -61,7 +61,7 @@ test('text not null permission failed', async () => {
     .createPostTextNotNullPermission({ title: null })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('text null permission failed', async () => {
@@ -69,7 +69,7 @@ test('text null permission failed', async () => {
     .createPostTextNullPermission({})
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('number not null permission successful', async () => {
@@ -77,7 +77,7 @@ test('number not null permission successful', async () => {
     .createPostNumberNotNullPermission({ views: 5 })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('number not null permission failed', async () => {
@@ -85,7 +85,7 @@ test('number not null permission failed', async () => {
     .createPostNumberNotNullPermission({ views: null })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('number null permission failed', async () => {
@@ -93,7 +93,7 @@ test('number null permission failed', async () => {
     .createPostNumberNullPermission({})
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('boolean not null permission successful', async () => {
@@ -101,7 +101,7 @@ test('boolean not null permission successful', async () => {
     .createPostBooleanNotNullPermission({ active: true })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('boolean not null permission failed', async () => {
@@ -109,7 +109,7 @@ test('boolean not null permission failed', async () => {
     .createPostBooleanNotNullPermission({ active: null })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('boolean null permission failed', async () => {
@@ -117,7 +117,7 @@ test('boolean null permission failed', async () => {
     .createPostBooleanNullPermission({})
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 function hasAuthorizationError(errors?): boolean {
