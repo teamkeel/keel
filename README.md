@@ -91,7 +91,6 @@ This allows you to debug individual tests using the VSCode debugger, although yo
 
 ### Gotchas
 
-- The database isn't yet cleared between individual `test()` blocks - this will be coming soon.
 - The test runner actually copies each test case directory to a temporary directory elsewhere when executing the test - inside of the temporary directory, all of the dependencies necessary to have a viable application are installed (this also includes creation of package.json and tsconfig.json). This saves us having to populate each directory each time we add a new test case. The downside is that we do not get intellisense when writing our tests; this would be tricky anyway given a lot of the code inside of the `@teamkeel/testing` package is code generated at the point of running the test. 
 
 ## Development
