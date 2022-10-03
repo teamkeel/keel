@@ -27,6 +27,7 @@ func TestRoundTrip(t *testing.T) {
 		"mixed or/and":           "a == b or a < c and a > d",
 		"parenthesis":            "(a == b or a < c) and a > d",
 		"dot notation":           "a.b.c == d.e.f",
+		"negative integer":       "a = -1",
 	}
 
 	for name, fixture := range fixtures {
@@ -101,6 +102,7 @@ func TestIsAssignment(t *testing.T) {
 		"true and a == b": false,
 		"(a == b)":        false,
 		"a = b":           true,
+		"a = -1":          true,
 	}
 
 	for input, expected := range fixtures {
