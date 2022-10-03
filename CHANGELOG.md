@@ -1,3 +1,10 @@
+# [0.152.0](https://github.com/teamkeel/keel/compare/v0.151.0...v0.152.0) (2022-10-03)
+
+
+### Features
+
+* adds notToHaveAuthorizationError and notToHaveError ([#429](https://github.com/teamkeel/keel/issues/429)) ([1a0f557](https://github.com/teamkeel/keel/commit/1a0f557beeeae1900d32817a422d7e231701c028))
+
 # [0.151.0](https://github.com/teamkeel/keel/compare/v0.150.0...v0.151.0) (2022-10-03)
 
 
