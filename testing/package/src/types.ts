@@ -5,7 +5,9 @@ const matcherTypes = <const>[
   "toEqual",
   "notToEqual",
   "toHaveError",
+  "notToHaveError",
   "toHaveAuthorizationError",
+  "notToHaveAuthorizationError",
   "toBeEmpty",
   "notToBeEmpty",
   "toContain",
@@ -20,7 +22,7 @@ export interface Test {
   fn: TestFunc;
 }
 
-// todo: use sdk types for action results + errors
+// todo: possibly use sdk types for action results + errors
 export interface ActionError {
   message: string;
 }
