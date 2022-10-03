@@ -68,12 +68,14 @@ describe("expect", () => {
       const actionResult = {
         errors: [
           {
-            message: 'foo'
-          }
-        ]
+            message: "foo",
+          },
+        ],
       };
 
-      expect(() => keelExpect(actionResult).notToHaveError({ message: 'foo' })).toThrowError();
+      expect(() =>
+        keelExpect(actionResult).notToHaveError({ message: "foo" })
+      ).toThrowError();
     });
 
     it("does not throw when there is no match", () => {

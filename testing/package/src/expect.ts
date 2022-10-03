@@ -46,7 +46,7 @@ const expect: Expect = (actual: any) => ({
       );
     }
   },
-  notToHaveError: (error: ActionError) : void => {
+  notToHaveError: (error: ActionError): void => {
     const actionResult = actual as unknown as ActionResult;
 
     const match = actionResult.errors.find((e) => {
@@ -73,11 +73,11 @@ const expect: Expect = (actual: any) => ({
   },
   // notToHaveAuthorizationError will throw an error if there is an error
   // in the action response errors payload matching the message
-  notToHaveAuthorizationError: () : void => {
+  notToHaveAuthorizationError: (): void => {
     expect(actual).notToHaveError({
       // todo: introduce error code for auth errors
-      message: "not authorized to access this operation"
-    })
+      message: "not authorized to access this operation",
+    });
   },
   // Checks for both null and undefined
   toBeEmpty: (): void => {
