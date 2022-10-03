@@ -1,3 +1,10 @@
+# [0.154.0](https://github.com/teamkeel/keel/compare/v0.153.0...v0.154.0) (2022-10-03)
+
+
+### Features
+
+* better js error capturing to reporter ([#433](https://github.com/teamkeel/keel/issues/433)) ([f5ef5af](https://github.com/teamkeel/keel/commit/f5ef5affc88ac5eac2f6b6746859b7f8e5483da3))
+
 # [0.153.0](https://github.com/teamkeel/keel/compare/v0.152.0...v0.153.0) (2022-10-03)
 
 
