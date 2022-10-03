@@ -1,0 +1,74 @@
+[
+    {
+        "status": "pass",
+        "testName": "text literal permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "text literal permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "text null literal permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "number literal permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "number literal permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "number null literal permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean literal permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean literal permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean null literal permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "text field permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "text field permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "text null field permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "number field permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "number field permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "number null field permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean field permission successful"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean field permission failed"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean null field permission failed"
+    }
+]

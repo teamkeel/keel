@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/iancoleman/strcase"
@@ -38,6 +39,28 @@ func Update(
 		return nil, err
 	}
 
+	// todo: permissions to evaluate at the database-level (expressions-to-SQL)
+	// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level-where-applicable
+	result := []map[string]any{}
+	tx = tx.Find(&result)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+	n := len(result)
+	if n == 0 {
+		return nil, errors.New("no records found for Update() operation")
+	}
+	if n > 1 {
+		return nil, fmt.Errorf("Update() operation should find only one record, it found: %d", n)
+	}
+	authorized, err := EvaluatePermissions(ctx, operation, schema, toLowerCamelMap(result[0]))
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errors.New("not authorized to access this operation")
+	}
+
 	values, ok := args["values"].(map[string]any)
 
 	if !ok {
@@ -54,11 +77,11 @@ func Update(
 	// usually in a non dynamic model, you would use .Model(User{}) but we do not know what the Model is, and havent built
 	// a struct for it; Gorm assumes you know what your model looks like upfront
 	// As a shortcut, we just do a select to hydrate the latest state of the record
-	result := map[string]any{}
+	resultMap := map[string]any{}
 
-	tx.Take(&result)
+	tx.Take(&resultMap)
 
-	return result, nil
+	return resultMap, nil
 }
 
 func addUpdateImplicitInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
