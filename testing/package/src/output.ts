@@ -70,5 +70,25 @@ export class TestResult {
     return base;
   };
 
-  toJSON = () => JSON.stringify(this.asObject());
+  toJSON = () => {
+    const obj = this.asObject();
+
+    if (obj.err) {
+      // Error instances are not automatically stringified to JSON
+      // so we need to serialize their properties
+      // See https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
+      const { stack, message, name } = obj.err;
+      
+      return JSON.stringify({
+        ...obj,
+        err: {
+          message,
+          stack,
+          name
+        }
+      })
+    }
+
+    return JSON.stringify(this.asObject());
+  }
 }
