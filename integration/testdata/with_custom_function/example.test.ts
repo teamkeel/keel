@@ -4,7 +4,7 @@ test('creating a person', async () => {
   const { object } = await actions
     .createPerson({ name: 'foo', gender: 'female', nINumber: '282' })
 
-  expect.equal(object.name, 'foo')
+  expect(object.name).toEqual('foo')
 })
 
 test('fetching a person by id', async () => {
@@ -12,8 +12,8 @@ test('fetching a person by id', async () => {
   const { object } = await actions
     .getPerson({ id: person.id })
 
-  expect.equal(object.id, person.id)
-  expect.equal(object.name, person.name)
+  expect(object.id).toEqual(person.id)
+  expect(object.name).toEqual(person.name)
 })
 
 test('fetching person by additional unique field (not PK)', async () => {
@@ -22,7 +22,7 @@ test('fetching person by additional unique field (not PK)', async () => {
   const { object } = await actions
     .getPerson({ nINumber: '333' })
 
-  expect.equal(object.id, person.id)
+  expect(object.id).toEqual(person.id)
 })
 
 test('listing', async () => {
@@ -35,7 +35,7 @@ test('listing', async () => {
 
   const alienNames = aliens.map((a) => a.name)
 
-  expect.equal(alienNames, [x11.name, x22.name])
+  expect(alienNames).toEqual([x11.name, x22.name])
 })
 
 test('deletion', async () => {
@@ -44,7 +44,7 @@ test('deletion', async () => {
   const { success } = await actions
     .deletePerson({ id: person.id })
 
-  expect.equal(success, true)
+  expect(success).toEqual(true)
 })
 
 test('updating', async () => {
@@ -53,6 +53,6 @@ test('updating', async () => {
   const { object: updatedPerson } = await actions
     .updatePerson({ where: { id: person.id }, values: { name: 'paul' }})
 
-  expect.equal(updatedPerson.name, 'paul')
-  expect.equal(updatedPerson.id, person.id)
+  expect(updatedPerson.name).toEqual('paul')
+  expect(updatedPerson.id).toEqual(person.id)
 })

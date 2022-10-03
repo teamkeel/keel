@@ -9,5 +9,5 @@ test('allows for two list operations on same model', async () => {
   const { collection: two } = await actions
     .listTwo({})
 
-  expect.equal(one, two)
+  expect(one).toEqual(two)
 })

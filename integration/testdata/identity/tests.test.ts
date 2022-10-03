@@ -6,7 +6,7 @@ test('create identity', async () => {
     email: 'user1@keel.xyz',
     password: '1234'})
 
-  expect.equal(identityCreated, true)
+  expect(identityCreated).toEqual(true)
 })
 
 test('do not create identity', async () => {
@@ -15,8 +15,8 @@ test('do not create identity', async () => {
     email: 'user2@keel.xyz',
     password: '1234'})
 
-  expect.equal(identityId, null)
-  expect.equal(identityCreated, false)
+  expect(identityId).toBeEmpty()
+  expect(identityCreated).toEqual(false)
 })
 
 test('authentication successful', async () => {
@@ -30,9 +30,9 @@ test('authentication successful', async () => {
     email: 'user3@keel.xyz',
     password: '1234'})
 
-  expect.equal(id1, id2)
-  expect.equal(created1, true)
-  expect.equal(created2, false)
+  expect(id1).toEqual(id2)
+  expect(created1).toEqual(true)
+  expect(created2).toEqual(false)
 })
 
 test('authentication unsuccessful', async () => {
@@ -47,7 +47,7 @@ test('authentication unsuccessful', async () => {
     password: 'zzzz'})
 
   var notEqualIdentities = id1 != id2
-  expect.equal(notEqualIdentities, true)
-  expect.equal(created1, true)
-  expect.equal(created2, false)
+  expect(notEqualIdentities).toEqual(true)
+  expect(created1).toEqual(true)
+  expect(created2).toEqual(false)
 })

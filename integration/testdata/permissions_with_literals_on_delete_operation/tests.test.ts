@@ -8,7 +8,7 @@ test('text permission successful', async () => {
     .deletePostTextPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('text permission failed', async () => {
@@ -19,7 +19,7 @@ test('text permission failed', async () => {
     .deletePostTextPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('number permission successful', async () => {
@@ -30,7 +30,7 @@ test('number permission successful', async () => {
     .deletePostNumberPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('number permission failed', async () => {
@@ -41,7 +41,7 @@ test('number permission failed', async () => {
     .deletePostNumberPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('boolean permission successful', async () => {
@@ -52,7 +52,7 @@ test('boolean permission successful', async () => {
     .deletePostBooleanPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('boolean permission failed', async () => {
@@ -63,7 +63,7 @@ test('boolean permission failed', async () => {
     .deletePostBooleanPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('text not null permission successful', async () => {
@@ -74,7 +74,7 @@ test('text not null permission successful', async () => {
     .deletePostTextNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('text not null permission failed', async () => {
@@ -85,7 +85,7 @@ test('text not null permission failed', async () => {
     .deletePostTextNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('text not null from default permission failed', async () => {
@@ -96,7 +96,7 @@ test('text not null from default permission failed', async () => {
     .deletePostTextNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('number not null permission successful', async () => {
@@ -107,7 +107,7 @@ test('number not null permission successful', async () => {
     .deletePostNumberNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('number not null permission failed', async () => {
@@ -118,7 +118,7 @@ test('number not null permission failed', async () => {
     .deletePostNumberNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('number not null from default permission failed', async () => {
@@ -129,7 +129,7 @@ test('number not null from default permission failed', async () => {
     .deletePostNumberNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('boolean not null permission successful', async () => {
@@ -140,7 +140,7 @@ test('boolean not null permission successful', async () => {
     .deletePostBooleanNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, false)
+  expect(authorizationFailed).toEqual(false)
 })
 
 test('boolean not null permission failed', async () => {
@@ -151,7 +151,7 @@ test('boolean not null permission failed', async () => {
     .deletePostBooleanNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 test('boolean not null from default permission failed', async () => {
@@ -162,7 +162,7 @@ test('boolean not null from default permission failed', async () => {
     .deletePostBooleanNotNullPermission({ id: post.id })
 
   var authorizationFailed = hasAuthorizationError(errors)
-  expect.equal(authorizationFailed, true)
+  expect(authorizationFailed).toEqual(true)
 })
 
 function hasAuthorizationError(errors?): boolean {
