@@ -47,7 +47,7 @@ test('a sample test', async () => {
   const { object: result } = await Actions.getMyModel({ id: createdModel.id });
 
   // assert on the result
-  expect.equal(result.id, createdModel.id);
+  expect(result.id).toEqual(createdModel.id);
 })
 ```
 
