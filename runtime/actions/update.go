@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"golang.org/x/exp/maps"
 	"gorm.io/gorm"
 )
 
@@ -43,6 +45,23 @@ func Update(
 	if !ok {
 		return nil, fmt.Errorf("values not provided")
 	}
+
+	setArgs, err := SetExpressionInputsToModelMap(operation, values, schema, ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// todo: clashing keys between implicit / explicit args (is this possible?)
+	maps.Copy(values, setArgs)
+
+	maps.DeleteFunc(values, func(k string, v any) bool {
+		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
+			return strcase.ToSnake(f.Name) == k
+		})
+
+		return !match
+	})
 
 	tx.Updates(values)
 

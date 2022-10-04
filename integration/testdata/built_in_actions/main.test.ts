@@ -1,4 +1,5 @@
-import { test, expect, actions, Post } from '@teamkeel/testing'
+import { test, expect, actions, Post, logger } from '@teamkeel/testing'
+import { LogLevel } from '@teamkeel/sdk'
 
 test('create action', async () => {
   // todo: /Users/adambull/dev/keel/runtime/actions/create.go:46 ERROR: null value in column "title" of relation "post" violates not-null constraint (SQLSTATE 23502)
@@ -113,4 +114,13 @@ test('update action', async () => {
     .updatePost({ where: { id: post.id }, values: { title: 'big watermelon' }})
 
   expect(updatedPost.title).toEqual('big watermelon')
+})
+
+test('update action - explicit set / args', async () => {
+  const { object: post } = await Post.create({ title: 'watermelon', subTitle: 'opm' })
+
+  const { object: updatedPost } = await actions
+    .updateWithExplicitSet({ where: { id: post.id }, values: { coolTitle: 'a really cool title' }})
+
+  expect(updatedPost.title).toEqual('a really cool title')
 })

@@ -5,9 +5,10 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema/expressions"
+	"golang.org/x/exp/maps"
 
 	"github.com/iancoleman/strcase"
 )
@@ -45,44 +46,22 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		}
 	}
 
-	for _, setExpressions := range operation.SetExpressions {
-		expression, err := expressions.Parse(setExpressions.Source)
-		if err != nil {
-			return nil, err
-		}
+	setArgs, err := SetExpressionInputsToModelMap(operation, args, schema, ctx)
 
-		assignment, err := expressions.ToAssignmentCondition(expression)
-		if err != nil {
-			return nil, err
-		}
-
-		lhsOperandType, err := GetOperandType(assignment.LHS, operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
-		isLiteral, _ := assignment.RHS.IsLiteralType()
-
-		switch {
-		case isLiteral:
-			modelMap[strcase.ToSnake(fieldName)], err = toNative(assignment.RHS, lhsOperandType)
-			if err != nil {
-				return nil, err
-			}
-		case assignment.RHS.Type() == expressions.TypeIdent:
-			if assignment.RHS.Ident.IsContextIdentityField() {
-				modelMap[strcase.ToSnake(fieldName)], err = runtimectx.GetIdentity(ctx)
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				return nil, fmt.Errorf("operand type not yet supported: %s", fieldName)
-			}
-		default:
-			return nil, fmt.Errorf("operand type not yet supported")
-		}
+	if err != nil {
+		return nil, err
 	}
+
+	// todo: clashing keys between implicit / explicit args (is this possible?)
+	maps.Copy(modelMap, setArgs)
+
+	maps.DeleteFunc(modelMap, func(k string, v any) bool {
+		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
+			return strcase.ToSnake(f.Name) == k
+		})
+
+		return !match
+	})
 
 	authorized, err := EvaluatePermissions(ctx, operation, schema, toLowerCamelMap(modelMap))
 	if err != nil {
