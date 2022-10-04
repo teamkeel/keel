@@ -1,8 +1,6 @@
 model Post {
     fields {
         identity Identity?
-
-        emptyIdentity Identity?
     }
 
     operations {

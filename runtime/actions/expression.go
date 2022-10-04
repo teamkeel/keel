@@ -375,6 +375,10 @@ func evaluateOperandValue(
 			return nil, fmt.Errorf("cannot yet compare operand of type %s", operandType)
 		}
 	case operand.Ident != nil && operand.Ident.IsContextIdentityField():
+		if !runtimectx.HasIdentity(context) {
+			return nil, nil
+		}
+
 		ksuid, err := runtimectx.GetIdentity(context)
 		if err != nil {
 			return nil, err
