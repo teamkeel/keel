@@ -37,39 +37,39 @@
     },
     {
         "status": "pass",
-        "testName": "string permission on field - matching value - is authorized"
+        "testName": "string permission on field name - matching value - is authorized"
     },
     {
         "status": "pass",
-        "testName": "string permission on field - not matching value - is not authorized"
+        "testName": "string permission on field name - not matching value - is not authorized"
     },
     {
         "status": "pass",
-        "testName": "string permission on field - null value - is not authorized"
+        "testName": "string permission on field name - null value - is not authorized"
     },
     {
         "status": "pass",
-        "testName": "number permission on field - matching value - is authorized"
+        "testName": "number permission on field name - matching value - is authorized"
     },
     {
         "status": "pass",
-        "testName": "number permission on field - not matching value - is not authorized"
+        "testName": "number permission on field name - not matching value - is not authorized"
     },
     {
         "status": "pass",
-        "testName": "number permission on field - null value - is not authorized"
+        "testName": "number permission on field name - null value - is not authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean permission on field - matching value - is authorized"
+        "testName": "boolean permission on field name - matching value - is authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean permission on field - field is not authorized"
+        "testName": "boolean permission on field name - not matching value - is not authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean permission on field - null - is not authorized"
+        "testName": "boolean permission on field name - null value - is not authorized"
     },
     {
         "status": "pass",
@@ -77,14 +77,22 @@
     },
     {
         "status": "pass",
-        "testName": "identity permission - incorrect identity in context - is not authorized"
+        "testName": "identity permission - missing identity in context - is not authorized"
     },
     {
         "status": "pass",
-        "testName": "identity permission - no identity in context - is not authorized"
+        "testName": "true value permission - with unauthenticated identity - is authorized"
     },
     {
         "status": "pass",
-        "testName": "true value permission - unauthenticated identity - is authorized"
+        "testName": "multiple ORed permissions - matching a single value - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "multiple ORed permissions - matching all values - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "multiple ORed permissions - matching no values - is not authorized"
     }
 ]

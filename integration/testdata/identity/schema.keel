@@ -1,10 +1,18 @@
 model Post {
     fields {
         title Text
+        identity Identity?
     }
     operations {
         create createPost() with (title)
         get getPost(id) 
+
+        create createPostWithIdentity() with (title) {
+            @set(post.identity = ctx.identity)
+        }
+        get getPostRequiresIdentity(id) {
+            @permission(expression: ctx.identity == post.identity)
+        }
     }
 }
 

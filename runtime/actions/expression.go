@@ -181,6 +181,12 @@ func EvaluatePermissions(
 		permissions = append(permissions, op.Permissions...)
 	}
 
+	// todo: remove this once we make permissions a requirement for any access
+	// https://linear.app/keel/issue/RUN-135/permissions-required-for-access-at-all
+	if len(permissions) == 0 {
+		return true, nil
+	}
+
 	for _, permission := range permissions {
 		if permission.Expression != nil {
 			expression, err := expressions.Parse(permission.Expression.Source)
@@ -192,13 +198,13 @@ func EvaluatePermissions(
 			if err != nil {
 				return false, err
 			}
-			if !authorized {
-				return false, nil
+			if authorized {
+				return true, nil
 			}
 		}
 	}
 
-	return true, nil
+	return false, nil
 }
 
 // evaluateExpression evaluates a given conditional expression
@@ -215,6 +221,23 @@ func evaluateExpression(
 		return false, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
 	}
 	condition := conditions[0]
+
+	if condition.Type() == expressions.ValueCondition {
+		valueType, _ := GetOperandType(condition.LHS, operation, schema)
+		if valueType != proto.Type_TYPE_BOOL {
+			return false, fmt.Errorf("value operand must be of type bool, not %s", condition.Type())
+		}
+
+		value, err := evaluateOperandValue(context, condition.LHS, operation, schema, data, valueType)
+		if err != nil {
+			return false, err
+		}
+
+		//boolresult, err := toNative(condition.LHS, valueType)
+
+		return value.(bool), nil
+	}
+
 	if condition.Type() != expressions.LogicalCondition {
 		return false, fmt.Errorf("can only handle condition type of LogicalCondition, have: %s", condition.Type())
 	}
@@ -335,8 +358,7 @@ func evaluateOperandValue(
 		}
 
 		switch operandType {
-		case proto.Type_TYPE_STRING,
-			proto.Type_TYPE_BOOL:
+		case proto.Type_TYPE_STRING, proto.Type_TYPE_BOOL:
 			return fieldValue, nil
 		case proto.Type_TYPE_INT:
 			// todo: unify these to a single type at the source?
