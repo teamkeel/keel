@@ -22,6 +22,10 @@ func WithIdentity(ctx context.Context, id *ksuid.KSUID) context.Context {
 	return ctx
 }
 
+func HasIdentity(ctx context.Context) bool {
+	return ctx.Value(identityIdContextKey) != nil
+}
+
 func GetIdentity(ctx context.Context) (*ksuid.KSUID, error) {
 	v := ctx.Value(identityIdContextKey)
 	if v == nil {

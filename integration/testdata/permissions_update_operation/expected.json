@@ -1,74 +1,86 @@
 [
     {
         "status": "pass",
-        "testName": "text literal permission successful"
+        "testName": "string permission with literal is authorized"
     },
     {
         "status": "pass",
-        "testName": "text literal permission failed"
+        "testName": "string permission with literal is not authorized"
     },
     {
         "status": "pass",
-        "testName": "text null literal permission failed"
+        "testName": "string permission with null literal is not authorized"
     },
     {
         "status": "pass",
-        "testName": "number literal permission successful"
+        "testName": "number permission with literal is authorized"
     },
     {
         "status": "pass",
-        "testName": "number literal permission failed"
+        "testName": "number permission with literal is not authorized"
     },
     {
         "status": "pass",
-        "testName": "number null literal permission failed"
+        "testName": "number permission with null literal is not authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean literal permission successful"
+        "testName": "boolean permission with literal is authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean literal permission failed"
+        "testName": "boolean permission with literal is not authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean null literal permission failed"
+        "testName": "boolean permission with null literal is not authorized"
     },
     {
         "status": "pass",
-        "testName": "text field permission successful"
+        "testName": "string permission with field succeeds"
     },
     {
         "status": "pass",
-        "testName": "text field permission failed"
+        "testName": "string permission with field is not authorized"
     },
     {
         "status": "pass",
-        "testName": "text null field permission failed"
+        "testName": "string permission with null field is not authorized"
     },
     {
         "status": "pass",
-        "testName": "number field permission successful"
+        "testName": "number permission with field is authorized"
     },
     {
         "status": "pass",
-        "testName": "number field permission failed"
+        "testName": "number permission with field is not authorized"
     },
     {
         "status": "pass",
-        "testName": "number null field permission failed"
+        "testName": "number permission with null field is not authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean field permission successful"
+        "testName": "boolean permission with field is authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean field permission failed"
+        "testName": "boolean permission with field is not authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean null field permission failed"
+        "testName": "boolean permission with null field is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "identity permission with correct identity in context is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "identity permission with incorrect identity in context is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "identity permission with no identity in context is not authorized"
     }
 ]

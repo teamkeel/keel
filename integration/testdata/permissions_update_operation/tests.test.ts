@@ -1,235 +1,306 @@
-import { test, expect, actions, Post } from '@teamkeel/testing'
+import { test, expect, actions, Post, Identity } from '@teamkeel/testing'
 
-test('text literal permission successful', async () => {
+test('string permission with literal is authorized', async () => {
   const { object: post } = await actions
     .createWithText({ title: "hello" })
 
   expect(
     await actions
-      .updateTextPermission({ 
+      .updateWithTextPermissionLiteral({ 
         where: { id: post.id },
         values: { title: "goodbye" }
       })
   ).notToHaveAuthorizationError()
 })
 
-test('text literal permission failed', async () => {
+test('string permission with literal is not authorized', async () => {
   const { object: post } = await actions
     .createWithText({ title: "goodbye" })
 
   expect(
     await actions
-      .updateTextPermission({ 
+      .updateWithTextPermissionLiteral({ 
         where: { id: post.id },
         values: { title: "hello" }
       })
   ).toHaveAuthorizationError()
 })
 
-test('text null literal permission failed', async () => {
+test('string permission with null literal is not authorized', async () => {
   const { object: post } = await actions
     .createWithText({ title: "goodbye" })
 
   expect(
     await actions
-      .updateTextPermission({ 
+      .updateWithTextPermissionLiteral({ 
         where: { id: post.id },
         values: { title: null }
       })
   ).toHaveAuthorizationError()
 })
 
-test('number literal permission successful', async () => {
+test('number permission with literal is authorized', async () => {
   const { object: post } = await actions
     .createWithNumber({ views: 1 })
 
   expect(
     await actions
-      .updateNumberPermission({ 
+      .updateWithNumberPermissionLiteral({ 
         where: { id: post.id },
         values: { views: 100 } 
       })
   ).notToHaveAuthorizationError()
 })
 
-test('number literal permission failed', async () => {
+test('number permission with literal is not authorized', async () => {
   const { object: post } = await actions
     .createWithNumber({ views: 100 })
 
   expect(
     await actions
-      .updateNumberPermission({ 
+      .updateWithNumberPermissionLiteral({ 
         where: { id: post.id },
         values: { views: 1 }
       })
   ).toHaveAuthorizationError()
 })
 
-test('number null literal permission failed', async () => {
+test('number permission with null literal is not authorized', async () => {
   const { object: post } = await actions
     .createWithNumber({ views: 100 })
 
   expect(
     await actions
-      .updateNumberPermission({ 
+      .updateWithNumberPermissionLiteral({ 
         where: { id: post.id },
         values: { views: null }
       })
   ).toHaveAuthorizationError()
 })
 
-test('boolean literal permission successful', async () => {
+test('boolean permission with literal is authorized', async () => {
   const { object: post } = await actions
     .createWithBoolean({ active: true })
 
   expect(
     await actions
-      .updateBooleanPermission({ 
+      .updateWithBooleanPermissionLiteral({ 
         where: { id: post.id },
         values: { active: false }
       })
   ).notToHaveAuthorizationError()
 })
 
-test('boolean literal permission failed', async () => {
+test('boolean permission with literal is not authorized', async () => {
   const { object: post } = await actions
     .createWithBoolean({ active: false })
 
   expect(
     await actions
-      .updateBooleanPermission({ 
+      .updateWithBooleanPermissionLiteral({ 
         where: { id: post.id },
         values: { active: true }
       })
   ).toHaveAuthorizationError()
 })
 
-test('boolean null literal permission failed', async () => {
+test('boolean permission with null literal is not authorized', async () => {
   const { object: post } = await actions
     .createWithBoolean({ active: false })
 
   expect(
     await actions
-      .updateBooleanPermission({ 
+      .updateWithBooleanPermissionLiteral({ 
         where: { id: post.id },
         values: { active: null }
       })
   ).toHaveAuthorizationError()
 })
 
-test('text field permission successful', async () => {
+test('string permission with field succeeds', async () => {
   const { object: post } = await actions
     .createWithText({ title: "hello" })
 
   expect(
     await actions
-      .updateFromFieldTextPermission({ 
+      .updateWithTextPermissionFromField({ 
         where: { id: post.id },
         values: { title: "goodbye" }
       })
   ).notToHaveAuthorizationError()
 })
 
-test('text field permission failed', async () => {
+test('string permission with field is not authorized', async () => {
   const { object: post } = await actions
     .createWithText({ title: "goodbye" })
 
   expect(
     await actions
-      .updateFromFieldTextPermission({ 
+      .updateWithTextPermissionFromField({ 
         where: { id: post.id },
         values: { title: "hello" }
       })
   ).toHaveAuthorizationError()
 })
 
-test('text null field permission failed', async () => {
+test('string permission with null field is not authorized', async () => {
   const { object: post } = await actions
     .createWithText({ title: "goodbye" })
 
   expect(
     await actions
-      .updateFromFieldTextPermission({ 
+      .updateWithTextPermissionFromField({ 
         where: { id: post.id },
         values: { title: null }
       })
   ).toHaveAuthorizationError()
 })
 
-test('number field permission successful', async () => {
+test('number permission with field is authorized', async () => {
   const { object: post } = await actions
     .createWithNumber({ views: 1 })
 
   expect(
     await actions
-      .updateFromFieldNumberPermission({ 
+      .updateWithNumberPermissionFromField({ 
         where: { id: post.id },
         values: { views: 100 } 
       })
   ).notToHaveAuthorizationError()
 })
 
-test('number field permission failed', async () => {
+test('number permission with field is not authorized', async () => {
   const { object: post } = await actions
     .createWithNumber({ views: 100 })
 
   expect(
     await actions
-      .updateFromFieldNumberPermission({ 
+      .updateWithNumberPermissionFromField({ 
         where: { id: post.id },
         values: { views: 1 }
       })
   ).toHaveAuthorizationError()
 })
 
-test('number null field permission failed', async () => {
+test('number permission with null field is not authorized', async () => {
   const { object: post } = await actions
     .createWithNumber({ views: 100 })
 
   expect(
     await actions
-      .updateFromFieldNumberPermission({ 
+      .updateWithNumberPermissionFromField({ 
         where: { id: post.id },
         values: { views: null }
       })
   ).toHaveAuthorizationError()
 })
 
-test('boolean field permission successful', async () => {
+test('boolean permission with field is authorized', async () => {
   const { object: post } = await actions
     .createWithBoolean({ active: true })
 
   expect(
     await actions
-      .updateFromFieldBooleanPermission({ 
+      .updateWithBooleanPermissionFromField({ 
         where: { id: post.id },
         values: { active: false }
       })
   ).notToHaveAuthorizationError()
 })
 
-test('boolean field permission failed', async () => {
+test('boolean permission with field is not authorized', async () => {
   const { object: post } = await actions
     .createWithBoolean({ active: false })
 
   expect(
     await actions
-      .updateFromFieldBooleanPermission({ 
+      .updateWithBooleanPermissionFromField({ 
         where: { id: post.id },
         values: { active: true }
       })
   ).toHaveAuthorizationError()
 })
 
-test('boolean null field permission failed', async () => {
+test('boolean permission with null field is not authorized', async () => {
   const { object: post } = await actions
     .createWithBoolean({ active: false })
 
   expect(
     await actions
-      .updateFromFieldBooleanPermission({ 
+      .updateWithBooleanPermissionFromField({ 
         where: { id: post.id },
         values: { active: null }
+      })
+  ).toHaveAuthorizationError()
+})
+
+test('identity permission with correct identity in context is authorized', async () => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user@keel.xyz',
+    password: '1234'})
+
+  const { object: identity } = await Identity.findOne({ id: identityId })
+
+  const { object: post } = await actions
+    .withIdentity(identity)
+    .createWithIdentity({});
+
+  expect(
+    await actions
+      .withIdentity(identity)
+      .updateWithIdentityPermission({ 
+        where: { id: post.id },
+        values: { title: "hello" }
+      })
+  ).notToHaveAuthorizationError()
+})
+
+test('identity permission with incorrect identity in context is authorized', async () => {
+  const { identityId: id1 } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user1@keel.xyz',
+    password: '1234'})
+
+  const { identityId: id2 } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user2@keel.xyz',
+    password: '1234'})
+
+  const { object: identity1 } = await Identity.findOne({ id: id1 })
+  const { object: identity2 } = await Identity.findOne({ id: id2 })
+
+  const { object: post } = await actions
+    .withIdentity(identity1)
+    .createWithIdentity({});
+
+  expect(
+    await actions
+      .withIdentity(identity2)
+      .updateWithIdentityPermission({ 
+        where: { id: post.id },
+        values: { title: "hello" }
+      })
+  ).toHaveAuthorizationError()
+})
+
+test('identity permission with no identity in context is not authorized', async () => {
+  const { identityId: id } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'user@keel.xyz',
+    password: '1234'})
+
+  const { object: identity } = await Identity.findOne({ id: id })
+
+  const { object: post } = await actions
+    .withIdentity(identity)
+    .createWithIdentity({});
+
+  expect(
+    await actions
+      .updateWithIdentityPermission({ 
+        where: { id: post.id },
+        values: { title: "hello" }
       })
   ).toHaveAuthorizationError()
 })
