@@ -1,3 +1,10 @@
+# [0.156.0](https://github.com/teamkeel/keel/compare/v0.155.0...v0.156.0) (2022-10-04)
+
+
+### Features
+
+* support set expressions in update action ([#432](https://github.com/teamkeel/keel/issues/432)) ([17d071a](https://github.com/teamkeel/keel/commit/17d071ad9c564d6dd62c047440b6134ed08779d4))
+
 # [0.155.0](https://github.com/teamkeel/keel/compare/v0.154.0...v0.155.0) (2022-10-03)
 
 
