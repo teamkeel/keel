@@ -1,3 +1,10 @@
+# [0.157.0](https://github.com/teamkeel/keel/compare/v0.156.0...v0.157.0) (2022-10-04)
+
+
+### Features
+
+* permission() support on update ([#439](https://github.com/teamkeel/keel/issues/439)) ([ab34e93](https://github.com/teamkeel/keel/commit/ab34e93c552623764814bfc3ecfbecaced004242))
+
 # [0.156.0](https://github.com/teamkeel/keel/compare/v0.155.0...v0.156.0) (2022-10-04)
 
 
