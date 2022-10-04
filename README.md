@@ -1,4 +1,3 @@
-<!-- prettier-ignore -->
 # keel-cli
 
 keel-cli is a tool to build and deploy services
