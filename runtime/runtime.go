@@ -83,7 +83,7 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 	}
 
 	handler := http.HandlerFunc(h)
-	return cors.Default().Handler(handler).(http.HandlerFunc)
+	return cors.Default().Handler(handler).ServeHTTP
 
 }
 
