@@ -13,8 +13,9 @@ import (
 )
 
 type HttpFunctionsClient struct {
-	Port string
-	Host string
+	Port  string
+	Host  string
+	Https bool
 }
 
 func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, opType proto.OperationType, body map[string]any) (any, error) {
@@ -24,7 +25,17 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, op
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:%s/%s", h.Host, h.Port, actionName), bytes.NewReader(b))
+	protocol := "http"
+	if h.Https {
+		protocol = "https"
+	}
+
+	baseUrl := h.Host
+	if h.Port != "" {
+		baseUrl = baseUrl + ":" + h.Port
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s://%s/%s", protocol, baseUrl, actionName), bytes.NewReader(b))
 
 	if err != nil {
 		return nil, err
@@ -44,13 +55,19 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, op
 
 	var response interface{}
 
-	json.Unmarshal(b, &response)
+	err = json.Unmarshal(b, &response)
+	if err != nil {
+		return nil, errors.New("invalid json: " + string(b))
+	}
 
 	return response, nil
 }
 
 func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opType proto.OperationType) (interface{}, error) {
 	responseMap, ok := response.(map[string]any)
+	if !ok {
+		return nil, errors.New("unknown response from custom function runtime")
+	}
 
 	errs, hasErrors := responseMap["errors"].([]map[string]string)
 
@@ -65,7 +82,7 @@ func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opTyp
 		object, hasObject := responseMap["object"]
 
 		if !hasObject {
-			panic(errors.New("unknown response from custom function runtime"))
+			return nil, errors.New("unknown response from custom function runtime")
 		}
 
 		return object, nil
@@ -73,7 +90,7 @@ func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opTyp
 		collection, hasCollection := responseMap["collection"]
 
 		if !hasCollection {
-			panic(errors.New("unknown response from custom function runtime"))
+			return nil, errors.New("unknown response from custom function runtime")
 		}
 
 		return collection, nil
@@ -81,7 +98,7 @@ func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opTyp
 		success, hasSuccess := responseMap["success"]
 
 		if !hasSuccess {
-			panic(errors.New("unknown response from custom function runtime"))
+			return nil, errors.New("unknown response from custom function runtime")
 		}
 
 		return success, nil
