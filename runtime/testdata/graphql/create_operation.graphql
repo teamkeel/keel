@@ -41,7 +41,10 @@ type Timestamp {
   day: Int!
   formatted(format: String!): String!
   fromNow: String!
+  hour: Int!
+  minute: Int!
   month: Int!
-  seconds: Int!
+  second: Int!
+  unixSeconds: Int!
   year: Int!
 }

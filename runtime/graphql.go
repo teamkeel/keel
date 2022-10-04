@@ -456,6 +456,21 @@ var fromNowType = graphql.Field{
 	},
 }
 
+var sinceEpochField = graphql.Field{
+	Name:        "seconds",
+	Description: "Seconds since unix epoch",
+	Type:        graphql.NewNonNull(graphql.Int),
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		t, ok := p.Source.(time.Time)
+
+		if !ok {
+			return nil, fmt.Errorf("not a valid timestamp")
+		}
+
+		return t.Unix(), nil
+	},
+}
+
 var formattedDateType = &graphql.Field{
 	Name:        "formatted",
 	Description: "Formatted timestamp. Uses standard datetime formats",
@@ -493,20 +508,7 @@ var formattedDateType = &graphql.Field{
 var timestampType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Timestamp",
 	Fields: graphql.Fields{
-		"seconds": &graphql.Field{
-			Name:        "seconds",
-			Description: "Seconds since unix epoch",
-			Type:        graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid time")
-				}
-
-				return t.Unix(), nil
-			},
-		},
+		"unixSeconds": &sinceEpochField,
 		"year": &graphql.Field{
 			Name: "year",
 			Type: graphql.NewNonNull(graphql.Int),
@@ -514,7 +516,7 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 				d, ok := p.Source.(time.Time)
 
 				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+					return nil, fmt.Errorf("not a valid timestamp")
 				}
 
 				return d.Year(), nil
@@ -527,7 +529,7 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 				d, ok := p.Source.(time.Time)
 
 				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+					return nil, fmt.Errorf("not a valid timestamp")
 				}
 
 				return int(d.Month()), nil
@@ -540,10 +542,49 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 				d, ok := p.Source.(time.Time)
 
 				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+					return nil, fmt.Errorf("not a valid timestamp")
 				}
 
 				return d.Day(), nil
+			},
+		},
+		"hour": &graphql.Field{
+			Name: "hour",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				d, ok := p.Source.(time.Time)
+
+				if !ok {
+					return nil, fmt.Errorf("not a valid timestamp")
+				}
+
+				return d.Hour(), nil
+			},
+		},
+		"minute": &graphql.Field{
+			Name: "minute",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				d, ok := p.Source.(time.Time)
+
+				if !ok {
+					return nil, fmt.Errorf("not a valid timestamp")
+				}
+
+				return d.Minute(), nil
+			},
+		},
+		"second": &graphql.Field{
+			Name: "second",
+			Type: graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				d, ok := p.Source.(time.Time)
+
+				if !ok {
+					return nil, fmt.Errorf("not a valid timestamp")
+				}
+
+				return d.Second(), nil
 			},
 		},
 		"formatted": formattedDateType,
@@ -554,6 +595,7 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 var dateType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Date",
 	Fields: graphql.Fields{
+		"unixSeconds": &sinceEpochField,
 		"year": &graphql.Field{
 			Name: "year",
 			Type: graphql.NewNonNull(graphql.Int),
@@ -658,7 +700,7 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 var timestampInputType = graphql.NewInputObject(graphql.InputObjectConfig{
 	Name: "TimestampInput",
 	Fields: graphql.InputObjectConfigFieldMap{
-		"seconds": &graphql.InputObjectFieldConfig{
+		"unixSeconds": &graphql.InputObjectFieldConfig{
 			Type: graphql.NewNonNull(graphql.Int),
 		},
 	},
