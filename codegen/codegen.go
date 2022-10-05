@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"text/template"
 
@@ -587,7 +588,7 @@ type EntryPointRenderArguments struct {
 	API       string
 }
 
-func (gen *Generator) GenerateEntryPointRenderArguments() EntryPointRenderArguments {
+func (gen *Generator) GenerateEntryPointRenderArguments(pathToFunctionsDirFromHandlerDir string) EntryPointRenderArguments {
 	renderFunctions := func(sch *proto.Schema) (acc string) {
 		for _, model := range sch.Models {
 			functions := lo.Filter(model.Operations, func(o *proto.Operation, _ int) bool {
@@ -675,17 +676,7 @@ func (gen *Generator) GenerateEntryPointRenderArguments() EntryPointRenderArgume
 				// Add the imports to each custom code srcfile
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 					"Name": op.Name,
-					// We need to refer to the users functions directory,
-					// which will be a few levels above the @teamkeel/client/dist directory.
-					// The hierarchy is as follows:
-					// project/
-					//   functions/
-					//   node_modules/
-					//     @teamkeel/
-					//       client/
-					//         dist/
-					//           handler.js
-					"Path": fmt.Sprintf("../../../../functions/%s", op.Name),
+					"Path": filepath.Join(pathToFunctionsDirFromHandlerDir, op.Name),
 				}))
 			}
 		}
@@ -727,7 +718,19 @@ func (gen *Generator) GenerateEntryPointRenderArguments() EntryPointRenderArgume
 }
 
 func (gen *Generator) GenerateEntryPoint() (r string) {
-	renderArgs := gen.GenerateEntryPointRenderArguments()
+	// We need to refer to the users functions directory,
+	// which will be a few levels above the @teamkeel/client/dist directory.
+	// The hierarchy is as follows:
+	// project/
+	//   functions/
+	//   node_modules/
+	//     @teamkeel/
+	//       client/
+	//         dist/
+	//           handler.js
+	pathToFunctionsDirFromHandlerDir := "../../../../functions"
+
+	renderArgs := gen.GenerateEntryPointRenderArguments(pathToFunctionsDirFromHandlerDir)
 
 	r += renderTemplate(TemplateHandler, map[string]interface{}{
 		"Functions": renderArgs.Functions,
