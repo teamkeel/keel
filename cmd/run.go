@@ -172,7 +172,7 @@ var runCmd = &cobra.Command{
 
 			m := migrations.New(protoSchema, currSchema)
 
-			if m.HasChanges() {
+			if m.HasModelFieldChanges() {
 				fmt.Println("💿 Applying migrations")
 				err = m.Apply(db)
 				if err != nil {
@@ -180,6 +180,12 @@ var runCmd = &cobra.Command{
 				}
 
 				printMigrationChanges(m.Changes)
+			} else {
+				fmt.Println("💿 Applying changes")
+				err = m.Apply(db)
+				if err != nil {
+					panic(err)
+				}
 			}
 
 			// Every time the schema changes, we want to run codegen again

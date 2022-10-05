@@ -43,8 +43,8 @@ type Migrations struct {
 	SQL string
 }
 
-// HasChanges returns true if the migrations have changes to be applied
-func (m *Migrations) HasChanges() bool {
+// HasModelFieldChanges returns true if the migrations contain model field changes to be applied
+func (m *Migrations) HasModelFieldChanges() bool {
 	return m.SQL != ""
 }
 
