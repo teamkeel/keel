@@ -14,5 +14,13 @@
     {
         "status": "pass",
         "testName": "authentication unsuccessful"
+    },
+    {
+        "status": "pass",
+        "testName": "authorization successful"
+    },
+    {
+        "status": "pass",
+        "testName": "authorization failed"
     }
 ]

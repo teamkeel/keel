@@ -6,10 +6,7 @@ test('string permission on literal - matching value - is authorized', async () =
 
   expect(
     await actions
-      .updateWithTextPermissionLiteral({ 
-        where: { id: post.id },
-        values: { title: "goodbye" }
-      })
+      .getWithTextPermissionLiteral({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -19,10 +16,7 @@ test('string permission on literal - not matching value - is not authorized', as
 
   expect(
     await actions
-      .updateWithTextPermissionLiteral({ 
-        where: { id: post.id },
-        values: { title: "hello" }
-      })
+      .getWithTextPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -32,10 +26,7 @@ test('string permission on literal - null value - is not authorized', async () =
 
   expect(
     await actions
-      .updateWithTextPermissionLiteral({ 
-        where: { id: post.id },
-        values: { title: null }
-      })
+      .getWithTextPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -45,10 +36,7 @@ test('number permission on literal - matching value - is authorized', async () =
 
   expect(
     await actions
-      .updateWithNumberPermissionLiteral({ 
-        where: { id: post.id },
-        values: { views: 100 } 
-      })
+      .getWithNumberPermissionLiteral({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -58,10 +46,7 @@ test('number permission on literal - not matching value - is not authorized', as
 
   expect(
     await actions
-      .updateWithNumberPermissionLiteral({ 
-        where: { id: post.id },
-        values: { views: 1 }
-      })
+      .getWithNumberPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -71,10 +56,7 @@ test('number permission on literal - null value - is not authorized', async () =
 
   expect(
     await actions
-      .updateWithNumberPermissionLiteral({ 
-        where: { id: post.id },
-        values: { views: null }
-      })
+      .getWithNumberPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -84,10 +66,7 @@ test('boolean permission on literal - matching value - is authorized', async () 
 
   expect(
     await actions
-      .updateWithBooleanPermissionLiteral({ 
-        where: { id: post.id },
-        values: { active: false }
-      })
+      .getWithBooleanPermissionLiteral({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -97,10 +76,7 @@ test('boolean permission on literal - not matching value - is not authorized', a
 
   expect(
     await actions
-      .updateWithBooleanPermissionLiteral({ 
-        where: { id: post.id },
-        values: { active: true }
-      })
+      .getWithBooleanPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -110,10 +86,7 @@ test('boolean permission on literal - null value - is not authorized', async () 
 
   expect(
     await actions
-      .updateWithBooleanPermissionLiteral({ 
-        where: { id: post.id },
-        values: { active: null }
-      })
+      .getWithBooleanPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -123,10 +96,7 @@ test('string permission on field - matching value - is authorized', async () => 
 
   expect(
     await actions
-      .updateWithTextPermissionFromField({ 
-        where: { id: post.id },
-        values: { title: "goodbye" }
-      })
+      .getWithTextPermissionFromField({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -136,10 +106,7 @@ test('string permission on field - not matching value - is not authorized', asyn
 
   expect(
     await actions
-      .updateWithTextPermissionFromField({ 
-        where: { id: post.id },
-        values: { title: "hello" }
-      })
+      .getWithTextPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -149,10 +116,7 @@ test('string permission on field - null value - is not authorized', async () => 
 
   expect(
     await actions
-      .updateWithTextPermissionFromField({ 
-        where: { id: post.id },
-        values: { title: null }
-      })
+      .getWithTextPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -162,10 +126,7 @@ test('number permission on field - matching value - is authorized', async () => 
 
   expect(
     await actions
-      .updateWithNumberPermissionFromField({ 
-        where: { id: post.id },
-        values: { views: 100 } 
-      })
+      .getWithNumberPermissionFromField({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -175,10 +136,7 @@ test('number permission on field - not matching value - is not authorized', asyn
 
   expect(
     await actions
-      .updateWithNumberPermissionFromField({ 
-        where: { id: post.id },
-        values: { views: 1 }
-      })
+      .getWithNumberPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -188,10 +146,7 @@ test('number permission on field - null value - is not authorized', async () => 
 
   expect(
     await actions
-      .updateWithNumberPermissionFromField({ 
-        where: { id: post.id },
-        values: { views: null }
-      })
+      .getWithNumberPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -201,10 +156,7 @@ test('boolean permission on field - matching value - is authorized', async () =>
 
   expect(
     await actions
-      .updateWithBooleanPermissionFromField({ 
-        where: { id: post.id },
-        values: { active: false }
-      })
+      .getWithBooleanPermissionFromField({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -214,10 +166,7 @@ test('boolean permission on field - field is not authorized', async () => {
 
   expect(
     await actions
-      .updateWithBooleanPermissionFromField({ 
-        where: { id: post.id },
-        values: { active: true }
-      })
+      .getWithBooleanPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -227,10 +176,7 @@ test('boolean permission on field - null - is not authorized', async () => {
 
   expect(
     await actions
-      .updateWithBooleanPermissionFromField({ 
-        where: { id: post.id },
-        values: { active: null }
-      })
+      .getWithBooleanPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -249,10 +195,7 @@ test('identity permission - correct identity in context - is authorized', async 
   expect(
     await actions
       .withIdentity(identity)
-      .updateWithIdentityPermission({ 
-        where: { id: post.id },
-        values: { title: "hello" }
-      })
+      .getWithIdentityPermission({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -277,10 +220,7 @@ test('identity permission - incorrect identity in context - is not authorized', 
   expect(
     await actions
       .withIdentity(identity2)
-      .updateWithIdentityPermission({ 
-        where: { id: post.id },
-        values: { title: "hello" }
-      })
+      .getWithIdentityPermission({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -298,10 +238,7 @@ test('identity permission - no identity in context - is not authorized', async (
 
   expect(
     await actions
-      .updateWithIdentityPermission({ 
-        where: { id: post.id },
-        values: { title: "hello" }
-      })
+      .getWithIdentityPermission({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -311,9 +248,6 @@ test('true value permission - unauthenticated identity - is authorized', async (
 
   expect(
     await actions
-      .updateWithTrueValuePermission({ 
-        where: { id: post.id },
-        values: { title: "hello again" }
-      })
+      .getWithTrueValuePermission({ id: post.id })
   ).notToHaveAuthorizationError()
 })
