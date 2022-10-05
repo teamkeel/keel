@@ -19,7 +19,8 @@ func Update(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
-	wheres map[string]any, values map[string]any) (map[string]any, error) {
+	wheres map[string]any,
+	values map[string]any) (map[string]any, error) {
 
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
@@ -61,32 +62,6 @@ func Update(
 		return nil, errors.New("not authorized to access this operation")
 	}
 
-<<<<<<< Updated upstream
-	values, ok := args["values"].(map[string]any)
-
-	if !ok {
-		return nil, fmt.Errorf("values not provided")
-	}
-
-	setArgs, err := SetExpressionInputsToModelMap(operation, values, schema, ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	// todo: clashing keys between implicit / explicit args (is this possible?)
-	maps.Copy(values, setArgs)
-
-	maps.DeleteFunc(values, func(k string, v any) bool {
-		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
-			return strcase.ToSnake(f.Name) == k
-		})
-
-		return !match
-	})
-
-=======
->>>>>>> Stashed changes
 	tx.Updates(values)
 
 	if tx.Error != nil || tx.RowsAffected == 0 {

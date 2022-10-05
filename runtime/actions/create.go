@@ -21,47 +21,6 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		return nil, err
 	}
 
-<<<<<<< Updated upstream
-	// Now overwrite the fields for which Inputs have been given accordingly.
-	for _, input := range operation.Inputs {
-		switch input.Behaviour {
-		case proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT:
-			modelFieldName := input.Target[0]
-
-			// If this argument is missing it must be optional.
-			v, ok := args[input.Name]
-			if !ok {
-				continue
-			}
-			v, err := toMap(v, input.Type.Type)
-			if err != nil {
-				return nil, err
-			}
-			modelMap[strcase.ToSnake(modelFieldName)] = v
-		default:
-			return nil, fmt.Errorf("input behaviour %s is not yet supported for Create", input.Behaviour)
-		}
-	}
-
-	setArgs, err := SetExpressionInputsToModelMap(operation, args, schema, ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	// todo: clashing keys between implicit / explicit args (is this possible?)
-	maps.Copy(modelMap, setArgs)
-
-	maps.DeleteFunc(modelMap, func(k string, v any) bool {
-		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
-			return strcase.ToSnake(f.Name) == k
-		})
-
-		return !match
-	})
-
-=======
->>>>>>> Stashed changes
 	authorized, err := EvaluatePermissions(ctx, operation, schema, toLowerCamelMap(modelMap))
 	if err != nil {
 		return nil, err

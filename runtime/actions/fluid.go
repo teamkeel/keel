@@ -10,6 +10,14 @@ import (
 	"golang.org/x/exp/maps"
 )
 
+type Where struct {
+
+}
+
+type Value struct {
+	
+}
+
 type RootAction struct {
 	inputs    map[string]any
 	schema    *proto.Schema
@@ -63,20 +71,7 @@ func (a *RootAction) Execute() (map[string]any, error) {
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		// 1. build explicit inputs from where they are used in @set expressions
 		// 2. build implicit inputs
-
-		// operations {
-		//  create createPost() with(title, coolTitle: Text, anotherThing: Text) {
-		//    @set(post.title = coolTitle)
-		//    @set(post.title = anotherThing)  <== does this overwrite previous @set?
-		//	}
-		//}
-
-		// { "title": "cool title" }
-		// both of these types will eventually create a map type object like:
-
-		// { "myField": "ujsuds",  }
-
-		resolvedInputs, err := a.reconcileInputs()
+		resolvedInputs, err := a.reconcileWriteInputs()
 
 		if err != nil {
 			return nil, err
@@ -105,7 +100,7 @@ func (a *RootAction) model() *proto.Model {
 	return proto.FindModel(a.schema.Models, a.operation.ModelName)
 }
 
-func (a *RootAction) reconcileInputs() (map[string]any, error) {
+func (a *RootAction) reconcileWriteInputs() (map[string]any, error) {
 	modelMap := map[string]any{}
 
 	// first assign implicit inputs and their values
@@ -175,15 +170,15 @@ func (a *RootAction) convertFromDbResult(result interface{}) interface{} {
 	panic("not a valid db result")
 }
 
-// func main() {
-// 	action := RootAction{}
+func main() {
+	action := RootAction{}
 
-// 	action.
-// 		WithSchema(schema).
-// 		WithContext(ctx).
-// 		WithArgs(map[string]any{
-// 			"test": "test",
-// 		}).
-// 		WithOperation(operation).
-// 		Execute()
-// }
+	action.
+		WithSchema(schema).
+		WithContext(ctx).
+		WithArgs(map[string]any{
+			"test": "test",
+		}).
+		WithOperation(operation).
+		Execute()
+}
