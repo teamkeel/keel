@@ -4,8 +4,22 @@ model Post {
     }
 
     functions {
-        get getPost(id)
-        create createPost() with (title)
+        get getPost(id) {
+            @where(expression: post.title != "")
+            @permission(expression: post.title.length > 20)
+        }
+
+        list listPost() {
+            @permission(expression: post.title != "jdjdjd")
+        }
+
+        create createPost() with (title) {
+            @permission(expression: post.title.length > 50)
+        }
+
+        update updatePost() with(title) {
+            @permission(expression: post.identity == ctx.identity)
+        }
     }
 }
 

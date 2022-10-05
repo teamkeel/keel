@@ -48,11 +48,20 @@ func SetExpressionInputsToModelMap(operation *proto.Operation, values map[string
 				}
 			} else {
 				// check if there is a match for the set expression in explicit inputs
-
 				rhsIdent := assignment.RHS.Ident
 
 				if match, ok := values[rhsIdent.ToString()]; ok {
-					modelMap[strcase.ToSnake(fieldName)] = match
+					typeForExplicitInput := getExplicitInputType(operation, rhsIdent.ToString())
+
+					if typeForExplicitInput != nil {
+						dbObject, err := toMap(match, *typeForExplicitInput)
+
+						if err != nil {
+							return nil, err
+						}
+
+						modelMap[strcase.ToSnake(fieldName)] = dbObject
+					}
 
 					continue
 				}
@@ -65,4 +74,18 @@ func SetExpressionInputsToModelMap(operation *proto.Operation, values map[string
 	}
 
 	return modelMap, nil
+}
+
+func getExplicitInputType(operation *proto.Operation, name string) *proto.Type {
+	for _, input := range operation.Inputs {
+		if input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
+
+		if input.Name == name {
+			return &input.Type.Type
+		}
+	}
+
+	return nil
 }

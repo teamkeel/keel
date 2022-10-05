@@ -6,10 +6,8 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"golang.org/x/exp/maps"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +19,7 @@ func Update(
 	ctx context.Context,
 	operation *proto.Operation,
 	schema *proto.Schema,
-	args map[string]any) (map[string]any, error) {
+	wheres map[string]any, values map[string]any) (map[string]any, error) {
 
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
@@ -36,7 +34,7 @@ func Update(
 	tx := db.Table(tableName)
 
 	// Add the WHERE clauses derived from IMPLICIT inputs.
-	tx, err = addUpdateImplicitInputFilters(operation, args, tx)
+	tx, err = addUpdateImplicitInputFilters(operation, wheres, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +61,7 @@ func Update(
 		return nil, errors.New("not authorized to access this operation")
 	}
 
+<<<<<<< Updated upstream
 	values, ok := args["values"].(map[string]any)
 
 	if !ok {
@@ -86,6 +85,8 @@ func Update(
 		return !match
 	})
 
+=======
+>>>>>>> Stashed changes
 	tx.Updates(values)
 
 	if tx.Error != nil || tx.RowsAffected == 0 {

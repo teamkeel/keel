@@ -108,14 +108,21 @@ model Task {
     }
 
     operations {
+        // select * from task inner join project on X = X where project.id = X and task.completed == true
+        
+        // with openTasks 
         list openTasks(project.id) {
             @where(task.completed == false)
+            @permission(expression: task.assignedTo.identity == ctx.identity)
+            @permission(expression: true) // public endpoint
+            @permission(expression: ctx.isAuthenticated)
         }
         list completedTasks(project.id, completedAt) {
             @where(task.completed == true)
         }
         update completeTask(id) {
             @set(task.completed = true)
+            @set(task.completedAt = task.createdAt)
             @set(task.completedAt = ctx.now)
         }
         update unCompleteTask(id) {

@@ -3,18 +3,14 @@ package actions
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"golang.org/x/exp/maps"
 
 	"github.com/iancoleman/strcase"
 )
 
-func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
-
+func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, inputs map[string]any) (map[string]any, error) {
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, err
@@ -25,6 +21,7 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		return nil, err
 	}
 
+<<<<<<< Updated upstream
 	// Now overwrite the fields for which Inputs have been given accordingly.
 	for _, input := range operation.Inputs {
 		switch input.Behaviour {
@@ -63,6 +60,8 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		return !match
 	})
 
+=======
+>>>>>>> Stashed changes
 	authorized, err := EvaluatePermissions(ctx, operation, schema, toLowerCamelMap(modelMap))
 	if err != nil {
 		return nil, err
@@ -76,26 +75,4 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		return nil, err
 	}
 	return toLowerCamelMap(modelMap), nil
-}
-
-// toLowerCamelMap returns a copy of the given map, in which all
-// of the key strings are converted to LowerCamelCase.
-// It is good for converting identifiers typically used as database
-// table or column names, to the case requirements stipulated by the Keel schema.
-func toLowerCamelMap(m map[string]any) map[string]any {
-	res := map[string]any{}
-	for key, value := range m {
-		res[strcase.ToLowerCamel(key)] = value
-	}
-	return res
-}
-
-// toLowerCamelMaps is a convenience wrapper around toLowerCamelMap
-// that operates on a list of input maps - rather than just a single map.
-func toLowerCamelMaps(maps []map[string]any) []map[string]any {
-	res := []map[string]any{}
-	for _, m := range maps {
-		res = append(res, toLowerCamelMap(m))
-	}
-	return res
 }
