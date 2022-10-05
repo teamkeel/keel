@@ -1,3 +1,10 @@
+# [0.158.0](https://github.com/teamkeel/keel/compare/v0.157.0...v0.158.0) (2022-10-05)
+
+
+### Features
+
+* make path to functions dir configurable ([d119bea](https://github.com/teamkeel/keel/commit/d119bead633a4830d96bccd04f26304e8189e420))
+
 # [0.157.0](https://github.com/teamkeel/keel/compare/v0.156.0...v0.157.0) (2022-10-04)
 
 
