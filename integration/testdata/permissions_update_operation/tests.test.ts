@@ -117,6 +117,45 @@ test('boolean permission on literal - null value - is not authorized', async () 
   ).toHaveAuthorizationError()
 })
 
+test('enum permission on literal - matching value - is authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ type: "Technical" })
+
+  expect(
+    await actions
+      .updateWithEnumPermissionLiteral({ 
+        where: { id: post.id },
+        values: { title: "goodbye" }
+      })
+  ).notToHaveAuthorizationError()
+})
+
+test('enum permission on literal - not matching value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ type: "Lifestyle" })
+
+  expect(
+    await actions
+      .updateWithEnumPermissionLiteral({ 
+        where: { id: post.id },
+        values: { title: "hello" }
+      })
+  ).toHaveAuthorizationError()
+})
+
+test('enum permission on literal - null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ title: null })
+
+  expect(
+    await actions
+      .updateWithEnumPermissionLiteral({ 
+        where: { id: post.id },
+        values: { title: null }
+      })
+  ).toHaveAuthorizationError()
+})
+
 test('string permission on field - matching value - is authorized', async () => {
   const { object: post } = await actions
     .createWithText({ title: "hello" })

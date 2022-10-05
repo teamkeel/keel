@@ -233,8 +233,6 @@ func evaluateExpression(
 			return false, err
 		}
 
-		//boolresult, err := toNative(condition.LHS, valueType)
-
 		return value.(bool), nil
 	}
 
@@ -334,6 +332,8 @@ func evaluateOperandValue(
 	switch {
 	case isLiteral:
 		return toNative(operand, operandType)
+	case operand.Ident != nil && proto.EnumExists(schema.Enums, operand.Ident.Fragments[0].Fragment):
+		return operand.Ident.Fragments[1].Fragment, nil
 	case operand.Ident != nil && strcase.ToCamel(operand.Ident.Fragments[0].Fragment) == operation.ModelName:
 		target := operand.Ident.Fragments[0].Fragment
 		modelTarget := strcase.ToCamel(target)
@@ -378,6 +378,8 @@ func evaluateOperandValue(
 			default:
 				return nil, fmt.Errorf("cannot yet parse %s to int64", v)
 			}
+		case proto.Type_TYPE_ENUM:
+			return fieldValue, nil
 		case proto.Type_TYPE_IDENTITY:
 			switch v := fieldValue.(type) {
 			case *ksuid.KSUID:
@@ -438,6 +440,8 @@ func evaluateOperandCondition(
 		return compareInt(lhs.(int64), rhs.(int64), operator)
 	case proto.Type_TYPE_BOOL:
 		return compareBool(lhs.(bool), rhs.(bool), operator)
+	case proto.Type_TYPE_ENUM:
+		return compareEnum(lhs.(string), rhs.(string), operator)
 	case proto.Type_TYPE_IDENTITY:
 		return compareIdentity(lhs.(ksuid.KSUID), rhs.(ksuid.KSUID), operator)
 	default:
@@ -495,6 +499,21 @@ func compareBool(
 		return lhs != rhs, nil
 	default:
 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_BOOL)
+	}
+}
+
+func compareEnum(
+	lhs string,
+	rhs string,
+	operator *expressions.Operator,
+) (bool, error) {
+	switch operator.Symbol {
+	case expressions.OperatorEquals:
+		return lhs == rhs, nil
+	case expressions.OperatorNotEquals:
+		return lhs != rhs, nil
+	default:
+		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
 	}
 }
 

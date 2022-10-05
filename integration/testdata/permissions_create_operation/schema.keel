@@ -3,11 +3,13 @@ model Post {
         title Text?
         views Number?
         active Boolean?
+        type PostType?
         identity Identity?
 
         titlePermissionMatch Text @default("hello")
         viewsPermissionMatch Number @default(5)
         activePermissionMatch Boolean @default(true)
+        typePermissionMatch PostType @default(PostType.Technical)
     }
 
     operations {
@@ -23,6 +25,10 @@ model Post {
             @permission(expression: post.active == true)
         }
 
+        create createWithEnumPermissionLiteral() with (type) {
+            @permission(expression: post.type == PostType.Technical)
+        }
+
         create createWithTextPermissionFromField() with (title) {
             @permission(expression: post.title == post.titlePermissionMatch)
         }
@@ -34,6 +40,11 @@ model Post {
         create createWithBooleanPermissionFromField() with (active) {
             @permission(expression: post.active == post.activePermissionMatch)
         }
+
+        // todo: https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
+        // create createWithEnumPermissionFromField() with (type) {
+        //     @permission(expression: post.type == post.typePermissionMatch)
+        // }
 
         create createWithIdentityRequiresSameIdentity() {
             @set(post.identity = ctx.identity)
@@ -50,6 +61,12 @@ model Post {
             @permission(expression: post.active == post.activePermissionMatch)
         }
     }
+}
+
+enum PostType {
+    Technical
+    Lifestyle
+    Food
 }
 
 api Web {

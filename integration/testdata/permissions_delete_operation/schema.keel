@@ -3,6 +3,7 @@ model Post {
         title Text?
         views Number?
         active Boolean?
+        type PostType?
         identity Identity?
 
         titlePermissionMatch Text @default("hello")
@@ -17,6 +18,8 @@ model Post {
 
         create createWithActive() with (active) 
 
+        create createWithEnum() with (type) 
+
         delete deleteWithTextPermissionLiteral(id) {
             @permission(expression: post.title == "hello")
         }
@@ -27,6 +30,10 @@ model Post {
 
         delete deleteWithBooleanPermissionLiteral(id) {
             @permission(expression: post.active == true)
+        }
+
+        delete deleteWithEnumPermissionLiteral(id) {
+            @permission(expression: post.type == PostType.Technical)
         }
 
         delete deleteWithTextPermissionOnField(id) {
@@ -53,6 +60,12 @@ model Post {
             @permission(expression: true)
         }
     }
+}
+
+enum PostType {
+    Technical
+    Lifestyle
+    Food
 }
 
 api Web {
