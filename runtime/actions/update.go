@@ -69,6 +69,31 @@ func Update(
 		return nil, fmt.Errorf("values not provided")
 	}
 
+	finalMap := map[string]any{}
+
+	// todo: cleanup and share this logic with create
+	for _, input := range operation.Inputs {
+		switch input.Behaviour {
+		case proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT:
+			modelFieldName := input.Target[0]
+
+			// If this argument is missing it must be optional.
+			v, ok := values[strcase.ToSnake(input.Name)]
+			if !ok {
+				continue
+			}
+			v, err := toMap(v, input.Type.Type)
+			if err != nil {
+				return nil, err
+			}
+			finalMap[strcase.ToSnake(modelFieldName)] = v
+		case proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT:
+			continue
+		default:
+			return nil, fmt.Errorf("input behaviour %s is not yet supported for Create", input.Behaviour)
+		}
+	}
+
 	setArgs, err := SetExpressionInputsToModelMap(operation, values, schema, ctx)
 
 	if err != nil {
@@ -76,9 +101,9 @@ func Update(
 	}
 
 	// todo: clashing keys between implicit / explicit args (is this possible?)
-	maps.Copy(values, setArgs)
+	maps.Copy(finalMap, setArgs)
 
-	maps.DeleteFunc(values, func(k string, v any) bool {
+	maps.DeleteFunc(finalMap, func(k string, v any) bool {
 		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
 			return strcase.ToSnake(f.Name) == k
 		})
@@ -86,7 +111,7 @@ func Update(
 		return !match
 	})
 
-	tx.Updates(values)
+	tx.Updates(finalMap)
 
 	if tx.Error != nil || tx.RowsAffected == 0 {
 		return nil, tx.Error

@@ -25,6 +25,7 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 		return nil, err
 	}
 
+	// todo: same code as update - extract out
 	// Now overwrite the fields for which Inputs have been given accordingly.
 	for _, input := range operation.Inputs {
 		switch input.Behaviour {
@@ -41,6 +42,8 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 				return nil, err
 			}
 			modelMap[strcase.ToSnake(modelFieldName)] = v
+		case proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT:
+			continue
 		default:
 			return nil, fmt.Errorf("input behaviour %s is not yet supported for Create", input.Behaviour)
 		}
