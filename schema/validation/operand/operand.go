@@ -49,6 +49,7 @@ func (e *ExpressionScopeEntity) IsOptional() bool {
 
 func (e *ExpressionScopeEntity) IsEnumField() bool {
 	return e.Parent != nil && e.Parent.Enum != nil && e.Field != nil
+
 }
 
 func (e *ExpressionScopeEntity) IsEnumValue() bool {
@@ -133,6 +134,8 @@ var operatorsForType = map[string][]string{
 		expressions.OperatorAssignment,
 	},
 	expressions.TypeEnum: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
 		expressions.OperatorAssignment,
 	},
 	expressions.TypeArray: {

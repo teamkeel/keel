@@ -29,6 +29,8 @@ func toNative(v *expressions.Operand, fieldType proto.Type) (any, error) {
 			return toTime(v), nil
 		}
 		return v, nil
+	case fieldType == proto.Type_TYPE_ENUM:
+		return v.Ident.Fragments[1].Fragment, nil
 	case v.Null:
 		return nil, nil
 	default:

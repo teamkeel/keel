@@ -37,6 +37,18 @@
     },
     {
         "status": "pass",
+        "testName": "enum permission on literal - matching value - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "enum permission on literal - not matching value - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "enum permission on literal - null value - is not authorized"
+    },
+    {
+        "status": "pass",
         "testName": "string permission on field - matching value - is authorized"
     },
     {
@@ -69,7 +81,7 @@
     },
     {
         "status": "pass",
-        "testName": "boolean permission on field - null - is not authorized"
+        "testName": "boolean permission on field - null value - is not authorized"
     },
     {
         "status": "pass",

@@ -3,6 +3,7 @@ model Post {
         title Text?
         views Number?
         active Boolean?
+        type PostType?
         identity Identity?
 
         titlePermissionMatch Text @default("hello")
@@ -16,6 +17,8 @@ model Post {
         create createWithNumber() with (views)
 
         create createWithBoolean() with (active)
+
+        create createWithEnum() with (type)
 
         create createWithIdentity() {
             @set(post.identity = ctx.identity)
@@ -31,6 +34,10 @@ model Post {
 
         get getWithBooleanPermissionLiteral(id) {
             @permission(expression: post.active == true)
+        }
+
+        get getWithEnumPermissionLiteral(id) {
+            @permission(expression: post.type == PostType.Technical)
         }
 
         get getWithTextPermissionFromField(id) {
@@ -53,6 +60,12 @@ model Post {
             @permission(expression: true)
         }
     }
+}
+
+enum PostType {
+    Technical
+    Lifestyle
+    Food
 }
 
 api Web {

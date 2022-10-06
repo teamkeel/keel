@@ -22,7 +22,7 @@ test('string permission on literal - not matching value - is not authorized', as
 
 test('string permission on literal - null value - is not authorized', async () => {
   const { object: post } = await actions
-    .createWithText({ title: "goodbye" })
+    .createWithText({ title: null })
 
   expect(
     await actions
@@ -52,7 +52,7 @@ test('number permission on literal - not matching value - is not authorized', as
 
 test('number permission on literal - null value - is not authorized', async () => {
   const { object: post } = await actions
-    .createWithNumber({ views: 100 })
+    .createWithNumber({ views: null })
 
   expect(
     await actions
@@ -82,11 +82,41 @@ test('boolean permission on literal - not matching value - is not authorized', a
 
 test('boolean permission on literal - null value - is not authorized', async () => {
   const { object: post } = await actions
-    .createWithBoolean({ active: false })
+    .createWithBoolean({ active: null })
 
   expect(
     await actions
       .getWithBooleanPermissionLiteral({ id: post.id })
+  ).toHaveAuthorizationError()
+})
+
+test('enum permission on literal - matching value - is authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ type: "Technical" })
+
+  expect(
+    await actions
+      .getWithEnumPermissionLiteral({ id: post.id })
+  ).notToHaveAuthorizationError()
+})
+
+test('enum permission on literal - not matching value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ type: "Lifestyle" })
+
+  expect(
+    await actions
+      .getWithEnumPermissionLiteral({ id: post.id })
+  ).toHaveAuthorizationError()
+})
+
+test('enum permission on literal - null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ title: null })
+
+  expect(
+    await actions
+      .getWithEnumPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError()
 })
 
@@ -96,7 +126,7 @@ test('string permission on field - matching value - is authorized', async () => 
 
   expect(
     await actions
-      .getWithTextPermissionFromField({ id: post.id })
+      .getWithTextPermissionLiteral({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -112,7 +142,7 @@ test('string permission on field - not matching value - is not authorized', asyn
 
 test('string permission on field - null value - is not authorized', async () => {
   const { object: post } = await actions
-    .createWithText({ title: "goodbye" })
+    .createWithText({ title: null })
 
   expect(
     await actions
@@ -142,7 +172,7 @@ test('number permission on field - not matching value - is not authorized', asyn
 
 test('number permission on field - null value - is not authorized', async () => {
   const { object: post } = await actions
-    .createWithNumber({ views: 100 })
+    .createWithNumber({ views: null })
 
   expect(
     await actions
@@ -170,9 +200,9 @@ test('boolean permission on field - field is not authorized', async () => {
   ).toHaveAuthorizationError()
 })
 
-test('boolean permission on field - null - is not authorized', async () => {
+test('boolean permission on field - null value - is not authorized', async () => {
   const { object: post } = await actions
-    .createWithBoolean({ active: false })
+    .createWithBoolean({ active: null })
 
   expect(
     await actions

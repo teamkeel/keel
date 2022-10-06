@@ -63,6 +63,27 @@ test('boolean permission on literal - null value - is not authorized', async () 
   ).toHaveAuthorizationError()
 })
 
+test('enum permission on literal - matching value - is authorized', async () => {
+  expect(
+    await actions
+    .createWithEnumPermissionLiteral({ type: 'Technical' })
+  ).notToHaveAuthorizationError()
+})
+
+test('enum permission on literal - not matching value - is not authorized', async () => {
+  expect(
+    await actions
+    .createWithEnumPermissionLiteral({ type: 'Lifestyle' })
+  ).toHaveAuthorizationError()
+})
+
+test('enum permission on literal - null value - is not authorized', async () => {
+  expect(
+    await actions
+    .createWithEnumPermissionLiteral({ type: null })
+  ).toHaveAuthorizationError()
+})
+
 test('string permission on field name - matching value - is authorized', async () => {
   expect(
     await actions
@@ -125,6 +146,28 @@ test('boolean permission on field name - null value - is not authorized', async 
     .createWithBooleanPermissionFromField({ active: null })
   ).toHaveAuthorizationError()
 })
+
+// todo: https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
+// test('enum permission on field name - matching value - is authorized', async () => {
+//   expect(
+//     await actions
+//     .createWithEnumPermissionFromField({ type: PostType.Technical })
+//   ).notToHaveAuthorizationError()
+// })
+
+// test('enum permission on field name - not matching value - is not authorized', async () => {
+//   expect(
+//     await actions
+//     .createWithEnumPermissionFromField({ type: PostType.Lifestyle })
+//   ).toHaveAuthorizationError()
+// })
+
+// test('enum permission on field name - null value - is not authorized', async () => {
+//   expect(
+//     await actions
+//     .createWithEnumPermissionFromField({ type: null })
+//   ).toHaveAuthorizationError()
+// })
 
 test('identity permission - correct identity in context - is authorized', async () => {
   const { identityId } = await actions.authenticate({ 
