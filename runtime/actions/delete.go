@@ -80,6 +80,7 @@ func addDeleteImplicitInputFilters(op *proto.Operation, args map[string]any, tx 
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
+
 		identifier := input.Target[0]
 		valueFromArg, ok := args[identifier]
 		if !ok {

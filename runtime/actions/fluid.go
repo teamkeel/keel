@@ -10,14 +10,6 @@ import (
 	"golang.org/x/exp/maps"
 )
 
-type Where struct {
-
-}
-
-type Value struct {
-	
-}
-
 type RootAction struct {
 	inputs    map[string]any
 	schema    *proto.Schema
@@ -100,7 +92,48 @@ func (a *RootAction) model() *proto.Model {
 	return proto.FindModel(a.schema.Models, a.operation.ModelName)
 }
 
+func (a *RootAction) reconcileReadInputs() (map[string]any, error) {
+	queryMap := map[string]any{}
+
+	// first we want to assign any implicit read inputs to the queryMap
+	for _, input := range a.operation.Inputs {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
+
+		identifier := input.Target[0]
+
+		valueFromArg, ok := a.inputs[identifier]
+
+		if !input.Optional && !ok {
+			return nil, fmt.Errorf("expected input %s missing from arguments %+v", identifier, a.inputs)
+		}
+
+		dbValue, err := toMap(valueFromArg, input.Type.Type)
+
+		if err != nil {
+			return nil, fmt.Errorf("could not convert %s value to database value", identifier)
+		}
+
+		queryMap[identifier] = dbValue
+	}
+
+	// then we want to overwrite any of the values set by implicit inputs with explicit ones
+	// if they assign to the same fields, and assign any new values not set by implicit
+
+	for _, where := range a.operation.WhereExpressions {
+
+	}
+
+	return queryMap, nil
+}
+
 func (a *RootAction) reconcileWriteInputs() (map[string]any, error) {
+
+	// Complex: oneOf etc (list)
+
+	// Simple = equals only + unique fields only (get, update, delete)
+
 	modelMap := map[string]any{}
 
 	// first assign implicit inputs and their values
@@ -109,10 +142,13 @@ func (a *RootAction) reconcileWriteInputs() (map[string]any, error) {
 		case proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT:
 			modelFieldName := input.Target[0]
 
-			// If this argument is missing it must be optional.
-			v, ok := a.inputs[input.Name]
-			if !ok {
+			v, matchingArg := a.inputs[input.Name]
+			if input.Optional && !matchingArg {
 				continue
+			}
+
+			if !matchingArg {
+				return nil, fmt.Errorf("missing required input %s", input.Name)
 			}
 
 			v, err := toMap(v, input.Type.Type)
@@ -120,6 +156,7 @@ func (a *RootAction) reconcileWriteInputs() (map[string]any, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			modelMap[strcase.ToSnake(modelFieldName)] = v
 		case proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT:
 			continue
@@ -170,15 +207,15 @@ func (a *RootAction) convertFromDbResult(result interface{}) interface{} {
 	panic("not a valid db result")
 }
 
-func main() {
-	action := RootAction{}
+// func main() {
+// 	action := RootAction{}
 
-	action.
-		WithSchema(schema).
-		WithContext(ctx).
-		WithArgs(map[string]any{
-			"test": "test",
-		}).
-		WithOperation(operation).
-		Execute()
-}
+// 	action.
+// 		WithSchema(schema).
+// 		WithContext(ctx).
+// 		WithArgs(map[string]any{
+// 			"test": "test",
+// 		}).
+// 		WithOperation(operation).
+// 		Execute()
+// }

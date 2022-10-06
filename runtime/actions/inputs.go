@@ -5,8 +5,9 @@ import "fmt"
 // A ListInput defines the input to a LIST action. Specifically,
 // A filter - in terms of Where clauses, and also a mandate about which
 // page from the potential results is required.
-type ListInput struct {
-	Page            Page
+type Input struct {
+	Page Page
+
 	ImplicitFilters []*ImplicitFilter
 	ExplicitFilters []*ExplicitFilter
 }
@@ -81,6 +82,7 @@ const (
 func operator(operatorStr string) (op Operator, err error) {
 	switch operatorStr {
 	case "equals":
+		// todo: check this lines up - in docs its eq
 		return OperatorEquals, nil
 	case "startsWith":
 		return OperatorStartsWith, nil
@@ -103,9 +105,9 @@ func operator(operatorStr string) (op Operator, err error) {
 	case "after":
 		return OperatorAfter, nil
 	case "onOrBefore":
-		return OperatorOnOrAfter, nil
-	case "onOrAfter":
 		return OperatorOnOrBefore, nil
+	case "onOrAfter":
+		return OperatorOnOrAfter, nil
 	default:
 		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
 	}
