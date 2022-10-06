@@ -1,3 +1,10 @@
+# [0.159.0](https://github.com/teamkeel/keel/compare/v0.158.0...v0.159.0) (2022-10-06)
+
+
+### Features
+
+* initial enum support on [@set](https://github.com/set)() and permission() ([#448](https://github.com/teamkeel/keel/issues/448)) ([4870cf5](https://github.com/teamkeel/keel/commit/4870cf5f73b57804d82f853ed60f6a41fd7fb701))
+
 # [0.158.0](https://github.com/teamkeel/keel/compare/v0.157.0...v0.158.0) (2022-10-05)
 
 
