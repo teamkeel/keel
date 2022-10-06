@@ -2,11 +2,9 @@ package actions
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/expressions"
 )
 
@@ -32,37 +30,10 @@ func SetExpressionInputsToModelMap(operation *proto.Operation, values map[string
 		}
 
 		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
-		isLiteral, _ := assignment.RHS.IsLiteralType()
 
-		switch {
-		case isLiteral:
-			modelMap[strcase.ToSnake(fieldName)], err = toNative(assignment.RHS, lhsOperandType)
-			if err != nil {
-				return nil, err
-			}
-		case assignment.RHS.Type() == expressions.TypeIdent:
-			if assignment.RHS.Ident.IsContextIdentityField() {
-				modelMap[strcase.ToSnake(fieldName)], err = runtimectx.GetIdentity(ctx)
-				if err != nil {
-					return nil, err
-				}
-			} else if proto.EnumExists(schema.Enums, assignment.RHS.Ident.Fragments[0].Fragment) {
-				modelMap[strcase.ToSnake(fieldName)] = assignment.RHS.Ident.Fragments[1].Fragment
-			} else {
-				// check if there is a match for the set expression in explicit inputs
-
-				rhsIdent := assignment.RHS.Ident
-
-				if match, ok := values[rhsIdent.ToString()]; ok {
-					modelMap[strcase.ToSnake(fieldName)] = match
-
-					continue
-				}
-
-				return nil, fmt.Errorf("operand type not yet supported: %s", fieldName)
-			}
-		default:
-			return nil, fmt.Errorf("operand type not yet supported")
+		modelMap[strcase.ToSnake(fieldName)], err = evaluateOperandValue(ctx, assignment.RHS, operation, schema, values, lhsOperandType)
+		if err != nil {
+			return nil, err
 		}
 	}
 

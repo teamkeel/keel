@@ -22,10 +22,6 @@ func WithIdentity(ctx context.Context, id *ksuid.KSUID) context.Context {
 	return ctx
 }
 
-func HasIdentity(ctx context.Context) bool {
-	return ctx.Value(identityIdContextKey) != nil
-}
-
 func GetIdentity(ctx context.Context) (*ksuid.KSUID, error) {
 	v := ctx.Value(identityIdContextKey)
 	if v == nil {
@@ -37,4 +33,8 @@ func GetIdentity(ctx context.Context) (*ksuid.KSUID, error) {
 		return nil, errors.New("identity id on the context is not of type ksuid.KSUID")
 	}
 	return id, nil
+}
+
+func IsAuthenticated(ctx context.Context) (bool, error) {
+	return ctx.Value(identityIdContextKey) != nil, nil
 }

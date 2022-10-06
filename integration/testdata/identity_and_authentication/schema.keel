@@ -2,16 +2,31 @@ model Post {
     fields {
         title Text
         identity Identity?
+        isAuthenticated Boolean?
     }
     operations {
         create createPost() with (title)
+
         get getPost(id) 
 
         create createPostWithIdentity() with (title) {
             @set(post.identity = ctx.identity)
         }
+
         get getPostRequiresIdentity(id) {
             @permission(expression: ctx.identity == post.identity)
+        }
+
+        get getPostRequiresAuthentication(id) {
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+        get getPostRequiresNoAuthentication(id) {
+            @permission(expression: ctx.isAuthenticated == false)
+        }
+
+        create createPostSetIsAuthenticated() with (title) {
+            @set(post.isAuthenticated = ctx.isAuthenticated)
         }
     }
 }

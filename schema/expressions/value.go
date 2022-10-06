@@ -154,6 +154,13 @@ func (ident *Ident) IsContextIdentityField() bool {
 	return false
 }
 
+func (ident *Ident) IsContextIsAuthenticatedField() bool {
+	if ident.IsContext() {
+		return ident.Fragments[1].Fragment == runtimectx.ContextIsAuthenticatedField
+	}
+	return false
+}
+
 func (ident *Ident) IsContextNowField() bool {
 	if ident.IsContext() {
 		return ident.Fragments[1].Fragment == runtimectx.ContextNowField

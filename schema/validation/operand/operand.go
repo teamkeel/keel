@@ -178,6 +178,10 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 						Model: query.Model(asts, "Identity"),
 					},
 					{
+						Name: "isAuthenticated",
+						Type: parser.FieldTypeBoolean,
+					},
+					{
 						Name: "now",
 						Type: parser.FieldTypeDatetime,
 					},
