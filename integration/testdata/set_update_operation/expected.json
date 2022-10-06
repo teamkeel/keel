@@ -1,0 +1,30 @@
+[
+    {
+        "status": "pass",
+        "testName": "text set attribute - set to goodbye - is goodbye"
+    },
+    {
+        "status": "pass",
+        "testName": "text set attribute - set to null - is null"
+    },
+    {
+        "status": "pass",
+        "testName": "number set attribute - set to 5 - is 5"
+    },
+    {
+        "status": "pass",
+        "testName": "number set attribute - set to null - is null"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean set attribute - set to true - is true"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean set attribute - set to null - is null"
+    },
+    {
+        "status": "pass",
+        "testName": "enum set attribute - set to TypeTwo - is TypeTwo"
+    }
+]

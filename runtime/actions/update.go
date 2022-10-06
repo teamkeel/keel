@@ -63,10 +63,15 @@ func Update(
 		return nil, errors.New("not authorized to access this operation")
 	}
 
-	values, ok := args["values"].(map[string]any)
+	values := map[string]any{}
+	if args["values"] != nil {
+		argValues, ok := args["values"].(map[string]any)
 
-	if !ok {
-		return nil, fmt.Errorf("values not provided")
+		if !ok {
+			return nil, fmt.Errorf("values not provided")
+		}
+
+		values = argValues
 	}
 
 	setArgs, err := SetExpressionInputsToModelMap(operation, values, schema, ctx)

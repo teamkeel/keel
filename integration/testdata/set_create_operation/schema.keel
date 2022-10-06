@@ -1,0 +1,77 @@
+model Thing {
+    fields {
+        optionalText Text?
+        requiredText Text @default("hello")
+
+        optionalNumber Number?
+        requiredNumber Number @default(1)
+
+        optionalBoolean Boolean?
+        requiredBoolean Boolean @default(false)
+
+        optionalEnum ThingType?
+        requiredEnum ThingType @default(ThingType.TypeOne)
+    }
+    operations {
+        create createTextOnOptional()  {
+            @set(thing.optionalText = "goodbye")
+        }
+
+        create createNullTextOnOptional()  {
+            @set(thing.optionalText = null)
+        }
+    
+        create createTextOnRequired() {
+            @set(thing.requiredText = "goodbye")
+        }
+
+        create createNumberOnOptional()  {
+            @set(thing.optionalNumber = 5)
+        }
+
+        create createNullNumberOnOptional()  {
+            @set(thing.optionalNumber = null)
+        }
+    
+        create createNumberOnRequired() {
+            @set(thing.requiredNumber = 5)
+        }
+       
+        create createBooleanOnOptional()  {
+            @set(thing.optionalBoolean = true)
+        }
+
+        create createNullBooleanOnOptional()  {
+            @set(thing.optionalBoolean = null)
+        }
+    
+        create createBooleanOnRequired() {
+            @set(thing.requiredBoolean = true)
+        }
+
+        create createEnumOnOptional()  {
+            @set(thing.optionalEnum = ThingType.TypeTwo)
+        }
+
+        // https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
+        // create createNullEnumOnOptional()  {
+        //     @set(thing.optionalEnum = null)
+        // }
+    
+        create createEnumOnRequired() {
+            @set(thing.requiredEnum = ThingType.TypeTwo)
+        }
+    }
+}
+
+enum ThingType {
+    TypeOne
+    TypeTwo
+}
+
+api Test {
+    @graphql
+    models {
+        Thing
+    }
+}

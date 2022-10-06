@@ -190,7 +190,7 @@ test('boolean permission on field - matching value - is authorized', async () =>
   ).notToHaveAuthorizationError()
 })
 
-test('boolean permission on field - field is not authorized', async () => {
+test('boolean permission on field - unmatching value - field is not authorized', async () => {
   const { object: post } = await actions
     .createWithBoolean({ active: false })
 

@@ -1,0 +1,61 @@
+model Thing {
+    fields {
+        text Text? @default("hello")
+
+        number Number? @default(1)
+
+        boolean Boolean? @default(false)
+
+        enum ThingType? @default(ThingType.TypeOne)
+    }
+    operations {
+        create create() 
+
+        get get(id)
+
+        update updateText(id) {
+            @set(thing.text = "goodbye")
+        }
+
+        update updateNullText(id) {
+            @set(thing.text = null)
+        }
+
+        update updateNumber(id) {
+            @set(thing.number = 5)
+        }
+
+        update updateNullNumber(id) {
+            @set(thing.number = null)
+        }
+
+        update updateBoolean(id) {
+            @set(thing.boolean = true)
+        }
+
+        update updateNullBoolean(id) {
+            @set(thing.boolean = null)
+        }
+
+        update updateEnum(id) {
+            @set(thing.enum = ThingType.TypeTwo)
+        }
+
+        // https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
+        // create updateNullEnum()  {
+        //     @set(thing.enum = null)
+        // }
+    }
+}
+
+enum ThingType {
+    TypeOne
+    TypeTwo
+}
+
+api Test {
+    @graphql
+    models {
+        Thing
+    }
+}
