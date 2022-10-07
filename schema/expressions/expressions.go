@@ -54,11 +54,9 @@ type Condition struct {
 	node.Node
 
 	LHS      *Operand  `@@`
-	Operator *Operator `( @@`
+	Operator *Operator `(@@`
 	RHS      *Operand  `@@ )?`
 }
-
-var equalityOperators = []string{"==", "<", ">", ">=", "<=", "!=", "in", "notin", "contains"}
 
 var (
 	AssignmentCondition = "assignment"
@@ -104,7 +102,7 @@ var (
 	OperatorIn                   = "in"
 	OperatorNotIn                = "notin"
 	OperatorIncrement            = "+="
-	OperatorDecrement            = "--"
+	OperatorDecrement            = "-="
 )
 
 var AssignmentOperators = []string{

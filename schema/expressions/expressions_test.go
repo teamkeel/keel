@@ -103,6 +103,8 @@ func TestIsAssignment(t *testing.T) {
 		"(a == b)":        false,
 		"a = b":           true,
 		"a = -1":          true,
+		"a += 1":          true,
+		"a -= 1":          true,
 	}
 
 	for input, expected := range fixtures {
