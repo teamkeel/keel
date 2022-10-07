@@ -152,7 +152,7 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 		return []string{
 			expressions.OperatorEquals,
 			expressions.OperatorNotEquals,
-			expressions.AssignmentCondition,
+			expressions.OperatorAssignment,
 		}
 	}
 
