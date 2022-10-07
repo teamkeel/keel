@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        identity Identity?
+    }
+
+    operations {
+        create createPost() with (identity) {
+            @permission(expression: post.identity == null)
+        }
+    }
+}

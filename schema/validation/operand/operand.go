@@ -145,6 +145,10 @@ var operatorsForType = map[string][]string{
 		expressions.OperatorIn,
 		expressions.OperatorNotIn,
 	},
+	expressions.TypeNull: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+	},
 }
 
 func (e *ExpressionScopeEntity) AllowedOperators() []string {
