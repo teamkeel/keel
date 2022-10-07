@@ -182,11 +182,13 @@ var runCmd = &cobra.Command{
 				printMigrationChanges(m.Changes)
 			}
 
-			// Every time the schema changes, we want to run codegen again
-			generate(protoSchema)
-			// kill the old node server hosting the old code, and
-			// spawn a new node server for the new version of the code
-			spawnNodeProcess()
+			if hasCustomFunctions(protoSchema) {
+				// Every time the schema changes, we want to run codegen again
+				generate(protoSchema)
+				// kill the old node server hosting the old code, and
+				// spawn a new node server for the new version of the code
+				spawnNodeProcess()
+			}
 
 			currSchema = protoSchema
 			fmt.Println("🎉 You're ready to roll")
@@ -225,8 +227,10 @@ var runCmd = &cobra.Command{
 		}
 		defer stopWatcher()
 
-		// Then spawn a node server
-		nodeProcess = spawnNodeProcess()
+		if hasCustomFunctions {
+			// Then spawn a node server
+			nodeProcess = spawnNodeProcess()
+		}
 
 		go http.ListenAndServe(":"+runCmdFlagPort, http.DefaultServeMux)
 
