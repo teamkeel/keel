@@ -1,3 +1,10 @@
+## [0.159.1](https://github.com/teamkeel/keel/compare/v0.159.0...v0.159.1) (2022-10-07)
+
+
+### Bug Fixes
+
+* skip bootstrapping functions runtime if not used ([#451](https://github.com/teamkeel/keel/issues/451)) ([83a820a](https://github.com/teamkeel/keel/commit/83a820a806e48c1d47bee6c223d7119b5a69a85b))
+
 # [0.159.0](https://github.com/teamkeel/keel/compare/v0.158.0...v0.159.0) (2022-10-06)
 
 
