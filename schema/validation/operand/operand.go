@@ -148,7 +148,7 @@ var operatorsForType = map[string][]string{
 }
 
 func (e *ExpressionScopeEntity) AllowedOperators() []string {
-	if e.Model != nil {
+	if e.Model != nil || e.Field != nil {
 		return []string{
 			expressions.OperatorEquals,
 			expressions.OperatorNotEquals,
