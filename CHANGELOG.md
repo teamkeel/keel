@@ -1,3 +1,10 @@
+# [0.161.0](https://github.com/teamkeel/keel/compare/v0.160.0...v0.161.0) (2022-10-07)
+
+
+### Features
+
+* allow comparison of matching field types (associations) ([#454](https://github.com/teamkeel/keel/issues/454)) ([7c7ce8e](https://github.com/teamkeel/keel/commit/7c7ce8e6579cfb214c10902adc5cf223da506b5d))
+
 # [0.160.0](https://github.com/teamkeel/keel/compare/v0.159.1...v0.160.0) (2022-10-07)
 
 
