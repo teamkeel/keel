@@ -1,3 +1,10 @@
+## [0.162.1](https://github.com/teamkeel/keel/compare/v0.162.0...v0.162.1) (2022-10-07)
+
+
+### Bug Fixes
+
+* fix increment/decrement ([#456](https://github.com/teamkeel/keel/issues/456)) ([93fd4c3](https://github.com/teamkeel/keel/commit/93fd4c32965f7b83744c44a113663ec944742d60))
+
 # [0.162.0](https://github.com/teamkeel/keel/compare/v0.161.0...v0.162.0) (2022-10-07)
 
 
