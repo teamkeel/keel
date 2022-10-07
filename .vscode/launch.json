@@ -28,14 +28,25 @@
                 "-d",
                 "../../${input:directory}",
             ]
+        },
+        {
+            "name": "Run / debug schema validation test",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/schema",
+            "args": [
+                "-test.run",
+                "TestSchema/${input:testCase}"
+            ]
         }
     ],
     "inputs": [
         {
             "type": "promptString",
             "id": "testCase",
-            "description": "The test case directory to isolate (see integration/testdata for list of test case directories)",
-            "default": "built_in_actions"
+            "description": "The test case directory to isolate",
+            "default": ""
         },
         {
             "type": "promptString",

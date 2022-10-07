@@ -1,0 +1,17 @@
+model Post {
+    fields {
+        type PostType
+        differentType PostType
+    }
+
+    operations {
+        get getPost(id) {
+            @permission(expression: post.type == post.differentType)
+        }
+    }
+}
+
+enum PostType {
+    Bar
+    Foo
+}
