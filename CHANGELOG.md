@@ -1,3 +1,10 @@
+# [0.160.0](https://github.com/teamkeel/keel/compare/v0.159.1...v0.160.0) (2022-10-07)
+
+
+### Features
+
+* allow valid expression enum field comparison ([#453](https://github.com/teamkeel/keel/issues/453)) ([b428674](https://github.com/teamkeel/keel/commit/b42867489cab26caff9235a816fffda52a76c178))
+
 ## [0.159.1](https://github.com/teamkeel/keel/compare/v0.159.0...v0.159.1) (2022-10-07)
 
 
