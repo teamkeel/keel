@@ -1,3 +1,10 @@
+# [0.162.0](https://github.com/teamkeel/keel/compare/v0.161.0...v0.162.0) (2022-10-07)
+
+
+### Features
+
+* support comparing null literals with equality operators ([#455](https://github.com/teamkeel/keel/issues/455)) ([9d47e9d](https://github.com/teamkeel/keel/commit/9d47e9d56de8b95e7f7f8563ebd78d5cf9a69951))
+
 # [0.161.0](https://github.com/teamkeel/keel/compare/v0.160.0...v0.161.0) (2022-10-07)
 
 
