@@ -48,8 +48,7 @@ func (e *ExpressionScopeEntity) IsOptional() bool {
 }
 
 func (e *ExpressionScopeEntity) IsEnumField() bool {
-	return e.Parent != nil && e.Parent.Enum != nil && e.Field != nil
-
+	return e.Enum != nil
 }
 
 func (e *ExpressionScopeEntity) IsEnumValue() bool {
@@ -71,6 +70,10 @@ func (e *ExpressionScopeEntity) GetType() string {
 
 	if e.Literal != nil {
 		return e.Literal.Type()
+	}
+
+	if e.Enum != nil {
+		return e.Enum.Name.Value
 	}
 
 	if e.EnumValue != nil {
@@ -137,6 +140,7 @@ var operatorsForType = map[string][]string{
 		expressions.OperatorEquals,
 		expressions.OperatorNotEquals,
 		expressions.OperatorAssignment,
+		expressions.OperatorEquals, // is this always right
 	},
 	expressions.TypeArray: {
 		expressions.OperatorIn,
@@ -325,10 +329,22 @@ fragments:
 				model := query.Model(asts, e.Field.Type)
 
 				if model == nil {
-					// Did not find the model matching the field
-					scope = &ExpressionScope{
-						Parent: scope,
+					// try enum instead
+					enum := query.Enum(asts, e.Field.Type)
+
+					if enum != nil {
+						return &ExpressionScopeEntity{
+
+							Enum: enum,
+						}, nil
+
+					} else {
+						// Did not find the model matching the field
+						scope = &ExpressionScope{
+							Parent: scope,
+						}
 					}
+
 				} else {
 					scope = scopeFromModel(scope, e, model)
 				}
