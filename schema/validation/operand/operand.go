@@ -140,7 +140,6 @@ var operatorsForType = map[string][]string{
 		expressions.OperatorEquals,
 		expressions.OperatorNotEquals,
 		expressions.OperatorAssignment,
-		expressions.OperatorEquals, // is this always right
 	},
 	expressions.TypeArray: {
 		expressions.OperatorIn,
@@ -329,12 +328,18 @@ fragments:
 				model := query.Model(asts, e.Field.Type)
 
 				if model == nil {
-					// try enum instead
+					// try matching the field name to a known enum instead
 					enum := query.Enum(asts, e.Field.Type)
 
 					if enum != nil {
+						// if we've reached a field that is an enum
+						// then we want to return the enum as the resolved
+						// scope entity. There will be no further nested entities
+						// added to the scope for enum types because you can't compare
+						// enum values if you are doing a field comparison
+						// e.g  expression: post.enumField.EnumValue == post.anotherEnumField.EnumValue
+						// doesnt make sense
 						return &ExpressionScopeEntity{
-
 							Enum: enum,
 						}, nil
 
@@ -344,7 +349,6 @@ fragments:
 							Parent: scope,
 						}
 					}
-
 				} else {
 					scope = scopeFromModel(scope, e, model)
 				}
