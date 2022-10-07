@@ -148,7 +148,11 @@ var operatorsForType = map[string][]string{
 }
 
 func (e *ExpressionScopeEntity) AllowedOperators() []string {
-	if e.Model != nil || e.Field != nil {
+	t := e.GetType()
+
+	arrayEntity := e.IsRepeated()
+
+	if e.Model != nil || (e.Field != nil && !arrayEntity) {
 		return []string{
 			expressions.OperatorEquals,
 			expressions.OperatorNotEquals,
@@ -156,14 +160,12 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 		}
 	}
 
-	t := e.GetType()
+	if arrayEntity {
+		t = expressions.TypeArray
+	}
 
 	if e.IsEnumField() || e.IsEnumValue() {
 		t = expressions.TypeEnum
-	}
-
-	if e.IsRepeated() {
-		t = expressions.TypeArray
 	}
 
 	return operatorsForType[t]
