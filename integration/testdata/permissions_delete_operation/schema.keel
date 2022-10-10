@@ -7,56 +7,56 @@ model Post {
         identity Identity?
 
         titlePermissionMatch Text @default("hello")
-        viewsPermissionMatch Number @default(1)
+        viewsPermissionMatch Number @default(5)
         activePermissionMatch Boolean @default(true)
     }
 
     operations {
-        create createWithText() with (title)
+        create createWithTitle() with (title) 
 
-        create createWithNumber() with (views)
+        create createWithViews() with (views) 
 
-        create createWithBoolean() with (active)
+        create createWithActive() with (active) 
 
         create createWithEnum() with (type) 
+
+        delete deleteWithTextPermissionLiteral(id) {
+            @permission(expression: post.title == "hello")
+        }
+
+        delete deleteWithNumberPermissionLiteral(id) {
+            @permission(expression: post.views == 5)
+        }
+
+        delete deleteWithBooleanPermissionLiteral(id) {
+            @permission(expression: post.active == true)
+        }
+
+        delete deleteWithEnumPermissionLiteral(id) {
+            @permission(expression: post.type == PostType.Technical)
+        }
+
+        delete deleteWithTextPermissionOnField(id) {
+            @permission(expression: post.title == post.titlePermissionMatch)
+        }
+
+        delete deleteWithNumberPermissionOnField(id) {
+            @permission(expression: post.views == post.viewsPermissionMatch)
+        }
+
+        delete deleteWithBooleanPermissionOnField(id) {
+            @permission(expression: post.active == post.activePermissionMatch)
+        }
 
         create createWithIdentity() {
             @set(post.identity = ctx.identity)
         }
 
-        update updateWithTextPermissionLiteral(id) with (title) {
-            @permission(expression: post.title == "hello")
-        }
-
-        update updateWithNumberPermissionLiteral(id) with (views) {
-            @permission(expression: post.views == 1)
-        }
-
-        update updateWithBooleanPermissionLiteral(id) with (active) {
-            @permission(expression: post.active == true)
-        }
-
-        update updateWithEnumPermissionLiteral(id) with (type) {
-            @permission(expression: post.type == PostType.Technical)
-        }
-
-        update updateWithTextPermissionFromField(id) with (title) {
-            @permission(expression: post.title == post.titlePermissionMatch)
-        }
-
-        update updateWithNumberPermissionFromField(id) with (views) {
-            @permission(expression: post.views == post.viewsPermissionMatch)
-        }
-
-        update updateWithBooleanPermissionFromField(id) with (active) {
-            @permission(expression: post.active == post.activePermissionMatch)
-        }
-
-        update updateWithIdentityPermission(id) with (title) {
+        delete deleteWithRequiresSameIdentity() {
             @permission(expression: post.identity == ctx.identity)
         }
 
-        update updateWithTrueValuePermission(id) with (title) {
+        update deleteWithTrueValuePermission(id) with (title) {
             @permission(expression: true)
         }
     }

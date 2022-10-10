@@ -1,0 +1,26 @@
+[
+    {
+        "status": "pass",
+        "testName": "permission set on model level for create op - matching title - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission set on model level for create op - not matching - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "ORed permissions set on model level for get op - matching title - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "ORed permissions set on model level for get op - matching title and views - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "ORed permissions set on model level for get op - none matching - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "no permissions set on model level for delete op - can delete - is authorized"
+    }
+]

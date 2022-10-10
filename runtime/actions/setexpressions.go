@@ -46,6 +46,8 @@ func SetExpressionInputsToModelMap(operation *proto.Operation, values map[string
 				if err != nil {
 					return nil, err
 				}
+			} else if proto.EnumExists(schema.Enums, assignment.RHS.Ident.Fragments[0].Fragment) {
+				modelMap[strcase.ToSnake(fieldName)] = assignment.RHS.Ident.Fragments[1].Fragment
 			} else {
 				// check if there is a match for the set expression in explicit inputs
 

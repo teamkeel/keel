@@ -18,45 +18,45 @@ model Post {
 
         create createWithBoolean() with (active)
 
-        create createWithEnum() with (type) 
+        create createWithEnum() with (type)
 
         create createWithIdentity() {
             @set(post.identity = ctx.identity)
         }
 
-        update updateWithTextPermissionLiteral(id) with (title) {
+        get getWithTextPermissionLiteral(id) {
             @permission(expression: post.title == "hello")
         }
 
-        update updateWithNumberPermissionLiteral(id) with (views) {
+        get getWithNumberPermissionLiteral(id) {
             @permission(expression: post.views == 1)
         }
 
-        update updateWithBooleanPermissionLiteral(id) with (active) {
+        get getWithBooleanPermissionLiteral(id) {
             @permission(expression: post.active == true)
         }
 
-        update updateWithEnumPermissionLiteral(id) with (type) {
+        get getWithEnumPermissionLiteral(id) {
             @permission(expression: post.type == PostType.Technical)
         }
 
-        update updateWithTextPermissionFromField(id) with (title) {
+        get getWithTextPermissionFromField(id) {
             @permission(expression: post.title == post.titlePermissionMatch)
         }
 
-        update updateWithNumberPermissionFromField(id) with (views) {
+        get getWithNumberPermissionFromField(id) {
             @permission(expression: post.views == post.viewsPermissionMatch)
         }
 
-        update updateWithBooleanPermissionFromField(id) with (active) {
+        get getWithBooleanPermissionFromField(id) {
             @permission(expression: post.active == post.activePermissionMatch)
         }
 
-        update updateWithIdentityPermission(id) with (title) {
+        get getWithIdentityPermission(id) {
             @permission(expression: post.identity == ctx.identity)
         }
 
-        update updateWithTrueValuePermission(id) with (title) {
+        get getWithTrueValuePermission(id) {
             @permission(expression: true)
         }
     }

@@ -106,3 +106,14 @@ func OperationHasInput(op *Operation, name string) bool {
 	}
 	return false
 }
+
+// EnumExists returns true if the given schema contains a
+// enum with the given name.
+func EnumExists(enums []*Enum, name string) bool {
+	for _, m := range enums {
+		if m.Name == name {
+			return true
+		}
+	}
+	return false
+}

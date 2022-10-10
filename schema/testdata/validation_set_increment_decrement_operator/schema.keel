@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        views Number
+    }
+
+    operations {
+        update boostViews(id) {
+            @set(post.views += 1)
+        }
+    }
+}

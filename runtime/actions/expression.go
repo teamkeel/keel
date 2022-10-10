@@ -181,6 +181,12 @@ func EvaluatePermissions(
 		permissions = append(permissions, op.Permissions...)
 	}
 
+	// todo: remove this once we make permissions a requirement for any access
+	// https://linear.app/keel/issue/RUN-135/permissions-required-for-access-at-all
+	if len(permissions) == 0 {
+		return true, nil
+	}
+
 	for _, permission := range permissions {
 		if permission.Expression != nil {
 			expression, err := expressions.Parse(permission.Expression.Source)
@@ -192,13 +198,13 @@ func EvaluatePermissions(
 			if err != nil {
 				return false, err
 			}
-			if !authorized {
-				return false, nil
+			if authorized {
+				return true, nil
 			}
 		}
 	}
 
-	return true, nil
+	return false, nil
 }
 
 // evaluateExpression evaluates a given conditional expression
@@ -215,6 +221,21 @@ func evaluateExpression(
 		return false, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
 	}
 	condition := conditions[0]
+
+	if condition.Type() == expressions.ValueCondition {
+		valueType, _ := GetOperandType(condition.LHS, operation, schema)
+		if valueType != proto.Type_TYPE_BOOL {
+			return false, fmt.Errorf("value operand must be of type bool, not %s", condition.Type())
+		}
+
+		value, err := evaluateOperandValue(context, condition.LHS, operation, schema, data, valueType)
+		if err != nil {
+			return false, err
+		}
+
+		return value.(bool), nil
+	}
+
 	if condition.Type() != expressions.LogicalCondition {
 		return false, fmt.Errorf("can only handle condition type of LogicalCondition, have: %s", condition.Type())
 	}
@@ -311,6 +332,8 @@ func evaluateOperandValue(
 	switch {
 	case isLiteral:
 		return toNative(operand, operandType)
+	case operand.Ident != nil && proto.EnumExists(schema.Enums, operand.Ident.Fragments[0].Fragment):
+		return operand.Ident.Fragments[1].Fragment, nil
 	case operand.Ident != nil && strcase.ToCamel(operand.Ident.Fragments[0].Fragment) == operation.ModelName:
 		target := operand.Ident.Fragments[0].Fragment
 		modelTarget := strcase.ToCamel(target)
@@ -335,8 +358,7 @@ func evaluateOperandValue(
 		}
 
 		switch operandType {
-		case proto.Type_TYPE_STRING,
-			proto.Type_TYPE_BOOL:
+		case proto.Type_TYPE_STRING, proto.Type_TYPE_BOOL:
 			return fieldValue, nil
 		case proto.Type_TYPE_INT:
 			// todo: unify these to a single type at the source?
@@ -356,6 +378,8 @@ func evaluateOperandValue(
 			default:
 				return nil, fmt.Errorf("cannot yet parse %s to int64", v)
 			}
+		case proto.Type_TYPE_ENUM:
+			return fieldValue, nil
 		case proto.Type_TYPE_IDENTITY:
 			switch v := fieldValue.(type) {
 			case *ksuid.KSUID:
@@ -416,6 +440,8 @@ func evaluateOperandCondition(
 		return compareInt(lhs.(int64), rhs.(int64), operator)
 	case proto.Type_TYPE_BOOL:
 		return compareBool(lhs.(bool), rhs.(bool), operator)
+	case proto.Type_TYPE_ENUM:
+		return compareEnum(lhs.(string), rhs.(string), operator)
 	case proto.Type_TYPE_IDENTITY:
 		return compareIdentity(lhs.(ksuid.KSUID), rhs.(ksuid.KSUID), operator)
 	default:
@@ -473,6 +499,21 @@ func compareBool(
 		return lhs != rhs, nil
 	default:
 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_BOOL)
+	}
+}
+
+func compareEnum(
+	lhs string,
+	rhs string,
+	operator *expressions.Operator,
+) (bool, error) {
+	switch operator.Symbol {
+	case expressions.OperatorEquals:
+		return lhs == rhs, nil
+	case expressions.OperatorNotEquals:
+		return lhs != rhs, nil
+	default:
+		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
 	}
 }
 

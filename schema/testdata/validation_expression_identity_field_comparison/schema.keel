@@ -1,0 +1,25 @@
+model Author {
+    fields {
+        identity Identity
+    }
+}
+
+model Publisher {
+    fields {
+        identity Identity
+    }
+}
+
+model Post {
+    fields {
+        title Text
+        owner Author
+        publisher Publisher
+    }
+
+    operations {
+        create createPost() with (title, publisher, owner) {
+            @permission(expression: post.owner.identity == post.publisher.identity)
+        }
+    }
+}

@@ -1,0 +1,31 @@
+model Post {
+    fields {
+        title Text?
+        views Number?
+        identity Identity?
+    }
+
+    operations {
+        create create() with (title, views) 
+        get get(id)
+        update update(id) with (title)
+        delete delete(id)
+    }
+
+    @permission(
+        expression: post.title == "hello",
+        actions: [create, get, update]
+    )
+
+    @permission(
+        expression: post.views == 5,
+        actions: [get]
+    )
+}
+
+api Web {
+    @graphql
+    models {
+        Post
+    }
+}

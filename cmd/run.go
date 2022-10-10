@@ -65,10 +65,10 @@ var runCmd = &cobra.Command{
 		logger := logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 			logger.Config{
-				SlowThreshold:             time.Second, // Slow SQL threshold
-				LogLevel:                  logger.Info, // Log level
-				IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
-				Colorful:                  true,        // Disable color
+				SlowThreshold:             time.Second,   // Slow SQL threshold
+				LogLevel:                  logger.Silent, // Dont log any gorm internals for now
+				IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
+				Colorful:                  true,          // Disable color
 			},
 		)
 
@@ -182,11 +182,13 @@ var runCmd = &cobra.Command{
 				printMigrationChanges(m.Changes)
 			}
 
-			// Every time the schema changes, we want to run codegen again
-			generate(protoSchema)
-			// kill the old node server hosting the old code, and
-			// spawn a new node server for the new version of the code
-			spawnNodeProcess()
+			if hasCustomFunctions(protoSchema) {
+				// Every time the schema changes, we want to run codegen again
+				generate(protoSchema)
+				// kill the old node server hosting the old code, and
+				// spawn a new node server for the new version of the code
+				spawnNodeProcess()
+			}
 
 			currSchema = protoSchema
 			fmt.Println("🎉 You're ready to roll")
@@ -225,8 +227,10 @@ var runCmd = &cobra.Command{
 		}
 		defer stopWatcher()
 
-		// Then spawn a node server
-		nodeProcess = spawnNodeProcess()
+		if hasCustomFunctions {
+			// Then spawn a node server
+			nodeProcess = spawnNodeProcess()
+		}
 
 		go http.ListenAndServe(":"+runCmdFlagPort, http.DefaultServeMux)
 

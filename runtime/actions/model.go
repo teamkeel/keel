@@ -36,13 +36,11 @@ func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, e
 
 	switch {
 	case field.DefaultValue != nil && field.DefaultValue.Expression != nil:
-		{
-			v, err := schemaDefault(field) // Will need more arguments / context later.
-			if err != nil {
-				return nil, err
-			}
-			return v, nil
+		v, err := schemaDefault(field) // Will need more arguments / context later.
+		if err != nil {
+			return nil, err
 		}
+		return v, nil
 	case field.DefaultValue != nil && field.DefaultValue.UseZeroValue:
 		v, err := builtinDefault(field, enums)
 		if err != nil {

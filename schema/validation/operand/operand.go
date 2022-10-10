@@ -48,7 +48,7 @@ func (e *ExpressionScopeEntity) IsOptional() bool {
 }
 
 func (e *ExpressionScopeEntity) IsEnumField() bool {
-	return e.Parent != nil && e.Parent.Enum != nil && e.Field != nil
+	return e.Enum != nil
 }
 
 func (e *ExpressionScopeEntity) IsEnumValue() bool {
@@ -70,6 +70,10 @@ func (e *ExpressionScopeEntity) GetType() string {
 
 	if e.Literal != nil {
 		return e.Literal.Type()
+	}
+
+	if e.Enum != nil {
+		return e.Enum.Name.Value
 	}
 
 	if e.EnumValue != nil {
@@ -133,31 +137,39 @@ var operatorsForType = map[string][]string{
 		expressions.OperatorAssignment,
 	},
 	expressions.TypeEnum: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
 		expressions.OperatorAssignment,
 	},
 	expressions.TypeArray: {
 		expressions.OperatorIn,
 		expressions.OperatorNotIn,
 	},
+	expressions.TypeNull: {
+		expressions.OperatorEquals,
+		expressions.OperatorNotEquals,
+	},
 }
 
 func (e *ExpressionScopeEntity) AllowedOperators() []string {
-	if e.Model != nil {
+	t := e.GetType()
+
+	arrayEntity := e.IsRepeated()
+
+	if e.Model != nil || (e.Field != nil && !arrayEntity) {
 		return []string{
 			expressions.OperatorEquals,
 			expressions.OperatorNotEquals,
-			expressions.AssignmentCondition,
+			expressions.OperatorAssignment,
 		}
 	}
 
-	t := e.GetType()
+	if arrayEntity {
+		t = expressions.TypeArray
+	}
 
 	if e.IsEnumField() || e.IsEnumValue() {
 		t = expressions.TypeEnum
-	}
-
-	if e.IsRepeated() {
-		t = expressions.TypeArray
 	}
 
 	return operatorsForType[t]
@@ -322,9 +334,26 @@ fragments:
 				model := query.Model(asts, e.Field.Type)
 
 				if model == nil {
-					// Did not find the model matching the field
-					scope = &ExpressionScope{
-						Parent: scope,
+					// try matching the field name to a known enum instead
+					enum := query.Enum(asts, e.Field.Type)
+
+					if enum != nil {
+						// if we've reached a field that is an enum
+						// then we want to return the enum as the resolved
+						// scope entity. There will be no further nested entities
+						// added to the scope for enum types because you can't compare
+						// enum values if you are doing a field comparison
+						// e.g  expression: post.enumField.EnumValue == post.anotherEnumField.EnumValue
+						// doesnt make sense
+						return &ExpressionScopeEntity{
+							Enum: enum,
+						}, nil
+
+					} else {
+						// Did not find the model matching the field
+						scope = &ExpressionScope{
+							Parent: scope,
+						}
 					}
 				} else {
 					scope = scopeFromModel(scope, e, model)

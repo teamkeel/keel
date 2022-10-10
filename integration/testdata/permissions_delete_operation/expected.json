@@ -77,11 +77,11 @@
     },
     {
         "status": "pass",
-        "testName": "boolean permission on field - field is not authorized"
+        "testName": "boolean permission on field - not matching value - is not authorized"
     },
     {
         "status": "pass",
-        "testName": "boolean permission on field - null - is not authorized"
+        "testName": "boolean permission on field - null value - is not authorized"
     },
     {
         "status": "pass",
@@ -97,6 +97,6 @@
     },
     {
         "status": "pass",
-        "testName": "true value permission - unauthenticated identity - is authorized"
+        "testName": "true value permission - with unauthenticated identity - is authorized"
     }
 ]

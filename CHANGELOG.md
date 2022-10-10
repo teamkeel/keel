@@ -1,3 +1,52 @@
+## [0.162.1](https://github.com/teamkeel/keel/compare/v0.162.0...v0.162.1) (2022-10-07)
+
+
+### Bug Fixes
+
+* fix increment/decrement ([#456](https://github.com/teamkeel/keel/issues/456)) ([93fd4c3](https://github.com/teamkeel/keel/commit/93fd4c32965f7b83744c44a113663ec944742d60))
+
+# [0.162.0](https://github.com/teamkeel/keel/compare/v0.161.0...v0.162.0) (2022-10-07)
+
+
+### Features
+
+* support comparing null literals with equality operators ([#455](https://github.com/teamkeel/keel/issues/455)) ([9d47e9d](https://github.com/teamkeel/keel/commit/9d47e9d56de8b95e7f7f8563ebd78d5cf9a69951))
+
+# [0.161.0](https://github.com/teamkeel/keel/compare/v0.160.0...v0.161.0) (2022-10-07)
+
+
+### Features
+
+* allow comparison of matching field types (associations) ([#454](https://github.com/teamkeel/keel/issues/454)) ([7c7ce8e](https://github.com/teamkeel/keel/commit/7c7ce8e6579cfb214c10902adc5cf223da506b5d))
+
+# [0.160.0](https://github.com/teamkeel/keel/compare/v0.159.1...v0.160.0) (2022-10-07)
+
+
+### Features
+
+* allow valid expression enum field comparison ([#453](https://github.com/teamkeel/keel/issues/453)) ([b428674](https://github.com/teamkeel/keel/commit/b42867489cab26caff9235a816fffda52a76c178))
+
+## [0.159.1](https://github.com/teamkeel/keel/compare/v0.159.0...v0.159.1) (2022-10-07)
+
+
+### Bug Fixes
+
+* skip bootstrapping functions runtime if not used ([#451](https://github.com/teamkeel/keel/issues/451)) ([83a820a](https://github.com/teamkeel/keel/commit/83a820a806e48c1d47bee6c223d7119b5a69a85b))
+
+# [0.159.0](https://github.com/teamkeel/keel/compare/v0.158.0...v0.159.0) (2022-10-06)
+
+
+### Features
+
+* initial enum support on [@set](https://github.com/set)() and permission() ([#448](https://github.com/teamkeel/keel/issues/448)) ([4870cf5](https://github.com/teamkeel/keel/commit/4870cf5f73b57804d82f853ed60f6a41fd7fb701))
+
+# [0.158.0](https://github.com/teamkeel/keel/compare/v0.157.0...v0.158.0) (2022-10-05)
+
+
+### Features
+
+* make path to functions dir configurable ([d119bea](https://github.com/teamkeel/keel/commit/d119bead633a4830d96bccd04f26304e8189e420))
+
 # [0.157.0](https://github.com/teamkeel/keel/compare/v0.156.0...v0.157.0) (2022-10-04)
 
 
