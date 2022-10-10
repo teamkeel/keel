@@ -1,10 +1,5 @@
 import { test, expect, actions, Thing } from '@teamkeel/testing'
 
-// Outstanding tests & features:
-// - setting using implicit inputs
-// - setting using explicit inputs
-// - setting using explicit inputs overriding implicit write
-
 /* 
   Text Type 
 */
@@ -21,6 +16,17 @@ test('text set attribute on optional field - set to null - is null', async () =>
 
 test('text set attribute on required field - set to goodbye - is goodbye', async () => {
   const { object: thing } = await actions.createTextOnRequired({})
+  expect(thing.requiredText).toEqual("goodbye")
+})
+
+test('text set attribute from explicit input - set to goodbye - is goodbye', async () => {
+  const { object: thing } = await actions.createTextFromExplicitInput({ explText: "goodbye" })
+  expect(thing.requiredText).toEqual("goodbye")
+})
+
+test('text set attribute from implicit input - set to goodbye - is goodbye', async () => {
+  const { object: thing } = await actions.createTextFromImplicitInput({ requiredText: "goodbye" })
+  expect(thing.optionalText).toEqual("goodbye")
   expect(thing.requiredText).toEqual("goodbye")
 })
 
@@ -43,6 +49,17 @@ test('number set attribute on required field - set to 5 - is 5', async () => {
   expect(thing.requiredNumber).toEqual(5)
 })
 
+test('number set attribute from explicit input - set to 5 - is 5', async () => {
+  const { object: thing } = await actions.createNumberFromExplicitInput({ explNumber: 5 })
+  expect(thing.requiredNumber).toEqual(5)
+})
+
+test('number set attribute from implicit input - set to 5 - is 5', async () => {
+  const { object: thing } = await actions.createNumberFromImplicitInput({ requiredNumber: 5 })
+  expect(thing.optionalNumber).toEqual(5)
+  expect(thing.requiredNumber).toEqual(5)
+})
+
 /* 
   Boolean Type 
 */
@@ -62,6 +79,17 @@ test('boolean set attribute on required field - set to true - is true', async ()
   expect(thing.requiredBoolean).toEqual(true)
 })
 
+test('boolean set attribute from explicit input - set to true - is true', async () => {
+  const { object: thing } = await actions.createBooleanFromExplicitInput({ explBoolean: true })
+  expect(thing.requiredBoolean).toEqual(true)
+})
+
+test('boolean set attribute from implicit input - set to true - is true', async () => {
+  const { object: thing } = await actions.createBooleanFromImplicitInput({ requiredBoolean: true })
+  expect(thing.optionalBoolean).toEqual(true)
+  expect(thing.requiredBoolean).toEqual(true)
+})
+
 /* 
   Enum Type 
 */
@@ -72,7 +100,8 @@ test('enum set attribute on optional field - set to TypeTwo - is TypeTwo', async
   expect(thing.optionalEnum).toEqual("TypeTwo")
 })
 
-// https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
+
+// https://linear.app/keel/issue/DEV-209/set-enum-to-null
 // test('enum set attribute on optional field - set to null - is null', async () => {
 //   const { object: thing } = await actions.createNullEnumOnOptional({})
 //   expect(thing.optionalEnum).toEqual(null)
@@ -83,3 +112,16 @@ test('enum set attribute on required field - set to TypeTwo - is TypeTwo', async
   const { object: thing } = await actions.createEnumOnRequired({})
   expect(thing.requiredEnum).toEqual("TypeTwo")
 })
+
+// https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
+// test('enum set attribute from explicit input - set to TypeTwo - is TypeTwo', async () => {
+//   const { object: thing } = await actions.createEnumOnRequired({ explEnum: "TypeTwo" })
+//   expect(thing.requiredEnum).toEqual("TypeTwo")
+// })
+
+// https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
+// test('enum set attribute from implicit input - set to TypeTwo - is TypeTwo', async () => {
+//   const { object: thing } = await actions.createEnumOnRequired({ requiredEnum: "TypeTwo" })
+//   expect(thing.optionalEnum).toEqual("TypeTwo")
+//   expect(thing.requiredEnum).toEqual("TypeTwo")
+// })
