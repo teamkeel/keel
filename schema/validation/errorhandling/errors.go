@@ -57,6 +57,7 @@ const (
 	ErrorInvalidActionType                  = "E040"
 	ErrorModelNotAllowedAsInput             = "E041"
 	ErrorReservedActionName                 = "E042"
+	ErrorClashingImplicitInput              = "E043"
 )
 
 type ErrorDetails struct {

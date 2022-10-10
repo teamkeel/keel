@@ -417,6 +417,8 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 
 	isUsed := false
 
+	fieldsAssignedWithExplicitInput := []string{}
+
 	for _, attr := range action.Attributes {
 		if !lo.Contains([]string{parser.AttributeWhere, parser.AttributeSet}, attr.Name.Value) {
 			continue
@@ -436,12 +438,43 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 				if operand.Ident != nil && operand.ToString() == input.Label.Value {
 					// we've found a usage of the input
 					isUsed = true
+
+					if cond.LHS != nil && cond.LHS != operand {
+						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.LHS.Ident.Fragments[1].Fragment)
+						continue
+					}
+
+					if cond.RHS != nil && cond.RHS != operand {
+						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.RHS.Ident.Fragments[1].Fragment)
+					}
 				}
 			}
 		}
 	}
 
 	if isUsed {
+		// check explicit input doesn't clash with an implicit input already defined in the inputs list
+		allInputs := append(action.Inputs, action.With...)
+		implicitInputs := lo.Filter(allInputs, func(input *parser.ActionInputNode, _ int) bool {
+			// inputs without a label are deemed to be implicit
+			return input.Label == nil
+		})
+
+		for _, input := range implicitInputs {
+			if lo.Contains(fieldsAssignedWithExplicitInput, input.Name()) {
+				return errorhandling.NewValidationError(
+					errorhandling.ErrorClashingImplicitInput,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"ImplicitInputName": input.Name(),
+						},
+					},
+					input,
+				)
+			}
+
+		}
+
 		return nil
 	}
 

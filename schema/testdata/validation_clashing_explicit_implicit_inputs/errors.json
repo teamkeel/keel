@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "You have overriden 'title' with an explicit input",
+      "short_message": "'title' overriden by explicit input",
+      "hint": "Try removing 'title' from the inputs list",
+      "code": "E043",
+      "pos": {
+        "filename": "testdata/validation_clashing_explicit_implicit_inputs/schema.keel",
+        "offset": 103,
+        "line": 7,
+        "column": 35
+      },
+      "end_pos": {
+        "filename": "testdata/validation_clashing_explicit_implicit_inputs/schema.keel",
+        "offset": 108,
+        "line": 7,
+        "column": 40
+      }
+    }
+  ]
+}

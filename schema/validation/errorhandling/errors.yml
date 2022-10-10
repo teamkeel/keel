@@ -161,3 +161,7 @@ en:
     short_message: "cannot use '{{ .Name }}'"
     message: "You have a reserved action name '{{ .Name }}'"
     hint: "Try '{{ .Suggestion }}' instead"
+  E043:
+    short_message: "'{{ .ImplicitInputName }}' overriden by explicit input"
+    message: "You have overriden '{{ .ImplicitInputName }}' with an explicit input"
+    hint: "Try removing '{{ .ImplicitInputName }}' from the inputs list"
