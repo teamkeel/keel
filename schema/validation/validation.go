@@ -3,6 +3,7 @@ package validation
 import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"github.com/teamkeel/keel/schema/validation/rules/actions"
 	"github.com/teamkeel/keel/schema/validation/rules/api"
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
 	"github.com/teamkeel/keel/schema/validation/rules/enum"
@@ -36,17 +37,17 @@ var validatorFuncs = []validationFunc{
 	model.ReservedModelNamesRule,
 	model.ModelNamingRule,
 	model.UniqueModelNamesRule,
-	// Begin sub actions of model
-	model.ActionNamingRule,
-	model.ActionTypesRule,
-	model.UniqueOperationNamesRule,
-	model.ValidActionInputsRule,
-	model.GetOperationUniqueConstraintRule,
-	model.ListActionModelInputsRule,
-	model.UpdateOperationUniqueConstraintRule,
-	model.CreateOperationNoReadInputsRule,
-	model.CreateOperationRequiredFieldsRule,
-	model.ReservedActionNameRule,
+	// Begin actions
+	actions.ActionNamingRule,
+	actions.ActionTypesRule,
+	actions.UniqueOperationNamesRule,
+	actions.ValidActionInputsRule,
+	actions.GetOperationUniqueConstraintRule,
+	actions.ListActionModelInputsRule,
+	actions.UpdateOperationUniqueConstraintRule,
+	actions.CreateOperationNoReadInputsRule,
+	actions.CreateOperationRequiredFieldsRule,
+	actions.ReservedActionNameRule,
 	// Begin fields
 	field.ReservedNameRule,
 	field.ValidFieldTypesRule,

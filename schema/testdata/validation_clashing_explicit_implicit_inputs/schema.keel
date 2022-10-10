@@ -1,0 +1,15 @@
+model Post {
+    fields {
+        title Text
+    }
+
+    operations {
+        create createPost() with (title, coolTitle: Text) {
+            @set(post.title = coolTitle)
+        }
+
+        list listPost(id, coolID: ID) {
+            @where(post.id == coolID)
+        }
+    }
+}

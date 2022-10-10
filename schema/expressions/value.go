@@ -127,6 +127,10 @@ type Ident struct {
 	Fragments []*IdentFragment `( @@ ( "." @@ )* )`
 }
 
+func (ident *Ident) LastFragment() string {
+	return ident.Fragments[len(ident.Fragments)-1].Fragment
+}
+
 func (ident *Ident) ToString() string {
 	ret := ""
 	for i, fragment := range ident.Fragments {
