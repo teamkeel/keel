@@ -17,6 +17,24 @@
         "line": 7,
         "column": 40
       }
+    },
+    {
+      "message": "You have overridden 'id' with an explicit input",
+      "short_message": "'id' overridden by explicit input",
+      "hint": "Try removing 'id' from the inputs list",
+      "code": "E043",
+      "pos": {
+        "filename": "testdata/validation_clashing_explicit_implicit_inputs/schema.keel",
+        "offset": 203,
+        "line": 11,
+        "column": 23
+      },
+      "end_pos": {
+        "filename": "testdata/validation_clashing_explicit_implicit_inputs/schema.keel",
+        "offset": 205,
+        "line": 11,
+        "column": 25
+      }
     }
   ]
 }
