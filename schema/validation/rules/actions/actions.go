@@ -440,12 +440,12 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 					isUsed = true
 
 					if cond.LHS != nil && cond.LHS != operand {
-						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.LHS.Ident.Fragments[1].Fragment)
+						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.LHS.Ident.LastFragment())
 						continue
 					}
 
 					if cond.RHS != nil && cond.RHS != operand {
-						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.RHS.Ident.Fragments[1].Fragment)
+						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.RHS.Ident.LastFragment())
 					}
 				}
 			}
