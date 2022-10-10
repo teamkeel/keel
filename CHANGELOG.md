@@ -1,3 +1,10 @@
+# [0.165.0](https://github.com/teamkeel/keel/compare/v0.164.0...v0.165.0) (2022-10-10)
+
+
+### Features
+
+* validate implicit/explicit input clashes ([#458](https://github.com/teamkeel/keel/issues/458)) ([befd825](https://github.com/teamkeel/keel/commit/befd8252fed61e03920edef1bbbbb46fa1964ad6))
+
 # [0.164.0](https://github.com/teamkeel/keel/compare/v0.163.0...v0.164.0) (2022-10-10)
 
 
