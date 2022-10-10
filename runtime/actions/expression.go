@@ -334,6 +334,9 @@ func evaluateOperandValue(
 		return toNative(operand, operandType)
 	case operand.Ident != nil && proto.EnumExists(schema.Enums, operand.Ident.Fragments[0].Fragment):
 		return operand.Ident.Fragments[1].Fragment, nil
+	case operand.Ident != nil && len(operand.Ident.Fragments) == 1 && data[operand.Ident.Fragments[0].Fragment] != nil:
+		explicitInputValue, _ := data[operand.Ident.Fragments[0].Fragment]
+		return explicitInputValue, nil
 	case operand.Ident != nil && strcase.ToCamel(operand.Ident.Fragments[0].Fragment) == operation.ModelName:
 		target := operand.Ident.Fragments[0].Fragment
 		modelTarget := strcase.ToCamel(target)
@@ -399,7 +402,12 @@ func evaluateOperandValue(
 			return nil, fmt.Errorf("cannot yet compare operand of type %s", operandType)
 		}
 	case operand.Ident != nil && operand.Ident.IsContextIdentityField():
-		if !runtimectx.HasIdentity(context) {
+		isAuthenticated, err := runtimectx.IsAuthenticated(context)
+		if err != nil {
+			return nil, err
+		}
+
+		if !isAuthenticated {
 			return nil, nil
 		}
 
@@ -408,6 +416,12 @@ func evaluateOperandValue(
 			return nil, err
 		}
 		return *ksuid, nil
+	case operand.Ident != nil && operand.Ident.IsContextIsAuthenticatedField():
+		isAuthenticated, err := runtimectx.IsAuthenticated(context)
+		if err != nil {
+			return nil, err
+		}
+		return isAuthenticated, nil
 	case operand.Ident != nil && operand.Ident.IsContextNowField():
 		return nil, fmt.Errorf("cannot yet handle ctx field now")
 	case operand.Type() == expressions.TypeArray:
