@@ -1,3 +1,10 @@
+# [0.163.0](https://github.com/teamkeel/keel/compare/v0.162.1...v0.163.0) (2022-10-10)
+
+
+### Features
+
+* support https and optional port on HttpFunctionsClient ([acf0eb8](https://github.com/teamkeel/keel/commit/acf0eb8b7646e2c15ed8e4f6392518d67107abc9))
+
 ## [0.162.1](https://github.com/teamkeel/keel/compare/v0.162.0...v0.162.1) (2022-10-07)
 
 
