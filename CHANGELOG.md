@@ -1,3 +1,10 @@
+# [0.164.0](https://github.com/teamkeel/keel/compare/v0.163.0...v0.164.0) (2022-10-10)
+
+
+### Features
+
+* ctx.isAuthenticated support in set() and permission() ([#450](https://github.com/teamkeel/keel/issues/450)) ([48c8ef8](https://github.com/teamkeel/keel/commit/48c8ef8e671ec63fdfe0f4de4ddd1ccbd4dc0374))
+
 # [0.163.0](https://github.com/teamkeel/keel/compare/v0.162.1...v0.163.0) (2022-10-10)
 
 
