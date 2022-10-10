@@ -1,8 +1,8 @@
 {
   "Errors": [
     {
-      "message": "You have overriden 'title' with an explicit input",
-      "short_message": "'title' overriden by explicit input",
+      "message": "You have overridden 'title' with an explicit input",
+      "short_message": "'title' overridden by explicit input",
       "hint": "Try removing 'title' from the inputs list",
       "code": "E043",
       "pos": {
