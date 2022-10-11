@@ -1,3 +1,10 @@
+# [0.166.0](https://github.com/teamkeel/keel/compare/v0.165.0...v0.166.0) (2022-10-11)
+
+
+### Features
+
+* set on create() for implicit and explicit inputs ([#459](https://github.com/teamkeel/keel/issues/459)) ([b04be1a](https://github.com/teamkeel/keel/commit/b04be1afdace0eedded6c7c8eef32d28e6c20efb))
+
 # [0.165.0](https://github.com/teamkeel/keel/compare/v0.164.0...v0.165.0) (2022-10-10)
 
 
