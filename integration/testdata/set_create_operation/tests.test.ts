@@ -102,10 +102,10 @@ test('enum set attribute on optional field - set to TypeTwo - is TypeTwo', async
 
 
 // https://linear.app/keel/issue/DEV-209/set-enum-to-null
-// test('enum set attribute on optional field - set to null - is null', async () => {
-//   const { object: thing } = await actions.createNullEnumOnOptional({})
-//   expect(thing.optionalEnum).toEqual(null)
-// })
+test('enum set attribute on optional field - set to null - is null', async () => {
+  const { object: thing } = await actions.createNullEnumOnOptional({})
+  expect(thing.optionalEnum).toEqual(null)
+})
 
 // Use enum type: https://linear.app/keel/issue/DEV-204/export-enum-types-from-teamkeeltesting
 test('enum set attribute on required field - set to TypeTwo - is TypeTwo', async () => {

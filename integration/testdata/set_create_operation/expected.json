@@ -65,6 +65,10 @@
     },
     {
         "status": "pass",
+        "testName": "enum set attribute on optional field - set to null - is null"
+    },
+    {
+        "status": "pass",
         "testName": "enum set attribute on required field - set to TypeTwo - is TypeTwo"
     }
 ]
