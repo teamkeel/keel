@@ -300,6 +300,10 @@ func GetOperandType(
 		return i.Name == target
 	})
 
+	_, matchedEnumLiteral := lo.Find(schema.Enums, func(e *proto.Enum) bool {
+		return e.Name == target
+	})
+
 	switch {
 	case strcase.ToCamel(target) == operation.ModelName:
 		// todo: evaluate at the database-level where applicable
@@ -314,6 +318,9 @@ func GetOperandType(
 
 		operandType := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), fieldName).Type.Type
 		return operandType, nil
+
+	case matchedEnumLiteral:
+		return proto.Type_TYPE_ENUM, nil
 	case matchedInput:
 		return matchingInput.Type.Type, nil
 	case operand.Ident.IsContext():

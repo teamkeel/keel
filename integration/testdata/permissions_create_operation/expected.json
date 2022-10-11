@@ -6,5 +6,9 @@
     {
         "status": "pass",
         "testName": "input arg - matching value - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "input arg - non matching value - is not authorized"
     }
 ]
