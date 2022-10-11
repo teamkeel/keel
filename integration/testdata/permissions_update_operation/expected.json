@@ -85,6 +85,18 @@
     },
     {
         "status": "pass",
+        "testName": "enum permission on field - matching value - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "enum permission on field - field is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "enum permission on field - null - is not authorized"
+    },
+    {
+        "status": "pass",
         "testName": "identity permission - correct identity in context - is authorized"
     },
     {

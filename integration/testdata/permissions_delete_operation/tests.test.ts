@@ -210,6 +210,36 @@ test('boolean permission on field - null value - is not authorized', async () =>
   ).toHaveAuthorizationError()
 })
 
+test('enum permission on field - matching value - is authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ type: 'Technical' })
+
+  expect(
+    await actions
+      .deleteWithEnumPermissionOnField({ id: post.id })
+  ).notToHaveAuthorizationError()
+})
+
+test('enum permission on field - not matching value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ type: 'Lifestyle' })
+
+  expect(
+    await actions
+      .deleteWithEnumPermissionOnField({ id: post.id })
+  ).toHaveAuthorizationError()
+})
+
+test('enum permission on field - null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithEnum({ type: null })
+
+  expect(
+    await actions
+      .deleteWithEnumPermissionOnField({ id: post.id })
+  ).toHaveAuthorizationError()
+})
+
 test('identity permission - correct identity in context - is authorized', async () => {
   const { identityId } = await actions.authenticate({ 
     createIfNotExists: true, 
