@@ -328,7 +328,12 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 	// dont add the current model to the scope of the expression for permission expressions in create actions
 	// as it doesn't make sense for the current model to be  in scope because it
 	// doesnt' exist yet (because it is being created!)
-	if context.Action.Type.Value != parser.ActionTypeCreate && context.Attribute.Name.Value == parser.AttributePermission {
+
+	permissionAttribute := context.Attribute.Name.Value == parser.AttributePermission
+	createAction := context.Action != nil && context.Action.Type.Value == parser.ActionTypeCreate
+	skipCurrentModelRootScope := permissionAttribute && createAction
+
+	if !skipCurrentModelRootScope {
 		scope = &operand.ExpressionScope{
 			Entities: []*operand.ExpressionScopeEntity{
 				{
@@ -339,27 +344,30 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 		}
 	}
 
-	// append read inputs to the scope
-	inputs := append([]*parser.ActionInputNode{}, context.Action.Inputs...)
+	if context.Action != nil {
 
-	// append write inputs to the scope
-	inputs = append(inputs, context.Action.With...)
+		// append read inputs to the scope
+		inputs := append([]*parser.ActionInputNode{}, context.Action.Inputs...)
 
-	for _, input := range inputs {
-		// inputs using short-hand syntax that refer to relationships
-		// don't get added to the scope
-		if input.Label == nil && len(input.Type.Fragments) > 1 {
-			continue
+		// append write inputs to the scope
+		inputs = append(inputs, context.Action.With...)
+
+		for _, input := range inputs {
+			// inputs using short-hand syntax that refer to relationships
+			// don't get added to the scope
+			if input.Label == nil && len(input.Type.Fragments) > 1 {
+				continue
+			}
+
+			resolvedType := query.ResolveInputType(asts, input, context.Model)
+			if resolvedType == "" {
+				continue
+			}
+			scope.Entities = append(scope.Entities, &operand.ExpressionScopeEntity{
+				Name: input.Name(),
+				Type: resolvedType,
+			})
 		}
-
-		resolvedType := query.ResolveInputType(asts, input, context.Model)
-		if resolvedType == "" {
-			continue
-		}
-		scope.Entities = append(scope.Entities, &operand.ExpressionScopeEntity{
-			Name: input.Name(),
-			Type: resolvedType,
-		})
 	}
 
 	scope = operand.DefaultExpressionScope(asts).Merge(scope)

@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "",
-        "hint": "",
-        "message": "",
-        "end_pos": {
-          "column": 0,
-          "filename": "testdata/validation_operation_create_no_current_model/schema.keel",
-          "line": 0,
-          "offset": 0
-        },
-        "pos": {
-          "column": 0,
-          "filename": "testdata/validation_operation_create_no_current_model/schema.keel",
-          "line": 0,
-          "offset": 0
-        },
-        "short_message": ""
+{
+  "Errors": [
+    {
+      "message": "'post' not found",
+      "short_message": "'post' not found",
+      "hint": "Did you mean ctx, or title?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_operation_create_no_current_model/schema.keel",
+        "offset": 148,
+        "line": 8,
+        "column": 37
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_create_no_current_model/schema.keel",
+        "offset": 152,
+        "line": 8,
+        "column": 41
       }
-    ]
-  }
+    }
+  ]
+}
