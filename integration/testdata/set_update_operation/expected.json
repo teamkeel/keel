@@ -9,6 +9,14 @@
     },
     {
         "status": "pass",
+        "testName": "text set attribute from explicit input - set to goodbye - is goodbye"
+    },
+    {
+        "status": "pass",
+        "testName": "text set attribute from implicit input - set to goodbye - is goodbye"
+    },
+    {
+        "status": "pass",
         "testName": "number set attribute - set to 5 - is 5"
     },
     {
@@ -17,11 +25,27 @@
     },
     {
         "status": "pass",
+        "testName": "number set attribute from explicit input - set to 5 - is 5"
+    },
+    {
+        "status": "pass",
+        "testName": "number set attribute from implicit input - set to 5 - is 5"
+    },
+    {
+        "status": "pass",
         "testName": "boolean set attribute - set to true - is true"
     },
     {
         "status": "pass",
         "testName": "boolean set attribute - set to null - is null"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean set attribute from explicit input - set to true - is true"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean set attribute from implicit input - set to true - is true"
     },
     {
         "status": "pass",
