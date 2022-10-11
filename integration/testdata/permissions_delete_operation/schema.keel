@@ -9,6 +9,7 @@ model Post {
         titlePermissionMatch Text @default("hello")
         viewsPermissionMatch Number @default(5)
         activePermissionMatch Boolean @default(true)
+        typePermissionMatch PostType @default(PostType.Technical)
     }
 
     operations {
@@ -46,6 +47,10 @@ model Post {
 
         delete deleteWithBooleanPermissionOnField(id) {
             @permission(expression: post.active == post.activePermissionMatch)
+        }
+
+        delete deleteWithEnumPermissionOnField(id) {
+            @permission(expression: post.type == post.typePermissionMatch)
         }
 
         create createWithIdentity() {

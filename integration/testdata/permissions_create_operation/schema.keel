@@ -41,10 +41,9 @@ model Post {
             @permission(expression: post.active == post.activePermissionMatch)
         }
 
-        // todo: https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
-        // create createWithEnumPermissionFromField() with (type) {
-        //     @permission(expression: post.type == post.typePermissionMatch)
-        // }
+        create createWithEnumPermissionFromField() with (type) {
+            @permission(expression: post.type == post.typePermissionMatch)
+        }
 
         create createWithIdentityRequiresSameIdentity() {
             @set(post.identity = ctx.identity)
