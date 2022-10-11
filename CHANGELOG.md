@@ -1,3 +1,10 @@
+# [0.168.0](https://github.com/teamkeel/keel/compare/v0.167.0...v0.168.0) (2022-10-11)
+
+
+### Features
+
+* using implicit and explicit inputs in [@set](https://github.com/set) on update operation ([#463](https://github.com/teamkeel/keel/issues/463)) ([cdc6c5e](https://github.com/teamkeel/keel/commit/cdc6c5ed8728dcaaa9ce1ee14aba0fd4cacd207b))
+
 # [0.167.0](https://github.com/teamkeel/keel/compare/v0.166.1...v0.167.0) (2022-10-11)
 
 
