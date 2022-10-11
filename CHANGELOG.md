@@ -1,3 +1,10 @@
+## [0.166.1](https://github.com/teamkeel/keel/compare/v0.166.0...v0.166.1) (2022-10-11)
+
+
+### Bug Fixes
+
+* apply migrations if they don't have model field changes ([442ee6f](https://github.com/teamkeel/keel/commit/442ee6f6d843921b00f9ac62e574b3ce540ed5be))
+
 # [0.166.0](https://github.com/teamkeel/keel/compare/v0.165.0...v0.166.0) (2022-10-11)
 
 
