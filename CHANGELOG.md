@@ -1,3 +1,10 @@
+# [0.167.0](https://github.com/teamkeel/keel/compare/v0.166.1...v0.167.0) (2022-10-11)
+
+
+### Features
+
+* setting optional enum to null in [@set](https://github.com/set) ([#461](https://github.com/teamkeel/keel/issues/461)) ([3a2cca8](https://github.com/teamkeel/keel/commit/3a2cca8f6fd5fa8bc4e299b449a3af7047fe9cc3))
+
 ## [0.166.1](https://github.com/teamkeel/keel/compare/v0.166.0...v0.166.1) (2022-10-11)
 
 
