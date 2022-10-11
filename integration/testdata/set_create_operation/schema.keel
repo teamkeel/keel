@@ -77,10 +77,9 @@ model Thing {
             @set(thing.optionalEnum = ThingType.TypeTwo)
         }
 
-        // https://linear.app/keel/issue/DEV-209/set-enum-to-null
-        // create createNullEnumOnOptional()  {
-        //     @set(thing.optionalEnum = null)
-        // }
+        create createNullEnumOnOptional()  {
+            @set(thing.optionalEnum = null)
+        }
     
         create createEnumOnRequired() {
             @set(thing.requiredEnum = ThingType.TypeTwo)

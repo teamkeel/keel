@@ -255,6 +255,10 @@ type EnumNode struct {
 
 	Name   NameNode         `@@`
 	Values []*EnumValueNode `"{" @@* "}"`
+
+	// Because optionality for enums is set at field level,
+	// we set this virtually when evaluating operand types.
+	Optional bool
 }
 
 func (ast *EnumNode) String() string {

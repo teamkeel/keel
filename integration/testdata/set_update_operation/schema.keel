@@ -41,10 +41,9 @@ model Thing {
             @set(thing.enum = ThingType.TypeTwo)
         }
 
-        // https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
-        // create updateNullEnum()  {
-        //     @set(thing.enum = null)
-        // }
+        update updateNullEnum(id)  {
+            @set(thing.enum = null)
+        }
     }
 }
 

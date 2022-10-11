@@ -70,10 +70,9 @@ test('enum set attribute - set to TypeTwo - is TypeTwo', async () => {
   expect(updated.enum).toEqual("TypeTwo")
 })
 
-// https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
-// test('enum set attribute - set to null - is null', async () => {
-//   const { object: thing } = await actions.create({})
-//   await actions.updateNullEnum({ where: { id: thing.id } })
-//   const { object: updated } = await actions.get({ id: thing.id })
-//   expect(updated.enum).toEqual(null)
-// })
+test('enum set attribute - set to null - is null', async () => {
+  const { object: thing } = await actions.create({})
+  await actions.updateNullEnum({ where: { id: thing.id } })
+  const { object: updated } = await actions.get({ id: thing.id })
+  expect(updated.enum).toEqual(null)
+})

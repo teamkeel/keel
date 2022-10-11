@@ -26,5 +26,9 @@
     {
         "status": "pass",
         "testName": "enum set attribute - set to TypeTwo - is TypeTwo"
+    },
+    {
+        "status": "pass",
+        "testName": "enum set attribute - set to null - is null"
     }
 ]

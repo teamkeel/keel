@@ -44,7 +44,7 @@ func (e *ExpressionScopeEntity) IsNull() bool {
 }
 
 func (e *ExpressionScopeEntity) IsOptional() bool {
-	return e.Field != nil && e.Field.Optional
+	return (e.Field != nil && e.Field.Optional) || (e.Enum != nil && e.Enum.Optional)
 }
 
 func (e *ExpressionScopeEntity) IsEnumField() bool {
@@ -148,6 +148,7 @@ var operatorsForType = map[string][]string{
 	expressions.TypeNull: {
 		expressions.OperatorEquals,
 		expressions.OperatorNotEquals,
+		expressions.OperatorAssignment,
 	},
 }
 
@@ -342,6 +343,8 @@ fragments:
 					enum := query.Enum(asts, e.Field.Type)
 
 					if enum != nil {
+						enum.Optional = e.Field.Optional
+
 						// if we've reached a field that is an enum
 						// then we want to return the enum as the resolved
 						// scope entity. There will be no further nested entities
