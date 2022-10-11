@@ -4,7 +4,7 @@ model Post {
     }
 
     operations {
-        create createPost() with (identity) {
+        update updatePost(id) with (identity) {
             @permission(expression: post.identity == null)
         }
     }

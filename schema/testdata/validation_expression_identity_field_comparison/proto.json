@@ -149,13 +149,26 @@
       "operations":  [
         {
           "modelName":  "Post",
-          "name":  "createPost",
-          "type":  "OPERATION_TYPE_CREATE",
+          "name":  "updatePost",
+          "type":  "OPERATION_TYPE_UPDATE",
           "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
           "inputs":  [
             {
               "modelName":  "Post",
-              "operationName":  "createPost",
+              "operationName":  "updatePost",
+              "name":  "id",
+              "type":  {
+                "type":  "TYPE_ID"
+              },
+              "mode":  "INPUT_MODE_READ",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
+                "id"
+              ]
+            },
+            {
+              "modelName":  "Post",
+              "operationName":  "updatePost",
               "name":  "title",
               "type":  {
                 "type":  "TYPE_STRING"
@@ -168,7 +181,7 @@
             },
             {
               "modelName":  "Post",
-              "operationName":  "createPost",
+              "operationName":  "updatePost",
               "name":  "publisher",
               "type":  {
                 "type":  "TYPE_MODEL",
@@ -182,7 +195,7 @@
             },
             {
               "modelName":  "Post",
-              "operationName":  "createPost",
+              "operationName":  "updatePost",
               "name":  "owner",
               "type":  {
                 "type":  "TYPE_MODEL",
@@ -198,7 +211,7 @@
           "permissions":  [
             {
               "modelName":  "Post",
-              "operationName":  "createPost",
+              "operationName":  "updatePost",
               "expression":  {
                 "source":  "post.owner.identity == post.publisher.identity"
               }

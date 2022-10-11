@@ -18,7 +18,7 @@ model Post {
     }
 
     operations {
-        create createPost() with (title, publisher, owner) {
+        update updatePost(id) with (title, publisher, owner) {
             @permission(expression: post.owner.identity == post.publisher.identity)
         }
     }
