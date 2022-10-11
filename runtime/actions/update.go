@@ -74,16 +74,20 @@ func Update(
 		values = argValues
 	}
 
+	modelMap := map[string]any{}
+	for k, v := range values {
+		modelMap[strcase.ToSnake(k)] = v
+	}
+
 	setArgs, err := SetExpressionInputsToModelMap(operation, values, schema, ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	// todo: clashing keys between implicit / explicit args (is this possible?)
-	maps.Copy(values, setArgs)
+	maps.Copy(modelMap, setArgs)
 
-	maps.DeleteFunc(values, func(k string, v any) bool {
+	maps.DeleteFunc(modelMap, func(k string, v any) bool {
 		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
 			return strcase.ToSnake(f.Name) == k
 		})
@@ -91,7 +95,7 @@ func Update(
 		return !match
 	})
 
-	tx.Updates(values)
+	tx.Updates(modelMap)
 
 	if tx.Error != nil || tx.RowsAffected == 0 {
 		return nil, tx.Error
@@ -105,7 +109,7 @@ func Update(
 
 	tx.Take(&resultMap)
 
-	return resultMap, nil
+	return toLowerCamelMap(resultMap), nil
 }
 
 func addUpdateImplicitInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {

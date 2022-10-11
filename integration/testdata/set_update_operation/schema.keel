@@ -2,9 +2,15 @@ model Thing {
     fields {
         text Text? @default("hello")
 
+        otherText Text?
+
         number Number? @default(1)
 
+        otherNumber Number?
+
         boolean Boolean? @default(false)
+
+        otherBoolean Boolean?
 
         enum ThingType? @default(ThingType.TypeOne)
     }
@@ -21,6 +27,14 @@ model Thing {
             @set(thing.text = null)
         }
 
+        update updateTextFromExplicitInput(id) with (explText: Text) {
+            @set(thing.text = explText)
+        }
+
+        update updateTextFromImplicitInput(id) with (otherText) {
+            @set(thing.text = otherText)
+        }
+
         update updateNumber(id) {
             @set(thing.number = 5)
         }
@@ -29,12 +43,28 @@ model Thing {
             @set(thing.number = null)
         }
 
+        update updateNumberFromExplicitInput(id) with (explNumber: Number) {
+            @set(thing.number = explNumber)
+        }
+
+        update updateNumberFromImplicitInput(id) with (otherNumber) {
+            @set(thing.number = otherNumber)
+        }
+
         update updateBoolean(id) {
             @set(thing.boolean = true)
         }
 
         update updateNullBoolean(id) {
             @set(thing.boolean = null)
+        }
+
+        update updateBooleanFromExplicitInput(id) with (explBoolean: Boolean) {
+            @set(thing.boolean = explBoolean)
+        }
+
+        update updateBooleanFromImplicitInput(id) with (otherBoolean) {
+            @set(thing.boolean = otherBoolean)
         }
 
         update updateEnum(id) {
