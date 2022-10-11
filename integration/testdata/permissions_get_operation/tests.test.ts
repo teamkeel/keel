@@ -1,4 +1,4 @@
-import { test, expect, actions, Post, Identity } from '@teamkeel/testing'
+import { test, expect, actions, Identity } from '@teamkeel/testing'
 
 test('string permission on literal - matching value - is authorized', async () => {
   const { object: post } = await actions
