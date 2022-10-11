@@ -1,0 +1,22 @@
+  {
+    "Errors": [
+      {
+        "code": "",
+        "hint": "",
+        "message": "",
+        "end_pos": {
+          "column": 0,
+          "filename": "testdata/validation_operation_create_no_current_model/schema.keel",
+          "line": 0,
+          "offset": 0
+        },
+        "pos": {
+          "column": 0,
+          "filename": "testdata/validation_operation_create_no_current_model/schema.keel",
+          "line": 0,
+          "offset": 0
+        },
+        "short_message": ""
+      }
+    ]
+  }

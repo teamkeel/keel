@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        title Text
+    }
+
+    operations {
+        create createPost() with (title) {
+            @permission(expression: post.title == "1234")
+        }
+    }
+}

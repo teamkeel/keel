@@ -13,11 +13,15 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// RuleContext provides contextual informtion about the expression condition being validated
+// e.g some metadata about its parents such as the current model or attribute being evaluated
+// that we can use to alter the validation behaviour based on certain contextual factors.
 type RuleContext struct {
-	Model       *parser.ModelNode
-	ReadInputs  []*parser.ActionInputNode
-	WriteInputs []*parser.ActionInputNode
-	Attribute   *parser.AttributeNode
+	Model     *parser.ModelNode
+	Attribute *parser.AttributeNode
+
+	// Sometimes, we need to know what the action type is in order to alter the validation behaviour
+	Action *parser.ActionNode
 }
 
 type Rule func(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error
@@ -318,17 +322,28 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 	lhs := cond.LHS
 	rhs := cond.RHS
 
-	scope := &operand.ExpressionScope{
-		Entities: []*operand.ExpressionScopeEntity{
-			{
-				Name:  strcase.ToLowerCamel(context.Model.Name.Value),
-				Model: context.Model,
+	// initialise an empty scope
+	scope := &operand.ExpressionScope{}
+
+	// dont add the current model to the scope of the expression for permission expressions in create actions
+	// as it doesn't make sense for the current model to be  in scope because it
+	// doesnt' exist yet (because it is being created!)
+	if context.Action.Type.Value != parser.ActionTypeCreate && context.Attribute.Name.Value == parser.AttributePermission {
+		scope = &operand.ExpressionScope{
+			Entities: []*operand.ExpressionScopeEntity{
+				{
+					Name:  strcase.ToLowerCamel(context.Model.Name.Value),
+					Model: context.Model,
+				},
 			},
-		},
+		}
 	}
 
-	inputs := append([]*parser.ActionInputNode{}, context.ReadInputs...)
-	inputs = append(inputs, context.WriteInputs...)
+	// append read inputs to the scope
+	inputs := append([]*parser.ActionInputNode{}, context.Action.Inputs...)
+
+	// append write inputs to the scope
+	inputs = append(inputs, context.Action.With...)
 
 	for _, input := range inputs {
 		// inputs using short-hand syntax that refer to relationships

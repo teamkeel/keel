@@ -212,10 +212,9 @@ func validateActionAttributeWithExpression(
 		expr,
 		rules,
 		expression.RuleContext{
-			Model:       model,
-			Attribute:   attr,
-			ReadInputs:  action.Inputs,
-			WriteInputs: action.With,
+			Model:     model,
+			Attribute: attr,
+			Action:    action,
 		},
 	)
 	for _, e := range err {
@@ -287,6 +286,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				expression.RuleContext{
 					Model:     model,
 					Attribute: attr,
+					Action:    action,
 				},
 			)
 			for _, err := range expressionErrors {
@@ -390,9 +390,7 @@ func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (e
 }
 
 func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
 	for _, model := range query.Models(asts) {
-
 		// field level e.g. @unique
 		for _, field := range query.ModelFields(model) {
 			for _, attr := range field.Attributes {
