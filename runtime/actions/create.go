@@ -3,7 +3,6 @@ package actions
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
@@ -26,24 +25,23 @@ func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schem
 	}
 
 	// Now overwrite the fields for which Inputs have been given accordingly.
-	for _, input := range operation.Inputs {
-		switch input.Behaviour {
-		case proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT:
-			modelFieldName := input.Target[0]
+	implicitInputs := lo.Filter(operation.Inputs, func(input *proto.OperationInput, _ int) bool {
+		return input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
+	})
 
-			// If this argument is missing it must be optional.
-			v, ok := args[input.Name]
-			if !ok {
-				continue
-			}
-			v, err := toMap(v, input.Type.Type)
-			if err != nil {
-				return nil, err
-			}
-			modelMap[strcase.ToSnake(modelFieldName)] = v
-		default:
-			return nil, fmt.Errorf("input behaviour %s is not yet supported for Create", input.Behaviour)
+	for _, input := range implicitInputs {
+		modelFieldName := input.Target[0]
+
+		// If this argument is missing it must be optional.
+		v, ok := args[input.Name]
+		if !ok {
+			continue
 		}
+		v, err := toMap(v, input.Type.Type)
+		if err != nil {
+			return nil, err
+		}
+		modelMap[strcase.ToSnake(modelFieldName)] = v
 	}
 
 	setArgs, err := SetExpressionInputsToModelMap(operation, args, schema, ctx)

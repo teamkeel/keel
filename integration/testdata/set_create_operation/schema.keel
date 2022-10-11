@@ -25,6 +25,14 @@ model Thing {
             @set(thing.requiredText = "goodbye")
         }
 
+        create createTextFromExplicitInput() with (explText: Text) {
+            @set(thing.requiredText = explText)
+        }
+
+        create createTextFromImplicitInput() with (requiredText) {
+            @set(thing.optionalText = requiredText)
+        }
+
         create createNumberOnOptional()  {
             @set(thing.optionalNumber = 5)
         }
@@ -35,6 +43,14 @@ model Thing {
     
         create createNumberOnRequired() {
             @set(thing.requiredNumber = 5)
+        }
+
+        create createNumberFromExplicitInput() with (explNumber: Number) {
+            @set(thing.requiredNumber = explNumber)
+        }
+
+        create createNumberFromImplicitInput() with (requiredNumber) {
+            @set(thing.optionalNumber = requiredNumber)
         }
        
         create createBooleanOnOptional()  {
@@ -49,11 +65,19 @@ model Thing {
             @set(thing.requiredBoolean = true)
         }
 
+        create createBooleanFromExplicitInput() with (explBoolean: Boolean) {
+            @set(thing.requiredBoolean = explBoolean)
+        }
+
+        create createBooleanFromImplicitInput() with (requiredBoolean) {
+            @set(thing.optionalBoolean = requiredBoolean)
+        }
+
         create createEnumOnOptional()  {
             @set(thing.optionalEnum = ThingType.TypeTwo)
         }
 
-        // https://linear.app/keel/issue/DEV-202/enum-conditional-expressions-with-field-name
+        // https://linear.app/keel/issue/DEV-209/set-enum-to-null
         // create createNullEnumOnOptional()  {
         //     @set(thing.optionalEnum = null)
         // }
@@ -61,6 +85,16 @@ model Thing {
         create createEnumOnRequired() {
             @set(thing.requiredEnum = ThingType.TypeTwo)
         }
+
+        // https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
+        // create createEnumFromExplicitInput() with (explEnum: ThingType) {
+        //     @set(thing.requiredEnum = explEnum)
+        // }
+
+        // https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
+        // create createEnumFromImplicitInput() with (requiredEnum) {
+        //     @set(thing.optionalEnum = explEnum)
+        // }
     }
 }
 

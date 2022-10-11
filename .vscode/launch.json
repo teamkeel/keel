@@ -51,7 +51,7 @@
         {
             "type": "promptString",
             "id": "testName",
-            "default": "(.*)",
+            "default": "",
             "description": "Regular expression pattern to isolate individual tests. Can just be the JS test case name if you don't want to do anything fancy."
         },
         {
