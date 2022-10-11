@@ -243,7 +243,7 @@ func evaluateExpression(
 	// Determine the native protobuf type underlying the expression comparison
 	var operandType proto.Type
 	lhsType, _ := GetOperandType(condition.LHS, operation, schema)
-	rhsType, _ := GetOperandType(condition.LHS, operation, schema)
+	rhsType, _ := GetOperandType(condition.RHS, operation, schema)
 	switch {
 	case lhsType != proto.Type_TYPE_UNKNOWN && (lhsType == rhsType || rhsType == proto.Type_TYPE_UNKNOWN):
 		operandType = lhsType
@@ -295,6 +295,11 @@ func GetOperandType(
 	}
 
 	target := operand.Ident.Fragments[0].Fragment
+
+	matchingInput, matchedInput := lo.Find(operation.Inputs, func(i *proto.OperationInput) bool {
+		return i.Name == target
+	})
+
 	switch {
 	case strcase.ToCamel(target) == operation.ModelName:
 		// todo: evaluate at the database-level where applicable
@@ -309,6 +314,8 @@ func GetOperandType(
 
 		operandType := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), fieldName).Type.Type
 		return operandType, nil
+	case matchedInput:
+		return matchingInput.Type.Type, nil
 	case operand.Ident.IsContext():
 		fieldName := operand.Ident.Fragments[1].Fragment
 		return runtimectx.ContextFieldTypes[fieldName], nil // todo: if not found
