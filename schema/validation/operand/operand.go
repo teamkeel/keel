@@ -8,6 +8,13 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+type OperandPosition = string
+
+const (
+	OperandPositionLhs OperandPosition = "lhs"
+	OperandPositionRhs OperandPosition = "rhs"
+)
+
 type ExpressionScope struct {
 	Parent   *ExpressionScope
 	Entities []*ExpressionScopeEntity
@@ -287,14 +294,21 @@ func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEn
 	}
 }
 
-// Given an operand of a condition, tries to resolve the relationships defined within the operand
-// e.g if the operand is of type "Ident", and the ident is post.author.name
-func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope) (entity *ExpressionScopeEntity, err error) {
+// A condition is composed of a LHS operand (and an operator, and a RHS operand if not a value only condition like expression: true)
+// Given an operand of a condition, tries to resolve all of the fragments defined within the operand
+// an operand might be:
+// - post.author.name
+// - MyEnum.ValueName
+// - "123"
+// - true
+// All of these types above are checked / attempted to be resolved in this method.
+func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err error) {
+	// build additional root scopes based on position of operand
+	// and also what type attribute the expression is used in.
+
+	// If it is a literal then handle differently.
 	if ok, _ := operand.IsLiteralType(); ok {
-
-		// If it is an array literal then handle differently.
 		if operand.Type() == expressions.TypeArray {
-
 			array := []*ExpressionScopeEntity{}
 
 			for _, item := range operand.Array.Values {
@@ -334,15 +348,28 @@ fragments:
 
 			switch {
 			case e.Model != nil:
+				// crucially, scope is redefined for the next iteration of the outer loop
+				// so that we check the subsequent fragment against the models fields
+				// e.g post.field - fragment at idx 0 would be post, so scopeFromModel finds the fields on the
+				// Post model and populates the new scope with them.
 				scope = scopeFromModel(scope, e, e.Model)
 			case e.Field != nil:
+				// covers fields which are associations to other models:
+				// e.g post.association.associationField
+				// repopulates the scope for the third fragment to be the fields of 'association'
 				model := query.Model(asts, e.Field.Type)
 
+				// if no model is found for the field type, then we need to check other potential matches
+				// e.g enums in the schema
 				if model == nil {
 					// try matching the field name to a known enum instead
 					enum := query.Enum(asts, e.Field.Type)
 
 					if enum != nil {
+						// enum definitions aren't optional when they are defined
+						// declaratively in the schema, but instead you mark an enum's
+						// optionality at field level, so we need to attach it here based on the field's
+						// optional value.
 						enum.Optional = e.Field.Optional
 
 						// if we've reached a field that is an enum
@@ -355,7 +382,6 @@ fragments:
 						return &ExpressionScopeEntity{
 							Enum: enum,
 						}, nil
-
 					} else {
 						// Did not find the model matching the field
 						scope = &ExpressionScope{
@@ -363,17 +389,25 @@ fragments:
 						}
 					}
 				} else {
+					// move onto the associations' fields so we populate the new scope with them
 					scope = scopeFromModel(scope, e, model)
 				}
 			case e.Object != nil:
+				// object is a special wrapper type to describe entities we want
+				// to be in scope that aren't models. It is a more flexible type that
+				// allows us to add fields to an object at our choosing
+				// Mostly used for ctx
 				scope = scopeFromObject(scope, e)
 			case e.Enum != nil:
+				// if the first fragment of the Ident matches an Enum name, then we want to proceed populating the scope for the next fragment
+				// with all of the potential values of the enum
 				scope = scopeFromEnum(scope, e)
 			case e.EnumValue != nil:
 				scope = &ExpressionScope{
 					Parent: scope,
 				}
 			case e.Type != "":
+				// Otherwise, the scope is empty of any new entities
 				scope = &ExpressionScope{
 					Parent: scope,
 				}

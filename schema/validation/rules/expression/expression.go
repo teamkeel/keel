@@ -352,14 +352,14 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 
 	scope = operand.DefaultExpressionScope(asts).Merge(scope)
 
-	resolvedLhs, lhsErr := operand.ResolveOperand(asts, lhs, scope)
+	resolvedLhs, lhsErr := operand.ResolveOperand(asts, lhs, scope, operand.OperandPositionLhs)
 
 	if lhsErr != nil {
 		errors = append(errors, lhsErr)
 	}
 
 	if rhs != nil {
-		resolvedRhs, rhsErr := operand.ResolveOperand(asts, rhs, scope)
+		resolvedRhs, rhsErr := operand.ResolveOperand(asts, rhs, scope, operand.OperandPositionRhs)
 
 		if rhsErr != nil {
 			errors = append(errors, rhsErr)
