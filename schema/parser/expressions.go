@@ -1,10 +1,11 @@
-package expressions
+package parser
 
 import (
 	"errors"
 	"fmt"
 
 	"github.com/alecthomas/participle/v2"
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/node"
 )
@@ -56,6 +57,70 @@ type Condition struct {
 	LHS      *Operand  `@@`
 	Operator *Operator `(@@`
 	RHS      *Operand  `@@ )?`
+}
+
+type ExpressionContext struct {
+	Model     *ModelNode
+	Action    *ActionNode
+	Attribute *AttributeNode
+}
+
+func (c *Condition) Resolve(asts []*AST, context ExpressionContext) (resolvedLhs *ExpressionScopeEntity, resolvedRhs *ExpressionScopeEntity, errors []error) {
+	lhs := c.LHS
+	rhs := c.RHS
+
+	scope := &ExpressionScope{
+		Entities: []*ExpressionScopeEntity{
+			{
+				Name:  strcase.ToLowerCamel(context.Model.Name.Value),
+				Model: context.Model,
+			},
+		},
+	}
+
+	if context.Action != nil {
+		// todo: this isnt right
+		// the scope logic for inputs should be:
+		// if lhs, suggest read and write ONLY for @permission expression, otherwise, dont suggest anything
+		// if rhs, suggest write inputs only
+
+		for _, input := range context.Action.AllInputs() {
+			// inputs using short-hand syntax that refer to relationships
+			// don't get added to the scope
+			if input.Label == nil && len(input.Type.Fragments) > 1 {
+				continue
+			}
+
+			resolvedType := ResolveInputType(asts, input, context.Model)
+			if resolvedType == "" {
+				continue
+			}
+			scope.Entities = append(scope.Entities, &ExpressionScopeEntity{
+				Name: input.Name(),
+				Type: resolvedType,
+			})
+		}
+	}
+
+	scope = DefaultExpressionScope(asts).Merge(scope)
+
+	resolvedLhs, lhsErr := ResolveOperand(asts, lhs, scope, OperandPositionLhs)
+
+	if lhsErr != nil {
+		errors = append(errors, lhsErr)
+	}
+
+	if rhs != nil {
+		resolvedRhs, rhsErr := ResolveOperand(asts, rhs, scope, OperandPositionRhs)
+
+		if rhsErr != nil {
+			errors = append(errors, rhsErr)
+		}
+
+		return resolvedLhs, resolvedRhs, errors
+	}
+
+	return resolvedLhs, nil, errors
 }
 
 var (
@@ -140,7 +205,7 @@ func (condition *Condition) ToString() string {
 	return result
 }
 
-func Parse(source string) (*Expression, error) {
+func ParseExpression(source string) (*Expression, error) {
 	parser, err := participle.Build[Expression]()
 	if err != nil {
 		return nil, err
@@ -154,7 +219,7 @@ func Parse(source string) (*Expression, error) {
 	return expr, nil
 }
 
-func ToString(expr *Expression) (string, error) {
+func (expr *Expression) ToString() (string, error) {
 	result := ""
 
 	for i, orExpr := range expr.Or {
@@ -168,7 +233,7 @@ func ToString(expr *Expression) (string, error) {
 			}
 
 			if andExpr.Expression != nil {
-				r, err := ToString(andExpr.Expression)
+				r, err := andExpr.Expression.ToString()
 				if err != nil {
 					return result, err
 				}
@@ -200,14 +265,14 @@ func ToString(expr *Expression) (string, error) {
 	return result, nil
 }
 
-func IsValue(expr *Expression) bool {
-	v, _ := ToValue(expr)
+func (expr *Expression) IsValue() bool {
+	v, _ := expr.ToValue()
 	return v != nil
 }
 
 var ErrNotValue = errors.New("expression is not a single value")
 
-func ToValue(expr *Expression) (*Operand, error) {
+func (expr *Expression) ToValue() (*Operand, error) {
 	if len(expr.Or) > 1 {
 		return nil, ErrNotValue
 	}
@@ -233,12 +298,12 @@ func ToValue(expr *Expression) (*Operand, error) {
 
 var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
 
-func IsAssignment(expr *Expression) bool {
-	v, _ := ToAssignmentCondition(expr)
+func (expr *Expression) IsAssignment() bool {
+	v, _ := expr.ToAssignmentCondition()
 	return v != nil
 }
 
-func ToAssignmentCondition(expr *Expression) (*Condition, error) {
+func (expr *Expression) ToAssignmentCondition() (*Condition, error) {
 	if len(expr.Or) > 1 {
 		return nil, ErrNotAssignment
 	}

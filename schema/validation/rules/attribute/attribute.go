@@ -6,9 +6,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/schema/validation/rules/expression"
 )
@@ -16,7 +14,7 @@ import (
 // attributeLocationsRule checks that attributes are used in valid places
 // For example it's invalid to use a @where attribute inside a model definition
 func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
+	for _, model := range parser.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
 				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "model", model.Name.Value))
@@ -42,7 +40,7 @@ func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 		}
 	}
 
-	for _, api := range query.APIs(asts) {
+	for _, api := range parser.APIs(asts) {
 		for _, section := range api.Sections {
 			if section.Attribute != nil {
 				errs.Concat(checkAttributes([]*parser.AttributeNode{section.Attribute}, "api", api.Name.Value))
@@ -109,8 +107,8 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 }
 
 func PermissionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, attr := range query.ModelAttributes(model) {
+	for _, model := range parser.Models(asts) {
+		for _, attr := range parser.ModelAttributes(model) {
 			if attr.Name.Value != parser.AttributePermission {
 				continue
 			}
@@ -118,7 +116,7 @@ func PermissionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationE
 			errs.Concat(validatePermissionAttribute(asts, attr, model, nil))
 		}
 
-		for _, action := range query.ModelActions(model) {
+		for _, action := range parser.ModelActions(model) {
 			for _, attr := range action.Attributes {
 				if attr.Name.Value != parser.AttributePermission {
 					continue
@@ -133,8 +131,8 @@ func PermissionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationE
 }
 
 func ValidateAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			for _, attr := range action.Attributes {
 				if attr.Name.Value != parser.AttributeValidate {
 					continue
@@ -151,8 +149,8 @@ func ValidateAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 }
 
 func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			for _, attr := range action.Attributes {
 				if attr.Name.Value != parser.AttributeSet && attr.Name.Value != parser.AttributeWhere {
 					continue
@@ -207,7 +205,7 @@ func validateActionAttributeWithExpression(
 		asts,
 		expr,
 		rules,
-		expression.RuleContext{
+		parser.ExpressionContext{
 			Model:     model,
 			Attribute: attr,
 			Action:    action,
@@ -254,7 +252,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			// applies to that action.
 			if action == nil {
 				allowedIdents := append([]string{}, validActionKeywords...)
-				for _, action := range query.ModelActions(model) {
+				for _, action := range parser.ModelActions(model) {
 					allowedIdents = append(allowedIdents, action.Name.Value)
 				}
 				errs.Concat(validateIdentArray(arg.Expression, allowedIdents))
@@ -279,7 +277,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				[]expression.Rule{
 					expression.OperatorLogicalRule,
 				},
-				expression.RuleContext{
+				parser.ExpressionContext{
 					Model:     model,
 					Attribute: attr,
 					Action:    action,
@@ -292,7 +290,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 		case "roles":
 			hasRoles = true
 			allowedIdents := []string{}
-			for _, role := range query.Roles(asts) {
+			for _, role := range parser.Roles(asts) {
 				allowedIdents = append(allowedIdents, role.Name.Value)
 			}
 			errs.Concat(validateIdentArray(arg.Expression, allowedIdents))
@@ -334,8 +332,8 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 	return
 }
 
-func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
-	value, err := expressions.ToValue(expr)
+func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
+	value, err := expr.ToValue()
 	if err != nil || value.Array == nil {
 		expected := ""
 		if len(allowedIdents) > 0 {
@@ -387,10 +385,10 @@ func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (e
 
 func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
-	for _, model := range query.Models(asts) {
+	for _, model := range parser.Models(asts) {
 
 		// field level e.g. @unique
-		for _, field := range query.ModelFields(model) {
+		for _, field := range parser.ModelFields(model) {
 			for _, attr := range field.Attributes {
 				if attr.Name.Value != parser.AttributeUnique {
 					continue
@@ -411,7 +409,7 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationE
 		}
 
 		// model level e.g. @unique([fieldOne, fieldTwo])
-		for _, attr := range query.ModelAttributes(model) {
+		for _, attr := range parser.ModelAttributes(model) {
 			if attr.Name.Value != parser.AttributeUnique {
 				continue
 			}
@@ -429,13 +427,13 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationE
 				continue
 			}
 
-			e := validateIdentArray(attr.Arguments[0].Expression, query.ModelFieldNames(model))
+			e := validateIdentArray(attr.Arguments[0].Expression, parser.ModelFieldNames(model))
 			errs.Concat(e)
 			if len(e.Errors) > 0 {
 				continue
 			}
 
-			value, _ := expressions.ToValue(attr.Arguments[0].Expression)
+			value, _ := attr.Arguments[0].Expression.ToValue()
 			if len(value.Array.Values) < 2 {
 				errs.Append(errorhandling.ErrorInvalidValue,
 					map[string]string{

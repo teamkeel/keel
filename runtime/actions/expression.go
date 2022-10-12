@@ -9,7 +9,7 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
 )
 
@@ -21,7 +21,7 @@ import (
 //
 //	tx.Where(fmt.Sprintf("%s = ?", column), value)
 func interpretExpressionGivenArgs(
-	expr *expressions.Expression,
+	expr *parser.Expression,
 	operation *proto.Operation,
 	schema *proto.Schema,
 	args map[string]any,
@@ -35,20 +35,20 @@ func interpretExpressionGivenArgs(
 	}
 	condition := conditions[0]
 	cType := condition.Type()
-	if cType != expressions.LogicalCondition {
+	if cType != parser.LogicalCondition {
 		return "", nil, fmt.Errorf("cannot yet handle condition types other than LogicalCondition, have: %s", cType)
 	}
 
-	if condition.Operator.ToString() != expressions.OperatorEquals {
+	if condition.Operator.ToString() != parser.OperatorEquals {
 		return "", nil, fmt.Errorf(
 			"cannot yet handle operators other than OperatorEquals, have: %s",
 			condition.Operator.ToString())
 	}
 
-	if condition.LHS.Type() != expressions.TypeIdent {
+	if condition.LHS.Type() != parser.TypeIdent {
 		return "", nil, fmt.Errorf("cannot handle LHS of type other than TypeIdent, have: %s", condition.LHS.Type())
 	}
-	if condition.RHS.Type() != expressions.TypeIdent {
+	if condition.RHS.Type() != parser.TypeIdent {
 		return "", nil, fmt.Errorf("cannot handle RHS of type other than TypeIdent, have: %s", condition.LHS.Type())
 	}
 
@@ -102,7 +102,7 @@ func interpretExpressionGivenArgs(
 //
 //	tx.Where(fmt.Sprintf("%s = ?", column), value)
 func interpretExpressionField(
-	expr *expressions.Expression,
+	expr *parser.Expression,
 	operation *proto.Operation,
 	schema *proto.Schema,
 ) (column string, err error) {
@@ -115,20 +115,20 @@ func interpretExpressionField(
 	}
 	condition := conditions[0]
 	cType := condition.Type()
-	if cType != expressions.LogicalCondition {
+	if cType != parser.LogicalCondition {
 		return "", fmt.Errorf("cannot yet handle condition types other than LogicalCondition, have: %s", cType)
 	}
 
-	if condition.Operator.ToString() != expressions.OperatorEquals {
+	if condition.Operator.ToString() != parser.OperatorEquals {
 		return "", fmt.Errorf(
 			"cannot yet handle operators other than OperatorEquals, have: %s",
 			condition.Operator.ToString())
 	}
 
-	if condition.LHS.Type() != expressions.TypeIdent {
+	if condition.LHS.Type() != parser.TypeIdent {
 		return "", fmt.Errorf("cannot handle LHS of type other than TypeIdent, have: %s", condition.LHS.Type())
 	}
-	if condition.RHS.Type() != expressions.TypeIdent {
+	if condition.RHS.Type() != parser.TypeIdent {
 		return "", fmt.Errorf("cannot handle RHS of type other than TypeIdent, have: %s", condition.LHS.Type())
 	}
 
@@ -189,7 +189,7 @@ func EvaluatePermissions(
 
 	for _, permission := range permissions {
 		if permission.Expression != nil {
-			expression, err := expressions.Parse(permission.Expression.Source)
+			expression, err := parser.ParseExpression(permission.Expression.Source)
 			if err != nil {
 				return false, err
 			}
@@ -210,7 +210,7 @@ func EvaluatePermissions(
 // evaluateExpression evaluates a given conditional expression
 func evaluateExpression(
 	context context.Context,
-	expression *expressions.Expression,
+	expression *parser.Expression,
 	operation *proto.Operation,
 	schema *proto.Schema,
 	data map[string]any,
@@ -222,7 +222,7 @@ func evaluateExpression(
 	}
 	condition := conditions[0]
 
-	if condition.Type() == expressions.ValueCondition {
+	if condition.Type() == parser.ValueCondition {
 		valueType, _ := GetOperandType(condition.LHS, operation, schema)
 		if valueType != proto.Type_TYPE_BOOL {
 			return false, fmt.Errorf("value operand must be of type bool, not %s", condition.Type())
@@ -236,7 +236,7 @@ func evaluateExpression(
 		return value.(bool), nil
 	}
 
-	if condition.Type() != expressions.LogicalCondition {
+	if condition.Type() != parser.LogicalCondition {
 		return false, fmt.Errorf("can only handle condition type of LogicalCondition, have: %s", condition.Type())
 	}
 
@@ -274,7 +274,7 @@ func evaluateExpression(
 
 // GetOperandType determines the underlying type to compare with for an operand
 func GetOperandType(
-	operand *expressions.Operand,
+	operand *parser.Operand,
 	operation *proto.Operation,
 	schema *proto.Schema,
 ) (proto.Type, error) {
@@ -320,7 +320,7 @@ func GetOperandType(
 // evaluateOperandValue evaluates the value to compare with for an operand
 func evaluateOperandValue(
 	context context.Context,
-	operand *expressions.Operand,
+	operand *parser.Operand,
 	operation *proto.Operation,
 	schema *proto.Schema,
 	data map[string]any,
@@ -424,7 +424,7 @@ func evaluateOperandValue(
 		return isAuthenticated, nil
 	case operand.Ident != nil && operand.Ident.IsContextNowField():
 		return nil, fmt.Errorf("cannot yet handle ctx field now")
-	case operand.Type() == expressions.TypeArray:
+	case operand.Type() == parser.TypeArray:
 		return nil, fmt.Errorf("cannot yet handle operand of type non-literal array")
 	default:
 		return nil, fmt.Errorf("cannot handle operand of unknown type")
@@ -437,13 +437,13 @@ func evaluateOperandCondition(
 	lhs any,
 	rhs any,
 	operandType proto.Type,
-	operator *expressions.Operator,
+	operator *parser.Operator,
 ) (bool, error) {
 	// Evaluate when either operand or both are nil
 	if lhs == nil && rhs == nil {
-		return true && (operator.Symbol != expressions.OperatorNotEquals), nil
+		return true && (operator.Symbol != parser.OperatorNotEquals), nil
 	} else if lhs == nil || rhs == nil {
-		return false || (operator.Symbol == expressions.OperatorNotEquals), nil
+		return false || (operator.Symbol == parser.OperatorNotEquals), nil
 	}
 
 	// Evaluate with non-nil operands
@@ -466,12 +466,12 @@ func evaluateOperandCondition(
 func compareString(
 	lhs string,
 	rhs string,
-	operator *expressions.Operator,
+	operator *parser.Operator,
 ) (bool, error) {
 	switch operator.Symbol {
-	case expressions.OperatorEquals:
+	case parser.OperatorEquals:
 		return lhs == rhs, nil
-	case expressions.OperatorNotEquals:
+	case parser.OperatorNotEquals:
 		return lhs != rhs, nil
 	default:
 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
@@ -481,20 +481,20 @@ func compareString(
 func compareInt(
 	lhs int64,
 	rhs int64,
-	operator *expressions.Operator,
+	operator *parser.Operator,
 ) (bool, error) {
 	switch operator.Symbol {
-	case expressions.OperatorEquals:
+	case parser.OperatorEquals:
 		return lhs == rhs, nil
-	case expressions.OperatorNotEquals:
+	case parser.OperatorNotEquals:
 		return lhs != rhs, nil
-	case expressions.OperatorGreaterThan:
+	case parser.OperatorGreaterThan:
 		return lhs > rhs, nil
-	case expressions.OperatorGreaterThanOrEqualTo:
+	case parser.OperatorGreaterThanOrEqualTo:
 		return lhs >= rhs, nil
-	case expressions.OperatorLessThan:
+	case parser.OperatorLessThan:
 		return lhs < rhs, nil
-	case expressions.OperatorLessThanOrEqualTo:
+	case parser.OperatorLessThanOrEqualTo:
 		return lhs <= rhs, nil
 	default:
 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_INT)
@@ -504,12 +504,12 @@ func compareInt(
 func compareBool(
 	lhs bool,
 	rhs bool,
-	operator *expressions.Operator,
+	operator *parser.Operator,
 ) (bool, error) {
 	switch operator.Symbol {
-	case expressions.OperatorEquals:
+	case parser.OperatorEquals:
 		return lhs == rhs, nil
-	case expressions.OperatorNotEquals:
+	case parser.OperatorNotEquals:
 		return lhs != rhs, nil
 	default:
 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_BOOL)
@@ -519,12 +519,12 @@ func compareBool(
 func compareEnum(
 	lhs string,
 	rhs string,
-	operator *expressions.Operator,
+	operator *parser.Operator,
 ) (bool, error) {
 	switch operator.Symbol {
-	case expressions.OperatorEquals:
+	case parser.OperatorEquals:
 		return lhs == rhs, nil
-	case expressions.OperatorNotEquals:
+	case parser.OperatorNotEquals:
 		return lhs != rhs, nil
 	default:
 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
@@ -534,12 +534,12 @@ func compareEnum(
 func compareIdentity(
 	lhs ksuid.KSUID,
 	rhs ksuid.KSUID,
-	operator *expressions.Operator,
+	operator *parser.Operator,
 ) (bool, error) {
 	switch operator.Symbol {
-	case expressions.OperatorEquals:
+	case parser.OperatorEquals:
 		return lhs == rhs, nil
-	case expressions.OperatorNotEquals:
+	case parser.OperatorNotEquals:
 		return lhs != rhs, nil
 	default:
 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_ID)

@@ -7,9 +7,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -25,8 +23,8 @@ var (
 )
 
 func ActionNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			if strcase.ToLowerCamel(action.Name.Value) != action.Name.Value {
 				errs.Append(errorhandling.ErrorActionNameLowerCamel,
 					map[string]string{
@@ -43,8 +41,8 @@ func ActionNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) 
 }
 
 func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			if !lo.Contains(validActionTypes, action.Type.Value) {
 				errs.Append(errorhandling.ErrorInvalidActionType,
 					map[string]string{
@@ -63,8 +61,8 @@ func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 func UniqueOperationNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	operationNames := map[string]bool{}
 
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			if _, ok := operationNames[action.Name.Value]; ok {
 				errs.Append(errorhandling.ErrorOperationsUniqueGlobally,
 					map[string]string{
@@ -85,8 +83,8 @@ func UniqueOperationNamesRule(asts []*parser.AST) (errs errorhandling.Validation
 // ReservedActionNameRule ensures that all actions (operations or functions) do not
 // use a reserved name
 func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, op := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, op := range parser.ModelActions(model) {
 			if lo.Contains(reservedActionNames, op.Name.Value) {
 				errs.Append(errorhandling.ErrorReservedActionName,
 					map[string]string{
@@ -105,21 +103,21 @@ func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 // CreateOperationRequiredFieldsRule validates that all create actions
 // accept all required fields (that don't have default values) as write inputs
 func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
+	for _, model := range parser.Models(asts) {
 
 		requiredFields := []*parser.FieldNode{}
-		for _, field := range query.ModelFields(model) {
+		for _, field := range parser.ModelFields(model) {
 			// Optional and repeated fields are not required
 			if field.Optional || field.Repeated {
 				continue
 			}
-			if query.FieldHasAttribute(field, parser.AttributeDefault) {
+			if parser.FieldHasAttribute(field, parser.AttributeDefault) {
 				continue
 			}
 			requiredFields = append(requiredFields, field)
 		}
 
-		for _, action := range query.ModelActions(model) {
+		for _, action := range parser.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeCreate {
 				continue
 			}
@@ -147,7 +145,7 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.V
 						continue
 					}
 
-					assignment, err := expressions.ToAssignmentCondition(attr.Arguments[0].Expression)
+					assignment, err := attr.Arguments[0].Expression.ToAssignmentCondition()
 					if err != nil {
 						continue
 					}
@@ -193,8 +191,8 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.V
 // are filtering on unique fields only
 func UpdateOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeUpdate {
 				continue
 			}
@@ -207,19 +205,19 @@ func UpdateOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling
 
 func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeList {
 				continue
 			}
 
 			for _, input := range action.Inputs {
-				resolvedType := query.ResolveInputType(asts, input, model)
+				resolvedType := parser.ResolveInputType(asts, input, model)
 				if resolvedType == "" {
 					continue
 				}
 
-				m := query.Model(asts, resolvedType)
+				m := parser.Model(asts, resolvedType)
 				if m == nil {
 					continue
 				}
@@ -244,8 +242,8 @@ func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.Validatio
 // are filtering on unique fields only
 func GetOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeGet {
 				continue
 			}
@@ -291,7 +289,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 		for _, condition := range conds {
 			// If it's not a logical condition it will be caught by the
 			// @where attribute validation
-			if condition.Type() != expressions.LogicalCondition {
+			if condition.Type() != parser.LogicalCondition {
 				continue
 			}
 
@@ -299,7 +297,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 
 			// Only "==" and "in" are direct comparison operators, anything else
 			// doesn't make sense for a unique lookup e.g. age > 5
-			if operator != expressions.OperatorEquals && operator != expressions.OperatorIn {
+			if operator != parser.OperatorEquals && operator != parser.OperatorIn {
 				errs.Append(errorhandling.ErrorNonDirectComparisonOperatorUsed,
 					map[string]string{
 						"Operator":      operator,
@@ -311,10 +309,10 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 			}
 
 			// we always check the LHS
-			operands := []*expressions.Operand{condition.LHS}
+			operands := []*parser.Operand{condition.LHS}
 
 			// if it's an equal operator we can check both sides
-			if operator == expressions.OperatorEquals {
+			if operator == parser.OperatorEquals {
 				operands = append(operands, condition.RHS)
 			}
 
@@ -329,14 +327,14 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 					continue
 				}
 
-				field := query.ModelField(model, fieldName)
+				field := parser.ModelField(model, fieldName)
 				if field == nil {
 					continue
 				}
 
 				// we've found a @where that is filtering on a unique
 				// field using a direct comparison operator
-				if query.FieldIsUnique(field) {
+				if parser.FieldIsUnique(field) {
 					hasUniqueLookup = true
 					continue
 				}
@@ -371,8 +369,8 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 }
 
 func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			for _, input := range action.Inputs {
 				errs.AppendError(validateInput(asts, input, model, action))
 			}
@@ -386,12 +384,12 @@ func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 }
 
 func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode) *errorhandling.ValidationError {
-	resolvedType := query.ResolveInputType(asts, input, model)
+	resolvedType := parser.ResolveInputType(asts, input, model)
 
 	// If type cannot be resolved report error
 	if resolvedType == "" {
 		fieldNames := []string{}
-		for _, field := range query.ModelFields(model) {
+		for _, field := range parser.ModelFields(model) {
 			fieldNames = append(fieldNames, field.Name.Value)
 		}
 
@@ -434,7 +432,7 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 		}
 
 		for _, cond := range expr.Conditions() {
-			for _, operand := range []*expressions.Operand{cond.LHS, cond.RHS} {
+			for _, operand := range []*parser.Operand{cond.LHS, cond.RHS} {
 				if operand.Ident != nil && operand.ToString() == input.Label.Value {
 					// we've found a usage of the input
 					isUsed = true
@@ -493,8 +491,8 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 // CreateOperationNoReadInputsRule validates that create actions don't accept
 // any read-only inputs
 func CreateOperationNoReadInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+	for _, model := range parser.Models(asts) {
+		for _, action := range parser.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeCreate {
 				continue
 			}
@@ -536,11 +534,11 @@ func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input 
 		if model == nil {
 			return false, nil
 		}
-		field = query.ModelField(model, fragment.Fragment)
+		field = parser.ModelField(model, fragment.Fragment)
 		if field == nil {
 			return false, nil
 		}
-		if !query.FieldIsUnique(field) {
+		if !parser.FieldIsUnique(field) {
 			// input refers to a non-unique field - this is an error
 			return false, errorhandling.NewValidationError(errorhandling.ErrorOperationInputNotUnique,
 				errorhandling.TemplateLiterals{
@@ -552,7 +550,7 @@ func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input 
 				fragment,
 			)
 		}
-		model = query.Model(asts, field.Type)
+		model = parser.Model(asts, field.Type)
 	}
 
 	// If we have a model at the end of this it means that the input

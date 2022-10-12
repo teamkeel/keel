@@ -7,7 +7,6 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -16,7 +15,7 @@ var (
 )
 
 func ModelNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
+	for _, model := range parser.Models(asts) {
 		// todo - these MustCompile regex would be better at module scope, to
 		// make the MustCompile panic a load-time thing rather than a runtime thing.
 		reg := regexp.MustCompile("([A-Z][a-z0-9]+)+")
@@ -39,7 +38,7 @@ func ModelNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 }
 
 func ReservedModelNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
+	for _, model := range parser.Models(asts) {
 		for _, name := range reservedModelNames {
 			if strings.EqualFold(name, model.Name.Value) {
 				errs.Append(errorhandling.ErrorReservedModelName,
@@ -59,7 +58,7 @@ func ReservedModelNamesRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 func UniqueModelNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	seenModelNames := map[string]bool{}
 
-	for _, model := range query.Models(asts) {
+	for _, model := range parser.Models(asts) {
 		if _, ok := seenModelNames[model.Name.Value]; ok {
 			errs.Append(errorhandling.ErrorUniqueModelsGlobally,
 				map[string]string{

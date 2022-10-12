@@ -9,7 +9,6 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -437,7 +436,7 @@ func printAttributes(writer *Writer, attributes []*parser.AttributeNode) {
 						if arg.Label != nil {
 							writer.Write("%s: ", lowerCamel(arg.Label.Value))
 						}
-						expr, _ := expressions.ToString(arg.Expression)
+						expr, _ := arg.Expression.ToString()
 						writer.Write(expr)
 					})
 				}

@@ -1,10 +1,7 @@
-package operand
+package parser
 
 import (
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/schema/expressions"
-	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -48,11 +45,11 @@ type ExpressionScopeEntity struct {
 	Name string
 
 	Object    *ExpressionObjectEntity
-	Model     *parser.ModelNode
-	Field     *parser.FieldNode
-	Literal   *expressions.Operand
-	Enum      *parser.EnumNode
-	EnumValue *parser.EnumValueNode
+	Model     *ModelNode
+	Field     *FieldNode
+	Literal   *Operand
+	Enum      *EnumNode
+	EnumValue *EnumValueNode
 	Array     []*ExpressionScopeEntity
 	Type      string
 
@@ -101,7 +98,7 @@ func (e *ExpressionScopeEntity) GetType() string {
 	}
 
 	if e.Array != nil {
-		return expressions.TypeArray
+		return TypeArray
 	}
 
 	if e.Type != "" {
@@ -112,63 +109,63 @@ func (e *ExpressionScopeEntity) GetType() string {
 }
 
 var operatorsForType = map[string][]string{
-	parser.FieldTypeText: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+	FieldTypeText: {
+		OperatorEquals,
+		OperatorNotEquals,
+		OperatorAssignment,
 	},
-	parser.FieldTypeID: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+	FieldTypeID: {
+		OperatorEquals,
+		OperatorNotEquals,
+		OperatorAssignment,
 	},
-	parser.FieldTypeNumber: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorGreaterThan,
-		expressions.OperatorGreaterThanOrEqualTo,
-		expressions.OperatorLessThan,
-		expressions.OperatorLessThanOrEqualTo,
-		expressions.OperatorAssignment,
-		expressions.OperatorIncrement,
-		expressions.OperatorDecrement,
+	FieldTypeNumber: {
+		OperatorEquals,
+		OperatorNotEquals,
+		OperatorGreaterThan,
+		OperatorGreaterThanOrEqualTo,
+		OperatorLessThan,
+		OperatorLessThanOrEqualTo,
+		OperatorAssignment,
+		OperatorIncrement,
+		OperatorDecrement,
 	},
-	parser.FieldTypeBoolean: {
-		expressions.OperatorAssignment,
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
+	FieldTypeBoolean: {
+		OperatorAssignment,
+		OperatorEquals,
+		OperatorNotEquals,
 	},
-	parser.FieldTypeDate: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorGreaterThan,
-		expressions.OperatorGreaterThanOrEqualTo,
-		expressions.OperatorLessThan,
-		expressions.OperatorLessThanOrEqualTo,
-		expressions.OperatorAssignment,
+	FieldTypeDate: {
+		OperatorEquals,
+		OperatorNotEquals,
+		OperatorGreaterThan,
+		OperatorGreaterThanOrEqualTo,
+		OperatorLessThan,
+		OperatorLessThanOrEqualTo,
+		OperatorAssignment,
 	},
-	parser.FieldTypeDatetime: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorGreaterThan,
-		expressions.OperatorGreaterThanOrEqualTo,
-		expressions.OperatorLessThan,
-		expressions.OperatorLessThanOrEqualTo,
-		expressions.OperatorAssignment,
+	FieldTypeDatetime: {
+		OperatorEquals,
+		OperatorNotEquals,
+		OperatorGreaterThan,
+		OperatorGreaterThanOrEqualTo,
+		OperatorLessThan,
+		OperatorLessThanOrEqualTo,
+		OperatorAssignment,
 	},
-	expressions.TypeEnum: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+	TypeEnum: {
+		OperatorEquals,
+		OperatorNotEquals,
+		OperatorAssignment,
 	},
-	expressions.TypeArray: {
-		expressions.OperatorIn,
-		expressions.OperatorNotIn,
+	TypeArray: {
+		OperatorIn,
+		OperatorNotIn,
 	},
-	expressions.TypeNull: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+	TypeNull: {
+		OperatorEquals,
+		OperatorNotEquals,
+		OperatorAssignment,
 	},
 }
 
@@ -179,24 +176,24 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 
 	if e.Model != nil || (e.Field != nil && !arrayEntity) {
 		return []string{
-			expressions.OperatorEquals,
-			expressions.OperatorNotEquals,
-			expressions.OperatorAssignment,
+			OperatorEquals,
+			OperatorNotEquals,
+			OperatorAssignment,
 		}
 	}
 
 	if arrayEntity {
-		t = expressions.TypeArray
+		t = TypeArray
 	}
 
 	if e.IsEnumField() || e.IsEnumValue() {
-		t = expressions.TypeEnum
+		t = TypeEnum
 	}
 
 	return operatorsForType[t]
 }
 
-func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
+func DefaultExpressionScope(asts []*AST) *ExpressionScope {
 	entities := []*ExpressionScopeEntity{
 		{
 			Name: "ctx",
@@ -205,22 +202,22 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 				Fields: []*ExpressionScopeEntity{
 					{
 						Name:  "identity",
-						Model: query.Model(asts, "Identity"),
+						Model: Model(asts, "Identity"),
 					},
 					{
 						Name: "isAuthenticated",
-						Type: parser.FieldTypeBoolean,
+						Type: FieldTypeBoolean,
 					},
 					{
 						Name: "now",
-						Type: parser.FieldTypeDatetime,
+						Type: FieldTypeDatetime,
 					},
 				},
 			},
 		},
 	}
 
-	for _, enum := range query.Enums(asts) {
+	for _, enum := range Enums(asts) {
 		entities = append(entities, &ExpressionScopeEntity{
 			Name: enum.Name.Value,
 			Enum: enum,
@@ -255,10 +252,10 @@ func (e *ExpressionScopeEntity) IsRepeated() bool {
 	return false
 }
 
-func scopeFromModel(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity, model *parser.ModelNode) *ExpressionScope {
+func scopeFromModel(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity, model *ModelNode) *ExpressionScope {
 	newEntities := []*ExpressionScopeEntity{}
 
-	for _, field := range query.ModelFields(model) {
+	for _, field := range ModelFields(model) {
 		newEntities = append(newEntities, &ExpressionScopeEntity{
 			Name:   field.Name.Value,
 			Field:  field,
@@ -315,13 +312,13 @@ func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEn
 // - "123"
 // - true
 // All of these types above are checked / attempted to be resolved in this method.
-func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err error) {
+func ResolveOperand(asts []*AST, operand *Operand, scope *ExpressionScope, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err error) {
 	// build additional root scopes based on position of operand
 	// and also what type attribute the expression is used in.
 
 	// If it is a literal then handle differently.
 	if ok, _ := operand.IsLiteralType(); ok {
-		if operand.Type() == expressions.TypeArray {
+		if operand.Type() == TypeArray {
 			array := []*ExpressionScopeEntity{}
 
 			for _, item := range operand.Array.Values {
@@ -370,13 +367,13 @@ fragments:
 				// covers fields which are associations to other models:
 				// e.g post.association.associationField
 				// repopulates the scope for the third fragment to be the fields of 'association'
-				model := query.Model(asts, e.Field.Type)
+				model := Model(asts, e.Field.Type)
 
 				// if no model is found for the field type, then we need to check other potential matches
 				// e.g enums in the schema
 				if model == nil {
 					// try matching the field name to a known enum instead
-					enum := query.Enum(asts, e.Field.Type)
+					enum := Enum(asts, e.Field.Type)
 
 					if enum != nil {
 						// enum definitions aren't optional when they are defined

@@ -1,10 +1,6 @@
-package query
+package parser
 
-import (
-	"github.com/teamkeel/keel/schema/parser"
-)
-
-func APIs(asts []*parser.AST) (res []*parser.APINode) {
+func APIs(asts []*AST) (res []*APINode) {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.API != nil {
@@ -15,13 +11,13 @@ func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	return res
 }
 
-type ModelFilter func(m *parser.ModelNode) bool
+type ModelFilter func(m *ModelNode) bool
 
-func ExcludeBuiltInModels(m *parser.ModelNode) bool {
+func ExcludeBuiltInModels(m *ModelNode) bool {
 	return !m.BuiltIn
 }
 
-func Models(asts []*parser.AST, filters ...ModelFilter) (res []*parser.ModelNode) {
+func Models(asts []*AST, filters ...ModelFilter) (res []*ModelNode) {
 	for _, ast := range asts {
 	models:
 		for _, decl := range ast.Declarations {
@@ -39,7 +35,7 @@ func Models(asts []*parser.AST, filters ...ModelFilter) (res []*parser.ModelNode
 	return res
 }
 
-func ModelNames(asts []*parser.AST, filters ...ModelFilter) (res []string) {
+func ModelNames(asts []*AST, filters ...ModelFilter) (res []string) {
 	for _, ast := range asts {
 
 	models:
@@ -59,7 +55,7 @@ func ModelNames(asts []*parser.AST, filters ...ModelFilter) (res []string) {
 	return res
 }
 
-func Model(asts []*parser.AST, name string) *parser.ModelNode {
+func Model(asts []*AST, name string) *ModelNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.Model != nil && decl.Model.Name.Value == name {
@@ -70,15 +66,15 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
-func IsModel(asts []*parser.AST, name string) bool {
+func IsModel(asts []*AST, name string) bool {
 	return Model(asts, name) != nil
 }
 
-func IsIdentityModel(asts []*parser.AST, name string) bool {
-	return name == parser.ImplicitIdentityModelName
+func IsIdentityModel(asts []*AST, name string) bool {
+	return name == ImplicitIdentityModelName
 }
 
-func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
+func ModelAttributes(model *ModelNode) (res []*AttributeNode) {
 	for _, section := range model.Sections {
 		if section.Attribute != nil {
 			res = append(res, section.Attribute)
@@ -87,7 +83,7 @@ func ModelAttributes(model *parser.ModelNode) (res []*parser.AttributeNode) {
 	return res
 }
 
-func Enums(asts []*parser.AST) (res []*parser.EnumNode) {
+func Enums(asts []*AST) (res []*EnumNode) {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.Enum != nil {
@@ -98,7 +94,7 @@ func Enums(asts []*parser.AST) (res []*parser.EnumNode) {
 	return res
 }
 
-func Enum(asts []*parser.AST, name string) *parser.EnumNode {
+func Enum(asts []*AST, name string) *EnumNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.Enum != nil && decl.Enum.Name.Value == name {
@@ -109,11 +105,11 @@ func Enum(asts []*parser.AST, name string) *parser.EnumNode {
 	return nil
 }
 
-func IsEnum(asts []*parser.AST, name string) bool {
+func IsEnum(asts []*AST, name string) bool {
 	return Enum(asts, name) != nil
 }
 
-func Roles(asts []*parser.AST) (res []*parser.RoleNode) {
+func Roles(asts []*AST) (res []*RoleNode) {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
 			if decl.Role != nil {
@@ -124,11 +120,11 @@ func Roles(asts []*parser.AST) (res []*parser.RoleNode) {
 	return res
 }
 
-func IsUserDefinedType(asts []*parser.AST, name string) bool {
+func IsUserDefinedType(asts []*AST, name string) bool {
 	return Model(asts, name) != nil || Enum(asts, name) != nil
 }
 
-func UserDefinedTypes(asts []*parser.AST) (res []string) {
+func UserDefinedTypes(asts []*AST) (res []string) {
 	for _, model := range Models(asts) {
 		res = append(res, model.Name.Value)
 	}
@@ -138,31 +134,31 @@ func UserDefinedTypes(asts []*parser.AST) (res []string) {
 	return res
 }
 
-func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
+func ModelActions(model *ModelNode) (res []*ActionNode) {
 	return append(ModelOperations(model), ModelFunctions(model)...)
 }
 
-func ModelOperations(model *parser.ModelNode) (res []*parser.ActionNode) {
+func ModelOperations(model *ModelNode) (res []*ActionNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Operations...)
 	}
 	return res
 }
 
-func ModelFunctions(model *parser.ModelNode) (res []*parser.ActionNode) {
+func ModelFunctions(model *ModelNode) (res []*ActionNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Functions...)
 	}
 	return res
 }
 
-type ModelFieldFilter func(f *parser.FieldNode) bool
+type ModelFieldFilter func(f *FieldNode) bool
 
-func ExcludeBuiltInFields(f *parser.FieldNode) bool {
+func ExcludeBuiltInFields(f *FieldNode) bool {
 	return !f.BuiltIn
 }
 
-func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*parser.FieldNode) {
+func ModelFields(model *ModelNode, filters ...ModelFieldFilter) (res []*FieldNode) {
 	for _, section := range model.Sections {
 		if section.Fields == nil {
 			continue
@@ -182,7 +178,7 @@ func ModelFields(model *parser.ModelNode, filters ...ModelFieldFilter) (res []*p
 	return res
 }
 
-func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
+func ModelField(model *ModelNode, name string) *FieldNode {
 	for _, section := range model.Sections {
 		for _, field := range section.Fields {
 			if field.Name.Value == name {
@@ -193,7 +189,7 @@ func ModelField(model *parser.ModelNode, name string) *parser.FieldNode {
 	return nil
 }
 
-func FieldHasAttribute(field *parser.FieldNode, name string) bool {
+func FieldHasAttribute(field *FieldNode, name string) bool {
 	for _, attr := range field.Attributes {
 		if attr.Name.Value == name {
 			return true
@@ -202,11 +198,11 @@ func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 	return false
 }
 
-func FieldIsUnique(field *parser.FieldNode) bool {
-	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
+func FieldIsUnique(field *FieldNode) bool {
+	return FieldHasAttribute(field, AttributePrimaryKey) || FieldHasAttribute(field, AttributeUnique)
 }
 
-func ModelFieldNames(model *parser.ModelNode) []string {
+func ModelFieldNames(model *ModelNode) []string {
 	names := []string{}
 	for _, field := range ModelFields(model, ExcludeBuiltInFields) {
 		names = append(names, field.Name.Value)
@@ -222,9 +218,9 @@ func ModelFieldNames(model *parser.ModelNode) []string {
 // If `i` refers to a field on the parent model (or a nested field) then the type of that field is returned
 //
 //	example: (foo: some.field) -> The type of `field` on the model referrred to by `some` is returned
-func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentModel *parser.ModelNode) string {
+func ResolveInputType(asts []*AST, input *ActionInputNode, parentModel *ModelNode) string {
 	// handle built-in type
-	if parser.IsBuiltInFieldType(input.Type.ToString()) {
+	if IsBuiltInFieldType(input.Type.ToString()) {
 		return input.Type.ToString()
 	}
 
@@ -237,9 +233,9 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 }
 
 // ResolveInputField returns the field that the input's type references
-func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parentModel *parser.ModelNode) (field *parser.FieldNode) {
+func ResolveInputField(asts []*AST, input *ActionInputNode, parentModel *ModelNode) (field *FieldNode) {
 	// handle built-in type
-	if parser.IsBuiltInFieldType(input.Type.ToString()) {
+	if IsBuiltInFieldType(input.Type.ToString()) {
 		return nil
 	}
 

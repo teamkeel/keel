@@ -8,7 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 	"gorm.io/gorm"
 )
 
@@ -106,7 +106,7 @@ func addGetExplicitInputFilters(
 	args map[string]any,
 	tx *gorm.DB) (*gorm.DB, error) {
 	for _, e := range op.WhereExpressions {
-		expr, err := expressions.Parse(e.Source)
+		expr, err := parser.ParseExpression(e.Source)
 		if err != nil {
 			return nil, err
 		}

@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
 )
@@ -158,18 +157,18 @@ func TestModelWithPermissionAttributes(t *testing.T) {
 	assert.Equal(t, "permission", schema.Declarations[0].Model.Sections[2].Attribute.Name.Value)
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
-	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
+	assert.Equal(t, true, arg1.Expression.IsValue())
 	assert.Equal(t, "expression", arg1.Label.Value)
 
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
-	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
+	assert.Equal(t, true, arg2.Expression.IsValue())
 	assert.Equal(t, "actions", arg2.Label.Value)
 
-	v1, err := expressions.ToValue(arg1.Expression)
+	v1, err := arg1.Expression.ToValue()
 	assert.NoError(t, err)
 	assert.Equal(t, true, v1.True)
 
-	v2, err := expressions.ToValue(arg2.Expression)
+	v2, err := arg2.Expression.ToValue()
 	assert.NoError(t, err)
 	assert.Equal(t, "get", v2.Array.Values[0].Ident.Fragments[0].Fragment)
 }
@@ -195,18 +194,18 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 	  }`})
 
 	arg1 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[0]
-	assert.Equal(t, true, expressions.IsValue(arg1.Expression))
+	assert.Equal(t, true, arg1.Expression.IsValue())
 	assert.Equal(t, "role", arg1.Label.Value)
 
 	arg2 := schema.Declarations[0].Model.Sections[2].Attribute.Arguments[1]
-	assert.Equal(t, true, expressions.IsValue(arg2.Expression))
+	assert.Equal(t, true, arg2.Expression.IsValue())
 	assert.Equal(t, "actions", arg2.Label.Value)
 
-	v1, err := expressions.ToValue(arg1.Expression)
+	v1, err := arg1.Expression.ToValue()
 	assert.NoError(t, err)
 	assert.Equal(t, "Admin", v1.Ident.Fragments[0].Fragment)
 
-	v2, err := expressions.ToValue(arg2.Expression)
+	v2, err := arg2.Expression.ToValue()
 	assert.NoError(t, err)
 	assert.Equal(t, "create", v2.Array.Values[0].Ident.Fragments[0].Fragment)
 }

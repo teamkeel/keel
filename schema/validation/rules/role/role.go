@@ -2,14 +2,13 @@ package role
 
 import (
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 func UniqueRoleNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	seenRoleNames := map[string]bool{}
 
-	for _, role := range query.Roles(asts) {
+	for _, role := range parser.Roles(asts) {
 		if _, ok := seenRoleNames[role.Name.Value]; ok {
 			errs.Append(errorhandling.ErrorUniqueRoleGlobally,
 				map[string]string{

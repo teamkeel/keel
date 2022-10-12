@@ -18,7 +18,7 @@ model Post {
         }
 
         create createWithNumberPermissioLiteral() with (views) {
-            @permission(expression: post.views == 5)
+            @permission(expression: views == 5)
         }
 
         create createWithBooleanPermissionLiteral() with (active) {

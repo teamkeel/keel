@@ -3,24 +3,23 @@ package relationships
 import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
-	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	processed := map[string]bool{}
-	allModelNames := query.ModelNames(asts)
+	allModelNames := parser.ModelNames(asts)
 
-	for _, model := range query.Models(asts) {
+	for _, model := range parser.Models(asts) {
 		if ok := processed[model.Name.Value]; ok {
 			continue
 		}
 
-		for _, field := range query.ModelFields(model) {
+		for _, field := range parser.ModelFields(model) {
 			if lo.Contains(allModelNames, field.Type) {
-				otherModel := query.Model(asts, field.Type)
+				otherModel := parser.Model(asts, field.Type)
 
-				otherModelFields := query.ModelFields(otherModel)
+				otherModelFields := parser.ModelFields(otherModel)
 
 				for _, otherField := range otherModelFields {
 					if otherField.Type != model.Name.Value {

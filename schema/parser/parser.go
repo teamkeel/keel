@@ -8,7 +8,6 @@ import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
 )
@@ -198,8 +197,8 @@ func (ast *AttributeNode) String() string {
 type AttributeArgumentNode struct {
 	node.Node
 
-	Label      *NameNode               `(@@ ":")?`
-	Expression *expressions.Expression `@@`
+	Label      *NameNode   `(@@ ":")?`
+	Expression *Expression `@@`
 }
 
 func (ast *AttributeArgumentNode) String() string {
@@ -235,10 +234,10 @@ func (a *ActionNode) String() string {
 type ActionInputNode struct {
 	node.Node
 
-	Label    *NameNode         `(@@ ":")?`
-	Type     expressions.Ident `@@`
-	Repeated bool              `( @( "[" "]" )`
-	Optional bool              `| @( "?" ))?`
+	Label    *NameNode `(@@ ":")?`
+	Type     Ident     `@@`
+	Repeated bool      `( @( "[" "]" )`
+	Optional bool      `| @( "?" ))?`
 }
 
 func (ast *ActionInputNode) String() string {
