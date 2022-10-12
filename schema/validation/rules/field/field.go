@@ -8,6 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -17,8 +18,8 @@ var (
 
 func ReservedNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
-	for _, model := range parser.Models(asts) {
-		for _, field := range parser.ModelFields(model) {
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
 
 			if field.BuiltIn {
 				continue
@@ -42,8 +43,8 @@ func ReservedNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) 
 }
 
 func FieldNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range parser.Models(asts) {
-		for _, field := range parser.ModelFields(model) {
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
 			if field.BuiltIn {
 				continue
 			}
@@ -63,9 +64,9 @@ func FieldNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 }
 
 func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range parser.Models(asts) {
+	for _, model := range query.Models(asts) {
 		fieldNames := map[string]bool{}
-		for _, field := range parser.ModelFields(model) {
+		for _, field := range query.ModelFields(model) {
 			// Ignore built in fields as usage of these field names is handled
 			// by reservedFieldNamesRule
 			if field.BuiltIn {
@@ -89,18 +90,18 @@ func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErro
 }
 
 func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range parser.Models(asts) {
-		for _, field := range parser.ModelFields(model) {
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
 
 			if parser.IsBuiltInFieldType(field.Type) {
 				continue
 			}
 
-			if parser.IsUserDefinedType(asts, field.Type) {
+			if query.IsUserDefinedType(asts, field.Type) {
 				continue
 			}
 
-			validTypes := parser.UserDefinedTypes(asts)
+			validTypes := query.UserDefinedTypes(asts)
 			for t := range parser.BuiltInTypes {
 				validTypes = append(validTypes, t)
 			}

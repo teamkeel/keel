@@ -8,6 +8,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
 )
 
@@ -99,12 +100,12 @@ func Completions(schema string, pos *node.Position) []*CompletionItem {
 }
 
 func getUndefinedFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) (items []*CompletionItem) {
-	for _, model := range parser.Models([]*parser.AST{ast}) {
-		for _, field := range parser.ModelFields(model) {
+	for _, model := range query.Models([]*parser.AST{ast}) {
+		for _, field := range query.ModelFields(model) {
 			// check that model exists
-			model := parser.Model([]*parser.AST{ast}, field.Type)
+			model := query.Model([]*parser.AST{ast}, field.Type)
 
-			enum := parser.Enum([]*parser.AST{ast}, field.Type)
+			enum := query.Enum([]*parser.AST{ast}, field.Type)
 
 			if model == nil && enum == nil {
 				items = append(items, &CompletionItem{
@@ -371,7 +372,7 @@ func getBuiltInTypeCompletions() []*CompletionItem {
 
 func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	modelName := getParentModelName(tokenAtPos)
-	model := parser.Model([]*parser.AST{ast}, modelName)
+	model := query.Model([]*parser.AST{ast}, modelName)
 
 	// inside action input args - auto-complete field names
 	completions := append([]*CompletionItem{}, builtInFieldCompletions...)
@@ -530,7 +531,7 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 		}
 
 	case expressionModelName:
-		model := parser.Model([]*parser.AST{ast}, modelName)
+		model := query.Model([]*parser.AST{ast}, modelName)
 		fieldNames, ok := getFieldNamesAtPath(ast, model, previousIdents[1:])
 		if !ok {
 			// if we were unable to resolve the relevant model
@@ -689,11 +690,11 @@ func getFieldNamesAtPath(ast *parser.AST, model *parser.ModelNode, idents []stri
 
 	for i := 0; i < len(idents); i++ {
 		ident := idents[i]
-		field := parser.ModelField(model, ident)
+		field := query.ModelField(model, ident)
 		if field == nil {
 			return nil, false
 		}
-		model = parser.Model([]*parser.AST{ast}, field.Type)
+		model = query.Model([]*parser.AST{ast}, field.Type)
 		if model == nil {
 			return nil, false
 		}
@@ -704,7 +705,7 @@ func getFieldNamesAtPath(ast *parser.AST, model *parser.ModelNode, idents []stri
 
 func getModelFieldCompletions(model *parser.ModelNode) []*CompletionItem {
 	completions := []*CompletionItem{}
-	for _, field := range parser.ModelFields(model) {
+	for _, field := range query.ModelFields(model) {
 		completions = append(completions, &CompletionItem{
 			Label:       field.Name.Value,
 			Description: field.Type,

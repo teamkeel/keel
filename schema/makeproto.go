@@ -6,6 +6,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -196,8 +197,8 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 
 	// Handle @unique attribute at model level which expresses
 	// unique constrains across multiple fields
-	model := parser.Model(scm.asts, modelName)
-	for _, attr := range parser.ModelAttributes(model) {
+	model := query.Model(scm.asts, modelName)
+	for _, attr := range query.ModelAttributes(model) {
 		if attr.Name.Value != parser.AttributeUnique {
 			continue
 		}
@@ -237,7 +238,7 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 		Type:           scm.mapToOperationType(parserFunction.Type.Value),
 	}
 
-	model := parser.Model(scm.asts, modelName)
+	model := query.Model(scm.asts, modelName)
 
 	for _, input := range parserFunction.Inputs {
 		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_READ)
@@ -278,8 +279,8 @@ func (scm *Builder) makeOperationInput(
 
 		for _, ident := range idents {
 			target = append(target, ident.Fragment)
-			field = parser.ModelField(currModel, ident.Fragment)
-			currModel = parser.Model(scm.asts, field.Type)
+			field = query.ModelField(currModel, ident.Fragment)
+			currModel = query.Model(scm.asts, field.Type)
 		}
 
 		protoType = scm.parserFieldToProtoTypeInfo(field).Type
@@ -333,11 +334,11 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_SECRET
 	case parserType == parser.FieldTypePassword:
 		return proto.Type_TYPE_PASSWORD
-	case parser.IsIdentityModel(scm.asts, parserType):
+	case query.IsIdentityModel(scm.asts, parserType):
 		return proto.Type_TYPE_IDENTITY
-	case parser.IsModel(scm.asts, parserType):
+	case query.IsModel(scm.asts, parserType):
 		return proto.Type_TYPE_MODEL
-	case parser.IsEnum(scm.asts, parserType):
+	case query.IsEnum(scm.asts, parserType):
 		return proto.Type_TYPE_ENUM
 	default:
 		return proto.Type_TYPE_UNKNOWN
@@ -352,13 +353,13 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 
 	if protoType == proto.Type_TYPE_MODEL || protoType == proto.Type_TYPE_IDENTITY {
 		modelName = &wrapperspb.StringValue{
-			Value: parser.Model(scm.asts, field.Type).Name.Value,
+			Value: query.Model(scm.asts, field.Type).Name.Value,
 		}
 	}
 
 	if protoType == proto.Type_TYPE_ENUM {
 		enumName = &wrapperspb.StringValue{
-			Value: parser.Enum(scm.asts, field.Type).Name.Value,
+			Value: query.Enum(scm.asts, field.Type).Name.Value,
 		}
 	}
 

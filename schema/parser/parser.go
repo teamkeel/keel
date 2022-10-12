@@ -12,11 +12,6 @@ import (
 	"github.com/teamkeel/keel/schema/reader"
 )
 
-type GenericNode interface {
-	node.ParserNode
-	fmt.Stringer
-}
-
 type AST struct {
 	node.Node
 

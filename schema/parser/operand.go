@@ -53,22 +53,6 @@ func (o *Operand) ToString() string {
 	}
 }
 
-var (
-	// These intentionally match the parser field types
-	// TODO: maybe refactor so we can use the same constants
-	//       refactoring required as the parser depends on this package
-	//       so this package can't depend on the parser consts
-	TypeNumber  = "Number"
-	TypeText    = "Text"
-	TypeBoolean = "Boolean"
-
-	// These are unique to expressions
-	TypeNull  = "Null"
-	TypeArray = "Array"
-	TypeIdent = "Ident"
-	TypeEnum  = "Enum"
-)
-
 func (o *Operand) Type() string {
 	switch {
 	case o.Number != nil:

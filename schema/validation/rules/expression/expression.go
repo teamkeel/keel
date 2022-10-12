@@ -4,14 +4,15 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"golang.org/x/exp/slices"
 )
 
-type Rule func(asts []*parser.AST, expression *parser.Expression, context parser.ExpressionContext) []error
+type Rule func(asts []*parser.AST, expression *parser.Expression, context expressions.ExpressionContext) []error
 
-func ValidateExpression(asts []*parser.AST, expression *parser.Expression, rules []Rule, context parser.ExpressionContext) (errors []error) {
+func ValidateExpression(asts []*parser.AST, expression *parser.Expression, rules []Rule, context expressions.ExpressionContext) (errors []error) {
 	for _, rule := range rules {
 		errs := rule(asts, expression, context)
 		errors = append(errors, errs...)
@@ -23,15 +24,15 @@ func ValidateExpression(asts []*parser.AST, expression *parser.Expression, rules
 // Validates that all operands resolve correctly
 // This handles operands of all types including operands such as model.associationA.associationB
 // as well as simple value types such as string, number, bool etc
-func OperandResolutionRule(asts []*parser.AST, condition *parser.Condition, context parser.ExpressionContext) (errors []error) {
-	_, _, errs := condition.Resolve(asts, context)
+func OperandResolutionRule(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext) (errors []error) {
+	_, _, errs := expressions.ResolveCondition(asts, condition, context)
 	errors = append(errors, errs...)
 
 	return errors
 }
 
 // Validates that all conditions in an expression use assignment
-func OperatorAssignmentRule(asts []*parser.AST, expression *parser.Expression, context parser.ExpressionContext) (errors []error) {
+func OperatorAssignmentRule(asts []*parser.AST, expression *parser.Expression, context expressions.ExpressionContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
@@ -67,7 +68,7 @@ func OperatorAssignmentRule(asts []*parser.AST, expression *parser.Expression, c
 }
 
 // Validates that all conditions in an expression use logical operators
-func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, context parser.ExpressionContext) (errors []error) {
+func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, context expressions.ExpressionContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
@@ -102,7 +103,7 @@ func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, cont
 }
 
 // Validates that no value conditions are used
-func PreventValueConditionRule(asts []*parser.AST, expression *parser.Expression, context parser.ExpressionContext) (errors []error) {
+func PreventValueConditionRule(asts []*parser.AST, expression *parser.Expression, context expressions.ExpressionContext) (errors []error) {
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
@@ -126,8 +127,8 @@ func PreventValueConditionRule(asts []*parser.AST, expression *parser.Expression
 	return errors
 }
 
-func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condition, context parser.ExpressionContext, permittedOperators []string) (errors []error) {
-	resolvedLHS, resolvedRHS, _ := condition.Resolve(asts, context)
+func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext, permittedOperators []string) (errors []error) {
+	resolvedLHS, resolvedRHS, _ := expressions.ResolveCondition(asts, condition, context)
 
 	// If there is no operator, then we are not interested in validating this rule
 	if condition.Operator == nil {
@@ -194,8 +195,8 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condit
 //   - LHS and RHS are of _compatible_ types
 //   - LHS is of type T and RHS is an array of type T
 //   - LHS or RHS is an optional field and the other side is an explicit null
-func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, context parser.ExpressionContext) (errors []error) {
-	resolvedLHS, resolvedRHS, _ := condition.Resolve(asts, context)
+func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext) (errors []error) {
+	resolvedLHS, resolvedRHS, _ := expressions.ResolveCondition(asts, condition, context)
 
 	// If either side fails to resolve then no point checking compatibility
 	if resolvedLHS == nil || resolvedRHS == nil {
@@ -301,7 +302,7 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 
 	return errors
 }
-func runSideEffectOperandRules(asts []*parser.AST, condition *parser.Condition, context parser.ExpressionContext, permittedOperators []string) (errors []error) {
+func runSideEffectOperandRules(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext, permittedOperators []string) (errors []error) {
 	errors = append(errors, OperandResolutionRule(asts, condition, context)...)
 
 	if len(errors) > 0 {
