@@ -12,7 +12,7 @@ import (
 // what are we trying to achieve by drying up the action package?
 // - create an intuitive and reusable API for use across actions.
 // - standardise the steps across each of the actions.
-// - reusing similar logic across actions. for e.g., unifying how we parse arguments
+// - reusing similar logic across actions. for e.g., unifying how we parse inputs
 // - simpler / less code
 
 // how might this work against us?

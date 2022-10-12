@@ -13,7 +13,7 @@ type CreateAction struct {
 func (action *CreateAction) Instantiate(ctx context.Context, schema *proto.Schema, operation *proto.Operation) ActionBuilder {
 	// can we call instantiate on Action embedded field?
 
-	action.Scope.values = &Values{}
+	action.Scope.values = &DbValues{}
 
 	return action
 }
