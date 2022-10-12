@@ -63,6 +63,7 @@ process.on("uncaughtException", (err, next) => {
   }
 
   // If it's any other kind of uncaught exception then exit with a non zero exit code
+  console.log("Exiting process due to", err);
   process.exit(1);
 });
 
