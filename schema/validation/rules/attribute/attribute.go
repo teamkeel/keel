@@ -285,8 +285,10 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 					expression.OperatorLogicalRule,
 				},
 				expression.RuleContext{
-					Model:     model,
-					Attribute: attr,
+					Model:       model,
+					Attribute:   attr,
+					ReadInputs:  action.Inputs,
+					WriteInputs: action.With,
 				},
 			)
 			for _, err := range expressionErrors {
