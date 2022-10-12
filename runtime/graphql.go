@@ -176,15 +176,18 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 
 			input := p.Args["input"]
-			inputMap, ok := input.(map[string]any)
+			arguments, ok := input.(actions.Arguments)
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
 
-			result, err := actions.Get(p.Context, op, schema, inputMap)
-			if err != nil {
-				return result, err
-			}
+			var builder actions.GetAction
+
+			result, err := builder.
+				Instantiate(p.Context, schema, op).
+				ApplyFilters(arguments).
+				IsAuthorised(arguments).
+				Execute()
 
 			return result, err
 		}
@@ -192,12 +195,22 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			inputMap, ok := input.(map[string]any)
+			arguments, ok := input.(actions.Arguments)
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
 
-			return actions.Create(p.Context, op, schema, inputMap)
+			var builder actions.CreateAction
+
+			result, err := builder.
+				Instantiate(p.Context, schema, op).
+				ApplyImplicitInputs(arguments).
+				ApplySets(arguments).
+				ApplyFilters(arguments).
+				IsAuthorised(arguments).
+				Execute()
+
+			return result, err
 		}
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
