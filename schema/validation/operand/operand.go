@@ -15,6 +15,13 @@ const (
 	OperandPositionRhs OperandPosition = "rhs"
 )
 
+// ExpressionScope is used to represent things that should be in the scope
+// of an expression.
+// Operands in an expression are composed of fragments,
+// which are dot separated identifiers:
+// e.g post.title
+// The base scope that is constructed before we start evaluating the first
+// fragment contains things like ctx, any input parameters, the current model etc
 type ExpressionScope struct {
 	Parent   *ExpressionScope
 	Entities []*ExpressionScopeEntity
@@ -31,6 +38,12 @@ type ExpressionObjectEntity struct {
 	Fields []*ExpressionScopeEntity
 }
 
+// An ExpressionScopeEntity is an individual item that is inserted into an
+// expression scope. So a scope might have multiple entities of different types in it
+// at one single time:
+// example:
+// &ExpressionScope{Entities: []*ExpressionScopeEntity{{ Name: "ctx": Object: {....} }}, Parent: nil}
+// Parent is used to provide useful metadata about any upper scopes (e.g previous fragments that were evaluated)
 type ExpressionScopeEntity struct {
 	Name string
 
