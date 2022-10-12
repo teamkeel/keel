@@ -16,7 +16,6 @@ import (
 // attributeLocationsRule checks that attributes are used in valid places
 // For example it's invalid to use a @where attribute inside a model definition
 func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
 	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
@@ -79,9 +78,7 @@ var attributeLocations = map[string][]string{
 }
 
 func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) (errs errorhandling.ValidationErrors) {
-
 	for _, attr := range attributes {
-
 		allowedAttributes := attributeLocations[definedOn]
 
 		if lo.Contains(allowedAttributes, attr.Name.Value) {
@@ -180,7 +177,6 @@ func validateActionAttributeWithExpression(
 	action *parser.ActionNode,
 	attr *parser.AttributeNode,
 ) (errs errorhandling.ValidationErrors) {
-
 	argLength := len(attr.Arguments)
 
 	if argLength == 0 || argLength >= 2 {
@@ -212,10 +208,9 @@ func validateActionAttributeWithExpression(
 		expr,
 		rules,
 		expression.RuleContext{
-			Model:       model,
-			Attribute:   attr,
-			ReadInputs:  action.Inputs,
-			WriteInputs: action.With,
+			Model:     model,
+			Attribute: attr,
+			Action:    action,
 		},
 	)
 	for _, e := range err {
@@ -285,10 +280,9 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 					expression.OperatorLogicalRule,
 				},
 				expression.RuleContext{
-					Model:       model,
-					Attribute:   attr,
-					ReadInputs:  action.Inputs,
-					WriteInputs: action.With,
+					Model:     model,
+					Attribute: attr,
+					Action:    action,
 				},
 			)
 			for _, err := range expressionErrors {

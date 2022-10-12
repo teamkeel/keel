@@ -14,10 +14,9 @@ import (
 )
 
 type RuleContext struct {
-	Model       *parser.ModelNode
-	ReadInputs  []*parser.ActionInputNode
-	WriteInputs []*parser.ActionInputNode
-	Attribute   *parser.AttributeNode
+	Model     *parser.ModelNode
+	Action    *parser.ActionNode
+	Attribute *parser.AttributeNode
 }
 
 type Rule func(asts []*parser.AST, expression *expressions.Expression, context RuleContext) []error
@@ -327,24 +326,28 @@ func resolveConditionOperands(asts []*parser.AST, cond *expressions.Condition, c
 		},
 	}
 
-	inputs := append([]*parser.ActionInputNode{}, context.ReadInputs...)
-	inputs = append(inputs, context.WriteInputs...)
+	if context.Action != nil {
+		// todo: this isnt right
+		// the scope logic for inputs should be:
+		// if lhs, suggest read and write ONLY for @permission expression, otherwise, dont suggest anything
+		// if rhs, suggest write inputs only
 
-	for _, input := range inputs {
-		// inputs using short-hand syntax that refer to relationships
-		// don't get added to the scope
-		if input.Label == nil && len(input.Type.Fragments) > 1 {
-			continue
-		}
+		for _, input := range context.Action.AllInputs() {
+			// inputs using short-hand syntax that refer to relationships
+			// don't get added to the scope
+			if input.Label == nil && len(input.Type.Fragments) > 1 {
+				continue
+			}
 
-		resolvedType := query.ResolveInputType(asts, input, context.Model)
-		if resolvedType == "" {
-			continue
+			resolvedType := query.ResolveInputType(asts, input, context.Model)
+			if resolvedType == "" {
+				continue
+			}
+			scope.Entities = append(scope.Entities, &operand.ExpressionScopeEntity{
+				Name: input.Name(),
+				Type: resolvedType,
+			})
 		}
-		scope.Entities = append(scope.Entities, &operand.ExpressionScopeEntity{
-			Name: input.Name(),
-			Type: resolvedType,
-		})
 	}
 
 	scope = operand.DefaultExpressionScope(asts).Merge(scope)

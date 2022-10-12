@@ -216,7 +216,19 @@ type ActionNode struct {
 	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
 
-func (ast *ActionNode) String() string {
+func (a *ActionNode) ReadInputs() []*ActionInputNode {
+	return a.Inputs
+}
+
+func (a *ActionNode) WriteInputs() []*ActionInputNode {
+	return a.With
+}
+
+func (a *ActionNode) AllInputs() []*ActionInputNode {
+	return append(a.Inputs, a.With...)
+}
+
+func (a *ActionNode) String() string {
 	return "ActionNode"
 }
 
