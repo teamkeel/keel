@@ -218,6 +218,14 @@ func (a *ActionNode) WriteInputs() []*ActionInputNode {
 	return a.With
 }
 
+func (a *ActionNode) IsWrite() bool {
+	return a.Type.Value == ActionTypeCreate || a.Type.Value == ActionTypeUpdate
+}
+
+func (a *ActionNode) IsRead() bool {
+	return a.Type.Value != ActionTypeCreate
+}
+
 func (a *ActionNode) AllInputs() []*ActionInputNode {
 	return append(a.Inputs, a.With...)
 }

@@ -10,14 +10,14 @@ func ResolveCondition(asts []*parser.AST, c *parser.Condition, context Expressio
 
 	scope := BuildRootExpressionScope(asts, context)
 
-	resolvedLhs, lhsErr := ResolveOperand(asts, lhs, scope, OperandPositionLhs)
+	resolvedLhs, lhsErr := ResolveOperand(asts, lhs, scope, context, OperandPositionLhs)
 
 	if lhsErr != nil {
 		errors = append(errors, lhsErr)
 	}
 
 	if rhs != nil {
-		resolvedRhs, rhsErr := ResolveOperand(asts, rhs, scope, OperandPositionRhs)
+		resolvedRhs, rhsErr := ResolveOperand(asts, rhs, scope, context, OperandPositionRhs)
 
 		if rhsErr != nil {
 			errors = append(errors, rhsErr)
