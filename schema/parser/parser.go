@@ -173,6 +173,13 @@ func (ast *ModelsNode) String() string {
 	return "ModelsNode"
 }
 
+// Attributes:
+// - @permission
+// - @set
+// - @validate
+// - @where
+// - @unique
+// - @default
 type AttributeNode struct {
 	node.Node
 

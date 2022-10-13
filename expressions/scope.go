@@ -434,9 +434,11 @@ func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, co
 
 	switch attribute.Name.Value {
 	case parser.AttributePermission:
-		if position == OperandPositionLhs {
-			scope = applyInputsInScope(asts, context, scope)
-		}
+		// inputs can be used on either lhs or rhs
+		// e.g
+		// @permission(expression: explicitInput == "123")
+		// @permission(expression: "123" == explicitInput)
+		scope = applyInputsInScope(asts, context, scope)
 	case parser.AttributeValidate:
 		if position == OperandPositionLhs {
 			scope = applyInputsInScope(asts, context, scope)
