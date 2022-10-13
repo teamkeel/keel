@@ -5,7 +5,6 @@ model Post {
         active Boolean?
         type PostType?
         identity Identity?
-
         titlePermissionMatch Text @default("hello")
         viewsPermissionMatch Number @default(5)
         activePermissionMatch Boolean @default(true)
@@ -16,44 +15,34 @@ model Post {
         create createWithTextPermissionLiteral() with (title) {
             @permission(expression: post.title == "hello")
         }
-
         create createWithNumberPermissioLiteral() with (views) {
-            @permission(expression: views == 5)
+            @permission(expression: post.views == 5)
         }
-
         create createWithBooleanPermissionLiteral() with (active) {
             @permission(expression: post.active == true)
         }
-
         create createWithEnumPermissionLiteral() with (type) {
             @permission(expression: post.type == PostType.Technical)
         }
-
         create createWithTextPermissionFromField() with (title) {
             @permission(expression: post.title == post.titlePermissionMatch)
         }
-
         create createWithNumberPermissionFromField() with (views) {
             @permission(expression: post.views == post.viewsPermissionMatch)
         }
-
         create createWithBooleanPermissionFromField() with (active) {
             @permission(expression: post.active == post.activePermissionMatch)
         }
-
         create createWithEnumPermissionFromField() with (type) {
             @permission(expression: post.type == post.typePermissionMatch)
         }
-
         create createWithIdentityRequiresSameIdentity() {
             @set(post.identity = ctx.identity)
             @permission(expression: post.identity == ctx.identity)
         }
-
         create createWithTrueValuePermission() with (title) {
             @permission(expression: true)
         }
-
         create createWithMultipleOrPermissions() with (title, views, active) {
             @permission(expression: post.title == post.titlePermissionMatch)
             @permission(expression: post.views == post.viewsPermissionMatch)
@@ -70,6 +59,7 @@ enum PostType {
 
 api Web {
     @graphql
+
     models {
         Post
     }
