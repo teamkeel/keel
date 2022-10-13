@@ -1,12 +1,18 @@
 package expressions
 
 import (
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+// ExpressionContext represents all of the metadata that we need to know about
+// to resolve an expression.
+// For example, we need to know the parent constructs in the schema such as the
+// current model, the current attribute or the current action in order to determine
+// what fragments are expected in an expression
 type ExpressionContext struct {
 	Model     *parser.ModelNode
 	Action    *parser.ActionNode
@@ -30,6 +36,43 @@ const (
 type ExpressionScope struct {
 	Parent   *ExpressionScope
 	Entities []*ExpressionScopeEntity
+}
+
+func BuildRootExpressionScope(asts []*parser.AST, context ExpressionContext) *ExpressionScope {
+	contextualScope := &ExpressionScope{
+		Entities: []*ExpressionScopeEntity{
+			{
+				Name:  strcase.ToLowerCamel(context.Model.Name.Value),
+				Model: context.Model,
+			},
+		},
+	}
+
+	if context.Action != nil {
+		// todo: this isnt right
+		// the scope logic for inputs should be:
+		// if lhs, suggest read and write ONLY for @permission expression, otherwise, dont suggest anything
+		// if rhs, suggest write inputs only
+
+		for _, input := range context.Action.AllInputs() {
+			// inputs using short-hand syntax that refer to relationships
+			// don't get added to the scope
+			if input.Label == nil && len(input.Type.Fragments) > 1 {
+				continue
+			}
+
+			resolvedType := query.ResolveInputType(asts, input, context.Model)
+			if resolvedType == "" {
+				continue
+			}
+			contextualScope.Entities = append(contextualScope.Entities, &ExpressionScopeEntity{
+				Name: input.Name(),
+				Type: resolvedType,
+			})
+		}
+	}
+
+	return DefaultExpressionScope(asts).Merge(contextualScope)
 }
 
 func (a *ExpressionScope) Merge(b *ExpressionScope) *ExpressionScope {
