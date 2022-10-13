@@ -9,11 +9,30 @@ type GetAction struct {
 	Action
 }
 
-func (action *GetAction) ApplyFilters(args Arguments) ActionBuilder {
-	action.query, _ = addGetImplicitInputFilters(action.operation, args, action.query)
-	action.query, _ = addGetExplicitInputFilters(action.operation, action.schema, args, action.query)
-	return action
-}
+// func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder {
+// 	// todo: Default implementation for all actions types
+// 	return action
+// }
+
+// func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
+// 	// todo: Default implementation for all actions types
+// 	return action
+// }
+
+// func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+// 	// todo: Default implementation for all actions types
+// 	return action
+// }
+
+// func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder {
+// 	// todo: Default implementation for all actions types
+// 	return action
+// }
+
+// func (action *Action) IsAuthorised(args RequestArguments) ActionBuilder {
+// 	// todo: default implementation for all actions types
+// 	return action
+// }
 
 func (action *GetAction) Execute() (*Result, error) {
 	result := []map[string]any{}

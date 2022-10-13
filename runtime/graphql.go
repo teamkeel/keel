@@ -176,16 +176,18 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 
 			input := p.Args["input"]
-			arguments, ok := input.(actions.Arguments)
+			arguments, ok := input.(actions.RequestArguments)
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
 
 			var builder actions.GetAction
+			scope, err := actions.NewScope(p.Context, op, schema)
 
 			result, err := builder.
-				Instantiate(p.Context, schema, op).
-				ApplyFilters(arguments).
+				Initialise(scope).
+				ApplyImplicitFilters(arguments).
+				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
 				Execute()
 
@@ -195,18 +197,19 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			arguments, ok := input.(actions.Arguments)
+			arguments, ok := input.(actions.RequestArguments)
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
 
 			var builder actions.CreateAction
 
+			scope, err := actions.NewScope(p.Context, op, schema)
+
 			result, err := builder.
-				Instantiate(p.Context, schema, op).
-				ApplyImplicitInputs(arguments).
-				ApplySets(arguments).
-				ApplyFilters(arguments).
+				Initialise(scope).
+				CaptureImplicitWriteInputValues(arguments). // todo: err?
+				CaptureSetValues(arguments).
 				IsAuthorised(arguments).
 				Execute()
 

@@ -6,6 +6,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/expressions"
 	"gorm.io/gorm"
 )
 
@@ -31,10 +32,10 @@ import (
 // in the case of implicit inputs, or the alias name defined in the schema in the case of explicit inputs.
 type RequestArguments map[string]any
 
-// DbValues hold the in-memory representation of a record we are going to *Write* to a database row.
+// Values hold the in-memory representation of a record we are going to *Write* to a database row.
 // Keys are strictly model field names. (I.e. something must intervene to snake-case it before passing it on to
 // a gorm.DB.Create() for example).
-type DbValues map[string]any
+type WriteValues map[string]any
 
 // An ActionResult is the object returned to the caller for any of the Action functions.
 // Keys are strictly model field names.
@@ -42,7 +43,9 @@ type ActionResult map[string]any
 
 // The ActionBuilder interface governs a contract that must be used to instantiate, build-up,
 // and execute any Action.
-
+// All the following methods share a Scope object in which to accumulate query clauses and values that which
+// be written to a database row and an error that has been detected. The implementation of every method below
+// must short-circuit return if error is not nil and similarly set error if they encounter an error, and return.
 type ActionBuilder interface {
 
 	// Initialise implementations must retain access to the given Scope - because it is the way that
@@ -98,54 +101,128 @@ type Scope struct {
 
 	// instantiated to {}
 	// modified with ParseValues and ApplySets
-	dbValues DbValues
+	writeValues WriteValues
+
+	curError error
 }
 
 func NewScope(
-	context context.Context,
+	ctx context.Context,
 	operation *proto.Operation,
-	model *proto.Model,
-	schema *proto.Schema,
-	table string,
-	query *gorm.DB) *Scope {
-	return &Scope{
-		context:   context,
-		operation: operation,
-		model:     model,
-		schema:    schema,
-		table:     table,
-		query:     query,
-		dbValues:  DbValues{},
+	schema *proto.Schema) (*Scope, error) {
+
+	model := proto.FindModel(schema.Models, operation.ModelName)
+	table := strcase.ToSnake(model.Name)
+	query, err := runtimectx.GetDatabase(ctx)
+
+	if err != nil {
+		return nil, err
 	}
+
+	return &Scope{
+		context:     ctx,
+		operation:   operation,
+		model:       model,
+		schema:      schema,
+		table:       table,
+		query:       query,
+		writeValues: WriteValues{},
+	}, nil
 }
 
 type Action struct {
-	Scope
+	*Scope
 }
 
-func (action *Action) Initialise(ctx context.Context, schema *proto.Schema, operation *proto.Operation) ActionBuilder {
-	action.context = ctx
-	action.schema = schema
-	action.operation = operation
-	action.model = proto.FindModel(schema.Models, operation.ModelName)
-	action.query, _ = runtimectx.GetDatabase(ctx)
-	action.table = strcase.ToSnake(action.model.Name)
-	action.values = &DbValues{}
+func (action *Action) Initialise(scope *Scope) ActionBuilder {
+	action.Scope = scope
 
 	return action
 }
 
-func (action *Action) ApplyImplicitInputs(args RequestArguments) ActionBuilder {
+func (action *Action) WithError(err error) ActionBuilder {
+	action.Scope.curError = err
+	return action
+}
+
+func (action *Action) HasError() bool {
+	return action.Scope.curError != nil
+}
+
+func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder {
+	if action.HasError() {
+		return action
+	}
+
+	// values, ok := args.(map[string]any)
+
+	// if !ok {
+	// 	return action.WithError(errors.New("values not in correct format"))
+	// }
+
+	for _, input := range action.operation.Inputs {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
+
+		if input.Mode != proto.InputMode_INPUT_MODE_WRITE {
+			continue
+		}
+
+		target := input.Target[0]
+		match, ok := args[target]
+
+		if !ok {
+			continue
+		}
+
+		action.Scope.writeValues[target] = match
+	}
+
+	return action
+}
+
+func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
+	if action.HasError() {
+		return action
+	}
+
+	ctx := action.Scope.context
+	operation := action.operation
+	schema := action.schema
+
+	for _, setExpression := range operation.SetExpressions {
+		expression, err := expressions.Parse(setExpression.Source)
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		assignment, err := expressions.ToAssignmentCondition(expression)
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		lhsOperandType, err := GetOperandType(assignment.LHS, operation, schema)
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
+
+		action.Scope.writeValues[fieldName], err = evaluateOperandValue(ctx, assignment.RHS, operation, schema, args, lhsOperandType)
+		if err != nil {
+			return action.WithError(err)
+		}
+	}
+	return action
+}
+
+func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
 	// todo: Default implementation for all actions types
 	return action
 }
 
-func (action *Action) ApplySets(args RequestArguments) ActionBuilder {
-	// todo: Default implementation for all actions types
-	return action
-}
-
-func (action *Action) ApplyFilters(args RequestArguments) ActionBuilder {
+func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder {
 	// todo: Default implementation for all actions types
 	return action
 }
@@ -158,4 +235,26 @@ func (action *Action) IsAuthorised(args RequestArguments) ActionBuilder {
 func (action *Action) Execute() (*ActionResult, error) {
 	// todo: would we ever want a default implementation or should we panic?
 	return &ActionResult{}, nil
+}
+
+// toLowerCamelMap returns a copy of the given map, in which all
+// of the key strings are converted to LowerCamelCase.
+// It is good for converting identifiers typically used as database
+// table or column names, to the case requirements stipulated by the Keel schema.
+func toLowerCamelMap(m map[string]any) map[string]any {
+	res := map[string]any{}
+	for key, value := range m {
+		res[strcase.ToLowerCamel(key)] = value
+	}
+	return res
+}
+
+// toLowerCamelMaps is a convenience wrapper around toLowerCamelMap
+// that operates on a list of input maps - rather than just a single map.
+func toLowerCamelMaps(maps []map[string]any) []map[string]any {
+	res := []map[string]any{}
+	for _, m := range maps {
+		res = append(res, toLowerCamelMap(m))
+	}
+	return res
 }
