@@ -432,11 +432,16 @@ func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, co
 		return scope
 	}
 
-	if attribute.Name.Value == parser.AttributePermission {
+	switch attribute.Name.Value {
+	case parser.AttributePermission:
 		if position == OperandPositionLhs {
 			scope = applyInputsInScope(asts, context, scope)
 		}
-	} else if action.IsRead() {
+	case parser.AttributeValidate:
+		if position == OperandPositionLhs {
+			scope = applyInputsInScope(asts, context, scope)
+		}
+	default:
 		if position == OperandPositionRhs {
 			scope = applyInputsInScope(asts, context, scope)
 		}
