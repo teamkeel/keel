@@ -9,7 +9,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 	"gorm.io/gorm"
 )
 
@@ -145,7 +145,7 @@ func addListExplicitInputFilters(
 	listInput *ListInput,
 	tx *gorm.DB) (*gorm.DB, error) {
 	for _, e := range op.WhereExpressions {
-		expr, err := expressions.Parse(e.Source)
+		expr, err := parser.ParseExpression(e.Source)
 		if err != nil {
 			return nil, err
 		}

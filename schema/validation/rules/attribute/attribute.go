@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -16,7 +16,6 @@ import (
 // attributeLocationsRule checks that attributes are used in valid places
 // For example it's invalid to use a @where attribute inside a model definition
 func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
 	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
@@ -79,9 +78,7 @@ var attributeLocations = map[string][]string{
 }
 
 func checkAttributes(attributes []*parser.AttributeNode, definedOn string, parentName string) (errs errorhandling.ValidationErrors) {
-
 	for _, attr := range attributes {
-
 		allowedAttributes := attributeLocations[definedOn]
 
 		if lo.Contains(allowedAttributes, attr.Name.Value) {
@@ -180,7 +177,6 @@ func validateActionAttributeWithExpression(
 	action *parser.ActionNode,
 	attr *parser.AttributeNode,
 ) (errs errorhandling.ValidationErrors) {
-
 	argLength := len(attr.Arguments)
 
 	if argLength == 0 || argLength >= 2 {
@@ -211,11 +207,10 @@ func validateActionAttributeWithExpression(
 		asts,
 		expr,
 		rules,
-		expression.RuleContext{
-			Model:       model,
-			Attribute:   attr,
-			ReadInputs:  action.Inputs,
-			WriteInputs: action.With,
+		expressions.ExpressionContext{
+			Model:     model,
+			Attribute: attr,
+			Action:    action,
 		},
 	)
 	for _, e := range err {
@@ -284,9 +279,10 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 				[]expression.Rule{
 					expression.OperatorLogicalRule,
 				},
-				expression.RuleContext{
+				expressions.ExpressionContext{
 					Model:     model,
 					Attribute: attr,
+					Action:    action,
 				},
 			)
 			for _, err := range expressionErrors {
@@ -338,8 +334,8 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 	return
 }
 
-func validateIdentArray(expr *expressions.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
-	value, err := expressions.ToValue(expr)
+func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs errorhandling.ValidationErrors) {
+	value, err := expr.ToValue()
 	if err != nil || value.Array == nil {
 		expected := ""
 		if len(allowedIdents) > 0 {
@@ -439,7 +435,7 @@ func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationE
 				continue
 			}
 
-			value, _ := expressions.ToValue(attr.Arguments[0].Expression)
+			value, _ := attr.Arguments[0].Expression.ToValue()
 			if len(value.Array.Values) < 2 {
 				errs.Append(errorhandling.ErrorInvalidValue,
 					map[string]string{

@@ -1,16 +1,78 @@
-package operand
+package expressions
 
 import (
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+// ExpressionContext represents all of the metadata that we need to know about
+// to resolve an expression.
+// For example, we need to know the parent constructs in the schema such as the
+// current model, the current attribute or the current action in order to determine
+// what fragments are expected in an expression
+type ExpressionContext struct {
+	Model     *parser.ModelNode
+	Action    *parser.ActionNode
+	Attribute *parser.AttributeNode
+}
+
+type OperandPosition = string
+
+const (
+	OperandPositionLhs OperandPosition = "lhs"
+	OperandPositionRhs OperandPosition = "rhs"
+)
+
+// ExpressionScope is used to represent things that should be in the scope
+// of an expression.
+// Operands in an expression are composed of fragments,
+// which are dot separated identifiers:
+// e.g post.title
+// The base scope that is constructed before we start evaluating the first
+// fragment contains things like ctx, any input parameters, the current model etc
 type ExpressionScope struct {
 	Parent   *ExpressionScope
 	Entities []*ExpressionScopeEntity
+}
+
+func BuildRootExpressionScope(asts []*parser.AST, context ExpressionContext) *ExpressionScope {
+	contextualScope := &ExpressionScope{
+		Entities: []*ExpressionScopeEntity{
+			{
+				Name:  strcase.ToLowerCamel(context.Model.Name.Value),
+				Model: context.Model,
+			},
+		},
+	}
+
+	if context.Action != nil {
+		// todo: this isnt right
+		// the scope logic for inputs should be:
+		// if lhs, suggest read and write ONLY for @permission expression, otherwise, dont suggest anything
+		// if rhs, suggest write inputs only
+
+		for _, input := range context.Action.AllInputs() {
+			// inputs using short-hand syntax that refer to relationships
+			// don't get added to the scope
+			if input.Label == nil && len(input.Type.Fragments) > 1 {
+				continue
+			}
+
+			resolvedType := query.ResolveInputType(asts, input, context.Model)
+			if resolvedType == "" {
+				continue
+			}
+			contextualScope.Entities = append(contextualScope.Entities, &ExpressionScopeEntity{
+				Name: input.Name(),
+				Type: resolvedType,
+			})
+		}
+	}
+
+	return DefaultExpressionScope(asts).Merge(contextualScope)
 }
 
 func (a *ExpressionScope) Merge(b *ExpressionScope) *ExpressionScope {
@@ -24,13 +86,19 @@ type ExpressionObjectEntity struct {
 	Fields []*ExpressionScopeEntity
 }
 
+// An ExpressionScopeEntity is an individual item that is inserted into an
+// expression scope. So a scope might have multiple entities of different types in it
+// at one single time:
+// example:
+// &ExpressionScope{Entities: []*ExpressionScopeEntity{{ Name: "ctx": Object: {....} }}, Parent: nil}
+// Parent is used to provide useful metadata about any upper scopes (e.g previous fragments that were evaluated)
 type ExpressionScopeEntity struct {
 	Name string
 
 	Object    *ExpressionObjectEntity
 	Model     *parser.ModelNode
 	Field     *parser.FieldNode
-	Literal   *expressions.Operand
+	Literal   *parser.Operand
 	Enum      *parser.EnumNode
 	EnumValue *parser.EnumValueNode
 	Array     []*ExpressionScopeEntity
@@ -81,7 +149,7 @@ func (e *ExpressionScopeEntity) GetType() string {
 	}
 
 	if e.Array != nil {
-		return expressions.TypeArray
+		return parser.TypeArray
 	}
 
 	if e.Type != "" {
@@ -93,62 +161,62 @@ func (e *ExpressionScopeEntity) GetType() string {
 
 var operatorsForType = map[string][]string{
 	parser.FieldTypeText: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorAssignment,
 	},
 	parser.FieldTypeID: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorAssignment,
 	},
 	parser.FieldTypeNumber: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorGreaterThan,
-		expressions.OperatorGreaterThanOrEqualTo,
-		expressions.OperatorLessThan,
-		expressions.OperatorLessThanOrEqualTo,
-		expressions.OperatorAssignment,
-		expressions.OperatorIncrement,
-		expressions.OperatorDecrement,
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorGreaterThan,
+		parser.OperatorGreaterThanOrEqualTo,
+		parser.OperatorLessThan,
+		parser.OperatorLessThanOrEqualTo,
+		parser.OperatorAssignment,
+		parser.OperatorIncrement,
+		parser.OperatorDecrement,
 	},
 	parser.FieldTypeBoolean: {
-		expressions.OperatorAssignment,
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
+		parser.OperatorAssignment,
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
 	},
 	parser.FieldTypeDate: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorGreaterThan,
-		expressions.OperatorGreaterThanOrEqualTo,
-		expressions.OperatorLessThan,
-		expressions.OperatorLessThanOrEqualTo,
-		expressions.OperatorAssignment,
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorGreaterThan,
+		parser.OperatorGreaterThanOrEqualTo,
+		parser.OperatorLessThan,
+		parser.OperatorLessThanOrEqualTo,
+		parser.OperatorAssignment,
 	},
 	parser.FieldTypeDatetime: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorGreaterThan,
-		expressions.OperatorGreaterThanOrEqualTo,
-		expressions.OperatorLessThan,
-		expressions.OperatorLessThanOrEqualTo,
-		expressions.OperatorAssignment,
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorGreaterThan,
+		parser.OperatorGreaterThanOrEqualTo,
+		parser.OperatorLessThan,
+		parser.OperatorLessThanOrEqualTo,
+		parser.OperatorAssignment,
 	},
-	expressions.TypeEnum: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+	parser.TypeEnum: {
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorAssignment,
 	},
-	expressions.TypeArray: {
-		expressions.OperatorIn,
-		expressions.OperatorNotIn,
+	parser.TypeArray: {
+		parser.OperatorIn,
+		parser.OperatorNotIn,
 	},
-	expressions.TypeNull: {
-		expressions.OperatorEquals,
-		expressions.OperatorNotEquals,
-		expressions.OperatorAssignment,
+	parser.TypeNull: {
+		parser.OperatorEquals,
+		parser.OperatorNotEquals,
+		parser.OperatorAssignment,
 	},
 }
 
@@ -159,18 +227,18 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 
 	if e.Model != nil || (e.Field != nil && !arrayEntity) {
 		return []string{
-			expressions.OperatorEquals,
-			expressions.OperatorNotEquals,
-			expressions.OperatorAssignment,
+			parser.OperatorEquals,
+			parser.OperatorNotEquals,
+			parser.OperatorAssignment,
 		}
 	}
 
 	if arrayEntity {
-		t = expressions.TypeArray
+		t = parser.TypeArray
 	}
 
 	if e.IsEnumField() || e.IsEnumValue() {
-		t = expressions.TypeEnum
+		t = parser.TypeEnum
 	}
 
 	return operatorsForType[t]
@@ -287,14 +355,21 @@ func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEn
 	}
 }
 
-// Given an operand of a condition, tries to resolve the relationships defined within the operand
-// e.g if the operand is of type "Ident", and the ident is post.author.name
-func ResolveOperand(asts []*parser.AST, operand *expressions.Operand, scope *ExpressionScope) (entity *ExpressionScopeEntity, err error) {
+// A condition is composed of a LHS operand (and an operator, and a RHS operand if not a value only condition like expression: true)
+// Given an operand of a condition, tries to resolve all of the fragments defined within the operand
+// an operand might be:
+// - post.author.name
+// - MyEnum.ValueName
+// - "123"
+// - true
+// All of these types above are checked / attempted to be resolved in this method.
+func ResolveOperand(asts []*parser.AST, operand *parser.Operand, scope *ExpressionScope, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err error) {
+	// build additional root scopes based on position of operand
+	// and also what type attribute the expression is used in.
+
+	// If it is a literal then handle differently.
 	if ok, _ := operand.IsLiteralType(); ok {
-
-		// If it is an array literal then handle differently.
-		if operand.Type() == expressions.TypeArray {
-
+		if operand.Type() == parser.TypeArray {
 			array := []*ExpressionScopeEntity{}
 
 			for _, item := range operand.Array.Values {
@@ -334,15 +409,28 @@ fragments:
 
 			switch {
 			case e.Model != nil:
+				// crucially, scope is redefined for the next iteration of the outer loop
+				// so that we check the subsequent fragment against the models fields
+				// e.g post.field - fragment at idx 0 would be post, so scopeFromModel finds the fields on the
+				// Post model and populates the new scope with them.
 				scope = scopeFromModel(scope, e, e.Model)
 			case e.Field != nil:
+				// covers fields which are associations to other models:
+				// e.g post.association.associationField
+				// repopulates the scope for the third fragment to be the fields of 'association'
 				model := query.Model(asts, e.Field.Type)
 
+				// if no model is found for the field type, then we need to check other potential matches
+				// e.g enums in the schema
 				if model == nil {
 					// try matching the field name to a known enum instead
 					enum := query.Enum(asts, e.Field.Type)
 
 					if enum != nil {
+						// enum definitions aren't optional when they are defined
+						// declaratively in the schema, but instead you mark an enum's
+						// optionality at field level, so we need to attach it here based on the field's
+						// optional value.
 						enum.Optional = e.Field.Optional
 
 						// if we've reached a field that is an enum
@@ -355,7 +443,6 @@ fragments:
 						return &ExpressionScopeEntity{
 							Enum: enum,
 						}, nil
-
 					} else {
 						// Did not find the model matching the field
 						scope = &ExpressionScope{
@@ -363,17 +450,25 @@ fragments:
 						}
 					}
 				} else {
+					// move onto the associations' fields so we populate the new scope with them
 					scope = scopeFromModel(scope, e, model)
 				}
 			case e.Object != nil:
+				// object is a special wrapper type to describe entities we want
+				// to be in scope that aren't models. It is a more flexible type that
+				// allows us to add fields to an object at our choosing
+				// Mostly used for ctx
 				scope = scopeFromObject(scope, e)
 			case e.Enum != nil:
+				// if the first fragment of the Ident matches an Enum name, then we want to proceed populating the scope for the next fragment
+				// with all of the potential values of the enum
 				scope = scopeFromEnum(scope, e)
 			case e.EnumValue != nil:
 				scope = &ExpressionScope{
 					Parent: scope,
 				}
 			case e.Type != "":
+				// Otherwise, the scope is empty of any new entities
 				scope = &ExpressionScope{
 					Parent: scope,
 				}

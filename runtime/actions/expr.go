@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
-func toNative(v *expressions.Operand, fieldType proto.Type) (any, error) {
+func toNative(v *parser.Operand, fieldType proto.Type) (any, error) {
 	switch {
 	case v.False:
 		return false, nil

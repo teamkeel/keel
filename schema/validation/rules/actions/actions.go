@@ -7,7 +7,6 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -147,7 +146,7 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.V
 						continue
 					}
 
-					assignment, err := expressions.ToAssignmentCondition(attr.Arguments[0].Expression)
+					assignment, err := attr.Arguments[0].Expression.ToAssignmentCondition()
 					if err != nil {
 						continue
 					}
@@ -291,7 +290,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 		for _, condition := range conds {
 			// If it's not a logical condition it will be caught by the
 			// @where attribute validation
-			if condition.Type() != expressions.LogicalCondition {
+			if condition.Type() != parser.LogicalCondition {
 				continue
 			}
 
@@ -299,7 +298,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 
 			// Only "==" and "in" are direct comparison operators, anything else
 			// doesn't make sense for a unique lookup e.g. age > 5
-			if operator != expressions.OperatorEquals && operator != expressions.OperatorIn {
+			if operator != parser.OperatorEquals && operator != parser.OperatorIn {
 				errs.Append(errorhandling.ErrorNonDirectComparisonOperatorUsed,
 					map[string]string{
 						"Operator":      operator,
@@ -311,10 +310,10 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 			}
 
 			// we always check the LHS
-			operands := []*expressions.Operand{condition.LHS}
+			operands := []*parser.Operand{condition.LHS}
 
 			// if it's an equal operator we can check both sides
-			if operator == expressions.OperatorEquals {
+			if operator == parser.OperatorEquals {
 				operands = append(operands, condition.RHS)
 			}
 
@@ -434,7 +433,7 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 		}
 
 		for _, cond := range expr.Conditions() {
-			for _, operand := range []*expressions.Operand{cond.LHS, cond.RHS} {
+			for _, operand := range []*parser.Operand{cond.LHS, cond.RHS} {
 				if operand.Ident != nil && operand.ToString() == input.Label.Value {
 					// we've found a usage of the input
 					isUsed = true

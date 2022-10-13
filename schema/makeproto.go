@@ -5,7 +5,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -204,8 +203,8 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 			continue
 		}
 
-		value, _ := expressions.ToValue(attr.Arguments[0].Expression)
-		fieldNames := lo.Map(value.Array.Values, func(v *expressions.Operand, i int) string {
+		value, _ := attr.Arguments[0].Expression.ToValue()
+		fieldNames := lo.Map(value.Array.Values, func(v *parser.Operand, i int) string {
 			return v.Ident.ToString()
 		})
 
@@ -390,15 +389,15 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoOperat
 			perm.OperationName = wrapperspb.String(protoOperation.Name)
 			protoOperation.Permissions = append(protoOperation.Permissions, perm)
 		case parser.AttributeWhere:
-			expr, _ := expressions.ToString(attribute.Arguments[0].Expression)
+			expr, _ := attribute.Arguments[0].Expression.ToString()
 			where := &proto.Expression{Source: expr}
 			protoOperation.WhereExpressions = append(protoOperation.WhereExpressions, where)
 		case parser.AttributeSet:
-			expr, _ := expressions.ToString(attribute.Arguments[0].Expression)
+			expr, _ := attribute.Arguments[0].Expression.ToString()
 			set := &proto.Expression{Source: expr}
 			protoOperation.SetExpressions = append(protoOperation.SetExpressions, set)
 		case parser.AttributeValidate:
-			expr, _ := expressions.ToString(attribute.Arguments[0].Expression)
+			expr, _ := attribute.Arguments[0].Expression.ToString()
 			set := &proto.Expression{Source: expr}
 			protoOperation.ValidationExpressions = append(protoOperation.ValidationExpressions, set)
 		}
@@ -416,7 +415,7 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 			defaultValue := &proto.DefaultValue{}
 			if len(fieldAttribute.Arguments) == 1 {
 				expr := fieldAttribute.Arguments[0].Expression
-				source, _ := expressions.ToString(expr)
+				source, _ := expr.ToString()
 				defaultValue.Expression = &proto.Expression{
 					Source: source,
 				}
@@ -433,15 +432,15 @@ func (scm *Builder) permissionAttributeToProtoPermission(attr *parser.AttributeN
 	for _, arg := range attr.Arguments {
 		switch arg.Label.Value {
 		case "expression":
-			expr, _ := expressions.ToString(arg.Expression)
+			expr, _ := arg.Expression.ToString()
 			pr.Expression = &proto.Expression{Source: expr}
 		case "roles":
-			value, _ := expressions.ToValue(arg.Expression)
+			value, _ := arg.Expression.ToValue()
 			for _, item := range value.Array.Values {
 				pr.RoleNames = append(pr.RoleNames, item.Ident.Fragments[0].Fragment)
 			}
 		case "actions":
-			value, _ := expressions.ToValue(arg.Expression)
+			value, _ := arg.Expression.ToValue()
 			for _, v := range value.Array.Values {
 				pr.OperationsTypes = append(pr.OperationsTypes, scm.mapToOperationType(v.Ident.Fragments[0].Fragment))
 			}
