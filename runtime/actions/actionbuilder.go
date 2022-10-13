@@ -10,50 +10,80 @@ import (
 )
 
 // what are we trying to achieve by drying up the action package?
-// - create an intuitive and reusable API for use across actions.
-// - standardise the steps across each of the actions.
-// - reusing similar logic across actions. for e.g., unifying how we parse inputs
-// - simpler / less code
-
+// We hope to exploit the usual, well understood benefits of DRY code as follows:
+// - provide a standardised way for Action implementation functions to
+//   be coded - by providing a Go interface that provides method signatures and types for
+//   the principal steps involved. These aim to help identify and separate the main high-level
+//   processing steps.
+// - enforcing the use of the standardised approach by making a single entry point function
+//   with a signature that uses said interface.
+// - replacing the casual maps we have been using for: inputs/args, queries, db records and results with
+//   specific dedicated types for each context.
+// - standardizing the way we build up db queries and hold their state (*gorm.DB) objects *across* the
+//   main steps that wish to get involved with the *gorm.DB query.
+//
 // how might this work against us?
 // - we corner ourselves into a structure which isn't flexible enough
-// - overcomplicated polymorphic solution
+// - we might discover that the problem is simply not as polymorphic as we think it is
 // - if it ain't broke, don't fix it. so why waste energy on this?
 
-type Arguments map[string]any
+// RequestArguments are input values that are provided by an incoming request. Keys are model field names
+// in the case of implicit inputs, or the alias name defined in the schema in the case of explicit inputs.
+type RequestArguments map[string]any
 
-type Values map[string]any
+// DbValues hold the in-memory representation of a record we are going to *Write* to a database row.
+// Keys are strictly model field names. (I.e. something must intervene to snake-case it before passing it on to
+// a gorm.DB.Create() for example).
+type DbValues map[string]any
 
-type Result map[string]any
+// An ActionResult is the object returned to the caller for any of the Action functions.
+// Keys are strictly model field names.
+type ActionResult map[string]any
 
-// the ActionBuilder API fluidly constructs
-// - a model object used for writing data, and
-// - a database query used for querying data.
+// The ActionBuilder interface governs a contract that must be used to instantiate, build-up,
+// and execute any Action.
+
 type ActionBuilder interface {
 
-	// instantiate action scope.
-	Instantiate(ctx context.Context, schema *proto.Schema, operation *proto.Operation) ActionBuilder
+	// Initialise implementations must retain access to the given Scope - because it is the way that
+	// state is shared between the interface methods. For example it contains a *gorm.DB that some of the
+	// methods incrementally update.
+	Initialise(scope *Scope) ActionBuilder
 
-	// for each implicit input on write operation, store matching argument in underlying "Values" data structure.
-	ApplyImplicitInputs(args Arguments) ActionBuilder
+	// CaptureImplicitWriteInputValues implementations are expected to identify implicit
+	// Action *write* input key/values in the given args, and update the the dbValues in the shared Scope
+	// object accordingly.
+	CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder
 
-	// for each @set attribute on the write operation, store matching argument in the underlying "Values" data structure (for intended field).
-	ApplySets(args Arguments) ActionBuilder
+	// CaptureSetValues implementations are expected to reconcile the @Set expressions defined for this Action
+	// by the schema with the key/values provided by the given args, and to populate the *DBValues in the
+	// shared Scope accordingly.
+	CaptureSetValues(args RequestArguments) ActionBuilder
 
-	// 1. for each implicit input on read operation, use matching argument to add filter clause to database object.
-	// 2. for each @where attribute on the read/write operation, use matching argument to add filter clause to database object.
-	ApplyFilters(args Arguments) ActionBuilder
+	// ApplyImplicitFilters implementations are expected to reconcile the implicit read inputs defined for
+	// this Action by the schema with the key/values provided by the given args, and to add corresponding
+	// Where filters to the *gorm.DB in the shared Scope.
+	ApplyImplicitFilters(args RequestArguments) ActionBuilder
 
+	// ApplyExplicitFilters implementations are expected to reconcile the explicit read inputs defined for
+	// this Action by the schema with the key/values provided by the given args, and to add corresponding
+	// Where filters to the *gorm.DB in the shared Scope.
+	ApplyExplicitFilters(args RequestArguments) ActionBuilder
+
+	// ????? don't understand this one yet, ...
 	// use the current database query scope to perform an authorisation check on the data filter.
 	// use explicit inputs where ne
-	IsAuthorised(args Arguments) ActionBuilder
+	IsAuthorised(args RequestArguments) ActionBuilder
 
-	// execute database query and return action-specific result.
-	Execute() (*Result, error)
+	// Execute database query and return action-specific result.
+	Execute() (*ActionResult, error)
 }
 
+// A Scope provides a shared single source of truth to support Action implementation code,
+// plus some shared state that the ActionBuilder can update or otherwise use. For example
+// the values that will be written to a database row, or the *gorm.DB that the methods will
+// incrementally add to.
 type Scope struct {
-	// instantiated with context
 	context   context.Context
 	operation *proto.Operation
 	model     *proto.Model
@@ -68,46 +98,64 @@ type Scope struct {
 
 	// instantiated to {}
 	// modified with ParseValues and ApplySets
-	values *Values
+	dbValues DbValues
+}
+
+func NewScope(
+	context context.Context,
+	operation *proto.Operation,
+	model *proto.Model,
+	schema *proto.Schema,
+	table string,
+	query *gorm.DB) *Scope {
+	return &Scope{
+		context:   context,
+		operation: operation,
+		model:     model,
+		schema:    schema,
+		table:     table,
+		query:     query,
+		dbValues:  DbValues{},
+	}
 }
 
 type Action struct {
 	Scope
 }
 
-func (action *Action) Instantiate(ctx context.Context, schema *proto.Schema, operation *proto.Operation) ActionBuilder {
+func (action *Action) Initialise(ctx context.Context, schema *proto.Schema, operation *proto.Operation) ActionBuilder {
 	action.context = ctx
 	action.schema = schema
 	action.operation = operation
 	action.model = proto.FindModel(schema.Models, operation.ModelName)
 	action.query, _ = runtimectx.GetDatabase(ctx)
 	action.table = strcase.ToSnake(action.model.Name)
-	action.values = &Values{}
+	action.values = &DbValues{}
 
 	return action
 }
 
-func (action *Action) ApplyImplicitInputs(args Arguments) ActionBuilder {
+func (action *Action) ApplyImplicitInputs(args RequestArguments) ActionBuilder {
 	// todo: Default implementation for all actions types
 	return action
 }
 
-func (action *Action) ApplySets(args Arguments) ActionBuilder {
+func (action *Action) ApplySets(args RequestArguments) ActionBuilder {
 	// todo: Default implementation for all actions types
 	return action
 }
 
-func (action *Action) ApplyFilters(args Arguments) ActionBuilder {
+func (action *Action) ApplyFilters(args RequestArguments) ActionBuilder {
 	// todo: Default implementation for all actions types
 	return action
 }
 
-func (action *Action) IsAuthorised(args Arguments) ActionBuilder {
+func (action *Action) IsAuthorised(args RequestArguments) ActionBuilder {
 	// todo: default implementation for all actions types
 	return action
 }
 
-func (action *Action) Execute() (*Result, error) {
+func (action *Action) Execute() (*ActionResult, error) {
 	// todo: would we ever want a default implementation or should we panic?
-	return &Result{}, nil
+	return &ActionResult{}, nil
 }
