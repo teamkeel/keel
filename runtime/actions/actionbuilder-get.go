@@ -3,6 +3,8 @@ package actions
 import (
 	"errors"
 	"fmt"
+
+	"github.com/teamkeel/keel/proto"
 )
 
 type GetAction struct {
@@ -19,10 +21,28 @@ type GetAction struct {
 // 	return action
 // }
 
-// func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
-// 	// todo: Default implementation for all actions types
-// 	return action
-// }
+func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+	if action.HasError() {
+		return action
+	}
+
+	for _, input := range action.operation.Inputs {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
+
+		fieldName := input.Target[0]
+		value, ok := args[fieldName]
+
+		if !ok {
+			return action.WithError(fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args))
+		}
+
+		action.addImplicitFilter(fieldName, OperatorEquals, value)
+	}
+
+	return action
+}
 
 // func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder {
 // 	// todo: Default implementation for all actions types
