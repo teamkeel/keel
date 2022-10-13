@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
@@ -169,17 +170,30 @@ func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) Act
 			continue
 		}
 
-		target := input.Target[0]
-		match, ok := args[target]
+		fieldName := input.Target[0]
+		value, ok := args[fieldName]
 
 		if !ok {
 			continue
 		}
 
-		action.Scope.writeValues[target] = match
+		action.Scope.writeValues[fieldName] = value
 	}
 
 	return action
+}
+
+func (s *Action) addImplicitFilter(field string, operator Operator, value any) {
+	switch operator {
+	case OperatorStartsWith:
+		value = fmt.Sprintf("%s%", value)
+	case OperatorEndsWith:
+		value = fmt.Sprintf("%%%s", value) // todo: rethink how to escape in %
+	}
+
+	w := fmt.Sprintf("%s %s ?", strcase.ToSnake(field), sqlOperatorFromGraphQLOperator(operator))
+
+	s.query = s.query.Where(w, value)
 }
 
 func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
@@ -218,7 +232,14 @@ func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
 }
 
 func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+	panic("concrete implementation required")
+
+	// get(id, code, unqiueField): construct where from each field input (as equality) (point query)
+	// update(): construct where from each inputs as equality (range query)
+	// list(): construct where from many inputs with user-specified operators
+
 	// todo: Default implementation for all actions types
+	// { }
 	return action
 }
 
