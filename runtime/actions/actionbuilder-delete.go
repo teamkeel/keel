@@ -4,6 +4,6 @@ type DeleteAction struct {
 	Action
 }
 
-func (action *DeleteAction) Execute() (*Result, error) {
-	return &Result{}, nil
+func (action *DeleteAction) Execute() (*ActionResult, error) {
+	return &ActionResult{}, nil
 }

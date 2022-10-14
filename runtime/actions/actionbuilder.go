@@ -7,7 +7,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 	"gorm.io/gorm"
 )
 
@@ -184,6 +184,7 @@ func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) Act
 }
 
 func (s *Action) addImplicitFilter(field string, operator Operator, value any) {
+	// First, amend the RHS operand if necessart
 	switch operator {
 	case OperatorStartsWith:
 		value = fmt.Sprintf("%s%", value)
@@ -191,7 +192,10 @@ func (s *Action) addImplicitFilter(field string, operator Operator, value any) {
 		value = fmt.Sprintf("%%%s", value) // todo: rethink how to escape in %
 	}
 
-	w := fmt.Sprintf("%s %s ?", strcase.ToSnake(field), sqlOperatorFromGraphQLOperator(operator))
+	// Then, get the relevant SQL operator
+	sqlOperator := SqlOperatorFromGraphQLOperator(operator)
+
+	w := fmt.Sprintf("%s %s ?", strcase.ToSnake(field), sqlOperator)
 
 	s.query = s.query.Where(w, value)
 }
@@ -206,12 +210,12 @@ func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
 	schema := action.schema
 
 	for _, setExpression := range operation.SetExpressions {
-		expression, err := expressions.Parse(setExpression.Source)
+		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return action.WithError(err)
 		}
 
-		assignment, err := expressions.ToAssignmentCondition(expression)
+		assignment, err := expression.ToAssignmentCondition()
 		if err != nil {
 			return action.WithError(err)
 		}

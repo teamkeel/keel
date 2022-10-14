@@ -4,6 +4,6 @@ type CreateAction struct {
 	Action
 }
 
-func (c *CreateAction) Execute() (*Result, error) {
-	return &Result{}, nil
+func (c *CreateAction) Execute() (*ActionResult, error) {
+	return &ActionResult{}, nil
 }

@@ -4,6 +4,6 @@ type UpdateAction struct {
 	Action
 }
 
-func (action *UpdateAction) Execute() (*Result, error) {
-	return &Result{}, nil
+func (action *UpdateAction) Execute() (*ActionResult, error) {
+	return &ActionResult{}, nil
 }

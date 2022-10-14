@@ -54,7 +54,7 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 // 	return action
 // }
 
-func (action *GetAction) Execute() (*Result, error) {
+func (action *GetAction) Execute() (*ActionResult, error) {
 	result := []map[string]any{}
 	action.query = action.query.Find(&result)
 
@@ -69,7 +69,7 @@ func (action *GetAction) Execute() (*Result, error) {
 		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
 	}
 
-	var resultMap Result
+	var resultMap ActionResult
 	resultMap = toLowerCamelMap(result[0])
 	return &resultMap, nil
 }

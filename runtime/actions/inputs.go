@@ -61,8 +61,15 @@ var operatorsMap = map[Operator]string{
 	OperatorStartsWith: "field like '%'",
 }
 
-func sqlOperatorFromGraphQLOperator(op Operator) string {
+func SqlOperatorFromGraphQLOperator(op Operator) string {
 	// todo: implement
+	switch op {
+	case OperatorEquals, OperatorStartsWith, OperatorEndsWith:
+		return "="
+
+	default:
+		panic("todo")
+	}
 }
 
 // operator converts the given string representation of an operator like

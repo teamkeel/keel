@@ -11,7 +11,7 @@ type ListAction struct {
 	Action
 }
 
-func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
 	if action.HasError() {
 		return action
 	}
@@ -68,6 +68,6 @@ func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder 
 	return action
 }
 
-func (action *ListAction) Execute() (*Result, error) {
-	return &Result{}, nil
+func (action *ListAction) Execute() (*ActionResult, error) {
+	return &ActionResult{}, nil
 }
