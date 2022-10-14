@@ -8,15 +8,9 @@ import (
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
 )
-
-type GenericNode interface {
-	node.ParserNode
-	fmt.Stringer
-}
 
 type AST struct {
 	node.Node
@@ -198,8 +192,8 @@ func (ast *AttributeNode) String() string {
 type AttributeArgumentNode struct {
 	node.Node
 
-	Label      *NameNode               `(@@ ":")?`
-	Expression *expressions.Expression `@@`
+	Label      *NameNode   `(@@ ":")?`
+	Expression *Expression `@@`
 }
 
 func (ast *AttributeArgumentNode) String() string {
@@ -216,17 +210,29 @@ type ActionNode struct {
 	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
 
-func (ast *ActionNode) String() string {
+func (a *ActionNode) ReadInputs() []*ActionInputNode {
+	return a.Inputs
+}
+
+func (a *ActionNode) WriteInputs() []*ActionInputNode {
+	return a.With
+}
+
+func (a *ActionNode) AllInputs() []*ActionInputNode {
+	return append(a.Inputs, a.With...)
+}
+
+func (a *ActionNode) String() string {
 	return "ActionNode"
 }
 
 type ActionInputNode struct {
 	node.Node
 
-	Label    *NameNode         `(@@ ":")?`
-	Type     expressions.Ident `@@`
-	Repeated bool              `( @( "[" "]" )`
-	Optional bool              `| @( "?" ))?`
+	Label    *NameNode `(@@ ":")?`
+	Type     Ident     `@@`
+	Repeated bool      `( @( "[" "]" )`
+	Optional bool      `| @( "?" ))?`
 }
 
 func (ast *ActionInputNode) String() string {

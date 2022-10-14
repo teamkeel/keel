@@ -18,6 +18,19 @@ const (
 	KeywordWith       = "with"
 )
 
+// Types are roughly analogous to field types but they are used to type expressions
+const (
+	TypeNumber  = "Number"
+	TypeText    = "Text"
+	TypeBoolean = "Boolean"
+
+	// These are unique to expressions
+	TypeNull  = "Null"
+	TypeArray = "Array"
+	TypeIdent = "Ident"
+	TypeEnum  = "Enum"
+)
+
 // Built in Keel types. Worth noting a field type can also reference
 // another user-defined model
 const (

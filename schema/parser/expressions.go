@@ -1,4 +1,4 @@
-package expressions
+package parser
 
 import (
 	"errors"
@@ -140,7 +140,7 @@ func (condition *Condition) ToString() string {
 	return result
 }
 
-func Parse(source string) (*Expression, error) {
+func ParseExpression(source string) (*Expression, error) {
 	parser, err := participle.Build[Expression]()
 	if err != nil {
 		return nil, err
@@ -154,7 +154,7 @@ func Parse(source string) (*Expression, error) {
 	return expr, nil
 }
 
-func ToString(expr *Expression) (string, error) {
+func (expr *Expression) ToString() (string, error) {
 	result := ""
 
 	for i, orExpr := range expr.Or {
@@ -168,7 +168,7 @@ func ToString(expr *Expression) (string, error) {
 			}
 
 			if andExpr.Expression != nil {
-				r, err := ToString(andExpr.Expression)
+				r, err := andExpr.Expression.ToString()
 				if err != nil {
 					return result, err
 				}
@@ -200,14 +200,14 @@ func ToString(expr *Expression) (string, error) {
 	return result, nil
 }
 
-func IsValue(expr *Expression) bool {
-	v, _ := ToValue(expr)
+func (expr *Expression) IsValue() bool {
+	v, _ := expr.ToValue()
 	return v != nil
 }
 
 var ErrNotValue = errors.New("expression is not a single value")
 
-func ToValue(expr *Expression) (*Operand, error) {
+func (expr *Expression) ToValue() (*Operand, error) {
 	if len(expr.Or) > 1 {
 		return nil, ErrNotValue
 	}
@@ -233,12 +233,12 @@ func ToValue(expr *Expression) (*Operand, error) {
 
 var ErrNotAssignment = errors.New("expression is not using an assignment, e.g. a = b")
 
-func IsAssignment(expr *Expression) bool {
-	v, _ := ToAssignmentCondition(expr)
+func (expr *Expression) IsAssignment() bool {
+	v, _ := expr.ToAssignmentCondition()
 	return v != nil
 }
 
-func ToAssignmentCondition(expr *Expression) (*Condition, error) {
+func (expr *Expression) ToAssignmentCondition() (*Condition, error) {
 	if len(expr.Or) > 1 {
 		return nil, ErrNotAssignment
 	}

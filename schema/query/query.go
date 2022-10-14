@@ -1,8 +1,6 @@
 package query
 
-import (
-	"github.com/teamkeel/keel/schema/parser"
-)
+import "github.com/teamkeel/keel/schema/parser"
 
 func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	for _, ast := range asts {

@@ -1,0 +1,13 @@
+model Post {
+  fields {
+    title Text
+  }
+
+  operations {
+    create createPost() with(coolTitle: Text) {
+      @set(post.title = coolTitle)
+
+      @permission(expression: coolTitle == "123")
+    }
+  }
+}

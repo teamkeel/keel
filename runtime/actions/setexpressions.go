@@ -5,7 +5,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Given an operation with set expressions, will return a model map with any explicit
@@ -14,12 +14,12 @@ func SetExpressionInputsToModelMap(operation *proto.Operation, values map[string
 	modelMap := map[string]any{}
 
 	for _, setExpression := range operation.SetExpressions {
-		expression, err := expressions.Parse(setExpression.Source)
+		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return nil, err
 		}
 
-		assignment, err := expressions.ToAssignmentCondition(expression)
+		assignment, err := expression.ToAssignmentCondition()
 		if err != nil {
 			return nil, err
 		}

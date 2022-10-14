@@ -7,7 +7,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -119,13 +119,13 @@ func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
 
 func schemaDefault(field *proto.Field) (any, error) {
 	source := field.DefaultValue.Expression.Source
-	expr, err := expressions.Parse(source)
+	expr, err := parser.ParseExpression(source)
 	if err != nil {
 		return nil, fmt.Errorf("cannot Parse this expression: %s", source)
 	}
 	switch {
-	case expressions.IsValue(expr):
-		v, err := expressions.ToValue(expr)
+	case expr.IsValue():
+		v, err := expr.ToValue()
 		if err != nil {
 			return nil, err
 		}

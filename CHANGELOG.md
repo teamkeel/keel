@@ -1,3 +1,10 @@
+# [0.169.0](https://github.com/teamkeel/keel/compare/v0.168.0...v0.169.0) (2022-10-12)
+
+
+### Features
+
+* add log on process exit ([5deb247](https://github.com/teamkeel/keel/commit/5deb24741c72aadb026c82992479a651b183aa12))
+
 # [0.168.0](https://github.com/teamkeel/keel/compare/v0.167.0...v0.168.0) (2022-10-11)
 
 

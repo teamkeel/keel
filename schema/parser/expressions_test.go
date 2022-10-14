@@ -1,10 +1,10 @@
-package expressions_test
+package parser_test
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/teamkeel/keel/schema/expressions"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 func TestRoundTrip(t *testing.T) {
@@ -32,10 +32,10 @@ func TestRoundTrip(t *testing.T) {
 
 	for name, fixture := range fixtures {
 		t.Run(name, func(t *testing.T) {
-			expr, err := expressions.Parse(fixture)
+			expr, err := parser.ParseExpression(fixture)
 			assert.NoError(t, err)
 
-			str, err := expressions.ToString(expr)
+			str, err := expr.ToString()
 			assert.NoError(t, err)
 			assert.Equal(t, fixture, str)
 		})
@@ -51,10 +51,10 @@ func TestToString(t *testing.T) {
 	)
 	`
 
-	expr, err := expressions.Parse(source)
+	expr, err := parser.ParseExpression(source)
 	assert.NoError(t, err)
 
-	output, err := expressions.ToString(expr)
+	output, err := expr.ToString()
 	assert.NoError(t, err)
 
 	assert.Equal(t, "a == b or ((c < d) and (e > f))", output)
@@ -79,10 +79,10 @@ func TestIsValue(t *testing.T) {
 
 	for input, expected := range fixtures {
 		t.Run(input, func(t *testing.T) {
-			expr, err := expressions.Parse(input)
+			expr, err := parser.ParseExpression(input)
 			assert.NoError(t, err)
 
-			assert.Equal(t, expected, expressions.IsValue(expr))
+			assert.Equal(t, expected, expr.IsValue())
 		})
 	}
 }
@@ -109,10 +109,10 @@ func TestIsAssignment(t *testing.T) {
 
 	for input, expected := range fixtures {
 		t.Run(input, func(t *testing.T) {
-			expr, err := expressions.Parse(input)
+			expr, err := parser.ParseExpression(input)
 			assert.NoError(t, err)
 
-			actual := expressions.IsAssignment(expr)
+			actual := expr.IsAssignment()
 			assert.Equal(t, expected, actual)
 		})
 	}
@@ -146,14 +146,14 @@ func TestLogicalExpressions(t *testing.T) {
 
 	for input, expected := range fixtures {
 		t.Run(input, func(t *testing.T) {
-			expr, err := expressions.Parse(input)
+			expr, err := parser.ParseExpression(input)
 			assert.NoError(t, err)
 
 			for _, cond := range expr.Conditions() {
 				if expected {
-					assert.Equal(t, expressions.LogicalCondition, cond.Type())
+					assert.Equal(t, parser.LogicalCondition, cond.Type())
 				} else {
-					assert.NotEqual(t, expressions.LogicalCondition, cond.Type())
+					assert.NotEqual(t, parser.LogicalCondition, cond.Type())
 				}
 			}
 		})
