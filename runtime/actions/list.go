@@ -380,10 +380,3 @@ func addOrderingAndLead(tx *gorm.DB) *gorm.DB {
 	tx = tx.Order(by)
 	return tx
 }
-
-func isMap(x any) bool {
-	if _, ok := x.(map[string]any); ok {
-		return true
-	}
-	return false
-}

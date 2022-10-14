@@ -39,23 +39,19 @@ func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuil
 				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs))
 			}
 
-			value := whereInputsAsMap[fieldName]
+			value, ok := whereInputsAsMap[fieldName].(map[string]any)
 
 			// todo: inspect this logic is correct
-			if input.Optional && !isMap(value) {
+			if input.Optional && !ok {
 				// do not do any further processing if the input is not a map
+				// as it is likely nil
 				continue
-			} else {
-				// not a map, and not optional: panic
-				panic("not a map")
-			}
-
-			argValueAsMap, ok := value.(map[string]any)
-			if !ok {
+			} else if !ok {
+				// not a map, and not optional
 				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
 			}
 
-			for operatorStr, operand := range argValueAsMap {
+			for operatorStr, operand := range value {
 				operatorName, err := operator(operatorStr)
 				if err != nil {
 					return action.WithError(err)
