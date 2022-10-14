@@ -51,17 +51,13 @@ func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuil
 			}
 
 			for operatorStr, operand := range argValueAsMap {
-				// form graphql op to sql op
-				op, err := operator(operatorStr)
+				operatorName, err := operator(operatorStr)
 				if err != nil {
 					return action.WithError(err)
 				}
 
-				// do implicit
-				// we want sql operator
-				action.addImplicitFilter(fieldName, op, operand)
+				action.addImplicitFilter(input, operatorName, operand)
 			}
-
 		}
 	}
 

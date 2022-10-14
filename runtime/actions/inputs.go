@@ -56,27 +56,30 @@ const (
 	OperatorOnOrAfter  = "onOrAfter"
 )
 
-var operatorsMap = map[Operator]string{
-	OperatorEquals:     "=",
-	OperatorStartsWith: "field like '%'",
-}
-
-func SqlOperatorFromGraphQLOperator(op Operator) string {
-	// todo: implement
-	switch op {
-	case OperatorEquals, OperatorStartsWith, OperatorEndsWith:
-		return "="
-
-	default:
-		panic("todo")
-	}
-}
+// Contains a mapping from graphql operator names
+// to SQL operators
+// var operatorsMap = map[Operator]string{
+// 	OperatorEquals:            "=",
+// 	OperatorOneOf:             "IN",
+// 	OperatorStartsWith:        "LIKE",
+// 	OperatorEndsWith:          "LIKE",
+// 	OperatorLessThan:          "<",
+// 	OperatorLessThanEquals:    "<=",
+// 	OperatorGreaterThan:       ">",
+// 	OperatorGreaterThanEquals: ">=",
+// 	OperatorBefore:            "<",
+// 	OperatorOnOrBefore:        "<=",
+// 	OperatorAfter:             ">",
+// 	OperatorOnOrAfter:         ">=",
+// }
 
 // operator converts the given string representation of an operator like
 // "eq" into the corresponding Operator value.
+// todo: is this method redundant?
 func operator(operatorStr string) (op Operator, err error) {
 	switch operatorStr {
 	case "equals":
+		// todo: should it be eq as the method comment says or equals
 		return OperatorEquals, nil
 	case "startsWith":
 		return OperatorStartsWith, nil

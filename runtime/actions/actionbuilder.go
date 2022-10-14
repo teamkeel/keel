@@ -183,21 +183,149 @@ func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) Act
 	return action
 }
 
-func (s *Action) addImplicitFilter(field string, operator Operator, value any) {
-	// First, amend the RHS operand if necessart
-	switch operator {
-	case OperatorStartsWith:
-		value = fmt.Sprintf("%s%", value)
-	case OperatorEndsWith:
-		value = fmt.Sprintf("%%%s", value) // todo: rethink how to escape in %
+// Given an input, operator and value, this method will add a where constraint to the current
+// query scope for the implicit filtering API.
+// e.g operator is 'greaterThan' and value is 1, with the input being targeted to a field 'rating',
+// the scope.query variable will have the following new SQL constraint added to it:
+// (..existing query..) AND rating > 1
+func (action *Action) addImplicitFilter(input *proto.OperationInput, operator Operator, value any) ActionBuilder {
+	if action.HasError() {
+		return action
 	}
 
-	// Then, get the relevant SQL operator
-	sqlOperator := SqlOperatorFromGraphQLOperator(operator)
+	inputType := input.Type.Type
 
-	w := fmt.Sprintf("%s %s ?", strcase.ToSnake(field), sqlOperator)
+	columnName := input.Target[0]
 
-	s.query = s.query.Where(w, value)
+	switch operator {
+	case OperatorEquals:
+		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
+
+		if inputType == proto.Type_TYPE_DATE || inputType == proto.Type_TYPE_DATETIME || inputType == proto.Type_TYPE_TIMESTAMP {
+			time, err := parseTimeOperand(value, inputType)
+
+			if err != nil {
+				return action.WithError(err)
+			}
+
+			action.query = action.query.Where(w, time)
+		} else {
+			action.query = action.query.Where(w, value)
+		}
+	case OperatorStartsWith:
+		operandStr, ok := value.(string)
+
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to a string", value))
+		}
+
+		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, operandStr+"%%")
+	case OperatorEndsWith:
+		operandStr, ok := value.(string)
+
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to a string", value))
+		}
+
+		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, "%%"+operandStr)
+	case OperatorContains:
+		operandStr, ok := value.(string)
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to a string", value))
+		}
+
+		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, "%%"+operandStr+"%%")
+	case OperatorOneOf:
+		operandStrings, ok := value.([]interface{})
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to a []interface{}", value))
+		}
+
+		w := fmt.Sprintf("%s in ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, operandStrings)
+	case OperatorLessThan:
+		operandInt, ok := value.(int)
+
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to an int", value))
+		}
+
+		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, operandInt)
+	case OperatorLessThanEquals:
+		operandInt, ok := value.(int)
+
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to an int", value))
+		}
+
+		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, operandInt)
+	case OperatorGreaterThan:
+		operandInt, ok := value.(int)
+
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to an int", value))
+		}
+
+		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, operandInt)
+	case OperatorGreaterThanEquals:
+		operandInt, ok := value.(int)
+
+		if !ok {
+			return action.WithError(fmt.Errorf("cannot cast this: %v to an int", value))
+		}
+
+		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
+
+		action.query = action.query.Where(w, operandInt)
+	case OperatorBefore:
+		operandTime, err := parseTimeOperand(value, inputType)
+
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
+
+		action.query = action.query.Where(w, operandTime)
+	case OperatorAfter:
+		operandTime, err := parseTimeOperand(value, inputType)
+
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
+
+		action.query = action.query.Where(w, operandTime)
+	case OperatorOnOrBefore:
+		operandTime, err := parseTimeOperand(value, inputType)
+
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, operandTime)
+	case OperatorOnOrAfter:
+		operandTime, err := parseTimeOperand(value, inputType)
+
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
+		action.query = action.query.Where(w, operandTime)
+	default:
+		return action.WithError(fmt.Errorf("operator: %v is not yet supported", operator))
+	}
+
+	return action
 }
 
 func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
