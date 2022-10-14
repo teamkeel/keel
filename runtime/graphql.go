@@ -184,6 +184,10 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			var builder actions.GetAction
 			scope, err := actions.NewScope(p.Context, op, schema)
 
+			if err != nil {
+				return nil, err
+			}
+
 			result, err := builder.
 				Initialise(scope).
 				ApplyImplicitFilters(arguments).
@@ -206,6 +210,10 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 			scope, err := actions.NewScope(p.Context, op, schema)
 
+			if err != nil {
+				return nil, err
+			}
+
 			result, err := builder.
 				Initialise(scope).
 				CaptureImplicitWriteInputValues(arguments). // todo: err?
@@ -222,13 +230,38 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			inputMap, ok := input.(map[string]any)
+			arguments, ok := input.(actions.RequestArguments)
 
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
 
-			return actions.Update(p.Context, op, schema, inputMap)
+			var builder actions.UpdateAction
+
+			scope, err := actions.NewScope(p.Context, op, schema)
+
+			if err != nil {
+				return nil, err
+			}
+
+			values, ok := arguments["values"].(map[string]any)
+
+			if !ok {
+				return nil, fmt.Errorf("no values provided")
+			}
+
+			result, err := builder.
+				Initialise(scope).
+				// first capture any implicit inputs
+				CaptureImplicitWriteInputValues(values).
+				// then capture explicitly used inputs
+				CaptureSetValues(values).
+				// then apply unique filters
+				ApplyImplicitFilters(arguments).
+				IsAuthorised(arguments).
+				Execute()
+
+			return result, err
 		}
 
 		field.Type = graphql.NewNonNull(field.Type)
@@ -239,19 +272,28 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			inputMap, ok := input.(map[string]any)
+			arguments, ok := input.(actions.RequestArguments)
 
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
 
-			success, err := actions.Delete(p.Context, op, schema, inputMap)
+			var builder actions.DeleteAction
 
-			resp := map[string]interface{}{
-				"success": success,
+			scope, err := actions.NewScope(p.Context, op, schema)
+
+			if err != nil {
+				return nil, err
 			}
 
-			return resp, err
+			result, err := builder.
+				Initialise(scope).
+				ApplyImplicitFilters(arguments).
+				IsAuthorised(arguments).
+				Execute()
+
+			// action result here is { "success": true|false }
+			return result, err
 		}
 
 		mk.mutation.AddFieldConfig(op.Name, field)
