@@ -1,3 +1,10 @@
+# [0.170.0](https://github.com/teamkeel/keel/compare/v0.169.0...v0.170.0) (2022-10-14)
+
+
+### Features
+
+* support inputs in permission attributes ([#467](https://github.com/teamkeel/keel/issues/467)) ([5b733c3](https://github.com/teamkeel/keel/commit/5b733c39d27f2b9d4a36753d827eb59da500da4a))
+
 # [0.169.0](https://github.com/teamkeel/keel/compare/v0.168.0...v0.169.0) (2022-10-12)
 
 
