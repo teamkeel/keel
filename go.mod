@@ -13,6 +13,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/golang-jwt/jwt/v4 v4.4.2
+	github.com/gorilla/handlers v1.5.1
 	github.com/graphql-go/graphql v0.8.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c
@@ -36,6 +37,7 @@ require (
 
 require (
 	github.com/aybabtme/flatjson v0.1.2 // indirect
+	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/tkuchiki/go-timezone v0.2.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
@@ -67,7 +69,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 	golang.org/x/net v0.0.0-20220906165146-f3363e06e74c // indirect
