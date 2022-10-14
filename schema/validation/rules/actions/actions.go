@@ -419,7 +419,7 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 	fieldsAssignedWithExplicitInput := []string{}
 
 	for _, attr := range action.Attributes {
-		if !lo.Contains([]string{parser.AttributeWhere, parser.AttributeSet}, attr.Name.Value) {
+		if !lo.Contains([]string{parser.AttributeWhere, parser.AttributeSet, parser.AttributePermission, parser.AttributeValidate}, attr.Name.Value) {
 			continue
 		}
 
@@ -438,12 +438,12 @@ func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *par
 					// we've found a usage of the input
 					isUsed = true
 
-					if cond.LHS != nil && cond.LHS != operand {
+					if cond.LHS != nil && cond.LHS != operand && cond.LHS.Ident != nil {
 						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.LHS.Ident.LastFragment())
 						continue
 					}
 
-					if cond.RHS != nil && cond.RHS != operand {
+					if cond.RHS != nil && cond.RHS != operand && cond.RHS.Ident != nil {
 						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.RHS.Ident.LastFragment())
 					}
 				}

@@ -173,6 +173,13 @@ func (ast *ModelsNode) String() string {
 	return "ModelsNode"
 }
 
+// Attributes:
+// - @permission
+// - @set
+// - @validate
+// - @where
+// - @unique
+// - @default
 type AttributeNode struct {
 	node.Node
 
@@ -216,6 +223,14 @@ func (a *ActionNode) ReadInputs() []*ActionInputNode {
 
 func (a *ActionNode) WriteInputs() []*ActionInputNode {
 	return a.With
+}
+
+func (a *ActionNode) IsWrite() bool {
+	return a.Type.Value == ActionTypeCreate || a.Type.Value == ActionTypeUpdate
+}
+
+func (a *ActionNode) IsRead() bool {
+	return a.Type.Value != ActionTypeCreate
 }
 
 func (a *ActionNode) AllInputs() []*ActionInputNode {

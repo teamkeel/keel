@@ -19,13 +19,6 @@ type ExpressionContext struct {
 	Attribute *parser.AttributeNode
 }
 
-type OperandPosition = string
-
-const (
-	OperandPositionLhs OperandPosition = "lhs"
-	OperandPositionRhs OperandPosition = "rhs"
-)
-
 // ExpressionScope is used to represent things that should be in the scope
 // of an expression.
 // Operands in an expression are composed of fragments,
@@ -46,30 +39,6 @@ func BuildRootExpressionScope(asts []*parser.AST, context ExpressionContext) *Ex
 				Model: context.Model,
 			},
 		},
-	}
-
-	if context.Action != nil {
-		// todo: this isnt right
-		// the scope logic for inputs should be:
-		// if lhs, suggest read and write ONLY for @permission expression, otherwise, dont suggest anything
-		// if rhs, suggest write inputs only
-
-		for _, input := range context.Action.AllInputs() {
-			// inputs using short-hand syntax that refer to relationships
-			// don't get added to the scope
-			if input.Label == nil && len(input.Type.Fragments) > 1 {
-				continue
-			}
-
-			resolvedType := query.ResolveInputType(asts, input, context.Model)
-			if resolvedType == "" {
-				continue
-			}
-			contextualScope.Entities = append(contextualScope.Entities, &ExpressionScopeEntity{
-				Name: input.Name(),
-				Type: resolvedType,
-			})
-		}
 	}
 
 	return DefaultExpressionScope(asts).Merge(contextualScope)
@@ -159,67 +128,6 @@ func (e *ExpressionScopeEntity) GetType() string {
 	return ""
 }
 
-var operatorsForType = map[string][]string{
-	parser.FieldTypeText: {
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-		parser.OperatorAssignment,
-	},
-	parser.FieldTypeID: {
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-		parser.OperatorAssignment,
-	},
-	parser.FieldTypeNumber: {
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-		parser.OperatorGreaterThan,
-		parser.OperatorGreaterThanOrEqualTo,
-		parser.OperatorLessThan,
-		parser.OperatorLessThanOrEqualTo,
-		parser.OperatorAssignment,
-		parser.OperatorIncrement,
-		parser.OperatorDecrement,
-	},
-	parser.FieldTypeBoolean: {
-		parser.OperatorAssignment,
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-	},
-	parser.FieldTypeDate: {
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-		parser.OperatorGreaterThan,
-		parser.OperatorGreaterThanOrEqualTo,
-		parser.OperatorLessThan,
-		parser.OperatorLessThanOrEqualTo,
-		parser.OperatorAssignment,
-	},
-	parser.FieldTypeDatetime: {
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-		parser.OperatorGreaterThan,
-		parser.OperatorGreaterThanOrEqualTo,
-		parser.OperatorLessThan,
-		parser.OperatorLessThanOrEqualTo,
-		parser.OperatorAssignment,
-	},
-	parser.TypeEnum: {
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-		parser.OperatorAssignment,
-	},
-	parser.TypeArray: {
-		parser.OperatorIn,
-		parser.OperatorNotIn,
-	},
-	parser.TypeNull: {
-		parser.OperatorEquals,
-		parser.OperatorNotEquals,
-		parser.OperatorAssignment,
-	},
-}
-
 func (e *ExpressionScopeEntity) AllowedOperators() []string {
 	t := e.GetType()
 
@@ -303,58 +211,6 @@ func (e *ExpressionScopeEntity) IsRepeated() bool {
 	return false
 }
 
-func scopeFromModel(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity, model *parser.ModelNode) *ExpressionScope {
-	newEntities := []*ExpressionScopeEntity{}
-
-	for _, field := range query.ModelFields(model) {
-		newEntities = append(newEntities, &ExpressionScopeEntity{
-			Name:   field.Name.Value,
-			Field:  field,
-			Parent: parentEntity,
-		})
-	}
-
-	return &ExpressionScope{
-		Entities: newEntities,
-		Parent:   parentScope,
-	}
-}
-
-func scopeFromObject(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity) *ExpressionScope {
-	newEntities := []*ExpressionScopeEntity{}
-
-	for _, entity := range parentEntity.Object.Fields {
-		// create a shallow copy by getting the _value_ of entity
-		entityCopy := *entity
-		// update parent (this does _not_ mutate entity)
-		entityCopy.Parent = parentEntity
-		// then add a pointer to the _copy_
-		newEntities = append(newEntities, &entityCopy)
-	}
-
-	return &ExpressionScope{
-		Entities: newEntities,
-		Parent:   parentScope,
-	}
-}
-
-func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity) *ExpressionScope {
-	newEntities := []*ExpressionScopeEntity{}
-
-	for _, value := range parentEntity.Enum.Values {
-		newEntities = append(newEntities, &ExpressionScopeEntity{
-			Name:      value.Name.Value,
-			EnumValue: value,
-			Parent:    parentEntity,
-		})
-	}
-
-	return &ExpressionScope{
-		Entities: newEntities,
-		Parent:   parentScope,
-	}
-}
-
 // A condition is composed of a LHS operand (and an operator, and a RHS operand if not a value only condition like expression: true)
 // Given an operand of a condition, tries to resolve all of the fragments defined within the operand
 // an operand might be:
@@ -363,9 +219,11 @@ func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEn
 // - "123"
 // - true
 // All of these types above are checked / attempted to be resolved in this method.
-func ResolveOperand(asts []*parser.AST, operand *parser.Operand, scope *ExpressionScope, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err error) {
+func ResolveOperand(asts []*parser.AST, operand *parser.Operand, scope *ExpressionScope, context ExpressionContext, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err error) {
 	// build additional root scopes based on position of operand
 	// and also what type attribute the expression is used in.
+
+	scope = applyAdditionalOperandScopes(asts, scope, context, operandPosition)
 
 	// If it is a literal then handle differently.
 	if ok, _ := operand.IsLiteralType(); ok {
@@ -391,7 +249,6 @@ func ResolveOperand(asts []*parser.AST, operand *parser.Operand, scope *Expressi
 			}
 			return entity, nil
 		}
-
 	}
 
 	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything
@@ -464,6 +321,9 @@ fragments:
 				// with all of the potential values of the enum
 				scope = scopeFromEnum(scope, e)
 			case e.EnumValue != nil:
+				// if we are evaluating an EnumValue, then there are no more
+				// child entities to append as an EnumValue is a termination point.
+				// e.g EnumName.EnumValue.SomethingElse isnt a thing.
 				scope = &ExpressionScope{
 					Parent: scope,
 				}
@@ -478,6 +338,7 @@ fragments:
 			continue fragments
 		}
 
+		// todo: move this back to validation package
 		// Suggest the names of all things in scope
 		inScope := lo.Map(scope.Entities, func(e *ExpressionScopeEntity, _ int) string {
 			return e.Name
@@ -506,4 +367,110 @@ fragments:
 	}
 
 	return entity, nil
+}
+
+func scopeFromModel(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity, model *parser.ModelNode) *ExpressionScope {
+	newEntities := []*ExpressionScopeEntity{}
+
+	for _, field := range query.ModelFields(model) {
+		newEntities = append(newEntities, &ExpressionScopeEntity{
+			Name:   field.Name.Value,
+			Field:  field,
+			Parent: parentEntity,
+		})
+	}
+
+	return &ExpressionScope{
+		Entities: newEntities,
+		Parent:   parentScope,
+	}
+}
+
+func scopeFromObject(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity) *ExpressionScope {
+	newEntities := []*ExpressionScopeEntity{}
+
+	for _, entity := range parentEntity.Object.Fields {
+		// create a shallow copy by getting the _value_ of entity
+		entityCopy := *entity
+		// update parent (this does _not_ mutate entity)
+		entityCopy.Parent = parentEntity
+		// then add a pointer to the _copy_
+		newEntities = append(newEntities, &entityCopy)
+	}
+
+	return &ExpressionScope{
+		Entities: newEntities,
+		Parent:   parentScope,
+	}
+}
+
+func scopeFromEnum(parentScope *ExpressionScope, parentEntity *ExpressionScopeEntity) *ExpressionScope {
+	newEntities := []*ExpressionScopeEntity{}
+
+	for _, value := range parentEntity.Enum.Values {
+		newEntities = append(newEntities, &ExpressionScopeEntity{
+			Name:      value.Name.Value,
+			EnumValue: value,
+			Parent:    parentEntity,
+		})
+	}
+
+	return &ExpressionScope{
+		Entities: newEntities,
+		Parent:   parentScope,
+	}
+}
+
+func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, context ExpressionContext, position OperandPosition) *ExpressionScope {
+	additionalScope := &ExpressionScope{}
+
+	attribute := context.Attribute
+	action := context.Action
+
+	// If there is no action, then we dont want to do anything
+	if action == nil {
+		return scope
+	}
+
+	switch attribute.Name.Value {
+	case parser.AttributePermission:
+		// inputs can be used on either lhs or rhs
+		// e.g
+		// @permission(expression: explicitInput == "123")
+		// @permission(expression: "123" == explicitInput)
+		scope = applyInputsInScope(asts, context, scope)
+	case parser.AttributeValidate:
+		if position == OperandPositionLhs {
+			scope = applyInputsInScope(asts, context, scope)
+		}
+	default:
+		if position == OperandPositionRhs {
+			scope = applyInputsInScope(asts, context, scope)
+		}
+	}
+
+	return scope.Merge(additionalScope)
+}
+
+func applyInputsInScope(asts []*parser.AST, context ExpressionContext, scope *ExpressionScope) *ExpressionScope {
+	additionalScope := &ExpressionScope{}
+
+	for _, input := range context.Action.AllInputs() {
+		// inputs using short-hand syntax that refer to relationships
+		// don't get added to the scope
+		if input.Label == nil && len(input.Type.Fragments) > 1 {
+			continue
+		}
+
+		resolvedType := query.ResolveInputType(asts, input, context.Model)
+		if resolvedType == "" {
+			continue
+		}
+		additionalScope.Entities = append(additionalScope.Entities, &ExpressionScopeEntity{
+			Name: input.Name(),
+			Type: resolvedType,
+		})
+	}
+
+	return scope.Merge(additionalScope)
 }
