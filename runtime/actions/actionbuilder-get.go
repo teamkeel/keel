@@ -38,7 +38,7 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 			return action.WithError(fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args))
 		}
 
-		action.addImplicitFilter(fieldName, OperatorEquals, value)
+		action.addImplicitFilter(input, OperatorEquals, value)
 	}
 
 	return action
