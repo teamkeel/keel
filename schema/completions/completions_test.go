@@ -424,7 +424,7 @@ func TestCompletions(t *testing.T) {
 				mo<Cursor>
 			}
 			`,
-			expected: []string{"@graphql", "models"},
+			expected: []string{"@graphql", "@rpc", "models"},
 		},
 		{
 			name: "api-attributes",
@@ -433,7 +433,7 @@ func TestCompletions(t *testing.T) {
 				@<Cursor>
 			}
 			`,
-			expected: []string{"@graphql", "models"},
+			expected: []string{"@graphql", "@rpc", "models"},
 		},
 		{
 			name: "api-model-names",

@@ -3,7 +3,7 @@
     {
       "message": "api 'Web' has an unrecognised attribute @what",
       "short_message": "Unrecognised attribute what",
-      "hint": "Did you mean @graphql?",
+      "hint": "Did you mean @graphql, or @rpc?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_api_unsupported_attribute/schema.keel",

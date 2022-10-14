@@ -1,9 +1,12 @@
 package runtime
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strings"
 	"testing"
 	"time"
 
@@ -45,13 +48,19 @@ func TestRuntime(t *testing.T) {
 			// Construct the runtime API Handler.
 			handler := NewHandler(schema)
 
-			// Assemble the query to send from the test case data.
 			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
-			request := Request{
-				Context: runtimectx.WithDatabase(context.Background(), testDB),
-				Path:    "/Test",
-				Body:    []byte(reqBody),
+
+			request := &http.Request{
+				URL: &url.URL{
+					Path: "/Test",
+				},
+				Method: http.MethodPost,
+				Body:   ioutil.NopCloser(strings.NewReader(reqBody)),
 			}
+
+			ctx := request.Context()
+			ctx = runtimectx.WithDatabase(ctx, testDB)
+			request = request.WithContext(ctx)
 
 			// Apply the database prior-set up mandated by this test case.
 			if tCase.databaseSetup != nil {
@@ -59,7 +68,7 @@ func TestRuntime(t *testing.T) {
 			}
 
 			// Call the handler, and capture the response.
-			response, err := handler(&request)
+			response, err := handler(request)
 			require.NoError(t, err)
 			body := string(response.Body)
 			bodyFields := respFields{}
@@ -87,6 +96,58 @@ func TestRuntime(t *testing.T) {
 			// Do the specified assertion on the resultant database contents, if one is specified.
 			if tCase.assertDatabase != nil {
 				tCase.assertDatabase(t, testDB, bodyFields.Data)
+			}
+		})
+	}
+}
+
+func TestRuntimeRPC(t *testing.T) {
+	// We connect to the "main" database here only so we can create a new database
+	// for each sub-test
+
+	for _, tCase := range rpcTestCases {
+
+		// Run this test case.
+		t.Run(tCase.name, func(t *testing.T) {
+			schema := protoSchema(t, tCase.keelSchema)
+
+			testDB := testhelpers.SetupDatabaseForTestCase(t, schema, testhelpers.DbNameForTestName(tCase.name))
+
+			handler := NewHandler(schema)
+
+			request := &http.Request{
+				URL: &url.URL{
+					Path:     "/Test/" + tCase.Path,
+					RawQuery: tCase.QueryParams,
+				},
+				Method: tCase.Method,
+				Body:   ioutil.NopCloser(strings.NewReader(tCase.Body)),
+			}
+
+			ctx := request.Context()
+			ctx = runtimectx.WithDatabase(ctx, testDB)
+			request = request.WithContext(ctx)
+
+			// Apply the database prior-set up mandated by this test case.
+			if tCase.databaseSetup != nil {
+				tCase.databaseSetup(t, testDB)
+			}
+
+			// Call the handler, and capture the response.
+			response, err := handler(request)
+			require.NoError(t, err)
+			body := string(response.Body)
+			var res interface{}
+			require.NoError(t, json.Unmarshal([]byte(body), &res))
+
+			// Do the specified assertion on the data returned, if one is specified.
+			if tCase.assertResponse != nil {
+				tCase.assertResponse(t, res)
+			}
+
+			// Do the specified assertion on the resultant database contents, if one is specified.
+			if tCase.assertDatabase != nil {
+				tCase.assertDatabase(t, testDB, res)
 			}
 		})
 	}
@@ -122,6 +183,18 @@ type testCase struct {
 	assertData     func(t *testing.T, data map[string]any)
 	assertErrors   func(t *testing.T, errors []gqlerrors.FormattedError)
 	assertDatabase func(t *testing.T, db *gorm.DB, data map[string]any)
+}
+
+type rpcTestCase struct {
+	name           string
+	keelSchema     string
+	databaseSetup  func(t *testing.T, db *gorm.DB)
+	Path           string
+	QueryParams    string
+	Body           string
+	Method         string
+	assertResponse func(t *testing.T, data interface{})
+	assertDatabase func(t *testing.T, db *gorm.DB, data interface{})
 }
 
 // initRow makes a map to represent a database row - that is good to use inside the
@@ -1042,6 +1115,92 @@ var testCases = []testCase{
 			require.True(t, ok)
 			require.Len(t, edgesList, 1)
 
+		},
+	},
+}
+
+var rpcTestCases = []rpcTestCase{
+	{
+		name: "rpc_list",
+		keelSchema: `
+		model Thing {
+			fields {
+				text Text @unique
+				bool Boolean
+				timestamp Timestamp
+				date Date
+				number Number
+			}
+			operations {
+				list listThings()
+			}
+		}
+		api Test {
+			@rpc
+			models {
+				Thing
+			}
+		}
+	`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row1 := initRow(map[string]any{
+				"id":        "id_123",
+				"text":      "some-interesting-text",
+				"bool":      true,
+				"timestamp": "1970-01-01 00:00:10",
+				"date":      "2020-01-02",
+				"number":    10,
+			})
+			require.NoError(t, db.Table("thing").Create(row1).Error)
+		},
+		Path:   "listThings",
+		Body:   "",
+		Method: http.MethodGet,
+		assertResponse: func(t *testing.T, data interface{}) {
+			res := data.([]interface{})
+			require.Len(t, res, 1)
+		},
+	},
+	{
+		name: "rpc_get",
+		keelSchema: `
+		model Thing {
+			fields {
+				text Text @unique
+				bool Boolean
+				timestamp Timestamp
+				date Date
+				number Number
+			}
+			operations {
+				get getThing(id)
+			}
+		}
+		api Test {
+			@rpc
+			models {
+				Thing
+			}
+		}
+	`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row1 := initRow(map[string]any{
+				"id":        "id_123",
+				"text":      "some-interesting-text",
+				"bool":      true,
+				"timestamp": "1970-01-01 00:00:10",
+				"date":      "2020-01-02",
+				"number":    10,
+			})
+			require.NoError(t, db.Table("thing").Create(row1).Error)
+		},
+		Path:        "getThing",
+		QueryParams: "id=id_123",
+		Body:        "",
+		Method:      http.MethodGet,
+		assertResponse: func(t *testing.T, data interface{}) {
+			res := data.(map[string]any)
+			require.Equal(t, res["id"], "id_123")
 		},
 	},
 }

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -30,7 +30,7 @@ type Response struct {
 	Status int
 }
 
-type Handler func(r *Request) (*Response, error)
+type Handler func(r *http.Request) (*Response, error)
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -56,13 +56,6 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		body, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
-			return
-		}
-
 		handler := NewHandler(currSchema)
 
 		identityId, err := RetrieveIdentityClaim(r)
@@ -85,11 +78,7 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 		ctx := r.Context()
 		ctx = runtimectx.WithIdentity(ctx, identityId)
 
-		response, err := handler(&Request{
-			Context: ctx,
-			Path:    r.URL.Path,
-			Body:    body,
-		})
+		response, err := handler(r)
 
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -112,18 +101,22 @@ func NewHandler(s *proto.Schema) Handler {
 	handlers := map[string]Handler{}
 
 	for _, api := range s.Apis {
+		apiPath := strings.ToLower(api.Name)
 		switch api.Type {
 		case proto.ApiType_API_TYPE_GRAPHQL:
-			handlers["/"+api.Name] = NewGraphQLHandler(s, api)
+			handlers[apiPath] = NewGraphQLHandler(s, api)
+		case proto.ApiType_API_TYPE_RPC:
+			handlers[apiPath] = NewRpcHandler(s, api)
 		default:
 			panic(fmt.Sprintf("api type %s not supported", api.Type.String()))
 		}
 	}
 
-	return func(r *Request) (*Response, error) {
-		path := strings.TrimSuffix(r.Path, "/")
+	return func(r *http.Request) (*Response, error) {
+		uriSegments := strings.Split(r.URL.Path, "/")
+		apiPath := strings.ToLower(uriSegments[1])
 
-		handler, ok := handlers[path]
+		handler, ok := handlers[apiPath]
 		if !ok {
 			return &Response{
 				Status: 404,
@@ -135,20 +128,81 @@ func NewHandler(s *proto.Schema) Handler {
 	}
 }
 
+func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
+
+	rpcApi, err := NewRpcApi(s, api)
+	if err != nil {
+		panic(err)
+	}
+
+	return func(r *http.Request) (*Response, error) {
+
+		trimmedPath := strings.TrimPrefix(r.URL.Path, fmt.Sprintf("/%s/", api.Name))
+		trimmedPath = strings.TrimPrefix(trimmedPath, fmt.Sprintf("/%s/", strings.ToLower(api.Name)))
+
+		var result interface{}
+		switch r.Method {
+		case http.MethodGet:
+			handler, ok := rpcApi.get[trimmedPath]
+			if !ok {
+				return &Response{
+					Status: 404,
+					Body:   []byte("Not found"),
+				}, nil
+			}
+			result, err = handler(r)
+			if err != nil {
+				return nil, err
+			}
+		case http.MethodPost:
+			handler, ok := rpcApi.post[trimmedPath]
+			if !ok {
+				return &Response{
+					Status: 404,
+					Body:   []byte("Not found"),
+				}, nil
+			}
+			result, err = handler(r)
+			if err != nil {
+				return nil, err
+			}
+		default:
+			return nil, errors.New("unsupported method")
+		}
+
+		res, err := json.Marshal(result)
+		if err != nil {
+			return nil, err
+		}
+
+		return &Response{
+			Body:   res,
+			Status: 200,
+		}, nil
+	}
+
+}
+
 func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 	gqlSchema, err := NewGraphQLSchema(s, api)
 	if err != nil {
 		panic(err)
 	}
 
-	return func(r *Request) (*Response, error) {
+	return func(r *http.Request) (*Response, error) {
+
 		var params struct {
 			Query         string                 `json:"query"`
 			OperationName string                 `json:"operationName"`
 			Variables     map[string]interface{} `json:"variables"`
 		}
 
-		err := json.Unmarshal(r.Body, &params)
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(body, &params)
 		if err != nil {
 			return nil, err
 		}
@@ -159,7 +213,7 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 
 		result := graphql.Do(graphql.Params{
 			Schema:         *gqlSchema,
-			Context:        r.Context,
+			Context:        r.Context(),
 			RequestString:  params.Query,
 			VariableValues: params.Variables,
 		})
