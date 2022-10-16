@@ -1,3 +1,10 @@
+# [0.171.0](https://github.com/teamkeel/keel/compare/v0.170.0...v0.171.0) (2022-10-16)
+
+
+### Features
+
+* fix incorrect formatting of explicit inputs ([#469](https://github.com/teamkeel/keel/issues/469)) ([5073e42](https://github.com/teamkeel/keel/commit/5073e42f8f0136d1029ae5d64da212e1bc67d8fc))
+
 # [0.170.0](https://github.com/teamkeel/keel/compare/v0.169.0...v0.170.0) (2022-10-14)
 
 
