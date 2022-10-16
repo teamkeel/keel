@@ -303,16 +303,18 @@ func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode) {
 		}
 
 		if arg.Label != nil {
-			writer.Write("%s: ", arg.Label.Value)
-		}
+			// explicit input
+			writer.Write("%s: %s", arg.Label.Value, arg.Type.Fragments[0].Fragment)
+		} else {
 
-		// Note: not using arg.Type.ToString() here as we want to try
-		// and fix any casing issues
-		for i, fragment := range arg.Type.Fragments {
-			if i > 0 {
-				writer.Write(".")
+			// Note: not using arg.Type.ToString() here as we want to try
+			// and fix any casing issues
+			for i, fragment := range arg.Type.Fragments {
+				if i > 0 {
+					writer.Write(".")
+				}
+				writer.Write(lowerCamel(fragment.Fragment))
 			}
-			writer.Write(lowerCamel(fragment.Fragment))
 		}
 
 		if arg.Optional {
