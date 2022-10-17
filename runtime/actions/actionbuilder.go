@@ -382,7 +382,7 @@ func (action *Action[ResultType]) CaptureSetValues(args RequestArguments) Action
 }
 
 func (action *Action[ResultType]) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ResultType] {
-	panic("concrete implementation required")
+	return action
 }
 
 func (action *Action[ResultType]) ApplyExplicitFilters(args RequestArguments) ActionBuilder[ResultType] {
@@ -438,7 +438,7 @@ func (action *Action[ResultType]) IsAuthorised(args RequestArguments) ActionBuil
 }
 
 func (action *Action[ResultType]) Execute(args RequestArguments) (*ActionResult[ResultType], error) {
-	panic("provide concrete implementation")
+	return &ActionResult[ResultType]{}, nil
 }
 
 // toLowerCamelMap returns a copy of the given map, in which all

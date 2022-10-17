@@ -8,12 +8,19 @@ import (
 )
 
 type ListAction struct {
-	Action[ListResult]
+	*Action[ListResult]
 }
 
 type ListResult struct {
 	Collection  []map[string]any `json:"collection"`
 	HasNextPage bool             `json:"hasNextPage"`
+}
+
+func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
+	action.Action = &Action[ListResult]{
+		Scope: scope,
+	}
+	return action
 }
 
 func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {

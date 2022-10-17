@@ -1,11 +1,18 @@
 package actions
 
 type UpdateAction struct {
-	Action[UpdateResult]
+	*Action[UpdateResult]
 }
 
 type UpdateResult struct {
 	Object map[string]any `json:"object"`
+}
+
+func (action *UpdateAction) Initialise(scope *Scope) ActionBuilder[UpdateResult] {
+	action.Action = &Action[UpdateResult]{
+		Scope: scope,
+	}
+	return action
 }
 
 func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[UpdateResult], error) {
@@ -17,9 +24,7 @@ func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[Update
 
 	return &ActionResult[UpdateResult]{
 		Value: UpdateResult{
-			Object: map[string]any{
-				"object": toLowerCamelMap(action.writeValues),
-			},
+			Object: toLowerCamelMap(action.writeValues),
 		},
 	}, nil
 }

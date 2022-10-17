@@ -8,11 +8,18 @@ import (
 )
 
 type GetAction struct {
-	Action[GetResult]
+	*Action[GetResult]
 }
 
 type GetResult struct {
 	Object map[string]any `json:"object"`
+}
+
+func (action *GetAction) Initialise(scope *Scope) ActionBuilder[GetResult] {
+	action.Action = &Action[GetResult]{
+		Scope: scope,
+	}
+	return action
 }
 
 // func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder {
@@ -75,9 +82,7 @@ func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult
 
 	return &ActionResult[GetResult]{
 		Value: GetResult{
-			map[string]any{
-				"object": resultMap[0],
-			},
+			Object: resultMap[0],
 		},
 	}, nil
 }
