@@ -1,3 +1,10 @@
+# [0.172.0](https://github.com/teamkeel/keel/compare/v0.171.0...v0.172.0) (2022-10-17)
+
+
+### Features
+
+* logging and gzip ([c35b3f3](https://github.com/teamkeel/keel/commit/c35b3f39a33896e0de9bbe78c76cae97ba13ebb7))
+
 # [0.171.0](https://github.com/teamkeel/keel/compare/v0.170.0...v0.171.0) (2022-10-16)
 
 
