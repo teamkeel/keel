@@ -8,7 +8,11 @@ import (
 )
 
 type GetAction struct {
-	Action
+	Action[GetResult]
+}
+
+type GetResult struct {
+	Object map[string]any `json:"object"`
 }
 
 // func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder {
@@ -21,7 +25,7 @@ type GetAction struct {
 // 	return action
 // }
 
-func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
 	if action.HasError() {
 		return action
 	}
@@ -54,14 +58,14 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 // 	return action
 // }
 
-func (action *GetAction) Execute(args RequestArguments) (*ActionResult, error) {
-	result := []map[string]any{}
-	action.query = action.query.Find(&result)
+func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult], error) {
+	resultMap := []map[string]any{}
+	action.query = action.query.Find(&resultMap)
 
 	if action.query.Error != nil {
 		return nil, action.query.Error
 	}
-	n := len(result)
+	n := len(resultMap)
 	if n == 0 {
 		return nil, errors.New("no records found for Get() operation")
 	}
@@ -69,7 +73,11 @@ func (action *GetAction) Execute(args RequestArguments) (*ActionResult, error) {
 		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
 	}
 
-	var resultMap ActionResult
-	resultMap = toLowerCamelMap(result[0])
-	return &resultMap, nil
+	return &ActionResult[GetResult]{
+		Value: GetResult{
+			map[string]any{
+				"object": resultMap[0],
+			},
+		},
+	}, nil
 }

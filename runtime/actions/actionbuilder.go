@@ -40,47 +40,49 @@ type WriteValues map[string]any
 
 // An ActionResult is the object returned to the caller for any of the Action functions.
 // Keys are strictly model field names.
-type ActionResult map[string]any
+type ActionResult[T any] struct {
+	Value T
+}
 
 // The ActionBuilder interface governs a contract that must be used to instantiate, build-up,
 // and execute any Action.
 // All the following methods share a Scope object in which to accumulate query clauses and values that which
 // be written to a database row and an error that has been detected. The implementation of every method below
 // must short-circuit return if error is not nil and similarly set error if they encounter an error, and return.
-type ActionBuilder interface {
+type ActionBuilder[Result any] interface {
 
 	// Initialise implementations must retain access to the given Scope - because it is the way that
 	// state is shared between the interface methods. For example it contains a *gorm.DB that some of the
 	// methods incrementally update.
-	Initialise(scope *Scope) ActionBuilder
+	Initialise(scope *Scope) ActionBuilder[Result]
 
 	// CaptureImplicitWriteInputValues implementations are expected to identify implicit
 	// Action *write* input key/values in the given args, and update the the dbValues in the shared Scope
 	// object accordingly.
-	CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder
+	CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[Result]
 
 	// CaptureSetValues implementations are expected to reconcile the @Set expressions defined for this Action
 	// by the schema with the key/values provided by the given args, and to populate the *DBValues in the
 	// shared Scope accordingly.
-	CaptureSetValues(args RequestArguments) ActionBuilder
+	CaptureSetValues(args RequestArguments) ActionBuilder[Result]
 
 	// ApplyImplicitFilters implementations are expected to reconcile the implicit read inputs defined for
 	// this Action by the schema with the key/values provided by the given args, and to add corresponding
 	// Where filters to the *gorm.DB in the shared Scope.
-	ApplyImplicitFilters(args RequestArguments) ActionBuilder
+	ApplyImplicitFilters(args RequestArguments) ActionBuilder[Result]
 
 	// ApplyExplicitFilters implementations are expected to reconcile the explicit read inputs defined for
 	// this Action by the schema with the key/values provided by the given args, and to add corresponding
 	// Where filters to the *gorm.DB in the shared Scope.
-	ApplyExplicitFilters(args RequestArguments) ActionBuilder
+	ApplyExplicitFilters(args RequestArguments) ActionBuilder[Result]
 
 	// ????? don't understand this one yet, ...
 	// use the current database query scope to perform an authorisation check on the data filter.
 	// use explicit inputs where ne
-	IsAuthorised(args RequestArguments) ActionBuilder
+	IsAuthorised(args RequestArguments) ActionBuilder[Result]
 
 	// Execute database query and return action-specific result.
-	Execute(args RequestArguments) (*ActionResult, error)
+	Execute(args RequestArguments) (*ActionResult[Result], error)
 }
 
 // A Scope provides a shared single source of truth to support Action implementation code,
@@ -131,26 +133,26 @@ func NewScope(
 	}, nil
 }
 
-type Action struct {
+type Action[ResultType any] struct {
 	*Scope
 }
 
-func (action *Action) Initialise(scope *Scope) ActionBuilder {
+func (action *Action[ResultType]) Initialise(scope *Scope) ActionBuilder[ResultType] {
 	action.Scope = scope
 
 	return action
 }
 
-func (action *Action) WithError(err error) ActionBuilder {
+func (action *Action[ResultType]) WithError(err error) ActionBuilder[ResultType] {
 	action.Scope.curError = err
 	return action
 }
 
-func (action *Action) HasError() bool {
+func (action *Action[ResultType]) HasError() bool {
 	return action.Scope.curError != nil
 }
 
-func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder {
+func (action *Action[ResultType]) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[ResultType] {
 	if action.HasError() {
 		return action
 	}
@@ -183,7 +185,7 @@ func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) Act
 	return action
 }
 
-func (action *Action) addExplicitFilter(fieldName string, operator string, value any) ActionBuilder {
+func (action *Action[ResultType]) addExplicitFilter(fieldName string, operator string, value any) ActionBuilder[ResultType] {
 	// todo: support all operator types
 	if operator != parser.OperatorEquals {
 		panic("this operator is not supported yet...")
@@ -204,7 +206,7 @@ func (action *Action) addExplicitFilter(fieldName string, operator string, value
 // e.g operator is 'greaterThan' and value is 1, with the input being targeted to a field 'rating',
 // the scope.query variable will have the following new SQL constraint added to it:
 // (..existing query..) AND rating > 1
-func (action *Action) addImplicitFilter(input *proto.OperationInput, operator Operator, value any) ActionBuilder {
+func (action *Action[ResultType]) addImplicitFilter(input *proto.OperationInput, operator Operator, value any) ActionBuilder[ResultType] {
 	if action.HasError() {
 		return action
 	}
@@ -344,7 +346,7 @@ func (action *Action) addImplicitFilter(input *proto.OperationInput, operator Op
 	return action
 }
 
-func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
+func (action *Action[ResultType]) CaptureSetValues(args RequestArguments) ActionBuilder[ResultType] {
 	if action.HasError() {
 		return action
 	}
@@ -379,19 +381,11 @@ func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
 	return action
 }
 
-func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+func (action *Action[ResultType]) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ResultType] {
 	panic("concrete implementation required")
-
-	// get(id, code, unqiueField): construct where from each field input (as equality) (point query)
-	// update(): construct where from each inputs as equality (range query)
-	// list(): construct where from many inputs with user-specified operators
-
-	// todo: Default implementation for all actions types
-	// { }
-	return action
 }
 
-func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder {
+func (action *Action[ResultType]) ApplyExplicitFilters(args RequestArguments) ActionBuilder[ResultType] {
 	if action.HasError() {
 		return action
 	}
@@ -438,12 +432,12 @@ func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder 
 	return action
 }
 
-func (action *Action) IsAuthorised(args RequestArguments) ActionBuilder {
+func (action *Action[ResultType]) IsAuthorised(args RequestArguments) ActionBuilder[ResultType] {
 	// todo: default implementation for all actions types
 	return action
 }
 
-func (action *Action) Execute(args RequestArguments) (*ActionResult, error) {
+func (action *Action[ResultType]) Execute(args RequestArguments) (*ActionResult[ResultType], error) {
 	panic("provide concrete implementation")
 }
 
