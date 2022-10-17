@@ -1,3 +1,15 @@
+# [0.173.0](https://github.com/teamkeel/keel/compare/v0.172.0...v0.173.0) (2022-10-17)
+
+
+### Bug Fixes
+
+* fix wasm build ([3b05f19](https://github.com/teamkeel/keel/commit/3b05f198a4325ad849dd485d6192a3c273515490))
+
+
+### Features
+
+* simple rpc support ([fa22ea8](https://github.com/teamkeel/keel/commit/fa22ea80331e9966fcc6550648a35e4be5d1aa2d))
+
 # [0.172.0](https://github.com/teamkeel/keel/compare/v0.171.0...v0.172.0) (2022-10-17)
 
 
