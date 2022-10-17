@@ -193,7 +193,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				ApplyImplicitFilters(arguments).
 				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
-				Execute()
+				Execute(arguments)
 
 			return result, err
 		}
@@ -219,7 +219,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				CaptureImplicitWriteInputValues(arguments). // todo: err?
 				CaptureSetValues(arguments).
 				IsAuthorised(arguments).
-				Execute()
+				Execute(arguments)
 
 			return result, err
 		}
@@ -264,7 +264,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				ApplyImplicitFilters(wheres).
 				ApplyExplicitFilters(wheres).
 				IsAuthorised(arguments).
-				Execute()
+				Execute(arguments)
 
 			return result, err
 		}
@@ -296,7 +296,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				ApplyImplicitFilters(arguments).
 				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
-				Execute()
+				Execute(arguments)
 
 			// action result here is { "success": true|false }
 			return result, err
@@ -334,7 +334,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				ApplyImplicitFilters(where).
 				ApplyExplicitFilters(where).
 				IsAuthorised(input).
-				Execute()
+				Execute(input)
 
 			records, ok := result["records"]
 			hasNextPage, ok := result["hasNextPage"]

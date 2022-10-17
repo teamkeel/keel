@@ -80,7 +80,7 @@ type ActionBuilder interface {
 	IsAuthorised(args RequestArguments) ActionBuilder
 
 	// Execute database query and return action-specific result.
-	Execute() (*ActionResult, error)
+	Execute(args RequestArguments) (*ActionResult, error)
 }
 
 // A Scope provides a shared single source of truth to support Action implementation code,
@@ -189,12 +189,15 @@ func (action *Action) addExplicitFilter(fieldName string, operator string, value
 		panic("this operator is not supported yet...")
 	}
 
+	w := fmt.Sprintf("%s = ?", strcase.ToSnake(fieldName))
+	action.query = action.query.Where(w, value)
+
+	return action
 }
 
-// @where(expression: post.title == "foo" or post.title == "bar")
-// @where(expression: post.title == "banana")
-
-// select * from post where (post.title == 'foo' or post.title=)
+// todo:
+// addExplicitFilter and  addImplicitFilter should be the same method
+// we just need to find a common syntax for expressing operators from grapqhql implicit operators or expression operators
 
 // Given an input, operator and value, this method will add a where constraint to the current
 // query scope for the implicit filtering API.
@@ -440,9 +443,8 @@ func (action *Action) IsAuthorised(args RequestArguments) ActionBuilder {
 	return action
 }
 
-func (action *Action) Execute() (*ActionResult, error) {
-	// todo: would we ever want a default implementation or should we panic?
-	return &ActionResult{}, nil
+func (action *Action) Execute(args RequestArguments) (*ActionResult, error) {
+	panic("provide concrete implementation")
 }
 
 // toLowerCamelMap returns a copy of the given map, in which all
