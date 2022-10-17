@@ -244,10 +244,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			values, ok := arguments["values"].(map[string]any)
+			values, err := toArgsMap(arguments, "values")
+			if err != nil {
+				return nil, err
+			}
 
-			if !ok {
-				return nil, fmt.Errorf("no values provided")
+			wheres, err := toArgsMap(arguments, "where")
+			if err != nil {
+				return nil, err
 			}
 
 			result, err := builder.
@@ -257,7 +261,8 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				// then capture explicitly used inputs
 				CaptureSetValues(values).
 				// then apply unique filters
-				ApplyImplicitFilters(arguments).
+				ApplyImplicitFilters(wheres).
+				ApplyExplicitFilters(wheres).
 				IsAuthorised(arguments).
 				Execute()
 
@@ -289,6 +294,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			result, err := builder.
 				Initialise(scope).
 				ApplyImplicitFilters(arguments).
+				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
 				Execute()
 
@@ -299,27 +305,36 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
+			input, err := toArgsMap(p.Args, "input")
 
 			// If no inputs have been specified then we need to initialise an empty
 			// input map with no where conditions
-			if input == nil {
+			if err != nil {
 				input = map[string]any{
 					"where": map[string]any{},
 				}
 			}
 
-			args, ok := input.(map[string]any)
+			var builder actions.ListAction
 
-			if !ok {
-				return nil, err
-			}
-
-			records, hasNextPage, err := actions.List(p.Context, op, schema, args)
+			scope, err := actions.NewScope(p.Context, op, schema)
 
 			if err != nil {
 				return nil, err
 			}
+
+			where, err := toArgsMap(input, "where")
+
+			if err != nil {
+				where = map[string]any{}
+			}
+
+			result, err := builder.
+				Initialise(scope).
+				ApplyImplicitFilters(where).
+				ApplyExplicitFilters(where).
+				IsAuthorised(input).
+				Execute()
 
 			resp, err := connectionResponse(records, hasNextPage)
 			if err != nil {
@@ -1284,4 +1299,20 @@ func connectionResponse(records any, hasNextPage bool) (resp any, err error) {
 		"edges":    edges,
 	}
 	return resp, nil
+}
+
+func toArgsMap(input map[string]any, key string) (map[string]any, error) {
+	subKey, ok := input[key]
+
+	if !ok {
+		return nil, fmt.Errorf("%s missing", key)
+	}
+
+	subMap, ok := subKey.(map[string]any)
+
+	if !ok {
+		return nil, fmt.Errorf("%s does not match expected format", key)
+	}
+
+	return subMap, nil
 }
