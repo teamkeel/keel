@@ -3,6 +3,14 @@ model Post {
     author Author
   }
 
+  operations {
+    update updatePost(id) with(title) {
+      @set(post.title = post.subTitle)
+    }
+
+    // update posts set posts.title = posts.subTitle where posts.id = id
+  }
+
   @permission(
     expression: post.author == post.auth,
     actions: [get]

@@ -183,9 +183,14 @@ func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) Act
 	return action
 }
 
-func (action *Action) addExplicitFilter() ActionBuilder {
+func (action *Action) addExplicitFilter(fieldName string, operator string, value any) ActionBuilder {
 
 }
+
+// @where(expression: post.title == "foo" or post.title == "bar")
+// @where(expression: post.title == "banana")
+
+// select * from post where (post.title == 'foo' or post.title=)
 
 // Given an input, operator and value, this method will add a where constraint to the current
 // query scope for the implicit filtering API.
@@ -402,17 +407,22 @@ func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder 
 		}
 
 		// todo: look into refactoring interpretExpressionField to support handling
-		// of multiple conditions in an expression
+		// of multiple conditions in an expression and also literal values
 		field, err := interpretExpressionField(expr, operation, action.schema)
 		if err != nil {
 			return action.WithError(err)
 		}
 
-		value, ok := args[field.Name]
+		// @where(expression: post.title == coolTitle and post.title == somethingElse)
+
+		conditions := expr.Conditions()
+
+		condition := conditions[0]
+
+		match, ok := args[condition.RHS.Ident.ToString()]
 
 		if !ok {
 			return action.WithError(fmt.Errorf("argument not provided for %s", field.Name))
-
 		}
 
 	}
