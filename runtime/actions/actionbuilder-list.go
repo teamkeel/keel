@@ -20,6 +20,7 @@ func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuil
 		return input.Optional
 	})
 
+inputs:
 	for _, input := range action.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
@@ -39,20 +40,32 @@ func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuil
 				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs))
 			}
 
-			value, ok := whereInputsAsMap[fieldName].(map[string]any)
+			value, ok := whereInputsAsMap[fieldName]
 
-			// todo: inspect this logic is correct
-			if input.Optional && !ok {
-				// do not do any further processing if the input is not a map
-				// as it is likely nil
-				continue
-			} else if !ok {
-				// not a map, and not optional
+			if !ok {
+				if input.Optional {
+					// do not do any further processing if the input is not a map
+					// as it is likely nil
+					continue inputs
+				}
+
 				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
 			}
 
-			for operatorStr, operand := range value {
-				operatorName, err := operator(operatorStr)
+			valueMap, ok := value.(map[string]any)
+
+			if !ok {
+				if input.Optional {
+					// do not do any further processing if the input is not a map
+					// as it is likely nil
+					continue inputs
+				}
+
+				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
+			}
+
+			for operatorStr, operand := range valueMap {
+				operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
 				if err != nil {
 					return action.WithError(err)
 				}

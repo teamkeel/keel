@@ -76,6 +76,7 @@ const (
 // operator converts the given string representation of an operator like
 // "eq" into the corresponding Operator value.
 // todo: is this method redundant?
+// todo: make sure it matches the gql doc - particularly eq
 func operator(operatorStr string) (op Operator, err error) {
 	switch operatorStr {
 	case "equals":
