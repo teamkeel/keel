@@ -1,9 +1,12 @@
 package runtime_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -65,10 +68,14 @@ func TestGraphQL(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			response, err := handler(&runtime.Request{
-				Path: "/Test",
-				Body: body,
+			response, err := handler(&http.Request{
+				URL: &url.URL{
+					Path: "/Test",
+				},
+				Method: http.MethodPost,
+				Body:   ioutil.NopCloser(bytes.NewReader(body)),
 			})
+
 			require.NoError(t, err)
 			assert.Equal(t, 200, response.Status)
 

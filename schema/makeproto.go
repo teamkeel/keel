@@ -473,9 +473,9 @@ func stripQuotes(s string) string {
 
 func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 	switch parserAPIType {
-	case parser.APITypeGraphQL:
+	case parser.AttributeGraphQL:
 		return proto.ApiType_API_TYPE_GRAPHQL
-	case parser.APITypeRPC:
+	case parser.AttributeRPC:
 		return proto.ApiType_API_TYPE_RPC
 	default:
 		return proto.ApiType_API_TYPE_UNKNOWN

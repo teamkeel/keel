@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/iancoleman/strcase"
@@ -449,7 +450,11 @@ func parsePage(args map[string]any) (Page, error) {
 	if first, ok := args["first"]; ok {
 		asInt, ok := first.(int)
 		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to an int", first)
+			var err error
+			asInt, err = strconv.Atoi(first.(string))
+			if err != nil {
+				return page, fmt.Errorf("cannot cast this: %v to an int", first)
+			}
 		}
 		page.First = asInt
 	}
@@ -457,7 +462,11 @@ func parsePage(args map[string]any) (Page, error) {
 	if last, ok := args["last"]; ok {
 		asInt, ok := last.(int)
 		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to an int", last)
+			var err error
+			asInt, err = strconv.Atoi(last.(string))
+			if err != nil {
+				return page, fmt.Errorf("cannot cast this: %v to an int", last)
+			}
 		}
 		page.Last = asInt
 	}
