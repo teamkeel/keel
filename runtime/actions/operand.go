@@ -165,45 +165,45 @@ func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err erro
 	return t, nil
 }
 
-// parsePage extracts page mandate information from the given map and uses it to
-// compose a Page.
-func parsePage(args map[string]any) (Page, error) {
-	page := Page{}
+// // parsePage extracts page mandate information from the given map and uses it to
+// // compose a Page.
+// func parsePage(args map[string]any) (Page, error) {
+// 	page := Page{}
 
-	if first, ok := args["first"]; ok {
-		asInt, ok := first.(int)
-		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to an int", first)
-		}
-		page.First = asInt
-	}
+// 	if first, ok := args["first"]; ok {
+// 		asInt, ok := first.(int)
+// 		if !ok {
+// 			return page, fmt.Errorf("cannot cast this: %v to an int", first)
+// 		}
+// 		page.First = asInt
+// 	}
 
-	if last, ok := args["last"]; ok {
-		asInt, ok := last.(int)
-		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to an int", last)
-		}
-		page.Last = asInt
-	}
+// 	if last, ok := args["last"]; ok {
+// 		asInt, ok := last.(int)
+// 		if !ok {
+// 			return page, fmt.Errorf("cannot cast this: %v to an int", last)
+// 		}
+// 		page.Last = asInt
+// 	}
 
-	if after, ok := args["after"]; ok {
-		asString, ok := after.(string)
-		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to a string", after)
-		}
-		page.After = asString
-	}
+// 	if after, ok := args["after"]; ok {
+// 		asString, ok := after.(string)
+// 		if !ok {
+// 			return page, fmt.Errorf("cannot cast this: %v to a string", after)
+// 		}
+// 		page.After = asString
+// 	}
 
-	if before, ok := args["before"]; ok {
-		asString, ok := before.(string)
-		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to a string", before)
-		}
-		page.Before = asString
-	}
+// 	if before, ok := args["before"]; ok {
+// 		asString, ok := before.(string)
+// 		if !ok {
+// 			return page, fmt.Errorf("cannot cast this: %v to a string", before)
+// 		}
+// 		page.Before = asString
+// 	}
 
-	return page, nil
-}
+// 	return page, nil
+// }
 
 // addOrderingAndLead puts in a SELECT statement that puts in the ORDER BY clause to support
 // paging. It also uses the SQL "lead(1)" idiom to deduces if each row has a following row, wich

@@ -1,16 +1,22 @@
 package actions
 
 type DeleteAction struct {
-	Action
+	Action[DeleteResult]
 }
 
-func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult, error) {
+type DeleteResult struct {
+	Success bool `json:"success"`
+}
+
+func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[DeleteResult], error) {
 	record := []map[string]any{}
 	err := action.query.Delete(record).Error
 
-	result := ActionResult(map[string]any{
-		"success": err == nil,
-	})
+	result := ActionResult[DeleteResult]{
+		Value: DeleteResult{
+			Success: err != nil,
+		},
+	}
 
 	if err != nil {
 		return &result, err

@@ -8,10 +8,15 @@ import (
 )
 
 type ListAction struct {
-	Action
+	Action[ListResult]
 }
 
-func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+type ListResult struct {
+	Collection  []map[string]any `json:"collection"`
+	HasNextPage bool             `json:"hasNextPage"`
+}
+
+func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
 	if action.HasError() {
 		return action
 	}
@@ -78,7 +83,9 @@ inputs:
 	return action
 }
 
-func (action *ListAction) Execute(args RequestArguments) (*ActionResult, error) {
+func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
+	// how do we access original args?
+	// simple: add
 
 	if action.HasError() {
 		return nil, action.curError
@@ -135,9 +142,11 @@ func (action *ListAction) Execute(args RequestArguments) (*ActionResult, error) 
 		delete(row, "has_next")
 	}
 	collection := toLowerCamelMaps(result)
-	actionResult := ActionResult{
-		"collection":  collection,
-		"hasNextPage": hasNextPage,
+	actionResult := ActionResult[ListResult]{
+		Value: ListResult{
+			Collection:  collection,
+			HasNextPage: hasNextPage,
+		},
 	}
 
 	return &actionResult, nil
