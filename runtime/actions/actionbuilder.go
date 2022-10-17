@@ -183,6 +183,10 @@ func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) Act
 	return action
 }
 
+func (action *Action) addExplicitFilter() ActionBuilder {
+
+}
+
 // Given an input, operator and value, this method will add a where constraint to the current
 // query scope for the implicit filtering API.
 // e.g operator is 'greaterThan' and value is 1, with the input being targeted to a field 'rating',
@@ -376,7 +380,43 @@ func (action *Action) ApplyImplicitFilters(args RequestArguments) ActionBuilder 
 }
 
 func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder {
+	if action.HasError() {
+		return action
+	}
 	// todo: Default implementation for all actions types
+
+	// get: { "explicitUniqueField": "jdjsjs" }
+	// update: { "where": { "coolId": "djdjjd" }, "values": { "title": "djsjsjs" } }
+	// list { "where": { "coolId": { "startsWith": "usss" } } }
+	// delete: { "uniqueField": "jdjsjd" }
+	// create: n/a
+	// authenticate: n/a
+
+	operation := action.operation
+
+	for _, where := range operation.WhereExpressions {
+		expr, err := parser.ParseExpression(where.Source)
+
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		// todo: look into refactoring interpretExpressionField to support handling
+		// of multiple conditions in an expression
+		field, err := interpretExpressionField(expr, operation, action.schema)
+		if err != nil {
+			return action.WithError(err)
+		}
+
+		value, ok := args[field.Name]
+
+		if !ok {
+			return action.WithError(fmt.Errorf("argument not provided for %s", field.Name))
+
+		}
+
+	}
+
 	return action
 }
 

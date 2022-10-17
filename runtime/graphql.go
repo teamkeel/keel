@@ -336,6 +336,9 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(input).
 				Execute()
 
+			records, ok := result["records"]
+			hasNextPage, ok := result["hasNextPage"]
+
 			resp, err := connectionResponse(records, hasNextPage)
 			if err != nil {
 				return nil, err
