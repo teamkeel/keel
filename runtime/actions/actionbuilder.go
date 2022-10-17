@@ -184,6 +184,10 @@ func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) Act
 }
 
 func (action *Action) addExplicitFilter(fieldName string, operator string, value any) ActionBuilder {
+	// todo: support all operator types
+	if operator != parser.OperatorEquals {
+		panic("this operator is not supported yet...")
+	}
 
 }
 
@@ -425,6 +429,7 @@ func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder 
 			return action.WithError(fmt.Errorf("argument not provided for %s", field.Name))
 		}
 
+		action.addExplicitFilter(field.Name, condition.Operator.Symbol, match)
 	}
 
 	return action
