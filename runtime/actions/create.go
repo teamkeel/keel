@@ -1,11 +1,18 @@
 package actions
 
 type CreateAction struct {
-	Action[CreateResult]
+	*Action[CreateResult]
 }
 
 type CreateResult struct {
 	Object map[string]any `json:"object"`
+}
+
+func (action *CreateAction) Initialise(scope *Scope) ActionBuilder[CreateResult] {
+	action.Action = &Action[CreateResult]{
+		Scope: scope,
+	}
+	return action
 }
 
 func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
@@ -18,11 +25,7 @@ func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResul
 
 	return &ActionResult[CreateResult]{
 		Value: CreateResult{
-			Object: map[string]any{
-				"object": result,
-			},
+			Object: result,
 		},
 	}, nil
 }
-
-// insert into posts (id, title, created_at, updated_at) values('djdjd', 'a post', 20201i, 2023020) returning *
