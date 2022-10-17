@@ -328,8 +328,6 @@ func buildListInput(operation *proto.Operation, argsMap map[string]any) (*ListIn
 	implicitFilters := []*ImplicitFilter{}
 	explicitFilters := []*ExplicitFilter{}
 
-	fmt.Printf("args: %v", argsMap)
-
 	if allOptionalInputs && argsMap == nil {
 		// No inputs and nothing required. Set default paging
 		return &ListInput{

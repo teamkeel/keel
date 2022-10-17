@@ -61,14 +61,19 @@ var runCmd = &cobra.Command{
 		}
 		defer database.Stop()
 
+		logLevel := logger.Warn
+		if runCmdFlagVerbose {
+			logLevel = logger.Info
+		}
+
 		// todo: unify db logging with custom functions
 		logger := logger.New(
 			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 			logger.Config{
-				SlowThreshold:             time.Second,   // Slow SQL threshold
-				LogLevel:                  logger.Silent, // Dont log any gorm internals for now
-				IgnoreRecordNotFoundError: true,          // Ignore ErrRecordNotFound error for logger
-				Colorful:                  true,          // Disable color
+				SlowThreshold:             time.Second, // Slow SQL threshold
+				LogLevel:                  logLevel,    // Log level
+				IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+				Colorful:                  true,        // Disable color
 			},
 		)
 
@@ -383,6 +388,7 @@ func isRelevantEventType(op fsnotify.Op) bool {
 }
 
 var runCmdFlagReset bool
+var runCmdFlagVerbose bool
 var runCmdFlagPort string
 
 func init() {
@@ -395,5 +401,6 @@ func init() {
 
 	runCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "the directory containing the Keel schema files")
 	runCmd.Flags().BoolVar(&runCmdFlagReset, "reset", false, "if set the database will be reset")
+	runCmd.Flags().BoolVarP(&runCmdFlagVerbose, "verbose", "v", false, "print database logs")
 	runCmd.Flags().StringVar(&runCmdFlagPort, "port", "8000", "the port to run the Keel application on")
 }

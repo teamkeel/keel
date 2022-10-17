@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
+	"github.com/gorilla/handlers"
 	"github.com/graphql-go/graphql"
 	"github.com/rs/cors"
 	"github.com/teamkeel/keel/proto"
@@ -28,8 +32,24 @@ type Response struct {
 
 type Handler func(r *Request) (*Response, error)
 
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+	log.SetLevel(logLevel())
+}
+
 func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request) {
+
 	h := func(w http.ResponseWriter, r *http.Request) {
+
+		log.WithFields(log.Fields{
+			"url":     r.URL,
+			"uri":     r.RequestURI,
+			"headers": r.Header,
+			"method":  r.Method,
+			"host":    r.Host,
+		}).Debug("request received")
+
 		if currSchema == nil {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("Cannot serve requests when schema contains errors"))
@@ -83,8 +103,9 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 	}
 
 	handler := http.HandlerFunc(h)
-	return cors.Default().Handler(handler).ServeHTTP
+	withCors := cors.Default().Handler(handler)
 
+	return handlers.CompressHandler(withCors).ServeHTTP
 }
 
 func NewHandler(s *proto.Schema) Handler {
@@ -132,6 +153,10 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 			return nil, err
 		}
 
+		log.WithFields(log.Fields{
+			"query": params.Query,
+		}).Debug("graphql")
+
 		result := graphql.Do(graphql.Params{
 			Schema:         *gqlSchema,
 			Context:        r.Context,
@@ -148,5 +173,22 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 			Body:   b,
 			Status: 200,
 		}, nil
+	}
+}
+
+func logLevel() log.Level {
+	switch os.Getenv("LOG_LEVEL") {
+	case "trace":
+		return log.TraceLevel
+	case "debug":
+		return log.DebugLevel
+	case "info":
+		return log.InfoLevel
+	case "warn":
+		return log.WarnLevel
+	case "error":
+		return log.ErrorLevel
+	default:
+		return log.InfoLevel
 	}
 }
