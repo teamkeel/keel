@@ -4,9 +4,10 @@ import { DatabaseError } from "pg-protocol";
 
 import { RunnerOpts, Test, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
-import { TestResultData, TestResult } from "./output";
+import { TestResult } from "./output";
 import { expect } from "./expect";
 import Reporter from "./reporter";
+import log from './logger'
 
 // generated.ts doesnt exist at this point, but once the node_module has been
 // injected with the generated code, IT WILL 😈
@@ -33,13 +34,14 @@ async function runAllTests({
   debug,
   filePath,
   pattern = "",
+  silent = false
 }: RunnerOpts) {
-  console.log(`${chalk.white.bgBlue(" INFO ")} Running testfile ${filePath}\n`);
+  log(`${chalk.white.bgBlue(" INFO ")} Running testfile ${filePath}\n`, silent);
 
   const hasPattern = pattern !== "";
 
   if (hasPattern) {
-    console.log(`${chalk.white.bgBlue(" INFO ")} Filtering on ${pattern}\n`);
+    log(`${chalk.white.bgBlue(" INFO ")} Filtering on ${pattern}\n`, silent);
   }
 
   const reporter = new Reporter({
@@ -60,13 +62,15 @@ async function runAllTests({
         continue;
       }
 
-      console.log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`);
+      log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`, silent);
     } else {
-      console.log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`);
+      log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`, silent);
     }
 
     let result: TestResult | undefined = undefined;
 
+    // we make a http request to the /reset endpoint in the go process
+    // which resets the database prior to the test run
     const resetSuccess = await reporter.clearDatabase({
       filePath: filePath,
       testCase: testName,
@@ -74,16 +78,18 @@ async function runAllTests({
 
     if (debug) {
       if (resetSuccess) {
-        console.log(
+        log(
           `${chalk.bgBlueBright.white(
             " INFO "
-          )} Reset database after ${testName}\n`
+          )} Reset database after ${testName}\n`,
+          silent
         );
       } else {
-        console.log(
+        log(
           `${chalk.bgRedBright.white(
             " ERROR "
-          )} Could not reset database after ${testName}\n`
+          )} Could not reset database after ${testName}\n`,
+          silent
         );
       }
     }
@@ -107,7 +113,7 @@ async function runAllTests({
 
       result = TestResult.pass(testName);
 
-      console.log(`${chalk.bgGreen.white(" PASS ")} ${testName}\n`);
+      log(`${chalk.bgGreen.white(" PASS ")} ${testName}\n`, silent);
     } catch (err) {
       if (debug) {
         console.debug(err);
@@ -116,7 +122,6 @@ async function runAllTests({
       // If the above code throws, then we know something went wrong during execution
       // An AssertionFailure might have been thrown, but it could also be something
       // else, so we need to check with instance_of checks the type of error
-
       const isAssertionFailure = err instanceof AssertionFailure;
 
       if (isAssertionFailure) {
@@ -124,25 +129,26 @@ async function runAllTests({
 
         result = TestResult.fail(testName, actual, expected);
 
-        console.log(`${chalk.bgRed.white(" FAIL ")} ${testName}\n`);
+        log(`${chalk.bgRed.white(" FAIL ")} ${testName}\n`, silent);
       } else if (err instanceof DatabaseError) {
         // do nothing
 
-        console.log(
+        log(
           `${chalk.bgBlueBright.white(
             " INFO "
-          )} Connection terminated during execution of ${testName}\n`
+          )} Connection terminated during execution of ${testName}\n`,
+          silent
         );
       } else if (err instanceof Error) {
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error
         result = TestResult.exception(testName, err);
-        console.log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`);
+        log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`, silent);
         runnerLogger.log(`${err}\n${err.stack}`, LogLevel.Error);
       } else {
         // if it's not an error, then wrap after stringifing
         result = TestResult.exception(testName, new Error(JSON.stringify(err)));
-        console.log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`);
+        log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`, silent);
         runnerLogger.log(`${err}`, LogLevel.Error);
       }
     } finally {
