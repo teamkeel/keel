@@ -8,6 +8,32 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
+// applyImplicitFiltersForGetOrDelete considers all the implicit inputs expected for
+// the given operation, and captures the targeted field. It then captures the corresponding value
+// operand value provided by the given request arguments, and adds a Where clause to the
+// query field in the given scope, using a hard-coded equality operator.
+func applyImplicitFiltersForGetOrDelete(scope *Scope, args RequestArguments) error {
+
+	for _, input := range scope.operation.Inputs {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
+
+		fieldName := input.Target[0]
+		value, ok := args[fieldName]
+
+		if !ok {
+			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
+		}
+
+		if err := addImplicitFilter(scope, input, OperatorEquals, value); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // todo:
 // addExplicitFilter and  addImplicitFilter should be the same method
 // we just need to find a common syntax for expressing operators from grapqhql implicit operators or expression operators

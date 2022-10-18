@@ -29,6 +29,8 @@ func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[Cr
 	return action // no-op
 }
 
+// --------------
+
 func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
 	err := c.scope.query.Create(c.scope.writeValues).Error
 
@@ -45,7 +47,7 @@ func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResul
 }
 
 func (action *CreateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[CreateResult] {
-	// Delegate to a method that we hople will become more widely used later.
+	// Delegate to a method that we hope will become more widely used later.
 	if err := captureImplicitWriteInputValues(action.scope.operation.Inputs, args, action.scope); err != nil {
 		action.scope.Error = err
 		return action

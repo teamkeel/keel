@@ -1,11 +1,5 @@
 package actions
 
-import (
-	"fmt"
-
-	"github.com/teamkeel/keel/proto"
-)
-
 type DeleteAction struct {
 	scope *Scope
 }
@@ -43,26 +37,10 @@ func (action *DeleteAction) ApplyImplicitFilters(args RequestArguments) ActionBu
 	if action.scope.Error != nil {
 		return action
 	}
-
-	for _, input := range action.scope.operation.Inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
-			continue
-		}
-
-		fieldName := input.Target[0]
-		value, ok := args[fieldName]
-
-		if !ok {
-			action.scope.Error = fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
-			return action
-		}
-
-		if err := addImplicitFilter(action.scope, input, OperatorEquals, value); err != nil {
-			action.scope.Error = err
-			return action
-		}
+	if err := applyImplicitFiltersForGetOrDelete(action.scope, args); err != nil {
+		action.scope.Error = err
+		return action
 	}
-
 	return action
 }
 

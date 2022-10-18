@@ -9,35 +9,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// what are we trying to achieve by drying up the action package?
-// We hope to exploit the usual, well understood benefits of DRY code as follows:
-// - provide a standardised way for Action implementation functions to
-//   be coded - by providing a Go interface that provides method signatures and types for
-//   the principal steps involved. These aim to help identify and separate the main high-level
-//   processing steps.
-// - enforcing the use of the standardised approach by making a single entry point function
-//   with a signature that uses said interface.
-// - replacing the casual maps we have been using for: inputs/args, queries, db records and results with
-//   specific dedicated types for each context.
-// - standardizing the way we build up db queries and hold their state (*gorm.DB) objects *across* the
-//   main steps that wish to get involved with the *gorm.DB query.
-//
-// how might this work against us?
-// - we corner ourselves into a structure which isn't flexible enough
-// - we might discover that the problem is simply not as polymorphic as we think it is
-// - if it ain't broke, don't fix it. so why waste energy on this?
-
 // RequestArguments are input values that are provided by an incoming request. Keys are model field names
 // in the case of implicit inputs, or the alias name defined in the schema in the case of explicit inputs.
 type RequestArguments map[string]any
 
-// Values hold the in-memory representation of a record we are going to *Write* to a database row.
+// WriteValues hold the in-memory representation of a record we are going to *Write* to a database row.
 // Keys are strictly model field names. (I.e. something must intervene to snake-case it before passing it on to
 // a gorm.DB.Create() for example).
 type WriteValues map[string]any
 
-// An ActionResult contains the return data for an Action using generics, so that we can create an interface
-// that depends ...:
+// An ActionResult is a parameterised Type that allows each of the specific Actions {Get,Create,List...} to define
+// their own return type structure. E.g. for the List action - it can return paging information as well as
+// the records in a strongly typed way.
 type ActionResult[T any] struct {
 	Value T
 }
@@ -46,7 +29,7 @@ type ActionResult[T any] struct {
 // and execute any Action.
 // All the following methods share a Scope object in which to accumulate query clauses and values that which
 // be written to a database row and an error that has been detected. The implementation of every method below
-// must short-circuit return if error is not nil and similarly set error if they encounter an error, and return.
+// must short-circuit-return if error is not nil and similarly set error if they encounter an error, and return.
 type ActionBuilder[Result any] interface {
 
 	// Initialise implementations must retain access to the given Scope - because it is the way that
@@ -94,16 +77,14 @@ type Scope struct {
 	schema    *proto.Schema
 	table     string
 
-	// instantiated to database
-	// amended with ParseFilters as defined in each action
-	// used to check authorisation using current query scope
-	// used to execute action outcome using current query scope
+	// This field is connected to the database, and we use it to perform all
+	// all queries and write operations on the database.
 	query *gorm.DB
 
-	// instantiated to {}
-	// modified with ParseValues and ApplySets
+	// This field accumulates the values we intend to write to a database row.
 	writeValues WriteValues
 
+	// The Error field holds the current error if there is one.
 	Error error
 }
 
