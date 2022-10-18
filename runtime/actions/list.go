@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 type ListAction struct {
-	*Action[ListResult]
+	scope *Scope
 }
 
 type ListResult struct {
@@ -18,23 +20,37 @@ type ListResult struct {
 }
 
 func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
-	action.Action = &Action[ListResult]{
-		Scope: scope,
-	}
+	action.scope = scope
 	return action
 }
 
+// Keep the no-op methods in a group together
+
+func (action *ListAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[ListResult] {
+	return action // no-op
+}
+
+func (action *ListAction) CaptureSetValues(args RequestArguments) ActionBuilder[ListResult] {
+	return action // no-op
+}
+
+func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[ListResult] {
+	return action // no-op
+}
+
+// ----------------
+
 func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
-	if action.HasError() {
+	if action.scope.Error != nil {
 		return action
 	}
 
-	allOptional := lo.EveryBy(action.operation.Inputs, func(input *proto.OperationInput) bool {
+	allOptional := lo.EveryBy(action.scope.operation.Inputs, func(input *proto.OperationInput) bool {
 		return input.Optional
 	})
 
 inputs:
-	for _, input := range action.operation.Inputs {
+	for _, input := range action.scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
@@ -45,12 +61,14 @@ inputs:
 		if !ok {
 			// We have some required inputs but there is no where key
 			if !allOptional {
-				return action.WithError(fmt.Errorf("arguments map does not contain a where key: %v", args))
+				action.scope.Error = fmt.Errorf("arguments map does not contain a where key: %v", args)
+				return action
 			}
 		} else {
 			whereInputsAsMap, ok := whereInputs.(map[string]any)
 			if !ok {
-				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs))
+				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
+				return action
 			}
 
 			value, ok := whereInputsAsMap[fieldName]
@@ -62,7 +80,8 @@ inputs:
 					continue inputs
 				}
 
-				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
+				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
+				return action
 			}
 
 			valueMap, ok := value.(map[string]any)
@@ -74,16 +93,18 @@ inputs:
 					continue inputs
 				}
 
-				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
+				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
+				return action
 			}
 
 			for operatorStr, operand := range valueMap {
 				operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
 				if err != nil {
-					return action.WithError(err)
+					action.scope.Error = err
+					return action
 				}
 
-				action.addImplicitFilter(input, operatorName, operand)
+				addImplicitFilter(action.scope, input, operatorName, operand)
 			}
 		}
 	}
@@ -91,12 +112,24 @@ inputs:
 	return action
 }
 
-func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
-	// how do we access original args?
-	// simple: add
+func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+	// We delegate to a function that may get used by other Actions later on, once we have
+	// unified how we handle operators in both schema where clauses and in implicit inputs language.
+	err := applyExplicitFilters(action.scope, args)
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+	return action
+}
 
-	if action.HasError() {
-		return nil, action.curError
+func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
+
+	if action.scope.Error != nil {
+		return nil, action.scope.Error
 	}
 
 	// We update the query to implement the paging request
@@ -110,33 +143,33 @@ func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResu
 	// that helps to determine "hasNextPage".
 	const by = "id"
 	selectArgs := `
-	 *,
-		CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
-		END as hasNext
-	`
-	action.query = action.query.Select(selectArgs, by)
-	action.query = action.query.Order(by)
+		 *,
+			CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
+			END as hasNext
+		`
+	action.scope.query = action.scope.query.Select(selectArgs, by)
+	action.scope.query = action.scope.query.Order(by)
 
 	// A Where clause to implement the after/before paging request
 	switch {
 	case page.After != "":
-		action.query = action.query.Where("ID > ?", page.After)
+		action.scope.query = action.scope.query.Where("ID > ?", page.After)
 	case page.Before != "":
-		action.query = action.query.Where("ID < ?", page.Before)
+		action.scope.query = action.scope.query.Where("ID < ?", page.Before)
 	}
 
 	switch {
 	case page.First != 0:
-		action.query = action.query.Limit(page.First)
+		action.scope.query = action.scope.query.Limit(page.First)
 	case page.Last != 0:
-		action.query = action.query.Limit(page.Last)
+		action.scope.query = action.scope.query.Limit(page.Last)
 	}
 
 	// Execute the query
 	result := []map[string]any{}
-	action.query = action.query.Find(&result)
-	if action.query.Error != nil {
-		return nil, action.query.Error
+	action.scope.query = action.scope.query.Find(&result)
+	if action.scope.query.Error != nil {
+		return nil, action.scope.query.Error
 	}
 
 	// Sort out the hasNextPage value, and clean up the response.
@@ -150,14 +183,13 @@ func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResu
 		delete(row, "has_next")
 	}
 	collection := toLowerCamelMaps(result)
-	actionResult := ActionResult[ListResult]{
+
+	return &ActionResult[ListResult]{
 		Value: ListResult{
 			Collection:  collection,
 			HasNextPage: hasNextPage,
 		},
-	}
-
-	return &actionResult, nil
+	}, nil
 }
 
 // parsePage extracts page mandate information from the given map and uses it to
@@ -211,4 +243,57 @@ func parsePage(args map[string]any) (Page, error) {
 	}
 
 	return page, nil
+}
+
+// applyExplicitFilters marries up the given operation's Where expressions, with operands
+// provided in the given request arguments. It then adds corresponding Where clauses to the
+// query field in the given scope object.
+func applyExplicitFilters(scope *Scope, args RequestArguments) error {
+
+	for _, where := range scope.operation.WhereExpressions {
+		expr, err := parser.ParseExpression(where.Source)
+
+		if err != nil {
+			return err
+		}
+
+		// todo: look into refactoring interpretExpressionField to support handling
+		// of multiple conditions in an expression and also literal values
+		field, err := interpretExpressionField(expr, scope.operation, scope.schema)
+		if err != nil {
+			return err
+		}
+
+		// @where(expression: post.title == coolTitle and post.title == somethingElse)
+
+		conditions := expr.Conditions()
+
+		condition := conditions[0]
+
+		match, ok := args[condition.RHS.Ident.ToString()]
+
+		if !ok {
+			return fmt.Errorf("argument not provided for %s", field.Name)
+		}
+
+		// Delegate to a function that we hope will be used more widely later.
+		addExplicitFilter(scope, field.Name, condition.Operator.Symbol, match)
+	}
+
+	return nil
+}
+
+// addExplicitFilter updates the query inside the given scope with
+// Where clauses that represent filters specified by an operation's Where expression,
+// using the given value as an operand.
+func addExplicitFilter(scope *Scope, fieldName string, operator string, value any) error {
+	// todo: support all operator types
+	if operator != parser.OperatorEquals {
+		panic("this operator is not supported yet...")
+	}
+
+	w := fmt.Sprintf("%s = ?", strcase.ToSnake(fieldName))
+	scope.query = scope.query.Where(w, value)
+
+	return nil
 }

@@ -1,7 +1,7 @@
 package actions
 
 type UpdateAction struct {
-	*Action[UpdateResult]
+	scope *Scope
 }
 
 type UpdateResult struct {
@@ -9,14 +9,36 @@ type UpdateResult struct {
 }
 
 func (action *UpdateAction) Initialise(scope *Scope) ActionBuilder[UpdateResult] {
-	action.Action = &Action[UpdateResult]{
-		Scope: scope,
-	}
+	action.scope = scope
 	return action
 }
 
+// Keep the no-op methods in a group together
+
+func (action *UpdateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[UpdateResult] {
+	return action // no-op
+}
+
+func (action *UpdateAction) CaptureSetValues(args RequestArguments) ActionBuilder[UpdateResult] {
+	return action // no-op
+}
+
+func (action *UpdateAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[UpdateResult] {
+	return action // no-op
+}
+
+func (action *UpdateAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[UpdateResult] {
+	return action // no-op
+}
+
+func (action *UpdateAction) IsAuthorised(args RequestArguments) ActionBuilder[UpdateResult] {
+	return action // no-op
+}
+
+// --------------------
+
 func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[UpdateResult], error) {
-	err := action.query.Updates(action.Scope.writeValues).Error
+	err := action.scope.query.Updates(action.scope.writeValues).Error
 
 	if err != nil {
 		return nil, err
@@ -24,7 +46,7 @@ func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[Update
 
 	return &ActionResult[UpdateResult]{
 		Value: UpdateResult{
-			Object: toLowerCamelMap(action.writeValues),
+			Object: toLowerCamelMap(action.scope.writeValues),
 		},
 	}, nil
 }

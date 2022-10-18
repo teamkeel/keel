@@ -1,13 +1,7 @@
 package actions
 
-import (
-	"fmt"
-
-	"github.com/teamkeel/keel/proto"
-)
-
 type DeleteAction struct {
-	*Action[DeleteResult]
+	scope *Scope
 }
 
 type DeleteResult struct {
@@ -15,38 +9,48 @@ type DeleteResult struct {
 }
 
 func (action *DeleteAction) Initialise(scope *Scope) ActionBuilder[DeleteResult] {
-	action.Action = &Action[DeleteResult]{
-		Scope: scope,
-	}
+	action.scope = scope
 	return action
 }
 
+// Keep the no-op methods in a group together
+
+func (action *DeleteAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[DeleteResult] {
+	return action // no-op
+}
+
+func (action *DeleteAction) CaptureSetValues(args RequestArguments) ActionBuilder[DeleteResult] {
+	return action // no-op
+}
+
+func (action *DeleteAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[DeleteResult] {
+	return action // no-op
+}
+
+func (action *DeleteAction) IsAuthorised(args RequestArguments) ActionBuilder[DeleteResult] {
+	return action // no-op
+}
+
+// --------------------
+
 func (action *DeleteAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[DeleteResult] {
-	if action.HasError() {
+	if action.scope.Error != nil {
 		return action
 	}
-
-	for _, input := range action.operation.Inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
-			continue
-		}
-
-		fieldName := input.Target[0]
-		value, ok := args[fieldName]
-
-		if !ok {
-			return action.WithError(fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args))
-		}
-
-		action.addImplicitFilter(input, OperatorEquals, value)
+	if err := applyImplicitFiltersForGetOrDelete(action.scope, args); err != nil {
+		action.scope.Error = err
+		return action
 	}
-
 	return action
 }
 
 func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[DeleteResult], error) {
+	if action.scope.Error != nil {
+		return nil, action.scope.Error
+	}
+
 	record := []map[string]any{}
-	err := action.query.Delete(record).Error
+	err := action.scope.query.Delete(record).Error
 
 	result := ActionResult[DeleteResult]{
 		Value: DeleteResult{
@@ -55,7 +59,7 @@ func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[Delete
 	}
 
 	if err != nil {
-		return &result, err
+		return nil, err
 	}
 
 	return &result, nil
