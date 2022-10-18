@@ -85,15 +85,52 @@ func (mk *rpcApiBuilder) addRoute(
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
 		handler := func(r *http.Request) (interface{}, error) {
+			scope, err := actions.NewScope(r.Context(), op, schema)
+			var builder actions.GetAction
+
 			inputs := queryParamsToInputs(r.URL.Query())
-			return actions.Get(r.Context(), op, schema, inputs)
+			if err != nil {
+				return nil, err
+			}
+
+			return builder.
+				Initialise(scope).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
+				IsAuthorised(inputs).
+				Execute(inputs)
 		}
 		mk.get[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_LIST:
+		var builder actions.ListAction
+
 		handler := func(r *http.Request) (interface{}, error) {
+
+			scope, err := actions.NewScope(r.Context(), op, schema)
+
 			inputs := queryParamsToInputs(r.URL.Query())
-			res, _, err := actions.List(r.Context(), op, schema, inputs)
-			return res, err
+
+			if err != nil {
+				return nil, err
+			}
+
+			where, err := toArgsMap(inputs, "where")
+
+			if err != nil {
+				where = map[string]any{}
+			}
+
+			result, err := builder.
+				Initialise(scope).
+				ApplyImplicitFilters(where).
+				ApplyExplicitFilters(where).
+				IsAuthorised(inputs).
+				Execute(inputs)
+
+			if err != nil {
+				return nil, err
+			}
+			return result, err
 		}
 		mk.get[op.Name] = handler
 
@@ -103,26 +140,87 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			res, _, err := actions.List(r.Context(), op, schema, inputs)
-			return res, err
+			scope, err := actions.NewScope(r.Context(), op, schema)
+			if err != nil {
+				return nil, err
+			}
+			where, err := toArgsMap(inputs, "where")
+
+			if err != nil {
+				where = map[string]any{}
+			}
+
+			result, err := builder.
+				Initialise(scope).
+				ApplyImplicitFilters(where).
+				ApplyExplicitFilters(where).
+				IsAuthorised(inputs).
+				Execute(inputs)
+
+			if err != nil {
+				return nil, err
+			}
+			return result, err
 		}
 		mk.post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		handler := func(r *http.Request) (interface{}, error) {
+			var builder actions.CreateAction
+
+			scope, err := actions.NewScope(r.Context(), op, schema)
+			if err != nil {
+				return nil, err
+			}
 			inputs, err := postParamsToInputs(r.Body)
 			if err != nil {
 				return nil, err
 			}
-			return actions.Create(r.Context(), op, schema, inputs)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return builder.
+				Initialise(scope).
+				CaptureImplicitWriteInputValues(inputs).
+				CaptureSetValues(inputs).
+				IsAuthorised(inputs).
+				Execute(inputs)
 		}
 		mk.post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
 		handler := func(r *http.Request) (interface{}, error) {
+			var builder actions.UpdateAction
+
+			scope, err := actions.NewScope(r.Context(), op, schema)
+			if err != nil {
+				return nil, err
+			}
 			inputs, err := postParamsToInputs(r.Body)
 			if err != nil {
 				return nil, err
 			}
-			return actions.Update(r.Context(), op, schema, inputs)
+			values, err := toArgsMap(inputs, "values")
+			if err != nil {
+				return nil, err
+			}
+
+			wheres, err := toArgsMap(inputs, "where")
+			if err != nil {
+				return nil, err
+			}
+
+			return builder.
+				Initialise(scope).
+				// first capture any implicit inputs
+				CaptureImplicitWriteInputValues(values).
+				// then capture explicitly used inputs
+				CaptureSetValues(values).
+				// then apply unique filters
+				ApplyImplicitFilters(wheres).
+				ApplyExplicitFilters(wheres).
+				IsAuthorised(inputs).
+				Execute(inputs)
 		}
 		mk.post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_DELETE:
@@ -131,7 +229,20 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			return actions.Delete(r.Context(), op, schema, inputs)
+			var builder actions.DeleteAction
+
+			scope, err := actions.NewScope(r.Context(), op, schema)
+
+			if err != nil {
+				return nil, err
+			}
+
+			return builder.
+				Initialise(scope).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
+				IsAuthorised(inputs).
+				Execute(inputs)
 		}
 		mk.post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
