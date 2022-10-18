@@ -188,14 +188,12 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			result, err := builder.
+			return builder.
 				Initialise(scope).
 				ApplyImplicitFilters(arguments).
 				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
 				Execute(arguments)
-
-			return result, err
 		}
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
@@ -214,14 +212,12 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			result, err := builder.
+			return builder.
 				Initialise(scope).
 				CaptureImplicitWriteInputValues(arguments). // todo: err?
 				CaptureSetValues(arguments).
 				IsAuthorised(arguments).
 				Execute(arguments)
-
-			return result, err
 		}
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
@@ -254,7 +250,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			result, err := builder.
+			return builder.
 				Initialise(scope).
 				// first capture any implicit inputs
 				CaptureImplicitWriteInputValues(values).
@@ -266,7 +262,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(arguments).
 				Execute(arguments)
 
-			return result, err
 		}
 
 		field.Type = graphql.NewNonNull(field.Type)
@@ -291,15 +286,12 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			result, err := builder.
+			return builder.
 				Initialise(scope).
 				ApplyImplicitFilters(arguments).
 				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
 				Execute(arguments)
-
-			// action result here is { "success": true|false }
-			return result, err
 		}
 
 		mk.mutation.AddFieldConfig(op.Name, field)
@@ -336,8 +328,13 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(input).
 				Execute(input)
 
-			records, ok := result["records"]
-			hasNextPage, ok := result["hasNextPage"]
+			if err != nil {
+				return nil, err
+			}
+
+			records := result.Value.Collection
+
+			hasNextPage := result.Value.HasNextPage
 
 			resp, err := connectionResponse(records, hasNextPage)
 			if err != nil {
@@ -369,7 +366,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			ouput.AddFieldConfig(output.Name, &graphql.Field{
 				Type: outputType,
 			})
-
 		}
 
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {

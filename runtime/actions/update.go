@@ -1,17 +1,30 @@
 package actions
 
 type UpdateAction struct {
-	Action
+	*Action[UpdateResult]
 }
 
-func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult, error) {
+type UpdateResult struct {
+	Object map[string]any `json:"object"`
+}
+
+func (action *UpdateAction) Initialise(scope *Scope) ActionBuilder[UpdateResult] {
+	action.Action = &Action[UpdateResult]{
+		Scope: scope,
+	}
+	return action
+}
+
+func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[UpdateResult], error) {
 	err := action.query.Updates(action.Scope.writeValues).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	result := ActionResult(toLowerCamelMap(action.writeValues))
-
-	return &result, nil
+	return &ActionResult[UpdateResult]{
+		Value: UpdateResult{
+			Object: toLowerCamelMap(action.writeValues),
+		},
+	}, nil
 }
