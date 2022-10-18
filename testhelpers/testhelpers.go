@@ -3,15 +3,11 @@ package testhelpers
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"testing"
 
 	cp "github.com/otiai10/copy"
-	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
 	"gorm.io/driver/postgres"
@@ -42,57 +38,87 @@ const dbConnString = "host=localhost port=8001 user=postgres password=postgres d
 
 var mainDB *gorm.DB
 
-func SetupDatabaseForTestCase(t *testing.T, schema *proto.Schema, dbName string) *gorm.DB {
+func SetupDatabaseForTestCase(schema *proto.Schema, dbName string, onCleanup func(mainDB *gorm.DB, testDB *gorm.DB, dbName string)) (*gorm.DB, error) {
 	if mainDB == nil {
 		var err error
 		mainDB, err = gorm.Open(
 			postgres.Open(fmt.Sprintf(dbConnString, "keel")),
-			&gorm.Config{})
-		require.NoError(t, err)
+			&gorm.Config{
+				Logger: logger.Discard,
+			})
+
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	require.NoError(t, mainDB.Exec("select pg_terminate_backend(pg_stat_activity.pid) from pg_stat_activity where datname = '"+dbName+"' and pg_stat_activity.pid <> pg_backend_pid();").Error)
+	err := mainDB.Exec("select pg_terminate_backend(pg_stat_activity.pid) from pg_stat_activity where datname = '" + dbName + "' and pg_stat_activity.pid <> pg_backend_pid();").Error
+
+	if err != nil {
+		return nil, err
+	}
 
 	// Drop the database if it already exists. The normal dropping of it at the end of the
 	// test case is bypassed if you quit a debug run of the test in VS Code.
-	require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
+	err = mainDB.Exec("DROP DATABASE if exists " + dbName).Error
+
+	if err != nil {
+		return nil, err
+	}
 
 	// Create the database and drop at the end of the test
-	err := mainDB.Exec("CREATE DATABASE " + dbName).Error
-	require.NoError(t, err)
-
-	t.Cleanup(func() {
-		require.NoError(t, mainDB.Exec("DROP DATABASE if exists "+dbName).Error)
-	})
+	err = mainDB.Exec("CREATE DATABASE " + dbName).Error
+	if err != nil {
+		return nil, err
+	}
 
 	// Connect to the newly created test database and close connection
 	// at the end of the test. We need to explicitly close the connection
 	// so the mainDB connection can drop the database.
 	testDB, err := gorm.Open(
-		postgres.Open(fmt.Sprintf(dbConnString, dbName)),
-		&gorm.Config{
-			Logger: logger.New(
-				log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-				logger.Config{
-					LogLevel: logger.Silent, // Log level
-					Colorful: true,          // Disable color
-				},
-			),
-		})
-	require.NoError(t, err)
+		postgres.Open(fmt.Sprintf(dbConnString, dbName)))
 
-	t.Cleanup(func() {
-		conn, err := testDB.DB()
-		require.NoError(t, err)
-		conn.Close()
-	})
+	if err != nil {
+		return nil, err
+	}
 
 	// Migrate the database to this test case's schema.
 	m := migrations.New(schema, nil)
 
-	require.NoError(t, m.Apply(testDB))
+	err = m.Apply(testDB)
 
-	return testDB
+	if err != nil {
+		return nil, err
+	}
+
+	// onCleanup(mainDB, testDB, dbName)
+
+	return testDB, nil
+}
+
+func CleanupDatabaseSetup(main *gorm.DB, testDB *gorm.DB, dbName string) error {
+	err := main.Exec("select pg_terminate_backend(pg_stat_activity.pid) from pg_stat_activity where datname = '" + dbName + "' and pg_stat_activity.pid <> pg_backend_pid();").Error
+
+	if err != nil {
+		return err
+	}
+
+	err = main.Exec("DROP DATABASE if exists " + dbName).Error
+
+	if err != nil {
+		return err
+	}
+	conn, err := testDB.DB()
+	if err != nil {
+		return err
+	}
+
+	err = conn.Close()
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func DbNameForTestName(testName string) string {

@@ -1,8 +1,6 @@
 import { test, expect, actions, Post, logger } from '@teamkeel/testing'
-import { LogLevel } from '@teamkeel/sdk'
 
 test('create action', async () => {
-  // todo: /Users/adambull/dev/keel/runtime/actions/create.go:46 ERROR: null value in column "title" of relation "post" violates not-null constraint (SQLSTATE 23502)
   const { object: createdPost } = await actions
     .createPost({ title: 'foo', subTitle: 'abc' })
 
