@@ -30,7 +30,7 @@ var testCmd = &cobra.Command{
 		}
 
 		err = packageJson.Inject(map[string]string{
-			"@teamkeel/testing": "0.175.0",
+			"@teamkeel/testing": "*",
 			"@teamkeel/sdk":     "*",
 			"@teamkeel/runtime": "*",
 			"ts-node":           "*",
