@@ -8,46 +8,20 @@ import (
 )
 
 type ListAction struct {
-	scope *Scope
+	Action
 }
 
-type ListResult struct {
-	Collection  []map[string]any `json:"collection"`
-	HasNextPage bool             `json:"hasNextPage"`
-}
-
-func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
-	action.scope = scope
-	return action
-}
-
-// Keep the no-op methods in a group together
-
-func (action *ListAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[ListResult] {
-	return action // no-op
-}
-
-func (action *ListAction) CaptureSetValues(args RequestArguments) ActionBuilder[ListResult] {
-	return action // no-op
-}
-
-func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[ListResult] {
-	return action // no-op
-}
-
-// ----------------
-
-func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
-	if action.scope.Error != nil {
+func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder {
+	if action.HasError() {
 		return action
 	}
 
-	allOptional := lo.EveryBy(action.scope.operation.Inputs, func(input *proto.OperationInput) bool {
+	allOptional := lo.EveryBy(action.operation.Inputs, func(input *proto.OperationInput) bool {
 		return input.Optional
 	})
 
 inputs:
-	for _, input := range action.scope.operation.Inputs {
+	for _, input := range action.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
@@ -58,14 +32,12 @@ inputs:
 		if !ok {
 			// We have some required inputs but there is no where key
 			if !allOptional {
-				action.scope.Error = fmt.Errorf("arguments map does not contain a where key: %v", args)
-				return action
+				return action.WithError(fmt.Errorf("arguments map does not contain a where key: %v", args))
 			}
 		} else {
 			whereInputsAsMap, ok := whereInputs.(map[string]any)
 			if !ok {
-				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
-				return action
+				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs))
 			}
 
 			value, ok := whereInputsAsMap[fieldName]
@@ -77,8 +49,7 @@ inputs:
 					continue inputs
 				}
 
-				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
-				return action
+				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
 			}
 
 			valueMap, ok := value.(map[string]any)
@@ -90,18 +61,16 @@ inputs:
 					continue inputs
 				}
 
-				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
-				return action
+				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
 			}
 
 			for operatorStr, operand := range valueMap {
 				operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
 				if err != nil {
-					action.scope.Error = err
-					return action
+					return action.WithError(err)
 				}
 
-				DRYaddImplicitFilter(action.scope, input, operatorName, operand)
+				action.addImplicitFilter(input, operatorName, operand)
 			}
 		}
 	}
@@ -109,22 +78,10 @@ inputs:
 	return action
 }
 
-func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-	err := DRYApplyExplicitFilters(action.scope, args)
-	if err != nil {
-		action.scope.Error = err
-		return action
-	}
-	return action
-}
+func (action *ListAction) Execute(args RequestArguments) (*ActionResult, error) {
 
-func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
-
-	if action.scope.Error != nil {
-		return nil, action.scope.Error
+	if action.HasError() {
+		return nil, action.curError
 	}
 
 	// We update the query to implement the paging request
@@ -138,33 +95,33 @@ func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResu
 	// that helps to determine "hasNextPage".
 	const by = "id"
 	selectArgs := `
-		 *,
-			CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
-			END as hasNext
-		`
-	action.scope.query = action.scope.query.Select(selectArgs, by)
-	action.scope.query = action.scope.query.Order(by)
+	 *,
+		CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
+		END as hasNext
+	`
+	action.query = action.query.Select(selectArgs, by)
+	action.query = action.query.Order(by)
 
 	// A Where clause to implement the after/before paging request
 	switch {
 	case page.After != "":
-		action.scope.query = action.scope.query.Where("ID > ?", page.After)
+		action.query = action.query.Where("ID > ?", page.After)
 	case page.Before != "":
-		action.scope.query = action.scope.query.Where("ID < ?", page.Before)
+		action.query = action.query.Where("ID < ?", page.Before)
 	}
 
 	switch {
 	case page.First != 0:
-		action.scope.query = action.scope.query.Limit(page.First)
+		action.query = action.query.Limit(page.First)
 	case page.Last != 0:
-		action.scope.query = action.scope.query.Limit(page.Last)
+		action.query = action.query.Limit(page.Last)
 	}
 
 	// Execute the query
 	result := []map[string]any{}
-	action.scope.query = action.scope.query.Find(&result)
-	if action.scope.query.Error != nil {
-		return nil, action.scope.query.Error
+	action.query = action.query.Find(&result)
+	if action.query.Error != nil {
+		return nil, action.query.Error
 	}
 
 	// Sort out the hasNextPage value, and clean up the response.
@@ -178,13 +135,12 @@ func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResu
 		delete(row, "has_next")
 	}
 	collection := toLowerCamelMaps(result)
+	actionResult := ActionResult{
+		"collection":  collection,
+		"hasNextPage": hasNextPage,
+	}
 
-	return &ActionResult[ListResult]{
-		Value: ListResult{
-			Collection:  collection,
-			HasNextPage: hasNextPage,
-		},
-	}, nil
+	return &actionResult, nil
 }
 
 // parsePage extracts page mandate information from the given map and uses it to
