@@ -1,3 +1,10 @@
+# [0.174.0](https://github.com/teamkeel/keel/compare/v0.173.0...v0.174.0) (2022-10-18)
+
+
+### Features
+
+* add logging on HttpFunctionsClient response errors ([3066c09](https://github.com/teamkeel/keel/commit/3066c092648d4f9d6212fc8ba9ef6c2324807e14))
+
 # [0.173.0](https://github.com/teamkeel/keel/compare/v0.172.0...v0.173.0) (2022-10-17)
 
 
