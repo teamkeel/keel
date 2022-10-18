@@ -1,3 +1,10 @@
+# [0.175.0](https://github.com/teamkeel/keel/compare/v0.174.0...v0.175.0) (2022-10-18)
+
+
+### Features
+
+* move database reset to before each individual test ([#475](https://github.com/teamkeel/keel/issues/475)) ([5cbeb02](https://github.com/teamkeel/keel/commit/5cbeb02b93e0689791f45b9cc34a7d38bb1aaf4e))
+
 # [0.174.0](https://github.com/teamkeel/keel/compare/v0.173.0...v0.174.0) (2022-10-18)
 
 
