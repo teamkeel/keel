@@ -1,3 +1,10 @@
+# [0.177.0](https://github.com/teamkeel/keel/compare/v0.176.0...v0.177.0) (2022-10-18)
+
+
+### Features
+
+* disable sdk query logging ([#481](https://github.com/teamkeel/keel/issues/481)) ([8ff5fd1](https://github.com/teamkeel/keel/commit/8ff5fd1be196dc0e60194743655c3cb1cd782374))
+
 # [0.176.0](https://github.com/teamkeel/keel/compare/v0.175.1...v0.176.0) (2022-10-18)
 
 
