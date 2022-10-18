@@ -8,7 +8,7 @@ import (
 )
 
 type ListAction struct {
-	*Action[ListResult]
+	scope *Scope
 }
 
 type ListResult struct {
@@ -17,23 +17,37 @@ type ListResult struct {
 }
 
 func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
-	action.Action = &Action[ListResult]{
-		Scope: scope,
-	}
+	action.scope = scope
 	return action
 }
 
+// Keep the no-op methods in a group together
+
+func (action *ListAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[ListResult] {
+	return action // no-op
+}
+
+func (action *ListAction) CaptureSetValues(args RequestArguments) ActionBuilder[ListResult] {
+	return action // no-op
+}
+
+func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[ListResult] {
+	return action // no-op
+}
+
+// ----------------
+
 func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
-	if action.HasError() {
+	if action.scope.Error != nil {
 		return action
 	}
 
-	allOptional := lo.EveryBy(action.operation.Inputs, func(input *proto.OperationInput) bool {
+	allOptional := lo.EveryBy(action.scope.operation.Inputs, func(input *proto.OperationInput) bool {
 		return input.Optional
 	})
 
 inputs:
-	for _, input := range action.operation.Inputs {
+	for _, input := range action.scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
@@ -44,12 +58,14 @@ inputs:
 		if !ok {
 			// We have some required inputs but there is no where key
 			if !allOptional {
-				return action.WithError(fmt.Errorf("arguments map does not contain a where key: %v", args))
+				action.scope.Error = fmt.Errorf("arguments map does not contain a where key: %v", args)
+				return action
 			}
 		} else {
 			whereInputsAsMap, ok := whereInputs.(map[string]any)
 			if !ok {
-				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs))
+				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
+				return action
 			}
 
 			value, ok := whereInputsAsMap[fieldName]
@@ -61,7 +77,8 @@ inputs:
 					continue inputs
 				}
 
-				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
+				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
+				return action
 			}
 
 			valueMap, ok := value.(map[string]any)
@@ -73,20 +90,31 @@ inputs:
 					continue inputs
 				}
 
-				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
+				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
+				return action
 			}
 
 			for operatorStr, operand := range valueMap {
 				operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
 				if err != nil {
-					return action.WithError(err)
+					action.scope.Error = err
+					return action
 				}
 
-				action.addImplicitFilter(input, operatorName, operand)
+				DRYaddImplicitFilter(action.scope, input, operatorName, operand)
 			}
 		}
 	}
 
+	return action
+}
+
+func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
+	err := DRYApplyExplicitFilters(action.scope, args)
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
 	return action
 }
 
