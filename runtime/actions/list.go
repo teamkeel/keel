@@ -79,19 +79,111 @@ inputs:
 }
 
 func (action *ListAction) Execute(args RequestArguments) (*ActionResult, error) {
-	// how do we access original args?
-	// simple: add
 
-	// pagination:
-	// 1. add ordering and lead
-	// 2. add after before (pagination)
-	// 3. add limit
+	if action.HasError() {
+		return nil, action.curError
+	}
 
-	// post processing:
-	// prune out lead column
-	// maybe some other pruning?
+	// We update the query to implement the paging request
 
-	// return return value structure: records, hasNextPage, etc
+	page, err := parsePage(args)
+	if err != nil {
+		return nil, err
+	}
 
-	panic("hdjds")
+	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
+	// that helps to determine "hasNextPage".
+	const by = "id"
+	selectArgs := `
+	 *,
+		CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
+		END as hasNext
+	`
+	action.query = action.query.Select(selectArgs, by)
+	action.query = action.query.Order(by)
+
+	// A Where clause to implement the after/before paging request
+	switch {
+	case page.After != "":
+		action.query = action.query.Where("ID > ?", page.After)
+	case page.Before != "":
+		action.query = action.query.Where("ID < ?", page.Before)
+	}
+
+	switch {
+	case page.First != 0:
+		action.query = action.query.Limit(page.First)
+	case page.Last != 0:
+		action.query = action.query.Limit(page.Last)
+	}
+
+	// Execute the query
+	result := []map[string]any{}
+	action.query = action.query.Find(&result)
+	if action.query.Error != nil {
+		return nil, action.query.Error
+	}
+
+	// Sort out the hasNextPage value, and clean up the response.
+	hasNextPage := false
+	if len(result) > 0 {
+		last := result[len(result)-1]
+		hasNextPage = last["hasnext"].(bool)
+	}
+
+	for _, row := range result {
+		delete(row, "has_next")
+	}
+	collection := toLowerCamelMaps(result)
+	actionResult := ActionResult{
+		"collection":  collection,
+		"hasNextPage": hasNextPage,
+	}
+
+	return &actionResult, nil
+}
+
+// parsePage extracts page mandate information from the given map and uses it to
+// compose a Page.
+func parsePage(args map[string]any) (Page, error) {
+	page := Page{}
+
+	if first, ok := args["first"]; ok {
+		asInt, ok := first.(int)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to an int", first)
+		}
+		page.First = asInt
+	}
+
+	if last, ok := args["last"]; ok {
+		asInt, ok := last.(int)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to an int", last)
+		}
+		page.Last = asInt
+	}
+
+	if after, ok := args["after"]; ok {
+		asString, ok := after.(string)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to a string", after)
+		}
+		page.After = asString
+	}
+
+	if before, ok := args["before"]; ok {
+		asString, ok := before.(string)
+		if !ok {
+			return page, fmt.Errorf("cannot cast this: %v to a string", before)
+		}
+		page.Before = asString
+	}
+
+	// If none specified - use a sensible default
+	if page.First == 0 && page.Last == 0 {
+		page = Page{First: 50}
+	}
+
+	return page, nil
 }
