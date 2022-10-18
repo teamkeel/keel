@@ -1,3 +1,10 @@
+# [0.176.0](https://github.com/teamkeel/keel/compare/v0.175.1...v0.176.0) (2022-10-18)
+
+
+### Features
+
+* provide ability to silence testing package logging ([#479](https://github.com/teamkeel/keel/issues/479)) ([7e41834](https://github.com/teamkeel/keel/commit/7e41834ca87d4daedbbdd6322640f4c0dacb990b))
+
 ## [0.175.1](https://github.com/teamkeel/keel/compare/v0.175.0...v0.175.1) (2022-10-18)
 
 
