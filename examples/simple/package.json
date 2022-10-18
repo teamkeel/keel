@@ -1,8 +1,12 @@
 {
   "devDependencies": {
+    "@swc/core": "*",
     "@teamkeel/runtime": "*",
     "@teamkeel/sdk": "*",
+    "@teamkeel/testing": "*",
     "@types/node": "^18.0.6",
+    "regenerator-runtime": "*",
+    "ts-node": "*",
     "typescript": "^4.7.4",
     "zod": "^3.18.0"
   },

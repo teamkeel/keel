@@ -1,28 +1,12 @@
 model Post {
     fields {
-        titleText Text?
-        subtitleText Text?
+        title Text
     }
 
     operations {
         get getPost(id)
-        create createPostExpl() with (explTitle: Text) {
-            @set(post.titleText = explTitle)
-            @set(post.subtitleText = explTitle)
-        }
-
-        create createPostImpl() with (titleText) {
-            @set(post.subtitleText = titleText)
-        }
-
-        update updatePostExpl(id) with (explTitle: Text) {
-            @set(post.titleText = explTitle)
-            @set(post.subtitleText = explTitle)
-        }
-
-        update updatePostImpl(id) with (titleText) {
-            @set(post.subtitleText = titleText)
-        }
+        create createPost() with (title)
+        list listPosts(title)
     }
 }
 

@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"testing"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/samber/lo"
@@ -49,10 +48,22 @@ type ActionRequest struct {
 	Payload    map[string]any `json:"payload"`
 }
 
+type ResetRequest struct {
+	FilePath string `json:"filePath"`
+	TestCase string `json:"testCase"`
+}
+
 //go:embed tsconfig.json
 var sampleTsConfig string
 
-func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
+type RunType = string
+
+const (
+	RunTypeIntegration = "integration"
+	RunTypeTestCmd     = "testCmd"
+)
+
+func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
@@ -120,7 +131,7 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 		panic(err)
 	}
 
-	output, err := typecheck(dir)
+	output, err := typecheck(dir, runType)
 
 	if err != nil {
 		fmt.Print(output)
@@ -276,7 +287,15 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 				w.Write([]byte("ok"))
 
 			case "/reset":
-				db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
+				resetRequestBody := &ResetRequest{}
+				err = json.Unmarshal(b, &resetRequestBody)
+				if err != nil {
+					panic(err)
+				}
+				db, err = testhelpers.SetupDatabaseForTestCase(schema, dbName)
+				if err != nil {
+					panic(err)
+				}
 				w.Write([]byte("ok"))
 			}
 		}),
@@ -296,8 +315,6 @@ func Run(t *testing.T, dir string, pattern string) (<-chan []*Event, error) {
 			if strings.Contains(file, "node_modules") {
 				continue
 			}
-
-			db = testhelpers.SetupDatabaseForTestCase(t, schema, dbName)
 
 			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file), pattern)
 
@@ -397,14 +414,27 @@ func serializeError(err error) []map[string]string {
 	}
 }
 
-func typecheck(dir string) (output string, err error) {
+func typecheck(dir string, runType RunType) (output string, err error) {
 	// todo: we need to generate a tsconfig to be able to run tsc for typechecking
 	// however, when we come to use the testing package in real projects, there may already
 	// be a tsconfig file that we need to respect
-	f, err := os.CreateTemp(dir, "tsconfig.json")
+
+	// switch runType {
+	// case RunTypeIntegration:
+	// case RunTypeTestCmd:
+	// default:
+	// 	panic("unrecognised run type")
+	// }
+	f, err := os.Create(filepath.Join(dir, "tsconfig.json"))
+
+	if err != nil {
+		return "", err
+	}
+
 	f.WriteString(sampleTsConfig)
+
 	defer f.Close()
-	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--project", f.Name())
+	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--project", filepath.Base(f.Name()))
 	cmd.Dir = dir
 
 	b, e := cmd.CombinedOutput()

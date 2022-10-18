@@ -18,13 +18,13 @@
             ]
         },
         {
-            "name": "Execute Run Command",
+            "name": "Execute Command",
             "type": "go",
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/cmd/keel/main.go",
             "args": [
-                "run",
+                "${input:cmd}",
                 "-d",
                 "../../${input:directory}",
             ]
@@ -47,6 +47,12 @@
             "id": "testCase",
             "description": "The test case directory to isolate",
             "default": ""
+        },
+        {
+            "type": "promptString",
+            "id": "cmd",
+            "description": "The cmd to run",
+            "default": "run"
         },
         {
             "type": "promptString",
