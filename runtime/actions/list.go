@@ -1,445 +1,163 @@
 package actions
 
 import (
-	"context"
 	"fmt"
 	"strconv"
-	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema/parser"
-	"gorm.io/gorm"
 )
 
-// List implements a Keel List Action.
-// In quick overview this means generating a SQL query
-// based on the List operation's Inputs and Where clause,
-// running that query, and returning the results.
-func List(
-	ctx context.Context,
-	operation *proto.Operation,
-	schema *proto.Schema,
-	inputs map[string]any) (records interface{}, hasNextPage bool, err error) {
+type ListAction struct {
+	*Action[ListResult]
+}
 
-	db, err := runtimectx.GetDatabase(ctx)
-	if err != nil {
-		return nil, false, err
+type ListResult struct {
+	Collection  []map[string]any `json:"collection"`
+	HasNextPage bool             `json:"hasNextPage"`
+}
+
+func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
+	action.Action = &Action[ListResult]{
+		Scope: scope,
+	}
+	return action
+}
+
+func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
+	if action.HasError() {
+		return action
 	}
 
-	model := proto.FindModel(schema.Models, operation.ModelName)
+	allOptional := lo.EveryBy(action.operation.Inputs, func(input *proto.OperationInput) bool {
+		return input.Optional
+	})
 
-	qry, err := buildQuery(db, model, operation, schema, inputs)
-	if err != nil {
-		return nil, false, err
+inputs:
+	for _, input := range action.operation.Inputs {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			continue
+		}
+
+		fieldName := input.Target[0]
+
+		whereInputs, ok := args["where"]
+		if !ok {
+			// We have some required inputs but there is no where key
+			if !allOptional {
+				return action.WithError(fmt.Errorf("arguments map does not contain a where key: %v", args))
+			}
+		} else {
+			whereInputsAsMap, ok := whereInputs.(map[string]any)
+			if !ok {
+				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs))
+			}
+
+			value, ok := whereInputsAsMap[fieldName]
+
+			if !ok {
+				if input.Optional {
+					// do not do any further processing if the input is not a map
+					// as it is likely nil
+					continue inputs
+				}
+
+				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
+			}
+
+			valueMap, ok := value.(map[string]any)
+
+			if !ok {
+				if input.Optional {
+					// do not do any further processing if the input is not a map
+					// as it is likely nil
+					continue inputs
+				}
+
+				return action.WithError(fmt.Errorf("cannot cast this: %v to a map[string]any", value))
+			}
+
+			for operatorStr, operand := range valueMap {
+				operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
+				if err != nil {
+					return action.WithError(err)
+				}
+
+				action.addImplicitFilter(input, operatorName, operand)
+			}
+		}
 	}
 
-	// Execute the SQL query.
+	return action
+}
+
+func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
+	// how do we access original args?
+	// simple: add
+
+	if action.HasError() {
+		return nil, action.curError
+	}
+
+	// We update the query to implement the paging request
+
+	page, err := parsePage(args)
+	if err != nil {
+		return nil, err
+	}
+
+	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
+	// that helps to determine "hasNextPage".
+	const by = "id"
+	selectArgs := `
+	 *,
+		CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
+		END as hasNext
+	`
+	action.query = action.query.Select(selectArgs, by)
+	action.query = action.query.Order(by)
+
+	// A Where clause to implement the after/before paging request
+	switch {
+	case page.After != "":
+		action.query = action.query.Where("ID > ?", page.After)
+	case page.Before != "":
+		action.query = action.query.Where("ID < ?", page.Before)
+	}
+
+	switch {
+	case page.First != 0:
+		action.query = action.query.Limit(page.First)
+	case page.Last != 0:
+		action.query = action.query.Limit(page.Last)
+	}
+
+	// Execute the query
 	result := []map[string]any{}
-	qry = qry.Find(&result)
-	if qry.Error != nil {
-		return nil, false, qry.Error
+	action.query = action.query.Find(&result)
+	if action.query.Error != nil {
+		return nil, action.query.Error
 	}
 
 	// Sort out the hasNextPage value, and clean up the response.
+	hasNextPage := false
 	if len(result) > 0 {
 		last := result[len(result)-1]
 		hasNextPage = last["hasnext"].(bool)
 	}
-	res := toLowerCamelMaps(result)
-	for _, row := range res {
-		delete(row, "hasnext")
+
+	for _, row := range result {
+		delete(row, "has_next")
 	}
-	return res, hasNextPage, nil
-}
-
-func buildQuery(
-	db *gorm.DB,
-	model *proto.Model,
-	op *proto.Operation,
-	schema *proto.Schema,
-	args map[string]any,
-) (*gorm.DB, error) {
-
-	listInput, err := buildListInput(op, args)
-	if err != nil {
-		return nil, err
+	collection := toLowerCamelMaps(result)
+	actionResult := ActionResult[ListResult]{
+		Value: ListResult{
+			Collection:  collection,
+			HasNextPage: hasNextPage,
+		},
 	}
 
-	tableName := strcase.ToSnake(model.Name)
-
-	// Initialise a query on the table = to which we'll add Where clauses.
-	qry := db.Table(tableName)
-
-	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
-	// that helps to determin "hasNextPage".
-	qry = addOrderingAndLead(qry)
-
-	// Add the WHERE clauses derived from the implicit inputs.
-	qry, err = addListImplicitFilters(op, listInput, qry)
-	if err != nil {
-		return nil, err
-	}
-
-	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
-	qry, err = addListExplicitInputFilters(op, schema, listInput, qry)
-	if err != nil {
-		return nil, err
-	}
-
-	// Where clause to implement the after/before paging request
-	qry = addAfterBefore(qry, listInput.Page)
-
-	// Put a LIMIT clause on the sql, if the Page mandate is asking for the first-N after x, or the
-	// last-N before x.
-	qry = addLimit(qry, listInput.Page)
-
-	return qry, nil
-}
-
-// addListImplicitFilters adds Where clauses to the given gorm.DB corresponding to the
-// implicit inputs present in the given ListInput.
-func addListImplicitFilters(op *proto.Operation, listInput *ListInput, tx *gorm.DB) (*gorm.DB, error) {
-	// We'll look at each of the fields specified as implicit inputs by the operation in the schema,
-	// and then try to find these referenced by the where filters in the given ListInput.
-	for _, schemaInput := range op.Inputs {
-		if schemaInput.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
-			continue
-		}
-
-		expectedFieldName := schemaInput.Target[0]
-		var matchingWhere *ImplicitFilter
-		for _, where := range listInput.ImplicitFilters {
-			if where.Name == expectedFieldName {
-				matchingWhere = where
-				break
-			}
-		}
-		if matchingWhere == nil && schemaInput.Optional {
-			// If the input is optional we don't need a where input
-			continue
-		}
-		if matchingWhere == nil {
-			return nil, fmt.Errorf("operation expects an input named: <%s>, but none is present on the request", expectedFieldName)
-		}
-
-		var err error
-		tx, err = addWhereForImplicitFilter(tx, expectedFieldName, matchingWhere, schemaInput.Type)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return tx, nil
-}
-
-// addListExplicitInputFilters adds Where clauses for all the operation's Where clauses.
-// E.g.
-//
-//	list getPerson(name: Text) {
-//		@where(person.name == name)
-//	}
-func addListExplicitInputFilters(
-	op *proto.Operation,
-	schema *proto.Schema,
-	listInput *ListInput,
-	tx *gorm.DB) (*gorm.DB, error) {
-	for _, e := range op.WhereExpressions {
-		expr, err := parser.ParseExpression(e.Source)
-		if err != nil {
-			return nil, err
-		}
-		// This call gives us the column and the value to use like this:
-		// tx.Where(fmt.Sprintf("%s = ?", column), value)
-		fieldName, err := interpretExpressionField(expr, op, schema)
-		if err != nil {
-			return nil, err
-		}
-		// Find the ExplicitInputFilter that belongs to the field being targeted by the
-		// expression.
-		filter, ok := lo.Find(listInput.ExplicitFilters, func(f *ExplicitFilter) bool {
-			return f.Name == fieldName
-		})
-		if !ok {
-			return nil, fmt.Errorf("input does not provide a filter for key: %s", fieldName)
-		}
-		scalarValue := filter.ScalarValue
-
-		w := fmt.Sprintf("%s = ?", strcase.ToSnake(fieldName))
-		tx = tx.Where(w, scalarValue)
-	}
-	return tx, nil
-}
-
-// addWhereForImplicitFilter updates the given gorm.DB tx with a where clause that represents the given
-// query.
-func addWhereForImplicitFilter(tx *gorm.DB, columnName string, filter *ImplicitFilter, inputType *proto.TypeInfo) (*gorm.DB, error) {
-	switch filter.Operator {
-	case OperatorEquals:
-		operand := filter.Operand
-
-		if inputType.Type == proto.Type_TYPE_DATE || inputType.Type == proto.Type_TYPE_DATETIME || inputType.Type == proto.Type_TYPE_TIMESTAMP {
-			timeOperand, err := parseTimeOperand(filter.Operand, inputType.Type)
-			if err != nil {
-				return nil, err
-			}
-			operand = timeOperand
-		}
-
-		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operand), nil
-
-	case OperatorStartsWith:
-		operandStr, ok := filter.Operand.(string)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to a string", filter.Operand)
-		}
-		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandStr+"%%"), nil
-
-	case OperatorEndsWith:
-		operandStr, ok := filter.Operand.(string)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to a string", filter.Operand)
-		}
-		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
-		return tx.Where(w, "%%"+operandStr), nil
-
-	case OperatorContains:
-		operandStr, ok := filter.Operand.(string)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to a string", filter.Operand)
-		}
-		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
-		return tx.Where(w, "%%"+operandStr+"%%"), nil
-
-	case OperatorOneOf:
-		operandStrings, ok := filter.Operand.([]interface{})
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to a []interface{}", filter.Operand)
-		}
-		w := fmt.Sprintf("%s in ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandStrings), nil
-
-	case OperatorLessThan:
-		operandInt, ok := filter.Operand.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to an int", filter.Operand)
-		}
-		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandInt), nil
-
-	case OperatorLessThanEquals:
-		operandInt, ok := filter.Operand.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to an int", filter.Operand)
-		}
-		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandInt), nil
-
-	case OperatorGreaterThan:
-		operandInt, ok := filter.Operand.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to an int", filter.Operand)
-		}
-		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandInt), nil
-
-	case OperatorGreaterThanEquals:
-		operandInt, ok := filter.Operand.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to an int", filter.Operand)
-		}
-		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandInt), nil
-
-	case OperatorBefore:
-		operandTime, err := parseTimeOperand(filter.Operand, inputType.Type)
-		if err != nil {
-			return nil, err
-		}
-		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandTime), nil
-
-	case OperatorAfter:
-		operandTime, err := parseTimeOperand(filter.Operand, inputType.Type)
-		if err != nil {
-			return nil, err
-		}
-		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandTime), nil
-
-	case OperatorOnOrBefore:
-		operandTime, err := parseTimeOperand(filter.Operand, inputType.Type)
-		if err != nil {
-			return nil, err
-		}
-		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandTime), nil
-
-	case OperatorOnOrAfter:
-		operandTime, err := parseTimeOperand(filter.Operand, inputType.Type)
-		if err != nil {
-			return nil, err
-		}
-		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
-		return tx.Where(w, operandTime), nil
-
-	default:
-		return nil, fmt.Errorf("operator: %v is not yet supported", filter.Operator)
-	}
-}
-
-func addAfterBefore(tx *gorm.DB, page Page) *gorm.DB {
-	switch {
-	case page.After != "":
-		return tx.Where("ID > ?", page.After)
-	case page.Before != "":
-		return tx.Where("ID < ?", page.Before)
-	}
-	return tx
-}
-
-// addLimit puts a LIMIT clause on the query to return the number of records
-// specified by the Page mandate.
-func addLimit(tx *gorm.DB, page Page) *gorm.DB {
-	switch {
-	case page.First != 0:
-		return tx.Limit(page.First)
-	case page.Last != 0:
-		return tx.Limit(page.Last)
-	default:
-		return tx
-	}
-}
-
-// buildListInput consumes the dictionary that carries the LIST operation input values on the
-// incoming request, and composes a corresponding ListInput object that is good
-// to pass to the generic List() function.
-func buildListInput(operation *proto.Operation, argsMap map[string]any) (*ListInput, error) {
-
-	allOptionalInputs := true
-	for _, in := range operation.Inputs {
-		if !in.Optional {
-			allOptionalInputs = false
-		}
-	}
-
-	implicitFilters := []*ImplicitFilter{}
-	explicitFilters := []*ExplicitFilter{}
-
-	if allOptionalInputs && argsMap == nil {
-		// No inputs and nothing required. Set default paging
-		return &ListInput{
-			Page:            Page{First: 50},
-			ImplicitFilters: implicitFilters,
-			ExplicitFilters: explicitFilters,
-		}, nil
-	}
-
-	page, err := parsePage(argsMap)
-	if err != nil {
-		return nil, err
-	}
-	whereInputs, ok := argsMap["where"]
-	if !ok {
-		// We have some required inputs but there is no where key
-		if !allOptionalInputs {
-			return nil, fmt.Errorf("arguments map does not contain a where key: %v", argsMap)
-		}
-	} else {
-		whereInputsAsMap, ok := whereInputs.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
-		}
-
-		for argName, argValue := range whereInputsAsMap {
-
-			switch {
-			case isMap(argValue):
-				argValueAsMap := argValue.(map[string]any)
-				if !ok {
-					return nil, fmt.Errorf("cannot cast this: %v to a map[string]any", argValue)
-				}
-
-				for operatorStr, operand := range argValueAsMap {
-					op, err := operator(operatorStr)
-					if err != nil {
-						return nil, err
-					}
-					implicitFilter := &ImplicitFilter{
-						Name:     argName,
-						Operator: op,
-						Operand:  operand,
-					}
-					implicitFilters = append(implicitFilters, implicitFilter)
-				}
-			default:
-				explicitFilter := &ExplicitFilter{
-					Name:        argName,
-					ScalarValue: argValue,
-				}
-				explicitFilters = append(explicitFilters, explicitFilter)
-			}
-		}
-	}
-
-	inp := &ListInput{
-		Page:            page,
-		ImplicitFilters: implicitFilters,
-		ExplicitFilters: explicitFilters,
-	}
-	return inp, nil
-}
-
-// praseTime extract and parses time for date/time based operators
-// Supports timestamps passed in map[seconds:int] and dates passesd as map[day:int month:int year:int]
-func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err error) {
-	operandMap, ok := operand.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("cannot cast this: %v to a map[string]interface{}", operand)
-	}
-
-	switch inputType {
-	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		seconds := operandMap["seconds"]
-		secondsInt, ok := seconds.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to int", seconds)
-		}
-		unix := time.Unix(int64(secondsInt), 0).UTC()
-		t = &unix
-
-	case proto.Type_TYPE_DATE:
-		day := operandMap["day"]
-		month := operandMap["month"]
-		year := operandMap["year"]
-
-		dayInt, ok := day.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast days: %v to int", day)
-		}
-		monthInt, ok := month.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast month: %v to int", month)
-		}
-		yearInt, ok := year.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast year: %v to int", year)
-		}
-
-		time, err := time.Parse("2006-01-02", fmt.Sprintf("%d-%02d-%02d", yearInt, monthInt, dayInt))
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse date %s", err)
-		}
-		t = &time
-
-	default:
-		return nil, fmt.Errorf("unknown time field type")
-	}
-
-	return t, nil
+	return &actionResult, nil
 }
 
 // parsePage extracts page mandate information from the given map and uses it to
@@ -487,29 +205,10 @@ func parsePage(args map[string]any) (Page, error) {
 		page.Before = asString
 	}
 
-	return page, nil
-}
-
-// addOrderingAndLead puts in a SELECT statement that puts in the ORDER BY clause to support
-// paging. It also uses the SQL "lead(1)" idiom to deduces if each row has a following row, wich
-// we can then use to determine if a "next" page is available.
-func addOrderingAndLead(tx *gorm.DB) *gorm.DB {
-
-	const by = "id"
-	selectArgs := `
-	 *,
-		CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
-		END as hasNext
-	`
-
-	tx = tx.Select(selectArgs, by)
-	tx = tx.Order(by)
-	return tx
-}
-
-func isMap(x any) bool {
-	if _, ok := x.(map[string]any); ok {
-		return true
+	// If none specified - use a sensible default
+	if page.First == 0 && page.Last == 0 {
+		page = Page{First: 50}
 	}
-	return false
+
+	return page, nil
 }
