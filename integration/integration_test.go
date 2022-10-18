@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
+	"gorm.io/gorm"
 )
 
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
@@ -37,8 +38,6 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			fmt.Printf("Tmp test directory: %s\n", workingDir)
-
 			packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
 
 			require.NoError(t, err)
@@ -57,7 +56,11 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			ch, err := testing.Run(t, workingDir, *pattern)
+			ch, err := testing.Run(workingDir, *pattern, testing.RunTypeIntegration, func(mainDB *gorm.DB, testDB *gorm.DB, dbName string) {
+				t.Cleanup(func() {
+					require.NoError(t, testhelpers.CleanupDatabaseSetup(mainDB, testDB, dbName))
+				})
+			})
 			require.NoError(t, err)
 
 			events := []*testing.Event{}
