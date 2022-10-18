@@ -8,7 +8,7 @@ import (
 )
 
 type GetAction struct {
-	*Action[GetResult]
+	scope *Scope
 }
 
 type GetResult struct {
@@ -16,28 +16,36 @@ type GetResult struct {
 }
 
 func (action *GetAction) Initialise(scope *Scope) ActionBuilder[GetResult] {
-	action.Action = &Action[GetResult]{
-		Scope: scope,
-	}
+	action.scope = scope
 	return action
 }
 
-// func (action *Action) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder {
-// 	// todo: Default implementation for all actions types
-// 	return action
-// }
+// Keep the no-op methods in a group together
 
-// func (action *Action) CaptureSetValues(args RequestArguments) ActionBuilder {
-// 	// todo: Default implementation for all actions types
-// 	return action
-// }
+func (action *GetAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[GetResult] {
+	return action // no-op
+}
+
+func (action *GetAction) CaptureSetValues(args RequestArguments) ActionBuilder[GetResult] {
+	return action // no-op
+}
+
+func (action *GetAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
+	return action // no-op
+}
+
+func (action *GetAction) IsAuthorised(args RequestArguments) ActionBuilder[GetResult] {
+	return action // no-op
+}
+
+// --------------------
 
 func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
-	if action.HasError() {
+	if action.scope.Error != nil {
 		return action
 	}
 
-	for _, input := range action.operation.Inputs {
+	for _, input := range action.scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
@@ -46,31 +54,29 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 		value, ok := args[fieldName]
 
 		if !ok {
-			return action.WithError(fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args))
+			action.scope.Error = fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
+			return action
 		}
 
-		action.addImplicitFilter(input, OperatorEquals, value)
+		if err := DRYaddImplicitFilter(action.scope, input, OperatorEquals, value); err != nil {
+			action.scope.Error = err
+			return action
+		}
 	}
 
 	return action
 }
 
-// func (action *Action) ApplyExplicitFilters(args RequestArguments) ActionBuilder {
-// 	// todo: Default implementation for all actions types
-// 	return action
-// }
-
-// func (action *Action) IsAuthorised(args RequestArguments) ActionBuilder {
-// 	// todo: default implementation for all actions types
-// 	return action
-// }
-
 func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult], error) {
-	resultMap := []map[string]any{}
-	action.query = action.query.Find(&resultMap)
+	if action.scope.Error != nil {
+		return nil, action.scope.Error
+	}
 
-	if action.query.Error != nil {
-		return nil, action.query.Error
+	resultMap := []map[string]any{}
+	action.scope.query = action.scope.query.Find(&resultMap)
+
+	if action.scope.query.Error != nil {
+		return nil, action.scope.query.Error
 	}
 	n := len(resultMap)
 	if n == 0 {
