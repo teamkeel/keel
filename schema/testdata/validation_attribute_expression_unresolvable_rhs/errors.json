@@ -7,15 +7,15 @@
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 98,
-        "line": 7,
-        "column": 37
+        "offset": 247,
+        "line": 14,
+        "column": 41
       },
       "end_pos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 102,
-        "line": 7,
-        "column": 41
+        "offset": 251,
+        "line": 14,
+        "column": 45
       }
     }
   ]

@@ -6,9 +6,7 @@ import "fmt"
 // A filter - in terms of Where clauses, and also a mandate about which
 // page from the potential results is required.
 type ListInput struct {
-	Page            Page
-	ImplicitFilters []*ImplicitFilter
-	ExplicitFilters []*ExplicitFilter
+	Page Page
 }
 
 // A Page describes which page you want from a list of records,
@@ -31,24 +29,6 @@ type Page struct {
 	Before string
 }
 
-// An ImplicitInputFilter encapsulates a filter for one column in a database row, derived
-// from an implicit input carried by an incoming request.
-// Note that the implementation of the filter logic for IMPLICIT inputs is in Keel code.
-type ImplicitFilter struct {
-	Name     string   // Targeted field.
-	Operator Operator // E.g. "startsWith"
-	Operand  any      // E.g. "Fr"
-}
-
-// An ExplicitFilter encapsulates a filter for one column in a database row, derived
-// from an explicit input carried by an incoming request.
-// Note that the implementation of the filter logic for IMPLICIT inputs is in the explicit where
-// clause on the schema operation.
-type ExplicitFilter struct {
-	Name        string // Targeted field.
-	ScalarValue any    // E.g. "Smith"
-}
-
 // An Operator represents one of the built-in operators you can use in a filter for
 // implicit inputs.
 type Operator string
@@ -63,7 +43,7 @@ const (
 	OperatorContains   = "contains"
 	OperatorOneOf      = "oneOf"
 
-	// Numberic
+	// Numeric
 	OperatorLessThan          = "lessThan"
 	OperatorLessThanEquals    = "lessThanOrEqualTo"
 	OperatorGreaterThan       = "greaterThan"
@@ -76,11 +56,31 @@ const (
 	OperatorOnOrAfter  = "onOrAfter"
 )
 
+// Contains a mapping from graphql operator names
+// to SQL operators
+// var operatorsMap = map[Operator]string{
+// 	OperatorEquals:            "=",
+// 	OperatorOneOf:             "IN",
+// 	OperatorStartsWith:        "LIKE",
+// 	OperatorEndsWith:          "LIKE",
+// 	OperatorLessThan:          "<",
+// 	OperatorLessThanEquals:    "<=",
+// 	OperatorGreaterThan:       ">",
+// 	OperatorGreaterThanEquals: ">=",
+// 	OperatorBefore:            "<",
+// 	OperatorOnOrBefore:        "<=",
+// 	OperatorAfter:             ">",
+// 	OperatorOnOrAfter:         ">=",
+// }
+
 // operator converts the given string representation of an operator like
 // "eq" into the corresponding Operator value.
+// todo: is this method redundant?
+// todo: make sure it matches the gql doc - particularly eq
 func operator(operatorStr string) (op Operator, err error) {
 	switch operatorStr {
 	case "equals":
+		// todo: should it be eq as the method comment says or equals
 		return OperatorEquals, nil
 	case "startsWith":
 		return OperatorStartsWith, nil
@@ -103,9 +103,9 @@ func operator(operatorStr string) (op Operator, err error) {
 	case "after":
 		return OperatorAfter, nil
 	case "onOrBefore":
-		return OperatorOnOrAfter, nil
-	case "onOrAfter":
 		return OperatorOnOrBefore, nil
+	case "onOrAfter":
+		return OperatorOnOrAfter, nil
 	default:
 		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
 	}
