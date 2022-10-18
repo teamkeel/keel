@@ -115,7 +115,8 @@ export class ChainableQuery<T extends IDer> {
   private execute = async (
     query: TaggedTemplateLiteralInvocation<T>
   ): Promise<QueryResult<T>> => {
-    this.logger.log(logSql<T>(query), LogLevel.Debug);
+    // todo: reinstate
+    // this.logger.log(logSql<T>(query), LogLevel.Debug);
 
     return this.connect(async (connection) => {
       return connection.query(query);
@@ -240,7 +241,8 @@ export default class Query<T extends IDer> {
   private execute = async (
     query: TaggedTemplateLiteralInvocation<T>
   ): Promise<QueryResult<T>> => {
-    this.logger.log(logSql<T>(query), LogLevel.Debug);
+    // todo: reinstate
+    // this.logger.log(logSql<T>(query), LogLevel.Debug);
 
     return this.connect(async (connection) => {
       const result = connection.query(query);
