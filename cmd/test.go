@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/fatih/color"
+	"github.com/samber/lo"
 
 	"github.com/spf13/cobra"
 
@@ -73,11 +74,22 @@ func init() {
 }
 
 func PrintSummary(events []*testing.Event) {
-	for _, event := range events {
-		if event.Status == testing.StatusPass {
-			fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
-		} else {
-			fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", event.Status), event.TestName)
-		}
-	}
+
+	totalPassed := lo.CountBy(events, func(evt *testing.Event) bool {
+		return evt.Status == testing.StatusPass
+	})
+
+	totalFailed := lo.CountBy(events, func(evt *testing.Event) bool {
+		return evt.Status != testing.StatusPass
+	})
+
+	fmt.Printf("Test summary: %s, %s\n", color.New(color.FgGreen).Sprintf("%d passed", totalPassed), color.New(color.FgRed).Sprintf("%d failed", totalFailed))
+
+	// for _, event := range events {
+	// 	if event.Status == testing.StatusPass {
+	// 		fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
+	// 	} else {
+	// 		fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", event.Status), event.TestName)
+	// 	}
+	// }
 }
