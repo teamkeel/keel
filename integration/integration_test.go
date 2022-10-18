@@ -12,6 +12,7 @@ import (
 	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/cmd"
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
@@ -29,6 +30,8 @@ type Expected struct {
 func TestIntegration(t *gotest.T) {
 	entries, err := ioutil.ReadDir("./testdata")
 	require.NoError(t, err)
+
+	allEvents := []*testing.Event{}
 
 	for _, e := range entries {
 		t.Run(e.Name(), func(t *gotest.T) {
@@ -62,6 +65,8 @@ func TestIntegration(t *gotest.T) {
 			for newEvents := range ch {
 				events = append(events, newEvents...)
 			}
+
+			allEvents = append(allEvents, events...)
 
 			actual, err := json.Marshal(events)
 			require.NoError(t, err)
@@ -97,6 +102,8 @@ func TestIntegration(t *gotest.T) {
 			}
 		})
 	}
+
+	cmd.PrintSummary(allEvents)
 }
 
 func CompareJson(t *gotest.T, expected []byte, actual []byte) {
