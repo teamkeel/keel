@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"errors"
+
 	"golang.org/x/exp/maps"
 )
 
@@ -36,6 +38,15 @@ func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResul
 		return nil, err
 	}
 	maps.Copy(values, c.scope.writeValues)
+
+	// todo: temporary hack for permissions
+	authorized, err := EvaluatePermissions(c.scope.context, c.scope.operation, c.scope.schema, toLowerCamelMap(c.scope.writeValues))
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errors.New("not authorized to access this operation")
+	}
 
 	err = c.scope.query.Create(values).Error
 

@@ -1,5 +1,10 @@
 package actions
 
+import (
+	"errors"
+	"fmt"
+)
+
 type DeleteAction struct {
 	scope *Scope
 }
@@ -55,8 +60,31 @@ func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[Delete
 		return nil, action.scope.Error
 	}
 
+	results := []map[string]any{}
+	action.scope.query = action.scope.query.Find(&results)
+	if action.scope.query.Error != nil {
+		return nil, action.scope.query.Error
+	}
+	n := len(results)
+	if n == 0 {
+		return nil, errors.New("no records found for Delete() operation")
+	}
+	if n > 1 {
+		return nil, fmt.Errorf("Delete() operation should find only one record, it found: %d", n)
+	}
+
+	resultMap := toLowerCamelMap(results[0])
+
+	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, resultMap)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errors.New("not authorized to access this operation")
+	}
+
 	records := []map[string]any{}
-	err := action.scope.query.Delete(records).Error
+	err = action.scope.query.Delete(records).Error
 
 	result := ActionResult[DeleteResult]{
 		Value: DeleteResult{

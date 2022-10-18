@@ -64,13 +64,13 @@ func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult
 		return nil, action.scope.Error
 	}
 
-	resultMap := []map[string]any{}
-	action.scope.query = action.scope.query.Find(&resultMap)
+	results := []map[string]any{}
+	action.scope.query = action.scope.query.Find(&results)
 
 	if action.scope.query.Error != nil {
 		return nil, action.scope.query.Error
 	}
-	n := len(resultMap)
+	n := len(results)
 	if n == 0 {
 		return nil, errors.New("no records found for Get() operation")
 	}
@@ -78,9 +78,21 @@ func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult
 		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
 	}
 
+	singleResult := toLowerCamelMap(results[0])
+
+	// todo: permissions to evaluate at the database-level where applicable
+	// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level-where-applicable
+	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, singleResult)
+	if err != nil {
+		return nil, err
+	}
+	if !authorized {
+		return nil, errors.New("not authorized to access this operation")
+	}
+
 	return &ActionResult[GetResult]{
 		Value: GetResult{
-			Object: resultMap[0],
+			Object: toLowerCamelMap(results[0]),
 		},
 	}, nil
 }

@@ -294,8 +294,11 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										Execute(body.Payload)
 
 									r := map[string]any{
-										"success": result.Value.Success,
-										"errors":  serializeError(err),
+										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["success"] = result.Value.Success
 									}
 
 									writeResponse(r, w)
