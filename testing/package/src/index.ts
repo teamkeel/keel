@@ -67,6 +67,27 @@ async function runAllTests({
 
     let result: TestResult | undefined = undefined;
 
+    const resetSuccess = await reporter.clearDatabase({
+      filePath: filePath,
+      testCase: testName,
+    });
+
+    if (debug) {
+      if (resetSuccess) {
+        console.log(
+          `${chalk.bgBlueBright.white(
+            " INFO "
+          )} Reset database after ${testName}\n`
+        );
+      } else {
+        console.log(
+          `${chalk.bgRedBright.white(
+            " ERROR "
+          )} Could not reset database after ${testName}\n`
+        );
+      }
+    }
+
     try {
       const t = fn();
 
@@ -131,24 +152,6 @@ async function runAllTests({
         }
 
         results.push(result);
-      }
-    }
-
-    const resetSuccess = await reporter.clearDatabase();
-
-    if (debug) {
-      if (resetSuccess) {
-        console.log(
-          `${chalk.bgBlueBright.white(
-            " INFO "
-          )} Reset database after ${testName}\n`
-        );
-      } else {
-        console.log(
-          `${chalk.bgRedBright.white(
-            " ERROR "
-          )} Could not reset database after ${testName}\n`
-        );
       }
     }
   }
