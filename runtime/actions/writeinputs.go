@@ -1,35 +1,8 @@
 package actions
 
 import (
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
-
-// DRYCaptureImplicitWriteInputValues updates the writeValues field in the
-// given scope object with key/values that represent the implicit write-mode
-// inputs carried by the given request.
-func DRYCaptureImplicitWriteInputValues(inputs []*proto.OperationInput, args RequestArguments, scope *Scope) error {
-
-	for _, input := range inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
-			continue
-		}
-
-		if input.Mode != proto.InputMode_INPUT_MODE_WRITE {
-			continue
-		}
-
-		fieldName := input.Target[0]
-		value, ok := args[fieldName]
-
-		if !ok {
-			continue
-		}
-
-		scope.writeValues[fieldName] = value
-	}
-	return nil
-}
 
 // DRYCaptureSetValues updates the writeValues field in the given scope, with
 // field/values that should be set for each of the given operation's Set expressions.

@@ -2,71 +2,19 @@ package actions
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/parser"
 )
-
-// DRYApplyExplicitFilters marries up the given operation's Where expressions, with operands
-// provided in the given request arguments. It then adds corresponding Where clauses to the
-// query field in the given scope object.
-func DRYApplyExplicitFilters(scope *Scope, args RequestArguments) error {
-
-	for _, where := range scope.operation.WhereExpressions {
-		expr, err := parser.ParseExpression(where.Source)
-
-		if err != nil {
-			return err
-		}
-
-		// todo: look into refactoring interpretExpressionField to support handling
-		// of multiple conditions in an expression and also literal values
-		field, err := interpretExpressionField(expr, scope.operation, scope.schema)
-		if err != nil {
-			return err
-		}
-
-		// @where(expression: post.title == coolTitle and post.title == somethingElse)
-
-		conditions := expr.Conditions()
-
-		condition := conditions[0]
-
-		match, ok := args[condition.RHS.Ident.ToString()]
-
-		if !ok {
-			return fmt.Errorf("argument not provided for %s", field.Name)
-		}
-
-		DRYaddExplicitFilter(scope, field.Name, condition.Operator.Symbol, match)
-	}
-
-	return nil
-}
-
-// DRYaddExplicitFilter updates the query inside the given scope with
-// Where clauses that represent filters specified by an operation's Where expression,
-// using the given value as an operand.
-func DRYaddExplicitFilter(scope *Scope, fieldName string, operator string, value any) error {
-	// todo: support all operator types
-	if operator != parser.OperatorEquals {
-		panic("this operator is not supported yet...")
-	}
-
-	w := fmt.Sprintf("%s = ?", strcase.ToSnake(fieldName))
-	scope.query = scope.query.Where(w, value)
-
-	return nil
-}
 
 // todo:
 // addExplicitFilter and  addImplicitFilter should be the same method
 // we just need to find a common syntax for expressing operators from grapqhql implicit operators or expression operators
 
-// DRYaddImplicitFilter adds Where clauses to the query field of the given scope, corresponding to
+// addImplicitFilter adds Where clauses to the query field of the given scope, corresponding to
 // the given input, the given operator, and using the given value as the operand.
-func DRYaddImplicitFilter(scope *Scope, input *proto.OperationInput, operator Operator, value any) error {
+func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Operator, value any) error {
 
 	inputType := input.Type.Type
 	columnName := input.Target[0]
@@ -197,4 +145,53 @@ func DRYaddImplicitFilter(scope *Scope, input *proto.OperationInput, operator Op
 	}
 
 	return nil
+}
+
+// parseTimeOperand extract and parses time for date/time based operators
+// Supports timestamps passed in map[seconds:int] and dates passesd as map[day:int month:int year:int]
+func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err error) {
+	operandMap, ok := operand.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("cannot cast this: %v to a map[string]interface{}", operand)
+	}
+
+	switch inputType {
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		seconds := operandMap["seconds"]
+		secondsInt, ok := seconds.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast this: %v to int", seconds)
+		}
+		unix := time.Unix(int64(secondsInt), 0).UTC()
+		t = &unix
+
+	case proto.Type_TYPE_DATE:
+		day := operandMap["day"]
+		month := operandMap["month"]
+		year := operandMap["year"]
+
+		dayInt, ok := day.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast days: %v to int", day)
+		}
+		monthInt, ok := month.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast month: %v to int", month)
+		}
+		yearInt, ok := year.(int)
+		if !ok {
+			return nil, fmt.Errorf("cannot cast year: %v to int", year)
+		}
+
+		time, err := time.Parse("2006-01-02", fmt.Sprintf("%d-%02d-%02d", yearInt, monthInt, dayInt))
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse date %s", err)
+		}
+		t = &time
+
+	default:
+		return nil, fmt.Errorf("unknown time field type")
+	}
+
+	return t, nil
 }

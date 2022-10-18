@@ -58,7 +58,7 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 			return action
 		}
 
-		if err := DRYaddImplicitFilter(action.scope, input, OperatorEquals, value); err != nil {
+		if err := addImplicitFilter(action.scope, input, OperatorEquals, value); err != nil {
 			action.scope.Error = err
 			return action
 		}

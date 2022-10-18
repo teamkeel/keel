@@ -3,8 +3,10 @@ package actions
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 type ListAction struct {
@@ -101,7 +103,7 @@ inputs:
 					return action
 				}
 
-				DRYaddImplicitFilter(action.scope, input, operatorName, operand)
+				addImplicitFilter(action.scope, input, operatorName, operand)
 			}
 		}
 	}
@@ -113,7 +115,9 @@ func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuil
 	if action.scope.Error != nil {
 		return action
 	}
-	err := DRYApplyExplicitFilters(action.scope, args)
+	// We delegate to a function that may get used by other Actions later on, once we have
+	// unified how we handle operators in both schema where clauses and in implicit inputs language.
+	err := applyExplicitFilters(action.scope, args)
 	if err != nil {
 		action.scope.Error = err
 		return action
@@ -230,4 +234,57 @@ func parsePage(args map[string]any) (Page, error) {
 	}
 
 	return page, nil
+}
+
+// applyExplicitFilters marries up the given operation's Where expressions, with operands
+// provided in the given request arguments. It then adds corresponding Where clauses to the
+// query field in the given scope object.
+func applyExplicitFilters(scope *Scope, args RequestArguments) error {
+
+	for _, where := range scope.operation.WhereExpressions {
+		expr, err := parser.ParseExpression(where.Source)
+
+		if err != nil {
+			return err
+		}
+
+		// todo: look into refactoring interpretExpressionField to support handling
+		// of multiple conditions in an expression and also literal values
+		field, err := interpretExpressionField(expr, scope.operation, scope.schema)
+		if err != nil {
+			return err
+		}
+
+		// @where(expression: post.title == coolTitle and post.title == somethingElse)
+
+		conditions := expr.Conditions()
+
+		condition := conditions[0]
+
+		match, ok := args[condition.RHS.Ident.ToString()]
+
+		if !ok {
+			return fmt.Errorf("argument not provided for %s", field.Name)
+		}
+
+		// Delegate to a function that we hope will be used more widely later.
+		addExplicitFilter(scope, field.Name, condition.Operator.Symbol, match)
+	}
+
+	return nil
+}
+
+// addExplicitFilter updates the query inside the given scope with
+// Where clauses that represent filters specified by an operation's Where expression,
+// using the given value as an operand.
+func addExplicitFilter(scope *Scope, fieldName string, operator string, value any) error {
+	// todo: support all operator types
+	if operator != parser.OperatorEquals {
+		panic("this operator is not supported yet...")
+	}
+
+	w := fmt.Sprintf("%s = ?", strcase.ToSnake(fieldName))
+	scope.query = scope.query.Where(w, value)
+
+	return nil
 }
