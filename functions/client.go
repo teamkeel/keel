@@ -66,6 +66,7 @@ func (h *HttpFunctionsClient) Request(ctx context.Context, actionName string, op
 func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opType proto.OperationType) (interface{}, error) {
 	responseMap, ok := response.(map[string]any)
 	if !ok {
+		fmt.Printf("unknown response from custom function runtime (not map): %v\n", responseMap)
 		return nil, errors.New("unknown response from custom function runtime")
 	}
 
@@ -82,6 +83,7 @@ func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opTyp
 		object, hasObject := responseMap["object"]
 
 		if !hasObject {
+			fmt.Printf("unknown response from custom function runtime (no object): %v\n", responseMap)
 			return nil, errors.New("unknown response from custom function runtime")
 		}
 
@@ -90,6 +92,7 @@ func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opTyp
 		collection, hasCollection := responseMap["collection"]
 
 		if !hasCollection {
+			fmt.Printf("unknown response from custom function runtime (no collection): %v\n", responseMap)
 			return nil, errors.New("unknown response from custom function runtime")
 		}
 
@@ -98,6 +101,7 @@ func (h *HttpFunctionsClient) ToGraphQL(ctx context.Context, response any, opTyp
 		success, hasSuccess := responseMap["success"]
 
 		if !hasSuccess {
+			fmt.Printf("unknown response from custom function runtime (no success): %v\n", responseMap)
 			return nil, errors.New("unknown response from custom function runtime")
 		}
 
