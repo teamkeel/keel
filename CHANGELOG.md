@@ -1,3 +1,10 @@
+## [0.175.1](https://github.com/teamkeel/keel/compare/v0.175.0...v0.175.1) (2022-10-18)
+
+
+### Bug Fixes
+
+* test cmd ([#476](https://github.com/teamkeel/keel/issues/476)) ([937171a](https://github.com/teamkeel/keel/commit/937171afaf7fff2f3bba30a108b2c0e3d0f64e47))
+
 # [0.175.0](https://github.com/teamkeel/keel/compare/v0.174.0...v0.175.0) (2022-10-18)
 
 
