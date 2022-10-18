@@ -30,6 +30,7 @@ func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[Cr
 }
 
 func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
+	// initialise default values
 	values, err := initialValueForModel(c.scope.model, c.scope.schema)
 	if err != nil {
 		return nil, err

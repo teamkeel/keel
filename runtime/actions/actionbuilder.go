@@ -16,6 +16,7 @@ type RequestArguments map[string]any
 // An ActionResult is a parameterised Type that allows each of the specific Actions {Get,Create,List...} to define
 // their own return type structure. E.g. for the List action - it can return paging information as well as
 // the records in a strongly typed way.
+// *Value* is the underlying result type
 type ActionResult[T any] struct {
 	Value T
 }
@@ -71,9 +72,6 @@ type Scope struct {
 	model     *proto.Model
 	schema    *proto.Schema
 
-	// temporary - clearly wrong
-	result map[string]any
-
 	// This field is connected to the database, and we use it to perform all
 	// all queries and write operations on the database.
 	query *gorm.DB
@@ -108,10 +106,6 @@ func NewScope(
 		query:       query,
 		writeValues: map[string]any{},
 	}, nil
-}
-
-func (s *Scope) SetResult(data map[string]any) {
-	s.result = data
 }
 
 // toLowerCamelMap returns a copy of the given map, in which all
