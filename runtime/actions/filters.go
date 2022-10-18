@@ -6,14 +6,14 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
-// applyImplicitFiltersForGetOrDelete considers all the implicit inputs expected for
+// DefaultApplyImplicitFilters considers all the implicit inputs expected for
 // the given operation, and captures the targeted field. It then captures the corresponding value
 // operand value provided by the given request arguments, and adds a Where clause to the
 // query field in the given scope, using a hard-coded equality operator.
-func applyImplicitFiltersForGetOrDelete(scope *Scope, args RequestArguments) error {
-
+func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
@@ -29,6 +29,39 @@ func applyImplicitFiltersForGetOrDelete(scope *Scope, args RequestArguments) err
 		if err := addImplicitFilter(scope, input, OperatorEquals, value); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
+	operation := scope.operation
+
+	for _, where := range operation.WhereExpressions {
+		expr, err := parser.ParseExpression(where.Source)
+
+		if err != nil {
+			return err
+		}
+
+		// todo: look into refactoring interpretExpressionField to support handling
+		// of multiple conditions in an expression and also literal values
+		field, err := interpretExpressionField(expr, operation, scope.schema)
+		if err != nil {
+			return err
+		}
+
+		conditions := expr.Conditions()
+
+		condition := conditions[0]
+
+		match, ok := args[condition.RHS.Ident.ToString()]
+
+		if !ok {
+			return fmt.Errorf("argument not provided for %s", field.Name)
+		}
+
+		addExplicitFilter(scope, field, OperatorEquals, match)
 	}
 
 	return nil
@@ -220,4 +253,15 @@ func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err erro
 	}
 
 	return t, nil
+}
+
+func addExplicitFilter(scope *Scope, field *proto.Field, operator Operator, value any) error {
+	if operator != OperatorEquals {
+		return fmt.Errorf("operator %s not yet supported", operator)
+	}
+
+	w := fmt.Sprintf("%s = ?", strcase.ToSnake(field.Name))
+	scope.query = scope.query.Where(w, value)
+
+	return nil
 }

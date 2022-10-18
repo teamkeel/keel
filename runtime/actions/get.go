@@ -42,7 +42,7 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 	if action.scope.Error != nil {
 		return action
 	}
-	if err := applyImplicitFiltersForGetOrDelete(action.scope, args); err != nil {
+	if err := DefaultApplyImplicitFilters(action.scope, args); err != nil {
 		action.scope.Error = err
 		return action
 	}

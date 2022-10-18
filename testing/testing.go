@@ -187,8 +187,12 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										Execute(body.Payload)
 
 									r := map[string]any{
-										"object": result.Value.Object,
+										"object": nil,
 										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["object"] = result.Value.Object
 									}
 
 									writeResponse(r, w)
@@ -203,8 +207,12 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										Execute(body.Payload)
 
 									r := map[string]any{
-										"object": result.Value.Object,
+										"object": nil,
 										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["object"] = result.Value.Object
 									}
 
 									writeResponse(r, w)
@@ -238,25 +246,33 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										Execute(body.Payload)
 
 									r := map[string]any{
-										"object": result.Value.Object,
+										"object": nil,
 										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["object"] = result.Value.Object
 									}
 
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_LIST:
 									var builder actions.ListAction
-									where, err := toArgsMap(body.Payload, "where")
 
-									if err != nil {
-										where = map[string]any{}
+									// todo: body.Payload is currently just the wheres
+									// needs to follow this structure:
+									// where: {},
+									// pageInfo: {}
+
+									args := map[string]any{
+										"where": body.Payload,
 									}
 
 									result, err := builder.
 										Initialise(scope).
-										ApplyImplicitFilters(where).
-										ApplyExplicitFilters(where).
-										IsAuthorised(body.Payload).
-										Execute(body.Payload)
+										ApplyImplicitFilters(args).
+										ApplyExplicitFilters(args).
+										IsAuthorised(args).
+										Execute(args)
 
 									r := map[string]any{
 										"collection":  result.Value.Collection,
