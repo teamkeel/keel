@@ -93,12 +93,14 @@ func (mk *rpcApiBuilder) addRoute(
 				return nil, err
 			}
 
-			return builder.
+			result, err := builder.
 				Initialise(scope).
 				ApplyImplicitFilters(inputs).
 				ApplyExplicitFilters(inputs).
 				IsAuthorised(inputs).
 				Execute(inputs)
+
+			return result.Value.Object, err
 		}
 		mk.get[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_LIST:
@@ -130,7 +132,7 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			return result, err
+			return result.Value.Collection, err
 		}
 		mk.get[op.Name] = handler
 
@@ -160,7 +162,7 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			return result, err
+			return result.Value.Collection, err
 		}
 		mk.post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_CREATE:
