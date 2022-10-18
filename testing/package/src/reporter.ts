@@ -6,6 +6,11 @@ export interface ReporterOptions {
   port: number;
 }
 
+interface ClearOptions {
+  filePath: string;
+  testCase: string;
+}
+
 export default class Reporter {
   private readonly opts: ReporterOptions;
 
@@ -13,9 +18,13 @@ export default class Reporter {
     this.opts = opts;
   }
 
-  clearDatabase = async (): Promise<boolean> => {
+  clearDatabase = async ({ filePath, testCase }: ClearOptions): Promise<boolean> => {
     const res = await fetch(`${this.buildHostUri()}/reset`, {
       method: "POST",
+      body: JSON.stringify({
+        filePath,
+        testCase,
+      })
     });
 
     return res.ok;
