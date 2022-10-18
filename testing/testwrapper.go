@@ -19,14 +19,15 @@ func WrapTestFileWithShim(parentPort string, filePath string, pattern string) er
 	if _, err := file.WriteString(
 		fmt.Sprintf(
 			`
-					import { runAllTests } from '@teamkeel/testing';
+			import { runAllTests } from '@teamkeel/testing';
 
-					runAllTests({
-						parentPort: %s,
-						filePath: '%s',
-						host: 'localhost',
-						pattern: '%s'
-					});
+			runAllTests({
+				parentPort: %s,
+				filePath: '%s',
+				host: 'localhost',
+				pattern: '%s',
+				silent: false
+			});
 				`,
 			parentPort,
 			filePath,

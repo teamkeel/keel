@@ -2,15 +2,18 @@ package cmd
 
 import (
 	"fmt"
+
 	"os"
 	"path/filepath"
+
+	"github.com/fatih/color"
+	"github.com/samber/lo"
 
 	"github.com/spf13/cobra"
 
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
-	testpackage "github.com/teamkeel/keel/testing"
 )
 
 var testCmd = &cobra.Command{
@@ -18,6 +21,8 @@ var testCmd = &cobra.Command{
 	Short: "Run Keel tests",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workingDir, err := testhelpers.WithTmpDir(inputDir)
+
+		allEvents := []*testing.Event{}
 
 		if err != nil {
 			return err
@@ -43,19 +48,18 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
-		ch, err := testpackage.Run(workingDir, "", testing.RunTypeTestCmd)
+		ch, err := testing.Run(workingDir, "", testing.RunTypeTestCmd)
 
 		if err != nil {
 			return err
 		}
 
-		events := []*testing.Event{}
+		// each js test file reports back an array of testing results
 		for newEvents := range ch {
-			events = append(events, newEvents...)
-
-			fmt.Print(newEvents)
+			allEvents = append(allEvents, newEvents...)
 		}
 
+		PrintSummary(allEvents)
 		return nil
 	},
 }
@@ -67,4 +71,25 @@ func init() {
 		panic(fmt.Errorf("os.Getwd() errored: %v", err))
 	}
 	testCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "input directory to validate")
+}
+
+func PrintSummary(events []*testing.Event) {
+
+	totalPassed := lo.CountBy(events, func(evt *testing.Event) bool {
+		return evt.Status == testing.StatusPass
+	})
+
+	totalFailed := lo.CountBy(events, func(evt *testing.Event) bool {
+		return evt.Status != testing.StatusPass
+	})
+
+	fmt.Printf("Test summary: %s, %s\n", color.New(color.FgGreen).Sprintf("%d passed", totalPassed), color.New(color.FgRed).Sprintf("%d failed", totalFailed))
+
+	// for _, event := range events {
+	// 	if event.Status == testing.StatusPass {
+	// 		fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
+	// 	} else {
+	// 		fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", event.Status), event.TestName)
+	// 	}
+	// }
 }

@@ -35,6 +35,12 @@ var TestIgnorePatterns []string = []string{"node_modules"}
 
 const dbConnUri = "postgres://postgres:postgres@0.0.0.0:8001/%s"
 
+const (
+	StatusPass      = "pass"
+	StatusFail      = "fail"
+	StatusException = "exception"
+)
+
 type Event struct {
 	Status   string          `json:"status"`
 	TestName string          `json:"testName"`
