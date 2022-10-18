@@ -38,7 +38,7 @@ const dbConnString = "host=localhost port=8001 user=postgres password=postgres d
 
 var mainDB *gorm.DB
 
-func SetupDatabaseForTestCase(schema *proto.Schema, dbName string, onCleanup func(mainDB *gorm.DB, testDB *gorm.DB, dbName string)) (*gorm.DB, error) {
+func SetupDatabaseForTestCase(schema *proto.Schema, dbName string) (*gorm.DB, error) {
 	if mainDB == nil {
 		var err error
 		mainDB, err = gorm.Open(
@@ -90,8 +90,6 @@ func SetupDatabaseForTestCase(schema *proto.Schema, dbName string, onCleanup fun
 	if err != nil {
 		return nil, err
 	}
-
-	// onCleanup(mainDB, testDB, dbName)
 
 	return testDB, nil
 }

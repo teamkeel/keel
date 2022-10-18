@@ -43,12 +43,7 @@ func TestRuntime(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
-			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name), func(mainDB *gorm.DB, testDB *gorm.DB, dbName string) {
-				// cleanup function
-				t.Cleanup(func() {
-					require.NoError(t, testhelpers.CleanupDatabaseSetup(mainDB, testDB, dbName))
-				})
-			})
+			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name))
 
 			require.NoError(t, err)
 
@@ -118,10 +113,7 @@ func TestRuntimeRPC(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
-			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name), func(mainDB *gorm.DB, testDB *gorm.DB, dbName string) {
-				// cleanup function
-				require.NoError(t, testhelpers.CleanupDatabaseSetup(mainDB, testDB, dbName))
-			})
+			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name))
 
 			require.NoError(t, err)
 

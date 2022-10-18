@@ -48,6 +48,11 @@ type ActionRequest struct {
 	Payload    map[string]any `json:"payload"`
 }
 
+type ResetRequest struct {
+	FilePath string `json:"filePath"`
+	TestCase string `json:"testCase"`
+}
+
 //go:embed tsconfig.json
 var sampleTsConfig string
 
@@ -282,11 +287,15 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 				w.Write([]byte("ok"))
 
 			case "/reset":
-				db, err = testhelpers.SetupDatabaseForTestCase(schema, dbName, func(main, testDB *gorm.DB, dbName string) {
-					// clean up between individual js tests
-
-					testhelpers.CleanupDatabaseSetup(main, testDB, dbName)
-				})
+				resetRequestBody := &ResetRequest{}
+				err = json.Unmarshal(b, &resetRequestBody)
+				if err != nil {
+					panic(err)
+				}
+				db, err = testhelpers.SetupDatabaseForTestCase(schema, dbName)
+				if err != nil {
+					panic(err)
+				}
 				w.Write([]byte("ok"))
 			}
 		}),
@@ -305,13 +314,6 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 		for _, file := range testFiles {
 			if strings.Contains(file, "node_modules") {
 				continue
-			}
-
-			db, err = testhelpers.SetupDatabaseForTestCase(schema, dbName, func(mainDB, testDB *gorm.DB, dbName string) {
-				testhelpers.CleanupDatabaseSetup(mainDB, testDB, dbName)
-			})
-			if err != nil {
-				panic(err)
 			}
 
 			err := WrapTestFileWithShim(reportingPort, filepath.Join(dir, file), pattern)
