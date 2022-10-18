@@ -28,10 +28,6 @@ func (action *GetAction) CaptureSetValues(args RequestArguments) ActionBuilder[G
 	return action // no-op
 }
 
-func (action *GetAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
-	return action // no-op
-}
-
 func (action *GetAction) IsAuthorised(args RequestArguments) ActionBuilder[GetResult] {
 	return action // no-op
 }
@@ -43,6 +39,20 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 		return action
 	}
 	if err := DefaultApplyImplicitFilters(action.scope, args); err != nil {
+		action.scope.Error = err
+		return action
+	}
+	return action
+}
+
+func (action *GetAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+	// We delegate to a function that may get used by other Actions later on, once we have
+	// unified how we handle operators in both schema where clauses and in implicit inputs language.
+	err := DefaultApplyExplicitFilters(action.scope, args)
+	if err != nil {
 		action.scope.Error = err
 		return action
 	}

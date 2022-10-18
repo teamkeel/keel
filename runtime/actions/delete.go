@@ -23,14 +23,6 @@ func (action *DeleteAction) CaptureSetValues(args RequestArguments) ActionBuilde
 	return action // no-op
 }
 
-func (action *DeleteAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[DeleteResult] {
-	return action // no-op
-}
-
-func (action *DeleteAction) IsAuthorised(args RequestArguments) ActionBuilder[DeleteResult] {
-	return action // no-op
-}
-
 // --------------------
 
 func (action *DeleteAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[DeleteResult] {
@@ -44,13 +36,27 @@ func (action *DeleteAction) ApplyImplicitFilters(args RequestArguments) ActionBu
 	return action
 }
 
+func (action *DeleteAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[DeleteResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+	// We delegate to a function that may get used by other Actions later on, once we have
+	// unified how we handle operators in both schema where clauses and in implicit inputs language.
+	err := DefaultApplyExplicitFilters(action.scope, args)
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+	return action
+}
+
 func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[DeleteResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
 	}
 
-	record := []map[string]any{}
-	err := action.scope.query.Delete(record).Error
+	records := []map[string]any{}
+	err := action.scope.query.Delete(records).Error
 
 	result := ActionResult[DeleteResult]{
 		Value: DeleteResult{
@@ -63,4 +69,9 @@ func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[Delete
 	}
 
 	return &result, nil
+}
+
+func (action *DeleteAction) IsAuthorised(args RequestArguments) ActionBuilder[DeleteResult] {
+	// res := DefaultAuthorizeAction(action.scope, args, action.result)
+	return action
 }

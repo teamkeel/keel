@@ -71,6 +71,9 @@ type Scope struct {
 	model     *proto.Model
 	schema    *proto.Schema
 
+	// temporary - clearly wrong
+	result map[string]any
+
 	// This field is connected to the database, and we use it to perform all
 	// all queries and write operations on the database.
 	query *gorm.DB
@@ -105,6 +108,10 @@ func NewScope(
 		query:       query,
 		writeValues: map[string]any{},
 	}, nil
+}
+
+func (s *Scope) SetResult(data map[string]any) {
+	s.result = data
 }
 
 // toLowerCamelMap returns a copy of the given map, in which all

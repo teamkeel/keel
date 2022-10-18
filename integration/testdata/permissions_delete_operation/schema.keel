@@ -57,7 +57,7 @@ model Post {
             @set(post.identity = ctx.identity)
         }
 
-        delete deleteWithRequiresSameIdentity() {
+        delete deleteWithRequiresSameIdentity(id) {
             @permission(expression: post.identity == ctx.identity)
         }
 

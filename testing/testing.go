@@ -223,12 +223,14 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										panic(err)
 									}
 
-									values, err := toArgsMap(body.Payload, "values")
+									// toArgsMap covers if the key isnt present
+									// if this is the case, an empty map will be returned
+									values, err := toArgsMap(body.Payload, "values", true)
 									if err != nil {
 										panic(err)
 									}
 
-									wheres, err := toArgsMap(body.Payload, "where")
+									wheres, err := toArgsMap(body.Payload, "where", false)
 									if err != nil {
 										panic(err)
 									}
@@ -533,10 +535,13 @@ func typecheck(dir string, runType RunType) (output string, err error) {
 	return string(b), err
 }
 
-func toArgsMap(input map[string]any, key string) (map[string]any, error) {
+func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[string]any, error) {
 	subKey, ok := input[key]
 
 	if !ok {
+		if defaultToEmpty {
+			return make(map[string]any), nil
+		}
 		return nil, fmt.Errorf("%s missing", key)
 	}
 
