@@ -169,8 +169,11 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									ctx = runtimectx.WithIdentity(ctx, &identityId)
 								}
 
-								scope, _ := actions.NewScope(ctx, action, schema)
+								scope, err := actions.NewScope(ctx, action, schema)
 
+								if err != nil {
+									panic(err)
+								}
 								switch action.Type {
 								case proto.OperationType_OPERATION_TYPE_GET:
 

@@ -1,6 +1,9 @@
 package actions
 
-import "github.com/teamkeel/keel/proto"
+import (
+	"github.com/teamkeel/keel/proto"
+	"golang.org/x/exp/maps"
+)
 
 type CreateAction struct {
 	scope *Scope
@@ -15,8 +18,6 @@ func (action *CreateAction) Initialise(scope *Scope) ActionBuilder[CreateResult]
 	return action
 }
 
-// Keep the no-op methods in a group together
-
 func (action *CreateAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[CreateResult] {
 	return action // no-op
 }
@@ -29,15 +30,19 @@ func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[Cr
 	return action // no-op
 }
 
-// --------------
-
 func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
-	err := c.scope.query.Create(c.scope.writeValues).Error
+	values, err := initialValueForModel(c.scope.model, c.scope.schema)
+	if err != nil {
+		return nil, err
+	}
+	maps.Copy(values, c.scope.writeValues)
+
+	err = c.scope.query.Create(values).Error
 
 	if err != nil {
 		return nil, err
 	}
-	result := toLowerCamelMap(c.scope.writeValues)
+	result := toLowerCamelMap(values)
 
 	return &ActionResult[CreateResult]{
 		Value: CreateResult{

@@ -13,11 +13,6 @@ import (
 // in the case of implicit inputs, or the alias name defined in the schema in the case of explicit inputs.
 type RequestArguments map[string]any
 
-// WriteValues hold the in-memory representation of a record we are going to *Write* to a database row.
-// Keys are strictly model field names. (I.e. something must intervene to snake-case it before passing it on to
-// a gorm.DB.Create() for example).
-type WriteValues map[string]any
-
 // An ActionResult is a parameterised Type that allows each of the specific Actions {Get,Create,List...} to define
 // their own return type structure. E.g. for the List action - it can return paging information as well as
 // the records in a strongly typed way.
@@ -75,14 +70,13 @@ type Scope struct {
 	operation *proto.Operation
 	model     *proto.Model
 	schema    *proto.Schema
-	table     string
 
 	// This field is connected to the database, and we use it to perform all
 	// all queries and write operations on the database.
 	query *gorm.DB
 
 	// This field accumulates the values we intend to write to a database row.
-	writeValues WriteValues
+	writeValues map[string]any
 
 	// The Error field holds the current error if there is one.
 	Error error
@@ -101,14 +95,15 @@ func NewScope(
 		return nil, err
 	}
 
+	query = query.Table(table)
+
 	return &Scope{
 		context:     ctx,
 		operation:   operation,
 		model:       model,
 		schema:      schema,
-		table:       table,
 		query:       query,
-		writeValues: WriteValues{},
+		writeValues: map[string]any{},
 	}, nil
 }
 

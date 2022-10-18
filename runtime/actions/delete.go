@@ -54,12 +54,12 @@ func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[Delete
 
 	result := ActionResult[DeleteResult]{
 		Value: DeleteResult{
-			Success: err != nil,
+			Success: err == nil,
 		},
 	}
 
 	if err != nil {
-		return nil, err
+		return &result, err
 	}
 
 	return &result, nil
