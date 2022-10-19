@@ -1,6 +1,7 @@
 package codegen_test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
@@ -82,6 +83,73 @@ func TestCodeGeneration(t *testing.T) {
 			} else {
 				t.Fatalf("Test case names must follow convention XXX_name where XXX is one of %s", formatting.HumanizeList(permittedTestCaseTypes, formatting.DelimiterOr))
 			}
+		})
+	}
+}
+
+func TestGenerateEntryPointRenderArguments(t *testing.T) {
+	testSchema := `
+model Post {
+  fields {
+    title Text
+  }
+
+  functions {
+    create createPost() with(title)
+  }
+}
+`
+
+	type TestCase struct {
+		PathToFunctionsDirArg string
+		ExpectedImportPrefix  string
+	}
+
+	testCases := []TestCase{
+		{
+			PathToFunctionsDirArg: ".",
+			ExpectedImportPrefix:  "./",
+		},
+		{
+			PathToFunctionsDirArg: "functions",
+			ExpectedImportPrefix:  "./functions/",
+		},
+		{
+			PathToFunctionsDirArg: "..",
+			ExpectedImportPrefix:  "../",
+		},
+		{
+			PathToFunctionsDirArg: "../../../../functions",
+			ExpectedImportPrefix:  "../../../../functions/",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(fmt.Sprintf("Input_'%s'", testCase.PathToFunctionsDirArg), func(t *testing.T) {
+			scm := schema.Builder{}
+
+			proto, err := scm.MakeFromString(testSchema)
+
+			require.NoError(t, err)
+
+			generator := codegen.NewGenerator(proto)
+
+			renderArguments := generator.GenerateEntryPointRenderArguments(testCase.PathToFunctionsDirArg)
+
+			expectedImports := fmt.Sprintf(`import startRuntimeServer from '@teamkeel/runtime'
+import { Logger } from '@teamkeel/sdk'
+import { PostApi } from '@teamkeel/sdk'
+import createPost from '%screatePost'
+import { IdentityApi } from '@teamkeel/sdk'
+`, testCase.ExpectedImportPrefix)
+			expectedAPI := `models: { post: new PostApi(),
+identity: new IdentityApi() },
+logger: new Logger({ colorize: true })`
+			expectedFunctions := "createPost: { call: createPost, },"
+
+			assert.Equal(t, expectedImports, renderArguments.Imports)
+			assert.Equal(t, expectedAPI, renderArguments.API)
+			assert.Equal(t, expectedFunctions, renderArguments.Functions)
 		})
 	}
 }

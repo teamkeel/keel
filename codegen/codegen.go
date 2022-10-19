@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"sort"
+	"strings"
 	"text/template"
 
 	"github.com/iancoleman/strcase"
@@ -673,10 +674,14 @@ func (gen *Generator) GenerateEntryPointRenderArguments(pathToFunctionsDirFromHa
 			})
 
 			for _, op := range functions {
+				path := filepath.Join(pathToFunctionsDirFromHandlerDir, op.Name)
+				if !strings.HasPrefix(path, ".") {
+					path = "./" + path
+				}
 				// Add the imports to each custom code srcfile
 				acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 					"Name": op.Name,
-					"Path": filepath.Join(pathToFunctionsDirFromHandlerDir, op.Name),
+					"Path": path,
 				}))
 			}
 		}
