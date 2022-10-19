@@ -33,7 +33,7 @@ func (action *ListAction) CaptureSetValues(args RequestArguments) ActionBuilder[
 }
 
 func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[ListResult] {
-	return action // no-op
+	return action
 }
 
 // ----------------
@@ -125,7 +125,6 @@ func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuil
 }
 
 func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
-
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
 	}

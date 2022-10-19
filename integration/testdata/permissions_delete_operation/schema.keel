@@ -61,7 +61,7 @@ model Post {
             @permission(expression: post.identity == ctx.identity)
         }
 
-        update deleteWithTrueValuePermission(id) with (title) {
+        delete deleteWithTrueValuePermission(id) with (title) {
             @permission(expression: true)
         }
     }

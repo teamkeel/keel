@@ -15,7 +15,7 @@ import (
 // query field in the given scope, using a hard-coded equality operator.
 func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 	for _, input := range scope.operation.Inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT || input.Mode == proto.InputMode_INPUT_MODE_WRITE {
 			continue
 		}
 

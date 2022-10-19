@@ -2,8 +2,6 @@ package actions
 
 import (
 	"errors"
-
-	"golang.org/x/exp/maps"
 )
 
 type CreateAction struct {
@@ -28,32 +26,36 @@ func (action *CreateAction) ApplyImplicitFilters(args RequestArguments) ActionBu
 }
 
 func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[CreateResult] {
-	return action // no-op
-}
-
-func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
-	// initialise default values
-	values, err := initialValueForModel(c.scope.model, c.scope.schema)
-	if err != nil {
-		return nil, err
+	if action.scope.Error != nil {
+		return action
 	}
-	maps.Copy(values, c.scope.writeValues)
 
 	// todo: temporary hack for permissions
-	authorized, err := EvaluatePermissions(c.scope.context, c.scope.operation, c.scope.schema, toLowerCamelMap(c.scope.writeValues))
+	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, toLowerCamelMap(action.scope.writeValues))
 	if err != nil {
-		return nil, err
+		action.scope.Error = err
+		return action
 	}
 	if !authorized {
-		return nil, errors.New("not authorized to access this operation")
+		action.scope.Error = errors.New("not authorized to access this operation")
+		return action
 	}
 
-	err = c.scope.query.Create(values).Error
+	return action
+}
 
+func (action *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
+	if action.scope.Error != nil {
+		return nil, action.scope.Error
+	}
+
+	err := action.scope.query.Create(action.scope.writeValues).Error
 	if err != nil {
+		action.scope.Error = err
 		return nil, err
 	}
-	result := toLowerCamelMap(values)
+
+	result := toLowerCamelMap(action.scope.writeValues)
 
 	return &ActionResult[CreateResult]{
 		Value: CreateResult{
@@ -63,6 +65,18 @@ func (c *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResul
 }
 
 func (action *CreateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[CreateResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
+	// initialise default values
+	values, err := initialValueForModel(action.scope.model, action.scope.schema)
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+	action.scope.writeValues = values
+
 	// Delegate to a method that we hope will become more widely used later.
 	if err := DefaultCaptureImplicitWriteInputValues(action.scope.operation.Inputs, args, action.scope); err != nil {
 		action.scope.Error = err
@@ -72,6 +86,10 @@ func (action *CreateAction) CaptureImplicitWriteInputValues(args RequestArgument
 }
 
 func (action *CreateAction) CaptureSetValues(args RequestArguments) ActionBuilder[CreateResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
 	if err := DefaultCaptureSetValues(action.scope, args); err != nil {
 		action.scope.Error = err
 		return action

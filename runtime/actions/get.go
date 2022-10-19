@@ -29,7 +29,7 @@ func (action *GetAction) CaptureSetValues(args RequestArguments) ActionBuilder[G
 }
 
 func (action *GetAction) IsAuthorised(args RequestArguments) ActionBuilder[GetResult] {
-	return action // no-op
+	return action
 }
 
 // --------------------

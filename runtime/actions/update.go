@@ -21,6 +21,10 @@ func (action *UpdateAction) Initialise(scope *Scope) ActionBuilder[UpdateResult]
 // Keep the no-op methods in a group together
 
 func (action *UpdateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[UpdateResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
 	// Delegate to a method that we hope will become more widely used later.
 	if err := DefaultCaptureImplicitWriteInputValues(action.scope.operation.Inputs, args, action.scope); err != nil {
 		action.scope.Error = err
@@ -30,6 +34,10 @@ func (action *UpdateAction) CaptureImplicitWriteInputValues(args RequestArgument
 }
 
 func (action *UpdateAction) CaptureSetValues(args RequestArguments) ActionBuilder[UpdateResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
 	if err := DefaultCaptureSetValues(action.scope, args); err != nil {
 		action.scope.Error = err
 		return action
@@ -38,7 +46,7 @@ func (action *UpdateAction) CaptureSetValues(args RequestArguments) ActionBuilde
 }
 
 func (action *UpdateAction) IsAuthorised(args RequestArguments) ActionBuilder[UpdateResult] {
-	return action // no-op
+	return action
 }
 
 // --------------------
@@ -47,6 +55,7 @@ func (action *UpdateAction) ApplyImplicitFilters(args RequestArguments) ActionBu
 	if action.scope.Error != nil {
 		return action
 	}
+
 	if err := DefaultApplyImplicitFilters(action.scope, args); err != nil {
 		action.scope.Error = err
 		return action
@@ -58,6 +67,7 @@ func (action *UpdateAction) ApplyExplicitFilters(args RequestArguments) ActionBu
 	if action.scope.Error != nil {
 		return action
 	}
+
 	// We delegate to a function that may get used by other Actions later on, once we have
 	// unified how we handle operators in both schema where clauses and in implicit inputs language.
 	err := DefaultApplyExplicitFilters(action.scope, args)
@@ -69,6 +79,10 @@ func (action *UpdateAction) ApplyExplicitFilters(args RequestArguments) ActionBu
 }
 
 func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[UpdateResult], error) {
+	if action.scope.Error != nil {
+		return nil, action.scope.Error
+	}
+
 	result := []map[string]any{}
 	action.scope.query = action.scope.query.Find(&result)
 	if action.scope.query.Error != nil {

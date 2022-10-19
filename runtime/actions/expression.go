@@ -259,9 +259,8 @@ func evaluateOperandValue(
 	case operand.Ident != nil && len(operand.Ident.Fragments) == 1 && data[operand.Ident.Fragments[0].Fragment] != nil:
 		inputValue, _ := data[operand.Ident.Fragments[0].Fragment]
 		return inputValue, nil
-	case operand.Ident != nil && strcase.ToCamel(operand.Ident.Fragments[0].Fragment) == operation.ModelName:
-		target := operand.Ident.Fragments[0].Fragment
-		modelTarget := strcase.ToCamel(target)
+	case operand.Ident != nil && strcase.ToCamel(operand.Ident.Fragments[0].Fragment) == strcase.ToCamel(operation.ModelName):
+		modelTarget := strcase.ToCamel(operand.Ident.Fragments[0].Fragment)
 		fieldName := operand.Ident.Fragments[1].Fragment
 
 		if !proto.ModelHasField(schema, strcase.ToCamel(modelTarget), fieldName) {
