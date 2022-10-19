@@ -194,7 +194,10 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(arguments).
 				Execute(arguments)
 
-			return result.Value.Object, err
+			if result != nil {
+				return result.Value.Object, err
+			}
+			return nil, err
 		}
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
@@ -220,7 +223,10 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(arguments).
 				Execute(arguments)
 
-			return result.Value.Object, err
+			if result != nil {
+				return result.Value.Object, err
+			}
+			return nil, err
 		}
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
@@ -265,7 +271,11 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(arguments).
 				Execute(arguments)
 
-			return result.Value.Object, err
+			if result != nil {
+				return result.Value.Object, err
+			}
+
+			return nil, err
 		}
 
 		field.Type = graphql.NewNonNull(field.Type)
@@ -297,7 +307,11 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(arguments).
 				Execute(arguments)
 
-			return result.Value.Success, err
+			if result != nil {
+				return result.Value.Success, err
+			}
+
+			return false, err
 		}
 
 		mk.mutation.AddFieldConfig(op.Name, field)
