@@ -1,6 +1,8 @@
 package expressions
 
 import (
+	"fmt"
+
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
@@ -17,6 +19,39 @@ type ExpressionContext struct {
 	Model     *parser.ModelNode
 	Action    *parser.ActionNode
 	Attribute *parser.AttributeNode
+}
+
+type ResolutionError struct {
+	scope    *ExpressionScope
+	fragment *parser.IdentFragment
+	parent   string
+	operand  *parser.Operand
+}
+
+func (e *ResolutionError) InScopeEntities() []string {
+	return lo.Map(e.scope.Entities, func(e *ExpressionScopeEntity, _ int) string {
+		return e.Name
+	})
+}
+
+func (e *ResolutionError) Error() string {
+	return fmt.Sprintf("Could not resolve %s in %s", e.fragment.Fragment, e.operand.ToString())
+}
+
+func (e *ResolutionError) ToValidationError() *errorhandling.ValidationError {
+	suggestions := errorhandling.NewCorrectionHint(e.InScopeEntities(), e.fragment.Fragment)
+
+	return errorhandling.NewValidationError(
+		errorhandling.ErrorUnresolvableExpression,
+		errorhandling.TemplateLiterals{
+			Literals: map[string]string{
+				"Fragment":   e.fragment.Fragment,
+				"Parent":     e.parent,
+				"Suggestion": suggestions.ToString(),
+			},
+		},
+		e.fragment,
+	)
 }
 
 // ExpressionScope is used to represent things that should be in the scope
@@ -219,10 +254,9 @@ func (e *ExpressionScopeEntity) IsRepeated() bool {
 // - "123"
 // - true
 // All of these types above are checked / attempted to be resolved in this method.
-func ResolveOperand(asts []*parser.AST, operand *parser.Operand, scope *ExpressionScope, context ExpressionContext, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err error) {
+func ResolveOperand(asts []*parser.AST, operand *parser.Operand, scope *ExpressionScope, context ExpressionContext, operandPosition OperandPosition) (entity *ExpressionScopeEntity, err *ResolutionError) {
 	// build additional root scopes based on position of operand
 	// and also what type attribute the expression is used in.
-
 	scope = applyAdditionalOperandScopes(asts, scope, context, operandPosition)
 
 	// If it is a literal then handle differently.
@@ -338,32 +372,18 @@ fragments:
 			continue fragments
 		}
 
-		// todo: move this back to validation package
-		// Suggest the names of all things in scope
-		inScope := lo.Map(scope.Entities, func(e *ExpressionScopeEntity, _ int) string {
-			return e.Name
-		})
-
-		suggestions := errorhandling.NewCorrectionHint(inScope, fragment.Fragment)
-
 		parent := ""
+
 		if entity != nil {
 			parent = entity.GetType()
 		}
 
-		err = errorhandling.NewValidationError(
-			errorhandling.ErrorUnresolvableExpression,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"Fragment":   fragment.Fragment,
-					"Parent":     parent,
-					"Suggestion": suggestions.ToString(),
-				},
-			},
-			fragment,
-		)
-
-		return nil, err
+		return nil, &ResolutionError{
+			fragment: fragment,
+			parent:   parent,
+			scope:    scope,
+			operand:  operand,
+		}
 	}
 
 	return entity, nil
