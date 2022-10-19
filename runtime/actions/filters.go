@@ -26,7 +26,7 @@ func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
 		}
 
-		if err := addImplicitFilter(scope, input, OperatorEquals, value); err != nil {
+		if err := addImplicitFilter(scope, input, Equals, value); err != nil {
 			return err
 		}
 	}
@@ -61,7 +61,7 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("argument not provided for %s", field.Name)
 		}
 
-		addExplicitFilter(scope, field, OperatorEquals, match)
+		addExplicitFilter(scope, field, Equals, match)
 	}
 
 	return nil
@@ -73,13 +73,13 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 
 // addImplicitFilter adds Where clauses to the query field of the given scope, corresponding to
 // the given input, the given operator, and using the given value as the operand.
-func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Operator, value any) error {
+func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator ActionOperator, value any) error {
 
 	inputType := input.Type.Type
 	columnName := input.Target[0]
 
 	switch operator {
-	case OperatorEquals:
+	case Equals:
 		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
 
 		if inputType == proto.Type_TYPE_DATE || inputType == proto.Type_TYPE_DATETIME || inputType == proto.Type_TYPE_TIMESTAMP {
@@ -93,7 +93,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 		} else {
 			scope.query = scope.query.Where(w, value)
 		}
-	case OperatorStartsWith:
+	case StartsWith:
 		operandStr, ok := value.(string)
 
 		if !ok {
@@ -102,7 +102,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 
 		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandStr+"%%")
-	case OperatorEndsWith:
+	case EndsWith:
 		operandStr, ok := value.(string)
 
 		if !ok {
@@ -111,7 +111,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 
 		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, "%%"+operandStr)
-	case OperatorContains:
+	case Contains:
 		operandStr, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("cannot cast this: %v to a string", value)
@@ -119,7 +119,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 
 		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, "%%"+operandStr+"%%")
-	case OperatorOneOf:
+	case OneOf:
 		operandStrings, ok := value.([]interface{})
 		if !ok {
 			return fmt.Errorf("cannot cast this: %v to a []interface{}", value)
@@ -127,7 +127,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 
 		w := fmt.Sprintf("%s in ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandStrings)
-	case OperatorLessThan:
+	case LessThan:
 		operandInt, ok := value.(int)
 
 		if !ok {
@@ -136,7 +136,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 
 		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandInt)
-	case OperatorLessThanEquals:
+	case LessThanEquals:
 		operandInt, ok := value.(int)
 
 		if !ok {
@@ -145,7 +145,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 
 		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandInt)
-	case OperatorGreaterThan:
+	case GreaterThan:
 		operandInt, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("cannot cast this: %v to an int", value)
@@ -153,7 +153,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandInt)
 
-	case OperatorGreaterThanEquals:
+	case GreaterThanEquals:
 		operandInt, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("cannot cast this: %v to an int", value)
@@ -161,7 +161,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandInt)
 
-	case OperatorBefore:
+	case Before:
 		operandTime, err := parseTimeOperand(value, inputType)
 
 		if err != nil {
@@ -171,7 +171,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
 
 		scope.query = scope.query.Where(w, operandTime)
-	case OperatorAfter:
+	case After:
 		operandTime, err := parseTimeOperand(value, inputType)
 
 		if err != nil {
@@ -181,7 +181,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
 
 		scope.query = scope.query.Where(w, operandTime)
-	case OperatorOnOrBefore:
+	case OnOrBefore:
 		operandTime, err := parseTimeOperand(value, inputType)
 
 		if err != nil {
@@ -190,7 +190,7 @@ func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator Opera
 
 		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandTime)
-	case OperatorOnOrAfter:
+	case OnOrAfter:
 		operandTime, err := parseTimeOperand(value, inputType)
 
 		if err != nil {
@@ -255,9 +255,9 @@ func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err erro
 	return t, nil
 }
 
-func addExplicitFilter(scope *Scope, field *proto.Field, operator Operator, value any) error {
-	if operator != OperatorEquals {
-		return fmt.Errorf("operator %s not yet supported", operator)
+func addExplicitFilter(scope *Scope, field *proto.Field, operator ActionOperator, value any) error {
+	if operator != Equals {
+		return fmt.Errorf("operator %d not yet supported", operator)
 	}
 
 	w := fmt.Sprintf("%s = ?", strcase.ToSnake(field.Name))

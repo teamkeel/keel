@@ -1,7 +1,5 @@
 package actions
 
-import "fmt"
-
 // A ListInput defines the input to a LIST action. Specifically,
 // A filter - in terms of Where clauses, and also a mandate about which
 // page from the potential results is required.
@@ -31,30 +29,30 @@ type Page struct {
 
 // An Operator represents one of the built-in operators you can use in a filter for
 // implicit inputs.
-type Operator string
+// type Operator string
 
-const (
-	OperatorUnknown = "unknown"
-	OperatorEquals  = "equal"
+// const (
+// 	OperatorUnknown = "unknown"
+// 	OperatorEquals  = "equal"
 
-	// String
-	OperatorStartsWith = "startsWith"
-	OperatorEndsWith   = "endsWith"
-	OperatorContains   = "contains"
-	OperatorOneOf      = "oneOf"
+// 	// String
+// 	OperatorStartsWith = "startsWith"
+// 	OperatorEndsWith   = "endsWith"
+// 	OperatorContains   = "contains"
+// 	OperatorOneOf      = "oneOf"
 
-	// Numeric
-	OperatorLessThan          = "lessThan"
-	OperatorLessThanEquals    = "lessThanOrEqualTo"
-	OperatorGreaterThan       = "greaterThan"
-	OperatorGreaterThanEquals = "greaterThanOrEqualTo"
+// 	// Numeric
+// 	OperatorLessThan          = "lessThan"
+// 	OperatorLessThanEquals    = "lessThanOrEqualTo"
+// 	OperatorGreaterThan       = "greaterThan"
+// 	OperatorGreaterThanEquals = "greaterThanOrEqualTo"
 
-	// Date
-	OperatorBefore     = "before"
-	OperatorAfter      = "after"
-	OperatorOnOrBefore = "onOrBefore"
-	OperatorOnOrAfter  = "onOrAfter"
-)
+// 	// Date
+// 	OperatorBefore     = "before"
+// 	OperatorAfter      = "after"
+// 	OperatorOnOrBefore = "onOrBefore"
+// 	OperatorOnOrAfter  = "onOrAfter"
+// )
 
 // Contains a mapping from graphql operator names
 // to SQL operators
@@ -72,41 +70,3 @@ const (
 // 	OperatorAfter:             ">",
 // 	OperatorOnOrAfter:         ">=",
 // }
-
-// operator converts the given string representation of an operator like
-// "eq" into the corresponding Operator value.
-// todo: is this method redundant?
-// todo: make sure it matches the gql doc - particularly eq
-func operator(operatorStr string) (op Operator, err error) {
-	switch operatorStr {
-	case "equals":
-		// todo: should it be eq as the method comment says or equals
-		return OperatorEquals, nil
-	case "startsWith":
-		return OperatorStartsWith, nil
-	case "endsWith":
-		return OperatorEndsWith, nil
-	case "contains":
-		return OperatorContains, nil
-	case "oneOf":
-		return OperatorOneOf, nil
-	case "lessThan":
-		return OperatorLessThan, nil
-	case "lessThanOrEquals":
-		return OperatorLessThanEquals, nil
-	case "greaterThan":
-		return OperatorGreaterThan, nil
-	case "greaterThanOrEquals":
-		return OperatorGreaterThanEquals, nil
-	case "before":
-		return OperatorBefore, nil
-	case "after":
-		return OperatorAfter, nil
-	case "onOrBefore":
-		return OperatorOnOrBefore, nil
-	case "onOrAfter":
-		return OperatorOnOrAfter, nil
-	default:
-		return op, fmt.Errorf("unrecognized operator: %s", operatorStr)
-	}
-}
