@@ -1,3 +1,10 @@
+## [0.177.1](https://github.com/teamkeel/keel/compare/v0.177.0...v0.177.1) (2022-10-19)
+
+
+### Bug Fixes
+
+* fix graphql action response ([#488](https://github.com/teamkeel/keel/issues/488)) ([f7d6570](https://github.com/teamkeel/keel/commit/f7d6570db1f0ab02178b2d27411f21d1d30dea0f))
+
 # [0.177.0](https://github.com/teamkeel/keel/compare/v0.176.0...v0.177.0) (2022-10-18)
 
 
