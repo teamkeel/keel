@@ -1,99 +1,98 @@
 package actions
 
 import (
-	"context"
 	"errors"
-
-	"github.com/samber/lo"
-	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/runtimectx"
-	"golang.org/x/exp/maps"
-
-	"github.com/iancoleman/strcase"
 )
 
-func Create(ctx context.Context, operation *proto.Operation, schema *proto.Schema, args map[string]any) (map[string]any, error) {
+type CreateAction struct {
+	scope *Scope
+}
 
-	db, err := runtimectx.GetDatabase(ctx)
-	if err != nil {
-		return nil, err
-	}
-	model := proto.FindModel(schema.Models, operation.ModelName)
-	modelMap, err := initialValueForModel(model, schema)
-	if err != nil {
-		return nil, err
-	}
+type CreateResult struct {
+	Object map[string]any `json:"object"`
+}
 
-	// Now overwrite the fields for which Inputs have been given accordingly.
-	implicitInputs := lo.Filter(operation.Inputs, func(input *proto.OperationInput, _ int) bool {
-		return input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
-	})
+func (action *CreateAction) Initialise(scope *Scope) ActionBuilder[CreateResult] {
+	action.scope = scope
+	return action
+}
 
-	for _, input := range implicitInputs {
-		modelFieldName := input.Target[0]
+func (action *CreateAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[CreateResult] {
+	return action // no-op
+}
 
-		// If this argument is missing it must be optional.
-		v, ok := args[input.Name]
-		if !ok {
-			continue
-		}
-		v, err := toMap(v, input.Type.Type)
-		if err != nil {
-			return nil, err
-		}
-		modelMap[strcase.ToSnake(modelFieldName)] = v
+func (action *CreateAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[CreateResult] {
+	return action // no-op
+}
+
+func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[CreateResult] {
+	if action.scope.Error != nil {
+		return action
 	}
 
-	setArgs, err := SetExpressionInputsToModelMap(operation, args, schema, ctx)
-
+	// todo: temporary hack for permissions
+	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, toLowerCamelMap(action.scope.writeValues))
 	if err != nil {
-		return nil, err
-	}
-
-	// todo: clashing keys between implicit / explicit args (is this possible?)
-	maps.Copy(modelMap, setArgs)
-
-	maps.DeleteFunc(modelMap, func(k string, v any) bool {
-		match := lo.SomeBy(model.Fields, func(f *proto.Field) bool {
-			return strcase.ToSnake(f.Name) == k
-		})
-
-		return !match
-	})
-
-	authorized, err := EvaluatePermissions(ctx, operation, schema, toLowerCamelMap(modelMap))
-	if err != nil {
-		return nil, err
+		action.scope.Error = err
+		return action
 	}
 	if !authorized {
-		return nil, errors.New("not authorized to access this operation")
+		action.scope.Error = errors.New("not authorized to access this operation")
+		return action
 	}
 
-	// Write a row to the database.
-	if err := db.Table(strcase.ToSnake(model.Name)).Create(modelMap).Error; err != nil {
+	return action
+}
+
+func (action *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
+	if action.scope.Error != nil {
+		return nil, action.scope.Error
+	}
+
+	err := action.scope.query.Create(action.scope.writeValues).Error
+	if err != nil {
+		action.scope.Error = err
 		return nil, err
 	}
-	return toLowerCamelMap(modelMap), nil
+
+	result := toLowerCamelMap(action.scope.writeValues)
+
+	return &ActionResult[CreateResult]{
+		Value: CreateResult{
+			Object: result,
+		},
+	}, nil
 }
 
-// toLowerCamelMap returns a copy of the given map, in which all
-// of the key strings are converted to LowerCamelCase.
-// It is good for converting identifiers typically used as database
-// table or column names, to the case requirements stipulated by the Keel schema.
-func toLowerCamelMap(m map[string]any) map[string]any {
-	res := map[string]any{}
-	for key, value := range m {
-		res[strcase.ToLowerCamel(key)] = value
+func (action *CreateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[CreateResult] {
+	if action.scope.Error != nil {
+		return action
 	}
-	return res
+
+	// initialise default values
+	values, err := initialValueForModel(action.scope.model, action.scope.schema)
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+	action.scope.writeValues = values
+
+	// Delegate to a method that we hope will become more widely used later.
+	if err := DefaultCaptureImplicitWriteInputValues(action.scope.operation.Inputs, args, action.scope); err != nil {
+		action.scope.Error = err
+		return action
+	}
+	return action
 }
 
-// toLowerCamelMaps is a convenience wrapper around toLowerCamelMap
-// that operates on a list of input maps - rather than just a single map.
-func toLowerCamelMaps(maps []map[string]any) []map[string]any {
-	res := []map[string]any{}
-	for _, m := range maps {
-		res = append(res, toLowerCamelMap(m))
+func (action *CreateAction) CaptureSetValues(args RequestArguments) ActionBuilder[CreateResult] {
+	if action.scope.Error != nil {
+		return action
 	}
-	return res
+
+	if err := DefaultCaptureSetValues(action.scope, args); err != nil {
+		action.scope.Error = err
+		return action
+	}
+	return action
 }

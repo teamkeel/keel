@@ -161,6 +161,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 				for _, model := range schema.Models {
 					for _, action := range model.Operations {
 						if action.Name == body.ActionName {
+
 							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
 								ctx := r.Context()
 								ctx = runtimectx.WithDatabase(ctx, db)
@@ -168,51 +169,136 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									ctx = runtimectx.WithIdentity(ctx, &identityId)
 								}
 
+								scope, err := actions.NewScope(ctx, action, schema)
+
+								if err != nil {
+									panic(err)
+								}
 								switch action.Type {
 								case proto.OperationType_OPERATION_TYPE_GET:
-									res, err := actions.Get(ctx, action, schema, body.Payload)
+
+									var builder actions.GetAction
+
+									result, err := builder.
+										Initialise(scope).
+										ApplyImplicitFilters(body.Payload).
+										ApplyExplicitFilters(body.Payload).
+										IsAuthorised(body.Payload).
+										Execute(body.Payload)
 
 									r := map[string]any{
-										"object": res,
+										"object": nil,
 										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["object"] = result.Value.Object
 									}
 
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_CREATE:
-									res, err := actions.Create(ctx, action, schema, body.Payload)
+									var builder actions.CreateAction
+
+									result, err := builder.
+										Initialise(scope).
+										CaptureImplicitWriteInputValues(body.Payload). // todo: err?
+										CaptureSetValues(body.Payload).
+										IsAuthorised(body.Payload).
+										Execute(body.Payload)
 
 									r := map[string]any{
-										"object": res,
+										"object": nil,
 										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["object"] = result.Value.Object
 									}
 
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_UPDATE:
-									res, err := actions.Update(ctx, action, schema, body.Payload)
+									var builder actions.UpdateAction
+
+									if err != nil {
+										panic(err)
+									}
+
+									// toArgsMap covers if the key isnt present
+									// if this is the case, an empty map will be returned
+									values, err := toArgsMap(body.Payload, "values", true)
+									if err != nil {
+										panic(err)
+									}
+
+									wheres, err := toArgsMap(body.Payload, "where", false)
+									if err != nil {
+										panic(err)
+									}
+
+									result, err := builder.
+										Initialise(scope).
+										// first capture any implicit inputs
+										CaptureImplicitWriteInputValues(values).
+										// then capture explicitly used inputs
+										CaptureSetValues(values).
+										// then apply unique filters
+										ApplyImplicitFilters(wheres).
+										ApplyExplicitFilters(wheres).
+										IsAuthorised(body.Payload).
+										Execute(body.Payload)
 
 									r := map[string]any{
-										"object": res,
+										"object": nil,
 										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["object"] = result.Value.Object
 									}
 
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_LIST:
-									res, hasNextPage, err := actions.List(ctx, action, schema, map[string]any{"where": body.Payload})
+									var builder actions.ListAction
+
+									// todo: body.Payload is currently just the wheres
+									// needs to follow this structure:
+									// where: {},
+									// pageInfo: {}
+
+									args := map[string]any{
+										"where": body.Payload,
+									}
+
+									result, err := builder.
+										Initialise(scope).
+										ApplyImplicitFilters(args).
+										ApplyExplicitFilters(args).
+										IsAuthorised(args).
+										Execute(args)
 
 									r := map[string]any{
-										"collection":  res,
-										"hasNextPage": hasNextPage,
+										"collection":  result.Value.Collection,
+										"hasNextPage": result.Value.HasNextPage,
 										"errors":      serializeError(err),
 									}
 
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_DELETE:
-									// todo: take into account error returned from here
-									res, err := actions.Delete(ctx, action, schema, body.Payload)
+									var builder actions.DeleteAction
+
+									result, err := builder.
+										Initialise(scope).
+										ApplyImplicitFilters(body.Payload).
+										ApplyExplicitFilters(body.Payload).
+										IsAuthorised(body.Payload).
+										Execute(body.Payload)
 
 									r := map[string]any{
-										"success": res,
-										"errors":  serializeError(err),
+										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["success"] = result.Value.Success
 									}
 
 									writeResponse(r, w)
@@ -450,4 +536,23 @@ func typecheck(dir string, runType RunType) (output string, err error) {
 	}
 
 	return string(b), err
+}
+
+func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[string]any, error) {
+	subKey, ok := input[key]
+
+	if !ok {
+		if defaultToEmpty {
+			return make(map[string]any), nil
+		}
+		return nil, fmt.Errorf("%s missing", key)
+	}
+
+	subMap, ok := subKey.(map[string]any)
+
+	if !ok {
+		return nil, fmt.Errorf("%s does not match expected format", key)
+	}
+
+	return subMap, nil
 }

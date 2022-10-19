@@ -1,59 +1,76 @@
 package actions
 
 import (
-	"context"
 	"errors"
 	"fmt"
-
-	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/runtimectx"
-	"github.com/teamkeel/keel/schema/parser"
-	"gorm.io/gorm"
 )
 
-// Get implements a Keel Get Action.
-// In quick overview this means generating a SQL query
-// based on the Get operation's Inputs and Where clause,
-// running that query, and returning the results.
-func Get(
-	ctx context.Context,
-	operation *proto.Operation,
-	schema *proto.Schema,
-	args map[string]any) (interface{}, error) {
+type GetAction struct {
+	scope *Scope
+}
 
-	db, err := runtimectx.GetDatabase(ctx)
+type GetResult struct {
+	Object map[string]any `json:"object"`
+}
+
+func (action *GetAction) Initialise(scope *Scope) ActionBuilder[GetResult] {
+	action.scope = scope
+	return action
+}
+
+// Keep the no-op methods in a group together
+
+func (action *GetAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[GetResult] {
+	return action // no-op
+}
+
+func (action *GetAction) CaptureSetValues(args RequestArguments) ActionBuilder[GetResult] {
+	return action // no-op
+}
+
+func (action *GetAction) IsAuthorised(args RequestArguments) ActionBuilder[GetResult] {
+	return action
+}
+
+// --------------------
+
+func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+	if err := DefaultApplyImplicitFilters(action.scope, args); err != nil {
+		action.scope.Error = err
+		return action
+	}
+	return action
+}
+
+func (action *GetAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+	// We delegate to a function that may get used by other Actions later on, once we have
+	// unified how we handle operators in both schema where clauses and in implicit inputs language.
+	err := DefaultApplyExplicitFilters(action.scope, args)
 	if err != nil {
-		return nil, err
+		action.scope.Error = err
+		return action
+	}
+	return action
+}
+
+func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult], error) {
+	if action.scope.Error != nil {
+		return nil, action.scope.Error
 	}
 
-	model := proto.FindModel(schema.Models, operation.ModelName)
+	results := []map[string]any{}
+	action.scope.query = action.scope.query.Find(&results)
 
-	tableName := strcase.ToSnake(model.Name)
-
-	// Initialise a query on the table = to which we'll add Where clauses.
-	tx := db.Table(tableName)
-
-	// Add the WHERE clauses derived from IMPLICIT inputs.
-	tx, err = addGetImplicitInputFilters(operation, args, tx)
-	if err != nil {
-		return nil, err
+	if action.scope.query.Error != nil {
+		return nil, action.scope.query.Error
 	}
-	// Add the WHERE clauses derived from EXPLICIT inputs (i.e. the operation's where clauses).
-	tx, err = addGetExplicitInputFilters(operation, schema, args, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Todo: should we validate the type of the values?, or let postgres object to them later?
-
-	// Execute the SQL query.
-	result := []map[string]any{}
-	tx = tx.Find(&result)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-	n := len(result)
+	n := len(results)
 	if n == 0 {
 		return nil, errors.New("no records found for Get() operation")
 	}
@@ -61,11 +78,11 @@ func Get(
 		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
 	}
 
-	resultMap := toLowerCamelMap(result[0])
+	singleResult := toLowerCamelMap(results[0])
 
 	// todo: permissions to evaluate at the database-level where applicable
 	// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level-where-applicable
-	authorized, err := EvaluatePermissions(ctx, operation, schema, resultMap)
+	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, singleResult)
 	if err != nil {
 		return nil, err
 	}
@@ -73,51 +90,9 @@ func Get(
 		return nil, errors.New("not authorized to access this operation")
 	}
 
-	return resultMap, nil
-}
-
-// addGetImplicitInputFilters adds Where clauses for all the operation inputs, which have type
-// IMPLICIT. E.g. "get getPerson(id)"
-func addGetImplicitInputFilters(op *proto.Operation, args map[string]any, tx *gorm.DB) (*gorm.DB, error) {
-	for _, input := range op.Inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
-			continue
-		}
-		identifier := input.Target[0]
-		valueFromArg, ok := args[identifier]
-		if !ok {
-			return nil, fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", identifier, args)
-		}
-		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
-		tx = tx.Where(w, valueFromArg)
-	}
-	return tx, nil
-}
-
-// addGetExplicitInputFilters adds Where clauses for all the operation's Where clauses.
-// E.g.
-//
-//	get getPerson(name: Text) {
-//		@where(person.name == name)
-//	}
-func addGetExplicitInputFilters(
-	op *proto.Operation,
-	schema *proto.Schema,
-	args map[string]any,
-	tx *gorm.DB) (*gorm.DB, error) {
-	for _, e := range op.WhereExpressions {
-		expr, err := parser.ParseExpression(e.Source)
-		if err != nil {
-			return nil, err
-		}
-		// This call gives us the column and the value to use like this:
-		// tx.Where(fmt.Sprintf("%s = ?", column), value)
-		identifier, exprValue, err := interpretExpressionGivenArgs(expr, op, schema, args)
-		if err != nil {
-			return nil, err
-		}
-		w := fmt.Sprintf("%s = ?", strcase.ToSnake(identifier))
-		tx = tx.Where(w, exprValue)
-	}
-	return tx, nil
+	return &ActionResult[GetResult]{
+		Value: GetResult{
+			Object: toLowerCamelMap(results[0]),
+		},
+	}, nil
 }

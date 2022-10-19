@@ -1,16 +1,23 @@
 model Post {
-  fields {
-    author Author
-  }
+    fields {
+        author Author
+        title Text
+    }
 
-  @permission(
-    expression: post.author == post.auth,
-    actions: [get]
-  )
+    operations {
+        update updatePost(id) with (title) {
+            @set(post.title = title)
+        }
+    }
+
+    @permission(
+        expression: post.author == post.auth,
+        actions: [get]
+    )
 }
 
 model Author {
-  fields {
-    posts Post[]
-  }
+    fields {
+        posts Post[]
+    }
 }
