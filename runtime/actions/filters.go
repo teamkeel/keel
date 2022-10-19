@@ -46,7 +46,7 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 
 		// todo: look into refactoring interpretExpressionField to support handling
 		// of multiple conditions in an expression and also literal values
-		field, err := interpretExpressionField(expr, operation, scope.schema)
+		field, operator, err := interpretExpressionField(expr, operation, scope.schema)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("argument not provided for %s", field.Name)
 		}
 
-		addExplicitFilter(scope, field, Equals, match)
+		addExplicitFilter(scope, field, operator, match)
 	}
 
 	return nil

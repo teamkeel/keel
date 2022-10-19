@@ -24,41 +24,41 @@ func interpretExpressionField(
 	expr *parser.Expression,
 	operation *proto.Operation,
 	schema *proto.Schema,
-) (*proto.Field, error) {
+) (*proto.Field, ActionOperator, error) {
 
 	// Make sure the expression is in the form we can handle.
 
 	conditions := expr.Conditions()
 	if len(conditions) != 1 {
-		return nil, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
+		return nil, Unknown, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
 	}
 	condition := conditions[0]
 	cType := condition.Type()
 	if cType != parser.LogicalCondition {
-		return nil, fmt.Errorf("cannot yet handle condition types other than LogicalCondition, have: %s", cType)
+		return nil, Unknown, fmt.Errorf("cannot yet handle condition types other than LogicalCondition, have: %s", cType)
 	}
 
-	if condition.Operator.ToString() != parser.OperatorEquals {
-		return nil, fmt.Errorf(
-			"cannot yet handle operators other than OperatorEquals, have: %s",
-			condition.Operator.ToString())
+	operatorStr := condition.Operator.ToString()
+	operator, err := expressionOperatorToActionOperator(operatorStr)
+	if err != nil {
+		return nil, Unknown, err
 	}
 
 	if condition.LHS.Type() != parser.TypeIdent {
-		return nil, fmt.Errorf("cannot handle LHS of type other than TypeIdent, have: %s", condition.LHS.Type())
+		return nil, operator, fmt.Errorf("cannot handle LHS of type other than TypeIdent, have: %s", condition.LHS.Type())
 	}
 	if condition.RHS.Type() != parser.TypeIdent {
-		return nil, fmt.Errorf("cannot handle RHS of type other than TypeIdent, have: %s", condition.LHS.Type())
+		return nil, operator, fmt.Errorf("cannot handle RHS of type other than TypeIdent, have: %s", condition.LHS.Type())
 	}
 
 	lhs := condition.LHS
 	if len(lhs.Ident.Fragments) != 2 {
-		return nil, fmt.Errorf("cannot handle LHS identifier unless it has 2 fragments, have: %d", len(lhs.Ident.Fragments))
+		return nil, operator, fmt.Errorf("cannot handle LHS identifier unless it has 2 fragments, have: %d", len(lhs.Ident.Fragments))
 	}
 
 	rhs := condition.RHS
 	if len(rhs.Ident.Fragments) != 1 {
-		return nil, fmt.Errorf("cannot handle RHS identifier unless it has 1 fragment, have: %d", len(rhs.Ident.Fragments))
+		return nil, operator, fmt.Errorf("cannot handle RHS identifier unless it has 1 fragment, have: %d", len(rhs.Ident.Fragments))
 	}
 
 	// Make sure the first fragment in the LHS is the name of the model of which this operation is part.
@@ -66,7 +66,7 @@ func interpretExpressionField(
 	modelTarget := strcase.ToCamel(lhs.Ident.Fragments[0].Fragment)
 
 	if modelTarget != operation.ModelName {
-		return nil, fmt.Errorf("can only handle the first LHS fragment referencing the Operation's model, have: %s", modelTarget)
+		return nil, operator, fmt.Errorf("can only handle the first LHS fragment referencing the Operation's model, have: %s", modelTarget)
 	}
 
 	// Make sure the second fragment in the LHS is the name of a field of the model of which this operation is part.
@@ -75,11 +75,11 @@ func interpretExpressionField(
 
 	field := proto.FindField(schema.Models, modelTarget, fieldName)
 	if !proto.ModelHasField(schema, modelTarget, fieldName) {
-		return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", modelTarget, fieldName)
+		return nil, operator, fmt.Errorf("this model: %s, does not have a field of name: %s", modelTarget, fieldName)
 	}
 
 	// Now we have all the data we need to return
-	return field, nil
+	return field, operator, nil
 }
 
 // EvaluatePermissions will evaluate all the permission conditions defined on models and operations
