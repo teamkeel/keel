@@ -174,9 +174,8 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-
 			input := p.Args["input"]
-			arguments, ok := input.(actions.RequestArguments)
+			arguments, ok := input.(map[string]any)
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
@@ -199,7 +198,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			arguments, ok := input.(actions.RequestArguments)
+			arguments, ok := input.(map[string]any)
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
@@ -226,7 +225,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			arguments, ok := input.(actions.RequestArguments)
+			arguments, ok := input.(map[string]any)
 
 			if !ok {
 				return nil, errors.New("input not a map")
@@ -272,7 +271,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
-			arguments, ok := input.(actions.RequestArguments)
+			arguments, ok := input.(map[string]any)
 
 			if !ok {
 				return nil, errors.New("input not a map")
