@@ -187,12 +187,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			return builder.
+			result, err := builder.
 				Initialise(scope).
 				ApplyImplicitFilters(arguments).
 				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
 				Execute(arguments)
+
+			return result.Value.Object, err
 		}
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
@@ -211,12 +213,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			return builder.
+			result, err := builder.
 				Initialise(scope).
 				CaptureImplicitWriteInputValues(arguments). // todo: err?
 				CaptureSetValues(arguments).
 				IsAuthorised(arguments).
 				Execute(arguments)
+
+			return result.Value.Object, err
 		}
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
@@ -249,7 +253,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			return builder.
+			result, err := builder.
 				Initialise(scope).
 				// first capture any implicit inputs
 				CaptureImplicitWriteInputValues(values).
@@ -261,6 +265,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				IsAuthorised(arguments).
 				Execute(arguments)
 
+			return result.Value.Object, err
 		}
 
 		field.Type = graphql.NewNonNull(field.Type)
@@ -285,12 +290,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			return builder.
+			result, err := builder.
 				Initialise(scope).
 				ApplyImplicitFilters(arguments).
 				ApplyExplicitFilters(arguments).
 				IsAuthorised(arguments).
 				Execute(arguments)
+
+			return result.Value.Success, err
 		}
 
 		mk.mutation.AddFieldConfig(op.Name, field)
