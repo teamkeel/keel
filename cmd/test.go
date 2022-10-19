@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"os"
 	"path/filepath"
@@ -87,7 +88,14 @@ func PrintSummary(events []*testing.Event) {
 		if event.Status == testing.StatusPass {
 			fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
 		} else {
-			fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", event.Status), event.TestName)
+			fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", strings.ToUpper(event.Status)), event.TestName)
+
+			switch event.Status {
+			case testing.StatusFail:
+				fmt.Printf("------------\n%s\n%s\n------------\n", color.New(color.FgGreen).Sprintf("Expected:\n%s", event.Expected), color.New(color.FgRed).Sprintf("Actual:\n%s", event.Actual))
+			case testing.StatusException:
+				fmt.Printf("------------\n%s\n------------\n", color.New(color.FgGreen).Sprintf("Error:\n%s", event.Err))
+			}
 		}
 	}
 
