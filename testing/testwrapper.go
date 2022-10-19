@@ -26,7 +26,7 @@ func WrapTestFileWithShim(parentPort string, filePath string, pattern string) er
 				filePath: '%s',
 				host: 'localhost',
 				pattern: '%s',
-				silent: false
+				silent: true
 			});
 				`,
 			parentPort,

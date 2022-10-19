@@ -83,13 +83,13 @@ func PrintSummary(events []*testing.Event) {
 		return evt.Status != testing.StatusPass
 	})
 
-	fmt.Printf("Test summary: %s, %s\n", color.New(color.FgGreen).Sprintf("%d passed", totalPassed), color.New(color.FgRed).Sprintf("%d failed", totalFailed))
+	for _, event := range events {
+		if event.Status == testing.StatusPass {
+			fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
+		} else {
+			fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", event.Status), event.TestName)
+		}
+	}
 
-	// for _, event := range events {
-	// 	if event.Status == testing.StatusPass {
-	// 		fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
-	// 	} else {
-	// 		fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", event.Status), event.TestName)
-	// 	}
-	// }
+	fmt.Printf("Test summary: %s, %s\n", color.New(color.FgGreen).Sprintf("%d passed", totalPassed), color.New(color.FgRed).Sprintf("%d failed", totalFailed))
 }
