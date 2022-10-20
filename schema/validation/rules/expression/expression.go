@@ -25,7 +25,8 @@ func ValidateExpression(asts []*parser.AST, expression *parser.Expression, rules
 // This handles operands of all types including operands such as model.associationA.associationB
 // as well as simple value types such as string, number, bool etc
 func OperandResolutionRule(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext) (errors []error) {
-	_, _, errs := expressions.ResolveCondition(asts, condition, context)
+	resolver := expressions.NewConditionResolver(condition, asts, &context)
+	_, _, errs := resolver.Resolve()
 	errors = append(errors, errs...)
 
 	return errors
@@ -128,7 +129,8 @@ func PreventValueConditionRule(asts []*parser.AST, expression *parser.Expression
 }
 
 func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext, permittedOperators []string) (errors []error) {
-	resolvedLHS, resolvedRHS, _ := expressions.ResolveCondition(asts, condition, context)
+	resolver := expressions.NewConditionResolver(condition, asts, &context)
+	resolvedLHS, resolvedRHS, _ := resolver.Resolve()
 
 	// If there is no operator, then we are not interested in validating this rule
 	if condition.Operator == nil {
@@ -196,7 +198,8 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condit
 //   - LHS is of type T and RHS is an array of type T
 //   - LHS or RHS is an optional field and the other side is an explicit null
 func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, context expressions.ExpressionContext) (errors []error) {
-	resolvedLHS, resolvedRHS, _ := expressions.ResolveCondition(asts, condition, context)
+	resolver := expressions.NewConditionResolver(condition, asts, &context)
+	resolvedLHS, resolvedRHS, _ := resolver.Resolve()
 
 	// If either side fails to resolve then no point checking compatibility
 	if resolvedLHS == nil || resolvedRHS == nil {

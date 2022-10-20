@@ -1,0 +1,27 @@
+
+how it works currently:
+
+- start with a prepopulated scope (ctx, current model)
+- loop over fragments of operand ident
+- match fragment against something in scope
+- move to next fragment, rinse and repeat step above
+- reach end of fragments - you should have a resolved entity
+
+how it needs to differ for sql land:
+
+- start with a prepopulated scope (ctx, current model)
+- loop over fragments of operand ident
+- match fragment against something in scope
+- for matches, only populate the scope (or other ds) with the match, not all
+- we need to end up with ds:
+  - [model, field, model, field]
+  - [string]
+  - [enum, enumvalue]
+- continue until end
+
+common code:
+
+- start with prepopulated scope
+- match fragment against something in current scope
+- scope still needs to be reassigned for each iteration
+- however, what differs is what is accumulated into the return value (e.g validation needs to keep on reassigning entity until end, whilst sql needs to accumulate the resolved fragments in an array like structure)
