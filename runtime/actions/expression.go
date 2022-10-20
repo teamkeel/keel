@@ -5,12 +5,10 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
-	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
-	"golang.org/x/exp/slices"
 )
 
 // interpretExpressionField examines the given expression, in order to work out how to construct a gorm WHERE clause.
@@ -76,120 +74,8 @@ func interpretExpressionField(
 	return field, operator, nil
 }
 
-// EvaluatePermissions will evaluate all the permission conditions defined on models and operations
-func EvaluatePermissions(
-	ctx context.Context,
-	op *proto.Operation,
-	schema *proto.Schema,
-	data map[string]any,
-) (authorized bool, err error) {
-	permissions := []*proto.PermissionRule{}
-
-	model := proto.FindModel(schema.Models, op.ModelName)
-
-	modelPermissions := lo.Filter(model.Permissions, func(modelPermission *proto.PermissionRule, _ int) bool {
-		return slices.Contains(modelPermission.OperationsTypes, op.Type)
-	})
-
-	permissions = append(permissions, modelPermissions...)
-
-	if op.Permissions != nil {
-		permissions = append(permissions, op.Permissions...)
-	}
-
-	// todo: remove this once we make permissions a requirement for any access
-	// https://linear.app/keel/issue/RUN-135/permissions-required-for-access-at-all
-	if len(permissions) == 0 {
-		return true, nil
-	}
-
-	for _, permission := range permissions {
-		if permission.Expression != nil {
-			expression, err := parser.ParseExpression(permission.Expression.Source)
-			if err != nil {
-				return false, err
-			}
-
-			authorized, err := evaluateExpression(ctx, expression, op, schema, data)
-			if err != nil {
-				return false, err
-			}
-			if authorized {
-				return true, nil
-			}
-		}
-	}
-
-	return false, nil
-}
-
-// evaluateExpression evaluates a given conditional expression
-func evaluateExpression(
-	context context.Context,
-	expression *parser.Expression,
-	operation *proto.Operation,
-	schema *proto.Schema,
-	data map[string]any,
-) (result bool, err error) {
-
-	conditions := expression.Conditions()
-	if len(conditions) != 1 {
-		return false, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
-	}
-	condition := conditions[0]
-
-	if condition.Type() == parser.ValueCondition {
-		valueType, _ := GetOperandType(condition.LHS, operation, schema)
-		if valueType != proto.Type_TYPE_BOOL {
-			return false, fmt.Errorf("value operand must be of type bool, not %s", condition.Type())
-		}
-
-		value, err := evaluateOperandValue(context, condition.LHS, operation, schema, data, valueType)
-		if err != nil {
-			return false, err
-		}
-
-		return value.(bool), nil
-	}
-
-	if condition.Type() != parser.LogicalCondition {
-		return false, fmt.Errorf("can only handle condition type of LogicalCondition, have: %s", condition.Type())
-	}
-
-	// Determine the native protobuf type underlying the expression comparison
-	var operandType proto.Type
-	lhsType, _ := GetOperandType(condition.LHS, operation, schema)
-	rhsType, _ := GetOperandType(condition.LHS, operation, schema)
-	switch {
-	case lhsType != proto.Type_TYPE_UNKNOWN && (lhsType == rhsType || rhsType == proto.Type_TYPE_UNKNOWN):
-		operandType = lhsType
-	case rhsType != proto.Type_TYPE_UNKNOWN && (lhsType == rhsType || lhsType == proto.Type_TYPE_UNKNOWN):
-		operandType = rhsType
-	default:
-		return false, fmt.Errorf("lhs: %s, and rhs: %s, are not of the same native type", lhsType, rhsType)
-	}
-
-	// Evaluate the values on each side of the expression
-	lhsValue, err := evaluateOperandValue(context, condition.LHS, operation, schema, data, operandType)
-	if err != nil {
-		return false, err
-	}
-	rhsValue, err := evaluateOperandValue(context, condition.RHS, operation, schema, data, operandType)
-	if err != nil {
-		return false, err
-	}
-
-	// The LHS and RHS types must be equal unless the RHS is a null literal
-	if lhsType != rhsType && rhsValue != nil {
-		return false, fmt.Errorf("lhs type: %s, and rhs type: %s, are not the same", lhsType, rhsType)
-	}
-
-	// Evaluate the condition
-	return evaluateOperandCondition(lhsValue, rhsValue, operandType, condition.Operator)
-}
-
-// GetOperandType determines the underlying type to compare with for an operand
-func GetOperandType(
+// getOperandType determines the underlying type to compare with for an operand
+func getOperandType(
 	operand *parser.Operand,
 	operation *proto.Operation,
 	schema *proto.Schema,
@@ -213,9 +99,7 @@ func GetOperandType(
 	target := operand.Ident.Fragments[0].Fragment
 	switch {
 	case strcase.ToCamel(target) == operation.ModelName:
-		// todo: evaluate at the database-level where applicable
-		// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level-where-applicable
-
+		// implicit input as database field (with the model name)
 		modelTarget := strcase.ToCamel(target)
 		fieldName := operand.Ident.Fragments[1].Fragment
 
@@ -225,6 +109,13 @@ func GetOperandType(
 
 		operandType := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), fieldName).Type.Type
 		return operandType, nil
+	case operand.Ident != nil && len(operand.Ident.Fragments) == 1 && proto.ModelHasField(schema, operation.ModelName, operand.Ident.Fragments[0].Fragment):
+		// implicit input (without the model name)
+		modelTarget := strcase.ToCamel(operation.ModelName)
+		fieldName := operand.Ident.Fragments[0].Fragment
+		operandType := proto.FindField(schema.Models, modelTarget, fieldName).Type.Type
+		return operandType, nil
+
 	case operand.Ident.IsContext():
 		fieldName := operand.Ident.Fragments[1].Fragment
 		return runtimectx.ContextFieldTypes[fieldName], nil // todo: if not found
@@ -251,7 +142,7 @@ func evaluateOperandValue(
 	case operand.Ident != nil && proto.EnumExists(schema.Enums, operand.Ident.Fragments[0].Fragment):
 		return operand.Ident.Fragments[1].Fragment, nil
 	case operand.Ident != nil && len(operand.Ident.Fragments) == 1 && data[operand.Ident.Fragments[0].Fragment] != nil:
-		inputValue, _ := data[operand.Ident.Fragments[0].Fragment]
+		inputValue := data[operand.Ident.Fragments[0].Fragment]
 		return inputValue, nil
 	case operand.Ident != nil && strcase.ToCamel(operand.Ident.Fragments[0].Fragment) == strcase.ToCamel(operation.ModelName):
 		modelTarget := strcase.ToCamel(operand.Ident.Fragments[0].Fragment)
@@ -317,13 +208,10 @@ func evaluateOperandValue(
 			return nil, fmt.Errorf("cannot yet compare operand of type %s", operandType)
 		}
 	case operand.Ident != nil && operand.Ident.IsContextIdentityField():
-		isAuthenticated, err := runtimectx.IsAuthenticated(context)
-		if err != nil {
-			return nil, err
-		}
+		isAuthenticated := runtimectx.IsAuthenticated(context)
 
 		if !isAuthenticated {
-			return nil, nil
+			return nil, nil // todo: err?
 		}
 
 		ksuid, err := runtimectx.GetIdentity(context)
@@ -332,10 +220,8 @@ func evaluateOperandValue(
 		}
 		return *ksuid, nil
 	case operand.Ident != nil && operand.Ident.IsContextIsAuthenticatedField():
-		isAuthenticated, err := runtimectx.IsAuthenticated(context)
-		if err != nil {
-			return nil, err
-		}
+		isAuthenticated := runtimectx.IsAuthenticated(context)
+
 		return isAuthenticated, nil
 	case operand.Ident != nil && operand.Ident.IsContextNowField():
 		return nil, fmt.Errorf("cannot yet handle ctx field now")
@@ -348,115 +234,115 @@ func evaluateOperandValue(
 }
 
 // evaluateOperandCondition evaluates the condition by comparing the lhs and rhs operands using the given operator
-func evaluateOperandCondition(
-	lhs any,
-	rhs any,
-	operandType proto.Type,
-	operator *parser.Operator,
-) (bool, error) {
-	// Evaluate when either operand or both are nil
-	if lhs == nil && rhs == nil {
-		return true && (operator.Symbol != parser.OperatorNotEquals), nil
-	} else if lhs == nil || rhs == nil {
-		return false || (operator.Symbol == parser.OperatorNotEquals), nil
-	}
+// func evaluateOperandCondition(
+// 	lhs any,
+// 	rhs any,
+// 	operandType proto.Type,
+// 	operator *parser.Operator,
+// ) (bool, error) {
+// 	// Evaluate when either operand or both are nil
+// 	if lhs == nil && rhs == nil {
+// 		return true && (operator.Symbol != parser.OperatorNotEquals), nil
+// 	} else if lhs == nil || rhs == nil {
+// 		return false || (operator.Symbol == parser.OperatorNotEquals), nil
+// 	}
 
-	// Evaluate with non-nil operands
-	switch operandType {
-	case proto.Type_TYPE_STRING:
-		return compareString(lhs.(string), rhs.(string), operator)
-	case proto.Type_TYPE_INT:
-		return compareInt(lhs.(int64), rhs.(int64), operator)
-	case proto.Type_TYPE_BOOL:
-		return compareBool(lhs.(bool), rhs.(bool), operator)
-	case proto.Type_TYPE_ENUM:
-		return compareEnum(lhs.(string), rhs.(string), operator)
-	case proto.Type_TYPE_IDENTITY:
-		return compareIdentity(lhs.(ksuid.KSUID), rhs.(ksuid.KSUID), operator)
-	default:
-		return false, fmt.Errorf("cannot yet handle comparision of type: %s", operandType)
-	}
-}
+// 	// Evaluate with non-nil operands
+// 	switch operandType {
+// 	case proto.Type_TYPE_STRING:
+// 		return compareString(lhs.(string), rhs.(string), operator)
+// 	case proto.Type_TYPE_INT:
+// 		return compareInt(lhs.(int64), rhs.(int64), operator)
+// 	case proto.Type_TYPE_BOOL:
+// 		return compareBool(lhs.(bool), rhs.(bool), operator)
+// 	case proto.Type_TYPE_ENUM:
+// 		return compareEnum(lhs.(string), rhs.(string), operator)
+// 	case proto.Type_TYPE_IDENTITY:
+// 		return compareIdentity(lhs.(ksuid.KSUID), rhs.(ksuid.KSUID), operator)
+// 	default:
+// 		return false, fmt.Errorf("cannot yet handle comparision of type: %s", operandType)
+// 	}
+// }
 
-func compareString(
-	lhs string,
-	rhs string,
-	operator *parser.Operator,
-) (bool, error) {
-	switch operator.Symbol {
-	case parser.OperatorEquals:
-		return lhs == rhs, nil
-	case parser.OperatorNotEquals:
-		return lhs != rhs, nil
-	default:
-		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
-	}
-}
+// func compareString(
+// 	lhs string,
+// 	rhs string,
+// 	operator *parser.Operator,
+// ) (bool, error) {
+// 	switch operator.Symbol {
+// 	case parser.OperatorEquals:
+// 		return lhs == rhs, nil
+// 	case parser.OperatorNotEquals:
+// 		return lhs != rhs, nil
+// 	default:
+// 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
+// 	}
+// }
 
-func compareInt(
-	lhs int64,
-	rhs int64,
-	operator *parser.Operator,
-) (bool, error) {
-	switch operator.Symbol {
-	case parser.OperatorEquals:
-		return lhs == rhs, nil
-	case parser.OperatorNotEquals:
-		return lhs != rhs, nil
-	case parser.OperatorGreaterThan:
-		return lhs > rhs, nil
-	case parser.OperatorGreaterThanOrEqualTo:
-		return lhs >= rhs, nil
-	case parser.OperatorLessThan:
-		return lhs < rhs, nil
-	case parser.OperatorLessThanOrEqualTo:
-		return lhs <= rhs, nil
-	default:
-		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_INT)
-	}
-}
+// func compareInt(
+// 	lhs int64,
+// 	rhs int64,
+// 	operator *parser.Operator,
+// ) (bool, error) {
+// 	switch operator.Symbol {
+// 	case parser.OperatorEquals:
+// 		return lhs == rhs, nil
+// 	case parser.OperatorNotEquals:
+// 		return lhs != rhs, nil
+// 	case parser.OperatorGreaterThan:
+// 		return lhs > rhs, nil
+// 	case parser.OperatorGreaterThanOrEqualTo:
+// 		return lhs >= rhs, nil
+// 	case parser.OperatorLessThan:
+// 		return lhs < rhs, nil
+// 	case parser.OperatorLessThanOrEqualTo:
+// 		return lhs <= rhs, nil
+// 	default:
+// 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_INT)
+// 	}
+// }
 
-func compareBool(
-	lhs bool,
-	rhs bool,
-	operator *parser.Operator,
-) (bool, error) {
-	switch operator.Symbol {
-	case parser.OperatorEquals:
-		return lhs == rhs, nil
-	case parser.OperatorNotEquals:
-		return lhs != rhs, nil
-	default:
-		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_BOOL)
-	}
-}
+// func compareBool(
+// 	lhs bool,
+// 	rhs bool,
+// 	operator *parser.Operator,
+// ) (bool, error) {
+// 	switch operator.Symbol {
+// 	case parser.OperatorEquals:
+// 		return lhs == rhs, nil
+// 	case parser.OperatorNotEquals:
+// 		return lhs != rhs, nil
+// 	default:
+// 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_BOOL)
+// 	}
+// }
 
-func compareEnum(
-	lhs string,
-	rhs string,
-	operator *parser.Operator,
-) (bool, error) {
-	switch operator.Symbol {
-	case parser.OperatorEquals:
-		return lhs == rhs, nil
-	case parser.OperatorNotEquals:
-		return lhs != rhs, nil
-	default:
-		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
-	}
-}
+// func compareEnum(
+// 	lhs string,
+// 	rhs string,
+// 	operator *parser.Operator,
+// ) (bool, error) {
+// 	switch operator.Symbol {
+// 	case parser.OperatorEquals:
+// 		return lhs == rhs, nil
+// 	case parser.OperatorNotEquals:
+// 		return lhs != rhs, nil
+// 	default:
+// 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
+// 	}
+// }
 
-func compareIdentity(
-	lhs ksuid.KSUID,
-	rhs ksuid.KSUID,
-	operator *parser.Operator,
-) (bool, error) {
-	switch operator.Symbol {
-	case parser.OperatorEquals:
-		return lhs == rhs, nil
-	case parser.OperatorNotEquals:
-		return lhs != rhs, nil
-	default:
-		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_ID)
-	}
-}
+// func compareIdentity(
+// 	lhs ksuid.KSUID,
+// 	rhs ksuid.KSUID,
+// 	operator *parser.Operator,
+// ) (bool, error) {
+// 	switch operator.Symbol {
+// 	case parser.OperatorEquals:
+// 		return lhs == rhs, nil
+// 	case parser.OperatorNotEquals:
+// 		return lhs != rhs, nil
+// 	default:
+// 		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_ID)
+// 	}
+// }

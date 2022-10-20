@@ -35,6 +35,6 @@ func GetIdentity(ctx context.Context) (*ksuid.KSUID, error) {
 	return id, nil
 }
 
-func IsAuthenticated(ctx context.Context) (bool, error) {
-	return ctx.Value(identityIdContextKey) != nil, nil
+func IsAuthenticated(ctx context.Context) bool {
+	return ctx.Value(identityIdContextKey) != nil
 }

@@ -22,7 +22,7 @@ func DefaultCaptureSetValues(scope *Scope, args RequestArguments) error {
 			return err
 		}
 
-		lhsOperandType, err := GetOperandType(assignment.LHS, scope.operation, scope.schema)
+		lhsOperandType, err := getOperandType(assignment.LHS, scope.operation, scope.schema)
 		if err != nil {
 			return err
 		}

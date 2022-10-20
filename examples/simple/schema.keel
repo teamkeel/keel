@@ -1,12 +1,13 @@
 model Post {
     fields {
-        title Text
+        title Text?
+        subtitle Text?
     }
 
     operations {
-        get getPost(id)
-        create createPost() with (title)
-        list listPosts(title)
+        get getPost(id) 
+        create createPost() with (title, subtitle?) 
+
     }
 }
 

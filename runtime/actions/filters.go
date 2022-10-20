@@ -102,8 +102,10 @@ func addFilter(scope *Scope, columnName string, input *proto.OperationInput, ope
 			}
 
 			scope.query = scope.query.Where(w, time)
+			scope.permmissionQuery = scope.permmissionQuery.Where(w, time)
 		} else {
 			scope.query = scope.query.Where(w, value)
+			scope.permmissionQuery = scope.permmissionQuery.Where(w, value)
 		}
 	case NotEquals:
 		w := fmt.Sprintf("%s != ?", strcase.ToSnake(columnName))
@@ -226,6 +228,7 @@ func addFilter(scope *Scope, columnName string, input *proto.OperationInput, ope
 
 		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandTime)
+		scope.permmissionQuery = scope.permmissionQuery.Where(w, operandTime)
 	default:
 		return fmt.Errorf("operator: %v is not yet supported", operator)
 	}
