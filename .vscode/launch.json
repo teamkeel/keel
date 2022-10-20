@@ -39,6 +39,17 @@
                 "-test.run",
                 "TestSchema/${input:testCase}"
             ]
+        },
+        {
+            "name": "Run / Debug runtime test",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/runtime",
+            "args": [
+                "-test.run",
+                "TestRuntime/${input:testCase}"
+            ]
         }
     ],
     "inputs": [

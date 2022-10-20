@@ -271,15 +271,18 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 
 									result, err := builder.
 										Initialise(scope).
-										ApplyImplicitFilters(args).
-										ApplyExplicitFilters(args).
+										ApplyImplicitFilters(body.Payload).
+										ApplyExplicitFilters(body.Payload).
 										IsAuthorised(args).
 										Execute(args)
 
 									r := map[string]any{
-										"collection":  result.Value.Collection,
-										"hasNextPage": result.Value.HasNextPage,
-										"errors":      serializeError(err),
+										"errors": serializeError(err),
+									}
+
+									if result != nil {
+										r["collection"] = result.Value.Collection
+										r["hasNextPage"] = result.Value.HasNextPage
 									}
 
 									writeResponse(r, w)
