@@ -57,7 +57,7 @@
             "type": "promptString",
             "id": "testCase",
             "description": "The test case directory to isolate",
-            "default": ""
+            "default": "operation_list_where_explicit"
         },
         {
             "type": "promptString",
@@ -68,7 +68,7 @@
         {
             "type": "promptString",
             "id": "testName",
-            "default": "",
+            "default": ".*not eq.*",
             "description": "Regular expression pattern to isolate individual tests. Can just be the JS test case name if you don't want to do anything fancy."
         },
         {

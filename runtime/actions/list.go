@@ -74,13 +74,16 @@ inputs:
 		}
 
 		for operatorStr, operand := range valueMap {
-			operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
+			operator, err := graphQlOperatorToActionOperator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
 			if err != nil {
 				action.scope.Error = err
 				return action
 			}
 
-			addImplicitFilter(action.scope, input, operatorName, operand)
+			if err := addWhereClauseForConditional(action.scope, fieldName, input, operator, operand); err != nil {
+				action.scope.Error = err
+				return action
+			}
 		}
 	}
 

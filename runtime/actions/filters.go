@@ -60,9 +60,8 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 
 		argName := condition.RHS.Ident.ToString() // E.g. "requiredTitle"
 
-		// Find the value to use as the conditional operand from the given request args.
-		argValue, err := DrillMap(args, []string{"where", "values", argName})
-		if err != nil {
+		operandValue, ok := args[argName]
+		if !ok {
 			return fmt.Errorf("argument not provided for %s", field.Name)
 		}
 
@@ -74,7 +73,9 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("cannot find input of name: %s", argName)
 		}
 
-		addWhereClauseForConditional(scope, field.Name, protoInput, operator, argValue)
+		if err := addWhereClauseForConditional(scope, field.Name, protoInput, operator, operandValue); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -102,6 +103,21 @@ func addWhereClauseForConditional(scope *Scope, columnName string, input *proto.
 		} else {
 			scope.query = scope.query.Where(w, value)
 		}
+	case NotEquals:
+		w := fmt.Sprintf("%s != ?", strcase.ToSnake(columnName))
+
+		if inputType == proto.Type_TYPE_DATE || inputType == proto.Type_TYPE_DATETIME || inputType == proto.Type_TYPE_TIMESTAMP {
+			time, err := parseTimeOperand(value, inputType)
+
+			if err != nil {
+				return err
+			}
+
+			scope.query = scope.query.Where(w, time)
+		} else {
+			scope.query = scope.query.Where(w, value)
+		}
+
 	case StartsWith:
 		operandStr, ok := value.(string)
 

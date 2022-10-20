@@ -1,4 +1,4 @@
 [
-  { "testName": "listPostsEqualString", "status": "pass" },
-  { "testName": "listPostsNotEqualString", "status": "pass" }
+  { "testName": "List Where filters - using equal operator (string) - filters correctly", "status": "pass" },
+  { "testName": "List Where filters - using not equal operator (string) - filters correctly", "status": "pass" }
 ]
