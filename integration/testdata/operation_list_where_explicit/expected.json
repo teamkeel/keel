@@ -1,3 +1,4 @@
 [
-  { "testName": "startsWith finds correct records", "status": "pass" }
+  { "testName": "listPostsEqualString", "status": "pass" },
+  { "testName": "listPostsNotEqualString", "status": "pass" }
 ]

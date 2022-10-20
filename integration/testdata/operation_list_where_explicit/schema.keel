@@ -7,8 +7,11 @@ model Post {
 
     operations {
         create createPost() with (title?, length?, aTimestamp?)
-        list listPostsEqualityString(requiredTitle: Text) {
+        list listPostsEqualString(requiredTitle: Text) {
             @where(post.title == requiredTitle)
+        }
+        list listPostsNotEqualString(requiredTitle: Text) {
+            @where(post.title != requiredTitle)
         }
     }
 }
