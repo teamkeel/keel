@@ -85,9 +85,11 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 // scope, corresponding to the given input, the given operator, and using the given value as
 // the operand.
 func addWhereClauseForConditional(scope *Scope, columnName string, input *proto.OperationInput, operator ActionOperator, value any) error {
-
 	inputType := input.Type.Type
 
+	// todo: the use of parseTimeOperand is conflicting with our current integration test framework, as this
+	// generates typescript that expects the input objects to be native javascript Date/Time types.
+	// See for example integration/operation_list_explicit.
 	switch operator {
 	case Equals:
 		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))

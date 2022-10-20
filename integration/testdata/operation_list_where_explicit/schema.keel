@@ -2,16 +2,19 @@ model Post {
     fields {
         title Text?
         length Number?
-        aTimestamp Timestamp?
+        aDate Date?
     }
 
     operations {
-        create createPost() with (title?, length?, aTimestamp?)
+        create createPost() with (title?, length?, aDate?)
         list listPostsEqualString(whereArg: Text) {
             @where(post.title == whereArg)
         }
         list listPostsNotEqualString(whereArg: Text) {
             @where(post.title != whereArg)
+        }
+        list listPostsEqualDate(whereArg: Date) {
+            @where(post.aDate != whereArg)
         }
     }
 }
