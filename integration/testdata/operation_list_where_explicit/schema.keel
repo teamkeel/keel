@@ -1,0 +1,28 @@
+model Post {
+    fields {
+        title Text?
+        length Number?
+        aTimestamp Timestamp?
+    }
+
+    operations {
+        create createPost() with (title?, length?, aTimestamp?)
+        list listPostsEqualityString(requiredTitle: Text) {
+            @where(post.title == requiredTitle)
+        }
+    }
+}
+
+enum Category {
+    Technical
+    Lifestyle
+    Food
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+    }
+}

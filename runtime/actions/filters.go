@@ -55,6 +55,7 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 
 		condition := conditions[0]
 
+		// todo: need to do this look up like this args["where"]["values"][ident]
 		match, ok := args[condition.RHS.Ident.ToString()]
 
 		if !ok {
