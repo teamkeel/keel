@@ -19,12 +19,7 @@ test('List Where filters - using not equal operator (string) - filters correctly
   await Post.create({ title: 'NotFred' })
 
   const { collection: response } = await actions.listPostsNotEqualString({ 
-      where: {
-        whereArg: "Fred"
-      },
-      pageInfo: {
-        
-      }
+      whereArg: "Fred"
     })
 
   expect(response.length).toEqual(1)
