@@ -103,7 +103,7 @@ func NewScope(
 		operation:   operation,
 		model:       model,
 		schema:      schema,
-		query:       query,
+		query:       query.Debug(),
 		writeValues: map[string]any{},
 	}, nil
 }

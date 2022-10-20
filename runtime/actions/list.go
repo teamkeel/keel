@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -32,6 +33,21 @@ func (action *ListAction) CaptureSetValues(args RequestArguments) ActionBuilder[
 }
 
 func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[ListResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
+	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
+
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+
+	if !isAuthorised {
+		action.scope.Error = errors.New("not authorized to access this operation")
+	}
+
 	return action
 }
 
@@ -80,10 +96,17 @@ inputs:
 				return action
 			}
 
-			if err := addFilter(action.scope, fieldName, input, operator, operand); err != nil {
+			// New filter resolver to generate a database query statement
+			resolver := NewFilterResolver(action.scope)
+
+			// Resolve the database statement for this expression
+			statement, err := resolver.ResolveQueryStatement(fieldName, operand, operator, input.Type.Type)
+			if err != nil {
 				action.scope.Error = err
 				return action
 			}
+
+			action.scope.query = action.scope.query.Where(statement)
 		}
 	}
 

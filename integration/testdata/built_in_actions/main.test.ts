@@ -96,7 +96,7 @@ test('delete action', async () => {
   expect(success).toEqual(true)
 })
 
-test('delete action (other unique field)', async () => {
+test('delete action on other unique field', async () => {
   const { object: post } = await Post.create({ title: 'pear', subTitle: 'nop' })
 
   const { success } = await actions

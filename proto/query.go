@@ -59,6 +59,16 @@ func FilterOperations(p *Schema, filter func(op *Operation) bool) (ops []*Operat
 	return ops
 }
 
+func FindOperation(schema *Schema, operationName string) *Operation {
+	operations := FilterOperations(schema, func(op *Operation) bool {
+		return op.Name == operationName
+	})
+	if len(operations) != 1 {
+		return nil
+	}
+	return operations[0]
+}
+
 // FindModels locates and returns the models whose names match up with those
 // specified in the given names to find.
 func FindModels(allModels []*Model, namesToFind []string) (foundModels []*Model) {
@@ -94,6 +104,16 @@ func ModelHasField(schema *Schema, model string, field string) bool {
 		}
 	}
 	return false
+}
+
+// FindInput returns the input on a given operation
+func FindInput(op *Operation, name string) *OperationInput {
+	for _, input := range op.Inputs {
+		if input.Name == name {
+			return input
+		}
+	}
+	return nil
 }
 
 // OperationHasInput returns true if the given Operation defines

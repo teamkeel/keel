@@ -11,6 +11,7 @@ type ConditionResolver struct {
 	asts      []*parser.AST
 }
 
+// func (c *ConditionResolver) ToSql(data map[string]any){}
 func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resolvedRhs *ExpressionScopeEntity, errors []error) {
 	lhs := NewOperandResolver(
 		c.condition.LHS,

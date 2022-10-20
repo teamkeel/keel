@@ -2,7 +2,6 @@ package actions
 
 import (
 	"errors"
-	"fmt"
 )
 
 type UpdateAction struct {
@@ -46,6 +45,21 @@ func (action *UpdateAction) CaptureSetValues(args RequestArguments) ActionBuilde
 }
 
 func (action *UpdateAction) IsAuthorised(args RequestArguments) ActionBuilder[UpdateResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
+	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
+
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+
+	if !isAuthorised {
+		action.scope.Error = errors.New("not authorized to access this operation")
+	}
+
 	return action
 }
 
@@ -83,27 +97,7 @@ func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[Update
 		return nil, action.scope.Error
 	}
 
-	result := []map[string]any{}
-	action.scope.query = action.scope.query.Find(&result)
-	if action.scope.query.Error != nil {
-		return nil, action.scope.query.Error
-	}
-	n := len(result)
-	if n == 0 {
-		return nil, errors.New("no records found for Update() operation")
-	}
-	if n > 1 {
-		return nil, fmt.Errorf("Update() operation should find only one record, it found: %d", n)
-	}
-	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, toLowerCamelMap(result[0]))
-	if err != nil {
-		return nil, err
-	}
-	if !authorized {
-		return nil, errors.New("not authorized to access this operation")
-	}
-
-	err = action.scope.query.Updates(action.scope.writeValues).Error
+	err := action.scope.query.Updates(action.scope.writeValues).Error
 
 	if err != nil {
 		return nil, err
