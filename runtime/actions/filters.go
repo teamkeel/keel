@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -26,7 +27,7 @@ func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
 		}
 
-		if err := addImplicitFilter(scope, input, Equals, value); err != nil {
+		if err := addWhereClauseForConditional(scope, fieldName, input, Equals, value); err != nil {
 			return err
 		}
 	}
@@ -38,14 +39,14 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 	operation := scope.operation
 
 	for _, where := range operation.WhereExpressions {
-		expr, err := parser.ParseExpression(where.Source)
+		expr, err := parser.ParseExpression(where.Source) // E.g. post.title == requiredTitle
 
 		if err != nil {
 			return err
 		}
 
-		// todo: look into refactoring interpretExpressionField to support handling
-		// of multiple conditions in an expression and also literal values
+		// Map the "requiredTitle" part to the correct model field - e.g. "the title" field, and
+		// capture the "==" part as a machine-readable ActionOperator type.
 		field, operator, err := interpretExpressionField(expr, operation, scope.schema)
 		if err != nil {
 			return err
@@ -53,31 +54,38 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 
 		conditions := expr.Conditions()
 
+		// todo: look into refactoring interpretExpressionField to support handling
+		// of multiple conditions in an expression and also literal values
 		condition := conditions[0]
 
-		// todo: need to do this look up like this args["where"]["values"][ident]
-		match, ok := args[condition.RHS.Ident.ToString()]
+		argName := condition.RHS.Ident.ToString() // E.g. "requiredTitle"
 
-		if !ok {
+		// Find the value to use as the conditional operand from the given request args.
+		argValue, err := DrillMap(args, []string{"where", "values", argName})
+		if err != nil {
 			return fmt.Errorf("argument not provided for %s", field.Name)
 		}
 
-		addExplicitFilter(scope, field, operator, match)
+		// The function we are going to call, requires access to the corresponding Input object.
+		protoInput, ok := lo.Find(scope.operation.Inputs, func(input *proto.OperationInput) bool {
+			return input.Name == argName
+		})
+		if !ok {
+			return fmt.Errorf("cannot find input of name: %s", argName)
+		}
+
+		addWhereClauseForConditional(scope, field.Name, protoInput, operator, argValue)
 	}
 
 	return nil
 }
 
-// todo:
-// addExplicitFilter and  addImplicitFilter should be the same method
-// we just need to find a common syntax for expressing operators from grapqhql implicit operators or expression operators
-
-// addImplicitFilter adds Where clauses to the query field of the given scope, corresponding to
-// the given input, the given operator, and using the given value as the operand.
-func addImplicitFilter(scope *Scope, input *proto.OperationInput, operator ActionOperator, value any) error {
+// addWhereClauseForConditional adds Where clauses to the query field of the given
+// scope, corresponding to the given input, the given operator, and using the given value as
+// the operand.
+func addWhereClauseForConditional(scope *Scope, columnName string, input *proto.OperationInput, operator ActionOperator, value any) error {
 
 	inputType := input.Type.Type
-	columnName := input.Target[0]
 
 	switch operator {
 	case Equals:
@@ -254,15 +262,4 @@ func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err erro
 	}
 
 	return t, nil
-}
-
-func addExplicitFilter(scope *Scope, field *proto.Field, operator ActionOperator, value any) error {
-	if operator != Equals {
-		return fmt.Errorf("operator %d not yet supported", operator)
-	}
-
-	w := fmt.Sprintf("%s = ?", strcase.ToSnake(field.Name))
-	scope.query = scope.query.Where(w, value)
-
-	return nil
 }

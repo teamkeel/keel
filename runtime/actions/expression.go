@@ -14,12 +14,6 @@ import (
 )
 
 // interpretExpressionField examines the given expression, in order to work out how to construct a gorm WHERE clause.
-//
-// The ONLY form we support at the moment in this infant version is this: "person.name == <an-input-name>"
-//
-// It returns the field name being assigned to.
-//
-//	tx.Where(fmt.Sprintf("%s = ?", column), value)
 func interpretExpressionField(
 	expr *parser.Expression,
 	operation *proto.Operation,
