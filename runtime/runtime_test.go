@@ -3,7 +3,7 @@ package runtime
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,23 +23,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// NOTE:
+// This suite of tests has on the most part been replaced by the integration test framework (see https://github.com/teamkeel/keel/tree/main/integration/testdata)
+// HOWEVER, if you want to explicitly test the graphql layer, please add a test here
+
 func TestRuntime(t *testing.T) {
 	// We connect to the "main" database here only so we can create a new database
 	// for each sub-test
-
-	var skip string = ""             // Name of test case you want to skip, or ""
-	var only = "get_operation_error" // Name of test case you want isolated and alone, or ""
-
 	for _, tCase := range testCases {
-
-		if only != "" && tCase.name != only {
-			continue
-		}
-		if skip == tCase.name {
-			continue
-		}
-
-		// Run this test case.
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
@@ -57,7 +48,7 @@ func TestRuntime(t *testing.T) {
 					Path: "/Test",
 				},
 				Method: http.MethodPost,
-				Body:   ioutil.NopCloser(strings.NewReader(reqBody)),
+				Body:   io.NopCloser(strings.NewReader(reqBody)),
 			}
 
 			ctx := request.Context()
@@ -108,8 +99,6 @@ func TestRuntimeRPC(t *testing.T) {
 	// for each sub-test
 
 	for _, tCase := range rpcTestCases {
-
-		// Run this test case.
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
@@ -125,7 +114,7 @@ func TestRuntimeRPC(t *testing.T) {
 					RawQuery: tCase.QueryParams,
 				},
 				Method: tCase.Method,
-				Body:   ioutil.NopCloser(strings.NewReader(tCase.Body)),
+				Body:   io.NopCloser(strings.NewReader(tCase.Body)),
 			}
 
 			ctx := request.Context()

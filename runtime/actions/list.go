@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -43,10 +42,6 @@ func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuil
 		return action
 	}
 
-	allOptional := lo.EveryBy(action.scope.operation.Inputs, func(input *proto.OperationInput) bool {
-		return input.Optional
-	})
-
 inputs:
 	for _, input := range action.scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
@@ -54,56 +49,38 @@ inputs:
 		}
 
 		fieldName := input.Target[0]
+		value, ok := args[fieldName]
 
-		whereInputs, ok := args["where"]
+		// not found
 		if !ok {
-			// We have some required inputs but there is no where key
-			if !allOptional {
-				action.scope.Error = fmt.Errorf("arguments map does not contain a where key: %v", args)
-				return action
-			}
-		} else {
-			whereInputsAsMap, ok := whereInputs.(map[string]any)
-			if !ok {
-				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", whereInputs)
-				return action
+			if input.Optional {
+				continue inputs
 			}
 
-			value, ok := whereInputsAsMap[fieldName]
+			action.scope.Error = fmt.Errorf("did not find required '%s' input in where clause", fieldName)
+		}
 
-			if !ok {
-				if input.Optional {
-					// do not do any further processing if the input is not a map
-					// as it is likely nil
-					continue inputs
-				}
+		valueMap, ok := value.(map[string]any)
 
-				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
-				return action
+		if !ok {
+			if input.Optional {
+				// do not do any further processing if the input is not a map
+				// as it is likely nil
+				continue inputs
 			}
 
-			valueMap, ok := value.(map[string]any)
+			action.scope.Error = fmt.Errorf("'%s' input value %v to not in correct format", fieldName, value)
+			return action
+		}
 
-			if !ok {
-				if input.Optional {
-					// do not do any further processing if the input is not a map
-					// as it is likely nil
-					continue inputs
-				}
-
-				action.scope.Error = fmt.Errorf("cannot cast this: %v to a map[string]any", value)
+		for operatorStr, operand := range valueMap {
+			operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
+			if err != nil {
+				action.scope.Error = err
 				return action
 			}
 
-			for operatorStr, operand := range valueMap {
-				operatorName, err := operator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
-				if err != nil {
-					action.scope.Error = err
-					return action
-				}
-
-				addImplicitFilter(action.scope, input, operatorName, operand)
-			}
+			addImplicitFilter(action.scope, input, operatorName, operand)
 		}
 	}
 
