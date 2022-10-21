@@ -27,7 +27,7 @@ func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
 		}
 
-		if err := addWhereClauseForConditional(scope, fieldName, input, Equals, value); err != nil {
+		if err := addFilter(scope, fieldName, input, Equals, value); err != nil {
 			return err
 		}
 	}
@@ -73,7 +73,7 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("cannot find input of name: %s", argName)
 		}
 
-		if err := addWhereClauseForConditional(scope, field.Name, protoInput, operator, operandValue); err != nil {
+		if err := addFilter(scope, field.Name, protoInput, operator, operandValue); err != nil {
 			return err
 		}
 	}
@@ -81,10 +81,10 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 	return nil
 }
 
-// addWhereClauseForConditional adds Where clauses to the query field of the given
+// addFilter adds Where clauses to the query field of the given
 // scope, corresponding to the given input, the given operator, and using the given value as
 // the operand.
-func addWhereClauseForConditional(scope *Scope, columnName string, input *proto.OperationInput, operator ActionOperator, value any) error {
+func addFilter(scope *Scope, columnName string, input *proto.OperationInput, operator ActionOperator, value any) error {
 	inputType := input.Type.Type
 
 	// todo: the use of parseTimeOperand is conflicting with our current integration test framework, as this
