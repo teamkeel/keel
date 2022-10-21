@@ -35,7 +35,7 @@ func DefaultIsAuthorised(
 	}
 
 	// Generation SQL condition for each permission expression
-	sqlCondition := []string{}
+	sqlConditions := []string{}
 	for _, permission := range permissions {
 		if permission.Expression != nil {
 			expression, err := parser.ParseExpression(permission.Expression.Source)
@@ -43,29 +43,29 @@ func DefaultIsAuthorised(
 				return false, err
 			}
 
-			sqlSegment, err := expressionToSqlCondition(scope.context, expression, scope.operation, scope.schema, args)
+			condition, err := expressionToSqlCondition(scope.context, expression, scope.operation, scope.schema, args)
 			if err != nil {
 				return false, err
 			}
 
-			sqlCondition = append(sqlCondition, sqlSegment)
+			sqlConditions = append(sqlConditions, condition)
 		}
 	}
 
 	// Logical OR between all the permission expressions
-	conditions := scope.permmissionQuery.Session(&gorm.Session{NewDB: true})
-	for _, sqlSegment := range sqlCondition {
+	conditions := scope.permissionQuery.Session(&gorm.Session{NewDB: true}) // todo: remove NewDB?
+	for _, sqlSegment := range sqlConditions {
 		conditions = conditions.Or(sqlSegment)
 	}
 
 	// Logical AND between the filters and the permission conditions
-	scope.permmissionQuery = scope.permmissionQuery.Where(conditions)
+	scope.permissionQuery = scope.permissionQuery.Where(conditions)
 
 	// Determine the number of rows which don't satisfy the permission conditions
 	results := map[string]any{}
-	scope.query.Session(&gorm.Session{NewDB: true}).Raw("SELECT COUNT(*) as unauthorised FROM ( ? EXCEPT ?) as unauthorisedrows",
+	scope.query.Session(&gorm.Session{NewDB: true}).Raw("SELECT COUNT(*) as unauthorised FROM (? EXCEPT ?) as unauthorisedrows",
 		scope.query,
-		scope.permmissionQuery,
+		scope.permissionQuery,
 	).Scan(&results)
 	unauthorisedRows, ok := results["unauthorised"].(int64)
 

@@ -57,16 +57,9 @@ func expressionToSqlCondition(
 		return "", fmt.Errorf("lhs: %s, and rhs: %s, are not of the same native type", lhsType, rhsType)
 	}
 
+	// TODO:  instead we should use actions.addFilter(...) to build out the gorm statement
 	lhsSqlSegment, _ := generateSqlOperand(context, condition.LHS, operation, schema, data, operandType)
 	rhsSqlSegment, _ := generateSqlOperand(context, condition.RHS, operation, schema, data, operandType)
-
-	// fmt.Printf("%s = %s", lhsSqlSegment, rhsSqlSegment)
-	// fmt.Println()
-
-	// The LHS and RHS types must be equal unless the RHS is a null literal
-	// if lhsType != rhsType && rhsValue != nil {
-	// 	return "", fmt.Errorf("lhs type: %s, and rhs type: %s, are not the same", lhsType, rhsType)
-	// }
 
 	return fmt.Sprintf("%s = %s", lhsSqlSegment, rhsSqlSegment), nil
 }
@@ -86,7 +79,6 @@ func generateSqlOperand(
 	args map[string]any,
 	operandType proto.Type,
 ) (string, error) {
-
 	isLiteral, _ := operand.IsLiteralType()
 
 	switch {

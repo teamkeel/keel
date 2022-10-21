@@ -81,6 +81,10 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 	return nil
 }
 
+// TODO: refactor and decouple this function from columnName and Input?
+// Any operand can be literal, input, context or database field.
+// @where doesn't only operate on database columns
+
 // addFilter adds Where clauses to the query field of the given
 // scope, corresponding to the given input, the given operator, and using the given value as
 // the operand.
@@ -102,10 +106,10 @@ func addFilter(scope *Scope, columnName string, input *proto.OperationInput, ope
 			}
 
 			scope.query = scope.query.Where(w, time)
-			scope.permmissionQuery = scope.permmissionQuery.Where(w, time)
+			scope.permissionQuery = scope.permissionQuery.Where(w, time)
 		} else {
 			scope.query = scope.query.Where(w, value)
-			scope.permmissionQuery = scope.permmissionQuery.Where(w, value)
+			scope.permissionQuery = scope.permissionQuery.Where(w, value)
 		}
 	case NotEquals:
 		w := fmt.Sprintf("%s != ?", strcase.ToSnake(columnName))
@@ -228,7 +232,7 @@ func addFilter(scope *Scope, columnName string, input *proto.OperationInput, ope
 
 		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
 		scope.query = scope.query.Where(w, operandTime)
-		scope.permmissionQuery = scope.permmissionQuery.Where(w, operandTime)
+		scope.permissionQuery = scope.permissionQuery.Where(w, operandTime)
 	default:
 		return fmt.Errorf("operator: %v is not yet supported", operator)
 	}
