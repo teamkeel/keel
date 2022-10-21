@@ -55,7 +55,15 @@ export default class ActionExecutor {
 
     const requestInit: RequestInit = {
       method: "POST",
-      body: JSON.stringify(args),
+      // https://stackoverflow.com/questions/31096130/how-to-json-stringify-a-javascript-date-and-preserve-timezone#:~:text=To%20save%20others,you%20a%20string
+      body: JSON.stringify(args, function (key, value) {
+        if (this[key] instanceof Date) {
+          // preserve utc-ness as stringify doesnt
+          return this[key].toUTCString();
+        }
+
+        return value;
+      }),
       headers: headersInit,
     };
 
