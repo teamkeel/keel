@@ -5,5 +5,7 @@ test('it passes', () => {
 })
 
 test('it fails', () => {
-  expect(1).toEqual(2)
+  expect(1).toEqual({
+    title: 'hello'
+  })
 })

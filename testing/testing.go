@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/samber/lo"
@@ -178,6 +179,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 								case proto.OperationType_OPERATION_TYPE_GET:
 
 									var builder actions.GetAction
+									body.Payload, err = toNativeMap(body.Payload, action)
 
 									result, err := builder.
 										Initialise(scope).
@@ -198,6 +200,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_CREATE:
 									var builder actions.CreateAction
+									body.Payload, err = toNativeMap(body.Payload, action)
 
 									result, err := builder.
 										Initialise(scope).
@@ -222,6 +225,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									if err != nil {
 										panic(err)
 									}
+									body.Payload, err = toNativeMap(body.Payload, action)
 
 									// toArgsMap covers if the key isnt present
 									// if this is the case, an empty map will be returned
@@ -269,6 +273,8 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										"where": body.Payload,
 									}
 
+									body.Payload, err = toNativeMap(body.Payload, action)
+
 									result, err := builder.
 										Initialise(scope).
 										ApplyImplicitFilters(body.Payload).
@@ -288,6 +294,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_DELETE:
 									var builder actions.DeleteAction
+									body.Payload, err = toNativeMap(body.Payload, action)
 
 									result, err := builder.
 										Initialise(scope).
@@ -558,4 +565,38 @@ func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[strin
 	}
 
 	return subMap, nil
+}
+
+func toNativeMap(args map[string]interface{}, action *proto.Operation) (out map[string]any, err error) {
+	for _, input := range action.Inputs {
+		match, ok := args[input.Name]
+
+		if ok {
+			inputType := input.Type.Type
+
+			if !ok {
+				return nil, fmt.Errorf("cannot convert input arg %s to expected value", input.Name)
+			}
+
+			switch inputType {
+			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE:
+				str, ok := match.(string)
+
+				if !ok {
+					return nil, fmt.Errorf("%s arg with value %v is not an ISO8601 formatted string", input.Name, match)
+				}
+
+				time, err := time.Parse("2006-01-02T15:04:05-0700", str)
+				if err != nil {
+					return nil, fmt.Errorf("cannot parse date(time) %s", err)
+				}
+
+				out[input.Name] = time
+			default:
+				out[input.Name] = match
+			}
+		}
+	}
+
+	return out, nil
 }

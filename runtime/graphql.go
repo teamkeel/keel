@@ -286,7 +286,10 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
+
 			arguments, ok := input.(map[string]any)
+
+			arguments = convertToNative(arguments)
 
 			if !ok {
 				return nil, errors.New("input not a map")
@@ -641,7 +644,9 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 		"formatted": formattedDateType,
 		"fromNow":   &fromNowType,
 	},
+	
 })
+
 
 var dateType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Date",
@@ -1111,7 +1116,6 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 // Note: this implementation is not complete and only covers cases
 // that are relevant to us, for example directives are not handled
 func ToGraphQLSchemaLanguage(response *Response) string {
-
 	// First we have the marshal the response bytes back into
 	// a graphql.Result
 	var result graphql.Result
@@ -1169,6 +1173,10 @@ func ToGraphQLSchemaLanguage(response *Response) string {
 		if !ok {
 			continue
 		}
+
+		dateInputType.AddFieldConfig("jfjf", &graphql.InputObjectFieldConfig{
+			
+		})
 
 		b := strings.Builder{}
 		b.WriteString(keyword)
@@ -1318,4 +1326,20 @@ func connectionResponse(records any, hasNextPage bool) (resp any, err error) {
 		"edges":    edges,
 	}
 	return resp, nil
+}
+
+func convertToNative(m map[string]interface{}, operation *proto.Operation) map[string]any {
+	for _, input := range operation.Inputs {
+		match, ok := m[input.Name]
+
+		if ok {
+			if input.Type.Type == proto.Type_TYPE_DATETIME {
+				// do conversion from { "year": 1, "month": 2, "day": 10 }
+
+				// to time.Time
+			}
+		}
+	}
+
+	return m
 }
