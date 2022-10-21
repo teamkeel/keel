@@ -11,6 +11,7 @@ import (
 )
 
 // Produces a complete SQL condition from an expression. It is intended for use to construct a filtered SQL statement.
+// Currently supports single condition expressions.
 func expressionToSqlCondition(
 	context context.Context,
 	expression *parser.Expression,
