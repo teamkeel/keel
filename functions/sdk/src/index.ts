@@ -1,4 +1,4 @@
-import Query, { ChainableQuery } from "./query";
+import Query, { ChainableQuery, defaultClientConfiguration } from "./query";
 import * as Constraints from "./constraints";
 import Logger, { ConsoleTransport, Level as LogLevel } from "./logger";
 import { Identity } from "./types";
@@ -24,4 +24,5 @@ export {
   ConsoleTransport,
   LogLevel,
   Identity,
+  defaultClientConfiguration,
 };

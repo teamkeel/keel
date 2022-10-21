@@ -4,6 +4,7 @@ import {
   buildDeleteStatement,
   buildCreateStatement,
   buildUpdateStatement,
+  transformValue
 } from "./";
 
 interface Test {
@@ -119,4 +120,22 @@ test("testOrder", () => {
   );
 
   expect(values).toEqual(["bar%", "foo ASC"]);
+});
+
+describe('transformValue', () => {
+  it('converts Date objects to ISO8601', () => {
+    const d = new Date(2020, 3, 1);
+
+    const result = transformValue(d);
+
+    expect(result).toEqual("2020-03-31T23:00:00.000Z")
+  });
+  
+  it('returns the original value for everything else', () => {
+    const primitives = [1, 's', true, undefined, null];
+
+    primitives.forEach((p) => {
+      expect(transformValue(p)).toEqual(p);
+    });
+  });
 });

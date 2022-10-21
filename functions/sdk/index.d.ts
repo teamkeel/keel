@@ -36,7 +36,7 @@ declare module "@teamkeel/sdk/constraints" {
   export type EnumConstraint = string | EqualityConstraint;
 }
 declare module "@teamkeel/sdk/index" {
-  import Query, { ChainableQuery } from "@teamkeel/sdk/query";
+  import Query, { ChainableQuery, defaultClientConfiguration } from "@teamkeel/sdk/query";
   import * as QueryConstraints from "@teamkeel/sdk/constraints";
   import Logger, {
     ConsoleTransport,
@@ -57,6 +57,7 @@ declare module "@teamkeel/sdk/index" {
     ConsoleTransport,
     LogLevel,
     Identity,
+    defaultClientConfiguration,
   };
 }
 
@@ -93,7 +94,7 @@ declare module "@teamkeel/sdk/logger" {
 }
 
 declare module "@teamkeel/sdk/query" {
-  import { TaggedTemplateLiteralInvocation } from "slonik";
+  import { TaggedTemplateLiteralInvocation, ClientConfigurationInput } from "slonik";
   import {
     Conditions,
     ChainedQueryOpts,
@@ -140,6 +141,8 @@ declare module "@teamkeel/sdk/query" {
     ) => Promise<ReturnTypes.FunctionUpdateResponse<T>>;
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
   }
+  export const defaultClientConfiguration : ClientConfigurationInput;
+  
   export {};
 }
 
