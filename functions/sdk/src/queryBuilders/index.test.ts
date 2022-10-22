@@ -124,11 +124,11 @@ test("testOrder", () => {
 
 describe('transformValue', () => {
   it('converts Date objects to ISO8601', () => {
-    const d = new Date(2020, 3, 1);
-
+    const d = new Date("2020-03-31T23:00:00.000Z");
     const result = transformValue(d);
 
-    expect(result).toEqual("2020-03-31T23:00:00.000Z")
+    const expected = d.toISOString()
+    expect(result).toEqual(expected)
   });
   
   it('returns the original value for everything else', () => {
