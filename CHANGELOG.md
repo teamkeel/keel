@@ -1,3 +1,10 @@
+# [0.179.0](https://github.com/teamkeel/keel/compare/v0.178.0...v0.179.0) (2022-10-22)
+
+
+### Features
+
+* release packages ([#495](https://github.com/teamkeel/keel/issues/495)) ([6896701](https://github.com/teamkeel/keel/commit/68967012f55b9cb0e92c025f612d6f528bfa77da))
+
 # [0.178.0](https://github.com/teamkeel/keel/compare/v0.177.1...v0.178.0) (2022-10-22)
 
 
