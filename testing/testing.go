@@ -576,21 +576,17 @@ func toNativeMap(args map[string]interface{}, action *proto.Operation) (map[stri
 		if ok {
 			inputType := input.Type.Type
 
-			if !ok {
-				return nil, fmt.Errorf("cannot convert input arg %s to expected value", input.Name)
-			}
-
 			switch inputType {
 			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE:
 				str, ok := match.(string)
 
 				if !ok {
-					return nil, fmt.Errorf("%s arg with value %v is not an ISO8601 formatted string", input.Name, match)
+					return nil, fmt.Errorf("%s arg with value %v is not a string", input.Name, match)
 				}
 
 				time, err := time.Parse("2006-01-02T15:04:05-0700", str)
 				if err != nil {
-					return nil, fmt.Errorf("cannot parse date(time) %s", err)
+					return nil, fmt.Errorf("%s is not ISO8601 formatted date: %s", input.Name, str)
 				}
 
 				out[input.Name] = time
