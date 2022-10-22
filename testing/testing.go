@@ -181,6 +181,9 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									var builder actions.GetAction
 									body.Payload, err = toNativeMap(body.Payload, action)
 
+									if err != nil {
+										panic(err)
+									}
 									result, err := builder.
 										Initialise(scope).
 										ApplyImplicitFilters(body.Payload).
@@ -225,11 +228,16 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									if err != nil {
 										panic(err)
 									}
-									body.Payload, err = toNativeMap(body.Payload, action)
 
 									// toArgsMap covers if the key isnt present
 									// if this is the case, an empty map will be returned
 									values, err := toArgsMap(body.Payload, "values", true)
+
+									if err != nil {
+										panic(err)
+									}
+
+									values, err = toNativeMap(values, action)
 									if err != nil {
 										panic(err)
 									}
@@ -239,6 +247,10 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										panic(err)
 									}
 
+									wheres, err = toNativeMap(wheres, action)
+									if err != nil {
+										panic(err)
+									}
 									result, err := builder.
 										Initialise(scope).
 										// first capture any implicit inputs
@@ -275,6 +287,10 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 
 									body.Payload, err = toNativeMap(body.Payload, action)
 
+									if err != nil {
+										panic(err)
+									}
+
 									result, err := builder.
 										Initialise(scope).
 										ApplyImplicitFilters(body.Payload).
@@ -296,6 +312,9 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									var builder actions.DeleteAction
 									body.Payload, err = toNativeMap(body.Payload, action)
 
+									if err != nil {
+										panic(err)
+									}
 									result, err := builder.
 										Initialise(scope).
 										ApplyImplicitFilters(body.Payload).
