@@ -567,6 +567,13 @@ func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[strin
 	return subMap, nil
 }
 
+// Converts the input args (JSON) sent from the JavaScript process
+// into a format that the actions code understands.
+// Dates in JSON will come in as strings in ISO8601 format whereas
+// the actions code expects time.Time
+// In the future, this method can be extended to handle other conversions
+// or refactored completely into a deserializer type pattern, shared with
+// the graphql code
 func toNativeMap(args map[string]interface{}, action *proto.Operation) (map[string]any, error) {
 	out := map[string]any{}
 
