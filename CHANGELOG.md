@@ -1,3 +1,10 @@
+# [0.178.0](https://github.com/teamkeel/keel/compare/v0.177.1...v0.178.0) (2022-10-22)
+
+
+### Features
+
+* convert js dates/timestamps to native go dates ([#493](https://github.com/teamkeel/keel/issues/493)) ([81bec8c](https://github.com/teamkeel/keel/commit/81bec8ca2c7ab82b30990f996d208d359cdaf526))
+
 ## [0.177.1](https://github.com/teamkeel/keel/compare/v0.177.0...v0.177.1) (2022-10-19)
 
 
