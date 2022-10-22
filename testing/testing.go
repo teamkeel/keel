@@ -567,7 +567,9 @@ func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[strin
 	return subMap, nil
 }
 
-func toNativeMap(args map[string]interface{}, action *proto.Operation) (out map[string]any, err error) {
+func toNativeMap(args map[string]interface{}, action *proto.Operation) (map[string]any, error) {
+	out := map[string]any{}
+
 	for _, input := range action.Inputs {
 		match, ok := args[input.Name]
 
