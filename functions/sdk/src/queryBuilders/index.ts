@@ -1,4 +1,4 @@
-import { sql, ValueExpression, TaggedTemplateLiteralInvocation } from "slonik";
+import { sql, ValueExpression, TaggedTemplateLiteralInvocation, QueryResultRow } from "slonik";
 import { Conditions, Constraints, OrderClauses } from "../types";
 
 import toSnakeCase from "../util/snakeCaser";
@@ -152,7 +152,7 @@ export const buildCreateStatement = <T>(
       .map((f) => sql.identifier([f])),
     sql`, `
   )})
-    VALUES (${sql.join(Object.values(inputs), sql`, `)})
+    VALUES (${sql.join(Object.values(inputs).map(transformValue), sql`, `)})
     RETURNING id`;
 };
 
@@ -167,10 +167,22 @@ export const buildUpdateStatement = <T>(
 
   const query = sql`UPDATE ${sql.identifier([
     toSnakeCase(tableName),
-  ])} SET ${sql.join(values, sql`,`)} WHERE id = ${id}`;
+  ])} SET ${sql.join(values.map(transformValue), sql`,`)} WHERE id = ${id}`;
 
   return query;
 };
+
+type ValueType = "array" | "object" | "string" | "date" | "number" | "function" | "regexp" | "boolean" | "null" | "undefined"
+
+export const transformValue = (v: any) => {
+  const valueType: ValueType = Object.prototype.toString.call(v).slice(8, -1).toLowerCase()
+  switch (valueType) {
+    case "date":
+      return (v as Date).toISOString()
+    default:
+      return v
+  }
+}
 
 export const buildDeleteStatement = <T>(
   tableName: string,

@@ -1,4 +1,5 @@
 import {
+  ClientConfigurationInput,
   createPool,
   QueryResult,
   TaggedTemplateLiteralInvocation,
@@ -21,8 +22,12 @@ import {
 } from "./types";
 import * as ReturnTypes from "./returnTypes";
 import Logger from "./logger";
-import { LogLevel } from "./";
 import { ConnectionRoutine } from "slonik/dist/src/types";
+
+export const defaultClientConfiguration : ClientConfigurationInput = {
+  // https://github.com/gajus/slonik/issues/94#issuecomment-531117098
+  typeParsers: []
+}
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
