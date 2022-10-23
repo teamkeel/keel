@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -32,6 +33,21 @@ func (action *ListAction) CaptureSetValues(args RequestArguments) ActionBuilder[
 }
 
 func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[ListResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
+	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
+
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+
+	if !isAuthorised {
+		action.scope.Error = errors.New("not authorized to access this operation")
+	}
+
 	return action
 }
 

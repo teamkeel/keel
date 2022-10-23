@@ -15,6 +15,11 @@ model Post {
             //@permission(expression: post.title == post.subtitle)
         }
 
+        list listPost() {
+            @where(post.title == "hello")
+            @permission(expression: ctx.isAuthenticated) 
+        }
+
         create createPost() with (title, subtitle?) {
             @set(post.user = ctx.identity)
         }

@@ -21,7 +21,7 @@ func expressionToSqlCondition(
 	operatorStr := condition.Operator.ToString()
 	operator, _ := expressionOperatorToActionOperator(operatorStr)
 
-	return toSql(scope, condition, operator, data)
+	return conditionToSqlStatement(scope, condition, operator, data)
 }
 
 // Produces a SQL operand from an expression operand. It is intended for use to construct a complete SQL condition.
