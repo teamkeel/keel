@@ -80,7 +80,7 @@ inputs:
 				return action
 			}
 
-			if err := addFilter(action.scope, fieldName, input, operator, operand); err != nil {
+			if err := addFilter(action.scope, fieldName, operator, operand); err != nil {
 				action.scope.Error = err
 				return action
 			}
