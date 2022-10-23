@@ -74,8 +74,9 @@ func interpretExpressionField(
 	return field, operator, nil
 }
 
-// getOperandType determines the underlying type to compare with for an operand
-func getOperandType(
+// GetOperandType determines the underlying type to compare with for an operand
+// todo: refactor using IsModelField, IsLiteral...
+func GetOperandType(
 	operand *parser.Operand,
 	operation *proto.Operation,
 	schema *proto.Schema,
@@ -124,8 +125,8 @@ func getOperandType(
 	}
 }
 
-// evaluateOperandValue evaluates the value to compare with for an operand
-func evaluateOperandValue(
+// EvaluateOperandValue evaluates the value to compare with for an operand
+func EvaluateOperandValue(
 	context context.Context,
 	operand *parser.Operand,
 	operation *proto.Operation,

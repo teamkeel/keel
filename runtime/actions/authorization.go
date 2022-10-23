@@ -35,7 +35,10 @@ func DefaultIsAuthorised(
 	}
 
 	// Generation SQL condition for each permission expression
-	sqlConditions := []string{}
+	//sqlConditions := []string{}
+
+	conditions := scope.permissionQuery.Session(&gorm.Session{NewDB: true}) // todo: remove NewDB?
+
 	for _, permission := range permissions {
 		if permission.Expression != nil {
 			expression, err := parser.ParseExpression(permission.Expression.Source)
@@ -43,20 +46,21 @@ func DefaultIsAuthorised(
 				return false, err
 			}
 
-			condition, err := expressionToSqlCondition(scope.context, expression, scope.operation, scope.schema, args)
+			//condition, err := addDataFilter(scope, )
+
+			query, args := expressionToSqlCondition(scope, expression, args)
 			if err != nil {
 				return false, err
 			}
 
-			sqlConditions = append(sqlConditions, condition)
+			conditions = conditions.Or(query, args...)
 		}
 	}
 
-	// Logical OR between all the permission expressions
-	conditions := scope.permissionQuery.Session(&gorm.Session{NewDB: true}) // todo: remove NewDB?
-	for _, sqlSegment := range sqlConditions {
-		conditions = conditions.Or(sqlSegment)
-	}
+	// // Logical OR between all the permission expressions
+	// for _, sqlSegment := range sqlConditions {
+	// 	conditions = conditions.Or(sqlSegment)
+	// }
 
 	// Logical AND between the filters and the permission conditions
 	scope.permissionQuery = scope.permissionQuery.Where(conditions)

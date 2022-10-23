@@ -2,15 +2,17 @@ model Post {
     fields {
         title Text?
         subtitle Text?
+        views Number? @default(10)
         isActive Boolean? @default(true)
         user Identity? 
     }
 
     operations {
         get getPost(id) { 
-            @permission(expression: post.subtitle == "hello")
-            @permission(expression: ctx.isAuthenticated == false)
-            @permission(expression: post.isActive == post.isActive)
+            //@permission(expression: post.subtitle == null)
+            @permission(expression: ctx.isAuthenticated) 
+            //@permission(expression: post.views >= views)
+            //@permission(expression: post.title == post.subtitle)
         }
 
         create createPost() with (title, subtitle?) {
