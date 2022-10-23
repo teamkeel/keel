@@ -2,11 +2,20 @@ model Post {
     fields {
         title Text?
         subtitle Text?
+        isActive Boolean? @default(true)
+        user Identity? 
     }
 
     operations {
-        get getPost(id) 
-        create createPost() with (title, subtitle?) 
+        get getPost(id) { 
+            @permission(expression: post.subtitle == "hello")
+            @permission(expression: ctx.isAuthenticated == false)
+            @permission(expression: post.isActive == post.isActive)
+        }
+
+        create createPost() with (title, subtitle?) {
+            @set(post.user = ctx.identity)
+        }
 
     }
 }
@@ -18,3 +27,4 @@ api Web {
         Post
     }
 }
+

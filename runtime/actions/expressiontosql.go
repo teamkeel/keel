@@ -100,6 +100,8 @@ func generateSqlOperand(
 		} else {
 			return fmt.Sprintf("%v", value), nil
 		}
+
+		// todo: IF date/time, then do special passing as well
 	case operand.Ident != nil && proto.EnumExists(schema.Enums, operand.Ident.Fragments[0].Fragment):
 		// if enum literal, then pull the value from the schema
 		return fmt.Sprintf("'%v'", operand.Ident.Fragments[1].Fragment), nil
