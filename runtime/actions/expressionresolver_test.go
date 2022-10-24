@@ -1,9 +1,11 @@
 package actions
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"testing"
+	"text/template"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/require"
@@ -22,11 +24,12 @@ func TestExpressionResolver(t *testing.T) {
 	defer sqlDb.Close()
 
 	rslv := NewExpressionResolver(scope)
-	expr, err := parser.ParseExpression(`post.Title == coolTitle`)
+
+	parsedExpr, err := parser.ParseExpression(scope.operation.WhereExpressions[0].Source)
 	require.NoError(t, err)
 
 	updatedQry, err := rslv.Resolve(
-		expr,
+		parsedExpr,
 		RequestArguments{
 			"coolTitle": "Good Morning",
 		})
@@ -34,7 +37,7 @@ func TestExpressionResolver(t *testing.T) {
 
 	c := findGormWhereClause(t, updatedQry)
 
-	require.Equal(t, "post.title IS ?", c.SQL)
+	require.Equal(t, "my_model.my_field IS ?", c.SQL)
 	require.Equal(t, "Good Morning", c.Vars[0])
 }
 
@@ -49,10 +52,9 @@ func makeDbAndScope(t *testing.T) (*Scope, *sql.DB) {
 	}), &gorm.Config{})
 	require.NoError(t, err)
 
-	schema := protoSchema(t, schemaString)
-	op := proto.FilterOperations(schema, func(op *proto.Operation) bool {
-		return op.Name == "listPosts"
-	})[0]
+	schemaParameterisation := schemaParams{FieldType: "Text"}
+	schema := protoSchema(t, parameterisedSchema(t, schemaParameterisation))
+	op := proto.FindOperation(schema, "myOperation")
 
 	ctx := runtimectx.WithDatabase(context.Background(), gormdb)
 	scope, err := NewScope(ctx, op, schema)
@@ -60,6 +62,7 @@ func makeDbAndScope(t *testing.T) (*Scope, *sql.DB) {
 	return scope, sqldb
 }
 
+// protoSchema generates a proto.Schema based on the given keel schema string.
 func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromInputs(&reader.Inputs{
@@ -73,6 +76,8 @@ func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 	return schema
 }
 
+// findGormWhereClause extracts the clause.Expr that represents the
+// Where clause from inside the given *gorm.DB query structure.
 func findGormWhereClause(t *testing.T, qry *gorm.DB) clause.Expr {
 	clauses, ok := qry.Statement.Clauses["WHERE"]
 	require.True(t, ok)
@@ -84,15 +89,32 @@ func findGormWhereClause(t *testing.T, qry *gorm.DB) clause.Expr {
 	return asExpr
 }
 
-const schemaString string = `
-model Post {
+// A schemaTemplate is a keel (text) schema, with placeholders that can
+// be replaced using go's template.Template.
+const schemaTemplate string = `
+model MyModel {
 	fields {
-		title Text 
+		myField {{.FieldType}}
 	}
 	operations {
-		list listPosts(coolTitle: Text) {
-			@where(post.title == coolTitle )
+		list myOperation(coolTitle: Text) {
+			@where(myModel.myField == coolTitle )
 		}
 	}
 }
 `
+
+// parameterisedSchema generates a template-based keel schema using
+// the given plug-in values.
+func parameterisedSchema(t *testing.T, pluginValues schemaParams) string {
+	tmpl, err := template.New("test").Parse(schemaTemplate)
+	require.NoError(t, err)
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, pluginValues)
+	require.NoError(t, err)
+	return buf.String()
+}
+
+type schemaParams struct {
+	FieldType string
+}
