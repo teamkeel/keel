@@ -22,8 +22,8 @@ func DefaultCaptureSetValues(scope *Scope, args RequestArguments) error {
 			return err
 		}
 
-		lhsResolver := NewOperandResolver(scope.context, assignment.LHS, scope.operation, scope.schema)
-		rhsResolver := NewOperandResolver(scope.context, assignment.RHS, scope.operation, scope.schema)
+		lhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.LHS)
+		rhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.RHS)
 
 		if !lhsResolver.IsModelField() {
 			return fmt.Errorf("lhs operand of assignment expression must be a model field")

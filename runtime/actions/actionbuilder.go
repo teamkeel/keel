@@ -74,8 +74,7 @@ type Scope struct {
 
 	// This field is connected to the database, and we use it to perform all
 	// all queries and write operations on the database.
-	query           *gorm.DB
-	permissionQuery *gorm.DB
+	query *gorm.DB
 
 	// This field accumulates the values we intend to write to a database row.
 	writeValues map[string]any
@@ -92,23 +91,20 @@ func NewScope(
 	model := proto.FindModel(schema.Models, operation.ModelName)
 	table := strcase.ToSnake(model.Name)
 	query, err := runtimectx.GetDatabase(ctx)
-	permissionQuery, _ := runtimectx.GetDatabase(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
 	query = query.Table(table)
-	permissionQuery = permissionQuery.Table(table)
 
 	return &Scope{
-		context:         ctx,
-		operation:       operation,
-		model:           model,
-		schema:          schema,
-		query:           query.Debug(),
-		permissionQuery: permissionQuery.Debug(),
-		writeValues:     map[string]any{},
+		context:     ctx,
+		operation:   operation,
+		model:       model,
+		schema:      schema,
+		query:       query.Debug(),
+		writeValues: map[string]any{},
 	}, nil
 }
 

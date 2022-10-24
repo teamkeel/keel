@@ -9,84 +9,85 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
+	"gorm.io/gorm"
 )
 
-// // interpretExpressionField examines the given expression, in order to work out how to construct a gorm WHERE clause.
-// func interpretExpressionField(
-// 	expr *parser.Expression,
-// 	operation *proto.Operation,
-// 	schema *proto.Schema,
-// ) (*proto.Field, ActionOperator, error) {
+type FilterResolver struct {
+	scope *Scope
+}
 
-// 	// Make sure the expression is in the form we can handle.
+func NewFilterResolver(scope *Scope) *FilterResolver {
+	return &FilterResolver{
+		scope: scope,
+	}
+}
 
-// 	conditions := expr.Conditions()
-// 	if len(conditions) != 1 {
-// 		return nil, Unknown, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
-// 	}
-// 	condition := conditions[0]
-// 	cType := condition.Type()
-// 	if cType != parser.LogicalCondition {
-// 		return nil, Unknown, fmt.Errorf("cannot yet handle condition types other than LogicalCondition, have: %s", cType)
-// 	}
+func (resolver *FilterResolver) Resolve(fieldName string, value any, valueType proto.Type) (*gorm.DB, error) {
+	queryTemplate, err := generateFilterTemplate(fieldName, "?", Equals, valueType)
+	if err != nil {
+		return nil, err
+	}
 
-// 	operatorStr := condition.Operator.ToString()
-// 	operator, err := expressionOperatorToActionOperator(operatorStr)
-// 	if err != nil {
-// 		return nil, Unknown, err
-// 	}
+	queryArgument := value
 
-// 	if condition.LHS.Type() != parser.TypeIdent {
-// 		return nil, operator, fmt.Errorf("cannot handle LHS of type other than TypeIdent, have: %s", condition.LHS.Type())
-// 	}
-// 	if condition.RHS.Type() != parser.TypeIdent {
-// 		return nil, operator, fmt.Errorf("cannot handle RHS of type other than TypeIdent, have: %s", condition.LHS.Type())
-// 	}
+	query := resolver.scope.query.
+		Session(&gorm.Session{NewDB: true}).
+		Where(queryTemplate, queryArgument)
 
-// 	lhs := condition.LHS
-// 	if len(lhs.Ident.Fragments) != 2 {
-// 		return nil, operator, fmt.Errorf("cannot handle LHS identifier unless it has 2 fragments, have: %d", len(lhs.Ident.Fragments))
-// 	}
+	return query, nil
+}
 
-// 	rhs := condition.RHS
-// 	if len(rhs.Ident.Fragments) != 1 {
-// 		return nil, operator, fmt.Errorf("cannot handle RHS identifier unless it has 1 fragment, have: %d", len(rhs.Ident.Fragments))
-// 	}
+type ExpressionResolver struct {
+	scope *Scope
+}
 
-// 	// Make sure the first fragment in the LHS is the name of the model of which this operation is part.
-// 	// e.g. "person" in the example above.
-// 	modelTarget := strcase.ToCamel(lhs.Ident.Fragments[0].Fragment)
+func NewExpressionResolver(scope *Scope) *ExpressionResolver {
+	return &ExpressionResolver{
+		scope: scope,
+	}
+}
 
-// 	if modelTarget != operation.ModelName {
-// 		return nil, operator, fmt.Errorf("can only handle the first LHS fragment referencing the Operation's model, have: %s", modelTarget)
-// 	}
+func (resolver *ExpressionResolver) Resolve(expression *parser.Expression, args RequestArguments) (*gorm.DB, error) {
+	// Make sure the expression is in the form we can handle.
 
-// 	// Make sure the second fragment in the LHS is the name of a field of the model of which this operation is part.
-// 	// e.g. "name" in the example above.
-// 	fieldName := lhs.Ident.Fragments[1].Fragment
+	if len(expression.Conditions()) != 1 {
+		return nil, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
+	}
 
-// 	field := proto.FindField(schema.Models, modelTarget, fieldName)
-// 	if !proto.ModelHasField(schema, modelTarget, fieldName) {
-// 		return nil, operator, fmt.Errorf("this model: %s, does not have a field of name: %s", modelTarget, fieldName)
-// 	}
+	condition := expression.Conditions()[0]
 
-// 	// Now we have all the data we need to return
-// 	return field, operator, nil
-// }
+	if condition.Type() != parser.ValueCondition && condition.Type() != parser.LogicalCondition {
+		return nil, fmt.Errorf("can only handle condition type of LogicalCondition or ValueCondition, have: %s", condition.Type())
+	}
+
+	operatorStr := condition.Operator.ToString()
+	operator, _ := expressionOperatorToActionOperator(operatorStr)
+
+	queryTemplate, queryArguments, err := resolver.generateQuery(condition, operator, args)
+	if err != nil {
+		return nil, err
+	}
+
+	query := resolver.scope.query.
+		Session(&gorm.Session{NewDB: true}).
+		Where(queryTemplate, queryArguments...)
+
+	return query, nil
+}
 
 type OperandResolver struct {
 	context   context.Context
-	operand   *parser.Operand
-	operation *proto.Operation
 	schema    *proto.Schema
+	operation *proto.Operation
+	operand   *parser.Operand
 }
 
-func NewOperandResolver(ctx context.Context, operand *parser.Operand, operation *proto.Operation, schema *proto.Schema) *OperandResolver {
+func NewOperandResolver(ctx context.Context, schema *proto.Schema, operation *proto.Operation, operand *parser.Operand) *OperandResolver {
 	return &OperandResolver{
 		context:   ctx,
-		operand:   operand,
-		operation: operation,
 		schema:    schema,
+		operation: operation,
+		operand:   operand,
 	}
 }
 
@@ -144,6 +145,7 @@ func (resolver *OperandResolver) IsContextField() bool {
 	return resolver.operand.Ident.IsContext()
 }
 
+// todo: cleanup
 func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 	operand := resolver.operand
 	operation := resolver.operation
@@ -193,8 +195,8 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 }
 
 func (resolver *OperandResolver) ResolveValue(
-	data map[string]any,
-	operandType proto.Type,
+	args map[string]any,
+	operandType proto.Type, //todo: infer from schema
 ) (any, error) {
 
 	switch {
@@ -209,7 +211,7 @@ func (resolver *OperandResolver) ResolveValue(
 		}
 
 	case resolver.IsImplicitInput(), resolver.IsExplicitInput():
-		inputValue := data[resolver.operand.Ident.Fragments[0].Fragment] // todo: convert to type?
+		inputValue := args[resolver.operand.Ident.Fragments[0].Fragment] // todo: convert to type?
 		return inputValue, nil
 	case resolver.IsModelField():
 		panic("cannot resolve operand value when IsModelField() is true")
@@ -236,4 +238,112 @@ func (resolver *OperandResolver) ResolveValue(
 		return nil, fmt.Errorf("cannot handle operand of unknown type")
 
 	}
+}
+
+func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, operator ActionOperator, args map[string]any) (queryTemplate string, queryArguments []any, err error) {
+
+	var lhsOperandType, rhsOperandType proto.Type
+
+	lhsOperand := condition.LHS
+	rhsOperand := condition.RHS
+
+	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, lhsOperand)
+	rhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, rhsOperand)
+	lhsOperandType, _ = lhsResolver.GetOperandType()
+
+	if condition.Type() == parser.ValueCondition {
+		if lhsOperandType != proto.Type_TYPE_BOOL {
+			return "", nil, fmt.Errorf("single operands in a value condition must be of type boolean")
+		}
+
+		// A value condition only has one operand in the expression,
+		// for example, permission(expression: ctx.isAuthenticated),
+		// so we must set the operator and RHS value (== true) ourselves.
+		rhsOperandType = lhsOperandType
+		operator = Equals
+	} else {
+		rhsOperandType, _ = rhsResolver.GetOperandType()
+	}
+
+	var template string
+	var queryArgs []any
+
+	lhsSqlOperand := "?"
+	rhsSqlOperand := "?"
+
+	if !lhsResolver.IsModelField() {
+		lhsValue, _ := lhsResolver.ResolveValue(args, lhsOperandType)
+		queryArgs = append(queryArgs, lhsValue)
+	} else {
+		modelTarget := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[0].Fragment)
+		fieldName := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[1].Fragment)
+		lhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)
+	}
+
+	if condition.Type() == parser.ValueCondition {
+		queryArgs = append(queryArgs, true)
+	} else if !rhsResolver.IsModelField() {
+		rhsValue, _ := rhsResolver.ResolveValue(args, rhsOperandType)
+		queryArgs = append(queryArgs, rhsValue)
+	} else {
+		modelTarget := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[0].Fragment)
+		fieldName := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[1].Fragment)
+		rhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)
+	}
+
+	template, err = generateFilterTemplate(lhsSqlOperand, rhsSqlOperand, operator, rhsOperandType)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return template, queryArgs, nil
+}
+
+// todo: reintroduce time and date parsing
+// todo: What if the LHS is null?
+func generateFilterTemplate(lhsSqlOperand any, rhsSqlOperand any, operator ActionOperator, rhsOperandType proto.Type) (string, error) {
+	var template string
+
+	switch operator {
+	case Equals:
+		if rhsOperandType == proto.Type_TYPE_UNKNOWN {
+			template = fmt.Sprintf("%s IS %s", lhsSqlOperand, rhsSqlOperand)
+		} else {
+			template = fmt.Sprintf("%s = %s", lhsSqlOperand, rhsSqlOperand)
+		}
+	case NotEquals:
+		if rhsOperandType == proto.Type_TYPE_UNKNOWN {
+			template = fmt.Sprintf("%s IS NOT %s", lhsSqlOperand, rhsSqlOperand)
+		} else {
+			template = fmt.Sprintf("%s != %s", lhsSqlOperand, rhsSqlOperand)
+		}
+	case StartsWith:
+		template = fmt.Sprintf("%s LIKE %s%s", lhsSqlOperand, "%%", rhsSqlOperand)
+	case EndsWith:
+		template = fmt.Sprintf("%s LIKE %s%s", lhsSqlOperand, rhsSqlOperand, "%%")
+	case Contains:
+		template = fmt.Sprintf("%s LIKE %s%s%s", lhsSqlOperand, "%%", rhsSqlOperand, "%%")
+	case OneOf:
+		template = fmt.Sprintf("%s in %s", lhsSqlOperand, rhsSqlOperand)
+	case LessThan:
+		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
+	case LessThanEquals:
+		template = fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand)
+	case GreaterThan:
+		template = fmt.Sprintf("%s > %s", lhsSqlOperand, rhsSqlOperand)
+	case GreaterThanEquals:
+		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand)
+	case Before:
+		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
+	case After:
+		template = fmt.Sprintf("%s > %s", lhsSqlOperand, rhsSqlOperand)
+	case OnOrBefore:
+		template = fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand)
+	case OnOrAfter:
+		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand)
+	default:
+		return "", fmt.Errorf("operator: %v is not yet supported", operator)
+	}
+
+	return template, nil
 }

@@ -96,10 +96,13 @@ inputs:
 				return action
 			}
 
-			if err := addFilter(action.scope, fieldName, input, operator, operand); err != nil {
+			queryTemplate, err := generateFilterTemplate(fieldName, "?", operator, input.Type.Type)
+			if err != nil {
 				action.scope.Error = err
 				return action
 			}
+
+			action.scope.query = action.scope.query.Where(queryTemplate, operand)
 		}
 	}
 

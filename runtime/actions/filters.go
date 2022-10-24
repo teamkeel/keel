@@ -25,16 +25,17 @@ func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
 		}
 
-		queryTemplate := generateFilterTemplate(fieldName, "?", Equals, input.Type.Type)
+		// New filter resolver to generate a database query statement
+		resolver := NewFilterResolver(scope)
 
-		//todo: DECOUPLE query from this method
-		// Logical OR between all the permission expressions
-		scope.query = scope.query.Where(queryTemplate, value)
-		scope.permissionQuery = scope.permissionQuery.Where(queryTemplate, value)
+		// Resolve the database statement for this expression
+		statement, err := resolver.Resolve(fieldName, value, input.Type.Type)
+		if err != nil {
+			return err
+		}
 
-		// if err := addFilter(scope, fieldName, input, Equals, value); err != nil {
-		// 	return err
-		// }
+		// Logical AND between all the expressions
+		scope.query = scope.query.Where(statement)
 	}
 
 	return nil
@@ -45,187 +46,25 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 
 	for _, where := range operation.WhereExpressions {
 		expression, err := parser.ParseExpression(where.Source) // E.g. post.title == requiredTitle
-
 		if err != nil {
 			return err
 		}
 
-		if len(expression.Conditions()) != 1 {
-			//return "", nil // fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
-		}
-		condition := expression.Conditions()[0]
+		// New expression resolver to generate a database query statement
+		resolver := NewExpressionResolver(scope)
 
-		operatorStr := condition.Operator.ToString()
-		operator, _ := expressionOperatorToActionOperator(operatorStr)
-
-		query, queryArguments := conditionToSqlStatement(scope, condition, operator, args)
+		// Resolve the database statement for this expression
+		statement, err := resolver.Resolve(expression, args)
 		if err != nil {
 			return err
 		}
 
-		//todo: DECOUPLE query from this method... have a nice scope.AddFilter rec method
-		// Logical OR between all the permission expressions
-		scope.query = scope.query.Where(query, queryArguments...)
-		scope.permissionQuery = scope.permissionQuery.Where(query, queryArguments...)
+		// Logical AND between all the expressions
+		scope.query = scope.query.Where(statement)
 	}
 
 	return nil
 }
-
-// // addFilter adds Where clauses to the query field of the given
-// // scope, corresponding to the given input, the given operator, and using the given value as
-// // the operand.
-// func addFilter(scope *Scope, columnName string, input *proto.OperationInput, operator ActionOperator, value any) error {
-// 	inputType := input.Type.Type
-
-// 	// todo: the use of parseTimeOperand is conflicting with our current integration test framework, as this
-// 	// generates typescript that expects the input objects to be native javascript Date/Time types.
-// 	// See for example integration/operation_list_explicit.
-// 	switch operator {
-// 	case Equals:
-// 		w := fmt.Sprintf("%s = ?", strcase.ToSnake(columnName))
-
-// 		if inputType == proto.Type_TYPE_DATE || inputType == proto.Type_TYPE_DATETIME || inputType == proto.Type_TYPE_TIMESTAMP {
-// 			time, err := parseTimeOperand(value, inputType)
-
-// 			if err != nil {
-// 				return err
-// 			}
-
-// 			scope.query = scope.query.Where(w, time)
-// 			scope.permissionQuery = scope.permissionQuery.Where(w, time)
-// 		} else {
-// 			scope.query = scope.query.Where(w, value)
-// 			scope.permissionQuery = scope.permissionQuery.Where(w, value)
-// 		}
-// 	case NotEquals:
-// 		w := fmt.Sprintf("%s != ?", strcase.ToSnake(columnName))
-
-// 		if inputType == proto.Type_TYPE_DATE || inputType == proto.Type_TYPE_DATETIME || inputType == proto.Type_TYPE_TIMESTAMP {
-// 			time, err := parseTimeOperand(value, inputType)
-
-// 			if err != nil {
-// 				return err
-// 			}
-
-// 			scope.query = scope.query.Where(w, time)
-// 		} else {
-// 			scope.query = scope.query.Where(w, value)
-// 		}
-
-// 	case StartsWith:
-// 		operandStr, ok := value.(string)
-
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to a string", value)
-// 		}
-
-// 		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandStr+"%%")
-// 	case EndsWith:
-// 		operandStr, ok := value.(string)
-
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to a string", value)
-// 		}
-
-// 		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, "%%"+operandStr)
-// 	case Contains:
-// 		operandStr, ok := value.(string)
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to a string", value)
-// 		}
-
-// 		w := fmt.Sprintf("%s LIKE ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, "%%"+operandStr+"%%")
-// 	case OneOf:
-// 		operandStrings, ok := value.([]interface{})
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to a []interface{}", value)
-// 		}
-
-// 		w := fmt.Sprintf("%s in ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandStrings)
-// 	case LessThan:
-// 		operandInt, ok := value.(int)
-
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to an int", value)
-// 		}
-
-// 		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandInt)
-// 	case LessThanEquals:
-// 		operandInt, ok := value.(int)
-
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to an int", value)
-// 		}
-
-// 		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandInt)
-// 	case GreaterThan:
-// 		operandInt, ok := value.(int)
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to an int", value)
-// 		}
-// 		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandInt)
-
-// 	case GreaterThanEquals:
-// 		operandInt, ok := value.(int)
-// 		if !ok {
-// 			return fmt.Errorf("cannot cast this: %v to an int", value)
-// 		}
-// 		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandInt)
-
-// 	case Before:
-// 		operandTime, err := parseTimeOperand(value, inputType)
-
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		w := fmt.Sprintf("%s < ?", strcase.ToSnake(columnName))
-
-// 		scope.query = scope.query.Where(w, operandTime)
-// 	case After:
-// 		operandTime, err := parseTimeOperand(value, inputType)
-
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		w := fmt.Sprintf("%s > ?", strcase.ToSnake(columnName))
-
-// 		scope.query = scope.query.Where(w, operandTime)
-// 	case OnOrBefore:
-// 		operandTime, err := parseTimeOperand(value, inputType)
-
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		w := fmt.Sprintf("%s <= ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandTime)
-// 	case OnOrAfter:
-// 		operandTime, err := parseTimeOperand(value, inputType)
-
-// 		if err != nil {
-// 			return err
-// 		}
-
-// 		w := fmt.Sprintf("%s >= ?", strcase.ToSnake(columnName))
-// 		scope.query = scope.query.Where(w, operandTime)
-// 		scope.permissionQuery = scope.permissionQuery.Where(w, operandTime)
-// 	default:
-// 		return fmt.Errorf("operator: %v is not yet supported", operator)
-// 	}
-
-// 	return nil
-// }
 
 // parseTimeOperand extract and parses time for date/time based operators
 // Supports timestamps passed in map[seconds:int] and dates passesd as map[day:int month:int year:int]

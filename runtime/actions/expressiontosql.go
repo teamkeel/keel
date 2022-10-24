@@ -1,28 +1,24 @@
 package actions
 
-import (
-	"github.com/teamkeel/keel/schema/parser"
-)
-
 // Produces a complete SQL condition from an expression. It is intended for use to construct a filtered SQL statement.
 // Currently supports single condition expressions.
-func expressionToSqlCondition(
-	scope *Scope,
-	expression *parser.Expression,
-	data map[string]any,
-) (result string, queryArguments []any) {
+// func expressionToSqlCondition(
+// 	scope *Scope,
+// 	expression *parser.Expression,
+// 	args map[string]any,
+// ) (result string, queryArguments []any) {
 
-	conditions := expression.Conditions()
-	if len(conditions) != 1 {
-		return "", nil // fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
-	}
-	condition := conditions[0]
+// 	conditions := expression.Conditions()
+// 	if len(conditions) != 1 {
+// 		return "", nil // fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(conditions))
+// 	}
+// 	condition := conditions[0]
 
-	operatorStr := condition.Operator.ToString()
-	operator, _ := expressionOperatorToActionOperator(operatorStr)
+// 	operatorStr := condition.Operator.ToString()
+// 	operator, _ := expressionOperatorToActionOperator(operatorStr)
 
-	return conditionToSqlStatement(scope, condition, operator, data)
-}
+// 	return scope.generateQuery(condition, operator, args)
+// }
 
 // Produces a SQL operand from an expression operand. It is intended for use to construct a complete SQL condition.
 // An expression operand can be of the following types:
