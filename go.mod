@@ -36,6 +36,7 @@ require (
 )
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/aybabtme/flatjson v0.1.2 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
