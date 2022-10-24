@@ -20,23 +20,29 @@ import (
 )
 
 func TestExpressionResolver(t *testing.T) {
+
+	// Set up the fixture required for this test.
 	scope, sqlDb := makeDbAndScope(t)
 	defer sqlDb.Close()
 
-	rslv := NewExpressionResolver(scope)
-
+	// Fish out the Where expression to test from the schema.
 	parsedExpr, err := parser.ParseExpression(scope.operation.WhereExpressions[0].Source)
 	require.NoError(t, err)
 
-	updatedQry, err := rslv.Resolve(
-		parsedExpr,
-		RequestArguments{
-			"coolTitle": "Good Morning",
-		})
+	// Create some input arguments to represent an incoming request.
+	requestArgs := RequestArguments{
+		"coolTitle": "Good Morning",
+	}
+
+	// Fire the function under test.
+	rslv := NewExpressionResolver(scope)
+	updatedQry, err := rslv.Resolve(parsedExpr, requestArgs)
 	require.NoError(t, err)
 
+	// Fish out the now-populated gorm data structures that represent the generated SQL for inspection.
 	c := findGormWhereClause(t, updatedQry)
 
+	// Fire the assertions.
 	require.Equal(t, "my_model.my_field IS ?", c.SQL)
 	require.Equal(t, "Good Morning", c.Vars[0])
 }
