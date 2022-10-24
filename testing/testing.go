@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/go-errors/errors"
@@ -528,20 +527,11 @@ func serializeError(err error) []map[string]string {
 		return []map[string]string{}
 	}
 
-	errWithStack, ok := err.(*errors.Error)
-
-	ret := []map[string]string{
+	return []map[string]string{
 		{
 			"message": err.Error(),
 		},
 	}
-
-	// if it has a stack...
-	if ok {
-		ret[0]["stack"] = errWithStack.ErrorStack()
-	}
-
-	return ret
 }
 
 func typecheck(dir string, runType RunType) (output string, err error) {
@@ -595,58 +585,80 @@ func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[strin
 	return subMap, nil
 }
 
-// Converts the input args (JSON) sent from the JavaScript process
-// into a format that the actions code understands.
-// Dates in JSON will come in as strings in ISO8601 format whereas
-// the actions code expects time.Time
-// In the future, this method can be extended to handle other conversions
-// or refactored completely into a deserializer type pattern, shared with
-// the graphql code
-func toNativeMap(args map[string]interface{}, action *proto.Operation) (map[string]any, error) {
-	out := map[string]map[string]any{}
+// // Converts the input args (JSON) sent from the JavaScript process
+// // into a format that the actions code understands.
+// // Dates in JSON will come in as strings in ISO8601 format whereas
+// // the actions code expects time.Time
+// // In the future, this method can be extended to handle other conversions
+// // or refactored completely into a deserializer type pattern, shared with
+// // the graphql code
+// func toNativeMap(args map[string]interface{}, action *proto.Operation) (map[string]any, error) {
+// 	out := map[string]map[string]any{}
 
-	for _, input := range action.Inputs {
-		match, ok := args[input.Name]
+// 	for key, value := range args {
+// 		if key == "where" || key == "values" {
+// 			value, ok := value.(map[string]any)
 
-		if ok {
-			matchMap, isAMap := match.(map[string]any)
+// 			if !ok {
+// 				return nil, fmt.Errorf("not a map")
+// 			}
 
-			if isAMap {
-				// implicit api
+// 			v, err := toNativeMap(value, action)
 
-				for key, value := range matchMap {
-					inputType := input.Type.Type
+// 			if err != nil {
+// 				return nil, err
+// 			}
 
-					out[input.Name] = make(map[string]any)
+// 			out[key] = v
+// 		} else {
+// 			for _, input := range action.Inputs {
+// 				match, ok := args[input.Name]
 
-					switch inputType {
-					case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-						// unix seconds
-					case proto.Type_TYPE_DATE:
-						str, ok := value.(string)
+// 				if ok {
+// 					matchMap, isAMap := match.(map[string]any)
 
-						if !ok {
-							return nil, fmt.Errorf("%s arg with value %v is not a string", input.Name, match)
-						}
+// 					if isAMap {
+// 						// implicit api
 
-						time, err := time.Parse("2006-01-02T15:04:05.000Z", str)
-						if err != nil {
-							return nil, fmt.Errorf("%s is not ISO8601 formatted date: %s", input.Name, str)
-						}
+// 						for key, value := range matchMap {
 
-						out[input.Name][key] = time
-					default:
-						out[input.Name][key] = value
-					}
-				}
-			}
-		}
-	}
+// 							inputType := input.Type.Type
 
-	finalMap := map[string]any{}
-	for key, value := range out {
-		finalMap[key] = value
-	}
+// 							out[input.Name] = make(map[string]any)
 
-	return finalMap, nil
-}
+// 							switch inputType {
+// 							case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+// 								// unix seconds
+// 							case proto.Type_TYPE_DATE:
+// 								str, ok := value.(string)
+
+// 								if !ok {
+// 									return nil, fmt.Errorf("%s arg with value %v is not a string", input.Name, match)
+// 								}
+
+// 								time, err := time.Parse("2006-01-02T15:04:05.000Z", str)
+// 								if err != nil {
+// 									return nil, fmt.Errorf("%s is not ISO8601 formatted date: %s", input.Name, str)
+// 								}
+
+// 								out[input.Name][key] = time
+// 							default:
+// 								out[input.Name][key] = value
+// 							}
+// 						}
+// 					} else {
+// 						out[input.Name] = match
+// 					}
+// 				}
+// 			}
+
+// 		}
+// 	}
+
+// 	finalMap := map[string]any{}
+// 	for key, value := range out {
+// 		finalMap[key] = value
+// 	}
+
+// 	return finalMap, nil
+// }

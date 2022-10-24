@@ -16,6 +16,8 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/rs/cors"
 	"github.com/teamkeel/keel/proto"
+	gql "github.com/teamkeel/keel/runtime/apis/graphql"
+	"github.com/teamkeel/keel/runtime/apis/rpc"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
@@ -131,7 +133,7 @@ func NewHandler(s *proto.Schema) Handler {
 
 func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
 
-	rpcApi, err := NewRpcApi(s, api)
+	rpcApi, err := rpc.NewRpcApi(s, api)
 	if err != nil {
 		panic(err)
 	}
@@ -144,7 +146,7 @@ func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
 		var result interface{}
 		switch r.Method {
 		case http.MethodGet:
-			handler, ok := rpcApi.get[trimmedPath]
+			handler, ok := rpcApi.Get[trimmedPath]
 			if !ok {
 				return &Response{
 					Status: 404,
@@ -156,7 +158,7 @@ func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
 				return nil, err
 			}
 		case http.MethodPost:
-			handler, ok := rpcApi.post[trimmedPath]
+			handler, ok := rpcApi.Post[trimmedPath]
 			if !ok {
 				return &Response{
 					Status: 404,
@@ -185,7 +187,7 @@ func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
 }
 
 func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
-	gqlSchema, err := NewGraphQLSchema(s, api)
+	gqlSchema, err := gql.NewGraphQLApi(s, api)
 	if err != nil {
 		panic(err)
 	}
