@@ -8,7 +8,6 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // initialValueForModel provides a map[string]any that corresponds to all the fields
@@ -133,81 +132,4 @@ func schemaDefault(field *proto.Field) (any, error) {
 	default:
 		return nil, fmt.Errorf("expressions that are not simple values are not yet supported")
 	}
-}
-
-// toMap provides casts / interprets the given proto.OperationInput value, into a value that
-// is good to insert into the corresponding DB column (using Gorm).
-func toMap(in any, inputType proto.Type) (any, error) {
-	switch inputType {
-
-	// Start with some special cases that require some intervention.
-
-	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-
-		// The input is expected to be a map[string]any, that contains a "seconds" field.
-		obj, ok := in.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast %+v to a TimestampInput", in)
-		}
-		seconds, ok := obj["seconds"]
-		if !ok {
-			return nil, fmt.Errorf("this input object: %v, does not have a seconds key", obj)
-		}
-		asInt, ok := seconds.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this seconds value: %+v to an int", seconds)
-		}
-		return time.Unix(int64(asInt), 0), nil
-
-	case proto.Type_TYPE_DATE:
-		// The input is expected to be a map[string]any, that contains a year,month,day fields.
-		obj, ok := in.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast %+v to a DateInput", in)
-		}
-		var year int
-		var month int
-		var day int
-
-		if err := parseInt("year", obj, &year); err != nil {
-			return nil, err
-		}
-		if err := parseInt("month", obj, &month); err != nil {
-			return nil, err
-		}
-		if err := parseInt("day", obj, &day); err != nil {
-			return nil, err
-		}
-
-		date := time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
-		return date, nil
-	case proto.Type_TYPE_SECRET:
-		return nil, fmt.Errorf("secret data type not yet implemented")
-
-	case proto.Type_TYPE_PASSWORD:
-		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(in.(string)), bcrypt.DefaultCost)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return string(hashedBytes), nil
-
-	// The general case is to return the input unchanged.
-	default:
-		return in, nil
-	}
-}
-
-func parseInt(key string, source map[string]any, dest *int) error {
-	v, ok := source[key]
-	if !ok {
-		return fmt.Errorf("this input object: %v, does not have a %s key", source, key)
-	}
-	asInt, ok := v.(int)
-	if !ok {
-		return fmt.Errorf("cannot cast this value: %+v to an int", v)
-	}
-	*dest = asInt
-	return nil
 }
