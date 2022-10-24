@@ -1,3 +1,10 @@
+# [0.180.0](https://github.com/teamkeel/keel/compare/v0.179.1...v0.180.0) (2022-10-24)
+
+
+### Features
+
+* crude funcitons support for rpc ([7f92281](https://github.com/teamkeel/keel/commit/7f92281952651368971dbf04eb814ca938c6443a))
+
 ## [0.179.1](https://github.com/teamkeel/keel/compare/v0.179.0...v0.179.1) (2022-10-24)
 
 
