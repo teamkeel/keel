@@ -1,3 +1,10 @@
+## [0.179.1](https://github.com/teamkeel/keel/compare/v0.179.0...v0.179.1) (2022-10-24)
+
+
+### Bug Fixes
+
+* always start imports with a dot ([fdc6051](https://github.com/teamkeel/keel/commit/fdc60515c81f35d17070ad26ac98a1ebf1f9dadb))
+
 # [0.179.0](https://github.com/teamkeel/keel/compare/v0.178.0...v0.179.0) (2022-10-22)
 
 
