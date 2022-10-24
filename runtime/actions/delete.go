@@ -63,24 +63,24 @@ func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[Delete
 	results := []map[string]any{}
 	action.scope.query = action.scope.query.Find(&results)
 	if action.scope.query.Error != nil {
-		return nil, action.scope.query.Error
+		return nil, ErrorWithStack(action.scope.query.Error)
 	}
 	n := len(results)
 	if n == 0 {
-		return nil, errors.New("no records found for Delete() operation")
+		return nil, ErrorWithStack(errors.New("no records found for Delete() operation"))
 	}
 	if n > 1 {
-		return nil, fmt.Errorf("Delete() operation should find only one record, it found: %d", n)
+		return nil, ErrorWithStack(fmt.Errorf("Delete() operation should find only one record, it found: %d", n))
 	}
 
 	resultMap := toLowerCamelMap(results[0])
 
 	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, resultMap)
 	if err != nil {
-		return nil, err
+		return nil, ErrorWithStack(err)
 	}
 	if !authorized {
-		return nil, errors.New("not authorized to access this operation")
+		return nil, ErrorWithStack(errors.New("not authorized to access this operation"))
 	}
 
 	records := []map[string]any{}
@@ -93,7 +93,7 @@ func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[Delete
 	}
 
 	if err != nil {
-		return &result, err
+		return &result, ErrorWithStack(err)
 	}
 
 	return &result, nil

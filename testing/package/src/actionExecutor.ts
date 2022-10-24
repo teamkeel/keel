@@ -75,6 +75,17 @@ export default class ActionExecutor {
     // return type for the given operation
     const json = (await res.json()) as ReturnType;
 
+    const j = json as Record<string, any>
+
+    // throw an error if there are any errors
+    // this will ensure that the user will be aware of 
+    // any errors so they dont have to explicitly check for their
+    // presence.
+    const errors = j['errors']
+    if(errors && errors.length > 0) {
+      throw new Error(errors.map((e: any) => e.message).join(', '))
+    } 
+
     return json;
   };
 }

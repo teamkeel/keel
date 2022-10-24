@@ -38,6 +38,7 @@ require (
 require (
 	github.com/aybabtme/flatjson v0.1.2 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
+	github.com/go-errors/errors v1.4.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/tkuchiki/go-timezone v0.2.0 // indirect

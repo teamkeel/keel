@@ -3,7 +3,6 @@ package testing
 import (
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +13,7 @@ import (
 	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/go-errors/errors"
 	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/cmd/database"
@@ -528,9 +528,12 @@ func serializeError(err error) []map[string]string {
 		return []map[string]string{}
 	}
 
+	errWithStack := err.(*errors.Error)
+
 	return []map[string]string{
 		{
 			"message": err.Error(),
+			"stack":   errWithStack.ErrorStack(),
 		},
 	}
 }
@@ -594,33 +597,50 @@ func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[strin
 // or refactored completely into a deserializer type pattern, shared with
 // the graphql code
 func toNativeMap(args map[string]interface{}, action *proto.Operation) (map[string]any, error) {
-	out := map[string]any{}
+	out := map[string]map[string]any{}
 
 	for _, input := range action.Inputs {
 		match, ok := args[input.Name]
 
 		if ok {
-			inputType := input.Type.Type
+			matchMap, isAMap := match.(map[string]any)
 
-			switch inputType {
-			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE:
-				str, ok := match.(string)
+			if isAMap {
+				// implicit api
 
-				if !ok {
-					return nil, fmt.Errorf("%s arg with value %v is not a string", input.Name, match)
+				for key, value := range matchMap {
+					inputType := input.Type.Type
+
+					out[input.Name] = make(map[string]any)
+
+					switch inputType {
+					case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+						// unix seconds
+					case proto.Type_TYPE_DATE:
+						str, ok := value.(string)
+
+						if !ok {
+							return nil, fmt.Errorf("%s arg with value %v is not a string", input.Name, match)
+						}
+
+						time, err := time.Parse("2006-01-02T15:04:05.000Z", str)
+						if err != nil {
+							return nil, fmt.Errorf("%s is not ISO8601 formatted date: %s", input.Name, str)
+						}
+
+						out[input.Name][key] = time
+					default:
+						out[input.Name][key] = value
+					}
 				}
-
-				time, err := time.Parse("2006-01-02T15:04:05-0700", str)
-				if err != nil {
-					return nil, fmt.Errorf("%s is not ISO8601 formatted date: %s", input.Name, str)
-				}
-
-				out[input.Name] = time
-			default:
-				out[input.Name] = match
 			}
 		}
 	}
 
-	return out, nil
+	finalMap := map[string]any{}
+	for key, value := range out {
+		finalMap[key] = value
+	}
+
+	return finalMap, nil
 }

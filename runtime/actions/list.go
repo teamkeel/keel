@@ -57,7 +57,7 @@ inputs:
 				continue inputs
 			}
 
-			action.scope.Error = fmt.Errorf("did not find required '%s' input in where clause", fieldName)
+			action.scope.Error = ErrorWithStack(fmt.Errorf("did not find required '%s' input in where clause", fieldName))
 		}
 
 		valueMap, ok := value.(map[string]any)
@@ -69,19 +69,19 @@ inputs:
 				continue inputs
 			}
 
-			action.scope.Error = fmt.Errorf("'%s' input value %v to not in correct format", fieldName, value)
+			action.scope.Error = ErrorWithStack(fmt.Errorf("'%s' input value %v not in correct format", fieldName, value))
 			return action
 		}
 
 		for operatorStr, operand := range valueMap {
 			operator, err := graphQlOperatorToActionOperator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
 			if err != nil {
-				action.scope.Error = err
+				action.scope.Error = ErrorWithStack(err)
 				return action
 			}
 
 			if err := addFilter(action.scope, fieldName, input, operator, operand); err != nil {
-				action.scope.Error = err
+				action.scope.Error = ErrorWithStack(err)
 				return action
 			}
 		}
@@ -98,7 +98,7 @@ func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuil
 	// unified how we handle operators in both schema where clauses and in implicit inputs language.
 	err := DefaultApplyExplicitFilters(action.scope, args)
 	if err != nil {
-		action.scope.Error = err
+		action.scope.Error = ErrorWithStack(err)
 		return action
 	}
 	return action
@@ -106,14 +106,14 @@ func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuil
 
 func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
 	if action.scope.Error != nil {
-		return nil, action.scope.Error
+		return nil, ErrorWithStack(action.scope.Error)
 	}
 
 	// We update the query to implement the paging request
 
 	page, err := parsePage(args)
 	if err != nil {
-		return nil, err
+		return nil, ErrorWithStack(err)
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
@@ -146,7 +146,7 @@ func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResu
 	result := []map[string]any{}
 	action.scope.query = action.scope.query.Find(&result)
 	if action.scope.query.Error != nil {
-		return nil, action.scope.query.Error
+		return nil, ErrorWithStack(action.scope.query.Error)
 	}
 
 	// Sort out the hasNextPage value, and clean up the response.
@@ -180,7 +180,7 @@ func parsePage(args map[string]any) (Page, error) {
 			var err error
 			asInt, err = strconv.Atoi(first.(string))
 			if err != nil {
-				return page, fmt.Errorf("cannot cast this: %v to an int", first)
+				return page, ErrorWithStack(fmt.Errorf("cannot cast this: %v to an int", first))
 			}
 		}
 		page.First = asInt
@@ -192,7 +192,7 @@ func parsePage(args map[string]any) (Page, error) {
 			var err error
 			asInt, err = strconv.Atoi(last.(string))
 			if err != nil {
-				return page, fmt.Errorf("cannot cast this: %v to an int", last)
+				return page, ErrorWithStack(fmt.Errorf("cannot cast this: %v to an int", last))
 			}
 		}
 		page.Last = asInt
@@ -201,7 +201,7 @@ func parsePage(args map[string]any) (Page, error) {
 	if after, ok := args["after"]; ok {
 		asString, ok := after.(string)
 		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to a string", after)
+			return page, ErrorWithStack(fmt.Errorf("cannot cast this: %v to a string", after))
 		}
 		page.After = asString
 	}
@@ -209,7 +209,7 @@ func parsePage(args map[string]any) (Page, error) {
 	if before, ok := args["before"]; ok {
 		asString, ok := before.(string)
 		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to a string", before)
+			return page, ErrorWithStack(fmt.Errorf("cannot cast this: %v to a string", before))
 		}
 		page.Before = asString
 	}

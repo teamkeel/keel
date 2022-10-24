@@ -77,6 +77,19 @@ test('list action - endsWith', async () => {
   expect(collection.length).toEqual(2)
 })
 
+test('list action - with date', async () => {
+  await Post.create({
+    title: 'star wars',
+    subTitle: 'jkl',
+    publishedAt: new Date(2020, 12, 2)
+  })
+
+  const { collection } = await actions
+  .listPostsByPublishedAt({ publishedAt: { after: new Date(2020, 12, 1) } })
+
+  expect(collection.length).toEqual(1)
+})
+
 test('list action - oneOf', async () => {
   await Post.create({ title: 'pear', subTitle: 'lmn' })
   await Post.create({ title: 'mango', subTitle: 'mno' })

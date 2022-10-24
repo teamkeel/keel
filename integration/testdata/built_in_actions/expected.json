@@ -11,5 +11,6 @@
   { "testName": "delete action", "status": "pass" },
   { "testName": "delete action (other unique field)", "status": "pass" },
   { "testName": "update action", "status": "pass" },
-  { "testName": "update action - explicit set / args", "status": "pass" }
+  { "testName": "update action - explicit set / args", "status": "pass" },
+  { "testName": "list action - with date", "status": "pass" }
 ]

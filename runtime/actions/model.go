@@ -137,7 +137,6 @@ func schemaDefault(field *proto.Field) (any, error) {
 
 // toMap provides casts / interprets the given proto.OperationInput value, into a value that
 // is good to insert into the corresponding DB column (using Gorm).
-// todo: combine with parseTimeOperand
 func toMap(in any, inputType proto.Type) (any, error) {
 	switch inputType {
 

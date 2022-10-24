@@ -2,6 +2,7 @@ model Post {
     fields {
         title Text
         subTitle Text @unique
+        publishedAt Date?
     }
 
     operations {
@@ -11,7 +12,8 @@ model Post {
         delete deletePost(id)
         delete deletePostBySubTitle(subTitle)
         list listPosts(title)
-        update updateWithExplicitSet(id) with(coolTitle: Text) {
+        list listPostsByPublishedAt(publishedAt)
+        update updateWithExplicitSet(id) with (coolTitle: Text) {
             @set(post.title = coolTitle)
         }
     }
