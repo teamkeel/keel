@@ -21,35 +21,45 @@ import (
 
 func TestExpressionResolver(t *testing.T) {
 
-	// Set up the fixture required for this test.
-	scope, sqlDb := makeDbAndScope(t)
-	defer sqlDb.Close()
+	for _, tCase := range testCases {
+		_ = tCase
 
-	// Fish out the Where expression to test from the schema.
-	parsedExpr, err := parser.ParseExpression(scope.operation.WhereExpressions[0].Source)
-	require.NoError(t, err)
+		t.Run(tCase.name, func(t *testing.T) {
 
-	// Create some input arguments to represent an incoming request.
-	requestArgs := RequestArguments{
-		"coolTitle": "Good Morning",
+			// Set up the fixture required for this test - passing in parameters that
+			// parameterise the schema generated.
+			scope, sqlDb := makeDbAndScope(t, schemaParams{FieldType: tCase.fieldType})
+
+			defer sqlDb.Close()
+
+			// Fish out the Where expression to test from the schema.
+			parsedExpr, err := parser.ParseExpression(scope.operation.WhereExpressions[0].Source)
+			require.NoError(t, err)
+
+			// Create some input arguments to represent an incoming request.
+			requestArgs := RequestArguments{
+				"coolTitle": "Good Morning",
+			}
+
+			// Fire the function under test.
+			rslv := NewExpressionResolver(scope)
+			updatedQry, err := rslv.ResolveQueryStatement(parsedExpr, requestArgs)
+			require.NoError(t, err)
+
+			// Fish out the now-populated gorm data structures that represent the generated SQL for inspection.
+			c := findGormWhereClause(t, updatedQry)
+
+			// Fire the assertions.
+			require.Equal(t, "my_model.my_field = ?", c.SQL)
+			require.Equal(t, "Good Morning", c.Vars[0])
+		})
+
 	}
-
-	// Fire the function under test.
-	rslv := NewExpressionResolver(scope)
-	updatedQry, err := rslv.Resolve(parsedExpr, requestArgs)
-	require.NoError(t, err)
-
-	// Fish out the now-populated gorm data structures that represent the generated SQL for inspection.
-	c := findGormWhereClause(t, updatedQry)
-
-	// Fire the assertions.
-	require.Equal(t, "my_model.my_field IS ?", c.SQL)
-	require.Equal(t, "Good Morning", c.Vars[0])
 }
 
 // makeDbAndScope constructs a Scope based on a keel schema,
 // and with a mock database.
-func makeDbAndScope(t *testing.T) (*Scope, *sql.DB) {
+func makeDbAndScope(t *testing.T, schemaParams schemaParams) (*Scope, *sql.DB) {
 	sqldb, _, err := sqlmock.New()
 	require.NoError(t, err)
 
@@ -58,8 +68,7 @@ func makeDbAndScope(t *testing.T) (*Scope, *sql.DB) {
 	}), &gorm.Config{})
 	require.NoError(t, err)
 
-	schemaParameterisation := schemaParams{FieldType: "Text"}
-	schema := protoSchema(t, parameterisedSchema(t, schemaParameterisation))
+	schema := protoSchema(t, parameterisedSchema(t, schemaParams))
 	op := proto.FindOperation(schema, "myOperation")
 
 	ctx := runtimectx.WithDatabase(context.Background(), gormdb)
@@ -123,4 +132,16 @@ func parameterisedSchema(t *testing.T, pluginValues schemaParams) string {
 
 type schemaParams struct {
 	FieldType string
+}
+
+type testCase struct {
+	name      string
+	fieldType string
+}
+
+var testCases []testCase = []testCase{
+	{
+		name:      "getting started",
+		fieldType: "Text",
+	},
 }
