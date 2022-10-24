@@ -528,14 +528,20 @@ func serializeError(err error) []map[string]string {
 		return []map[string]string{}
 	}
 
-	errWithStack := err.(*errors.Error)
+	errWithStack, ok := err.(*errors.Error)
 
-	return []map[string]string{
+	ret := []map[string]string{
 		{
 			"message": err.Error(),
-			"stack":   errWithStack.ErrorStack(),
 		},
 	}
+
+	// if it has a stack...
+	if ok {
+		ret[0]["stack"] = errWithStack.ErrorStack()
+	}
+
+	return ret
 }
 
 func typecheck(dir string, runType RunType) (output string, err error) {
