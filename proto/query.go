@@ -96,6 +96,16 @@ func ModelHasField(schema *Schema, model string, field string) bool {
 	return false
 }
 
+// FindInput returns the input on a given operation
+func FindInput(op *Operation, name string) *OperationInput {
+	for _, input := range op.Inputs {
+		if input.Name == name {
+			return input
+		}
+	}
+	return nil
+}
+
 // OperationHasInput returns true if the given Operation defines
 // an input of the given name.
 func OperationHasInput(op *Operation, name string) bool {

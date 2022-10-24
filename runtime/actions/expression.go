@@ -6,6 +6,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
@@ -22,7 +23,7 @@ func NewFilterResolver(scope *Scope) *FilterResolver {
 	}
 }
 
-func (resolver *FilterResolver) Resolve(fieldName string, value any, valueType proto.Type) (*gorm.DB, error) {
+func (resolver *FilterResolver) ResolveQueryStatement(fieldName string, value any, valueType proto.Type) (*gorm.DB, error) {
 	queryTemplate, err := generateFilterTemplate(fieldName, "?", Equals, valueType)
 	if err != nil {
 		return nil, err
@@ -47,9 +48,34 @@ func NewExpressionResolver(scope *Scope) *ExpressionResolver {
 	}
 }
 
-func (resolver *ExpressionResolver) Resolve(expression *parser.Expression, args RequestArguments) (*gorm.DB, error) {
-	// Make sure the expression is in the form we can handle.
+func (resolver *ExpressionResolver) CanResolveInProcess(expression *parser.Expression) bool {
+	condition := expression.Conditions()[0]
 
+	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
+	rhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.RHS)
+
+	referencesDatabaseColumns := lhsResolver.IsModelField() || rhsResolver.IsModelField()
+
+	return !(referencesDatabaseColumns)
+}
+
+func (resolver *ExpressionResolver) ResolveInProcess(expression *parser.Expression, args RequestArguments) bool {
+	condition := expression.Conditions()[0]
+
+	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
+	rhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.RHS)
+
+	operandType, _ := lhsResolver.GetOperandType()
+
+	lhsValue, _ := lhsResolver.ResolveValue(args, operandType)
+	rhsValue, _ := rhsResolver.ResolveValue(args, operandType)
+
+	result, _ := evaluateInProcess(lhsValue, rhsValue, operandType, condition.Operator)
+
+	return result
+}
+
+func (resolver *ExpressionResolver) ResolveQueryStatement(expression *parser.Expression, args RequestArguments) (*gorm.DB, error) {
 	if len(expression.Conditions()) != 1 {
 		return nil, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
 	}
@@ -98,8 +124,11 @@ func (resolver *OperandResolver) IsLiteral() bool {
 }
 
 func (resolver *OperandResolver) IsImplicitInput() bool {
-	// implicit and explicit inputs are strictly one fragment
-	// todo: with exception of create()?
+	// For the create operation, the model name is ignored on operands.
+	if resolver.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE && resolver.IsModelField() {
+		return true
+	}
+
 	isSingleFragment := resolver.operand.Ident != nil && len(resolver.operand.Ident.Fragments) == 1
 
 	if !isSingleFragment {
@@ -114,8 +143,6 @@ func (resolver *OperandResolver) IsImplicitInput() bool {
 }
 
 func (resolver *OperandResolver) IsExplicitInput() bool {
-	// implicit and explicit inputs are strictly one fragment
-	// todo: with exception of create()?
 	isSingleFragmentIdent := resolver.operand.Ident != nil && len(resolver.operand.Ident.Fragments) == 1
 
 	if !isSingleFragmentIdent {
@@ -130,6 +157,11 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 }
 
 func (resolver *OperandResolver) IsModelField() bool {
+	// It is not possible to reference model fields on create, when no data exists in the database.
+	if resolver.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
+		return false
+	}
+
 	isMultiFragmentIdent := resolver.operand.Ident != nil && len(resolver.operand.Ident.Fragments) > 1
 
 	if !isMultiFragmentIdent {
@@ -138,39 +170,40 @@ func (resolver *OperandResolver) IsModelField() bool {
 
 	modelTarget := resolver.operand.Ident.Fragments[0].Fragment
 
-	return isMultiFragmentIdent && modelTarget == strcase.ToLowerCamel(resolver.operation.ModelName)
+	return modelTarget == strcase.ToLowerCamel(resolver.operation.ModelName)
 }
 
 func (resolver *OperandResolver) IsContextField() bool {
 	return resolver.operand.Ident.IsContext()
 }
 
-// todo: cleanup
 func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 	operand := resolver.operand
 	operation := resolver.operation
 	schema := resolver.schema
 
-	if operand.Ident == nil {
-		switch {
-		case operand.String != nil:
-			return proto.Type_TYPE_STRING, nil
-		case operand.Number != nil:
-			return proto.Type_TYPE_INT, nil
-		case operand.True || operand.False:
-			return proto.Type_TYPE_BOOL, nil
-		case operand.Null:
-			return proto.Type_TYPE_UNKNOWN, nil
-		default:
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("cannot handle operand type")
-		}
-	}
-
-	target := operand.Ident.Fragments[0].Fragment
 	switch {
-	case strcase.ToCamel(target) == operation.ModelName:
-		// implicit input as database field (with the model name)
-		modelTarget := strcase.ToCamel(target)
+	case resolver.IsLiteral():
+		if operand.Ident == nil {
+			switch {
+			case operand.String != nil:
+				return proto.Type_TYPE_STRING, nil
+			case operand.Number != nil:
+				return proto.Type_TYPE_INT, nil
+			case operand.True || operand.False:
+				return proto.Type_TYPE_BOOL, nil
+			case operand.Null:
+				return proto.Type_TYPE_UNKNOWN, nil
+			default:
+				return proto.Type_TYPE_UNKNOWN, fmt.Errorf("cannot handle operand type")
+			}
+		} else if resolver.operand.Ident != nil && proto.EnumExists(resolver.schema.Enums, resolver.operand.Ident.Fragments[0].Fragment) {
+			return proto.Type_TYPE_ENUM, nil
+		} else {
+			panic("unknown literal type")
+		}
+	case resolver.IsModelField():
+		modelTarget := strcase.ToCamel(operand.Ident.Fragments[0].Fragment)
 		fieldName := operand.Ident.Fragments[1].Fragment
 
 		if !proto.ModelHasField(schema, strcase.ToCamel(modelTarget), fieldName) {
@@ -179,18 +212,20 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 
 		operandType := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), fieldName).Type.Type
 		return operandType, nil
-	case operand.Ident != nil && len(operand.Ident.Fragments) == 1 && proto.ModelHasField(schema, operation.ModelName, operand.Ident.Fragments[0].Fragment):
-		// implicit input (without the model name)
+	case resolver.IsImplicitInput():
 		modelTarget := strcase.ToCamel(operation.ModelName)
-		fieldName := operand.Ident.Fragments[0].Fragment
-		operandType := proto.FindField(schema.Models, modelTarget, fieldName).Type.Type
+		inputName := operand.Ident.Fragments[0].Fragment
+		operandType := proto.FindField(schema.Models, modelTarget, inputName).Type.Type
 		return operandType, nil
-
+	case resolver.IsExplicitInput():
+		inputName := operand.Ident.Fragments[0].Fragment
+		input := proto.FindInput(operation, inputName)
+		return input.Type.Type, nil
 	case operand.Ident.IsContext():
 		fieldName := operand.Ident.Fragments[1].Fragment
 		return runtimectx.ContextFieldTypes[fieldName], nil // todo: if not found
 	default:
-		return proto.Type_TYPE_UNKNOWN, fmt.Errorf("cannot handle operand target %s", target)
+		return proto.Type_TYPE_UNKNOWN, fmt.Errorf("cannot handle operand target %s", operand.Ident.Fragments[0].Fragment)
 	}
 }
 
@@ -209,9 +244,17 @@ func (resolver *OperandResolver) ResolveValue(
 		} else {
 			panic("unknown literal type")
 		}
-
 	case resolver.IsImplicitInput(), resolver.IsExplicitInput():
-		inputValue := args[resolver.operand.Ident.Fragments[0].Fragment] // todo: convert to type?
+		var inputName string
+		// Model fields (i.e. post.isActive) on create are actually referencing inputs
+		if resolver.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
+			inputName = resolver.operand.Ident.Fragments[1].Fragment
+		} else {
+			inputName = resolver.operand.Ident.Fragments[0].Fragment
+		}
+
+		inputValue := args[inputName]
+
 		return inputValue, nil
 	case resolver.IsModelField():
 		panic("cannot resolve operand value when IsModelField() is true")
@@ -244,11 +287,8 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 
 	var lhsOperandType, rhsOperandType proto.Type
 
-	lhsOperand := condition.LHS
-	rhsOperand := condition.RHS
-
-	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, lhsOperand)
-	rhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, rhsOperand)
+	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
+	rhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.RHS)
 	lhsOperandType, _ = lhsResolver.GetOperandType()
 
 	if condition.Type() == parser.ValueCondition {
@@ -273,6 +313,16 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 
 	if !lhsResolver.IsModelField() {
 		lhsValue, _ := lhsResolver.ResolveValue(args, lhsOperandType)
+
+		switch operator {
+		case StartsWith:
+			lhsValue = lhsValue.(string) + "%%"
+		case EndsWith:
+			lhsValue = lhsValue.(string) + "%%"
+		case Contains, NotContains:
+			lhsValue = "%%" + lhsValue.(string) + "%%"
+		}
+
 		queryArgs = append(queryArgs, lhsValue)
 	} else {
 		modelTarget := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[0].Fragment)
@@ -284,6 +334,16 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 		queryArgs = append(queryArgs, true)
 	} else if !rhsResolver.IsModelField() {
 		rhsValue, _ := rhsResolver.ResolveValue(args, rhsOperandType)
+
+		switch operator {
+		case StartsWith:
+			rhsValue = rhsValue.(string) + "%%"
+		case EndsWith:
+			rhsValue = rhsValue.(string) + "%%"
+		case Contains, NotContains:
+			rhsValue = "%%" + rhsValue.(string) + "%%"
+		}
+
 		queryArgs = append(queryArgs, rhsValue)
 	} else {
 		modelTarget := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[0].Fragment)
@@ -318,11 +378,13 @@ func generateFilterTemplate(lhsSqlOperand any, rhsSqlOperand any, operator Actio
 			template = fmt.Sprintf("%s != %s", lhsSqlOperand, rhsSqlOperand)
 		}
 	case StartsWith:
-		template = fmt.Sprintf("%s LIKE %s%s", lhsSqlOperand, "%%", rhsSqlOperand)
+		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case EndsWith:
-		template = fmt.Sprintf("%s LIKE %s%s", lhsSqlOperand, rhsSqlOperand, "%%")
+		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case Contains:
-		template = fmt.Sprintf("%s LIKE %s%s%s", lhsSqlOperand, "%%", rhsSqlOperand, "%%")
+		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
+	case NotContains:
+		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case OneOf:
 		template = fmt.Sprintf("%s in %s", lhsSqlOperand, rhsSqlOperand)
 	case LessThan:
@@ -346,4 +408,117 @@ func generateFilterTemplate(lhsSqlOperand any, rhsSqlOperand any, operator Actio
 	}
 
 	return template, nil
+}
+
+func evaluateInProcess(
+	lhs any,
+	rhs any,
+	operandType proto.Type,
+	operator *parser.Operator,
+) (bool, error) {
+	// Evaluate when either operand or both are nil
+	if lhs == nil && rhs == nil {
+		return true && (operator.Symbol != parser.OperatorNotEquals), nil
+	} else if lhs == nil || rhs == nil {
+		return false || (operator.Symbol == parser.OperatorNotEquals), nil
+	}
+
+	// Evaluate with non-nil operands
+	switch operandType {
+	case proto.Type_TYPE_STRING:
+		return compareString(lhs.(string), rhs.(string), operator)
+	case proto.Type_TYPE_INT:
+		return compareInt(lhs.(int64), rhs.(int64), operator)
+	case proto.Type_TYPE_BOOL:
+		return compareBool(lhs.(bool), rhs.(bool), operator)
+	case proto.Type_TYPE_ENUM:
+		return compareEnum(lhs.(string), rhs.(string), operator)
+	case proto.Type_TYPE_IDENTITY:
+		return compareIdentity(lhs.(ksuid.KSUID), rhs.(ksuid.KSUID), operator)
+	default:
+		return false, fmt.Errorf("cannot yet handle comparision of type: %s", operandType)
+	}
+}
+
+func compareString(
+	lhs string,
+	rhs string,
+	operator *parser.Operator,
+) (bool, error) {
+	switch operator.Symbol {
+	case parser.OperatorEquals:
+		return lhs == rhs, nil
+	case parser.OperatorNotEquals:
+		return lhs != rhs, nil
+	default:
+		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
+	}
+}
+
+func compareInt(
+	lhs int64,
+	rhs int64,
+	operator *parser.Operator,
+) (bool, error) {
+	switch operator.Symbol {
+	case parser.OperatorEquals:
+		return lhs == rhs, nil
+	case parser.OperatorNotEquals:
+		return lhs != rhs, nil
+	case parser.OperatorGreaterThan:
+		return lhs > rhs, nil
+	case parser.OperatorGreaterThanOrEqualTo:
+		return lhs >= rhs, nil
+	case parser.OperatorLessThan:
+		return lhs < rhs, nil
+	case parser.OperatorLessThanOrEqualTo:
+		return lhs <= rhs, nil
+	default:
+		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_INT)
+	}
+}
+
+func compareBool(
+	lhs bool,
+	rhs bool,
+	operator *parser.Operator,
+) (bool, error) {
+	switch operator.Symbol {
+	case parser.OperatorEquals:
+		return lhs == rhs, nil
+	case parser.OperatorNotEquals:
+		return lhs != rhs, nil
+	default:
+		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_BOOL)
+	}
+}
+
+func compareEnum(
+	lhs string,
+	rhs string,
+	operator *parser.Operator,
+) (bool, error) {
+	switch operator.Symbol {
+	case parser.OperatorEquals:
+		return lhs == rhs, nil
+	case parser.OperatorNotEquals:
+		return lhs != rhs, nil
+	default:
+		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_STRING)
+	}
+}
+
+func compareIdentity(
+	lhs ksuid.KSUID,
+	rhs ksuid.KSUID,
+	operator *parser.Operator,
+) (bool, error) {
+	switch operator.Symbol {
+	case parser.OperatorEquals:
+		return lhs == rhs, nil
+	case parser.OperatorNotEquals:
+		return lhs != rhs, nil
+	default:
+		return false, fmt.Errorf("operator: %s, not supported for type: %s", operator.Symbol, proto.Type_TYPE_ID)
+	}
 }

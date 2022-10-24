@@ -29,7 +29,7 @@ func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 		resolver := NewFilterResolver(scope)
 
 		// Resolve the database statement for this expression
-		statement, err := resolver.Resolve(fieldName, value, input.Type.Type)
+		statement, err := resolver.ResolveQueryStatement(fieldName, value, input.Type.Type)
 		if err != nil {
 			return err
 		}
@@ -54,7 +54,7 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 		resolver := NewExpressionResolver(scope)
 
 		// Resolve the database statement for this expression
-		statement, err := resolver.Resolve(expression, args)
+		statement, err := resolver.ResolveQueryStatement(expression, args)
 		if err != nil {
 			return err
 		}
