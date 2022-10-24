@@ -82,6 +82,23 @@ func (mk *rpcApiBuilder) addRoute(
 	op *proto.Operation,
 	schema *proto.Schema) error {
 
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		handler := func(r *http.Request) (interface{}, error) {
+			inputs := queryParamsToInputs(r.URL.Query())
+			postInputs, err := postParamsToInputs(r.Body)
+			// merge query params and post body inputs
+			if err == nil {
+				for k, v := range postInputs {
+					inputs[k] = v
+				}
+			}
+			// TODO validate those inputs are correct for this function
+			return CallFunction(r.Context(), op.Name, op.Type, inputs)
+		}
+		mk.post[op.Name] = handler
+		return nil
+	}
+
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
 		handler := func(r *http.Request) (interface{}, error) {
