@@ -27,16 +27,18 @@ func TestExpressionResolver(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 
 			// Set up the fixture required for this test - passing in parameters that
-			// parameterise the schema generated.
+			// adjust the generated schema to this test case. E.g. the model field's type,
+			// or the operation's where expression.
 			scope, sqlDb := makeDbAndScope(t, schemaParams{FieldType: tCase.fieldType})
-
 			defer sqlDb.Close()
 
 			// Fish out the Where expression to test from the schema.
-			parsedExpr, err := parser.ParseExpression(scope.operation.WhereExpressions[0].Source)
+			exprSource := scope.operation.WhereExpressions[0].Source
+			parsedExpr, err := parser.ParseExpression(exprSource)
 			require.NoError(t, err)
 
 			// Create some input arguments to represent an incoming request.
+			// Todo: these should come from the testCase.
 			requestArgs := RequestArguments{
 				"coolTitle": "Good Morning",
 			}
@@ -50,6 +52,7 @@ func TestExpressionResolver(t *testing.T) {
 			c := findGormWhereClause(t, updatedQry)
 
 			// Fire the assertions.
+			// Todo: these should come from the test case.
 			require.Equal(t, "my_model.my_field = ?", c.SQL)
 			require.Equal(t, "Good Morning", c.Vars[0])
 		})
