@@ -2,7 +2,6 @@ package actions
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
@@ -64,53 +63,4 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 	}
 
 	return nil
-}
-
-// parseTimeOperand extract and parses time for date/time based operators
-// Supports timestamps passed in map[seconds:int] and dates passesd as map[day:int month:int year:int]
-func parseTimeOperand(operand any, inputType proto.Type) (t *time.Time, err error) {
-	operandMap, ok := operand.(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("cannot cast this: %v to a map[string]interface{}", operand)
-	}
-
-	switch inputType {
-	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		seconds := operandMap["seconds"]
-		secondsInt, ok := seconds.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast this: %v to int", seconds)
-		}
-		unix := time.Unix(int64(secondsInt), 0).UTC()
-		t = &unix
-
-	case proto.Type_TYPE_DATE:
-		day := operandMap["day"]
-		month := operandMap["month"]
-		year := operandMap["year"]
-
-		dayInt, ok := day.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast days: %v to int", day)
-		}
-		monthInt, ok := month.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast month: %v to int", month)
-		}
-		yearInt, ok := year.(int)
-		if !ok {
-			return nil, fmt.Errorf("cannot cast year: %v to int", year)
-		}
-
-		time, err := time.Parse("2006-01-02", fmt.Sprintf("%d-%02d-%02d", yearInt, monthInt, dayInt))
-		if err != nil {
-			return nil, fmt.Errorf("cannot parse date %s", err)
-		}
-		t = &time
-
-	default:
-		return nil, fmt.Errorf("unknown time field type")
-	}
-
-	return t, nil
 }

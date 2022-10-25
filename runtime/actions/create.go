@@ -21,10 +21,6 @@ func (action *CreateAction) ApplyExplicitFilters(args RequestArguments) ActionBu
 	return action // no-op
 }
 
-func (action *CreateAction) IsCreated(args RequestArguments) ActionBuilder[CreateResult] {
-	return action // no-op
-}
-
 func (action *CreateAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[CreateResult] {
 	return action // no-op
 }

@@ -64,7 +64,7 @@ func NewExpressionResolver(scope *Scope) *ExpressionResolver {
 
 // Determines if the expression can be evaluated on the runtime process
 // as opposed to producing a SQL statement and querying against the database.
-func (resolver *ExpressionResolver) CanResolveInProcess(expression *parser.Expression) bool {
+func (resolver *ExpressionResolver) CanResolveInMemory(expression *parser.Expression) bool {
 	condition := expression.Conditions()[0]
 
 	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
@@ -80,7 +80,7 @@ func (resolver *ExpressionResolver) CanResolveInProcess(expression *parser.Expre
 }
 
 // Evaluated the expression in the runtime process without generated and query against the database.
-func (resolver *ExpressionResolver) ResolveInProcess(expression *parser.Expression, args RequestArguments, writeValues map[string]any) bool {
+func (resolver *ExpressionResolver) ResolveInMemory(expression *parser.Expression, args RequestArguments, writeValues map[string]any) bool {
 	condition := expression.Conditions()[0]
 
 	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
@@ -303,7 +303,7 @@ func (resolver *OperandResolver) ResolveValue(
 		inputName := strcase.ToSnake(resolver.operand.Ident.Fragments[1].Fragment)
 		return writeValues[inputName], nil
 	case resolver.IsDatabaseColumn():
-		panic("cannot resolve operand value when IsModelField() is true")
+		panic("cannot resolve operand value when IsDatabaseColumn() is true")
 	case resolver.IsContextField() && resolver.operand.Ident.IsContextIdentityField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.context)
 
@@ -377,6 +377,7 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 
 		queryArgs = append(queryArgs, lhsValue)
 	} else {
+		// Generate the table's column operand from the fragments (e.g. post.sub_title)
 		modelTarget := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[0].Fragment)
 		fieldName := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[1].Fragment)
 		lhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)
@@ -398,6 +399,7 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 
 		queryArgs = append(queryArgs, rhsValue)
 	} else {
+		// Generate the table's column operand from the fragments (e.g. post.sub_title)
 		modelTarget := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[0].Fragment)
 		fieldName := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[1].Fragment)
 		rhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)

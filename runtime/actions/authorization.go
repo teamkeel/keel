@@ -34,7 +34,7 @@ func DefaultIsAuthorised(
 		return true, nil
 	}
 
-	conditions := scope.query.Session(&gorm.Session{NewDB: true})
+	constraints := scope.query.Session(&gorm.Session{NewDB: true})
 
 	for i, permission := range permissions {
 		if permission.Expression != nil {
@@ -47,8 +47,8 @@ func DefaultIsAuthorised(
 			resolver := NewExpressionResolver(scope)
 
 			// First check to see if we can resolve the condition "in proc"
-			if resolver.CanResolveInProcess(expression) {
-				if resolver.ResolveInProcess(expression, args, scope.writeValues) {
+			if resolver.CanResolveInMemory(expression) {
+				if resolver.ResolveInMemory(expression, args, scope.writeValues) {
 					return true, nil
 				} else if i == len(permissions)-1 {
 					return false, nil
@@ -61,7 +61,7 @@ func DefaultIsAuthorised(
 				}
 
 				// Logical OR between each of the permission expressions
-				conditions = conditions.Or(statement)
+				constraints = constraints.Or(statement)
 			}
 		}
 	}
@@ -69,11 +69,11 @@ func DefaultIsAuthorised(
 	// Logical AND between the implicit/explicit filters and all the permission conditions
 	permissionQuery := scope.query.
 		Session(&gorm.Session{}).
-		Where(conditions)
+		Where(constraints)
 
 	// Determine the number of rows in the current query which don't satisfy the permission conditions
 	results := map[string]any{}
-	scope.query.Session(&gorm.Session{NewDB: true}).Raw("SELECT COUNT(*) as unauthorised FROM (? EXCEPT ?) as unauthorisedrows",
+	scope.query.Session(&gorm.Session{NewDB: true}).Raw("SELECT COUNT(id) as unauthorised FROM (? EXCEPT ?) as unauthorisedrows",
 		scope.query,
 		permissionQuery,
 	).Scan(&results)
