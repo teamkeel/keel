@@ -129,7 +129,9 @@ export class ChainableQuery<T extends IDer> {
   };
 
   private connect = async (routine: ConnectionRoutine<QueryResult<T>>) => {
-    return (await createPool(this.connectionString)).connect(routine);
+    return (
+      await createPool(this.connectionString, { typeParsers: [] })
+    ).connect(routine);
   };
 }
 
@@ -256,7 +258,9 @@ export default class Query<T extends IDer> {
   };
 
   private connect = async (routine: ConnectionRoutine<QueryResult<T>>) => {
-    return (await createPool(this.connectionString)).connect(routine);
+    return (
+      await createPool(this.connectionString, { typeParsers: [] })
+    ).connect(routine);
   };
 }
 
