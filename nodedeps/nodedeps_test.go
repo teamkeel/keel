@@ -2,7 +2,6 @@ package nodedeps_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,7 +13,7 @@ import (
 )
 
 func TestNodeDeps(t *testing.T) {
-	testCases, err := ioutil.ReadDir("testdata")
+	testCases, err := os.ReadDir("testdata")
 
 	require.NoError(t, err)
 

@@ -481,27 +481,27 @@ func evaluateInProcess(
 		return compareString(lhs.(string), rhs.(string), operator)
 	case proto.Type_TYPE_INT:
 		// todo: unify these to a single type at the source?
-		switch lhs.(type) {
+		switch v := lhs.(type) {
 		case int:
 			// Sourced from GraphQL input parameters.
-			lhs = int64(lhs.(int))
+			lhs = int64(v)
 		case float64:
 			// Sourced from integration test framework.
-			lhs = int64(lhs.(float64))
+			lhs = int64(v)
 		case int32:
 			// Sourced from database.
-			lhs = int64(lhs.(int32)) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
+			lhs = int64(v) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
 		}
-		switch rhs.(type) {
+		switch v := rhs.(type) {
 		case int:
 			// Sourced from GraphQL input parameters.
-			rhs = int64(rhs.(int))
+			rhs = int64(v)
 		case float64:
 			// Sourced from integration test framework.
-			rhs = int64(rhs.(float64))
+			rhs = int64(v)
 		case int32:
 			// Sourced from database.
-			rhs = int64(rhs.(int32)) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
+			rhs = int64(v) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
 		}
 		return compareInt(lhs.(int64), rhs.(int64), operator)
 	case proto.Type_TYPE_BOOL:

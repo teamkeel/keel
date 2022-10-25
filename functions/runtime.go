@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -33,11 +32,9 @@ import (
 // type.
 
 type Runtime struct {
-	Schema             *proto.Schema
-	WorkingDir         string
-	generator          codegen.Generator
-	port               int
-	dbConnectionString string
+	Schema     *proto.Schema
+	WorkingDir string
+	generator  codegen.Generator
 }
 
 type ScaffoldResult struct {
@@ -325,7 +322,7 @@ func (r *Runtime) makeModule(path string, code string) (string, error) {
 		}
 	}
 
-	err := ioutil.WriteFile(path, []byte(code), 0644)
+	err := os.WriteFile(path, []byte(code), 0644)
 
 	if err != nil {
 		return "", err

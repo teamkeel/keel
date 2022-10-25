@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"syscall/js"
@@ -151,7 +151,7 @@ func getGraphQLSchemas(this js.Value, args []js.Value) any {
 				Path: "/" + api.Name,
 			},
 			Method: http.MethodPost,
-			Body:   ioutil.NopCloser(bytes.NewReader(body)),
+			Body:   io.NopCloser(bytes.NewReader(body)),
 		})
 
 		if response.Status != 200 {

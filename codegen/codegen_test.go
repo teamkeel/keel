@@ -2,7 +2,7 @@ package codegen_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -15,7 +15,7 @@ import (
 )
 
 func TestCodeGeneration(t *testing.T) {
-	testCases, err := ioutil.ReadDir("testdata")
+	testCases, err := os.ReadDir("testdata")
 	require.NoError(t, err)
 
 	var permittedTestCaseTypes = []string{
@@ -31,7 +31,7 @@ func TestCodeGeneration(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(strings.TrimSuffix(testCase.Name(), ".txt"), func(t *testing.T) {
-			b, err := ioutil.ReadFile(filepath.Join("testdata", testCase.Name()))
+			b, err := os.ReadFile(filepath.Join("testdata", testCase.Name()))
 			require.NoError(t, err)
 
 			parts := strings.Split(string(b), "====")
