@@ -243,109 +243,11 @@ func TestZeroValueForModel(t *testing.T) {
 	require.Equal(t, "", modelMap["string_field"])
 }
 
-func TestToMapHappy(t *testing.T) {
-	for _, mapCase := range mapCases {
-		t.Run(mapCase.testName, func(t *testing.T) {
-			v, err := toMap(mapCase.input, mapCase.inputType)
-			require.NoError(t, err)
-			require.Equal(t, mapCase.expected, v)
-		})
-	}
-}
-
-func TestToMapError(t *testing.T) {
-	// Most malformed input errors should never get passed schema validation,
-	// but this test bypasses that to make sure errors in general are emitted by toMap() as
-	// they should be.
-	dateIsWrongType := 42 // Should be a map[string]any representing a DateInput
-	_, err := toMap(dateIsWrongType, proto.Type_TYPE_DATE)
-	require.EqualError(t, err, `cannot cast 42 to a DateInput`)
-}
-
 type mapCase struct {
 	testName  string
 	input     any
 	inputType proto.Type
 	expected  any
-}
-
-var mapCases []mapCase = []mapCase{
-	// These are ordered to match the order of the inputType enums
-	{
-		inputType: proto.Type_TYPE_STRING,
-		testName:  "string",
-		input:     "Jill",
-		expected:  "Jill",
-	},
-	{
-		inputType: proto.Type_TYPE_BOOL,
-		testName:  "bool",
-		input:     true,
-		expected:  true,
-	},
-	{
-		inputType: proto.Type_TYPE_INT,
-		testName:  "int",
-		input:     42,
-		expected:  42,
-	},
-	{
-		inputType: proto.Type_TYPE_TIMESTAMP,
-		testName:  "timestamp",
-		input: map[string]any{
-			"seconds": int(1658329775),
-		},
-		expected: time.Unix(int64(1658329775), 0),
-	},
-	{
-		inputType: proto.Type_TYPE_DATE,
-		testName:  "date",
-		input: map[string]any{
-			"year":  2022,
-			"month": 7,
-			"day":   20,
-		},
-		expected: time.Date(2022, time.Month(7), 20, 0, 0, 0, 0, time.UTC),
-	},
-	// skipping type proto.Type_TYPE_ID, because you cannot set an ID field using a Create request.
-	{
-		inputType: proto.Type_TYPE_MODEL,
-		testName:  "model",
-		input:     `Person`,
-		expected:  `Person`,
-	},
-	{
-		inputType: proto.Type_TYPE_CURRENCY,
-		testName:  "currency",
-		input:     `GBP`,
-		expected:  `GBP`,
-	},
-	{
-		inputType: proto.Type_TYPE_DATETIME,
-		testName:  "datetime",
-		input: map[string]any{
-			"seconds": int(1658329775),
-		},
-		expected: time.Unix(int64(1658329775), 0),
-	},
-	{
-		inputType: proto.Type_TYPE_ENUM,
-		testName:  "enum",
-		input:     `apple`,
-		expected:  `apple`,
-	},
-	{
-		inputType: proto.Type_TYPE_IDENTITY,
-		testName:  "identity",
-		input:     `foo@bar.com`,
-		expected:  `foo@bar.com`,
-	},
-	{
-		inputType: proto.Type_TYPE_IMAGE,
-		testName:  "image",
-		input:     `someurl/cat.png`,
-		expected:  `someurl/cat.png`,
-	},
 }
 
 type equality struct {

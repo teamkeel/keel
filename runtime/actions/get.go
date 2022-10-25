@@ -29,6 +29,21 @@ func (action *GetAction) CaptureSetValues(args RequestArguments) ActionBuilder[G
 }
 
 func (action *GetAction) IsAuthorised(args RequestArguments) ActionBuilder[GetResult] {
+	if action.scope.Error != nil {
+		return action
+	}
+
+	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
+
+	if err != nil {
+		action.scope.Error = err
+		return action
+	}
+
+	if !isAuthorised {
+		action.scope.Error = errors.New("not authorized to access this operation")
+	}
+
 	return action
 }
 
@@ -76,18 +91,6 @@ func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult
 	}
 	if n > 1 {
 		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
-	}
-
-	singleResult := toLowerCamelMap(results[0])
-
-	// todo: permissions to evaluate at the database-level where applicable
-	// https://linear.app/keel/issue/RUN-129/expressions-to-evaluate-at-database-level-where-applicable
-	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, singleResult)
-	if err != nil {
-		return nil, err
-	}
-	if !authorized {
-		return nil, errors.New("not authorized to access this operation")
 	}
 
 	return &ActionResult[GetResult]{

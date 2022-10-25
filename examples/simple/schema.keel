@@ -1,12 +1,30 @@
 model Post {
     fields {
-        title Text
+        title Text?
+        subtitle Text?
+        views Number? @default(10)
+        isActive Boolean? @default(true)
+        user Identity? 
     }
 
     operations {
-        get getPost(id)
-        create createPost() with (title)
-        list listPosts(title)
+        get getPost(id, views2: Number) { 
+            //@permission(expression: post.subtitle == null)
+            @permission(expression: ctx.isAuthenticated == true) 
+            @permission(expression: post.views >= views2)
+            @permission(expression: post.title == post.subtitle)
+        }
+
+        list listPost(views) {
+            @where(post.title == "hello")
+            @permission(expression: ctx.isAuthenticated) 
+            @permission(expression: post.title == "hello")
+        }
+
+        create createPost() with (title, subtitle?) {
+            @set(post.user = ctx.identity)
+        }
+
     }
 }
 
@@ -17,3 +35,4 @@ api Web {
         Post
     }
 }
+

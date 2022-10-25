@@ -30,15 +30,15 @@ func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[Cr
 		return action
 	}
 
-	// todo: temporary hack for permissions
-	authorized, err := EvaluatePermissions(action.scope.context, action.scope.operation, action.scope.schema, toLowerCamelMap(action.scope.writeValues))
+	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
+
 	if err != nil {
 		action.scope.Error = err
 		return action
 	}
-	if !authorized {
+
+	if !isAuthorised {
 		action.scope.Error = errors.New("not authorized to access this operation")
-		return action
 	}
 
 	return action
