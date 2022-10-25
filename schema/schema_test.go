@@ -2,7 +2,7 @@ package schema_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/nsf/jsondiff"
@@ -22,7 +22,7 @@ type Errors struct {
 
 func TestSchema(t *testing.T) {
 	testdataDir := "./testdata"
-	testCases, err := ioutil.ReadDir(testdataDir)
+	testCases, err := os.ReadDir(testdataDir)
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
@@ -34,7 +34,7 @@ func TestSchema(t *testing.T) {
 
 		t.Run(testCase.Name(), func(t *testing.T) {
 
-			files, err := ioutil.ReadDir(testCaseDir)
+			files, err := os.ReadDir(testCaseDir)
 			require.NoError(t, err)
 
 			filesByName := map[string][]byte{}
@@ -42,7 +42,7 @@ func TestSchema(t *testing.T) {
 				if f.IsDir() {
 					continue
 				}
-				b, err := ioutil.ReadFile(testCaseDir + "/" + f.Name())
+				b, err := os.ReadFile(testCaseDir + "/" + f.Name())
 				require.NoError(t, err)
 				filesByName[f.Name()] = b
 			}

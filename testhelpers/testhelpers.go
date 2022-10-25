@@ -2,7 +2,7 @@ package testhelpers
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -19,7 +19,7 @@ import (
 func WithTmpDir(dir string) (string, error) {
 	base := filepath.Base(dir)
 
-	tmpDir, err := ioutil.TempDir("", base)
+	tmpDir, err := os.MkdirTemp("", base)
 
 	if err != nil {
 		return "", err

@@ -3,7 +3,7 @@ package migrations_test
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -25,7 +25,7 @@ import (
 const dbConnString = "host=localhost port=8001 user=postgres password=postgres dbname=%s sslmode=disable"
 
 func TestMigrations(t *testing.T) {
-	testCases, err := ioutil.ReadDir("testdata")
+	testCases, err := os.ReadDir("testdata")
 	require.NoError(t, err)
 
 	// We connect to the "main" database here only so we can create a new database
@@ -62,7 +62,7 @@ func TestMigrations(t *testing.T) {
 			}()
 
 			// Read the fixture file
-			contents, err := ioutil.ReadFile(filepath.Join("testdata", testCase.Name()))
+			contents, err := os.ReadFile(filepath.Join("testdata", testCase.Name()))
 			require.NoError(t, err)
 
 			parts := strings.Split(string(contents), "===")

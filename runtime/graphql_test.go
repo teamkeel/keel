@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -20,7 +21,7 @@ import (
 )
 
 func TestGraphQL(t *testing.T) {
-	testFiles, err := ioutil.ReadDir("./testdata/graphql")
+	testFiles, err := os.ReadDir("./testdata/graphql")
 	require.NoError(t, err)
 
 	type testCase struct {
@@ -36,7 +37,7 @@ func TestGraphQL(t *testing.T) {
 
 		tc := testCases[name]
 
-		b, err := ioutil.ReadFile(filepath.Join("./testdata/graphql", f.Name()))
+		b, err := os.ReadFile(filepath.Join("./testdata/graphql", f.Name()))
 		require.NoError(t, err)
 
 		switch ext {
@@ -73,7 +74,7 @@ func TestGraphQL(t *testing.T) {
 					Path: "/Test",
 				},
 				Method: http.MethodPost,
-				Body:   ioutil.NopCloser(bytes.NewReader(body)),
+				Body:   io.NopCloser(bytes.NewReader(body)),
 			})
 
 			require.NoError(t, err)

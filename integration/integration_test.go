@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	gotest "testing"
 
@@ -28,7 +28,7 @@ type Expected struct {
 }
 
 func TestIntegration(t *gotest.T) {
-	entries, err := ioutil.ReadDir("./testdata")
+	entries, err := os.ReadDir("./testdata")
 	require.NoError(t, err)
 
 	allEvents := []*testing.Event{}
@@ -70,7 +70,7 @@ func TestIntegration(t *gotest.T) {
 
 			actual, err := json.Marshal(events)
 			require.NoError(t, err)
-			expected, err := ioutil.ReadFile(filepath.Join("./testdata", e.Name(), "expected.json"))
+			expected, err := os.ReadFile(filepath.Join("./testdata", e.Name(), "expected.json"))
 			require.NoError(t, err)
 
 			if pattern != nil && *pattern != "" {
