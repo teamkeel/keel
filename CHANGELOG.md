@@ -1,3 +1,10 @@
+# [0.181.0](https://github.com/teamkeel/keel/compare/v0.180.0...v0.181.0) (2022-10-25)
+
+
+### Features
+
+* expressions to sql ([#499](https://github.com/teamkeel/keel/issues/499)) ([7ffceb6](https://github.com/teamkeel/keel/commit/7ffceb61a4391c58d1641016be27fec804039129))
+
 # [0.180.0](https://github.com/teamkeel/keel/compare/v0.179.1...v0.180.0) (2022-10-24)
 
 
