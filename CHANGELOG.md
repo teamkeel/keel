@@ -1,3 +1,15 @@
+# [0.182.0](https://github.com/teamkeel/keel/compare/v0.181.0...v0.182.0) (2022-10-26)
+
+
+### Bug Fixes
+
+* postgres on correct ci job ([adf3c88](https://github.com/teamkeel/keel/commit/adf3c88714fd409189c0c43cc2ed790ebcf156f6))
+
+
+### Features
+
+* test sdk queries ([9d20961](https://github.com/teamkeel/keel/commit/9d20961967a187ee2f3d3014d5416b284d007f7d))
+
 # [0.181.0](https://github.com/teamkeel/keel/compare/v0.180.0...v0.181.0) (2022-10-25)
 
 
