@@ -2,6 +2,8 @@ package actions
 
 import (
 	"errors"
+
+	"github.com/teamkeel/keel/proto"
 )
 
 type DeleteAction struct {
@@ -19,17 +21,17 @@ func (action *DeleteAction) Initialise(scope *Scope) ActionBuilder[DeleteResult]
 
 // Keep the no-op methods in a group together
 
-func (action *DeleteAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[DeleteResult] {
+func (action *DeleteAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[DeleteResult] {
 	return action // no-op
 }
 
-func (action *DeleteAction) CaptureSetValues(args RequestArguments) ActionBuilder[DeleteResult] {
+func (action *DeleteAction) CaptureSetValues(args ValueArgs) ActionBuilder[DeleteResult] {
 	return action // no-op
 }
 
 // --------------------
 
-func (action *DeleteAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[DeleteResult] {
+func (action *DeleteAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[DeleteResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -40,7 +42,7 @@ func (action *DeleteAction) ApplyImplicitFilters(args RequestArguments) ActionBu
 	return action
 }
 
-func (action *DeleteAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[DeleteResult] {
+func (action *DeleteAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[DeleteResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -54,9 +56,15 @@ func (action *DeleteAction) ApplyExplicitFilters(args RequestArguments) ActionBu
 	return action
 }
 
-func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[DeleteResult], error) {
+func (action *DeleteAction) Execute(args WhereArgs) (*ActionResult[DeleteResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
+	}
+
+	op := action.scope.operation
+
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		return ParseDeleteResponse(action.scope.context, op, args)
 	}
 
 	records := []map[string]any{}
@@ -75,7 +83,7 @@ func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[Delete
 	return &result, nil
 }
 
-func (action *DeleteAction) IsAuthorised(args RequestArguments) ActionBuilder[DeleteResult] {
+func (action *DeleteAction) IsAuthorised(args WhereArgs) ActionBuilder[DeleteResult] {
 	if action.scope.Error != nil {
 		return action
 	}

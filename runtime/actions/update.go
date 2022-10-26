@@ -3,6 +3,8 @@ package actions
 import (
 	"errors"
 	"fmt"
+
+	"github.com/teamkeel/keel/proto"
 )
 
 type UpdateAction struct {
@@ -18,9 +20,7 @@ func (action *UpdateAction) Initialise(scope *Scope) ActionBuilder[UpdateResult]
 	return action
 }
 
-// Keep the no-op methods in a group together
-
-func (action *UpdateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[UpdateResult] {
+func (action *UpdateAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[UpdateResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -33,7 +33,7 @@ func (action *UpdateAction) CaptureImplicitWriteInputValues(args RequestArgument
 	return action
 }
 
-func (action *UpdateAction) CaptureSetValues(args RequestArguments) ActionBuilder[UpdateResult] {
+func (action *UpdateAction) CaptureSetValues(args ValueArgs) ActionBuilder[UpdateResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -45,7 +45,7 @@ func (action *UpdateAction) CaptureSetValues(args RequestArguments) ActionBuilde
 	return action
 }
 
-func (action *UpdateAction) IsAuthorised(args RequestArguments) ActionBuilder[UpdateResult] {
+func (action *UpdateAction) IsAuthorised(args WhereArgs) ActionBuilder[UpdateResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -64,9 +64,7 @@ func (action *UpdateAction) IsAuthorised(args RequestArguments) ActionBuilder[Up
 	return action
 }
 
-// --------------------
-
-func (action *UpdateAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[UpdateResult] {
+func (action *UpdateAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[UpdateResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -78,7 +76,7 @@ func (action *UpdateAction) ApplyImplicitFilters(args RequestArguments) ActionBu
 	return action
 }
 
-func (action *UpdateAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[UpdateResult] {
+func (action *UpdateAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[UpdateResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -93,9 +91,19 @@ func (action *UpdateAction) ApplyExplicitFilters(args RequestArguments) ActionBu
 	return action
 }
 
-func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[UpdateResult], error) {
+func (action *UpdateAction) Execute(args WhereArgs) (*ActionResult[UpdateResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
+	}
+	op := action.scope.operation
+
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		inputs := map[string]any{
+			"where":  args,
+			"values": action.scope.writeValues,
+		}
+
+		return ParseUpdateResponse(action.scope.context, op, inputs)
 	}
 
 	err := action.scope.query.Updates(action.scope.writeValues).Error

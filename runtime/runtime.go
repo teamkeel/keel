@@ -1,7 +1,6 @@
 package runtime
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,25 +11,23 @@ import (
 
 	"github.com/graphql-go/graphql"
 	log "github.com/sirupsen/logrus"
+	"github.com/teamkeel/keel/runtime/actions"
+	gql "github.com/teamkeel/keel/runtime/apis/graphql"
+	rpc "github.com/teamkeel/keel/runtime/apis/rpc"
+	"github.com/teamkeel/keel/runtime/common"
 
 	"github.com/gorilla/handlers"
 	"github.com/rs/cors"
 	"github.com/teamkeel/keel/proto"
+
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
-type Request struct {
-	Context context.Context
-	Path    string
-	Body    []byte
-}
+const (
+	authorizationHeaderName string = "Authorization"
+)
 
-type Response struct {
-	Body   []byte
-	Status int
-}
-
-type Handler func(r *http.Request) (*Response, error)
+type Handler func(r *http.Request) (*common.Response, error)
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -58,26 +55,33 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 
 		handler := NewHandler(currSchema)
 
-		identityId, err := RetrieveIdentityClaim(r)
-
-		switch {
-		case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired):
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Valid bearer token required to authenticate"))
-			return
-		case errors.Is(err, ErrNoBearerPrefix):
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(err.Error()))
-			return
-		case errors.Is(err, ErrInvalidIdentityClaim):
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
-			return
-		}
-
 		ctx := r.Context()
-		ctx = runtimectx.WithIdentity(ctx, identityId)
-		r = r.WithContext(ctx)
+
+		header := r.Header.Get(authorizationHeaderName)
+		if header != "" {
+			headerSplit := strings.Split(header, "Bearer ")
+			if len(headerSplit) != 2 {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte("no 'Bearer' prefix in the authentication header"))
+				return
+			}
+
+			identityId, err := actions.ParseBearerToken(headerSplit[1])
+
+			switch {
+			case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired):
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write([]byte(err.Error()))
+				return
+			case errors.Is(err, actions.ErrInvalidIdentityClaim):
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
+				return
+			}
+
+			ctx = runtimectx.WithIdentity(ctx, identityId)
+			r = r.WithContext(ctx)
+		}
 
 		response, err := handler(r)
 
@@ -113,13 +117,13 @@ func NewHandler(s *proto.Schema) Handler {
 		}
 	}
 
-	return func(r *http.Request) (*Response, error) {
+	return func(r *http.Request) (*common.Response, error) {
 		uriSegments := strings.Split(r.URL.Path, "/")
 		apiPath := strings.ToLower(uriSegments[1])
 
 		handler, ok := handlers[apiPath]
 		if !ok {
-			return &Response{
+			return &common.Response{
 				Status: 404,
 				Body:   []byte("Not found"),
 			}, nil
@@ -130,23 +134,21 @@ func NewHandler(s *proto.Schema) Handler {
 }
 
 func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
-
-	rpcApi, err := NewRpcApi(s, api)
+	rpcApi, err := rpc.NewRpcApi(s, api)
 	if err != nil {
 		panic(err)
 	}
 
-	return func(r *http.Request) (*Response, error) {
-
+	return func(r *http.Request) (*common.Response, error) {
 		trimmedPath := strings.TrimPrefix(r.URL.Path, fmt.Sprintf("/%s/", api.Name))
 		trimmedPath = strings.TrimPrefix(trimmedPath, fmt.Sprintf("/%s/", strings.ToLower(api.Name)))
 
 		var result interface{}
 		switch r.Method {
 		case http.MethodGet:
-			handler, ok := rpcApi.get[trimmedPath]
+			handler, ok := rpcApi.Get[trimmedPath]
 			if !ok {
-				return &Response{
+				return &common.Response{
 					Status: 404,
 					Body:   []byte("Not found"),
 				}, nil
@@ -156,9 +158,9 @@ func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
 				return nil, err
 			}
 		case http.MethodPost:
-			handler, ok := rpcApi.post[trimmedPath]
+			handler, ok := rpcApi.Post[trimmedPath]
 			if !ok {
-				return &Response{
+				return &common.Response{
 					Status: 404,
 					Body:   []byte("Not found"),
 				}, nil
@@ -176,7 +178,7 @@ func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
 			return nil, err
 		}
 
-		return &Response{
+		return &common.Response{
 			Body:   res,
 			Status: 200,
 		}, nil
@@ -185,7 +187,7 @@ func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
 }
 
 func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
-	gqlSchema, err := NewGraphQLSchema(s, api)
+	gqlSchema, err := gql.NewGraphQLSchema(s, api)
 	if err != nil {
 		panic(err)
 	}
@@ -195,7 +197,7 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 		gqlSchema.AddExtensions(&Tracer{})
 	}
 
-	return func(r *http.Request) (*Response, error) {
+	return func(r *http.Request) (*common.Response, error) {
 
 		var params struct {
 			Query         string                 `json:"query"`
@@ -229,7 +231,7 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 			return nil, err
 		}
 
-		return &Response{
+		return &common.Response{
 			Body:   b,
 			Status: 200,
 		}, nil

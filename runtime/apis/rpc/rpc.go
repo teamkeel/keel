@@ -1,4 +1,4 @@
-package runtime
+package rpc
 
 import (
 	"encoding/json"
@@ -15,8 +15,8 @@ import (
 func NewRpcApi(proto *proto.Schema, api *proto.Api) (*rpcApiBuilder, error) {
 	m := &rpcApiBuilder{
 		proto: proto,
-		get:   make(map[string]actionHandler),
-		post:  make(map[string]actionHandler),
+		Get:   make(map[string]actionHandler),
+		Post:  make(map[string]actionHandler),
 	}
 
 	return m.build(api, proto)
@@ -24,8 +24,9 @@ func NewRpcApi(proto *proto.Schema, api *proto.Api) (*rpcApiBuilder, error) {
 
 type rpcApiBuilder struct {
 	proto *proto.Schema
-	get   map[string]actionHandler
-	post  map[string]actionHandler
+
+	Get  map[string]actionHandler
+	Post map[string]actionHandler
 }
 
 type actionHandler func(r *http.Request) (interface{}, error)
@@ -82,22 +83,22 @@ func (mk *rpcApiBuilder) addRoute(
 	op *proto.Operation,
 	schema *proto.Schema) error {
 
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		handler := func(r *http.Request) (interface{}, error) {
-			inputs := queryParamsToInputs(r.URL.Query())
-			postInputs, err := postParamsToInputs(r.Body)
-			// merge query params and post body inputs
-			if err == nil {
-				for k, v := range postInputs {
-					inputs[k] = v
-				}
-			}
-			// TODO validate those inputs are correct for this function
-			return CallFunction(r.Context(), op.Name, op.Type, inputs)
-		}
-		mk.post[op.Name] = handler
-		return nil
-	}
+	// if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+	// 	handler := func(r *http.Request) (interface{}, error) {
+	// 		inputs := queryParamsToInputs(r.URL.Query())
+	// 		postInputs, err := postParamsToInputs(r.Body)
+	// 		// merge query params and post body inputs
+	// 		if err == nil {
+	// 			for k, v := range postInputs {
+	// 				inputs[k] = v
+	// 			}
+	// 		}
+	// 		// TODO validate those inputs are correct for this function
+	// 		return CallFunction(r.Context(), op.Name, op.Type, inputs)
+	// 	}
+	// 	mk.Post[op.Name] = handler
+	// 	return nil
+	// }
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
@@ -119,30 +120,23 @@ func (mk *rpcApiBuilder) addRoute(
 
 			return result.Value.Object, err
 		}
-		mk.get[op.Name] = handler
+		mk.Get[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		var builder actions.ListAction
 
 		handler := func(r *http.Request) (interface{}, error) {
 
 			scope, err := actions.NewScope(r.Context(), op, schema)
-
-			inputs := queryParamsToInputs(r.URL.Query())
-
 			if err != nil {
 				return nil, err
 			}
 
-			where, err := toArgsMap(inputs, "where")
-
-			if err != nil {
-				where = map[string]any{}
-			}
+			inputs := queryParamsToInputs(r.URL.Query())
 
 			result, err := builder.
 				Initialise(scope).
-				ApplyImplicitFilters(where).
-				ApplyExplicitFilters(where).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
 				IsAuthorised(inputs).
 				Execute(inputs)
 
@@ -151,7 +145,7 @@ func (mk *rpcApiBuilder) addRoute(
 			}
 			return result.Value.Collection, err
 		}
-		mk.get[op.Name] = handler
+		mk.Get[op.Name] = handler
 
 		// Support post requests which take a full gql query object as the body
 		handler = func(r *http.Request) (interface{}, error) {
@@ -163,16 +157,11 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			where, err := toArgsMap(inputs, "where")
-
-			if err != nil {
-				where = map[string]any{}
-			}
 
 			result, err := builder.
 				Initialise(scope).
-				ApplyImplicitFilters(where).
-				ApplyExplicitFilters(where).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
 				IsAuthorised(inputs).
 				Execute(inputs)
 
@@ -181,7 +170,7 @@ func (mk *rpcApiBuilder) addRoute(
 			}
 			return result.Value.Collection, err
 		}
-		mk.post[op.Name] = handler
+		mk.Post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_CREATE:
 		handler := func(r *http.Request) (interface{}, error) {
 			var builder actions.CreateAction
@@ -206,7 +195,7 @@ func (mk *rpcApiBuilder) addRoute(
 				IsAuthorised(inputs).
 				Execute(inputs)
 		}
-		mk.post[op.Name] = handler
+		mk.Post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
 		handler := func(r *http.Request) (interface{}, error) {
 			var builder actions.UpdateAction
@@ -219,29 +208,20 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			values, err := toArgsMap(inputs, "values")
-			if err != nil {
-				return nil, err
-			}
-
-			wheres, err := toArgsMap(inputs, "where")
-			if err != nil {
-				return nil, err
-			}
 
 			return builder.
 				Initialise(scope).
 				// first capture any implicit inputs
-				CaptureImplicitWriteInputValues(values).
+				CaptureImplicitWriteInputValues(inputs).
 				// then capture explicitly used inputs
-				CaptureSetValues(values).
+				CaptureSetValues(inputs).
 				// then apply unique filters
-				ApplyImplicitFilters(wheres).
-				ApplyExplicitFilters(wheres).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
 				IsAuthorised(inputs).
 				Execute(inputs)
 		}
-		mk.post[op.Name] = handler
+		mk.Post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		handler := func(r *http.Request) (interface{}, error) {
 			inputs, err := postParamsToInputs(r.Body)
@@ -263,7 +243,7 @@ func (mk *rpcApiBuilder) addRoute(
 				IsAuthorised(inputs).
 				Execute(inputs)
 		}
-		mk.post[op.Name] = handler
+		mk.Post[op.Name] = handler
 	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
 		break
 	default:

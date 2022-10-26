@@ -1,4 +1,26 @@
 [
-  { "testName": "List Where filters - using equal operator (string) - filters correctly", "status": "pass" },
-  { "testName": "List Where filters - using not equal operator (string) - filters correctly", "status": "pass" }
+  {
+    "status": "pass",
+    "testName": "List Where filters - using equal operator (string) - filters correctly"
+},
+{
+    "status": "pass",
+    "testName": "List Where filters - using not equal operator (string) - filters correctly"
+},
+{
+    "status": "pass",
+    "testName": "List Where filters - using equal operator on date - filters correctly"
+},
+{
+    "status": "pass",
+    "testName": "List Where filters - using not equal operator on date - filters correctly"
+},
+{
+    "status": "pass",
+    "testName": "List Where filters - using after operator on timestamp - filters correctly"
+},
+{
+    "status": "pass",
+    "testName": "List Where filters - using before operator on timestamp - filters correctly"
+}
 ]

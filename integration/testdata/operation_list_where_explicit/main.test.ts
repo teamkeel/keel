@@ -2,21 +2,21 @@ import { test, expect, actions, Post, logger } from '@teamkeel/testing'
 import { LogLevel } from '@teamkeel/sdk'
 
 test('List Where filters - using equal operator (string) - filters correctly', async () => {
-  await Post.create({ title: 'Fred' })
-  await Post.create({ title: 'NotFred' })
+  await actions.createPost({ title: 'Fred' })
+  await actions.createPost({ title: 'NotFred' })
 
   const { collection: response } = await actions.listPostsEqualString({ 
       whereArg: "Fred" 
     })
 
   expect(response.length).toEqual(1)
-   expect(response[0].title).toEqual('Fred')
+  expect(response[0].title).toEqual('Fred')
 })
 
 
 test('List Where filters - using not equal operator (string) - filters correctly', async () => {
-  await Post.create({ title: 'Fred' })
-  await Post.create({ title: 'NotFred' })
+  await actions.createPost({ title: 'Fred' })
+  await actions.createPost({ title: 'NotFred' })
 
   const { collection: response } = await actions.listPostsNotEqualString({ 
       whereArg: "Fred"
@@ -26,22 +26,51 @@ test('List Where filters - using not equal operator (string) - filters correctly
   expect(response[0].title).toEqual('NotFred')
 })
 
-// todo get Date and Time versions of these tests working as above.
-// Currently the generated Post.create() method, requires that we pass in native JS Date objects -
-// but these do not make it through to the actions Go code - that expects to receive graphql style
-// date/time structures with fields for seconds/year etc.
+test('List Where filters - using equal operator on date - filters correctly', async () => {
+  await actions.createPost({ aDate: new Date(2020, 1, 21) })
+  await actions.createPost({ aDate: new Date(2020, 1, 22) })
+  await actions.createPost({ aDate: new Date(2020, 1, 23) })
 
+  const { collection: response } = await actions.listPostsEqualDate({ 
+      whereArg: new Date(2020, 1, 21)
+  })
 
+  expect(response.length).toEqual(1)
+})
 
-// test('List Where filters - using equal operator (date) - filters correctly', async () => {
-//   await Post.create({ aDate: new Date(2020, 1, 21).toISOString() })
-//   await Post.create({ aDate: new Date(2020, 1, 22) .toISOString() })
+test('List Where filters - using not equal operator on date - filters correctly', async () => {
+  await actions.createPost({ aDate: new Date(2020, 1, 21) })
+  await actions.createPost({ aDate: new Date(2020, 1, 22) })
+  await actions.createPost({ aDate: new Date(2020, 1, 23) })
 
-//   const { collection: response } = await actions.listPostsEqualDate({ 
-//       whereArg: { aDate: new Date(2020, 1, 21)}
-//   })
+  const { collection: response } = await actions.listPostsNotEqualDate({ 
+      whereArg: new Date(2020, 1, 21)
+  })
 
-//   console.log(response)
-//   expect(response.length).toEqual(1)
-//   // expect(response[0].aDate.day).toEqual(22)
-// })
+  expect(response.length).toEqual(2)
+})
+
+test('List Where filters - using after operator on timestamp - filters correctly', async () => {
+  await actions.createPost({ aTimestamp: new Date(2020, 1, 21, 1, 0, 0) })
+  await actions.createPost({ aTimestamp: new Date(2020, 1, 22, 2, 30, 0) })
+  await actions.createPost({ aTimestamp: new Date(2020, 1, 23, 4, 0, 0) })
+
+  const { collection: response } = await actions.listPostsAfterTimestamp({ 
+      whereArg: new Date(2020, 1, 21, 1, 30, 0)
+  })
+
+  expect(response.length).toEqual(2)
+})
+
+test('List Where filters - using before operator on timestamp - filters correctly', async () => {
+  await actions.createPost({ aTimestamp: new Date(2020, 1, 21, 1, 0, 0) })
+  await actions.createPost({ aTimestamp: new Date(2020, 1, 22, 2, 30, 0) })
+  await actions.createPost({ aTimestamp: new Date(2020, 1, 23, 4, 0, 0) })
+
+  const { collection: response } = await actions.beforePostsBeforeTimestamp({ 
+      whereArg: new Date(2020, 1, 21, 1, 30, 0)
+  })
+
+  expect(response.length).toEqual(1)
+})
+

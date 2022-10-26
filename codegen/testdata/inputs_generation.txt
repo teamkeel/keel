@@ -29,9 +29,7 @@ export interface UpdatePostTitleInput {
     title: string
   }
 }
-export interface ListPostsInput {
-  // todo
-}
+export type ListPostsInput = ListPostsQuery
 export interface AuthenticateInput {
   createIfNotExists?: boolean
   email: string

@@ -7,10 +7,11 @@ model Post {
         title Text?
         length Number?
         aDate Date?
+        aTimestamp Timestamp?
     }
 
     operations {
-        create createPost() with (title?, length?, aDate?)
+        create createPost() with (title?, length?, aDate?, aTimestamp?)
         list listPostsEqualString(whereArg: Text) {
             @where(post.title == whereArg)
         }
@@ -18,7 +19,16 @@ model Post {
             @where(post.title != whereArg)
         }
         list listPostsEqualDate(whereArg: Date) {
+            @where(post.aDate == whereArg)
+        }
+        list listPostsNotEqualDate(whereArg: Date) {
             @where(post.aDate != whereArg)
+        }
+        list listPostsAfterTimestamp(whereArg: Timestamp) {
+            @where(post.aTimestamp > whereArg)
+        }
+        list beforePostsBeforeTimestamp(whereArg: Timestamp) {
+            @where(post.aTimestamp < whereArg)
         }
     }
 }

@@ -3,6 +3,8 @@ package actions
 import (
 	"errors"
 	"fmt"
+
+	"github.com/teamkeel/keel/proto"
 )
 
 type GetAction struct {
@@ -20,15 +22,15 @@ func (action *GetAction) Initialise(scope *Scope) ActionBuilder[GetResult] {
 
 // Keep the no-op methods in a group together
 
-func (action *GetAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[GetResult] {
+func (action *GetAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[GetResult] {
 	return action // no-op
 }
 
-func (action *GetAction) CaptureSetValues(args RequestArguments) ActionBuilder[GetResult] {
+func (action *GetAction) CaptureSetValues(args ValueArgs) ActionBuilder[GetResult] {
 	return action // no-op
 }
 
-func (action *GetAction) IsAuthorised(args RequestArguments) ActionBuilder[GetResult] {
+func (action *GetAction) IsAuthorised(args WhereArgs) ActionBuilder[GetResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -49,7 +51,7 @@ func (action *GetAction) IsAuthorised(args RequestArguments) ActionBuilder[GetRe
 
 // --------------------
 
-func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
+func (action *GetAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[GetResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -60,7 +62,7 @@ func (action *GetAction) ApplyImplicitFilters(args RequestArguments) ActionBuild
 	return action
 }
 
-func (action *GetAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[GetResult] {
+func (action *GetAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[GetResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -74,9 +76,15 @@ func (action *GetAction) ApplyExplicitFilters(args RequestArguments) ActionBuild
 	return action
 }
 
-func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult], error) {
+func (action *GetAction) Execute(args WhereArgs) (*ActionResult[GetResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
+	}
+
+	op := action.scope.operation
+
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		return ParseGetObjectResponse(action.scope.context, op, args)
 	}
 
 	results := []map[string]any{}

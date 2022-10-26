@@ -39,7 +39,7 @@ func TestExpressionResolver(t *testing.T) {
 
 			// Create some input arguments to represent an incoming request.
 			// Todo: these should come from the testCase.
-			requestArgs := RequestArguments{
+			requestArgs := WhereArgs{
 				"coolTitle": "Good Morning",
 			}
 

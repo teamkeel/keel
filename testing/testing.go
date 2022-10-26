@@ -19,7 +19,6 @@ import (
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
@@ -172,245 +171,152 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 				identityIdHeader := r.Header.Get("identityId")
 				identityId, _ := ksuid.Parse(identityIdHeader)
 
+				client := &functions.HttpFunctionsClient{
+					Port: customFunctionRuntimePort,
+					Host: "0.0.0.0",
+				}
+
 				for _, model := range schema.Models {
-					for _, action := range model.Operations {
-						if action.Name == body.ActionName {
+					for _, operation := range model.Operations {
+						if operation.Name == body.ActionName {
+							ctx := r.Context()
+							ctx = runtimectx.WithDatabase(ctx, db)
+							ctx = functions.WithFunctionsClient(ctx, client)
 
-							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
-								ctx := r.Context()
-								ctx = runtimectx.WithDatabase(ctx, db)
-								if identityId != ksuid.Nil {
-									ctx = runtimectx.WithIdentity(ctx, &identityId)
-								}
+							if identityId != ksuid.Nil {
+								ctx = runtimectx.WithIdentity(ctx, &identityId)
+							}
 
-								scope, err := actions.NewScope(ctx, action, schema)
+							argParser := &IntegrationTestArgParser{}
+							scope, err := actions.NewScope(ctx, operation, schema)
 
+							if err != nil {
+								panic(err)
+							}
+							switch operation.Type {
+							case proto.OperationType_OPERATION_TYPE_GET:
+								args, err := argParser.ParseGet(operation, body.Payload)
 								if err != nil {
 									panic(err)
 								}
-								switch action.Type {
-								case proto.OperationType_OPERATION_TYPE_GET:
 
-									var builder actions.GetAction
-									body.Payload, err = toNativeMap(body.Payload, action)
+								result, err := scope.Get(args)
 
-									if err != nil {
-										panic(err)
-									}
-									result, err := builder.
-										Initialise(scope).
-										ApplyImplicitFilters(body.Payload).
-										ApplyExplicitFilters(body.Payload).
-										IsAuthorised(body.Payload).
-										Execute(body.Payload)
-
-									r := map[string]any{
-										"object": nil,
-										"errors": serializeError(err),
-									}
-
-									if result != nil {
-										r["object"] = result.Value.Object
-									}
-
-									writeResponse(r, w)
-								case proto.OperationType_OPERATION_TYPE_CREATE:
-									var builder actions.CreateAction
-									body.Payload, _ = toNativeMap(body.Payload, action)
-
-									result, err := builder.
-										Initialise(scope).
-										CaptureImplicitWriteInputValues(body.Payload). // todo: err?
-										CaptureSetValues(body.Payload).
-										IsAuthorised(body.Payload).
-										Execute(body.Payload)
-
-									r := map[string]any{
-										"object": nil,
-										"errors": serializeError(err),
-									}
-
-									if result != nil {
-										r["object"] = result.Value.Object
-									}
-
-									writeResponse(r, w)
-								case proto.OperationType_OPERATION_TYPE_UPDATE:
-									var builder actions.UpdateAction
-
-									if err != nil {
-										panic(err)
-									}
-
-									// toArgsMap covers if the key isnt present
-									// if this is the case, an empty map will be returned
-									values, err := toArgsMap(body.Payload, "values", true)
-
-									if err != nil {
-										panic(err)
-									}
-
-									values, err = toNativeMap(values, action)
-									if err != nil {
-										panic(err)
-									}
-
-									wheres, err := toArgsMap(body.Payload, "where", false)
-									if err != nil {
-										panic(err)
-									}
-
-									wheres, err = toNativeMap(wheres, action)
-									if err != nil {
-										panic(err)
-									}
-									result, err := builder.
-										Initialise(scope).
-										// first capture any implicit inputs
-										CaptureImplicitWriteInputValues(values).
-										// then capture explicitly used inputs
-										CaptureSetValues(values).
-										// then apply unique filters
-										ApplyImplicitFilters(wheres).
-										ApplyExplicitFilters(wheres).
-										IsAuthorised(values).
-										Execute(body.Payload)
-
-									r := map[string]any{
-										"object": nil,
-										"errors": serializeError(err),
-									}
-
-									if result != nil {
-										r["object"] = result.Value.Object
-									}
-
-									writeResponse(r, w)
-								case proto.OperationType_OPERATION_TYPE_LIST:
-									var builder actions.ListAction
-
-									// todo: body.Payload is currently just the wheres
-									// needs to follow this structure:
-									// where: {},
-									// pageInfo: {}
-
-									args := map[string]any{
-										"where": body.Payload,
-									}
-
-									body.Payload, err = toNativeMap(body.Payload, action)
-
-									if err != nil {
-										panic(err)
-									}
-
-									result, err := builder.
-										Initialise(scope).
-										ApplyImplicitFilters(body.Payload).
-										ApplyExplicitFilters(body.Payload).
-										IsAuthorised(body.Payload).
-										Execute(args)
-
-									r := map[string]any{
-										"errors": serializeError(err),
-									}
-
-									if result != nil {
-										r["collection"] = result.Value.Collection
-										r["hasNextPage"] = result.Value.HasNextPage
-									}
-
-									writeResponse(r, w)
-								case proto.OperationType_OPERATION_TYPE_DELETE:
-									var builder actions.DeleteAction
-									body.Payload, err = toNativeMap(body.Payload, action)
-
-									if err != nil {
-										panic(err)
-									}
-									result, err := builder.
-										Initialise(scope).
-										ApplyImplicitFilters(body.Payload).
-										ApplyExplicitFilters(body.Payload).
-										IsAuthorised(body.Payload).
-										Execute(body.Payload)
-
-									r := map[string]any{
-										"errors": serializeError(err),
-									}
-
-									if result != nil {
-										r["success"] = result.Value.Success
-									}
-
-									writeResponse(r, w)
-								case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-									authArgs := actions.AuthenticateArgs{
-										CreateIfNotExists: body.Payload["createIfNotExists"].(bool),
-										Email:             body.Payload["email"].(string),
-										Password:          body.Payload["password"].(string),
-									}
-
-									identityId, identityCreated, err := actions.Authenticate(ctx, schema, &authArgs)
-
-									// todo: this doesn't nicely match what the user might expect to be returned from authenticate()
-									// do we refactor this to return a token?
-									var r map[string]any
-									if identityId == nil {
-										r = map[string]any{
-											"identityId":      nil,
-											"identityCreated": identityCreated,
-											"errors":          serializeError(err),
-										}
-									} else {
-										r = map[string]any{
-											"identityId":      identityId.String(),
-											"identityCreated": identityCreated,
-											"errors":          serializeError(err),
-										}
-									}
-
-									writeResponse(r, w)
-								default:
-									w.WriteHeader(400)
-									panic(fmt.Sprintf("%s not yet implemented", action.Type))
+								r := map[string]any{
+									"object": nil,
+									"errors": serializeError(err),
 								}
 
-								return
-							}
-
-							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-								// call node process
-								ctx := r.Context()
-
-								client := &functions.HttpFunctionsClient{
-									Port: customFunctionRuntimePort,
-									Host: "0.0.0.0",
+								if result != nil {
+									r["object"] = result.Object
 								}
 
-								ctx = runtime.WithFunctionsClient(ctx, client)
-								res, err := client.Request(ctx, body.ActionName, action.Type, body.Payload)
-
+								writeResponse(r, w)
+							case proto.OperationType_OPERATION_TYPE_CREATE:
+								args, err := argParser.ParseCreate(operation, body.Payload)
 								if err != nil {
-									// transport error with http request only
-									r := map[string]any{
-										"object": nil,
-										"errors": []map[string]string{
-											{
-												"message": err.Error(),
-											},
-										},
-									}
-
-									writeResponse(r, w)
-
-									return
+									panic(err)
 								}
 
-								// for custom functions, we just want to return whatever response
-								// shape is returned from the node handler
-								writeResponse(res, w)
+								result, err := scope.Create(args)
+
+								r := map[string]any{
+									"object": nil,
+									"errors": serializeError(err),
+								}
+
+								if result != nil {
+									r["object"] = result.Object
+								}
+
+								writeResponse(r, w)
+							case proto.OperationType_OPERATION_TYPE_UPDATE:
+								args, err := argParser.ParseUpdate(operation, body.Payload)
+								if err != nil {
+									panic(err)
+								}
+
+								result, err := scope.Update(args)
+
+								r := map[string]any{
+									"object": nil,
+									"errors": serializeError(err),
+								}
+
+								if result != nil {
+									r["object"] = result.Object
+								}
+
+								writeResponse(r, w)
+							case proto.OperationType_OPERATION_TYPE_LIST:
+								args, err := argParser.ParseList(operation, body.Payload)
+								if err != nil {
+									panic(err)
+								}
+
+								result, err := scope.List(args)
+
+								r := map[string]any{
+									"errors": serializeError(err),
+								}
+
+								if result != nil {
+									r["collection"] = result.Collection
+									r["hasNextPage"] = result.HasNextPage
+								}
+
+								writeResponse(r, w)
+							case proto.OperationType_OPERATION_TYPE_DELETE:
+								args, err := argParser.ParseDelete(operation, body.Payload)
+								if err != nil {
+									panic(err)
+								}
+
+								result, err := scope.Delete(args)
+
+								r := map[string]any{
+									"errors": serializeError(err),
+								}
+
+								if result != nil {
+									r["success"] = result.Success
+								}
+
+								writeResponse(r, w)
+							case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+								authArgs := actions.AuthenticateArgs{
+									CreateIfNotExists: body.Payload["createIfNotExists"].(bool),
+									Email:             body.Payload["email"].(string),
+									Password:          body.Payload["password"].(string),
+								}
+
+								token, identityCreated, err := actions.Authenticate(ctx, schema, &authArgs)
+
+								// todo: this doesn't nicely match what the user might expect to be returned from authenticate()
+								// do we refactor this to return a token?
+								identityId, err := actions.ParseBearerToken(token)
+								var r map[string]any
+								if identityId == nil {
+									r = map[string]any{
+										"identityId":      nil,
+										"identityCreated": identityCreated,
+										"errors":          serializeError(err),
+									}
+								} else {
+									r = map[string]any{
+										"identityId":      identityId.String(),
+										"identityCreated": identityCreated,
+										"errors":          serializeError(err),
+									}
+								}
+
+								writeResponse(r, w)
+							default:
+								w.WriteHeader(400)
+								panic(fmt.Sprintf("%s not yet implemented", operation.Type))
 							}
+
+							return
 						}
 					}
 				}
@@ -585,25 +491,6 @@ func typecheck(dir string) (output string, err error) {
 	}
 
 	return string(b), err
-}
-
-func toArgsMap(input map[string]any, key string, defaultToEmpty bool) (map[string]any, error) {
-	subKey, ok := input[key]
-
-	if !ok {
-		if defaultToEmpty {
-			return make(map[string]any), nil
-		}
-		return nil, fmt.Errorf("%s missing", key)
-	}
-
-	subMap, ok := subKey.(map[string]any)
-
-	if !ok {
-		return nil, fmt.Errorf("%s does not match expected format", key)
-	}
-
-	return subMap, nil
 }
 
 // Converts the input args (JSON) sent from the JavaScript process
