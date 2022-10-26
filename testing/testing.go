@@ -295,7 +295,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										Initialise(scope).
 										ApplyImplicitFilters(body.Payload).
 										ApplyExplicitFilters(body.Payload).
-										IsAuthorised(args).
+										IsAuthorised(body.Payload).
 										Execute(args)
 
 									r := map[string]any{

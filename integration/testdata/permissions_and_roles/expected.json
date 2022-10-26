@@ -22,5 +22,21 @@
     {
         "status": "pass",
         "testName": "no permissions set on model level for delete op - can delete - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "text literal comparisons - all expressions fail - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "number literal comparisons - all expressions fail - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "boolean literal comparisons - all expressions fail - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "enum literal comparisons - all expressions fail - is not authorized"
     }
 ]

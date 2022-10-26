@@ -90,7 +90,7 @@ inputs:
 		}
 
 		for operatorStr, operand := range valueMap {
-			operator, err := graphQlOperatorToActionOperator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
+			operator, err := graphQlOperatorToActionOperator(operatorStr)
 			if err != nil {
 				action.scope.Error = err
 				return action
