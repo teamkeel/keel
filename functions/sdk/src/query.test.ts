@@ -3,7 +3,7 @@ import Logger from "./logger";
 import { createPool, sql } from "slonik";
 import { Input } from "./types";
 
-const connectionString = "postgresql://postgres:postgres@localhost:5432/sdk";
+const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
 
 test("select", async () => {
   interface Person {

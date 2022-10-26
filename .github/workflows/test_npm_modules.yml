@@ -10,17 +10,6 @@ jobs:
   test-sdk:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - uses: actions/checkout@v3
-      - name: Run tests
-        working-directory: ./functions/sdk
-        run: npm install && npm test
-  test-testing:
-    runs-on: ubuntu-latest
-
     services:
       postgres:
         image: postgres:14.1-alpine
@@ -35,6 +24,17 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - uses: actions/checkout@v3
+      - name: Run tests
+        working-directory: ./functions/sdk
+        run: npm install && npm test
+  test-testing:
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/setup-node@v3
