@@ -1,9 +1,17 @@
 import Query from "./query";
 import Logger from "./logger";
-import { createPool, sql } from "slonik";
 import { Input } from "./types";
+import { Pool, QueryResult } from "pg";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
+
+async function runInitialSql(sql: string): Promise<QueryResult> {
+  const pool = new Pool({
+    connectionString,
+  });
+
+  return await pool.query(sql);
+}
 
 test("select", async () => {
   interface Person {
@@ -14,7 +22,7 @@ test("select", async () => {
     date: Date;
   }
 
-  const prepareTestSql = sql`
+  const prepareTestSql = `
     DROP TABLE IF EXISTS person;
 
     CREATE TABLE person(
@@ -41,28 +49,28 @@ test("select", async () => {
     name: "Jane Doe",
     married: false,
     favourite_number: 0,
-    date: new Date("2013-03-21 09:10:59.897666Z"),
+    date: new Date("2013-03-21 09:10:59.897666"),
   };
   const keelKeelson = {
     id: "3469bd00-a51c-4efb-b045-4eda9823f590",
     name: "Keel Keelson",
     married: true,
     favourite_number: 10,
-    date: new Date("2013-03-21 09:10:59.897667Z"),
+    date: new Date("2013-03-21 09:10:59.897667"),
   };
   const keelKeelgrandson = {
     id: "1f5ed3cb-1410-48cd-b499-df17d9a7906c",
     name: "Keel Keelgrandson",
     married: false,
     favourite_number: 10,
-    date: new Date("2013-03-21 09:10:59.897667Z"),
+    date: new Date("2013-03-21 09:10:59.897667"),
   };
   const agentSmith = {
     id: "bc3033c2-f331-463a-a335-5aa1a05f990c",
     name: "Agent Smith",
     married: false,
     favourite_number: 1,
-    date: new Date("2013-03-21 09:10:59.897668Z"),
+    date: new Date("2013-03-21 09:10:59.897668"),
   };
   const nullPerson = {
     id: "8d53f4d9-0139-48a1-b3fa-0333030c023b",
@@ -72,11 +80,7 @@ test("select", async () => {
     date: null,
   };
 
-  const pool = await createPool(connectionString);
-  await pool.connect(async (connection) => {
-    return connection.query(prepareTestSql);
-  });
-  await pool.end();
+  await runInitialSql(prepareTestSql);
 
   const tableName = "person";
 
@@ -200,22 +204,22 @@ test("select", async () => {
     await query.where({ favourite_number: { lessThanOrEqualTo: 1 } }).all()
   ).toEqual({ collection: [janeDoe, agentSmith] });
 
-  //TODO the order doesn't seem to be working or I'm misusing it
   expect(
     await query
       .where({ married: { equal: "false" } })
       .order({ favourite_number: "DESC" })
       .all()
   ).toEqual({
-    collection: [janeDoe, keelKeelgrandson, agentSmith],
+    collection: [keelKeelgrandson, agentSmith, janeDoe],
   });
+
   expect(
     await query
       .where({ married: { equal: "false" } })
       .order({ favourite_number: "ASC" })
       .all()
   ).toEqual({
-    collection: [janeDoe, keelKeelgrandson, agentSmith],
+    collection: [janeDoe, agentSmith, keelKeelgrandson],
   });
 });
 
@@ -229,7 +233,7 @@ test("insert", async () => {
   }
   type CreatePost = Partial<Omit<Post, "id">>;
 
-  const prepareTestSql = sql`
+  const prepareTestSql = `
     DROP TABLE IF EXISTS post;
 
     CREATE TABLE post(
@@ -248,11 +252,7 @@ test("insert", async () => {
   const logger = new Logger();
   const query = new Query<Post>({ tableName, connectionString, logger });
 
-  const pool = await createPool(connectionString);
-  await pool.connect(async (connection) => {
-    return connection.query(prepareTestSql);
-  });
-  await pool.end();
+  await runInitialSql(prepareTestSql);
 
   expect(await query.all()).toEqual({ collection: [] });
 
@@ -311,7 +311,7 @@ test("delete", async () => {
     name: string;
   }
 
-  const prepareTestSql = sql`
+  const prepareTestSql = `
     DROP TABLE IF EXISTS animal;
 
     CREATE TABLE animal(
@@ -328,11 +328,7 @@ test("delete", async () => {
   const logger = new Logger();
   const query = new Query<Animal>({ tableName, connectionString, logger });
 
-  const pool = await createPool(connectionString);
-  await pool.connect(async (connection) => {
-    return connection.query(prepareTestSql);
-  });
-  await pool.end();
+  await runInitialSql(prepareTestSql);
 
   let scoobyDoo = {
     id: "5a09be63-190f-4c77-a297-b4be4c023b71",
@@ -363,7 +359,7 @@ test("update", async () => {
   }
   type UpdateFood = Input<Food>;
 
-  const prepareTestSql = sql`
+  const prepareTestSql = `
     DROP TABLE IF EXISTS food;
 
     CREATE TABLE food(
@@ -384,11 +380,7 @@ test("update", async () => {
   const logger = new Logger();
   const query = new Query<Food>({ tableName, connectionString, logger });
 
-  const pool = await createPool(connectionString);
-  await pool.connect(async (connection) => {
-    return connection.query(prepareTestSql);
-  });
-  await pool.end();
+  await runInitialSql(prepareTestSql);
 
   let apple = {
     id: "6cba2acc-a06b-4f4d-8671-bd87a5473ed9",

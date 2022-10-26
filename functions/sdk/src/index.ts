@@ -24,8 +24,8 @@ export {
   ConsoleTransport,
   LogLevel,
   Identity,
-  // exposes a default client configuration that reverts the unexpected typeParsers 
-  // behaviour of the slonik library. The default typeParsers behaviour means that 
+  // exposes a default client configuration that reverts the unexpected typeParsers
+  // behaviour of the slonik library. The default typeParsers behaviour means that
   // timestamps/dates are serialized out of the db as ISO8601 strings rather than
   // native dates
   defaultClientConfiguration,
