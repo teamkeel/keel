@@ -236,7 +236,6 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
 			input := p.Args["input"]
 			arguments, ok := input.(map[string]any)
-
 			if !ok {
 				return nil, errors.New("input not a map")
 			}
@@ -268,7 +267,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				// then apply unique filters
 				ApplyImplicitFilters(wheres).
 				ApplyExplicitFilters(wheres).
-				IsAuthorised(arguments).
+				IsAuthorised(values).
 				Execute(arguments)
 
 			if result != nil {

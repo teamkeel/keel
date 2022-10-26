@@ -260,7 +260,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										// then apply unique filters
 										ApplyImplicitFilters(wheres).
 										ApplyExplicitFilters(wheres).
-										IsAuthorised(body.Payload).
+										IsAuthorised(values).
 										Execute(body.Payload)
 
 									r := map[string]any{

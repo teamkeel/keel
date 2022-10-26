@@ -395,3 +395,94 @@ test('true value permission - unauthenticated identity - is authorized', async (
       })
   ).notToHaveAuthorizationError()
 })
+
+test('permission on implicit input - matching value - is authorized', async () => {
+  const { object: post } = await actions
+    .createWithText({ title: "hello" })
+
+  expect(
+    await actions
+      .updateWithTextPermissionOnImplicitInput({ 
+        where: { id: post.id },
+        values: { title: "does not matter" }
+      })
+  ).notToHaveAuthorizationError()
+})
+
+test('permission on implicit input - not matching value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithText({ title: "goodbye" })
+
+  expect(
+    await actions
+      .updateWithTextPermissionOnImplicitInput({ 
+        where: { id: post.id },
+        values: { title: "does not matter" }
+      })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on implicit input - null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithText({ title: null })
+
+  expect(
+    await actions
+      .updateWithTextPermissionOnImplicitInput({ 
+        where: { id: post.id },
+        values: { title: "does not matter" }
+      })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on explicit input - matching value - is authorized', async () => {
+  const { object: post } = await actions
+    .createWithText({ title: "hello" })
+
+  expect(
+    await actions
+      .updateWithTextPermissionOnExplicitInput({ 
+        where: { id: post.id },
+        values: { explTitle: "hello" }
+      })
+  ).notToHaveAuthorizationError()
+})
+
+test('permission on explicit input - not matching value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithText({ title: "hello" })
+
+  expect(
+    await actions
+      .updateWithTextPermissionOnExplicitInput({ 
+        where: { id: post.id },
+        values: { explTitle: "goodbye" }
+      })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on explicit input - null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithText({ title: "hello" })
+
+  expect(
+    await actions
+      .updateWithTextPermissionOnExplicitInput({ 
+        where: { id: post.id },
+        values: { explTitle: null }
+      })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on explicit input - matching null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithText({ title: null })
+
+  expect(
+    await actions
+      .updateWithTextPermissionOnExplicitInput({ 
+        where: { id: post.id },
+        values: { explTitle: null }
+      })
+  ).notToHaveAuthorizationError()
+})

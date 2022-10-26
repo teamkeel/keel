@@ -20,7 +20,7 @@ test('string permission on literal - not matching value - is not authorized', as
   ).toHaveAuthorizationError()
 })
 
-test('string permission on literal - null value - is not authorized', async () => {
+test('string permission on literal - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithTitle({ title: null })
 
@@ -50,7 +50,7 @@ test('number permission on literal - not matching value - is not authorized', as
     ).toHaveAuthorizationError()
 })
 
-test('number permission on literal - null value - is not authorized', async () => {
+test('number permission on literal - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithViews({ views: null })
 
@@ -80,7 +80,7 @@ test('boolean permission on literal - not matching value - is not authorized', a
   ).toHaveAuthorizationError()
 })
 
-test('boolean permission on literal - null value - is not authorized', async () => {
+test('boolean permission on literal - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithActive({ active: null })
 
@@ -110,7 +110,7 @@ test('enum permission on literal - not matching value - is not authorized', asyn
   ).toHaveAuthorizationError()
 })
 
-test('enum permission on literal - null value - is not authorized', async () => {
+test('enum permission on literal - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithEnum({ title: null })
 
@@ -140,7 +140,7 @@ test('string permission on field - not matching value - is not authorized', asyn
   ).toHaveAuthorizationError()
 })
 
-test('string permission on field - null value - is not authorized', async () => {
+test('string permission on field - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithTitle({ title: null })
 
@@ -170,7 +170,7 @@ test('number permission on field - not matching value - is not authorized', asyn
     ).toHaveAuthorizationError()
 })
 
-test('number permission on field - null value - is not authorized', async () => {
+test('number permission on field - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithViews({ views: null })
 
@@ -200,7 +200,7 @@ test('boolean permission on field - not matching value - is not authorized', asy
   ).toHaveAuthorizationError()
 })
 
-test('boolean permission on field - null value - is not authorized', async () => {
+test('boolean permission on field - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithActive({ active: null })
 
@@ -230,7 +230,7 @@ test('enum permission on field - not matching value - is not authorized', async 
   ).toHaveAuthorizationError()
 })
 
-test('enum permission on field - null value - is not authorized', async () => {
+test('enum permission on field - not matching null value - is not authorized', async () => {
   const { object: post } = await actions
     .createWithEnum({ type: null })
 
@@ -310,4 +310,64 @@ test('true value permission - with unauthenticated identity - is authorized', as
     await actions
       .deleteWithTrueValuePermission({ id: post.id })
   ).notToHaveAuthorizationError()
+})
+
+test('permission on implicit input - matching value - is authorized', async () => {
+  const { object: post } = await actions
+    .createWithTitle({ title: "hello" })
+
+  expect(
+    await actions
+      .deleteWithPermissionOnImplicitInput({ id: post.id, title: "hello" })
+  ).notToHaveAuthorizationError()
+})
+
+test('permission on implicit input - not matching value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithTitle({ title: "hello" })
+
+  expect(
+    await actions
+      .deleteWithPermissionOnImplicitInput({ id: post.id, title: "goodbye" })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on implicit input - not matching null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithTitle({ title: "hello" })
+
+  expect(
+    await actions
+      .deleteWithPermissionOnImplicitInput({ id: post.id, title: null })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on explicit input - not matching value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithTitle({ title: "hello" })
+
+  expect(
+    await actions
+      .deleteWithPermissionOnExplicitInput({ id: post.id, explTitle: "goodbye" })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on explicit input - matching null value - is authorized', async () => {
+  const { object: post } = await actions
+    .createWithTitle({ title: null })
+
+  expect(
+    await actions
+      .deleteWithPermissionOnExplicitInput({ id: post.id, explTitle: null })
+  ).notToHaveAuthorizationError()
+})
+
+test('permission on explicit input - not matching null value - is not authorized', async () => {
+  const { object: post } = await actions
+    .createWithTitle({ title: "hello" })
+
+  expect(
+    await actions
+      .deleteWithPermissionOnExplicitInput({ id: post.id, explTitle: null })
+  ).toHaveAuthorizationError()
 })

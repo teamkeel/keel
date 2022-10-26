@@ -64,6 +64,14 @@ model Post {
         delete deleteWithTrueValuePermission(id) with (title) {
             @permission(expression: true)
         }
+
+        delete deleteWithPermissionOnImplicitInput(id, title) {
+            @permission(expression: title == "hello")
+        }
+
+        delete deleteWithPermissionOnExplicitInput(id, explTitle: Text) {
+            @permission(expression: post.title == explTitle)
+        }
     }
 }
 
