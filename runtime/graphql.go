@@ -344,7 +344,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Initialise(scope).
 				ApplyImplicitFilters(where).
 				ApplyExplicitFilters(where).
-				IsAuthorised(input).
+				IsAuthorised(where).
 				Execute(input)
 
 			if err != nil {

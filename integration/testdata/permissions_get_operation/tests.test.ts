@@ -126,7 +126,7 @@ test('string permission on field - matching value - is authorized', async () => 
 
   expect(
     await actions
-      .getWithTextPermissionLiteral({ id: post.id })
+      .getWithTextPermissionFromField({ id: post.id })
   ).notToHaveAuthorizationError()
 })
 
@@ -210,7 +210,6 @@ test('boolean permission on field - null value - is not authorized', async () =>
   ).toHaveAuthorizationError()
 })
 
-//these
 test('enum permission on field name - matching value - is authorized', async () => {
   const { object: post } = await actions
     .createWithEnum({ type: 'Technical' })
