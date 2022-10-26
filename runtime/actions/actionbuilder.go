@@ -72,6 +72,8 @@ type Scope struct {
 	model     *proto.Model
 	schema    *proto.Schema
 
+	customFunctionClient FunctionsClient
+
 	// This field is connected to the database, and we use it to perform all
 	// all queries and write operations on the database.
 	query *gorm.DB
@@ -86,7 +88,8 @@ type Scope struct {
 func NewScope(
 	ctx context.Context,
 	operation *proto.Operation,
-	schema *proto.Schema) (*Scope, error) {
+	schema *proto.Schema,
+	customFunctionsClient FunctionsClient) (*Scope, error) {
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
 	table := strcase.ToSnake(model.Name)
@@ -105,6 +108,8 @@ func NewScope(
 		schema:      schema,
 		query:       query,
 		writeValues: map[string]any{},
+		// If the action is a custom function, then inject the correct client
+		customFunctionClient: customFunctionsClient,
 	}, nil
 }
 

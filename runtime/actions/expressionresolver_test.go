@@ -77,7 +77,7 @@ func makeDbAndScope(t *testing.T, schemaParams schemaParams) (*Scope, *sql.DB) {
 	op := proto.FindOperation(schema, "myOperation")
 
 	ctx := runtimectx.WithDatabase(context.Background(), gormdb)
-	scope, err := NewScope(ctx, op, schema)
+	scope, err := NewScope(ctx, op, schema, nil)
 	require.NoError(t, err)
 	return scope, sqldb
 }

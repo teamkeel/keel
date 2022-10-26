@@ -1,14 +1,11 @@
-package runtime
+package graphql
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"sort"
 	"strings"
 	"time"
 
-	"github.com/bykof/gostradamus"
 	"github.com/nleeper/goment"
 
 	"github.com/graphql-go/graphql"
@@ -16,15 +13,6 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 )
-
-var deleteResponseType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "DeleteResponse",
-	Fields: graphql.Fields{
-		"success": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Boolean),
-		},
-	},
-})
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
 // are the API names from the provided proto.Schema
@@ -181,7 +169,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			}
 
 			var builder actions.GetAction
-			scope, err := actions.NewScope(p.Context, op, schema)
+			scope, err := actions.NewScope(p.Context, op, schema, nil)
 
 			if err != nil {
 				return nil, err
@@ -210,7 +198,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 			var builder actions.CreateAction
 
-			scope, err := actions.NewScope(p.Context, op, schema)
+			scope, err := actions.NewScope(p.Context, op, schema, nil)
 
 			if err != nil {
 				return nil, err
@@ -243,7 +231,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 			var builder actions.UpdateAction
 
-			scope, err := actions.NewScope(p.Context, op, schema)
+			scope, err := actions.NewScope(p.Context, op, schema, nil)
 
 			if err != nil {
 				return nil, err
@@ -294,7 +282,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 			var builder actions.DeleteAction
 
-			scope, err := actions.NewScope(p.Context, op, schema)
+			scope, err := actions.NewScope(p.Context, op, schema, nil)
 
 			if err != nil {
 				return nil, err
@@ -431,44 +419,8 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
 
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
-			inputMap, ok := input.(map[string]any)
-			if !ok {
-				return nil, errors.New("input not a map")
-			}
-
-			res, err := CallFunction(p.Context, op.Name, op.Type, inputMap)
-
-			if err != nil {
-				return nil, err
-			}
-
-			return ToGraphQL(p.Context, res, op.Type)
-		}
-	}
-
 	return nil
 }
-
-var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "PageInfo",
-	Fields: graphql.Fields{
-		"hasNextPage": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Boolean),
-		},
-		"startCursor": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"endCursor": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-		"totalCount": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Int),
-		},
-	},
-})
 
 func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) graphql.Output {
 	if out, found := mk.types[fmt.Sprintf("connection-%s", itemType.Name())]; found {
@@ -548,158 +500,6 @@ var fromNowType = graphql.Field{
 	},
 }
 
-var formattedDateType = &graphql.Field{
-	Name:        "formatted",
-	Description: "Formatted timestamp. Uses standard datetime formats",
-	Type:        graphql.NewNonNull(graphql.String),
-	Args: graphql.FieldConfigArgument{
-		"format": &graphql.ArgumentConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		t, ok := p.Source.(time.Time)
-
-		if !ok {
-			return nil, fmt.Errorf("not a valid time")
-		}
-
-		formatArg, ok := p.Args["format"].(string)
-
-		if !ok {
-			return nil, fmt.Errorf("no format argument provided")
-		}
-
-		// Go prefers to use layout as the basis for date formats
-		// However most users of the api will likely be used to date
-		// formats such as YYYY-mm-dd so therefore the library below
-		// provides a conversion inbetween standard date formats and go's
-		// layout format system
-		// Format spec: https://github.com/bykof/gostradamus/blob/master/formatting.go#L11-L42
-		dateTime := gostradamus.DateTimeFromTime(t)
-
-		return dateTime.Format(formatArg), nil
-	},
-}
-
-var timestampType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Timestamp",
-	Fields: graphql.Fields{
-		"seconds": &graphql.Field{
-			Name:        "seconds",
-			Description: "Seconds since unix epoch",
-			Type:        graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid time")
-				}
-
-				return t.Unix(), nil
-			},
-		},
-		"year": &graphql.Field{
-			Name: "year",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
-				}
-
-				return d.Year(), nil
-			},
-		},
-		"month": &graphql.Field{
-			Name: "month",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
-				}
-
-				return int(d.Month()), nil
-			},
-		},
-		"day": &graphql.Field{
-			Name: "day",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
-				}
-
-				return d.Day(), nil
-			},
-		},
-		"formatted": formattedDateType,
-		"fromNow":   &fromNowType,
-	},
-})
-
-var dateType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Date",
-	Fields: graphql.Fields{
-		"year": &graphql.Field{
-			Name: "year",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
-				}
-
-				return d.Year(), nil
-			},
-		},
-		"fromNow": &fromNowType,
-		"month": &graphql.Field{
-			Name: "month",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
-				}
-
-				return int(d.Month()), nil
-			},
-		},
-		"day": &graphql.Field{
-			Name: "day",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
-
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
-				}
-
-				return d.Day(), nil
-			},
-		},
-		"formatted": formattedDateType,
-	},
-})
-
-var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
-	proto.Type_TYPE_ID:       graphql.ID,
-	proto.Type_TYPE_STRING:   graphql.String,
-	proto.Type_TYPE_INT:      graphql.Int,
-	proto.Type_TYPE_BOOL:     graphql.Boolean,
-	proto.Type_TYPE_DATETIME: timestampType,
-	proto.Type_TYPE_DATE:     dateType,
-	proto.Type_TYPE_SECRET:   graphql.String,
-}
-
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.Output, err error) {
 	switch field.Type.Type {
@@ -745,42 +545,6 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 	}
 
 	return out, nil
-}
-
-var timestampInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "TimestampInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"seconds": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
-		},
-	},
-})
-
-var dateInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "DateInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"year": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
-		},
-		"month": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
-		},
-		"day": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
-		},
-	},
-})
-
-var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
-	proto.Type_TYPE_ID:        graphql.ID,
-	proto.Type_TYPE_STRING:    graphql.String,
-	proto.Type_TYPE_INT:       graphql.Int,
-	proto.Type_TYPE_BOOL:      graphql.Boolean,
-	proto.Type_TYPE_TIMESTAMP: timestampInputType,
-	proto.Type_TYPE_DATETIME:  timestampInputType,
-	proto.Type_TYPE_DATE:      dateInputType,
-	proto.Type_TYPE_SECRET:    graphql.String,
-	proto.Type_TYPE_PASSWORD:  graphql.String,
 }
 
 // inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
@@ -834,112 +598,6 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.
 	}
 
 	return in, nil
-}
-
-var idQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "IDQueryInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"equals": &graphql.InputObjectFieldConfig{
-			Type: graphql.ID,
-		},
-		"oneOf": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewList(graphql.NewNonNull(graphql.ID)),
-		},
-	},
-})
-
-var stringQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "StringQueryInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"equals": &graphql.InputObjectFieldConfig{
-			Type: graphql.String,
-		},
-		"startsWith": &graphql.InputObjectFieldConfig{
-			Type: graphql.String,
-		},
-		"endsWith": &graphql.InputObjectFieldConfig{
-			Type: graphql.String,
-		},
-		"contains": &graphql.InputObjectFieldConfig{
-			Type: graphql.String,
-		},
-		"oneOf": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewList(graphql.NewNonNull(graphql.String)),
-		},
-	},
-})
-
-var intQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "IntQueryInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"equals": &graphql.InputObjectFieldConfig{
-			Type: graphql.Int,
-		},
-		"lessThan": &graphql.InputObjectFieldConfig{
-			Type: graphql.Int,
-		},
-		"lessThanOrEquals": &graphql.InputObjectFieldConfig{
-			Type: graphql.Int,
-		},
-		"greaterThan": &graphql.InputObjectFieldConfig{
-			Type: graphql.Int,
-		},
-		"greaterThanOrEquals": &graphql.InputObjectFieldConfig{
-			Type: graphql.Int,
-		},
-	},
-})
-
-var booleanQueryInput = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "BooleanQueryInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"equals": &graphql.InputObjectFieldConfig{
-			Type: graphql.Boolean,
-		},
-	},
-})
-
-var timestampQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "TimestampQueryInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"before": &graphql.InputObjectFieldConfig{
-			Type: timestampInputType,
-		},
-		"after": &graphql.InputObjectFieldConfig{
-			Type: timestampInputType,
-		},
-	},
-})
-
-var dateQueryInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "DateQueryInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"equals": &graphql.InputObjectFieldConfig{
-			Type: dateInputType,
-		},
-		"before": &graphql.InputObjectFieldConfig{
-			Type: dateInputType,
-		},
-		"onOrBefore": &graphql.InputObjectFieldConfig{
-			Type: dateInputType,
-		},
-		"after": &graphql.InputObjectFieldConfig{
-			Type: dateInputType,
-		},
-		"onOrAfter": &graphql.InputObjectFieldConfig{
-			Type: dateInputType,
-		},
-	},
-})
-
-var protoTypeToGraphQLQueryInput = map[proto.Type]graphql.Input{
-	proto.Type_TYPE_ID:        idQueryInputType,
-	proto.Type_TYPE_STRING:    stringQueryInputType,
-	proto.Type_TYPE_INT:       intQueryInputType,
-	proto.Type_TYPE_BOOL:      booleanQueryInput,
-	proto.Type_TYPE_TIMESTAMP: timestampQueryInputType,
-	proto.Type_TYPE_DATETIME:  timestampQueryInputType,
-	proto.Type_TYPE_DATE:      dateQueryInputType,
 }
 
 // queryInputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
@@ -1104,218 +762,4 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	}
 
 	return inputType, nil
-}
-
-// ToGraphQLSchemaLanguage converts the result of an introspection query
-// into a GraphQL schema string
-// Note: this implementation is not complete and only covers cases
-// that are relevant to us, for example directives are not handled
-func ToGraphQLSchemaLanguage(response *Response) string {
-
-	// First we have the marshal the response bytes back into
-	// a graphql.Result
-	var result graphql.Result
-	json.Unmarshal(response.Body, &result)
-
-	// Then we pull out the data contained in the result and convert
-	// back into JSON
-	b, _ := json.Marshal(result.Data)
-
-	// Finally we marshal that JSON into the IntrospectionQueryResult
-	// type... urgh
-	var r IntrospectionQueryResult
-	json.Unmarshal(b, &r)
-
-	definitions := []string{}
-
-	sort.Slice(r.Schema.Types, func(a, b int) bool {
-		aType := r.Schema.Types[a]
-		bType := r.Schema.Types[b]
-
-		// Make sure Query and Mutation come at the top of the generated
-		// schema with Query first and Mutation second
-		typeNameOrder := []string{"Mutation", "Query"}
-		aIndex := lo.IndexOf(typeNameOrder, aType.Name)
-		bIndex := lo.IndexOf(typeNameOrder, bType.Name)
-		if aIndex != -1 || bIndex != -1 {
-			return aIndex > bIndex
-		}
-
-		// Then order by input types, types, and enums
-		kindOrder := []string{"ENUM", "OBJECT", "INPUT_OBJECT"}
-		aIndex = lo.IndexOf(kindOrder, aType.Kind)
-		bIndex = lo.IndexOf(kindOrder, bType.Kind)
-		if aIndex != bIndex {
-			return aIndex > bIndex
-		}
-
-		// Order same kind by name
-		return aType.Name < bType.Name
-	})
-
-	for _, t := range r.Schema.Types {
-		if t.Kind == "SCALAR" {
-			continue
-		}
-		if strings.HasPrefix(t.Name, "__") {
-			continue
-		}
-
-		keyword, ok := map[string]string{
-			"OBJECT":       "type",
-			"INPUT_OBJECT": "input",
-			"ENUM":         "enum",
-		}[t.Kind]
-		if !ok {
-			continue
-		}
-
-		b := strings.Builder{}
-		b.WriteString(keyword)
-		b.WriteString(" ")
-		b.WriteString(t.Name)
-		b.WriteString(" {\n")
-
-		if t.Kind == "ENUM" {
-			values := t.EnumValues
-			sort.Slice(values, func(i, j int) bool {
-				return values[i].Name < values[j].Name
-			})
-
-			for _, v := range values {
-				b.WriteString("  ")
-				b.WriteString(v.Name)
-				b.WriteString("\n")
-			}
-		} else {
-			fields := t.Fields
-			if t.Kind == "INPUT_OBJECT" {
-				fields = t.InputFields
-			}
-
-			sort.Slice(fields, func(i, j int) bool {
-				return fields[i].Name < fields[j].Name
-			})
-
-			for _, field := range fields {
-				b.WriteString("  ")
-				b.WriteString(field.Name)
-
-				sort.Slice(field.Args, func(i, j int) bool {
-					return field.Args[i].Name < field.Args[j].Name
-				})
-
-				if len(field.Args) > 0 {
-					b.WriteString("(")
-					for i, arg := range field.Args {
-						if i > 0 {
-							b.WriteString(", ")
-						}
-						b.WriteString(arg.Name)
-						b.WriteString(": ")
-						b.WriteString(arg.Type.String())
-					}
-					b.WriteString(")")
-				}
-
-				b.WriteString(": ")
-				b.WriteString(field.Type.String())
-				b.WriteString("\n")
-			}
-		}
-
-		b.WriteString("}")
-
-		definitions = append(definitions, b.String())
-	}
-
-	return strings.Join(definitions, "\n\n") + "\n"
-}
-
-type introsepctionTypeRef struct {
-	Name   string                `json:"name"`
-	Kind   string                `json:"kind"`
-	OfType *introsepctionTypeRef `json:"ofType"`
-}
-
-func (t introsepctionTypeRef) String() string {
-	if t.Kind == "NON_NULL" {
-		return t.OfType.String() + "!"
-	}
-	if t.Kind == "LIST" {
-		return "[" + t.OfType.String() + "]"
-	}
-	return t.Name
-}
-
-type introspectionField struct {
-	Args []struct {
-		DefaultValue interface{}          `json:"defaultValue"`
-		Name         string               `json:"name"`
-		Type         introsepctionTypeRef `json:"type"`
-	} `json:"args"`
-	Name string               `json:"name"`
-	Type introsepctionTypeRef `json:"type"`
-}
-
-// Represents the result of executing github.com/graphql-go/graphql/testutil.IntrospectionQuery
-type IntrospectionQueryResult struct {
-	Schema struct {
-		MutationType struct {
-			Name string `json:"name"`
-		} `json:"mutationType"`
-		QueryType struct {
-			Name string `json:"name"`
-		} `json:"queryType"`
-		Types []struct {
-			EnumValues []struct {
-				Name string
-			} `json:"enumValues"`
-			Fields        []introspectionField `json:"fields"`
-			InputFields   []introspectionField `json:"inputFields"`
-			Interfaces    interface{}          `json:"interfaces"`
-			Kind          string               `json:"kind"`
-			Name          string               `json:"name"`
-			PossibleTypes interface{}          `json:"possibleTypes"`
-		} `json:"types"`
-	} `json:"__schema"`
-}
-
-// connectionResponse consumes the raw records returned by actions.List() (and similar),
-// and wraps them into a Node+Edges structure that is good for the connections pattern
-// return type and is expected by the GraphQL schema for the List operation.
-// See https://relay.dev/graphql/connections.htm
-func connectionResponse(records any, hasNextPage bool) (resp any, err error) {
-
-	recordsList, ok := records.([]map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("cannot cast this: %v to a []map[string]any", records)
-	}
-	var startCursor string
-	var endCursor string
-	edges := []map[string]any{}
-	for i, record := range recordsList {
-		edge := map[string]any{
-			"cursor": record["id"],
-			"node":   record,
-		}
-		edges = append(edges, edge)
-		if i == 0 {
-			startCursor, _ = record["id"].(string)
-		}
-		if i == len(edges)-1 {
-			endCursor, _ = record["id"].(string)
-		}
-	}
-
-	pageInfo := map[string]any{
-		"hasNextPage": hasNextPage,
-		"startCursor": startCursor,
-		"endCursor":   endCursor,
-	}
-	resp = map[string]any{
-		"pageInfo": pageInfo,
-		"edges":    edges,
-	}
-	return resp, nil
 }

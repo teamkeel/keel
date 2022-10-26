@@ -2,6 +2,9 @@ package actions
 
 import (
 	"errors"
+	"fmt"
+
+	"github.com/teamkeel/keel/proto"
 )
 
 type UpdateAction struct {
@@ -16,8 +19,6 @@ func (action *UpdateAction) Initialise(scope *Scope) ActionBuilder[UpdateResult]
 	action.scope = scope
 	return action
 }
-
-// Keep the no-op methods in a group together
 
 func (action *UpdateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[UpdateResult] {
 	if action.scope.Error != nil {
@@ -63,8 +64,6 @@ func (action *UpdateAction) IsAuthorised(args RequestArguments) ActionBuilder[Up
 	return action
 }
 
-// --------------------
-
 func (action *UpdateAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[UpdateResult] {
 	if action.scope.Error != nil {
 		return action
@@ -95,6 +94,38 @@ func (action *UpdateAction) ApplyExplicitFilters(args RequestArguments) ActionBu
 func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[UpdateResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
+	}
+
+	if action.scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		client := action.scope.customFunctionClient
+		res, err := client.Call(action.scope.context, action.scope.operation.Name, action.scope.operation.Type, action.scope.writeValues)
+
+		if err != nil {
+			return nil, err
+		}
+		resMap, ok := res.(map[string]any)
+
+		if !ok {
+			return nil, fmt.Errorf("not a map")
+		}
+
+		object, ok := resMap["object"]
+
+		if !ok {
+			return nil, fmt.Errorf("no object key")
+		}
+
+		objectAsMap, ok := object.(map[string]any)
+
+		if !ok {
+			return nil, fmt.Errorf("object not a map")
+		}
+
+		return &ActionResult[UpdateResult]{
+			Value: UpdateResult{
+				Object: objectAsMap,
+			},
+		}, nil
 	}
 
 	err := action.scope.query.Updates(action.scope.writeValues).Error

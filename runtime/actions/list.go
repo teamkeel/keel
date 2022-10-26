@@ -22,8 +22,6 @@ func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
 	return action
 }
 
-// Keep the no-op methods in a group together
-
 func (action *ListAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[ListResult] {
 	return action // no-op
 }
@@ -50,8 +48,6 @@ func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[List
 
 	return action
 }
-
-// ----------------
 
 func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
 	if action.scope.Error != nil {
@@ -130,6 +126,38 @@ func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuil
 func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
+	}
+
+	if action.scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		client := action.scope.customFunctionClient
+		res, err := client.Call(action.scope.context, action.scope.operation.Name, action.scope.operation.Type, action.scope.writeValues)
+
+		if err != nil {
+			return nil, err
+		}
+		resMap, ok := res.(map[string]any)
+
+		if !ok {
+			return nil, fmt.Errorf("not a map")
+		}
+
+		object, ok := resMap["collection"]
+
+		if !ok {
+			return nil, fmt.Errorf("no collection key")
+		}
+
+		collectionAsMaps, ok := object.([]map[string]any)
+
+		if !ok {
+			return nil, fmt.Errorf("object not a map")
+		}
+
+		return &ActionResult[ListResult]{
+			Value: ListResult{
+				Collection: collectionAsMaps,
+			},
+		}, nil
 	}
 
 	// We update the query to implement the paging request

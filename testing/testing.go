@@ -19,7 +19,6 @@ import (
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
@@ -170,7 +169,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									ctx = runtimectx.WithIdentity(ctx, &identityId)
 								}
 
-								scope, err := actions.NewScope(ctx, action, schema)
+								scope, err := actions.NewScope(ctx, action, schema, nil)
 
 								if err != nil {
 									panic(err)
@@ -364,39 +363,6 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 								}
 
 								return
-							}
-
-							if action.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-								// call node process
-								ctx := r.Context()
-
-								client := &functions.HttpFunctionsClient{
-									Port: customFunctionRuntimePort,
-									Host: "0.0.0.0",
-								}
-
-								ctx = runtime.WithFunctionsClient(ctx, client)
-								res, err := client.Request(ctx, body.ActionName, action.Type, body.Payload)
-
-								if err != nil {
-									// transport error with http request only
-									r := map[string]any{
-										"object": nil,
-										"errors": []map[string]string{
-											{
-												"message": err.Error(),
-											},
-										},
-									}
-
-									writeResponse(r, w)
-
-									return
-								}
-
-								// for custom functions, we just want to return whatever response
-								// shape is returned from the node handler
-								writeResponse(res, w)
 							}
 						}
 					}

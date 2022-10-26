@@ -2,6 +2,9 @@ package actions
 
 import (
 	"errors"
+	"fmt"
+
+	"github.com/teamkeel/keel/proto"
 )
 
 type DeleteAction struct {
@@ -57,6 +60,39 @@ func (action *DeleteAction) ApplyExplicitFilters(args RequestArguments) ActionBu
 func (action *DeleteAction) Execute(args RequestArguments) (*ActionResult[DeleteResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
+	}
+
+	if action.scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		client := action.scope.customFunctionClient
+		res, err := client.Call(action.scope.context, action.scope.operation.Name, action.scope.operation.Type, action.scope.writeValues)
+
+		if err != nil {
+			return nil, err
+		}
+
+		resMap, ok := res.(map[string]any)
+
+		if !ok {
+			return nil, fmt.Errorf("not a map")
+		}
+
+		object, ok := resMap["success"]
+
+		if !ok {
+			return nil, fmt.Errorf("no success key")
+		}
+
+		success, ok := object.(bool)
+
+		if !ok {
+			return nil, fmt.Errorf("success not a bool")
+		}
+
+		return &ActionResult[DeleteResult]{
+			Value: DeleteResult{
+				Success: success,
+			},
+		}, nil
 	}
 
 	records := []map[string]any{}

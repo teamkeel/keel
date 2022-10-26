@@ -1,4 +1,4 @@
-package runtime_test
+package graphql_test
 
 import (
 	"bytes"
@@ -16,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/runtime"
+	gql "github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 )
@@ -80,7 +81,7 @@ func TestGraphQL(t *testing.T) {
 			require.NoError(t, err)
 			assert.Equal(t, 200, response.Status)
 
-			actual := runtime.ToGraphQLSchemaLanguage(response)
+			actual := gql.ToGraphQLSchemaLanguage(response)
 			expected := tc.graphql
 
 			assert.Equal(t, expected, actual)
