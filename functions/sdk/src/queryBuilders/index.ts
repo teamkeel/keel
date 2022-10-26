@@ -83,10 +83,12 @@ export const buildSelectStatement = <T>(
                 ors.push(sql`${fullyQualifiedField} >= ${value}`);
                 break;
               case NOT_EQUAL:
-                ors.push(sql`${fullyQualifiedField} != ${value}`);
+                ors.push(sql`${fullyQualifiedField} IS DISTINCT FROM ${value}`);
                 break;
               case EQUAL:
-                ors.push(sql`${fullyQualifiedField} = ${value}`);
+                ors.push(
+                  sql`${fullyQualifiedField} IS NOT DISTINCT FROM ${value}`
+                );
                 break;
               case BEFORE:
                 ors.push(sql`${fullyQualifiedField} < ${dateParam(value)}`);

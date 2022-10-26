@@ -1,0 +1,431 @@
+import Query from "./query";
+import Logger from "./logger";
+import { createPool, sql } from "slonik";
+import { Input } from "./types";
+
+const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
+
+test("select", async () => {
+  interface Person {
+    id: string;
+    name: string;
+    married: boolean;
+    favourite_number: number;
+    date: Date;
+  }
+
+  const prepareTestSql = sql`
+    DROP TABLE IF EXISTS person;
+
+    CREATE TABLE person(
+        id               text PRIMARY KEY,
+        name             text,
+        married          boolean,
+        favourite_number integer,
+        date             timestamp
+    );
+
+    INSERT INTO person (id, name, married, favourite_number, date)
+    VALUES ('6cba2acc-a06b-4f4d-8671-bd87a5473ed9', 'Jane Doe', false, 0, '2013-03-21 09:10:59.897666Z');
+    INSERT INTO person (id, name, married, favourite_number, date)
+    VALUES ('3469bd00-a51c-4efb-b045-4eda9823f590', 'Keel Keelson', true, 10, '2013-03-21 09:10:59.897667Z');
+    INSERT INTO person (id, name, married, favourite_number, date)
+    VALUES ('1f5ed3cb-1410-48cd-b499-df17d9a7906c', 'Keel Keelgrandson', false, 10, '2013-03-21 09:10:59.897667Z');
+    INSERT INTO person (id, name, married, favourite_number, date)
+    VALUES ('bc3033c2-f331-463a-a335-5aa1a05f990c', 'Agent Smith', false, 1, '2013-03-21 09:10:59.897668Z');
+    INSERT INTO person (id, name, married, favourite_number, date)
+    VALUES ('8d53f4d9-0139-48a1-b3fa-0333030c023b', null, null, null, null);
+  `;
+  const janeDoe = {
+    id: "6cba2acc-a06b-4f4d-8671-bd87a5473ed9",
+    name: "Jane Doe",
+    married: false,
+    favourite_number: 0,
+    date: new Date("2013-03-21 09:10:59.897666Z"),
+  };
+  const keelKeelson = {
+    id: "3469bd00-a51c-4efb-b045-4eda9823f590",
+    name: "Keel Keelson",
+    married: true,
+    favourite_number: 10,
+    date: new Date("2013-03-21 09:10:59.897667Z"),
+  };
+  const keelKeelgrandson = {
+    id: "1f5ed3cb-1410-48cd-b499-df17d9a7906c",
+    name: "Keel Keelgrandson",
+    married: false,
+    favourite_number: 10,
+    date: new Date("2013-03-21 09:10:59.897667Z"),
+  };
+  const agentSmith = {
+    id: "bc3033c2-f331-463a-a335-5aa1a05f990c",
+    name: "Agent Smith",
+    married: false,
+    favourite_number: 1,
+    date: new Date("2013-03-21 09:10:59.897668Z"),
+  };
+  const nullPerson = {
+    id: "8d53f4d9-0139-48a1-b3fa-0333030c023b",
+    name: null,
+    married: null,
+    favourite_number: null,
+    date: null,
+  };
+
+  const pool = await createPool(connectionString);
+  await pool.connect(async (connection) => {
+    return connection.query(prepareTestSql);
+  });
+  await pool.end();
+
+  const tableName = "person";
+
+  const logger = new Logger();
+  const query = new Query<Person>({ tableName, connectionString, logger });
+
+  expect(await query.all()).toEqual({
+    collection: [
+      janeDoe,
+      keelKeelson,
+      keelKeelgrandson,
+      agentSmith,
+      nullPerson,
+    ],
+  });
+
+  expect(await query.where({ id: { equal: janeDoe.id } }).all()).toEqual({
+    collection: [janeDoe],
+  });
+
+  expect(await query.where({ id: { equal: janeDoe.id } }).findOne()).toEqual({
+    errors: [],
+    object: janeDoe,
+  });
+
+  expect(await query.where({ id: janeDoe.id }).findOne()).toEqual({
+    errors: [],
+    object: janeDoe,
+  });
+
+  expect(await query.where({ name: { contains: "o" } }).all()).toEqual({
+    collection: [janeDoe, keelKeelson, keelKeelgrandson],
+  });
+
+  expect(await query.where({ name: { contains: "Smith" } }).findOne()).toEqual({
+    errors: [],
+    object: agentSmith,
+  });
+
+  expect(await query.where({ name: { startsWith: "K" } }).all()).toEqual({
+    collection: [keelKeelson, keelKeelgrandson],
+  });
+
+  expect(await query.where({ name: { endsWith: "son" } }).all()).toEqual({
+    collection: [keelKeelson, keelKeelgrandson],
+  });
+
+  expect(
+    await query.where({ id: { oneOf: [janeDoe.id, agentSmith.id] } }).all()
+  ).toEqual({ collection: [janeDoe, agentSmith] });
+
+  expect(await query.where({ id: { notEqual: janeDoe.id } }).all()).toEqual({
+    collection: [keelKeelson, keelKeelgrandson, agentSmith, nullPerson],
+  });
+
+  expect(await query.where({ married: { equal: "true" } }).all()).toEqual({
+    collection: [keelKeelson],
+  });
+
+  expect(await query.where({ married: { equal: "false" } }).all()).toEqual({
+    collection: [janeDoe, keelKeelgrandson, agentSmith],
+  });
+
+  expect(await query.where({ married: { notEqual: "true" } }).all()).toEqual({
+    collection: [janeDoe, keelKeelgrandson, agentSmith, nullPerson],
+  });
+
+  expect(await query.where({ married: { equal: null } }).all()).toEqual({
+    collection: [nullPerson],
+  });
+
+  expect(await query.where({ favourite_number: { equal: 10 } }).all()).toEqual({
+    collection: [keelKeelson, keelKeelgrandson],
+  });
+
+  expect(
+    await query.where({ favourite_number: { greaterThan: 1 } }).all()
+  ).toEqual({ collection: [keelKeelson, keelKeelgrandson] });
+
+  expect(
+    await query.where({ favourite_number: { greaterThanOrEqualTo: 1 } }).all()
+  ).toEqual({ collection: [keelKeelson, keelKeelgrandson, agentSmith] });
+
+  expect(
+    await query
+      .where({ favourite_number: { lessThan: 1 } })
+      .orWhere({ favourite_number: { greaterThan: 1 } })
+      .all()
+  ).toEqual({ collection: [janeDoe, keelKeelson, keelKeelgrandson] });
+
+  expect(
+    await query
+      .where({ favourite_number: { lessThan: 1 } })
+      .orWhere({ id: keelKeelson.id, favourite_number: { greaterThan: 1 } })
+      .all()
+  ).toEqual({ collection: [janeDoe, keelKeelson] });
+
+  expect(
+    await query
+      .where({ favourite_number: { lessThan: 1 } })
+      .orWhere({ id: keelKeelson.id, favourite_number: { greaterThan: 1 } })
+      .orWhere({
+        name: keelKeelgrandson.name,
+        favourite_number: { greaterThan: 1 },
+      })
+      .all()
+  ).toEqual({ collection: [janeDoe, keelKeelson, keelKeelgrandson] });
+
+  expect(
+    await query
+      .where({ favourite_number: { lessThan: 1 } })
+      .orWhere({ id: keelKeelson.id, favourite_number: { greaterThan: 1 } })
+      .orWhere({
+        name: keelKeelgrandson.name,
+        favourite_number: { greaterThan: 10 },
+      })
+      .all()
+  ).toEqual({ collection: [janeDoe, keelKeelson] });
+
+  expect(
+    await query.where({ favourite_number: { lessThanOrEqualTo: 1 } }).all()
+  ).toEqual({ collection: [janeDoe, agentSmith] });
+
+  //TODO the order doesn't seem to be working or I'm misusing it
+  expect(
+    await query
+      .where({ married: { equal: "false" } })
+      .order({ favourite_number: "DESC" })
+      .all()
+  ).toEqual({
+    collection: [janeDoe, keelKeelgrandson, agentSmith],
+  });
+  expect(
+    await query
+      .where({ married: { equal: "false" } })
+      .order({ favourite_number: "ASC" })
+      .all()
+  ).toEqual({
+    collection: [janeDoe, keelKeelgrandson, agentSmith],
+  });
+});
+
+test("insert", async () => {
+  interface Post {
+    id: string;
+    title: string;
+    published: boolean;
+    relevance: number;
+    author_born_in: Date;
+  }
+  type CreatePost = Partial<Omit<Post, "id">>;
+
+  const prepareTestSql = sql`
+    DROP TABLE IF EXISTS post;
+
+    CREATE TABLE post(
+        id             text PRIMARY KEY,
+        title          text,
+        published      boolean,
+        relevance      integer,
+        author_born_in timestamp,
+        created_at     timestamp DEFAULT now(),
+        updated_at     timestamp DEFAULT now()
+    );
+  `;
+
+  const tableName = "post";
+
+  const logger = new Logger();
+  const query = new Query<Post>({ tableName, connectionString, logger });
+
+  const pool = await createPool(connectionString);
+  await pool.connect(async (connection) => {
+    return connection.query(prepareTestSql);
+  });
+  await pool.end();
+
+  expect(await query.all()).toEqual({ collection: [] });
+
+  let postToCreate: CreatePost = {
+    title: "The Most Amazing News",
+    relevance: 9000,
+    published: true,
+    //TODO query blows up if I add this
+    // author_born_in: new Date('2013-03-21 09:10:59.897666Z'),
+  };
+
+  let queryResult = await query.create(postToCreate);
+
+  expect(Object.keys(queryResult.object)).toEqual([
+    "title",
+    "relevance",
+    "published",
+    "id",
+  ]);
+  expect(queryResult.object?.id).toBeTruthy();
+  expect(queryResult.object?.title).toEqual(postToCreate.title);
+  expect(queryResult.object?.relevance).toEqual(postToCreate.relevance);
+  expect(queryResult.object?.published).toEqual(postToCreate.published);
+  expect(queryResult.object?.author_born_in).toEqual(
+    postToCreate.author_born_in
+  );
+
+  postToCreate = {
+    title: null,
+    relevance: null,
+    published: null,
+    author_born_in: null,
+  };
+
+  queryResult = await query.create(postToCreate);
+
+  expect(Object.keys(queryResult.object)).toEqual([
+    "title",
+    "relevance",
+    "published",
+    "author_born_in",
+    "id",
+  ]);
+  expect(queryResult.object?.id).toBeTruthy();
+  expect(queryResult.object?.title).toEqual(postToCreate.title);
+  expect(queryResult.object?.relevance).toEqual(postToCreate.relevance);
+  expect(queryResult.object?.published).toEqual(postToCreate.published);
+  expect(queryResult.object?.author_born_in).toEqual(
+    postToCreate.author_born_in
+  );
+});
+
+test("delete", async () => {
+  interface Animal {
+    id: string;
+    name: string;
+  }
+
+  const prepareTestSql = sql`
+    DROP TABLE IF EXISTS animal;
+
+    CREATE TABLE animal(
+        id         text PRIMARY KEY,
+        name       text
+    );
+
+    INSERT INTO animal(id, name) VALUES ('5a09be63-190f-4c77-a297-b4be4c023b71', 'Scooby Doo');
+    INSERT INTO animal(id, name) VALUES ('66c83d78-25b9-4794-aca5-701a46bed575', 'Snoopy');
+  `;
+
+  const tableName = "animal";
+
+  const logger = new Logger();
+  const query = new Query<Animal>({ tableName, connectionString, logger });
+
+  const pool = await createPool(connectionString);
+  await pool.connect(async (connection) => {
+    return connection.query(prepareTestSql);
+  });
+  await pool.end();
+
+  let scoobyDoo = {
+    id: "5a09be63-190f-4c77-a297-b4be4c023b71",
+    name: "Scooby Doo",
+  };
+  let snoopy = { id: "66c83d78-25b9-4794-aca5-701a46bed575", name: "Snoopy" };
+
+  expect(await query.all()).toEqual({ collection: [scoobyDoo, snoopy] });
+
+  expect(await query.delete(snoopy.id)).toEqual({ success: true });
+
+  expect(await query.delete(snoopy.id)).toEqual({ success: false });
+
+  expect(await query.all()).toEqual({ collection: [scoobyDoo] });
+
+  expect(await query.delete(scoobyDoo.id)).toEqual({ success: true });
+
+  expect(await query.all()).toEqual({ collection: [] });
+});
+
+test("update", async () => {
+  interface Food {
+    id: string;
+    name?: string;
+    rotten?: boolean;
+    //TODO add date here
+    stock?: number;
+  }
+  type UpdateFood = Input<Food>;
+
+  const prepareTestSql = sql`
+    DROP TABLE IF EXISTS food;
+
+    CREATE TABLE food(
+        id         text PRIMARY KEY,
+        name       text,
+        rotten     boolean,
+        stock      integer
+    );
+
+    INSERT INTO food (id, name, rotten, stock)
+    VALUES ('6cba2acc-a06b-4f4d-8671-bd87a5473ed9', 'Apple', false, 10);
+    INSERT INTO food (id, name, rotten, stock)
+    VALUES ('414467c1-817c-4bf2-8911-b1df8e689806', 'Burger', true, 1);
+  `;
+
+  const tableName = "food";
+
+  const logger = new Logger();
+  const query = new Query<Food>({ tableName, connectionString, logger });
+
+  const pool = await createPool(connectionString);
+  await pool.connect(async (connection) => {
+    return connection.query(prepareTestSql);
+  });
+  await pool.end();
+
+  let apple = {
+    id: "6cba2acc-a06b-4f4d-8671-bd87a5473ed9",
+    name: "Apple",
+    rotten: false,
+    stock: 10,
+  };
+  let burger = {
+    id: "414467c1-817c-4bf2-8911-b1df8e689806",
+    name: "Burger",
+    rotten: true,
+    stock: 1,
+  };
+  let updatedApple1: UpdateFood = { ...apple, name: "Pear" };
+  let updatedApple2: UpdateFood = { ...apple, id: "updated_id" };
+  let updatedApple3: UpdateFood = {
+    id: updatedApple2.id,
+    name: "Onions",
+    rotten: true,
+    stock: 5,
+  };
+  let updatedApple4: UpdateFood = {
+    id: updatedApple2.id,
+    name: null,
+    rotten: null,
+    stock: null,
+  };
+
+  expect(await query.all()).toEqual({ collection: [apple, burger] });
+  await query.update("non-existing-id", updatedApple1);
+  expect(await query.all()).toEqual({ collection: [apple, burger] });
+  await query.update(apple.id, updatedApple1);
+  expect(await query.all()).toEqual({ collection: [burger, updatedApple1] });
+  await query.update(apple.id, updatedApple2);
+  expect(await query.all()).toEqual({ collection: [burger, updatedApple2] });
+  await query.update("updated_id", updatedApple3);
+  expect(await query.all()).toEqual({ collection: [burger, updatedApple3] });
+  await query.update("updated_id", updatedApple4);
+  expect(await query.all()).toEqual({ collection: [burger, updatedApple4] });
+});
