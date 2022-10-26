@@ -28,7 +28,7 @@ func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 		resolver := NewFilterResolver(scope)
 
 		// Resolve the database statement for this expression
-		statement, err := resolver.ResolveQueryStatement(fieldName, value, Equals, input.Type.Type)
+		statement, err := resolver.ResolveQueryStatement(fieldName, value, Equals)
 		if err != nil {
 			return err
 		}
@@ -44,7 +44,7 @@ func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
 	operation := scope.operation
 
 	for _, where := range operation.WhereExpressions {
-		expression, err := parser.ParseExpression(where.Source) // E.g. post.title == requiredTitle
+		expression, err := parser.ParseExpression(where.Source)
 		if err != nil {
 			return err
 		}

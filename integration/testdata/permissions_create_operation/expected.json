@@ -118,5 +118,29 @@
     {
         "status": "pass",
         "testName": "multiple ORed permissions - matching no values - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission on implicit input - matching value - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission on implicit input - not matching value - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission on implicit input - null value - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission on explicit input - matching value - is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission on explicit input - not matching value - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission on explicit input - null value - is not authorized"
     }
 ]
