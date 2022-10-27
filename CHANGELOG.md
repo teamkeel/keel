@@ -1,3 +1,10 @@
+# [0.186.0](https://github.com/teamkeel/keel/compare/v0.185.0...v0.186.0) (2022-10-27)
+
+
+### Features
+
+* ctx.now supported on schema ([#511](https://github.com/teamkeel/keel/issues/511)) ([3893878](https://github.com/teamkeel/keel/commit/3893878e2fa81f27fbc227678237db1f65559d14))
+
 # [0.185.0](https://github.com/teamkeel/keel/compare/v0.184.0...v0.185.0) (2022-10-27)
 
 
