@@ -36,7 +36,7 @@ declare module "@teamkeel/sdk/constraints" {
   export type EnumConstraint = string | EqualityConstraint;
 }
 declare module "@teamkeel/sdk/index" {
-  import Query, { ChainableQuery, defaultClientConfiguration } from "@teamkeel/sdk/query";
+  import Query, { ChainableQuery } from "@teamkeel/sdk/query";
   import * as QueryConstraints from "@teamkeel/sdk/constraints";
   import Logger, {
     ConsoleTransport,
@@ -51,13 +51,11 @@ declare module "@teamkeel/sdk/index" {
 
   export {
     Query,
-    QueryConstraints,
     ChainableQuery,
     Logger,
     ConsoleTransport,
     LogLevel,
     Identity,
-    defaultClientConfiguration,
   };
 }
 
@@ -94,11 +92,9 @@ declare module "@teamkeel/sdk/logger" {
 }
 
 declare module "@teamkeel/sdk/query" {
-  import { TaggedTemplateLiteralInvocation, ClientConfigurationInput } from "slonik";
   import {
     Conditions,
     ChainedQueryOpts,
-    SqlOptions, 
     QueryOpts,
     Input,
     OrderClauses,
@@ -117,7 +113,6 @@ declare module "@teamkeel/sdk/query" {
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
     order: (clauses: OrderClauses<T>) => ChainableQuery<T>;
     findOne: () => Promise<ReturnTypes.FunctionGetResponse<T>>;
-    sql: ({ asAst }: SqlOptions) => string | TaggedTemplateLiteralInvocation<T>;
     private appendConditions;
   }
   export default class Query<T> {
@@ -141,31 +136,46 @@ declare module "@teamkeel/sdk/query" {
     ) => Promise<ReturnTypes.FunctionUpdateResponse<T>>;
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
   }
-  export const defaultClientConfiguration : ClientConfigurationInput;
   
   export {};
 }
 
+declare module "@teamkeel/sdk/db/query" {
+  export type SqlQueryParts = SqlQueryPart[];
+
+  export type SqlQueryPart = RawSql | SqlInput;
+
+  export type RawSql = {
+    type: "sql";
+    value: string;
+  };
+
+  export type SqlInput = {
+    type: "input";
+    value: any;
+  };
+}
+
 declare module "@teamkeel/sdk/queryBuilders/index" {
-  import { TaggedTemplateLiteralInvocation } from "slonik";
   import { Constraints } from "@teamkeel/sdk/types";
+  import { SqlQueryParts } from "@teamkeel/sdk/db/query";
   export const buildSelectStatement: <T>(
     tableName: string,
     conditions: Partial<Record<keyof T, Constraints>>[]
-  ) => TaggedTemplateLiteralInvocation<T>;
+  ) => SqlQueryParts;
   export const buildCreateStatement: <T>(
     tableName: string,
     inputs: Partial<T>
-  ) => TaggedTemplateLiteralInvocation;
+  ) => SqlQueryParts;
   export const buildUpdateStatement: <T>(
     tableName: string,
     id: string,
     inputs: Partial<T>
-  ) => TaggedTemplateLiteralInvocation<T>;
+  ) => SqlQueryParts;
   export const buildDeleteStatement: <T>(
     tableName: string,
     id: string
-  ) => TaggedTemplateLiteralInvocation<T>;
+  ) => SqlQueryParts;
 }
 declare module "@teamkeel/sdk/types" {
   import {
@@ -184,9 +194,6 @@ declare module "@teamkeel/sdk/types" {
   }
   export interface ChainedQueryOpts<T> extends QueryOpts {
     conditions: Conditions<T>[];
-  }
-  export interface SqlOptions {
-    asAst: boolean;
   }
   export type Constraints =
     | StringConstraint
