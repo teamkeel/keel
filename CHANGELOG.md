@@ -1,3 +1,10 @@
+# [0.191.0](https://github.com/teamkeel/keel/compare/v0.190.0...v0.191.0) (2022-10-27)
+
+
+### Features
+
+* adapt to updated sdk ([e5ade15](https://github.com/teamkeel/keel/commit/e5ade155058ca86412d90630036f668eddcfb68b))
+
 # [0.190.0](https://github.com/teamkeel/keel/compare/v0.189.0...v0.190.0) (2022-10-27)
 
 
