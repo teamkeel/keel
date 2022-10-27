@@ -1,9 +1,3 @@
-import {
-  ClientConfigurationInput,
-  createPool,
-  QueryResult,
-  TaggedTemplateLiteralInvocation,
-} from "slonik";
 import KSUID from "ksuid";
 import {
   buildCreateStatement,
@@ -14,7 +8,6 @@ import {
 import {
   Conditions,
   ChainedQueryOpts,
-  SqlOptions,
   QueryOpts,
   Input,
   BuiltInFields,
@@ -22,12 +15,8 @@ import {
 } from "./types";
 import * as ReturnTypes from "./returnTypes";
 import Logger from "./logger";
-import { ConnectionRoutine } from "slonik/dist/src/types";
-
-export const defaultClientConfiguration : ClientConfigurationInput = {
-  // https://github.com/gajus/slonik/issues/94#issuecomment-531117098
-  typeParsers: []
-}
+import { SqlQueryParts } from "./db/query";
+import { Pool, QueryResult } from "pg";
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
@@ -94,44 +83,19 @@ export class ChainableQuery<T extends IDer> {
     return this;
   };
 
-  // Returns the SQL string representing the query
-  sql = ({
-    asAst,
-  }: SqlOptions): string | TaggedTemplateLiteralInvocation<T> => {
-    if (asAst) {
-      return buildSelectStatement(
-        this.tableName,
-        this.conditions,
-        this.orderClauses
-      );
-    }
-
-    return buildSelectStatement(
-      this.tableName,
-      this.conditions,
-      this.orderClauses
-    ).sql;
-  };
-
   private appendConditions(conditions: Conditions<T>): void {
     this.conditions.push(conditions);
   }
 
-  private execute = async (
-    query: TaggedTemplateLiteralInvocation<T>
-  ): Promise<QueryResult<T>> => {
+  private execute = async (query: SqlQueryParts): Promise<QueryResult<T>> => {
     // todo: reinstate
     // this.logger.log(logSql<T>(query), LogLevel.Debug);
 
-    return this.connect(async (connection) => {
-      return connection.query(query);
+    const pool = new Pool({
+      connectionString: this.connectionString,
     });
-  };
 
-  private connect = async (routine: ConnectionRoutine<QueryResult<T>>) => {
-    return (
-      await createPool(this.connectionString, { typeParsers: [] })
-    ).connect(routine);
+    return pool.query(toQuery(query));
   };
 }
 
@@ -245,52 +209,59 @@ export default class Query<T extends IDer> {
     };
   };
 
-  private execute = async (
-    query: TaggedTemplateLiteralInvocation<T>
-  ): Promise<QueryResult<T>> => {
+  private execute = async (query: SqlQueryParts): Promise<QueryResult<T>> => {
     // todo: reinstate
     // this.logger.log(logSql<T>(query), LogLevel.Debug);
 
-    return this.connect(async (connection) => {
-      const result = connection.query(query);
-      return result;
+    const pool = new Pool({
+      connectionString: this.connectionString,
     });
-  };
 
-  private connect = async (routine: ConnectionRoutine<QueryResult<T>>) => {
-    return (
-      await createPool(this.connectionString, { typeParsers: [] })
-    ).connect(routine);
+    return pool.query(toQuery(query));
   };
 }
 
-const logSql = <T extends IDer>(
-  query: TaggedTemplateLiteralInvocation<T>
-): string => {
-  const mutatedQuery = query.values.reduce((acc, cur, idx) => {
-    const newObj = Object.assign({}, acc);
+const logSql = <T extends IDer>(query: SqlQueryParts): string => {
+  return query
+    .map((queryPart) => {
+      switch (queryPart.type) {
+        case "sql":
+          return queryPart.value;
+        case "input":
+          let v = queryPart.value.valueOf();
+          let value = "";
 
-    const v = typeof cur.valueOf();
-
-    let value = "";
-
-    switch (v) {
-      case "number":
-      case "boolean":
-        value = cur.toString();
-        break;
-      case "string":
-        // string covers some other types that are stringified such as date
-        value = `'${cur}'`;
-        break;
-      default:
-        value = `'${JSON.stringify(cur)}'`;
-    }
-
-    const newSql = newObj.sql.replace(`$${idx + 1}`, value);
-
-    return Object.assign(newObj, { sql: newSql });
-  }, query);
-
-  return mutatedQuery.sql;
+          switch (v) {
+            case "number":
+            case "boolean":
+              value = queryPart.value.toString();
+              break;
+            case "string":
+              // string covers some other types that are stringified such as date
+              value = `'${queryPart.value}'`;
+              break;
+            default:
+              value = `'${JSON.stringify(queryPart.value)}'`;
+          }
+          return value;
+      }
+    })
+    .join();
 };
+
+function toQuery(query: SqlQueryParts): { text: string; values: any[] } {
+  let nextInterpolationIndex = 1;
+  let values = [];
+  const text = query
+    .map((queryPart) => {
+      switch (queryPart.type) {
+        case "sql":
+          return queryPart.value;
+        case "input":
+          values.push(queryPart.value);
+          return `$${nextInterpolationIndex++}`;
+      }
+    })
+    .join(" ");
+  return { text, values };
+}

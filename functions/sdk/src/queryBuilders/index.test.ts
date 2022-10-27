@@ -4,12 +4,33 @@ import {
   buildDeleteStatement,
   buildCreateStatement,
   buildUpdateStatement,
-  transformValue
+  transformValue,
 } from "./";
+import { SqlQueryParts } from "../db/query";
 
 interface Test {
   foo: string;
   bar: number;
+}
+
+function toPreparedStatement(query: SqlQueryParts): {
+  sql: string;
+  values: any[];
+} {
+  let nextInterpolationIndex = 1;
+  let values = [];
+  const sql = query
+    .map((queryPart) => {
+      switch (queryPart.type) {
+        case "sql":
+          return queryPart.value;
+        case "input":
+          values.push(queryPart.value);
+          return `$${nextInterpolationIndex++}`;
+      }
+    })
+    .join(" ");
+  return { sql, values };
 }
 
 test("buildSelectStatement", () => {
@@ -26,10 +47,10 @@ test("buildSelectStatement", () => {
     },
   ] as Conditions<Test>[]);
 
-  const { sql, values } = query;
+  const { sql, values } = toPreparedStatement(query);
 
   expect(sql).toEqual(
-    'SELECT * FROM "test" WHERE ("test"."foo" ILIKE $1) OR ("test"."bar" > $2)'
+    'SELECT * FROM "test" WHERE ( "test"."foo" ILIKE $1 ) OR ( "test"."bar" > $2 )'
   );
 
   expect(values).toEqual(["bar%", 1]);
@@ -38,7 +59,9 @@ test("buildSelectStatement", () => {
 test("buildDeleteStatement", () => {
   const id = "jdssjdjsjj";
 
-  const { sql, values } = buildDeleteStatement<Test>("test", id);
+  const { sql, values } = toPreparedStatement(
+    buildDeleteStatement<Test>("test", id)
+  );
 
   expect(sql).toEqual('DELETE FROM "test" WHERE id = $1 RETURNING id');
 
@@ -51,12 +74,13 @@ test("buildCreateStatement", () => {
     bar: 1,
   };
 
-  const { sql, values } = buildCreateStatement<Test>("test", t);
+  const { sql, values } = toPreparedStatement(
+    buildCreateStatement<Test>("test", t)
+  );
 
-  expect(sql).toEqual(`
-    INSERT INTO "test" ("foo", "bar")
-    VALUES ($1, $2)
-    RETURNING id`);
+  expect(sql).toEqual(
+    `INSERT INTO "test" ( "foo" , "bar" ) VALUES ( $1 , $2 ) RETURNING id`
+  );
 
   expect(values).toEqual(["bar", 1]);
 });
@@ -68,9 +92,13 @@ test("buildUpdateStatement", () => {
     bar: 1,
   };
 
-  const { sql, values } = buildUpdateStatement<Test>("test", id, t);
+  const { sql, values } = toPreparedStatement(
+    buildUpdateStatement<Test>("test", id, t)
+  );
 
-  expect(sql).toEqual('UPDATE "test" SET "foo" = $1,"bar" = $2 WHERE id = $3');
+  expect(sql).toEqual(
+    'UPDATE "test" SET "foo" = $1 , "bar" = $2 WHERE id = $3'
+  );
 
   expect(values).toEqual(["bar", 1, id]);
 });
@@ -89,10 +117,10 @@ test("testLimit", () => {
     1
   );
 
-  const { sql, values } = query;
+  const { sql, values } = toPreparedStatement(query);
 
   expect(sql).toEqual(
-    'SELECT * FROM "test" WHERE ("test"."foo" ILIKE $1) LIMIT $2'
+    'SELECT * FROM "test" WHERE ( "test"."foo" ILIKE $1 ) LIMIT $2'
   );
 
   expect(values).toEqual(["bar%", 1]);
@@ -113,26 +141,26 @@ test("testOrder", () => {
     } as OrderClauses<Test>
   );
 
-  const { sql, values } = query;
+  const { sql, values } = toPreparedStatement(query);
 
   expect(sql).toEqual(
-    'SELECT * FROM "test" WHERE ("test"."foo" ILIKE $1) ORDER BY $2'
+    'SELECT * FROM "test" WHERE ( "test"."foo" ILIKE $1 ) ORDER BY foo ASC'
   );
 
-  expect(values).toEqual(["bar%", "foo ASC"]);
+  expect(values).toEqual(["bar%"]);
 });
 
-describe('transformValue', () => {
-  it('converts Date objects to ISO8601', () => {
+describe("transformValue", () => {
+  it("converts Date objects to ISO8601", () => {
     const d = new Date("2020-03-31T23:00:00.000Z");
     const result = transformValue(d);
 
-    const expected = d.toISOString()
-    expect(result).toEqual(expected)
+    const expected = d.toISOString();
+    expect(result).toEqual(expected);
   });
-  
-  it('returns the original value for everything else', () => {
-    const primitives = [1, 's', true, undefined, null];
+
+  it("returns the original value for everything else", () => {
+    const primitives = [1, "s", true, undefined, null];
 
     primitives.forEach((p) => {
       expect(transformValue(p)).toEqual(p);
