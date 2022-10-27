@@ -657,6 +657,12 @@ func (gen *Generator) GenerateEntryPointRenderArguments(pathToFunctionsDirFromHa
 
 		// Logger types
 		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
+			"Name": "{ queryResolverFromEnv }",
+			"Path": "@teamkeel/sdk",
+		}))
+
+		// Logger types
+		acc += fmt.Sprintf("%s\n", renderTemplate(TemplateImport, map[string]interface{}{
 			"Name": "{ Logger }",
 			"Path": "@teamkeel/sdk",
 		}))
