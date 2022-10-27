@@ -228,6 +228,7 @@ const basicSchema string = `
 		operations {
 			get getPerson(id)
 			create createPerson() with (name)
+			update updatePerson(id) with (name)
 			list listPeople(name)
 		}
 	}
@@ -290,6 +291,7 @@ const multiSchema string = `
 		operations {
 			get getMulti(id)
 			create createMulti() with (aText, aBool, aNumber)
+			update updateMulti(id) with (aText, aBool, aNumber)
 		}
 	}
 	api Test {
@@ -355,7 +357,6 @@ var testCases = []testCase{
 			require.Equal(t, "Fred", name)
 		},
 	},
-
 	{
 		name:       "create_operation_errors",
 		keelSchema: basicSchema,
@@ -406,7 +407,6 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getPerson.name", "Fred")
 		},
 	},
-
 	{
 		name:       "get_operation_error",
 		keelSchema: basicSchema,
@@ -423,6 +423,67 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "no records found for Get() operation", errors[0].Message)
+		},
+	},
+	{
+		name:       "update_operation_happy",
+		keelSchema: basicSchema,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"name": "Sue",
+					"id":   "41",
+				}),
+				initRow(map[string]any{
+					"name": "Fred",
+					"id":   "42",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("person").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			mutation UpdatePerson($id: ID!, $name: String!) {
+				updatePerson(input: { where: { id: $id }, values: { name: $name }}) {
+					id
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"id":   42,
+			"name": "Keelson",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "updatePerson.name", "Keelson")
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := rtt.GetValueAtPath(t, data, "updatePerson.id")
+			var name string
+			err := db.Table("person").Where("id = ?", id).Pluck("name", &name).Error
+			require.NoError(t, err)
+			require.Equal(t, "Keelson", name)
+		},
+	},
+	{
+		name:       "update_operation_errors",
+		keelSchema: basicSchema,
+		gqlOperation: `
+			mutation UpdatePerson($id: ID!, $name: String!) {
+				updatePerson(input: { where: { id: $id }, values: { name: $name }}) {
+					id
+					name
+				}
+			}
+		`,
+		variables: map[string]any{
+			"id":   42,
+			"name": "Fred",
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "no records found for Update() operation", errors[0].Message)
 		},
 	},
 	{
@@ -496,6 +557,65 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getMulti.aText", "Petunia")
 			rtt.AssertValueAtPath(t, data, "getMulti.aBool", true)
 			rtt.AssertValueAtPath(t, data, "getMulti.aNumber", float64(8086))
+		},
+	},
+	{
+		name:       "update_all_field_types",
+		keelSchema: multiSchema,
+		gqlOperation: `
+			mutation UpdateMulti(
+				$id: ID!
+				$aText: String!
+				$aBool: Boolean!
+				$aNumber: Int!
+			) {
+			updateMulti(input: {
+				where: {
+					id: $id
+				},
+				values: {
+					aText: $aText
+					aBool: $aBool
+					aNumber: $aNumber
+				}
+			}) {id aText aBool aNumber}
+		}
+		`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":      "42",
+					"aText":   "Petunia",
+					"aNumber": int(8086),
+					"aBool":   true,
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("multi").Create(row).Error)
+			}
+		},
+		variables: map[string]any{
+			"id":      "42",
+			"aText":   "Keelson",
+			"aNumber": int(8001),
+			"aBool":   false,
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "updateMulti.aText", "Keelson")
+			rtt.AssertValueAtPath(t, data, "updateMulti.aBool", false)
+			rtt.AssertValueAtPath(t, data, "updateMulti.aNumber", float64(8001))
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data map[string]any) {
+			id := rtt.GetValueAtPath(t, data, "updateMulti.id")
+			record := map[string]any{}
+			err := db.Table("multi").Where("id = ?", id).Find(&record).Error
+			require.NoError(t, err)
+
+			require.Equal(t, "Keelson", record["a_text"])
+			require.Equal(t, false, record["a_bool"])
+			require.Equal(t, int32(8001), record["a_number"])
+			rtt.AssertIsTimeNow(t, record["created_at"])
+			rtt.AssertIsTimeNow(t, record["updated_at"])
 		},
 	},
 	{

@@ -2,6 +2,7 @@ package actions
 
 import (
 	"errors"
+	"fmt"
 )
 
 type UpdateAction struct {
@@ -98,14 +99,31 @@ func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[Update
 	}
 
 	err := action.scope.query.Updates(action.scope.writeValues).Error
-
 	if err != nil {
 		return nil, err
 	}
 
+	// todo: Use RETURNING statement on UPDATE
+	// https://linear.app/keel/issue/RUN-146/gorm-use-returning-on-insert-and-update-statements
+	results := []map[string]any{}
+	action.scope.query = action.scope.query.Find(&results)
+
+	if action.scope.query.Error != nil {
+		return nil, action.scope.query.Error
+	}
+	n := len(results)
+	if n == 0 {
+		return nil, errors.New("no records found for Update() operation")
+	}
+	if n > 1 {
+		return nil, fmt.Errorf("Update() operation should find only one record, it found: %d", n)
+	}
+
+	result := toLowerCamelMap(results[0])
+
 	return &ActionResult[UpdateResult]{
 		Value: UpdateResult{
-			Object: toLowerCamelMap(action.scope.writeValues),
+			Object: result,
 		},
 	}, nil
 }
