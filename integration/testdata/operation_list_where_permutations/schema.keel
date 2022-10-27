@@ -1,0 +1,52 @@
+model Thing {
+    fields {
+        title Text?
+        length Number?
+        switchIsOn Boolean?
+        eventTime Timestamp?
+        birthday Date?
+        faveFruit FruitT?
+    }
+
+    operations {
+        create createPost() with (title?, length?, switchIsOn?, eventTime?, birthday?, faveFruit?)
+
+        // These are mostly concerned with a Text field and the Equals operator, 
+        // but use a different styles of input. Most of the variation is on the RHS,
+        // but note that FieldTLit and LitToField are delibarately equivalent, and only
+        // differ in the LHS and RHS being swapped over.
+
+        list eqTextFieldToInp(whereArg: Text) {
+            @where(thing.title == whereArg)
+        }
+        list eqTextFieldToField() {
+            @where(thing.title == thing.title)
+        }
+        list eqTextFieldToLit() {
+            @where(thing.title == "History of Art")
+        }
+        list eqTextFieldToNil() {
+            @where(thing.title == null)
+        }
+
+        // This one swaps over LHS of RHS of an earlier one.
+        list eqTextLitToField() {
+            @where("History of Art" == thing.title)
+        }
+
+        // This one does a quick sample that != works the same way as ==.
+        list notEqTextFieldToLit() {
+            @where(thing.title != "History of Art")
+        }
+
+        // This one does a quick sample of a Number input
+        list eqNumberFieldToLit() {
+            @where(thing.length == 42)
+        }
+    }
+}
+
+enum FruitT {
+    Apple
+    Orange
+}

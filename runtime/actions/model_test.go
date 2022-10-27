@@ -65,7 +65,7 @@ func TestBuiltInDefaultForTimeFields(t *testing.T) {
 		require.NoError(t, err)
 		times, ok := v.([]time.Time)
 		require.True(t, ok)
-		require.Len(t, times, 0)
+		require.Len(t, times, 9)
 	}
 }
 

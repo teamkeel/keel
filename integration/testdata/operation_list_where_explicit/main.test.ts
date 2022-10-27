@@ -10,7 +10,7 @@ test('List Where filters - using equal operator (string) - filters correctly', a
     })
 
   expect(response.length).toEqual(1)
-  expect(response[0].title).toEqual('Fred')
+   expect(response[0].title).toEqual('Fred')
 })
 
 
