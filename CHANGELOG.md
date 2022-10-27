@@ -1,3 +1,10 @@
+# [0.185.0](https://github.com/teamkeel/keel/compare/v0.184.0...v0.185.0) (2022-10-27)
+
+
+### Features
+
+* support pattern in test cmd ([#510](https://github.com/teamkeel/keel/issues/510)) ([dc5e1c2](https://github.com/teamkeel/keel/commit/dc5e1c2eee1818e2cffa61e9c71dead6bdd3e631))
+
 # [0.184.0](https://github.com/teamkeel/keel/compare/v0.183.1...v0.184.0) (2022-10-27)
 
 
