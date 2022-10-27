@@ -49,7 +49,7 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
-		ch, err := testing.Run(workingDir, "", testing.RunTypeTestCmd)
+		ch, err := testing.Run(workingDir, pattern, testing.RunTypeTestCmd)
 
 		if err != nil {
 			return err
@@ -65,6 +65,8 @@ var testCmd = &cobra.Command{
 	},
 }
 
+var pattern string
+
 func init() {
 	rootCmd.AddCommand(testCmd)
 	defaultDir, err := os.Getwd()
@@ -72,6 +74,7 @@ func init() {
 		panic(fmt.Errorf("os.Getwd() errored: %v", err))
 	}
 	testCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "input directory to validate")
+	testCmd.Flags().StringVarP(&pattern, "pattern", "p", "(.*)", "pattern to isolate test")
 }
 
 func PrintSummary(events []*testing.Event) {
