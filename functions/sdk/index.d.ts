@@ -49,6 +49,8 @@ declare module "@teamkeel/sdk/index" {
 
   export * from "@teamkeel/sdk/returnTypes";
 
+  export * from "@teamkeel/sdk/db/resolver";
+
   export {
     Query,
     ChainableQuery,
