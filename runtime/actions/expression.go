@@ -31,10 +31,10 @@ func NewFilterResolver(scope *Scope) *FilterResolver {
 }
 
 // Generates a database query statement for a filter.
-func (resolver *FilterResolver) ResolveQueryStatement(fieldName string, value any, operator ActionOperator, valueType proto.Type) (*gorm.DB, error) {
+func (resolver *FilterResolver) ResolveQueryStatement(fieldName string, value any, operator ActionOperator) (*gorm.DB, error) {
 	fieldName = strcase.ToSnake(fieldName)
 
-	queryTemplate, err := generateFilterTemplate(fieldName, "?", operator, valueType)
+	queryTemplate, err := generateFilterTemplate(fieldName, "?", operator)
 	if err != nil {
 		return nil, err
 	}
@@ -298,17 +298,25 @@ func (resolver *OperandResolver) ResolveValue(
 		}
 	case resolver.IsImplicitInput(), resolver.IsExplicitInput():
 		inputName := resolver.operand.Ident.Fragments[0].Fragment
-		return args[inputName], nil
+		value, ok := args[inputName]
+		if !ok {
+			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", inputName)
+		}
+		return value, nil
 	case resolver.IsWriteValue():
 		inputName := strcase.ToSnake(resolver.operand.Ident.Fragments[1].Fragment)
-		return writeValues[inputName], nil
+		value, ok := writeValues[inputName]
+		if !ok {
+			return nil, fmt.Errorf("value '%s' does not exist in write values", inputName)
+		}
+		return value, nil
 	case resolver.IsDatabaseColumn():
 		panic("cannot resolve operand value when IsDatabaseColumn() is true")
 	case resolver.IsContextField() && resolver.operand.Ident.IsContextIdentityField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.context)
 
 		if !isAuthenticated {
-			return nil, fmt.Errorf("cannot retrieve identity for unauthenticated session")
+			return nil, nil
 		}
 
 		ksuid, err := runtimectx.GetIdentity(resolver.context)
@@ -360,24 +368,30 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 	var template string
 	var queryArgs []any
 
-	lhsSqlOperand := "?"
-	rhsSqlOperand := "?"
+	// ? is the gorm template token which is replaced when populating the operand arguments.
+	var lhsSqlOperand, rhsSqlOperand any
+	lhsSqlOperand = "?"
+	rhsSqlOperand = "?"
 
 	if !lhsResolver.IsDatabaseColumn() {
-		lhsValue, _ := lhsResolver.ResolveValue(args, writeValues, lhsOperandType)
+		lhsValue, err := lhsResolver.ResolveValue(args, writeValues, lhsOperandType)
+		if err != nil {
+			return "", nil, err
+		}
 
 		switch operator {
 		case StartsWith:
 			lhsValue = lhsValue.(string) + "%%"
 		case EndsWith:
-			lhsValue = lhsValue.(string) + "%%"
+			lhsValue = "%%" + lhsValue.(string)
 		case Contains, NotContains:
 			lhsValue = "%%" + lhsValue.(string) + "%%"
 		}
 
 		queryArgs = append(queryArgs, lhsValue)
 	} else {
-		// Generate the table's column operand from the fragments (e.g. post.sub_title)
+		// Generate the table's column name from the fragments (e.g. post.sub_title)
+		// And replace the ? gorm template token with the column name
 		modelTarget := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[0].Fragment)
 		fieldName := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[1].Fragment)
 		lhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)
@@ -386,26 +400,35 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 	if condition.Type() == parser.ValueCondition {
 		queryArgs = append(queryArgs, true)
 	} else if !rhsResolver.IsDatabaseColumn() {
-		rhsValue, _ := rhsResolver.ResolveValue(args, writeValues, rhsOperandType)
-
-		switch operator {
-		case StartsWith:
-			rhsValue = rhsValue.(string) + "%%"
-		case EndsWith:
-			rhsValue = rhsValue.(string) + "%%"
-		case Contains, NotContains:
-			rhsValue = "%%" + rhsValue.(string) + "%%"
+		rhsValue, err := rhsResolver.ResolveValue(args, writeValues, rhsOperandType)
+		if err != nil {
+			return "", nil, err
 		}
 
-		queryArgs = append(queryArgs, rhsValue)
+		// If the value is nil, then we can bake this straight into the template
+		if rhsValue == nil {
+			rhsSqlOperand = nil
+		} else {
+			switch operator {
+			case StartsWith:
+				rhsValue = rhsValue.(string) + "%%"
+			case EndsWith:
+				rhsValue = "%%" + rhsValue.(string)
+			case Contains, NotContains:
+				rhsValue = "%%" + rhsValue.(string) + "%%"
+			}
+
+			queryArgs = append(queryArgs, rhsValue)
+		}
 	} else {
 		// Generate the table's column operand from the fragments (e.g. post.sub_title)
+		// And replace the ? gorm template token with the column name
 		modelTarget := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[0].Fragment)
 		fieldName := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[1].Fragment)
 		rhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)
 	}
 
-	template, err = generateFilterTemplate(lhsSqlOperand, rhsSqlOperand, operator, rhsOperandType)
+	template, err = generateFilterTemplate(lhsSqlOperand, rhsSqlOperand, operator)
 	if err != nil {
 		return "", nil, err
 	}
@@ -413,27 +436,23 @@ func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, o
 	return template, queryArgs, nil
 }
 
-func generateFilterTemplate(lhsSqlOperand any, rhsSqlOperand any, operator ActionOperator, rhsOperandType proto.Type) (string, error) {
+func generateFilterTemplate(lhsSqlOperand any, rhsSqlOperand any, operator ActionOperator) (string, error) {
 	var template string
 
 	switch operator {
 	case Equals:
-		if rhsOperandType == proto.Type_TYPE_UNKNOWN {
-			template = fmt.Sprintf("%s IS %s", lhsSqlOperand, rhsSqlOperand)
+		if rhsSqlOperand == nil {
+			template = fmt.Sprintf("%s IS NULL", lhsSqlOperand)
 		} else {
 			template = fmt.Sprintf("%s = %s", lhsSqlOperand, rhsSqlOperand)
 		}
 	case NotEquals:
-		if rhsOperandType == proto.Type_TYPE_UNKNOWN {
-			template = fmt.Sprintf("%s IS NOT %s", lhsSqlOperand, rhsSqlOperand)
+		if rhsSqlOperand == nil {
+			template = fmt.Sprintf("%s IS NOT NULL", lhsSqlOperand)
 		} else {
 			template = fmt.Sprintf("%s != %s", lhsSqlOperand, rhsSqlOperand)
 		}
-	case StartsWith:
-		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
-	case EndsWith:
-		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
-	case Contains:
+	case StartsWith, EndsWith, Contains:
 		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case NotContains:
 		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
@@ -481,27 +500,27 @@ func evaluateInProcess(
 		return compareString(lhs.(string), rhs.(string), operator)
 	case proto.Type_TYPE_INT:
 		// todo: unify these to a single type at the source?
-		switch lhs.(type) {
+		switch v := lhs.(type) {
 		case int:
 			// Sourced from GraphQL input parameters.
-			lhs = int64(lhs.(int))
+			lhs = int64(v)
 		case float64:
 			// Sourced from integration test framework.
-			lhs = int64(lhs.(float64))
+			lhs = int64(v)
 		case int32:
 			// Sourced from database.
-			lhs = int64(lhs.(int32)) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
+			lhs = int64(v) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
 		}
-		switch rhs.(type) {
+		switch v := rhs.(type) {
 		case int:
 			// Sourced from GraphQL input parameters.
-			rhs = int64(rhs.(int))
+			rhs = int64(v)
 		case float64:
 			// Sourced from integration test framework.
-			rhs = int64(rhs.(float64))
+			rhs = int64(v)
 		case int32:
 			// Sourced from database.
-			rhs = int64(rhs.(int32)) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
+			rhs = int64(v) // todo: https://linear.app/keel/issue/RUN-98/number-type-as-int32-or-int64
 		}
 		return compareInt(lhs.(int64), rhs.(int64), operator)
 	case proto.Type_TYPE_BOOL:

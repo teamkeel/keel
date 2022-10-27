@@ -41,7 +41,7 @@ declare module "@teamkeel/sdk/constraints" {
 }
 declare module "@teamkeel/sdk/index" {
   import Query, { ChainableQuery } from "@teamkeel/sdk/query";
-  import * as Constraints from "@teamkeel/sdk/constraints";
+  import * as QueryConstraints from "@teamkeel/sdk/constraints";
   import Logger, {
     ConsoleTransport,
     Level as LogLevel,
@@ -56,7 +56,7 @@ declare module "@teamkeel/sdk/index" {
   export {
     Query,
     ChainableQuery,
-    Constraints,
+    QueryConstraints,
     Logger,
     ConsoleTransport,
     LogLevel,
@@ -231,7 +231,7 @@ declare module "@teamkeel/sdk/types" {
     | EqualityConstraint;
   export type Input<T> = Record<keyof T, unknown>;
   export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
-  export type OrderDirection = "asc" | "desc";
+  export type OrderDirection = "ASC" | "DESC";
   export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>;
 
   // A generic Identity interface for usage in other npm packages

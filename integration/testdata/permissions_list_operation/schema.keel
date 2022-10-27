@@ -10,66 +10,72 @@ model Post {
         viewsPermissionMatch Number @default(1)
         activePermissionMatch Boolean @default(true)
         typePermissionMatch PostType @default(PostType.Technical)
+
+        isActive Boolean @default(true)
     }
 
     operations {
-        create createWithText() with (title)
+        create createWithText() with (title, isActive)
 
-        create createWithNumber() with (views)
+        create createWithNumber() with (views, isActive)
 
-        create createWithBoolean() with (active)
+        create createWithBoolean() with (active, isActive)
 
-        create createWithEnum() with (type) 
+        create createWithEnum() with (type, isActive)
 
-        create createWithIdentity() {
+        create createWithIdentity() with (isActive) {
             @set(post.identity = ctx.identity)
         }
 
-        update updateWithTextPermissionLiteral(id) with (title) {
+        list listWithTextPermissionLiteral(isActive) {
             @permission(expression: post.title == "hello")
         }
 
-        update updateWithNumberPermissionLiteral(id) with (views) {
+        list listWithNumberPermissionLiteral(isActive) {
             @permission(expression: post.views == 1)
         }
 
-        update updateWithBooleanPermissionLiteral(id) with (active) {
+        list listWithBooleanPermissionLiteral(isActive) {
             @permission(expression: post.active == true)
         }
 
-        update updateWithEnumPermissionLiteral(id) with (type) {
+        list listWithEnumPermissionLiteral(isActive) {
             @permission(expression: post.type == PostType.Technical)
         }
 
-        update updateWithTextPermissionFromField(id) with (title) {
+        list listWithTextPermissionFromField(isActive) {
             @permission(expression: post.title == post.titlePermissionMatch)
         }
 
-        update updateWithNumberPermissionFromField(id) with (views) {
+        list listWithNumberPermissionFromField(isActive) {
             @permission(expression: post.views == post.viewsPermissionMatch)
         }
 
-        update updateWithBooleanPermissionFromField(id) with (active) {
+        list listWithBooleanPermissionFromField(isActive) {
             @permission(expression: post.active == post.activePermissionMatch)
         }
 
-        update updateWithEnumPermissionFromField(id) with (type) {
+        list listWithEnumPermissionFromField(isActive) {
             @permission(expression: post.type == post.typePermissionMatch)
         }
 
-        update updateWithIdentityPermission(id) with (title) {
+        list listWithIdentityPermission(isActive) {
             @permission(expression: post.identity == ctx.identity)
         }
 
-        update updateWithTrueValuePermission(id) with (title) {
+        list listWithTrueValuePermission() {
             @permission(expression: true)
         }
 
-        update updateWithTextPermissionOnImplicitInput(id) with (title) {
-            @permission(expression: post.title == "hello")
+        list listWithTextPermissionFromImplicitInput(isActive) {
+            @permission(expression: isActive == true)
         }
 
-        update updateWithTextPermissionOnExplicitInput(id) with (explTitle: Text) {
+        list listWithTextPermissionFromImplicitInputIsFalse(isActive) {
+            @permission(expression: isActive == false)
+        }
+
+        list listWithTextPermissionFromExplicitInput(isActive, explTitle: Text) {
             @permission(expression: post.title == explTitle)
         }
     }

@@ -217,3 +217,45 @@ test('multiple ORed permissions - matching no values - is not authorized', async
       .createWithMultipleOrPermissions({ title: "goodbye",  views: 100, active: false })
   ).toHaveAuthorizationError()
 })
+
+test('permission on implicit input - matching value - is authorized', async () => {
+  expect(
+    await actions
+    .createWithPermissionFromImplicitInput({ title: "hello" })
+  ).notToHaveAuthorizationError()
+})
+
+test('permission on implicit input - not matching value - is not authorized', async () => {
+  expect(
+    await actions
+    .createWithPermissionFromImplicitInput({ title: "goodbye" })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on implicit input - null value - is not authorized', async () => {
+  expect(
+    await actions
+    .createWithPermissionFromImplicitInput({ title: null })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on explicit input - matching value - is authorized', async () => {
+  expect(
+    await actions
+    .createWithPermissionFromExplicitInput({ explTitle: "hello" })
+  ).notToHaveAuthorizationError()
+})
+
+test('permission on explicit input - not matching value - is not authorized', async () => {
+  expect(
+    await actions
+    .createWithPermissionFromExplicitInput({ explTitle: "goodbye" })
+  ).toHaveAuthorizationError()
+})
+
+test('permission on explicit input - null value - is not authorized', async () => {
+  expect(
+    await actions
+    .createWithPermissionFromExplicitInput({ explTitle: null })
+  ).toHaveAuthorizationError()
+})

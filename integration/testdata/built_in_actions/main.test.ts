@@ -111,7 +111,10 @@ test('update action', async () => {
   const { object: updatedPost } = await actions
     .updatePost({ where: { id: post.id }, values: { title: 'big watermelon' }})
 
+  expect(updatedPost.id).toEqual(post.id)
   expect(updatedPost.title).toEqual('big watermelon')
+  expect(updatedPost.subTitle).toEqual('opm')
+  //expect(updatedPost.createdAt).toEqual(post.createdAt)
 })
 
 test('update action - explicit set / args', async () => {

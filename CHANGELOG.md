@@ -1,3 +1,43 @@
+# [0.184.0](https://github.com/teamkeel/keel/compare/v0.183.1...v0.184.0) (2022-10-27)
+
+
+### Features
+
+* release packages ([#514](https://github.com/teamkeel/keel/issues/514)) ([edcdb1c](https://github.com/teamkeel/keel/commit/edcdb1c17fd4287879aad57fc2090b4591c7af97))
+
+## [0.183.1](https://github.com/teamkeel/keel/compare/v0.183.0...v0.183.1) (2022-10-27)
+
+
+### Bug Fixes
+
+* asc and desc match casing ([#513](https://github.com/teamkeel/keel/issues/513)) ([8dd7713](https://github.com/teamkeel/keel/commit/8dd7713ddd89ffe763391ad85aeece713481045c))
+
+# [0.183.0](https://github.com/teamkeel/keel/compare/v0.182.0...v0.183.0) (2022-10-27)
+
+
+### Bug Fixes
+
+* rename constraints to queryconstraints ([1d70356](https://github.com/teamkeel/keel/commit/1d70356e7ab85ca1f24f128c2b3e5f8b54d83c95))
+* update index.d.ts ([a074a60](https://github.com/teamkeel/keel/commit/a074a60342d2995ff50513481b575306d3d995c8))
+* update index.d.ts ([797d9d3](https://github.com/teamkeel/keel/commit/797d9d30f0d06ab5767989fff3c0c438457b54ab))
+
+
+### Features
+
+* drop slonik ([d89f4b1](https://github.com/teamkeel/keel/commit/d89f4b1fb1c066f6e03c6128bd3f8e4785106f28))
+
+# [0.182.0](https://github.com/teamkeel/keel/compare/v0.181.0...v0.182.0) (2022-10-26)
+
+
+### Bug Fixes
+
+* postgres on correct ci job ([adf3c88](https://github.com/teamkeel/keel/commit/adf3c88714fd409189c0c43cc2ed790ebcf156f6))
+
+
+### Features
+
+* test sdk queries ([9d20961](https://github.com/teamkeel/keel/commit/9d20961967a187ee2f3d3014d5416b284d007f7d))
+
 # [0.181.0](https://github.com/teamkeel/keel/compare/v0.180.0...v0.181.0) (2022-10-25)
 
 

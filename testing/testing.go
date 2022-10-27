@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -149,7 +149,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 	srv := http.Server{
 		Addr: fmt.Sprintf(":%s", reportingPort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			b, _ := ioutil.ReadAll(r.Body)
+			b, _ := io.ReadAll(r.Body)
 
 			switch r.URL.Path {
 			case "/action":
@@ -203,7 +203,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 									writeResponse(r, w)
 								case proto.OperationType_OPERATION_TYPE_CREATE:
 									var builder actions.CreateAction
-									body.Payload, err = toNativeMap(body.Payload, action)
+									body.Payload, _ = toNativeMap(body.Payload, action)
 
 									result, err := builder.
 										Initialise(scope).
@@ -260,7 +260,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										// then apply unique filters
 										ApplyImplicitFilters(wheres).
 										ApplyExplicitFilters(wheres).
-										IsAuthorised(body.Payload).
+										IsAuthorised(values).
 										Execute(body.Payload)
 
 									r := map[string]any{
@@ -295,7 +295,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										Initialise(scope).
 										ApplyImplicitFilters(body.Payload).
 										ApplyExplicitFilters(body.Payload).
-										IsAuthorised(args).
+										IsAuthorised(body.Payload).
 										Execute(args)
 
 									r := map[string]any{

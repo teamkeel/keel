@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -40,7 +39,7 @@ func main() {
 			continue
 		}
 
-		files, err := ioutil.ReadDir(filepath.Join(testdataDir, subDir.Name()))
+		files, err := os.ReadDir(filepath.Join(testdataDir, subDir.Name()))
 		if err != nil {
 			panic(err)
 		}
@@ -51,7 +50,7 @@ func main() {
 
 		for _, file := range files {
 			if file.Name() == "errors.json" {
-				b, err := ioutil.ReadFile(filepath.Join(testdataDir, subDir.Name(), "errors.json"))
+				b, err := os.ReadFile(filepath.Join(testdataDir, subDir.Name(), "errors.json"))
 				if err != nil {
 					panic(err)
 				}
@@ -59,7 +58,7 @@ func main() {
 				hasCurrErrors = true
 			}
 			if file.Name() == "proto.json" {
-				b, err := ioutil.ReadFile(filepath.Join(testdataDir, subDir.Name(), "proto.json"))
+				b, err := os.ReadFile(filepath.Join(testdataDir, subDir.Name(), "proto.json"))
 				if err != nil {
 					panic(err)
 				}

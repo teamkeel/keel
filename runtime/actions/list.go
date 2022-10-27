@@ -90,7 +90,7 @@ inputs:
 		}
 
 		for operatorStr, operand := range valueMap {
-			operator, err := graphQlOperatorToActionOperator(operatorStr) // { "rating": { "greaterThanOrEquals": 1 } }
+			operator, err := graphQlOperatorToActionOperator(operatorStr)
 			if err != nil {
 				action.scope.Error = err
 				return action
@@ -100,7 +100,7 @@ inputs:
 			resolver := NewFilterResolver(action.scope)
 
 			// Resolve the database statement for this expression
-			statement, err := resolver.ResolveQueryStatement(fieldName, operand, operator, input.Type.Type)
+			statement, err := resolver.ResolveQueryStatement(fieldName, operand, operator)
 			if err != nil {
 				action.scope.Error = err
 				return action

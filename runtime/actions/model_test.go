@@ -243,13 +243,6 @@ func TestZeroValueForModel(t *testing.T) {
 	require.Equal(t, "", modelMap["string_field"])
 }
 
-type mapCase struct {
-	testName  string
-	input     any
-	inputType proto.Type
-	expected  any
-}
-
 type equality struct {
 	protoType       proto.Type
 	expectedHasOne  any

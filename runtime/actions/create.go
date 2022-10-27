@@ -55,6 +55,8 @@ func (action *CreateAction) Execute(args RequestArguments) (*ActionResult[Create
 		return nil, err
 	}
 
+	// todo: Use RETURNING statement on INSERT
+	// https://linear.app/keel/issue/RUN-146/gorm-use-returning-on-insert-and-update-statements
 	result := toLowerCamelMap(action.scope.writeValues)
 
 	return &ActionResult[CreateResult]{

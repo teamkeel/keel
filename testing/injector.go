@@ -2,7 +2,6 @@ package testing
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -47,7 +46,7 @@ func (r *Injector) makeModule(path string, code string) (string, error) {
 		}
 	}
 
-	err := ioutil.WriteFile(path, []byte(code), 0644)
+	err := os.WriteFile(path, []byte(code), 0644)
 
 	if err != nil {
 		return "", err

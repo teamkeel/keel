@@ -2,7 +2,7 @@ package reader
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 )
@@ -37,7 +37,7 @@ func FromDir(dirName string) (*Inputs, error) {
 		return nil, fmt.Errorf("no files matching: <%s> were found", globPattern)
 	}
 	for _, fName := range schemaFileNames {
-		fileBytes, err := ioutil.ReadFile(fName)
+		fileBytes, err := os.ReadFile(fName)
 		if err != nil {
 			return nil, fmt.Errorf("error reading file: %v", err)
 		}
@@ -50,7 +50,7 @@ func FromDir(dirName string) (*Inputs, error) {
 }
 
 func FromFile(filename string) (*Inputs, error) {
-	fileBytes, err := ioutil.ReadFile(filename)
+	fileBytes, err := os.ReadFile(filename)
 	if err != nil {
 		return nil, err
 	}
