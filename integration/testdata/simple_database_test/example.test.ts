@@ -62,11 +62,11 @@ test('order', async () => {
       contains: 'bc'
     }
   }).order({
-    title: 'desc'
+    title: 'DESC'
   }).all()
 
   expect(collection.length).toEqual(2)
-  expect(collection[0].title).toEqual('abc')
+  expect(collection[0].title).toEqual('bcd')
 })
 
 test('findMany', async () => {
