@@ -8,7 +8,6 @@ import {
 import {
   Conditions,
   ChainedQueryOpts,
-  SqlOptions,
   QueryOpts,
   Input,
   BuiltInFields,

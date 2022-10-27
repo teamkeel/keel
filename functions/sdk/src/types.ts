@@ -17,10 +17,6 @@ export interface ChainedQueryOpts<T> extends QueryOpts {
   conditions: Conditions<T>[];
 }
 
-export interface SqlOptions {
-  asAst: boolean;
-}
-
 export type Constraints =
   | StringConstraint
   | BooleanConstraint
