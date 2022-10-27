@@ -89,6 +89,9 @@ var runCmd = &cobra.Command{
 		var mutex sync.Mutex
 		var nodePort string
 		var nodeProcess *os.Process
+		var nodeClient = &functions.HttpFunctionsClient{
+			Port: nodePort,
+		}
 
 		generate := func(protoSchema *proto.Schema) {
 			customFunctionRuntime, err := functions.NewRuntime(protoSchema, schemaDir)
@@ -128,6 +131,7 @@ var runCmd = &cobra.Command{
 			// Update the references that are in the upper scope so that can be referrred back
 			// to by other things.
 			nodePort = freePort
+			nodeClient.Port = nodePort
 
 			return nodeProcess
 		}

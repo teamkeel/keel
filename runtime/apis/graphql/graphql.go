@@ -44,6 +44,10 @@ type graphqlSchemaBuilder struct {
 	enums    map[string]*graphql.Enum
 }
 
+func (b *graphqlSchemaBuilder) NormalizeArgs(args map[string]any) (map[string]any, error) {
+
+}
+
 // build returns a graphql.Schema that implements the given API.
 func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*graphql.Schema, error) {
 	// The graphql top level query contents will be comprised ONLY of the
@@ -161,195 +165,24 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
-		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
-			arguments, ok := input.(map[string]any)
-			if !ok {
-				return nil, errors.New("input not a map")
-			}
-
-			var builder actions.GetAction
-			scope, err := actions.NewScope(p.Context, op, schema, nil)
-
-			if err != nil {
-				return nil, err
-			}
-
-			result, err := builder.
-				Initialise(scope).
-				ApplyImplicitFilters(arguments).
-				ApplyExplicitFilters(arguments).
-				IsAuthorised(arguments).
-				Execute(arguments)
-
-			if result != nil {
-				return result.Value.Object, err
-			}
-			return nil, err
-		}
+		field.Resolve = GetFn(schema)
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
-			arguments, ok := input.(map[string]any)
-			if !ok {
-				return nil, errors.New("input not a map")
-			}
-
-			var builder actions.CreateAction
-
-			scope, err := actions.NewScope(p.Context, op, schema, nil)
-
-			if err != nil {
-				return nil, err
-			}
-
-			result, err := builder.
-				Initialise(scope).
-				CaptureImplicitWriteInputValues(arguments). // todo: err?
-				CaptureSetValues(arguments).
-				IsAuthorised(arguments).
-				Execute(arguments)
-
-			if result != nil {
-				return result.Value.Object, err
-			}
-			return nil, err
-		}
+		field.Resolve = CreateFn
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
-			arguments, ok := input.(map[string]any)
-
-			if !ok {
-				return nil, errors.New("input not a map")
-			}
-
-			var builder actions.UpdateAction
-
-			scope, err := actions.NewScope(p.Context, op, schema, nil)
-
-			if err != nil {
-				return nil, err
-			}
-
-			values, err := toArgsMap(arguments, "values")
-			if err != nil {
-				return nil, err
-			}
-
-			wheres, err := toArgsMap(arguments, "where")
-			if err != nil {
-				return nil, err
-			}
-
-			result, err := builder.
-				Initialise(scope).
-				// first capture any implicit inputs
-				CaptureImplicitWriteInputValues(values).
-				// then capture explicitly used inputs
-				CaptureSetValues(values).
-				// then apply unique filters
-				ApplyImplicitFilters(wheres).
-				ApplyExplicitFilters(wheres).
-				IsAuthorised(arguments).
-				Execute(arguments)
-
-			if result != nil {
-				return result.Value.Object, err
-			}
-
-			return nil, err
-		}
-
+		field.Resolve = UpdateFn
 		field.Type = graphql.NewNonNull(field.Type)
-
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		field.Type = deleteResponseType
-
-		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
-			arguments, ok := input.(map[string]any)
-
-			if !ok {
-				return nil, errors.New("input not a map")
-			}
-
-			var builder actions.DeleteAction
-
-			scope, err := actions.NewScope(p.Context, op, schema, nil)
-
-			if err != nil {
-				return nil, err
-			}
-
-			result, err := builder.
-				Initialise(scope).
-				ApplyImplicitFilters(arguments).
-				ApplyExplicitFilters(arguments).
-				IsAuthorised(arguments).
-				Execute(arguments)
-
-			if result != nil {
-				return result.Value.Success, err
-			}
-
-			return false, err
-		}
-
+		field.Resolve = DeleteFn
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input, err := toArgsMap(p.Args, "input")
-
-			// If no inputs have been specified then we need to initialise an empty
-			// input map with no where conditions
-			if err != nil {
-				input = map[string]any{
-					"where": map[string]any{},
-				}
-			}
-
-			var builder actions.ListAction
-
-			scope, err := actions.NewScope(p.Context, op, schema)
-
-			if err != nil {
-				return nil, err
-			}
-
-			where, err := toArgsMap(input, "where")
-
-			if err != nil {
-				where = map[string]any{}
-			}
-
-			result, err := builder.
-				Initialise(scope).
-				ApplyImplicitFilters(where).
-				ApplyExplicitFilters(where).
-				IsAuthorised(input).
-				Execute(input)
-
-			if err != nil {
-				return nil, err
-			}
-
-			records := result.Value.Collection
-
-			hasNextPage := result.Value.HasNextPage
-
-			resp, err := connectionResponse(records, hasNextPage)
-			if err != nil {
-				return nil, err
-			}
-			return resp, nil
-		}
+		field.Resolve = ListFn
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		field.Type = mk.makeConnectionType(outputType)
@@ -397,7 +230,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			}
 
 			if identityId != nil {
-				token, err := GenerateBearerToken(identityId)
+				token, err := actions.GenerateBearerToken(identityId)
 
 				if err != nil {
 					return nil, err

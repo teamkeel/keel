@@ -35,6 +35,10 @@ type rpcApiBuilder struct {
 	Post map[string]actionHandler
 }
 
+func (b *rpcApiBuilder) NormalizeArgs(args map[string]any) (map[string]any, error) {
+
+}
+
 type actionHandler func(r *http.Request) (interface{}, error)
 
 func (mk *rpcApiBuilder) build(api *proto.Api, schema *proto.Schema) (*rpcApiBuilder, error) {
@@ -122,16 +126,12 @@ func (mk *rpcApiBuilder) addRoute(
 				return nil, err
 			}
 
-			where, err := toArgsMap(inputs, "where")
-
-			if err != nil {
-				where = map[string]any{}
-			}
+			inputs, err = mk.NormalizeArgs(inputs)
 
 			result, err := builder.
 				Initialise(scope).
-				ApplyImplicitFilters(where).
-				ApplyExplicitFilters(where).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
 				IsAuthorised(inputs).
 				Execute(inputs)
 
@@ -152,16 +152,12 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			where, err := toArgsMap(inputs, "where")
-
-			if err != nil {
-				where = map[string]any{}
-			}
+			inputs, err = mk.NormalizeArgs(inputs)
 
 			result, err := builder.
 				Initialise(scope).
-				ApplyImplicitFilters(where).
-				ApplyExplicitFilters(where).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
 				IsAuthorised(inputs).
 				Execute(inputs)
 
@@ -208,25 +204,17 @@ func (mk *rpcApiBuilder) addRoute(
 			if err != nil {
 				return nil, err
 			}
-			values, err := toArgsMap(inputs, "values")
-			if err != nil {
-				return nil, err
-			}
-
-			wheres, err := toArgsMap(inputs, "where")
-			if err != nil {
-				return nil, err
-			}
+			inputs, err = mk.NormalizeArgs(inputs)
 
 			return builder.
 				Initialise(scope).
 				// first capture any implicit inputs
-				CaptureImplicitWriteInputValues(values).
+				CaptureImplicitWriteInputValues(inputs).
 				// then capture explicitly used inputs
-				CaptureSetValues(values).
+				CaptureSetValues(inputs).
 				// then apply unique filters
-				ApplyImplicitFilters(wheres).
-				ApplyExplicitFilters(wheres).
+				ApplyImplicitFilters(inputs).
+				ApplyExplicitFilters(inputs).
 				IsAuthorised(inputs).
 				Execute(inputs)
 		}
