@@ -1,3 +1,10 @@
+# [0.184.0](https://github.com/teamkeel/keel/compare/v0.183.1...v0.184.0) (2022-10-27)
+
+
+### Features
+
+* release packages ([#514](https://github.com/teamkeel/keel/issues/514)) ([edcdb1c](https://github.com/teamkeel/keel/commit/edcdb1c17fd4287879aad57fc2090b4591c7af97))
+
 ## [0.183.1](https://github.com/teamkeel/keel/compare/v0.183.0...v0.183.1) (2022-10-27)
 
 
