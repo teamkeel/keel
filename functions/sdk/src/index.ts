@@ -16,6 +16,10 @@ export * from "../../client";
 // these include different types of responses for different operations
 export * from "./returnTypes";
 
+export * from "./db/resolver";
+
+import { queryResolverFromEnv } from "./db/resolver";
+
 export {
   Query,
   ChainableQuery,
@@ -24,4 +28,5 @@ export {
   ConsoleTransport,
   LogLevel,
   Identity,
+  queryResolverFromEnv,
 };
