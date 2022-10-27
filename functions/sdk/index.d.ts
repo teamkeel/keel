@@ -37,7 +37,7 @@ declare module "@teamkeel/sdk/constraints" {
 }
 declare module "@teamkeel/sdk/index" {
   import Query, { ChainableQuery } from "@teamkeel/sdk/query";
-  import * as Constraints from "@teamkeel/sdk/constraints";
+  import * as QueryConstraints from "@teamkeel/sdk/constraints";
   import Logger, {
     ConsoleTransport,
     Level as LogLevel,
@@ -52,7 +52,7 @@ declare module "@teamkeel/sdk/index" {
   export {
     Query,
     ChainableQuery,
-    Constraints,
+    QueryConstraints,
     Logger,
     ConsoleTransport,
     LogLevel,
