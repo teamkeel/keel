@@ -1,5 +1,3 @@
-import pg from "pg";
-
 declare module "@teamkeel/sdk/constraints" {
   export type EqualityConstraint = {
     notEqual?: string;
@@ -161,6 +159,7 @@ declare module "@teamkeel/sdk/db/query" {
 }
 
 declare module "@teamkeel/sdk/db/resolver" {
+  import pg from "pg";
   import { SqlQueryParts } from "@teamkeel/sdk/db/query";
   export interface QueryResolver {
     runQuery(query: SqlQueryParts): Promise<QueryResult>;
