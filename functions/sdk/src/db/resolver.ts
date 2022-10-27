@@ -23,7 +23,7 @@ export class PgQueryResolver implements QueryResolver {
     return this.pool.query(this.toQuery(query));
   }
 
-  toQuery(query: SqlQueryParts): { text: string; values: any[] } {
+  private toQuery(query: SqlQueryParts): { text: string; values: any[] } {
     let nextInterpolationIndex = 1;
     let values = [];
     const text = query

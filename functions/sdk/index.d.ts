@@ -1,3 +1,7 @@
+import {SqlQueryParts} from "./src/db/query";
+import pg from "pg";
+import {QueryResolver} from "./src/db/resolver";
+
 declare module "@teamkeel/sdk/constraints" {
   export type EqualityConstraint = {
     notEqual?: string;
@@ -103,10 +107,10 @@ declare module "@teamkeel/sdk/query" {
   export class ChainableQuery<T> {
     private readonly tableName;
     private readonly conditions;
-    private readonly connectionString: string;
+    private readonly queryResolver: QueryResolver;
     constructor({
       tableName,
-      connectionString,
+      queryResolver,
       conditions,
     }: ChainedQueryOpts<T>);
     orWhere: (conditions: Conditions<T>) => ChainableQuery<T>;
@@ -119,9 +123,9 @@ declare module "@teamkeel/sdk/query" {
     private readonly tableName;
     private readonly conditions;
     private orderClauses;
-    private readonly connectionString: string;
+    private readonly queryResolver: QueryResolver;
 
-    constructor({ tableName, connectionString, logger }: QueryOpts);
+    constructor({ tableName, queryResolver, logger }: QueryOpts);
     create: (
       inputs: Partial<T>
     ) => Promise<ReturnTypes.FunctionCreateResponse<T>>;
@@ -156,6 +160,27 @@ declare module "@teamkeel/sdk/db/query" {
   };
 }
 
+declare module "@teamkeel/sdk/db/resolver" {
+  export interface QueryResolver {
+    runQuery(query: SqlQueryParts): Promise<QueryResult>;
+  }
+
+  export interface QueryResult {
+    rows: QueryResultRow[];
+  }
+
+  export interface QueryResultRow {
+    [column: string]: any;
+  }
+  export class PgQueryResolver implements QueryResolver {
+    private readonly pool: pg.Pool;
+    constructor(config: { connectionString: string })
+
+    runQuery(query: SqlQueryParts): Promise<QueryResult>
+    private toQuery(query: SqlQueryParts): { text: string; values: any[] }
+  }
+}
+
 declare module "@teamkeel/sdk/queryBuilders/index" {
   import { Constraints } from "@teamkeel/sdk/types";
   import { SqlQueryParts } from "@teamkeel/sdk/db/query";
@@ -187,9 +212,10 @@ declare module "@teamkeel/sdk/types" {
     EqualityConstraint
   } from "@teamkeel/sdk/constraints";
   import { Logger } from "@teamkeel/sdk";
+  import { QueryResolver } from "@teamkeel/sdk/db/resolver";
   export interface QueryOpts {
     tableName: string;
-    connectionString: string;
+    queryResolver: QueryResolver;
     logger: Logger;
   }
   export interface ChainedQueryOpts<T> extends QueryOpts {
