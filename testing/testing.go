@@ -459,6 +459,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 			// so that slonik (query builder lib) can create a database pool which will be used
 			// by the generated Query API code
 			cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", fmt.Sprintf(dbConnUri, dbName)))
+			cmd.Env = append(cmd.Env, "DB_CONN_TYPE=pg")
 			cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 
 			cmd.Dir = dir
@@ -495,6 +496,7 @@ func RunServer(workingDir string, port string, parentPort string, dbConnectionSt
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%s", port))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+	cmd.Env = append(cmd.Env, "DB_CONN_TYPE=pg")
 	cmd.Env = append(cmd.Env, fmt.Sprintf("HOST_PORT=%s", parentPort))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 

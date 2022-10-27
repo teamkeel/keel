@@ -137,6 +137,7 @@ model Post {
 			renderArguments := generator.GenerateEntryPointRenderArguments(testCase.PathToFunctionsDirArg)
 
 			expectedImports := fmt.Sprintf(`import startRuntimeServer from '@teamkeel/runtime'
+import { queryResolverFromEnv } from '@teamkeel/sdk'
 import { Logger } from '@teamkeel/sdk'
 import { PostApi } from '@teamkeel/sdk'
 import createPost from '%screatePost'

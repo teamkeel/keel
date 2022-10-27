@@ -5,7 +5,7 @@ class {{ .Name }}Api {
   }
 
   where = (conditions: Client.{{ .Name }}Query) : ChainableQuery<Client.{{ .Name }}> => {
-    return new ChainableQuery<Client.{{ .Name }}>({ tableName: '{{ .TableName }}', connectionString: cs, conditions: [conditions], logger: queryLogger })
+    return new ChainableQuery<Client.{{ .Name }}>({ tableName: '{{ .TableName }}', queryResolver: qr, conditions: [conditions], logger: queryLogger })
   }
 
   delete = async (id: string) : Promise<ReturnTypes.FunctionDeleteResponse<Client.{{ .Name }}>> => {
@@ -31,7 +31,7 @@ class {{ .Name }}Api {
   private query = async () : Promise<Query<Client.{{ .Name }}>> => {
     return new Query<Client.{{ .Name }}>({
       tableName: '{{ .TableName }}',
-      connectionString: cs,
+      queryResolver: qr,
       logger: queryLogger
     })
   }

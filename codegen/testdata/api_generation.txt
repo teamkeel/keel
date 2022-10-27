@@ -25,7 +25,7 @@ export class PostApi {
   constructor() {
     this.db = new Query<Post>({
       tableName: 'post',
-      connectionString: process.env.DB_CONN!,
+      queryResolver: queryResolverFromEnv(process.env),
       logger: queryLogger
     })
   }
@@ -73,7 +73,7 @@ export class IdentityApi {
   constructor() {
     this.db = new Query<Identity>({
       tableName: 'identity',
-      connectionString: process.env.DB_CONN!,
+      queryResolver: queryResolverFromEnv(process.env),
       logger: queryLogger
     })
   }

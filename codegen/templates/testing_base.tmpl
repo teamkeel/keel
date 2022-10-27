@@ -1,12 +1,10 @@
 // We reuse various things from the client package for interacting with the db
 import * as Client from '@teamkeel/client';
-import { createPool, DatabasePool } from 'slonik';
-import { createQueryLoggingInterceptor } from 'slonik-interceptor-query-logging';
-import { QueryConstraints, Query, Logger, ChainableQuery } from '@teamkeel/sdk';
+import { QueryConstraints, Query, Logger, ChainableQuery, queryResolverFromEnv } from '@teamkeel/sdk';
 import * as ReturnTypes from '@teamkeel/sdk/returnTypes';
 import ActionExecutor from './actionExecutor';
 
-const cs = process.env.DB_CONN!;
+const qr = queryResolverFromEnv(process.env);
 const parentPort = process.env.HOST_PORT!;
 
 const queryLogger = new Logger();

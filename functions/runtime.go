@@ -144,6 +144,7 @@ func RunServer(workingDir string, port string, dbConnectionString string) (*os.P
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%s", port))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("DB_CONN=%s", dbConnectionString))
+	cmd.Env = append(cmd.Env, "DB_CONN_TYPE=pg")
 	cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 
 	cmd.Dir = workingDir
@@ -292,8 +293,6 @@ func (r *Runtime) bundle() (api.BuildResult, []error) {
 		External: []string{
 			"@teamkeel/sdk",
 			"@teamkeel/runtime",
-			"slonik",
-			"slonik-interceptor-query-logging",
 		},
 	})
 

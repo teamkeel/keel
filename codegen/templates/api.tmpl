@@ -13,7 +13,7 @@ export class {{ .Name }}Api {
   constructor() {
     this.db = new Query<{{ .Name }}>({
       tableName: '{{ .TableName }}',
-      connectionString: process.env.DB_CONN!,
+      queryResolver: queryResolverFromEnv(process.env),
       logger: queryLogger
     })
   }
