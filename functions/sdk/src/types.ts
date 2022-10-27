@@ -6,19 +6,16 @@ import {
   EnumConstraint,
 } from "./constraints";
 import { Logger } from "./";
+import { QueryResolver } from "./db/resolver";
 
 export interface QueryOpts {
   tableName: string;
-  connectionString: string;
+  queryResolver: QueryResolver;
   logger: Logger;
 }
 
 export interface ChainedQueryOpts<T> extends QueryOpts {
   conditions: Conditions<T>[];
-}
-
-export interface SqlOptions {
-  asAst: boolean;
 }
 
 export type Constraints =

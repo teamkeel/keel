@@ -2,6 +2,7 @@ import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
 import { Pool, QueryResult } from "pg";
+import { PgQueryResolver } from "./db/resolver";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
 
@@ -85,7 +86,11 @@ test("select", async () => {
   const tableName = "person";
 
   const logger = new Logger();
-  const query = new Query<Person>({ tableName, connectionString, logger });
+  const query = new Query<Person>({
+    tableName,
+    queryResolver: new PgQueryResolver({ connectionString }),
+    logger,
+  });
 
   expect(await query.all()).toEqual({
     collection: [
@@ -250,7 +255,11 @@ test("insert", async () => {
   const tableName = "post";
 
   const logger = new Logger();
-  const query = new Query<Post>({ tableName, connectionString, logger });
+  const query = new Query<Post>({
+    tableName,
+    queryResolver: new PgQueryResolver({ connectionString }),
+    logger,
+  });
 
   await runInitialSql(prepareTestSql);
 
@@ -326,7 +335,11 @@ test("delete", async () => {
   const tableName = "animal";
 
   const logger = new Logger();
-  const query = new Query<Animal>({ tableName, connectionString, logger });
+  const query = new Query<Animal>({
+    tableName,
+    queryResolver: new PgQueryResolver({ connectionString }),
+    logger,
+  });
 
   await runInitialSql(prepareTestSql);
 
@@ -378,7 +391,11 @@ test("update", async () => {
   const tableName = "food";
 
   const logger = new Logger();
-  const query = new Query<Food>({ tableName, connectionString, logger });
+  const query = new Query<Food>({
+    tableName,
+    queryResolver: new PgQueryResolver({ connectionString }),
+    logger,
+  });
 
   await runInitialSql(prepareTestSql);
 
