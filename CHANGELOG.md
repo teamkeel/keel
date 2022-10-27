@@ -1,3 +1,10 @@
+# [0.188.0](https://github.com/teamkeel/keel/compare/v0.187.0...v0.188.0) (2022-10-27)
+
+
+### Features
+
+* fix import ([5f5c11d](https://github.com/teamkeel/keel/commit/5f5c11dc1a8d70c5af42590717562d598f06836c))
+
 # [0.187.0](https://github.com/teamkeel/keel/compare/v0.186.0...v0.187.0) (2022-10-27)
 
 
