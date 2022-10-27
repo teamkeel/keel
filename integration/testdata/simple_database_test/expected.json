@@ -5,7 +5,6 @@
   { "testName": "simple all", "status": "pass" },
   { "testName": "chained conditions with all", "status": "pass" },
   { "testName": "order", "status": "pass" },
-  { "testName": "sql", "status": "pass" },
   { "testName": "findMany", "status": "pass" },
   { "testName": "findOne", "status": "pass" }
 ]
