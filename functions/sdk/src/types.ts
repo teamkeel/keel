@@ -6,10 +6,11 @@ import {
   EnumConstraint,
 } from "./constraints";
 import { Logger } from "./";
+import { QueryResolver } from "./db/resolver";
 
 export interface QueryOpts {
   tableName: string;
-  connectionString: string;
+  queryResolver: QueryResolver;
   logger: Logger;
 }
 

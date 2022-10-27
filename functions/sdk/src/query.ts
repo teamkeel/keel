@@ -16,24 +16,24 @@ import {
 import * as ReturnTypes from "./returnTypes";
 import Logger from "./logger";
 import { SqlQueryParts } from "./db/query";
-import { Pool, QueryResult } from "pg";
+import { QueryResolver, QueryResult } from "./db/resolver";
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
   private readonly conditions: Conditions<T>[];
   private orderClauses: OrderClauses<T>;
-  private readonly connectionString: string;
+  private readonly queryResolver: QueryResolver;
   private readonly logger: Logger;
 
   constructor({
     tableName,
-    connectionString,
+    queryResolver,
     conditions,
     logger,
   }: ChainedQueryOpts<T>) {
     this.tableName = tableName;
     this.conditions = conditions;
-    this.connectionString = connectionString;
+    this.queryResolver = queryResolver;
     this.logger = logger;
   }
 
@@ -72,7 +72,7 @@ export class ChainableQuery<T extends IDer> {
     const result = await this.execute(sql);
 
     return {
-      object: result.rows[0],
+      object: result.rows[0] as T,
       errors: [],
     };
   };
@@ -87,15 +87,11 @@ export class ChainableQuery<T extends IDer> {
     this.conditions.push(conditions);
   }
 
-  private execute = async (query: SqlQueryParts): Promise<QueryResult<T>> => {
+  private execute = async (query: SqlQueryParts): Promise<QueryResult> => {
     // todo: reinstate
     // this.logger.log(logSql<T>(query), LogLevel.Debug);
 
-    const pool = new Pool({
-      connectionString: this.connectionString,
-    });
-
-    return pool.query(toQuery(query));
+    return this.queryResolver.runQuery(query);
   };
 }
 
@@ -106,13 +102,13 @@ interface IDer {
 export default class Query<T extends IDer> {
   private readonly tableName: string;
   private readonly conditions: Conditions<T>[];
-  private readonly connectionString: string;
+  private readonly queryResolver: QueryResolver;
   private readonly logger: Logger;
 
-  constructor({ tableName, connectionString, logger }: QueryOpts) {
+  constructor({ tableName, queryResolver, logger }: QueryOpts) {
     this.tableName = tableName;
     this.conditions = [];
-    this.connectionString = connectionString;
+    this.queryResolver = queryResolver;
     this.logger = logger;
   }
 
@@ -148,7 +144,7 @@ export default class Query<T extends IDer> {
     // at the top level e.g Query.orWhere doesnt make much sense.
     return new ChainableQuery({
       tableName: this.tableName,
-      connectionString: this.connectionString,
+      queryResolver: this.queryResolver,
       conditions: [conditions],
       logger: this.logger,
     });
@@ -162,7 +158,7 @@ export default class Query<T extends IDer> {
     const result = await this.execute(query);
 
     return {
-      success: result.rowCount === 1,
+      success: result.rows.length === 1,
     };
   };
 
@@ -176,7 +172,7 @@ export default class Query<T extends IDer> {
     // buildSelectStatement stil returns an array despite applying a LIMIT 1
     // so return the first row anyhow.
     return {
-      object: result.rows[0],
+      object: result.rows[0] as T,
       errors: [],
     };
   };
@@ -209,15 +205,11 @@ export default class Query<T extends IDer> {
     };
   };
 
-  private execute = async (query: SqlQueryParts): Promise<QueryResult<T>> => {
+  private execute = async (query: SqlQueryParts): Promise<QueryResult> => {
     // todo: reinstate
     // this.logger.log(logSql<T>(query), LogLevel.Debug);
 
-    const pool = new Pool({
-      connectionString: this.connectionString,
-    });
-
-    return pool.query(toQuery(query));
+    return this.queryResolver.runQuery(query);
   };
 }
 
@@ -248,20 +240,3 @@ const logSql = <T extends IDer>(query: SqlQueryParts): string => {
     })
     .join();
 };
-
-function toQuery(query: SqlQueryParts): { text: string; values: any[] } {
-  let nextInterpolationIndex = 1;
-  let values = [];
-  const text = query
-    .map((queryPart) => {
-      switch (queryPart.type) {
-        case "sql":
-          return queryPart.value;
-        case "input":
-          values.push(queryPart.value);
-          return `$${nextInterpolationIndex++}`;
-      }
-    })
-    .join(" ");
-  return { text, values };
-}
