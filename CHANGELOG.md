@@ -1,3 +1,10 @@
+# [0.189.0](https://github.com/teamkeel/keel/compare/v0.188.0...v0.189.0) (2022-10-27)
+
+
+### Features
+
+* export sdk db resolver ([2f62f83](https://github.com/teamkeel/keel/commit/2f62f839e6e2677cc24c56babe89e5ec73f1e010))
+
 # [0.188.0](https://github.com/teamkeel/keel/compare/v0.187.0...v0.188.0) (2022-10-27)
 
 
