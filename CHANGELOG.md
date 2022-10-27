@@ -1,3 +1,10 @@
+## [0.183.1](https://github.com/teamkeel/keel/compare/v0.183.0...v0.183.1) (2022-10-27)
+
+
+### Bug Fixes
+
+* asc and desc match casing ([#513](https://github.com/teamkeel/keel/issues/513)) ([8dd7713](https://github.com/teamkeel/keel/commit/8dd7713ddd89ffe763391ad85aeece713481045c))
+
 # [0.183.0](https://github.com/teamkeel/keel/compare/v0.182.0...v0.183.0) (2022-10-27)
 
 
