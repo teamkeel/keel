@@ -69,18 +69,6 @@ test('order', async () => {
   expect(collection[0].title).toEqual('abc')
 })
 
-test('sql', async () => {
-  const sql = await Post.where({
-    title: {
-      contains: 'bc'
-    }
-  }).order({
-    title: 'desc'
-  }).sql({ asAst: false })
-
-  expect(sql).toEqual('SELECT * FROM "post" WHERE ("post"."title" ILIKE $1) ORDER BY $2')
-})
-
 test('findMany', async () => {
   await Post.create({ title: 'io' })
   await Post.create({ title: 'iota' })
