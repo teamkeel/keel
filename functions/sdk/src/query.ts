@@ -96,7 +96,7 @@ export class ChainableQuery<T extends IDer> {
       connectionString: this.connectionString,
     });
 
-    return await pool.query(toQuery(query));
+    return pool.query(toQuery(query));
   };
 }
 
@@ -218,7 +218,7 @@ export default class Query<T extends IDer> {
       connectionString: this.connectionString,
     });
 
-    return await pool.query(toQuery(query));
+    return pool.query(toQuery(query));
   };
 }
 

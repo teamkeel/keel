@@ -10,7 +10,7 @@ async function runInitialSql(sql: string): Promise<QueryResult> {
     connectionString,
   });
 
-  return await pool.query(sql);
+  return pool.query(sql);
 }
 
 test("select", async () => {
