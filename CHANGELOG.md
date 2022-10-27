@@ -1,3 +1,16 @@
+# [0.187.0](https://github.com/teamkeel/keel/compare/v0.186.0...v0.187.0) (2022-10-27)
+
+
+### Bug Fixes
+
+* update index.d.ts ([859d821](https://github.com/teamkeel/keel/commit/859d821682751590d434adb3c0fe6e4c62db06dd))
+
+
+### Features
+
+* add queryResolverFromEnv ([3e2026a](https://github.com/teamkeel/keel/commit/3e2026aa26136c292d3d3fd0add4a592217e27a2))
+* separate query resolver ([e8121b3](https://github.com/teamkeel/keel/commit/e8121b33329e29f1bdca0596e98de242000f5eb7))
+
 # [0.186.0](https://github.com/teamkeel/keel/compare/v0.185.0...v0.186.0) (2022-10-27)
 
 
