@@ -13,6 +13,22 @@ export interface QueryResultRow {
   [column: string]: any;
 }
 
+export function queryResolverFromEnv(
+  env: Record<string, string | undefined>
+): QueryResolver {
+  const dbConnType = env["DB_CONN_TYPE"];
+  switch (dbConnType) {
+    case "pg":
+      const dbConn = env["DB_CONN"];
+      if (!dbConn) {
+        throw Error("expected DB_CONN for DB_CONN_TYPE=pg");
+      }
+      return new PgQueryResolver({ connectionString: dbConn });
+    default:
+      throw Error("unexpected DB_CONN_TYPE: " + dbConnType);
+  }
+}
+
 export class PgQueryResolver implements QueryResolver {
   private readonly pool: pg.Pool;
   constructor(config: { connectionString: string }) {

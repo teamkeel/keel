@@ -1,6 +1,4 @@
-import {SqlQueryParts} from "./src/db/query";
 import pg from "pg";
-import {QueryResolver} from "./src/db/resolver";
 
 declare module "@teamkeel/sdk/constraints" {
   export type EqualityConstraint = {
@@ -105,6 +103,7 @@ declare module "@teamkeel/sdk/query" {
     OrderClauses,
   } from "@teamkeel/sdk/types";
   import * as ReturnTypes from "@teamkeel/sdk/returnTypes";
+  import { QueryResolver } from "@teamkeel/sdk/db/resolver";
   export class ChainableQuery<T> {
     private readonly tableName;
     private readonly conditions;
@@ -162,6 +161,7 @@ declare module "@teamkeel/sdk/db/query" {
 }
 
 declare module "@teamkeel/sdk/db/resolver" {
+  import { SqlQueryParts } from "@teamkeel/sdk/db/query";
   export interface QueryResolver {
     runQuery(query: SqlQueryParts): Promise<QueryResult>;
   }
@@ -173,6 +173,7 @@ declare module "@teamkeel/sdk/db/resolver" {
   export interface QueryResultRow {
     [column: string]: any;
   }
+  export function queryResolverFromEnv(env: Record<string, string | undefined>): QueryResolver
   export class PgQueryResolver implements QueryResolver {
     private readonly pool: pg.Pool;
     constructor(config: { connectionString: string })
