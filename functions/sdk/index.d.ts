@@ -43,13 +43,12 @@ declare module "@teamkeel/sdk/index" {
     Level as LogLevel,
   } from "@teamkeel/sdk/logger";
   import { Identity } from "@teamkeel/sdk/types";
+  import { queryResolverFromEnv } from "@teamkeel/sdk/db/resolver";
 
   //@ts-ignore
   export * from "@teamkeel/client";
 
   export * from "@teamkeel/sdk/returnTypes";
-
-  export * from "@teamkeel/sdk/db/resolver";
 
   export {
     Query,
@@ -59,6 +58,7 @@ declare module "@teamkeel/sdk/index" {
     ConsoleTransport,
     LogLevel,
     Identity,
+    queryResolverFromEnv,
   };
 }
 
