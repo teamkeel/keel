@@ -205,7 +205,7 @@ declare module "@teamkeel/sdk/types" {
     | EqualityConstraint;
   export type Input<T> = Record<keyof T, unknown>;
   export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
-  export type OrderDirection = "asc" | "desc";
+  export type OrderDirection = "ASC" | "DESC";
   export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>;
 
   // A generic Identity interface for usage in other npm packages
