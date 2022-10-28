@@ -337,10 +337,11 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 										Password:          body.Payload["password"].(string),
 									}
 
-									identityId, identityCreated, err := actions.Authenticate(ctx, schema, &authArgs)
+									token, identityCreated, err := actions.Authenticate(ctx, schema, &authArgs)
 
 									// todo: this doesn't nicely match what the user might expect to be returned from authenticate()
 									// do we refactor this to return a token?
+									identityId, err := actions.ParseBearerToken(token)
 									var r map[string]any
 									if identityId == nil {
 										r = map[string]any{

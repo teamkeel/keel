@@ -223,7 +223,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
 			}
 
-			_, identityCreated, token, err := actions.Authenticate(p.Context, schema, &authArgs)
+			token, identityCreated, err := actions.Authenticate(p.Context, schema, &authArgs)
 
 			if err != nil {
 				return nil, err

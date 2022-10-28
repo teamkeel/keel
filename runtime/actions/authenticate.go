@@ -41,16 +41,16 @@ var (
 )
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
-func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (*ksuid.KSUID, bool, string, error) {
+func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (string, bool, error) {
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
-		return nil, false, "", err
+		return "", false, err
 	}
 
 	identity, err := find(ctx, args.Email)
 
 	if err != nil {
-		return nil, false, "", err
+		return "", false, err
 	}
 
 	if identity != nil {
@@ -60,44 +60,44 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 			id, err := ksuid.Parse(identity.Id)
 
 			if err != nil {
-				return nil, false, "", err
+				return "", false, err
 			}
 
-			token, err := generateBearerToken(&id)
+			token, err := GenerateBearerToken(&id)
 
-			return &id, false, token, nil
+			return token, false, nil
 		} else {
-			return nil, false, "", nil
+			return "", false, nil
 		}
 	} else if args.CreateIfNotExists {
 		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(args.Password), bcrypt.DefaultCost)
 
 		if err != nil {
-			return nil, false, "", err
+			return "", false, err
 		}
 
 		identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 		modelMap, err := initialValueForModel(identityModel, schema)
 		if err != nil {
-			return nil, false, "", err
+			return "", false, err
 		}
 
 		modelMap[strcase.ToSnake(EmailColumnName)] = args.Email
 		modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
 
 		if err := db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error; err != nil {
-			return nil, false, "", err
+			return "", false, err
 		}
 
 		id := modelMap[IdColumnName].(ksuid.KSUID)
 
-		token, err := generateBearerToken(&id)
+		token, err := GenerateBearerToken(&id)
 
-		return &id, true, token, nil
+		return token, true, nil
 	}
 
-	return nil, false, "", nil
+	return "", false, nil
 }
 
 func find(ctx context.Context, email string) (*Identity, error) {
@@ -128,7 +128,7 @@ type claims struct {
 	jwt.RegisteredClaims
 }
 
-func generateBearerToken(id *ksuid.KSUID) (string, error) {
+func GenerateBearerToken(id *ksuid.KSUID) (string, error) {
 	now := time.Now()
 
 	claims := claims{
