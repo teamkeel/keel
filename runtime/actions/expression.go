@@ -328,7 +328,7 @@ func (resolver *OperandResolver) ResolveValue(
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.context)
 		return isAuthenticated, nil
 	case resolver.IsContextField() && resolver.operand.Ident.IsContextNowField():
-		return nil, fmt.Errorf("cannot yet handle ctx field now")
+		return runtimectx.GetNow(), nil
 	case resolver.operand.Type() == parser.TypeArray:
 		return nil, fmt.Errorf("cannot yet handle operand of type non-literal array")
 	default:
