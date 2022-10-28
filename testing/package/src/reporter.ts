@@ -34,10 +34,10 @@ export default class Reporter {
 
   // At the beginning of the test run, report all of the known
   // tests back to the go process, so it can output them in the TUI
-  collectTest = async (test: TestCase) : Promise<boolean> => {
+  collectTests = async (tests: TestCase[]) : Promise<boolean> => {
     const res = await fetch(`${this.buildHostUri()}/collect`, {
       method: "POST",
-      body: JSON.stringify(test),
+      body: JSON.stringify(tests),
     });
 
     return res.ok;
