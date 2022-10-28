@@ -1,3 +1,10 @@
+# [0.192.0](https://github.com/teamkeel/keel/compare/v0.191.1...v0.192.0) (2022-10-28)
+
+
+### Features
+
+* report individual test results ([#523](https://github.com/teamkeel/keel/issues/523)) ([d603c0b](https://github.com/teamkeel/keel/commit/d603c0bac1126b8198021240f00b88163eebb0f1))
+
 ## [0.191.1](https://github.com/teamkeel/keel/compare/v0.191.0...v0.191.1) (2022-10-28)
 
 
