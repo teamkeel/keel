@@ -223,19 +223,13 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
 			}
 
-			identityId, identityCreated, token, err := actions.Authenticate(p.Context, schema, &authArgs)
+			_, identityCreated, token, err := actions.Authenticate(p.Context, schema, &authArgs)
 
 			if err != nil {
 				return nil, err
 			}
 
-			if identityId != nil {
-				token, err := actions.GenerateBearerToken(identityId)
-
-				if err != nil {
-					return nil, err
-				}
-
+			if token != nil {
 				return map[string]any{
 					"identityCreated": identityCreated,
 					"token":           token,
