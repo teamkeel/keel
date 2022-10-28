@@ -26,6 +26,8 @@ function test(name: TestName, fn: TestFunc) {
   });
 }
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 async function runAllTests({
   parentPort,
   host = "localhost",
@@ -56,9 +58,13 @@ async function runAllTests({
     // when registering the test via the test() block,
     // so enrich the data with the filepath now we know it.
     test.filePath = filePath;
+  }
 
-    await reporter.collectTest(test)
+  await reporter.collectTests(tests)
 
+  await delay(1000)
+
+  for (const test of tests) {
     if (hasPattern) {
       const regex = new RegExp(pattern!);
 
