@@ -3,8 +3,6 @@ package actions
 import (
 	"context"
 	"errors"
-	"net/http"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -36,16 +34,10 @@ const (
 	PasswordColumnName string = "password"
 )
 
-const (
-	authorizationHeaderName string = "Authorization"
-)
-
 var (
-	ErrNoAuthorizationHeader = errors.New("no authentication header set")
-	ErrNoBearerPrefix        = errors.New("no 'Bearer' prefix in the authentication header")
-	ErrInvalidToken          = errors.New("cannot be parsed or vertified as a valid JWT")
-	ErrTokenExpired          = errors.New("token has expired")
-	ErrInvalidIdentityClaim  = errors.New("the identity claim is invalid and cannot be parsed")
+	ErrInvalidToken         = errors.New("cannot be parsed or vertified as a valid JWT")
+	ErrTokenExpired         = errors.New("token has expired")
+	ErrInvalidIdentityClaim = errors.New("the identity claim is invalid and cannot be parsed")
 )
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
@@ -154,19 +146,7 @@ func generateBearerToken(id *ksuid.KSUID) (string, error) {
 	return tokenString, err
 }
 
-func RetrieveIdentityClaim(request *http.Request) (*ksuid.KSUID, error) {
-	header := request.Header.Get(authorizationHeaderName)
-	if header == "" {
-		return nil, ErrNoAuthorizationHeader
-	}
-
-	headerSplit := strings.Split(header, "Bearer ")
-	if len(headerSplit) != 2 {
-		return nil, ErrNoBearerPrefix
-	}
-
-	jwtToken := headerSplit[1]
-
+func ParseBearerToken(jwtToken string) (*ksuid.KSUID, error) {
 	token, err := jwt.ParseWithClaims(jwtToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(getSigningKey()), nil
 	})
