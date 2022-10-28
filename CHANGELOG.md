@@ -1,3 +1,10 @@
+# [0.193.0](https://github.com/teamkeel/keel/compare/v0.192.0...v0.193.0) (2022-10-28)
+
+
+### Features
+
+* collect all tests ([#528](https://github.com/teamkeel/keel/issues/528)) ([d2b0e64](https://github.com/teamkeel/keel/commit/d2b0e64c09604d7df3b3a4bf1a896e7ba40b14b4))
+
 # [0.192.0](https://github.com/teamkeel/keel/compare/v0.191.1...v0.192.0) (2022-10-28)
 
 
