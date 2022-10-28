@@ -19,9 +19,13 @@ describe("reporter", () => {
 
         const reporter = new Reporter({ port: 123, host: "localhost" });
 
-        const testResults = [TestResult.pass("a passing test")] as TestResult[];
+        const testResults = TestResult.pass({
+          name: "a passing test",
+          fn: () => {},
+          filePath: "/foo/bar"
+        }) as TestResult;
 
-        await reporter.report(testResults);
+        await reporter.reportResult([testResults]);
 
         expect(fetchMock.mock.calls[0][1]).toEqual({
           method: "POST",
