@@ -25,9 +25,6 @@ function test(testName: TestName, fn: TestFunc) {
   });
 }
 
-// global - reset with every instantiation of module.
-let results: TestResult[] = [];
-
 async function runAllTests({
   parentPort,
   host = "localhost",
@@ -48,7 +45,6 @@ async function runAllTests({
     host,
     port: parentPort,
   });
-  results = [];
 
   if (!tests.length) {
     return;
@@ -157,17 +153,15 @@ async function runAllTests({
           console.debug(result.asObject());
         }
 
-        results.push(result);
+        // report back to parent process with
+        // result for test
+        // we want to await for it to complete prior to moving on
+        // because the report request also clears the database
+        // between individual test() cases
+        await reporter.report([result]);
       }
     }
   }
-
-  // report back to parent process with all
-  // results for tests in the current file.
-  // we want to await for it to complete prior to moving on
-  // because the report request also clears the database
-  // between individual test() cases
-  await reporter.report(results);
 }
 
 const logger = new Logger({ colorize: true, timestamps: false });
