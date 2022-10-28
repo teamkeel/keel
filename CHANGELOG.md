@@ -1,3 +1,10 @@
+## [0.191.1](https://github.com/teamkeel/keel/compare/v0.191.0...v0.191.1) (2022-10-28)
+
+
+### Bug Fixes
+
+* update readme ([ea56faa](https://github.com/teamkeel/keel/commit/ea56faa0426bb76acbcb2bb2c3f4cd2f1ca5f64e))
+
 # [0.191.0](https://github.com/teamkeel/keel/compare/v0.190.0...v0.191.0) (2022-10-27)
 
 
