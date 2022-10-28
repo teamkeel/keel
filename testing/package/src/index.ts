@@ -2,7 +2,7 @@ import { Logger, LogLevel } from "@teamkeel/sdk";
 import chalk from "chalk";
 import { DatabaseError } from "pg-protocol";
 
-import { RunnerOpts, Test, TestFunc, TestName } from "./types";
+import { RunnerOpts, TestCase, TestFunc, TestName } from "./types";
 import { AssertionFailure } from "./errors";
 import { TestResult } from "./output";
 import { expect } from "./expect";
@@ -16,12 +16,13 @@ export * from "./generated";
 
 const runnerLogger = new Logger({ colorize: true });
 
-const tests: Test[] = [];
+const tests: TestCase[] = [];
 
-function test(testName: TestName, fn: TestFunc) {
+function test(name: TestName, fn: TestFunc) {
   tests.push({
-    testName,
+    name,
     fn,
+    filePath: ""
   });
 }
 
@@ -50,17 +51,24 @@ async function runAllTests({
     return;
   }
 
-  for (const { testName, fn } of tests) {
+  for (const test of tests) {
+    // we do not know what the filepath of the test is 
+    // when registering the test via the test() block,
+    // so enrich the data with the filepath now we know it.
+    test.filePath = filePath;
+
+    await reporter.collectTest(test)
+
     if (hasPattern) {
       const regex = new RegExp(pattern!);
 
-      if (!regex.test(testName)) {
+      if (!regex.test(test.name)) {
         continue;
       }
 
-      log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`, silent);
+      log(`${chalk.bgYellow.white(" RUNS ")} ${test.name}\n`, silent);
     } else {
-      log(`${chalk.bgYellow.white(" RUNS ")} ${testName}\n`, silent);
+      log(`${chalk.bgYellow.white(" RUNS ")} ${test.name}\n`, silent);
     }
 
     let result: TestResult | undefined = undefined;
@@ -69,7 +77,7 @@ async function runAllTests({
     // which resets the database prior to the test run
     const resetSuccess = await reporter.clearDatabase({
       filePath: filePath,
-      testCase: testName,
+      testCase: test.name,
     });
 
     if (debug) {
@@ -77,21 +85,21 @@ async function runAllTests({
         log(
           `${chalk.bgBlueBright.white(
             " INFO "
-          )} Reset database after ${testName}\n`,
+          )} Reset database after ${test.name}\n`,
           silent
         );
       } else {
         log(
           `${chalk.bgRedBright.white(
             " ERROR "
-          )} Could not reset database after ${testName}\n`,
+          )} Could not reset database after ${test.name}\n`,
           silent
         );
       }
     }
 
     try {
-      const t = fn();
+      const t = test.fn();
 
       // support both async and non async invocations:
       // i.e
@@ -107,9 +115,9 @@ async function runAllTests({
         await t;
       }
 
-      result = TestResult.pass(testName);
+      result = TestResult.pass(test);
 
-      log(`${chalk.bgGreen.white(" PASS ")} ${testName}\n`, silent);
+      log(`${chalk.bgGreen.white(" PASS ")} ${test.name}\n`, silent);
     } catch (err) {
       if (debug) {
         console.debug(err);
@@ -123,28 +131,28 @@ async function runAllTests({
       if (isAssertionFailure) {
         const { actual, expected } = err as AssertionFailure;
 
-        result = TestResult.fail(testName, actual, expected);
+        result = TestResult.fail(test, actual, expected);
 
-        log(`${chalk.bgRed.white(" FAIL ")} ${testName}\n`, silent);
+        log(`${chalk.bgRed.white(" FAIL ")} ${test.name}\n`, silent);
       } else if (err instanceof DatabaseError) {
         // do nothing
 
         log(
           `${chalk.bgBlueBright.white(
             " INFO "
-          )} Connection terminated during execution of ${testName}\n`,
+          )} Connection terminated during execution of ${test.name}\n`,
           silent
         );
       } else if (err instanceof Error) {
         // An unrelated error occurred inside of the .test() block
         // which was an instanceof Error
-        result = TestResult.exception(testName, err);
-        log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`, silent);
+        result = TestResult.exception(test, err);
+        log(`${chalk.bgRedBright.white(" ERROR ")} ${test.name}\n`, silent);
         runnerLogger.log(`${err}\n${err.stack}`, LogLevel.Error);
       } else {
         // if it's not an error, then wrap after stringifing
-        result = TestResult.exception(testName, new Error(JSON.stringify(err)));
-        log(`${chalk.bgRedBright.white(" ERROR ")} ${testName}\n`, silent);
+        result = TestResult.exception(test, new Error(JSON.stringify(err)));
+        log(`${chalk.bgRedBright.white(" ERROR ")} ${test.name}\n`, silent);
         runnerLogger.log(`${err}`, LogLevel.Error);
       }
     } finally {
@@ -155,7 +163,7 @@ async function runAllTests({
 
         // report back to parent process with
         // result for test
-        await reporter.report([result]);
+        await reporter.reportResult([result]);
       }
     }
   }

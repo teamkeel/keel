@@ -1,4 +1,4 @@
-import { TestName } from "./types";
+import { TestCase } from "./types";
 
 enum Status {
   Pass = "pass",
@@ -9,27 +9,27 @@ enum Status {
 
 export interface TestResultData {
   status: Status;
-  testName: string;
+  test: TestCase;
   actual?: unknown;
   expected?: unknown;
   err?: Error;
 }
 
 export class TestResult {
-  private readonly testName: TestName;
+  private readonly test: TestCase;
   private readonly status: Status;
   private readonly actual?: unknown;
   private readonly expected?: unknown;
   private readonly err?: Error;
 
   private constructor({
-    testName,
+    test,
     status,
     err,
     expected,
     actual,
   }: TestResultData) {
-    this.testName = testName;
+    this.test = test;
     this.status = status;
     if (err) {
       this.err = err;
@@ -42,24 +42,24 @@ export class TestResult {
   }
 
   static fail(
-    testName: string,
+    test: TestCase,
     actual: unknown,
     expected: unknown
   ): TestResult {
-    return new TestResult({ status: Status.Fail, testName, actual, expected });
+    return new TestResult({ status: Status.Fail, test, actual, expected });
   }
 
-  static exception(testName: string, err: Error): TestResult {
-    return new TestResult({ status: Status.Exception, testName, err });
+  static exception(test: TestCase, err: Error): TestResult {
+    return new TestResult({ status: Status.Exception, test, err });
   }
 
-  static pass(testName: string): TestResult {
-    return new TestResult({ status: Status.Pass, testName });
+  static pass(test: TestCase): TestResult {
+    return new TestResult({ status: Status.Pass, test });
   }
 
   asObject = (): TestResultData => {
     let base: TestResultData = {
-      testName: this.testName,
+      test: this.test,
       status: this.status,
     };
 
