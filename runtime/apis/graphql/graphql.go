@@ -34,6 +34,14 @@ func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, err
 	return m.build(api, proto)
 }
 
+type GraphQlNormalizer struct {
+}
+
+func (b GraphQlNormalizer) NormalizeArgs(args map[string]any) (map[string]any, error) {
+	//toddo
+	return args, nil
+}
+
 // A graphqlSchemaBuilder exposes a Make method, that makes a set of graphql.Schema objects - one for each
 // of the APIs defined in the keel schema provided at construction time.
 type graphqlSchemaBuilder struct {
@@ -42,10 +50,6 @@ type graphqlSchemaBuilder struct {
 	mutation *graphql.Object
 	types    map[string]*graphql.Object
 	enums    map[string]*graphql.Enum
-}
-
-func (b *graphqlSchemaBuilder) NormalizeArgs(args map[string]any) (map[string]any, error) {
-
 }
 
 // build returns a graphql.Schema that implements the given API.
@@ -163,30 +167,30 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		}
 	}
 
+	normalizer := &GraphQlNormalizer{}
+
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
-		field.Resolve = GetFn(schema)
+		field.Resolve = GetFn(schema, op, normalizer)
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		field.Resolve = CreateFn
+		field.Resolve = CreateFn(schema, op, normalizer)
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
-
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		field.Resolve = UpdateFn
+		field.Resolve = UpdateFn(schema, op, normalizer)
 		field.Type = graphql.NewNonNull(field.Type)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		field.Type = deleteResponseType
-		field.Resolve = DeleteFn
+		field.Resolve = DeleteFn(schema, op, normalizer)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		field.Resolve = ListFn
+		field.Resolve = ListFn(schema, op, normalizer)
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		field.Type = mk.makeConnectionType(outputType)
-
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
 		// custom response type as defined in the protobuf schema
@@ -229,7 +233,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				return nil, err
 			}
 
-			if token != nil {
+			if token != "" {
 				return map[string]any{
 					"identityCreated": identityCreated,
 					"token":           token,
