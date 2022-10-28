@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/teamkeel/keel/runtime/actions"
 	gql "github.com/teamkeel/keel/runtime/apis/graphql"
 
 	"github.com/gorilla/handlers"
@@ -31,6 +32,10 @@ type Response struct {
 	Body   []byte
 	Status int
 }
+
+const (
+	authorizationHeaderName string = "Authorization"
+)
 
 type Handler func(r *http.Request) (*Response, error)
 
@@ -60,18 +65,26 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 
 		handler := NewHandler(currSchema)
 
-		identityId, err := RetrieveIdentityClaim(r)
+		header := r.Header.Get(authorizationHeaderName)
+		if header == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("no authentication header set"))
+		}
+
+		headerSplit := strings.Split(header, "Bearer ")
+		if len(headerSplit) != 2 {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("no 'Bearer' prefix in the authentication header"))
+		}
+
+		identityId, err := actions.ParseBearerToken(headerSplit[1])
 
 		switch {
-		case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired):
+		case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired):
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Valid bearer token required to authenticate"))
-			return
-		case errors.Is(err, ErrNoBearerPrefix):
-			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(err.Error()))
 			return
-		case errors.Is(err, ErrInvalidIdentityClaim):
+		case errors.Is(err, actions.ErrInvalidIdentityClaim):
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(err.Error()))
 			return
