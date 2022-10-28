@@ -1,4 +1,5 @@
 import { TestResult } from "./output";
+import { TestCase } from "./types";
 import fetch from "node-fetch";
 
 export interface ReporterOptions {
@@ -18,6 +19,7 @@ export default class Reporter {
     this.opts = opts;
   }
 
+  // Clear the database prior to running each test casde
   clearDatabase = async ({ filePath, testCase }: ClearOptions): Promise<boolean> => {
     const res = await fetch(`${this.buildHostUri()}/reset`, {
       method: "POST",
@@ -30,18 +32,27 @@ export default class Reporter {
     return res.ok;
   };
 
-  report = async (results: TestResult[]): Promise<boolean> => {
-    const response = await this.testResultsRequest(results);
-    return response.ok;
-  };
+  // At the beginning of the test run, report all of the known
+  // tests back to the go process, so it can output them in the TUI
+  collectTest = async (test: TestCase) : Promise<boolean> => {
+    const res = await fetch(`${this.buildHostUri()}/collect`, {
+      method: "POST",
+      body: JSON.stringify(test),
+    });
 
-  private async testResultsRequest(results: TestResult[]) {
-    return await fetch(`${this.buildHostUri()}/report`, {
+    return res.ok;
+  }
+
+  // Report the test result (pass | fail | exception) when the test function
+  // has been evaluated in the try/catch block
+  reportResult = async (results: TestResult[]): Promise<boolean> => {
+    const response = await fetch(`${this.buildHostUri()}/report`, {
       method: "POST",
       // JSON.stringify will call TestResult.toJSON for each result in the array
-      body: JSON.stringify(results),
+      body: JSON.stringify(results.map((r) => r.toJSON())),
     });
-  }
+    return response.ok;
+  };
 
   private buildHostUri = () => {
     const { port, host } = this.opts;

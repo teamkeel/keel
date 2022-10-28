@@ -1,6 +1,12 @@
 export type TestFunc = () => void | Promise<void>;
 export type TestName = string;
 
+export interface TestCase {
+  name: string;
+  filePath: string;
+  fn: TestFunc;
+}
+
 const matcherTypes = <const>[
   "toEqual",
   "notToEqual",
@@ -16,11 +22,6 @@ const matcherTypes = <const>[
 export type MatcherTypes = typeof matcherTypes[number];
 type MatcherFunc = any;
 export type Matchers = Record<MatcherTypes, MatcherFunc>;
-
-export interface Test {
-  testName: TestName;
-  fn: TestFunc;
-}
 
 // todo: possibly use sdk types for action results + errors
 export interface ActionError {
