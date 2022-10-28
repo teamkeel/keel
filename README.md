@@ -27,7 +27,6 @@ You need the following installed:
 - Go `brew install go`
 - Node - first install [`pnpm`](https://pnpm.io/installation) then run `pnpm env use --global lts`
 - [Docker](https://docs.docker.com/desktop/install/mac-install/)
-- libpq - `brew install libpq` and follow post-install Brew instructions on updating PATH
 
 A working setup will look something like this (paths will vary):
 
@@ -38,8 +37,6 @@ A working setup will look something like this (paths will vary):
 /Users/jonbretman/.nvm/versions/node/v16.16.0/bin/node
 ~/code/keel main $ which docker
 /usr/local/bin/docker
-~/code/keel main $ which psql
-/opt/homebrew/opt/libpq/bin/psql
 ```
 
 ### Setting up conventional commits
