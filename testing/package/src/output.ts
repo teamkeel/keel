@@ -76,14 +76,18 @@ export class TestResult {
 
   toJSON = () => {
     const obj = this.asObject();
+    const { test, ...rest } = obj;
 
     if (obj.err) {
       // Error instances are not automatically stringified to JSON
       // so we need to serialize their properties
       // See https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
+
       const { stack, message, name } = obj.err;
+
       return {
-        ...obj,
+        ...test,
+        ...rest,
         err: {
           message,
           stack,
@@ -92,6 +96,9 @@ export class TestResult {
       };
     }
 
-    return this.asObject();
+    return {
+      ...test,
+      ...rest,
+    };
   };
 }

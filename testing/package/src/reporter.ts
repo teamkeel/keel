@@ -49,7 +49,7 @@ export default class Reporter {
     const response = await fetch(`${this.buildHostUri()}/report`, {
       method: "POST",
       // JSON.stringify will call TestResult.toJSON for each result in the array
-      body: JSON.stringify(results),
+      body: JSON.stringify(results.map((r) => r.toJSON())),
     });
     return response.ok;
   };
