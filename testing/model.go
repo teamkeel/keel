@@ -1,0 +1,408 @@
+package testing
+
+// This file heavily utilizes the terminal UI framework (TUI) Bubbletea: https://github.com/charmbracelet/bubbletea
+// Take some time to read the documentation. Their discord server is very helpful for getting help.
+// Bubbletea is a model-view framework. The Update() method on a model is responsible for receiving "messages" of
+// different types (e.g window resize events, custom events from outside of the Bubbletea program that send new data etc),
+// and updating the internal model state
+// Once an Update() has finished, then the View() method is called to repaint the whole of the Terminal UI.
+// Because the whole CLI output is repainted with every update to the state, you need to be careful to ensure you do not
+// cause the UI to jump if you are mutating data in the update or if you loop over a data structure non deterministically.
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/charmbracelet/bubbles/spinner"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/fatih/color"
+	"github.com/samber/lo"
+	"github.com/teamkeel/keel/testing/viewport"
+
+	"github.com/muesli/termenv"
+)
+
+// A Bubbletea model is responsible for maintaining the CLI state
+// More about models at https://github.com/charmbracelet/bubbletea#the-model
+type Model struct {
+	spinner  spinner.Model
+	viewport viewport.Model
+	color    termenv.Profile
+
+	onQuit func()
+
+	builder  strings.Builder
+	ready    bool
+	tests    []*UITestCase
+	cursor   int
+	updating bool
+
+	finished bool
+
+	passedCount    int
+	failedCount    int
+	completedTests int
+
+	Err error
+}
+
+type (
+	errMsg struct {
+		err error
+	}
+)
+
+func NewModel(onQuit func()) *Model {
+	s := spinner.NewModel()
+	s.Spinner = spinner.Spinner{
+		Frames: []string{"...", "·..", ".·.", "..·", "..."},
+		FPS:    time.Second / 8,
+	}
+	s.Style.Foreground(lipgloss.Color("41"))
+
+	return &Model{
+		color:   termenv.ColorProfile(),
+		spinner: s,
+		tests:   make([]*UITestCase, 0),
+		onQuit:  onQuit,
+	}
+}
+
+func (m *Model) Init() tea.Cmd {
+	return m.spinner.Tick
+}
+
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	allCmds := []tea.Cmd{}
+	switch msg := msg.(type) {
+	case errMsg:
+		// Handle any error message types raised and quit the tea program
+		m.Err = msg.err
+
+		return m, tea.Quit
+	case []*Event:
+		// Event is a catchall struct which notifies of changes to test results.
+		// There are two scenarios:
+		// 1. All of the test names are collected first before each test is run - these are "Pending" type events (all of the pending events come in at once in one array)
+		// 2. When each test is executed, a "completed" event is pushed to this code with details of whether the test succeeeded / failed / error-ed
+		if msg[0].EventStatus == EventStatusPending {
+			m.ready = true
+			for _, evt := range msg {
+				s := spinner.New()
+				s.Spinner = spinner.Spinner{
+					Frames: []string{"....", "·...", ".·..", "..·.", "...·"},
+					FPS:    time.Second / 8,
+				}
+				allCmds = append(allCmds, s.Tick)
+
+				m.tests = append(m.tests, &UITestCase{
+					TestName: evt.Meta.TestName,
+					FilePath: evt.Meta.FilePath,
+					spinner:  s,
+				})
+			}
+		} else {
+			evt := msg[0]
+			for i, test := range m.tests {
+
+				caseMatch := strings.EqualFold(test.TestName, evt.Result.TestName)
+
+				if caseMatch {
+					m.tests[i].Completed = true
+					m.tests[i].StatusStr = evt.Result.Status
+
+					if i >= m.viewport.Height-3 {
+						m.viewport.YOffset++
+					}
+					m.completedTests++
+
+					switch test.StatusStr {
+					case StatusPass:
+						m.passedCount++
+					case StatusFail:
+						m.tests[i].Actual = evt.Result.Actual
+						m.tests[i].Expected = evt.Result.Expected
+						m.failedCount++
+					case StatusException:
+						m.tests[i].Err = evt.Result.Err
+						m.failedCount++
+					}
+
+					allCmds = append(allCmds, m.tests[i].spinner.Tick)
+				}
+			}
+
+			if m.completedTests == len(m.tests) {
+				summary := m.failedTestSummary()
+				failedTestHeight := len(strings.Split(summary, "\n"))
+				newHeight := m.viewport.TotalLineCount() + failedTestHeight
+
+				m.viewport.Height = newHeight
+				m.viewport.YOffset = 0
+				m.finished = true
+			}
+			if m.completedTests == len(m.tests) && m.finished {
+				allCmds = append(allCmds, tea.DisableMouse)
+			}
+		}
+
+		return m, tea.Batch(allCmds...)
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "ctrl+c", "q":
+			m.onQuit()
+			return m, tea.Quit
+		case "down", "j":
+			if !m.updating {
+				m.cursor++
+				m.fixCursor()
+				m.fixViewport(false)
+			}
+		case "up", "k":
+			if !m.updating {
+				m.cursor--
+				m.fixCursor()
+				m.fixViewport(false)
+			}
+		case "pgup", "u":
+			if !m.updating {
+				m.viewport.LineUp(1)
+				m.fixViewport(true)
+			}
+		case "pgdown", "d":
+			if !m.updating {
+				m.viewport.LineDown(1)
+				m.fixViewport(true)
+			}
+		}
+	case spinner.TickMsg:
+		// A tick message is Bubbletea's internal way of progressing the animation of loading spinners
+		// Every time a previous tick message comes in, we want to append the new tick cmd to the update
+		// so that spinners continue to spin
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+
+		allCmds = append(allCmds, cmd)
+		for i, t := range m.tests {
+			s, cmd := t.spinner.Update(msg)
+
+			m.tests[i].spinner = s
+
+			allCmds = append(allCmds, cmd)
+		}
+
+		return m, tea.Batch(allCmds...)
+	case tea.WindowSizeMsg:
+		// The window size message event is triggered once when the program begins - the height and width that are sent are
+		// the height and width of the terminal window
+		// The message event is triggered with subsequent resizing of the window
+
+		// We construct/mutate the height and width of our internal viewport based on the width and height of the window
+		// As more tests results are reported, elsewhere we also want to increase the height of the viewport so we can display
+		// all of the tests
+		if !m.ready {
+			m.viewport = viewport.Model{
+				Width:  msg.Width,
+				Height: msg.Height - 2,
+			}
+			m.ready = true
+		} else {
+			m.viewport.Width = msg.Width
+			m.viewport.Height = msg.Height - 2
+			m.fixViewport(true)
+		}
+	}
+
+	viewport, cmd := m.viewport.Update(msg)
+
+	m.viewport = viewport
+	allCmds = append(allCmds, cmd)
+
+	return m, tea.Batch(allCmds...)
+}
+
+func (m *Model) View() string {
+	var header, body string
+	if len(m.tests) < 1 {
+		header = color.New(color.FgCyan).Sprint("Preparing tests" + m.spinner.View())
+	} else {
+		header = color.New(color.FgWhite).Add(color.Bold).Sprintf("Running %d tests", len(m.tests))
+		m.viewport.SetContent(m.content())
+		body = m.viewport.View()
+	}
+
+	return fmt.Sprintf("%s\n%s", header, body)
+}
+
+// Content is where all of the tests are (re)rendered
+func (m *Model) content() string {
+	defer m.builder.Reset()
+
+	m.builder.WriteString("\n")
+
+	// We need to compute the longest test name so we can add spacer between the progress counter and the names of the tests
+	longestTestName := lo.MaxBy(m.tests, func(t *UITestCase, max *UITestCase) bool {
+		return len(t.TestName) > len(max.TestName)
+	})
+
+	for i, test := range m.tests {
+		if test.Completed {
+			var c *color.Color
+
+			if test.StatusStr == "pass" {
+				c = color.New(color.BgGreen).Add(color.FgBlack)
+			} else {
+				c = color.New(color.BgRed).Add(color.FgWhite)
+			}
+
+			m.builder.WriteString(
+				fmt.Sprintf("%s  %s\n", c.Sprintf(" %s ", strings.ToUpper(test.StatusStr)), test.TestName),
+			)
+		} else if i > 0 && m.tests[i-1].Completed || i == 0 && !m.tests[i].Completed {
+			m.builder.WriteString(
+				fmt.Sprintf(
+					" %s   %s%s(%d/%d)\n",
+					test.spinner.View(),
+					test.TestName,
+					strings.Repeat(" ", len(longestTestName.TestName)-len(m.tests[i].TestName)+4),
+					m.completedTests+1,
+					len(m.tests),
+				),
+			)
+		} else {
+			m.builder.WriteString(
+				fmt.Sprintf("        %s\n", color.New(color.Faint).Sprint(test.TestName)),
+			)
+		}
+	}
+
+	// Print the summary
+	// e.g 5 passed · 1 failed · 6 total
+	if m.finished {
+		dialogBoxStyle := lipgloss.NewStyle().
+			Border(lipgloss.ThickBorder()).
+			BorderForeground(lipgloss.Color("#fff")).
+			Width(50).
+			Height(1).
+			MarginTop(1).
+			BorderTop(true).
+			BorderLeft(true).
+			BorderRight(true).
+			AlignHorizontal(lipgloss.Center).
+			BorderBottom(true).
+			MarginRight(2)
+
+		m.builder.WriteString(
+			dialogBoxStyle.Render(
+				fmt.Sprintf("%s · %s · %s", color.New(color.FgGreen).Sprintf("%d passed", m.passedCount), color.New(color.FgRed).Sprintf("%d failed", m.failedCount), color.New(color.FgWhite).Sprintf("%d total", len(m.tests))),
+			),
+		)
+
+		// failures
+		m.builder.WriteString(m.failedTestSummary())
+
+		m.builder.WriteString("\n")
+	}
+
+	return m.builder.String()
+}
+
+func (m *Model) failedTestSummary() (s string) {
+	failedTests := lo.Filter(m.tests, func(t *UITestCase, _ int) bool {
+		return t.StatusStr != StatusPass
+	})
+
+	dialogBoxStyle := lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("1")).
+		MarginTop(1).
+		BorderTop(true).
+		Width(30).
+		BorderLeft(true).
+		BorderRight(true).
+		AlignHorizontal(lipgloss.Center).
+		BorderBottom(true)
+
+	s += "\n"
+	s += fmt.Sprintf("%s\n\n", color.New(color.FgRed).Sprintf("%d failed tests:", len(failedTests)))
+
+	withinBox := ""
+
+	for _, failedTest := range failedTests {
+		withinBox += fmt.Sprintf("%s %s", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", strings.ToUpper(failedTest.StatusStr)), failedTest.TestName)
+		switch failedTest.StatusStr {
+		case StatusFail:
+
+			withinBox += lipgloss.JoinHorizontal(
+				lipgloss.Center,
+				dialogBoxStyle.Render(color.New(color.FgRed).Sprintf("%s", failedTest.Expected)),
+				dialogBoxStyle.Render(color.New(color.FgRed).Sprintf("%s", failedTest.Actual)),
+			)
+			withinBox += "\n"
+			labelsBox := lipgloss.NewStyle().
+				Width(30).
+				AlignHorizontal(lipgloss.Left).
+				MarginRight(5)
+
+			withinBox += lipgloss.JoinHorizontal(
+				lipgloss.Center,
+				labelsBox.Render(color.New(color.FgRed).Sprint("Expected")),
+				labelsBox.Render(color.New(color.FgRed).Sprint("Actual")),
+			)
+			withinBox += "\n\n"
+		case StatusException:
+			// todo
+		}
+	}
+
+	s += withinBox
+
+	s += "\n\n"
+	return s
+}
+
+func (m *Model) fixCursor() {
+	if m.cursor > len(m.tests)-1 {
+		m.cursor = len(m.tests) - 1
+	} else if m.cursor < 0 {
+		m.cursor = 0
+	}
+}
+
+func (m *Model) fixViewport(moveCursor bool) {
+	top := m.viewport.YOffset
+	bottom := m.viewport.Height + m.viewport.YOffset - 1
+
+	if moveCursor {
+		if m.cursor < top {
+			m.cursor = top
+		} else if m.cursor > bottom {
+			m.cursor = bottom
+		}
+		return
+	}
+
+	if m.cursor < top {
+		m.viewport.LineUp(top - m.cursor)
+	} else if m.cursor > bottom {
+		m.viewport.LineDown(m.cursor - bottom)
+	}
+}
+
+type UITestCase struct {
+	TestName string
+	FilePath string
+
+	Completed bool
+	StatusStr string
+
+	Actual   any
+	Expected any
+
+	Err json.RawMessage
+
+	spinner spinner.Model
+}

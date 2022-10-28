@@ -61,7 +61,7 @@ func SetupDatabaseForTestCase(schema *proto.Schema, dbName string) (*gorm.DB, er
 		mainDB, err = gorm.Open(
 			postgres.Open(fmt.Sprintf(dbConnString, "keel")),
 			&gorm.Config{
-				Logger: logger.Discard,
+				Logger: logger.Discard.LogMode(logger.Silent),
 			})
 
 		if err != nil {

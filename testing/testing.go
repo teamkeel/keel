@@ -82,7 +82,7 @@ type ResetRequest struct {
 //go:embed tsconfig.json
 var sampleTsConfig string
 
-func Run(dir string, pattern string) (<-chan []*Event, error) {
+func Run(dir string, pattern string) (chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
@@ -328,6 +328,7 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 			case "/report":
 				result := []*TestResult{}
 				json.Unmarshal(b, &result)
+
 				ch <- []*Event{{EventStatus: EventStatusComplete, Result: result[0]}}
 				w.Write([]byte("ok"))
 				expectedResults--
