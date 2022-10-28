@@ -155,9 +155,6 @@ async function runAllTests({
 
         // report back to parent process with
         // result for test
-        // we want to await for it to complete prior to moving on
-        // because the report request also clears the database
-        // between individual test() cases
         await reporter.report([result]);
       }
     }
