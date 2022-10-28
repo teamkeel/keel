@@ -42,9 +42,29 @@ const (
 	StatusException = "exception"
 )
 
+type EventStatus string
+
+const (
+	EventStatusPending  EventStatus = "pending"
+	EventStatusComplete EventStatus = "complete"
+)
+
 type Event struct {
+	EventStatus EventStatus
+
+	Result *TestResult
+	Meta   *TestCase
+}
+
+type TestCase struct {
+	TestName string `json:"name"`
+	FilePath string `json:"filePath"`
+}
+
+type TestResult struct {
+	TestCase
+
 	Status   string          `json:"status"`
-	TestName string          `json:"testName"`
 	Expected json.RawMessage `json:"expected,omitempty"`
 	Actual   json.RawMessage `json:"actual,omitempty"`
 	Err      json.RawMessage `json:"err,omitempty"`
@@ -63,14 +83,7 @@ type ResetRequest struct {
 //go:embed tsconfig.json
 var sampleTsConfig string
 
-type RunType = string
-
-const (
-	RunTypeIntegration = "integration"
-	RunTypeTestCmd     = "testCmd"
-)
-
-func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
+func Run(dir string, pattern string) (<-chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
@@ -138,7 +151,7 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 		panic(err)
 	}
 
-	output, err := typecheck(dir, runType)
+	output, err := typecheck(dir)
 
 	if err != nil {
 		fmt.Print(output)
@@ -402,11 +415,15 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 					}
 				}
 			case "/report":
-				events := []*Event{}
-				json.Unmarshal(b, &events)
-				ch <- events
+				result := []*TestResult{}
+				json.Unmarshal(b, &result)
+				ch <- []*Event{{EventStatus: EventStatusComplete, Result: result[0]}}
 				w.Write([]byte("ok"))
-
+			case "/collect":
+				result := TestCase{}
+				json.Unmarshal(b, &result)
+				ch <- []*Event{{EventStatus: EventStatusPending, Meta: &result}}
+				w.Write([]byte("ok"))
 			case "/reset":
 				resetRequestBody := &ResetRequest{}
 				err = json.Unmarshal(b, &resetRequestBody)
@@ -424,6 +441,13 @@ func Run(dir string, pattern string, runType RunType) (<-chan []*Event, error) {
 	go srv.ListenAndServe()
 
 	fs := os.DirFS(dir)
+
+	// go func() {
+	// 	for {
+	// 		val := <-ch
+	// 		fmt.Println(val)
+	// 	}
+	// }()
 
 	testFiles, err := doublestar.Glob(fs, "**/*.test.ts")
 
@@ -537,17 +561,11 @@ func serializeError(err error) []map[string]string {
 	}
 }
 
-func typecheck(dir string, runType RunType) (output string, err error) {
+func typecheck(dir string) (output string, err error) {
 	// todo: we need to generate a tsconfig to be able to run tsc for typechecking
 	// however, when we come to use the testing package in real projects, there may already
 	// be a tsconfig file that we need to respect
 
-	// switch runType {
-	// case RunTypeIntegration:
-	// case RunTypeTestCmd:
-	// default:
-	// 	panic("unrecognised run type")
-	// }
 	f, err := os.Create(filepath.Join(dir, "tsconfig.json"))
 
 	if err != nil {
