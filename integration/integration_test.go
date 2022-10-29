@@ -10,6 +10,7 @@ import (
 
 	"github.com/alexflint/go-restructure/regex"
 	"github.com/nsf/jsondiff"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/cmd"
@@ -20,7 +21,7 @@ import (
 
 var pattern = flag.String("pattern", "", "Pattern to match individual test case names")
 
-type Expected struct {
+type Assertion struct {
 	TestName string `json:"testName"`
 	Status   string `json:"status"`
 	Actual   any    `json:"actual,omitempty"`
@@ -31,7 +32,7 @@ func TestIntegration(t *gotest.T) {
 	entries, err := os.ReadDir("./testdata")
 	require.NoError(t, err)
 
-	allEvents := []*testing.Event{}
+	allResults := []*testing.TestResult{}
 
 	for _, e := range entries {
 		t.Run(e.Name(), func(t *gotest.T) {
@@ -58,17 +59,41 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 
-			ch, err := testing.Run(workingDir, *pattern, testing.RunTypeIntegration)
+			ch, err := testing.Run(workingDir, *pattern)
 			require.NoError(t, err)
 
-			events := []*testing.Event{}
+			results := []*testing.TestResult{}
 			for newEvents := range ch {
-				events = append(events, newEvents...)
+				resultEvents := lo.Filter(newEvents, func(e *testing.Event, _ int) bool {
+					return e.EventStatus == testing.EventStatusComplete
+				})
+
+				for _, e := range resultEvents {
+					results = append(results, e.Result)
+				}
 			}
 
-			allEvents = append(allEvents, events...)
+			allResults = append(allResults, results...)
 
-			actual, err := json.Marshal(events)
+			actual := []*Assertion{}
+
+			for _, r := range results {
+				assertion := &Assertion{
+					TestName: r.TestName,
+					Status:   r.Status,
+				}
+
+				if r.Expected != nil {
+					assertion.Expected = r.Expected
+				}
+				if r.Actual != nil {
+					assertion.Actual = r.Actual
+				}
+
+				actual = append(actual, assertion)
+			}
+
+			a, err := json.Marshal(actual)
 			require.NoError(t, err)
 			expected, err := os.ReadFile(filepath.Join("./testdata", e.Name(), "expected.json"))
 			require.NoError(t, err)
@@ -76,13 +101,13 @@ func TestIntegration(t *gotest.T) {
 			if pattern != nil && *pattern != "" {
 				// subset of tests
 
-				allExpected := []*Expected{}
+				allExpected := []*Assertion{}
 
 				err := json.Unmarshal(expected, &allExpected)
 
 				require.NoError(t, err)
 
-				filteredExpected := []*Expected{}
+				filteredExpected := []*Assertion{}
 
 				for _, e := range allExpected {
 					match, _ := regex.MatchString(fmt.Sprintf("^%s$", *pattern), e.TestName)
@@ -96,14 +121,14 @@ func TestIntegration(t *gotest.T) {
 
 				require.NoError(t, err)
 
-				CompareJson(t, b, actual)
+				CompareJson(t, b, a)
 			} else {
-				CompareJson(t, expected, actual)
+				CompareJson(t, expected, a)
 			}
 		})
 	}
 
-	cmd.PrintSummary(allEvents)
+	cmd.PrintSummary(allResults)
 }
 
 func CompareJson(t *gotest.T, expected []byte, actual []byte) {

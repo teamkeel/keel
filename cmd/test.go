@@ -23,8 +23,6 @@ var testCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		workingDir, err := testhelpers.WithTmpDir(inputDir)
 
-		allEvents := []*testing.Event{}
-
 		if err != nil {
 			return err
 		}
@@ -49,18 +47,24 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
-		ch, err := testing.Run(workingDir, pattern, testing.RunTypeTestCmd)
+		ch, err := testing.Run(workingDir, pattern)
 
 		if err != nil {
 			return err
 		}
 
-		// each js test file reports back an array of testing results
+		results := []*testing.TestResult{}
 		for newEvents := range ch {
-			allEvents = append(allEvents, newEvents...)
+			resultEvents := lo.Filter(newEvents, func(e *testing.Event, _ int) bool {
+				return e.EventStatus == testing.EventStatusComplete && e.Result != nil
+			})
+
+			for _, e := range resultEvents {
+				results = append(results, e.Result)
+			}
 		}
 
-		PrintSummary(allEvents)
+		PrintSummary(results)
 		return nil
 	},
 }
@@ -77,17 +81,16 @@ func init() {
 	testCmd.Flags().StringVarP(&pattern, "pattern", "p", "(.*)", "pattern to isolate test")
 }
 
-func PrintSummary(events []*testing.Event) {
-
-	totalPassed := lo.CountBy(events, func(evt *testing.Event) bool {
+func PrintSummary(results []*testing.TestResult) {
+	totalPassed := lo.CountBy(results, func(evt *testing.TestResult) bool {
 		return evt.Status == testing.StatusPass
 	})
 
-	totalFailed := lo.CountBy(events, func(evt *testing.Event) bool {
+	totalFailed := lo.CountBy(results, func(evt *testing.TestResult) bool {
 		return evt.Status != testing.StatusPass
 	})
 
-	for _, event := range events {
+	for _, event := range results {
 		if event.Status == testing.StatusPass {
 			fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
 		} else {

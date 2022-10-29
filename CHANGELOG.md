@@ -1,3 +1,24 @@
+# [0.193.0](https://github.com/teamkeel/keel/compare/v0.192.0...v0.193.0) (2022-10-28)
+
+
+### Features
+
+* collect all tests ([#528](https://github.com/teamkeel/keel/issues/528)) ([d2b0e64](https://github.com/teamkeel/keel/commit/d2b0e64c09604d7df3b3a4bf1a896e7ba40b14b4))
+
+# [0.192.0](https://github.com/teamkeel/keel/compare/v0.191.1...v0.192.0) (2022-10-28)
+
+
+### Features
+
+* report individual test results ([#523](https://github.com/teamkeel/keel/issues/523)) ([d603c0b](https://github.com/teamkeel/keel/commit/d603c0bac1126b8198021240f00b88163eebb0f1))
+
+## [0.191.1](https://github.com/teamkeel/keel/compare/v0.191.0...v0.191.1) (2022-10-28)
+
+
+### Bug Fixes
+
+* update readme ([ea56faa](https://github.com/teamkeel/keel/commit/ea56faa0426bb76acbcb2bb2c3f4cd2f1ca5f64e))
+
 # [0.191.0](https://github.com/teamkeel/keel/compare/v0.190.0...v0.191.0) (2022-10-27)
 
 
