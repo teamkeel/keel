@@ -36,30 +36,30 @@ type ActionBuilder[Result any] interface {
 	// CaptureImplicitWriteInputValues implementations are expected to identify implicit
 	// Action *write* input key/values in the given args, and update the the dbValues in the shared Scope
 	// object accordingly.
-	CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[Result]
+	CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[Result]
 
 	// CaptureSetValues implementations are expected to reconcile the @Set expressions defined for this Action
 	// by the schema with the key/values provided by the given args, and to populate the *DBValues in the
 	// shared Scope accordingly.
-	CaptureSetValues(args RequestArguments) ActionBuilder[Result]
+	CaptureSetValues(args ValueArgs) ActionBuilder[Result]
 
 	// ApplyImplicitFilters implementations are expected to reconcile the implicit read inputs defined for
 	// this Action by the schema with the key/values provided by the given args, and to add corresponding
 	// Where filters to the *gorm.DB in the shared Scope.
-	ApplyImplicitFilters(args RequestArguments) ActionBuilder[Result]
+	ApplyImplicitFilters(args WhereArgs) ActionBuilder[Result]
 
 	// ApplyExplicitFilters implementations are expected to reconcile the explicit read inputs defined for
 	// this Action by the schema with the key/values provided by the given args, and to add corresponding
 	// Where filters to the *gorm.DB in the shared Scope.
-	ApplyExplicitFilters(args RequestArguments) ActionBuilder[Result]
+	ApplyExplicitFilters(args WhereArgs) ActionBuilder[Result]
 
 	// ????? don't understand this one yet, ...
 	// use the current database query scope to perform an authorisation check on the data filter.
 	// use explicit inputs where ne
-	IsAuthorised(args RequestArguments) ActionBuilder[Result]
+	IsAuthorised(args WhereArgs) ActionBuilder[Result]
 
 	// Execute database query and return action-specific result.
-	Execute(args RequestArguments) (*ActionResult[Result], error)
+	Execute(args WhereArgs) (*ActionResult[Result], error)
 }
 
 // A Scope provides a shared single source of truth to support Action implementation code,

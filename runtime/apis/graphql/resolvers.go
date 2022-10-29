@@ -1,38 +1,32 @@
 package graphql
 
 import (
-	"errors"
-
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 )
 
-type Normalizer interface {
-	NormalizeArgs(args map[string]any) (map[string]any, error)
-}
+// TODO: this logic will be exactly the same on RPC since we'll have abstractions like ArgParser.  We should decouple this from graphql and make it reusable
 
-func GetFn(schema *proto.Schema, operation *proto.Operation, normalizer Normalizer) func(p graphql.ResolveParams) (interface{}, error) {
+func GetFn(schema *proto.Schema, operation *proto.Operation, argParser actions.ArgParser) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		input := p.Args["input"]
-		arguments, ok := input.(map[string]any)
-		if !ok {
-			return nil, errors.New("input not a map")
+		args, err := argParser.ParseGet(p.Args)
+		if err != nil {
+			return nil, err
 		}
 
 		var builder actions.GetAction
 		scope, err := actions.NewScope(p.Context, operation, schema, nil)
-
 		if err != nil {
 			return nil, err
 		}
 
 		result, err := builder.
 			Initialise(scope).
-			ApplyImplicitFilters(arguments).
-			ApplyExplicitFilters(arguments).
-			IsAuthorised(arguments).
-			Execute(arguments)
+			ApplyImplicitFilters(args.Wheres()).
+			ApplyExplicitFilters(args.Wheres()).
+			IsAuthorised(args.Wheres()).
+			Execute(args.Wheres())
 
 		if result != nil {
 			return result.Value.Object, err
@@ -41,30 +35,25 @@ func GetFn(schema *proto.Schema, operation *proto.Operation, normalizer Normaliz
 	}
 }
 
-func CreateFn(schema *proto.Schema, operation *proto.Operation, normalizer Normalizer) func(p graphql.ResolveParams) (interface{}, error) {
+func CreateFn(schema *proto.Schema, operation *proto.Operation, argParser actions.ArgParser) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		input := p.Args["input"]
-		arguments, ok := input.(map[string]any)
-		if !ok {
-			return nil, errors.New("input not a map")
+		args, err := argParser.ParseGet(p.Args)
+		if err != nil {
+			return nil, err
 		}
-
-		args, err := normalizer.NormalizeArgs(arguments)
 
 		var builder actions.CreateAction
-
 		scope, err := actions.NewScope(p.Context, operation, schema, nil)
-
 		if err != nil {
 			return nil, err
 		}
 
 		result, err := builder.
 			Initialise(scope).
-			CaptureImplicitWriteInputValues(arguments). // todo: err?
-			CaptureSetValues(arguments).
-			IsAuthorised(arguments).
-			Execute(arguments)
+			CaptureImplicitWriteInputValues(args.Values()).
+			CaptureSetValues(args.Values()).
+			IsAuthorised(args.Wheres()).
+			Execute(args.Wheres())
 
 		if result != nil {
 			return result.Value.Object, err
@@ -73,34 +62,25 @@ func CreateFn(schema *proto.Schema, operation *proto.Operation, normalizer Norma
 	}
 }
 
-func ListFn(schema *proto.Schema, operation *proto.Operation, normalizer Normalizer) func(p graphql.ResolveParams) (interface{}, error) {
+func ListFn(schema *proto.Schema, operation *proto.Operation, argParser actions.ArgParser) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		input := p.Args["input"].(map[string]any)
-
-		args, err := normalizer.NormalizeArgs(input)
-
-		// If no inputs have been specified then we need to initialise an empty
-		// input map with no where conditions
+		args, err := argParser.ParseGet(p.Args)
 		if err != nil {
-			args = map[string]any{
-				"where": map[string]any{},
-			}
+			return nil, err
 		}
 
 		var builder actions.ListAction
-
 		scope, err := actions.NewScope(p.Context, operation, schema, nil)
-
 		if err != nil {
 			return nil, err
 		}
 
 		result, err := builder.
 			Initialise(scope).
-			ApplyImplicitFilters(args).
-			ApplyExplicitFilters(args).
-			IsAuthorised(args).
-			Execute(args)
+			ApplyImplicitFilters(args.Wheres()).
+			ApplyExplicitFilters(args.Wheres()).
+			IsAuthorised(args.Wheres()).
+			Execute(args.Wheres())
 
 		if err != nil {
 			return nil, err
@@ -118,31 +98,25 @@ func ListFn(schema *proto.Schema, operation *proto.Operation, normalizer Normali
 	}
 }
 
-func DeleteFn(schema *proto.Schema, operation *proto.Operation, normalizer Normalizer) func(p graphql.ResolveParams) (interface{}, error) {
+func DeleteFn(schema *proto.Schema, operation *proto.Operation, argParser actions.ArgParser) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		input := p.Args["input"]
-		arguments, ok := input.(map[string]any)
-
-		if !ok {
-			return nil, errors.New("input not a map")
+		args, err := argParser.ParseGet(p.Args)
+		if err != nil {
+			return nil, err
 		}
 
-		arguments, err = mk.NormalizeArgs(arguments)
-
 		var builder actions.DeleteAction
-
 		scope, err := actions.NewScope(p.Context, operation, schema, nil)
-
 		if err != nil {
 			return nil, err
 		}
 
 		result, err := builder.
 			Initialise(scope).
-			ApplyImplicitFilters(arguments).
-			ApplyExplicitFilters(arguments).
-			IsAuthorised(arguments).
-			Execute(arguments)
+			ApplyImplicitFilters(args.Wheres()).
+			ApplyExplicitFilters(args.Wheres()).
+			IsAuthorised(args.Wheres()).
+			Execute(args.Wheres())
 
 		if result != nil {
 			return result.Value.Success, err
@@ -152,16 +126,9 @@ func DeleteFn(schema *proto.Schema, operation *proto.Operation, normalizer Norma
 	}
 }
 
-func UpdateFn(schema *proto.Schema, operation *proto.Operation, normalizer Normalizer) func(p graphql.ResolveParams) (interface{}, error) {
+func UpdateFn(schema *proto.Schema, operation *proto.Operation, argParser actions.ArgParser) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		input := p.Args["input"]
-		arguments, ok := input.(map[string]any)
-		if !ok {
-			return nil, errors.New("input not a map")
-		}
-
-		args := actions.NewArgs(arguments)
-
+		args, err := argParser.ParseGet(p.Args)
 		if err != nil {
 			return nil, err
 		}
@@ -169,24 +136,18 @@ func UpdateFn(schema *proto.Schema, operation *proto.Operation, normalizer Norma
 		var builder actions.UpdateAction
 
 		scope, err := actions.NewScope(p.Context, operation, schema, nil)
-
 		if err != nil {
 			return nil, err
 		}
 
-		arguments, err = normalizer.NormalizeArgs(arguments)
-
 		result, err := builder.
 			Initialise(scope).
-			// first capture any implicit inputs
-			CaptureImplicitWriteInputValues().
-			// then capture explicitly used inputs
-			CaptureSetValues().
-			// then apply unique filters
-			ApplyImplicitFilters().
-			ApplyExplicitFilters().
-			IsAuthorised().
-			Execute()
+			CaptureImplicitWriteInputValues(args.Values()).
+			CaptureSetValues(args.Values()).
+			ApplyImplicitFilters(args.Wheres()).
+			ApplyExplicitFilters(args.Wheres()).
+			IsAuthorised(args.Wheres()).
+			Execute(args.Wheres())
 
 		if result != nil {
 			return result.Value.Object, err

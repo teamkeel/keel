@@ -20,15 +20,15 @@ func (action *CreateAction) Initialise(scope *Scope) ActionBuilder[CreateResult]
 	return action
 }
 
-func (action *CreateAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[CreateResult] {
+func (action *CreateAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[CreateResult] {
 	return action // no-op
 }
 
-func (action *CreateAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[CreateResult] {
+func (action *CreateAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[CreateResult] {
 	return action // no-op
 }
 
-func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[CreateResult] {
+func (action *CreateAction) IsAuthorised(args WhereArgs) ActionBuilder[CreateResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -47,7 +47,7 @@ func (action *CreateAction) IsAuthorised(args RequestArguments) ActionBuilder[Cr
 	return action
 }
 
-func (action *CreateAction) Execute(args RequestArguments) (*ActionResult[CreateResult], error) {
+func (action *CreateAction) Execute(args WhereArgs) (*ActionResult[CreateResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
 	}
@@ -99,7 +99,7 @@ func (action *CreateAction) Execute(args RequestArguments) (*ActionResult[Create
 	}, nil
 }
 
-func (action *CreateAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[CreateResult] {
+func (action *CreateAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[CreateResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -120,7 +120,7 @@ func (action *CreateAction) CaptureImplicitWriteInputValues(args RequestArgument
 	return action
 }
 
-func (action *CreateAction) CaptureSetValues(args RequestArguments) ActionBuilder[CreateResult] {
+func (action *CreateAction) CaptureSetValues(args ValueArgs) ActionBuilder[CreateResult] {
 	if action.scope.Error != nil {
 		return action
 	}

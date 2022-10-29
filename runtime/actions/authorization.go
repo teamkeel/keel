@@ -12,7 +12,7 @@ import (
 
 func DefaultIsAuthorised(
 	scope *Scope,
-	args map[string]any,
+	args WhereArgs,
 ) (authorized bool, err error) {
 	permissions := []*proto.PermissionRule{}
 
