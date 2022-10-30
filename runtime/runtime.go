@@ -97,9 +97,26 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 	}
 
 	handler := http.HandlerFunc(h)
-	withCors := cors.Default().Handler(handler)
+	withCors := cors.New(cors.Options{
+		AllowOriginFunc: CheckOrigin,
+		AllowedMethods: []string{
+			http.MethodHead,
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodDelete,
+		},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).Handler(handler)
 
 	return handlers.CompressHandler(withCors).ServeHTTP
+}
+
+func CheckOrigin(origin string) bool {
+	// Returning true reflects the request origin as the allows origin to allow support of any origin along with AllowCredentials
+	return true
 }
 
 func NewHandler(s *proto.Schema) Handler {
