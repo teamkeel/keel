@@ -7,13 +7,6 @@ test('create action', async () => {
   expect(createdPost.title).toEqual('foo')
 })
 
-test('create action (unrecognised fields)', async () => {
-  const { object: createdPost } = await actions
-    .createPost({ unknown: 'foo' })
-
-  expect(createdPost).toBeEmpty()
-})
-
 test('get action', async () => {
   const { object: post } = await actions
     .createPost({ title: 'foo', subTitle: 'bcd' })
