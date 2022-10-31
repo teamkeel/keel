@@ -1,3 +1,0 @@
-[
-  { "testName": "get action with no permissions should fail", "status": "fail" }
-]

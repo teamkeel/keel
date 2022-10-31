@@ -5,12 +5,10 @@ model Post {
         isAuthenticated Boolean?
     }
     operations {
-        create createPost() with (title)
-
-        get getPost(id) 
 
         create createPostWithIdentity() with (title) {
             @set(post.identity = ctx.identity)
+            @permission(expression: true)
         }
 
         get getPostRequiresIdentity(id) {
@@ -27,6 +25,7 @@ model Post {
 
         create createPostSetIsAuthenticated() with (title) {
             @set(post.isAuthenticated = ctx.isAuthenticated)
+            @permission(expression: true)
         }
     }
 }

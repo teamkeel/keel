@@ -1,9 +1,0 @@
-model Post {
-    fields {
-        title Text
-    }
-
-    operations {
-        get getPost(id)
-    }
-}

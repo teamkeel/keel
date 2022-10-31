@@ -1,4 +1,8 @@
 model Thing {
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
     fields {
         text Text? @default("hello")
 

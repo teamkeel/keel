@@ -1,4 +1,8 @@
 model Post {
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
     fields {
         title Text?
         length Number?
