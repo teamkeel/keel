@@ -1,7 +1,8 @@
 package main
 
-// A cmd that finds all the *.keel files in the current working dir, and
-// reports on those found whose contents match some condition
+// A cmd that searches for all the *.keel files in the current working dir and
+// any subdirectories (recursively), and
+// reports on schema files found whose contents match some condition (of your choice).
 //
 // It helped when we switched the default permission to no-permission and thus
 // had to edit all our existing schemas, but not in a perfectly universal way.
@@ -53,7 +54,7 @@ func applyTests(filePath string, lines []string, schemaAsString string) {
 		fmt.Printf("XXXX This file uses permission attribute: %s\n", filePath)
 	}
 
-	// Example 2) capture the first line of the model decclaration in all schema files.
+	// Example 2) capture the first line of every model declaration in all schema files.
 	modelLines := []string{}
 	re := regexp.MustCompile(`model\s`)
 	for _, line := range lines {
