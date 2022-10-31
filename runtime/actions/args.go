@@ -7,27 +7,41 @@ package actions
 // In the future, there will be other types of data to account for where the input structure differs dependent on the source
 
 type ArgParser interface {
-	Parse(input map[string]any) (values map[string]any, wheres map[string]any)
+	ParseGet(input map[string]any) (*Args, error)
+	ParseCreate(input map[string]any) (*Args, error)
+	ParseUpdate(input map[string]any) (*Args, error)
+	ParseList(input map[string]any) (*Args, error)
+	ParseDelete(input map[string]any) (*Args, error)
 }
+
+type ValueArgs map[string]any
+type WhereArgs map[string]any
 
 type Args struct {
-	values map[string]any
-	wheres map[string]any
+	values ValueArgs
+	wheres WhereArgs
 }
 
-func NewArgs(input map[string]any, parser ArgParser) *Args {
-	values, wheres := parser.Parse(input)
+func NewArgs(values ValueArgs, wheres WhereArgs) *Args {
+	if values == nil || wheres == nil {
+		panic("values or wheres input maps canot be nil in NewArgs")
+	}
 
 	return &Args{
+		// Used to provide data for the means of writing (create and update)
 		values: values,
+		// Used to filter data before performing an action (get, list, update, delete)
+		// Or inputs for use in expressions (i.e. explicit inputs)
 		wheres: wheres,
+
+		// TODO: ive realised that on some operations explicit inputs are passed to values and in others they are passed to where - this is annoyingly inconsistent
 	}
 }
 
-func (a *Args) Values() map[string]any {
-
+func (a *Args) Values() ValueArgs {
+	return a.values
 }
 
-func (a *Args) Wheres() map[string]any {
-
+func (a *Args) Wheres() WhereArgs {
+	return a.wheres
 }

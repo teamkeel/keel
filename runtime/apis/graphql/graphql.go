@@ -167,27 +167,27 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		}
 	}
 
-	normalizer := &GraphQlNormalizer{}
+	argsParser := &GraphQlArgParser{}
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
-		field.Resolve = GetFn(schema, op, normalizer)
+		field.Resolve = GetFn(schema, op, argsParser)
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		field.Resolve = CreateFn(schema, op, normalizer)
+		field.Resolve = CreateFn(schema, op, argsParser)
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		field.Resolve = UpdateFn(schema, op, normalizer)
+		field.Resolve = UpdateFn(schema, op, argsParser)
 		field.Type = graphql.NewNonNull(field.Type)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		field.Type = deleteResponseType
-		field.Resolve = DeleteFn(schema, op, normalizer)
+		field.Resolve = DeleteFn(schema, op, argsParser)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		field.Resolve = ListFn(schema, op, normalizer)
+		field.Resolve = ListFn(schema, op, argsParser)
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		field.Type = mk.makeConnectionType(outputType)
