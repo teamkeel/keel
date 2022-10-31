@@ -222,6 +222,11 @@ func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 // basicSchema is a DRY, simplest possible, schema that can be used in test cases.
 const basicSchema string = `
 	model Person {
+
+		@permission(
+			expression: true,
+			actions: [create, get, list, update, delete]
+		)
 		fields {
 			name Text 
 		}
@@ -243,6 +248,11 @@ const basicSchema string = `
 // getWhere is a simple schema that contains a minimal WHERE clause.
 const getWhere string = `
 	model Person {
+
+		@permission(
+			expression: true,
+			actions: [create, get, list, update, delete]
+		)
 		fields {
 			name Text @unique
 		}
@@ -262,6 +272,11 @@ const getWhere string = `
 
 const listImplicitAndExplicitInputs string = `
 	model Person {
+
+		@permission(
+			expression: true,
+			actions: [create, get, list, update, delete]
+		)
 		fields {
 			firstName Text
 			secondName Text
@@ -283,6 +298,11 @@ const listImplicitAndExplicitInputs string = `
 // multiSchema is a schema with a model that exhibits all the simple field types.
 const multiSchema string = `
 	model Multi {
+
+		@permission(
+			expression: true,
+			actions: [create, get, list, update, delete]
+		)
 		fields {
 			aText Text
 			aBool Boolean
@@ -305,6 +325,11 @@ const multiSchema string = `
 // Schema with all field types
 const fieldTypes string = `
 	model Thing {
+
+		@permission(
+			expression: true,
+			actions: [create, get, list, update, delete]
+		)
 		fields {
 			text Text @unique
 			bool Boolean
@@ -970,6 +995,11 @@ var testCases = []testCase{
 		name: "operation_create_set_attribute_with_text_literal",
 		keelSchema: `
 			model Person {
+
+				@permission(
+					expression: true,
+					actions: [create, get, list, update, delete]
+				)
 				fields {
 					name Text
 					nickname Text?
@@ -1015,6 +1045,11 @@ var testCases = []testCase{
 		name: "operation_create_set_attribute_with_number_literal",
 		keelSchema: `
 			model Person {
+
+				@permission(
+					expression: true,
+					actions: [create, get, list, update, delete]
+				)
 				fields {
 					name Text
 					age Number?
@@ -1060,6 +1095,11 @@ var testCases = []testCase{
 		name: "operation_create_set_attribute_with_boolean_literal",
 		keelSchema: `
 			model Person {
+
+				@permission(
+					expression: true,
+					actions: [create, get, list, update, delete]
+				)
 				fields {
 					name Text
 					hasFriends Boolean?
@@ -1105,6 +1145,11 @@ var testCases = []testCase{
 		name: "operation_authenticate_new_user",
 		keelSchema: `
 			model Person {
+
+				@permission(
+					expression: true,
+					actions: [create, get, list, update, delete]
+				)
 				fields {
 					name Text
 				}
@@ -1143,6 +1188,11 @@ var testCases = []testCase{
 		name: "operation_authenticate_createifnotexists_false",
 		keelSchema: `
 			model Person {
+
+				@permission(
+					expression: true,
+					actions: [create, get, list, update, delete]
+				)
 				fields {
 					name Text
 				}
@@ -1180,6 +1230,11 @@ var testCases = []testCase{
 		name: "list_no_inputs",
 		keelSchema: `
 		model Thing {
+
+			@permission(
+				expression: true,
+				actions: [create, get, list, update, delete]
+			)
 			fields {
 				text Text @unique
 				bool Boolean
@@ -1237,6 +1292,11 @@ var rpcTestCases = []rpcTestCase{
 		name: "rpc_list",
 		keelSchema: `
 		model Thing {
+
+			@permission(
+				expression: true,
+				actions: [create, get, list, update, delete]
+			)
 			fields {
 				text Text @unique
 				bool Boolean
@@ -1278,6 +1338,11 @@ var rpcTestCases = []rpcTestCase{
 		name: "rpc_get",
 		keelSchema: `
 		model Thing {
+
+			@permission(
+				expression: true,
+				actions: [create, get, list, update, delete]
+			)
 			fields {
 				text Text @unique
 				bool Boolean
