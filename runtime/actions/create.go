@@ -49,7 +49,7 @@ func (action *CreateAction) Execute(args RequestArguments) (*ActionResult[Create
 		return nil, action.scope.Error
 	}
 
-	err := action.scope.query.Create(action.scope.writeValues).Error
+	err := action.scope.query.WithContext(action.scope.context).Create(action.scope.writeValues).Error
 	if err != nil {
 		action.scope.Error = err
 		return nil, err

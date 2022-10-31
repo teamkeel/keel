@@ -1,6 +1,7 @@
 package migrations_test
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -106,7 +107,7 @@ func TestMigrations(t *testing.T) {
 
 			// Now fetch the "current" schema from the database, which
 			// should be the new one we just applied
-			dbSchema, err := migrations.GetCurrentSchema(testDB)
+			dbSchema, err := migrations.GetCurrentSchema(context.Background(), testDB)
 			require.NoError(t, err)
 
 			// Assert it is the new schema

@@ -106,7 +106,7 @@ func (action *UpdateAction) Execute(args RequestArguments) (*ActionResult[Update
 	// todo: Use RETURNING statement on UPDATE
 	// https://linear.app/keel/issue/RUN-146/gorm-use-returning-on-insert-and-update-statements
 	results := []map[string]any{}
-	action.scope.query = action.scope.query.Find(&results)
+	action.scope.query = action.scope.query.WithContext(action.scope.context).Find(&results)
 
 	if action.scope.query.Error != nil {
 		return nil, action.scope.query.Error
