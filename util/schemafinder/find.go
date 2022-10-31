@@ -1,12 +1,17 @@
 package main
 
 // A cmd that finds all the *.keel files in the current working dir, and
-// reports on those found whose contents match some condition.
+// reports on those found whose contents match some condition
+//
+// It helped when we switched the default permission to no-permission and thus
+// had to edit all our existing schemas, but not in a perfectly universal way.
+// And will likely be useful again for something similar.
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -43,8 +48,24 @@ func panicOnErr(err error) {
 // You can change this function to suit your purpose.
 func applyTests(filePath string, lines []string, schemaAsString string) {
 
-	// Example does the schema have any references to permissions?
+	// Example 1) capture the location of all schema files that have at least one references to permissions?
 	if strings.Contains(schemaAsString, "@permission") {
-		fmt.Printf("This file uses permission attribute: %s\n", filePath)
+		fmt.Printf("XXXX This file uses permission attribute: %s\n", filePath)
+	}
+
+	// Example 2) capture the first line of the model decclaration in all schema files.
+	modelLines := []string{}
+	re := regexp.MustCompile(`model\s`)
+	for _, line := range lines {
+		matched := re.MatchString(line)
+		if matched {
+			modelLines = append(modelLines, line)
+		}
+	}
+	if len(modelLines) > 0 {
+		fmt.Printf("XXXX this file contains the following model definitions\n%s\n", filePath)
+		for _, ln := range modelLines {
+			fmt.Printf("  %s\n", ln)
+		}
 	}
 }
