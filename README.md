@@ -1,6 +1,10 @@
 # keel-cli
 
-keel-cli is a tool to build and deploy services
+keel-cli is a tool to build and deploy services.
+
+# Note
+
+Keel is currently pre-release (semver < 1). *Do not commit any major releases using conventional commits to bump the version to v1 until we have decided that this is the case*
 
 ## Usage
 
