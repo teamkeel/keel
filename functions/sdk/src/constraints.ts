@@ -14,11 +14,6 @@
 //   myOtherNumberField: 10 // <== equality check
 // }
 
-export type EqualityConstraint = {
-  notEqual?: string;
-  equal?: string;
-};
-
 export type StringConstraint =
   | string
   | {
@@ -28,8 +23,9 @@ export type StringConstraint =
       contains?: string;
       // todo: need to enforce usage of only one of
       // equal or not equal - it is not a simple union of the two
-    }
-  | EqualityConstraint;
+      notEqual?: string;
+      equal?: string;
+    };
 
 export type NumberConstraint =
   | number
@@ -42,10 +38,14 @@ export type NumberConstraint =
       // equal or not equal - it is not a simple union of the two
       equal?: number;
       notEqual?: number;
-    }
-  | EqualityConstraint;
+    };
 
-export type BooleanConstraint = EqualityConstraint;
+export type BooleanConstraint =
+  | boolean
+  | {
+      equal?: boolean;
+      notEqual?: boolean;
+    };
 
 export type DateConstraint =
   | Date
@@ -57,4 +57,5 @@ export type DateConstraint =
       onOrAfter?: Date;
     };
 
-export type EnumConstraint = string | EqualityConstraint;
+// TODO
+export type EnumConstraint = StringConstraint;

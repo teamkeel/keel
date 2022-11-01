@@ -18,21 +18,24 @@ export interface ChainedQueryOpts<T> extends QueryOpts {
   conditions: Conditions<T>[];
 }
 
-export type Constraints =
-  | StringConstraint
-  | BooleanConstraint
-  | NumberConstraint
-  | DateConstraint
-  | EnumConstraint;
+export type Constraints<T> = T extends String
+  ? StringConstraint
+  : T extends Boolean
+  ? BooleanConstraint
+  : T extends Number
+  ? NumberConstraint
+  : T extends Date
+  ? DateConstraint
+  : EnumConstraint;
 
 export type Input<T> = Record<keyof T, unknown>;
 
-export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
+export type Conditions<T> = Partial<{ [K in keyof T]: Constraints<T[K]> }>;
 
 export interface BuiltInFields {
   id: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type OrderDirection = "ASC" | "DESC";
