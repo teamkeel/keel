@@ -80,7 +80,7 @@ func (action *GetAction) Execute(args RequestArguments) (*ActionResult[GetResult
 	}
 
 	results := []map[string]any{}
-	action.scope.query = action.scope.query.Find(&results)
+	action.scope.query = action.scope.query.WithContext(action.scope.context).Find(&results)
 
 	if action.scope.query.Error != nil {
 		return nil, action.scope.query.Error

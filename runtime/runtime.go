@@ -10,10 +10,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/graphql-go/graphql"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/gorilla/handlers"
-	"github.com/graphql-go/graphql"
 	"github.com/rs/cors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -188,6 +188,11 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 	gqlSchema, err := NewGraphQLSchema(s, api)
 	if err != nil {
 		panic(err)
+	}
+
+	// This enables the graphql-go extension for tracing
+	if os.Getenv("ENABLE_TRACING") == "true" {
+		gqlSchema.AddExtensions(&Tracer{})
 	}
 
 	return func(r *http.Request) (*Response, error) {

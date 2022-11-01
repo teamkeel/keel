@@ -106,7 +106,7 @@ inputs:
 				return action
 			}
 
-			action.scope.query = action.scope.query.Where(statement)
+			action.scope.query = action.scope.query.WithContext(action.scope.context).Where(statement)
 		}
 	}
 
@@ -147,29 +147,29 @@ func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResu
 			CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
 			END as hasNext
 		`
-	action.scope.query = action.scope.query.Select(selectArgs, by)
-	action.scope.query = action.scope.query.Order(by)
+	action.scope.query = action.scope.query.WithContext(action.scope.context).Select(selectArgs, by)
+	action.scope.query = action.scope.query.WithContext(action.scope.context).Order(by)
 
 	// A Where clause to implement the after/before paging request
 	switch {
 	case page.After != "":
-		action.scope.query = action.scope.query.Where("ID > ?", page.After)
+		action.scope.query = action.scope.query.WithContext(action.scope.context).Where("ID > ?", page.After)
 	case page.Before != "":
-		action.scope.query = action.scope.query.Where("ID < ?", page.Before)
+		action.scope.query = action.scope.query.WithContext(action.scope.context).Where("ID < ?", page.Before)
 	}
 
 	switch {
 	case page.First != 0:
-		action.scope.query = action.scope.query.Limit(page.First)
+		action.scope.query = action.scope.query.WithContext(action.scope.context).Limit(page.First)
 	case page.Last != 0:
-		action.scope.query = action.scope.query.Limit(page.Last)
+		action.scope.query = action.scope.query.WithContext(action.scope.context).Limit(page.Last)
 	}
 
 	// Execute the query
 	result := []map[string]any{}
-	action.scope.query = action.scope.query.Find(&result)
-	if action.scope.query.Error != nil {
-		return nil, action.scope.query.Error
+	action.scope.query = action.scope.query.WithContext(action.scope.context).Find(&result)
+	if action.scope.query.WithContext(action.scope.context).Error != nil {
+		return nil, action.scope.query.WithContext(action.scope.context).Error
 	}
 
 	// Sort out the hasNextPage value, and clean up the response.

@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -165,7 +166,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 	}
 }
 
-func keelSchemaTableExists(db *gorm.DB) (bool, error) {
+func keelSchemaTableExists(ctx context.Context, db *gorm.DB) (bool, error) {
 	var rows []struct {
 		Name *string
 	}
@@ -173,7 +174,7 @@ func keelSchemaTableExists(db *gorm.DB) (bool, error) {
 	// to_regclass docs - https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE
 	// translates a textual relation name to its OID ... this function will
 	// return NULL rather than throwing an error if the name is not found.
-	err := db.Raw("SELECT to_regclass('keel_schema') AS name").Scan(&rows).Error
+	err := db.WithContext(ctx).Raw("SELECT to_regclass('keel_schema') AS name").Scan(&rows).Error
 	if err != nil {
 		return false, err
 	}
@@ -181,8 +182,8 @@ func keelSchemaTableExists(db *gorm.DB) (bool, error) {
 	return rows[0].Name != nil, nil
 }
 
-func GetCurrentSchema(db *gorm.DB) (*proto.Schema, error) {
-	exists, err := keelSchemaTableExists(db)
+func GetCurrentSchema(ctx context.Context, db *gorm.DB) (*proto.Schema, error) {
+	exists, err := keelSchemaTableExists(ctx, db)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +193,7 @@ func GetCurrentSchema(db *gorm.DB) (*proto.Schema, error) {
 	}
 
 	var rows [][]byte
-	err = db.Raw("SELECT schema FROM keel_schema").Scan(&rows).Error
+	err = db.WithContext(ctx).Raw("SELECT schema FROM keel_schema").Scan(&rows).Error
 	if err != nil {
 		return nil, err
 	}

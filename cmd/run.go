@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -136,7 +137,7 @@ var runCmd = &cobra.Command{
 			return nodeProcess
 		}
 
-		currSchema, err := migrations.GetCurrentSchema(db)
+		currSchema, err := migrations.GetCurrentSchema(context.Background(), db)
 		if err != nil {
 			panic(err)
 		}
