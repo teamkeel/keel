@@ -11,6 +11,10 @@ model Post {
         activePermissionMatch Boolean @default(true)
         typePermissionMatch PostType @default(PostType.Technical)
     }
+    @permission(
+        expression: true,
+        actions: [create]
+    )
 
     operations {
         create createWithText() with (title)

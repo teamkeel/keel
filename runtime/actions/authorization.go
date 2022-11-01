@@ -28,13 +28,11 @@ func DefaultIsAuthorised(
 		permissions = append(permissions, scope.operation.Permissions...)
 	}
 
-	// todo: remove this once we make permissions a requirement for any access
-	// https://linear.app/keel/issue/RUN-135/permissions-required-for-access-at-all
-	if len(permissions) == 0 {
-		return true, nil
-	}
-
 	constraints := scope.query.Session(&gorm.Session{NewDB: true})
+
+	if len(permissions) == 0 {
+		return false, nil
+	}
 
 	for i, permission := range permissions {
 		if permission.Expression != nil {

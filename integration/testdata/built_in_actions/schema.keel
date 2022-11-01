@@ -1,4 +1,10 @@
 model Post {
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+
     fields {
         title Text
         subTitle Text @unique

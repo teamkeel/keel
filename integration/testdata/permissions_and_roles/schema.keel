@@ -21,6 +21,11 @@ model Post {
         expression: post.views == 5,
         actions: [get]
     )
+
+    @permission(
+        expression: true,
+        actions: [delete]
+    )
 }
 
 model ModelWithExpressions {

@@ -12,6 +12,11 @@ model Post {
         typePermissionMatch PostType @default(PostType.Technical)
     }
 
+    @permission(
+        expression: true,
+        actions: [create]
+    )
+
     operations {
         create createWithTitle() with (title) 
 

@@ -1,4 +1,8 @@
 model Person {
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
     fields {
         name Text
         gender Text
