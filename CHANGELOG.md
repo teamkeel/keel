@@ -1,3 +1,15 @@
+# [0.196.0](https://github.com/teamkeel/keel/compare/v0.195.0...v0.196.0) (2022-11-01)
+
+
+### Bug Fixes
+
+* add comment ([adc843a](https://github.com/teamkeel/keel/commit/adc843a001f34622a81596cbc8590bdcbfa46fa2))
+
+
+### Features
+
+* data api query resolver ([60d9943](https://github.com/teamkeel/keel/commit/60d9943762bbb404aab026e4c27fdb235f35994d))
+
 # [0.195.0](https://github.com/teamkeel/keel/compare/v0.194.0...v0.195.0) (2022-11-01)
 
 
