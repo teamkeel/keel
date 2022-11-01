@@ -1,3 +1,10 @@
+# [0.194.0](https://github.com/teamkeel/keel/compare/v0.193.0...v0.194.0) (2022-11-01)
+
+
+### Features
+
+* make default operation permission = no permission ([#534](https://github.com/teamkeel/keel/issues/534)) ([8a81b1d](https://github.com/teamkeel/keel/commit/8a81b1dffc13a956d3cf38aab44e75f3a30e1427))
+
 # [0.193.0](https://github.com/teamkeel/keel/compare/v0.192.0...v0.193.0) (2022-10-28)
 
 
