@@ -1,3 +1,11 @@
+# [0.195.0](https://github.com/teamkeel/keel/compare/v0.194.0...v0.195.0) (2022-11-01)
+
+
+### Features
+
+* reverse complex typescript ([7b109ae](https://github.com/teamkeel/keel/commit/7b109ae55c55b878b5017d929bc1fe7b674547fd))
+* tighten constraints to type ([af58063](https://github.com/teamkeel/keel/commit/af58063ca7ffd4b3d3ad2dd7fc56c053ea43f324))
+
 # [0.194.0](https://github.com/teamkeel/keel/compare/v0.193.0...v0.194.0) (2022-11-01)
 
 
