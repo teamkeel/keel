@@ -1,11 +1,22 @@
 import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
-import { PgQueryResolver, QueryResult } from "./db/resolver";
+import {
+  AwsRdsDataClientQueryResolver,
+  PgQueryResolver,
+  QueryResult,
+} from "./db/resolver";
 import { rawSql } from "./db/query";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
 const queryResolver = new PgQueryResolver({ connectionString });
+// data api:
+// const queryResolver = new AwsRdsDataClientQueryResolver({
+//   dbClusterResourceArn: "",
+//   dbCredentialsSecretArn: "",
+//   dbName: "",
+//   region: "eu-west-2"
+// });
 
 async function runInitialSql(sql: string): Promise<QueryResult> {
   // don't do this outside of tests, this is vulnerable to sql injetions

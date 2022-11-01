@@ -30,6 +30,7 @@
     "ts-node": "^10.9.1"
   },
   "dependencies": {
+    "@aws-sdk/client-rds-data": "^3.200.0",
     "@types/pg": "^8.6.5",
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",
