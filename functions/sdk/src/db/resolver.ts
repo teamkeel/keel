@@ -204,6 +204,8 @@ export class AwsRdsDataClientQueryResolver implements QueryResolver {
     return { sql, params };
   }
 
+  // The accepted format is YYYY-MM-DD HH:MM:SS[.FFF]
+  // source: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/rds-data.html#RDSDataService.Client.execute_statement
   private toDataApiFormat(date: Date): string {
     const iso = date.toISOString();
     const withoutZ = iso.replace(/Z$/, "");
