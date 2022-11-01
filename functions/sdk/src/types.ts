@@ -1,10 +1,4 @@
-import {
-  StringConstraint,
-  BooleanConstraint,
-  NumberConstraint,
-  DateConstraint,
-  EnumConstraint,
-} from "./constraints";
+import { Constraint } from "./constraints";
 import { Logger } from "./";
 import { QueryResolver } from "./db/resolver";
 
@@ -25,14 +19,20 @@ export type Constraints =
   | DateConstraint
   | EnumConstraint;
 
+export type StringConstraint = Constraint<String>;
+export type BooleanConstraint = Constraint<Boolean>;
+export type NumberConstraint = Constraint<Number>;
+export type DateConstraint = Constraint<Date>;
+export type EnumConstraint = Constraint<String>;
+
 export type Input<T> = Record<keyof T, unknown>;
 
-export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
+export type Conditions<T> = Partial<{ [K in keyof T]: Constraint<T[K]> }>;
 
 export interface BuiltInFields {
   id: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type OrderDirection = "ASC" | "DESC";

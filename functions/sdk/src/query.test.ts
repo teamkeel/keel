@@ -1,17 +1,15 @@
 import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
-import { Pool, QueryResult } from "pg";
-import { PgQueryResolver } from "./db/resolver";
+import { PgQueryResolver, QueryResult } from "./db/resolver";
+import { rawSql } from "./db/query";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
+const queryResolver = new PgQueryResolver({ connectionString });
 
 async function runInitialSql(sql: string): Promise<QueryResult> {
-  const pool = new Pool({
-    connectionString,
-  });
-
-  return pool.query(sql);
+  // don't do this outside of tests, this is vulnerable to sql injetions
+  return queryResolver.runQuery([rawSql(sql)]);
 }
 
 test("select", async () => {
@@ -50,28 +48,28 @@ test("select", async () => {
     name: "Jane Doe",
     married: false,
     favourite_number: 0,
-    date: new Date("2013-03-21 09:10:59.897666"),
+    date: new Date("2013-03-21 09:10:59.897"),
   };
   const keelKeelson = {
     id: "3469bd00-a51c-4efb-b045-4eda9823f590",
     name: "Keel Keelson",
     married: true,
     favourite_number: 10,
-    date: new Date("2013-03-21 09:10:59.897667"),
+    date: new Date("2013-03-21 09:10:59.897"),
   };
   const keelKeelgrandson = {
     id: "1f5ed3cb-1410-48cd-b499-df17d9a7906c",
     name: "Keel Keelgrandson",
     married: false,
     favourite_number: 10,
-    date: new Date("2013-03-21 09:10:59.897667"),
+    date: new Date("2013-03-21 09:10:59.897"),
   };
   const agentSmith = {
     id: "bc3033c2-f331-463a-a335-5aa1a05f990c",
     name: "Agent Smith",
     married: false,
     favourite_number: 1,
-    date: new Date("2013-03-21 09:10:59.897668"),
+    date: new Date("2013-03-21 09:10:59.897"),
   };
   const nullPerson = {
     id: "8d53f4d9-0139-48a1-b3fa-0333030c023b",
@@ -88,7 +86,7 @@ test("select", async () => {
   const logger = new Logger();
   const query = new Query<Person>({
     tableName,
-    queryResolver: new PgQueryResolver({ connectionString }),
+    queryResolver,
     logger,
   });
 
@@ -141,15 +139,15 @@ test("select", async () => {
     collection: [keelKeelson, keelKeelgrandson, agentSmith, nullPerson],
   });
 
-  expect(await query.where({ married: { equal: "true" } }).all()).toEqual({
+  expect(await query.where({ married: { equal: true } }).all()).toEqual({
     collection: [keelKeelson],
   });
 
-  expect(await query.where({ married: { equal: "false" } }).all()).toEqual({
+  expect(await query.where({ married: { equal: false } }).all()).toEqual({
     collection: [janeDoe, keelKeelgrandson, agentSmith],
   });
 
-  expect(await query.where({ married: { notEqual: "true" } }).all()).toEqual({
+  expect(await query.where({ married: { notEqual: true } }).all()).toEqual({
     collection: [janeDoe, keelKeelgrandson, agentSmith, nullPerson],
   });
 
@@ -211,7 +209,7 @@ test("select", async () => {
 
   expect(
     await query
-      .where({ married: { equal: "false" } })
+      .where({ married: { equal: false } })
       .order({ favourite_number: "DESC" })
       .all()
   ).toEqual({
@@ -220,7 +218,7 @@ test("select", async () => {
 
   expect(
     await query
-      .where({ married: { equal: "false" } })
+      .where({ married: { equal: false } })
       .order({ favourite_number: "ASC" })
       .all()
   ).toEqual({
@@ -257,7 +255,7 @@ test("insert", async () => {
   const logger = new Logger();
   const query = new Query<Post>({
     tableName,
-    queryResolver: new PgQueryResolver({ connectionString }),
+    queryResolver,
     logger,
   });
 
@@ -269,8 +267,7 @@ test("insert", async () => {
     title: "The Most Amazing News",
     relevance: 9000,
     published: true,
-    //TODO query blows up if I add this
-    // author_born_in: new Date('2013-03-21 09:10:59.897666Z'),
+    author_born_in: new Date("2013-03-21 09:10:59.897Z"),
   };
 
   let queryResult = await query.create(postToCreate);
@@ -279,6 +276,7 @@ test("insert", async () => {
     "title",
     "relevance",
     "published",
+    "author_born_in",
     "id",
   ]);
   expect(queryResult.object?.id).toBeTruthy();
@@ -337,7 +335,7 @@ test("delete", async () => {
   const logger = new Logger();
   const query = new Query<Animal>({
     tableName,
-    queryResolver: new PgQueryResolver({ connectionString }),
+    queryResolver,
     logger,
   });
 
@@ -393,7 +391,7 @@ test("update", async () => {
   const logger = new Logger();
   const query = new Query<Food>({
     tableName,
-    queryResolver: new PgQueryResolver({ connectionString }),
+    queryResolver,
     logger,
   });
 

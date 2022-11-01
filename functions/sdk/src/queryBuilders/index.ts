@@ -213,10 +213,7 @@ export const buildCreateStatement = <T>(
       rawSql(",")
     ),
     rawSql(") VALUES ("),
-    ...sqlAddSeparator(
-      Object.values(inputs).map(transformValue).map(sqlInput),
-      rawSql(",")
-    ),
+    ...sqlAddSeparator(Object.values(inputs).map(sqlInput), rawSql(",")),
     rawSql(") RETURNING id"),
   ];
 };
@@ -227,11 +224,7 @@ export const buildUpdateStatement = <T>(
   inputs: Partial<T>
 ): SqlQueryParts => {
   const values = Object.entries(inputs).map(([key, value]) => {
-    return [
-      sqlIdentifier(toSnakeCase(key)),
-      rawSql("="),
-      sqlInput(transformValue(value)),
-    ];
+    return [sqlIdentifier(toSnakeCase(key)), rawSql("="), sqlInput(value)];
   });
 
   const query = [
@@ -244,31 +237,6 @@ export const buildUpdateStatement = <T>(
   ];
 
   return query;
-};
-
-type ValueType =
-  | "array"
-  | "object"
-  | "string"
-  | "date"
-  | "number"
-  | "function"
-  | "regexp"
-  | "boolean"
-  | "null"
-  | "undefined";
-
-export const transformValue = (v: any) => {
-  const valueType: ValueType = Object.prototype.toString
-    .call(v)
-    .slice(8, -1)
-    .toLowerCase();
-  switch (valueType) {
-    case "date":
-      return (v as Date).toISOString();
-    default:
-      return v;
-  }
 };
 
 export const buildDeleteStatement = <T>(
@@ -287,5 +255,5 @@ export const buildDeleteStatement = <T>(
 };
 
 const dateParam = (d: Date) => {
-  return d.toISOString();
+  return d;
 };

@@ -119,8 +119,8 @@ export default class Query<T extends IDer> {
     const ksuid = await KSUID.random(now);
     const builtIns: BuiltInFields = {
       id: ksuid.string,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
+      createdAt: now,
+      updatedAt: now,
     };
 
     const values = { ...inputs, ...builtIns };
