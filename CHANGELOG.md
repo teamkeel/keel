@@ -1,3 +1,10 @@
+# [0.197.0](https://github.com/teamkeel/keel/compare/v0.196.0...v0.197.0) (2022-11-01)
+
+
+### Features
+
+* create tracing extension for graphql ([#532](https://github.com/teamkeel/keel/issues/532)) ([1cb118e](https://github.com/teamkeel/keel/commit/1cb118e0000cb499ffe36dcdedc4fbce81c2e66e))
+
 # [0.196.0](https://github.com/teamkeel/keel/compare/v0.195.0...v0.196.0) (2022-11-01)
 
 
