@@ -14,27 +14,48 @@
 //   myOtherNumberField: 10 // <== equality check
 // }
 
-export type Constraint<T> =
-  | T
+export type StringConstraint =
+  | string
   | {
-      equal?: T;
-      notEqual?: T;
-
-      // string constraints
-      startsWith?: T extends String ? string : never;
-      endsWith?: T extends String ? string : never;
-      oneOf?: T extends String ? string[] : never;
-      contains?: T extends String ? string : never;
-
-      // number constraints
-      greaterThan?: T extends Number ? number : never;
-      greaterThanOrEqualTo?: T extends Number ? number : never;
-      lessThan?: T extends Number ? number : never;
-      lessThanOrEqualTo?: T extends Number ? number : never;
-
-      // date constraints
-      before?: T extends Date ? Date : never;
-      onOrBefore?: T extends Date ? Date : never;
-      after?: T extends Date ? Date : never;
-      onOrAfter?: T extends Date ? Date : never;
+      startsWith?: string;
+      endsWith?: string;
+      oneOf?: string[];
+      contains?: string;
+      // todo: need to enforce usage of only one of
+      // equal or not equal - it is not a simple union of the two
+      notEqual?: string;
+      equal?: string;
     };
+
+export type NumberConstraint =
+  | number
+  | {
+      greaterThan?: number;
+      greaterThanOrEqualTo?: number;
+      lessThan?: number;
+      lessThanOrEqualTo?: number;
+      // todo: need to enforce usage of only one of
+      // equal or not equal - it is not a simple union of the two
+      equal?: number;
+      notEqual?: number;
+    };
+
+export type BooleanConstraint =
+  | boolean
+  | {
+      equal?: boolean;
+      notEqual?: boolean;
+    };
+
+export type DateConstraint =
+  | Date
+  | {
+      equal?: Date;
+      before?: Date;
+      onOrBefore?: Date;
+      after?: Date;
+      onOrAfter?: Date;
+    };
+
+// TODO
+export type EnumConstraint = StringConstraint;

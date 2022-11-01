@@ -194,7 +194,7 @@ export const buildSelectStatement = <T>(
   return query;
 };
 
-const isComplexConstraint = (constraint: Constraints): boolean => {
+const isComplexConstraint = (constraint: Constraints<any>): boolean => {
   return constraint instanceof Object && constraint.constructor === Object;
 };
 
