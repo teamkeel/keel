@@ -25,12 +25,12 @@ const ONE_OF = "oneOf";
 // NumberConstraint
 const GREATER_THAN = "greaterThan";
 const LESS_THAN = "lessThan";
-const GREATER_THAN_OR_EQUAL_TO = "greaterThanOrEquals";
-const LESS_THAN_OR_EQUAL_TO = "lessThanOrEquals";
+const GREATER_THAN_OR_EQUALS = "greaterThanOrEquals";
+const LESS_THAN_OR_EQUALS = "lessThanOrEquals";
 
 // EqualityConstraint
-const NOT_EQUAL = "notEquals";
-const EQUAL = "equals";
+const NOT_EQUALS = "notEquals";
+const EQUALS = "equals";
 
 // DateConstraint
 const ON_OR_BEFORE = "onOrBefore";
@@ -106,20 +106,20 @@ export const buildSelectStatement = <T>(
               case LESS_THAN:
                 ors.push([fullyQualifiedField, rawSql("<"), sqlInput(value)]);
                 break;
-              case LESS_THAN_OR_EQUAL_TO:
+              case LESS_THAN_OR_EQUALS:
                 ors.push([fullyQualifiedField, rawSql("<="), sqlInput(value)]);
                 break;
-              case GREATER_THAN_OR_EQUAL_TO:
+              case GREATER_THAN_OR_EQUALS:
                 ors.push([fullyQualifiedField, rawSql(">="), sqlInput(value)]);
                 break;
-              case NOT_EQUAL:
+              case NOT_EQUALS:
                 ors.push([
                   fullyQualifiedField,
                   rawSql("IS DISTINCT FROM"),
                   sqlInput(value),
                 ]);
                 break;
-              case EQUAL:
+              case EQUALS:
                 ors.push([
                   fullyQualifiedField,
                   rawSql("IS NOT DISTINCT FROM"),
