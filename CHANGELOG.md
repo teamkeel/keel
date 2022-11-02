@@ -1,3 +1,10 @@
+## [0.199.1](https://github.com/teamkeel/keel/compare/v0.199.0...v0.199.1) (2022-11-02)
+
+
+### Bug Fixes
+
+* wasm ([#542](https://github.com/teamkeel/keel/issues/542)) ([6dac8b5](https://github.com/teamkeel/keel/commit/6dac8b543209744dc6af7be5b5e4c1296b1b1a4a))
+
 # [0.199.0](https://github.com/teamkeel/keel/compare/v0.198.0...v0.199.0) (2022-11-02)
 
 
