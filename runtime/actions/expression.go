@@ -80,7 +80,7 @@ func (resolver *ExpressionResolver) CanResolveInMemory(expression *parser.Expres
 }
 
 // Evaluated the expression in the runtime process without generated and query against the database.
-func (resolver *ExpressionResolver) ResolveInMemory(expression *parser.Expression, args RequestArguments, writeValues map[string]any) bool {
+func (resolver *ExpressionResolver) ResolveInMemory(expression *parser.Expression, args WhereArgs, writeValues map[string]any) bool {
 	condition := expression.Conditions()[0]
 
 	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
@@ -102,7 +102,7 @@ func (resolver *ExpressionResolver) ResolveInMemory(expression *parser.Expressio
 }
 
 // Generates a database query statement for an expression.
-func (resolver *ExpressionResolver) ResolveQueryStatement(expression *parser.Expression, args RequestArguments, writeValues map[string]any) (*gorm.DB, error) {
+func (resolver *ExpressionResolver) ResolveQueryStatement(expression *parser.Expression, args WhereArgs, writeValues map[string]any) (*gorm.DB, error) {
 	if len(expression.Conditions()) != 1 {
 		return nil, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
 	}

@@ -1,8 +1,4 @@
 model Person {
-    @permission(
-        expression: true,
-        actions: [create, get, list, update, delete]
-    )
     fields {
         name Text
         gender Text
@@ -11,9 +7,15 @@ model Person {
 
     functions {
         get getPerson(id)
+        get getPersonByNINumber(nINumber)
         create createPerson() with (name, gender, nINumber)
         list listPeople(gender)
         delete deletePerson(id)
         update updatePerson(id) with (name, gender, nINumber)
     }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
 }

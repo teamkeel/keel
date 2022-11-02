@@ -526,22 +526,10 @@ func (gen *Generator) GenerateInputs(typings bool) (r string) {
 				if typings {
 					r += renderTemplate(TemplateListInputTypings, map[string]interface{}{
 						"Name": strcase.ToCamel(op.Name),
-						"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
-						}),
-						"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
-						}),
 					})
 				} else {
 					r += renderTemplate(TemplateListInput, map[string]interface{}{
 						"Name": strcase.ToCamel(op.Name),
-						"Filters": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
-						}),
-						"Values": renderInputFields(inputs, func(input *proto.OperationInput) bool {
-							return input.GetMode() == proto.InputMode_INPUT_MODE_WRITE
-						}),
 					})
 				}
 			case proto.OperationType_OPERATION_TYPE_DELETE:
@@ -552,7 +540,8 @@ func (gen *Generator) GenerateInputs(typings bool) (r string) {
 							return input.GetMode() == proto.InputMode_INPUT_MODE_READ
 						}),
 					})
-					r += renderTemplate(TemplateListInput, map[string]interface{}{
+				} else {
+					r += renderTemplate(TemplateDeleteInput, map[string]interface{}{
 						"Name": strcase.ToCamel(op.Name),
 						"Properties": renderInputFields(inputs, func(input *proto.OperationInput) bool {
 							return input.GetMode() == proto.InputMode_INPUT_MODE_READ

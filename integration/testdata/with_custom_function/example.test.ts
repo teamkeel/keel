@@ -1,4 +1,4 @@
-import { test, expect, actions, Person, logger } from '@teamkeel/testing'
+import { test, expect, actions, Person } from '@teamkeel/testing'
 
 test('creating a person', async () => {
   const { object } = await actions
@@ -20,7 +20,7 @@ test('fetching person by additional unique field (not PK)', async () => {
   const { object: person } = await Person.create({ name: 'bar', gender: 'male', nINumber: '333' })
 
   const { object } = await actions
-    .getPerson({ nINumber: '333' })
+    .getPersonByNINumber({ nINumber: '333' })
 
   expect(object.id).toEqual(person.id)
 })
@@ -31,7 +31,7 @@ test('listing', async () => {
   const { object: x22 } =  await Person.create({ name: 'X22', gender: 'alien', nINumber: '902' })
 
   const { collection: aliens } = await actions
-    .listPeople({ gender: 'alien' })
+    .listPeople({ gender: { equals: 'alien' } })
 
   const alienNames = aliens.map((a) => a.name)
 

@@ -1252,7 +1252,7 @@ var testCases = []testCase{
 				Thing
 			}
 		}
-	`,
+		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row1 := initRow(map[string]any{
 				"id":        "id_123",
@@ -1265,7 +1265,6 @@ var testCases = []testCase{
 			require.NoError(t, db.Table("thing").Create(row1).Error)
 		},
 		gqlOperation: `
-		
 		query {
 			listThings {
 				edges {
@@ -1275,7 +1274,6 @@ var testCases = []testCase{
 				}
 			}
 		}
-
 		`,
 		assertData: func(t *testing.T, data map[string]any) {
 			edges := rtt.GetValueAtPath(t, data, "listThings.edges")

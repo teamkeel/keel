@@ -27,6 +27,8 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
+		fmt.Print(workingDir)
+
 		packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
 
 		if err != nil {

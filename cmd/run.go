@@ -220,7 +220,7 @@ var runCmd = &cobra.Command{
 
 			ctx := r.Context()
 			ctx = runtimectx.WithDatabase(ctx, db)
-			ctx = runtime.WithFunctionsClient(ctx, nodeClient)
+			ctx = functions.WithFunctionsClient(ctx, nodeClient)
 			r = r.WithContext(ctx)
 
 			handler := runtime.Serve(currSchema)

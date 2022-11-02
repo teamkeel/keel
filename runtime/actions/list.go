@@ -22,17 +22,15 @@ func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
 	return action
 }
 
-// Keep the no-op methods in a group together
-
-func (action *ListAction) CaptureImplicitWriteInputValues(args RequestArguments) ActionBuilder[ListResult] {
+func (action *ListAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[ListResult] {
 	return action // no-op
 }
 
-func (action *ListAction) CaptureSetValues(args RequestArguments) ActionBuilder[ListResult] {
+func (action *ListAction) CaptureSetValues(args ValueArgs) ActionBuilder[ListResult] {
 	return action // no-op
 }
 
-func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[ListResult] {
+func (action *ListAction) IsAuthorised(args WhereArgs) ActionBuilder[ListResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -51,9 +49,7 @@ func (action *ListAction) IsAuthorised(args RequestArguments) ActionBuilder[List
 	return action
 }
 
-// ----------------
-
-func (action *ListAction) ApplyImplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
+func (action *ListAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[ListResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -113,7 +109,7 @@ inputs:
 	return action
 }
 
-func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuilder[ListResult] {
+func (action *ListAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[ListResult] {
 	if action.scope.Error != nil {
 		return action
 	}
@@ -127,11 +123,15 @@ func (action *ListAction) ApplyExplicitFilters(args RequestArguments) ActionBuil
 	return action
 }
 
-func (action *ListAction) Execute(args RequestArguments) (*ActionResult[ListResult], error) {
+func (action *ListAction) Execute(args WhereArgs) (*ActionResult[ListResult], error) {
 	if action.scope.Error != nil {
 		return nil, action.scope.Error
 	}
+	op := action.scope.operation
 
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		return ParseListResponse(action.scope.context, op, args)
+	}
 	// We update the query to implement the paging request
 
 	page, err := parsePage(args)

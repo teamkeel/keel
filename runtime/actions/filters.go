@@ -11,7 +11,7 @@ import (
 // the given operation, and captures the targeted field. It then captures the corresponding value
 // operand value provided by the given request arguments, and adds a Where clause to the
 // query field in the given scope, using a hard-coded equality operator.
-func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
+func DefaultApplyImplicitFilters(scope *Scope, args WhereArgs) error {
 	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT || input.Mode == proto.InputMode_INPUT_MODE_WRITE {
 			continue
@@ -40,7 +40,7 @@ func DefaultApplyImplicitFilters(scope *Scope, args RequestArguments) error {
 	return nil
 }
 
-func DefaultApplyExplicitFilters(scope *Scope, args RequestArguments) error {
+func DefaultApplyExplicitFilters(scope *Scope, args WhereArgs) error {
 	operation := scope.operation
 
 	for _, where := range operation.WhereExpressions {

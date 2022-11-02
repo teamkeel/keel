@@ -10,7 +10,7 @@ import (
 
 // DefaultCaptureSetValues updates the writeValues field in the given scope, with
 // field/values that should be set for each of the given operation's Set expressions.
-func DefaultCaptureSetValues(scope *Scope, args RequestArguments) error {
+func DefaultCaptureSetValues(scope *Scope, args ValueArgs) error {
 	for _, setExpression := range scope.operation.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
@@ -50,7 +50,7 @@ func DefaultCaptureSetValues(scope *Scope, args RequestArguments) error {
 // captureImplicitWriteInputValues updates the writeValues field in the
 // given scope object with key/values that represent the implicit write-mode
 // inputs carried by the given request.
-func DefaultCaptureImplicitWriteInputValues(inputs []*proto.OperationInput, args RequestArguments, scope *Scope) error {
+func DefaultCaptureImplicitWriteInputValues(inputs []*proto.OperationInput, args ValueArgs, scope *Scope) error {
 	for _, input := range inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
