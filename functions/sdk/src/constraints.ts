@@ -23,34 +23,34 @@ export type StringConstraint =
       contains?: string;
       // todo: need to enforce usage of only one of
       // equal or not equal - it is not a simple union of the two
-      notEqual?: string;
-      equal?: string;
+      notEquals?: string;
+      equals?: string;
     };
 
 export type NumberConstraint =
   | number
   | {
       greaterThan?: number;
-      greaterThanOrEqualTo?: number;
+      greaterThanOrEquals?: number;
       lessThan?: number;
-      lessThanOrEqualTo?: number;
+      lessThanOrEquals?: number;
       // todo: need to enforce usage of only one of
       // equal or not equal - it is not a simple union of the two
-      equal?: number;
-      notEqual?: number;
+      equals?: number;
+      notEquals?: number;
     };
 
 export type BooleanConstraint =
   | boolean
   | {
-      equal?: boolean;
-      notEqual?: boolean;
+      equals?: boolean;
+      notEquals?: boolean;
     };
 
 export type DateConstraint =
   | Date
   | {
-      equal?: Date;
+      equals?: Date;
       before?: Date;
       onOrBefore?: Date;
       after?: Date;
