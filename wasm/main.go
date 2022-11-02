@@ -15,6 +15,7 @@ import (
 	"github.com/graphql-go/graphql/testutil"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/format"
@@ -158,7 +159,7 @@ func getGraphQLSchemas(this js.Value, args []js.Value) any {
 			return nil, fmt.Errorf("error introspecting graphql schema: %s", response.Body)
 		}
 
-		res[api.Name] = runtime.ToGraphQLSchemaLanguage(response)
+		res[api.Name] = graphql.ToGraphQLSchemaLanguage(response)
 		return res, nil
 	})
 }
