@@ -88,6 +88,7 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 	dbName := testhelpers.DbNameForTestName(shortDir)
 
 	var db *gorm.DB
+	var testProcess *exec.Cmd
 
 	schema, err := builder.MakeFromDirectory(dir)
 
@@ -156,6 +157,8 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 		fmt.Print(output)
 		return nil, err
 	}
+
+	expectedResults := 0
 
 	// Server for node test process to talk to
 	srv := http.Server{
@@ -325,10 +328,20 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 				json.Unmarshal(b, &result)
 				ch <- []*Event{{EventStatus: EventStatusComplete, Result: result[0]}}
 				w.Write([]byte("ok"))
+				expectedResults--
+				if expectedResults == 0 {
+					// Now that all tests have been reported on we can kill the node process running the tests
+					// TODO: we shouldn't really need to do this but it seems the process hangs on for 10s or
+					// so after all tests have run. Possibly to do with an open database connection?
+					testProcess.Process.Kill()
+				}
 			case "/collect":
-				result := TestCase{}
-				json.Unmarshal(b, &result)
-				ch <- []*Event{{EventStatus: EventStatusPending, Meta: &result}}
+				cases := []*TestCase{}
+				json.Unmarshal(b, &cases)
+				expectedResults = len(cases)
+				for _, tc := range cases {
+					ch <- []*Event{{EventStatus: EventStatusPending, Meta: tc}}
+				}
 				w.Write([]byte("ok"))
 			case "/reset":
 				resetRequestBody := &ResetRequest{}
@@ -336,7 +349,11 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 				if err != nil {
 					panic(err)
 				}
-				db, err = testhelpers.SetupDatabaseForTestCase(schema, dbName)
+				if db == nil {
+					db, err = testhelpers.SetupDatabaseForTestCase(schema, dbName)
+				} else {
+					err = testhelpers.TruncateTables(db)
+				}
 				if err != nil {
 					panic(err)
 				}
@@ -396,9 +413,11 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 
+			testProcess = cmd
+
 			err = cmd.Run()
 
-			if err != nil {
+			if err != nil && err.Error() != "signal: killed" {
 				panic(err)
 			}
 		}

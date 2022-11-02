@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	gotest "testing"
 
+	cp "github.com/otiai10/copy"
+
 	"github.com/alexflint/go-restructure/regex"
 	"github.com/nsf/jsondiff"
 	"github.com/samber/lo"
@@ -15,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/cmd"
 	"github.com/teamkeel/keel/nodedeps"
-	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
 )
 
@@ -34,32 +35,56 @@ func TestIntegration(t *gotest.T) {
 
 	allResults := []*testing.TestResult{}
 
+	// Make a temp dir for all tests to run in (each tests files will be copied to this dir)
+	tmpDir, err := os.MkdirTemp("", t.Name())
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		// Remove it when done
+		os.RemoveAll(tmpDir)
+	})
+
+	packageJson, err := nodedeps.NewPackageJson(filepath.Join(tmpDir, "package.json"))
+	require.NoError(t, err)
+
+	err = packageJson.Inject(map[string]string{
+		"@teamkeel/testing": "*",
+		"@teamkeel/sdk":     "*",
+		"@teamkeel/runtime": "*",
+		"ts-node":           "*",
+		// https://typestrong.org/ts-node/docs/swc/
+		"@swc/core":           "*",
+		"regenerator-runtime": "*",
+	}, true)
+	require.NoError(t, err)
+
+	// Whatever files/dirs are present now can stay between tests
+	// e.g. node_modules, package.json
+	genericEntries, err := os.ReadDir(tmpDir)
+	require.NoError(t, err)
+
 	for _, e := range entries {
 		t.Run(e.Name(), func(t *gotest.T) {
-			workingDir, err := testhelpers.WithTmpDir(filepath.Join("./testdata", e.Name()))
-			fmt.Println(workingDir)
+			testDir := filepath.Join("./testdata", e.Name())
 
-			require.NoError(t, err)
+			// Copy test files to temp dir
+			require.NoError(t, cp.Copy(testDir, tmpDir))
 
-			packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
+			// At the end of this tests remove all the test files
+			t.Cleanup(func() {
+				entries, err := os.ReadDir(tmpDir)
+				require.NoError(t, err)
+			outer:
+				for _, entry := range entries {
+					for _, g := range genericEntries {
+						if g.Name() == entry.Name() {
+							continue outer
+						}
+					}
+					os.RemoveAll(filepath.Join(tmpDir, entry.Name()))
+				}
+			})
 
-			require.NoError(t, err)
-
-			// todo: to save time during test suite run, do the package.json creation
-			// plus injection only once per suite.
-			err = packageJson.Inject(map[string]string{
-				"@teamkeel/testing": "*",
-				"@teamkeel/sdk":     "*",
-				"@teamkeel/runtime": "*",
-				"ts-node":           "*",
-				// https://typestrong.org/ts-node/docs/swc/
-				"@swc/core":           "*",
-				"regenerator-runtime": "*",
-			}, true)
-
-			require.NoError(t, err)
-
-			ch, err := testing.Run(workingDir, *pattern)
+			ch, err := testing.Run(tmpDir, *pattern)
 			require.NoError(t, err)
 
 			results := []*testing.TestResult{}
