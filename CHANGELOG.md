@@ -1,3 +1,10 @@
+# [0.198.0](https://github.com/teamkeel/keel/compare/v0.197.0...v0.198.0) (2022-11-02)
+
+
+### Features
+
+* unify operator names with main runtime ([#539](https://github.com/teamkeel/keel/issues/539)) ([c61cf7a](https://github.com/teamkeel/keel/commit/c61cf7ae88f94126a54acff74ee07880d8d74e02))
+
 # [0.197.0](https://github.com/teamkeel/keel/compare/v0.196.0...v0.197.0) (2022-11-01)
 
 
