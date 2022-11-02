@@ -38,6 +38,23 @@ const dbConnString = "host=localhost port=8001 user=postgres password=postgres d
 
 var mainDB *gorm.DB
 
+func TruncateTables(db *gorm.DB) error {
+	var tables []string
+	err := db.Table("pg_tables").
+		Where("schemaname = 'public' and tablename != 'keel_schema'").
+		Pluck("tablename", &tables).Error
+	if err != nil {
+		return err
+	}
+
+	err = db.Exec("TRUNCATE TABLE " + strings.Join(tables, ",") + " CASCADE").Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func SetupDatabaseForTestCase(schema *proto.Schema, dbName string) (*gorm.DB, error) {
 	if mainDB == nil {
 		var err error
