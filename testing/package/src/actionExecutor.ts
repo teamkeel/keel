@@ -81,7 +81,8 @@ export default class ActionExecutor {
     // any errors so they dont have to explicitly check for their
     // presence like so:
     // const { object, errors } = await actions.doSomething()
-    // ^^ this is long
+    // ^^ this is very verbose to write, and liable to people forgetting
+    // to check that the errors key is populated.
     const errors = j['errors']
     if(errors && errors.length > 0) {
       throw new Error(errors.map((e: any) => e.message).join(', '))
