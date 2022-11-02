@@ -1,3 +1,10 @@
+# [0.199.0](https://github.com/teamkeel/keel/compare/v0.198.0...v0.199.0) (2022-11-02)
+
+
+### Features
+
+* update constraint types ([#540](https://github.com/teamkeel/keel/issues/540)) ([0d79aaa](https://github.com/teamkeel/keel/commit/0d79aaae3f58628d1c5a0be8dcdad54c6d8493ad))
+
 # [0.198.0](https://github.com/teamkeel/keel/compare/v0.197.0...v0.198.0) (2022-11-02)
 
 
