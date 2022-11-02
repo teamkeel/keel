@@ -1,8 +1,4 @@
 declare module "@teamkeel/sdk/constraints" {
-  export type EqualityConstraint = {
-    notEqual?: string;
-    equal?: string;
-  };
   export type StringConstraint =
     | string
     | {
@@ -10,19 +6,19 @@ declare module "@teamkeel/sdk/constraints" {
         endsWith?: string;
         oneOf?: string[];
         contains?: string;
-      }
-    | EqualityConstraint;
+        notEquals?: string;
+        equals?: string;
+      };
   export type NumberConstraint =
     | number
     | {
         greaterThan?: number;
-        greaterThanOrEqualTo?: number;
+        greaterThanOrEquals?: number;
         lessThan?: number;
-        lessThanOrEqualTo?: number;
-        equal?: number;
-        notEqual?: number;
-      }
-    | EqualityConstraint;
+        lessThanOrEquals?: number;
+        equals?: number;
+        notEquals?: number;
+      };
   export type DateConstraint =
     | Date
     | {
@@ -32,8 +28,14 @@ declare module "@teamkeel/sdk/constraints" {
         after?: Date;
         onOrAfter?: Date;
       };
-  export type BooleanConstraint = boolean | EqualityConstraint;
-  export type EnumConstraint = string | EqualityConstraint;
+  export type BooleanConstraint = boolean | {
+    notEquals?: boolean;
+    equals?: boolean;
+  };
+  export type EnumConstraint = string | {
+    notEquals?: string;
+    equals?: string;
+  };
 }
 declare module "@teamkeel/sdk/index" {
   import Query, { ChainableQuery } from "@teamkeel/sdk/query";
@@ -185,11 +187,11 @@ declare module "@teamkeel/sdk/db/resolver" {
 }
 
 declare module "@teamkeel/sdk/queryBuilders/index" {
-  import { Constraints } from "@teamkeel/sdk/types";
+  import { Conditions } from "@teamkeel/sdk/types";
   import { SqlQueryParts } from "@teamkeel/sdk/db/query";
   export const buildSelectStatement: <T>(
     tableName: string,
-    conditions: Partial<Record<keyof T, Constraints>>[]
+    conditions: Conditions<T>[]
   ) => SqlQueryParts;
   export const buildCreateStatement: <T>(
     tableName: string,
@@ -212,7 +214,6 @@ declare module "@teamkeel/sdk/types" {
     NumberConstraint,
     DateConstraint,
     EnumConstraint,
-    EqualityConstraint
   } from "@teamkeel/sdk/constraints";
   import { Logger } from "@teamkeel/sdk";
   import { QueryResolver } from "@teamkeel/sdk/db/resolver";
@@ -224,15 +225,17 @@ declare module "@teamkeel/sdk/types" {
   export interface ChainedQueryOpts<T> extends QueryOpts {
     conditions: Conditions<T>[];
   }
-  export type Constraints =
-    | StringConstraint
-    | BooleanConstraint
-    | NumberConstraint
-    | DateConstraint
-    | EnumConstraint
-    | EqualityConstraint;
+  export type Constraints<T> = T extends String
+    ? StringConstraint
+    : T extends Boolean
+    ? BooleanConstraint
+    : T extends Number
+    ? NumberConstraint
+    : T extends Date
+    ? DateConstraint
+    : EnumConstraint;
   export type Input<T> = Record<keyof T, unknown>;
-  export type Conditions<T> = Partial<Record<keyof T, Constraints>>;
+  export type Conditions<T> = Partial<{ [K in keyof T]: Constraints<T[K]> }>;
   export type OrderDirection = "ASC" | "DESC";
   export type OrderClauses<T> = Partial<Record<keyof T, OrderDirection>>;
 
