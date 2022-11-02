@@ -25,12 +25,12 @@ const ONE_OF = "oneOf";
 // NumberConstraint
 const GREATER_THAN = "greaterThan";
 const LESS_THAN = "lessThan";
-const GREATER_THAN_OR_EQUAL_TO = "greaterThanOrEqualTo";
-const LESS_THAN_OR_EQUAL_TO = "lessThanOrEqualTo";
+const GREATER_THAN_OR_EQUAL_TO = "greaterThanOrEquals";
+const LESS_THAN_OR_EQUAL_TO = "lessThanOrEquals";
 
 // EqualityConstraint
-const NOT_EQUAL = "notEqual";
-const EQUAL = "equal";
+const NOT_EQUAL = "notEquals";
+const EQUAL = "equals";
 
 // DateConstraint
 const ON_OR_BEFORE = "onOrBefore";
