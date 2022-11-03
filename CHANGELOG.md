@@ -1,3 +1,10 @@
+## [0.199.4](https://github.com/teamkeel/keel/compare/v0.199.3...v0.199.4) (2022-11-03)
+
+
+### Bug Fixes
+
+* cors all origins and allow credentials ([cd0adf9](https://github.com/teamkeel/keel/commit/cd0adf9d04b15fbc13ccea873078c1f141499d8a))
+
 ## [0.199.3](https://github.com/teamkeel/keel/compare/v0.199.2...v0.199.3) (2022-11-03)
 
 
