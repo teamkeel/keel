@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"errors"
+	"net/mail"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -42,6 +43,14 @@ var (
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
 func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (string, bool, error) {
+	if _, err := mail.ParseAddress(args.Email); err != nil {
+		return "", false, errors.New("invalid email address")
+	}
+
+	if args.Password == "" {
+		return "", false, errors.New("password cannot be empty")
+	}
+
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return "", false, err
@@ -98,6 +107,11 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 	}
 
 	return "", false, nil
+}
+
+func validEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
 }
 
 func find(ctx context.Context, email string) (*Identity, error) {

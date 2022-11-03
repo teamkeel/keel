@@ -9,6 +9,28 @@ test('create identity', async () => {
   expect(identityCreated).toEqual(true)
 })
 
+test('authenticate - invalid email - respond with invalid email address error', async () => {
+  expect(
+    await actions.authenticate({ 
+      createIfNotExists: true, 
+      email: 'user',
+      password: '1234'})
+  ).toHaveError({
+    message: "invalid email address",
+  });
+})
+
+test('authenticate - empty password - respond with password cannot be empty error', async () => {
+  expect(
+    await actions.authenticate({ 
+      createIfNotExists: true, 
+      email: 'user@keel.xyz',
+      password: ''})
+  ).toHaveError({
+    message: "password cannot be empty",
+  });
+})
+
 test('authenticate - new identity and createIfNotExists false - do not create identity', async () => {
   const { identityId, identityCreated } = await actions.authenticate({ 
     createIfNotExists: false, 

@@ -57,8 +57,8 @@ export default class ActionExecutor {
       method: "POST",
       body: JSON.stringify(args, function (key, value) {
         if (this[key] instanceof Date) {
-          const d = this[key] as Date
-          return d.toISOString()
+          const d = this[key] as Date;
+          return d.toISOString();
         }
 
         return value;

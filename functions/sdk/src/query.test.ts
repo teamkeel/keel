@@ -166,9 +166,11 @@ test("select", async () => {
     collection: [nullPerson],
   });
 
-  expect(await query.where({ favourite_number: { equals: 10 } }).all()).toEqual({
-    collection: [keelKeelson, keelKeelgrandson],
-  });
+  expect(await query.where({ favourite_number: { equals: 10 } }).all()).toEqual(
+    {
+      collection: [keelKeelson, keelKeelgrandson],
+    }
+  );
 
   expect(
     await query.where({ favourite_number: { greaterThan: 1 } }).all()
