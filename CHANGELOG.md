@@ -1,3 +1,10 @@
+## [0.199.3](https://github.com/teamkeel/keel/compare/v0.199.2...v0.199.3) (2022-11-03)
+
+
+### Bug Fixes
+
+* fixed comparison operators for number, date, time ([#548](https://github.com/teamkeel/keel/issues/548)) ([ce759fe](https://github.com/teamkeel/keel/commit/ce759fe3befc2330b65a768181c7dfad064e4697))
+
 ## [0.199.2](https://github.com/teamkeel/keel/compare/v0.199.1...v0.199.2) (2022-11-03)
 
 
