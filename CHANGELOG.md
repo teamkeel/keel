@@ -1,3 +1,11 @@
+## [0.199.2](https://github.com/teamkeel/keel/compare/v0.199.1...v0.199.2) (2022-11-03)
+
+
+### Bug Fixes
+
+* createdAt and updatedAt set to UTC ([#546](https://github.com/teamkeel/keel/issues/546)) ([eedf8cf](https://github.com/teamkeel/keel/commit/eedf8cf1de00575e552bbc5ce2cd20dfd48f9ebe))
+* delete() not returning success from gql ([#545](https://github.com/teamkeel/keel/issues/545)) ([e32f9d8](https://github.com/teamkeel/keel/commit/e32f9d83b4b6563a2d0ecd3cc860bbed835d50f5))
+
 ## [0.199.1](https://github.com/teamkeel/keel/compare/v0.199.0...v0.199.1) (2022-11-02)
 
 
