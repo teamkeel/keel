@@ -107,7 +107,6 @@ test('update action', async () => {
   expect(updatedPost.id).toEqual(post.id)
   expect(updatedPost.title).toEqual('big watermelon')
   expect(updatedPost.subTitle).toEqual('opm')
-  //expect(updatedPost.createdAt).toEqual(post.createdAt)
 })
 
 test('update action - explicit set / args', async () => {
