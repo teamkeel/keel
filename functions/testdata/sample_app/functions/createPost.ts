@@ -1,11 +1,10 @@
-import { CreatePost } from '@teamkeel/sdk'
+import { CreatePost } from "@teamkeel/sdk";
 
 export default CreatePost(async (inputs, api) => {
   return {
-    id: '123',
-    title: 'something',
+    id: "123",
+    title: "something",
     createdAt: new Date(),
-    updatedAt: new Date()
-  }
-})
-
+    updatedAt: new Date(),
+  };
+});
