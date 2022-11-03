@@ -123,6 +123,9 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 
 		for _, fieldName := range fieldsAdded {
 			field := proto.FindField(newSchema.Models, modelName, fieldName)
+			if isHasManyRelationField(field) { // These do not have an associated column.
+				continue
+			}
 			statements = append(statements, addColumnStmt(modelName, field))
 			changes = append(changes, &DatabaseChange{
 				Model: modelName,
@@ -132,6 +135,10 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 		}
 
 		for _, fieldName := range fieldsRemoved {
+			field := proto.FindField(currSchema.Models, modelName, fieldName)
+			if isHasManyRelationField(field) { // These do not have an associated column.
+				continue
+			}
 			statements = append(statements, dropColumnStmt(modelName, fieldName))
 			changes = append(changes, &DatabaseChange{
 				Model: modelName,
@@ -213,4 +220,12 @@ func GetCurrentSchema(ctx context.Context, db *gorm.DB) (*proto.Schema, error) {
 	}
 
 	return &protoSchema, nil
+}
+
+func isHasManyRelationField(field *proto.Field) bool {
+	return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.Repeated
+}
+
+func isHasOneRelationship(field *proto.Field) bool {
+	return field.Type.Type == proto.Type_TYPE_MODEL && !field.Type.Repeated
 }
