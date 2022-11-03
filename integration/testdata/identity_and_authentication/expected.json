@@ -5,6 +5,14 @@
     },
     {
         "status": "pass",
+        "testName": "authenticate - invalid email - respond with invalid email address error"
+    },
+    {
+        "status": "pass",
+        "testName": "authenticate - empty password - respond with password cannot be empty error"
+    },
+    {
+        "status": "pass",
         "testName": "authenticate - new identity and createIfNotExists false - do not create identity"
     },
     {
