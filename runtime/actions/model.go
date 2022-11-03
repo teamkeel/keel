@@ -56,7 +56,7 @@ func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, e
 func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
 	fType := field.Type.Type
 	rpt := field.Type.Repeated
-	now := time.Now()
+	now := time.Now().UTC()
 	kid, err := ksuid.NewRandomWithTime(now)
 	if err != nil {
 		return nil, err
