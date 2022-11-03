@@ -6,6 +6,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -131,7 +132,8 @@ func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.F
 }
 
 func fieldDefinition(field *proto.Field) string {
-	output := fmt.Sprintf("%s %s", Identifier(field.Name), PostgresFieldTypes[field.Type.Type])
+	columnName := lo.Ternary(isHasOneRelationship(field), Identifier(field.Name+"Id"), Identifier(field.Name))
+	output := fmt.Sprintf("%s %s", columnName, PostgresFieldTypes[field.Type.Type])
 
 	if !field.Optional {
 		output += " NOT NULL"
