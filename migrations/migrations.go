@@ -14,9 +14,10 @@ import (
 )
 
 const (
-	ChangeTypeAdded    = "ADDED"
-	ChangeTypeRemoved  = "REMOVED"
-	ChangeTypeModified = "MODIFIED"
+	ChangeTypeAdded                 = "ADDED"
+	ChangeTypeRemoved               = "REMOVED"
+	ChangeTypeModified              = "MODIFIED"
+	ChangeForeignKeyConstraintAdded = "FK_CONSTRAINED"
 )
 
 var ErrNoStoredSchema = errors.New("no schema stored in keel_schema table")
@@ -132,6 +133,15 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 				Field: fieldName,
 				Type:  ChangeTypeAdded,
 			})
+			if isHasOneRelationship(field) {
+				statements = append(statements, addForeignKeyConstraintStmt(modelName, field))
+				changes = append(changes, &DatabaseChange{
+					Model: modelName,
+					Field: fieldName,
+					Type:  ChangeForeignKeyConstraintAdded,
+				})
+			}
+
 		}
 
 		for _, fieldName := range fieldsRemoved {
@@ -145,6 +155,10 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 				Field: fieldName,
 				Type:  ChangeTypeRemoved,
 			})
+
+			// todo - what if we added a foreign key constraint, when we created this column?
+			// do we have to do some housekeeping, or will Postgres recognize it's no longer
+			// viable?
 		}
 
 		fieldsInCommon := lo.Intersect(newFieldNames, currFieldNames)

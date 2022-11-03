@@ -28,9 +28,11 @@ model Thing {
 ===
 
 ALTER TABLE "person" ADD COLUMN "favourite_thing_id" TEXT NOT NULL;
+ALTER TABLE "person" ADD FOREIGN KEY ("favourite_thing_id") REFERENCES "thing"("id");
 
 === 
 
 [
-  { "Model": "Person", "Field": "favouriteThing", "Type": "ADDED" }
+  { "Model": "Person", "Field": "favouriteThing", "Type": "ADDED" },
+  { "Model": "Person", "Field": "favouriteThing", "Type": "FK_CONSTRAINED" }
 ]
