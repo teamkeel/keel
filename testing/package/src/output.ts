@@ -22,13 +22,7 @@ export class TestResult {
   private readonly expected?: unknown;
   private readonly err?: Error;
 
-  private constructor({
-    test,
-    status,
-    err,
-    expected,
-    actual,
-  }: TestResultData) {
+  private constructor({ test, status, err, expected, actual }: TestResultData) {
     this.test = test;
     this.status = status;
     if (err) {
@@ -41,11 +35,7 @@ export class TestResult {
     }
   }
 
-  static fail(
-    test: TestCase,
-    actual: unknown,
-    expected: unknown
-  ): TestResult {
+  static fail(test: TestCase, actual: unknown, expected: unknown): TestResult {
     return new TestResult({ status: Status.Fail, test, actual, expected });
   }
 
