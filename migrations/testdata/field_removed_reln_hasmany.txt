@@ -1,0 +1,35 @@
+
+model Person {
+    fields {
+        name Text
+        favouriteThing Thing[] // There is no field for a hasMany in the db,
+                                // so we won't see anything be deleted.
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+
+===
+
+=== 
+
+[]

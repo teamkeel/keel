@@ -132,6 +132,8 @@ func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.F
 }
 
 func fieldDefinition(field *proto.Field) string {
+	// todo: - the foreign key column name will come from the proto field definition, and this
+	// inference of field name will go.
 	columnName := lo.Ternary(isHasOneRelationship(field), Identifier(field.Name+"Id"), Identifier(field.Name))
 	output := fmt.Sprintf("%s %s", columnName, PostgresFieldTypes[field.Type.Type])
 
@@ -142,9 +144,12 @@ func fieldDefinition(field *proto.Field) string {
 	return output
 }
 
-func dropColumnStmt(modelName string, fieldName string) string {
+func dropColumnStmt(modelName string, field *proto.Field) string {
+	// todo: - the foreign key column name will come from the proto field definition, and this
+	// inference of field name will go.
+	columnName := lo.Ternary(isHasOneRelationship(field), Identifier(field.Name+"Id"), Identifier(field.Name))
 	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
-	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(fieldName))
+	output += fmt.Sprintf("DROP COLUMN %s;", columnName)
 	return output
 }
 

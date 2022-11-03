@@ -139,7 +139,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 			if isHasManyRelationField(field) { // These do not have an associated column.
 				continue
 			}
-			statements = append(statements, dropColumnStmt(modelName, fieldName))
+			statements = append(statements, dropColumnStmt(modelName, field))
 			changes = append(changes, &DatabaseChange{
 				Model: modelName,
 				Field: fieldName,
