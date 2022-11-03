@@ -47,6 +47,9 @@ func (action *CreateAction) IsAuthorised(args WhereArgs) ActionBuilder[CreateRes
 	return action
 }
 
+// the custom function database api should be responsible for generating these values
+// because it is up to the developer to choose whether their function interacts with the database
+// (it may make a http request to somewhere else instead)
 var ExcludedCreateKeys = []string{"created_at", "updated_at", "id"}
 
 func (action *CreateAction) Execute(args WhereArgs) (*ActionResult[CreateResult], error) {
