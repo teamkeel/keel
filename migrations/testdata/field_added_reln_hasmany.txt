@@ -1,0 +1,32 @@
+model Person {
+    fields {
+        name Text
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+        favouriteThing Thing[] // Despite the new field - there is no change to the database for a has-many relation.
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+=== 
+
+[]
