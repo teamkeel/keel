@@ -100,6 +100,22 @@ func addColumnStmt(modelName string, field *proto.Field) string {
 	return strings.Join(statements, "\n")
 }
 
+// addForeignKeyConstraintStmt generates a string of this form:
+// ALTER TABLE "my_table" ADD FOREIGN KEY ("my_key") REFERENCES "my_other_table"("my_other_field")
+func addForeignKeyConstraintStmt(modelName string, field *proto.Field) string {
+	// todo: instead of inferring the key name, take it from proto.Field when it
+	// becomes available.
+	referencedModel := field.Type.ModelName.Value
+	key := Identifier(field.Name + "Id")
+	referencedField := "id"
+	return fmt.Sprintf("ALTER TABLE %s ADD FOREIGN KEY (%s) REFERENCES %s(%s);",
+		Identifier(modelName),
+		key,
+		Identifier(referencedModel),
+		Identifier(referencedField),
+	)
+}
+
 func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.Field) string {
 	stmts := []string{}
 
