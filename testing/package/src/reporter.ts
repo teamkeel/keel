@@ -20,13 +20,16 @@ export default class Reporter {
   }
 
   // Clear the database prior to running each test casde
-  clearDatabase = async ({ filePath, testCase }: ClearOptions): Promise<boolean> => {
+  clearDatabase = async ({
+    filePath,
+    testCase,
+  }: ClearOptions): Promise<boolean> => {
     const res = await fetch(`${this.buildHostUri()}/reset`, {
       method: "POST",
       body: JSON.stringify({
         filePath,
         testCase,
-      })
+      }),
     });
 
     return res.ok;
@@ -34,14 +37,14 @@ export default class Reporter {
 
   // At the beginning of the test run, report all of the known
   // tests back to the go process, so it can output them in the TUI
-  collectTests = async (tests: TestCase[]) : Promise<boolean> => {
+  collectTests = async (tests: TestCase[]): Promise<boolean> => {
     const res = await fetch(`${this.buildHostUri()}/collect`, {
       method: "POST",
       body: JSON.stringify(tests),
     });
 
     return res.ok;
-  }
+  };
 
   // Report the test result (pass | fail | exception) when the test function
   // has been evaluated in the try/catch block

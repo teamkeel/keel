@@ -50,7 +50,7 @@ export interface RunnerOpts {
   // Silences all logging (apart from process termination errors)
   // Useful if you want to do some special log format with the test results
   // that are reported to the /report handler in go world.
-  silent?: boolean
+  silent?: boolean;
 }
 
 export type ScalarTypes = "string" | "boolean" | "date" | "number";

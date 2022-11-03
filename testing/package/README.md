@@ -1,6 +1,6 @@
 # `@teamkeel/testing`
 
-** All examples use the following sample schema:
+\*\* All examples use the following sample schema:
 
 ```
 model Post {
@@ -41,32 +41,30 @@ If you are testing custom functions, then you should include a `functions/` sub 
 Define new test cases using:
 
 ```typescript
-import { test } from '@teamkeel/testing';
+import { test } from "@teamkeel/testing";
 
-test('it does something', async () => {
-
-})
+test("it does something", async () => {});
 ```
 
 The testing framework allows you to setup data in the database, call both built-in and custom actions, as well as assert on the return value of actions, fulfilling the AAA (arrange-act-assert) testing strategy:
 
 ```typescript
-import { test, expect, Actions, MyModel } from '@teamkeel/testing'
+import { test, expect, Actions, MyModel } from "@teamkeel/testing";
 
-test('a sample test', async () => {
+test("a sample test", async () => {
   // arrange - setup the data
-  const { object: createdModel } = await MyModel.create({ foo: 'bar' });
+  const { object: createdModel } = await MyModel.create({ foo: "bar" });
 
   // you can also fetch things from the database:
-  const { collection } = await MyModel.findMany({ foo: 'bar' });
-  const { object } = await MyModel.findOne({ myUniqueField: 'xxx' });
+  const { collection } = await MyModel.findMany({ foo: "bar" });
+  const { object } = await MyModel.findOne({ myUniqueField: "xxx" });
 
   // act - call an action
   const { object: result } = await Actions.getMyModel({ id: createdModel.id });
 
   // assert on the result
   expect(result.id).toEqual(createdModel.id);
-})
+});
 ```
 
 ## Querying the database
@@ -74,15 +72,15 @@ test('a sample test', async () => {
 You can create / update and query data easily using our Database API. Complete Database API documentation can be found at XXX
 
 ```typescript
-import { test, Post } from '@teamkeel/testing';
+import { test, Post } from "@teamkeel/testing";
 
-test('it does something', async () => {
+test("it does something", async () => {
   const { object: createdPost } = await Post.create({
-    title: 'a title'
+    title: "a title",
   });
 
-  expect(createdPost.title).toEqual('a title');
-})
+  expect(createdPost.title).toEqual("a title");
+});
 ```
 
 ## Calling actions
@@ -90,15 +88,15 @@ test('it does something', async () => {
 You can execute Keel actions like so:
 
 ```typescript
-import { test, actions } from '@teamkeel/testing';
+import { test, actions } from "@teamkeel/testing";
 
-test('it does something', async () => {
+test("it does something", async () => {
   const { object: createdPost } = await actions.createPost({
-    title: 'a title'
+    title: "a title",
   });
 
-  expect(createdPost.title).toEqual('a title');
-})
+  expect(createdPost.title).toEqual("a title");
+});
 ```
 
 ## Expectation API
@@ -106,13 +104,13 @@ test('it does something', async () => {
 The table below outlines our expectation API:
 
 | Expectation                   | Actual type    | Expected type | Example                                                                                        |
-|-------------------------------|----------------|---------------|------------------------------------------------------------------------------------------------|
+| ----------------------------- | -------------- | ------------- | ---------------------------------------------------------------------------------------------- |
 | `toEqual`                     | `any`          | `any`         | `expect(1).toEqual(1)`                                                                         |
 | `notToEqual`                  | `any`          | `any`         | `expect(1).notToEqual(2)`                                                                      |
 | `toHaveError`                 | `ActionResult` | `ActionError` | `expect(await actions.createPost({ title: 'too long' })).toHaveError({ message: 'too long' })` |
 | `notToHaveError`              | `ActionResult` | `ActionError` | `expect(await actions.createPost({ title: 'OK' })).notToHaveError()`                           |
-| `toHaveAuthorizationError`    | `ActionResult` | N/A           | `expect(await actions.createPost({ title: 'bar' })).toHaveAuthorizationError()`             |
-| `notToHaveAuthorizationError` | `ActionResult` | N/A           | `expect(await actions.createPost({ title: 'foo' })).notToHaveAuthorizationError()`          |
+| `toHaveAuthorizationError`    | `ActionResult` | N/A           | `expect(await actions.createPost({ title: 'bar' })).toHaveAuthorizationError()`                |
+| `notToHaveAuthorizationError` | `ActionResult` | N/A           | `expect(await actions.createPost({ title: 'foo' })).notToHaveAuthorizationError()`             |
 | `toBeEmpty`                   | `any`          | N/A           | `expect(null).toBeEmpty()`                                                                     |
 | `notToBeEmpty`                | `any`          | N/A           | `expect({ foo: 'bar' }).notToBeEmpty()`                                                        |
 | `toContain`                   | `Array<T>`     | `any`         | `expect([{ foo: 'bar' }]).toContain({ foo: 'bar' })`                                           |
@@ -158,4 +156,4 @@ This allows you to debug individual tests using the VSCode debugger, although yo
 
 ### Gotchas
 
-- The test runner actually copies each test case directory to a temporary directory elsewhere when executing the test - inside of the temporary directory, all of the dependencies necessary to have a viable application are installed (this also includes creation of package.json and tsconfig.json). This saves us having to populate each directory each time we add a new test case. The downside is that we do not get intellisense when writing our tests; this would be tricky anyway given a lot of the code inside of the `@teamkeel/testing` package is code generated at the point of running the test. 
+- The test runner actually copies each test case directory to a temporary directory elsewhere when executing the test - inside of the temporary directory, all of the dependencies necessary to have a viable application are installed (this also includes creation of package.json and tsconfig.json). This saves us having to populate each directory each time we add a new test case. The downside is that we do not get intellisense when writing our tests; this would be tricky anyway given a lot of the code inside of the `@teamkeel/testing` package is code generated at the point of running the test.

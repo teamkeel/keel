@@ -7,7 +7,7 @@ import { AssertionFailure } from "./errors";
 import { TestResult } from "./output";
 import { expect } from "./expect";
 import Reporter from "./reporter";
-import log from './logger'
+import log from "./logger";
 
 // generated.ts doesnt exist at this point, but once the node_module has been
 // injected with the generated code, IT WILL 😈
@@ -22,11 +22,11 @@ function test(name: TestName, fn: TestFunc) {
   tests.push({
     name,
     fn,
-    filePath: ""
+    filePath: "",
   });
 }
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function runAllTests({
   parentPort,
@@ -34,7 +34,7 @@ async function runAllTests({
   debug,
   filePath,
   pattern = "",
-  silent = false
+  silent = false,
 }: RunnerOpts) {
   log(`${chalk.white.bgBlue(" INFO ")} Running testfile ${filePath}\n`, silent);
 
@@ -54,15 +54,15 @@ async function runAllTests({
   }
 
   for (const test of tests) {
-    // we do not know what the filepath of the test is 
+    // we do not know what the filepath of the test is
     // when registering the test via the test() block,
     // so enrich the data with the filepath now we know it.
     test.filePath = filePath;
   }
 
-  await reporter.collectTests(tests)
+  await reporter.collectTests(tests);
 
-  await delay(1000)
+  await delay(1000);
 
   for (const test of tests) {
     if (hasPattern) {
@@ -89,9 +89,9 @@ async function runAllTests({
     if (debug) {
       if (resetSuccess) {
         log(
-          `${chalk.bgBlueBright.white(
-            " INFO "
-          )} Reset database after ${test.name}\n`,
+          `${chalk.bgBlueBright.white(" INFO ")} Reset database after ${
+            test.name
+          }\n`,
           silent
         );
       } else {
