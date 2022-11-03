@@ -1,0 +1,86 @@
+model Post {
+  fields {
+    text Text
+    number Number
+    bool Boolean
+    identity Identity
+    date Date
+    time Timestamp
+    enum Category
+
+    text2 Text
+    number2 Number
+    bool2 Boolean
+    identity2 Identity
+    date2 Date
+    time2 Timestamp
+    enum2 Category
+
+    textArray Text[]
+  }
+
+  operations {
+    list listWithLiterals() {
+      @where(post.text == "literal")
+      @where(post.text != "literal")
+
+      @where(post.number > 0)
+      @where(post.number < 0)
+      @where(post.number >= 0)
+      @where(post.number <= 0)
+      @where(post.number == 0)
+      @where(post.number != 0)
+
+      @where(post.bool == true)
+      @where(post.bool != true)
+      @where(post.bool == false)
+      @where(post.bool != false)
+
+      @where(post.enum == Category.Option1)
+      @where(post.enum != Category.Option1)
+
+      @where(post.text in ["one", "two"])
+
+      // add for date and time literals: https://linear.app/keel/issue/DEV-220/support-date-and-time-literal-on-schema
+    }
+
+    list listWithFields() {
+      @where(post.text == post.text2)
+      @where(post.text != post.text2)
+
+      @where(post.number > post.number2)
+      @where(post.number < post.number2)
+      @where(post.number >= post.number2)
+      @where(post.number <= post.number2)
+      @where(post.number == post.number2)
+      @where(post.number != post.number2)
+
+      @where(post.enum == post.enum2)
+      @where(post.enum != post.enum2)
+
+      @where(post.date > post.date2)
+      @where(post.date < post.date2)
+      @where(post.date >= post.date2)
+      @where(post.date <= post.date2)
+      @where(post.date == post.date2)
+      @where(post.date != post.date2)
+
+      @where(post.time > post.time2)
+      @where(post.time < post.time2)
+      @where(post.time >= post.time2)
+      @where(post.time <= post.time2)
+      @where(post.time == post.time2)
+      @where(post.time != post.time2)
+
+      @where(post.identity == post.identity2)
+      @where(post.identity != post.identity2)
+
+      @where(post.text in post.textArray)
+    }
+  }
+}
+
+enum Category {
+  Option1
+  Option2
+}

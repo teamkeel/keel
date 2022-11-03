@@ -168,7 +168,9 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 
 	arrayEntity := e.IsRepeated()
 
-	if e.Model != nil || (e.Field != nil && !arrayEntity) {
+	// If the field is a model
+	// todo: https://linear.app/keel/issue/RUN-167/refactor-identity-proto-type-to-use-model
+	if !arrayEntity && (e.Model != nil || t == parser.ImplicitIdentityModelName) {
 		return []string{
 			parser.OperatorEquals,
 			parser.OperatorNotEquals,
