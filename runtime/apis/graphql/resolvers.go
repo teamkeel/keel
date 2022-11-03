@@ -23,7 +23,7 @@ func GetFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlA
 			return nil, err
 		}
 
-		return result.Object, err
+		return result.Object, nil
 	}
 }
 
@@ -44,7 +44,7 @@ func CreateFn(schema *proto.Schema, operation *proto.Operation, argParser *Graph
 			return nil, err
 		}
 
-		return result.Object, err
+		return result.Object, nil
 	}
 }
 
@@ -61,14 +61,16 @@ func ListFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQl
 		}
 
 		result, err := scope.List(args)
-
 		if err != nil {
 			return nil, err
 		}
 
 		resp, err := connectionResponse(result.Collection, result.HasNextPage)
+		if err != nil {
+			return nil, err
+		}
 
-		return resp, err
+		return resp, nil
 	}
 }
 
@@ -89,7 +91,7 @@ func DeleteFn(schema *proto.Schema, operation *proto.Operation, argParser *Graph
 			return false, err
 		}
 
-		return result.Success, err
+		return result, nil
 	}
 }
 
@@ -111,6 +113,6 @@ func UpdateFn(schema *proto.Schema, operation *proto.Operation, argParser *Graph
 			return nil, err
 		}
 
-		return result.Object, err
+		return result.Object, nil
 	}
 }
