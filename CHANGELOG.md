@@ -1,3 +1,10 @@
+# [0.200.0](https://github.com/teamkeel/keel/compare/v0.199.6...v0.200.0) (2022-11-04)
+
+
+### Features
+
+* throw an error if an action returns any errors ([#541](https://github.com/teamkeel/keel/issues/541)) ([b1fc78c](https://github.com/teamkeel/keel/commit/b1fc78cb12f1c8e962e13b20adfc6e8a5a8d1fae))
+
 ## [0.199.6](https://github.com/teamkeel/keel/compare/v0.199.5...v0.199.6) (2022-11-04)
 
 
