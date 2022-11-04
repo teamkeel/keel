@@ -3,6 +3,7 @@ package schema
 import (
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
@@ -34,6 +35,13 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			}
 		}
 	}
+	// There are some parts of the schema build process that we cannot do until we have completed
+	// the first part (above). For example to calculate foreign key names for relationships we need access to
+	// the models at both ends of a relationship, and thus need to have built the global set of models that
+	// might have been defined in separate schema input files.
+
+	insertForeignKeys(protoSchema)
+
 	return protoSchema
 }
 
@@ -479,5 +487,29 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 		return proto.ApiType_API_TYPE_RPC
 	default:
 		return proto.ApiType_API_TYPE_UNKNOWN
+	}
+}
+
+// insertForeignKeys populates the Field.ForeignKeyFieldName for all the fields in the schema
+// that represent HasOne relationships.
+//
+// To do this it has to locate the related model and establish which of the related model's fields
+// is its Primary Key. Then it can derive the name for __this__ field's foreign key.
+func insertForeignKeys(schema *proto.Schema) {
+	allFields := proto.AllFields(schema)
+	for _, thisField := range allFields {
+		if !proto.IsHasOneRelation(thisField) {
+			continue
+		}
+		relatedModel := proto.FindModel(schema.Models, thisField.Type.ModelName.Value)
+
+		relatedModelPrimaryKeyField, _ := lo.Find(relatedModel.Fields, func(f *proto.Field) bool {
+			return f.PrimaryKey
+		})
+
+		fkName := strcase.ToLowerCamel(thisField.Name + "_" + relatedModelPrimaryKeyField.Name)
+		thisField.ForeignKeyFieldName = &wrapperspb.StringValue{
+			Value: fkName,
+		}
 	}
 }

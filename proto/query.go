@@ -26,6 +26,27 @@ func FieldNames(m *Model) []string {
 	return names
 }
 
+// IsHasOneRelation returns true if the given field is a MODEL type field
+// and is not repeated.
+func IsHasOneRelation(field *Field) bool {
+	if field.Type.Type != Type_TYPE_MODEL {
+		return false
+	}
+	if field.Type.Repeated {
+		return false
+	}
+	return true
+}
+
+// AllFields provides a list of all the model fields specified in the schema.
+func AllFields(p *Schema) []*Field {
+	fields := []*Field{}
+	for _, model := range p.Models {
+		fields = append(fields, model.Fields...)
+	}
+	return fields
+}
+
 // ModelsExists returns true if the given schema contains a
 // model with the given name.
 func ModelExists(models []*Model, name string) bool {

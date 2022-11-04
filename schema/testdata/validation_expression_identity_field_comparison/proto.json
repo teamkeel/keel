@@ -99,6 +99,7 @@
           }
         },
         {
+          "foreignKeyFieldName": "ownerId",
           "modelName":  "Post",
           "name":  "owner",
           "type":  {
@@ -107,6 +108,7 @@
           }
         },
         {
+          "foreignKeyFieldName": "publisherId",
           "modelName":  "Post",
           "name":  "publisher",
           "type":  {
