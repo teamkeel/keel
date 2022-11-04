@@ -72,7 +72,7 @@ export class PgQueryResolver implements QueryResolver {
     const result = await this.pool.query(this.toQuery(query));
     if (result.rows) {
       result.rows = result.rows.map((row) => {
-        if (typeof row === "object") {
+        if (row && typeof row === "object") {
           const camelCasedKeysObject = {};
           for (let key of Object.keys(row)) {
             camelCasedKeysObject[toCamelCase(key)] = row[key];
@@ -177,7 +177,7 @@ export class AwsRdsDataClientQueryResolver implements QueryResolver {
       return row;
     });
     const rowsWithObjectKeysCamelCased = rows.map((row) => {
-      if (typeof row === "object") {
+      if (row && typeof row === "object") {
         const camelCasedKeysObject = {};
         for (let key of Object.keys(row)) {
           camelCasedKeysObject[toCamelCase(key)] = row[key];
