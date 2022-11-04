@@ -1,3 +1,10 @@
+# [0.201.0](https://github.com/teamkeel/keel/compare/v0.200.0...v0.201.0) (2022-11-04)
+
+
+### Features
+
+* revert "feat: throw an error if an action returns any errors ([#541](https://github.com/teamkeel/keel/issues/541))" ([#554](https://github.com/teamkeel/keel/issues/554)) ([81b5d2d](https://github.com/teamkeel/keel/commit/81b5d2d5f3681ff02ab53d89447b259af8f6b4eb))
+
 # [0.200.0](https://github.com/teamkeel/keel/compare/v0.199.6...v0.200.0) (2022-11-04)
 
 
