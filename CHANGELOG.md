@@ -1,3 +1,10 @@
+## [0.199.5](https://github.com/teamkeel/keel/compare/v0.199.4...v0.199.5) (2022-11-04)
+
+
+### Bug Fixes
+
+* casing bug ([5d711ac](https://github.com/teamkeel/keel/commit/5d711ac71eb1e8f681cfceda09e22626b518c505))
+
 ## [0.199.4](https://github.com/teamkeel/keel/compare/v0.199.3...v0.199.4) (2022-11-03)
 
 
