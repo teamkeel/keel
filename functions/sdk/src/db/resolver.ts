@@ -8,6 +8,7 @@ import {
   SqlParameter,
   TypeHint,
 } from "@aws-sdk/client-rds-data";
+import toCamelCase from "../util/camelCaser";
 import { ExecuteStatementCommandInput } from "@aws-sdk/client-rds-data/dist-types/commands/ExecuteStatementCommand";
 
 export interface QueryResolver {
@@ -67,8 +68,22 @@ export class PgQueryResolver implements QueryResolver {
     this.pool = new pg.Pool({ connectionString: config.connectionString });
   }
 
-  runQuery(query: SqlQueryParts): Promise<QueryResult> {
-    return this.pool.query(this.toQuery(query));
+  async runQuery(query: SqlQueryParts): Promise<QueryResult> {
+    const result = await this.pool.query(this.toQuery(query));
+    if (result.rows) {
+      result.rows = result.rows.map((row) => {
+        if (typeof row === "object") {
+          const camelCasedKeysObject = {};
+          for (let key of Object.keys(row)) {
+            camelCasedKeysObject[toCamelCase(key)] = row[key];
+          }
+          return camelCasedKeysObject;
+        } else {
+          return row;
+        }
+      });
+    }
+    return result;
   }
 
   private toQuery(query: SqlQueryParts): { text: string; values: any[] } {
@@ -161,7 +176,18 @@ export class AwsRdsDataClientQueryResolver implements QueryResolver {
       }
       return row;
     });
-    return { rows };
+    const rowsWithObjectKeysCamelCased = rows.map((row) => {
+      if (typeof row === "object") {
+        const camelCasedKeysObject = {};
+        for (let key of Object.keys(row)) {
+          camelCasedKeysObject[toCamelCase(key)] = row[key];
+        }
+        return camelCasedKeysObject;
+      } else {
+        return row;
+      }
+    });
+    return { rows: rowsWithObjectKeysCamelCased };
   }
 
   private toQuery(query: SqlQueryParts): {
