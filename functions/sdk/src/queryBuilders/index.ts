@@ -182,7 +182,7 @@ export const buildSelectStatement = <T>(
     const orderClauses = Object.entries(order).map(([key, value]) => {
       if (value === "ASC" || value === "DESC") {
         let order: OrderDirection = value;
-        return [rawSql(key), rawSql(value)];
+        return [rawSql(toSnakeCase(key)), rawSql(value)];
       } else {
         throw new Error("Unrecognised order value");
       }

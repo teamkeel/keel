@@ -28,7 +28,7 @@ test("select", async () => {
     id: string;
     name: string;
     married: boolean;
-    favourite_number: number;
+    favouriteNumber: number;
     date: Date;
   }
 
@@ -58,35 +58,35 @@ test("select", async () => {
     id: "6cba2acc-a06b-4f4d-8671-bd87a5473ed9",
     name: "Jane Doe",
     married: false,
-    favourite_number: 0,
+    favouriteNumber: 0,
     date: new Date("2013-03-21 09:10:59.897"),
   };
   const keelKeelson = {
     id: "3469bd00-a51c-4efb-b045-4eda9823f590",
     name: "Keel Keelson",
     married: true,
-    favourite_number: 10,
+    favouriteNumber: 10,
     date: new Date("2013-03-21 09:10:59.897"),
   };
   const keelKeelgrandson = {
     id: "1f5ed3cb-1410-48cd-b499-df17d9a7906c",
     name: "Keel Keelgrandson",
     married: false,
-    favourite_number: 10,
+    favouriteNumber: 10,
     date: new Date("2013-03-21 09:10:59.897"),
   };
   const agentSmith = {
     id: "bc3033c2-f331-463a-a335-5aa1a05f990c",
     name: "Agent Smith",
     married: false,
-    favourite_number: 1,
+    favouriteNumber: 1,
     date: new Date("2013-03-21 09:10:59.897"),
   };
   const nullPerson = {
     id: "8d53f4d9-0139-48a1-b3fa-0333030c023b",
     name: null,
     married: null,
-    favourite_number: null,
+    favouriteNumber: null,
     date: null,
   };
 
@@ -166,64 +166,62 @@ test("select", async () => {
     collection: [nullPerson],
   });
 
-  expect(await query.where({ favourite_number: { equals: 10 } }).all()).toEqual(
-    {
-      collection: [keelKeelson, keelKeelgrandson],
-    }
-  );
+  expect(await query.where({ favouriteNumber: { equals: 10 } }).all()).toEqual({
+    collection: [keelKeelson, keelKeelgrandson],
+  });
 
   expect(
-    await query.where({ favourite_number: { greaterThan: 1 } }).all()
+    await query.where({ favouriteNumber: { greaterThan: 1 } }).all()
   ).toEqual({ collection: [keelKeelson, keelKeelgrandson] });
 
   expect(
-    await query.where({ favourite_number: { greaterThanOrEquals: 1 } }).all()
+    await query.where({ favouriteNumber: { greaterThanOrEquals: 1 } }).all()
   ).toEqual({ collection: [keelKeelson, keelKeelgrandson, agentSmith] });
 
   expect(
     await query
-      .where({ favourite_number: { lessThan: 1 } })
-      .orWhere({ favourite_number: { greaterThan: 1 } })
+      .where({ favouriteNumber: { lessThan: 1 } })
+      .orWhere({ favouriteNumber: { greaterThan: 1 } })
       .all()
   ).toEqual({ collection: [janeDoe, keelKeelson, keelKeelgrandson] });
 
   expect(
     await query
-      .where({ favourite_number: { lessThan: 1 } })
-      .orWhere({ id: keelKeelson.id, favourite_number: { greaterThan: 1 } })
+      .where({ favouriteNumber: { lessThan: 1 } })
+      .orWhere({ id: keelKeelson.id, favouriteNumber: { greaterThan: 1 } })
       .all()
   ).toEqual({ collection: [janeDoe, keelKeelson] });
 
   expect(
     await query
-      .where({ favourite_number: { lessThan: 1 } })
-      .orWhere({ id: keelKeelson.id, favourite_number: { greaterThan: 1 } })
+      .where({ favouriteNumber: { lessThan: 1 } })
+      .orWhere({ id: keelKeelson.id, favouriteNumber: { greaterThan: 1 } })
       .orWhere({
         name: keelKeelgrandson.name,
-        favourite_number: { greaterThan: 1 },
+        favouriteNumber: { greaterThan: 1 },
       })
       .all()
   ).toEqual({ collection: [janeDoe, keelKeelson, keelKeelgrandson] });
 
   expect(
     await query
-      .where({ favourite_number: { lessThan: 1 } })
-      .orWhere({ id: keelKeelson.id, favourite_number: { greaterThan: 1 } })
+      .where({ favouriteNumber: { lessThan: 1 } })
+      .orWhere({ id: keelKeelson.id, favouriteNumber: { greaterThan: 1 } })
       .orWhere({
         name: keelKeelgrandson.name,
-        favourite_number: { greaterThan: 10 },
+        favouriteNumber: { greaterThan: 10 },
       })
       .all()
   ).toEqual({ collection: [janeDoe, keelKeelson] });
 
   expect(
-    await query.where({ favourite_number: { lessThanOrEquals: 1 } }).all()
+    await query.where({ favouriteNumber: { lessThanOrEquals: 1 } }).all()
   ).toEqual({ collection: [janeDoe, agentSmith] });
 
   expect(
     await query
       .where({ married: { equals: false } })
-      .order({ favourite_number: "DESC" })
+      .order({ favouriteNumber: "DESC" })
       .all()
   ).toEqual({
     collection: [keelKeelgrandson, agentSmith, janeDoe],
@@ -232,7 +230,7 @@ test("select", async () => {
   expect(
     await query
       .where({ married: { equals: false } })
-      .order({ favourite_number: "ASC" })
+      .order({ favouriteNumber: "ASC" })
       .all()
   ).toEqual({
     collection: [janeDoe, agentSmith, keelKeelgrandson],
