@@ -1,3 +1,10 @@
+## [0.199.6](https://github.com/teamkeel/keel/compare/v0.199.5...v0.199.6) (2022-11-04)
+
+
+### Bug Fixes
+
+* safer use of typeof ([de297f1](https://github.com/teamkeel/keel/commit/de297f170f42aeb5531277059051d923a1254405))
+
 ## [0.199.5](https://github.com/teamkeel/keel/compare/v0.199.4...v0.199.5) (2022-11-04)
 
 
