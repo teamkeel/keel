@@ -1,0 +1,8 @@
+model Person {
+}
+
+model Book {
+  fields {
+	  author Person
+  }
+}

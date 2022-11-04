@@ -1,0 +1,11 @@
+model Person {
+  fields {
+    myBooks Book[]
+  }
+}
+
+model Book {
+  fields {
+	  author Person
+  }
+}
