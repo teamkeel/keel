@@ -14,10 +14,9 @@ import (
 )
 
 const (
-	ChangeTypeAdded                 = "ADDED"
-	ChangeTypeRemoved               = "REMOVED"
-	ChangeTypeModified              = "MODIFIED"
-	ChangeForeignKeyConstraintAdded = "FK_CONSTRAINED"
+	ChangeTypeAdded    = "ADDED"
+	ChangeTypeRemoved  = "REMOVED"
+	ChangeTypeModified = "MODIFIED"
 )
 
 var ErrNoStoredSchema = errors.New("no schema stored in keel_schema table")
@@ -135,11 +134,6 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 			})
 			if isHasOneRelationship(field) {
 				statements = append(statements, addForeignKeyConstraintStmt(modelName, field))
-				changes = append(changes, &DatabaseChange{
-					Model: modelName,
-					Field: fieldName,
-					Type:  ChangeForeignKeyConstraintAdded,
-				})
 			}
 
 		}

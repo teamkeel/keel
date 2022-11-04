@@ -33,6 +33,5 @@ ALTER TABLE "person" ADD FOREIGN KEY ("favourite_thing_id") REFERENCES "thing"("
 === 
 
 [
-  { "Model": "Person", "Field": "favouriteThing", "Type": "ADDED" },
-  { "Model": "Person", "Field": "favouriteThing", "Type": "FK_CONSTRAINED" }
+  { "Model": "Person", "Field": "favouriteThing", "Type": "ADDED" }
 ]
