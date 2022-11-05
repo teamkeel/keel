@@ -1,19 +1,19 @@
 {
   "models":  [
     {
-      "name":  "Person",
+      "name":  "Account",
       "fields":  [
         {
-          "modelName":  "Person",
-          "name":  "myBooks",
+          "modelName":  "Account",
+          "name":  "posts",
           "type":  {
             "type":  "TYPE_MODEL",
-            "modelName":  "Book",
+            "modelName":  "Post",
             "repeated":  true
           }
         },
         {
-          "modelName":  "Person",
+          "modelName":  "Account",
           "name":  "id",
           "type":  {
             "type":  "TYPE_ID"
@@ -24,7 +24,7 @@
           }
         },
         {
-          "modelName":  "Person",
+          "modelName":  "Account",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -34,7 +34,7 @@
           }
         },
         {
-          "modelName":  "Person",
+          "modelName":  "Account",
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -46,19 +46,19 @@
       ]
     },
     {
-      "name":  "Book",
+      "name":  "Post",
       "fields":  [
         {
-          "modelName":  "Book",
+          "modelName":  "Post",
           "name":  "author",
           "type":  {
             "type":  "TYPE_MODEL",
-            "modelName":  "Person"
+            "modelName":  "Account"
           },
           "foreignKeyFieldName":  "authorId"
         },
         {
-          "modelName":  "Book",
+          "modelName":  "Post",
           "name":  "id",
           "type":  {
             "type":  "TYPE_ID"
@@ -69,7 +69,7 @@
           }
         },
         {
-          "modelName":  "Book",
+          "modelName":  "Post",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -79,13 +79,22 @@
           }
         },
         {
-          "modelName":  "Book",
+          "modelName":  "Post",
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
           },
           "defaultValue":  {
             "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Post",
+          "name":  "authorId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "Account",
+            "fieldName":  "id"
           }
         }
       ]

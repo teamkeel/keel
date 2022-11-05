@@ -1,11 +1,11 @@
-model Person {
+model Account {
   fields {
-    myBooks Book[]
+    posts Post[]
   }
 }
 
-model Book {
+model Post {
   fields {
-	  author Person
+	  author Account
   }
 }

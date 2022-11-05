@@ -35,12 +35,11 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			}
 		}
 	}
-	// There are some parts of the schema build process that we cannot do until we have completed
-	// the first part (above). For example to calculate foreign key names for relationships we need access to
-	// the models at both ends of a relationship, and thus need to have built the global set of models that
-	// might have been defined in separate schema input files.
+	// We do some more work now that we built and can access the global model set, to finish populating
+	// some of the data concerning relationship fields.
 
-	insertForeignKeys(protoSchema)
+	affectedFields := insertForeignKeys(protoSchema)
+	createRelationshipIdFields(protoSchema, affectedFields)
 
 	return protoSchema
 }
@@ -359,13 +358,13 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
-	if protoType == proto.Type_TYPE_MODEL || protoType == proto.Type_TYPE_IDENTITY {
+	switch protoType {
+
+	case proto.Type_TYPE_MODEL, proto.Type_TYPE_IDENTITY:
 		modelName = &wrapperspb.StringValue{
 			Value: query.Model(scm.asts, field.Type).Name.Value,
 		}
-	}
-
-	if protoType == proto.Type_TYPE_ENUM {
+	case proto.Type_TYPE_ENUM:
 		enumName = &wrapperspb.StringValue{
 			Value: query.Enum(scm.asts, field.Type).Name.Value,
 		}
@@ -490,17 +489,17 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 	}
 }
 
-// insertForeignKeys populates the Field.ForeignKeyFieldName for all the fields in the schema
-// that represent HasOne relationships.
-//
-// To do this it has to locate the related model and establish which of the related model's fields
-// is its Primary Key. Then it can derive the name for __this__ field's foreign key.
-func insertForeignKeys(schema *proto.Schema) {
-	allFields := proto.AllFields(schema)
-	for _, thisField := range allFields {
+// insertForeignKeys locates all the model fields of type Model that represent
+// a HasOne relation, calculates, and populates that field's ForeignKeyFieldName value.
+// To do so it has to locate the referred-to model to find out which of its fields is
+// its primary key. (Because the foreign key name incorporates that).
+func insertForeignKeys(schema *proto.Schema) (affectedFields []*proto.Field) {
+	hasOneModelFields := allHasOneModelFields(schema)
+	for _, thisField := range hasOneModelFields {
 		if !proto.IsHasOneRelation(thisField) {
 			continue
 		}
+
 		relatedModel := proto.FindModel(schema.Models, thisField.Type.ModelName.Value)
 
 		relatedModelPrimaryKeyField, _ := lo.Find(relatedModel.Fields, func(f *proto.Field) bool {
@@ -511,5 +510,46 @@ func insertForeignKeys(schema *proto.Schema) {
 		thisField.ForeignKeyFieldName = &wrapperspb.StringValue{
 			Value: fkName,
 		}
+	}
+	return hasOneModelFields
+}
+
+// allHasOneModelFields provides a list of all the fields in the schema
+// that represent HasOne relationships.
+func allHasOneModelFields(schema *proto.Schema) []*proto.Field {
+	allFields := proto.AllFields(schema)
+	hasOneFields := lo.Filter(allFields, func(field *proto.Field, _ int) bool {
+		return proto.IsHasOneRelation(field)
+	})
+	return hasOneFields
+}
+
+// createRelationshipIdFields visits all the given hasOneModelFields (which
+// are defined in the Keel Schema), and auto generates a sibling field of type Id in the
+// same model to carry the pointer FK to the related object. Note the latter do not show up
+// in the keel schema - they are implied, similarly to the way each model has an implied CreatedAt
+// field.
+func createRelationshipIdFields(schema *proto.Schema, hasOneModelFields []*proto.Field) {
+	for _, hasOneModelField := range hasOneModelFields {
+		relnIdField := &proto.Field{
+			// The new field belongs to the same model as the hasOneModelField.
+			ModelName: hasOneModelField.ModelName,
+
+			// The hasOneModelField tells us explicitly what to call this new Id field.
+			Name: hasOneModelField.ForeignKeyFieldName.Value,
+
+			Type: &proto.TypeInfo{
+				// The new Id field is of type ID.
+				Type: proto.Type_TYPE_ID,
+
+				// The hasOneModelField can tell us which related model this Id value refers to.
+				ModelName: hasOneModelField.Type.ModelName,
+
+				// The new Id field has a hard-coded name - i.e. ID.
+				FieldName: &wrapperspb.StringValue{Value: parser.ImplicitFieldNameId},
+			},
+		}
+		thisModel := proto.FindModel(schema.Models, hasOneModelField.ModelName)
+		thisModel.Fields = append(thisModel.Fields, relnIdField)
 	}
 }
