@@ -99,22 +99,22 @@
           }
         },
         {
-          "foreignKeyFieldName": "ownerId",
           "modelName":  "Post",
           "name":  "owner",
           "type":  {
             "type":  "TYPE_MODEL",
             "modelName":  "Author"
-          }
+          },
+          "foreignKeyFieldName":  "ownerId"
         },
         {
-          "foreignKeyFieldName": "publisherId",
           "modelName":  "Post",
           "name":  "publisher",
           "type":  {
             "type":  "TYPE_MODEL",
             "modelName":  "Publisher"
-          }
+          },
+          "foreignKeyFieldName":  "publisherId"
         },
         {
           "modelName":  "Post",
@@ -145,6 +145,24 @@
           },
           "defaultValue":  {
             "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Post",
+          "name":  "ownerId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "Author",
+            "fieldName":  "id"
+          }
+        },
+        {
+          "modelName":  "Post",
+          "name":  "publisherId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "Publisher",
+            "fieldName":  "id"
           }
         }
       ],

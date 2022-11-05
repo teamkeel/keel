@@ -78,6 +78,15 @@
           "defaultValue":  {
             "useZeroValue":  true
           }
+        },
+        {
+          "modelName":  "Book",
+          "name":  "authorId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "Person",
+            "fieldName":  "id"
+          }
         }
       ]
     },
