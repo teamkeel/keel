@@ -26,9 +26,9 @@ func FieldNames(m *Model) []string {
 	return names
 }
 
-// IsHasOneRelation returns true if the given field is a MODEL type field
+// IfIsTypeModelAndHasOne returns true if the given field is a MODEL type field
 // and is not marked as multiple, or more accurately "repeated".
-func IsHasOneRelation(field *Field) bool {
+func IfIsTypeModelAndHasOne(field *Field) bool {
 	if field.Type.Type != Type_TYPE_MODEL {
 		return false
 	}
@@ -36,6 +36,18 @@ func IsHasOneRelation(field *Field) bool {
 		return false
 	}
 	return true
+}
+
+// PrimaryKeyFieldName returns the name of the field in the given model,
+// that is marked as being the model's primary key. (Or empty string).
+func PrimaryKeyFieldName(model *Model) string {
+	field, _ := lo.Find(model.Fields, func(f *Field) bool {
+		return f.PrimaryKey
+	})
+	if field != nil {
+		return field.Name
+	}
+	return ""
 }
 
 // AllFields provides a list of all the model fields specified in the schema.

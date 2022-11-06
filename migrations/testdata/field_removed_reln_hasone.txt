@@ -34,5 +34,5 @@ ALTER TABLE "person" DROP COLUMN "favourite_thing_id";
 === 
 
 [
-  { "Model": "Person", "Field": "favouriteThing", "Type": "REMOVED" }
+  { "Model": "Person", "Field": "favouriteThingId", "Type": "REMOVED" }
 ]

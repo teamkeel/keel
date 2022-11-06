@@ -6,7 +6,6 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -101,18 +100,13 @@ func addColumnStmt(modelName string, field *proto.Field) string {
 }
 
 // addForeignKeyConstraintStmt generates a string of this form:
-// ALTER TABLE "my_table" ADD FOREIGN KEY ("my_key") REFERENCES "my_other_table"("my_other_field")
-func addForeignKeyConstraintStmt(modelName string, field *proto.Field) string {
-	// todo: instead of inferring the key name, take it from proto.Field when it
-	// becomes available.
-	referencedModel := field.Type.ModelName.Value
-	key := Identifier(field.Name + "Id")
-	referencedField := "id"
+// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn")
+func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable string, otherColumn string) string {
 	return fmt.Sprintf("ALTER TABLE %s ADD FOREIGN KEY (%s) REFERENCES %s(%s);",
-		Identifier(modelName),
-		key,
-		Identifier(referencedModel),
-		Identifier(referencedField),
+		thisTable,
+		thisColumn,
+		otherTable,
+		otherColumn,
 	)
 }
 
@@ -148,9 +142,7 @@ func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.F
 }
 
 func fieldDefinition(field *proto.Field) string {
-	// todo: - the foreign key column name will come from the proto field definition, and this
-	// inference of field name will go.
-	columnName := lo.Ternary(isHasOneRelationship(field), Identifier(field.Name+"Id"), Identifier(field.Name))
+	columnName := Identifier(field.Name)
 	output := fmt.Sprintf("%s %s", columnName, PostgresFieldTypes[field.Type.Type])
 
 	if !field.Optional {
@@ -161,11 +153,8 @@ func fieldDefinition(field *proto.Field) string {
 }
 
 func dropColumnStmt(modelName string, field *proto.Field) string {
-	// todo: - the foreign key column name will come from the proto field definition, and this
-	// inference of field name will go.
-	columnName := lo.Ternary(isHasOneRelationship(field), Identifier(field.Name+"Id"), Identifier(field.Name))
 	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
-	output += fmt.Sprintf("DROP COLUMN %s;", columnName)
+	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(field.Name))
 	return output
 }
 

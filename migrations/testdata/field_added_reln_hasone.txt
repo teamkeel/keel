@@ -33,5 +33,5 @@ ALTER TABLE "person" ADD FOREIGN KEY ("favourite_thing_id") REFERENCES "thing"("
 === 
 
 [
-  { "Model": "Person", "Field": "favouriteThing", "Type": "ADDED" }
+  { "Model": "Person", "Field": "favouriteThingId", "Type": "ADDED" }
 ]
