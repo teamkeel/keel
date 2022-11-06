@@ -27,7 +27,7 @@ func FieldNames(m *Model) []string {
 }
 
 // IsHasOneRelation returns true if the given field is a MODEL type field
-// and is not repeated.
+// and is not marked as multiple, or more accurately "repeated".
 func IsHasOneRelation(field *Field) bool {
 	if field.Type.Type != Type_TYPE_MODEL {
 		return false
