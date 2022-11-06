@@ -110,11 +110,6 @@ func TestMigrations(t *testing.T) {
 			// Check the new migrations can be applied without error
 			require.NoError(t, m.Apply(testDB))
 
-			if dbName == "testmigrationsfield_added_reln_hasmany" {
-				a := 1
-				_ = a
-			}
-
 			// Now fetch the "current" schema from the database, which
 			// should be the new one we just applied
 			dbSchema, err := migrations.GetCurrentSchema(context.Background(), testDB)
