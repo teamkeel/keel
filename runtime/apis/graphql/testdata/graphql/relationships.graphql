@@ -36,6 +36,7 @@ type OrderItem {
   createdAt: Timestamp!
   id: ID!
   order: Order!
+  orderId: ID!
   price: Int!
   updatedAt: Timestamp!
 }
