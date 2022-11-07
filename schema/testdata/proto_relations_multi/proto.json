@@ -1,18 +1,19 @@
 {
   "models":  [
     {
-      "name":  "Author",
+      "name":  "Account",
       "fields":  [
         {
-          "modelName":  "Author",
-          "name":  "identity",
+          "modelName":  "Account",
+          "name":  "posts",
           "type":  {
-            "type":  "TYPE_IDENTITY",
-            "modelName":  "Identity"
+            "type":  "TYPE_MODEL",
+            "modelName":  "Post",
+            "repeated":  true
           }
         },
         {
-          "modelName":  "Author",
+          "modelName":  "Account",
           "name":  "id",
           "type":  {
             "type":  "TYPE_ID"
@@ -23,7 +24,7 @@
           }
         },
         {
-          "modelName":  "Author",
+          "modelName":  "Account",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -33,51 +34,7 @@
           }
         },
         {
-          "modelName":  "Author",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
-          },
-          "defaultValue":  {
-            "useZeroValue":  true
-          }
-        }
-      ]
-    },
-    {
-      "name":  "Publisher",
-      "fields":  [
-        {
-          "modelName":  "Publisher",
-          "name":  "identity",
-          "type":  {
-            "type":  "TYPE_IDENTITY",
-            "modelName":  "Identity"
-          }
-        },
-        {
-          "modelName":  "Publisher",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
-          },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
-          }
-        },
-        {
-          "modelName":  "Publisher",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
-          },
-          "defaultValue":  {
-            "useZeroValue":  true
-          }
-        },
-        {
-          "modelName":  "Publisher",
+          "modelName":  "Account",
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -93,28 +50,12 @@
       "fields":  [
         {
           "modelName":  "Post",
-          "name":  "title",
-          "type":  {
-            "type":  "TYPE_STRING"
-          }
-        },
-        {
-          "modelName":  "Post",
-          "name":  "owner",
+          "name":  "author",
           "type":  {
             "type":  "TYPE_MODEL",
-            "modelName":  "Author"
+            "modelName":  "Account"
           },
-          "foreignKeyFieldName":  "ownerId"
-        },
-        {
-          "modelName":  "Post",
-          "name":  "publisher",
-          "type":  {
-            "type":  "TYPE_MODEL",
-            "modelName":  "Publisher"
-          },
-          "foreignKeyFieldName":  "publisherId"
+          "foreignKeyFieldName":  "authorId"
         },
         {
           "modelName":  "Post",
@@ -149,81 +90,12 @@
         },
         {
           "modelName":  "Post",
-          "name":  "ownerId",
+          "name":  "authorId",
           "type":  {
             "type":  "TYPE_ID",
-            "modelName":  "Author",
+            "modelName":  "Account",
             "fieldName":  "id"
           }
-        },
-        {
-          "modelName":  "Post",
-          "name":  "publisherId",
-          "type":  {
-            "type":  "TYPE_ID",
-            "modelName":  "Publisher",
-            "fieldName":  "id"
-          }
-        }
-      ],
-      "operations":  [
-        {
-          "modelName":  "Post",
-          "name":  "createPost",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "title",
-              "type":  {
-                "type":  "TYPE_STRING"
-              },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
-                "title"
-              ]
-            },
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "publisher",
-              "type":  {
-                "type":  "TYPE_MODEL",
-                "modelName":  "Publisher"
-              },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
-                "publisher"
-              ]
-            },
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "owner",
-              "type":  {
-                "type":  "TYPE_MODEL",
-                "modelName":  "Author"
-              },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
-                "owner"
-              ]
-            }
-          ],
-          "permissions":  [
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "expression":  {
-                "source":  "post.owner.identity == post.publisher.identity"
-              }
-            }
-          ]
         }
       ]
     },

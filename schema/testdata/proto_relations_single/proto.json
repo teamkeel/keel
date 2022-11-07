@@ -1,18 +1,10 @@
 {
   "models":  [
     {
-      "name":  "Author",
+      "name":  "Person",
       "fields":  [
         {
-          "modelName":  "Author",
-          "name":  "identity",
-          "type":  {
-            "type":  "TYPE_IDENTITY",
-            "modelName":  "Identity"
-          }
-        },
-        {
-          "modelName":  "Author",
+          "modelName":  "Person",
           "name":  "id",
           "type":  {
             "type":  "TYPE_ID"
@@ -23,7 +15,7 @@
           }
         },
         {
-          "modelName":  "Author",
+          "modelName":  "Person",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -33,7 +25,7 @@
           }
         },
         {
-          "modelName":  "Author",
+          "modelName":  "Person",
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -45,18 +37,19 @@
       ]
     },
     {
-      "name":  "Publisher",
+      "name":  "Book",
       "fields":  [
         {
-          "modelName":  "Publisher",
-          "name":  "identity",
+          "modelName":  "Book",
+          "name":  "author",
           "type":  {
-            "type":  "TYPE_IDENTITY",
-            "modelName":  "Identity"
-          }
+            "type":  "TYPE_MODEL",
+            "modelName":  "Person"
+          },
+          "foreignKeyFieldName":  "authorId"
         },
         {
-          "modelName":  "Publisher",
+          "modelName":  "Book",
           "name":  "id",
           "type":  {
             "type":  "TYPE_ID"
@@ -67,7 +60,7 @@
           }
         },
         {
-          "modelName":  "Publisher",
+          "modelName":  "Book",
           "name":  "createdAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -77,68 +70,7 @@
           }
         },
         {
-          "modelName":  "Publisher",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
-          },
-          "defaultValue":  {
-            "useZeroValue":  true
-          }
-        }
-      ]
-    },
-    {
-      "name":  "Post",
-      "fields":  [
-        {
-          "modelName":  "Post",
-          "name":  "title",
-          "type":  {
-            "type":  "TYPE_STRING"
-          }
-        },
-        {
-          "modelName":  "Post",
-          "name":  "owner",
-          "type":  {
-            "type":  "TYPE_MODEL",
-            "modelName":  "Author"
-          },
-          "foreignKeyFieldName":  "ownerId"
-        },
-        {
-          "modelName":  "Post",
-          "name":  "publisher",
-          "type":  {
-            "type":  "TYPE_MODEL",
-            "modelName":  "Publisher"
-          },
-          "foreignKeyFieldName":  "publisherId"
-        },
-        {
-          "modelName":  "Post",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
-          },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
-          }
-        },
-        {
-          "modelName":  "Post",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
-          },
-          "defaultValue":  {
-            "useZeroValue":  true
-          }
-        },
-        {
-          "modelName":  "Post",
+          "modelName":  "Book",
           "name":  "updatedAt",
           "type":  {
             "type":  "TYPE_DATETIME"
@@ -148,82 +80,13 @@
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "ownerId",
+          "modelName":  "Book",
+          "name":  "authorId",
           "type":  {
             "type":  "TYPE_ID",
-            "modelName":  "Author",
+            "modelName":  "Person",
             "fieldName":  "id"
           }
-        },
-        {
-          "modelName":  "Post",
-          "name":  "publisherId",
-          "type":  {
-            "type":  "TYPE_ID",
-            "modelName":  "Publisher",
-            "fieldName":  "id"
-          }
-        }
-      ],
-      "operations":  [
-        {
-          "modelName":  "Post",
-          "name":  "createPost",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "title",
-              "type":  {
-                "type":  "TYPE_STRING"
-              },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
-                "title"
-              ]
-            },
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "publisher",
-              "type":  {
-                "type":  "TYPE_MODEL",
-                "modelName":  "Publisher"
-              },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
-                "publisher"
-              ]
-            },
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "owner",
-              "type":  {
-                "type":  "TYPE_MODEL",
-                "modelName":  "Author"
-              },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
-              "target":  [
-                "owner"
-              ]
-            }
-          ],
-          "permissions":  [
-            {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "expression":  {
-                "source":  "post.owner.identity == post.publisher.identity"
-              }
-            }
-          ]
         }
       ]
     },

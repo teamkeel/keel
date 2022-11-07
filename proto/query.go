@@ -26,6 +26,38 @@ func FieldNames(m *Model) []string {
 	return names
 }
 
+// IsTypeModel returns true of the field's type is Model.
+func IsTypeModel(field *Field) bool {
+	return field.Type.Type == Type_TYPE_MODEL
+}
+
+// IsTypeRepeated returns true if the field is specified as
+// being "repeated".
+func IsRepeated(field *Field) bool {
+	return field.Type.Repeated
+}
+
+// PrimaryKeyFieldName returns the name of the field in the given model,
+// that is marked as being the model's primary key. (Or empty string).
+func PrimaryKeyFieldName(model *Model) string {
+	field, _ := lo.Find(model.Fields, func(f *Field) bool {
+		return f.PrimaryKey
+	})
+	if field != nil {
+		return field.Name
+	}
+	return ""
+}
+
+// AllFields provides a list of all the model fields specified in the schema.
+func AllFields(p *Schema) []*Field {
+	fields := []*Field{}
+	for _, model := range p.Models {
+		fields = append(fields, model.Fields...)
+	}
+	return fields
+}
+
 // ModelsExists returns true if the given schema contains a
 // model with the given name.
 func ModelExists(models []*Model, name string) bool {

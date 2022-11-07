@@ -99,6 +99,17 @@ func addColumnStmt(modelName string, field *proto.Field) string {
 	return strings.Join(statements, "\n")
 }
 
+// addForeignKeyConstraintStmt generates a string of this form:
+// ALTER TABLE "thisTable" ADD FOREIGN KEY ("thisColumn") REFERENCES "otherTable"("otherColumn")
+func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable string, otherColumn string) string {
+	return fmt.Sprintf("ALTER TABLE %s ADD FOREIGN KEY (%s) REFERENCES %s(%s);",
+		thisTable,
+		thisColumn,
+		otherTable,
+		otherColumn,
+	)
+}
+
 func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.Field) string {
 	stmts := []string{}
 
@@ -131,7 +142,8 @@ func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.F
 }
 
 func fieldDefinition(field *proto.Field) string {
-	output := fmt.Sprintf("%s %s", Identifier(field.Name), PostgresFieldTypes[field.Type.Type])
+	columnName := Identifier(field.Name)
+	output := fmt.Sprintf("%s %s", columnName, PostgresFieldTypes[field.Type.Type])
 
 	if !field.Optional {
 		output += " NOT NULL"
@@ -140,9 +152,9 @@ func fieldDefinition(field *proto.Field) string {
 	return output
 }
 
-func dropColumnStmt(modelName string, fieldName string) string {
+func dropColumnStmt(modelName string, field *proto.Field) string {
 	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
-	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(fieldName))
+	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(field.Name))
 	return output
 }
 

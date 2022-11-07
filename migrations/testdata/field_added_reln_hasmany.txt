@@ -1,0 +1,37 @@
+model Account {
+  fields {
+    address Text
+  }
+}
+
+model Post {
+  fields {
+    size Number
+  }
+}
+
+===
+
+model Account {
+  fields {
+    address Text
+    posts Post[]
+  }
+}
+
+model Post {
+  fields {
+    size Number
+	  author Account
+  }
+}
+
+===
+ALTER TABLE "post" ADD COLUMN "author_id" TEXT NOT NULL;
+ALTER TABLE "post" ADD FOREIGN KEY ("author_id") REFERENCES "account"("id");
+=== 
+
+
+[
+  { "Model": "Post", "Field": "authorId", "Type": "ADDED" }
+]

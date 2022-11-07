@@ -22,6 +22,7 @@ export interface Post {
   id: string
   createdAt: Date
   updatedAt: Date
+  authorId: string
 }
 
 export interface Author {

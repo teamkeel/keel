@@ -105,6 +105,9 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 			scm.insertBuiltInModels(declarations, oneInputSchemaFile)
 		}
 
+		// This inserts the built in fields like "createdAt" etc. But it does not insert
+		// the relationship foreign key fields, because we need to defer that until all the
+		// models in the global set have been captured and modelled.
 		scm.insertBuiltInFields(declarations)
 
 		asts = append(asts, declarations)

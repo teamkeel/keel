@@ -53,6 +53,11 @@ message Field {
     // If true then this field will be set as the primary key for the parent model
     bool primary_key = 7;
 
+    // If this field is of type TYPE_MODEL then this field indicates which field on _this_
+    // model is the foriegn key. This field should always be populated on the many side of a
+    // one-to-many relationship and on the unique side of a one-to-one.
+    google.protobuf.StringValue foreign_key_field_name = 10;
+
     // This describes how the default value of this field should be created
     DefaultValue default_value = 9;
 }
@@ -238,9 +243,16 @@ message TypeInfo {
     // the enum that the type refers to.
     google.protobuf.StringValue enum_name = 2;
 
-    // If `type` is set to TYPE_MODEL then this value is the name of the
-    // the model that the type refers to.
+    // If this field is set then this type is referring to another model.
+    // In the case of TYPE_MODEL this type _is_ the model named here.
+    // In the case of other types e.g. TYPE_ID this type is referencing a field
+    // on the model named here, and the specific field being referenced is indicated
+    // by `field_name`.
     google.protobuf.StringValue model_name = 3;
+
+    // This field indicates which field on `model_name` this type is referencing.
+    // This field should only be set if `model_name` is set.
+    google.protobuf.StringValue field_name = 5;
 
     // If true then is type is an array of it's `type`
     bool repeated = 4;

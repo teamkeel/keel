@@ -1,0 +1,38 @@
+
+model Person {
+    fields {
+        name Text
+        favouriteThing Thing
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+
+===
+
+ALTER TABLE "person" DROP COLUMN "favourite_thing_id";
+
+=== 
+
+[
+  { "Model": "Person", "Field": "favouriteThingId", "Type": "REMOVED" }
+]

@@ -42,6 +42,11 @@ func TestMigrations(t *testing.T) {
 			re := regexp.MustCompile(`[^\w]`)
 			dbName := strings.ToLower(re.ReplaceAllString(t.Name(), ""))
 
+			// Drop the database if it already exists. The normal dropping of it at the end of the
+			// test case is bypassed if you quit a debug run of the test in VS Code.
+			err = mainDB.Exec("DROP DATABASE if exists " + dbName).Error
+			require.NoError(t, err)
+
 			// Create the database and drop at the end of the test
 			err = mainDB.Exec("CREATE DATABASE " + dbName).Error
 			require.NoError(t, err)
