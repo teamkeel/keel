@@ -67,6 +67,7 @@ var validatorFuncs = []validationFunc{
 	enum.UniqueEnumsRule,
 	// Relationships
 	relationships.InvalidOneToOneRelationshipRule,
+	relationships.InvalidImplicitBelongsToWithHasManyRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

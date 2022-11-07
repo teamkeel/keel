@@ -165,3 +165,7 @@ en:
     short_message: "'{{ .ImplicitInputName }}' overridden by explicit input"
     message: "You have overridden '{{ .ImplicitInputName }}' with an explicit input"
     hint: "Try removing '{{ .ImplicitInputName }}' from the inputs list"
+  E044:
+    short_message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
+    message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
+    hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."

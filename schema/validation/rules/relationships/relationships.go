@@ -1,6 +1,9 @@
 package relationships
 
 import (
+	"fmt"
+
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -51,4 +54,53 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 	}
 
 	return
+}
+
+func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	allModelNames := query.ModelNames(asts)
+	processed := map[string]bool{}
+
+	for _, model := range query.Models(asts) {
+		if ok := processed[model.Name.Value]; ok {
+			continue
+		}
+
+	fields:
+		for _, field := range query.ModelFields(model) {
+			if lo.Contains(allModelNames, field.Type) {
+				if !field.Repeated {
+					continue
+				}
+
+				otherModel := query.Model(asts, field.Type)
+
+				otherModelFields := query.ModelFields(otherModel)
+
+				for _, otherField := range otherModelFields {
+					if otherField.Type != model.Name.Value {
+						continue
+					}
+
+					if otherField.Repeated {
+						continue fields
+					}
+				}
+
+				errs.Append(
+					errorhandling.ErrorInvalidImplicitBelongsTo,
+					map[string]string{
+						"ModelA":     model.Name.Value,
+						"ModelB":     field.Type,
+						"Suggestion": fmt.Sprintf("%s %s", strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
+					},
+					field.Name,
+				)
+
+				processed[model.Name.Value] = true
+				processed[otherModel.Name.Value] = true
+			}
+		}
+	}
+
+	return errs
 }

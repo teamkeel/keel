@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        authors Author[]
+    }
+}
+
+model Author {
+    fields {
+        name Text
+    }
+}
