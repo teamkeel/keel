@@ -2,16 +2,10 @@ model Post {
     fields {
         authors Author[]
     }
-
-    @permission(
-        expression: "bob" > post.authors.name,
-        actions: [get]
-    )
 }
 
 model Author {
     fields {
         name Text
-        post Post
     }
 }

@@ -7,15 +7,15 @@
       "code": "E031",
       "pos": {
         "filename": "testdata/validation_expression_forbidden_lhs_array/schema.keel",
-        "offset": 99,
+        "offset": 113,
         "line": 7,
-        "column": 35
+        "column": 39
       },
       "end_pos": {
         "filename": "testdata/validation_expression_forbidden_lhs_array/schema.keel",
-        "offset": 101,
+        "offset": 115,
         "line": 7,
-        "column": 37
+        "column": 41
       }
     }
   ]
