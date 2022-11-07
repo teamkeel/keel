@@ -1,3 +1,10 @@
+# [0.203.0](https://github.com/teamkeel/keel/compare/v0.202.0...v0.203.0) (2022-11-07)
+
+
+### Features
+
+* support relationship fields in migrations and database ([5def274](https://github.com/teamkeel/keel/commit/5def2746f4bf9a84c31926dccb9b65764b263946))
+
 # [0.202.0](https://github.com/teamkeel/keel/compare/v0.201.0...v0.202.0) (2022-11-07)
 
 
