@@ -1,3 +1,10 @@
+# [0.202.0](https://github.com/teamkeel/keel/compare/v0.201.0...v0.202.0) (2022-11-07)
+
+
+### Features
+
+* adds validation for invalid implicit belongs_to relationship ([#558](https://github.com/teamkeel/keel/issues/558)) ([95504a7](https://github.com/teamkeel/keel/commit/95504a796cce697cbbd55b836076a51f1ccfe430))
+
 # [0.201.0](https://github.com/teamkeel/keel/compare/v0.200.0...v0.201.0) (2022-11-04)
 
 
