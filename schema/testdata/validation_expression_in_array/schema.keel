@@ -12,5 +12,6 @@ model Post {
 model Author {
     fields {
         name Number
+        post Post
     }
 }

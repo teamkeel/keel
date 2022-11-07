@@ -7,15 +7,15 @@
       "code": "E030",
       "pos": {
         "filename": "testdata/validation_expression_array_operator_mismatch/schema.keel",
-        "offset": 87,
+        "offset": 101,
         "line": 7,
-        "column": 23
+        "column": 27
       },
       "end_pos": {
         "filename": "testdata/validation_expression_array_operator_mismatch/schema.keel",
-        "offset": 88,
+        "offset": 102,
         "line": 7,
-        "column": 24
+        "column": 28
       }
     }
   ]
