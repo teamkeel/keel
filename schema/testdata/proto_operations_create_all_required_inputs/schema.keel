@@ -2,9 +2,9 @@ model Person {
     fields {
         name Text
         age Number?
-        friends Person[]
     }
+
     operations {
-        create createPerson() with(name)
+        create createPerson() with (name)
     }
 }

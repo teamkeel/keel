@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -12,45 +11,55 @@ import (
 
 func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	processed := map[string]bool{}
-	allModelNames := query.ModelNames(asts)
 
 	for _, model := range query.Models(asts) {
-		if ok := processed[model.Name.Value]; ok {
-			continue
-		}
 
 		for _, field := range query.ModelFields(model) {
-			if lo.Contains(allModelNames, field.Type) {
-				otherModel := query.Model(asts, field.Type)
+			if ok := processed[fmt.Sprintf("%s-%s", model.Name.Value, field.Name.Value)]; ok {
+				continue
+			}
 
-				otherModelFields := query.ModelFields(otherModel)
+			if field.Repeated {
+				continue
+			}
 
-				for _, otherField := range otherModelFields {
-					if otherField.Type != model.Name.Value {
-						continue
-					}
+			otherModel := query.Model(asts, field.Type)
 
-					// If either the field on model A is repeated
-					// or the corresponding field on the other side is repeated
-					// then we are not interested
-					if otherField.Repeated || field.Repeated {
-						continue
-					}
+			if otherModel == nil {
+				continue
+			}
 
-					errs.Append(
-						errorhandling.ErrorInvalidOneToOneRelationship,
-						map[string]string{
-							"ModelA": model.Name.Value,
-							"ModelB": field.Type,
-						},
-						field,
-					)
+			otherModelFields := query.ModelFields(otherModel)
 
-					processed[model.Name.Value] = true
-					processed[otherModel.Name.Value] = true
+			for _, otherField := range otherModelFields {
+				if otherField == field {
+					continue
 				}
+				if otherField.Type != model.Name.Value {
+					continue
+				}
+
+				// If either the field on model A is repeated
+				// or the corresponding field on the other side is repeated
+				// then we are not interested
+				if otherField.Repeated {
+					continue
+				}
+
+				errs.Append(
+					errorhandling.ErrorInvalidOneToOneRelationship,
+					map[string]string{
+						"ModelA": model.Name.Value,
+						"ModelB": field.Type,
+					},
+					field,
+				)
+
+				processed[fmt.Sprintf("%s-%s", model.Name.Value, field.Name.Value)] = true
+				processed[fmt.Sprintf("%s-%s", otherModel.Name.Value, otherField.Name.Value)] = true
 			}
 		}
+
 	}
 
 	return
