@@ -136,7 +136,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if m.completedTests == len(m.tests) {
-				summary := m.failedTestSummary()
+				summary := m.failedTestSummary(m.failedTests())
 				failedTestHeight := len(strings.Split(summary, "\n"))
 				newHeight := m.viewport.TotalLineCount() + failedTestHeight
 
@@ -302,7 +302,9 @@ func (m *Model) content() string {
 		)
 
 		// failures
-		m.builder.WriteString(m.failedTestSummary())
+		if len(m.failedTests()) > 0 {
+			m.builder.WriteString(m.failedTestSummary(m.failedTests()))
+		}
 
 		m.builder.WriteString("\n")
 	}
@@ -310,11 +312,13 @@ func (m *Model) content() string {
 	return m.builder.String()
 }
 
-func (m *Model) failedTestSummary() (s string) {
-	failedTests := lo.Filter(m.tests, func(t *UITestCase, _ int) bool {
+func (m *Model) failedTests() []*UITestCase {
+	return lo.Filter(m.tests, func(t *UITestCase, _ int) bool {
 		return t.StatusStr != StatusPass
 	})
+}
 
+func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 	dialogBoxStyle := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("1")).
