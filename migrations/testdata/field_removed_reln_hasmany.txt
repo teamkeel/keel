@@ -10,6 +10,7 @@ model Person {
 model Thing {
     fields {
         description Text
+        myFriend Person
     }
 }
 
@@ -24,6 +25,7 @@ model Person {
 model Thing {
     fields {
         description Text
+        myFriend Person
     }
 }
 

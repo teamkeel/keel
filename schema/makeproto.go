@@ -504,13 +504,13 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 func calculateForeignKeyFieldNames(schema *proto.Schema) (affectedFields []*proto.Field) {
 	hasOneModelFields := allHasOneModelFields(schema)
 	for _, thisField := range hasOneModelFields {
-		if !proto.IfIsTypeModelAndHasOne(thisField) {
+		if !isTypeModelAndHasOne(thisField) {
 			continue
 		}
 
 		relatedModel := proto.FindModel(schema.Models, thisField.Type.ModelName.Value)
 		relatedPrimaryKeyFieldName := proto.PrimaryKeyFieldName(relatedModel)
-		foreignKeyName := strcase.ToLowerCamel(thisField.Name + "_" + relatedPrimaryKeyFieldName)
+		foreignKeyName := thisField.Name + strcase.ToCamel(relatedPrimaryKeyFieldName)
 		thisField.ForeignKeyFieldName = &wrapperspb.StringValue{
 			Value: foreignKeyName,
 		}
@@ -523,7 +523,7 @@ func calculateForeignKeyFieldNames(schema *proto.Schema) (affectedFields []*prot
 func allHasOneModelFields(schema *proto.Schema) []*proto.Field {
 	allFields := proto.AllFields(schema)
 	hasOneFields := lo.Filter(allFields, func(field *proto.Field, _ int) bool {
-		return proto.IfIsTypeModelAndHasOne(field)
+		return isTypeModelAndHasOne(field)
 	})
 	return hasOneFields
 }
@@ -556,4 +556,8 @@ func createRelationshipIdFields(schema *proto.Schema, hasOneModelFields []*proto
 		thisModel := proto.FindModel(schema.Models, hasOneModelField.ModelName)
 		thisModel.Fields = append(thisModel.Fields, relnIdField)
 	}
+}
+
+func isTypeModelAndHasOne(field *proto.Field) bool {
+	return proto.IsTypeModel(field) && !proto.IsRepeated(field)
 }

@@ -26,16 +26,15 @@ func FieldNames(m *Model) []string {
 	return names
 }
 
-// IfIsTypeModelAndHasOne returns true if the given field is a MODEL type field
-// and is not marked as multiple, or more accurately "repeated".
-func IfIsTypeModelAndHasOne(field *Field) bool {
-	if field.Type.Type != Type_TYPE_MODEL {
-		return false
-	}
-	if field.Type.Repeated {
-		return false
-	}
-	return true
+// IsTypeModel returns true of the field's type is Model.
+func IsTypeModel(field *Field) bool {
+	return field.Type.Type == Type_TYPE_MODEL
+}
+
+// IsTypeRepeated returns true if the field is specified as
+// being "repeated".
+func IsRepeated(field *Field) bool {
+	return field.Type.Repeated
 }
 
 // PrimaryKeyFieldName returns the name of the field in the given model,

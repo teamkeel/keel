@@ -22,7 +22,7 @@ model Account {
 model Post {
   fields {
     size Number
-	author Account
+	  author Account
   }
 }
 
