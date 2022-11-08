@@ -244,7 +244,6 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 		}
 	}
 
-	// We found nada
 	return ""
 }
 
@@ -263,7 +262,6 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 		}
 		field = ModelField(model, fragment.Fragment)
 		if field == nil {
-
 			return nil
 		}
 		model = Model(asts, field.Type)
