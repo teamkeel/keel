@@ -334,7 +334,9 @@ func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, co
 func applyInputsInScope(asts []*parser.AST, context *ExpressionContext, scope *ExpressionScope) *ExpressionScope {
 	additionalScope := &ExpressionScope{}
 
-	for _, input := range context.Action.AllInputs() {
+	allInputs := context.Action.AllInputs()
+
+	for _, input := range allInputs {
 		// inputs using short-hand syntax that refer to relationships
 		// don't get added to the scope
 		if input.Label == nil && len(input.Type.Fragments) > 1 {

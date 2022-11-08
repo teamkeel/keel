@@ -1,0 +1,16 @@
+model Post {
+    fields {
+        type PostType
+    }
+
+    operations {
+        create enumFailedExpressions() with (type, explType: PostType) {
+            @permission(expression: PostType.Draft != explType)
+        }
+    }
+}
+
+enum PostType {
+    Draft
+    Published
+}
