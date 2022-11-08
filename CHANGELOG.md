@@ -1,3 +1,10 @@
+# [0.204.0](https://github.com/teamkeel/keel/compare/v0.203.0...v0.204.0) (2022-11-08)
+
+
+### Features
+
+* change postgres to 11.13 ([e7222ad](https://github.com/teamkeel/keel/commit/e7222adb82a9c725310896a5af2b3bc5467ae7b8))
+
 # [0.203.0](https://github.com/teamkeel/keel/compare/v0.202.0...v0.203.0) (2022-11-07)
 
 
