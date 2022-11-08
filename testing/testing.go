@@ -503,7 +503,7 @@ func typecheck(dir string) (output string, err error) {
 	f.WriteString(sampleTsConfig)
 
 	defer f.Close()
-	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--project", filepath.Base(f.Name()))
+	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--incremental", "--project", filepath.Base(f.Name()))
 	cmd.Dir = dir
 
 	b, e := cmd.CombinedOutput()
