@@ -234,16 +234,8 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 	}
 
 	// ResolveInputField above tries to resolve the fragments of an input identifier based on the input being a field
-	// The below case covers explicit input resolution where the explicit input isn't *definitely* linked to a field (until it is used in an expression).
-	//  There should only be one fragment for an explicit input
+	// The below case covers explicit inputs which are enums
 	if len(input.Type.Fragments) == 1 {
-		// first try to match the explicit input type annotation against a known model
-		model := Model(asts, input.Type.Fragments[0].Fragment)
-
-		if model != nil {
-			return model.Name.Value
-		}
-
 		// also try to match the explicit input type annotation against a known enum type
 		enum := Enum(asts, input.Type.Fragments[0].Fragment)
 
