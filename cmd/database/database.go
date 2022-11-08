@@ -332,5 +332,5 @@ func checkConnection(info *ConnectionInfo) (*sql.DB, error) {
 }
 
 const postgresImageName string = "postgres"
-const postgresTag string = "14.2"
+const postgresTag string = "11.13"
 const keelPostgresContainerName string = "keel-run-postgres"
