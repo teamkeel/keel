@@ -9,6 +9,9 @@ require (
 	github.com/aybabtme/orderedjson v0.1.0
 	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/bykof/gostradamus v1.0.4
+	github.com/charmbracelet/bubbles v0.14.0
+	github.com/charmbracelet/bubbletea v0.22.1
+	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/fatih/color v1.13.0
@@ -20,6 +23,7 @@ require (
 	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 	github.com/lib/pq v1.10.7
+	github.com/muesli/termenv v0.13.0
 	github.com/nleeper/goment v1.4.4
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/otiai10/copy v1.7.0
@@ -39,13 +43,23 @@ require (
 
 require (
 	github.com/aybabtme/flatjson v0.1.2 // indirect
+	github.com/aymanbagabas/go-osc52 v1.0.3 // indirect
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
+	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
+	github.com/mattn/go-localereader v0.0.1 // indirect
+	github.com/mattn/go-runewidth v0.0.14 // indirect
+	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
+	github.com/muesli/cancelreader v0.2.2 // indirect
+	github.com/muesli/reflow v0.3.0 // indirect
+	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/tkuchiki/go-timezone v0.2.0 // indirect
 	go.opentelemetry.io/otel/trace v1.11.1 // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

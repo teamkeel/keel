@@ -15,7 +15,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/cmd"
 	"github.com/teamkeel/keel/nodedeps"
 	"github.com/teamkeel/keel/testing"
 )
@@ -152,8 +151,6 @@ func TestIntegration(t *gotest.T) {
 			}
 		})
 	}
-
-	cmd.PrintSummary(allResults)
 }
 
 func CompareJson(t *gotest.T, expected []byte, actual []byte) {

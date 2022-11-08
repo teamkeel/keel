@@ -97,7 +97,7 @@ func (r *PackageJson) Bootstrap() error {
 // Runs npm install on the current *written* state of the package.json file, causing node_modules to be populated, and the lockfile to be updated
 // Call .Write() beforehand to persist any changes made.
 func (p *PackageJson) Install() error {
-	npmInstall := exec.Command("npm", "install")
+	npmInstall := exec.Command("npm", "install", "--progress=false", "--prefer-offline", "--no-audit")
 	npmInstall.Dir = filepath.Dir(p.Path)
 
 	o, err := npmInstall.CombinedOutput()

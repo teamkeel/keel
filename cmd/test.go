@@ -2,13 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
 
 	"os"
 	"path/filepath"
-
-	"github.com/fatih/color"
-	"github.com/samber/lo"
 
 	"github.com/spf13/cobra"
 
@@ -21,14 +17,21 @@ var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "Run Keel tests",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		var ch chan []*testing.Event
 		workingDir, err := testhelpers.WithTmpDir(inputDir)
 
 		if err != nil {
 			return err
 		}
 
-		fmt.Print(workingDir)
+		onQuit := func() {
+			if ch != nil {
+				close(ch)
+			}
+		}
+		outputter := testing.NewOutputter(workingDir, onQuit)
 
+		outputter.Start()
 		packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
 
 		if err != nil {
@@ -49,24 +52,18 @@ var testCmd = &cobra.Command{
 			return err
 		}
 
-		ch, err := testing.Run(workingDir, pattern)
+		ch, err = testing.Run(workingDir, pattern)
 
 		if err != nil {
 			return err
 		}
 
-		results := []*testing.TestResult{}
 		for newEvents := range ch {
-			resultEvents := lo.Filter(newEvents, func(e *testing.Event, _ int) bool {
-				return e.EventStatus == testing.EventStatusComplete && e.Result != nil
-			})
-
-			for _, e := range resultEvents {
-				results = append(results, e.Result)
-			}
+			outputter.Push(newEvents)
 		}
 
-		PrintSummary(results)
+		outputter.End()
+
 		return nil
 	},
 }
@@ -81,31 +78,4 @@ func init() {
 	}
 	testCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "input directory to validate")
 	testCmd.Flags().StringVarP(&pattern, "pattern", "p", "(.*)", "pattern to isolate test")
-}
-
-func PrintSummary(results []*testing.TestResult) {
-	totalPassed := lo.CountBy(results, func(evt *testing.TestResult) bool {
-		return evt.Status == testing.StatusPass
-	})
-
-	totalFailed := lo.CountBy(results, func(evt *testing.TestResult) bool {
-		return evt.Status != testing.StatusPass
-	})
-
-	for _, event := range results {
-		if event.Status == testing.StatusPass {
-			fmt.Printf("%s %s\n", color.New(color.BgGreen).Add(color.FgWhite).Sprint(" PASS "), event.TestName)
-		} else {
-			fmt.Printf("%s %s\n", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", strings.ToUpper(event.Status)), event.TestName)
-
-			switch event.Status {
-			case testing.StatusFail:
-				fmt.Printf("------------\n%s\n%s\n------------\n", color.New(color.FgGreen).Sprintf("Expected:\n%s", event.Expected), color.New(color.FgRed).Sprintf("Actual:\n%s", event.Actual))
-			case testing.StatusException:
-				fmt.Printf("------------\n%s\n------------\n", color.New(color.FgGreen).Sprintf("Error:\n%s", event.Err))
-			}
-		}
-	}
-
-	fmt.Printf("Test summary: %s, %s\n", color.New(color.FgGreen).Sprintf("%d passed", totalPassed), color.New(color.FgRed).Sprintf("%d failed", totalFailed))
 }

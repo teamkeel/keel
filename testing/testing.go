@@ -82,7 +82,7 @@ type ResetRequest struct {
 //go:embed tsconfig.json
 var sampleTsConfig string
 
-func Run(dir string, pattern string) (<-chan []*Event, error) {
+func Run(dir string, pattern string) (chan []*Event, error) {
 	builder := &schema.Builder{}
 	shortDir := filepath.Base(dir)
 	dbName := testhelpers.DbNameForTestName(shortDir)
@@ -328,6 +328,7 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 			case "/report":
 				result := []*TestResult{}
 				json.Unmarshal(b, &result)
+
 				ch <- []*Event{{EventStatus: EventStatusComplete, Result: result[0]}}
 				w.Write([]byte("ok"))
 				expectedResults--
@@ -412,8 +413,8 @@ func Run(dir string, pattern string) (<-chan []*Event, error) {
 			cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 
 			cmd.Dir = dir
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			// cmd.Stdout = os.Stdout
+			// cmd.Stderr = os.Stderr
 
 			testProcess = cmd
 
@@ -502,7 +503,7 @@ func typecheck(dir string) (output string, err error) {
 	f.WriteString(sampleTsConfig)
 
 	defer f.Close()
-	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--project", filepath.Base(f.Name()))
+	cmd := exec.Command("npx", "tsc", "--noEmit", "--skipLibCheck", "--incremental", "--project", filepath.Base(f.Name()))
 	cmd.Dir = dir
 
 	b, e := cmd.CombinedOutput()
