@@ -413,8 +413,8 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 			cmd.Env = append(cmd.Env, fmt.Sprintf("FORCE_COLOR=%d", 1))
 
 			cmd.Dir = dir
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			// cmd.Stdout = os.Stdout
+			// cmd.Stderr = os.Stderr
 
 			testProcess = cmd
 

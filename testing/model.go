@@ -19,10 +19,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
+	"github.com/muesli/termenv"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/testing/viewport"
-
-	"github.com/muesli/termenv"
 )
 
 // A Bubbletea model is responsible for maintaining the CLI state
@@ -127,7 +126,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.tests[i].Expected = evt.Result.Expected
 						m.failedCount++
 					case StatusException:
-						m.tests[i].Err = evt.Result.Err
+						e := &JsError{}
+
+						err := json.Unmarshal(evt.Result.Err, &e)
+
+						if err != nil {
+							continue
+						}
+
+						m.tests[i].Err = e
 						m.failedCount++
 					}
 
@@ -259,7 +266,7 @@ func (m *Model) content() string {
 			}
 
 			m.builder.WriteString(
-				fmt.Sprintf("%s  %s\n", c.Sprintf(" %s ", strings.ToUpper(test.StatusStr)), test.TestName),
+				fmt.Sprintf("%s  %s\n", c.Sprintf(" %s ", prettyStatusStr(test)), test.TestName),
 			)
 		} else if i > 0 && m.tests[i-1].Completed || i == 0 && !m.tests[i].Completed {
 			m.builder.WriteString(
@@ -336,7 +343,7 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 	withinBox := ""
 
 	for _, failedTest := range failedTests {
-		withinBox += fmt.Sprintf("%s %s", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", strings.ToUpper(failedTest.StatusStr)), failedTest.TestName)
+		withinBox += fmt.Sprintf("%s %s", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", prettyStatusStr(failedTest)), failedTest.TestName)
 		switch failedTest.StatusStr {
 		case StatusFail:
 
@@ -358,7 +365,15 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 			)
 			withinBox += "\n\n"
 		case StatusException:
-			// todo
+			withinBox += dialogBoxStyle.Width(m.viewport.Width - 5).Render(
+				fmt.Sprintf(
+					"%s\n%s",
+					color.New(color.FgRed).Sprint(failedTest.Err.Message),
+					color.New(color.FgRed).Sprint(failedTest.Err.Stack),
+				),
+			)
+
+			withinBox += "\n\n"
 		}
 	}
 
@@ -396,6 +411,11 @@ func (m *Model) fixViewport(moveCursor bool) {
 	}
 }
 
+type JsError struct {
+	Message string `json:"message"`
+	Stack   string `json:"stack"`
+}
+
 type UITestCase struct {
 	TestName string
 	FilePath string
@@ -406,7 +426,16 @@ type UITestCase struct {
 	Actual   any
 	Expected any
 
-	Err json.RawMessage
+	Err *JsError
 
 	spinner spinner.Model
+}
+
+func prettyStatusStr(t *UITestCase) string {
+	switch t.StatusStr {
+	case StatusException:
+		return "ERR "
+	default:
+		return strings.ToUpper(t.StatusStr)
+	}
 }
