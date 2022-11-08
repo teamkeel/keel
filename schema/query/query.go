@@ -1,6 +1,8 @@
 package query
 
-import "github.com/teamkeel/keel/schema/parser"
+import (
+	"github.com/teamkeel/keel/schema/parser"
+)
 
 func APIs(asts []*parser.AST) (res []*parser.APINode) {
 	for _, ast := range asts {
@@ -231,6 +233,26 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 		return field.Type
 	}
 
+	// ResolveInputField above tries to resolve the fragments of an input identifier based on the input being a field
+	// The below case covers explicit input resolution where the explicit input isn't *definitely* linked to a field (until it is used in an expression).
+	//  There should only be one fragment for an explicit input
+	if len(input.Type.Fragments) == 1 {
+		// first try to match the explicit input type annotation against a known model
+		model := Model(asts, input.Type.Fragments[0].Fragment)
+
+		if model != nil {
+			return model.Name.Value
+		}
+
+		// also try to match the explicit input type annotation against a known enum type
+		enum := Enum(asts, input.Type.Fragments[0].Fragment)
+
+		if enum != nil {
+			return enum.Name.Value
+		}
+	}
+
+	// We found nada
 	return ""
 }
 
@@ -249,6 +271,7 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 		}
 		field = ModelField(model, fragment.Fragment)
 		if field == nil {
+
 			return nil
 		}
 		model = Model(asts, field.Type)
