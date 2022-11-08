@@ -1,3 +1,10 @@
+# [0.205.0](https://github.com/teamkeel/keel/compare/v0.204.0...v0.205.0) (2022-11-08)
+
+
+### Features
+
+* support explicit inputs for enums ([#559](https://github.com/teamkeel/keel/issues/559)) ([0c3a853](https://github.com/teamkeel/keel/commit/0c3a85364e33c3bb160e695afd5c351167147360))
+
 # [0.204.0](https://github.com/teamkeel/keel/compare/v0.203.0...v0.204.0) (2022-11-08)
 
 
