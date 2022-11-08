@@ -46,6 +46,11 @@ func createTableStmt(model *proto.Model) string {
 	statements := []string{}
 	output := fmt.Sprintf("CREATE TABLE %s (\n", Identifier(model.Name))
 	for i, field := range model.Fields {
+		// This type of field exists only in proto land - and has no corresponding
+		// column in the database.
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
 		output += fieldDefinition(field)
 		if i < len(model.Fields)-1 {
 			output += ","
