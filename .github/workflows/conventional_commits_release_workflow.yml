@@ -30,16 +30,16 @@ jobs:
         run: npm install @semantic-release/git -D
 
       - name: Install wasm publish dependencies
-        run: cd wasm && npm ci
+        run: cd modules/wasm && npm ci
 
       - name: Install functions sdk publish dependencies
-        run: cd functions/sdk && npm ci
+        run: cd modules/sdk && npm ci
 
       - name: Install functions runtime publish dependencies
-        run: cd functions/runtime && npm ci
+        run: cd modules/runtime && npm ci
 
       - name: Install testing package publish dependencies
-        run: cd testing/package && npm ci
+        run: cd modules/testing && npm ci
 
       - name: Generate wasm binary
         run: make wasm

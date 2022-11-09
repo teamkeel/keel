@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "moduleResolution": "Node",
-    "module": "CommonJS",
-    "strict": true,
-    "baseUrl": "./src"
-  }
-}
