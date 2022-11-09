@@ -1,3 +1,10 @@
+## [0.205.1](https://github.com/teamkeel/keel/compare/v0.205.0...v0.205.1) (2022-11-09)
+
+
+### Bug Fixes
+
+* migrations for relationships ([#560](https://github.com/teamkeel/keel/issues/560)) ([0c8ae81](https://github.com/teamkeel/keel/commit/0c8ae819e3867589f4854e66d5a9e88dc829ff10))
+
 # [0.205.0](https://github.com/teamkeel/keel/compare/v0.204.0...v0.205.0) (2022-11-08)
 
 
