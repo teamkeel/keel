@@ -1,0 +1,71 @@
+
+model Post {
+    fields {
+        title Text
+        isActive Boolean
+        theAuthor Author?
+    }
+
+    operations {
+        get getActivePost(id) {
+            @where(post.theAuthor.thePublisher.isActive == true)
+            @where(post.theAuthor.isActive == true)
+            @where(post.isActive == true)
+        }
+
+        list listActivePosts() {
+            @where(post.theAuthor.thePublisher.isActive == true)
+            @where(post.theAuthor.isActive == true)
+            @where(post.isActive == true)
+        }
+    }
+
+    @permission(actions: [get, list], expression: true)
+}
+
+model Author {
+    fields {
+        name Text
+        isActive Boolean
+        thePosts Post[]
+        thePublisher Publisher
+    }
+
+    @permission(actions: [get, list], expression: true)
+}
+
+model Publisher {
+    fields {
+        orgName Text
+        theAuthors Author[]
+        isActive Boolean
+    }
+
+    operations {
+        get getActivePublisherWithActivePosts(id) {
+            @where(publisher.theAuthors.thePosts.isActive == true)
+            @where(publisher.theAuthors.isActive == true)
+            @where(publisher.isActive == true)
+        }
+
+        list listActivePublishersWithActivePosts() {
+            @where(publisher.theAuthors.thePosts.isActive == true)
+            @where(publisher.theAuthors.isActive == true)
+            @where(publisher.isActive == true)
+        }
+    }
+
+    @permission(actions: [get, list], expression: true)
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+        Author
+
+        Publisher
+    }
+}
+

@@ -47,7 +47,7 @@ func TestExpressionResolver(t *testing.T) {
 
 			// Fire the function under test.
 			rslv := NewExpressionResolver(scope)
-			updatedQry, err := rslv.ResolveQueryStatement(parsedExpr, requestArgs, writeArgs)
+			updatedQry, _, err := rslv.ResolveQueryStatement(parsedExpr, requestArgs, writeArgs)
 			require.NoError(t, err)
 
 			// Fish out the now-populated gorm data structures that represent the generated SQL for inspection.

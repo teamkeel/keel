@@ -31,10 +31,11 @@ func NewFilterResolver(scope *Scope) *FilterResolver {
 }
 
 // Generates a database query statement for a filter.
-func (resolver *FilterResolver) ResolveQueryStatement(fieldName string, value any, operator ActionOperator) (*gorm.DB, error) {
-	fieldName = strcase.ToSnake(fieldName)
+func (resolver *FilterResolver) ResolveQueryStatement(modelName string, fieldName string, value any, operator ActionOperator) (*gorm.DB, error) {
+	databaseTable := strcase.ToSnake(modelName)
+	databaseColumn := strcase.ToSnake(fieldName)
 
-	queryTemplate, err := generateFilterTemplate(fieldName, "?", operator)
+	queryTemplate, err := generateGormWhereTemplate(fmt.Sprintf("%s.%s", databaseTable, databaseColumn), "?", operator)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +86,7 @@ func (resolver *ExpressionResolver) ResolveInMemory(expression *parser.Expressio
 
 	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
 	operandType, _ := lhsResolver.GetOperandType()
-	lhsValue, _ := lhsResolver.ResolveValue(args, writeValues, operandType)
+	lhsValue, _ := lhsResolver.ResolveValue(args, writeValues)
 
 	if condition.Type() == parser.ValueCondition {
 		result, _ := evaluateInProcess(lhsValue, true, operandType, &parser.Operator{Symbol: parser.OperatorEquals})
@@ -94,7 +95,7 @@ func (resolver *ExpressionResolver) ResolveInMemory(expression *parser.Expressio
 
 	rhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.RHS)
 
-	rhsValue, _ := rhsResolver.ResolveValue(args, writeValues, operandType)
+	rhsValue, _ := rhsResolver.ResolveValue(args, writeValues)
 
 	result, _ := evaluateInProcess(lhsValue, rhsValue, operandType, condition.Operator)
 
@@ -102,33 +103,37 @@ func (resolver *ExpressionResolver) ResolveInMemory(expression *parser.Expressio
 }
 
 // Generates a database query statement for an expression.
-func (resolver *ExpressionResolver) ResolveQueryStatement(expression *parser.Expression, args WhereArgs, writeValues map[string]any) (*gorm.DB, error) {
+// todo:
+//
+//	Returning the joins from here is because I am unable to get gorm to "remember" JOINs.
+//	Suggestion is to refactor gorm out of each step, rather build up a custom query struct, and then use it to build populate a gorm query at the last step.
+func (resolver *ExpressionResolver) ResolveQueryStatement(expression *parser.Expression, args WhereArgs, writeValues map[string]any) (*gorm.DB, []string, error) {
 	if len(expression.Conditions()) != 1 {
-		return nil, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
+		return nil, nil, fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
 	}
 
 	condition := expression.Conditions()[0]
 
 	if condition.Type() != parser.ValueCondition && condition.Type() != parser.LogicalCondition {
-		return nil, fmt.Errorf("can only handle condition type of LogicalCondition or ValueCondition, have: %s", condition.Type())
+		return nil, nil, fmt.Errorf("can only handle condition type of LogicalCondition or ValueCondition, have: %s", condition.Type())
 	}
 
 	operatorStr := condition.Operator.ToString()
 	operator, err := expressionOperatorToActionOperator(operatorStr)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	queryTemplate, queryArguments, err := resolver.generateQuery(condition, operator, args, writeValues)
+	joins, queryTemplate, queryArguments, err := resolver.generateQuery(condition, operator, args, writeValues)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	query := resolver.scope.query.
 		Session(&gorm.Session{NewDB: true}).
 		Where(queryTemplate, queryArguments...)
 
-	return query, nil
+	return query, joins, nil
 }
 
 type OperandResolver struct {
@@ -246,9 +251,17 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unknown literal type")
 		}
 	case resolver.IsDatabaseColumn():
+		fragmentCount := len(operand.Ident.Fragments)
 		modelTarget := strcase.ToCamel(operand.Ident.Fragments[0].Fragment)
-		fieldName := operand.Ident.Fragments[1].Fragment
 
+		if fragmentCount > 2 {
+			for i := 1; i < fragmentCount-1; i++ {
+				field := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), operand.Ident.Fragments[i].Fragment)
+				modelTarget = field.Type.ModelName.Value
+			}
+		}
+
+		fieldName := operand.Ident.Fragments[fragmentCount-1].Fragment
 		if !proto.ModelHasField(schema, strcase.ToCamel(modelTarget), fieldName) {
 			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("this model: %s, does not have a field of name: %s", modelTarget, fieldName)
 		}
@@ -283,8 +296,12 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 func (resolver *OperandResolver) ResolveValue(
 	args map[string]any,
 	writeValues map[string]any,
-	operandType proto.Type, //todo: infer from schema
 ) (any, error) {
+
+	operandType, err := resolver.GetOperandType()
+	if err != nil {
+		return nil, err
+	}
 
 	switch {
 	case resolver.IsLiteral():
@@ -337,106 +354,209 @@ func (resolver *OperandResolver) ResolveValue(
 	}
 }
 
-func (resolver *ExpressionResolver) generateQuery(condition *parser.Condition, operator ActionOperator, args map[string]any, writeValues map[string]any) (queryTemplate string, queryArguments []any, err error) {
+// Generates a gorm-compatible query template, arguments, and list of join statements
+//   - The gorm operand is used to build a template for use in gorm.DB.Where(template, args).
+//   - The query arguments are used to populate the gorm operand in gorm.DB.Where(template, args).
+func (resolver *ExpressionResolver) generateQuery(
+	condition *parser.Condition,
+	operator ActionOperator,
+	args map[string]any,
+	writeValues map[string]any) (joins []string, queryTemplate string, queryArguments []any, err error) {
 
-	var lhsOperandType, rhsOperandType proto.Type
+	joins = []string{}
+	queryArguments = []any{}
 
 	lhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.LHS)
 	rhsResolver := NewOperandResolver(resolver.scope.context, resolver.scope.schema, resolver.scope.operation, condition.RHS)
-	lhsOperandType, err = lhsResolver.GetOperandType()
+
+	lhsOperandType, err := lhsResolver.GetOperandType()
 	if err != nil {
-		return "", nil, fmt.Errorf("cannot resolve operand type of LHS operand")
+		return nil, "", nil, fmt.Errorf("cannot resolve operand type of LHS operand")
 	}
 
 	if condition.Type() == parser.ValueCondition {
 		if lhsOperandType != proto.Type_TYPE_BOOL {
-			return "", nil, fmt.Errorf("single operands in a value condition must be of type boolean")
+			return nil, "", nil, fmt.Errorf("single operands in a value condition must be of type boolean")
 		}
 
 		// A value condition only has one operand in the expression,
 		// for example, permission(expression: ctx.isAuthenticated),
 		// so we must set the operator and RHS value (== true) ourselves.
-		rhsOperandType = lhsOperandType
 		operator = Equals
-	} else {
-		rhsOperandType, err = rhsResolver.GetOperandType()
-		if err != nil {
-			return "", nil, fmt.Errorf("cannot resolve operand type of RHS operand")
-		}
 	}
 
-	var template string
-	var queryArgs []any
-
-	// ? is the gorm template token which is replaced when populating the operand arguments.
-	var lhsSqlOperand, rhsSqlOperand any
-	lhsSqlOperand = "?"
-	rhsSqlOperand = "?"
-
-	if !lhsResolver.IsDatabaseColumn() {
-		lhsValue, err := lhsResolver.ResolveValue(args, writeValues, lhsOperandType)
-		if err != nil {
-			return "", nil, err
-		}
-
-		switch operator {
-		case StartsWith:
-			lhsValue = lhsValue.(string) + "%%"
-		case EndsWith:
-			lhsValue = "%%" + lhsValue.(string)
-		case Contains, NotContains:
-			lhsValue = "%%" + lhsValue.(string) + "%%"
-		}
-
-		queryArgs = append(queryArgs, lhsValue)
-	} else {
-		// Generate the table's column name from the fragments (e.g. post.sub_title)
-		// And replace the ? gorm template token with the column name
-		modelTarget := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[0].Fragment)
-		fieldName := strcase.ToSnake(lhsResolver.operand.Ident.Fragments[1].Fragment)
-		lhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)
+	lhsSqlOperand, lhsQueryArgs, err := lhsResolver.generateGormOperand(operator, args, writeValues)
+	if err != nil {
+		return nil, "", nil, err
 	}
 
+	lhsJoins, err := lhsResolver.generateJoins()
+	if err != nil {
+		return nil, "", nil, err
+	}
+
+	joins = append(joins, lhsJoins...)
+	queryArguments = append(queryArguments, lhsQueryArgs...)
+
+	var rhsSqlOperand any
 	if condition.Type() == parser.ValueCondition {
-		queryArgs = append(queryArgs, true)
-	} else if !rhsResolver.IsDatabaseColumn() {
-		rhsValue, err := rhsResolver.ResolveValue(args, writeValues, rhsOperandType)
+		// A value condition only has one operand in the expression.
+		// If the expression is a value condition, then we bake in the RHS argument (== true) ourselves.
+		queryArguments = append(queryArguments, true)
+	} else {
+		var rhsQueryArgs []any
+		rhsSqlOperand, rhsQueryArgs, err = rhsResolver.generateGormOperand(operator, args, writeValues)
+		if err != nil {
+			return nil, "", nil, err
+		}
+
+		rhsJoins, err := lhsResolver.generateJoins()
+		if err != nil {
+			return nil, "", nil, err
+		}
+
+		joins = append(joins, rhsJoins...)
+		queryArguments = append(queryArguments, rhsQueryArgs...)
+	}
+
+	queryTemplate, err = generateGormWhereTemplate(lhsSqlOperand, rhsSqlOperand, operator)
+	if err != nil {
+		return nil, "", nil, err
+	}
+
+	return joins, queryTemplate, queryArguments, nil
+}
+
+// Generates a single gorm-compatible operand and argument list:
+//   - The gorm operand is used to build a template for use in gorm.DB.Where(template, args).
+//   - The query arguments are used to populate the gorm operand in gorm.DB.Where(template, args).
+func (resolver *OperandResolver) generateGormOperand(
+	operator ActionOperator,
+	args map[string]any,
+	writeValues map[string]any) (gormOperand any, queryArguments []any, err error) {
+
+	// ? is the gorm template token which is replaced with values when populating the operand arguments when calling gorm.DB.Where(template, args).
+	gormOperand = "?"
+	queryArguments = []any{}
+
+	if !resolver.IsDatabaseColumn() {
+		value, err := resolver.ResolveValue(args, writeValues)
 		if err != nil {
 			return "", nil, err
 		}
 
-		// If the value is nil, then we can bake this straight into the template
-		if rhsValue == nil {
-			rhsSqlOperand = nil
+		if value == nil {
+			gormOperand = nil
 		} else {
 			switch operator {
 			case StartsWith:
-				rhsValue = rhsValue.(string) + "%%"
+				value = value.(string) + "%%"
 			case EndsWith:
-				rhsValue = "%%" + rhsValue.(string)
+				value = "%%" + value.(string)
 			case Contains, NotContains:
-				rhsValue = "%%" + rhsValue.(string) + "%%"
+				value = "%%" + value.(string) + "%%"
 			}
 
-			queryArgs = append(queryArgs, rhsValue)
+			queryArguments = append(queryArguments, value)
 		}
 	} else {
-		// Generate the table's column operand from the fragments (e.g. post.sub_title)
+		// Generate the table's column name from the fragments (e.g. post.sub_title)
 		// And replace the ? gorm template token with the column name
-		modelTarget := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[0].Fragment)
-		fieldName := strcase.ToSnake(rhsResolver.operand.Ident.Fragments[1].Fragment)
-		rhsSqlOperand = fmt.Sprintf("%s.%s", modelTarget, fieldName)
+		var databaseField string
+		model := strcase.ToCamel(resolver.operand.Ident.Fragments[0].Fragment)
+		fragmentCount := len(resolver.operand.Ident.Fragments)
+		databaseTable := strcase.ToSnake(resolver.operand.Ident.Fragments[0].Fragment)
+
+		for i := 1; i < fragmentCount; i++ {
+			currentFragment := resolver.operand.Ident.Fragments[i].Fragment
+
+			if !proto.ModelHasField(resolver.schema, model, currentFragment) {
+				return "", nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+			}
+
+			if i < fragmentCount-1 {
+				// We know that the current fragment is a related table because it's not the last fragment
+				relatedModelField := proto.FindField(resolver.schema.Models, model, currentFragment)
+				relatedTable := strcase.ToSnake(relatedModelField.Type.ModelName.Value)
+
+				model = relatedModelField.Type.ModelName.Value
+				databaseTable = relatedTable
+			} else {
+				databaseField = strcase.ToSnake(currentFragment)
+			}
+		}
+
+		gormOperand = fmt.Sprintf("%s.%s", databaseTable, databaseField)
 	}
 
-	template, err = generateFilterTemplate(lhsSqlOperand, rhsSqlOperand, operator)
-	if err != nil {
-		return "", nil, err
-	}
-
-	return template, queryArgs, nil
+	return gormOperand, queryArguments, nil
 }
 
-func generateFilterTemplate(lhsSqlOperand any, rhsSqlOperand any, operator ActionOperator) (string, error) {
+// Generates JOIN statements based on the operand of an expression.
+func (resolver *OperandResolver) generateJoins() (joins []string, err error) {
+	if resolver.IsDatabaseColumn() {
+		databaseTable := strcase.ToSnake(resolver.operand.Ident.Fragments[0].Fragment)
+		model := strcase.ToCamel(resolver.operand.Ident.Fragments[0].Fragment)
+		fragmentCount := len(resolver.operand.Ident.Fragments)
+
+		for i := 1; i < fragmentCount; i++ {
+			currentFragment := resolver.operand.Ident.Fragments[i].Fragment
+
+			if !proto.ModelHasField(resolver.schema, model, currentFragment) {
+				return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+			}
+
+			if i < fragmentCount-1 {
+				// We know that the current fragment is a related table because it's not the last fragment
+				relatedModelField := proto.FindField(resolver.schema.Models, model, currentFragment)
+				relatedTable := strcase.ToSnake(relatedModelField.Type.ModelName.Value)
+
+				primaryKeyDbColumn := "id"
+
+				var join string
+				if relatedModelField.ForeignKeyFieldName != nil {
+					// M:1
+					foreignKeyDbColumn := strcase.ToSnake(relatedModelField.ForeignKeyFieldName.Value)
+
+					join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
+						relatedTable,
+						fmt.Sprintf("%s.%s", databaseTable, foreignKeyDbColumn),
+						fmt.Sprintf("%s.%s", relatedTable, primaryKeyDbColumn))
+				} else {
+					// 1:M
+					fkModel := proto.FindModel(resolver.schema.Models, relatedModelField.Type.ModelName.Value)
+					fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
+						return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
+					})
+					if !found {
+						return nil, fmt.Errorf("no foreign key field found on related model %s", model)
+					}
+
+					foreignKeyDbColumn := strcase.ToSnake(fkField.ForeignKeyFieldName.Value)
+
+					join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
+						relatedTable,
+						fmt.Sprintf("%s.%s", databaseTable, primaryKeyDbColumn),
+						fmt.Sprintf("%s.%s", relatedTable, foreignKeyDbColumn))
+				}
+
+				//if !lo.Contains(joins, join) {
+				joins = append(joins, join)
+				//}
+
+				databaseTable = relatedTable
+				model = relatedModelField.Type.ModelName.Value
+			}
+		}
+	}
+
+	return joins, nil
+}
+
+// Builds a gorm-compatible SQL template for use in gorm.DB.Where(template, args).
+// Operand values provided by query arguments will have the ? placeholder.
+// Parses ActionOperator to the SQL equivalent.
+func generateGormWhereTemplate(lhsSqlOperand any, rhsSqlOperand any, operator ActionOperator) (string, error) {
 	var template string
 
 	switch operator {

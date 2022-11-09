@@ -6,6 +6,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -45,14 +46,16 @@ func PrimaryKeyConstraintName(modelName string, fieldName string) string {
 func createTableStmt(model *proto.Model) string {
 	statements := []string{}
 	output := fmt.Sprintf("CREATE TABLE %s (\n", Identifier(model.Name))
-	for i, field := range model.Fields {
-		// This type of field exists only in proto land - and has no corresponding
-		// column in the database.
-		if field.Type.Type == proto.Type_TYPE_MODEL {
-			continue
-		}
+
+	// This type of field exists only in proto land - and has no corresponding
+	// column in the database.
+	fields := lo.Filter(model.Fields, func(field *proto.Field, _ int) bool {
+		return field.Type.Type != proto.Type_TYPE_MODEL
+	})
+
+	for i, field := range fields {
 		output += fieldDefinition(field)
-		if i < len(model.Fields)-1 {
+		if i < len(fields)-1 {
 			output += ","
 		}
 		output += "\n"
@@ -60,7 +63,7 @@ func createTableStmt(model *proto.Model) string {
 	output += ");"
 	statements = append(statements, output)
 
-	for _, field := range model.Fields {
+	for _, field := range fields {
 		if field.Unique {
 			statements = append(statements, fmt.Sprintf(
 				"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",

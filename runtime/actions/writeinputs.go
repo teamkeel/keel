@@ -29,12 +29,7 @@ func DefaultCaptureSetValues(scope *Scope, args ValueArgs) error {
 			return fmt.Errorf("lhs operand of assignment expression must be a model field")
 		}
 
-		lhsOperandType, err := lhsResolver.GetOperandType()
-		if err != nil {
-			return err
-		}
-
-		value, err := rhsResolver.ResolveValue(args, scope.writeValues, lhsOperandType)
+		value, err := rhsResolver.ResolveValue(args, scope.writeValues)
 		if err != nil {
 			return err
 		}

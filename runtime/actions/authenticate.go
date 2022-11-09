@@ -67,12 +67,14 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 
 		if authenticated {
 			id, err := ksuid.Parse(identity.Id)
-
 			if err != nil {
 				return "", false, err
 			}
 
-			token, err := GenerateBearerToken(&id) // todo: check this error
+			token, err := GenerateBearerToken(&id)
+			if err != nil {
+				return "", false, err
+			}
 
 			return token, false, nil
 		} else {
@@ -101,7 +103,10 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 
 		id := modelMap[IdColumnName].(ksuid.KSUID)
 
-		token, err := GenerateBearerToken(&id) // todo: check this error
+		token, err := GenerateBearerToken(&id)
+		if err != nil {
+			return "", false, err
+		}
 
 		return token, true, nil
 	}

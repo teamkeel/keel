@@ -2,7 +2,9 @@ package actions
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -28,7 +30,7 @@ func DefaultApplyImplicitFilters(scope *Scope, args WhereArgs) error {
 		resolver := NewFilterResolver(scope)
 
 		// Resolve the database statement for this expression
-		statement, err := resolver.ResolveQueryStatement(fieldName, value, Equals)
+		statement, err := resolver.ResolveQueryStatement(input.ModelName, fieldName, value, Equals)
 		if err != nil {
 			return err
 		}
@@ -43,6 +45,8 @@ func DefaultApplyImplicitFilters(scope *Scope, args WhereArgs) error {
 func DefaultApplyExplicitFilters(scope *Scope, args WhereArgs) error {
 	operation := scope.operation
 
+	allJoins := []string{}
+
 	for _, where := range operation.WhereExpressions {
 		expression, err := parser.ParseExpression(where.Source)
 		if err != nil {
@@ -53,14 +57,19 @@ func DefaultApplyExplicitFilters(scope *Scope, args WhereArgs) error {
 		resolver := NewExpressionResolver(scope)
 
 		// Resolve the database statement for this expression
-		statement, err := resolver.ResolveQueryStatement(expression, args, scope.writeValues)
+		statement, joins, err := resolver.ResolveQueryStatement(expression, args, scope.writeValues)
 		if err != nil {
 			return err
 		}
 
+		allJoins = append(allJoins, joins...)
+
 		// Logical AND between all the expressions
 		scope.query = scope.query.Where(statement)
 	}
+
+	allJoins = lo.Uniq(allJoins)
+	scope.query = scope.query.Joins(strings.Join(allJoins, " "))
 
 	return nil
 }
