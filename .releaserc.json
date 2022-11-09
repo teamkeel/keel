@@ -9,16 +9,16 @@
         "npmPublish": false
       }],
       ["@semantic-release/npm", {
-        "pkgRoot": "wasm"
+        "pkgRoot": "packages/wasm"
       }],
       ["@semantic-release/npm", {
-        "pkgRoot": "functions/sdk"
+        "pkgRoot": "packages/sdk"
       }],
       ["@semantic-release/npm", {
-        "pkgRoot": "functions/runtime"
+        "pkgRoot": "packages/runtime"
       }],
       ["@semantic-release/npm", {
-        "pkgRoot": "testing/package"
+        "pkgRoot": "packages/testing"
       }],
       "@semantic-release/git"
     ]
