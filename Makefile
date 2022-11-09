@@ -22,4 +22,4 @@ testintegration:
 	go test ./integration -count=1 -v
 
 wasm:
-	GOOS=js GOARCH=wasm go build -o ./modules/wasm/keel.wasm ./modules/wasm/main.go
+	GOOS=js GOARCH=wasm go build -o ./packages/wasm/keel.wasm ./packages/wasm/main.go
