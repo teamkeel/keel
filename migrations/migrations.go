@@ -106,6 +106,14 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 			Type:  ChangeTypeAdded,
 		})
 	}
+	// the calls to createTableStmt() in the loop above ensures that all models have been
+	// created with all their fields, so now we apply foreign key constraints for each of the NEW
+	// models' Id fields. We cannot do this earlier because the FK sql depends on every all the
+	// tables now having been defined.
+	for _, modelName := range modelsAdded {
+		model := proto.FindModel(newSchema.Models, modelName)
+		statements = append(statements, fkConstraintsForModel(model, newSchema)...)
+	}
 
 	for _, modelName := range modelsRemoved {
 		statements = append(statements, dropTableStmt(modelName))
@@ -115,7 +123,9 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 		})
 	}
 
-	// Fields added or removed
+	// Fields added or removed.
+	// Note these are fields that exist on models that exist in both the old and
+	// new schema.
 	for _, modelName := range modelsInCommon {
 		currFieldNames := proto.FieldNames(proto.FindModel(currSchema.Models, modelName))
 		newFieldNames := proto.FieldNames(proto.FindModel(newSchema.Models, modelName))
@@ -138,20 +148,10 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 			})
 
 			// When we encounter a field of type ID, we add a corresponding foreign key constraint.
+			// NB. We can do this right now because in this context the FK statement cannot refer to
+			// a model that the DB does not already know about.
 			if field.Type.Type == proto.Type_TYPE_ID {
-				thisModelName := field.ModelName
-				otherModelName := field.Type.ModelName.Value
-				relatedModel := proto.FindModel(newSchema.Models, otherModelName)
-				relatedModelPrimaryKeyName := proto.PrimaryKeyFieldName(relatedModel)
-
-				statements = append(
-					statements,
-					addForeignKeyConstraintStmt(
-						Identifier(thisModelName),
-						Identifier(field.Name),
-						Identifier(otherModelName),
-						Identifier(relatedModelPrimaryKeyName),
-					))
+				statements = append(statements, fkConstraintForIdField(field, newSchema))
 			}
 		}
 
@@ -246,4 +246,34 @@ func GetCurrentSchema(ctx context.Context, db *gorm.DB) (*proto.Schema, error) {
 	}
 
 	return &protoSchema, nil
+}
+
+// fkConstraintsForModel generates foreign key constraint statements for each of the ID type fields
+// present in the given model.
+func fkConstraintsForModel(model *proto.Model, schema *proto.Schema) (fkStatements []string) {
+	idFields := proto.IdFields(model)
+	for _, field := range idFields {
+		stmt := fkConstraintForIdField(field, schema)
+		fkStatements = append(fkStatements, stmt)
+	}
+	return fkStatements
+}
+
+// fkConstraintForIdField generates a foreign key constraint statement for the given field
+// which must be of type proto.Type_TYPE_ID.
+func fkConstraintForIdField(field *proto.Field, schema *proto.Schema) (fkStatement string) {
+	if field.Type.ModelName == nil {
+		return "" // The case for the "id" field in the auto-generated Identity model. (This model is under review atm.)
+	}
+	thisModelName := field.ModelName
+	otherModelName := field.Type.ModelName.Value
+	relatedModel := proto.FindModel(schema.Models, otherModelName)
+	relatedModelPrimaryKeyName := proto.PrimaryKeyFieldName(relatedModel)
+	stmt := addForeignKeyConstraintStmt(
+		Identifier(thisModelName),
+		Identifier(field.Name),
+		Identifier(otherModelName),
+		Identifier(relatedModelPrimaryKeyName),
+	)
+	return stmt
 }

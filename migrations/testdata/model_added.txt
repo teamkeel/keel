@@ -15,6 +15,7 @@ model Person {
 model Animal {
     fields {
         name Text
+        humanFriend Person
     }
 }
 
@@ -24,9 +25,12 @@ CREATE TABLE "animal" (
 "name" TEXT NOT NULL,
 "id" TEXT NOT NULL,
 "created_at" TIMESTAMP NOT NULL,
-"updated_at" TIMESTAMP NOT NULL
+"updated_at" TIMESTAMP NOT NULL,
+"human_friend_id" TEXT NOT NULL
 );
 ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");
+
+ALTER TABLE "animal" ADD FOREIGN KEY ("human_friend_id") REFERENCES "person"("id");
 
 === 
 

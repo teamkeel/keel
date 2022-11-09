@@ -58,6 +58,13 @@ func AllFields(p *Schema) []*Field {
 	return fields
 }
 
+// IdFields returns all the fields in the given model which have type Type_TYPE_ID.
+func IdFields(model *Model) []*Field {
+	return lo.Filter(model.Fields, func(f *Field, _ int) bool {
+		return f.Type.Type == Type_TYPE_ID
+	})
+}
+
 // ModelsExists returns true if the given schema contains a
 // model with the given name.
 func ModelExists(models []*Model, name string) bool {
