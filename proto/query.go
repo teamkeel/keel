@@ -176,3 +176,13 @@ func EnumExists(enums []*Enum, name string) bool {
 	}
 	return false
 }
+
+// FindRole locates and returns the Role object that has the given name.
+func FindRole(roleName string, schema *Schema) *Role {
+	for _, role := range schema.Roles {
+		if role.Name == roleName {
+			return role
+		}
+	}
+	return nil
+}

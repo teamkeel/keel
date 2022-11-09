@@ -1,10 +1,14 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
 	"gorm.io/gorm"
@@ -28,11 +32,25 @@ func DefaultIsAuthorised(
 		permissions = append(permissions, scope.operation.Permissions...)
 	}
 
-	constraints := scope.query.Session(&gorm.Session{NewDB: true})
-
+	// No permissions declared means no permission can be granted.
 	if len(permissions) == 0 {
 		return false, nil
 	}
+
+	// We do a first pass - considering only Role-based permissions.
+	// Because if one of these grants permission, we short-circuit the need to compose
+	// and execute database queries to evaluate permission expressions.
+	granted, err := roleBasedPermissionGranted(permissions, scope)
+	if err != nil {
+		return false, err
+	}
+	if granted {
+		return true, nil
+	}
+
+	// Dropping through to Expression-based permissions logic...
+
+	constraints := scope.query.Session(&gorm.Session{NewDB: true})
 
 	for i, permission := range permissions {
 		if permission.Expression != nil {
@@ -83,3 +101,73 @@ func DefaultIsAuthorised(
 
 	return unauthorisedRows == 0, nil
 }
+
+// roleBasedPermissionGranted returns true if there is a role-based permission among the
+// given list of permissions that passes.
+func roleBasedPermissionGranted(permissions []*proto.PermissionRule, scope *Scope) (granted bool, err error) {
+
+	// If the context does not have an authenticated user, then we cannot grant
+	// any role-based permissions.
+	if !runtimectx.IsAuthenticated(scope.context) {
+		return false, nil
+	}
+
+	currentUserEmail, currentUserDomain, err := getEmailAndDomain(scope)
+	if err != nil {
+		return false, err
+	}
+
+	for _, perm := range permissions {
+		for _, roleName := range perm.RoleNames {
+			role := proto.FindRole(roleName, scope.schema)
+			for _, email := range role.Emails {
+				if email == currentUserEmail {
+					return true, nil
+				}
+			}
+
+			for _, domain := range role.Domains {
+				if domain == currentUserDomain {
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, nil
+}
+
+// getEmailAndDomain requires that the the given scope's context
+// contains an authenticated user, extracts the id of that
+// authenticated user, and does a database query to fetch their
+// email and domain.
+func getEmailAndDomain(scope *Scope) (string, string, error) {
+
+	// Use the authenticated user's id to lookup their email address.
+	userKSUID, err := runtimectx.GetIdentity(scope.context)
+	if err != nil {
+		return "", "", err
+	}
+
+	db, err := runtimectx.GetDatabase(scope.context)
+	if err != nil {
+		return "", "", err
+	}
+	rows := []map[string]any{}
+	tableName := strcase.ToSnake(parser.ImplicitIdentityModelName)
+	response := db.Table(tableName).Where("id = ?", userKSUID.String()).Find(&rows)
+	if response.Error != nil {
+		return "", "", err
+	}
+	if response.RowsAffected != 1 {
+		return "", "", ErrNotOneRow
+	}
+	row := rows[0]
+	email := row["email"].(string)
+	segments := strings.Split(email, "@")
+	domain := segments[1]
+	return email, domain, nil
+}
+
+var (
+	ErrNotOneRow = errors.New("should be one row")
+)
