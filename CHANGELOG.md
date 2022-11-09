@@ -1,3 +1,11 @@
+# [0.206.0](https://github.com/teamkeel/keel/compare/v0.205.1...v0.206.0) (2022-11-09)
+
+
+### Features
+
+* bump version ([#562](https://github.com/teamkeel/keel/issues/562)) ([33597e2](https://github.com/teamkeel/keel/commit/33597e212cb1d117e39042c517f0b20fb151dd0f))
+* reorganise npm packages into single modules directory ([#561](https://github.com/teamkeel/keel/issues/561)) ([000f43b](https://github.com/teamkeel/keel/commit/000f43b9fc1ec0972fe0367a3617c008da39a265))
+
 ## [0.205.1](https://github.com/teamkeel/keel/compare/v0.205.0...v0.205.1) (2022-11-09)
 
 
