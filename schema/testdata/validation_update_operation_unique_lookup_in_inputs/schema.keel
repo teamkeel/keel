@@ -1,0 +1,11 @@
+model MyModel {
+    fields {
+        isActive Boolean
+    }
+
+    operations {
+        get updateMyModel(id) {
+            @where(myModel.isActive == true)
+        }
+    }
+}

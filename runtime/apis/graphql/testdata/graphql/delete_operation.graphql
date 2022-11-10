@@ -18,7 +18,7 @@ input AuthenticateInput {
 }
 
 input DeletePersonInput {
-  name: String!
+  id: ID!
 }
 
 input GetPersonInput {

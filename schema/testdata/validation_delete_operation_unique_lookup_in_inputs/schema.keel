@@ -1,0 +1,11 @@
+model MyModel {
+    fields {
+        isLocked Boolean
+    }
+
+    operations {
+        delete deleteMyModel(id) {
+            @where(myModel.isLocked == false)
+        }
+    }
+}

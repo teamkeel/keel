@@ -1,0 +1,13 @@
+model MyModel {
+    fields {
+        isActive Boolean
+        code Text @unique
+    }
+
+    operations {
+        get getMyModel(explicitCode: Text) {
+            @where(myModel.isActive == true)
+            @where(myModel.code == explicitCode)
+        }
+    }
+}
