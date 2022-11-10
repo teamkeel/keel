@@ -1,11 +1,11 @@
 model MyModel {
     fields {
-        nonUnique Text
+        isActive Boolean
     }
 
     operations {
         get updateMyModel(id) {
-            @where(myModel.nonUnique == "something")
+            @where(myModel.isActive == true)
         }
     }
 }

@@ -1,13 +1,13 @@
 model MyModel {
     fields {
-        nonUnique Text
+        isLocked Boolean
         code Text @unique
     }
 
     operations {
-        delete deleteMyModel() {
-            @where(myModel.nonUnique == "something")
-            @where(myModel.code == "sdsd")
+        delete deleteMyModel(explicitCode: Text) {
+            @where(myModel.isLocked == false)
+            @where(myModel.code == explicitCode)
         }
     }
 }
