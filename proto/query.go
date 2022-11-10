@@ -186,3 +186,29 @@ func FindRole(roleName string, schema *Schema) *Role {
 	}
 	return nil
 }
+
+// PermissionsWithRole returns a list of those permission present in the given permissions
+// list, which have at least one Role-based permission rule. This does not imply that the
+// returned Permissions might not also have some expression-based rules.
+func PermissionsWithRole(permissions []*PermissionRule, schema *Schema) []*PermissionRule {
+	withRoles := []*PermissionRule{}
+	for _, perm := range permissions {
+		if len(perm.RoleNames) > 0 {
+			withRoles = append(withRoles, perm)
+		}
+	}
+	return withRoles
+}
+
+// PermissionsWithExpression returns a list of those permission present in the given permissions
+// list, which have at least one expression-based permission rule. This does not imply that the
+// returned Permissions might not also have some role-based rules.
+func PermissionsWithExpression(permissions []*PermissionRule, schema *Schema) []*PermissionRule {
+	withRoles := []*PermissionRule{}
+	for _, perm := range permissions {
+		if perm.Expression != nil {
+			withRoles = append(withRoles, perm)
+		}
+	}
+	return withRoles
+}

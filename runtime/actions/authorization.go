@@ -20,14 +20,14 @@ func DefaultIsAuthorised(
 ) (authorized bool, err error) {
 	permissions := []*proto.PermissionRule{}
 
-	// Add permissions defined at the model level
+	// Combine all the permissions defined at model level, with those defined at
+	// operation level.
 	model := proto.FindModel(scope.schema.Models, scope.operation.ModelName)
 	modelPermissions := lo.Filter(model.Permissions, func(modelPermission *proto.PermissionRule, _ int) bool {
 		return slices.Contains(modelPermission.OperationsTypes, scope.operation.Type)
 	})
 	permissions = append(permissions, modelPermissions...)
 
-	// Add permissions defined at the operation level
 	if scope.operation.Permissions != nil {
 		permissions = append(permissions, scope.operation.Permissions...)
 	}
@@ -37,48 +37,51 @@ func DefaultIsAuthorised(
 		return false, nil
 	}
 
-	// We do a first pass - considering only Role-based permissions.
-	// Because if one of these grants permission, we short-circuit the need to compose
-	// and execute database queries to evaluate permission expressions.
-	granted, err := roleBasedPermissionGranted(permissions, scope)
-	if err != nil {
-		return false, err
-	}
-	if granted {
-		return true, nil
+	// Does one of the role-based rules grant permission?
+	//
+	// This is good to check first, because it avoids the composition
+	// and execution of a complex SQL query.
+	if runtimectx.IsAuthenticated(scope.context) {
+		roleBasedPerms := proto.PermissionsWithRole(permissions, scope.schema)
+		granted, err := roleBasedPermissionGranted(roleBasedPerms, scope)
+		if err != nil {
+			return false, err
+		}
+		if granted {
+			return true, nil
+		}
 	}
 
 	// Dropping through to Expression-based permissions logic...
 
 	constraints := scope.query.Session(&gorm.Session{NewDB: true})
+	exprBasedPerms := proto.PermissionsWithExpression(permissions, scope.schema)
+	for i, permission := range exprBasedPerms {
 
-	for i, permission := range permissions {
-		if permission.Expression != nil {
-			expression, err := parser.ParseExpression(permission.Expression.Source)
+		expression, err := parser.ParseExpression(permission.Expression.Source)
+		if err != nil {
+			return false, err
+		}
+
+		// New expression resolver to generate a database query statement
+		resolver := NewExpressionResolver(scope) // todo: would it be better to have this outside the loop?
+
+		// First check to see if we can resolve the condition "in proc"
+		if resolver.CanResolveInMemory(expression) {
+			if resolver.ResolveInMemory(expression, args, scope.writeValues) {
+				return true, nil
+			} else if i == len(exprBasedPerms)-1 {
+				return false, nil
+			}
+		} else {
+			// Resolve the database statement for this expression
+			statement, err := resolver.ResolveQueryStatement(expression, args, scope.writeValues)
 			if err != nil {
 				return false, err
 			}
 
-			// New expression resolver to generate a database query statement
-			resolver := NewExpressionResolver(scope)
-
-			// First check to see if we can resolve the condition "in proc"
-			if resolver.CanResolveInMemory(expression) {
-				if resolver.ResolveInMemory(expression, args, scope.writeValues) {
-					return true, nil
-				} else if i == len(permissions)-1 {
-					return false, nil
-				}
-			} else {
-				// Resolve the database statement for this expression
-				statement, err := resolver.ResolveQueryStatement(expression, args, scope.writeValues)
-				if err != nil {
-					return false, err
-				}
-
-				// Logical OR between each of the permission expressions
-				constraints = constraints.Or(statement)
-			}
+			// Logical OR between each of the permission expressions
+			constraints = constraints.Or(statement)
 		}
 	}
 
@@ -104,20 +107,16 @@ func DefaultIsAuthorised(
 
 // roleBasedPermissionGranted returns true if there is a role-based permission among the
 // given list of permissions that passes.
-func roleBasedPermissionGranted(permissions []*proto.PermissionRule, scope *Scope) (granted bool, err error) {
+func roleBasedPermissionGranted(roleBasedPermissions []*proto.PermissionRule, scope *Scope) (granted bool, err error) {
 
-	// If the context does not have an authenticated user, then we cannot grant
-	// any role-based permissions.
-	if !runtimectx.IsAuthenticated(scope.context) {
-		return false, nil
-	}
-
+	// todo: nicer if this came in the Scope or Token?
+	// Because it costs a database query.
 	currentUserEmail, currentUserDomain, err := getEmailAndDomain(scope)
 	if err != nil {
 		return false, err
 	}
 
-	for _, perm := range permissions {
+	for _, perm := range roleBasedPermissions {
 		for _, roleName := range perm.RoleNames {
 			role := proto.FindRole(roleName, scope.schema)
 			for _, email := range role.Emails {
@@ -140,6 +139,9 @@ func roleBasedPermissionGranted(permissions []*proto.PermissionRule, scope *Scop
 // contains an authenticated user, extracts the id of that
 // authenticated user, and does a database query to fetch their
 // email and domain.
+//
+// todo: it would be nicer if the current user's email name was
+// available directly in the scope object?
 func getEmailAndDomain(scope *Scope) (string, string, error) {
 
 	// Use the authenticated user's id to lookup their email address.

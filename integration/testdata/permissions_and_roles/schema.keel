@@ -7,6 +7,11 @@ model Post {
 
     operations {
         create create() with (title, views) 
+        create createUsingRole() with (title) {
+            @permission(
+                roles: [Poster]
+            )
+        }
         get get(id)
         update update(id) with (title)
         delete delete(id)
@@ -87,6 +92,15 @@ model ModelWithExpressions {
 enum Options {
     One
     Two
+}
+
+role Poster {
+  emails {
+    "editorFred99@agency.org"
+  }
+  domains {
+    "times.co.uk"
+  }
 }
 
 api Web {

@@ -38,5 +38,21 @@
     {
         "status": "pass",
         "testName": "enum literal comparisons - all expressions fail - is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission role email is authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission role wrong email is not authorized"
+    },
+    {
+        "status": "pass",
+        "testName": "permission role domain is authorized"
+    },
+    {
+        "status": "exception",
+        "testName": "permission role wrong domain is not authorized"
     }
 ]
