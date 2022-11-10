@@ -1,3 +1,10 @@
+## [0.206.1](https://github.com/teamkeel/keel/compare/v0.206.0...v0.206.1) (2022-11-10)
+
+
+### Bug Fixes
+
+* unique input or where required for get, update and delete ([#563](https://github.com/teamkeel/keel/issues/563)) ([f7209b1](https://github.com/teamkeel/keel/commit/f7209b1df65abecfe8105edea49be64b20ce11cf))
+
 # [0.206.0](https://github.com/teamkeel/keel/compare/v0.205.1...v0.206.0) (2022-11-09)
 
 
