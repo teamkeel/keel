@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+        "code": "E036",
+        "message": "myModel.nonUnique is not a unique field. delete operations can only filter on unique fields",
+        "short_message": "myModel.nonUnique is not a unique field",
+        "hint": "",
+        "end_pos": {
+            "column": 37,
+            "filename": "testdata/validation_delete_operation_no_unique_lookup_in_wheres/schema.keel",
+            "line": 8,
+            "offset": 145
+        },
+        "pos": {
+            "column": 20,
+            "filename": "testdata/validation_delete_operation_no_unique_lookup_in_wheres/schema.keel",
+            "line": 8,
+            "offset": 128
+        }
+    }
+  ]
+}

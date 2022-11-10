@@ -1,0 +1,11 @@
+model MyModel {
+    fields {
+        nonUnique Text
+    }
+
+    operations {
+        delete deleteMyModel(id) {
+            @where(myModel.nonUnique == "something")
+        }
+    }
+}

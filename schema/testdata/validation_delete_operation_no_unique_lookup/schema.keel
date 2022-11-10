@@ -1,0 +1,5 @@
+model MyModel {
+    operations {
+        delete deleteMyModel()
+    }
+}

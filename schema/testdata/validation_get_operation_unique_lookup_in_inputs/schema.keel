@@ -1,0 +1,11 @@
+model MyModel {
+    fields {
+        nonUnique Text
+    }
+
+    operations {
+        get getMyModel(id) {
+            @where(myModel.nonUnique == "something")
+        }
+    }
+}

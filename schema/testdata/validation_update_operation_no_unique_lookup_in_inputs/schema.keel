@@ -1,0 +1,9 @@
+model MyModel {
+    fields {
+        text Text
+    }
+
+    operations {
+        update updateMyModel(text)
+    }
+}

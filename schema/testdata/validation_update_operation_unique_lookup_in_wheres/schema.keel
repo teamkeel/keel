@@ -1,0 +1,13 @@
+model MyModel {
+    fields {
+        nonUnique Text
+        code Text @unique
+    }
+
+    operations {
+        update updateMyModel() {
+            @where(myModel.nonUnique == "something")
+            @where(myModel.code == "sdsd")
+        }
+    }
+}

@@ -256,6 +256,23 @@ func GetOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.Va
 	return
 }
 
+// DeleteOperationUniqueConstraintRule checks that all get operations
+// are filtering on unique fields only
+func DeleteOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
+			if action.Type.Value != parser.ActionTypeDelete {
+				continue
+			}
+
+			errs.Concat(requireUniqueLookup(asts, action, model))
+		}
+	}
+
+	return
+}
+
 func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *parser.ModelNode) (errs errorhandling.ValidationErrors) {
 
 	hasUniqueLookup := false
@@ -272,86 +289,95 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 	}
 
 	// check for @where attributes that filter on non-unique fields
-	for _, attr := range action.Attributes {
-		if attr.Name.Value != parser.AttributeWhere {
-			continue
-		}
+	// only when the inputs are non-unique
+	if !hasUniqueLookup {
+		for _, attr := range action.Attributes {
 
-		if len(attr.Arguments) == 0 {
-			continue
-		}
-
-		if attr.Arguments[0].Expression == nil {
-			continue
-		}
-
-		conds := attr.Arguments[0].Expression.Conditions()
-
-		for _, condition := range conds {
-			// If it's not a logical condition it will be caught by the
-			// @where attribute validation
-			if condition.Type() != parser.LogicalCondition {
+			if attr.Name.Value != parser.AttributeWhere {
 				continue
 			}
 
-			operator := condition.Operator.Symbol
-
-			// Only "==" and "in" are direct comparison operators, anything else
-			// doesn't make sense for a unique lookup e.g. age > 5
-			if operator != parser.OperatorEquals && operator != parser.OperatorIn {
-				errs.Append(errorhandling.ErrorNonDirectComparisonOperatorUsed,
-					map[string]string{
-						"Operator":      operator,
-						"OperationType": action.Type.Value,
-					},
-					condition.Operator,
-				)
+			if len(attr.Arguments) == 0 {
 				continue
 			}
 
-			// we always check the LHS
-			operands := []*parser.Operand{condition.LHS}
-
-			// if it's an equal operator we can check both sides
-			if operator == parser.OperatorEquals {
-				operands = append(operands, condition.RHS)
+			if attr.Arguments[0].Expression == nil {
+				continue
 			}
 
-			for _, op := range operands {
-				if op.Ident == nil || len(op.Ident.Fragments) != 2 {
+			conds := attr.Arguments[0].Expression.Conditions()
+
+			for _, condition := range conds {
+				// If it's not a logical condition it will be caught by the
+				// @where attribute validation
+				if condition.Type() != parser.LogicalCondition {
 					continue
 				}
 
-				modelName, fieldName := op.Ident.Fragments[0].Fragment, op.Ident.Fragments[1].Fragment
+				operator := condition.Operator.Symbol
 
-				if modelName != strcase.ToLowerCamel(model.Name.Value) {
+				// Only "==" and "in" are direct comparison operators, anything else
+				// doesn't make sense for a unique lookup e.g. age > 5
+				if operator != parser.OperatorEquals && operator != parser.OperatorIn {
+					errs.Append(errorhandling.ErrorNonDirectComparisonOperatorUsed,
+						map[string]string{
+							"Operator":      operator,
+							"OperationType": action.Type.Value,
+						},
+						condition.Operator,
+					)
 					continue
 				}
 
-				field := query.ModelField(model, fieldName)
-				if field == nil {
-					continue
+				// we always check the LHS
+				operands := []*parser.Operand{condition.LHS}
+
+				// if it's an equal operator we can check both sides
+				if operator == parser.OperatorEquals {
+					operands = append(operands, condition.RHS)
 				}
 
-				// we've found a @where that is filtering on a unique
-				// field using a direct comparison operator
-				if query.FieldIsUnique(field) {
-					hasUniqueLookup = true
-					continue
-				}
+				for _, op := range operands {
+					if op.Ident == nil || len(op.Ident.Fragments) != 2 {
+						continue
+					}
 
-				// @where attribute that has a condition on a non-unique field
-				// this is an error
-				errs.Append(errorhandling.ErrorOperationWhereNotUnique,
-					map[string]string{
-						"Ident":         op.Ident.ToString(),
-						"OperationType": action.Type.Value,
-					},
-					op.Ident,
-				)
+					modelName, fieldName := op.Ident.Fragments[0].Fragment, op.Ident.Fragments[1].Fragment
+
+					if modelName != strcase.ToLowerCamel(model.Name.Value) {
+						continue
+					}
+
+					field := query.ModelField(model, fieldName)
+					if field == nil {
+						continue
+					}
+
+					// we've found a @where that is filtering on a unique
+					// field using a direct comparison operator
+					if query.FieldIsUnique(field) {
+						hasUniqueLookup = true
+						continue
+					}
+
+					// @where attribute that has a condition on a non-unique field
+					// this is an error
+					errs.Append(errorhandling.ErrorOperationWhereNotUnique,
+						map[string]string{
+							"Ident":         op.Ident.ToString(),
+							"OperationType": action.Type.Value,
+						},
+						op.Ident,
+					)
+				}
 			}
-
 		}
+	}
+
+	// If a unique lookup was found, then drop all errors found for any
+	// non-unique lookups found
+	if hasUniqueLookup {
+		errs = errorhandling.ValidationErrors{}
 	}
 
 	// If we did not find a unique field make sure there is an error on the
