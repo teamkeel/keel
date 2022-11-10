@@ -264,7 +264,7 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 								}
 
 								if result != nil {
-									r["collection"] = result.Collection
+									r["collection"] = result.Results
 									r["hasNextPage"] = result.HasNextPage
 								}
 

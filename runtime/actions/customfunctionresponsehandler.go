@@ -172,7 +172,7 @@ func ParseListResponse(context context.Context, op *proto.Operation, args WhereA
 
 		return &ActionResult[ListResult]{
 			Value: ListResult{
-				Collection: results,
+				Results: results,
 			}}, nil
 	} else if errorsPresent {
 		errorArr, ok := errors.([]map[string]any)

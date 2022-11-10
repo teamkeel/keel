@@ -65,7 +65,7 @@ func ListFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQl
 			return nil, err
 		}
 
-		resp, err := connectionResponse(result.Collection, result.HasNextPage)
+		resp, err := connectionResponse(result.Results, result.HasNextPage)
 		if err != nil {
 			return nil, err
 		}

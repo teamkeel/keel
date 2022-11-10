@@ -151,56 +151,34 @@ func NewHandler(s *proto.Schema) Handler {
 }
 
 func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
-	rpcApi, err := rpc.NewRpcApi(s, api)
-	if err != nil {
-		panic(err)
-	}
+	handler := rpc.NewRpcApi(s, api)
 
 	return func(r *http.Request) (*common.Response, error) {
-		trimmedPath := strings.TrimPrefix(r.URL.Path, fmt.Sprintf("/%s/", api.Name))
-		trimmedPath = strings.TrimPrefix(trimmedPath, fmt.Sprintf("/%s/", strings.ToLower(api.Name)))
+		status := 200
 
-		var result interface{}
-		switch r.Method {
-		case http.MethodGet:
-			handler, ok := rpcApi.Get[trimmedPath]
-			if !ok {
-				return &common.Response{
-					Status: 404,
-					Body:   []byte("Not found"),
-				}, nil
+		data, err := handler(r)
+		if err != nil {
+			// TODO: add error codes
+			data = map[string]any{
+				"errors": []map[string]string{
+					{
+						"message": err.Error(),
+					},
+				},
 			}
-			result, err = handler(r)
-			if err != nil {
-				return nil, err
-			}
-		case http.MethodPost:
-			handler, ok := rpcApi.Post[trimmedPath]
-			if !ok {
-				return &common.Response{
-					Status: 404,
-					Body:   []byte("Not found"),
-				}, nil
-			}
-			result, err = handler(r)
-			if err != nil {
-				return nil, err
-			}
-		default:
-			return nil, errors.New("unsupported method")
+			status = 400
 		}
 
-		res, err := json.Marshal(result)
+		res, err := json.Marshal(data)
 		if err != nil {
 			return nil, err
 		}
 
 		return &common.Response{
 			Body:   res,
-			Status: 200,
+			Status: status,
 		}, nil
 	}
-
 }
 
 func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {

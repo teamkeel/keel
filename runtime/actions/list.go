@@ -13,7 +13,7 @@ type ListAction struct {
 }
 
 type ListResult struct {
-	Collection  []map[string]any `json:"collection"`
+	Results     []map[string]any `json:"results"`
 	HasNextPage bool             `json:"hasNextPage"`
 }
 
@@ -186,7 +186,7 @@ func (action *ListAction) Execute(args WhereArgs) (*ActionResult[ListResult], er
 
 	return &ActionResult[ListResult]{
 		Value: ListResult{
-			Collection:  collection,
+			Results:     collection,
 			HasNextPage: hasNextPage,
 		},
 	}, nil
