@@ -14,9 +14,17 @@ func GetFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgPa
 			return nil, fmt.Errorf("%s not allowed", r.Method)
 		}
 
-		args, err := argParser.ParseGet(operation, r)
-		if err != nil {
-			return nil, err
+		var input map[string]any
+		var err error
+
+		switch r.Method {
+		case http.MethodGet:
+			input = queryParamsToInputs(r.URL.Query())
+		case http.MethodPost:
+			input, err = postParamsToInputs(r.Body)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		scope, err := actions.NewScope(r.Context(), operation, schema)
@@ -24,9 +32,7 @@ func GetFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgPa
 			return nil, err
 		}
 
-		result, err := scope.Get(args)
-
-		return result.Object, err
+		return actions.Get(scope, input)
 	}
 }
 

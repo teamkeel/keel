@@ -198,12 +198,7 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 							}
 							switch operation.Type {
 							case proto.OperationType_OPERATION_TYPE_GET:
-								args, err := argParser.ParseGet(operation, body.Payload)
-								if err != nil {
-									panic(err)
-								}
-
-								result, err := scope.Get(args)
+								result, err := actions.Get(scope, body.Payload)
 
 								r := map[string]any{
 									"object": nil,
@@ -211,7 +206,7 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 								}
 
 								if result != nil {
-									r["object"] = result.Object
+									r["object"] = result
 								}
 
 								writeResponse(r, w)

@@ -15,28 +15,6 @@ import (
 type RpcArgParser struct {
 }
 
-func (parser *RpcArgParser) ParseGet(operation *proto.Operation, request *http.Request) (*actions.Args, error) {
-	var wheres map[string]any
-	var err error
-
-	switch request.Method {
-	case http.MethodGet:
-		wheres = queryParamsToInputs(request.URL.Query())
-	case http.MethodPost:
-		wheres, err = postParamsToInputs(request.Body)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	wheres, err = convertArgsMap(operation, wheres)
-	if err != nil {
-		return nil, err
-	}
-
-	return actions.NewArgs(map[string]any{}, wheres), nil
-}
-
 func (parser *RpcArgParser) ParseCreate(operation *proto.Operation, request *http.Request) (*actions.Args, error) {
 	values, err := postParamsToInputs(request.Body)
 	if err != nil {

@@ -13,8 +13,7 @@ type Obj struct {
 	Object map[string]any
 }
 
-// todo: Replace Parse[ActionType]ObjectResponse with generics (if its possible to construct generic param return type)
-func ParseGetObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[GetResult], error) {
+func ParseGetObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
 
 	if err != nil {
@@ -22,16 +21,11 @@ func ParseGetObjectResponse(context context.Context, op *proto.Operation, args W
 	}
 
 	objectMap, err := TryParseObjectResponse(res)
-
 	if err != nil {
 		return nil, err
 	}
 
-	return &ActionResult[GetResult]{
-		Value: GetResult{
-			Object: objectMap,
-		},
-	}, nil
+	return objectMap, nil
 }
 
 func ParseCreateObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[CreateResult], error) {
