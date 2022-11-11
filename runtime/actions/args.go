@@ -9,8 +9,11 @@ type Args struct {
 }
 
 func NewArgs(values ValueArgs, wheres WhereArgs) *Args {
-	if values == nil || wheres == nil {
-		panic("values or wheres input maps canot be nil in NewArgs")
+	if values == nil {
+		values = map[string]any{}
+	}
+	if wheres == nil {
+		wheres = map[string]any{}
 	}
 
 	return &Args{

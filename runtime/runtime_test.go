@@ -1287,24 +1287,16 @@ var testCases = []testCase{
 
 var rpcTestCases = []rpcTestCase{
 	{
-		name: "rpc_list",
+		name: "rpc_list_http_get",
 		keelSchema: `
 		model Thing {
-
-			@permission(
-				expression: true,
-				actions: [create, get, list, update, delete]
-			)
-			fields {
-				text Text @unique
-				bool Boolean
-				timestamp Timestamp
-				date Date
-				number Number
-			}
 			operations {
 				list listThings()
 			}
+			@permission(
+				expression: true,
+				actions: [list]
+			)
 		}
 		api Test {
 			@rpc
@@ -1315,42 +1307,36 @@ var rpcTestCases = []rpcTestCase{
 	`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row1 := initRow(map[string]any{
-				"id":        "id_123",
-				"text":      "some-interesting-text",
-				"bool":      true,
-				"timestamp": "1970-01-01 00:00:10",
-				"date":      "2020-01-02",
-				"number":    10,
+				"id": "id_123",
 			})
 			require.NoError(t, db.Table("thing").Create(row1).Error)
 		},
 		Path:   "listThings",
-		Body:   "",
 		Method: http.MethodGet,
 		assertResponse: func(t *testing.T, data interface{}) {
-			res := data.([]interface{})
-			require.Len(t, res, 1)
+			res := data.(map[string]any)
+
+			results := res["results"].([]interface{})
+			require.Len(t, results, 1)
+
+			hasNextPage := res["hasNextPage"].(bool)
+			require.Equal(t, false, hasNextPage)
 		},
 	},
 	{
-		name: "rpc_get",
+		name: "rpc_list_http_post",
 		keelSchema: `
 		model Thing {
-
-			@permission(
-				expression: true,
-				actions: [create, get, list, update, delete]
-			)
 			fields {
-				text Text @unique
-				bool Boolean
-				timestamp Timestamp
-				date Date
-				number Number
+				text Text
 			}
 			operations {
-				get getThing(id)
+				list listThings(text)
 			}
+			@permission(
+				expression: true,
+				actions: [list]
+			)
 		}
 		api Test {
 			@rpc
@@ -1360,23 +1346,191 @@ var rpcTestCases = []rpcTestCase{
 		}
 	`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
-			row1 := initRow(map[string]any{
-				"id":        "id_123",
-				"text":      "some-interesting-text",
-				"bool":      true,
-				"timestamp": "1970-01-01 00:00:10",
-				"date":      "2020-01-02",
-				"number":    10,
+			row := initRow(map[string]any{
+				"id":   "id_1",
+				"text": "foobar",
 			})
-			require.NoError(t, db.Table("thing").Create(row1).Error)
+			require.NoError(t, db.Table("thing").Create(row).Error)
+			row = initRow(map[string]any{
+				"id":   "id_2",
+				"text": "foobaz",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+			row = initRow(map[string]any{
+				"id":   "id_3",
+				"text": "boop",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+		},
+		Path:   "listThings",
+		Body:   `{"where": { "text": { "startsWith": "foo" } }}`,
+		Method: http.MethodPost,
+		assertResponse: func(t *testing.T, data interface{}) {
+			res := data.(map[string]any)
+
+			results := res["results"].([]interface{})
+			require.Len(t, results, 2)
+
+			hasNextPage := res["hasNextPage"].(bool)
+			require.Equal(t, false, hasNextPage)
+		},
+	},
+	{
+		name: "rpc_get_http_get",
+		keelSchema: `
+		model Thing {
+			operations {
+				get getThing(id)
+			}
+			@permission(
+				expression: true,
+				actions: [get]
+			)
+		}
+		api Test {
+			@rpc
+			models {
+				Thing
+			}
+		}
+	`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row := initRow(map[string]any{
+				"id": "id_1",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
 		},
 		Path:        "getThing",
-		QueryParams: "id=id_123",
-		Body:        "",
+		QueryParams: "id=id_1",
 		Method:      http.MethodGet,
 		assertResponse: func(t *testing.T, data interface{}) {
 			res := data.(map[string]any)
-			require.Equal(t, res["id"], "id_123")
+			require.Equal(t, res["id"], "id_1")
+		},
+	},
+	{
+		name: "rpc_get_http_post",
+		keelSchema: `
+		model Thing {
+			operations {
+				get getThing(id)
+			}
+			@permission(
+				expression: true,
+				actions: [get]
+			)
+		}
+		api Test {
+			@rpc
+			models {
+				Thing
+			}
+		}
+	`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row := initRow(map[string]any{
+				"id": "id_1",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+		},
+		Path:   "getThing",
+		Body:   `{"id": "id_1"}`,
+		Method: http.MethodPost,
+		assertResponse: func(t *testing.T, data interface{}) {
+			res := data.(map[string]any)
+			require.Equal(t, res["id"], "id_1")
+		},
+	},
+	{
+		name: "rpc_create_http_post",
+		keelSchema: `
+		model Thing {
+			fields {
+				text Text
+			}
+			operations {
+				create createThing() with (text)
+			}
+			@permission(
+				expression: true,
+				actions: [create]
+			)
+		}
+		api Test {
+			@rpc
+			models {
+				Thing
+			}
+		}
+	`,
+		Path:   "createThing",
+		Body:   `{"text": "foo"}`,
+		Method: http.MethodPost,
+		assertDatabase: func(t *testing.T, db *gorm.DB, data interface{}) {
+			res := data.(map[string]any)
+			id := res["id"]
+
+			row := map[string]any{}
+			err := db.Table("thing").Where("id = ?", id).Scan(&row).Error
+			require.NoError(t, err)
+
+			require.Equal(t, "foo", row["text"])
+		},
+	},
+	{
+		name: "rpc_update_http_post",
+		keelSchema: `
+		model Thing {
+			fields {
+				text Text
+			}
+			operations {
+				update updateThing(id) with (text)
+			}
+			@permission(
+				expression: true,
+				actions: [update]
+			)
+		}
+		api Test {
+			@rpc
+			models {
+				Thing
+			}
+		}
+	`,
+		Path:   "updateThing",
+		Body:   `{"where": {"id": "id_1"}, "values": {"text": "new value"}}`,
+		Method: http.MethodPost,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row := initRow(map[string]any{
+				"id":   "id_1",
+				"text": "foo",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+			row = initRow(map[string]any{
+				"id":   "id_2",
+				"text": "bar",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+		},
+		assertDatabase: func(t *testing.T, db *gorm.DB, data interface{}) {
+			res := data.(map[string]any)
+			// check returned values
+			require.Equal(t, "id_1", res["id"])
+			require.Equal(t, "new value", res["text"])
+
+			// check row 1 changed
+			row := map[string]any{}
+			err := db.Table("thing").Where("id = ?", "id_1").Scan(&row).Error
+			require.NoError(t, err)
+			require.Equal(t, "new value", row["text"])
+
+			// check row 2 did not change
+			row = map[string]any{}
+			err = db.Table("thing").Where("id = ?", "id_2").Scan(&row).Error
+			require.NoError(t, err)
+			require.Equal(t, "bar", row["text"])
 		},
 	},
 }
