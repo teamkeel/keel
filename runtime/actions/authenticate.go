@@ -72,7 +72,7 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 				return "", false, err
 			}
 
-			token, err := GenerateBearerToken(&id)
+			token, err := GenerateBearerToken(&id) // todo: check this error
 
 			return token, false, nil
 		} else {
@@ -101,17 +101,12 @@ func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateA
 
 		id := modelMap[IdColumnName].(ksuid.KSUID)
 
-		token, err := GenerateBearerToken(&id)
+		token, err := GenerateBearerToken(&id) // todo: check this error
 
 		return token, true, nil
 	}
 
 	return "", false, nil
-}
-
-func validEmail(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err == nil
 }
 
 func find(ctx context.Context, email string) (*Identity, error) {

@@ -74,3 +74,67 @@ test('enum literal comparisons - all expressions fail - is not authorized', asyn
     await actions.enumFailedExpressions({ option: "One", explOption: "One" })
   ).toHaveAuthorizationError()
 })
+
+test('permission role email is authorized', async () => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'editorFred99@agency.org',
+    password: '1234'
+  })
+  const { object: identity } = await Identity.findOne({ id: identityId })
+
+  expect(
+    await actions
+      .withIdentity(identity)
+      .createUsingRole({ title: "nothing special about this title" })
+  ).notToHaveAuthorizationError()
+})
+
+
+test('permission role wrong email is not authorized', async () => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'editorFred42@agency.org',
+    password: '1234'
+  })
+  const { object: identity } = await Identity.findOne({ id: identityId })
+
+  expect(
+    await actions
+      .withIdentity(identity)
+      .createUsingRole({ title: "nothing special about this title" })
+  ).toHaveAuthorizationError()
+})
+
+
+test('permission role domain is authorized', async () => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'john.witherow@times.co.uk',
+    password: '1234'
+  })
+  const { object: identity } = await Identity.findOne({ id: identityId })
+
+  expect(
+    await actions
+      .withIdentity(identity)
+      .createUsingRole({ title: "nothing special about this title" })
+  ).notToHaveAuthorizationError()
+})
+
+test('permission role wrong domain is not authorized', async () => {
+  const { identityId } = await actions.authenticate({ 
+    createIfNotExists: true, 
+    email: 'jon.sargent@.bbc.co.uk',
+    password: '1234'
+  })
+  const { object: identity } = await Identity.findOne({ id: identityId })
+
+  expect(
+    await actions
+      .withIdentity(identity)
+      .createUsingRole({ title: "nothing special about this title" })
+  ).toHaveAuthorizationError()
+})
+
+
