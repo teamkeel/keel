@@ -42,7 +42,7 @@ func DefaultIsAuthorised(
 	// This is good to check first, because it avoids the composition
 	// and execution of a complex SQL query.
 	if runtimectx.IsAuthenticated(scope.context) {
-		roleBasedPerms := proto.PermissionsWithRole(permissions, scope.schema)
+		roleBasedPerms := proto.PermissionsWithRole(permissions)
 		granted, err := roleBasedPermissionGranted(roleBasedPerms, scope)
 		if err != nil {
 			return false, err
@@ -55,7 +55,7 @@ func DefaultIsAuthorised(
 	// Dropping through to Expression-based permissions logic...
 
 	constraints := scope.query.Session(&gorm.Session{NewDB: true})
-	exprBasedPerms := proto.PermissionsWithExpression(permissions, scope.schema)
+	exprBasedPerms := proto.PermissionsWithExpression(permissions)
 	for i, permission := range exprBasedPerms {
 
 		expression, err := parser.ParseExpression(permission.Expression.Source)
