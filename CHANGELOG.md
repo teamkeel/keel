@@ -1,3 +1,10 @@
+# [0.207.0](https://github.com/teamkeel/keel/compare/v0.206.1...v0.207.0) (2022-11-11)
+
+
+### Features
+
+* implement Role-based permission rules ([#565](https://github.com/teamkeel/keel/issues/565)) ([beaf548](https://github.com/teamkeel/keel/commit/beaf548883c654bca4e40494e5aa4742c8f26309))
+
 ## [0.206.1](https://github.com/teamkeel/keel/compare/v0.206.0...v0.206.1) (2022-11-10)
 
 
