@@ -1,3 +1,10 @@
+# [0.208.0](https://github.com/teamkeel/keel/compare/v0.207.0...v0.208.0) (2022-11-11)
+
+
+### Features
+
+* align RPC API with documented spec ([fe3e81c](https://github.com/teamkeel/keel/commit/fe3e81c7f0bb53c15265f360ee7d87b9276bcc86))
+
 # [0.207.0](https://github.com/teamkeel/keel/compare/v0.206.1...v0.207.0) (2022-11-11)
 
 
