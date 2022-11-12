@@ -1,62 +1,62 @@
 [
-    {
-        "status": "pass",
-        "testName": "create identity"
-    },
-    {
-        "status": "pass",
-        "testName": "authenticate - invalid email - respond with invalid email address error"
-    },
-    {
-        "status": "pass",
-        "testName": "authenticate - empty password - respond with password cannot be empty error"
-    },
-    {
-        "status": "pass",
-        "testName": "authenticate - new identity and createIfNotExists false - do not create identity"
-    },
-    {
-        "status": "pass",
-        "testName": "authenticate - new identity - new identity created"
-    },
-    {
-        "status": "pass",
-        "testName": "authenticate - existing identity - authenticated"
-    },
-    {
-        "status": "pass",
-        "testName": "authenticate - incorrect credentials with existing identity - not authenticated"
-    },
-    {
-        "status": "pass",
-        "testName": "identity context permission - correct identity - permission satisfied"
-    },
-    {
-        "status": "pass",
-        "testName": "identity context permission - incorrect identity - permission not satisfied"
-    },
-    {
-        "status": "pass",
-        "testName": "isAuthenticated context permission - authenticated - permission satisfied"
-    },
-    {
-        "status": "pass",
-        "testName": "isAuthenticated context permission - not authenticated - permission not satisfied"
-    },
-    {
-        "status": "pass",
-        "testName": "not isAuthenticated context permission - authenticated - permission satisfied"
-    },
-    {
-        "status": "pass",
-        "testName": "not isAuthenticated context permission - not authenticated - permission not satisfied"
-    },
-    {
-        "status": "pass",
-        "testName": "isAuthenticated context set - authenticated - is set to true"
-    },
-    {
-        "status": "pass",
-        "testName": "isAuthenticated context set - not authenticated - is set to false"
-    }
+  {
+    "status": "pass",
+    "testName": "create identity"
+  },
+  {
+    "status": "pass",
+    "testName": "authenticate - invalid email - respond with invalid email address error"
+  },
+  {
+    "status": "pass",
+    "testName": "authenticate - empty password - respond with password cannot be empty error"
+  },
+  {
+    "status": "pass",
+    "testName": "authenticate - new identity and createIfNotExists false - do not create identity"
+  },
+  {
+    "status": "pass",
+    "testName": "authenticate - new identity - new identity created"
+  },
+  {
+    "status": "pass",
+    "testName": "authenticate - existing identity - authenticated"
+  },
+  {
+    "status": "pass",
+    "testName": "authenticate - incorrect credentials with existing identity - not authenticated"
+  },
+  {
+    "status": "pass",
+    "testName": "identity context permission - correct identity - permission satisfied"
+  },
+  {
+    "status": "pass",
+    "testName": "identity context permission - incorrect identity - permission not satisfied"
+  },
+  {
+    "status": "pass",
+    "testName": "isAuthenticated context permission - authenticated - permission satisfied"
+  },
+  {
+    "status": "pass",
+    "testName": "isAuthenticated context permission - not authenticated - permission not satisfied"
+  },
+  {
+    "status": "pass",
+    "testName": "not isAuthenticated context permission - authenticated - permission satisfied"
+  },
+  {
+    "status": "pass",
+    "testName": "not isAuthenticated context permission - not authenticated - permission not satisfied"
+  },
+  {
+    "status": "pass",
+    "testName": "isAuthenticated context set - authenticated - is set to true"
+  },
+  {
+    "status": "pass",
+    "testName": "isAuthenticated context set - not authenticated - is set to false"
+  }
 ]

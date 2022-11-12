@@ -23,3 +23,6 @@ testintegration:
 
 wasm:
 	GOOS=js GOARCH=wasm go build -o ./packages/wasm/keel.wasm ./packages/wasm/main.go
+
+prettier:
+	npx prettier --write './integration/**/*.{ts,json}'

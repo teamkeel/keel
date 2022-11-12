@@ -1,58 +1,58 @@
 [
-    {
-        "status": "pass",
-        "testName": "permission set on model level for create op - matching title - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "permission set on model level for create op - not matching - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "ORed permissions set on model level for get op - matching title - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "ORed permissions set on model level for get op - matching title and views - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "ORed permissions set on model level for get op - none matching - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "no permissions set on model level for delete op - can delete - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "text literal comparisons - all expressions fail - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "number literal comparisons - all expressions fail - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "boolean literal comparisons - all expressions fail - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "enum literal comparisons - all expressions fail - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "permission role email is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "permission role wrong email is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "permission role domain is authorized"
-    },
-    {
-        "status": "exception",
-        "testName": "permission role wrong domain is not authorized"
-    }
+  {
+    "status": "pass",
+    "testName": "permission set on model level for create op - matching title - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission set on model level for create op - not matching - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "ORed permissions set on model level for get op - matching title - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "ORed permissions set on model level for get op - matching title and views - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "ORed permissions set on model level for get op - none matching - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "no permissions set on model level for delete op - can delete - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "text literal comparisons - all expressions fail - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "number literal comparisons - all expressions fail - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "boolean literal comparisons - all expressions fail - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "enum literal comparisons - all expressions fail - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission role email is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission role wrong email is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission role domain is authorized"
+  },
+  {
+    "status": "exception",
+    "testName": "permission role wrong domain is not authorized"
+  }
 ]

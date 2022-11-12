@@ -1,3 +1,6 @@
 [
-  { "testName": "allows for two list operations on same model", "status": "pass" }
+  {
+    "testName": "allows for two list operations on same model",
+    "status": "pass"
+  }
 ]

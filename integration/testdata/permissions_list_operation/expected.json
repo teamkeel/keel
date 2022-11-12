@@ -1,126 +1,126 @@
 [
-    {
-        "status": "pass",
-        "testName": "string permission on literal - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "string permission on literal - one not matching value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "string permission on literal - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "number permission on literal - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "number permission on literal - one not matching value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "number permission on literal - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "boolean permission on literal - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "boolean permission on literal - one not matching value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "boolean permission on literal - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "enum permission on literal - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "enum permission on literal - one not matching value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "enum permission on literal - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "string permission on field - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "string permission on field - one not matching value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "string permission on field - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "number permission on field - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "number permission on field - one not matching value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "number permission on field - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "boolean permission on field - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "boolean permission on field - one not matching value - field is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "boolean permission on field - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "enum permission on field name - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "enum permission on field name - one not matching value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "enum permission on field name - one not matching null value - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "identity permission - correct identity in context - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "identity permission - incorrect identity in context - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "identity permission - no identity in context - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "true value permission - unauthenticated identity - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "permission on explicit input - all matching - is authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "permission on explicit input - one not matching - is not authorized"
-    },
-    {
-        "status": "pass",
-        "testName": "permission on explicit input - one not matching null value - is not authorized"
-    }
+  {
+    "status": "pass",
+    "testName": "string permission on literal - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "string permission on literal - one not matching value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "string permission on literal - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "number permission on literal - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "number permission on literal - one not matching value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "number permission on literal - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "boolean permission on literal - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "boolean permission on literal - one not matching value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "boolean permission on literal - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "enum permission on literal - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "enum permission on literal - one not matching value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "enum permission on literal - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "string permission on field - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "string permission on field - one not matching value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "string permission on field - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "number permission on field - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "number permission on field - one not matching value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "number permission on field - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "boolean permission on field - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "boolean permission on field - one not matching value - field is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "boolean permission on field - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "enum permission on field name - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "enum permission on field name - one not matching value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "enum permission on field name - one not matching null value - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "identity permission - correct identity in context - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "identity permission - incorrect identity in context - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "identity permission - no identity in context - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "true value permission - unauthenticated identity - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission on explicit input - all matching - is authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission on explicit input - one not matching - is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission on explicit input - one not matching null value - is not authorized"
+  }
 ]
