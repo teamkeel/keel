@@ -104,20 +104,6 @@ func NewScope(
 	}, nil
 }
 
-func (scope *Scope) Create(args *Args) (*CreateResult, error) {
-	var builder CreateAction
-	result, err := builder.
-		Initialise(scope).
-		CaptureImplicitWriteInputValues(args.Values()).
-		CaptureSetValues(args.Values()).
-		IsAuthorised(args.Wheres()).
-		Execute(args.Wheres())
-	if err != nil {
-		return nil, err
-	}
-	return &result.Value, err
-}
-
 func (scope *Scope) List(args *Args) (*ListResult, error) {
 	var builder ListAction
 	result, err := builder.

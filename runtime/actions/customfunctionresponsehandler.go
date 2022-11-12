@@ -28,7 +28,7 @@ func ParseGetObjectResponse(context context.Context, op *proto.Operation, args W
 	return objectMap, nil
 }
 
-func ParseCreateObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[CreateResult], error) {
+func ParseCreateObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
 
 	if err != nil {
@@ -36,16 +36,11 @@ func ParseCreateObjectResponse(context context.Context, op *proto.Operation, arg
 	}
 
 	objectMap, err := TryParseObjectResponse(res)
-
 	if err != nil {
 		return nil, err
 	}
 
-	return &ActionResult[CreateResult]{
-		Value: CreateResult{
-			Object: objectMap,
-		},
-	}, nil
+	return objectMap, nil
 }
 
 func ParseDeleteResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[DeleteResult], error) {

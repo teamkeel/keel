@@ -21,22 +21,14 @@ func GetFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlA
 
 func CreateFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlArgParser) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		args, err := argParser.ParseCreate(operation, p.Args)
-		if err != nil {
-			return nil, err
-		}
-
 		scope, err := actions.NewScope(p.Context, operation, schema)
 		if err != nil {
 			return nil, err
 		}
 
-		result, err := scope.Create(args)
-		if err != nil {
-			return nil, err
-		}
+		input := p.Args["input"].(map[string]any)
 
-		return result.Object, nil
+		return actions.Create(scope, input)
 	}
 }
 

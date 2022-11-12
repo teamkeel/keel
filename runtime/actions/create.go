@@ -3,120 +3,49 @@ package actions
 import (
 	"errors"
 
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
-type CreateAction struct {
-	scope *Scope
-}
-
-type CreateResult struct {
-	Object map[string]any `json:"object"`
-}
-
-func (action *CreateAction) Initialise(scope *Scope) ActionBuilder[CreateResult] {
-	action.scope = scope
-	return action
-}
-
-func (action *CreateAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[CreateResult] {
-	return action // no-op
-}
-
-func (action *CreateAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[CreateResult] {
-	return action // no-op
-}
-
-func (action *CreateAction) IsAuthorised(args WhereArgs) ActionBuilder[CreateResult] {
-	if action.scope.Error != nil {
-		return action
+func Create(scope *Scope, input map[string]any) (Row, error) {
+	var err error
+	scope.writeValues, err = initialValueForModel(scope.model, scope.schema)
+	if err != nil {
+		return nil, err
 	}
 
-	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
-
+	err = DefaultCaptureImplicitWriteInputValues(scope.operation.Inputs, input, scope)
 	if err != nil {
-		action.scope.Error = err
-		return action
+		return nil, err
+	}
+
+	err = DefaultCaptureSetValues(scope, input)
+	if err != nil {
+		return nil, err
+	}
+
+	isAuthorised, err := DefaultIsAuthorised(scope, input)
+	if err != nil {
+		return nil, err
 	}
 
 	if !isAuthorised {
-		action.scope.Error = errors.New("not authorized to access this operation")
+		scope.Error = errors.New("not authorized to access this operation")
+		return nil, scope.Error
 	}
 
-	return action
-}
-
-// the custom function database api should be responsible for generating these values
-// because it is up to the developer to choose whether their function interacts with the database
-// (it may make a http request to somewhere else instead)
-var ExcludedCreateKeys = []string{"created_at", "updated_at", "id"}
-
-func (action *CreateAction) Execute(args WhereArgs) (*ActionResult[CreateResult], error) {
-	if action.scope.Error != nil {
-		return nil, action.scope.Error
-	}
-
-	op := action.scope.operation
+	op := scope.operation
 
 	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		values := map[string]any{}
-		for key, value := range action.scope.writeValues {
-			if lo.Contains(ExcludedCreateKeys, key) {
-				continue
-			}
-			values[key] = value
-		}
-
-		return ParseCreateObjectResponse(action.scope.context, op, values)
+		return ParseCreateObjectResponse(scope.context, op, input)
 	}
 
-	err := action.scope.query.WithContext(action.scope.context).Create(action.scope.writeValues).Error
+	err = scope.query.WithContext(scope.context).Create(scope.writeValues).Error
 	if err != nil {
-		action.scope.Error = err
+		scope.Error = err
 		return nil, err
 	}
 
 	// todo: Use RETURNING statement on INSERT
 	// https://linear.app/keel/issue/RUN-146/gorm-use-returning-on-insert-and-update-statements
-	result := toLowerCamelMap(action.scope.writeValues)
-
-	return &ActionResult[CreateResult]{
-		Value: CreateResult{
-			Object: result,
-		},
-	}, nil
-}
-
-func (action *CreateAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[CreateResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
-	// initialise default values
-	values, err := initialValueForModel(action.scope.model, action.scope.schema)
-	if err != nil {
-		action.scope.Error = err
-		return action
-	}
-	action.scope.writeValues = values
-
-	// Delegate to a method that we hope will become more widely used later.
-	if err := DefaultCaptureImplicitWriteInputValues(action.scope.operation.Inputs, args, action.scope); err != nil {
-		action.scope.Error = err
-		return action
-	}
-	return action
-}
-
-func (action *CreateAction) CaptureSetValues(args ValueArgs) ActionBuilder[CreateResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
-	if err := DefaultCaptureSetValues(action.scope, args); err != nil {
-		action.scope.Error = err
-		return action
-	}
-	return action
+	return toLowerCamelMap(scope.writeValues), nil
 }

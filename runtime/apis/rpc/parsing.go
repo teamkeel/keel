@@ -15,20 +15,6 @@ import (
 type RpcArgParser struct {
 }
 
-func (parser *RpcArgParser) ParseCreate(operation *proto.Operation, request *http.Request) (*actions.Args, error) {
-	values, err := postParamsToInputs(request.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	values, err = convertArgsMap(operation, values)
-	if err != nil {
-		return nil, err
-	}
-
-	return actions.NewArgs(values, map[string]any{}), nil
-}
-
 func (parser *RpcArgParser) ParseUpdate(operation *proto.Operation, request *http.Request) (*actions.Args, error) {
 	data, err := postParamsToInputs(request.Body)
 	if err != nil {

@@ -42,22 +42,17 @@ func CreateFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcAr
 			return nil, fmt.Errorf("%s not allowed", r.Method)
 		}
 
-		args, err := argParser.ParseCreate(operation, r)
-		if err != nil {
-			return nil, err
-		}
-
 		scope, err := actions.NewScope(r.Context(), operation, schema)
 		if err != nil {
 			return nil, err
 		}
 
-		result, err := scope.Create(args)
+		input, err := postParamsToInputs(r.Body)
 		if err != nil {
 			return nil, err
 		}
 
-		return result.Object, nil
+		return actions.Create(scope, input)
 	}
 }
 
