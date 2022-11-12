@@ -2,7 +2,6 @@ package actions
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
@@ -103,25 +102,6 @@ func NewScope(
 		query:       query,
 		writeValues: map[string]any{},
 	}, nil
-}
-
-func (scope *Scope) Get(args *Args) (*GetResult, error) {
-	var builder GetAction
-	result, err := builder.
-		Initialise(scope).
-		ApplyImplicitFilters(args.Wheres()).
-		ApplyExplicitFilters(args.Wheres()).
-		IsAuthorised(args.Wheres()).
-		Execute(args.Wheres())
-
-	if err != nil {
-		return nil, err
-	}
-
-	if result == nil {
-		return nil, fmt.Errorf("result is nil")
-	}
-	return &result.Value, err
 }
 
 func (scope *Scope) Create(args *Args) (*CreateResult, error) {
