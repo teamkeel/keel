@@ -118,21 +118,6 @@ func (scope *Scope) List(args *Args) (*ListResult, error) {
 	return &result.Value, err
 }
 
-func (scope *Scope) Delete(args *Args) (*DeleteResult, error) {
-	var builder DeleteAction
-	result, err := builder.
-		Initialise(scope).
-		ApplyImplicitFilters(args.Wheres()).
-		ApplyExplicitFilters(args.Wheres()).
-		IsAuthorised(args.Wheres()).
-		Execute(args.Wheres())
-
-	if err != nil {
-		return nil, err
-	}
-	return &result.Value, err
-}
-
 func (scope *Scope) Update(args *Args) (*UpdateResult, error) {
 	var builder UpdateAction
 	result, err := builder.

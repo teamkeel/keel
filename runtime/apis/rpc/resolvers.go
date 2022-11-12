@@ -62,22 +62,17 @@ func DeleteFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcAr
 			return nil, fmt.Errorf("%s not allowed", r.Method)
 		}
 
-		args, err := argParser.ParseDelete(operation, r)
-		if err != nil {
-			return nil, err
-		}
-
 		scope, err := actions.NewScope(r.Context(), operation, schema)
 		if err != nil {
 			return nil, err
 		}
 
-		result, err := scope.Delete(args)
+		input, err := postParamsToInputs(r.Body)
 		if err != nil {
-			return false, err
+			return nil, err
 		}
 
-		return result, nil
+		return actions.Delete(scope, input)
 	}
 }
 

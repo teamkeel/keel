@@ -43,11 +43,11 @@ func ParseCreateObjectResponse(context context.Context, op *proto.Operation, arg
 	return objectMap, nil
 }
 
-func ParseDeleteResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[DeleteResult], error) {
+func ParseDeleteResponse(context context.Context, op *proto.Operation, args WhereArgs) (bool, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
 
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 	resMap, ok := res.(map[string]any)
 
@@ -62,13 +62,10 @@ func ParseDeleteResponse(context context.Context, op *proto.Operation, args Wher
 		success, ok := success.(bool)
 
 		if !ok {
-			panic("custom functions object not a map")
+			return false, fmt.Errorf("invalid response from custom function: success was not a bool")
 		}
 
-		return &ActionResult[DeleteResult]{
-			Value: DeleteResult{
-				Success: success,
-			}}, nil
+		return success, nil
 	} else if errorsPresent {
 		errorArr, ok := errors.([]map[string]any)
 
@@ -91,14 +88,11 @@ func ParseDeleteResponse(context context.Context, op *proto.Operation, args Wher
 				messages = append(messages, messageStr)
 			}
 
-			return nil, fmt.Errorf(strings.Join(messages, ","))
-
+			return false, fmt.Errorf(strings.Join(messages, ","))
 		}
-
-		panic("errors in unexpected format")
 	}
 
-	return nil, fmt.Errorf("incorrect data returned from custom function")
+	return false, fmt.Errorf("invalid response from custom function: success was not a bool")
 }
 
 func ParseUpdateResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[UpdateResult], error) {

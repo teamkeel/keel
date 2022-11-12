@@ -95,29 +95,6 @@ func (parser *GraphQlArgParser) ParseList(operation *proto.Operation, requestInp
 	return actions.NewArgs(values, wheres), nil
 }
 
-func (parser *GraphQlArgParser) ParseDelete(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-
-	input, ok := data["input"].(map[string]any)
-	if !ok {
-		return nil, errors.New("input not of type map[string]any")
-	}
-
-	if len(input) == 0 {
-		return nil, errors.New("arguments cannot be empty")
-	}
-
-	values := map[string]any{}
-	wheres := input
-
-	wheres = convertArgsMap(operation, wheres)
-
-	return actions.NewArgs(values, wheres), nil
-}
-
 func convertArgsMap(operation *proto.Operation, values map[string]any) map[string]any {
 	for k, v := range values {
 		input, found := lo.Find(operation.Inputs, func(in *proto.OperationInput) bool {

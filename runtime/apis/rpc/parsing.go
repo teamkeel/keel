@@ -87,23 +87,6 @@ func (parser *RpcArgParser) ParseList(operation *proto.Operation, request *http.
 	return actions.NewArgs(map[string]any{}, wheres), nil
 }
 
-func (parser *RpcArgParser) ParseDelete(operation *proto.Operation, request *http.Request) (*actions.Args, error) {
-	data, err := postParamsToInputs(request.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	values := map[string]any{}
-	wheres := data
-
-	wheres, err = convertArgsMap(operation, wheres)
-	if err != nil {
-		return nil, err
-	}
-
-	return actions.NewArgs(values, wheres), nil
-}
-
 func convertArgsMap(operation *proto.Operation, values map[string]any) (map[string]any, error) {
 	var err error
 	for k, v := range values {
