@@ -1,3 +1,10 @@
+## [0.208.1](https://github.com/teamkeel/keel/compare/v0.208.0...v0.208.1) (2022-11-13)
+
+
+### Bug Fixes
+
+* bug in Role-based permissions (RUN-179) ([#569](https://github.com/teamkeel/keel/issues/569)) ([6ab0930](https://github.com/teamkeel/keel/commit/6ab09301687fcb692d192370b6bae006cd7ae6e8))
+
 # [0.208.0](https://github.com/teamkeel/keel/compare/v0.207.0...v0.208.0) (2022-11-11)
 
 
