@@ -54,8 +54,15 @@ func DefaultIsAuthorised(
 
 	// Dropping through to Expression-based permissions logic...
 
-	constraints := scope.query.Session(&gorm.Session{NewDB: true})
 	exprBasedPerms := proto.PermissionsWithExpression(permissions)
+
+	// If there are zero Expression-based permissions provided - we know we cannot grant permission.
+	// This isn't just an optimisation - the code below spuriously grants access in this case.
+	if len(exprBasedPerms) == 0 {
+		return false, nil
+	}
+
+	constraints := scope.query.Session(&gorm.Session{NewDB: true})
 	for i, permission := range exprBasedPerms {
 
 		expression, err := parser.ParseExpression(permission.Expression.Source)

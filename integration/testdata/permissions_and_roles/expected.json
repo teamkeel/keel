@@ -54,5 +54,9 @@
   {
     "status": "exception",
     "testName": "permission role wrong domain is not authorized"
+  },
+  {
+    "status": "pass",
+    "testName": "permission from unauthorized email is denied when model has only role-based permissions"
   }
 ]
