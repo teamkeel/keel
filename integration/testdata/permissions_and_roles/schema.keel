@@ -109,3 +109,31 @@ api Web {
         Post
     }
 }
+
+// The operation in this model has ONLY Role based permission rules - to provide test
+// regression coverage for this bugfix: https://linear.app/keel/issue/RUN-179/role-based-permission-bug-fix
+model Procedure {
+    fields {
+        name Text @unique
+    }
+
+    operations {
+        get getProc(name)
+
+        create doProcedure() with (name) {
+            @permission(
+                roles: [Surgeon]
+            )
+        }
+    }
+}
+
+role Surgeon {
+    emails {
+        "sam.brainsurgeon@gmail.com"
+        "sally.heartsurgeon@gmail.com"
+    }
+    domains {
+        "barts.org"
+    }
+}
