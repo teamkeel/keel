@@ -30,7 +30,6 @@ jobs:
         with:
           prettier: true
           prettier_dir: ./packages
-          prettier_auto_fix: true
           commit_message: "chore: autofix prettier issues"
 
   lint-integration:
@@ -53,6 +52,5 @@ jobs:
         uses: wearerequired/lint-action@v2
         with:
           prettier: true
-          prettier_auto_fix: true
           commit_message: "chore: autofix prettier issues"
           prettier_dir: ./integration
