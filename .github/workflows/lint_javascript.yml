@@ -22,14 +22,14 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Node.js dependencies
-        run: npm ci
+      - name: Install Pretier
+        run: npm install -g prettier
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
-        working-directory: ./packages
         with:
           prettier: true
+          prettier_dir: ./packages
           prettier_auto_fix: true
           commit_message: "chore: autofix prettier issues"
           check_name: "${linter} - ${dir}"
@@ -47,14 +47,14 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Node.js dependencies
-        run: npm ci
+      - name: Install Pretier
+        run: npm install -g prettier
 
       - name: Run linters
         uses: wearerequired/lint-action@v2
-        working-directory: ./integration
         with:
           prettier: true
           prettier_auto_fix: true
           commit_message: "chore: autofix prettier issues"
           check_name: "${linter} - ${dir}"
+          prettier_dir: ./integration
