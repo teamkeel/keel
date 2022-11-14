@@ -1,3 +1,10 @@
+# [0.209.0](https://github.com/teamkeel/keel/compare/v0.208.1...v0.209.0) (2022-11-14)
+
+
+### Features
+
+* relationships in expressions - first pass ([#567](https://github.com/teamkeel/keel/issues/567)) ([7e52035](https://github.com/teamkeel/keel/commit/7e520354fd449f2a6ad82ce499e819670668f734))
+
 ## [0.208.1](https://github.com/teamkeel/keel/compare/v0.208.0...v0.208.1) (2022-11-13)
 
 
