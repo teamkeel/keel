@@ -1,3 +1,10 @@
+# [0.210.0](https://github.com/teamkeel/keel/compare/v0.209.0...v0.210.0) (2022-11-14)
+
+
+### Features
+
+* remove prefer offline optimization ([#573](https://github.com/teamkeel/keel/issues/573)) ([d8253a6](https://github.com/teamkeel/keel/commit/d8253a6fb6b3ea4bf389ef778553f8310d06bd4b))
+
 # [0.209.0](https://github.com/teamkeel/keel/compare/v0.208.1...v0.209.0) (2022-11-14)
 
 
