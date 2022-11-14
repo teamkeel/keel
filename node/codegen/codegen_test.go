@@ -8,7 +8,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/codegen"
 	codegenerator "github.com/teamkeel/keel/node/codegen"
 	"github.com/teamkeel/keel/schema"
 )
@@ -85,73 +84,5 @@ func comparePackageFiles(t *testing.T, packageName string, tmpDir string) {
 		require.NoError(t, err)
 
 		assert.Equal(t, string(actualContents), string(expectedContents))
-	}
-}
-
-func TestGenerateEntryPointRenderArguments(t *testing.T) {
-	testSchema := `
-model Post {
-  fields {
-    title Text
-  }
-
-  functions {
-    create createPost() with(title)
-  }
-}
-`
-
-	type TestCase struct {
-		PathToFunctionsDirArg string
-		ExpectedImportPrefix  string
-	}
-
-	testCases := []TestCase{
-		{
-			PathToFunctionsDirArg: ".",
-			ExpectedImportPrefix:  "./",
-		},
-		{
-			PathToFunctionsDirArg: "functions",
-			ExpectedImportPrefix:  "./functions/",
-		},
-		{
-			PathToFunctionsDirArg: "..",
-			ExpectedImportPrefix:  "../",
-		},
-		{
-			PathToFunctionsDirArg: "../../../../functions",
-			ExpectedImportPrefix:  "../../../../functions/",
-		},
-	}
-
-	for _, testCase := range testCases {
-		t.Run(fmt.Sprintf("Input_'%s'", testCase.PathToFunctionsDirArg), func(t *testing.T) {
-			scm := schema.Builder{}
-
-			proto, err := scm.MakeFromString(testSchema)
-
-			require.NoError(t, err)
-
-			generator := codegen.NewGenerator(proto)
-
-			renderArguments := generator.GenerateEntryPointRenderArguments(testCase.PathToFunctionsDirArg)
-
-			expectedImports := fmt.Sprintf(`import startRuntimeServer from '@teamkeel/runtime'
-import { queryResolverFromEnv } from '@teamkeel/sdk'
-import { Logger } from '@teamkeel/sdk'
-import { PostApi } from '@teamkeel/sdk'
-import createPost from '%screatePost'
-import { IdentityApi } from '@teamkeel/sdk'
-`, testCase.ExpectedImportPrefix)
-			expectedAPI := `models: { post: new PostApi(),
-identity: new IdentityApi() },
-logger: new Logger({ colorize: true })`
-			expectedFunctions := "createPost: { call: createPost, },"
-
-			assert.Equal(t, expectedImports, renderArguments.Imports)
-			assert.Equal(t, expectedAPI, renderArguments.API)
-			assert.Equal(t, expectedFunctions, renderArguments.Functions)
-		})
 	}
 }
