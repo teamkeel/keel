@@ -211,12 +211,7 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 
 								writeResponse(r, w)
 							case proto.OperationType_OPERATION_TYPE_CREATE:
-								args, err := argParser.ParseCreate(operation, body.Payload)
-								if err != nil {
-									panic(err)
-								}
-
-								result, err := scope.Create(args)
+								result, err := actions.Create(scope, body.Payload)
 
 								r := map[string]any{
 									"object": nil,
@@ -224,7 +219,7 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 								}
 
 								if result != nil {
-									r["object"] = result.Object
+									r["object"] = result
 								}
 
 								writeResponse(r, w)
@@ -265,19 +260,11 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 
 								writeResponse(r, w)
 							case proto.OperationType_OPERATION_TYPE_DELETE:
-								args, err := argParser.ParseDelete(operation, body.Payload)
-								if err != nil {
-									panic(err)
-								}
-
-								result, err := scope.Delete(args)
+								result, err := actions.Delete(scope, body.Payload)
 
 								r := map[string]any{
-									"errors": serializeError(err),
-								}
-
-								if result != nil {
-									r["success"] = result.Success
+									"success": result,
+									"errors":  serializeError(err),
 								}
 
 								writeResponse(r, w)

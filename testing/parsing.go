@@ -11,45 +11,6 @@ import (
 
 type IntegrationTestArgParser struct{}
 
-func (parser *IntegrationTestArgParser) ParseGet(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-	if len(data) == 0 {
-		return nil, errors.New("arguments cannot be empty")
-	}
-
-	values := map[string]any{}
-	wheres := data
-
-	wheres = convertArgsMap(operation, wheres)
-
-	return actions.NewArgs(values, wheres), nil
-}
-
-func (parser *IntegrationTestArgParser) ParseCreate(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-
-	// Add explicit inputs to wheres because as they can be used in @permission
-	explicitInputs := lo.FilterMap(operation.Inputs, func(in *proto.OperationInput, _ int) (string, bool) {
-		_, ok := data[in.Name]
-		return in.Name, ok
-	})
-	explicitInputArgs := lo.PickByKeys(data, explicitInputs)
-
-	values := data
-	wheres := explicitInputArgs
-
-	values = convertArgsMap(operation, values)
-	wheres = convertArgsMap(operation, wheres)
-
-	return actions.NewArgs(values, wheres), nil
-}
-
 func (parser *IntegrationTestArgParser) ParseUpdate(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
 	data, ok := requestInput.(map[string]any)
 	if !ok {
@@ -115,24 +76,6 @@ func (parser *IntegrationTestArgParser) ParseList(operation *proto.Operation, re
 			wheres["after"] = afterStr
 		}
 	}
-
-	return actions.NewArgs(values, wheres), nil
-}
-
-func (parser *IntegrationTestArgParser) ParseDelete(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-
-	if len(data) == 0 {
-		return nil, errors.New("arguments cannot be empty")
-	}
-
-	values := map[string]any{}
-	wheres := data
-
-	wheres = convertArgsMap(operation, wheres)
 
 	return actions.NewArgs(values, wheres), nil
 }

@@ -11,52 +11,6 @@ import (
 
 type GraphQlArgParser struct{}
 
-func (parser *GraphQlArgParser) ParseGet(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-
-	input, ok := data["input"].(map[string]any)
-	if !ok {
-		return nil, errors.New("input not of type map[string]any")
-	}
-
-	values := map[string]any{}
-	wheres := input
-
-	wheres = convertArgsMap(operation, wheres)
-
-	return actions.NewArgs(values, wheres), nil
-}
-
-func (parser *GraphQlArgParser) ParseCreate(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-
-	input, ok := data["input"].(map[string]any)
-	if !ok {
-		return nil, errors.New("input not of type map[string]any")
-	}
-
-	// Add explicit inputs to wheres because as they can be used in @permission
-	explicitInputs := lo.FilterMap(operation.Inputs, func(in *proto.OperationInput, _ int) (string, bool) {
-		_, ok := data[in.Name]
-		return in.Name, ok
-	})
-	explicitInputArgs := lo.PickByKeys(data, explicitInputs)
-
-	values := input
-	wheres := explicitInputArgs
-
-	values = convertArgsMap(operation, values)
-	wheres = convertArgsMap(operation, wheres)
-
-	return actions.NewArgs(values, wheres), nil
-}
-
 func (parser *GraphQlArgParser) ParseUpdate(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
 	data, ok := requestInput.(map[string]any)
 	if !ok {
@@ -137,29 +91,6 @@ func (parser *GraphQlArgParser) ParseList(operation *proto.Operation, requestInp
 			wheres["after"] = afterStr
 		}
 	}
-
-	return actions.NewArgs(values, wheres), nil
-}
-
-func (parser *GraphQlArgParser) ParseDelete(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-
-	input, ok := data["input"].(map[string]any)
-	if !ok {
-		return nil, errors.New("input not of type map[string]any")
-	}
-
-	if len(input) == 0 {
-		return nil, errors.New("arguments cannot be empty")
-	}
-
-	values := map[string]any{}
-	wheres := input
-
-	wheres = convertArgsMap(operation, wheres)
 
 	return actions.NewArgs(values, wheres), nil
 }
