@@ -137,19 +137,17 @@ test("permission role wrong domain is not authorized", async () => {
 });
 
 // Regression test for: https://linear.app/keel/issue/RUN-179/role-based-permission-bug-fix
-test('permission from unauthorized email is denied when model has only role-based permissions', async () => {
+test("permission from unauthorized email is denied when model has only role-based permissions", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: 'imposter@gmail.com',
-    password: '1234'
-  })
-  const { object: identity } = await Identity.findOne({ id: identityId })
+    email: "imposter@gmail.com",
+    password: "1234",
+  });
+  const { object: identity } = await Identity.findOne({ id: identityId });
 
   expect(
     await actions
       .withIdentity(identity)
       .doProcedure({ name: "frontal lobotomy" })
-  ).toHaveAuthorizationError()
-})
-
-
+  ).toHaveAuthorizationError();
+});
