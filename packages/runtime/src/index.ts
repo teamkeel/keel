@@ -3,15 +3,6 @@ import url from "url";
 
 import { Config } from "./types";
 
-let blahahahahahhahah = "";
-
-
-
-
-
-
-
-
 const startRuntimeServer = ({ functions, api }: Config) => {
   const listener = async (req: IncomingMessage, res: ServerResponse) => {
     if (req.method === "POST") {
