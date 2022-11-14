@@ -28,14 +28,18 @@ declare module "@teamkeel/sdk/constraints" {
         after?: Date;
         onOrAfter?: Date;
       };
-  export type BooleanConstraint = boolean | {
-    notEquals?: boolean;
-    equals?: boolean;
-  };
-  export type EnumConstraint = string | {
-    notEquals?: string;
-    equals?: string;
-  };
+  export type BooleanConstraint =
+    | boolean
+    | {
+        notEquals?: boolean;
+        equals?: boolean;
+      };
+  export type EnumConstraint =
+    | string
+    | {
+        notEquals?: string;
+        equals?: string;
+      };
 }
 declare module "@teamkeel/sdk/index" {
   import Query, { ChainableQuery } from "@teamkeel/sdk/query";
@@ -70,7 +74,7 @@ declare module "@teamkeel/sdk/logger" {
     Error = "error",
     Debug = "debug",
     Warn = "warn",
-    Success = "success"
+    Success = "success",
   }
   type Msg = any;
 
@@ -110,11 +114,7 @@ declare module "@teamkeel/sdk/query" {
     private readonly tableName;
     private readonly conditions;
     private readonly queryResolver: QueryResolver;
-    constructor({
-      tableName,
-      queryResolver,
-      conditions,
-    }: ChainedQueryOpts<T>);
+    constructor({ tableName, queryResolver, conditions }: ChainedQueryOpts<T>);
     orWhere: (conditions: Conditions<T>) => ChainableQuery<T>;
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
     order: (clauses: OrderClauses<T>) => ChainableQuery<T>;
@@ -142,7 +142,7 @@ declare module "@teamkeel/sdk/query" {
     ) => Promise<ReturnTypes.FunctionUpdateResponse<T>>;
     all: () => Promise<ReturnTypes.FunctionListResponse<T>>;
   }
-  
+
   export {};
 }
 
@@ -176,13 +176,15 @@ declare module "@teamkeel/sdk/db/resolver" {
   export interface QueryResultRow {
     [column: string]: any;
   }
-  export function queryResolverFromEnv(env: Record<string, string | undefined>): QueryResolver
+  export function queryResolverFromEnv(
+    env: Record<string, string | undefined>
+  ): QueryResolver;
   export class PgQueryResolver implements QueryResolver {
     private readonly pool: pg.Pool;
-    constructor(config: { connectionString: string })
+    constructor(config: { connectionString: string });
 
-    runQuery(query: SqlQueryParts): Promise<QueryResult>
-    private toQuery(query: SqlQueryParts): { text: string; values: any[] }
+    runQuery(query: SqlQueryParts): Promise<QueryResult>;
+    private toQuery(query: SqlQueryParts): { text: string; values: any[] };
   }
 }
 

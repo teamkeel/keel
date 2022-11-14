@@ -32,7 +32,6 @@ jobs:
           prettier_dir: ./packages
           prettier_auto_fix: true
           commit_message: "chore: autofix prettier issues"
-          check_name: "${linter} - ${dir}"
 
   lint-integration:
     name: Lint Integration
@@ -56,5 +55,4 @@ jobs:
           prettier: true
           prettier_auto_fix: true
           commit_message: "chore: autofix prettier issues"
-          check_name: "${linter} - ${dir}"
           prettier_dir: ./integration
