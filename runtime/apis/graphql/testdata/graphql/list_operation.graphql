@@ -68,7 +68,6 @@ type AuthenticateResponse {
 type Date {
   day: Int!
   formatted(format: String!): String!
-  fromNow: String!
   month: Int!
   year: Int!
 }
