@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -96,7 +97,7 @@ inputs:
 			resolver := NewFilterResolver(action.scope)
 
 			// Resolve the database statement for this expression
-			statement, err := resolver.ResolveQueryStatement(fieldName, operand, operator)
+			statement, err := resolver.ResolveQueryStatement(input.ModelName, fieldName, operand, operator)
 			if err != nil {
 				action.scope.Error = err
 				return action
@@ -141,12 +142,14 @@ func (action *ListAction) Execute(args WhereArgs) (*ActionResult[ListResult], er
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
 	// that helps to determine "hasNextPage".
-	const by = "id"
-	selectArgs := `
-		 *,
-			CASE WHEN lead("id") OVER ( order by ? ) is not null THEN true ELSE false
-			END as hasNext
+	by := fmt.Sprintf("%s.id", strcase.ToSnake(action.scope.model.Name))
+
+	selectArgs := `DISTINCT ON (%[1]s.id) 
+		%[1]s.*,
+		CASE WHEN lead(%[1]s.id) OVER ( order by %[1]s.id ) is not null THEN true ELSE false END as hasNext
 		`
+	selectArgs = fmt.Sprintf(selectArgs, strcase.ToSnake(action.scope.model.Name))
+
 	action.scope.query = action.scope.query.WithContext(action.scope.context).Select(selectArgs, by)
 	action.scope.query = action.scope.query.WithContext(action.scope.context).Order(by)
 

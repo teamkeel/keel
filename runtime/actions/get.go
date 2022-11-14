@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -36,7 +37,10 @@ func Get(scope *Scope, input map[string]any) (Row, error) {
 	}
 
 	results := []map[string]any{}
-	scope.query = scope.query.WithContext(scope.context).Find(&results)
+	scope.query = scope.query.
+		WithContext(scope.context).
+		Select(fmt.Sprintf("DISTINCT %s.*", strcase.ToSnake(scope.model.Name))). // TODO: expand to related models
+		Find(&results)
 
 	if scope.query.Error != nil {
 		return nil, scope.query.Error

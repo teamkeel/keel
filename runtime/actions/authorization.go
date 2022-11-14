@@ -82,7 +82,9 @@ func DefaultIsAuthorised(
 			}
 		} else {
 			// Resolve the database statement for this expression
-			statement, err := resolver.ResolveQueryStatement(expression, args, scope.writeValues)
+			// todo: the issue with gorm not "remembering" JOINs
+
+			statement, _, err := resolver.ResolveQueryStatement(expression, args, scope.writeValues)
 			if err != nil {
 				return false, err
 			}
