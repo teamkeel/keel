@@ -13,8 +13,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// The FilterResolver generates database queries for filters which are specified implicitly.
-type FilterResolver struct {
+// The ImplicitFilterResolver generates database queries for filters which are specified implicitly.
+type ImplicitFilterResolver struct {
 	scope *Scope
 }
 
@@ -24,20 +24,75 @@ type ExpressionResolver struct {
 	scope *Scope
 }
 
-func NewFilterResolver(scope *Scope) *FilterResolver {
-	return &FilterResolver{
+func NewImplicitFilterResolverResolver(scope *Scope) *ImplicitFilterResolver {
+	return &ImplicitFilterResolver{
 		scope: scope,
 	}
 }
 
-// Generates a database query statement for a filter.
-func (resolver *FilterResolver) ResolveQueryStatement(modelName string, fieldName string, value any, operator ActionOperator) (*gorm.DB, error) {
-	databaseTable := strcase.ToSnake(modelName)
+// Generates a database query statement for an implicit input filter.
+func (resolver *ImplicitFilterResolver) ResolveQueryStatement(input *proto.OperationInput, fieldName string, value any, operator ActionOperator) (*gorm.DB, []string, error) {
+	model := input.ModelName
+
+	databaseTable := strcase.ToSnake(model)
 	databaseColumn := strcase.ToSnake(fieldName)
+	joins := []string{}
+
+	fragments := input.Target
+	fragmentCount := len(fragments)
+
+	for i := 0; i < fragmentCount; i++ {
+		currentFragment := fragments[i]
+
+		if !proto.ModelHasField(resolver.scope.schema, model, currentFragment) {
+			return nil, nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+		}
+
+		if i < fragmentCount-1 {
+			// We know that the current fragment is a related table because it's not the last fragment
+			relatedModelField := proto.FindField(resolver.scope.schema.Models, model, currentFragment)
+			relatedTable := strcase.ToSnake(relatedModelField.Type.ModelName.Value)
+
+			primaryKeyDbColumn := "id"
+
+			var join string
+			if relatedModelField.ForeignKeyFieldName != nil {
+				// M:1
+				foreignKeyDbColumn := strcase.ToSnake(relatedModelField.ForeignKeyFieldName.Value)
+
+				join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
+					relatedTable,
+					fmt.Sprintf("%s.%s", databaseTable, foreignKeyDbColumn),
+					fmt.Sprintf("%s.%s", relatedTable, primaryKeyDbColumn))
+			} else {
+				// 1:M
+				fkModel := proto.FindModel(resolver.scope.schema.Models, relatedModelField.Type.ModelName.Value)
+				fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
+					return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
+				})
+				if !found {
+					return nil, nil, fmt.Errorf("no foreign key field found on related model %s", model)
+				}
+
+				foreignKeyDbColumn := strcase.ToSnake(fkField.ForeignKeyFieldName.Value)
+
+				join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
+					relatedTable,
+					fmt.Sprintf("%s.%s", databaseTable, primaryKeyDbColumn),
+					fmt.Sprintf("%s.%s", relatedTable, foreignKeyDbColumn))
+			}
+
+			joins = append(joins, join)
+			databaseTable = relatedTable
+			model = relatedModelField.Type.ModelName.Value
+		} else {
+			databaseColumn = strcase.ToSnake(currentFragment)
+		}
+	}
 
 	queryTemplate, err := generateGormWhereTemplate(fmt.Sprintf("%s.%s", databaseTable, databaseColumn), "?", operator)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	queryArgument := value
@@ -54,7 +109,7 @@ func (resolver *FilterResolver) ResolveQueryStatement(modelName string, fieldNam
 		Session(&gorm.Session{NewDB: true}).
 		Where(queryTemplate, queryArgument)
 
-	return query, nil
+	return query, joins, nil
 }
 
 func NewExpressionResolver(scope *Scope) *ExpressionResolver {

@@ -1,0 +1,53 @@
+
+model Post {
+    fields {
+        title Text
+        isActive Boolean
+        theAuthor Author?
+    }
+
+    operations {
+        get getActivePost(id, theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
+        list listActivePosts(theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
+    }
+
+    @permission(actions: [get, list], expression: true)
+}
+
+model Author {
+    fields {
+        name Text
+        isActive Boolean
+        thePosts Post[]
+        thePublisher Publisher
+    }
+
+    @permission(actions: [get, list], expression: true)
+}
+
+model Publisher {
+    fields {
+        orgName Text
+        theAuthors Author[]
+        isActive Boolean
+    }
+
+    operations {
+        get getActivePublisherWithActivePosts(id, theAuthors.thePosts.isActive, theAuthors.isActive, isActive)
+        list listActivePublishersWithActivePosts(theAuthors.thePosts.isActive, theAuthors.isActive, isActive) 
+    }
+
+    @permission(actions: [get, list], expression: true)
+}
+
+api Web {
+    @graphql
+
+    models {
+        Post
+        Author
+
+        Publisher
+    }
+}
+

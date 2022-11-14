@@ -14,12 +14,14 @@ import (
 // operand value provided by the given request arguments, and adds a Where clause to the
 // query field in the given scope, using a hard-coded equality operator.
 func DefaultApplyImplicitFilters(scope *Scope, args WhereArgs) error {
+	allJoins := []string{}
+
 	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT || input.Mode == proto.InputMode_INPUT_MODE_WRITE {
 			continue
 		}
 
-		fieldName := input.Target[0]
+		fieldName := input.Name
 		value, ok := args[fieldName]
 
 		if !ok {
@@ -27,17 +29,22 @@ func DefaultApplyImplicitFilters(scope *Scope, args WhereArgs) error {
 		}
 
 		// New filter resolver to generate a database query statement
-		resolver := NewFilterResolver(scope)
+		resolver := NewImplicitFilterResolverResolver(scope)
 
 		// Resolve the database statement for this expression
-		statement, err := resolver.ResolveQueryStatement(input.ModelName, fieldName, value, Equals)
+		statement, joins, err := resolver.ResolveQueryStatement(input, fieldName, value, Equals)
 		if err != nil {
 			return err
 		}
 
-		// Logical AND between all the expressions
+		allJoins = append(allJoins, joins...)
+
+		// Logical AND between all the inputs
 		scope.query = scope.query.Where(statement)
 	}
+
+	allJoins = lo.Uniq(allJoins)
+	scope.query = scope.query.Joins(strings.Join(allJoins, " "))
 
 	return nil
 }
