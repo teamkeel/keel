@@ -1,0 +1,61 @@
+name: Lint JS packages
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - build/prettier
+      - main
+
+jobs:
+  lint-packages:
+    name: Lint Packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        working-directory: ./packages
+        with:
+          prettier: true
+          prettier_auto_fix: true
+          commit_message: "chore: autofix prettier issues"
+          check_name: "${linter} - ${dir}"
+
+  lint-integration:
+    name: Lint Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 18
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v2
+        working-directory: ./integration
+        with:
+          prettier: true
+          prettier_auto_fix: true
+          commit_message: "chore: autofix prettier issues"
+          check_name: "${linter} - ${dir}"
