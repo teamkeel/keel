@@ -1,3 +1,10 @@
+# [0.211.0](https://github.com/teamkeel/keel/compare/v0.210.0...v0.211.0) (2022-11-14)
+
+
+### Features
+
+* relationship support in implicit inputs - first pass ([#571](https://github.com/teamkeel/keel/issues/571)) ([b75a4ee](https://github.com/teamkeel/keel/commit/b75a4ee0c77d37709d30739ff508bf508c605da5))
+
 # [0.210.0](https://github.com/teamkeel/keel/compare/v0.209.0...v0.210.0) (2022-11-14)
 
 
