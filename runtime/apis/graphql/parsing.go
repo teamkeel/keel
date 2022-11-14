@@ -11,47 +11,6 @@ import (
 
 type GraphQlArgParser struct{}
 
-func (parser *GraphQlArgParser) ParseUpdate(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
-	data, ok := requestInput.(map[string]any)
-	if !ok {
-		return nil, errors.New("request data not of type map[string]any")
-	}
-
-	input, ok := data["input"].(map[string]any)
-	if !ok {
-		return nil, errors.New("input not of type map[string]any")
-	}
-
-	values, ok := input["values"].(map[string]any)
-	if !ok {
-		values = map[string]any{}
-	}
-
-	wheres, ok := input["where"].(map[string]any)
-	if !ok {
-		wheres = map[string]any{}
-	}
-
-	// Add explicit inputs to wheres as well because as they can be used in @permission
-	explicitInputs := lo.FilterMap(operation.Inputs, func(in *proto.OperationInput, _ int) (string, bool) {
-		isExplicit := in.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT
-		_, isArg := values[in.Name]
-
-		return in.Name, (isExplicit && isArg)
-	})
-	explicitInputArgs := lo.PickByKeys(values, explicitInputs)
-	wheres = lo.Assign(wheres, explicitInputArgs)
-
-	values = convertArgsMap(operation, values)
-	wheres = convertArgsMap(operation, wheres)
-
-	if len(wheres) == 0 {
-		return nil, errors.New("wheres cannot be empty")
-	}
-
-	return actions.NewArgs(values, wheres), nil
-}
-
 func (parser *GraphQlArgParser) ParseList(operation *proto.Operation, requestInput interface{}) (*actions.Args, error) {
 	data, ok := requestInput.(map[string]any)
 	if !ok {

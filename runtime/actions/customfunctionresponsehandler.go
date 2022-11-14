@@ -15,32 +15,20 @@ type Obj struct {
 
 func ParseGetObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
-
 	if err != nil {
 		return nil, err
 	}
 
-	objectMap, err := TryParseObjectResponse(res)
-	if err != nil {
-		return nil, err
-	}
-
-	return objectMap, nil
+	return TryParseObjectResponse(res)
 }
 
 func ParseCreateObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
-
 	if err != nil {
 		return nil, err
 	}
 
-	objectMap, err := TryParseObjectResponse(res)
-	if err != nil {
-		return nil, err
-	}
-
-	return objectMap, nil
+	return TryParseObjectResponse(res)
 }
 
 func ParseDeleteResponse(context context.Context, op *proto.Operation, args WhereArgs) (bool, error) {
@@ -95,24 +83,14 @@ func ParseDeleteResponse(context context.Context, op *proto.Operation, args Wher
 	return false, fmt.Errorf("invalid response from custom function: success was not a bool")
 }
 
-func ParseUpdateResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[UpdateResult], error) {
+func ParseUpdateResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
 
 	if err != nil {
 		return nil, err
 	}
 
-	objectMap, err := TryParseObjectResponse(res)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &ActionResult[UpdateResult]{
-		Value: UpdateResult{
-			Object: objectMap,
-		},
-	}, nil
+	return TryParseObjectResponse(res)
 }
 
 func ParseListResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[ListResult], error) {
