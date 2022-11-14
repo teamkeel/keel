@@ -28,9 +28,9 @@ func TestSDKGeneration(t *testing.T) {
 	fmt.Print(tmpDir)
 	require.NoError(t, err)
 
-	// t.Cleanup(func() {
-	// 	os.RemoveAll(tmpDir)
-	// })
+	t.Cleanup(func() {
+		os.RemoveAll(tmpDir)
+	})
 
 	generator := codegenerator.NewGenerator(proto, tmpDir)
 
@@ -52,7 +52,7 @@ func TestTestingGeneration(t *testing.T) {
 
 	require.NoError(t, err)
 
-	tmpDir, err := os.MkdirTemp("", "sdk")
+	tmpDir, err := os.MkdirTemp("", "testing")
 
 	require.NoError(t, err)
 
@@ -65,6 +65,8 @@ func TestTestingGeneration(t *testing.T) {
 	err = generator.GenerateTesting()
 
 	require.NoError(t, err)
+
+	comparePackageFiles(t, "testing", tmpDir)
 }
 
 func comparePackageFiles(t *testing.T, packageName string, tmpDir string) {
