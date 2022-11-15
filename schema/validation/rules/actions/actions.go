@@ -396,13 +396,19 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 }
 
 func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
+	// To validate inputs, we need access to a list of valid foreign key virtual fields for
+	// each model type. So we build them here.
+	primaryKeyMap := NewPrimaryKeys(asts)
+	foreignKeyMap := NewForeignKeyMap(asts, primaryKeyMap)
+
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, input := range action.Inputs {
-				errs.AppendError(validateInput(asts, input, model, action))
+				errs.AppendError(validateInput(asts, input, model, action, foreignKeyMap))
 			}
 			for _, input := range action.With {
-				errs.AppendError(validateInput(asts, input, model, action))
+				errs.AppendError(validateInput(asts, input, model, action, foreignKeyMap))
 			}
 		}
 	}
@@ -410,7 +416,12 @@ func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 	return
 }
 
-func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode) *errorhandling.ValidationError {
+func validateInput(
+	asts []*parser.AST,
+	input *parser.ActionInputNode,
+	model *parser.ModelNode,
+	action *parser.ActionNode,
+	foreignKeyMap ForeignKeyMap) *errorhandling.ValidationError {
 	resolvedType := query.ResolveInputType(asts, input, model)
 
 	// If type cannot be resolved report error
@@ -598,4 +609,58 @@ func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input 
 	}
 
 	return true, nil
+}
+
+// PrimaryKeys tells you the primary key field name for any given model name.
+// E.g. primaryKeys["Post"] = "id".
+type PrimaryKeys map[string]string
+
+// NewPrimaryKeys provides a PrimaryKeys map for each model present in
+// the given asts. Fields marked explicitly as primary keys take precedence,
+// or default to "id".
+func NewPrimaryKeys(asts []*parser.AST) PrimaryKeys {
+	pkeys := PrimaryKeys{}
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
+			switch {
+			case query.FieldHasAttribute(field, parser.AttributePrimaryKey):
+				pkeys[model.Name.Value] = field.Name.Value
+			default:
+				pkeys[model.Name.Value] = parser.ImplicitFieldNameId
+			}
+		}
+	}
+	return pkeys
+}
+
+// ForeignKeyMap tells you the names of the implicit foreign key field names
+// for any given model.
+// E.g. foreignKeys["Post"] = []string{"authorId", "reviewerId"}
+type ForeignKeyMap map[string][]string
+
+func NewForeignKeyMap(asts []*parser.AST, primaryKeyMap PrimaryKeys) ForeignKeyMap {
+	fkMap := ForeignKeyMap{}
+	for _, thisModel := range query.Models(asts) {
+		for _, thisModelField := range query.ModelFields(thisModel) {
+
+			if !query.IsModel(asts, thisModelField.Type) {
+				continue
+			}
+			targetModelName := strcase.ToCamel(thisModelField.Type)
+			referredToModelPK, ok := primaryKeyMap[targetModelName]
+			// todo: correct error handling
+			if !ok {
+				panic("XXXX failed to look up PK")
+			}
+			// todo - need to fix up casing
+			newFk := thisModelField.Name.Value + strcase.ToCamel(referredToModelPK)
+			existingFks, ok := fkMap[thisModel.Name.Value]
+			if ok {
+				fkMap[thisModel.Name.Value] = append(existingFks, newFk)
+			} else {
+				fkMap[thisModel.Name.Value] = []string{newFk}
+			}
+		}
+	}
+	return fkMap
 }
