@@ -1,3 +1,10 @@
+# [0.212.0](https://github.com/teamkeel/keel/compare/v0.211.0...v0.212.0) (2022-11-15)
+
+
+### Features
+
+* remove Date fromNow ([6f1e6d3](https://github.com/teamkeel/keel/commit/6f1e6d3357b4f8e5d5068758091d099f9ada7981))
+
 # [0.211.0](https://github.com/teamkeel/keel/compare/v0.210.0...v0.211.0) (2022-11-14)
 
 
