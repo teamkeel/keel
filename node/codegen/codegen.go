@@ -1,15 +1,5 @@
 package codegenerator
 
-// Files to be generated:
-// 1. Generate SDK
-// -> index.js
-// -> index.d.ts
-// -> package.json (peer dep)
-// 2. Generate Testing
-// -> index.js
-// -> index.d.ts
-// -> package.json (peer dep)
-
 import (
 	"bytes"
 	"embed"
@@ -22,6 +12,16 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
+
+// The following files will be generated:
+// - @teamkeel/sdk
+//   -> index.js
+//   -> index.d.ts
+//   -> package.json
+// - @teamkeel/testing
+//   -> index.js
+//   -> index.d.ts
+//   -> package.json
 
 type Generator struct {
 	schema *proto.Schema
@@ -45,23 +45,22 @@ const (
 	TestingPackageName = "testing"
 )
 
-
 // GenerateSDK will generate a fresh @teamkeel/sdk package into the node_modules
 // directory of the target directory
 func (g *Generator) GenerateSDK() error {
-	codez := []*SourceCode{}
+	sourceCodes := []*SourceCode{}
 
-	codez = append(codez, &SourceCode{
+	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "dist/index.js",
 		Contents: g.sdkSrcCode(),
 	})
 
-	codez = append(codez, &SourceCode{
+	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "dist/index.d.ts",
 		Contents: g.sdkTypeDefinitions(),
 	})
 
-	err := g.makeNpmPackage(SdkPackageName, codez)
+	err := g.makeNpmPackage(SdkPackageName, sourceCodes)
 
 	if err != nil {
 		return err
@@ -91,8 +90,6 @@ func (g *Generator) GenerateTesting() error {
 
 	return nil
 }
-
-// private methods
 
 func (g *Generator) testingSrcCode() (r string) {
 	renderApis := func(models []*proto.Model) (acc string) {
@@ -511,8 +508,6 @@ func (gen *Generator) generateModels() (r string) {
 	return r
 }
 
-var APIName = "API"
-
 func (gen *Generator) generateAPIs(typings bool) (r string) {
 	renderModelApiDefs := func(models []*proto.Model) (acc string) {
 		for i, model := range models {
@@ -626,12 +621,10 @@ func (gen *Generator) generateAPIs(typings bool) (r string) {
 
 	if typings {
 		r += fmt.Sprintf("\n%s\n", renderTemplate(TemplateKeelApiTypings, map[string]interface{}{
-			"Name":      APIName,
 			"ModelApis": renderModelApiDefs(gen.schema.Models),
 		}))
 	} else {
 		r += fmt.Sprintf("\n%s\n", renderTemplate(TemplateKeelApi, map[string]interface{}{
-			"Name":      APIName,
 			"ModelApis": renderModelApiDefs(gen.schema.Models),
 		}))
 	}
@@ -794,7 +787,7 @@ func (gen *Generator) generateInputs(typings bool) (r string) {
 // slightly different. Database pools for code-generated APIs that talk to
 // the database are constructed from within the testing package itself
 
-var (
+const (
 	TSTypeUnknown   = "unknown"
 	TSTypeString    = "string"
 	TSTypeBoolean   = "boolean"
@@ -846,7 +839,7 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 	}
 }
 
-var (
+const (
 	TemplateKeelApi                 = "keel_api"
 	TemplateApi                     = "api"
 	TemplateEnum                    = "enum"
