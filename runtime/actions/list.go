@@ -11,56 +11,16 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-type ListAction struct {
-	scope *Scope
-}
-
 type ListResult struct {
 	Results     []map[string]any `json:"results"`
 	HasNextPage bool             `json:"hasNextPage"`
 }
 
-func (action *ListAction) Initialise(scope *Scope) ActionBuilder[ListResult] {
-	action.scope = scope
-	return action
-}
-
-func (action *ListAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[ListResult] {
-	return action // no-op
-}
-
-func (action *ListAction) CaptureSetValues(args ValueArgs) ActionBuilder[ListResult] {
-	return action // no-op
-}
-
-func (action *ListAction) IsAuthorised(args WhereArgs) ActionBuilder[ListResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
-	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
-
-	if err != nil {
-		action.scope.Error = err
-		return action
-	}
-
-	if !isAuthorised {
-		action.scope.Error = errors.New("not authorized to access this operation")
-	}
-
-	return action
-}
-
-func (action *ListAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[ListResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
+func applyImplicitFiltersForList(scope *Scope, args WhereArgs) error {
 	allJoins := []string{}
 
 inputs:
-	for _, input := range action.scope.operation.Inputs {
+	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
@@ -74,7 +34,7 @@ inputs:
 				continue inputs
 			}
 
-			action.scope.Error = fmt.Errorf("did not find required '%s' input in where clause", fieldName)
+			return fmt.Errorf("did not find required '%s' input in where clause", fieldName)
 		}
 
 		valueMap, ok := value.(map[string]any)
@@ -86,104 +46,109 @@ inputs:
 				continue inputs
 			}
 
-			action.scope.Error = fmt.Errorf("'%s' input value %v to not in correct format", fieldName, value)
-			return action
+			return fmt.Errorf("'%s' input value %v to not in correct format", fieldName, value)
 		}
 
 		for operatorStr, operand := range valueMap {
 			operator, err := graphQlOperatorToActionOperator(operatorStr)
 			if err != nil {
-				action.scope.Error = err
-				return action
+				return err
 			}
 
 			// New filter resolver to generate a database query statement
-			resolver := NewImplicitFilterResolverResolver(action.scope)
+			resolver := NewImplicitFilterResolverResolver(scope)
 
 			// Resolve the database statement for this expression
 			statement, joins, err := resolver.ResolveQueryStatement(input, fieldName, operand, operator)
 			if err != nil {
-				action.scope.Error = err
-				return action
+				return err
 			}
 
 			allJoins = append(allJoins, joins...)
 
-			action.scope.query = action.scope.query.
-				WithContext(action.scope.context).
+			scope.query = scope.query.
+				WithContext(scope.context).
 				Where(statement)
 		}
 	}
 
 	allJoins = lo.Uniq(allJoins)
-	action.scope.query = action.scope.query.Joins(strings.Join(allJoins, " "))
+	scope.query = scope.query.Joins(strings.Join(allJoins, " "))
 
-	return action
+	return nil
 }
 
-func (action *ListAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[ListResult] {
-	if action.scope.Error != nil {
-		return action
+func List(scope *Scope, input map[string]any) (*ListResult, error) {
+	where, ok := input["where"].(map[string]any)
+	if !ok {
+		where = map[string]any{}
 	}
-	// We delegate to a function that may get used by other Actions later on, once we have
-	// unified how we handle operators in both schema where clauses and in implicit inputs language.
-	err := DefaultApplyExplicitFilters(action.scope, args)
+
+	err := applyImplicitFiltersForList(scope, where)
 	if err != nil {
-		action.scope.Error = err
-		return action
+		return nil, err
 	}
-	return action
-}
 
-func (action *ListAction) Execute(args WhereArgs) (*ActionResult[ListResult], error) {
-	if action.scope.Error != nil {
-		return nil, action.scope.Error
+	err = DefaultApplyExplicitFilters(scope, where)
+	if err != nil {
+		return nil, err
 	}
-	op := action.scope.operation
+
+	isAuthorised, err := DefaultIsAuthorised(scope, where)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isAuthorised {
+		return nil, errors.New("not authorized to access this operation")
+	}
+
+	op := scope.operation
 
 	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		return ParseListResponse(action.scope.context, op, args)
+		// TODO: the custom function should receive the whole input, not just the
+		// where's
+		return ParseListResponse(scope.context, op, where)
 	}
-	// We update the query to implement the paging request
 
-	page, err := parsePage(args)
+	page, err := parsePage(input)
 	if err != nil {
 		return nil, err
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
 	// that helps to determine "hasNextPage".
-	by := fmt.Sprintf("%s.id", strcase.ToSnake(action.scope.model.Name))
+	by := fmt.Sprintf("%s.id", strcase.ToSnake(scope.model.Name))
 
 	selectArgs := `DISTINCT ON (%[1]s.id) 
 		%[1]s.*,
 		CASE WHEN lead(%[1]s.id) OVER ( order by %[1]s.id ) is not null THEN true ELSE false END as hasNext
 		`
-	selectArgs = fmt.Sprintf(selectArgs, strcase.ToSnake(action.scope.model.Name))
+	selectArgs = fmt.Sprintf(selectArgs, strcase.ToSnake(scope.model.Name))
 
-	action.scope.query = action.scope.query.WithContext(action.scope.context).Select(selectArgs, by)
-	action.scope.query = action.scope.query.WithContext(action.scope.context).Order(by)
+	scope.query = scope.query.WithContext(scope.context).Select(selectArgs, by)
+	scope.query = scope.query.WithContext(scope.context).Order(by)
 
 	// A Where clause to implement the after/before paging request
 	switch {
 	case page.After != "":
-		action.scope.query = action.scope.query.WithContext(action.scope.context).Where("ID > ?", page.After)
+		scope.query = scope.query.WithContext(scope.context).Where("ID > ?", page.After)
 	case page.Before != "":
-		action.scope.query = action.scope.query.WithContext(action.scope.context).Where("ID < ?", page.Before)
+		scope.query = scope.query.WithContext(scope.context).Where("ID < ?", page.Before)
 	}
 
 	switch {
 	case page.First != 0:
-		action.scope.query = action.scope.query.WithContext(action.scope.context).Limit(page.First)
+		scope.query = scope.query.WithContext(scope.context).Limit(page.First)
 	case page.Last != 0:
-		action.scope.query = action.scope.query.WithContext(action.scope.context).Limit(page.Last)
+		scope.query = scope.query.WithContext(scope.context).Limit(page.Last)
 	}
 
 	// Execute the query
 	result := []map[string]any{}
-	action.scope.query = action.scope.query.WithContext(action.scope.context).Find(&result)
-	if action.scope.query.WithContext(action.scope.context).Error != nil {
-		return nil, action.scope.query.WithContext(action.scope.context).Error
+	err = scope.query.WithContext(scope.context).Find(&result).Error
+	if err != nil {
+		return nil, err
 	}
 
 	// Sort out the hasNextPage value, and clean up the response.
@@ -196,13 +161,10 @@ func (action *ListAction) Execute(args WhereArgs) (*ActionResult[ListResult], er
 	for _, row := range result {
 		delete(row, "has_next")
 	}
-	collection := toLowerCamelMaps(result)
 
-	return &ActionResult[ListResult]{
-		Value: ListResult{
-			Results:     collection,
-			HasNextPage: hasNextPage,
-		},
+	return &ListResult{
+		Results:     toLowerCamelMaps(result),
+		HasNextPage: hasNextPage,
 	}, nil
 }
 

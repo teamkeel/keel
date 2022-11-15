@@ -22,6 +22,7 @@ require (
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
+	github.com/karlseguin/typed v1.1.8
 	github.com/lib/pq v1.10.7
 	github.com/muesli/termenv v0.13.0
 	github.com/nleeper/goment v1.4.4

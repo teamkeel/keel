@@ -29,8 +29,7 @@ func Create(scope *Scope, input map[string]any) (Row, error) {
 	}
 
 	if !isAuthorised {
-		scope.Error = errors.New("not authorized to access this operation")
-		return nil, scope.Error
+		return nil, errors.New("not authorized to access this operation")
 	}
 
 	op := scope.operation
@@ -41,7 +40,6 @@ func Create(scope *Scope, input map[string]any) (Row, error) {
 
 	err = scope.query.WithContext(scope.context).Create(scope.writeValues).Error
 	if err != nil {
-		scope.Error = err
 		return nil, err
 	}
 

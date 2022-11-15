@@ -171,6 +171,8 @@ github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c h1:1+Edq3Y
 github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c/go.mod h1:XGJ4Wo9sjsEIW3FBp9tlKF98nH40an1qh7dt0Nc+DsA=
 github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba h1:keZ4vJpYOVm6yrjLzZ6QgozbEBaT0GjfH30ihbO67+4=
 github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba/go.mod h1:kaXTPU4xitQT0rfT7/i9O9Gm8acSh3DXr0p4y3vKqiE=
+github.com/karlseguin/typed v1.1.8 h1:ND0eDpwiUFIrm/n1ehxUyh/XNGs9zkYrLxtGqENSalY=
+github.com/karlseguin/typed v1.1.8/go.mod h1:pZlmYaWQ7MVpwfIOP88fASh3LopVxKeE+uNXW3hQ2D8=
 github.com/kevinmbeaulieu/eq-go v1.0.0/go.mod h1:G3S8ajA56gKBZm4UB9AOyoOS37JO3roToPzKNM8dtdM=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=

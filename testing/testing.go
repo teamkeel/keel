@@ -190,23 +190,18 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 								ctx = runtimectx.WithIdentity(ctx, &identityId)
 							}
 
-							argParser := &IntegrationTestArgParser{}
 							scope, err := actions.NewScope(ctx, operation, schema)
-
 							if err != nil {
 								panic(err)
 							}
+
 							switch operation.Type {
 							case proto.OperationType_OPERATION_TYPE_GET:
 								result, err := actions.Get(scope, body.Payload)
 
 								r := map[string]any{
-									"object": nil,
+									"object": result,
 									"errors": serializeError(err),
-								}
-
-								if result != nil {
-									r["object"] = result
 								}
 
 								writeResponse(r, w)
@@ -229,12 +224,19 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 
 								writeResponse(r, w)
 							case proto.OperationType_OPERATION_TYPE_LIST:
-								args, err := argParser.ParseList(operation, body.Payload)
-								if err != nil {
-									panic(err)
+								// Fix for testing client not sending filters under
+								// a "where" key
+								where := map[string]any{}
+								for k, v := range body.Payload {
+									if lo.Contains([]string{"first", "after"}, k) {
+										continue
+									}
+									where[k] = v
+									delete(body.Payload, k)
 								}
+								body.Payload["where"] = where
 
-								result, err := scope.List(args)
+								result, err := actions.List(scope, body.Payload)
 
 								r := map[string]any{
 									"errors": serializeError(err),

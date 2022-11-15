@@ -1,85 +1,48 @@
 package graphql
 
 import (
+	"fmt"
+
 	"github.com/graphql-go/graphql"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 )
 
-func GetFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlArgParser) func(p graphql.ResolveParams) (interface{}, error) {
-	return func(p graphql.ResolveParams) (interface{}, error) {
-		scope, err := actions.NewScope(p.Context, operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		input := p.Args["input"].(map[string]any)
-
-		return actions.Get(scope, input)
+func getInput(args map[string]any) map[string]any {
+	input, ok := args["input"].(map[string]any)
+	if !ok {
+		input = map[string]any{}
 	}
+
+	return input
 }
 
-func CreateFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlArgParser) func(p graphql.ResolveParams) (interface{}, error) {
+func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
 		scope, err := actions.NewScope(p.Context, operation, schema)
 		if err != nil {
 			return nil, err
 		}
 
-		input := p.Args["input"].(map[string]any)
+		input := getInput(p.Args)
 
-		return actions.Create(scope, input)
-	}
-}
-
-func ListFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlArgParser) func(p graphql.ResolveParams) (interface{}, error) {
-	return func(p graphql.ResolveParams) (interface{}, error) {
-		args, err := argParser.ParseList(operation, p.Args)
-		if err != nil {
-			return nil, err
+		switch operation.Type {
+		case proto.OperationType_OPERATION_TYPE_GET:
+			return actions.Get(scope, input)
+		case proto.OperationType_OPERATION_TYPE_UPDATE:
+			return actions.Update(scope, input)
+		case proto.OperationType_OPERATION_TYPE_CREATE:
+			return actions.Create(scope, input)
+		case proto.OperationType_OPERATION_TYPE_DELETE:
+			return actions.Delete(scope, input)
+		case proto.OperationType_OPERATION_TYPE_LIST:
+			res, err := actions.List(scope, input)
+			if err != nil {
+				return nil, err
+			}
+			return connectionResponse(res.Results, res.HasNextPage)
+		default:
+			panic(fmt.Errorf("unhandled operation type %s", operation.Type.String()))
 		}
-
-		scope, err := actions.NewScope(p.Context, operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		result, err := scope.List(args)
-		if err != nil {
-			return nil, err
-		}
-
-		resp, err := connectionResponse(result.Results, result.HasNextPage)
-		if err != nil {
-			return nil, err
-		}
-
-		return resp, nil
-	}
-}
-
-func DeleteFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlArgParser) func(p graphql.ResolveParams) (interface{}, error) {
-	return func(p graphql.ResolveParams) (interface{}, error) {
-		scope, err := actions.NewScope(p.Context, operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		input := p.Args["input"].(map[string]any)
-
-		return actions.Delete(scope, input)
-	}
-}
-
-func UpdateFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlArgParser) func(p graphql.ResolveParams) (interface{}, error) {
-	return func(p graphql.ResolveParams) (interface{}, error) {
-		scope, err := actions.NewScope(p.Context, operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		input := p.Args["input"].(map[string]any)
-
-		return actions.Update(scope, input)
 	}
 }

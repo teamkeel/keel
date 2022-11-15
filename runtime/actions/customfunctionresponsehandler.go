@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/karlseguin/typed"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 )
@@ -93,76 +94,34 @@ func ParseUpdateResponse(context context.Context, op *proto.Operation, args Wher
 	return TryParseObjectResponse(res)
 }
 
-func ParseListResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ActionResult[ListResult], error) {
+func ParseListResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ListResult, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
-
 	if err != nil {
 		return nil, err
 	}
+
 	resMap, ok := res.(map[string]any)
-
 	if !ok {
-		panic("custom function response not a map")
+		return nil, fmt.Errorf("custom function response is not a map")
 	}
 
-	collection, collectionPresent := resMap["collection"]
-	errors, errorsPresent := resMap["errors"]
-
-	if collectionPresent {
-		collectionAny, ok := collection.([]any)
-
-		if !ok {
-			panic("custom functions object not an array")
-		}
-
-		results := []map[string]any{}
-
-		for _, item := range collectionAny {
-			item, ok := item.(map[string]any)
-
-			if !ok {
-				continue
-			}
-
-			results = append(results, item)
-		}
-
-		if !ok {
-			panic("custom functions object not an array")
-		}
-
-		return &ActionResult[ListResult]{
-			Value: ListResult{
-				Results: results,
-			}}, nil
-	} else if errorsPresent {
-		errorArr, ok := errors.([]map[string]any)
-
-		if ok && len(errorArr) > 0 {
-			messages := []string{}
-
-			for _, err := range errorArr {
-				message, ok := err["message"]
-
-				if !ok {
-					continue
-				}
-
-				messageStr, ok := message.(string)
-
-				if !ok {
-					continue
-				}
-
-				messages = append(messages, messageStr)
-			}
-
-			return nil, fmt.Errorf(strings.Join(messages, ","))
-
-		}
+	collection := typed.New(resMap).Maps("collection")
+	if collection != nil {
+		return &ListResult{
+			Results: collection,
+		}, nil
 	}
 
-	panic("errors in unexpected format")
+	errors := typed.New(resMap).Maps("errors")
+	if errors != nil {
+		messages := []string{}
+		for _, err := range errors {
+			messages = append(messages, typed.New(err).String("message"))
+		}
+		return nil, fmt.Errorf(strings.Join(messages, ","))
+	}
+
+	return nil, fmt.Errorf("invalid response from custom function")
 }
 
 // Tries to parse object returned from custom functions runtime into correct data type
