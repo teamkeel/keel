@@ -2,12 +2,12 @@ package codegenerator
 
 // Files to be generated:
 // 1. Generate SDK
-// -> dist/index.js
-// -> dist/index.d.ts
+// -> index.js
+// -> index.d.ts
 // -> package.json (peer dep)
 // 2. Generate Testing
-// -> dist/index.js
-// -> dist/index.d.ts
+// -> index.js
+// -> index.d.ts
 // -> package.json (peer dep)
 
 import (
@@ -44,6 +44,7 @@ const (
 	SdkPackageName     = "sdk"
 	TestingPackageName = "testing"
 )
+
 
 // GenerateSDK will generate a fresh @teamkeel/sdk package into the node_modules
 // directory of the target directory
@@ -210,7 +211,7 @@ var templatePackageJson string
 
 func (g *Generator) makeNpmPackage(name string, srcCodes []*SourceCode) error {
 	basePath := filepath.Join(g.dir, "node_modules", "@teamkeel", name)
-	err := os.MkdirAll(filepath.Join(basePath, "dist"), os.ModePerm)
+	err := os.MkdirAll(filepath.Join(basePath), os.ModePerm)
 
 	if err != nil {
 		return err
