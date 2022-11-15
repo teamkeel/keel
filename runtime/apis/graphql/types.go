@@ -147,7 +147,6 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 				return d.Year(), nil
 			},
 		},
-		"fromNow": &fromNowType,
 		"month": &graphql.Field{
 			Name: "month",
 			Type: graphql.NewNonNull(graphql.Int),
