@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -55,13 +57,15 @@ func (action *ListAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[Lis
 		return action
 	}
 
+	allJoins := []string{}
+
 inputs:
 	for _, input := range action.scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
 
-		fieldName := input.Target[0]
+		fieldName := input.Name
 		value, ok := args[fieldName]
 
 		// not found
@@ -94,18 +98,25 @@ inputs:
 			}
 
 			// New filter resolver to generate a database query statement
-			resolver := NewFilterResolver(action.scope)
+			resolver := NewImplicitFilterResolverResolver(action.scope)
 
 			// Resolve the database statement for this expression
-			statement, err := resolver.ResolveQueryStatement(input.ModelName, fieldName, operand, operator)
+			statement, joins, err := resolver.ResolveQueryStatement(input, fieldName, operand, operator)
 			if err != nil {
 				action.scope.Error = err
 				return action
 			}
 
-			action.scope.query = action.scope.query.WithContext(action.scope.context).Where(statement)
+			allJoins = append(allJoins, joins...)
+
+			action.scope.query = action.scope.query.
+				WithContext(action.scope.context).
+				Where(statement)
 		}
 	}
+
+	allJoins = lo.Uniq(allJoins)
+	action.scope.query = action.scope.query.Joins(strings.Join(allJoins, " "))
 
 	return action
 }
