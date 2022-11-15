@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/karlseguin/typed"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -23,10 +24,9 @@ type Identity struct {
 	Password string `gorm:"column:password"`
 }
 
-type AuthenticateArgs struct {
-	CreateIfNotExists bool
-	Email             string
-	Password          string
+type AuthenticateResult struct {
+	Token           string `json:"token"`
+	IdentityCreated bool   `json:"identityCreated"`
 }
 
 const (
@@ -42,76 +42,87 @@ var (
 )
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
-func Authenticate(ctx context.Context, schema *proto.Schema, args *AuthenticateArgs) (string, bool, error) {
-	if _, err := mail.ParseAddress(args.Email); err != nil {
-		return "", false, errors.New("invalid email address")
+func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, error) {
+	typedInput := typed.New(input)
+	ctx := scope.context
+
+	emailPassword := typedInput.Object("emailPassword")
+	if _, err := mail.ParseAddress(emailPassword.String("email")); err != nil {
+		return nil, errors.New("invalid email address")
 	}
 
-	if args.Password == "" {
-		return "", false, errors.New("password cannot be empty")
+	if emailPassword.String("password") == "" {
+		return nil, errors.New("password cannot be empty")
 	}
 
 	db, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
-		return "", false, err
+		return nil, err
 	}
 
-	identity, err := find(ctx, args.Email)
-
+	identity, err := find(ctx, emailPassword.String("email"))
 	if err != nil {
-		return "", false, err
+		return nil, err
 	}
 
 	if identity != nil {
-		authenticated := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(args.Password)) == nil
-
-		if authenticated {
-			id, err := ksuid.Parse(identity.Id)
-			if err != nil {
-				return "", false, err
-			}
-
-			token, err := GenerateBearerToken(&id)
-			if err != nil {
-				return "", false, err
-			}
-
-			return token, false, nil
-		} else {
-			return "", false, nil
+		authenticated := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(emailPassword.String("password"))) == nil
+		if !authenticated {
+			return nil, errors.New("failed to authenticate")
 		}
-	} else if args.CreateIfNotExists {
-		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(args.Password), bcrypt.DefaultCost)
+
+		id, err := ksuid.Parse(identity.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		token, err := GenerateBearerToken(&id)
+		if err != nil {
+			return nil, err
+		}
+
+		return &AuthenticateResult{
+			Token:           token,
+			IdentityCreated: false,
+		}, nil
+	}
+
+	if typedInput.Bool("createIfNotExists") {
+		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(emailPassword.String("password")), bcrypt.DefaultCost)
 
 		if err != nil {
-			return "", false, err
+			return nil, err
 		}
 
-		identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+		identityModel := proto.FindModel(scope.schema.Models, parser.ImplicitIdentityModelName)
 
-		modelMap, err := initialValueForModel(identityModel, schema)
+		modelMap, err := initialValueForModel(identityModel, scope.schema)
 		if err != nil {
-			return "", false, err
+			return nil, err
 		}
 
-		modelMap[strcase.ToSnake(EmailColumnName)] = args.Email
+		modelMap[strcase.ToSnake(EmailColumnName)] = emailPassword.String("email")
 		modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
 
-		if err := db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error; err != nil {
-			return "", false, err
+		err = db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error
+		if err != nil {
+			return nil, err
 		}
 
 		id := modelMap[IdColumnName].(ksuid.KSUID)
 
 		token, err := GenerateBearerToken(&id)
 		if err != nil {
-			return "", false, err
+			return nil, err
 		}
 
-		return token, true, nil
+		return &AuthenticateResult{
+			Token:           token,
+			IdentityCreated: true,
+		}, nil
 	}
 
-	return "", false, nil
+	return &AuthenticateResult{}, nil
 }
 
 func find(ctx context.Context, email string) (*Identity, error) {

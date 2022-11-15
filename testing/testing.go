@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
+	"github.com/karlseguin/typed"
 	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/cmd/database"
@@ -258,17 +259,23 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 
 								writeResponse(r, w)
 							case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-								authArgs := actions.AuthenticateArgs{
-									CreateIfNotExists: body.Payload["createIfNotExists"].(bool),
-									Email:             body.Payload["email"].(string),
-									Password:          body.Payload["password"].(string),
+								t := typed.New(body.Payload)
+
+								// fix for testing client not sending the right
+								// request structure
+								input := map[string]any{
+									"createIfNotExists": t.Bool("createIfNotExists"),
+									"emailPassword": map[string]any{
+										"email":    t.String("email"),
+										"password": t.String("password"),
+									},
 								}
 
-								token, identityCreated, err := actions.Authenticate(ctx, schema, &authArgs)
+								result, err := actions.Authenticate(scope, input)
 
 								var identityId *ksuid.KSUID
-								if err == nil {
-									identityId, err = actions.ParseBearerToken(token)
+								if result != nil && result.Token != "" {
+									identityId, err = actions.ParseBearerToken(result.Token)
 								}
 
 								var r map[string]any
@@ -281,7 +288,7 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 								} else {
 									r = map[string]any{
 										"identityId":      identityId.String(),
-										"identityCreated": identityCreated,
+										"identityCreated": result.IdentityCreated,
 										"errors":          serializeError(err),
 									}
 								}
