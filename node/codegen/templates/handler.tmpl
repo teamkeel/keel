@@ -1,0 +1,43 @@
+{{ .Imports }}
+const qr = queryResolverFromEnv(process.env)
+const env = process.env.NODE_ENV
+
+startRuntimeServer({
+  functions: { {{ .Functions }}  },
+  api: { {{ .API }} }
+})
+
+const ADMIN_SHUTDOWN_CODE = '57P01';
+
+// todo: replace this logic with more graceful termination
+// logic
+// A better way might be to refactor the testing.go file
+// so that it creates a database per *JS test case* although
+// this requires the go world to have knowledge of each
+// of the individual test cases.
+
+
+// Explanation:
+// We call pg_terminate_backend in the go test harness
+// to terminate any active connections to the database
+// when clearing the database between individual test cases
+// This causes any active connections to the db in the node process
+// to error catastrophically.
+// which doesnt seem to be caught by standard try/catch
+// mechanism. Only process.on('uncaughtException') seems
+// to catch the error so we just want to return early for this
+// case instead of exiting
+
+// Postgres docs: https://www.postgresql.org/docs/8.0/errcodes-appendix.html#:~:text=57P01,ADMIN%20SHUTDOWN
+process.on("uncaughtException", (err, next) => {
+  const { name } = err.constructor;
+
+  // err instanceof DatabaseError doesnt work when the DatabaseError is from a different package
+  if (name === 'DatabaseError' && err.code === ADMIN_SHUTDOWN_CODE) {
+    return;
+  }
+
+  // If it's any other kind of uncaught exception then exit with a non zero exit code
+  console.log("Exiting process due to", err);
+  process.exit(1);
+});

@@ -1,0 +1,9 @@
+export interface {{ .Name }}Input {
+  where: {
+  {{ .Filters }}
+  }
+
+  values: {
+  {{ .Values }}
+  }
+}

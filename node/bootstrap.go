@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	codegenerator "github.com/teamkeel/keel/node/codegen"
 	"github.com/teamkeel/keel/schema"
 )
 
@@ -57,7 +58,21 @@ func GeneratePackages(dir string) error {
 
 	builder := schema.Builder{}
 
-	_, err := builder.MakeFromDirectory(dir)
+	schema, err := builder.MakeFromDirectory(dir)
+
+	if err != nil {
+		return err
+	}
+
+	cg := codegenerator.NewGenerator(schema, dir)
+
+	err = cg.GenerateSDK()
+
+	if err != nil {
+		return err
+	}
+
+	err = cg.GenerateTesting()
 
 	if err != nil {
 		return err

@@ -1,0 +1,41 @@
+class {{ .Name }}Api {
+  create = async (inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<ReturnTypes.FunctionCreateResponse<Client.{{ .Name }}>> => {
+    const q = await this.query()
+    return q.create(inputs);
+  }
+
+  where = (conditions: Client.{{ .Name }}Query) : ChainableQuery<Client.{{ .Name }}> => {
+    return new ChainableQuery<Client.{{ .Name }}>({ tableName: '{{ .TableName }}', queryResolver: qr, conditions: [conditions], logger: queryLogger })
+  }
+
+  delete = async (id: string) : Promise<ReturnTypes.FunctionDeleteResponse<Client.{{ .Name }}>> => {
+    const q = await this.query()
+    return q.delete(id);
+  }
+
+  findOne = async (query: Client.{{ .Name }}UniqueFields) : Promise<ReturnTypes.FunctionGetResponse<Client.{{ .Name }}>> => {
+    const q = await this.query()
+    return q.findOne(query as any);
+  }
+
+  update = async (id: string, inputs: Partial<Omit<Client.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) : Promise<ReturnTypes.FunctionUpdateResponse<Client.{{ .Name }}>> => {
+    const q = await this.query()
+    return q.update(id, inputs as any);
+  }
+
+  findMany = async (query: Client.{{ .Name }}Query) : Promise<ReturnTypes.FunctionListResponse<Client.{{ .Name }}>> => {
+    const q = await this.query()
+    return q.where(query as any).all();
+  }
+
+  private query = async () : Promise<Query<Client.{{ .Name }}>> => {
+    return new Query<Client.{{ .Name }}>({
+      tableName: '{{ .TableName }}',
+      queryResolver: qr,
+      logger: queryLogger
+    })
+  }
+}
+
+export const {{ .Name }} = new {{ .Name }}Api();
+
