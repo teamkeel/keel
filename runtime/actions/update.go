@@ -13,12 +13,14 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 		values = map[string]any{}
 	}
 
-	err := DefaultCaptureImplicitWriteInputValues(scope.operation.Inputs, values, scope)
+	query := NewQuery(scope.schema, scope.operation)
+
+	err := query.captureWriteValues(scope, values)
 	if err != nil {
 		return nil, err
 	}
 
-	err = DefaultCaptureSetValues(scope, values)
+	err = query.captureSetValues(scope, values)
 	if err != nil {
 		return nil, err
 	}
@@ -28,12 +30,12 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 		where = map[string]any{}
 	}
 
-	err = DefaultApplyImplicitFilters(scope, where)
+	err = query.applyImplicitFilters(scope, where)
 	if err != nil {
 		return nil, err
 	}
 
-	err = DefaultApplyExplicitFilters(scope, where)
+	err = query.applyExplicitFilters(scope, where)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +49,7 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 		permissionInputs[k] = v
 	}
 
-	isAuthorised, err := DefaultIsAuthorised(scope, permissionInputs)
+	isAuthorised, err := query.isAuthorised(scope, permissionInputs)
 	if err != nil {
 		return nil, err
 	}
@@ -57,31 +59,23 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 	}
 
 	op := scope.operation
-
 	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 		return ParseUpdateResponse(scope.context, op, input)
 	}
 
-	err = scope.query.Updates(scope.writeValues).Error
+	// Return the updated row
+	query.AppendReturning("*")
+
+	// Execute database request with results
+	results, affected, err := query.UpdateStatement().ExecuteWithResults(scope)
 	if err != nil {
 		return nil, err
 	}
 
-	// todo: Use RETURNING statement on UPDATE
-	// https://linear.app/keel/issue/RUN-146/gorm-use-returning-on-insert-and-update-statements
-	results := []map[string]any{}
-	scope.query = scope.query.WithContext(scope.context).Find(&results)
-
-	if scope.query.Error != nil {
-		return nil, scope.query.Error
-	}
-
-	n := len(results)
-	if n == 0 {
+	if affected == 0 {
 		return nil, errors.New("no records found for Update() operation")
-	}
-	if n > 1 {
-		return nil, fmt.Errorf("Update() operation should find only one record, it found: %d", n)
+	} else if affected > 1 {
+		return nil, fmt.Errorf("Update() operation should update only one record, it updated: %d", affected)
 	}
 
 	result := toLowerCamelMap(results[0])

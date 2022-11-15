@@ -4,10 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"strings"
 
-	"github.com/iancoleman/strcase"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -16,9 +13,7 @@ type ListResult struct {
 	HasNextPage bool             `json:"hasNextPage"`
 }
 
-func applyImplicitFiltersForList(scope *Scope, args WhereArgs) error {
-	allJoins := []string{}
-
+func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args WhereArgs) error {
 inputs:
 	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
@@ -55,25 +50,13 @@ inputs:
 				return err
 			}
 
-			// New filter resolver to generate a database query statement
-			resolver := NewImplicitFilterResolverResolver(scope)
-
 			// Resolve the database statement for this expression
-			statement, joins, err := resolver.ResolveQueryStatement(input, fieldName, operand, operator)
+			err = query.whereByImplicitFilter(scope, input, fieldName, operator, operand)
 			if err != nil {
 				return err
 			}
-
-			allJoins = append(allJoins, joins...)
-
-			scope.query = scope.query.
-				WithContext(scope.context).
-				Where(statement)
 		}
 	}
-
-	allJoins = lo.Uniq(allJoins)
-	scope.query = scope.query.Joins(strings.Join(allJoins, " "))
 
 	return nil
 }
@@ -84,17 +67,19 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 		where = map[string]any{}
 	}
 
-	err := applyImplicitFiltersForList(scope, where)
+	query := NewQuery(scope.schema, scope.operation)
+
+	err := query.applyImplicitFiltersForList(scope, where)
 	if err != nil {
 		return nil, err
 	}
 
-	err = DefaultApplyExplicitFilters(scope, where)
+	err = query.applyExplicitFilters(scope, where)
 	if err != nil {
 		return nil, err
 	}
 
-	isAuthorised, err := DefaultIsAuthorised(scope, where)
+	isAuthorised, err := query.isAuthorised(scope, where)
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +89,7 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	}
 
 	op := scope.operation
-
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+	if scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 		// TODO: the custom function should receive the whole input, not just the
 		// where's
 		return ParseListResponse(scope.context, op, where)
@@ -116,54 +100,53 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 		return nil, err
 	}
 
+	// Select all columns from this table and distinct on id
+	query.AppendDistinctOn("id")
+	query.AppendSelect("*")
+
+	// Select hasNext clause
+	selectArgs := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", query.table)
+	query.AppendSelectFromClause(selectArgs)
+
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
 	// that helps to determine "hasNextPage".
-	by := fmt.Sprintf("%s.id", strcase.ToSnake(scope.model.Name))
+	query.AppendOrderBy("id")
 
-	selectArgs := `DISTINCT ON (%[1]s.id) 
-		%[1]s.*,
-		CASE WHEN lead(%[1]s.id) OVER ( order by %[1]s.id ) is not null THEN true ELSE false END as hasNext
-		`
-	selectArgs = fmt.Sprintf(selectArgs, strcase.ToSnake(scope.model.Name))
-
-	scope.query = scope.query.WithContext(scope.context).Select(selectArgs, by)
-	scope.query = scope.query.WithContext(scope.context).Order(by)
-
-	// A Where clause to implement the after/before paging request
+	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
-		scope.query = scope.query.WithContext(scope.context).Where("ID > ?", page.After)
+		query.Where(Column(query.table, "id"), GreaterThan, Value(page.After))
 	case page.Before != "":
-		scope.query = scope.query.WithContext(scope.context).Where("ID < ?", page.Before)
+		query.Where(Column(query.table, "id"), LessThan, Value(page.Before))
 	}
 
+	// Add where condition to implement the page size
 	switch {
 	case page.First != 0:
-		scope.query = scope.query.WithContext(scope.context).Limit(page.First)
+		query.Limit(page.First)
 	case page.Last != 0:
-		scope.query = scope.query.WithContext(scope.context).Limit(page.Last)
+		query.Limit(page.Last)
 	}
 
-	// Execute the query
-	result := []map[string]any{}
-	err = scope.query.WithContext(scope.context).Find(&result).Error
+	// Execute database request with results
+	results, affected, err := query.SelectStatement().ExecuteWithResults(scope)
 	if err != nil {
 		return nil, err
 	}
 
 	// Sort out the hasNextPage value, and clean up the response.
 	hasNextPage := false
-	if len(result) > 0 {
-		last := result[len(result)-1]
+	if affected > 0 {
+		last := results[affected-1]
 		hasNextPage = last["hasnext"].(bool)
 	}
 
-	for _, row := range result {
+	for _, row := range results {
 		delete(row, "has_next")
 	}
 
 	return &ListResult{
-		Results:     toLowerCamelMaps(result),
+		Results:     toLowerCamelMaps(results),
 		HasNextPage: hasNextPage,
 	}, nil
 }

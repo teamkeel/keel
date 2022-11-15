@@ -204,11 +204,11 @@ func PermissionsWithRole(permissions []*PermissionRule) []*PermissionRule {
 // list, which have at least one expression-based permission rule. This does not imply that the
 // returned Permissions might not also have some role-based rules.
 func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule {
-	withRoles := []*PermissionRule{}
+	withPermissions := []*PermissionRule{}
 	for _, perm := range permissions {
 		if perm.Expression != nil {
-			withRoles = append(withRoles, perm)
+			withPermissions = append(withPermissions, perm)
 		}
 	}
-	return withRoles
+	return withPermissions
 }

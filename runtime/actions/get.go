@@ -4,24 +4,25 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 )
 
 type Row map[string]any
 
 func Get(scope *Scope, input map[string]any) (Row, error) {
-	err := DefaultApplyImplicitFilters(scope, input)
+	query := NewQuery(scope.schema, scope.operation)
+
+	err := query.applyImplicitFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}
 
-	err = DefaultApplyExplicitFilters(scope, input)
+	err = query.applyExplicitFilters(scope, input)
 	if err != nil {
 		return nil, err
 	}
 
-	isAuthorised, err := DefaultIsAuthorised(scope, input)
+	isAuthorised, err := query.isAuthorised(scope, input)
 	if err != nil {
 		return nil, err
 	}
@@ -30,29 +31,24 @@ func Get(scope *Scope, input map[string]any) (Row, error) {
 		return nil, errors.New("not authorized to access this operation")
 	}
 
-	op := scope.operation
-
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		return ParseGetObjectResponse(scope.context, op, input)
+	if scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		return ParseGetObjectResponse(scope.context, scope.operation, input)
 	}
 
-	results := []map[string]any{}
-	scope.query = scope.query.
-		WithContext(scope.context).
-		Select(fmt.Sprintf("DISTINCT %s.*", strcase.ToSnake(scope.model.Name))). // TODO: expand to related models
-		Find(&results)
+	// Select all columns and distinct on id
+	query.AppendSelect("*")
+	query.AppendDistinctOn("id")
 
-	if scope.query.Error != nil {
-		return nil, scope.query.Error
+	// Execute database request with results
+	results, affected, err := query.SelectStatement().ExecuteWithResults(scope)
+	if err != nil {
+		return nil, err
 	}
 
-	n := len(results)
-	if n == 0 {
+	if affected == 0 {
 		return nil, errors.New("no records found for Get() operation")
-	}
-
-	if n > 1 {
-		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", n)
+	} else if affected > 1 {
+		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", affected)
 	}
 
 	return toLowerCamelMap(results[0]), nil

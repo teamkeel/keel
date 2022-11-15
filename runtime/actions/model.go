@@ -18,6 +18,9 @@ func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string
 	zeroValue := map[string]any{}
 	var err error
 	for _, field := range pModel.Fields {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
 
 		if zeroValue[strcase.ToSnake(field.Name)], err = initialValueForField(field, schema.Enums); err != nil {
 			return nil, err

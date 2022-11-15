@@ -11,13 +11,9 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
-	"gorm.io/gorm"
 )
 
-func DefaultIsAuthorised(
-	scope *Scope,
-	args WhereArgs,
-) (authorized bool, err error) {
+func (query *QueryBuilder) isAuthorised(scope *Scope, args WhereArgs) (authorized bool, err error) {
 	permissions := []*proto.PermissionRule{}
 
 	// Combine all the permissions defined at model level, with those defined at
@@ -43,7 +39,7 @@ func DefaultIsAuthorised(
 	// and execution of a complex SQL query.
 	if runtimectx.IsAuthenticated(scope.context) {
 		roleBasedPerms := proto.PermissionsWithRole(permissions)
-		granted, err := roleBasedPermissionGranted(roleBasedPerms, scope)
+		granted, err := roleBasedPermissionGranted(scope, roleBasedPerms)
 		if err != nil {
 			return false, err
 		}
@@ -52,60 +48,54 @@ func DefaultIsAuthorised(
 		}
 	}
 
-	// Dropping through to Expression-based permissions logic...
+	// Create a copy of the current action query
+	permissionQuery := query.Copy()
 
+	// Dropping through to Expression-based permissions logic...
 	exprBasedPerms := proto.PermissionsWithExpression(permissions)
 
-	// If there are zero Expression-based permissions provided - we know we cannot grant permission.
-	// This isn't just an optimisation - the code below spuriously grants access in this case.
+	// No expression permissions left means no permission can be granted.
 	if len(exprBasedPerms) == 0 {
 		return false, nil
 	}
 
-	constraints := scope.query.Session(&gorm.Session{NewDB: true})
 	for i, permission := range exprBasedPerms {
-
 		expression, err := parser.ParseExpression(permission.Expression.Source)
 		if err != nil {
 			return false, err
 		}
 
-		// New expression resolver to generate a database query statement
-		resolver := NewExpressionResolver(scope) // todo: would it be better to have this outside the loop?
-
 		// First check to see if we can resolve the condition "in proc"
-		if resolver.CanResolveInMemory(expression) {
-			if resolver.ResolveInMemory(expression, args, scope.writeValues) {
+		if canResolveInMemory(scope, expression) {
+			if resolveInMemory(scope, expression, args, query.writeValues) {
 				return true, nil
 			} else if i == len(exprBasedPerms)-1 {
 				return false, nil
 			}
 		} else {
 			// Resolve the database statement for this expression
-			// todo: the issue with gorm not "remembering" JOINs
-
-			statement, _, err := resolver.ResolveQueryStatement(expression, args, scope.writeValues)
+			err = permissionQuery.whereByExpression(scope, expression, args)
 			if err != nil {
 				return false, err
 			}
-
-			// Logical OR between each of the permission expressions
-			constraints = constraints.Or(statement)
+			// Or with the next
+			permissionQuery.Or()
 		}
 	}
 
-	// Logical AND between the implicit/explicit filters and all the permission conditions
-	permissionQuery := scope.query.
-		Session(&gorm.Session{}).
-		Where(constraints)
-
 	// Determine the number of rows in the current query which don't satisfy the permission conditions
-	results := map[string]any{}
-	scope.query.Session(&gorm.Session{NewDB: true}).Raw("SELECT COUNT(id) as unauthorised FROM (? EXCEPT ?) as unauthorisedrows",
-		scope.query,
-		permissionQuery,
-	).Scan(&results)
-	unauthorisedRows, ok := results["unauthorised"].(int64)
+	stmt := &Statement{
+		template: fmt.Sprintf("SELECT COUNT(id) as unauthorised FROM (%v EXCEPT %v) as unauthorisedrows",
+			query.SelectStatement().template,
+			permissionQuery.SelectStatement().template),
+		args: append(query.args, permissionQuery.args...)}
+
+	results, _, err := stmt.ExecuteWithResults(scope)
+	if err != nil {
+		return false, err
+	}
+
+	unauthorisedRows, ok := results[0]["unauthorised"].(int64)
 
 	if !ok {
 		return false, fmt.Errorf("failed to query or parse unauthorised rows from database")
@@ -116,8 +106,7 @@ func DefaultIsAuthorised(
 
 // roleBasedPermissionGranted returns true if there is a role-based permission among the
 // given list of permissions that passes.
-func roleBasedPermissionGranted(roleBasedPermissions []*proto.PermissionRule, scope *Scope) (granted bool, err error) {
-
+func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.PermissionRule) (granted bool, err error) {
 	// todo: nicer if this came in the Scope or Token?
 	// Because it costs a database query.
 	currentUserEmail, currentUserDomain, err := getEmailAndDomain(scope)
