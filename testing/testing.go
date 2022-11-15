@@ -214,30 +214,17 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 								result, err := actions.Create(scope, body.Payload)
 
 								r := map[string]any{
-									"object": nil,
+									"object": result,
 									"errors": serializeError(err),
-								}
-
-								if result != nil {
-									r["object"] = result
 								}
 
 								writeResponse(r, w)
 							case proto.OperationType_OPERATION_TYPE_UPDATE:
-								args, err := argParser.ParseUpdate(operation, body.Payload)
-								if err != nil {
-									panic(err)
-								}
-
-								result, err := scope.Update(args)
+								result, err := actions.Update(scope, body.Payload)
 
 								r := map[string]any{
-									"object": nil,
+									"object": result,
 									"errors": serializeError(err),
-								}
-
-								if result != nil {
-									r["object"] = result.Object
 								}
 
 								writeResponse(r, w)

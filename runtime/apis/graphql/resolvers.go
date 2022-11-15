@@ -73,22 +73,13 @@ func DeleteFn(schema *proto.Schema, operation *proto.Operation, argParser *Graph
 
 func UpdateFn(schema *proto.Schema, operation *proto.Operation, argParser *GraphQlArgParser) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		args, err := argParser.ParseUpdate(operation, p.Args)
-		if err != nil {
-			return nil, err
-		}
-
 		scope, err := actions.NewScope(p.Context, operation, schema)
 		if err != nil {
 			return nil, err
 		}
 
-		result, err := scope.Update(args)
+		input := p.Args["input"].(map[string]any)
 
-		if err != nil {
-			return nil, err
-		}
-
-		return result.Object, nil
+		return actions.Update(scope, input)
 	}
 }

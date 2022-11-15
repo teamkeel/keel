@@ -15,37 +15,6 @@ import (
 type RpcArgParser struct {
 }
 
-func (parser *RpcArgParser) ParseUpdate(operation *proto.Operation, request *http.Request) (*actions.Args, error) {
-	data, err := postParamsToInputs(request.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	values, _ := data["values"].(map[string]any)
-	wheres, _ := data["where"].(map[string]any)
-
-	// Add explicit inputs to wheres as well because as they can be used in @permission
-	explicitInputs := lo.FilterMap(operation.Inputs, func(in *proto.OperationInput, _ int) (string, bool) {
-		isExplicit := in.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT
-		_, isArg := values[in.Name]
-
-		return in.Name, (isExplicit && isArg)
-	})
-	explicitInputArgs := lo.PickByKeys(values, explicitInputs)
-	wheres = lo.Assign(wheres, explicitInputArgs)
-
-	values, err = convertArgsMap(operation, values)
-	if err != nil {
-		return nil, err
-	}
-	wheres, err = convertArgsMap(operation, wheres)
-	if err != nil {
-		return nil, err
-	}
-
-	return actions.NewArgs(values, wheres), nil
-}
-
 func (parser *RpcArgParser) ParseList(operation *proto.Operation, request *http.Request) (*actions.Args, error) {
 	var data map[string]any
 	var err error

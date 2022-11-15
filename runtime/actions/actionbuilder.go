@@ -118,23 +118,6 @@ func (scope *Scope) List(args *Args) (*ListResult, error) {
 	return &result.Value, err
 }
 
-func (scope *Scope) Update(args *Args) (*UpdateResult, error) {
-	var builder UpdateAction
-	result, err := builder.
-		Initialise(scope).
-		CaptureImplicitWriteInputValues(args.Values()).
-		CaptureSetValues(args.Values()).
-		ApplyImplicitFilters(args.Wheres()).
-		ApplyExplicitFilters(args.Wheres()).
-		IsAuthorised(args.Wheres()).
-		Execute(args.Wheres())
-
-	if err != nil {
-		return nil, err
-	}
-	return &result.Value, err
-}
-
 // toLowerCamelMap returns a copy of the given map, in which all
 // of the key strings are converted to LowerCamelCase.
 // It is good for converting identifiers typically used as database

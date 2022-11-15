@@ -7,106 +7,62 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-type UpdateAction struct {
-	scope *Scope
-}
-
-type UpdateResult struct {
-	Object map[string]any `json:"object"`
-}
-
-func (action *UpdateAction) Initialise(scope *Scope) ActionBuilder[UpdateResult] {
-	action.scope = scope
-	return action
-}
-
-func (action *UpdateAction) CaptureImplicitWriteInputValues(args ValueArgs) ActionBuilder[UpdateResult] {
-	if action.scope.Error != nil {
-		return action
+func Update(scope *Scope, input map[string]any) (Row, error) {
+	values, ok := input["values"].(map[string]any)
+	if !ok {
+		values = map[string]any{}
 	}
 
-	// Delegate to a method that we hope will become more widely used later.
-	if err := DefaultCaptureImplicitWriteInputValues(action.scope.operation.Inputs, args, action.scope); err != nil {
-		action.scope.Error = err
-		return action
-	}
-	return action
-}
-
-func (action *UpdateAction) CaptureSetValues(args ValueArgs) ActionBuilder[UpdateResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
-	if err := DefaultCaptureSetValues(action.scope, args); err != nil {
-		action.scope.Error = err
-		return action
-	}
-	return action
-}
-
-func (action *UpdateAction) IsAuthorised(args WhereArgs) ActionBuilder[UpdateResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
-	isAuthorised, err := DefaultIsAuthorised(action.scope, args)
-
+	err := DefaultCaptureImplicitWriteInputValues(scope.operation.Inputs, values, scope)
 	if err != nil {
-		action.scope.Error = err
-		return action
+		return nil, err
+	}
+
+	err = DefaultCaptureSetValues(scope, values)
+	if err != nil {
+		return nil, err
+	}
+
+	where, ok := input["where"].(map[string]any)
+	if !ok {
+		where = map[string]any{}
+	}
+
+	err = DefaultApplyImplicitFilters(scope, where)
+	if err != nil {
+		return nil, err
+	}
+
+	err = DefaultApplyExplicitFilters(scope, where)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: update so that permissions can't access inputs
+	permissionInputs := map[string]any{}
+	for k, v := range where {
+		permissionInputs[k] = v
+	}
+	for k, v := range values {
+		permissionInputs[k] = v
+	}
+
+	isAuthorised, err := DefaultIsAuthorised(scope, permissionInputs)
+	if err != nil {
+		return nil, err
 	}
 
 	if !isAuthorised {
-		action.scope.Error = errors.New("not authorized to access this operation")
+		return nil, errors.New("not authorized to access this operation")
 	}
 
-	return action
-}
-
-func (action *UpdateAction) ApplyImplicitFilters(args WhereArgs) ActionBuilder[UpdateResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
-	if err := DefaultApplyImplicitFilters(action.scope, args); err != nil {
-		action.scope.Error = err
-		return action
-	}
-	return action
-}
-
-func (action *UpdateAction) ApplyExplicitFilters(args WhereArgs) ActionBuilder[UpdateResult] {
-	if action.scope.Error != nil {
-		return action
-	}
-
-	// We delegate to a function that may get used by other Actions later on, once we have
-	// unified how we handle operators in both schema where clauses and in implicit inputs language.
-	err := DefaultApplyExplicitFilters(action.scope, args)
-	if err != nil {
-		action.scope.Error = err
-		return action
-	}
-	return action
-}
-
-func (action *UpdateAction) Execute(args WhereArgs) (*ActionResult[UpdateResult], error) {
-	if action.scope.Error != nil {
-		return nil, action.scope.Error
-	}
-	op := action.scope.operation
+	op := scope.operation
 
 	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		inputs := map[string]any{
-			"where":  args,
-			"values": action.scope.writeValues,
-		}
-
-		return ParseUpdateResponse(action.scope.context, op, inputs)
+		return ParseUpdateResponse(scope.context, op, input)
 	}
 
-	err := action.scope.query.Updates(action.scope.writeValues).Error
+	err = scope.query.Updates(scope.writeValues).Error
 	if err != nil {
 		return nil, err
 	}
@@ -114,11 +70,12 @@ func (action *UpdateAction) Execute(args WhereArgs) (*ActionResult[UpdateResult]
 	// todo: Use RETURNING statement on UPDATE
 	// https://linear.app/keel/issue/RUN-146/gorm-use-returning-on-insert-and-update-statements
 	results := []map[string]any{}
-	action.scope.query = action.scope.query.WithContext(action.scope.context).Find(&results)
+	scope.query = scope.query.WithContext(scope.context).Find(&results)
 
-	if action.scope.query.Error != nil {
-		return nil, action.scope.query.Error
+	if scope.query.Error != nil {
+		return nil, scope.query.Error
 	}
+
 	n := len(results)
 	if n == 0 {
 		return nil, errors.New("no records found for Update() operation")
@@ -128,10 +85,5 @@ func (action *UpdateAction) Execute(args WhereArgs) (*ActionResult[UpdateResult]
 	}
 
 	result := toLowerCamelMap(results[0])
-
-	return &ActionResult[UpdateResult]{
-		Value: UpdateResult{
-			Object: result,
-		},
-	}, nil
+	return result, nil
 }
