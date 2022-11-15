@@ -27,8 +27,7 @@ func Get(scope *Scope, input map[string]any) (Row, error) {
 	}
 
 	if !isAuthorised {
-		scope.Error = errors.New("not authorized to access this operation")
-		return nil, scope.Error
+		return nil, errors.New("not authorized to access this operation")
 	}
 
 	op := scope.operation

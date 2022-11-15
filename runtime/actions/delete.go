@@ -9,25 +9,21 @@ import (
 func Delete(scope *Scope, input map[string]any) (bool, error) {
 	err := DefaultApplyImplicitFilters(scope, input)
 	if err != nil {
-		scope.Error = err
-		return false, scope.Error
+		return false, err
 	}
 
 	err = DefaultApplyExplicitFilters(scope, input)
 	if err != nil {
-		scope.Error = err
-		return false, scope.Error
+		return false, err
 	}
 
 	isAuthorised, err := DefaultIsAuthorised(scope, input)
 	if err != nil {
-		scope.Error = err
-		return false, scope.Error
+		return false, err
 	}
 
 	if !isAuthorised {
-		scope.Error = errors.New("not authorized to access this operation")
-		return false, scope.Error
+		return false, errors.New("not authorized to access this operation")
 	}
 
 	op := scope.operation

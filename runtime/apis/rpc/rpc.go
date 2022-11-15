@@ -37,23 +37,7 @@ func NewRpcApi(p *proto.Schema, api *proto.Api) func(r *http.Request) (interface
 			return nil, errors.New("not found")
 		}
 
-		var handler func(r *http.Request) (interface{}, error)
-
-		switch operation.Type {
-		case proto.OperationType_OPERATION_TYPE_GET:
-			handler = GetFn(p, operation, &RpcArgParser{})
-		case proto.OperationType_OPERATION_TYPE_CREATE:
-			handler = CreateFn(p, operation, &RpcArgParser{})
-		case proto.OperationType_OPERATION_TYPE_LIST:
-			handler = ListFn(p, operation, &RpcArgParser{})
-		case proto.OperationType_OPERATION_TYPE_UPDATE:
-			handler = UpdateFn(p, operation, &RpcArgParser{})
-		case proto.OperationType_OPERATION_TYPE_DELETE:
-			handler = DeleteFn(p, operation, &RpcArgParser{})
-		case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-			handler = AuthenticateFn(p, operation, &RpcArgParser{})
-		}
-
+		handler := ActionFunc(p, operation)
 		return handler(r)
 	}
 }

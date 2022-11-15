@@ -1,44 +1,36 @@
 package rpc
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 )
 
-func GetFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgParser) func(r *http.Request) (interface{}, error) {
+func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(r *http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
-		if r.Method != http.MethodGet && r.Method != http.MethodPost {
-			return nil, fmt.Errorf("%s not allowed", r.Method)
-		}
-
 		var input map[string]any
-		var err error
 
 		switch r.Method {
 		case http.MethodGet:
-			input = queryParamsToInputs(r.URL.Query())
+			switch operation.Type {
+			case proto.OperationType_OPERATION_TYPE_GET,
+				proto.OperationType_OPERATION_TYPE_LIST:
+				input = queryParamsToInputs(r.URL.Query())
+			default:
+				return nil, fmt.Errorf("%s not allowed", r.Method)
+			}
 		case http.MethodPost:
+			var err error
 			input, err = postParamsToInputs(r.Body)
 			if err != nil {
 				return nil, err
 			}
-		}
-
-		scope, err := actions.NewScope(r.Context(), operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		return actions.Get(scope, input)
-	}
-}
-
-func CreateFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgParser) func(r *http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		if r.Method != http.MethodPost {
+		default:
 			return nil, fmt.Errorf("%s not allowed", r.Method)
 		}
 
@@ -47,106 +39,64 @@ func CreateFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcAr
 			return nil, err
 		}
 
-		input, err := postParamsToInputs(r.Body)
-		if err != nil {
-			return nil, err
-		}
+		switch operation.Type {
+		case proto.OperationType_OPERATION_TYPE_GET:
+			return actions.Get(scope, input)
+		case proto.OperationType_OPERATION_TYPE_UPDATE:
+			return actions.Update(scope, input)
+		case proto.OperationType_OPERATION_TYPE_CREATE:
+			return actions.Create(scope, input)
+		case proto.OperationType_OPERATION_TYPE_DELETE:
+			return actions.Delete(scope, input)
+		case proto.OperationType_OPERATION_TYPE_LIST:
+			return actions.List(scope, input)
+		case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+			authArgs := actions.AuthenticateArgs{
+				CreateIfNotExists: input["createIfNotExists"].(bool),
+				Email:             input["emailPassword"].(map[string]any)["email"].(string),
+				Password:          input["emailPassword"].(map[string]any)["password"].(string),
+			}
 
-		return actions.Create(scope, input)
+			token, identityCreated, err := actions.Authenticate(r.Context(), schema, &authArgs)
+			if err != nil {
+				return nil, err
+			}
+
+			identityId, err := actions.ParseBearerToken(token)
+			if err != nil {
+				return nil, err
+			}
+
+			return map[string]any{
+				"identityId":      identityId.String(),
+				"identityCreated": identityCreated,
+				"token":           token,
+			}, nil
+		default:
+			panic(fmt.Errorf("unhandled operation type %s", operation.Type.String()))
+		}
 	}
 }
 
-func DeleteFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgParser) func(r *http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		if r.Method != http.MethodPost {
-			return nil, fmt.Errorf("%s not allowed", r.Method)
-		}
-
-		scope, err := actions.NewScope(r.Context(), operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		input, err := postParamsToInputs(r.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		return actions.Delete(scope, input)
+func queryParamsToInputs(q url.Values) map[string]any {
+	inputs := make(map[string]any)
+	for k := range q {
+		inputs[k] = q.Get(k)
 	}
+	return inputs
 }
 
-func UpdateFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgParser) func(r *http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		if r.Method != http.MethodPost {
-			return nil, fmt.Errorf("%s not allowed", r.Method)
-		}
+func postParamsToInputs(b io.ReadCloser) (inputs map[string]any, err error) {
 
-		scope, err := actions.NewScope(r.Context(), operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		input, err := postParamsToInputs(r.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		return actions.Update(scope, input)
+	body, err := io.ReadAll(b)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func ListFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgParser) func(r *http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		if r.Method != http.MethodGet && r.Method != http.MethodPost {
-			return nil, fmt.Errorf("%s not allowed", r.Method)
-		}
-
-		args, err := argParser.ParseList(operation, r)
-		if err != nil {
-			return nil, err
-		}
-
-		scope, err := actions.NewScope(r.Context(), operation, schema)
-		if err != nil {
-			return nil, err
-		}
-
-		return scope.List(args)
+	err = json.Unmarshal(body, &inputs)
+	if err != nil {
+		return nil, err
 	}
-}
 
-func AuthenticateFn(schema *proto.Schema, operation *proto.Operation, argParser *RpcArgParser) func(r *http.Request) (interface{}, error) {
-	return func(r *http.Request) (interface{}, error) {
-		if r.Method != http.MethodPost {
-			return nil, fmt.Errorf("%s not allowed", r.Method)
-		}
-
-		data, err := postParamsToInputs(r.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		authArgs := actions.AuthenticateArgs{
-			CreateIfNotExists: data["createIfNotExists"].(bool),
-			Email:             data["emailPassword"].(map[string]any)["email"].(string),
-			Password:          data["emailPassword"].(map[string]any)["password"].(string),
-		}
-
-		token, identityCreated, err := actions.Authenticate(r.Context(), schema, &authArgs)
-		if err != nil {
-			return nil, err
-		}
-
-		identityId, err := actions.ParseBearerToken(token)
-		if err != nil {
-			return nil, err
-		}
-
-		return map[string]any{
-			"identityId":      identityId.String(),
-			"identityCreated": identityCreated,
-			"token":           token,
-		}, nil
-	}
+	return inputs, nil
 }
