@@ -717,9 +717,6 @@ func (gen *Generator) GenerateEntryPointRenderArguments(pathToFunctionsDirFromHa
 	}
 }
 
-// const handler = newHandler({functions: { .functions here... }, models: { . .. models here ... }})
-
-
 func (gen *Generator) GenerateEntryPoint() (r string) {
 	// We need to refer to the users functions directory,
 	// which will be a few levels above the @teamkeel/client/dist directory.
