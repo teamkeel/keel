@@ -93,6 +93,8 @@ type FieldNode struct {
 	// For these fields this value is set to true so we can distinguish
 	// them from fields defined by the user in the schema
 	BuiltIn bool
+
+	ForeignKey bool // Does this field hold a foreign key?
 }
 
 func (field *FieldNode) String() string {

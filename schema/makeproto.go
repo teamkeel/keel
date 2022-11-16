@@ -189,11 +189,14 @@ func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName strin
 func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *proto.Field {
 	typeInfo := scm.parserFieldToProtoTypeInfo(parserField)
 
+	foreignKeyFieldName := lo.Ternary(parserField.ForeignKey, wrapperspb.String(parserField.Name.Value), nil)
+
 	protoField := &proto.Field{
-		ModelName: modelName,
-		Name:      parserField.Name.Value,
-		Type:      typeInfo,
-		Optional:  parserField.Optional,
+		ModelName:           modelName,
+		Name:                parserField.Name.Value,
+		Type:                typeInfo,
+		Optional:            parserField.Optional,
+		ForeignKeyFieldName: foreignKeyFieldName,
 	}
 
 	// Handle @unique attribute at model level which expresses
