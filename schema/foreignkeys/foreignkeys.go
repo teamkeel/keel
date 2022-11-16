@@ -41,7 +41,8 @@ func NewForeignKeys(asts []*parser.AST, primaryKeyMap PrimaryKeys) ForeignKeys {
 	for _, thisModel := range query.Models(asts) {
 		for _, thisModelField := range query.ModelFields(thisModel) {
 
-			if !query.IsModel(asts, thisModelField.Type) {
+			isHasOneRelation := query.IsModel(asts, thisModelField.Type) && !thisModelField.Repeated
+			if !isHasOneRelation {
 				continue
 			}
 			targetModelName := strcase.ToCamel(thisModelField.Type)
