@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/samber/lo"
@@ -493,11 +492,6 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 // should have their ForeignKeyName field set, and does so accordingly.
 func (scm *Builder) setForeignKeyNames(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
 	for _, fkInfo := range fkInfos {
-		fmt.Printf("XXXX setting fkname on %s:%s to %s\n",
-			fkInfo.OwningModel.Name.Value,
-			fkInfo.OwningField.Name.Value,
-			fkInfo.ForeignKeyName,
-		)
 		fieldToUpdate := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
 		fieldToUpdate.ForeignKeyFieldName = wrapperspb.String(fkInfo.ForeignKeyName)
 	}

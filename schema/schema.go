@@ -233,7 +233,6 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) []*foreignkeys.Fo
 				break
 			}
 		}
-		fmt.Printf("XXXX added fk named: %s to model: %s\n", fKInfo.ForeignKeyName, fKInfo.OwningModel.Name.Value)
 		fieldsSection.Fields = append(fieldsSection.Fields, fkField)
 	}
 	return foreignKeys
