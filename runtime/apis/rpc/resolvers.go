@@ -51,27 +51,7 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(r *http.R
 		case proto.OperationType_OPERATION_TYPE_LIST:
 			return actions.List(scope, input)
 		case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-			authArgs := actions.AuthenticateArgs{
-				CreateIfNotExists: input["createIfNotExists"].(bool),
-				Email:             input["emailPassword"].(map[string]any)["email"].(string),
-				Password:          input["emailPassword"].(map[string]any)["password"].(string),
-			}
-
-			token, identityCreated, err := actions.Authenticate(r.Context(), schema, &authArgs)
-			if err != nil {
-				return nil, err
-			}
-
-			identityId, err := actions.ParseBearerToken(token)
-			if err != nil {
-				return nil, err
-			}
-
-			return map[string]any{
-				"identityId":      identityId.String(),
-				"identityCreated": identityCreated,
-				"token":           token,
-			}, nil
+			return actions.Authenticate(scope, input)
 		default:
 			panic(fmt.Errorf("unhandled operation type %s", operation.Type.String()))
 		}

@@ -41,6 +41,8 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 				return nil, err
 			}
 			return connectionResponse(res.Results, res.HasNextPage)
+		case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+			return actions.Authenticate(scope, input)
 		default:
 			panic(fmt.Errorf("unhandled operation type %s", operation.Type.String()))
 		}

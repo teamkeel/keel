@@ -1,7 +1,6 @@
 package graphql
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,7 +10,6 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/actions"
 )
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
@@ -169,24 +167,19 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
-		field.Resolve = ActionFunc(schema, op)
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		field.Resolve = ActionFunc(schema, op)
 		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		field.Resolve = ActionFunc(schema, op)
 		field.Type = graphql.NewNonNull(field.Type)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		field.Type = deleteResponseType
-		field.Resolve = ActionFunc(schema, op)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		field.Resolve = ActionFunc(schema, op)
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
 		field.Type = mk.makeConnectionType(outputType)
@@ -211,42 +204,14 @@ func (mk *graphqlSchemaBuilder) addOperation(
 			})
 		}
 
-		field.Resolve = func(p graphql.ResolveParams) (interface{}, error) {
-			input := p.Args["input"]
-			inputMap, ok := input.(map[string]any)
-
-			if !ok {
-				return nil, errors.New("input not a map")
-			}
-
-			authArgs := actions.AuthenticateArgs{
-				CreateIfNotExists: inputMap["createIfNotExists"].(bool),
-				Email:             inputMap["emailPassword"].(map[string]any)["email"].(string),
-				Password:          inputMap["emailPassword"].(map[string]any)["password"].(string),
-			}
-
-			token, identityCreated, err := actions.Authenticate(p.Context, schema, &authArgs)
-
-			if err != nil {
-				return nil, err
-			}
-
-			if token != "" {
-				return map[string]any{
-					"identityCreated": identityCreated,
-					"token":           token,
-				}, nil
-			} else {
-				return nil, errors.New("failed to authenticate")
-			}
-		}
-
 		field.Type = ouput
 
 		mk.mutation.AddFieldConfig(op.Name, field)
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
 	}
+
+	field.Resolve = ActionFunc(schema, op)
 
 	return nil
 }
