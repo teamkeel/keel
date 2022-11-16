@@ -180,23 +180,22 @@ func (scm *Builder) makeEnum(decl *parser.DeclarationNode) *proto.Enum {
 func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
 	protoFields := []*proto.Field{}
 	for _, parserField := range parserFields {
-		protoField := scm.makeField(parserField, modelName)
+		protoField, isForeignKey := scm.makeField(parserField, modelName)
 		protoFields = append(protoFields, protoField)
 	}
+	// Mark any Model fields we found, with the correct ForeignKeyField name.
+	fart
 	return protoFields
 }
 
-func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *proto.Field {
+func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) (f *proto.Field, isForeignKey bool) {
 	typeInfo := scm.parserFieldToProtoTypeInfo(parserField)
 
-	foreignKeyFieldName := lo.Ternary(parserField.ForeignKey, wrapperspb.String(parserField.Name.Value), nil)
-
 	protoField := &proto.Field{
-		ModelName:           modelName,
-		Name:                parserField.Name.Value,
-		Type:                typeInfo,
-		Optional:            parserField.Optional,
-		ForeignKeyFieldName: foreignKeyFieldName,
+		ModelName: modelName,
+		Name:      parserField.Name.Value,
+		Type:      typeInfo,
+		Optional:  parserField.Optional,
 	}
 
 	// Handle @unique attribute at model level which expresses
@@ -222,7 +221,7 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 	}
 
 	scm.applyFieldAttributes(parserField, protoField)
-	return protoField
+	return protoField, parserField.ForeignKey
 }
 
 func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {

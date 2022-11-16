@@ -234,8 +234,11 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) {
 		}
 		for _, foreignKeyName := range fkList {
 			fkField := &parser.FieldNode{
-				BuiltIn:  true,
-				Optional: true, // todo should FK fields always be optional? (causes some regressions if not?)
+				ForeignKeyInfo: &parser.ForeignKeyInfo{
+					RelatedModelFieldName: what tomorrow is another day,
+				},
+				BuiltIn:    true,
+				Optional:   true,
 				Name: parser.NameNode{
 					Value: foreignKeyName,
 				},
