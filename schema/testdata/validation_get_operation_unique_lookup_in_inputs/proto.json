@@ -1,20 +1,17 @@
 {
   "models": [
     {
-      "name": "Post",
+      "name": "MyModel",
       "fields": [
         {
-          "modelName": "Post",
-          "name": "identity",
+          "modelName": "MyModel",
+          "name": "isActive",
           "type": {
-            "type": "TYPE_IDENTITY",
-            "modelName": "Identity"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "identityId"
+            "type": "TYPE_BOOL"
+          }
         },
         {
-          "modelName": "Post",
+          "modelName": "MyModel",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -25,7 +22,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "modelName": "MyModel",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -35,7 +32,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "modelName": "MyModel",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -43,44 +40,32 @@
           "defaultValue": {
             "useZeroValue": true
           }
-        },
-        {
-          "modelName": "Post",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true
         }
       ],
       "operations": [
         {
-          "modelName": "Post",
-          "name": "createPost",
-          "type": "OPERATION_TYPE_CREATE",
+          "modelName": "MyModel",
+          "name": "getMyModel",
+          "type": "OPERATION_TYPE_GET",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputs": [
             {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "name": "identity",
+              "modelName": "MyModel",
+              "operationName": "getMyModel",
+              "name": "id",
               "type": {
-                "type": "TYPE_IDENTITY"
+                "type": "TYPE_ID"
               },
-              "mode": "INPUT_MODE_WRITE",
+              "mode": "INPUT_MODE_READ",
               "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
               "target": [
-                "identity"
+                "id"
               ]
             }
           ],
-          "permissions": [
+          "whereExpressions": [
             {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "expression": {
-                "source": "post.identity == null"
-              }
+              "source": "myModel.isActive == true"
             }
           ]
         }
