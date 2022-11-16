@@ -1,74 +1,74 @@
 [
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with M:1 relations - all models active - model returned"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with M:1 relations - post model not active - no records found"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with M:1 relations - nested author model not active - no records found"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with M:1 relations - nested nested publisher model not active - no records found"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with 1:M relations - all models active - publisher returned"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with 1:M relations - publisher not active - no publisher found"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with 1:M relations - one author active - publisher returned"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with 1:M relations - active author with inactive posts and inactive autor with active posts - no publisher found"
-    },
-    {
-        "status": "pass",
-        "testName": "get operation implicit inputs with 1:M relations - no active posts  - publisher returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with M:1 relations - all models active - all models returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with M:1 relations - Keel org not active - Weave models returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with M:1 relations - Keelson author not active - Weaveton models returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with M:1 relations - one Keelson post not active - Weaveton models returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with 1:M relations - all models active - all models returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with 1:M relations - Keel org not active - only Keel returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with 1:M relations - Keel author not active - Weave org returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with 1:M relations - one Keel post not active - all models returned"
-    },
-    {
-        "status": "pass",
-        "testName": "list operation implicit inputs with 1:M relations - all Keel posts not active - Weave org returned"
-    }
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with M:1 relations - all models active - model returned"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with M:1 relations - post model not active - no records found"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with M:1 relations - nested author model not active - no records found"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with M:1 relations - nested nested publisher model not active - no records found"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with 1:M relations - all models active - publisher returned"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with 1:M relations - publisher not active - no publisher found"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with 1:M relations - one author active - publisher returned"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with 1:M relations - active author with inactive posts and inactive autor with active posts - no publisher found"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation implicit inputs with 1:M relations - no active posts  - publisher returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with M:1 relations - all models active - all models returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with M:1 relations - Keel org not active - Weave models returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with M:1 relations - Keelson author not active - Weaveton models returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with M:1 relations - one Keelson post not active - Weaveton models returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with 1:M relations - all models active - all models returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with 1:M relations - Keel org not active - only Keel returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with 1:M relations - Keel author not active - Weave org returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with 1:M relations - one Keel post not active - all models returned"
+  },
+  {
+    "status": "pass",
+    "testName": "list operation implicit inputs with 1:M relations - all Keel posts not active - Weave org returned"
+  }
 ]
