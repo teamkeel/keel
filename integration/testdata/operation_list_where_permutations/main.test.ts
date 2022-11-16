@@ -16,7 +16,9 @@ test("equalsGettingStarted", async () => {
   //
   // The other implied codes being Lit(eral) and null.
   //
-  resp = await actions.eqTextFieldToInp({ whereArg: "History of Art" });
+  resp = await actions.eqTextFieldToInp({
+    where: { whereArg: "History of Art" },
+  });
   expect(resp.collection.length).toEqual(1);
 
   resp = await actions.eqTextFieldToField({});

@@ -224,18 +224,6 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 
 								writeResponse(r, w)
 							case proto.OperationType_OPERATION_TYPE_LIST:
-								// Fix for testing client not sending filters under
-								// a "where" key
-								where := map[string]any{}
-								for k, v := range body.Payload {
-									if lo.Contains([]string{"first", "after"}, k) {
-										continue
-									}
-									where[k] = v
-									delete(body.Payload, k)
-								}
-								body.Payload["where"] = where
-
 								result, err := actions.List(scope, body.Payload)
 
 								r := map[string]any{
