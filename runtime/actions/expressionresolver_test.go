@@ -55,7 +55,7 @@ func TestExpressionResolver(t *testing.T) {
 
 			// Fire the assertions.
 			// Todo: these should come from the test case.
-			require.Equal(t, "my_model.my_field = ?", c.SQL)
+			require.Equal(t, "my_model.my_field IS NOT DISTINCT FROM ?", c.SQL)
 			require.Equal(t, "Good Morning", c.Vars[0])
 		})
 
