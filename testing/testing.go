@@ -11,7 +11,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/bmatcuk/doublestar/v4"
 	"github.com/karlseguin/typed"
@@ -491,43 +490,4 @@ func typecheck(dir string) (output string, err error) {
 	}
 
 	return string(b), err
-}
-
-// Converts the input args (JSON) sent from the JavaScript process
-// into a format that the actions code understands.
-// Dates in JSON will come in as strings in ISO8601 format whereas
-// the actions code expects time.Time
-// In the future, this method can be extended to handle other conversions
-// or refactored completely into a deserializer type pattern, shared with
-// the graphql code
-func toNativeMap(args map[string]interface{}, action *proto.Operation) (map[string]any, error) {
-	out := map[string]any{}
-
-	for _, input := range action.Inputs {
-		match, ok := args[input.Name]
-
-		if ok {
-			inputType := input.Type.Type
-
-			switch inputType {
-			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_DATE:
-				str, ok := match.(string)
-
-				if !ok {
-					return nil, fmt.Errorf("%s arg with value %v is not a string", input.Name, match)
-				}
-
-				time, err := time.Parse("2006-01-02T15:04:05-0700", str)
-				if err != nil {
-					return nil, fmt.Errorf("%s is not ISO8601 formatted date: %s", input.Name, str)
-				}
-
-				out[input.Name] = time
-			default:
-				out[input.Name] = match
-			}
-		}
-	}
-
-	return out, nil
 }
