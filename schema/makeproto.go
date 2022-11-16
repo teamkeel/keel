@@ -5,13 +5,14 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) set of parsed AST.
-func (scm *Builder) makeProtoModels() *proto.Schema {
+func (scm *Builder) makeProtoModels(fkInfo []*foreignkeys.ForeignKeyInfo) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
 	for _, parserSchema := range scm.asts {
@@ -34,6 +35,11 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			}
 		}
 	}
+
+	// Now that the proto models are built and accessible in the protoSchema, we go back over them,
+	// governed by the given ForeignKeyInfo, in order to set the ForeignKeyName on
+	// appropriate model fields.
+	scm.setForeignKeyNames(fkInfo, protoSchema)
 
 	return protoSchema
 }
@@ -180,17 +186,14 @@ func (scm *Builder) makeEnum(decl *parser.DeclarationNode) *proto.Enum {
 func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
 	protoFields := []*proto.Field{}
 	for _, parserField := range parserFields {
-		protoField, isForeignKey := scm.makeField(parserField, modelName)
+		protoField := scm.makeField(parserField, modelName)
 		protoFields = append(protoFields, protoField)
 	}
-	// Mark any Model fields we found, with the correct ForeignKeyField name.
-	fart
 	return protoFields
 }
 
-func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) (f *proto.Field, isForeignKey bool) {
+func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *proto.Field {
 	typeInfo := scm.parserFieldToProtoTypeInfo(parserField)
-
 	protoField := &proto.Field{
 		ModelName: modelName,
 		Name:      parserField.Name.Value,
@@ -221,7 +224,7 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) (
 	}
 
 	scm.applyFieldAttributes(parserField, protoField)
-	return protoField, parserField.ForeignKey
+	return protoField
 }
 
 func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {
@@ -482,5 +485,14 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 		return proto.ApiType_API_TYPE_RPC
 	default:
 		return proto.ApiType_API_TYPE_UNKNOWN
+	}
+}
+
+// setForeignKeyNames uses the instructions in the given ForeignKeyInfo(s) to locate all the fields that
+// should have their ForeignKeyName field set, and does so accordingly.
+func (scm *Builder) setForeignKeyNames(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
+	for _, fkInfo := range fkInfos {
+		fieldToUpdate := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
+		fieldToUpdate.ForeignKeyFieldName = wrapperspb.String(fkInfo.ForeignKeyName)
 	}
 }
