@@ -1,10 +1,5 @@
 name: Test NPM packages
-
-on: 
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [ pull_request ]
 
 jobs:
   test-sdk:
