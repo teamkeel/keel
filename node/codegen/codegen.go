@@ -127,10 +127,8 @@ func (g *Generator) sdkSrcCode() string {
 	})
 
 	return renderTemplate(TemplateSdk, map[string]interface{}{
-		"ModelApis":          modelApis,
-		"CustomFunctions":    customFunctions,
-		"HasCustomFunctions": len(customFunctions) > 0,
-		"HasModelApis":       len(modelApis) > 0,
+		"ModelApis":       modelApis,
+		"CustomFunctions": customFunctions,
 	})
 }
 
