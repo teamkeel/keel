@@ -55,7 +55,19 @@ func TestSdk(t *testing.T) {
 
 		require.NoError(t, err)
 
-		compareFiles(t, tc, generatedFiles)
+		for _, f := range generatedFiles {
+			actual := normaliseString(f.Contents)
+			expected := ""
+
+			switch f.Type {
+			case codegenerator.SourceCodeTypeJavaScript:
+				expected = normaliseString(tc.JavaScriptOutput)
+			case codegenerator.SourceCodeTypeDefinition:
+				expected = normaliseString(tc.TypeScriptDefinitionOutput)
+			}
+
+			assert.Equal(t, expected, actual)
+		}
 	}
 }
 
@@ -64,20 +76,4 @@ func normaliseString(str string) string {
 	str = strings.Replace(str, "\n", "", -1)
 
 	return str
-}
-
-func compareFiles(t *testing.T, tc TestCase, generatedFiles []*codegenerator.GeneratedFile) {
-	for _, f := range generatedFiles {
-		actual := normaliseString(f.Contents)
-		expected := ""
-
-		switch f.Type {
-		case codegenerator.SourceCodeTypeJavaScript:
-			expected = normaliseString(tc.JavaScriptOutput)
-		case codegenerator.SourceCodeTypeDefinition:
-			expected = normaliseString(tc.TypeScriptDefinitionOutput)
-		}
-
-		assert.Equal(t, expected, actual)
-	}
 }
