@@ -38,8 +38,8 @@ func NewGenerator(schema *proto.Schema, dir string) *Generator {
 type SourceCodeType string
 
 const (
-	SourceCodeTypeDefinition SourceCodeType = "definition"
-	SourceCodeTypeJavaScript SourceCodeType = "javascript"
+	SourceCodeTypeDefinition SourceCodeType = "definition" // index.d.ts
+	SourceCodeTypeJavaScript SourceCodeType = "javascript" // index.js
 )
 
 type SourceCode struct {
