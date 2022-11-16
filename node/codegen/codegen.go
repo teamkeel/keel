@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -109,11 +110,28 @@ func (g *Generator) testingTypeDefinitions() (r string) {
 	return r
 }
 
-func (g *Generator) sdkSrcCode() (r string) {
-	r += "const doSomething = () => 'hello';\n"
-	r += "const variableName = '';\n"
+func (g *Generator) sdkSrcCode() string {
+	// model api
+	modelApis := []*ModelApi{}
 
-	return r
+	for _, model := range g.schema.Models {
+		modelApis = append(modelApis, &ModelApi{
+			ModelName: model.Name,
+			TableName: strcase.ToSnake(model.Name),
+		})
+	}
+
+	// function wrapper
+	customFunctions := proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
+		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	})
+
+	return renderTemplate(TemplateSdk, map[string]interface{}{
+		"ModelApis":          modelApis,
+		"CustomFunctions":    customFunctions,
+		"HasCustomFunctions": len(customFunctions) > 0,
+		"HasModelApis":       len(modelApis) > 0,
+	})
 }
 
 func (g *Generator) sdkTypeDefinitions() (r string) {
