@@ -614,19 +614,18 @@ func (resolver *OperandResolver) generateJoins() (joins []string, err error) {
 func generateGormWhereTemplate(lhsSqlOperand any, rhsSqlOperand any, operator ActionOperator) (string, error) {
 	var template string
 
+	if lhsSqlOperand == nil {
+		lhsSqlOperand = "NULL"
+	}
+	if rhsSqlOperand == nil {
+		rhsSqlOperand = "NULL"
+	}
+
 	switch operator {
 	case Equals:
-		if rhsSqlOperand == nil {
-			template = fmt.Sprintf("%s IS NULL", lhsSqlOperand)
-		} else {
-			template = fmt.Sprintf("%s = %s", lhsSqlOperand, rhsSqlOperand)
-		}
+		template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
 	case NotEquals:
-		if rhsSqlOperand == nil {
-			template = fmt.Sprintf("%s IS NOT NULL", lhsSqlOperand)
-		} else {
-			template = fmt.Sprintf("%s != %s", lhsSqlOperand, rhsSqlOperand)
-		}
+		template = fmt.Sprintf("%s IS DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
 	case StartsWith, EndsWith, Contains:
 		template = fmt.Sprintf("%s LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case NotContains:
