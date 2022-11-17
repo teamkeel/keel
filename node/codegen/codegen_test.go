@@ -21,6 +21,10 @@ type TestCase struct {
 }
 
 func TestSdk(t *testing.T) {
+	// When comparing actual vs expected src code contents, the expected value is
+	// evaluated partially [e.g expect(actual).toInclude(expected)] so you do not need
+	// to specify the full code to be generated, and instead match partially on whatever
+	// you want to expect to be added for a given test.
 	cases := []TestCase{
 		{
 			Name: "model-generation-simple",
@@ -165,66 +169,6 @@ func TestSdk(t *testing.T) {
 				{
 					Path: "index.js",
 					Contents: `
-					export class PersonApi {
-						constructor() {
-							this.create = async (inputs) => {
-								return this.db.create(inputs);
-							};
-							this.where = (conditions) => {
-								return this.db.where(conditions);
-							};
-							this.delete = (id) => {
-								return this.db.delete(id);
-							};
-							this.findOne = (query) => {
-								return this.db.findOne(query);
-							};
-							this.update = (id, inputs) => {
-								return this.db.update(id, inputs);
-							};
-							this.findMany = (query) => {
-								return this.db.where(query).all();
-							};
-							this.db = new Query({
-								tableName: 'person',
-								queryResolver: queryResolverFromEnv(process.env),
-								logger: queryLogger
-							});
-						}
-					}
-					export class IdentityApi {
-						constructor() {
-							this.create = async (inputs) => {
-								return this.db.create(inputs);
-							};
-							this.where = (conditions) => {
-								return this.db.where(conditions);
-							};
-							this.delete = (id) => {
-								return this.db.delete(id);
-							};
-							this.findOne = (query) => {
-								return this.db.findOne(query);
-							};
-							this.update = (id, inputs) => {
-								return this.db.update(id, inputs);
-							};
-							this.findMany = (query) => {
-								return this.db.where(query).all();
-							};
-							this.db = new Query({
-								tableName: 'identity',
-								queryResolver: queryResolverFromEnv(process.env),
-								logger: queryLogger
-							});
-						}
-					}
-					export const api = {
-						models: {
-						  person: new PersonApi(),
-						  identity: new IdentityApi(),
-						}
-					}
 					export const createPerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
