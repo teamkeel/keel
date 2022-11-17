@@ -5,8 +5,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
+	"github.com/bmatcuk/doublestar/v4"
+	"github.com/samber/lo"
 	codegenerator "github.com/teamkeel/keel/node/codegen"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
 
@@ -54,11 +58,15 @@ func Bootstrap(dir string) error {
 
 // Generates @teamkeel/sdk and @teamkeel/testing
 func GeneratePackages(dir string) error {
-	// todo: if no functions or test files, then dont do anything.
-
 	builder := schema.Builder{}
 
 	schema, err := builder.MakeFromDirectory(dir)
+
+	// Dont do any code generation if there are no functions in the schema
+	// or any Keel tests defined
+	if !hasFunctions(schema) && !hasTests(dir) {
+		return nil
+	}
 
 	if err != nil {
 		return err
@@ -93,4 +101,38 @@ func GenerateDevelopmentServer(dir string) error {
 func RunDevelopmentServer(dir string, envVars map[string]any) (*os.Process, error) {
 	// 1. run dev server with ts-node.
 	return nil, nil
+}
+
+func hasFunctions(sch *proto.Schema) bool {
+	var ops []*proto.Operation
+
+	for _, model := range sch.Models {
+		ops = append(ops, model.Operations...)
+	}
+
+	return lo.SomeBy(ops, func(o *proto.Operation) bool {
+		return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	})
+}
+
+func hasTests(dir string) bool {
+	fs := os.DirFS(dir)
+
+	// the only potential error returned from glob here is bad pattern,
+	// which we know not to be true
+	testFiles, _ := doublestar.Glob(fs, "**/*.test.ts")
+
+	// there could be other *.test.ts files unrelated to the Keel testing framework,
+	// so for each test, we do a naive check that the file contents includes a match
+	// for the string "@teamkeel/testing"
+	return lo.SomeBy(testFiles, func(path string) bool {
+		b, err := os.ReadFile(path)
+
+		if err != nil {
+			return false
+		}
+
+		// todo: improve this check as its pretty naive
+		return strings.Contains(string(b), "@teamkeel/testing")
+	})
 }
