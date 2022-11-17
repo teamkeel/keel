@@ -111,7 +111,6 @@ func (g *Generator) testingTypeDefinitions() (r string) {
 }
 
 func (g *Generator) sdkSrcCode() string {
-	// model api
 	modelApis := []*ModelApi{}
 
 	for _, model := range g.schema.Models {
@@ -121,7 +120,6 @@ func (g *Generator) sdkSrcCode() string {
 		})
 	}
 
-	// function wrapper
 	customFunctions := proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
 		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 	})
