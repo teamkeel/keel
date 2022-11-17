@@ -3,8 +3,10 @@ import { test, expect, actions, Post, Identity } from "@teamkeel/testing";
 test("create identity", async () => {
   const { identityId, identityCreated } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   expect(identityCreated).toEqual(true);
@@ -14,8 +16,10 @@ test("authenticate - invalid email - respond with invalid email address error", 
   expect(
     await actions.authenticate({
       createIfNotExists: true,
-      email: "user",
-      password: "1234",
+      emailPassword: {
+        email: "user",
+        password: "1234",
+      },
     })
   ).toHaveError({
     message: "invalid email address",
@@ -26,8 +30,10 @@ test("authenticate - empty password - respond with password cannot be empty erro
   expect(
     await actions.authenticate({
       createIfNotExists: true,
-      email: "user@keel.xyz",
-      password: "",
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "",
+      },
     })
   ).toHaveError({
     message: "password cannot be empty",
@@ -37,8 +43,10 @@ test("authenticate - empty password - respond with password cannot be empty erro
 test("authenticate - new identity and createIfNotExists false - do not create identity", async () => {
   const { identityId, identityCreated } = await actions.authenticate({
     createIfNotExists: false,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   expect(identityId).toBeEmpty();
@@ -49,8 +57,10 @@ test("authenticate - new identity - new identity created", async () => {
   const { identityId: id, identityCreated: created } =
     await actions.authenticate({
       createIfNotExists: true,
-      email: "user@keel.xyz",
-      password: "1234",
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "1234",
+      },
     });
 
   expect(id).notToBeEmpty();
@@ -61,15 +71,19 @@ test("authenticate - existing identity - authenticated", async () => {
   const { identityId: id1, identityCreated: created1 } =
     await actions.authenticate({
       createIfNotExists: true,
-      email: "user@keel.xyz",
-      password: "1234",
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "1234",
+      },
     });
 
   const { identityId: id2, identityCreated: created2 } =
     await actions.authenticate({
       createIfNotExists: true,
-      email: "user@keel.xyz",
-      password: "1234",
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "1234",
+      },
     });
 
   expect(id1).toEqual(id2);
@@ -84,15 +98,19 @@ test("authenticate - incorrect credentials with existing identity - not authenti
     errors: errors1,
   } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { identityId: id2, identityCreated: created2 } =
     await actions.authenticate({
       createIfNotExists: true,
-      email: "user@keel.xyz",
-      password: "zzzz",
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "zzzz",
+      },
     });
 
   var notEqualIdentities = id1 != id2;
@@ -104,8 +122,10 @@ test("authenticate - incorrect credentials with existing identity - not authenti
 test("identity context permission - correct identity - permission satisfied", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });
@@ -124,14 +144,18 @@ test("identity context permission - correct identity - permission satisfied", as
 test("identity context permission - incorrect identity - permission not satisfied", async () => {
   const { identityId: id1 } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user1@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user1@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { identityId: id2 } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user2@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user2@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity1 } = await Identity.findOne({ id: id1 });
@@ -151,8 +175,10 @@ test("identity context permission - incorrect identity - permission not satisfie
 test("isAuthenticated context permission - authenticated - permission satisfied", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });
@@ -171,8 +197,10 @@ test("isAuthenticated context permission - authenticated - permission satisfied"
 test("isAuthenticated context permission - not authenticated - permission not satisfied", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });
@@ -189,8 +217,10 @@ test("isAuthenticated context permission - not authenticated - permission not sa
 test("not isAuthenticated context permission - authenticated - permission satisfied", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });
@@ -209,8 +239,10 @@ test("not isAuthenticated context permission - authenticated - permission satisf
 test("not isAuthenticated context permission - not authenticated - permission not satisfied", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });
@@ -227,8 +259,10 @@ test("not isAuthenticated context permission - not authenticated - permission no
 test("isAuthenticated context set - authenticated - is set to true", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });

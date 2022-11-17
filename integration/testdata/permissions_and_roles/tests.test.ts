@@ -79,8 +79,10 @@ test("enum literal comparisons - all expressions fail - is not authorized", asyn
 test("permission role email is authorized", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "editorFred99@agency.org",
-    password: "1234",
+    emailPassword: {
+      email: "editorFred99@agency.org",
+      password: "1234",
+    },
   });
   const { object: identity } = await Identity.findOne({ id: identityId });
 
@@ -94,8 +96,10 @@ test("permission role email is authorized", async () => {
 test("permission role wrong email is not authorized", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "editorFred42@agency.org",
-    password: "1234",
+    emailPassword: {
+      email: "editorFred42@agency.org",
+      password: "1234",
+    },
   });
   const { object: identity } = await Identity.findOne({ id: identityId });
 
@@ -109,8 +113,10 @@ test("permission role wrong email is not authorized", async () => {
 test("permission role domain is authorized", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "john.witherow@times.co.uk",
-    password: "1234",
+    emailPassword: {
+      email: "john.witherow@times.co.uk",
+      password: "1234",
+    },
   });
   const { object: identity } = await Identity.findOne({ id: identityId });
 
@@ -124,8 +130,10 @@ test("permission role domain is authorized", async () => {
 test("permission role wrong domain is not authorized", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "jon.sargent@.bbc.co.uk",
-    password: "1234",
+    emailPassword: {
+      email: "jon.sargent@.bbc.co.uk",
+      password: "1234",
+    },
   });
   const { object: identity } = await Identity.findOne({ id: identityId });
 
@@ -140,8 +148,10 @@ test("permission role wrong domain is not authorized", async () => {
 test("permission from unauthorized email is denied when model has only role-based permissions", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "imposter@gmail.com",
-    password: "1234",
+    emailPassword: {
+      email: "imposter@gmail.com",
+      password: "1234",
+    },
   });
   const { object: identity } = await Identity.findOne({ id: identityId });
 

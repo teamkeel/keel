@@ -195,8 +195,10 @@ test("enum permission on field name - null value - is not authorized", async () 
 test("identity permission - correct identity in context - is authorized", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });
@@ -215,14 +217,18 @@ test("identity permission - correct identity in context - is authorized", async 
 test("identity permission - incorrect identity in context - is not authorized", async () => {
   const { identityId: id1 } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user1@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user1@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { identityId: id2 } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user2@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user2@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity1 } = await Identity.findOne({ id: id1 });
@@ -242,8 +248,10 @@ test("identity permission - incorrect identity in context - is not authorized", 
 test("identity permission - no identity in context - is not authorized", async () => {
   const { identityId: id } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: id });

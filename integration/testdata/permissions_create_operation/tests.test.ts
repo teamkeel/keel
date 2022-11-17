@@ -147,8 +147,10 @@ test("enum permission on field name - null value - is not authorized", async () 
 test("identity permission - correct identity in context - is authorized", async () => {
   const { identityId } = await actions.authenticate({
     createIfNotExists: true,
-    email: "user@keel.xyz",
-    password: "1234",
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
   });
 
   const { object: identity } = await Identity.findOne({ id: identityId });
