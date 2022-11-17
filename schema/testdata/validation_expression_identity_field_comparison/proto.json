@@ -49,7 +49,6 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true,
           "foreignKeyInfo":  {
             "relatedModelName":  "Identity",
             "relatedModelField":  "id"
@@ -106,7 +105,6 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true,
           "foreignKeyInfo":  {
             "relatedModelName":  "Identity",
             "relatedModelField":  "id"
@@ -131,6 +129,7 @@
             "type":  "TYPE_MODEL",
             "modelName":  "Author"
           },
+          "optional":  true,
           "foreignKeyFieldName":  "ownerId"
         },
         {
@@ -140,6 +139,7 @@
             "type":  "TYPE_MODEL",
             "modelName":  "Publisher"
           },
+          "optional":  true,
           "foreignKeyFieldName":  "publisherId"
         },
         {

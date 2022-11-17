@@ -94,7 +94,6 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true,
           "foreignKeyInfo":  {
             "relatedModelName":  "Account",
             "relatedModelField":  "id"

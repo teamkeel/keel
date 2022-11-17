@@ -227,7 +227,7 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) ([]*foreignkeys.F
 	for _, fKInfo := range foreignKeys {
 		fkField := &parser.FieldNode{
 			BuiltIn:  true,
-			Optional: true,
+			Optional: fKInfo.OwningFieldIsOptional,
 			Name: parser.NameNode{
 				Value: fKInfo.ForeignKeyName,
 			},

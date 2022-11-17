@@ -1,6 +1,6 @@
 model Beatle {
     fields {
-        identity Identity @unique
+        identity Identity? @unique
         name Text @unique
     }
 

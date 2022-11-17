@@ -28,6 +28,7 @@
         {
           "modelName":  "Person",
           "name":  "identity",
+          "optional": true,
           "type":  {
             "type":  "TYPE_IDENTITY",
             "modelName":  "Identity"

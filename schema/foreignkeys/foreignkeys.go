@@ -40,6 +40,7 @@ func NewPrimaryKeys(asts []*parser.AST) PrimaryKeys {
 type ForeignKeyInfo struct {
 	OwningModel               *parser.ModelNode
 	OwningField               *parser.FieldNode // A field in the OwningModel that is of type MODEL, and topology HasOne.
+	OwningFieldIsOptional     bool
 	ReferredToModel           *parser.ModelNode
 	ReferredToModelPrimaryKey *parser.FieldNode // Which field in the ReferredToModel is its Primary Key
 	ForeignKeyName            string            // What name to give the generated FK.
@@ -55,6 +56,9 @@ func NewForeignKeyInfo(asts []*parser.AST, primaryKeyMap PrimaryKeys) ([]*Foreig
 			if !isHasOneModelField(asts, field) {
 				continue
 			}
+
+			// The generated foreign key optionality follows that of the owning field.
+			owningFieldIsOptional := field.Optional
 
 			referredToModelName := strcase.ToCamel(field.Type)
 			referredToModel := query.Model(asts, referredToModelName)
@@ -84,6 +88,7 @@ func NewForeignKeyInfo(asts []*parser.AST, primaryKeyMap PrimaryKeys) ([]*Foreig
 			fkInfo := &ForeignKeyInfo{
 				OwningModel:               mdl,
 				OwningField:               field,
+				OwningFieldIsOptional:     owningFieldIsOptional,
 				ReferredToModel:           referredToModel,
 				ReferredToModelPrimaryKey: referredToModelPKField,
 				ForeignKeyName:            generatedForeignKeyName,

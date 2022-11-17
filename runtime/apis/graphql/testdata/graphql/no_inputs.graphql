@@ -33,7 +33,7 @@ type AuthenticateResponse {
 type Beatle {
   createdAt: Timestamp!
   id: ID!
-  identity: Identity!
+  identity: Identity
   identityId: ID
   name: String!
   updatedAt: Timestamp!

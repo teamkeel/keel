@@ -1,6 +1,6 @@
 model Account {
     fields {
-        identity Identity @unique
+        identity Identity? @unique
     }
 
     operations {

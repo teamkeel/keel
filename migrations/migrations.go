@@ -133,10 +133,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 		fieldsAdded, fieldsRemoved := lo.Difference(newFieldNames, currFieldNames)
 
 		for _, fieldName := range fieldsAdded {
-			if fieldName == "favouriteThingId" {
-				a := 1
-				_ = a
-			}
+
 			field := proto.FindField(newSchema.Models, modelName, fieldName)
 
 			// This type of field exists only in proto land - and has no corresponding

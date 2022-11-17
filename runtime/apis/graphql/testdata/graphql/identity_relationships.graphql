@@ -37,7 +37,7 @@ type Person {
   id: ID!
   updatedAt: Timestamp!
   user: Identity!
-  userId: ID
+  userId: ID!
 }
 
 type Timestamp {

@@ -31,6 +31,7 @@
             "type":  "TYPE_IDENTITY",
             "modelName":  "Identity"
           },
+          "optional":  true,
           "foreignKeyFieldName":  "identityId",
           "defaultValue":  {
             "expression":  {

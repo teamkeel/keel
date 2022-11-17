@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/samber/lo"
@@ -491,7 +490,6 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 // guidance provided by the given ForeignKeyInfo(s)
 func (scm *Builder) updateForeignKeyInfo(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
 	for _, fkInfo := range fkInfos {
-		fmt.Printf("XXXX updatingForeignKeyInfo, fk name in fkInfo: %s\n", fkInfo.ForeignKeyName)
 
 		// Tell the "owning" type-Model field the name of its sister field that carries the corresponding
 		// foreign key values.
