@@ -1,3 +1,10 @@
+# [0.215.0](https://github.com/teamkeel/keel/compare/v0.214.1...v0.215.0) (2022-11-17)
+
+
+### Features
+
+* replacing gorm query builder in actions code ([#587](https://github.com/teamkeel/keel/issues/587)) ([18a6ebe](https://github.com/teamkeel/keel/commit/18a6ebe2a93bd38f14cd96e7077094f2df9d8e90))
+
 ## [0.214.1](https://github.com/teamkeel/keel/compare/v0.214.0...v0.214.1) (2022-11-17)
 
 
