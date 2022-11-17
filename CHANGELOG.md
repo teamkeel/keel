@@ -1,3 +1,10 @@
+## [0.213.1](https://github.com/teamkeel/keel/compare/v0.213.0...v0.213.1) (2022-11-17)
+
+
+### Bug Fixes
+
+* usage of list actions in integration tests ([8f17eb2](https://github.com/teamkeel/keel/commit/8f17eb271f641f77ff38a23ef44addabe261f761))
+
 # [0.213.0](https://github.com/teamkeel/keel/compare/v0.212.0...v0.213.0) (2022-11-17)
 
 
