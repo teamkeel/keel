@@ -6,8 +6,10 @@ package codegenerator
 // Represents the database api to interact with each model defined
 // in a Keel schema
 type ModelApi struct {
-	ModelName string
-	TableName string
+	Name                string
+	ModelName           string
+	ModelNameLowerCamel string
+	TableName           string
 }
 
 // Used to represent a custom function

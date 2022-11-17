@@ -1,5 +1,5 @@
 {{- range .ModelApis}}
-export class {{ .ModelName }}Api {
+export class {{ .Name }} {
   constructor() {
     this.create = async (inputs) => {
       return this.db.create(inputs);
@@ -27,6 +27,13 @@ export class {{ .ModelName }}Api {
   }
 }
 {{- end}}
+export const api = {
+  models: {
+    {{- range .ModelApis}}
+    {{ .ModelNameLowerCamel }}: new {{ .Name }}(),
+    {{- end}}
+  }
+}
 {{- range .CustomFunctions}}
 export const {{ .Name }} = (callback) => (inputs, api) => {
   return callback(inputs, api);

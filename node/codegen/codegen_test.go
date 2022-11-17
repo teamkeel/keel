@@ -88,6 +88,12 @@ func TestSdk(t *testing.T) {
 									logger: queryLogger
 								});
 							}
+						}
+						export const api = {
+							models: {
+								person: new PersonApi(),
+								identity: new IdentityApi(),
+							}
 						}`,
 				},
 				{
@@ -169,6 +175,12 @@ func TestSdk(t *testing.T) {
 								queryResolver: queryResolverFromEnv(process.env),
 								logger: queryLogger
 							});
+						}
+					}
+					export const api = {
+						models: {
+						  person: new PersonApi(),
+						  identity: new IdentityApi(),
 						}
 					}
 					export const createPerson = (callback) => (inputs, api) => {
