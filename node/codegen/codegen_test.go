@@ -1,8 +1,11 @@
 package codegenerator_test
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -282,6 +285,13 @@ func TestSdk(t *testing.T) {
 			require.NoError(t, err)
 
 			compareFiles(t, tc, generatedFiles)
+
+			o, err := typecheck(t, generatedFiles)
+
+			if err != nil {
+				fmt.Print(string(o))
+				t.Fail()
+			}
 		})
 	}
 }
@@ -372,4 +382,46 @@ expected:
 
 		assert.Fail(t, fmt.Sprintf("no matching actual file for expected file %s", expectedFile.Path))
 	}
+}
+
+//go:embed tsconfig.json
+var sampleTsConfig string
+
+func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (output string, err error) {
+	// todo: we need to generate a tsconfig to be able to run tsc for typechecking
+	// however, when we come to use the testing package in real projects, there may already
+	// be a tsconfig file that we need to respect
+
+	tmpDir, err := os.MkdirTemp("", "")
+	assert.NoError(t, err)
+
+	f, err := os.Create(filepath.Join(tmpDir, "tsconfig.json"))
+
+	if err != nil {
+		return "", err
+	}
+
+	f.WriteString(sampleTsConfig)
+
+	for _, file := range generatedFiles {
+		f, err := os.Create(filepath.Join(tmpDir, file.Path))
+
+		assert.NoError(t, err)
+
+		_, err = f.WriteString(file.Contents)
+
+		assert.NoError(t, err)
+	}
+
+	defer f.Close()
+	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty", "--skipLibCheck", "--incremental", "--project", filepath.Base(f.Name()))
+	cmd.Dir = tmpDir
+
+	b, e := cmd.CombinedOutput()
+
+	if e != nil {
+		err = e
+	}
+
+	return string(b), err
 }
