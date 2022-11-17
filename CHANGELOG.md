@@ -1,3 +1,10 @@
+# [0.213.0](https://github.com/teamkeel/keel/compare/v0.212.0...v0.213.0) (2022-11-17)
+
+
+### Features
+
+* add test ([cc703b2](https://github.com/teamkeel/keel/commit/cc703b2d3023b5701d221d67caaa54026416529c))
+
 # [0.212.0](https://github.com/teamkeel/keel/compare/v0.211.0...v0.212.0) (2022-11-15)
 
 
