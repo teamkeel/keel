@@ -3,14 +3,12 @@ package actions
 import (
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// DefaultCaptureSetValues updates the writeValues field in the given scope, with
-// field/values that should be set for each of the given operation's Set expressions.
-func DefaultCaptureSetValues(scope *Scope, args ValueArgs) error {
+// Updates the query with all set attributes defined on the operation.
+func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error {
 	for _, setExpression := range scope.operation.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
@@ -29,24 +27,21 @@ func DefaultCaptureSetValues(scope *Scope, args ValueArgs) error {
 			return fmt.Errorf("lhs operand of assignment expression must be a model field")
 		}
 
-		value, err := rhsResolver.ResolveValue(args, scope.writeValues)
+		value, err := rhsResolver.ResolveValue(args, query.writeValues)
 		if err != nil {
 			return err
 		}
 
 		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
 
-		// todo: examine whole snake casing thing here
-		scope.writeValues[strcase.ToSnake(fieldName)] = value
+		query.WriteInputValue(fieldName, value)
 	}
 	return nil
 }
 
-// captureImplicitWriteInputValues updates the writeValues field in the
-// given scope object with key/values that represent the implicit write-mode
-// inputs carried by the given request.
-func DefaultCaptureImplicitWriteInputValues(inputs []*proto.OperationInput, args ValueArgs, scope *Scope) error {
-	for _, input := range inputs {
+// Updates the query with all inputs defined on the operation.
+func (query *QueryBuilder) captureWriteValues(scope *Scope, args ValueArgs) error {
+	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
 		}
@@ -62,8 +57,7 @@ func DefaultCaptureImplicitWriteInputValues(inputs []*proto.OperationInput, args
 			continue
 		}
 
-		// todo: examine whole snake casing thing here
-		scope.writeValues[strcase.ToSnake(fieldName)] = value
+		query.WriteInputValue(fieldName, value)
 	}
 	return nil
 }

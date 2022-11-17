@@ -7,17 +7,19 @@ import (
 )
 
 func Delete(scope *Scope, input map[string]any) (bool, error) {
-	err := DefaultApplyImplicitFilters(scope, input)
+	query := NewQuery(scope.schema, scope.operation)
+
+	err := query.applyImplicitFilters(scope, input)
 	if err != nil {
 		return false, err
 	}
 
-	err = DefaultApplyExplicitFilters(scope, input)
+	err = query.applyExplicitFilters(scope, input)
 	if err != nil {
 		return false, err
 	}
 
-	isAuthorised, err := DefaultIsAuthorised(scope, input)
+	isAuthorised, err := query.isAuthorised(scope, input)
 	if err != nil {
 		return false, err
 	}
@@ -27,14 +29,19 @@ func Delete(scope *Scope, input map[string]any) (bool, error) {
 	}
 
 	op := scope.operation
-
 	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 		return ParseDeleteResponse(scope.context, op, input)
 	}
 
-	records := []map[string]any{}
-	err = scope.query.Delete(records).Error
+	// Execute database request
+	affected, err := query.DeleteStatement().Execute(scope)
+	if err != nil {
+		return false, err
+	}
 
-	// TODO: handle this error properly
-	return err == nil, nil
+	if affected == 0 {
+		return false, errors.New("no records found for Delete() operation")
+	}
+
+	return true, nil
 }

@@ -5,26 +5,13 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/runtimectx"
-	"gorm.io/gorm"
 )
 
-// A Scope provides a shared single source of truth to support Action implementation code,
-// plus some shared state that the ActionBuilder can update or otherwise use. For example
-// the values that will be written to a database row, or the *gorm.DB that the methods will
-// incrementally add to.
 type Scope struct {
 	context   context.Context
 	operation *proto.Operation
 	model     *proto.Model
 	schema    *proto.Schema
-
-	// This field is connected to the database, and we use it to perform all
-	// all queries and write operations on the database.
-	query *gorm.DB
-
-	// This field accumulates the values we intend to write to a database row.
-	writeValues map[string]any
 }
 
 func NewScope(
@@ -33,22 +20,12 @@ func NewScope(
 	schema *proto.Schema) (*Scope, error) {
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
-	table := strcase.ToSnake(model.Name)
-	query, err := runtimectx.GetDatabase(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
-	query = query.Table(table)
 
 	return &Scope{
-		context:     ctx,
-		operation:   operation,
-		model:       model,
-		schema:      schema,
-		query:       query,
-		writeValues: map[string]any{},
+		context:   ctx,
+		operation: operation,
+		model:     model,
+		schema:    schema,
 	}, nil
 }
 
