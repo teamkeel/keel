@@ -22,7 +22,7 @@ export interface Post {
   id: string
   createdAt: Date
   updatedAt: Date
-  authorId: string
+  authorId?: string
 }
 
 export interface Author {
