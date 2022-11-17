@@ -34,7 +34,8 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 
 		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
 
-		query.WriteInputValue(fieldName, value)
+		// Add a value to be written during an INSERT or UPDATE
+		query.AddWriteValue(fieldName, value)
 	}
 	return nil
 }
@@ -57,7 +58,8 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args ValueArgs) erro
 			continue
 		}
 
-		query.WriteInputValue(fieldName, value)
+		// Add a value to be written during an INSERT or UPDATE
+		query.AddWriteValue(fieldName, value)
 	}
 	return nil
 }

@@ -9,12 +9,14 @@ import (
 func Create(scope *Scope, input map[string]any) (Row, error) {
 	var err error
 
-	query := NewQuery(scope.schema, scope.operation)
+	query := NewQuery(scope.model)
 
-	query.writeValues, err = initialValueForModel(scope.model, scope.schema)
+	defaultValues, err := initialValueForModel(scope.model, scope.schema)
 	if err != nil {
 		return nil, err
 	}
+
+	query.AddWriteValues(defaultValues)
 
 	err = query.captureWriteValues(scope, input)
 	if err != nil {
@@ -41,7 +43,7 @@ func Create(scope *Scope, input map[string]any) (Row, error) {
 	}
 
 	// Return the inserted row
-	query.AppendReturning("*")
+	query.AppendReturning(Field("*"))
 
 	// Execute database request with results
 	results, _, err := query.InsertStatement().ExecuteWithResults(scope)

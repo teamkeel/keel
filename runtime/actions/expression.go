@@ -12,80 +12,22 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// Include a filter on the query based on the implicit input provided.
+// Include a filter (where condition) on the query based on an implicit input filter.
 func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, input *proto.OperationInput, fieldName string, operator ActionOperator, value any) error {
-	model := input.ModelName
+	// Implicit inputs don't include the model as the first fragment (unlike expressions), so we include it
+	fragments := append([]string{strcase.ToLowerCamel(input.ModelName)}, input.Target...)
 
-	databaseTable := strcase.ToSnake(model)
-	databaseColumn := strcase.ToSnake(fieldName)
+	// The lhs QueryOperand is determined from the fragments in the implicit input field
+	left, _ := operandFromFragments(scope.schema, fragments)
 
-	fragments := input.Target
-	fragmentCount := len(fragments)
+	// The rhs QueryOperand is always a value in an implicit input
+	right := Value(value)
 
-	for i := 0; i < fragmentCount; i++ {
-		currentFragment := fragments[i]
+	// Add join for the implicit input
+	query.addJoinFromFragments(scope, fragments)
 
-		if !proto.ModelHasField(scope.schema, model, currentFragment) {
-			return fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
-		}
-
-		if i < fragmentCount-1 {
-			// We know that the current fragment is a related table because it's not the last fragment
-			relatedModelField := proto.FindField(scope.schema.Models, model, currentFragment)
-			relatedTable := strcase.ToSnake(relatedModelField.Type.ModelName.Value)
-
-			primaryKeyDbColumn := "id"
-
-			var join string
-			if relatedModelField.ForeignKeyFieldName != nil {
-				// M:1
-				foreignKeyDbColumn := strcase.ToSnake(relatedModelField.ForeignKeyFieldName.Value)
-
-				join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
-					relatedTable,
-					fmt.Sprintf("%s.%s", databaseTable, foreignKeyDbColumn),
-					fmt.Sprintf("%s.%s", relatedTable, primaryKeyDbColumn))
-			} else {
-				// 1:M
-				fkModel := proto.FindModel(scope.schema.Models, relatedModelField.Type.ModelName.Value)
-				fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
-					return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
-				})
-				if !found {
-					return fmt.Errorf("no foreign key field found on related model %s", model)
-				}
-
-				foreignKeyDbColumn := strcase.ToSnake(fkField.ForeignKeyFieldName.Value)
-
-				join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
-					relatedTable,
-					fmt.Sprintf("%s.%s", databaseTable, primaryKeyDbColumn),
-					fmt.Sprintf("%s.%s", relatedTable, foreignKeyDbColumn))
-			}
-
-			query.Join(join)
-
-			databaseTable = relatedTable
-			model = relatedModelField.Type.ModelName.Value
-		} else {
-			databaseColumn = strcase.ToSnake(currentFragment)
-		}
-	}
-
-	queryArgument := value
-	switch operator {
-	case StartsWith:
-		queryArgument = queryArgument.(string) + "%%"
-	case EndsWith:
-		queryArgument = "%%" + queryArgument.(string)
-	case Contains, NotContains:
-		queryArgument = "%%" + queryArgument.(string) + "%%"
-	}
-
-	lhsOperand := Column(databaseTable, databaseColumn)
-	rhsOperand := Value(queryArgument)
-
-	query.Where(lhsOperand, operator, rhsOperand)
+	// Add where condition to the query for the implicit input
+	query.Where(left, operator, right)
 
 	return nil
 }
@@ -129,8 +71,7 @@ func resolveInMemory(scope *Scope, expression *parser.Expression, args WhereArgs
 	return result
 }
 
-// Include a filter on the query based on the expression provided.
-// Include a filter on the query based on the expression provided.
+// Include a filter (where condition) on the query based on a filter expression.
 func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Expression, args WhereArgs) error {
 	if len(expression.Conditions()) != 1 {
 		return fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
@@ -144,11 +85,29 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 
 	lhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, condition.LHS)
 	rhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, condition.RHS)
-	var operator ActionOperator
 
 	lhsOperandType, err := lhsResolver.GetOperandType()
 	if err != nil {
 		return fmt.Errorf("cannot resolve operand type of LHS operand")
+	}
+
+	var operator ActionOperator
+	var left, right *QueryOperand
+
+	// Generate lhs QueryOperand
+	left, err = lhsResolver.generateQueryOperand(args, query.writeValues)
+	if err != nil {
+		return err
+	}
+
+	if lhsResolver.IsDatabaseColumn() {
+		lhsFragments := lo.Map(lhsResolver.operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
+
+		// Generates joins based on the fragments that make up the operand
+		query.addJoinFromFragments(scope, lhsFragments)
+		if err != nil {
+			return err
+		}
 	}
 
 	if condition.Type() == parser.ValueCondition {
@@ -160,52 +119,108 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 		// for example, permission(expression: ctx.isAuthenticated),
 		// so we must set the operator and RHS value (== true) ourselves.
 		operator = Equals
+		right = Value(true)
 	} else {
+		// The operator used in the expression
 		operator, err = expressionOperatorToActionOperator(condition.Operator.ToString())
 		if err != nil {
 			return err
 		}
-	}
 
-	lhsOperand, err := lhsResolver.generateQueryOperand(operator, args, query.writeValues)
-	if err != nil {
-		return err
-	}
-
-	lhsJoins, err := lhsResolver.generateJoins()
-	if err != nil {
-		return err
-	}
-
-	for _, j := range lhsJoins {
-		query.Join(j)
-	}
-
-	var rhsOperand *QueryOperand
-	if condition.Type() == parser.ValueCondition {
-		// A value condition only has one operand in the expression.
-		// If the expression is a value condition, then we bake in the RHS argument (== true) ourselves.
-		rhsOperand = Value(true)
-	} else {
-
-		rhsOperand, err = rhsResolver.generateQueryOperand(operator, args, query.writeValues)
+		// Generate the rhs QueryOperand
+		right, err = rhsResolver.generateQueryOperand(args, query.writeValues)
 		if err != nil {
 			return err
 		}
 
-		rhsJoins, err := lhsResolver.generateJoins()
-		if err != nil {
-			return err
-		}
+		if rhsResolver.IsDatabaseColumn() {
+			rhsFragments := lo.Map(rhsResolver.operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
-		for _, j := range rhsJoins {
-			query.Join(j)
+			// Generates joins based on the fragments that make up the operand
+			query.addJoinFromFragments(scope, rhsFragments)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	query.Where(lhsOperand, operator, rhsOperand)
+	// Adds where condition to the query for the expression
+	query.Where(left, operator, right)
 
 	return nil
+}
+
+// Constructs and adds an INNER JOIN from a splice of fragments (representing an operand in an expression or implicit input).
+// The fragment slice must include the base model as the first item, for example: post.author.publisher.isActive
+func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
+	model := strcase.ToCamel(fragments[0])
+	fragmentCount := len(fragments)
+
+	for i := 1; i < fragmentCount; i++ {
+		currentFragment := fragments[i]
+
+		if !proto.ModelHasField(scope.schema, model, currentFragment) {
+			return fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+		}
+
+		if i < fragmentCount-1 {
+			// We know that the current fragment is a related model because it's not the last fragment
+			relatedModelField := proto.FindField(scope.schema.Models, model, currentFragment)
+			relatedModel := relatedModelField.Type.ModelName.Value
+			identifierField := "id"
+
+			if relatedModelField.ForeignKeyFieldName != nil {
+				foreignKeyField := relatedModelField.ForeignKeyFieldName.Value
+
+				// Add a join to the primary key of the model that has-many in the M:1 relationship
+				query.InnerJoin(ModelField(relatedModel, identifierField), ModelField(model, foreignKeyField))
+			} else {
+				fkModel := proto.FindModel(scope.schema.Models, relatedModelField.Type.ModelName.Value)
+				fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
+					return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
+				})
+				if !found {
+					return fmt.Errorf("no foreign key field found on related model %s", model)
+				}
+
+				foreignKeyField := fkField.ForeignKeyFieldName.Value
+
+				// Add a join to the foreign key of the model that belongs-to in the 1:M relationship
+				query.InnerJoin(ModelField(relatedModel, foreignKeyField), ModelField(model, identifierField))
+			}
+
+			model = relatedModelField.Type.ModelName.Value
+		}
+	}
+
+	return nil
+}
+
+// Constructs a QueryOperand from a splice of fragments, representing an expression operand or implicit input.
+// The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
+func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
+	var field string
+	model := strcase.ToCamel(fragments[0])
+	fragmentCount := len(fragments)
+
+	for i := 1; i < fragmentCount; i++ {
+		currentFragment := fragments[i]
+
+		if !proto.ModelHasField(schema, model, currentFragment) {
+			return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
+		}
+
+		if i < fragmentCount-1 {
+			// We know that the current fragment is a model because it's not the last fragment
+			relatedModelField := proto.FindField(schema.Models, model, currentFragment)
+			model = relatedModelField.Type.ModelName.Value
+		} else {
+			// The last fragment is referencing the field
+			field = currentFragment
+		}
+	}
+
+	return ModelField(model, field), nil
 }
 
 type OperandResolver struct {
@@ -365,11 +380,7 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 	}
 }
 
-func (resolver *OperandResolver) ResolveValue(
-	args map[string]any,
-	writeValues map[string]any,
-) (any, error) {
-
+func (resolver *OperandResolver) ResolveValue(args map[string]any, writeValues map[string]any) (any, error) {
 	operandType, err := resolver.GetOperandType()
 	if err != nil {
 		return nil, err
@@ -403,7 +414,6 @@ func (resolver *OperandResolver) ResolveValue(
 		panic("cannot resolve operand value when IsDatabaseColumn() is true")
 	case resolver.IsContextField() && resolver.operand.Ident.IsContextIdentityField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.context)
-
 		if !isAuthenticated {
 			return nil, nil
 		}
@@ -426,15 +436,8 @@ func (resolver *OperandResolver) ResolveValue(
 	}
 }
 
-// Generates a single gorm-compatible operand and argument list:
-//   - The gorm operand is used to build a template for use in gorm.DB.Where(template, args).
-//   - The query arguments are used to populate the gorm operand in gorm.DB.Where(template, args).
-func (resolver *OperandResolver) generateQueryOperand(
-	operator ActionOperator,
-	args map[string]any,
-	writeValues map[string]any) (*QueryOperand, error) {
-
-	// ? is the gorm template token which is replaced with values when populating the operand arguments when calling gorm.DB.Where(template, args).
+// Generates a database QueryOperand, either representing a field, a value or null.
+func (resolver *OperandResolver) generateQueryOperand(args map[string]any, writeValues map[string]any) (*QueryOperand, error) {
 	var queryOperand *QueryOperand
 
 	if !resolver.IsDatabaseColumn() {
@@ -446,109 +449,17 @@ func (resolver *OperandResolver) generateQueryOperand(
 		if value == nil {
 			queryOperand = Null()
 		} else {
-			switch operator {
-			case StartsWith:
-				value = value.(string) + "%%"
-			case EndsWith:
-				value = "%%" + value.(string)
-			case Contains, NotContains:
-				value = "%%" + value.(string) + "%%"
-			}
-
 			queryOperand = Value(value)
 		}
 	} else {
-		// Generate the table's column name from the fragments (e.g. post.sub_title)
-		// And replace the ? gorm template token with the column name
-		var databaseField string
-		model := strcase.ToCamel(resolver.operand.Ident.Fragments[0].Fragment)
-		fragmentCount := len(resolver.operand.Ident.Fragments)
-		databaseTable := strcase.ToSnake(resolver.operand.Ident.Fragments[0].Fragment)
+		// Step through the fragments in order to determine the table and field referenced by the expression operand
+		fragments := lo.Map(resolver.operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
-		for i := 1; i < fragmentCount; i++ {
-			currentFragment := resolver.operand.Ident.Fragments[i].Fragment
-
-			if !proto.ModelHasField(resolver.schema, model, currentFragment) {
-				return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
-			}
-
-			if i < fragmentCount-1 {
-				// We know that the current fragment is a related table because it's not the last fragment
-				relatedModelField := proto.FindField(resolver.schema.Models, model, currentFragment)
-				relatedTable := strcase.ToSnake(relatedModelField.Type.ModelName.Value)
-
-				model = relatedModelField.Type.ModelName.Value
-				databaseTable = relatedTable
-			} else {
-				databaseField = strcase.ToSnake(currentFragment)
-			}
-		}
-
-		queryOperand = Column(databaseTable, databaseField)
+		// Generate QueryOperand from the fragments that make up the expression operand
+		queryOperand, _ = operandFromFragments(resolver.schema, fragments)
 	}
 
 	return queryOperand, nil
-}
-
-// Generates JOIN statements based on the operand of an expression.
-func (resolver *OperandResolver) generateJoins() (joins []string, err error) {
-	if resolver.IsDatabaseColumn() {
-		databaseTable := strcase.ToSnake(resolver.operand.Ident.Fragments[0].Fragment)
-		model := strcase.ToCamel(resolver.operand.Ident.Fragments[0].Fragment)
-		fragmentCount := len(resolver.operand.Ident.Fragments)
-
-		for i := 1; i < fragmentCount; i++ {
-			currentFragment := resolver.operand.Ident.Fragments[i].Fragment
-
-			if !proto.ModelHasField(resolver.schema, model, currentFragment) {
-				return nil, fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
-			}
-
-			if i < fragmentCount-1 {
-				// We know that the current fragment is a related table because it's not the last fragment
-				relatedModelField := proto.FindField(resolver.schema.Models, model, currentFragment)
-				relatedTable := strcase.ToSnake(relatedModelField.Type.ModelName.Value)
-
-				primaryKeyDbColumn := "id"
-
-				var join string
-				if relatedModelField.ForeignKeyFieldName != nil {
-					// M:1
-					foreignKeyDbColumn := strcase.ToSnake(relatedModelField.ForeignKeyFieldName.Value)
-
-					join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
-						relatedTable,
-						fmt.Sprintf("%s.%s", databaseTable, foreignKeyDbColumn),
-						fmt.Sprintf("%s.%s", relatedTable, primaryKeyDbColumn))
-				} else {
-					// 1:M
-					fkModel := proto.FindModel(resolver.schema.Models, relatedModelField.Type.ModelName.Value)
-					fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
-						return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
-					})
-					if !found {
-						return nil, fmt.Errorf("no foreign key field found on related model %s", model)
-					}
-
-					foreignKeyDbColumn := strcase.ToSnake(fkField.ForeignKeyFieldName.Value)
-
-					join = fmt.Sprintf("INNER JOIN %s ON %s = %s",
-						relatedTable,
-						fmt.Sprintf("%s.%s", databaseTable, primaryKeyDbColumn),
-						fmt.Sprintf("%s.%s", relatedTable, foreignKeyDbColumn))
-				}
-
-				//if !lo.Contains(joins, join) {
-				joins = append(joins, join)
-				//}
-
-				databaseTable = relatedTable
-				model = relatedModelField.Type.ModelName.Value
-			}
-		}
-	}
-
-	return joins, nil
 }
 
 func evaluateInProcess(

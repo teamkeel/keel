@@ -67,7 +67,7 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 		where = map[string]any{}
 	}
 
-	query := NewQuery(scope.schema, scope.operation)
+	query := NewQuery(scope.model)
 
 	err := query.applyImplicitFiltersForList(scope, where)
 	if err != nil {
@@ -101,23 +101,23 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	}
 
 	// Select all columns from this table and distinct on id
-	query.AppendDistinctOn("id")
-	query.AppendSelect("*")
+	query.AppendDistinctOn(Field("id"))
+	query.AppendSelect(Field("*"))
 
 	// Select hasNext clause
 	selectArgs := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", query.table)
-	query.AppendSelectFromClause(selectArgs)
+	query.AppendSelectClause(selectArgs)
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
 	// that helps to determine "hasNextPage".
-	query.AppendOrderBy("id")
+	query.AppendOrderBy(Field("id"))
 
 	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
-		query.Where(Column(query.table, "id"), GreaterThan, Value(page.After))
+		query.Where(Field("id"), GreaterThan, Value(page.After))
 	case page.Before != "":
-		query.Where(Column(query.table, "id"), LessThan, Value(page.Before))
+		query.Where(Field("id"), LessThan, Value(page.Before))
 	}
 
 	// Add where condition to implement the page size
