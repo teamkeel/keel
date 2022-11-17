@@ -1,9 +1,12 @@
 package foreignkeys
 
 import (
+	"fmt"
+
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 // PrimaryKeys tells you the primary key field for any given model name.
@@ -44,7 +47,7 @@ type ForeignKeyInfo struct {
 
 // NewForeignKeyInfo builds a list of ForeignKeyInfo that defines all the foreign key
 // fields that should be auto-injected into the AST.
-func NewForeignKeyInfo(asts []*parser.AST, primaryKeyMap PrimaryKeys) []*ForeignKeyInfo {
+func NewForeignKeyInfo(asts []*parser.AST, primaryKeyMap PrimaryKeys) ([]*ForeignKeyInfo, *errorhandling.ErrorDetails) {
 	fks := []*ForeignKeyInfo{}
 	for _, mdl := range query.Models(asts) {
 		for _, field := range query.ModelFields(mdl) {
@@ -55,14 +58,25 @@ func NewForeignKeyInfo(asts []*parser.AST, primaryKeyMap PrimaryKeys) []*Foreign
 
 			referredToModelName := strcase.ToCamel(field.Type)
 			referredToModel := query.Model(asts, referredToModelName)
+
 			if referredToModel == nil {
-				// todo: proper error handling
-				panic("XXXX failed to lookup model")
+				errDetails := &errorhandling.ErrorDetails{
+					Message: fmt.Sprintf("cannot find the model referred to (%s) by field %s, on model %s",
+						referredToModelName, field.Name, mdl.Name),
+					ShortMessage: "cannot find model referenced by relationship field",
+					Hint:         "make sure you declare this model",
+				}
+				return nil, errDetails
 			}
+
 			referredToModelPKField, ok := primaryKeyMap[referredToModelName]
-			// todo: correct error handling
 			if !ok {
-				panic("XXXX failed to look up PK")
+				errDetails := &errorhandling.ErrorDetails{
+					Message:      fmt.Sprintf("cannot find the primary key field on model: %s (internal error)", referredToModelName),
+					ShortMessage: "cannot find primary key field",
+					Hint:         "(internal error)",
+				}
+				return nil, errDetails
 			}
 			// This is the single source of truth for how we name foreign key fields.
 			generatedForeignKeyName := field.Name.Value + strcase.ToCamel(referredToModelPKField.Name.Value)
@@ -77,7 +91,7 @@ func NewForeignKeyInfo(asts []*parser.AST, primaryKeyMap PrimaryKeys) []*Foreign
 			fks = append(fks, fkInfo)
 		}
 	}
-	return fks
+	return fks, nil
 }
 
 // isHasOneModelField returns true if the given field can be inferred to be

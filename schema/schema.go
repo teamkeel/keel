@@ -116,7 +116,12 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	// Now insert the foreign key fields. We have to defer this until now,
 	// because we need access to the global model set.
-	fkInfo := scm.insertForeignKeyFields(asts)
+	fkInfo, errDetails := scm.insertForeignKeyFields(asts)
+	if errDetails != nil {
+		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
+			ErrorDetails: errDetails,
+		})
+	}
 
 	// if we have errors in parsing then no point running validation rules
 	if len(parseErrors.Errors) > 0 {
@@ -211,10 +216,13 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 // built and combined from all input files. It delegates to foreignkeys.NewForeignKeyInfo()
 // to analyse the foreign keys that should be auto generated and into which models, and then
 // generates and inserts suitable fields accordingly.
-func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) []*foreignkeys.ForeignKeyInfo {
+func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) ([]*foreignkeys.ForeignKeyInfo, *errorhandling.ErrorDetails) {
 
 	primaryKeys := foreignkeys.NewPrimaryKeys(asts)
-	foreignKeys := foreignkeys.NewForeignKeyInfo(asts, primaryKeys)
+	foreignKeys, errDetails := foreignkeys.NewForeignKeyInfo(asts, primaryKeys)
+	if errDetails != nil {
+		return nil, errDetails
+	}
 
 	for _, fKInfo := range foreignKeys {
 		fkField := &parser.FieldNode{
@@ -235,7 +243,7 @@ func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) []*foreignkeys.Fo
 		}
 		fieldsSection.Fields = append(fieldsSection.Fields, fkField)
 	}
-	return foreignKeys
+	return foreignKeys, nil
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
