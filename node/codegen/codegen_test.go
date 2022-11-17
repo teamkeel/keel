@@ -388,10 +388,6 @@ expected:
 var sampleTsConfig string
 
 func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (output string, err error) {
-	// todo: we need to generate a tsconfig to be able to run tsc for typechecking
-	// however, when we come to use the testing package in real projects, there may already
-	// be a tsconfig file that we need to respect
-
 	tmpDir, err := os.MkdirTemp("", "")
 	assert.NoError(t, err)
 
