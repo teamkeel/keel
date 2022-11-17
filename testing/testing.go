@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
-	"github.com/karlseguin/typed"
 	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/cmd/database"
@@ -246,19 +245,7 @@ func Run(dir string, pattern string) (chan []*Event, error) {
 
 								writeResponse(r, w)
 							case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-								t := typed.New(body.Payload)
-
-								// fix for testing client not sending the right
-								// request structure
-								input := map[string]any{
-									"createIfNotExists": t.Bool("createIfNotExists"),
-									"emailPassword": map[string]any{
-										"email":    t.String("email"),
-										"password": t.String("password"),
-									},
-								}
-
-								result, err := actions.Authenticate(scope, input)
+								result, err := actions.Authenticate(scope, body.Payload)
 
 								var identityId *ksuid.KSUID
 								if result != nil && result.Token != "" {
