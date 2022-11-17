@@ -25,14 +25,20 @@ test("eqAndNotEq", async () => {
       return -1;
     }
     return a < b;
-  }
+  };
 
   resp = await actions.notEqArg({ arg: null });
-  expect(resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)).toEqual([false, true]);
+  expect(
+    resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
+  ).toEqual([false, true]);
 
   resp = await actions.notEqArg({ arg: false });
-  expect(resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)).toEqual([true, null]);
+  expect(
+    resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
+  ).toEqual([true, null]);
 
   resp = await actions.notEqArg({ arg: true });
-  expect(resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)).toEqual([false, null]);
+  expect(
+    resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
+  ).toEqual([false, null]);
 });
