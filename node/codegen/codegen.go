@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"text/template"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -34,17 +35,9 @@ func NewGenerator(schema *proto.Schema, dir string) *Generator {
 	}
 }
 
-type SourceCodeType string
-
-const (
-	SourceCodeTypeDefinition SourceCodeType = "definition"
-	SourceCodeTypeJavaScript SourceCodeType = "javascript"
-)
-
 type SourceCode struct {
 	Contents string
 	Path     string
-	Type     SourceCodeType
 }
 
 type GeneratedFile = SourceCode
@@ -56,13 +49,11 @@ func (g *Generator) GenerateSDK() ([]*GeneratedFile, error) {
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.js",
-		Type:     SourceCodeTypeJavaScript,
 		Contents: g.sdkSrcCode(),
 	})
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.d.ts",
-		Type:     SourceCodeTypeDefinition,
 		Contents: g.sdkTypeDefinitions(),
 	})
 
@@ -82,13 +73,11 @@ func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.js",
-		Type:     SourceCodeTypeJavaScript,
 		Contents: g.testingSrcCode(),
 	})
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.d.ts",
-		Type:     SourceCodeTypeDefinition,
 		Contents: g.testingTypeDefinitions(),
 	})
 
@@ -109,11 +98,24 @@ func (g *Generator) testingTypeDefinitions() (r string) {
 	return r
 }
 
-func (g *Generator) sdkSrcCode() (r string) {
-	r += "const doSomething = () => 'hello';\n"
-	r += "const variableName = '';\n"
+func (g *Generator) sdkSrcCode() string {
+	modelApis := []*ModelApi{}
 
-	return r
+	for _, model := range g.schema.Models {
+		modelApis = append(modelApis, &ModelApi{
+			ModelName: model.Name,
+			TableName: strcase.ToSnake(model.Name),
+		})
+	}
+
+	customFunctions := proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
+		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	})
+
+	return renderTemplate(TemplateSdk, map[string]interface{}{
+		"ModelApis":       modelApis,
+		"CustomFunctions": customFunctions,
+	})
 }
 
 func (g *Generator) sdkTypeDefinitions() (r string) {

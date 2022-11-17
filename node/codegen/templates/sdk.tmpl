@@ -1,0 +1,34 @@
+{{- range .ModelApis}}
+export class {{ .ModelName }}Api {
+  constructor() {
+    this.create = async (inputs) => {
+      return this.db.create(inputs);
+    };
+    this.where = (conditions) => {
+      return this.db.where(conditions);
+    };
+    this.delete = (id) => {
+      return this.db.delete(id);
+    };
+    this.findOne = (query) => {
+      return this.db.findOne(query);
+    };
+    this.update = (id, inputs) => {
+      return this.db.update(id, inputs);
+    };
+    this.findMany = (query) => {
+      return this.db.where(query).all();
+    };
+    this.db = new Query({
+      tableName: '{{ .TableName }}',
+      queryResolver: queryResolverFromEnv(process.env),
+      logger: queryLogger
+    });
+  }
+}
+{{- end}}
+{{- range .CustomFunctions}}
+export const {{ .Name }} = (callback) => (inputs, api) => {
+  return callback(inputs, api);
+};
+{{- end}}
