@@ -103,8 +103,10 @@ func (g *Generator) sdkSrcCode() string {
 
 	for _, model := range g.schema.Models {
 		modelApis = append(modelApis, &ModelApi{
-			ModelName: model.Name,
-			TableName: strcase.ToSnake(model.Name),
+			ModelName:           model.Name,
+			TableName:           strcase.ToSnake(model.Name),
+			Name:                fmt.Sprintf("%sApi", model.Name),
+			ModelNameLowerCamel: strcase.ToLowerCamel(model.Name),
 		})
 	}
 
