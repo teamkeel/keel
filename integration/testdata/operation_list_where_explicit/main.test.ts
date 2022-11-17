@@ -6,7 +6,9 @@ test("List Where filters - using equal operator (string) - filters correctly", a
   await actions.createPost({ title: "NotFred" });
 
   const { collection: response } = await actions.listPostsEqualString({
-    whereArg: "Fred",
+    where: {
+      whereArg: "Fred",
+    },
   });
 
   expect(response.length).toEqual(1);
@@ -18,7 +20,9 @@ test("List Where filters - using not equal operator (string) - filters correctly
   await actions.createPost({ title: "NotFred" });
 
   const { collection: response } = await actions.listPostsNotEqualString({
-    whereArg: "Fred",
+    where: {
+      whereArg: "Fred",
+    },
   });
 
   expect(response.length).toEqual(1);
@@ -31,7 +35,9 @@ test("List Where filters - using equal operator on date - filters correctly", as
   await actions.createPost({ aDate: new Date(2020, 1, 23) });
 
   const { collection: response } = await actions.listPostsEqualDate({
-    whereArg: new Date(2020, 1, 21),
+    where: {
+      whereArg: new Date(2020, 1, 21),
+    },
   });
 
   expect(response.length).toEqual(1);
@@ -43,7 +49,9 @@ test("List Where filters - using not equal operator on date - filters correctly"
   await actions.createPost({ aDate: new Date(2020, 1, 23) });
 
   const { collection: response } = await actions.listPostsNotEqualDate({
-    whereArg: new Date(2020, 1, 21),
+    where: {
+      whereArg: new Date(2020, 1, 21),
+    },
   });
 
   expect(response.length).toEqual(2);
@@ -55,7 +63,9 @@ test("List Where filters - using after operator on timestamp - filters correctly
   await actions.createPost({ aTimestamp: new Date(2020, 1, 23, 4, 0, 0) });
 
   const { collection: response } = await actions.listPostsAfterTimestamp({
-    whereArg: new Date(2020, 1, 21, 1, 30, 0),
+    where: {
+      whereArg: new Date(2020, 1, 21, 1, 30, 0),
+    },
   });
 
   expect(response.length).toEqual(2);
@@ -67,7 +77,9 @@ test("List Where filters - using before operator on timestamp - filters correctl
   await actions.createPost({ aTimestamp: new Date(2020, 1, 23, 4, 0, 0) });
 
   const { collection: response } = await actions.beforePostsBeforeTimestamp({
-    whereArg: new Date(2020, 1, 21, 1, 30, 0),
+    where: {
+      whereArg: new Date(2020, 1, 21, 1, 30, 0),
+    },
   });
 
   expect(response.length).toEqual(1);

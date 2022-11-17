@@ -368,9 +368,11 @@ test("list operation implicit inputs with M:1 relations - all models active - al
   });
 
   const { collection: posts } = await actions.listActivePosts({
-    thePublisherIsActive: { equals: true },
-    theAuthorIsActive: { equals: true },
-    isActive: { equals: true },
+    where: {
+      thePublisherIsActive: { equals: true },
+      theAuthorIsActive: { equals: true },
+      isActive: { equals: true },
+    },
   });
 
   expect(posts.length).toEqual(3);
@@ -412,9 +414,11 @@ test("list operation implicit inputs with M:1 relations - Keel org not active - 
   });
 
   const { collection: posts } = await actions.listActivePosts({
-    thePublisherIsActive: { equals: true },
-    theAuthorIsActive: { equals: true },
-    isActive: { equals: true },
+    where: {
+      thePublisherIsActive: { equals: true },
+      theAuthorIsActive: { equals: true },
+      isActive: { equals: true },
+    },
   });
 
   expect(posts.length).toEqual(1);
@@ -456,9 +460,11 @@ test("list operation implicit inputs with M:1 relations - Keelson author not act
   });
 
   const { collection: posts } = await actions.listActivePosts({
-    thePublisherIsActive: { equals: true },
-    theAuthorIsActive: { equals: true },
-    isActive: { equals: true },
+    where: {
+      thePublisherIsActive: { equals: true },
+      theAuthorIsActive: { equals: true },
+      isActive: { equals: true },
+    },
   });
 
   expect(posts.length).toEqual(1);
@@ -500,9 +506,11 @@ test("list operation implicit inputs with M:1 relations - one Keelson post not a
   });
 
   const { collection: posts } = await actions.listActivePosts({
-    thePublisherIsActive: { equals: true },
-    theAuthorIsActive: { equals: true },
-    isActive: { equals: true },
+    where: {
+      thePublisherIsActive: { equals: true },
+      theAuthorIsActive: { equals: true },
+      isActive: { equals: true },
+    },
   });
 
   expect(posts.length).toEqual(2);
@@ -545,9 +553,11 @@ test("list operation implicit inputs with 1:M relations - all models active - al
 
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
-      thePostsIsActive: { equals: true },
-      theAuthorsIsActive: { equals: true },
-      isActive: { equals: true },
+      where: {
+        thePostsIsActive: { equals: true },
+        theAuthorsIsActive: { equals: true },
+        isActive: { equals: true },
+      },
     });
 
   expect(publishers.length).toEqual(2);
@@ -590,9 +600,11 @@ test("list operation implicit inputs with 1:M relations - Keel org not active - 
 
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
-      thePostsIsActive: { equals: true },
-      theAuthorsIsActive: { equals: true },
-      isActive: { equals: true },
+      where: {
+        thePostsIsActive: { equals: true },
+        theAuthorsIsActive: { equals: true },
+        isActive: { equals: true },
+      },
     });
 
   expect(publishers.length).toEqual(1);
@@ -635,9 +647,11 @@ test("list operation implicit inputs with 1:M relations - Keel author not active
 
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
-      thePostsIsActive: { equals: true },
-      theAuthorsIsActive: { equals: true },
-      isActive: { equals: true },
+      where: {
+        thePostsIsActive: { equals: true },
+        theAuthorsIsActive: { equals: true },
+        isActive: { equals: true },
+      },
     });
 
   expect(publishers.length).toEqual(1);
@@ -680,9 +694,11 @@ test("list operation implicit inputs with 1:M relations - one Keel post not acti
 
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
-      thePostsIsActive: { equals: true },
-      theAuthorsIsActive: { equals: true },
-      isActive: { equals: true },
+      where: {
+        thePostsIsActive: { equals: true },
+        theAuthorsIsActive: { equals: true },
+        isActive: { equals: true },
+      },
     });
 
   expect(publishers.length).toEqual(2);
@@ -725,9 +741,11 @@ test("list operation implicit inputs with 1:M relations - all Keel posts not act
 
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
-      thePostsIsActive: { equals: true },
-      theAuthorsIsActive: { equals: true },
-      isActive: { equals: true },
+      where: {
+        thePostsIsActive: { equals: true },
+        theAuthorsIsActive: { equals: true },
+        isActive: { equals: true },
+      },
     });
 
   expect(publishers.length).toEqual(1);

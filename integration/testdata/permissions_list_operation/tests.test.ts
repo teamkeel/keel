@@ -8,7 +8,11 @@ test("string permission on literal - all matching - is authorized", async () => 
   await actions.createWithText({ title: null, isActive: false });
 
   expect(
-    await actions.listWithTextPermissionLiteral({ isActive: { equals: true } })
+    await actions.listWithTextPermissionLiteral({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).notToHaveAuthorizationError();
 });
 
@@ -18,7 +22,11 @@ test("string permission on literal - one not matching value - is not authorized"
   await actions.createWithText({ title: "hello" });
 
   expect(
-    await actions.listWithTextPermissionLiteral({ isActive: { equals: true } })
+    await actions.listWithTextPermissionLiteral({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -28,7 +36,11 @@ test("string permission on literal - one not matching null value - is not author
   await actions.createWithText({ title: "hello" });
 
   expect(
-    await actions.listWithTextPermissionLiteral({ isActive: { equals: true } })
+    await actions.listWithTextPermissionLiteral({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -41,7 +53,9 @@ test("number permission on literal - all matching - is authorized", async () => 
 
   expect(
     await actions.listWithNumberPermissionLiteral({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).notToHaveAuthorizationError();
 });
@@ -53,7 +67,9 @@ test("number permission on literal - one not matching value - is not authorized"
 
   expect(
     await actions.listWithNumberPermissionLiteral({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -65,7 +81,9 @@ test("number permission on literal - one not matching null value - is not author
 
   expect(
     await actions.listWithNumberPermissionLiteral({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -79,7 +97,9 @@ test("boolean permission on literal - all matching - is authorized", async () =>
 
   expect(
     await actions.listWithBooleanPermissionLiteral({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).notToHaveAuthorizationError();
 });
@@ -91,7 +111,9 @@ test("boolean permission on literal - one not matching value - is not authorized
 
   expect(
     await actions.listWithBooleanPermissionLiteral({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -103,7 +125,9 @@ test("boolean permission on literal - one not matching null value - is not autho
 
   expect(
     await actions.listWithBooleanPermissionLiteral({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -116,7 +140,11 @@ test("enum permission on literal - all matching - is authorized", async () => {
   await actions.createWithEnum({ type: null, isActive: false });
 
   expect(
-    await actions.listWithEnumPermissionLiteral({ isActive: { equals: true } })
+    await actions.listWithEnumPermissionLiteral({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).notToHaveAuthorizationError();
 });
 
@@ -126,7 +154,11 @@ test("enum permission on literal - one not matching value - is not authorized", 
   await actions.createWithEnum({ type: "Technical" });
 
   expect(
-    await actions.listWithEnumPermissionLiteral({ isActive: { equals: true } })
+    await actions.listWithEnumPermissionLiteral({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -136,7 +168,11 @@ test("enum permission on literal - one not matching null value - is not authoriz
   await actions.createWithEnum({ type: "Technical" });
 
   expect(
-    await actions.listWithEnumPermissionLiteral({ isActive: { equals: true } })
+    await actions.listWithEnumPermissionLiteral({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -149,7 +185,9 @@ test("string permission on field - all matching - is authorized", async () => {
 
   expect(
     await actions.listWithTextPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).notToHaveAuthorizationError();
 });
@@ -161,7 +199,9 @@ test("string permission on field - one not matching value - is not authorized", 
 
   expect(
     await actions.listWithTextPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -173,7 +213,9 @@ test("string permission on field - one not matching null value - is not authoriz
 
   expect(
     await actions.listWithTextPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -187,7 +229,9 @@ test("number permission on field - all matching - is authorized", async () => {
 
   expect(
     await actions.listWithNumberPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).notToHaveAuthorizationError();
 });
@@ -199,7 +243,9 @@ test("number permission on field - one not matching value - is not authorized", 
 
   expect(
     await actions.listWithNumberPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -211,7 +257,9 @@ test("number permission on field - one not matching null value - is not authoriz
 
   expect(
     await actions.listWithNumberPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -225,7 +273,9 @@ test("boolean permission on field - all matching - is authorized", async () => {
 
   expect(
     await actions.listWithBooleanPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).notToHaveAuthorizationError();
 });
@@ -237,7 +287,9 @@ test("boolean permission on field - one not matching value - field is not author
 
   expect(
     await actions.listWithBooleanPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -249,7 +301,9 @@ test("boolean permission on field - one not matching null value - is not authori
 
   expect(
     await actions.listWithBooleanPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -263,7 +317,9 @@ test("enum permission on field name - all matching - is authorized", async () =>
 
   expect(
     await actions.listWithEnumPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).notToHaveAuthorizationError();
 });
@@ -275,7 +331,9 @@ test("enum permission on field name - one not matching value - is not authorized
 
   expect(
     await actions.listWithEnumPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -287,7 +345,9 @@ test("enum permission on field name - one not matching null value - is not autho
 
   expect(
     await actions.listWithEnumPermissionFromField({
-      isActive: { equals: true },
+      where: {
+        isActive: { equals: true },
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -343,9 +403,11 @@ test("identity permission - incorrect identity in context - is not authorized", 
   await actions.withIdentity(identity2).createWithIdentity({});
 
   expect(
-    await actions
-      .withIdentity(identity2)
-      .listWithIdentityPermission({ isActive: { equals: true } })
+    await actions.withIdentity(identity2).listWithIdentityPermission({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -363,7 +425,11 @@ test("identity permission - no identity in context - is not authorized", async (
   await actions.createWithIdentity({ isActive: false });
 
   expect(
-    await actions.listWithIdentityPermission({ isActive: { equals: true } })
+    await actions.listWithIdentityPermission({
+      where: {
+        isActive: { equals: true },
+      },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -384,8 +450,10 @@ test("permission on explicit input - all matching - is authorized", async () => 
 
   expect(
     await actions.listWithTextPermissionFromExplicitInput({
-      isActive: { equals: true },
-      explTitle: "hello",
+      where: {
+        isActive: { equals: true },
+        explTitle: "hello",
+      },
     })
   ).notToHaveAuthorizationError();
 });
@@ -399,8 +467,10 @@ test("permission on explicit input - one not matching - is not authorized", asyn
 
   expect(
     await actions.listWithTextPermissionFromExplicitInput({
-      isActive: { equals: true },
-      explTitle: "hello",
+      where: {
+        isActive: { equals: true },
+        explTitle: "hello",
+      },
     })
   ).toHaveAuthorizationError();
 });
@@ -414,8 +484,10 @@ test("permission on explicit input - one not matching null value - is not author
 
   expect(
     await actions.listWithTextPermissionFromExplicitInput({
-      isActive: { equals: true },
-      explTitle: "hello",
+      where: {
+        isActive: { equals: true },
+        explTitle: "hello",
+      },
     })
   ).toHaveAuthorizationError();
 });

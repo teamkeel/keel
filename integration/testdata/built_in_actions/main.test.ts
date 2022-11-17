@@ -39,7 +39,9 @@ test("list action - equals", async () => {
   await Post.create({ title: "apple", subTitle: "efg" });
 
   const { collection } = await actions.listPosts({
-    title: { equals: "apple" },
+    where: {
+      title: { equals: "apple" },
+    },
   });
 
   expect(collection.length).toEqual(2);
@@ -50,7 +52,9 @@ test("list action - contains", async () => {
   await Post.create({ title: "banana", subTitle: "ghi" });
 
   const { collection } = await actions.listPosts({
-    title: { contains: "ana" },
+    where: {
+      title: { contains: "ana" },
+    },
   });
 
   expect(collection.length).toEqual(2);
@@ -61,7 +65,9 @@ test("list action - startsWith", async () => {
   await Post.create({ title: "adamant", subTitle: "ijk" });
 
   const { collection } = await actions.listPosts({
-    title: { startsWith: "adam" },
+    where: {
+      title: { startsWith: "adam" },
+    },
   });
 
   expect(collection.length).toEqual(2);
@@ -72,7 +78,9 @@ test("list action - endsWith", async () => {
   await Post.create({ title: "a post about star wars", subTitle: "klm" });
 
   const { collection } = await actions.listPosts({
-    title: { endsWith: "star wars" },
+    where: {
+      title: { endsWith: "star wars" },
+    },
   });
 
   expect(collection.length).toEqual(2);
@@ -83,7 +91,9 @@ test("list action - oneOf", async () => {
   await Post.create({ title: "mango", subTitle: "mno" });
 
   const { collection } = await actions.listPosts({
-    title: { oneOf: ["pear", "mango"] },
+    where: {
+      title: { oneOf: ["pear", "mango"] },
+    },
   });
 
   expect(collection.length).toEqual(2);

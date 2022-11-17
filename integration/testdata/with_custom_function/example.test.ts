@@ -48,7 +48,9 @@ test("listing", async () => {
   });
 
   const { collection: aliens } = await actions.listPeople({
-    gender: { equals: "alien" },
+    where: {
+      gender: { equals: "alien" },
+    },
   });
 
   const alienNames = aliens.map((a) => a.name);
