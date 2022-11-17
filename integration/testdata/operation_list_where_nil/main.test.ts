@@ -8,13 +8,13 @@ test("eqAndNotEq", async () => {
 
   let resp;
 
-  resp = await actions.eqArg({ arg: null });
+  resp = await actions.eqArg({ where: { arg: null } });
   expect(resp.collection.map((thing) => thing.switchIsOn)).toEqual([null]);
 
-  resp = await actions.eqArg({ arg: false });
+  resp = await actions.eqArg({ where: { arg: false } });
   expect(resp.collection.map((thing) => thing.switchIsOn)).toEqual([false]);
 
-  resp = await actions.eqArg({ arg: true });
+  resp = await actions.eqArg({ where: { arg: true } });
   expect(resp.collection.map((thing) => thing.switchIsOn)).toEqual([true]);
 
   let nullsLast = function (a, b) {
@@ -24,20 +24,20 @@ test("eqAndNotEq", async () => {
     if (b === null) {
       return -1;
     }
-    return a < b;
+    return a < b ? -1 : 1;
   };
 
-  resp = await actions.notEqArg({ arg: null });
+  resp = await actions.notEqArg({ where: { arg: null } });
   expect(
     resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
   ).toEqual([false, true]);
 
-  resp = await actions.notEqArg({ arg: false });
+  resp = await actions.notEqArg({ where: { arg: false } });
   expect(
     resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
   ).toEqual([true, null]);
 
-  resp = await actions.notEqArg({ arg: true });
+  resp = await actions.notEqArg({ where: { arg: true } });
   expect(
     resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
   ).toEqual([false, null]);
