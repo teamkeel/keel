@@ -1,3 +1,10 @@
+## [0.215.1](https://github.com/teamkeel/keel/compare/v0.215.0...v0.215.1) (2022-11-17)
+
+
+### Bug Fixes
+
+* send valid request for authenticate action ([1278a94](https://github.com/teamkeel/keel/commit/1278a94eb1c5a8be03141a13af67d439d0494501))
+
 # [0.215.0](https://github.com/teamkeel/keel/compare/v0.214.1...v0.215.0) (2022-11-17)
 
 
