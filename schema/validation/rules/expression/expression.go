@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/expressions"
+	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"golang.org/x/exp/slices"

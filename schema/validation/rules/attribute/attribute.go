@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/expressions"
 	"github.com/teamkeel/keel/formatting"
+	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
