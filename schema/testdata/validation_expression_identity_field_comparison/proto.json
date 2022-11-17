@@ -1,242 +1,250 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Author",
-      "fields": [
+      "name":  "Author",
+      "fields":  [
         {
-          "modelName": "Author",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_IDENTITY",
-            "modelName": "Identity"
+          "modelName":  "Author",
+          "name":  "identity",
+          "type":  {
+            "type":  "TYPE_IDENTITY",
+            "modelName":  "Identity"
           },
-          "foreignKeyFieldName": "identityId"
+          "foreignKeyFieldName":  "identityId"
         },
         {
-          "modelName": "Author",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Author",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
+          },
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Author",
+            "relatedModelField":  "id"
           }
         },
         {
-          "modelName": "Author",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Author",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Author",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Author",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Author",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Author",
+          "name":  "identityId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "optional": true
+          "optional":  true
         }
       ]
     },
     {
-      "name": "Publisher",
-      "fields": [
+      "name":  "Publisher",
+      "fields":  [
         {
-          "modelName": "Publisher",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_IDENTITY",
-            "modelName": "Identity"
+          "modelName":  "Publisher",
+          "name":  "identity",
+          "type":  {
+            "type":  "TYPE_IDENTITY",
+            "modelName":  "Identity"
           },
-          "foreignKeyFieldName": "identityId"
+          "foreignKeyFieldName":  "identityId"
         },
         {
-          "modelName": "Publisher",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Publisher",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
+          },
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Publisher",
+            "relatedModelField":  "id"
           }
         },
         {
-          "modelName": "Publisher",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Publisher",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Publisher",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Publisher",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Publisher",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Publisher",
+          "name":  "identityId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "optional": true
+          "optional":  true
         }
       ]
     },
     {
-      "name": "Post",
-      "fields": [
+      "name":  "Post",
+      "fields":  [
         {
-          "modelName": "Post",
-          "name": "title",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Post",
+          "name":  "title",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         },
         {
-          "modelName": "Post",
-          "name": "owner",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author"
+          "modelName":  "Post",
+          "name":  "owner",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Author"
           },
-          "foreignKeyFieldName": "ownerId"
+          "foreignKeyFieldName":  "ownerId"
         },
         {
-          "modelName": "Post",
-          "name": "publisher",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher"
+          "modelName":  "Post",
+          "name":  "publisher",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Publisher"
           },
-          "foreignKeyFieldName": "publisherId"
+          "foreignKeyFieldName":  "publisherId"
         },
         {
-          "modelName": "Post",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Post",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Post",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Post",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Post",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Post",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Post",
-          "name": "ownerId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Post",
+          "name":  "ownerId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "modelName": "Post",
-          "name": "publisherId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Post",
+          "name":  "publisherId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "optional": true
+          "optional":  true
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Post",
-          "name": "createPost",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "Post",
+          "name":  "createPost",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "name": "title",
-              "type": {
-                "type": "TYPE_STRING"
+              "modelName":  "Post",
+              "operationName":  "createPost",
+              "name":  "title",
+              "type":  {
+                "type":  "TYPE_STRING"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "title"
               ]
             },
             {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "name": "publisher",
-              "type": {
-                "type": "TYPE_MODEL",
-                "modelName": "Publisher"
+              "modelName":  "Post",
+              "operationName":  "createPost",
+              "name":  "publisher",
+              "type":  {
+                "type":  "TYPE_MODEL",
+                "modelName":  "Publisher"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "publisher"
               ]
             },
             {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "name": "owner",
-              "type": {
-                "type": "TYPE_MODEL",
-                "modelName": "Author"
+              "modelName":  "Post",
+              "operationName":  "createPost",
+              "name":  "owner",
+              "type":  {
+                "type":  "TYPE_MODEL",
+                "modelName":  "Author"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "owner"
               ]
             }
           ],
-          "permissions": [
+          "permissions":  [
             {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "expression": {
-                "source": "post.owner.identity == post.publisher.identity"
+              "modelName":  "Post",
+              "operationName":  "createPost",
+              "expression":  {
+                "source":  "post.owner.identity == post.publisher.identity"
               }
             }
           ]
@@ -244,113 +252,117 @@
       ]
     },
     {
-      "name": "Identity",
-      "fields": [
+      "name":  "Identity",
+      "fields":  [
         {
-          "modelName": "Identity",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
-          "unique": true
+          "unique":  true
         },
         {
-          "modelName": "Identity",
-          "name": "password",
-          "type": {
-            "type": "TYPE_PASSWORD"
+          "modelName":  "Identity",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_PASSWORD"
           }
         },
         {
-          "modelName": "Identity",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Identity",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
+          },
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Identity",
+            "relatedModelField":  "id"
           }
         },
         {
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Identity",
-          "name": "authenticate",
-          "type": "OPERATION_TYPE_AUTHENTICATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "Identity",
+          "name":  "authenticate",
+          "type":  "OPERATION_TYPE_AUTHENTICATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "createIfNotExists",
+              "type":  {
+                "type":  "TYPE_BOOL"
               },
-              "optional": true
+              "optional":  true
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "emailPassword",
+              "type":  {
+                "type":  "TYPE_OBJECT"
               },
-              "inputs": [
+              "inputs":  [
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "email",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 },
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "password",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 }
               ]
             }
           ],
-          "outputs": [
+          "outputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "identityCreated",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "identityCreated",
+              "type":  {
+                "type":  "TYPE_BOOL"
               }
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "token",
-              "type": {
-                "type": "TYPE_STRING"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "token",
+              "type":  {
+                "type":  "TYPE_STRING"
               }
             }
           ]

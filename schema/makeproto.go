@@ -35,11 +35,9 @@ func (scm *Builder) makeProtoModels(fkInfo []*foreignkeys.ForeignKeyInfo) *proto
 			}
 		}
 	}
-
 	// Now that the proto models are built and accessible in the protoSchema, we go back over them,
-	// governed by the given ForeignKeyInfo, in order to set the ForeignKeyName on
-	// appropriate model fields.
-	scm.setForeignKeyNames(fkInfo, protoSchema)
+	// governed by the given ForeignKeyInfo, in order to update various foreign key related data.
+	scm.updateForeignKeyInfo(fkInfo, protoSchema)
 
 	return protoSchema
 }
@@ -488,11 +486,23 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 	}
 }
 
-// setForeignKeyNames uses the instructions in the given ForeignKeyInfo(s) to locate all the fields that
-// should have their ForeignKeyName field set, and does so accordingly.
-func (scm *Builder) setForeignKeyNames(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
+// updateForeignKeyInfo updates relevant fields with information concerning foreign keys in accordance with the
+// guidance provided by the given ForeignKeyInfo(s)
+func (scm *Builder) updateForeignKeyInfo(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
 	for _, fkInfo := range fkInfos {
-		fieldToUpdate := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
-		fieldToUpdate.ForeignKeyFieldName = wrapperspb.String(fkInfo.ForeignKeyName)
+
+		// Tell the "owning" type-Model field the name of its sister field that carries the corresponding
+		// foreign key values.
+		owningField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
+		owningField.ForeignKeyFieldName = wrapperspb.String(fkInfo.ForeignKeyName)
+
+		// Attach the relevant metadata to the (auto-generated) fields that actually are the foreign key fields.
+		relatedModel := proto.FindModel(schema.Models, fkInfo.ReferredToModel.Name.Value)
+		relatedModelPkFieldName := proto.PrimaryKeyFieldName(relatedModel)
+		relatedField := proto.FindField(schema.Models, fkInfo.ReferredToModel.Name.Value, relatedModelPkFieldName)
+		relatedField.ForeignKeyInfo = &proto.ForeignKeyInfo{
+			RelatedModelName:  fkInfo.ReferredToModel.Name.Value,
+			RelatedModelField: relatedModelPkFieldName,
+		}
 	}
 }
