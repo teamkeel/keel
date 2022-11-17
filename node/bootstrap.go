@@ -66,26 +66,19 @@ func GeneratePackages(dir string) error {
 
 	cg := codegenerator.NewGenerator(schema, dir)
 
-	err = cg.GenerateSDK()
+	_, err = cg.GenerateSDK()
 
 	if err != nil {
 		return err
 	}
 
-	err = cg.GenerateTesting()
+	_, err = cg.GenerateTesting()
 
 	if err != nil {
 		return err
 	}
 
-	// sdk (client)
-	// sdk typings d.ts
-	// package.json for sdk (*peer* dependency on functions-runtime)
-	// testing library
-	// testing library d.t.s
-	// package.json for testing (*peer* dependency on functions-runtime)
-
-	panic("sksnsn")
+	return nil
 }
 
 func GenerateDevelopmentServer(dir string) error {

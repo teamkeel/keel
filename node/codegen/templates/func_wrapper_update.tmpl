@@ -1,7 +1,0 @@
-type {{ .Name }}ReturnType = Promise<FunctionUpdateResponse<{{ .Model }}>>
-
-type {{ .Name }}CallbackFunction = (inputs: {{ .Name }}Input, api: API) => {{ .Name }}ReturnType
-
-export const {{ .Name }} = (callback: {{ .Name }}CallbackFunction) => (inputs: {{ .Name }}Input, api: API) : {{ .Name }}ReturnType => {
-  return callback(inputs, api);
-};
