@@ -120,8 +120,46 @@ func (g *Generator) sdkSrcCode() string {
 	})
 }
 
-func (g *Generator) sdkTypeDefinitions() (r string) {
-	return r
+func (g *Generator) sdkTypeDefinitions() string {
+	models := []*Model{}
+
+	// add model interfaces to template
+	for _, model := range g.schema.Models {
+		m := Model{
+			Name: model.Name,
+		}
+
+		for _, field := range model.Fields {
+			m.Fields = append(m.Fields, &ModelField{
+				Name: field.Name,
+				Type: protoTypeToTypeScriptType(field.Type),
+			})
+		}
+
+		models = append(models, &m)
+	}
+
+	// add enums to template
+	enums := []*Enum{}
+
+	for _, enum := range g.schema.Enums {
+		e := Enum{
+			Name: enum.Name,
+		}
+
+		for _, v := range enum.Values {
+			e.Values = append(e.Values, &EnumValue{
+				Label: v.Name,
+			})
+		}
+
+		enums = append(enums, &e)
+	}
+
+	return renderTemplate(TemplateSdkDefinitions, map[string]interface{}{
+		"Models": models,
+		"Enums":  enums,
+	})
 }
 
 //go:embed package.json.tmpl

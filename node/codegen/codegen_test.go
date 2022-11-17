@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/andreyvit/diff"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -97,8 +98,49 @@ func TestSdk(t *testing.T) {
 						}`,
 				},
 				{
-					Path:     "index.d.ts",
-					Contents: ``,
+					Path: "index.d.ts",
+					Contents: `
+						import {
+							QueryConstraints,
+							ChainableQuery,
+							Query,
+							queryResolverFromEnv,
+							// todo: the response types below will change
+							FunctionError,
+							FunctionCreateResponse,
+							FunctionGetResponse,
+							FunctionDeleteResponse,
+							FunctionListResponse,
+							FunctionUpdateResponse,
+							FunctionAuthenticateResponse,
+						} from '@teamkeel/functions-runtime';
+						
+						// todo: examine this type
+						export type Timestamp = string
+
+						export interface Person {
+						  name: string
+						  age: number
+						  id: string
+						  createdAt: Date
+						  updatedAt: Date
+						}
+						export interface Identity {
+						  email: string
+						  password: string
+						  id: string
+						  createdAt: Date
+						  updatedAt: Date
+						}
+
+						// query types
+						
+						// func wrapper types
+						
+						// api typings
+						
+						// top level api typing
+					`,
 				},
 			},
 		},
@@ -200,8 +242,78 @@ func TestSdk(t *testing.T) {
 					};`,
 				},
 				{
-					Path:     "index.d.ts",
+					Path: "index.d.ts",
+					Contents: `
+						import {
+							QueryConstraints,
+							ChainableQuery,
+							Query,
+							queryResolverFromEnv,
+							// todo: the response types below will change
+							FunctionError,
+							FunctionCreateResponse,
+							FunctionGetResponse,
+							FunctionDeleteResponse,
+							FunctionListResponse,
+							FunctionUpdateResponse,
+							FunctionAuthenticateResponse,
+						} from '@teamkeel/functions-runtime';
+						
+						// todo: examine this type
+						export type Timestamp = string
+
+						export interface Person {
+							name: string
+							age: number
+							id: string
+							createdAt: Date
+							updatedAt: Date
+						}
+						export interface Identity {
+							email: string
+							password: string
+							id: string
+							createdAt: Date
+							updatedAt: Date
+						}
+						
+						
+						// query types
+						
+						// func wrapper types
+						
+						// api typings
+						
+						// top level api typing
+					`,
+				},
+			},
+		},
+		{
+			Name: "enum-generation",
+			Schema: `
+				enum TheBeatles {
+					John
+					Paul
+					Ringo
+					George
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path:     "index.js",
 					Contents: "",
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export enum TheBeatles {
+							John = "John",
+							Paul = "Paul",
+							Ringo = "Ringo",
+							George = "George",
+						}
+					`,
 				},
 			},
 		},
@@ -263,7 +375,14 @@ func normaliseString(str string) string {
 	newLines := []string{}
 
 	for _, line := range lines {
-		newLines = append(newLines, line[indentDepth:])
+		lineLength := len(line)
+
+		if lineLength <= indentDepth {
+			// blank line in body of lines
+			continue
+		} else {
+			newLines = append(newLines, line[indentDepth:])
+		}
 	}
 
 	tabReplacer := strings.NewReplacer(
@@ -282,7 +401,15 @@ actual:
 	for _, actualFile := range generatedFiles {
 		for _, expectedFile := range tc.ExpectedFiles {
 			if actualFile.Path == expectedFile.Path {
-				assert.Equal(t, normaliseString(actualFile.Contents), normaliseString(expectedFile.Contents))
+				assert.Contains(t, normaliseString(actualFile.Contents), normaliseString(expectedFile.Contents))
+
+				actual := normaliseString(actualFile.Contents)
+				expected := normaliseString(expectedFile.Contents)
+
+				if !strings.Contains(actual, expected) {
+					t.Errorf("Result not as expected:\n%v", diff.LineDiff(expected, actual))
+					t.Fail()
+				}
 
 				continue actual
 			}
@@ -295,8 +422,6 @@ expected:
 	for _, expectedFile := range tc.ExpectedFiles {
 		for _, actualFile := range generatedFiles {
 			if actualFile.Path == expectedFile.Path {
-				assert.Equal(t, normaliseString(actualFile.Contents), normaliseString(expectedFile.Contents))
-
 				continue expected
 			}
 		}

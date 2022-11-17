@@ -1,0 +1,41 @@
+import {
+  QueryConstraints,
+  ChainableQuery,
+  Query,
+  queryResolverFromEnv,
+  // todo: the response types below will change
+  FunctionError,
+  FunctionCreateResponse,
+  FunctionGetResponse,
+  FunctionDeleteResponse,
+  FunctionListResponse,
+  FunctionUpdateResponse,
+  FunctionAuthenticateResponse,
+} from '@teamkeel/functions-runtime';
+
+// todo: examine this type
+export type Timestamp = string
+
+{{- range .Models }}
+export interface {{ .Name }} {
+  {{- range .Fields }}
+  {{ .Name }}: {{ .Type }}
+  {{- end }}
+}
+{{- end }}
+
+{{- range .Enums }}
+export enum {{ .Name }} {
+  {{- range .Values }}
+  {{ .Label }} = "{{ .Label }}",
+  {{- end }}
+}
+{{- end }}
+
+// query types
+
+// func wrapper types
+
+// api typings
+
+// top level api typing

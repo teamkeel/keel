@@ -4,8 +4,8 @@ go 1.19
 
 require (
 	github.com/99designs/gqlgen v0.17.16
-	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
+	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/aybabtme/orderedjson v0.1.0
 	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/bykof/gostradamus v1.0.4
@@ -59,6 +59,7 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
+	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/tkuchiki/go-timezone v0.2.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
