@@ -29,7 +29,6 @@ CREATE TABLE "animal" (
 "human_friend_id" TEXT
 );
 ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");
-
 ALTER TABLE "animal" ADD FOREIGN KEY ("human_friend_id") REFERENCES "person"("id");
 
 === 

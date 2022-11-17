@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/samber/lo"
@@ -490,17 +491,25 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 // guidance provided by the given ForeignKeyInfo(s)
 func (scm *Builder) updateForeignKeyInfo(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
 	for _, fkInfo := range fkInfos {
+		fmt.Printf("XXXX updatingForeignKeyInfo, fk name in fkInfo: %s\n", fkInfo.ForeignKeyName)
+
+		if fkInfo.ForeignKeyName == "favouriteThingId" {
+			a := 1
+			_ = a
+		}
 
 		// Tell the "owning" type-Model field the name of its sister field that carries the corresponding
 		// foreign key values.
 		owningField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
 		owningField.ForeignKeyFieldName = wrapperspb.String(fkInfo.ForeignKeyName)
 
-		// Attach the relevant metadata to the (auto-generated) fields that actually are the foreign key fields.
+		// Find the auto-generated, *actual* foreign key field and attach the relevant meta data to it.
+		fkField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, owningField.ForeignKeyFieldName.Value)
+
 		relatedModel := proto.FindModel(schema.Models, fkInfo.ReferredToModel.Name.Value)
 		relatedModelPkFieldName := proto.PrimaryKeyFieldName(relatedModel)
-		relatedField := proto.FindField(schema.Models, fkInfo.ReferredToModel.Name.Value, relatedModelPkFieldName)
-		relatedField.ForeignKeyInfo = &proto.ForeignKeyInfo{
+
+		fkField.ForeignKeyInfo = &proto.ForeignKeyInfo{
 			RelatedModelName:  fkInfo.ReferredToModel.Name.Value,
 			RelatedModelField: relatedModelPkFieldName,
 		}

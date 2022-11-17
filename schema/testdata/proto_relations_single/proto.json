@@ -12,10 +12,6 @@
           "primaryKey":  true,
           "defaultValue":  {
             "useZeroValue":  true
-          },
-          "foreignKeyInfo":  {
-            "relatedModelName":  "Person",
-            "relatedModelField":  "id"
           }
         },
         {
@@ -89,7 +85,11 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Person",
+            "relatedModelField":  "id"
+          }
         }
       ]
     },

@@ -21,10 +21,6 @@
           "primaryKey":  true,
           "defaultValue":  {
             "useZeroValue":  true
-          },
-          "foreignKeyInfo":  {
-            "relatedModelName":  "Author",
-            "relatedModelField":  "id"
           }
         },
         {
@@ -53,7 +49,11 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Identity",
+            "relatedModelField":  "id"
+          }
         }
       ]
     },
@@ -78,10 +78,6 @@
           "primaryKey":  true,
           "defaultValue":  {
             "useZeroValue":  true
-          },
-          "foreignKeyInfo":  {
-            "relatedModelName":  "Publisher",
-            "relatedModelField":  "id"
           }
         },
         {
@@ -110,7 +106,11 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Identity",
+            "relatedModelField":  "id"
+          }
         }
       ]
     },
@@ -179,7 +179,11 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Author",
+            "relatedModelField":  "id"
+          }
         },
         {
           "modelName":  "Post",
@@ -187,7 +191,11 @@
           "type":  {
             "type":  "TYPE_ID"
           },
-          "optional":  true
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Publisher",
+            "relatedModelField":  "id"
+          }
         }
       ],
       "operations":  [
@@ -278,10 +286,6 @@
           "primaryKey":  true,
           "defaultValue":  {
             "useZeroValue":  true
-          },
-          "foreignKeyInfo":  {
-            "relatedModelName":  "Identity",
-            "relatedModelField":  "id"
           }
         },
         {
