@@ -96,7 +96,6 @@ func TestSchema(t *testing.T) {
 				// also highly unlikely (almost impossible) to happen
 				assert.Fail(t, "both expected and actual JSON are invalid")
 			}
-
 		})
 	}
 }

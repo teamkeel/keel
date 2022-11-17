@@ -493,11 +493,6 @@ func (scm *Builder) updateForeignKeyInfo(fkInfos []*foreignkeys.ForeignKeyInfo, 
 	for _, fkInfo := range fkInfos {
 		fmt.Printf("XXXX updatingForeignKeyInfo, fk name in fkInfo: %s\n", fkInfo.ForeignKeyName)
 
-		if fkInfo.ForeignKeyName == "favouriteThingId" {
-			a := 1
-			_ = a
-		}
-
 		// Tell the "owning" type-Model field the name of its sister field that carries the corresponding
 		// foreign key values.
 		owningField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
