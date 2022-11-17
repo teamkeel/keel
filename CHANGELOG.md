@@ -1,3 +1,10 @@
+# [0.214.0](https://github.com/teamkeel/keel/compare/v0.213.1...v0.214.0) (2022-11-17)
+
+
+### Features
+
+* add start of json schema support ([b6fa559](https://github.com/teamkeel/keel/commit/b6fa5599c1208529d35c179fd9e92773dc639b2b))
+
 ## [0.213.1](https://github.com/teamkeel/keel/compare/v0.213.0...v0.213.1) (2022-11-17)
 
 
