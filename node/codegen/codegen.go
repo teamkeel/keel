@@ -35,17 +35,9 @@ func NewGenerator(schema *proto.Schema, dir string) *Generator {
 	}
 }
 
-type SourceCodeType string
-
-const (
-	SourceCodeTypeDefinition SourceCodeType = "definition" // index.d.ts
-	SourceCodeTypeJavaScript SourceCodeType = "javascript" // index.js
-)
-
 type SourceCode struct {
 	Contents string
 	Path     string
-	Type     SourceCodeType
 }
 
 type GeneratedFile = SourceCode
@@ -57,13 +49,11 @@ func (g *Generator) GenerateSDK() ([]*GeneratedFile, error) {
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.js",
-		Type:     SourceCodeTypeJavaScript,
 		Contents: g.sdkSrcCode(),
 	})
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.d.ts",
-		Type:     SourceCodeTypeDefinition,
 		Contents: g.sdkTypeDefinitions(),
 	})
 
@@ -83,13 +73,11 @@ func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.js",
-		Type:     SourceCodeTypeJavaScript,
 		Contents: g.testingSrcCode(),
 	})
 
 	sourceCodes = append(sourceCodes, &SourceCode{
 		Path:     "index.d.ts",
-		Type:     SourceCodeTypeDefinition,
 		Contents: g.testingTypeDefinitions(),
 	})
 
