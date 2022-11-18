@@ -3,7 +3,7 @@ model Person {
         name Text
         public Boolean
         dateOfDeath Date?
-        identity Identity
+        identity Identity?
     }
 
     operations {

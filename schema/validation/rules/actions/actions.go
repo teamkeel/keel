@@ -396,6 +396,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 }
 
 func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, input := range action.Inputs {
@@ -410,7 +411,11 @@ func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 	return
 }
 
-func validateInput(asts []*parser.AST, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode) *errorhandling.ValidationError {
+func validateInput(
+	asts []*parser.AST,
+	input *parser.ActionInputNode,
+	model *parser.ModelNode,
+	action *parser.ActionNode) *errorhandling.ValidationError {
 	resolvedType := query.ResolveInputType(asts, input, model)
 
 	// If type cannot be resolved report error

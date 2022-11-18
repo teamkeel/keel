@@ -10,7 +10,8 @@
             "type":  "TYPE_IDENTITY",
             "modelName":  "Identity"
           },
-          "optional":  true
+          "optional":  true,
+          "foreignKeyFieldName":  "identityId"
         },
         {
           "modelName":  "Post",
@@ -41,6 +42,18 @@
           },
           "defaultValue":  {
             "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Post",
+          "name":  "identityId",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Identity",
+            "relatedModelField":  "id"
           }
         }
       ],

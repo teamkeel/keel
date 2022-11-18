@@ -1,6 +1,24 @@
 {
   "Errors": [
     {
+      "message": "create actions must accept all required fields that have no default value",
+      "short_message": "create actions must accept all required fields that have no default value",
+      "hint": "maybe add identityId to the with() inputs",
+      "code": "E034",
+      "pos": {
+        "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
+        "offset": 180,
+        "line": 12,
+        "column": 16
+      },
+      "end_pos": {
+        "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
+        "offset": 193,
+        "line": 12,
+        "column": 29
+      }
+    },
+    {
       "message": "'context' not found",
       "short_message": "'context' not found",
       "hint": "Did you mean one of ctx, profile, or username?",

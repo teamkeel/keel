@@ -83,9 +83,11 @@
           "modelName":  "Book",
           "name":  "authorId",
           "type":  {
-            "type":  "TYPE_ID",
-            "modelName":  "Person",
-            "fieldName":  "id"
+            "type":  "TYPE_ID"
+          },
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Person",
+            "relatedModelField":  "id"
           }
         }
       ]

@@ -3,16 +3,16 @@ package schema
 import (
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) set of parsed AST.
-func (scm *Builder) makeProtoModels() *proto.Schema {
+func (scm *Builder) makeProtoModels(fkInfo []*foreignkeys.ForeignKeyInfo) *proto.Schema {
 	protoSchema := &proto.Schema{}
 
 	for _, parserSchema := range scm.asts {
@@ -35,19 +35,9 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			}
 		}
 	}
-	// Now that we've built all the models from all the input schema files, we have a global set,
-	// and we can finish up populating some of the data concerned with relationship fields.
-
-	// Alongside every HasOne relationship field of type Model defined in the schema,
-	// we auto-generate another field in the same model to carry the foreign key values
-	// that can hold the "pointer" to  the target related object. In order to name these new fields,
-	// we need to access the related model and find out which of its fields is its primary key.
-	// (Canonically "id"). E.g. if the HasOne field is named "author", and the related model's primary key
-	// is "id", then we name the new FK field "authorId".
-	affectedFields := calculateForeignKeyFieldNames(protoSchema)
-
-	// Now we go ahead and actually auto-insert the new FK fields.
-	createRelationshipIdFields(protoSchema, affectedFields)
+	// Now that the proto models are built and accessible in the protoSchema, we go back over them,
+	// governed by the given ForeignKeyInfo, in order to update various foreign key related data.
+	scm.updateForeignKeyInfo(fkInfo, protoSchema)
 
 	return protoSchema
 }
@@ -202,7 +192,6 @@ func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName strin
 
 func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *proto.Field {
 	typeInfo := scm.parserFieldToProtoTypeInfo(parserField)
-
 	protoField := &proto.Field{
 		ModelName: modelName,
 		Name:      parserField.Name.Value,
@@ -497,67 +486,25 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 	}
 }
 
-// calculateForeignKeyFieldNames locates all the model fields of type Model that represent
-// a HasOne relation, calculates, and populates that field's ForeignKeyFieldName value.
-// To do so it has to locate the referred-to model to find out which of its fields is
-// its primary key. (Because the foreign key name incorporates that).
-func calculateForeignKeyFieldNames(schema *proto.Schema) (affectedFields []*proto.Field) {
-	hasOneModelFields := allHasOneModelFields(schema)
-	for _, thisField := range hasOneModelFields {
-		if !isTypeModelAndHasOne(thisField) {
-			continue
-		}
+// updateForeignKeyInfo updates relevant fields with information concerning foreign keys in accordance with the
+// guidance provided by the given ForeignKeyInfo(s)
+func (scm *Builder) updateForeignKeyInfo(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
+	for _, fkInfo := range fkInfos {
 
-		relatedModel := proto.FindModel(schema.Models, thisField.Type.ModelName.Value)
-		relatedPrimaryKeyFieldName := proto.PrimaryKeyFieldName(relatedModel)
-		foreignKeyName := thisField.Name + strcase.ToCamel(relatedPrimaryKeyFieldName)
-		thisField.ForeignKeyFieldName = &wrapperspb.StringValue{
-			Value: foreignKeyName,
+		// Tell the "owning" type-Model field the name of its sister field that carries the corresponding
+		// foreign key values.
+		owningField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
+		owningField.ForeignKeyFieldName = wrapperspb.String(fkInfo.ForeignKeyName)
+
+		// Find the auto-generated, *actual* foreign key field and attach the relevant meta data to it.
+		fkField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, owningField.ForeignKeyFieldName.Value)
+
+		relatedModel := proto.FindModel(schema.Models, fkInfo.ReferredToModel.Name.Value)
+		relatedModelPkFieldName := proto.PrimaryKeyFieldName(relatedModel)
+
+		fkField.ForeignKeyInfo = &proto.ForeignKeyInfo{
+			RelatedModelName:  fkInfo.ReferredToModel.Name.Value,
+			RelatedModelField: relatedModelPkFieldName,
 		}
 	}
-	return hasOneModelFields
-}
-
-// allHasOneModelFields provides a list of all the fields in the schema
-// that represent HasOne relationships.
-func allHasOneModelFields(schema *proto.Schema) []*proto.Field {
-	allFields := proto.AllFields(schema)
-	hasOneFields := lo.Filter(allFields, func(field *proto.Field, _ int) bool {
-		return isTypeModelAndHasOne(field)
-	})
-	return hasOneFields
-}
-
-// createRelationshipIdFields visits all the given hasOneModelFields (which
-// are defined in the Keel Schema), and auto generates a sibling field of type Id in the
-// same model to carry the foreign key that references the related object. Note this sibling field does not show up
-// in the keel schema - they are implied, similarly to the way each model has an implied CreatedAt
-// field.
-func createRelationshipIdFields(schema *proto.Schema, hasOneModelFields []*proto.Field) {
-	for _, hasOneModelField := range hasOneModelFields {
-		relnIdField := &proto.Field{
-			// The new field belongs to the same model as the hasOneModelField.
-			ModelName: hasOneModelField.ModelName,
-
-			// The hasOneModelField tells us explicitly what to call this new Id field.
-			Name: hasOneModelField.ForeignKeyFieldName.Value,
-
-			Type: &proto.TypeInfo{
-				// The new Id field is of type ID.
-				Type: proto.Type_TYPE_ID,
-
-				// The hasOneModelField can tell us which related model this Id value refers to.
-				ModelName: hasOneModelField.Type.ModelName,
-
-				// The new Id field has a hard-coded name - i.e. ID.
-				FieldName: &wrapperspb.StringValue{Value: parser.ImplicitFieldNameId},
-			},
-		}
-		thisModel := proto.FindModel(schema.Models, hasOneModelField.ModelName)
-		thisModel.Fields = append(thisModel.Fields, relnIdField)
-	}
-}
-
-func isTypeModelAndHasOne(field *proto.Field) bool {
-	return proto.IsTypeModel(field) && !proto.IsRepeated(field)
 }

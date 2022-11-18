@@ -3,7 +3,7 @@
     {
       "message": "'autho' not found on 'Post'",
       "short_message": "'autho' not found",
-      "hint": "Did you mean author?",
+      "hint": "Did you mean author, or authorId?",
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",

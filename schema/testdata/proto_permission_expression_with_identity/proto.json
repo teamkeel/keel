@@ -6,11 +6,13 @@
         {
           "modelName":  "Account",
           "name":  "identity",
+          "optional": true,
           "type":  {
             "type":  "TYPE_IDENTITY",
             "modelName":  "Identity"
           },
-          "unique":  true
+          "unique":  true,
+          "foreignKeyFieldName":  "identityId"
         },
         {
           "modelName":  "Account",
@@ -41,6 +43,18 @@
           },
           "defaultValue":  {
             "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Account",
+          "name":  "identityId",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Identity",
+            "relatedModelField":  "id"
           }
         }
       ],

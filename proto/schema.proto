@@ -60,6 +60,16 @@ message Field {
 
     // This describes how the default value of this field should be created
     DefaultValue default_value = 9;
+
+    // This only applies to the foreign key fields that we auto inject.
+    // If it is non null it *defines* this field as being a foreign key field,
+    // and carries corresponding metadata.
+    ForeignKeyInfo foreign_key_info = 11;
+}
+
+message ForeignKeyInfo {
+    string related_model_name = 1;
+    string related_model_field = 2;
 }
 
 message DefaultValue {

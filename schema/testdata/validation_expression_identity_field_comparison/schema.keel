@@ -13,8 +13,8 @@ model Publisher {
 model Post {
     fields {
         title Text
-        owner Author
-        publisher Publisher
+        owner Author?
+        publisher Publisher?
     }
 
     operations {

@@ -2,7 +2,6 @@ package schema_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"testing"
 
@@ -61,6 +60,7 @@ func TestSchema(t *testing.T) {
 				expectedJSON = expectedProto
 				actualJSON, err = protojson.Marshal(protoSchema)
 				actualJSONPretty = protojson.Format(protoSchema)
+				_ = actualJSONPretty
 				require.NoError(t, err)
 
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
@@ -85,7 +85,7 @@ func TestSchema(t *testing.T) {
 			case jsondiff.FullMatch:
 				// success
 			case jsondiff.SupersetMatch, jsondiff.NoMatch:
-				fmt.Printf("XXXX actual JSON: \n%s\n", actualJSONPretty)
+				//fmt.Printf("XXXX actual JSON: \n%s\n", actualJSONPretty)
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")
@@ -96,7 +96,6 @@ func TestSchema(t *testing.T) {
 				// also highly unlikely (almost impossible) to happen
 				assert.Fail(t, "both expected and actual JSON are invalid")
 			}
-
 		})
 	}
 }

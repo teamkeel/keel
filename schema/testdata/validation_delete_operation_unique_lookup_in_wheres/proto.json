@@ -1,0 +1,197 @@
+{
+  "models": [
+    {
+      "name": "MyModel",
+      "fields": [
+        {
+          "modelName": "MyModel",
+          "name": "isLocked",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "modelName": "MyModel",
+          "name": "code",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "MyModel",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "MyModel",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "MyModel",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "MyModel",
+          "name": "deleteMyModel",
+          "type": "OPERATION_TYPE_DELETE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+              "modelName": "MyModel",
+              "operationName": "deleteMyModel",
+              "name": "explicitCode",
+              "type": {
+                "type": "TYPE_STRING"
+              },
+              "mode": "INPUT_MODE_READ",
+              "behaviour": "INPUT_BEHAVIOUR_EXPLICIT"
+            }
+          ],
+          "whereExpressions": [
+            {
+              "source": "myModel.isLocked == false"
+            },
+            {
+              "source": "myModel.code == explicitCode"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "OPERATION_TYPE_AUTHENTICATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "createIfNotExists",
+              "type": {
+                "type": "TYPE_BOOL"
+              },
+              "optional": true
+            },
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "emailPassword",
+              "type": {
+                "type": "TYPE_OBJECT"
+              },
+              "inputs": [
+                {
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "email",
+                  "type": {
+                    "type": "TYPE_STRING"
+                  }
+                },
+                {
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "password",
+                  "type": {
+                    "type": "TYPE_STRING"
+                  }
+                }
+              ]
+            }
+          ],
+          "outputs": [
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "identityCreated",
+              "type": {
+                "type": "TYPE_BOOL"
+              }
+            },
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "token",
+              "type": {
+                "type": "TYPE_STRING"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

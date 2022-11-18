@@ -28,10 +28,12 @@
         {
           "modelName":  "Person",
           "name":  "identity",
+          "optional": true,
           "type":  {
             "type":  "TYPE_IDENTITY",
             "modelName":  "Identity"
-          }
+          },
+          "foreignKeyFieldName":  "identityId"
         },
         {
           "modelName":  "Person",
@@ -62,6 +64,18 @@
           },
           "defaultValue":  {
             "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Person",
+          "name":  "identityId",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Identity",
+            "relatedModelField":  "id"
           }
         }
       ],

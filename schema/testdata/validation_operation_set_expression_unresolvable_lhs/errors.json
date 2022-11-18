@@ -3,7 +3,7 @@
     {
       "message": "'identit' not found on 'Profile'",
       "short_message": "'identit' not found",
-      "hint": "Did you mean identity?",
+      "hint": "Did you mean identity, or identityId?",
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",

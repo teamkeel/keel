@@ -6,6 +6,7 @@ import (
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/teamkeel/keel/proto"
 
+	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/reader"
@@ -113,6 +114,15 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		asts = append(asts, declarations)
 	}
 
+	// Now insert the foreign key fields. We have to defer this until now,
+	// because we need access to the global model set.
+	fkInfo, errDetails := scm.insertForeignKeyFields(asts)
+	if errDetails != nil {
+		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
+			ErrorDetails: errDetails,
+		})
+	}
+
 	// if we have errors in parsing then no point running validation rules
 	if len(parseErrors.Errors) > 0 {
 		return nil, &parseErrors
@@ -126,7 +136,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	scm.asts = asts
 
-	protoModels := scm.makeProtoModels()
+	protoModels := scm.makeProtoModels(fkInfo)
 	return protoModels, nil
 }
 
@@ -200,6 +210,40 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 			fieldsSection.Fields = append(fieldsSection.Fields, fields...)
 		}
 	}
+}
+
+// insertForeignKeyFields works with the given GLOBAL set of asts, i.e. a set that has been
+// built and combined from all input files. It delegates to foreignkeys.NewForeignKeyInfo()
+// to analyse the foreign keys that should be auto generated and into which models, and then
+// generates and inserts suitable fields accordingly.
+func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) ([]*foreignkeys.ForeignKeyInfo, *errorhandling.ErrorDetails) {
+
+	primaryKeys := foreignkeys.NewPrimaryKeys(asts)
+	foreignKeys, errDetails := foreignkeys.NewForeignKeyInfo(asts, primaryKeys)
+	if errDetails != nil {
+		return nil, errDetails
+	}
+
+	for _, fKInfo := range foreignKeys {
+		fkField := &parser.FieldNode{
+			BuiltIn:  true,
+			Optional: fKInfo.OwningFieldIsOptional,
+			Name: parser.NameNode{
+				Value: fKInfo.ForeignKeyName,
+			},
+			Type:       parser.FieldTypeID,
+			Attributes: []*parser.AttributeNode{},
+		}
+		var fieldsSection *parser.ModelSectionNode
+		for _, section := range fKInfo.OwningModel.Sections {
+			if len(section.Fields) > 0 {
+				fieldsSection = section
+				break
+			}
+		}
+		fieldsSection.Fields = append(fieldsSection.Fields, fkField)
+	}
+	return foreignKeys, nil
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {
