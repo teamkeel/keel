@@ -10,7 +10,7 @@ import (
 type Row map[string]any
 
 func Get(scope *Scope, input map[string]any) (Row, error) {
-	query := NewQuery(scope.schema, scope.operation)
+	query := NewQuery(scope.model)
 
 	err := query.applyImplicitFilters(scope, input)
 	if err != nil {
@@ -36,8 +36,8 @@ func Get(scope *Scope, input map[string]any) (Row, error) {
 	}
 
 	// Select all columns and distinct on id
-	query.AppendSelect("*")
-	query.AppendDistinctOn("id")
+	query.AppendSelect(Field("*"))
+	query.AppendDistinctOn(Field("id"))
 
 	// Execute database request with results
 	results, affected, err := query.SelectStatement().ExecuteWithResults(scope)

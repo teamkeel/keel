@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"text/template"
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
@@ -12,9 +11,19 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
-// Represents a database column operand.
-func Column(table string, column string) *QueryOperand {
-	return &QueryOperand{table: table, column: column}
+// Represents a model field.
+func Field(field string) *QueryOperand {
+	return &QueryOperand{
+		column: strcase.ToSnake(field),
+	}
+}
+
+// Represents a model field.
+func ModelField(model string, field string) *QueryOperand {
+	return &QueryOperand{
+		table:  strcase.ToSnake(model),
+		column: strcase.ToSnake(field),
+	}
 }
 
 // Represents a value operand.
@@ -33,8 +42,8 @@ type QueryOperand struct {
 	value  any
 }
 
-func (o *QueryOperand) IsColumn() bool {
-	return o.table != "" && o.column != ""
+func (o *QueryOperand) IsField() bool {
+	return o.column != ""
 }
 
 func (o *QueryOperand) IsValue() bool {
@@ -52,6 +61,8 @@ type Statement struct {
 }
 
 type QueryBuilder struct {
+	// The model this query building is acting on.
+	Model string
 	// The table name in the database.
 	table string
 	// The columns and clauses in SELECT.
@@ -74,13 +85,10 @@ type QueryBuilder struct {
 	writeValues map[string]any
 }
 
-func NewQuery(schema *proto.Schema, operation *proto.Operation) *QueryBuilder {
-	model := proto.FindModel(schema.Models, operation.ModelName)
-	table := strcase.ToSnake(model.Name)
-	writeValues := map[string]any{}
-
+func NewQuery(model *proto.Model) *QueryBuilder {
 	return &QueryBuilder{
-		table:       table,
+		Model:       model.Name,
+		table:       strcase.ToSnake(model.Name),
 		selection:   []string{},
 		distinctOn:  []string{},
 		joins:       []string{},
@@ -89,13 +97,14 @@ func NewQuery(schema *proto.Schema, operation *proto.Operation) *QueryBuilder {
 		limit:       nil,
 		returning:   []string{},
 		args:        []any{},
-		writeValues: writeValues,
+		writeValues: map[string]any{},
 	}
 }
 
 // Creates a copy of the query builder.
 func (query *QueryBuilder) Copy() *QueryBuilder {
 	return &QueryBuilder{
+		Model:       query.Model,
 		table:       query.table,
 		selection:   copySlice(query.selection),
 		distinctOn:  copySlice(query.distinctOn),
@@ -110,18 +119,20 @@ func (query *QueryBuilder) Copy() *QueryBuilder {
 }
 
 // Includes a value to be written during an INSERT or UPDATE.
-func (query *QueryBuilder) WriteInputValue(fieldName string, value any) {
+func (query *QueryBuilder) AddWriteValue(fieldName string, value any) {
 	query.writeValues[strcase.ToSnake(fieldName)] = value
 }
 
-// Includes a column on this table in SELECT.
-func (query *QueryBuilder) AppendSelect(column string) {
-	query.AppendSelectFromTable(query.table, column)
+// Includes values to be written during an INSERT or UPDATE.
+func (query *QueryBuilder) AddWriteValues(values map[string]any) {
+	for k, v := range values {
+		query.AddWriteValue(k, v)
+	}
 }
 
-// Includes a column for some specified table in SELECT.
-func (query *QueryBuilder) AppendSelectFromTable(table string, column string) {
-	c := fmt.Sprintf("%s.%s", table, column)
+// Includes a column in SELECT.
+func (query *QueryBuilder) AppendSelect(operand *QueryOperand) {
+	c := operand.toColumnString(query)
 
 	if !lo.Contains(query.selection, c) {
 		query.selection = append(query.selection, c)
@@ -129,15 +140,15 @@ func (query *QueryBuilder) AppendSelectFromTable(table string, column string) {
 }
 
 // Include a clause in SELECT.
-func (query *QueryBuilder) AppendSelectFromClause(clause string) {
+func (query *QueryBuilder) AppendSelectClause(clause string) {
 	if !lo.Contains(query.selection, clause) {
 		query.selection = append(query.selection, clause)
 	}
 }
 
 // Include a column in this table in DISTINCT ON.
-func (query *QueryBuilder) AppendDistinctOn(column string) {
-	c := fmt.Sprintf("%s.%s", query.table, column)
+func (query *QueryBuilder) AppendDistinctOn(operand *QueryOperand) {
+	c := operand.toColumnString(query)
 
 	if !lo.Contains(query.distinctOn, c) {
 		query.distinctOn = append(query.distinctOn, c)
@@ -146,7 +157,7 @@ func (query *QueryBuilder) AppendDistinctOn(column string) {
 
 // Include a WHERE condition, ANDed to the existing filters.
 func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, right *QueryOperand) error {
-	template, args, err := generateWhereTemplate(left, operator, right)
+	template, args, err := query.generateWhereTemplate(left, operator, right)
 	if err != nil {
 		return err
 	}
@@ -167,15 +178,20 @@ func (query *QueryBuilder) Or() {
 }
 
 // Include a JOIN clause.
-func (query *QueryBuilder) Join(join string) {
+func (query *QueryBuilder) InnerJoin(joinField *QueryOperand, modelField *QueryOperand) {
+	join := fmt.Sprintf("INNER JOIN %s ON %s = %s",
+		strcase.ToSnake(joinField.table),
+		joinField.toColumnString(query),
+		modelField.toColumnString(query))
+
 	if !lo.Contains(query.joins, join) {
 		query.joins = append(query.joins, join)
 	}
 }
 
 // Include a column in ORDER BY.
-func (query *QueryBuilder) AppendOrderBy(column string) {
-	c := fmt.Sprintf("%s.%s", query.table, column)
+func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand) {
+	c := operand.toColumnString(query)
 
 	if !lo.Contains(query.orderBy, c) {
 		query.orderBy = append(query.orderBy, c)
@@ -188,23 +204,29 @@ func (query *QueryBuilder) Limit(limit int) {
 }
 
 // Include a column in RETURNING.
-func (query *QueryBuilder) AppendReturning(column string) {
-	c := fmt.Sprintf("%s.%s", query.table, column)
+func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
+	c := operand.toColumnString(query)
 
 	if !lo.Contains(query.returning, c) {
 		query.returning = append(query.returning, c)
 	}
 }
 
-// Generates an executable SELECT statement with the list of arguments.
-func (query *QueryBuilder) SelectStatement() *Statement {
-
-	t1 := template.New("SELECT FROM ")
-	t1, err := t1.Parse("SELECT {} {} FROM {}")
-	if err != nil {
-		panic(err)
+func (operand *QueryOperand) toColumnString(query *QueryBuilder) string {
+	if !operand.IsField() {
+		panic("operand is not of type field")
 	}
 
+	table := operand.table
+	if table == "" {
+		table = query.table
+	}
+
+	return fmt.Sprintf("%s.%s", table, operand.column)
+}
+
+// Generates an executable SELECT statement with the list of arguments.
+func (query *QueryBuilder) SelectStatement() *Statement {
 	distinctOn := ""
 	selection := ""
 	joins := ""
@@ -217,7 +239,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	}
 
 	if len(query.selection) == 0 {
-		query.AppendSelect("*")
+		query.AppendSelect(Field("*"))
 	}
 
 	selection = strings.Join(query.selection, ", ")
@@ -386,14 +408,23 @@ func (statement *Statement) ExecuteWithResults(scope *Scope) ([]map[string]any, 
 }
 
 // Builds a where conditional SQL template using the ? placeholder for values.
-func generateWhereTemplate(lhs *QueryOperand, operator ActionOperator, rhs *QueryOperand) (string, []any, error) {
+func (query *QueryBuilder) generateWhereTemplate(lhs *QueryOperand, operator ActionOperator, rhs *QueryOperand) (string, []any, error) {
 	var template string
 	var lhsSqlOperand, rhsSqlOperand any
 	args := []any{}
 
+	switch operator {
+	case StartsWith:
+		rhs.value = rhs.value.(string) + "%%"
+	case EndsWith:
+		rhs.value = "%%" + rhs.value.(string)
+	case Contains, NotContains:
+		rhs.value = "%%" + rhs.value.(string) + "%%"
+	}
+
 	switch {
-	case lhs.IsColumn():
-		lhsSqlOperand = fmt.Sprintf("%s.%s", lhs.table, lhs.column)
+	case lhs.IsField():
+		lhsSqlOperand = lhs.toColumnString(query)
 	case lhs.IsValue():
 		lhsSqlOperand = "?"
 		args = append(args, lhs.value)
@@ -404,8 +435,8 @@ func generateWhereTemplate(lhs *QueryOperand, operator ActionOperator, rhs *Quer
 	}
 
 	switch {
-	case rhs.IsColumn():
-		rhsSqlOperand = fmt.Sprintf("%s.%s", rhs.table, rhs.column)
+	case rhs.IsField():
+		rhsSqlOperand = rhs.toColumnString(query)
 	case rhs.IsValue():
 		rhsSqlOperand = "?"
 		args = append(args, rhs.value)

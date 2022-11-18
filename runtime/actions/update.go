@@ -13,7 +13,7 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 		values = map[string]any{}
 	}
 
-	query := NewQuery(scope.schema, scope.operation)
+	query := NewQuery(scope.model)
 
 	err := query.captureWriteValues(scope, values)
 	if err != nil {
@@ -64,7 +64,7 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 	}
 
 	// Return the updated row
-	query.AppendReturning("*")
+	query.AppendReturning(Field("*"))
 
 	// Execute database request with results
 	results, affected, err := query.UpdateStatement().ExecuteWithResults(scope)

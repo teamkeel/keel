@@ -7,7 +7,7 @@ import (
 )
 
 func Delete(scope *Scope, input map[string]any) (bool, error) {
-	query := NewQuery(scope.schema, scope.operation)
+	query := NewQuery(scope.model)
 
 	err := query.applyImplicitFilters(scope, input)
 	if err != nil {
