@@ -130,10 +130,18 @@ func (g *Generator) sdkTypeDefinitions() string {
 		}
 
 		for _, field := range model.Fields {
-			m.Fields = append(m.Fields, &ModelField{
-				Name: field.Name,
-				Type: protoTypeToTypeScriptType(field.Type),
-			})
+			mf := &ModelField{
+				Name:           field.Name,
+				Type:           protoTypeToTypeScriptType(field.Type),
+				ConstraintType: constraintTypeForField(field),
+				Optional:       field.Optional,
+			}
+
+			m.Fields = append(m.Fields, mf)
+
+			if field.Unique || field.PrimaryKey {
+				m.UniqueFields = append(m.UniqueFields, mf)
+			}
 		}
 
 		models = append(models, &m)
@@ -266,6 +274,14 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 	default:
 		return TSTypeUnknown
 	}
+}
+
+func constraintTypeForField(field *proto.Field) string {
+	if field.Type.Type == proto.Type_TYPE_ENUM {
+		return "EnumConstraint"
+	}
+
+	return fmt.Sprintf("%sConstraint", strcase.ToCamel(protoTypeToTypeScriptType(field.Type)))
 }
 
 func renderTemplate(name string, data map[string]interface{}) string {

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/acarl005/stripansi"
 	"github.com/andreyvit/diff"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,10 @@ type TestCase struct {
 	Schema        string
 	ExpectedFiles []*codegenerator.GeneratedFile
 }
+
+const (
+	DIVIDER string = "=========================================================="
+)
 
 func TestSdk(t *testing.T) {
 	// When comparing actual vs expected src code contents, the expected value is
@@ -107,24 +112,6 @@ func TestSdk(t *testing.T) {
 				{
 					Path: "index.d.ts",
 					Contents: `
-						import {
-							QueryConstraints,
-							ChainableQuery,
-							Query,
-							queryResolverFromEnv,
-							// todo: the response types below will change
-							FunctionError,
-							FunctionCreateResponse,
-							FunctionGetResponse,
-							FunctionDeleteResponse,
-							FunctionListResponse,
-							FunctionUpdateResponse,
-							FunctionAuthenticateResponse,
-						} from '@teamkeel/functions-runtime';
-						
-						// todo: examine this type
-						export type Timestamp = string
-
 						export interface Person {
 						  name: string
 						  age: number
@@ -132,21 +119,16 @@ func TestSdk(t *testing.T) {
 						  createdAt: Date
 						  updatedAt: Date
 						}
-						export interface Identity {
-						  email: string
-						  password: string
-						  id: string
-						  createdAt: Date
-						  updatedAt: Date
-						}
-
-						// query types
-						
-						// func wrapper types
-						
-						// api typings
-						
-						// top level api typing
+						export type PersonQuery = Partial<{
+						  name?: QueryConstraints.StringConstraint
+						  age?: QueryConstraints.NumberConstraint
+						  id?: QueryConstraints.StringConstraint
+						  createdAt?: QueryConstraints.DateConstraint
+						  updatedAt?: QueryConstraints.DateConstraint
+						}>
+						export type PersonUniqueFields = Partial<{
+							id?: QueryConstraints.StringConstraint
+						}>
 					`,
 				},
 			},
@@ -189,50 +171,8 @@ func TestSdk(t *testing.T) {
 					};`,
 				},
 				{
-					Path: "index.d.ts",
-					Contents: `
-						import {
-							QueryConstraints,
-							ChainableQuery,
-							Query,
-							queryResolverFromEnv,
-							// todo: the response types below will change
-							FunctionError,
-							FunctionCreateResponse,
-							FunctionGetResponse,
-							FunctionDeleteResponse,
-							FunctionListResponse,
-							FunctionUpdateResponse,
-							FunctionAuthenticateResponse,
-						} from '@teamkeel/functions-runtime';
-						
-						// todo: examine this type
-						export type Timestamp = string
-
-						export interface Person {
-							name: string
-							age: number
-							id: string
-							createdAt: Date
-							updatedAt: Date
-						}
-						export interface Identity {
-							email: string
-							password: string
-							id: string
-							createdAt: Date
-							updatedAt: Date
-						}
-						
-						
-						// query types
-						
-						// func wrapper types
-						
-						// api typings
-						
-						// top level api typing
-					`,
+					Path:     "index.d.ts",
+					Contents: ``,
 				},
 			},
 		},
@@ -260,6 +200,35 @@ func TestSdk(t *testing.T) {
 							Ringo = "Ringo",
 							George = "George",
 						}
+					`,
+				},
+			},
+		},
+		{
+			Name: "query-types",
+			Schema: `
+				model Person {
+					fields {
+						title Text
+						subTitle Text?
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path:     "index.js",
+					Contents: "",
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export type PersonQuery = Partial<{
+							title?: QueryConstraints.StringConstraint
+							subTitle?: QueryConstraints.StringConstraint
+							id?: QueryConstraints.StringConstraint
+							createdAt?: QueryConstraints.DateConstraint
+							updatedAt?: QueryConstraints.DateConstraint
+						}>
 					`,
 				},
 			},
@@ -360,8 +329,14 @@ actual:
 				actual := normaliseString(actualFile.Contents)
 				expected := normaliseString(expectedFile.Contents)
 
+				if expected == "" {
+					// was not asserted
+
+					continue actual
+				}
+
 				if !strings.Contains(actual, expected) {
-					t.Errorf("Result not as expected:\n%v", diff.LineDiff(expected, actual))
+					t.Errorf("Result not as expected:\nExpected src code (partial):\n%s\n%v\nActual src code:\n%s\n%v\nDiff:\n%s\n%v", DIVIDER, expected, DIVIDER, actual, DIVIDER, diff.LineDiff(actual, expected))
 					t.Fail()
 				}
 
@@ -369,7 +344,7 @@ actual:
 			}
 		}
 
-		assert.Fail(t, fmt.Sprintf("no matching expectated fike for actual file %s", actualFile.Path))
+		assert.Fail(t, fmt.Sprintf("no matching expectated file for actual file %s", actualFile.Path))
 	}
 
 expected:
@@ -415,9 +390,16 @@ func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (out
 
 	b, e := cmd.CombinedOutput()
 
+	str := string(b)
+
+	// tsc outputs ansi escape codes in its typechecking output
+	// which don't render correctly in the vscode test output channel
+	// (most likely not handled in the vscode-go plugin)
+	str = stripansi.Strip(str)
+
 	if e != nil {
 		err = e
 	}
 
-	return string(b), err
+	return str, err
 }

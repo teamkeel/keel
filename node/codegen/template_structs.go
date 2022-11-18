@@ -5,13 +5,16 @@ package codegenerator
 
 // Represents a model in a .keel schema
 type Model struct {
-	Name   string
-	Fields []*ModelField
+	Name         string
+	Fields       []*ModelField
+	UniqueFields []*ModelField
 }
 
 type ModelField struct {
-	Name string
-	Type string
+	Name           string
+	Optional       bool
+	Type           string // typescript type
+	ConstraintType string // e.g StringConstraint / BooleanConstraint etc
 }
 
 type Enum struct {
