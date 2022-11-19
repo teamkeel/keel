@@ -10,8 +10,8 @@ import (
 	"testing"
 
 	"github.com/acarl005/stripansi"
-	"github.com/andreyvit/diff"
 	"github.com/samber/lo"
+	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	codegenerator "github.com/teamkeel/keel/node/codegen"
@@ -115,20 +115,20 @@ func TestSdk(t *testing.T) {
 						export interface Person {
 						  name: string
 						  age: number
-						  id: string
+						  id: ID
 						  createdAt: Date
 						  updatedAt: Date
 						}
-						export type PersonQuery = Partial<{
+						export declare type PersonQuery = {
 						  name?: QueryConstraints.StringConstraint
 						  age?: QueryConstraints.NumberConstraint
-						  id?: QueryConstraints.StringConstraint
+						  id?: QueryConstraints.IdConstraint
 						  createdAt?: QueryConstraints.DateConstraint
 						  updatedAt?: QueryConstraints.DateConstraint
-						}>
-						export type PersonUniqueFields = Partial<{
-							id?: QueryConstraints.StringConstraint
-						}>
+						}
+						export declare type PersonUniqueFields = {
+							id?: QueryConstraints.IdConstraint
+						}
 					`,
 				},
 			},
@@ -194,7 +194,7 @@ func TestSdk(t *testing.T) {
 				{
 					Path: "index.d.ts",
 					Contents: `
-						export enum TheBeatles {
+						export declare enum TheBeatles {
 							John = "John",
 							Paul = "Paul",
 							Ringo = "Ringo",
@@ -222,13 +222,50 @@ func TestSdk(t *testing.T) {
 				{
 					Path: "index.d.ts",
 					Contents: `
-						export type PersonQuery = Partial<{
+						export declare type PersonQuery = {
 							title?: QueryConstraints.StringConstraint
 							subTitle?: QueryConstraints.StringConstraint
-							id?: QueryConstraints.StringConstraint
+							id?: QueryConstraints.IdConstraint
 							createdAt?: QueryConstraints.DateConstraint
 							updatedAt?: QueryConstraints.DateConstraint
-						}>
+						}
+						export declare type PersonUniqueFields = {
+							id?: QueryConstraints.IdConstraint
+						}
+					`,
+				},
+			},
+		},
+		{
+			Name: "input-types",
+			Schema: `
+				model Person {
+					fields {
+						title Text
+						subTitle Text?
+					}
+
+					operations {
+						create createPerson() with(title, subTitle)
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path:     "index.js",
+					Contents: "",
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export interface CreatePersonInput {
+							title: string
+							subTitle: string
+						}
+						export interface AuthenticateInput {
+							createIfNotExists?: boolean
+							emailPassword: unknown
+						}
 					`,
 				},
 			},
@@ -336,7 +373,20 @@ actual:
 				}
 
 				if !strings.Contains(actual, expected) {
-					t.Errorf("Result not as expected:\nExpected src code (partial):\n%s\n%v\nActual src code:\n%s\n%v\nDiff:\n%s\n%v", DIVIDER, expected, DIVIDER, actual, DIVIDER, diff.LineDiff(actual, expected))
+					actualPartial := matchPartial(actual, expected)
+					diff := diffmatchpatch.New()
+					diffs := diff.DiffMain(actualPartial, expected, true)
+
+					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff:\n%s\n%s\nActual:\n%s\n%sExpected:\n%s\n%s\n",
+						t.Name(),
+						DIVIDER,
+						DIVIDER,
+						diff.DiffPrettyText(diffs),
+						DIVIDER,
+						actual,
+						DIVIDER,
+						expected,
+					)
 					t.Fail()
 				}
 
@@ -402,4 +452,47 @@ func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (out
 	}
 
 	return str, err
+}
+
+// given a large body of text, and a partial string we want to match against
+// returns the relevant location in the larger string where a match was found
+func matchPartial(full, partial string) string {
+	fullLines := strings.Split(full, "\n")
+	partialLines := strings.Split(partial, "\n")
+
+	firstPartial := partialLines[0]
+
+	loc := 0
+	match := false
+
+	for _, fl := range fullLines {
+		if firstPartial == fl {
+			match = true
+			break
+		}
+
+		loc++
+	}
+
+	// we found a match for the first line, so do the diff on this to avoid confusing
+	// diffs between huge lhs and tiny rhs
+	if match {
+		subset := strings.Join(fullLines[loc:MinOf(len(fullLines), loc+len(partialLines))], "\n")
+
+		return subset
+	}
+
+	return full
+}
+
+func MinOf(vars ...int) int {
+	min := vars[0]
+
+	for _, i := range vars {
+		if min > i {
+			min = i
+		}
+	}
+
+	return min
 }

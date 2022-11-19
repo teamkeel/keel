@@ -1,26 +1,45 @@
 {{- range .Models }}
 export interface {{ .Name }} {
   {{- range .Fields }}
-  {{ .Name }}{{ if .Optional }}?{{end}}: {{ .Type }}
+  {{ .Name }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
   {{- end }}
 }
-export type {{ .Name }}Query = Partial<{
+export declare type {{ .Name }}Query = {
   {{- range .Fields }}
   {{ .Name }}?: QueryConstraints.{{ .ConstraintType }}
   {{- end }}
-}>
-
-export type {{ .Name }}UniqueFields = Partial<{
+}
+export declare type {{ .Name }}UniqueFields = {
   {{- range .UniqueFields }}
   {{ .Name }}?: QueryConstraints.{{ .ConstraintType }}
   {{- end }}
-}>
-
+}
 {{- end }}
 {{- range .Enums }}
-export enum {{ .Name }} {
+export declare enum {{ .Name }} {
   {{- range .Values }}
   {{ .Label }} = "{{ .Label }}",
+  {{- end }}
+}
+{{- end }}
+{{- range .Actions }}
+export interface {{ .Name }}Input {
+  {{- if eq .OperationType "Update" }}
+  where: {
+
+  }
+
+  values: {
+
+  }
+  {{- else if eq .OperationType "List" }}
+  where: {
+
+  }
+  {{- else }}
+  {{- range .Inputs }}
+  {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
+  {{- end }}
   {{- end }}
 }
 {{- end }}

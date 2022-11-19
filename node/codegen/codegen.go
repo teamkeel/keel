@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -110,13 +111,25 @@ func (g *Generator) sdkSrcCode() string {
 		})
 	}
 
-	customFunctions := proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
-		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+	actions := lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
+		return true
+	}), func(op *proto.Operation, _ int) *Action {
+		return &Action{
+			Name:     op.Name,
+			IsCustom: op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
+			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
+				return &ActionInput{
+					Label:      i.Name,
+					Type:       protoTypeToTypeScriptType(i.Type),
+					IsOptional: i.Optional,
+				}
+			}),
+		}
 	})
 
 	return renderTemplate(TemplateSdk, map[string]interface{}{
-		"ModelApis":       modelApis,
-		"CustomFunctions": customFunctions,
+		"ModelApis": modelApis,
+		"Actions":   actions,
 	})
 }
 
@@ -134,7 +147,7 @@ func (g *Generator) sdkTypeDefinitions() string {
 				Name:           field.Name,
 				Type:           protoTypeToTypeScriptType(field.Type),
 				ConstraintType: constraintTypeForField(field),
-				Optional:       field.Optional,
+				IsOptional:     field.Optional,
 			}
 
 			m.Fields = append(m.Fields, mf)
@@ -164,9 +177,26 @@ func (g *Generator) sdkTypeDefinitions() string {
 		enums = append(enums, &e)
 	}
 
+	actions := lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
+		return true
+	}), func(op *proto.Operation, _ int) *Action {
+		return &Action{
+			Name:     strcase.ToCamel(op.Name),
+			IsCustom: op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
+			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
+				return &ActionInput{
+					Label:      i.Name,
+					Type:       protoTypeToTypeScriptType(i.Type),
+					IsOptional: i.Optional,
+				}
+			}),
+		}
+	})
+
 	return renderTemplate(TemplateSdkDefinitions, map[string]interface{}{
-		"Models": models,
-		"Enums":  enums,
+		"Models":  models,
+		"Enums":   enums,
+		"Actions": actions,
 	})
 }
 
@@ -255,7 +285,7 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 	case proto.Type_TYPE_DATE:
 		return TSTypeDate
 	case proto.Type_TYPE_ID:
-		return TSTypeString
+		return TSTypeID
 	case proto.Type_TYPE_MODEL:
 		if t.Repeated {
 			return fmt.Sprintf("%s[]", t.ModelName.Value)

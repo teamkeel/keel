@@ -14,6 +14,7 @@ const (
 )
 
 const (
+	TSTypeID        = "ID"
 	TSTypeUnknown   = "unknown"
 	TSTypeString    = "string"
 	TSTypeBoolean   = "boolean"

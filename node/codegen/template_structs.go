@@ -12,7 +12,7 @@ type Model struct {
 
 type ModelField struct {
 	Name           string
-	Optional       bool
+	IsOptional     bool
 	Type           string // typescript type
 	ConstraintType string // e.g StringConstraint / BooleanConstraint etc
 }
@@ -35,9 +35,15 @@ type ModelApi struct {
 	TableName           string
 }
 
-// Used to represent a custom function
-// Initially will be used to generate friendly function wrappers that encapsulate
-// the input and return types expected for custom functions
-type CustomFunction struct {
-	Name string
+type Action struct {
+	Name          string
+	OperationType string // e.g Create / Update etc
+	IsCustom      bool
+	Inputs        []*ActionInput
+}
+
+type ActionInput struct {
+	Label      string
+	Type       string
+	IsOptional bool
 }

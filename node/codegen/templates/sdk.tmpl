@@ -34,8 +34,10 @@ export const api = {
     {{- end}}
   }
 }
-{{- range .CustomFunctions}}
+{{- range .Actions}}
+{{- if .IsCustom }}
 export const {{ .Name }} = (callback) => (inputs, api) => {
   return callback(inputs, api);
 };
+{{- end }}
 {{- end}}

@@ -50,6 +50,17 @@
             ]
         },
         {
+            "name": "Run / debug node codegen test",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}/node/codegen",
+            "args": [
+                "-test.run",
+                "TestSdk/${input:testCase}"
+            ]
+        },
+        {
             "name": "Run / Debug runtime test",
             "type": "go",
             "request": "launch",
