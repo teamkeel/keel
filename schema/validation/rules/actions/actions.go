@@ -149,29 +149,15 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST, fkInfo []*foreignkeys
 			for _, fld := range requiredFieldsWithAliases {
 				satisfiedByWithInput := requiredFieldInActionWithClause(fld, createAction)
 				satisfiedBySetExpr := satisfiedBySetExpr(fld, model.Name.Value, createAction)
-				switch {
 
 				// Value not supplied?
-				case satisfiedByWithInput == false && satisfiedBySetExpr == false:
+				if !satisfiedByWithInput && !satisfiedBySetExpr {
 					errs.Append(errorhandling.ErrorCreateOperationMissingInput,
 						map[string]string{
 							"FieldName": fld.Aliases(),
 						},
 						createAction.Name,
 					)
-
-					// Value supplied in duplicate?
-				case satisfiedByWithInput == true && satisfiedBySetExpr == true:
-					errs.Append(errorhandling.ErrorCreateOperationDuplicateInput,
-						map[string]string{
-							"FieldName": fld.Aliases(),
-						},
-						createAction.Name,
-					)
-
-					// Value is supplied as it should be?
-				default:
-					continue
 				}
 			}
 		}
