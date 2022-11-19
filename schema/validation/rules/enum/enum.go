@@ -1,12 +1,13 @@
 package enum
 
 import (
+	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func UniqueEnumsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func UniqueEnumsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 	seenEnumNames := map[string]bool{}
 
 	for _, enum := range query.Enums(asts) {

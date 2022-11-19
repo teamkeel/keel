@@ -21,8 +21,6 @@ model Author {
         thePosts Post[]
         thePublisher Publisher
     }
-
-    @permission(actions: [get, list], expression: true)
 }
 
 model Publisher {

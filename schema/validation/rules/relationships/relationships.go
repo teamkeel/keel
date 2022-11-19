@@ -4,12 +4,13 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func InvalidOneToOneRelationshipRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 	processed := map[string]bool{}
 
 	for _, model := range query.Models(asts) {
@@ -65,7 +66,7 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 	return
 }
 
-func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 

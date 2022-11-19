@@ -1,0 +1,15 @@
+model Author {
+  fields {
+    name Text
+  }
+}
+
+model Post {
+  fields {
+    content Text
+    author Author
+  }
+  operations {
+    create createPost() with (content, author, authorId)
+  }
+}

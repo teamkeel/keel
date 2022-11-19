@@ -1,6 +1,7 @@
 package query
 
 import (
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -140,6 +141,15 @@ func UserDefinedTypes(asts []*parser.AST) (res []string) {
 
 func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	return append(ModelOperations(model), ModelFunctions(model)...)
+}
+
+// ModelCreateActions returns all the actions in the given action, which
+// are create-type actions.
+func ModelCreateActions(model *parser.ModelNode) (res []*parser.ActionNode) {
+	allActions := ModelActions(model)
+	return lo.Filter(allActions, func(a *parser.ActionNode, _ int) bool {
+		return a.Type.Value == parser.ActionTypeCreate
+	})
 }
 
 func ModelOperations(model *parser.ModelNode) (res []*parser.ActionNode) {

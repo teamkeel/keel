@@ -6,7 +6,9 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/formatting"
+	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -23,7 +25,7 @@ var (
 	}
 )
 
-func ActionNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func ActionNamingRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			if strcase.ToLowerCamel(action.Name.Value) != action.Name.Value {
@@ -41,7 +43,7 @@ func ActionNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) 
 	return
 }
 
-func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func ActionTypesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			if !lo.Contains(validActionTypes, action.Type.Value) {
@@ -59,7 +61,7 @@ func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	return
 }
 
-func UniqueOperationNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func UniqueOperationNamesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 	operationNames := map[string]bool{}
 
 	for _, model := range query.Models(asts) {
@@ -83,7 +85,7 @@ func UniqueOperationNamesRule(asts []*parser.AST) (errs errorhandling.Validation
 
 // ReservedActionNameRule ensures that all actions (operations or functions) do not
 // use a reserved name
-func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func ReservedActionNameRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, op := range query.ModelActions(model) {
 			if lo.Contains(reservedActionNames, op.Name.Value) {
@@ -101,9 +103,189 @@ func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 	return errs
 }
 
+// CreateOperationRequiredFieldsRule validates that a create operation is specified in such a way
+// that all the fields that must be set, are covered by inputs or set expressions.
+func CreateOperationRequiredFieldsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+	/*
+
+		Explanation of this rule.
+
+		Because we're creating something, the create action must be defined in a way that provides
+		values for all the fields that must be set to a new value. These are the "required" fields.
+
+		The required fields are: all fields, except for those that:
+		- are optional, or
+		- have a default value specified, or
+		- are REPEATED
+
+		The operation may provide a value for a required field, by either:
+		1) specifying the field as an implicit input
+		2) specifying a @set attribute that cites the field on the LHS of its expression.
+
+		It is a validation error if any one of the required fields does not get covered by one or the
+		other of these.
+
+		It is also validation error if both 1) and 2) are true - because the value to use is now ambiguous.
+
+		Now we need to say more about relationship fields...
+
+		Firstly - REPEATED relationship fields are excluded from this scope, as per above.
+
+		So we're talking only about HasOne relationship fields such as "author".
+
+		But note that every Model field like "author", has a sibling, foreign key field in the same
+		model, which would be "authorId" for this example. Nb. both members of this field-pair have the
+		same optionality as the other - by definition.
+
+		For validation purposes we'll treat each member of this key-pair as an alias for the other.
+		So in fact we can stick to the definition of the rule above, EXCEPT that
+		we regard each field as potentially having two names.
+	*/
+
+	for _, model := range query.Models(asts) {
+		requiredFieldsWithAliases := requiredCreateFields(model, fkInfo)
+		createActions := query.ModelCreateActions(model)
+		for _, createAction := range createActions {
+			for _, fld := range requiredFieldsWithAliases {
+				satisfiedByWithInput := requiredFieldInActionWithClause(fld, createAction)
+				satisfiedBySetExpr := satisfiedBySetExpr(fld, model.Name.Value, createAction)
+				switch {
+
+				// Value not supplied?
+				case satisfiedByWithInput == false && satisfiedBySetExpr == false:
+					errs.Append(errorhandling.ErrorCreateOperationMissingInput,
+						map[string]string{
+							"FieldName": fld.Aliases(),
+						},
+						createAction.Name,
+					)
+
+					// Value supplied in duplicate?
+				case satisfiedByWithInput == true && satisfiedBySetExpr == true:
+					errs.Append(errorhandling.ErrorCreateOperationDuplicateInput,
+						map[string]string{
+							"FieldName": fld.Aliases(),
+						},
+						createAction.Name,
+					)
+
+					// Value is supplied as it should be?
+				default:
+					continue
+				}
+			}
+		}
+	}
+	return errs
+}
+
+// RequiredField is is a generalisation of a field name, that allows the field name to
+// have aliases.
+type requiredField []string
+
+// Aliases returns all the required field's aliases as a single comma delimited string.
+func (rf requiredField) Aliases() string {
+	return strings.Join([]string(rf), ", ")
+}
+
+// operationSetExpressions returns all the non-nil expressions from all
+// the @set attributes on the given action.
+func operationSetExpressions(action *parser.ActionNode) []*parser.Expression {
+	setters := lo.Filter(action.Attributes, func(a *parser.AttributeNode, _ int) bool {
+		return a.Name.Value == parser.AttributeSet
+	})
+	expressions := []*parser.Expression{}
+	for _, setAttr := range setters {
+		if len(setAttr.Arguments) == 0 {
+			continue
+		}
+		if setAttr.Arguments[0].Expression != nil {
+			expressions = append(expressions, setAttr.Arguments[0].Expression)
+		}
+	}
+	return expressions
+}
+
+// RequiredCreateFields works out which of the fields on the given model,
+// must be specified for any create action on that model to be valid.
+func requiredCreateFields(model *parser.ModelNode, fkInfo []*foreignkeys.ForeignKeyInfo) []*requiredField {
+	req := []*requiredField{}
+
+	for _, f := range query.ModelFields(model) {
+		if f.Optional {
+			continue
+		}
+		if f.Repeated {
+			continue
+		}
+		if query.FieldHasAttribute(f, parser.AttributeDefault) {
+			continue
+		}
+		// So this field is required...
+
+		// If this is a model field that has a sibling FK field,
+		// we hoover up the names of both fields as aliases in a single
+		// RequiredField
+		if siblingFieldName, ok := foreignkeys.IsModelFieldWithSiblingFK(fkInfo, model.Name.Value, f.Name.Value); ok {
+			req = append(req, &requiredField{f.Name.Value, siblingFieldName})
+
+			// If this is a foreign key field we ignore it, because we'll catch in the clause above.
+		} else if foreignkeys.IsFkField(fkInfo, model.Name.Value, f.Name.Value) {
+			continue
+
+			// This is the general / vanilla case.
+		} else {
+			req = append(req, &requiredField{f.Name.Value})
+		}
+	}
+	return req
+}
+
+// requiredFieldInActionWithClause returns true if any of the names/aliases in the given requiredField are
+// present the the given action's "With" inputs.
+func requiredFieldInActionWithClause(requiredField *requiredField, action *parser.ActionNode) bool {
+	for _, altFieldName := range *requiredField {
+		for _, input := range action.With {
+			if input.Label == nil && input.Type.ToString() == altFieldName {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// satisfiedBySetExpr returns true if any of the names/aliases in the given requiredField are
+// present in any of the given action's @set expressions as the LHS of an assignment.
+// Another words, is "age" present in a @set that looks like this: person.age = ...
+func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *parser.ActionNode) bool {
+	expressions := operationSetExpressions(action)
+	for _, expr := range expressions {
+		assignment, err := expr.ToAssignmentCondition()
+		if err != nil {
+			continue
+		}
+		lhs := assignment.LHS
+		if len(lhs.Ident.Fragments) != 2 {
+			continue
+		}
+		modelName, fieldName := lhs.Ident.Fragments[0].Fragment, lhs.Ident.Fragments[1].Fragment
+		if modelName != strcase.ToLowerCamel(modelName) {
+			continue
+		}
+		for _, altFieldName := range *requiredField {
+			if fieldName == altFieldName {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// todo: pch ditch this once replaced
 // CreateOperationRequiredFieldsRule validates that all create actions
 // accept all required fields (that don't have default values) as write inputs
-func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func CreateOperationRequiredFieldsRuleTodoDeprecated(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+
 	for _, model := range query.Models(asts) {
 
 		requiredFields := []*parser.FieldNode{}
@@ -181,6 +363,8 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.V
 					},
 					action.Name,
 				)
+				litter.Dump("XXXX error captured is...")
+				litter.Dump(errs)
 			}
 		}
 	}
@@ -190,7 +374,7 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.V
 
 // UpdateOperationUniqueConstraintRule checks that all update operations
 // are filtering on unique fields only
-func UpdateOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func UpdateOperationUniqueConstraintRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
@@ -204,7 +388,7 @@ func UpdateOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling
 	return
 }
 
-func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func ListActionModelInputsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
@@ -241,7 +425,7 @@ func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.Validatio
 
 // GetOperationUniqueConstraintRule checks that all get operations
 // are filtering on unique fields only
-func GetOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func GetOperationUniqueConstraintRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
@@ -258,7 +442,7 @@ func GetOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.Va
 
 // DeleteOperationUniqueConstraintRule checks that all get operations
 // are filtering on unique fields only
-func DeleteOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func DeleteOperationUniqueConstraintRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
@@ -395,7 +579,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 	return
 }
 
-func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func ValidActionInputsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
@@ -522,7 +706,7 @@ func validateInput(
 
 // CreateOperationNoReadInputsRule validates that create actions don't accept
 // any read-only inputs
-func CreateOperationNoReadInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func CreateOperationNoReadInputsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeCreate {

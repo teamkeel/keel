@@ -111,3 +111,34 @@ func isHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 		return true
 	}
 }
+
+// IsModelFieldWithSiblingFK consults the given foreign key information to tell you if
+// the given field name, in the context of the given model name,
+// is an "owning" field of type Model, which has a corresponding (sibling) FK field.
+func IsModelFieldWithSiblingFK(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) (siblingFkName string, ok bool) {
+	for _, fkInfo := range fkInfos {
+		if fkInfo.OwningModel.Name.Value != modelName {
+			continue
+		}
+		if fkInfo.OwningField.Name.Value != fieldName {
+			continue
+		}
+		return fkInfo.ForeignKeyName, true
+	}
+	return "", false
+}
+
+// IsFkField consults the given foreign key information to tell you if
+// the given field name, in the context of the given model name,
+// is a foreign key field associated with a sibling Owning field.
+func IsFkField(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) bool {
+	for _, fkInfo := range fkInfos {
+		if fkInfo.OwningModel.Name.Value != modelName {
+			continue
+		}
+		if fkInfo.ForeignKeyName != fieldName {
+			return true
+		}
+	}
+	return false
+}
