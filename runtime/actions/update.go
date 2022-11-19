@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-func Update(scope *Scope, input map[string]any) (Row, error) {
+func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 	values, ok := input["values"].(map[string]any)
 	if !ok {
 		values = map[string]any{}
@@ -67,7 +67,7 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 	query.AppendReturning(Field("*"))
 
 	// Execute database request with results
-	results, affected, err := query.UpdateStatement().ExecuteWithResults(scope)
+	results, affected, err := query.UpdateStatement().ExecuteWithResults(scope.context)
 	if err != nil {
 		return nil, err
 	}

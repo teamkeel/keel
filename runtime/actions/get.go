@@ -7,9 +7,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-type Row map[string]any
-
-func Get(scope *Scope, input map[string]any) (Row, error) {
+func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	query := NewQuery(scope.model)
 
 	err := query.applyImplicitFilters(scope, input)
@@ -40,7 +38,7 @@ func Get(scope *Scope, input map[string]any) (Row, error) {
 	query.AppendDistinctOn(Field("id"))
 
 	// Execute database request with results
-	results, affected, err := query.SelectStatement().ExecuteWithResults(scope)
+	results, affected, err := query.SelectStatement().ExecuteWithResults(scope.context)
 	if err != nil {
 		return nil, err
 	}

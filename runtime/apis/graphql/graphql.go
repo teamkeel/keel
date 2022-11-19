@@ -10,6 +10,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/actions"
 )
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
@@ -109,10 +110,77 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 		if err != nil {
 			return nil, err
 		}
-		object.AddFieldConfig(field.Name, &graphql.Field{
-			Name: field.Name,
-			Type: outputType,
-		})
+
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			object.AddFieldConfig(field.Name, &graphql.Field{
+				Name: field.Name,
+				Type: outputType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					// The field to the parent or child model
+					relatedModelField := proto.FindField(mk.proto.Models, model.Name, p.Info.FieldName)
+
+					// The parent or child model
+					relatedModelName := relatedModelField.Type.ModelName.Value
+					relatedModel := proto.FindModel(mk.proto.Models, relatedModelName)
+
+					// Create a new query for that parent or child model
+					query := actions.NewQuery(relatedModel)
+					query.AppendSelect(actions.Field("*"))
+
+					if relatedModelField.ForeignKeyFieldName != nil {
+						foreignKeyField := relatedModelField.ForeignKeyFieldName.Value
+						parent := p.Source.(map[string]interface{})
+						id := parent[foreignKeyField]
+
+						query.Where(actions.Field("id"), actions.Equals, actions.Value(id))
+						results, affected, err := query.
+							SelectStatement().
+							ExecuteWithResults(p.Context)
+
+						if err != nil {
+							return nil, err
+						}
+						if affected > 1 {
+							return nil, fmt.Errorf("more than one related record found: %v found", affected)
+						}
+
+						return results[0], nil
+					} else {
+						fkField, found := lo.Find(relatedModel.Fields, func(field *proto.Field) bool {
+							return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
+						})
+						if !found {
+							return nil, fmt.Errorf("no foreign key field found on related model %s", model)
+						}
+
+						foreignKeyField := fkField.ForeignKeyFieldName.Value
+						parent := p.Source.(map[string]interface{})
+						id := parent["id"]
+
+						query.Where(actions.Field(foreignKeyField), actions.Equals, actions.Value(id))
+						results, _, err := query.
+							SelectStatement().
+							ExecuteWithResults(p.Context)
+
+						if err != nil {
+							return nil, err
+						}
+
+						res, err := connectionResponse(results, false)
+						if err != nil {
+							return nil, err
+						}
+
+						return res, nil
+					}
+				},
+			})
+		} else {
+			object.AddFieldConfig(field.Name, &graphql.Field{
+				Name: field.Name,
+				Type: outputType,
+			})
+		}
 	}
 
 	return object, nil
@@ -169,9 +237,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_GET:
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		// create returns a non-null type
 		field.Type = graphql.NewNonNull(field.Type)
-
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
 		field.Type = graphql.NewNonNull(field.Type)

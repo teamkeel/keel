@@ -90,7 +90,7 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args WhereArgs) (authorize
 			permissionQuery.SelectStatement().template),
 		args: append(query.args, permissionQuery.args...)}
 
-	results, _, err := stmt.ExecuteWithResults(scope)
+	results, _, err := stmt.ExecuteWithResults(scope.context)
 	if err != nil {
 		return false, err
 	}

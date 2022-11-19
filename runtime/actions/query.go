@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -377,8 +378,8 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 }
 
 // Execute the SQL statement against the database, returning the number of rows affected.
-func (statement *Statement) Execute(scope *Scope) (int, error) {
-	db, err := runtimectx.GetDatabase(scope.context)
+func (statement *Statement) Execute(context context.Context) (int, error) {
+	db, err := runtimectx.GetDatabase(context)
 	if err != nil {
 		return 0, err
 	}
@@ -392,8 +393,8 @@ func (statement *Statement) Execute(scope *Scope) (int, error) {
 }
 
 // Execute the SQL statement against the database, return the rows, and  the number of rows affected.
-func (statement *Statement) ExecuteWithResults(scope *Scope) ([]map[string]any, int, error) {
-	db, err := runtimectx.GetDatabase(scope.context)
+func (statement *Statement) ExecuteWithResults(context context.Context) ([]map[string]any, int, error) {
+	db, err := runtimectx.GetDatabase(context)
 	if err != nil {
 		return nil, 0, err
 	}
