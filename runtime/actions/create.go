@@ -51,5 +51,5 @@ func Create(scope *Scope, input map[string]any) (Row, error) {
 		return nil, err
 	}
 
-	return toLowerCamelMap(results[0]), nil
+	return results[0], nil
 }

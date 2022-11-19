@@ -51,5 +51,5 @@ func Get(scope *Scope, input map[string]any) (Row, error) {
 		return nil, fmt.Errorf("Get() operation should find only one record, it found: %d", affected)
 	}
 
-	return toLowerCamelMap(results[0]), nil
+	return results[0], nil
 }

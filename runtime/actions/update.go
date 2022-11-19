@@ -78,6 +78,6 @@ func Update(scope *Scope, input map[string]any) (Row, error) {
 		return nil, fmt.Errorf("Update() operation should update only one record, it updated: %d", affected)
 	}
 
-	result := toLowerCamelMap(results[0])
+	result := results[0]
 	return result, nil
 }
