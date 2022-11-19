@@ -146,7 +146,7 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	}
 
 	return &ListResult{
-		Results:     toLowerCamelMaps(results),
+		Results:     results,
 		HasNextPage: hasNextPage,
 	}, nil
 }
