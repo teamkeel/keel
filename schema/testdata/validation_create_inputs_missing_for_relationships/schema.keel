@@ -25,8 +25,19 @@ model Post {
 
     // Set "authorId" in a @set expression
     create createPostWithExpressionA() with (content) {
-      @set(post.authorId = "1234")
-
+      @set(post.authorId = ctx.identity.id)
     }
+
+    // todo: this passes the validation function under test, but is disabled because
+    // it stimulates a different validation error: (incompatible types for LHS and RHS)
+    // 
+    // See this Linear ticket for the discussion:
+    //  https://linear.app/keel/issue/RUN-187/create-operation-product-question-mandatory-inputs-for-relationship
+    //
+    // Set "author" in a @set expression
+    //
+    // create createPostWithExpressionB() with (content) {
+    //   @set(post.author = ctx.identity.id)
+    // }
   }
 }
