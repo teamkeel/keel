@@ -143,6 +143,10 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST, fkInfo []*foreignkeys
 	*/
 
 	for _, model := range query.Models(asts) {
+		if model.Name.Value == "Post" {
+			a := 1
+			_ = a
+		}
 		requiredFieldsWithAliases := requiredCreateFields(model, fkInfo)
 		createActions := query.ModelCreateActions(model)
 		for _, createAction := range createActions {

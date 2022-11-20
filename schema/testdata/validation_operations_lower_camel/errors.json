@@ -17,24 +17,6 @@
         "line": 12,
         "column": 26
       }
-    },
-    {
-      "message": "create actions must accept all required fields that have no default value",
-      "short_message": "create actions must accept all required fields that have no default value",
-      "hint": "maybe add identityId to the with() inputs",
-      "code": "E034",
-      "pos": {
-        "filename": "testdata/validation_operations_lower_camel/schema.keel",
-        "offset": 158,
-        "line": 12,
-        "column": 12
-      },
-      "end_pos": {
-        "filename": "testdata/validation_operations_lower_camel/schema.keel",
-        "offset": 172,
-        "line": 12,
-        "column": 26
-      }
     }
   ]
 }

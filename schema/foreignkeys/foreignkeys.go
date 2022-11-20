@@ -136,7 +136,7 @@ func IsFkField(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) bo
 		if fkInfo.OwningModel.Name.Value != modelName {
 			continue
 		}
-		if fkInfo.ForeignKeyName != fieldName {
+		if fkInfo.ForeignKeyName == fieldName {
 			return true
 		}
 	}

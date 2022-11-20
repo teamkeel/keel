@@ -50,6 +50,12 @@ func TestSchema(t *testing.T) {
 			}
 
 			s2m := schema.Builder{}
+
+			if testCase.Name() == "validation_operation_set_expression_unresolvable_rhs" {
+				a := 1
+				_ = a
+			}
+
 			protoSchema, err := s2m.MakeFromDirectory(testCaseDir)
 
 			var expectedJSON []byte

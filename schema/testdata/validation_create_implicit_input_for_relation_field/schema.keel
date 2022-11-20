@@ -1,0 +1,26 @@
+model Author {
+  fields {
+    name Text
+  }
+}
+
+model Post {
+  fields {
+    content Text
+    author Author
+  }
+  operations {
+    // Validation for create operations checks that you have specified
+    // all the mandatory fields as implicit or explicit inputs.
+
+    // When it comes to HasOne relationship fields, e.g. Author, it recognizes
+    // either "authorId", or "author" as satisfying that, either declared
+    // as an implicit input, or referred to as the LHS of a set expression.
+    
+    // declare "author" as implicit input.
+    create createPostWithAuthor() with (content, author)
+
+    // declare "authorId" as implicit input.
+    create createPostWithAuthorId() with (content, authorId)
+  }
+}
