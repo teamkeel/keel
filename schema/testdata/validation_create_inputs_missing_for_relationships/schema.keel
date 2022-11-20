@@ -17,10 +17,16 @@ model Post {
     // either "authorId", or "author" as satisfying that, either declared
     // as an implicit input, or referred to as the LHS of a set expression.
     
-    // declare "author" as implicit input.
+    // Declare "author" as implicit input.
     create createPostWithAuthor() with (content, author)
 
-    // declare "authorId" as implicit input.
+    // Declare "authorId" as implicit input.
     create createPostWithAuthorId() with (content, authorId)
+
+    // Set "authorId" in a @set expression
+    create createPostWithExpressionA() with (content) {
+      @set(post.authorId = "1234")
+
+    }
   }
 }
