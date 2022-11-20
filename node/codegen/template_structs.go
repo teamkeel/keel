@@ -37,13 +37,35 @@ type ModelApi struct {
 
 type Action struct {
 	Name          string
-	OperationType string // e.g Create / Update etc
+	OperationType OperationType // e.g Create / Update etc
 	IsCustom      bool
-	Inputs        []*ActionInput
+	WriteInputs   []*ActionInput
+	ReadInputs    []*ActionInput
+	Inputs        []*ActionInput // includes inputs of Mode type Unknown (authenticate)
 }
 
 type ActionInput struct {
 	Label      string
 	Type       string
 	IsOptional bool
+	Mode       InputMode
 }
+
+type OperationType string
+
+const (
+	OperationTypeCreate       OperationType = "Create"
+	OperationTypeDelete       OperationType = "Delete"
+	OperationTypeList         OperationType = "List"
+	OperationTypeGet          OperationType = "Get"
+	OperationTypeUpdate       OperationType = "Update"
+	OperationTypeAuthenticate OperationType = "Authenticate"
+)
+
+type InputMode string
+
+const (
+	InputModeWrite   InputMode = "write"
+	InputModeRead    InputMode = "read"
+	InputModeUnknown InputMode = "unknown"
+)

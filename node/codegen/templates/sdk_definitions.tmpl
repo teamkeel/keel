@@ -1,3 +1,5 @@
+export declare type ID = string
+export declare type Timestamp = string
 {{- range .Models }}
 export interface {{ .Name }} {
   {{- range .Fields }}
@@ -36,7 +38,19 @@ export interface {{ .Name }}Input {
   where: {
 
   }
-  {{- else }}
+  {{- else if eq .OperationType "Create" }}
+  {{- range .WriteInputs }}
+  {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
+  {{- end }}
+  {{- else if eq .OperationType "Get" }}
+  {{- range .ReadInputs }}
+  {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
+  {{- end }}
+  {{- else if eq .OperationType "Delete" }}
+  {{- range .ReadInputs }}
+  {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
+  {{- end }}
+  {{- else if eq .OperationType "Authenticate" }}
   {{- range .Inputs }}
   {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
   {{- end }}

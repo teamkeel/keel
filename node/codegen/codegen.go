@@ -115,15 +115,10 @@ func (g *Generator) sdkSrcCode() string {
 		return true
 	}), func(op *proto.Operation, _ int) *Action {
 		return &Action{
-			Name:     op.Name,
-			IsCustom: op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
-			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
-				return &ActionInput{
-					Label:      i.Name,
-					Type:       protoTypeToTypeScriptType(i.Type),
-					IsOptional: i.Optional,
-				}
-			}),
+			Name:          op.Name,
+			OperationType: operationTypeForOperation(op),
+			IsCustom:      op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
+			// inputs are not needed for vanila js codegen, but they can be added here if needed in future
 		}
 	})
 
@@ -180,14 +175,40 @@ func (g *Generator) sdkTypeDefinitions() string {
 	actions := lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
 		return true
 	}), func(op *proto.Operation, _ int) *Action {
+		writeInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
+			return i.Mode == proto.InputMode_INPUT_MODE_WRITE
+		})
+
+		readInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
+			return i.Mode == proto.InputMode_INPUT_MODE_READ
+		})
+
 		return &Action{
-			Name:     strcase.ToCamel(op.Name),
-			IsCustom: op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
+			Name:          strcase.ToCamel(op.Name),
+			OperationType: operationTypeForOperation(op),
+			IsCustom:      op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
+			WriteInputs: lo.Map(writeInputs, func(i *proto.OperationInput, _ int) *ActionInput {
+				return &ActionInput{
+					Label:      i.Name,
+					Type:       protoTypeToTypeScriptType(i.Type),
+					IsOptional: i.Optional,
+					Mode:       inputModeStringFromInputMode(i.Mode),
+				}
+			}),
+			ReadInputs: lo.Map(readInputs, func(i *proto.OperationInput, _ int) *ActionInput {
+				return &ActionInput{
+					Label:      i.Name,
+					Type:       protoTypeToTypeScriptType(i.Type),
+					IsOptional: i.Optional,
+					Mode:       inputModeStringFromInputMode(i.Mode),
+				}
+			}),
 			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
 				return &ActionInput{
 					Label:      i.Name,
 					Type:       protoTypeToTypeScriptType(i.Type),
 					IsOptional: i.Optional,
+					Mode:       inputModeStringFromInputMode(i.Mode),
 				}
 			}),
 		}
@@ -328,4 +349,38 @@ func renderTemplate(name string, data map[string]interface{}) string {
 	}
 
 	return tpl.String()
+}
+
+func inputModeStringFromInputMode(inputMode proto.InputMode) InputMode {
+	switch inputMode {
+	case proto.InputMode_INPUT_MODE_READ:
+		return InputModeRead
+	case proto.InputMode_INPUT_MODE_WRITE:
+		return InputModeWrite
+	default:
+		return InputModeUnknown
+	}
+}
+
+// Go templates do not have support for comparing against complex logics
+// we could compare against the underlying proto.OperationType enum values but
+// it would make the templates really ugly, so in the interest of code succinctness
+// create a friendly api around the proto object
+func operationTypeForOperation(op *proto.Operation) OperationType {
+	switch op.Type {
+	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+		return OperationTypeAuthenticate
+	case proto.OperationType_OPERATION_TYPE_CREATE:
+		return OperationTypeCreate
+	case proto.OperationType_OPERATION_TYPE_DELETE:
+		return OperationTypeDelete
+	case proto.OperationType_OPERATION_TYPE_LIST:
+		return OperationTypeList
+	case proto.OperationType_OPERATION_TYPE_UPDATE:
+		return OperationTypeUpdate
+	case proto.OperationType_OPERATION_TYPE_GET:
+		return OperationTypeGet
+	default:
+		panic("Unknown operation type")
+	}
 }

@@ -377,7 +377,7 @@ actual:
 					diff := diffmatchpatch.New()
 					diffs := diff.DiffMain(actualPartial, expected, true)
 
-					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff:\n%s\n%s\nActual:\n%s\n%sExpected:\n%s\n%s\n",
+					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff:\n%s\n%s\nActual:\n%s\n%s\n\nExpected:\n%s\n%s\n",
 						t.Name(),
 						DIVIDER,
 						DIVIDER,
