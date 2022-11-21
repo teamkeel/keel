@@ -36,6 +36,37 @@ func TestSdk(t *testing.T) {
 	// you want to expect to be added for a given test.
 	cases := []TestCase{
 		{
+			Name: "imports",
+			Schema: `
+				model Foo {}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						import { queryResolverFromEnv, Logger } from '@teamkeel/functions-runtime';
+					`,
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						import {
+							QueryConstraints,
+							ChainableQuery,
+							Query,
+							FunctionError,
+							FunctionCreateResponse,
+							FunctionGetResponse,
+							FunctionDeleteResponse,
+							FunctionListResponse,
+							FunctionUpdateResponse,
+							FunctionAuthenticateResponse
+						} from '@teamkeel/functions-runtime';
+					`,
+				},
+			},
+		},
+		{
 			Name: "model-generation-simple",
 			Schema: `
 			model Person {
