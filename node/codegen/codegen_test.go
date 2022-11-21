@@ -542,7 +542,7 @@ actual:
 			}
 		}
 
-		assert.Fail(t, fmt.Sprintf("no matching expectated file for actual file %s", actualFile.Path))
+		assert.Fail(t, fmt.Sprintf("no matching expected file for actual file %s", actualFile.Path))
 	}
 
 expected:
