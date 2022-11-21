@@ -14,7 +14,7 @@ type Obj struct {
 	Object map[string]any
 }
 
-func ParseGetObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
+func ParseGetObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (map[string]any, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
 	if err != nil {
 		return nil, err
@@ -23,7 +23,7 @@ func ParseGetObjectResponse(context context.Context, op *proto.Operation, args W
 	return TryParseObjectResponse(res)
 }
 
-func ParseCreateObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
+func ParseCreateObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (map[string]any, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func ParseDeleteResponse(context context.Context, op *proto.Operation, args Wher
 	return false, fmt.Errorf("invalid response from custom function: success was not a bool")
 }
 
-func ParseUpdateResponse(context context.Context, op *proto.Operation, args WhereArgs) (Row, error) {
+func ParseUpdateResponse(context context.Context, op *proto.Operation, args WhereArgs) (map[string]any, error) {
 	res, err := functions.CallFunction(context, op.Name, op.Type, args)
 
 	if err != nil {

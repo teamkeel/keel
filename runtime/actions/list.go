@@ -129,7 +129,7 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	}
 
 	// Execute database request with results
-	results, affected, err := query.SelectStatement().ExecuteWithResults(scope)
+	results, affected, err := query.SelectStatement().ExecuteWithResults(scope.context)
 	if err != nil {
 		return nil, err
 	}

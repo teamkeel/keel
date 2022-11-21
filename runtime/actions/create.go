@@ -6,7 +6,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-func Create(scope *Scope, input map[string]any) (Row, error) {
+func Create(scope *Scope, input map[string]any) (map[string]any, error) {
 	var err error
 
 	query := NewQuery(scope.model)
@@ -46,7 +46,7 @@ func Create(scope *Scope, input map[string]any) (Row, error) {
 	query.AppendReturning(Field("*"))
 
 	// Execute database request with results
-	results, _, err := query.InsertStatement().ExecuteWithResults(scope)
+	results, _, err := query.InsertStatement().ExecuteWithResults(scope.context)
 	if err != nil {
 		return nil, err
 	}
