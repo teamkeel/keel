@@ -332,6 +332,40 @@ func TestSdk(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "input-types",
+			Schema: `
+				model Person {
+					fields {
+						title Text
+					}
+				}
+				model Author {
+					fields {
+						name Text
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path:     "index.js",
+					Contents: "",
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export declare type KeelApi = {
+							models: {
+								person: PersonApi,
+								author: AuthorApi,
+								identity: IdentityApi,
+							}
+						}
+						export declare const api : KeelApi
+					`,
+				},
+			},
+		},
 	}
 
 	for _, tc := range cases {

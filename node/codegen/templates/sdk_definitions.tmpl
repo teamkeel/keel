@@ -78,3 +78,12 @@ export interface {{ .Name }}Input {
   {{- end }}
 }
 {{- end }}
+
+export declare type KeelApi = {
+  models: {
+    {{- range .ModelApis}}
+    {{ .ModelNameLowerCamel }}: {{ .Name }},
+    {{- end}}
+  }
+}
+export declare const api : KeelApi

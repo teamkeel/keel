@@ -130,12 +130,20 @@ func (g *Generator) sdkSrcCode() string {
 
 func (g *Generator) sdkTypeDefinitions() string {
 	models := []*Model{}
+	modelApis := []*ModelApi{}
 
 	// add model interfaces to template
 	for _, model := range g.schema.Models {
 		m := Model{
 			Name: model.Name,
 		}
+
+		modelApis = append(modelApis, &ModelApi{
+			ModelName:           model.Name,
+			TableName:           strcase.ToSnake(model.Name),
+			Name:                fmt.Sprintf("%sApi", model.Name),
+			ModelNameLowerCamel: strcase.ToLowerCamel(model.Name),
+		})
 
 		for _, field := range model.Fields {
 			mf := &ModelField{
@@ -218,9 +226,10 @@ func (g *Generator) sdkTypeDefinitions() string {
 	})
 
 	return renderTemplate(TemplateSdkDefinitions, map[string]interface{}{
-		"Models":  models,
-		"Enums":   enums,
-		"Actions": actions,
+		"Models":    models,
+		"Enums":     enums,
+		"Actions":   actions,
+		"ModelApis": modelApis,
 	})
 }
 
