@@ -5,9 +5,12 @@ package codegenerator
 
 // Represents a model in a .keel schema
 type Model struct {
-	Name         string
-	Fields       []*ModelField
-	UniqueFields []*ModelField
+	Name           string
+	NameLowerCamel string
+	ApiName        string
+	TableName      string
+	Fields         []*ModelField
+	UniqueFields   []*ModelField
 }
 
 type ModelField struct {
@@ -24,15 +27,6 @@ type Enum struct {
 
 type EnumValue struct {
 	Label string
-}
-
-// Represents the database api to interact with each model defined
-// in a Keel schema
-type ModelApi struct {
-	Name                string
-	ModelName           string
-	ModelNameLowerCamel string
-	TableName           string
 }
 
 type Action struct {

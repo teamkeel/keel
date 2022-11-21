@@ -100,14 +100,14 @@ func (g *Generator) testingTypeDefinitions() (r string) {
 }
 
 func (g *Generator) sdkSrcCode() string {
-	modelApis := []*ModelApi{}
+	models := []*Model{}
 
 	for _, model := range g.schema.Models {
-		modelApis = append(modelApis, &ModelApi{
-			ModelName:           model.Name,
-			TableName:           strcase.ToSnake(model.Name),
-			Name:                fmt.Sprintf("%sApi", model.Name),
-			ModelNameLowerCamel: strcase.ToLowerCamel(model.Name),
+		models = append(models, &Model{
+			Name:           model.Name,
+			TableName:      strcase.ToSnake(model.Name),
+			ApiName:        fmt.Sprintf("%sApi", model.Name),
+			NameLowerCamel: strcase.ToLowerCamel(model.Name),
 		})
 	}
 
@@ -123,27 +123,22 @@ func (g *Generator) sdkSrcCode() string {
 	})
 
 	return renderTemplate(TemplateSdk, map[string]interface{}{
-		"ModelApis": modelApis,
-		"Actions":   actions,
+		"Models":  models,
+		"Actions": actions,
 	})
 }
 
 func (g *Generator) sdkTypeDefinitions() string {
 	models := []*Model{}
-	modelApis := []*ModelApi{}
 
 	// add model interfaces to template
 	for _, model := range g.schema.Models {
 		m := Model{
-			Name: model.Name,
+			Name:           model.Name,
+			TableName:      strcase.ToSnake(model.Name),
+			ApiName:        fmt.Sprintf("%sApi", model.Name),
+			NameLowerCamel: strcase.ToLowerCamel(model.Name),
 		}
-
-		modelApis = append(modelApis, &ModelApi{
-			ModelName:           model.Name,
-			TableName:           strcase.ToSnake(model.Name),
-			Name:                fmt.Sprintf("%sApi", model.Name),
-			ModelNameLowerCamel: strcase.ToLowerCamel(model.Name),
-		})
 
 		for _, field := range model.Fields {
 			mf := &ModelField{
@@ -226,10 +221,9 @@ func (g *Generator) sdkTypeDefinitions() string {
 	})
 
 	return renderTemplate(TemplateSdkDefinitions, map[string]interface{}{
-		"Models":    models,
-		"Enums":     enums,
-		"Actions":   actions,
-		"ModelApis": modelApis,
+		"Models":  models,
+		"Enums":   enums,
+		"Actions": actions,
 	})
 }
 

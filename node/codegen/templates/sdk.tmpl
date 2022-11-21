@@ -1,8 +1,8 @@
 import { queryResolverFromEnv, Logger } from '@teamkeel/sdk';
 const queryLogger = new Logger();
 
-{{- range .ModelApis}}
-export class {{ .Name }} {
+{{- range .Models }}
+export class {{ .ApiName }} {
   constructor() {
     this.create = async (inputs) => {
       return this.db.create(inputs);
@@ -32,8 +32,8 @@ export class {{ .Name }} {
 {{- end}}
 export const api = {
   models: {
-    {{- range .ModelApis}}
-    {{ .ModelNameLowerCamel }}: new {{ .Name }}(),
+    {{- range .Models }}
+    {{ .NameLowerCamel }}: new {{ .ApiName }}(),
     {{- end}}
   }
 }

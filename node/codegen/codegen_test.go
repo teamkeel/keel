@@ -505,11 +505,11 @@ actual:
 					// Attempting to perform a unified diff between a partial substring and a much larger actual string creates
 					// some problems with the diff output - comprehension of what has changed within the substring is particularly tricky with the unified
 					// diff output
-					// Therefore, the call to matchPartial will try to match the expected string against the actual, returning only the relevant
+					// Therefore, the call to matchActual will try to match the expected string against the actual, returning only the relevant
 					// portion of the actual string for diff display.
-					actualPartial := matchPartial(actual, expected)
 					diff := diffmatchpatch.New()
-					diffs := diff.DiffMain(expected, actualPartial, true)
+					match := matchActual(actual, expected)
+					diffs := diff.DiffMain(match, expected, false)
 
 					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff:\n%s\n%s\nActual:\n%s\n%s\n\nExpected:\n%s\n%s\n",
 						t.Name(),
@@ -590,33 +590,38 @@ func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (out
 	return str, err
 }
 
-// given a large body of text, and a partial string we want to match against
-// returns the relevant location in the larger string where a match was found
-func matchPartial(full, partial string) string {
-	fullLines := strings.Split(full, "\n")
-	partialLines := strings.Split(partial, "\n")
+// matchActual attempts to match the smaller expected string against a subsection of the larger
+// actual result - line by line comparison is performed to find a partial match in the actual output
+// The return value is a subsection of the actual input string
+func matchActual(actual, expected string) string {
+	actualLines := strings.Split(actual, "\n")
+	expectedLines := strings.Split(expected, "\n")
 
-	firstPartial := partialLines[0]
-
-	loc := 0
 	match := false
+	matchStart := 0
+	matchEnd := 0
 
-	for _, fl := range fullLines {
-		if firstPartial == fl {
-			match = true
-			break
+expected:
+	for eIdx, el := range expectedLines {
+		for aIdx, al := range actualLines {
+			if al == el {
+				match = true
+				matchStart = aIdx - eIdx
+
+				// the end location is the length of expected lines minus the number of
+				// expected lines we iterated through first to find a match, plus the number
+				// of lines we iterated through actual to find the match
+				matchEnd = len(expectedLines) - eIdx + aIdx
+
+				break expected
+			}
 		}
-
-		loc++
 	}
 
-	// we found a match for the first line, so do the diff on this to avoid confusing
-	// diffs between huge lhs and tiny rhs
 	if match {
-		subset := strings.Join(fullLines[loc:], "\n")
-
-		return subset
+		matchingLines := strings.Join(actualLines[matchStart:matchEnd], "\n")
+		return matchingLines
 	}
 
-	return full
+	return strings.Join(actualLines, "\n")
 }

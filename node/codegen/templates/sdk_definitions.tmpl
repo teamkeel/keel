@@ -27,6 +27,7 @@ export declare type {{ .Name }}UniqueFields = {
   {{- end }}
 }
 {{- end }}
+
 {{- range .Enums }}
 export declare enum {{ .Name }} {
   {{- range .Values }}
@@ -34,12 +35,14 @@ export declare enum {{ .Name }} {
   {{- end }}
 }
 {{- end }}
+
 {{- range .Actions }}
 {{- if .IsCustom }}
 export declare type {{ .Name }}ReturnType = Promise<Function{{ .OperationType }}Response<{{ .ModelName }}>>;
 export declare type {{ .Name }}CallbackFunction = (inputs: {{ .Name }}Input, api: API) => {{ .Name }}ReturnType;
 export declare const {{ .Name }}: (callback: {{ .Name }}CallbackFunction) => (inputs: {{ .Name }}Input, api: API) => {{ .Name }}ReturnType
 {{- end }}
+
 export interface {{ .Name }}Input {
   {{- if eq .OperationType "Update" }}
   where: {
@@ -50,7 +53,7 @@ export interface {{ .Name }}Input {
 
   values: {
   {{- range .WriteInputs }}
-    {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
+    {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}a
   {{- end }}
   }
   {{- else if eq .OperationType "List" }}
@@ -78,22 +81,22 @@ export interface {{ .Name }}Input {
   {{- end }}
 }
 {{- end }}
-{{- range .ModelApis }}
-export declare class {{ .Name }} {
-  private readonly db : Query<{{ .ModelName }}>;
+{{- range .Models }}
+export declare class {{ .ApiName }} {
+  private readonly db : Query<{{ .Name }}>;
   constructor();
-  create: (inputs: Partial<Omit<{{ .ModelName }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<{{ .ModelName }}>>;
-  where: (conditions: {{ .ModelName }}Query) => ChainableQuery<{{ .ModelName }}>;
-  delete: (id: string) => Promise<FunctionDeleteResponse<{{ .ModelName }}>>;
-  findOne: (query: {{ .ModelName }}UniqueFields) => Promise<FunctionGetResponse<{{ .ModelName }}>>;
-  update: (inputs: Partial<Omit<{{ .ModelName }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<{{ .ModelName }}>>;
-  findMany: (query: {{ .ModelName }}Query) => Promise<FunctionListResponse<{{ .ModelName }}>>;
+  create: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<{{ .Name }}>>;
+  where: (conditions: {{ .Name }}Query) => ChainableQuery<{{ .Name }}>;
+  delete: (id: string) => Promise<FunctionDeleteResponse<{{ .Name }}>>;
+  findOne: (query: {{ .Name }}UniqueFields) => Promise<FunctionGetResponse<{{ .Name }}>>;
+  update: (inputs: Partial<Omit<{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<{{ .Name }}>>;
+  findMany: (query: {{ .Name }}Query) => Promise<FunctionListResponse<{{ .Name }}>>;
 }
 {{- end }}
 export declare type KeelApi = {
   models: {
-    {{- range .ModelApis}}
-    {{ .ModelNameLowerCamel }}: {{ .Name }},
+    {{- range .Models }}
+    {{ .NameLowerCamel }}: {{ .ApiName }},
     {{- end}}
   }
 }
