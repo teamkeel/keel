@@ -1,10 +1,12 @@
 package graphql
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/iancoleman/strcase"
 	"github.com/nleeper/goment"
 
 	"github.com/graphql-go/graphql"
@@ -117,7 +119,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				Type: outputType,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					// The field to the parent or child model
-					relatedModelField := proto.FindField(mk.proto.Models, model.Name, p.Info.FieldName)
+					relatedModelField := proto.FindField(mk.proto.Models, model.Name, strcase.ToLowerCamel((p.Info.FieldName)))
 
 					// The parent or child model
 					relatedModelName := relatedModelField.Type.ModelName.Value
@@ -128,24 +130,31 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					query.AppendSelect(actions.Field("*"))
 
 					if relatedModelField.ForeignKeyFieldName != nil {
+						// A M:1 relationship lookup
 						foreignKeyField := relatedModelField.ForeignKeyFieldName.Value
-						parent := p.Source.(map[string]interface{})
-						id := parent[foreignKeyField]
+						parent, ok := p.Source.(map[string]interface{})
+						if !ok {
+							return nil, errors.New("graphql source value is not map[string]interface{}")
+						}
+
+						id, ok := parent[foreignKeyField]
+						if !ok {
+							return nil, fmt.Errorf("the foreign key does not exist in source value map: %s", foreignKeyField)
+						}
 
 						query.Where(actions.Field("id"), actions.Equals, actions.Value(id))
-						results, affected, err := query.
+						results, _, err := query.
 							SelectStatement().
 							ExecuteWithResults(p.Context)
 
 						if err != nil {
 							return nil, err
 						}
-						if affected > 1 {
-							return nil, fmt.Errorf("more than one related record found: %v found", affected)
-						}
 
 						return results[0], nil
 					} else {
+						// A 1:M relationship lookup
+						primaryKeyField := "id"
 						fkField, found := lo.Find(relatedModel.Fields, func(field *proto.Field) bool {
 							return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
 						})
@@ -154,8 +163,15 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						}
 
 						foreignKeyField := fkField.ForeignKeyFieldName.Value
-						parent := p.Source.(map[string]interface{})
-						id := parent["id"]
+						parent, ok := p.Source.(map[string]interface{})
+						if !ok {
+							return nil, errors.New("graphql source value is not map[string]interface{}")
+						}
+
+						id, ok := parent[primaryKeyField]
+						if !ok {
+							return nil, fmt.Errorf("the primary key does not exist in source value map: %s", primaryKeyField)
+						}
 
 						query.Where(actions.Field(foreignKeyField), actions.Equals, actions.Value(id))
 						results, _, err := query.
