@@ -1,0 +1,21 @@
+model Author {
+  fields {
+    name Text
+  }
+}
+
+model Post {
+  fields {
+    content Text
+    author Author
+  }
+  operations {
+    create createPostA(content, authorId) 
+
+    create createPostB(content, author.id)
+
+    create createPostC(content, theAuthorId: ID) {
+      @set(post.authorId = theAuthorId)
+    }
+  }
+}

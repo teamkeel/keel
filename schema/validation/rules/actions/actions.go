@@ -169,8 +169,9 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST, fkInfo []*foreignkeys
 	return errs
 }
 
-// RequiredField is is a generalisation of a field name, that allows the field name to
-// have aliases.
+// RequiredField is a generalisation of a field name, that allows the field name to
+// have aliases. For example a model might have an authorId field, but it's valid to
+// specify it as author.id in Create inputs and expressions.
 type requiredField []string
 
 // Aliases returns all the required field's aliases as a single comma delimited string.
@@ -211,20 +212,20 @@ func requiredCreateFields(model *parser.ModelNode, fkInfo []*foreignkeys.Foreign
 		if query.FieldHasAttribute(f, parser.AttributeDefault) {
 			continue
 		}
+		// If a "Post" has an "author" relationship field, then "author" is not a required field.
+		// Because instead the, "authorId" field is.
+		if foreignkeys.IsModelFieldWithSiblingFK(fkInfo, model.Name.Value, f.Name.Value) {
+			continue
+		}
 		// So this field is required...
 
-		// If this is a model field that has a sibling FK field,
-		// we hoover up the names of both fields as aliases in a single
-		// RequiredField
-		if siblingFieldName, ok := foreignkeys.IsModelFieldWithSiblingFK(fkInfo, model.Name.Value, f.Name.Value); ok {
-			req = append(req, &requiredField{f.Name.Value, siblingFieldName})
-
-			// If this is a foreign key field we ignore it, because we'll catch in the clause above.
-		} else if foreignkeys.IsFkField(fkInfo, model.Name.Value, f.Name.Value) {
-			continue
-
-			// This is the general / vanilla case.
+		// A required FK field can be satisfied by its real field name like "authorId", or by "author.id".
+		if relatedPrimaryKey, ok := foreignkeys.IsFkField(fkInfo, model.Name.Value, f.Name.Value); ok {
+			dottedForm := f.Name.Value + "." + relatedPrimaryKey
+			requiredField := requiredField{f.Name.Value, dottedForm}
+			req = append(req, &requiredField)
 		} else {
+			// The general case
 			req = append(req, &requiredField{f.Name.Value})
 		}
 	}

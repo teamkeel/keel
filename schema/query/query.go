@@ -143,7 +143,7 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	return append(ModelOperations(model), ModelFunctions(model)...)
 }
 
-// ModelCreateActions returns all the actions in the given action, which
+// ModelCreateActions returns all the actions in the given model, which
 // are create-type actions.
 func ModelCreateActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	allActions := ModelActions(model)

@@ -9,6 +9,18 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+// ForeignKeyInfo encapsulates everything relevant to the foreign key fields we auto
+// generate into the AST for some models. The generated fields are derived from an "Owning"
+// field (of type Model) defined explicitly in the keel schema, and with topology HasOne.
+type ForeignKeyInfo struct {
+	OwningModel               *parser.ModelNode
+	OwningField               *parser.FieldNode // A field in the OwningModel that is of type MODEL, and topology HasOne.
+	OwningFieldIsOptional     bool
+	ReferredToModel           *parser.ModelNode
+	ReferredToModelPrimaryKey *parser.FieldNode // Which field in the ReferredToModel is its Primary Key
+	ForeignKeyName            string            // What name to give the generated FK.
+}
+
 // PrimaryKeys tells you the primary key field for any given model name.
 type PrimaryKeys map[string]*parser.FieldNode
 
@@ -32,18 +44,6 @@ func NewPrimaryKeys(asts []*parser.AST) PrimaryKeys {
 		}
 	}
 	return pkeys
-}
-
-// ForeignKeyInfo encapsulates everything relevant to the foreign key fields we auto
-// generate into the AST for some models. The generated fields are derived from an "Owning"
-// field (of type Model) defined explicitly in the keel schema, and with topology HasOne.
-type ForeignKeyInfo struct {
-	OwningModel               *parser.ModelNode
-	OwningField               *parser.FieldNode // A field in the OwningModel that is of type MODEL, and topology HasOne.
-	OwningFieldIsOptional     bool
-	ReferredToModel           *parser.ModelNode
-	ReferredToModelPrimaryKey *parser.FieldNode // Which field in the ReferredToModel is its Primary Key
-	ForeignKeyName            string            // What name to give the generated FK.
 }
 
 // NewForeignKeyInfo builds a list of ForeignKeyInfo that defines all the foreign key
@@ -115,7 +115,7 @@ func isHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 // IsModelFieldWithSiblingFK consults the given foreign key information to tell you if
 // the given field name, in the context of the given model name,
 // is an "owning" field of type Model, which has a corresponding (sibling) FK field.
-func IsModelFieldWithSiblingFK(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) (siblingFkName string, ok bool) {
+func IsModelFieldWithSiblingFK(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) bool {
 	for _, fkInfo := range fkInfos {
 		if fkInfo.OwningModel.Name.Value != modelName {
 			continue
@@ -123,22 +123,23 @@ func IsModelFieldWithSiblingFK(fkInfos []*ForeignKeyInfo, modelName string, fiel
 		if fkInfo.OwningField.Name.Value != fieldName {
 			continue
 		}
-		return fkInfo.ForeignKeyName, true
+		return true
 	}
-	return "", false
+	return false
 }
 
 // IsFkField consults the given foreign key information to tell you if
 // the given field name, in the context of the given model name,
 // is a foreign key field associated with a sibling Owning field.
-func IsFkField(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) bool {
+// When so, it also tells you the primary key name for the referred-to model.
+func IsFkField(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) (relatedPrimaryKey string, isFKField bool) {
 	for _, fkInfo := range fkInfos {
 		if fkInfo.OwningModel.Name.Value != modelName {
 			continue
 		}
 		if fkInfo.ForeignKeyName == fieldName {
-			return true
+			return fkInfo.ReferredToModelPrimaryKey.Name.Value, true
 		}
 	}
-	return false
+	return "", false
 }
