@@ -628,6 +628,10 @@ expected:
 			diffs := differ.DiffMain(al, el, false)
 			levenshteinDistance := differ.DiffLevenshtein(diffs)
 
+			// the current levenshtein distance threshold may actually produce some
+			// false positives for lines that are similar enough but aren't actually
+			// the same code (with differences inside of it), so we can tweak the threshold
+			// when we run into these problems
 			if al == el || levenshteinDistance < LEVENSHTEIN_THRESHOLD {
 				match = true
 				matchStart = aIdx - eIdx
