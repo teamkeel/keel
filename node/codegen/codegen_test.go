@@ -333,6 +333,37 @@ func TestSdk(t *testing.T) {
 			},
 		},
 		{
+			Name: "model-database-apis",
+			Schema: `
+				model Person {
+					fields {
+						title Text
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path:     "index.js",
+					Contents: "",
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export declare class PersonApi {
+							private readonly db : Query<Person>;
+							constructor();
+							create: (inputs: Partial<Omit<Person, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<Person>>;
+							where: (conditions: PersonQuery) => ChainableQuery<Person>;
+							delete: (id: string) => Promise<FunctionDeleteResponse<Person>>;
+							findOne: (query: PersonUniqueFields) => Promise<FunctionGetResponse<Person>>;
+							update: (inputs: Partial<Omit<Person, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<Person>>;
+							findMany: (query: PersonQuery) => Promise<FunctionListResponse<Person>>;
+						}
+					`,
+				},
+			},
+		},
+		{
 			Name: "top-level-api",
 			Schema: `
 				model Person {

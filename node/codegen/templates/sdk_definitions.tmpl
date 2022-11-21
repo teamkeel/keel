@@ -78,7 +78,18 @@ export interface {{ .Name }}Input {
   {{- end }}
 }
 {{- end }}
-
+{{- range .ModelApis }}
+export declare class {{ .Name }} {
+  private readonly db : Query<{{ .ModelName }}>;
+  constructor();
+  create: (inputs: Partial<Omit<{{ .ModelName }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionCreateResponse<{{ .ModelName }}>>;
+  where: (conditions: {{ .ModelName }}Query) => ChainableQuery<{{ .ModelName }}>;
+  delete: (id: string) => Promise<FunctionDeleteResponse<{{ .ModelName }}>>;
+  findOne: (query: {{ .ModelName }}UniqueFields) => Promise<FunctionGetResponse<{{ .ModelName }}>>;
+  update: (inputs: Partial<Omit<{{ .ModelName }}, "id" | "createdAt" | "updatedAt">>) => Promise<FunctionUpdateResponse<{{ .ModelName }}>>;
+  findMany: (query: {{ .ModelName }}Query) => Promise<FunctionListResponse<{{ .ModelName }}>>;
+}
+{{- end }}
 export declare type KeelApi = {
   models: {
     {{- range .ModelApis}}
