@@ -1,3 +1,10 @@
+# [0.216.0](https://github.com/teamkeel/keel/compare/v0.215.1...v0.216.0) (2022-11-21)
+
+
+### Features
+
+* graphql nested model resolving ([#599](https://github.com/teamkeel/keel/issues/599)) ([5979bc4](https://github.com/teamkeel/keel/commit/5979bc43ffd6499ac63f2f2e76ae37bc247e7351))
+
 ## [0.215.1](https://github.com/teamkeel/keel/compare/v0.215.0...v0.215.1) (2022-11-17)
 
 
