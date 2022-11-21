@@ -6,7 +6,6 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
-	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
@@ -104,61 +103,18 @@ func ReservedActionNameRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKey
 }
 
 // CreateOperationRequiredFieldsRule validates that a create operation is specified in such a way
-// that all the fields that must be set, are covered by inputs or set expressions.
-func CreateOperationRequiredFieldsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
-	/*
-
-		Explanation of this rule.
-
-		Because we're creating something, the create action must be defined in a way that provides
-		values for all the fields that must be set to a new value. These are the "required" fields.
-
-		The required fields are: all fields, except for those that:
-		- are optional, or
-		- have a default value specified, or
-		- are REPEATED
-
-		The operation may provide a value for a required field, by either:
-		1) specifying the field as an implicit input
-		2) specifying a @set attribute that cites the field on the LHS of its expression.
-
-		It is a validation error if any one of the required fields does not get covered by one or the
-		other of these.
-
-		It is also validation error if both 1) and 2) are true - because the value to use is now ambiguous.
-
-		Now we need to say more about relationship fields...
-
-		Firstly - REPEATED relationship fields are excluded from this scope, as per above.
-
-		So we're talking only about HasOne relationship fields such as "author".
-
-		But note that every Model field like "author", has a sibling, foreign key field in the same
-		model, which would be "authorId" for this example. Nb. both members of this field-pair have the
-		same optionality as the other - by definition.
-
-		For validation purposes we'll treat each member of this key-pair as an alias for the other.
-		So in fact we can stick to the definition of the rule above, EXCEPT that
-		we regard each field as potentially having two names.
-	*/
+// that all the fields that must be set, are covered by either inputs or set expressions.
+func CreateOperationRequiredFieldsRule(
+	asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
-		if model.Name.Value == "Post" {
-			a := 1
-			_ = a
-		}
 		requiredFieldsWithAliases := requiredCreateFields(model, fkInfo)
 		createActions := query.ModelCreateActions(model)
 		for _, createAction := range createActions {
-			if createAction.Name.Value == "createPostA" {
-				a := 1
-				_ = a
-			}
 			for _, fld := range requiredFieldsWithAliases {
-				satisfiedByWithInput := requiredFieldInActionWithClause(fld, createAction)
+				satisfiedByWithInput := requiredFieldInWithClause(fld, createAction)
 				satisfiedBySetExpr := satisfiedBySetExpr(fld, model.Name.Value, createAction)
 
-				// Value not supplied?
 				if !satisfiedByWithInput && !satisfiedBySetExpr {
 					errs.Append(errorhandling.ErrorCreateOperationMissingInput,
 						map[string]string{
@@ -173,9 +129,8 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST, fkInfo []*foreignkeys
 	return errs
 }
 
-// RequiredField is a generalisation of a field name, that allows the field name to
-// have aliases. For example a model might have an authorId field, but it's valid to
-// specify it as author.id in Create inputs and expressions.
+// RequiredField is a generalisation of a field name, that allows a field name to
+// have aliases. For example "AuthorId", having an alias of "author.id".
 type requiredField []string
 
 // Aliases returns all the required field's aliases as a single comma delimited string.
@@ -183,9 +138,9 @@ func (rf requiredField) Aliases() string {
 	return strings.Join([]string(rf), ", ")
 }
 
-// operationSetExpressions returns all the non-nil expressions from all
+// setExpressions returns all the non-nil expressions from all
 // the @set attributes on the given action.
-func operationSetExpressions(action *parser.ActionNode) []*parser.Expression {
+func setExpressions(action *parser.ActionNode) []*parser.Expression {
 	setters := lo.Filter(action.Attributes, func(a *parser.AttributeNode, _ int) bool {
 		return a.Name.Value == parser.AttributeSet
 	})
@@ -201,7 +156,7 @@ func operationSetExpressions(action *parser.ActionNode) []*parser.Expression {
 	return expressions
 }
 
-// RequiredCreateFields works out which of the fields on the given model,
+// requiredCreateFields works out which of the fields on the given model,
 // must be specified for any create action on that model to be valid.
 func requiredCreateFields(model *parser.ModelNode, fkInfo []*foreignkeys.ForeignKeyInfo) []*requiredField {
 	req := []*requiredField{}
@@ -217,11 +172,12 @@ func requiredCreateFields(model *parser.ModelNode, fkInfo []*foreignkeys.Foreign
 			continue
 		}
 		// If a "Post" has an "author" relationship field, then "author" is not a required field.
-		// Because instead the, "authorId" field is.
+		// Because instead the auto-generated "authorId" field is - which is caught below.
 		if foreignkeys.IsModelFieldWithSiblingFK(fkInfo, model.Name.Value, f.Name.Value) {
 			continue
 		}
-		// So this field is required...
+
+		// We conclude this field IS required.
 
 		// A required FK field can be satisfied by its real field name like "authorId", or by "author.id".
 		if dottedForm, ok := foreignkeys.IsFkField(fkInfo, model.Name.Value, f.Name.Value); ok {
@@ -235,9 +191,9 @@ func requiredCreateFields(model *parser.ModelNode, fkInfo []*foreignkeys.Foreign
 	return req
 }
 
-// requiredFieldInActionWithClause returns true if any of the names/aliases in the given requiredField are
+// requiredFieldInWithClause returns true if any of the names/aliases in the given requiredField are
 // present the the given action's "With" inputs.
-func requiredFieldInActionWithClause(requiredField *requiredField, action *parser.ActionNode) bool {
+func requiredFieldInWithClause(requiredField *requiredField, action *parser.ActionNode) bool {
 	for _, altFieldName := range *requiredField {
 		for _, input := range action.With {
 			if input.Label == nil && input.Type.ToString() == altFieldName {
@@ -255,7 +211,7 @@ func requiredFieldInActionWithClause(requiredField *requiredField, action *parse
 // @set(mymodel.authorId =
 
 func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *parser.ActionNode) bool {
-	setExpressions := operationSetExpressions(action)
+	setExpressions := setExpressions(action)
 	for _, expr := range setExpressions {
 		assignment, err := expr.ToAssignmentCondition()
 		if err != nil {
@@ -273,103 +229,11 @@ func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *
 
 		for _, altFieldName := range *requiredField {
 			if fieldName == altFieldName {
-				fmt.Printf("XXXX matching LHS: %s\n", altFieldName)
 				return true
 			}
 		}
 	}
 	return false
-}
-
-// todo: pch ditch this once replaced
-// CreateOperationRequiredFieldsRule validates that all create actions
-// accept all required fields (that don't have default values) as write inputs
-func CreateOperationRequiredFieldsRuleTodoDeprecated(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
-
-	for _, model := range query.Models(asts) {
-
-		requiredFields := []*parser.FieldNode{}
-		for _, field := range query.ModelFields(model) {
-			// Optional and repeated fields are not required
-			if field.Optional || field.Repeated {
-				continue
-			}
-			if query.FieldHasAttribute(field, parser.AttributeDefault) {
-				continue
-			}
-			requiredFields = append(requiredFields, field)
-		}
-
-		for _, action := range query.ModelActions(model) {
-			if action.Type.Value != parser.ActionTypeCreate {
-				continue
-			}
-
-		fields:
-			for _, requiredField := range requiredFields {
-				for _, input := range action.With {
-					// short-hand syntax that matches the required field
-					if input.Label == nil && input.Type.ToString() == requiredField.Name.Value {
-						continue fields
-					}
-				}
-
-				// if no explicitly an input we need to look for a @set() that references the field
-				for _, attr := range action.Attributes {
-					if attr.Name.Value != parser.AttributeSet {
-						continue
-					}
-
-					if len(attr.Arguments) == 0 {
-						continue
-					}
-
-					if attr.Arguments[0].Expression == nil {
-						continue
-					}
-
-					assignment, err := attr.Arguments[0].Expression.ToAssignmentCondition()
-					if err != nil {
-						continue
-					}
-
-					lhs := assignment.LHS
-
-					if len(lhs.Ident.Fragments) != 2 {
-						continue
-					}
-
-					modelName, fieldName := lhs.Ident.Fragments[0].Fragment, lhs.Ident.Fragments[1].Fragment
-
-					if modelName != strcase.ToLowerCamel(model.Name.Value) {
-						continue
-					}
-
-					// If we've found an assignment expression with a left hand side like:
-					//   {modelName}.{fieldName}
-					// then we are satisfied that this required field is being set
-					// We're not validating the RHS of the expression here as that is handled
-					// by the @set attribute rules
-					if fieldName == requiredField.Name.Value {
-						continue fields
-					}
-				}
-
-				// we didn't find an input or a @set that satisfies this required field
-				// so that's an error
-				errs.Append(errorhandling.ErrorCreateOperationMissingInput,
-					map[string]string{
-						"FieldName": requiredField.Name.Value,
-					},
-					action.Name,
-				)
-				litter.Dump("XXXX error captured is...")
-				litter.Dump(errs)
-			}
-		}
-	}
-
-	return
 }
 
 // UpdateOperationUniqueConstraintRule checks that all update operations
