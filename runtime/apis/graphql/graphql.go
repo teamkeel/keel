@@ -117,6 +117,24 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			object.AddFieldConfig(field.Name, &graphql.Field{
 				Name: field.Name,
 				Type: outputType,
+				Args: graphql.FieldConfigArgument{
+					"first": &graphql.ArgumentConfig{
+						Type:        graphql.Int,
+						Description: "The requested number of nodes for each page.",
+					},
+					"last": &graphql.ArgumentConfig{
+						Type:        graphql.Int,
+						Description: "The requested number of nodes for each page.",
+					},
+					"after": &graphql.ArgumentConfig{
+						Type:        graphql.String,
+						Description: "The ID cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.",
+					},
+					"before": &graphql.ArgumentConfig{
+						Type:        graphql.String,
+						Description: "The ID cursor to retrieve nodes before in the connection. Typically, you should pass the startCursor of the previous page as before.",
+					},
+				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					// The field to the parent or child model
 					relatedModelField := proto.FindField(mk.proto.Models, model.Name, strcase.ToLowerCamel((p.Info.FieldName)))
@@ -143,15 +161,15 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						}
 
 						query.Where(actions.Field("id"), actions.Equals, actions.Value(id))
-						results, _, err := query.
+						result, err := query.
 							SelectStatement().
-							ExecuteWithResults(p.Context)
+							ExecuteAsSingle(p.Context)
 
 						if err != nil {
 							return nil, err
 						}
 
-						return results[0], nil
+						return result, nil
 					} else {
 						// A 1:M relationship lookup
 						primaryKeyField := "id"
@@ -174,7 +192,18 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						}
 
 						query.Where(actions.Field(foreignKeyField), actions.Equals, actions.Value(id))
-						results, _, err := query.
+
+						page, err := actions.ParsePage(p.Args)
+						if err != nil {
+							return nil, err
+						}
+
+						// Select all columns from this table and distinct on id
+						query.AppendDistinctOn(actions.Field("id"))
+						query.AppendSelect(actions.Field("*"))
+						query.ApplyPaging(page)
+
+						results, _, hasNextPage, err := query.
 							SelectStatement().
 							ExecuteWithResults(p.Context)
 
@@ -182,7 +211,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 							return nil, err
 						}
 
-						res, err := connectionResponse(results, false)
+						res, err := connectionResponse(results, hasNextPage)
 						if err != nil {
 							return nil, err
 						}
@@ -616,10 +645,12 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 		}
 
 		inputType.AddFieldConfig("first", &graphql.InputObjectFieldConfig{
-			Type: graphql.Int,
+			Type:        graphql.Int,
+			Description: "The requested number of nodes for each page.",
 		})
 		inputType.AddFieldConfig("after", &graphql.InputObjectFieldConfig{
-			Type: graphql.String,
+			Type:        graphql.String,
+			Description: "The ID cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.",
 		})
 
 		if len(op.Inputs) > 0 {

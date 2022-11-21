@@ -34,7 +34,10 @@ func Delete(scope *Scope, input map[string]any) (bool, error) {
 	}
 
 	// Execute database request
-	affected, err := query.DeleteStatement().Execute(scope.context)
+	affected, err := query.
+		DeleteStatement().
+		Execute(scope.context)
+
 	if err != nil {
 		return false, err
 	}

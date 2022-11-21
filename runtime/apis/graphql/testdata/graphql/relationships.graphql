@@ -28,14 +28,14 @@ type AuthenticateResponse {
 type Order {
   createdAt: Timestamp!
   id: ID!
-  items: OrderItemConnection!
+  items(after: String, before: String, first: Int, last: Int): OrderItemConnection!
   updatedAt: Timestamp!
 }
 
 type OrderItem {
   createdAt: Timestamp!
   id: ID!
-  order: Order!
+  order(after: String, before: String, first: Int, last: Int): Order!
   orderId: ID!
   price: Int!
   updatedAt: Timestamp!

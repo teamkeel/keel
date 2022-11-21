@@ -95,7 +95,7 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 		return ParseListResponse(scope.context, op, where)
 	}
 
-	page, err := parsePage(input)
+	page, err := ParsePage(input)
 	if err != nil {
 		return nil, err
 	}
@@ -103,46 +103,15 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	// Select all columns from this table and distinct on id
 	query.AppendDistinctOn(Field("id"))
 	query.AppendSelect(Field("*"))
-
-	// Select hasNext clause
-	selectArgs := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", query.table)
-	query.AppendSelectClause(selectArgs)
-
-	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
-	// that helps to determine "hasNextPage".
-	query.AppendOrderBy(Field("id"))
-
-	// Add where condition to implement the after/before paging request
-	switch {
-	case page.After != "":
-		query.Where(Field("id"), GreaterThan, Value(page.After))
-	case page.Before != "":
-		query.Where(Field("id"), LessThan, Value(page.Before))
-	}
-
-	// Add where condition to implement the page size
-	switch {
-	case page.First != 0:
-		query.Limit(page.First)
-	case page.Last != 0:
-		query.Limit(page.Last)
-	}
+	query.ApplyPaging(page)
 
 	// Execute database request with results
-	results, affected, err := query.SelectStatement().ExecuteWithResults(scope.context)
+	results, _, hasNextPage, err := query.
+		SelectStatement().
+		ExecuteWithResults(scope.context)
+
 	if err != nil {
 		return nil, err
-	}
-
-	// Sort out the hasNextPage value, and clean up the response.
-	hasNextPage := false
-	if affected > 0 {
-		last := results[affected-1]
-		hasNextPage = last["hasnext"].(bool)
-	}
-
-	for _, row := range results {
-		delete(row, "has_next")
 	}
 
 	return &ListResult{
@@ -151,9 +120,9 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	}, nil
 }
 
-// parsePage extracts page mandate information from the given map and uses it to
+// ParsePage extracts page mandate information from the given map and uses it to
 // compose a Page.
-func parsePage(args map[string]any) (Page, error) {
+func ParsePage(args map[string]any) (Page, error) {
 	page := Page{}
 
 	if first, ok := args["first"]; ok {
@@ -202,24 +171,4 @@ func parsePage(args map[string]any) (Page, error) {
 	}
 
 	return page, nil
-}
-
-// A Page describes which page you want from a list of records,
-// in the style of this "Connection" pattern:
-// https://relay.dev/graphql/connections.htm
-//
-// Consider for example, that you previously fetched a page of 10 records
-// and from that previous response you also knew that the last of those 10 records
-// could be referred to with the opaque cursor "abc123". Armed with that information you can
-// ask for the next page of 10 records by setting First to 10, and After to "abc123".
-//
-// To move backwards, you'd set the Last and Before fields instead.
-//
-// When you have no prior positional context you should specify First but leave Before and After to
-// the empty string. This gives you the first N records.
-type Page struct {
-	First  int
-	Last   int
-	After  string
-	Before string
 }

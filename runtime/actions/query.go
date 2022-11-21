@@ -178,7 +178,7 @@ func (query *QueryBuilder) Or() {
 	query.filters = append(query.filters, "OR")
 }
 
-// Include a JOIN clause.
+// Include an INNER JOIN clause.
 func (query *QueryBuilder) InnerJoin(joinField *QueryOperand, modelField *QueryOperand) {
 	join := fmt.Sprintf("INNER JOIN %s ON %s = %s",
 		strcase.ToSnake(joinField.table),
@@ -210,6 +210,33 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 
 	if !lo.Contains(query.returning, c) {
 		query.returning = append(query.returning, c)
+	}
+}
+
+// Apply pagination filters to the query.
+func (query *QueryBuilder) ApplyPaging(page Page) {
+	// Select hasNext clause
+	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", query.table)
+	query.AppendSelectClause(hasNext)
+
+	// Add where condition to implement the after/before paging request
+	switch {
+	case page.After != "":
+		query.Where(Field("id"), GreaterThan, Value(page.After))
+	case page.Before != "":
+		query.Where(Field("id"), LessThan, Value(page.Before))
+	}
+
+	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
+	// that helps to determine "hasNextPage".
+	query.AppendOrderBy(Field("id"))
+
+	// Add where condition to implement the page size
+	switch {
+	case page.First != 0:
+		query.Limit(page.First)
+	case page.Last != 0:
+		query.Limit(page.Last)
 	}
 }
 
@@ -392,20 +419,51 @@ func (statement *Statement) Execute(context context.Context) (int, error) {
 	return int(db.RowsAffected), nil
 }
 
-// Execute the SQL statement against the database, return the rows, and  the number of rows affected.
-func (statement *Statement) ExecuteWithResults(context context.Context) ([]map[string]any, int, error) {
+// Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
+func (statement *Statement) ExecuteWithResults(context context.Context) ([]map[string]any, int, bool, error) {
 	db, err := runtimectx.GetDatabase(context)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, false, err
 	}
 
 	results := []map[string]any{}
 	db = db.Raw(statement.template, statement.args...).Scan(&results)
 	if db.Error != nil {
-		return nil, 0, db.Error
+		return nil, 0, false, db.Error
 	}
 
-	return toLowerCamelMaps(results), int(db.RowsAffected), nil
+	rowsAffected := int(db.RowsAffected)
+
+	// Sort out the hasNextPage value, and clean up the response.
+	hasNextPage := false
+	if rowsAffected > 0 {
+		last := results[rowsAffected-1]
+		var hasPagination bool
+		hasNextPage, hasPagination = last["hasnext"].(bool)
+		if hasPagination {
+			for _, row := range results {
+				delete(row, "hasnext")
+			}
+		}
+	}
+
+	return toLowerCamelMaps(results), rowsAffected, hasNextPage, nil
+}
+
+// Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
+func (statement *Statement) ExecuteAsSingle(context context.Context) (map[string]any, error) {
+	results, affected, _, err := statement.ExecuteWithResults(context)
+	if err != nil {
+		return nil, err
+	}
+
+	if affected > 1 {
+		return nil, errors.New("more than 1 result returned for ExecuteWithSingle which expects 0 or 1 results")
+	} else if affected == 0 {
+		return nil, nil
+	}
+
+	return results[0], nil
 }
 
 // Builds a where conditional SQL template using the ? placeholder for values.
@@ -507,4 +565,24 @@ func toLowerCamelMaps(maps []map[string]any) []map[string]any {
 		res = append(res, toLowerCamelMap(m))
 	}
 	return res
+}
+
+// A Page describes which page you want from a list of records,
+// in the style of this "Connection" pattern:
+// https://relay.dev/graphql/connections.htm
+//
+// Consider for example, that you previously fetched a page of 10 records
+// and from that previous response you also knew that the last of those 10 records
+// could be referred to with the opaque cursor "abc123". Armed with that information you can
+// ask for the next page of 10 records by setting First to 10, and After to "abc123".
+//
+// To move backwards, you'd set the Last and Before fields instead.
+//
+// When you have no prior positional context you should specify First but leave Before and After to
+// the empty string. This gives you the first N records.
+type Page struct {
+	First  int
+	Last   int
+	After  string
+	Before string
 }
