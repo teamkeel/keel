@@ -328,7 +328,9 @@ func TestSdk(t *testing.T) {
 	}
 }
 
-// Normalises differences between actual and expected strings (replaces tabs with 2 spaces)
+// Removes inconsequential differences between actual and expected strings:
+// - Normalises tab / 2 space differences
+// - Normalises indentation between actual vs expected
 func normaliseString(str string) string {
 	lines := strings.Split(str, "\n")
 
@@ -399,6 +401,11 @@ actual:
 				}
 
 				if !strings.Contains(actual, expected) {
+					// Attempting to perform a unified diff between a partial substring and a much larger actual string creates
+					// some problems with the diff output - comprehension of what has changed within the substring is particularly tricky with the unified
+					// diff output
+					// Therefore, the call to matchPartial will try to match the expected string against the actual, returning only the relevant
+					// portion of the actual string for diff display.
 					actualPartial := matchPartial(actual, expected)
 					diff := diffmatchpatch.New()
 					diffs := diff.DiffMain(expected, actualPartial, true)
@@ -438,6 +445,8 @@ expected:
 //go:embed tsconfig.json
 var sampleTsConfig string
 
+// After we have asserted that the actual and expected values match, we want to typecheck the outputted d.ts
+// files using tsc to make sure that it is valid typescript!
 func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (output string, err error) {
 	tmpDir, err := os.MkdirTemp("", "")
 	assert.NoError(t, err)
@@ -509,16 +518,4 @@ func matchPartial(full, partial string) string {
 	}
 
 	return full
-}
-
-func MinOf(vars ...int) int {
-	min := vars[0]
-
-	for _, i := range vars {
-		if min > i {
-			min = i
-		}
-	}
-
-	return min
 }
