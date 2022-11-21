@@ -7,14 +7,14 @@
       "code": "E002",
       "pos": {
         "filename": "testdata/validation_operations_lower_camel/schema.keel",
-        "offset": 158,
-        "line": 12,
+        "offset": 109,
+        "line": 10,
         "column": 12
       },
       "end_pos": {
         "filename": "testdata/validation_operations_lower_camel/schema.keel",
-        "offset": 172,
-        "line": 12,
+        "offset": 123,
+        "line": 10,
         "column": 26
       }
     }

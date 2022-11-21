@@ -5,16 +5,16 @@
       "end_pos": {
         "column": 44,
         "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
-        "line": 13,
-        "offset": 257
+        "line": 10,
+        "offset": 183
       },
-      "hint": "Did you mean one of ctx, profile, or username?",
+      "hint": "Did you mean ctx, or profile?",
       "message": "'context' not found",
       "pos": {
         "column": 37,
         "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
-        "line": 13,
-        "offset": 250
+        "line": 10,
+        "offset": 176
       },
       "short_message": "'context' not found"
     }

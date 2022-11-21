@@ -1,8 +1,5 @@
 model Profile {
     fields {
-        identity Identity {
-            @unique
-        }
         username Text {
             @unique
         }
