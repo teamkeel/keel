@@ -625,8 +625,6 @@ func matchActual(actual, expected string) string {
 expected:
 	for eIdx, el := range expectedLines {
 		for aIdx, al := range actualLines {
-			// todo: could make this better by using levenshtein distance calculation to find *very*
-			// similar lines, not just exact matches
 			diffs := differ.DiffMain(al, el, false)
 			levenshteinDistance := differ.DiffLevenshtein(diffs)
 
