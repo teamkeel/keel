@@ -1,7 +1,12 @@
 package codegenerator
 
 // Template Structs defined here are used as friendly, presentational data structures
-// that are passed to the various go templates as variables
+// that are passed to the various go templates as variables (think "presenter" pattern).
+// There is a need for these "simplified" data structures over passing structs from the
+// proto.* package into templates, due to two reasons:
+// 1. The API of proto structs isn't very friendly to templating (underlying enums with strange values for example)
+// 2. Go's templating system is very basic - it has if / range statements but not much more, so there were
+// some situations where it wasn't possible to enumerate underlying proto structures
 
 // Represents a model in a .keel schema
 type Model struct {
