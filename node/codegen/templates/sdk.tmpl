@@ -1,3 +1,6 @@
+import { queryResolverFromEnv, Logger } from '@teamkeel/sdk';
+const queryLogger = new Logger();
+
 {{- range .ModelApis}}
 export class {{ .Name }} {
   constructor() {
