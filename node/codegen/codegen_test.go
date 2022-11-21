@@ -333,7 +333,7 @@ func TestSdk(t *testing.T) {
 			},
 		},
 		{
-			Name: "input-types",
+			Name: "top-level-api",
 			Schema: `
 				model Person {
 					fields {
