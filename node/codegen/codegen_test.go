@@ -545,6 +545,8 @@ actual:
 		assert.Fail(t, fmt.Sprintf("no matching expected file for actual file %s", actualFile.Path))
 	}
 
+	// we need to do the inverse of the above, so that we don't miss out on the scenario
+	// where there are files in the actual that are not in the expected array
 expected:
 	for _, expectedFile := range tc.ExpectedFiles {
 		for _, actualFile := range generatedFiles {
