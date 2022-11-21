@@ -399,6 +399,20 @@ func TestSdk(t *testing.T) {
 		},
 	}
 
+	runCases(t, cases, func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error) {
+		return cg.GenerateSDK()
+	})
+}
+
+func TestTesting(t *testing.T) {
+	cases := []TestCase{}
+
+	runCases(t, cases, func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error) {
+		return cg.GenerateSDK()
+	})
+}
+
+func runCases(t *testing.T, cases []TestCase, codegenFn func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error)) {
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			builder := schema.Builder{}
@@ -413,7 +427,7 @@ func TestSdk(t *testing.T) {
 
 			cg := codegenerator.NewGenerator(sch, tmpDir)
 
-			generatedFiles, err := cg.GenerateSDK()
+			generatedFiles, err := codegenFn(cg)
 
 			require.NoError(t, err)
 
