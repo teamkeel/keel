@@ -53,7 +53,7 @@ export interface {{ .Name }}Input {
 
   values: {
   {{- range .WriteInputs }}
-    {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}a
+    {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
   {{- end }}
   }
   {{- else if eq .OperationType "List" }}
