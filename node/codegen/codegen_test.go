@@ -408,7 +408,7 @@ func TestTesting(t *testing.T) {
 	cases := []TestCase{}
 
 	runCases(t, cases, func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error) {
-		return cg.GenerateSDK()
+		return cg.GenerateTesting()
 	})
 }
 
