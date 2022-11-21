@@ -601,9 +601,13 @@ func matchActual(actual, expected string) string {
 	matchStart := 0
 	matchEnd := 0
 
+	// Loop over each expected line, and try to find a match in the actual lines. If there is a match between actual and expected lines in any iteration,
+	// then break execution and take a slice of the actual lines based on how far we iterated through both loops
 expected:
 	for eIdx, el := range expectedLines {
 		for aIdx, al := range actualLines {
+			// todo: could make this better by using levenshtein distance calculation to find *very*
+			// similar lines, not just exact matches
 			if al == el {
 				match = true
 				matchStart = aIdx - eIdx
