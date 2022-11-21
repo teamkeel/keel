@@ -28,15 +28,21 @@ export declare enum {{ .Name }} {
 export interface {{ .Name }}Input {
   {{- if eq .OperationType "Update" }}
   where: {
-
+  {{- range .ReadInputs }}
+    {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
+  {{- end }}
   }
 
   values: {
-
+  {{- range .WriteInputs }}
+    {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .Type }}
+  {{- end }}
   }
   {{- else if eq .OperationType "List" }}
   where: {
-
+  {{- range .ReadInputs }}
+    {{ .Label }}{{ if .IsOptional }}?{{end}}: {{ .ConstraintType }}
+  {{- end }}
   }
   {{- else if eq .OperationType "Create" }}
   {{- range .WriteInputs }}

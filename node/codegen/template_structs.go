@@ -45,10 +45,11 @@ type Action struct {
 }
 
 type ActionInput struct {
-	Label      string
-	Type       string
-	IsOptional bool
-	Mode       InputMode
+	Label          string
+	Type           string
+	IsOptional     bool
+	Mode           InputMode
+	ConstraintType string // e.g StringConstraint / BooleanConstraint etc
 }
 
 type OperationType string

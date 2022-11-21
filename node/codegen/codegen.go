@@ -141,7 +141,7 @@ func (g *Generator) sdkTypeDefinitions() string {
 			mf := &ModelField{
 				Name:           field.Name,
 				Type:           protoTypeToTypeScriptType(field.Type),
-				ConstraintType: constraintTypeForField(field),
+				ConstraintType: constraintTypeForField(field.Type),
 				IsOptional:     field.Optional,
 			}
 
@@ -197,12 +197,14 @@ func (g *Generator) sdkTypeDefinitions() string {
 			}),
 			ReadInputs: lo.Map(readInputs, func(i *proto.OperationInput, _ int) *ActionInput {
 				return &ActionInput{
-					Label:      i.Name,
-					Type:       protoTypeToTypeScriptType(i.Type),
-					IsOptional: i.Optional,
-					Mode:       inputModeStringFromInputMode(i.Mode),
+					Label:          i.Name,
+					Type:           protoTypeToTypeScriptType(i.Type),
+					IsOptional:     i.Optional,
+					ConstraintType: constraintTypeForField(i.Type),
+					Mode:           inputModeStringFromInputMode(i.Mode),
 				}
 			}),
+			// Some operation types will need all of the inputs no matter the mode (including Unknown mode for authenticate actions)
 			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
 				return &ActionInput{
 					Label:      i.Name,
@@ -327,12 +329,12 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 	}
 }
 
-func constraintTypeForField(field *proto.Field) string {
-	if field.Type.Type == proto.Type_TYPE_ENUM {
+func constraintTypeForField(t *proto.TypeInfo) string {
+	if t.Type == proto.Type_TYPE_ENUM {
 		return "EnumConstraint"
 	}
 
-	return fmt.Sprintf("%sConstraint", strcase.ToCamel(protoTypeToTypeScriptType(field.Type)))
+	return fmt.Sprintf("%sConstraint", strcase.ToCamel(protoTypeToTypeScriptType(t)))
 }
 
 func renderTemplate(name string, data map[string]interface{}) string {

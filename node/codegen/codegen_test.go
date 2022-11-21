@@ -243,10 +243,15 @@ func TestSdk(t *testing.T) {
 					fields {
 						title Text
 						subTitle Text?
+						age Number?
 					}
 
 					operations {
-						create createPerson() with(title, subTitle)
+						create createPerson() with(title, subTitle?)
+						delete deletePerson(id)
+						list listPeople(title, age)
+						get getPerson(id)
+						update updatePerson(id) with(title, subTitle?)
 					}
 				}
 			`,
@@ -260,7 +265,28 @@ func TestSdk(t *testing.T) {
 					Contents: `
 						export interface CreatePersonInput {
 							title: string
-							subTitle: string
+							subTitle?: string
+						}
+						export interface DeletePersonInput {
+							id: ID
+						}
+						export interface ListPeopleInput {
+							where: {
+								title: StringConstraint
+								age: NumberConstraint
+							}
+						}
+						export interface GetPersonInput {
+							id: ID
+						}
+						export interface UpdatePersonInput {
+							where: {
+								id: ID
+							}
+							values: {
+								title: string
+								subTitle?: string
+							}
 						}
 						export interface AuthenticateInput {
 							createIfNotExists?: boolean
@@ -375,7 +401,7 @@ actual:
 				if !strings.Contains(actual, expected) {
 					actualPartial := matchPartial(actual, expected)
 					diff := diffmatchpatch.New()
-					diffs := diff.DiffMain(actualPartial, expected, true)
+					diffs := diff.DiffMain(expected, actualPartial, true)
 
 					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff:\n%s\n%s\nActual:\n%s\n%s\n\nExpected:\n%s\n%s\n",
 						t.Name(),
@@ -477,7 +503,7 @@ func matchPartial(full, partial string) string {
 	// we found a match for the first line, so do the diff on this to avoid confusing
 	// diffs between huge lhs and tiny rhs
 	if match {
-		subset := strings.Join(fullLines[loc:MinOf(len(fullLines), loc+len(partialLines))], "\n")
+		subset := strings.Join(fullLines[loc:], "\n")
 
 		return subset
 	}
