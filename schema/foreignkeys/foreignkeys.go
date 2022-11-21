@@ -2,6 +2,7 @@ package foreignkeys
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/parser"
@@ -131,14 +132,19 @@ func IsModelFieldWithSiblingFK(fkInfos []*ForeignKeyInfo, modelName string, fiel
 // IsFkField consults the given foreign key information to tell you if
 // the given field name, in the context of the given model name,
 // is a foreign key field associated with a sibling Owning field.
-// When so, it also tells you the primary key name for the referred-to model.
-func IsFkField(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) (relatedPrimaryKey string, isFKField bool) {
+// When so, it also tells you the dotted-form alternative name.
+// E.g. for AuthorId the dotted-form is "author.id".
+func IsFkField(fkInfos []*ForeignKeyInfo, modelName string, fieldName string) (dottedForm string, isFKField bool) {
 	for _, fkInfo := range fkInfos {
 		if fkInfo.OwningModel.Name.Value != modelName {
 			continue
 		}
 		if fkInfo.ForeignKeyName == fieldName {
-			return fkInfo.ReferredToModelPrimaryKey.Name.Value, true
+			dottedForm := strings.Join([]string{
+				fkInfo.OwningField.Name.Value,
+				fkInfo.ReferredToModelPrimaryKey.Name.Value}, ".")
+
+			return dottedForm, true
 		}
 	}
 	return "", false

@@ -150,6 +150,10 @@ func CreateOperationRequiredFieldsRule(asts []*parser.AST, fkInfo []*foreignkeys
 		requiredFieldsWithAliases := requiredCreateFields(model, fkInfo)
 		createActions := query.ModelCreateActions(model)
 		for _, createAction := range createActions {
+			if createAction.Name.Value == "createPostA" {
+				a := 1
+				_ = a
+			}
 			for _, fld := range requiredFieldsWithAliases {
 				satisfiedByWithInput := requiredFieldInActionWithClause(fld, createAction)
 				satisfiedBySetExpr := satisfiedBySetExpr(fld, model.Name.Value, createAction)
@@ -220,8 +224,7 @@ func requiredCreateFields(model *parser.ModelNode, fkInfo []*foreignkeys.Foreign
 		// So this field is required...
 
 		// A required FK field can be satisfied by its real field name like "authorId", or by "author.id".
-		if relatedPrimaryKey, ok := foreignkeys.IsFkField(fkInfo, model.Name.Value, f.Name.Value); ok {
-			dottedForm := f.Name.Value + "." + relatedPrimaryKey
+		if dottedForm, ok := foreignkeys.IsFkField(fkInfo, model.Name.Value, f.Name.Value); ok {
 			requiredField := requiredField{f.Name.Value, dottedForm}
 			req = append(req, &requiredField)
 		} else {
@@ -247,15 +250,19 @@ func requiredFieldInActionWithClause(requiredField *requiredField, action *parse
 
 // satisfiedBySetExpr returns true if any of the names/aliases in the given requiredField are
 // present in any of the given action's @set expressions as the LHS of an assignment.
-// Another words, is "age" present in a @set that looks like this: person.age = ...
+// E.g
+// @set(mymodel.age =
+// @set(mymodel.authorId =
+
 func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *parser.ActionNode) bool {
-	expressions := operationSetExpressions(action)
-	for _, expr := range expressions {
+	setExpressions := operationSetExpressions(action)
+	for _, expr := range setExpressions {
 		assignment, err := expr.ToAssignmentCondition()
 		if err != nil {
 			continue
 		}
 		lhs := assignment.LHS
+
 		if len(lhs.Ident.Fragments) != 2 {
 			continue
 		}
@@ -263,8 +270,10 @@ func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *
 		if modelName != strcase.ToLowerCamel(modelName) {
 			continue
 		}
+
 		for _, altFieldName := range *requiredField {
 			if fieldName == altFieldName {
+				fmt.Printf("XXXX matching LHS: %s\n", altFieldName)
 				return true
 			}
 		}

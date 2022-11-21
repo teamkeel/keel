@@ -10,12 +10,12 @@ model Post {
     author Author
   }
   operations {
-    create createPostA(content, authorId) 
+    create createPostA() with(content, authorId) 
 
-    create createPostB(content, author.id)
+    create createPostB() with(content, author.id)
 
-    create createPostC(content, theAuthorId: ID) {
-      @set(post.authorId = theAuthorId)
+    create createPostC() with (content, someAuthorId: ID) {
+      @set(post.authorId = someAuthorId)
     }
   }
 }
