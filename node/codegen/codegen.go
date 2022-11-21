@@ -192,30 +192,14 @@ func (g *Generator) sdkTypeDefinitions() string {
 			ModelName:     op.ModelName,
 			IsCustom:      op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
 			WriteInputs: lo.Map(writeInputs, func(i *proto.OperationInput, _ int) *ActionInput {
-				return &ActionInput{
-					Label:      i.Name,
-					Type:       protoTypeToTypeScriptType(i.Type),
-					IsOptional: i.Optional,
-					Mode:       inputModeStringFromInputMode(i.Mode),
-				}
+				return protoInputToActionInput(i)
 			}),
 			ReadInputs: lo.Map(readInputs, func(i *proto.OperationInput, _ int) *ActionInput {
-				return &ActionInput{
-					Label:          i.Name,
-					Type:           protoTypeToTypeScriptType(i.Type),
-					IsOptional:     i.Optional,
-					ConstraintType: constraintTypeForField(i.Type),
-					Mode:           inputModeStringFromInputMode(i.Mode),
-				}
+				return protoInputToActionInput(i)
 			}),
 			// Some operation types will need all of the inputs no matter the mode (including Unknown mode for authenticate actions)
 			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
-				return &ActionInput{
-					Label:      i.Name,
-					Type:       protoTypeToTypeScriptType(i.Type),
-					IsOptional: i.Optional,
-					Mode:       inputModeStringFromInputMode(i.Mode),
-				}
+				return protoInputToActionInput(i)
 			}),
 		}
 	})
@@ -365,6 +349,16 @@ func inputModeStringFromInputMode(inputMode proto.InputMode) InputMode {
 		return InputModeWrite
 	default:
 		return InputModeUnknown
+	}
+}
+
+func protoInputToActionInput(input *proto.OperationInput) *ActionInput {
+	return &ActionInput{
+		Label:          input.Name,
+		Type:           protoTypeToTypeScriptType(input.Type),
+		IsOptional:     input.Optional,
+		ConstraintType: constraintTypeForField(input.Type),
+		Mode:           inputModeStringFromInputMode(input.Mode),
 	}
 }
 
