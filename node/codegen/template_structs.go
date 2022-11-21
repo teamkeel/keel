@@ -39,6 +39,7 @@ type Action struct {
 	Name          string
 	OperationType OperationType // e.g Create / Update etc
 	IsCustom      bool
+	ModelName     string
 	WriteInputs   []*ActionInput
 	ReadInputs    []*ActionInput
 	Inputs        []*ActionInput // includes inputs of Mode type Unknown (authenticate)

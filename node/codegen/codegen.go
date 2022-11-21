@@ -186,6 +186,7 @@ func (g *Generator) sdkTypeDefinitions() string {
 		return &Action{
 			Name:          strcase.ToCamel(op.Name),
 			OperationType: operationTypeForOperation(op),
+			ModelName:     op.ModelName,
 			IsCustom:      op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
 			WriteInputs: lo.Map(writeInputs, func(i *proto.OperationInput, _ int) *ActionInput {
 				return &ActionInput{

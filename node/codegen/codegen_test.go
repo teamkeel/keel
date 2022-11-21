@@ -171,8 +171,44 @@ func TestSdk(t *testing.T) {
 					};`,
 				},
 				{
-					Path:     "index.d.ts",
-					Contents: ``,
+					Path: "index.d.ts",
+					Contents: `
+						export declare type CreatePersonReturnType = Promise<FunctionCreateResponse<Person>>;
+						export declare type CreatePersonCallbackFunction = (inputs: CreatePersonInput, api: API) => CreatePersonReturnType;
+						export declare const CreatePerson: (callback: CreatePersonCallbackFunction) => (inputs: CreatePersonInput, api: API) => CreatePersonReturnType
+						export interface CreatePersonInput {
+							name: string
+							age: number
+						}
+						export declare type UpdatePersonReturnType = Promise<FunctionUpdateResponse<Person>>;
+						export declare type UpdatePersonCallbackFunction = (inputs: UpdatePersonInput, api: API) => UpdatePersonReturnType;
+						export declare const UpdatePerson: (callback: UpdatePersonCallbackFunction) => (inputs: UpdatePersonInput, api: API) => UpdatePersonReturnType
+						export interface UpdatePersonInput {
+							where: {
+								id: ID
+							}
+							values: {
+								name: string
+								age: number
+							}
+						}
+						export declare type DeletePersonReturnType = Promise<FunctionDeleteResponse<Person>>;
+						export declare type DeletePersonCallbackFunction = (inputs: DeletePersonInput, api: API) => DeletePersonReturnType;
+						export declare const DeletePerson: (callback: DeletePersonCallbackFunction) => (inputs: DeletePersonInput, api: API) => DeletePersonReturnType
+						export interface DeletePersonInput {
+							id: ID
+						}
+						export declare type ListPersonReturnType = Promise<FunctionListResponse<Person>>;
+						export declare type ListPersonCallbackFunction = (inputs: ListPersonInput, api: API) => ListPersonReturnType;
+						export declare const ListPerson: (callback: ListPersonCallbackFunction) => (inputs: ListPersonInput, api: API) => ListPersonReturnType
+						export interface ListPersonInput {
+							where: {
+							}
+						}
+						export declare type GetPersonReturnType = Promise<FunctionGetResponse<Person>>;
+						export declare type GetPersonCallbackFunction = (inputs: GetPersonInput, api: API) => GetPersonReturnType;
+						export declare const GetPerson: (callback: GetPersonCallbackFunction) => (inputs: GetPersonInput, api: API) => GetPersonReturnType
+					`,
 				},
 			},
 		},
