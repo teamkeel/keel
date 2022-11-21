@@ -25,7 +25,8 @@ type TestCase struct {
 }
 
 const (
-	DIVIDER string = "=========================================================="
+	DIVIDER               string = "=========================================================="
+	LEVENSHTEIN_THRESHOLD int    = 5 // requires a maximum of five edits between actual and expected to be considered similar
 )
 
 func TestSdk(t *testing.T) {
@@ -617,6 +618,8 @@ func matchActual(actual, expected string) string {
 	matchStart := 0
 	matchEnd := 0
 
+	differ := diffmatchpatch.New()
+
 	// Loop over each expected line, and try to find a match in the actual lines. If there is a match between actual and expected lines in any iteration,
 	// then break execution and take a slice of the actual lines based on how far we iterated through both loops
 expected:
@@ -624,7 +627,10 @@ expected:
 		for aIdx, al := range actualLines {
 			// todo: could make this better by using levenshtein distance calculation to find *very*
 			// similar lines, not just exact matches
-			if al == el {
+			diffs := differ.DiffMain(al, el, false)
+			levenshteinDistance := differ.DiffLevenshtein(diffs)
+
+			if al == el || levenshteinDistance < LEVENSHTEIN_THRESHOLD {
 				match = true
 				matchStart = aIdx - eIdx
 
