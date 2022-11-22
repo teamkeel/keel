@@ -716,7 +716,7 @@ func TestTesting(t *testing.T) {
 					Path: "index.d.ts",
 					Contents: `
 						export declare class PostApi {
-							private query : Query<Post>;
+							private query : Query<SDK.Post>;
 							constructor();
 							create: (inputs: Partial<Omit<SDK.Post, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionCreateResponse<SDK.Post>>
 							where: (conditions: SDK.PostQuery) => ChainableQuery<SDK.Post>

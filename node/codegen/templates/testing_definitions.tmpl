@@ -22,7 +22,7 @@ export declare class Actions {
 export declare const actions : Actions;
 {{- range .Models }}
 export declare class {{ .ApiName }} {
-  private query : Query<{{ .Name }}>;
+  private query : Query<SDK.{{ .Name }}>;
   constructor();
   create: (inputs: Partial<Omit<SDK.{{ .Name }}, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionCreateResponse<SDK.{{ .Name }}>>
   where: (conditions: SDK.{{ .Name }}Query) => ChainableQuery<SDK.{{ .Name }}>
