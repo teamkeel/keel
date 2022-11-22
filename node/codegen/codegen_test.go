@@ -205,19 +205,19 @@ func TestSdk(t *testing.T) {
 				{
 					Path: "index.js",
 					Contents: `
-					export const createPerson = (callback) => (inputs, api) => {
+					export const CreatePerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const updatePerson = (callback) => (inputs, api) => {
+					export const UpdatePerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const deletePerson = (callback) => (inputs, api) => {
+					export const DeletePerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const listPerson = (callback) => (inputs, api) => {
+					export const ListPerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const getPerson = (callback) => (inputs, api) => {
+					export const GetPerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};`,
 				},
