@@ -1,3 +1,10 @@
+# [0.217.0](https://github.com/teamkeel/keel/compare/v0.216.0...v0.217.0) (2022-11-22)
+
+
+### Features
+
+* graphql nested model pagination ([#600](https://github.com/teamkeel/keel/issues/600)) ([93d764e](https://github.com/teamkeel/keel/commit/93d764eedb998350bd619d981f509233ccd5e8fe))
+
 # [0.216.0](https://github.com/teamkeel/keel/compare/v0.215.1...v0.216.0) (2022-11-21)
 
 
