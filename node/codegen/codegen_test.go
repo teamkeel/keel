@@ -625,6 +625,75 @@ func TestTesting(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "testing-model-api-generation",
+			Schema: `
+				model Post {
+					fields {
+						title Text?
+						rating Number
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						class PostApi {
+							constructor() {
+								this.create = async (inputs) => {
+									const q = await this.query()
+									return q.create(inputs);
+								}
+						
+								this.where = (conditions) => {
+									return new ChainableQuery({
+										tableName: 'post',
+										queryResolver: qr,
+										conditions: [conditions],
+										logger: queryLogger,
+									})
+								}
+						
+								this.delete = async (id) => {
+									const q = await this.query()
+									return q.delete(id);
+								}
+						
+								this.findOne = async (query) => {
+									const q = await this.query()
+									return q.findOne(query as any);
+								}
+						
+								this.update = async (id, inputs) => {
+									const q = await this.query()
+									return q.update(id, inputs as any);
+								}
+						
+								this.findMany = async (query) => {
+									const q = await this.query()
+									return q.where(query as any).all();
+								}
+						
+								this.query = async () => {
+									return new Query({
+										tableName: 'post',
+										queryResolver: qr,
+										logger: queryLogger,
+									})
+								}
+							}
+						}
+
+						export const Post = new PostApi();
+					`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
 	}
 
 	runCases(t, cases, func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error) {

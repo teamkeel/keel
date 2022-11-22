@@ -46,46 +46,48 @@ export const actions = new Actions();
 
 {{- range .Models }}
 class {{ .ApiName }} {
-  create = async (inputs) => {
-    const q = await this.query()
-    return q.create(inputs);
-  }
+  constructor() {
+    this.create = async (inputs) => {
+      const q = await this.query()
+      return q.create(inputs);
+    }
 
-  where = (conditions) => {
-    return new ChainableQuery({
-      tableName: '{{ .TableName }}',
-      queryResolver: qr,
-      conditions: [conditions],
-      logger: queryLogger,
-    })
-  }
+    this.where = (conditions) => {
+      return new ChainableQuery({
+        tableName: '{{ .TableName }}',
+        queryResolver: qr,
+        conditions: [conditions],
+        logger: queryLogger,
+      })
+    }
 
-  delete = async (id) => {
-    const q = await this.query()
-    return q.delete(id);
-  }
+    this.delete = async (id) => {
+      const q = await this.query()
+      return q.delete(id);
+    }
 
-  findOne = async (query) => {
-    const q = await this.query()
-    return q.findOne(query as any);
-  }
+    this.findOne = async (query) => {
+      const q = await this.query()
+      return q.findOne(query as any);
+    }
 
-  update = async (id, inputs) => {
-    const q = await this.query()
-    return q.update(id, inputs as any);
-  }
+    this.update = async (id, inputs) => {
+      const q = await this.query()
+      return q.update(id, inputs as any);
+    }
 
-  findMany = async (query) => {
-    const q = await this.query()
-    return q.where(query as any).all();
-  }
+    this.findMany = async (query) => {
+      const q = await this.query()
+      return q.where(query as any).all();
+    }
 
-  query = async () => {
-    return new Query({
-      tableName: '{{ .TableName }}',
-      queryResolver: qr,
-      logger: queryLogger,
-    })
+    this.query = async () => {
+      return new Query({
+        tableName: '{{ .TableName }}',
+        queryResolver: qr,
+        logger: queryLogger,
+      })
+    }
   }
 }
 
