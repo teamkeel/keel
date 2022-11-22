@@ -19,6 +19,7 @@ export declare class Actions {
   {{ .NameLowerCamel }}: (payload) => ReturnTypes.Function{{ .OperationType }}Response<SDK.{{ .ModelName }}>
   {{- end }}
 }
+export declare const actions : Actions;
 {{- range .Models }}
 export declare class {{ .ApiName }} {
   private query : Query<{{ .Name }}>;

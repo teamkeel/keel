@@ -644,6 +644,7 @@ func TestTesting(t *testing.T) {
 							listPosts: (payload) => ReturnTypes.FunctionListResponse<SDK.Post>
 							authenticate: (payload) => ReturnTypes.FunctionAuthenticateResponse<SDK.Identity>
 						}
+						export declare const actions : Actions;
 					`,
 				},
 			},
