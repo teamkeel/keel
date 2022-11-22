@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/99designs/gqlgen v0.17.16
-	github.com/DATA-DOG/go-sqlmock v1.5.0
+	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
 	github.com/aybabtme/orderedjson v0.1.0
 	github.com/bmatcuk/doublestar/v4 v4.2.0
@@ -32,6 +32,7 @@ require (
 	github.com/samber/lo v1.28.0
 	github.com/sanity-io/litter v1.5.5
 	github.com/segmentio/ksuid v1.0.4
+	github.com/sergi/go-diff v1.2.0
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
 	github.com/xeipuuv/gojsonschema v1.2.0
