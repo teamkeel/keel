@@ -29,7 +29,7 @@ Complete documentation and examples for the `@teamkeel/testing` package can be f
 You need the following installed:
 
 - Go `brew install go`
-- Node - first install [`pnpm`](https://pnpm.io/installation) then run `pnpm env use --global lts`
+- Node via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 - [Docker](https://docs.docker.com/desktop/install/mac-install/)
 
 A working setup will look something like this (paths will vary):
