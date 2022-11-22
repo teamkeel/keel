@@ -10,12 +10,27 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 // Represents a model field.
 func Field(field string) *QueryOperand {
 	return &QueryOperand{
 		column: strcase.ToSnake(field),
+	}
+}
+
+// Represents the model's identifier field.
+func IdField() *QueryOperand {
+	return &QueryOperand{
+		column: strcase.ToSnake(parser.ImplicitFieldNameId),
+	}
+}
+
+// Represents the model's identifier field.
+func AllFields() *QueryOperand {
+	return &QueryOperand{
+		column: "*",
 	}
 }
 
@@ -222,14 +237,14 @@ func (query *QueryBuilder) ApplyPaging(page Page) {
 	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
-		query.Where(Field("id"), GreaterThan, Value(page.After))
+		query.Where(IdField(), GreaterThan, Value(page.After))
 	case page.Before != "":
-		query.Where(Field("id"), LessThan, Value(page.Before))
+		query.Where(IdField(), LessThan, Value(page.Before))
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
 	// that helps to determine "hasNextPage".
-	query.AppendOrderBy(Field("id"))
+	query.AppendOrderBy(IdField())
 
 	// Add where condition to implement the page size
 	switch {
@@ -267,7 +282,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	}
 
 	if len(query.selection) == 0 {
-		query.AppendSelect(Field("*"))
+		query.AppendSelect(AllFields())
 	}
 
 	selection = strings.Join(query.selection, ", ")
@@ -565,24 +580,4 @@ func toLowerCamelMaps(maps []map[string]any) []map[string]any {
 		res = append(res, toLowerCamelMap(m))
 	}
 	return res
-}
-
-// A Page describes which page you want from a list of records,
-// in the style of this "Connection" pattern:
-// https://relay.dev/graphql/connections.htm
-//
-// Consider for example, that you previously fetched a page of 10 records
-// and from that previous response you also knew that the last of those 10 records
-// could be referred to with the opaque cursor "abc123". Armed with that information you can
-// ask for the next page of 10 records by setting First to 10, and After to "abc123".
-//
-// To move backwards, you'd set the Last and Before fields instead.
-//
-// When you have no prior positional context you should specify First but leave Before and After to
-// the empty string. This gives you the first N records.
-type Page struct {
-	First  int
-	Last   int
-	After  string
-	Before string
 }

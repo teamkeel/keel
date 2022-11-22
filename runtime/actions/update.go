@@ -63,7 +63,7 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Return the updated row
-	query.AppendReturning(Field("*"))
+	query.AppendReturning(AllFields())
 
 	// Execute database request, expecting a single result
 	result, err := query.

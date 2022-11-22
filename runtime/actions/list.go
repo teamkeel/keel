@@ -3,7 +3,6 @@ package actions
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
 	"github.com/teamkeel/keel/proto"
 )
@@ -101,8 +100,8 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	}
 
 	// Select all columns from this table and distinct on id
-	query.AppendDistinctOn(Field("id"))
-	query.AppendSelect(Field("*"))
+	query.AppendDistinctOn(IdField())
+	query.AppendSelect(AllFields())
 	query.ApplyPaging(page)
 
 	// Execute database request with results
@@ -118,57 +117,4 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 		Results:     results,
 		HasNextPage: hasNextPage,
 	}, nil
-}
-
-// ParsePage extracts page mandate information from the given map and uses it to
-// compose a Page.
-func ParsePage(args map[string]any) (Page, error) {
-	page := Page{}
-
-	if first, ok := args["first"]; ok {
-		asInt, ok := first.(int)
-		if !ok {
-			var err error
-			asInt, err = strconv.Atoi(first.(string))
-			if err != nil {
-				return page, fmt.Errorf("cannot cast this: %v to an int", first)
-			}
-		}
-		page.First = asInt
-	}
-
-	if last, ok := args["last"]; ok {
-		asInt, ok := last.(int)
-		if !ok {
-			var err error
-			asInt, err = strconv.Atoi(last.(string))
-			if err != nil {
-				return page, fmt.Errorf("cannot cast this: %v to an int", last)
-			}
-		}
-		page.Last = asInt
-	}
-
-	if after, ok := args["after"]; ok {
-		asString, ok := after.(string)
-		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to a string", after)
-		}
-		page.After = asString
-	}
-
-	if before, ok := args["before"]; ok {
-		asString, ok := before.(string)
-		if !ok {
-			return page, fmt.Errorf("cannot cast this: %v to a string", before)
-		}
-		page.Before = asString
-	}
-
-	// If none specified - use a sensible default
-	if page.First == 0 && page.Last == 0 {
-		page = Page{First: 50}
-	}
-
-	return page, nil
 }

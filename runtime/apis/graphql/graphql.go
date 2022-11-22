@@ -145,7 +145,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 
 					// Create a new query for that parent or child model
 					query := actions.NewQuery(relatedModel)
-					query.AppendSelect(actions.Field("*"))
+					query.AppendSelect(actions.AllFields())
 
 					if relatedModelField.ForeignKeyFieldName != nil {
 						// A M:1 relationship lookup
@@ -160,7 +160,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 							return nil, fmt.Errorf("the foreign key does not exist in source value map: %s", foreignKeyField)
 						}
 
-						query.Where(actions.Field("id"), actions.Equals, actions.Value(id))
+						query.Where(actions.IdField(), actions.Equals, actions.Value(id))
 						result, err := query.
 							SelectStatement().
 							ExecuteAsSingle(p.Context)
@@ -199,8 +199,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						}
 
 						// Select all columns from this table and distinct on id
-						query.AppendDistinctOn(actions.Field("id"))
-						query.AppendSelect(actions.Field("*"))
+						query.AppendDistinctOn(actions.IdField())
+						query.AppendSelect(actions.AllFields())
 						query.ApplyPaging(page)
 
 						results, _, hasNextPage, err := query.

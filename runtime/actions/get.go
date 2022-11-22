@@ -33,8 +33,8 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Select all columns and distinct on id
-	query.AppendSelect(Field("*"))
-	query.AppendDistinctOn(Field("id"))
+	query.AppendSelect(AllFields())
+	query.AppendDistinctOn(IdField())
 
 	// Execute database request, expecting a single result
 	result, err := query.
