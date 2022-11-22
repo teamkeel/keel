@@ -25,6 +25,7 @@ type TestCase struct {
 }
 
 const (
+	NO_CONTENT            string = "[NO-CONTENT]" // used to denote that an expected file should be empty, and therefore skipped
 	DIVIDER               string = "=========================================================="
 	LEVENSHTEIN_THRESHOLD int    = 5 // requires a maximum of five edits between actual and expected to be considered similar
 )
@@ -62,6 +63,24 @@ func TestSdk(t *testing.T) {
 							FunctionUpdateResponse,
 							FunctionAuthenticateResponse
 						} from '@teamkeel/functions-runtime';
+					`,
+				},
+			},
+		},
+		{
+			Name: "base-types",
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						const queryLogger = new Logger();
+					`,
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export declare type ID = string
+						export declare type Timestamp = string
 					`,
 				},
 			},
@@ -186,19 +205,19 @@ func TestSdk(t *testing.T) {
 				{
 					Path: "index.js",
 					Contents: `
-					export const createPerson = (callback) => (inputs, api) => {
+					export const CreatePerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const updatePerson = (callback) => (inputs, api) => {
+					export const UpdatePerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const deletePerson = (callback) => (inputs, api) => {
+					export const DeletePerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const listPerson = (callback) => (inputs, api) => {
+					export const ListPerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};
-					export const getPerson = (callback) => (inputs, api) => {
+					export const GetPerson = (callback) => (inputs, api) => {
 						return callback(inputs, api);
 					};`,
 				},
@@ -257,7 +276,7 @@ func TestSdk(t *testing.T) {
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
 					Path:     "index.js",
-					Contents: "",
+					Contents: NO_CONTENT,
 				},
 				{
 					Path: "index.d.ts",
@@ -285,7 +304,7 @@ func TestSdk(t *testing.T) {
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
 					Path:     "index.js",
-					Contents: "",
+					Contents: NO_CONTENT,
 				},
 				{
 					Path: "index.d.ts",
@@ -326,7 +345,7 @@ func TestSdk(t *testing.T) {
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
 					Path:     "index.js",
-					Contents: "",
+					Contents: NO_CONTENT,
 				},
 				{
 					Path: "index.d.ts",
@@ -375,8 +394,36 @@ func TestSdk(t *testing.T) {
 			`,
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
-					Path:     "index.js",
-					Contents: "",
+					Path: "index.js",
+					Contents: `
+						export class PersonApi {
+							constructor() {
+								this.create = async (inputs) => {
+									return this.db.create(inputs);
+								};
+								this.where = (conditions) => {
+									return this.db.where(conditions);
+								};
+								this.delete = (id) => {
+									return this.db.delete(id);
+								};
+								this.findOne = (query) => {
+									return this.db.findOne(query);
+								};
+								this.update = (id, inputs) => {
+									return this.db.update(id, inputs);
+								};
+								this.findMany = (query) => {
+									return this.db.where(query).all();
+								};
+								this.db = new Query({
+									tableName: 'person',
+									queryResolver: queryResolverFromEnv(process.env),
+									logger: queryLogger
+								});
+							}
+						}
+					`,
 				},
 				{
 					Path: "index.d.ts",
@@ -411,8 +458,16 @@ func TestSdk(t *testing.T) {
 			`,
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
-					Path:     "index.js",
-					Contents: "",
+					Path: "index.js",
+					Contents: `
+						export const api = {
+							models: {
+								person: new PersonApi(),
+								author: new AuthorApi(),
+								identity: new IdentityApi(),
+							}
+						}
+					`,
 				},
 				{
 					Path: "index.d.ts",
@@ -437,7 +492,209 @@ func TestSdk(t *testing.T) {
 }
 
 func TestTesting(t *testing.T) {
-	cases := []TestCase{}
+	cases := []TestCase{
+		{
+			Name: "imports",
+			Schema: `
+				model Foo {}
+			`,
+			ExpectedFiles: []*codegenerator.SourceCode{
+				{
+					Path: "index.js",
+					Contents: `
+						import {
+							Logger,
+							queryResolverFromEnv,
+						} from '@teamkeel/functions-runtime';
+						import { ActionExecutor } from '@teamkeel/functions-testing';
+					`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
+		{
+			Name: "plumbing",
+			Schema: `
+				model Foo {}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						const qr = queryResolverFromEnv(process.env);
+						const parentPort = parseInt(process.env.PARENT_PORT, 10);
+						const host = process.env.HOST || 'localhost';
+						const queryLogger = new Logger();
+						const actionExecutor = new ActionExecutor({ parentPort, host });
+					`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
+		{
+			Name: "action-generation-operations",
+			Schema: `
+				model Post {
+					fields {
+						title Text
+					}
+
+					operations {
+						create createPost() with(title)
+						update updatePost(id) with(title)
+						delete deletePost(id)
+						list listPosts()
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+					class ActionsWithIdentity {
+						constructor(identity) {
+							if (identity === undefined) {
+								throw new Error('valid identity was not provided to withIdentity.');
+							}
+							this.identity = identity;
+							this.createPost = async (payload) => await actionExecutor.execute({
+								actionName: "createPost",
+								payload,
+								identity: this.identity,
+							});
+							this.updatePost = async (payload) => await actionExecutor.execute({
+								actionName: "updatePost",
+								payload,
+								identity: this.identity,
+							});
+							this.deletePost = async (payload) => await actionExecutor.execute({
+								actionName: "deletePost",
+								payload,
+								identity: this.identity,
+							});
+							this.listPosts = async (payload) => await actionExecutor.execute({
+								actionName: "listPosts",
+								payload,
+								identity: this.identity,
+							});
+							this.authenticate = async (payload) => await actionExecutor.execute({
+								actionName: "authenticate",
+								payload,
+								identity: this.identity,
+							});
+						}
+					}
+					export class Actions {
+						constructor() {
+							this.withIdentity = (identity) => {
+								return new ActionsWithIdentity(identity);
+							};
+							this.createPost = async (payload) => await actionExecutor.execute({
+								actionName: "createPost",
+								payload,
+							});
+							this.updatePost = async (payload) => await actionExecutor.execute({
+								actionName: "updatePost",
+								payload,
+							});
+							this.deletePost = async (payload) => await actionExecutor.execute({
+								actionName: "deletePost",
+								payload,
+							});
+							this.listPosts = async (payload) => await actionExecutor.execute({
+								actionName: "listPosts",
+								payload,
+							});
+							this.authenticate = async (payload) => await actionExecutor.execute({
+								actionName: "authenticate",
+								payload,
+							});
+						}
+					}
+					export const actions = new Actions();`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
+		{
+			Name: "testing-model-api-generation",
+			Schema: `
+				model Post {
+					fields {
+						title Text?
+						rating Number
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						class PostApi {
+							constructor() {
+								this.create = async (inputs) => {
+									const q = await this.query()
+									return q.create(inputs);
+								}
+						
+								this.where = (conditions) => {
+									return new ChainableQuery({
+										tableName: 'post',
+										queryResolver: qr,
+										conditions: [conditions],
+										logger: queryLogger,
+									})
+								}
+						
+								this.delete = async (id) => {
+									const q = await this.query()
+									return q.delete(id);
+								}
+						
+								this.findOne = async (query) => {
+									const q = await this.query()
+									return q.findOne(query as any);
+								}
+						
+								this.update = async (id, inputs) => {
+									const q = await this.query()
+									return q.update(id, inputs as any);
+								}
+						
+								this.findMany = async (query) => {
+									const q = await this.query()
+									return q.where(query as any).all();
+								}
+						
+								this.query = async () => {
+									return new Query({
+										tableName: 'post',
+										queryResolver: qr,
+										logger: queryLogger,
+									})
+								}
+							}
+						}
+
+						export const Post = new PostApi();
+					`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
+	}
 
 	runCases(t, cases, func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error) {
 		return cg.GenerateTesting()
@@ -535,6 +792,10 @@ func compareFiles(t *testing.T, tc TestCase, generatedFiles []*codegenerator.Gen
 actual:
 	for _, actualFile := range generatedFiles {
 		for _, expectedFile := range tc.ExpectedFiles {
+			if expectedFile.Contents == NO_CONTENT {
+				continue actual
+			}
+
 			if actualFile.Path == expectedFile.Path {
 				assert.Contains(t, normaliseString(actualFile.Contents), normaliseString(expectedFile.Contents))
 
@@ -555,15 +816,21 @@ actual:
 					// portion of the actual string for diff display.
 					diff := diffmatchpatch.New()
 					match := matchActual(actual, expected)
-					diffs := diff.DiffMain(match, expected, false)
 
-					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff:\n%s\n%s\nActual:\n%s\n%s\n\nExpected:\n%s\n%s\n",
+					// expected goes first in the diff order below so that things missing in actual
+					// are shown as deletions rather than additions
+					diffs := diff.DiffMain(expected, match, false)
+
+					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff (%s):\n%s\n%s\n\nActual (%s):\n%s\n%s\n\nExpected (%s):\n%s\n%s\n",
 						t.Name(),
 						DIVIDER,
+						expectedFile.Path,
 						DIVIDER,
 						diff.DiffPrettyText(diffs),
+						actualFile.Path,
 						DIVIDER,
 						actual,
+						expectedFile.Path,
 						DIVIDER,
 						expected,
 					)
@@ -581,6 +848,10 @@ actual:
 	// where there are files in the actual that are not in the expected array
 expected:
 	for _, expectedFile := range tc.ExpectedFiles {
+		if expectedFile.Contents == NO_CONTENT {
+			continue
+		}
+
 		for _, actualFile := range generatedFiles {
 			if actualFile.Path == expectedFile.Path {
 				continue expected
@@ -678,9 +949,16 @@ expected:
 	}
 
 	if match {
-		matchingLines := strings.Join(actualLines[matchStart:matchEnd], "\n")
+		matchingLines := strings.Join(actualLines[matchStart:min(matchEnd, len(actualLines))], "\n")
 		return matchingLines
 	}
 
 	return strings.Join(actualLines, "\n")
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
