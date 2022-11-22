@@ -227,9 +227,6 @@ func (scm *Builder) insertForeignKeyFields(
 				continue
 			}
 
-			// The generated foreign key field is optional if the owning field is.
-			owningFieldIsOptional := field.Optional
-
 			referredToModelName := strcase.ToCamel(field.Type)
 			referredToModel := query.Model(asts, referredToModelName)
 
@@ -251,7 +248,7 @@ func (scm *Builder) insertForeignKeyFields(
 
 			fkField := &parser.FieldNode{
 				BuiltIn:  true,
-				Optional: owningFieldIsOptional,
+				Optional: field.Optional,
 				Name: parser.NameNode{
 					Value: generatedForeignKeyName,
 				},
@@ -262,7 +259,6 @@ func (scm *Builder) insertForeignKeyFields(
 			fkInfo := &parser.ForeignKeyAssociation{
 				OwningModel:               mdl,
 				OwningField:               field,
-				OwningFieldIsOptional:     owningFieldIsOptional,
 				ReferredToModel:           referredToModel,
 				ReferredToModelPrimaryKey: referredToModelPK,
 				ForeignKeyName:            generatedForeignKeyName,
