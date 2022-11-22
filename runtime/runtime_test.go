@@ -356,6 +356,54 @@ const fieldTypes string = `
 	}
 `
 
+const relationships string = `
+	model BlogPost {
+		fields {
+			title Text
+			author Author
+		}
+		operations {
+			get getPost(id)
+		}
+		@permission(
+			expression: true,
+			actions: [get]
+		)
+	}
+	
+	model Author {
+		fields {
+			name Text
+			posts BlogPost[]
+			publisher Publisher
+		}
+		operations {
+			get getAuthor(id)
+			list listAuthors(name)
+			update updateAuthor(id) with (name)
+		}
+		@permission(
+			expression: true,
+			actions: [get, list, update]
+		)
+	}
+
+	model Publisher {
+		fields {
+			organisation Text
+		}
+	}
+
+	api Test {
+		@graphql
+		models {
+			Post
+			Author
+			Publisher
+		}
+	}		
+`
+
 // testCases is a list of testCase that is good for the top level test suite to
 // iterate over.
 var testCases = []testCase{
@@ -1283,6 +1331,605 @@ var testCases = []testCase{
 			require.True(t, ok)
 			require.Len(t, edgesList, 1)
 
+		},
+	},
+	{
+		name:       "get_operation_relationship_belongs_to",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query GetAuthor($authorId: ID!) {
+				getAuthor(input: { id: $authorId }) {
+					id
+					name
+					publisher {
+						id
+						organisation
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"authorId": "author_1",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			authorId := rtt.GetValueAtPath(t, data, "getAuthor.id")
+			require.Equal(t, "author_1", authorId)
+
+			rtt.AssertValueAtPath(t, data, "getAuthor.publisher.id", "publisher_1")
+			rtt.AssertValueAtPath(t, data, "getAuthor.publisher.organisation", "Keelson Publishers")
+		},
+	},
+	{
+		name:       "get_operation_relationships_has_many_page_1",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_2",
+					"title":    "Keelson Second Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_3",
+					"title":    "Keelson Third Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_4",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query GetAuthor($authorId: ID!, $first: Int!) {
+				getAuthor(input: { id: $authorId }) {
+					id
+					name
+					posts(first: $first) {
+						edges {
+						  node {
+							id
+							title
+						  }
+						}
+						pageInfo {
+							hasNextPage
+							startCursor
+							endCursor
+						}
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"authorId": "author_1",
+			"first":    2,
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getAuthor.id", "author_1")
+
+			posts := rtt.GetValueAtPath(t, data, "getAuthor.posts.edges").([]any)
+			require.Len(t, posts, 2)
+
+			first := posts[0].(map[string]any)
+			rtt.AssertValueAtPath(t, first, "node.id", "post_1")
+			rtt.AssertValueAtPath(t, first, "node.title", "Keelson First Post")
+
+			second := posts[1].(map[string]any)
+			rtt.AssertValueAtPath(t, second, "node.id", "post_2")
+			rtt.AssertValueAtPath(t, second, "node.title", "Keelson Second Post")
+
+			// Check the correctness of the returned page metadata
+			pageInfo := rtt.GetValueAtPath(t, data, "getAuthor.posts.pageInfo")
+			pageInfoMap, ok := pageInfo.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_1")
+			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_2")
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+		},
+	},
+	{
+		name:       "get_operation_relationships_has_many_page_2",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_2",
+					"title":    "Keelson Second Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_3",
+					"title":    "Keelson Third Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_4",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+				query GetAuthor($authorId: ID!, $first: Int!, $after: String!) {
+					getAuthor(input: { id: $authorId }) {
+						id
+						name
+						posts(first: $first, after: $after) {
+							edges {
+							  node {
+								id
+								title
+							  }
+							}
+							pageInfo {
+								hasNextPage
+								startCursor
+								endCursor
+							}
+						}
+					}
+				 }`,
+		variables: map[string]any{
+			"authorId": "author_1",
+			"first":    2,
+			"after":    "post_2",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getAuthor.id", "author_1")
+
+			posts := rtt.GetValueAtPath(t, data, "getAuthor.posts.edges").([]any)
+			require.Len(t, posts, 1)
+
+			first := posts[0].(map[string]any)
+			rtt.AssertValueAtPath(t, first, "node.id", "post_3")
+			rtt.AssertValueAtPath(t, first, "node.title", "Keelson Third Post")
+
+			// Check the correctness of the returned page metadata
+			pageInfo := rtt.GetValueAtPath(t, data, "getAuthor.posts.pageInfo")
+			pageInfoMap, ok := pageInfo.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_3")
+			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_3")
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", false)
+		},
+	},
+	{
+		name:       "list_operation_relationships_has_many_page_1",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_2",
+					"title":    "Keelson Second Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_3",
+					"title":    "Keelson Third Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_4",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query ListAuthors($authorName: String!, $first: Int!) {
+				listAuthors(input: { where: { name: { equals: $authorName } } }) {
+					edges {
+						node {
+							id
+							name
+							posts(first: $first) {
+								edges {
+								  node {
+									id
+									title
+								  }
+								}
+								pageInfo {
+									hasNextPage
+									startCursor
+									endCursor
+								}
+							}
+						}
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"authorName": "Keelson",
+			"first":      2,
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			authors := rtt.GetValueAtPath(t, data, "listAuthors.edges").([]any)
+			require.Len(t, authors, 1)
+
+			author := authors[0].(map[string]any)
+			rtt.AssertValueAtPath(t, author, "node.id", "author_1")
+			rtt.AssertValueAtPath(t, author, "node.name", "Keelson")
+
+			posts := rtt.GetValueAtPath(t, author, "node.posts.edges").([]any)
+			require.Len(t, posts, 2)
+
+			first := posts[0].(map[string]any)
+			rtt.AssertValueAtPath(t, first, "node.id", "post_1")
+			rtt.AssertValueAtPath(t, first, "node.title", "Keelson First Post")
+
+			second := posts[1].(map[string]any)
+			rtt.AssertValueAtPath(t, second, "node.id", "post_2")
+			rtt.AssertValueAtPath(t, second, "node.title", "Keelson Second Post")
+
+			// Check the correctness of the returned page metadata
+			pageInfo := rtt.GetValueAtPath(t, author, "node.posts.pageInfo")
+			pageInfoMap, ok := pageInfo.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_1")
+			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_2")
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+		},
+	},
+	{
+		name:       "list_operation_relationships_has_many_page_2",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_2",
+					"title":    "Keelson Second Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_3",
+					"title":    "Keelson Third Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_4",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query ListAuthors($authorName: String!, $first: Int!, $after: String!) {
+				listAuthors(input: { where: { name: { equals: $authorName } } }) {
+					edges {
+						node {
+							id
+							name
+							posts(first: $first, after: $after) {
+								edges {
+								  node {
+									id
+									title
+								  }
+								}
+								pageInfo {
+									hasNextPage
+									startCursor
+									endCursor
+								}
+							}
+						}
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"authorName": "Keelson",
+			"first":      2,
+			"after":      "post_2",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			authors := rtt.GetValueAtPath(t, data, "listAuthors.edges").([]any)
+			require.Len(t, authors, 1)
+
+			author := authors[0].(map[string]any)
+			rtt.AssertValueAtPath(t, author, "node.id", "author_1")
+			rtt.AssertValueAtPath(t, author, "node.name", "Keelson")
+
+			posts := rtt.GetValueAtPath(t, author, "node.posts.edges").([]any)
+			require.Len(t, posts, 1)
+
+			first := posts[0].(map[string]any)
+			rtt.AssertValueAtPath(t, first, "node.id", "post_3")
+			rtt.AssertValueAtPath(t, first, "node.title", "Keelson Third Post")
+
+			// Check the correctness of the returned page metadata
+			pageInfo := rtt.GetValueAtPath(t, author, "node.posts.pageInfo")
+			pageInfoMap, ok := pageInfo.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_3")
+			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_3")
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", false)
+		},
+	},
+	{
+		name:       "update_operation_relationships",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_2",
+					"title":    "Keelson Second Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_3",
+					"title":    "Keelson Third Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_4",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			mutation UpdateAuthor($authorId: ID!, $authorName: String!, $first: Int!) {
+				updateAuthor(input: { where: { id: $authorId }, values: { name: $authorName } }) {
+					id
+					name
+					posts(first: $first) {
+						edges {
+						  node {
+							id
+							title
+						  }
+						}
+						pageInfo {
+							hasNextPage
+							startCursor
+							endCursor
+						}
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"authorId":   "author_1",
+			"authorName": "Keeeeelson",
+			"first":      2,
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "updateAuthor.id", "author_1")
+			rtt.AssertValueAtPath(t, data, "updateAuthor.name", "Keeeeelson")
+
+			posts := rtt.GetValueAtPath(t, data, "updateAuthor.posts.edges").([]any)
+			require.Len(t, posts, 2)
+
+			first := posts[0].(map[string]any)
+			rtt.AssertValueAtPath(t, first, "node.id", "post_1")
+			rtt.AssertValueAtPath(t, first, "node.title", "Keelson First Post")
+
+			second := posts[1].(map[string]any)
+			rtt.AssertValueAtPath(t, second, "node.id", "post_2")
+			rtt.AssertValueAtPath(t, second, "node.title", "Keelson Second Post")
+
+			// Check the correctness of the returned page metadata
+			pageInfo := rtt.GetValueAtPath(t, data, "updateAuthor.posts.pageInfo")
+			pageInfoMap, ok := pageInfo.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_1")
+			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_2")
+			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
 		},
 	},
 }
