@@ -7,7 +7,6 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/formatting"
-	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -17,7 +16,7 @@ var (
 	reservedFieldNames = []string{"id", "createdAt", "updatedAt"}
 )
 
-func ReservedNameRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func ReservedNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
@@ -43,7 +42,7 @@ func ReservedNameRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) 
 	return
 }
 
-func FieldNamingRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func FieldNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
 			if field.BuiltIn {
@@ -64,7 +63,7 @@ func FieldNamingRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (
 	return
 }
 
-func UniqueFieldNamesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func UniqueFieldNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		fieldNames := map[string]bool{}
 		for _, field := range query.ModelFields(model) {
@@ -90,7 +89,7 @@ func UniqueFieldNamesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyIn
 	return
 }
 
-func ValidFieldTypesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
 

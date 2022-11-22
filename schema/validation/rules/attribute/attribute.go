@@ -7,7 +7,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/expressions"
-	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -16,7 +15,7 @@ import (
 
 // attributeLocationsRule checks that attributes are used in valid places
 // For example it's invalid to use a @where attribute inside a model definition
-func AttributeLocationsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func AttributeLocationsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, section := range model.Sections {
 			if section.Attribute != nil {
@@ -110,7 +109,7 @@ func checkAttributes(attributes []*parser.AttributeNode, definedOn string, paren
 	return
 }
 
-func PermissionAttributeRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func PermissionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, attr := range query.ModelAttributes(model) {
 			if attr.Name.Value != parser.AttributePermission {
@@ -134,7 +133,7 @@ func PermissionAttributeRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKe
 	return
 }
 
-func ValidateAttributeRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func ValidateAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, attr := range action.Attributes {
@@ -152,7 +151,7 @@ func ValidateAttributeRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyI
 	return
 }
 
-func SetWhereAttributeRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, attr := range action.Attributes {
@@ -387,7 +386,7 @@ func validateIdentArray(expr *parser.Expression, allowedIdents []string) (errs e
 	return
 }
 
-func UniqueAttributeArgsRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func UniqueAttributeArgsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
 

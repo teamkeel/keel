@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
-	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -16,7 +15,7 @@ var (
 	reservedModelNames = []string{"query"}
 )
 
-func ModelNamingRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func ModelNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		// todo - these MustCompile regex would be better at module scope, to
 		// make the MustCompile panic a load-time thing rather than a runtime thing.
@@ -39,7 +38,7 @@ func ModelNamingRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (
 	return
 }
 
-func ReservedModelNamesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func ReservedModelNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, name := range reservedModelNames {
 			if strings.EqualFold(name, model.Name.Value) {
@@ -57,7 +56,7 @@ func ReservedModelNamesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKey
 	return
 }
 
-func UniqueModelNamesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func UniqueModelNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	seenModelNames := map[string]bool{}
 
 	for _, model := range query.Models(asts) {

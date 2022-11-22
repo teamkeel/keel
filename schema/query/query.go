@@ -280,3 +280,31 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 
 	return field
 }
+
+// PrimaryKey gives you the name of the primary key field on the given
+// model. It favours fields that have the AttributePrimaryKey attribute,
+// but drops back to the id field if none have.
+func PrimaryKey(model string, asts []*parser.AST) string {
+	for _, model := range Models(asts) {
+		potentialFields := ModelFields(model)
+		for _, field := range potentialFields {
+			if FieldHasAttribute(field, parser.AttributePrimaryKey) {
+				return field.Name.Value
+			}
+		}
+	}
+	return parser.ImplicitFieldNameId
+}
+
+// IsHasOneModelField returns true if the given field can be inferred to be
+// a field that references another model, and is not denoted as being repeated.
+func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
+	switch {
+	case !IsModel(asts, field.Type):
+		return false
+	case field.Repeated:
+		return false
+	default:
+		return true
+	}
+}

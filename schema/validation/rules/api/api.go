@@ -1,13 +1,12 @@
 package api
 
 import (
-	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func UniqueAPINamesRule(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) (errs errorhandling.ValidationErrors) {
+func UniqueAPINamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	seenAPINames := map[string]bool{}
 
 	for _, api := range query.APIs(asts) {

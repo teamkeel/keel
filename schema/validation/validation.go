@@ -1,7 +1,6 @@
 package validation
 
 import (
-	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 	"github.com/teamkeel/keel/schema/validation/rules/actions"
@@ -31,7 +30,7 @@ func NewValidator(asts []*parser.AST) *Validator {
 // of *parser.Schema objects - to match up with a user's schema likely
 // being written across N files.
 
-type validationFunc func(asts []*parser.AST, fkInfo []*foreignkeys.ForeignKeyInfo) errorhandling.ValidationErrors
+type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
 	// Begin base model validations
@@ -72,11 +71,11 @@ var validatorFuncs = []validationFunc{
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
 }
 
-func (v *Validator) RunAllValidators(fkInfo []*foreignkeys.ForeignKeyInfo) (errs *errorhandling.ValidationErrors) {
+func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
 	errs = &errorhandling.ValidationErrors{}
 
 	for _, vf := range validatorFuncs {
-		errs.Concat(vf(v.asts, fkInfo))
+		errs.Concat(vf(v.asts))
 	}
 
 	if len(errs.Errors) == 0 {

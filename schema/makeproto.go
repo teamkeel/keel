@@ -5,14 +5,13 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) set of parsed AST.
-func (scm *Builder) makeProtoModels(fkInfo []*foreignkeys.ForeignKeyInfo) *proto.Schema {
+func (scm *Builder) makeProtoModels() *proto.Schema {
 	protoSchema := &proto.Schema{}
 
 	for _, parserSchema := range scm.asts {
@@ -35,9 +34,6 @@ func (scm *Builder) makeProtoModels(fkInfo []*foreignkeys.ForeignKeyInfo) *proto
 			}
 		}
 	}
-	// Now that the proto models are built and accessible in the protoSchema, we go back over them,
-	// governed by the given ForeignKeyInfo, in order to update various foreign key related data.
-	scm.updateForeignKeyInfo(fkInfo, protoSchema)
 
 	return protoSchema
 }
@@ -222,6 +218,24 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 	}
 
 	scm.applyFieldAttributes(parserField, protoField)
+
+	// Apply data about relationship fields captured during the parsing phase.
+
+	if fki := parserField.FkInfo; fki != nil {
+		switch {
+		// This is a foreign key field
+		case protoField.Name == fki.ForeignKeyName:
+			protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
+				RelatedModelName:  fki.ReferredToModel.Name.Value,
+				RelatedModelField: fki.ReferredToModelPrimaryKey,
+			}
+
+			// This is model field that "owns" a FK field.
+		case protoField.Name == fki.OwningField.Name.Value:
+			protoField.ForeignKeyFieldName = wrapperspb.String(fki.ForeignKeyName)
+		}
+	}
+
 	return protoField
 }
 
@@ -483,28 +497,5 @@ func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
 		return proto.ApiType_API_TYPE_RPC
 	default:
 		return proto.ApiType_API_TYPE_UNKNOWN
-	}
-}
-
-// updateForeignKeyInfo updates relevant fields with information concerning foreign keys in accordance with the
-// guidance provided by the given ForeignKeyInfo(s)
-func (scm *Builder) updateForeignKeyInfo(fkInfos []*foreignkeys.ForeignKeyInfo, schema *proto.Schema) {
-	for _, fkInfo := range fkInfos {
-
-		// Tell the "owning" type-Model field the name of its sister field that carries the corresponding
-		// foreign key values.
-		owningField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, fkInfo.OwningField.Name.Value)
-		owningField.ForeignKeyFieldName = wrapperspb.String(fkInfo.ForeignKeyName)
-
-		// Find the auto-generated, *actual* foreign key field and attach the relevant meta data to it.
-		fkField := proto.FindField(schema.Models, fkInfo.OwningModel.Name.Value, owningField.ForeignKeyFieldName.Value)
-
-		relatedModel := proto.FindModel(schema.Models, fkInfo.ReferredToModel.Name.Value)
-		relatedModelPkFieldName := proto.PrimaryKeyFieldName(relatedModel)
-
-		fkField.ForeignKeyInfo = &proto.ForeignKeyInfo{
-			RelatedModelName:  fkInfo.ReferredToModel.Name.Value,
-			RelatedModelField: relatedModelPkFieldName,
-		}
 	}
 }
