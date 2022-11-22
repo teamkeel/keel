@@ -224,15 +224,15 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 	if fki := parserField.FkInfo; fki != nil {
 		switch {
 		// This is a foreign key field
-		case protoField.Name == fki.ForeignKeyName:
+		case protoField.Name == fki.ForeignKeyField.Name.Value:
 			protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
 				RelatedModelName:  fki.ReferredToModel.Name.Value,
-				RelatedModelField: fki.ReferredToModelPrimaryKey,
+				RelatedModelField: fki.ReferredToModelPrimaryKey.Name.Value,
 			}
 
 			// This is model field that "owns" a FK field.
 		case protoField.Name == fki.OwningField.Name.Value:
-			protoField.ForeignKeyFieldName = wrapperspb.String(fki.ForeignKeyName)
+			protoField.ForeignKeyFieldName = wrapperspb.String(fki.ForeignKeyField.Name.Value)
 		}
 	}
 

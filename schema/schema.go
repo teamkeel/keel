@@ -244,7 +244,7 @@ func (scm *Builder) insertForeignKeyFields(
 
 			// This is the single source of truth for how we name foreign key fields.
 			// Later on, we'll let the the user name them in the schema language.
-			generatedForeignKeyName := field.Name.Value + strcase.ToCamel(referredToModelPK)
+			generatedForeignKeyName := field.Name.Value + strcase.ToCamel(referredToModelPK.Name.Value)
 
 			fkField := &parser.FieldNode{
 				BuiltIn:  true,
@@ -261,7 +261,7 @@ func (scm *Builder) insertForeignKeyFields(
 				OwningField:               field,
 				ReferredToModel:           referredToModel,
 				ReferredToModelPrimaryKey: referredToModelPK,
-				ForeignKeyName:            generatedForeignKeyName,
+				ForeignKeyField:           fkField,
 			}
 
 			fkField.FkInfo = fkInfo

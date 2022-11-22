@@ -179,10 +179,10 @@ func requiredCreateFields(model *parser.ModelNode) []*requiredField {
 		// We conclude this field IS required.
 
 		// A required FK field can be satisfied by its real field name like "authorId", or by "author.id".
-		if f.FkInfo != nil && f.FkInfo.ForeignKeyName == f.Name.Value {
+		if f.FkInfo != nil && f.FkInfo.ForeignKeyField == f {
 			dottedForm := strings.Join([]string{
 				f.FkInfo.OwningField.Name.Value,
-				f.FkInfo.ReferredToModelPrimaryKey}, ".")
+				f.FkInfo.ReferredToModelPrimaryKey.Name.Value}, ".")
 			requiredField := requiredField{f.Name.Value, dottedForm}
 			req = append(req, &requiredField)
 		} else {
