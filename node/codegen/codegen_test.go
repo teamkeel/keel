@@ -25,6 +25,7 @@ type TestCase struct {
 }
 
 const (
+	NO_CONTENT            string = "[NO-CONTENT]" // used to denote that an expected file should be empty, and therefore skipped
 	DIVIDER               string = "=========================================================="
 	LEVENSHTEIN_THRESHOLD int    = 5 // requires a maximum of five edits between actual and expected to be considered similar
 )
@@ -62,6 +63,24 @@ func TestSdk(t *testing.T) {
 							FunctionUpdateResponse,
 							FunctionAuthenticateResponse
 						} from '@teamkeel/functions-runtime';
+					`,
+				},
+			},
+		},
+		{
+			Name: "base-types",
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						const queryLogger = new Logger();
+					`,
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export declare type ID = string
+						export declare type Timestamp = string
 					`,
 				},
 			},
@@ -257,7 +276,7 @@ func TestSdk(t *testing.T) {
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
 					Path:     "index.js",
-					Contents: "",
+					Contents: NO_CONTENT,
 				},
 				{
 					Path: "index.d.ts",
@@ -285,7 +304,7 @@ func TestSdk(t *testing.T) {
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
 					Path:     "index.js",
-					Contents: "",
+					Contents: NO_CONTENT,
 				},
 				{
 					Path: "index.d.ts",
@@ -326,7 +345,7 @@ func TestSdk(t *testing.T) {
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
 					Path:     "index.js",
-					Contents: "",
+					Contents: NO_CONTENT,
 				},
 				{
 					Path: "index.d.ts",
@@ -375,8 +394,36 @@ func TestSdk(t *testing.T) {
 			`,
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
-					Path:     "index.js",
-					Contents: "",
+					Path: "index.js",
+					Contents: `
+						export class PersonApi {
+							constructor() {
+								this.create = async (inputs) => {
+									return this.db.create(inputs);
+								};
+								this.where = (conditions) => {
+									return this.db.where(conditions);
+								};
+								this.delete = (id) => {
+									return this.db.delete(id);
+								};
+								this.findOne = (query) => {
+									return this.db.findOne(query);
+								};
+								this.update = (id, inputs) => {
+									return this.db.update(id, inputs);
+								};
+								this.findMany = (query) => {
+									return this.db.where(query).all();
+								};
+								this.db = new Query({
+									tableName: 'person',
+									queryResolver: queryResolverFromEnv(process.env),
+									logger: queryLogger
+								});
+							}
+						}
+					`,
 				},
 				{
 					Path: "index.d.ts",
@@ -411,8 +458,16 @@ func TestSdk(t *testing.T) {
 			`,
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
-					Path:     "index.js",
-					Contents: "",
+					Path: "index.js",
+					Contents: `
+						export const api = {
+							models: {
+								person: new PersonApi(),
+								author: new AuthorApi(),
+								identity: new IdentityApi(),
+							}
+						}
+					`,
 				},
 				{
 					Path: "index.d.ts",
@@ -535,6 +590,10 @@ func compareFiles(t *testing.T, tc TestCase, generatedFiles []*codegenerator.Gen
 actual:
 	for _, actualFile := range generatedFiles {
 		for _, expectedFile := range tc.ExpectedFiles {
+			if expectedFile.Contents == NO_CONTENT {
+				continue actual
+			}
+
 			if actualFile.Path == expectedFile.Path {
 				assert.Contains(t, normaliseString(actualFile.Contents), normaliseString(expectedFile.Contents))
 
@@ -581,6 +640,10 @@ actual:
 	// where there are files in the actual that are not in the expected array
 expected:
 	for _, expectedFile := range tc.ExpectedFiles {
+		if expectedFile.Contents == NO_CONTENT {
+			continue
+		}
+
 		for _, actualFile := range generatedFiles {
 			if actualFile.Path == expectedFile.Path {
 				continue expected
