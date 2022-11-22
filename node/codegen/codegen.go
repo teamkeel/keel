@@ -103,7 +103,10 @@ func (g *Generator) testingSrcCode() string {
 // Generates the contents of the index.d.ts file, containing typescript
 // type definitions for the index.js javascript file.
 func (g *Generator) testingTypeDefinitions() string {
-	return ""
+	return renderTemplate(TemplateTestingDefinitions, map[string]interface{}{
+		"Actions": g.schemaActions(),
+		"Models":  g.schemaModels(),
+	})
 }
 
 // Generates the contents of the index.js file, containing vanilla javascript code required by the sdk

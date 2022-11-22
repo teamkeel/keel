@@ -620,8 +620,31 @@ func TestTesting(t *testing.T) {
 					export const actions = new Actions();`,
 				},
 				{
-					Path:     "index.d.ts",
-					Contents: NO_CONTENT,
+					Path: "index.d.ts",
+					Contents: `
+						import * as SDK from '@teamkeel/sdk';
+						import * as ReturnTypes from '@teamkeel/functions-runtime/returnTypes';
+						import { ActionExecutor } from '@teamkeel/functions-testing';
+
+						declare class ActionsWithIdentity {
+							private identity : SDK.Identity;
+
+							constructor(identity: SDK.Identity | undefined)
+							createPost: (payload) => ReturnTypes.FunctionCreateResponse<SDK.Post>
+							updatePost: (payload) => ReturnTypes.FunctionUpdateResponse<SDK.Post>
+							deletePost: (payload) => ReturnTypes.FunctionDeleteResponse<SDK.Post>
+							listPosts: (payload) => ReturnTypes.FunctionListResponse<SDK.Post>
+							authenticate: (payload) => ReturnTypes.FunctionAuthenticateResponse<SDK.Identity>
+						}
+						export declare class Actions {
+							withIdentity: (identity: SDK.Identity | undefined) => ActionsWithIdentity
+							createPost: (payload) => ReturnTypes.FunctionCreateResponse<SDK.Post>
+							updatePost: (payload) => ReturnTypes.FunctionUpdateResponse<SDK.Post>
+							deletePost: (payload) => ReturnTypes.FunctionDeleteResponse<SDK.Post>
+							listPosts: (payload) => ReturnTypes.FunctionListResponse<SDK.Post>
+							authenticate: (payload) => ReturnTypes.FunctionAuthenticateResponse<SDK.Identity>
+						}
+					`,
 				},
 			},
 		},
@@ -689,8 +712,20 @@ func TestTesting(t *testing.T) {
 					`,
 				},
 				{
-					Path:     "index.d.ts",
-					Contents: NO_CONTENT,
+					Path: "index.d.ts",
+					Contents: `
+						export declare class PostApi {
+							private query : Query<Post>;
+							constructor();
+							create: (inputs: Partial<Omit<SDK.Post, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionCreateResponse<SDK.Post>>
+							where: (conditions: SDK.PostQuery) => ChainableQuery<SDK.Post>
+							delete: (id: string) => Promise<ReturnTypes.FunctionDeleteResponse<SDK.Post>>
+							findOne: (query: SDK.Post) => Promise<ReturnTypes.FunctionGetResponse<SDK.Post>>
+							update: (inputs: Partial<Omit<SDK.Post, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionUpdateResponse<SDK.Post>>
+							findMany: (query: SDK.PostQuery) => Promise<ReturnTypes.FunctionListResponse<SDK.Post>>
+						}
+						export declare const Post : PostApi;
+					`,
 				},
 			},
 		},
@@ -949,6 +984,9 @@ expected:
 	}
 
 	if match {
+		if matchStart < 0 {
+			matchStart = 0
+		}
 		matchingLines := strings.Join(actualLines[matchStart:min(matchEnd, len(actualLines))], "\n")
 		return matchingLines
 	}
