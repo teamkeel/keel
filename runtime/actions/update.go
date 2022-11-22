@@ -2,7 +2,6 @@ package actions
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/teamkeel/keel/proto"
 )
@@ -64,20 +63,20 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Return the updated row
-	query.AppendReturning(Field("*"))
+	query.AppendReturning(AllFields())
 
-	// Execute database request with results
-	results, affected, err := query.UpdateStatement().ExecuteWithResults(scope.context)
+	// Execute database request, expecting a single result
+	result, err := query.
+		UpdateStatement().
+		ExecuteAsSingle(scope.context)
+
 	if err != nil {
 		return nil, err
 	}
 
-	if affected == 0 {
+	if result == nil {
 		return nil, errors.New("no records found for Update() operation")
-	} else if affected > 1 {
-		return nil, fmt.Errorf("Update() operation should update only one record, it updated: %d", affected)
 	}
 
-	result := results[0]
 	return result, nil
 }

@@ -43,13 +43,16 @@ func Create(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Return the inserted row
-	query.AppendReturning(Field("*"))
+	query.AppendReturning(AllFields())
 
-	// Execute database request with results
-	results, _, err := query.InsertStatement().ExecuteWithResults(scope.context)
+	// Execute database request, expecting a single result
+	result, err := query.
+		InsertStatement().
+		ExecuteAsSingle(scope.context)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return results[0], nil
+	return result, nil
 }

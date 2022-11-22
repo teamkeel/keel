@@ -22,16 +22,20 @@ var pageInfoType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "PageInfo",
 	Fields: graphql.Fields{
 		"hasNextPage": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Boolean),
+			Type:        graphql.NewNonNull(graphql.Boolean),
+			Description: "Whether there are results after the current page.",
 		},
 		"startCursor": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The ID cursor of the first node on the current page.",
 		},
 		"endCursor": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.String),
+			Type:        graphql.NewNonNull(graphql.String),
+			Description: "The ID cursor of the last node on the current page.",
 		},
 		"totalCount": &graphql.Field{
-			Type: graphql.NewNonNull(graphql.Int),
+			Type:        graphql.NewNonNull(graphql.Int),
+			Description: "Total count of nodes on the current page.",
 		},
 	},
 })
