@@ -650,6 +650,73 @@ func TestTesting(t *testing.T) {
 			},
 		},
 		{
+			Name:   "testing-model-api-identity",
+			Schema: "",
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						class IdentityApi {
+							constructor() {
+								this.create = async (inputs) => {
+									const q = await this.query()
+									return q.create(inputs);
+								}
+								this.where = (conditions) => {
+									return new ChainableQuery({
+										tableName: 'identity',
+										queryResolver: qr,
+										conditions: [conditions],
+										logger: queryLogger,
+									})
+								}
+								this.delete = async (id) => {
+									const q = await this.query()
+									return q.delete(id);
+								}
+								this.findOne = async (query) => {
+									const q = await this.query()
+									return q.findOne(query as any);
+								}
+								this.update = async (id, inputs) => {
+									const q = await this.query()
+									return q.update(id, inputs as any);
+								}
+								this.findMany = async (query) => {
+									const q = await this.query()
+									return q.where(query as any).all();
+								}
+								this.query = async () => {
+									return new Query({
+										tableName: 'identity',
+										queryResolver: qr,
+										logger: queryLogger,
+									})
+								}
+							}
+						}
+						export const Identity = new IdentityApi();
+					`,
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export declare class IdentityApi {
+							private query : Query<SDK.Identity>;
+							constructor();
+							create: (inputs: Partial<Omit<SDK.Identity, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionCreateResponse<SDK.Identity>>
+							where: (conditions: SDK.IdentityQuery) => ChainableQuery<SDK.Identity>
+							delete: (id: string) => Promise<ReturnTypes.FunctionDeleteResponse<SDK.Identity>>
+							findOne: (query: SDK.Identity) => Promise<ReturnTypes.FunctionGetResponse<SDK.Identity>>
+							update: (inputs: Partial<Omit<SDK.Identity, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionUpdateResponse<SDK.Identity>>
+							findMany: (query: SDK.IdentityQuery) => Promise<ReturnTypes.FunctionListResponse<SDK.Identity>>
+						}
+						export declare const Identity : IdentityApi;
+					`,
+				},
+			},
+		},
+		{
 			Name: "testing-model-api-generation",
 			Schema: `
 				model Post {
