@@ -114,10 +114,9 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 		}
 
 		if field.Type.Type == proto.Type_TYPE_MODEL {
-			object.AddFieldConfig(field.Name, &graphql.Field{
-				Name: field.Name,
-				Type: outputType,
-				Args: graphql.FieldConfigArgument{
+			fieldArgs := graphql.FieldConfigArgument{}
+			if proto.IsToManyRelationship(field) {
+				fieldArgs = graphql.FieldConfigArgument{
 					"first": &graphql.ArgumentConfig{
 						Type:        graphql.Int,
 						Description: "The requested number of nodes for each page.",
@@ -134,27 +133,37 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						Type:        graphql.String,
 						Description: "The ID cursor to retrieve nodes before in the connection. Typically, you should pass the startCursor of the previous page as before.",
 					},
-				},
+				}
+			}
+
+			object.AddFieldConfig(field.Name, &graphql.Field{
+				Name: field.Name,
+				Type: outputType,
+				Args: fieldArgs,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					// The field to the parent or child model
-					relatedModelField := proto.FindField(mk.proto.Models, model.Name, strcase.ToLowerCamel((p.Info.FieldName)))
+					modelField := proto.FindField(mk.proto.Models, model.Name, strcase.ToLowerCamel((p.Info.FieldName)))
 
-					// The parent or child model
-					relatedModelName := relatedModelField.Type.ModelName.Value
-					relatedModel := proto.FindModel(mk.proto.Models, relatedModelName)
+					// The model(s) to be fetched in the look up
+					lookupModelName := modelField.Type.ModelName.Value
+					lookupModel := proto.FindModel(mk.proto.Models, lookupModelName)
 
 					// Create a new query for that parent or child model
-					query := actions.NewQuery(relatedModel)
+					query := actions.NewQuery(lookupModel)
 					query.AppendSelect(actions.AllFields())
 
-					if relatedModelField.ForeignKeyFieldName != nil {
-						// A M:1 relationship lookup
-						foreignKeyField := relatedModelField.ForeignKeyFieldName.Value
+					switch {
+					case proto.IsToOneRelationship(modelField):
+						// The foreign key id field name on this model
+						foreignKeyField := modelField.ForeignKeyFieldName.Value
+
+						// Get the current model
 						parent, ok := p.Source.(map[string]interface{})
 						if !ok {
 							return nil, errors.New("graphql source value is not map[string]interface{}")
 						}
 
+						// Retrieve the foreign key id value for the lookup
 						id, ok := parent[foreignKeyField]
 						if !ok {
 							return nil, fmt.Errorf("the foreign key does not exist in source value map: %s", foreignKeyField)
@@ -163,17 +172,23 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						query.Where(actions.IdField(), actions.Equals, actions.Value(id))
 						result, err := query.
 							SelectStatement().
-							ExecuteAsSingle(p.Context)
+							ExecuteToSingle(p.Context)
 
 						if err != nil {
 							return nil, err
 						}
 
+						// If the result is nil, then we must explicit return the untyped nil literal
+						// so to not confuse the GraphQL resolver in trying to retrieve nested fields.
+						if result == nil {
+							return nil, nil
+						}
+
 						return result, nil
-					} else {
+					case proto.IsToManyRelationship(modelField):
 						// A 1:M relationship lookup
 						primaryKeyField := "id"
-						fkField, found := lo.Find(relatedModel.Fields, func(field *proto.Field) bool {
+						fkField, found := lo.Find(lookupModel.Fields, func(field *proto.Field) bool {
 							return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
 						})
 						if !found {
@@ -205,7 +220,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 
 						results, _, hasNextPage, err := query.
 							SelectStatement().
-							ExecuteWithResults(p.Context)
+							ExecuteToMany(p.Context)
 
 						if err != nil {
 							return nil, err
@@ -217,6 +232,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						}
 
 						return res, nil
+					default:
+						return nil, fmt.Errorf("unhandled model relationship configuration for field: %s on model: %s", field.Name, field.ModelName)
 					}
 				},
 			})

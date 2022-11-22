@@ -35,7 +35,7 @@ type Order {
 type OrderItem {
   createdAt: Timestamp!
   id: ID!
-  order(after: String, before: String, first: Int, last: Int): Order!
+  order: Order!
   orderId: ID!
   price: Int!
   updatedAt: Timestamp!
