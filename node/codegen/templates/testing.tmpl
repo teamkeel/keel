@@ -1,0 +1,93 @@
+import {
+  Logger,
+  queryResolverFromEnv,
+} from '@teamkeel/functions-runtime';
+import { ActionExecutor } from '@teamkeel/functions-testing';
+
+const qr = queryResolverFromEnv(process.env);
+const parentPort = parseInt(process.env.PARENT_PORT, 10);
+const host = process.env.HOST || 'localhost';
+const queryLogger = new Logger();
+const actionExecutor = new ActionExecutor({ parentPort, host });
+
+// Actions contains all of the Keel schema actions - both built-in actions
+// defined in an *operations* block and custom operations defined in a *functions*
+// block.
+class ActionsWithIdentity {
+  constructor(identity) {
+    if (identity === undefined) {
+      throw new Error('valid identity was not provided to withIdentity.');
+    }
+    this.identity = identity;
+    {{- range .Actions }}
+    this.{{ .NameLowerCamel }} = async (payload) => await actionExecutor.execute({
+      actionName: "{{ .NameLowerCamel }}",
+      payload,
+      identity: this.identity,
+    });
+    {{- end }}
+  }
+}
+
+export class Actions {
+  constructor() {
+    this.withIdentity = (identity) => {
+      return new ActionsWithIdentity(identity);
+    };
+    {{- range .Actions }}
+    this.{{ .NameLowerCamel }} = async (payload) => await actionExecutor.execute({
+      actionName: "{{ .NameLowerCamel }}",
+      payload,
+    });
+    {{- end }}
+  }
+}
+export const actions = new Actions();
+
+{{- range .Models }}
+class {{ .ApiName }} {
+  create = async (inputs) => {
+    const q = await this.query()
+    return q.create(inputs);
+  }
+
+  where = (conditions) => {
+    return new ChainableQuery({
+      tableName: '{{ .TableName }}',
+      queryResolver: qr,
+      conditions: [conditions],
+      logger: queryLogger,
+    })
+  }
+
+  delete = async (id) => {
+    const q = await this.query()
+    return q.delete(id);
+  }
+
+  findOne = async (query) => {
+    const q = await this.query()
+    return q.findOne(query as any);
+  }
+
+  update = async (id, inputs) => {
+    const q = await this.query()
+    return q.update(id, inputs as any);
+  }
+
+  findMany = async (query) => {
+    const q = await this.query()
+    return q.where(query as any).all();
+  }
+
+  query = async () => {
+    return new Query({
+      tableName: '{{ .TableName }}',
+      queryResolver: qr,
+      logger: queryLogger,
+    })
+  }
+}
+
+export const {{ .Name }} = new {{ .ApiName }}();
+{{- end }}

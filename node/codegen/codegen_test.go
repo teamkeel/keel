@@ -492,7 +492,140 @@ func TestSdk(t *testing.T) {
 }
 
 func TestTesting(t *testing.T) {
-	cases := []TestCase{}
+	cases := []TestCase{
+		{
+			Name: "imports",
+			Schema: `
+				model Foo {}
+			`,
+			ExpectedFiles: []*codegenerator.SourceCode{
+				{
+					Path: "index.js",
+					Contents: `
+						import {
+							Logger,
+							queryResolverFromEnv,
+						} from '@teamkeel/functions-runtime';
+						import { ActionExecutor } from '@teamkeel/functions-testing';
+					`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
+		{
+			Name: "plumbing",
+			Schema: `
+				model Foo {}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						const qr = queryResolverFromEnv(process.env);
+						const parentPort = parseInt(process.env.PARENT_PORT, 10);
+						const host = process.env.HOST || 'localhost';
+						const queryLogger = new Logger();
+						const actionExecutor = new ActionExecutor({ parentPort, host });
+					`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
+		{
+			Name: "action-generation-operations",
+			Schema: `
+				model Post {
+					fields {
+						title Text
+					}
+
+					operations {
+						create createPost() with(title)
+						update updatePost(id) with(title)
+						delete deletePost(id)
+						list listPosts()
+					}
+				}
+			`,
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+					class ActionsWithIdentity {
+						constructor(identity) {
+							if (identity === undefined) {
+								throw new Error('valid identity was not provided to withIdentity.');
+							}
+							this.identity = identity;
+							this.createPost = async (payload) => await actionExecutor.execute({
+								actionName: "createPost",
+								payload,
+								identity: this.identity,
+							});
+							this.updatePost = async (payload) => await actionExecutor.execute({
+								actionName: "updatePost",
+								payload,
+								identity: this.identity,
+							});
+							this.deletePost = async (payload) => await actionExecutor.execute({
+								actionName: "deletePost",
+								payload,
+								identity: this.identity,
+							});
+							this.listPosts = async (payload) => await actionExecutor.execute({
+								actionName: "listPosts",
+								payload,
+								identity: this.identity,
+							});
+							this.authenticate = async (payload) => await actionExecutor.execute({
+								actionName: "authenticate",
+								payload,
+								identity: this.identity,
+							});
+						}
+					}
+					export class Actions {
+						constructor() {
+							this.withIdentity = (identity) => {
+								return new ActionsWithIdentity(identity);
+							};
+							this.createPost = async (payload) => await actionExecutor.execute({
+								actionName: "createPost",
+								payload,
+							});
+							this.updatePost = async (payload) => await actionExecutor.execute({
+								actionName: "updatePost",
+								payload,
+							});
+							this.deletePost = async (payload) => await actionExecutor.execute({
+								actionName: "deletePost",
+								payload,
+							});
+							this.listPosts = async (payload) => await actionExecutor.execute({
+								actionName: "listPosts",
+								payload,
+							});
+							this.authenticate = async (payload) => await actionExecutor.execute({
+								actionName: "authenticate",
+								payload,
+							});
+						}
+					}
+					export const actions = new Actions();`,
+				},
+				{
+					Path:     "index.d.ts",
+					Contents: NO_CONTENT,
+				},
+			},
+		},
+	}
 
 	runCases(t, cases, func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error) {
 		return cg.GenerateTesting()
@@ -614,15 +747,21 @@ actual:
 					// portion of the actual string for diff display.
 					diff := diffmatchpatch.New()
 					match := matchActual(actual, expected)
-					diffs := diff.DiffMain(match, expected, false)
 
-					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff:\n%s\n%s\nActual:\n%s\n%s\n\nExpected:\n%s\n%s\n",
+					// expected goes first in the diff order below so that things missing in actual
+					// are shown as deletions rather than additions
+					diffs := diff.DiffMain(expected, match, false)
+
+					fmt.Printf("Test case '%s' failed.\n%s\nContextual Diff (%s):\n%s\n%s\n\nActual (%s):\n%s\n%s\n\nExpected (%s):\n%s\n%s\n",
 						t.Name(),
 						DIVIDER,
+						expectedFile.Path,
 						DIVIDER,
 						diff.DiffPrettyText(diffs),
+						actualFile.Path,
 						DIVIDER,
 						actual,
+						expectedFile.Path,
 						DIVIDER,
 						expected,
 					)
@@ -741,9 +880,16 @@ expected:
 	}
 
 	if match {
-		matchingLines := strings.Join(actualLines[matchStart:matchEnd], "\n")
+		matchingLines := strings.Join(actualLines[matchStart:min(matchEnd, len(actualLines))], "\n")
 		return matchingLines
 	}
 
 	return strings.Join(actualLines, "\n")
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

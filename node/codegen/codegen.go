@@ -91,123 +91,36 @@ func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
 	return sourceCodes, nil
 }
 
-func (g *Generator) testingSrcCode() (r string) {
-	return r
+// Generates the contents of the index.js file, containing vanilla
+// javascript code required by the testing package
+func (g *Generator) testingSrcCode() string {
+	return renderTemplate(TemplateTesting, map[string]interface{}{
+		"Actions": g.schemaActions(),
+		"Models":  g.schemaModels(),
+	})
 }
 
-func (g *Generator) testingTypeDefinitions() (r string) {
-	return r
+// Generates the contents of the index.d.ts file, containing typescript
+// type definitions for the index.js javascript file.
+func (g *Generator) testingTypeDefinitions() string {
+	return ""
 }
 
+// Generates the contents of the index.js file, containing vanilla javascript code required by the sdk
 func (g *Generator) sdkSrcCode() string {
-	models := []*Model{}
-
-	for _, model := range g.schema.Models {
-		models = append(models, &Model{
-			Name:           model.Name,
-			TableName:      strcase.ToSnake(model.Name),
-			ApiName:        fmt.Sprintf("%sApi", model.Name),
-			NameLowerCamel: strcase.ToLowerCamel(model.Name),
-		})
-	}
-
-	actions := lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
-		return true
-	}), func(op *proto.Operation, _ int) *Action {
-		return &Action{
-			Name:          op.Name,
-			OperationType: operationTypeForOperation(op),
-			IsCustom:      op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
-			// inputs are not needed for vanila js codegen, but they can be added here if needed in future
-		}
-	})
-
 	return renderTemplate(TemplateSdk, map[string]interface{}{
-		"Models":  models,
-		"Actions": actions,
+		"Models":  g.schemaModels(),
+		"Actions": g.schemaActions(),
 	})
 }
 
+// Generates the contents of the index.d.ts file, containing typescript
+// type definitions for the index.js javascript file.
 func (g *Generator) sdkTypeDefinitions() string {
-	models := []*Model{}
-
-	// add model interfaces to template
-	for _, model := range g.schema.Models {
-		m := Model{
-			Name:           model.Name,
-			TableName:      strcase.ToSnake(model.Name),
-			ApiName:        fmt.Sprintf("%sApi", model.Name),
-			NameLowerCamel: strcase.ToLowerCamel(model.Name),
-		}
-
-		for _, field := range model.Fields {
-			mf := &ModelField{
-				Name:           field.Name,
-				Type:           protoTypeToTypeScriptType(field.Type),
-				ConstraintType: constraintTypeForField(field.Type),
-				IsOptional:     field.Optional,
-			}
-
-			m.Fields = append(m.Fields, mf)
-
-			if field.Unique || field.PrimaryKey {
-				m.UniqueFields = append(m.UniqueFields, mf)
-			}
-		}
-
-		models = append(models, &m)
-	}
-
-	// add enums to template
-	enums := []*Enum{}
-
-	for _, enum := range g.schema.Enums {
-		e := Enum{
-			Name: enum.Name,
-		}
-
-		for _, v := range enum.Values {
-			e.Values = append(e.Values, &EnumValue{
-				Label: v.Name,
-			})
-		}
-
-		enums = append(enums, &e)
-	}
-
-	actions := lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
-		return true
-	}), func(op *proto.Operation, _ int) *Action {
-		writeInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
-			return i.Mode == proto.InputMode_INPUT_MODE_WRITE
-		})
-
-		readInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
-			return i.Mode == proto.InputMode_INPUT_MODE_READ
-		})
-
-		return &Action{
-			Name:          strcase.ToCamel(op.Name),
-			OperationType: operationTypeForOperation(op),
-			ModelName:     op.ModelName,
-			IsCustom:      op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
-			WriteInputs: lo.Map(writeInputs, func(i *proto.OperationInput, _ int) *ActionInput {
-				return protoInputToActionInput(i)
-			}),
-			ReadInputs: lo.Map(readInputs, func(i *proto.OperationInput, _ int) *ActionInput {
-				return protoInputToActionInput(i)
-			}),
-			// Some operation types will need all of the inputs no matter the mode (including Unknown mode for authenticate actions)
-			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
-				return protoInputToActionInput(i)
-			}),
-		}
-	})
-
 	return renderTemplate(TemplateSdkDefinitions, map[string]interface{}{
-		"Models":  models,
-		"Enums":   enums,
-		"Actions": actions,
+		"Models":  g.schemaModels(),
+		"Enums":   g.schemaEnums(),
+		"Actions": g.schemaActions(),
 	})
 }
 
@@ -272,6 +185,86 @@ func (g *Generator) makeNpmPackage(name string, srcCodes []*SourceCode) error {
 	return nil
 }
 
+func (g *Generator) schemaEnums() (enums []*Enum) {
+	for _, enum := range g.schema.Enums {
+		e := Enum{
+			Name: enum.Name,
+		}
+
+		for _, v := range enum.Values {
+			e.Values = append(e.Values, &EnumValue{
+				Label: v.Name,
+			})
+		}
+
+		enums = append(enums, &e)
+	}
+
+	return enums
+}
+
+func (g *Generator) schemaModels() (models []*Model) {
+	for _, model := range g.schema.Models {
+		m := Model{
+			Name:           model.Name,
+			TableName:      strcase.ToSnake(model.Name),
+			ApiName:        fmt.Sprintf("%sApi", model.Name),
+			NameLowerCamel: strcase.ToLowerCamel(model.Name),
+		}
+
+		for _, field := range model.Fields {
+			mf := &ModelField{
+				Name:           field.Name,
+				Type:           protoTypeToTypeScriptType(field.Type),
+				ConstraintType: constraintTypeForField(field.Type),
+				IsOptional:     field.Optional,
+			}
+
+			m.Fields = append(m.Fields, mf)
+
+			if field.Unique || field.PrimaryKey {
+				m.UniqueFields = append(m.UniqueFields, mf)
+			}
+		}
+
+		models = append(models, &m)
+	}
+
+	return models
+}
+
+func (g *Generator) schemaActions() []*Action {
+	return lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
+		return true
+	}), func(op *proto.Operation, _ int) *Action {
+		writeInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
+			return i.Mode == proto.InputMode_INPUT_MODE_WRITE
+		})
+
+		readInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
+			return i.Mode == proto.InputMode_INPUT_MODE_READ
+		})
+
+		return &Action{
+			Name:           strcase.ToCamel(op.Name),
+			OperationType:  operationTypeForOperation(op),
+			NameLowerCamel: strcase.ToLowerCamel(op.Name),
+			ModelName:      op.ModelName,
+			IsCustom:       op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM,
+			WriteInputs: lo.Map(writeInputs, func(i *proto.OperationInput, _ int) *ActionInput {
+				return protoInputToActionInput(i)
+			}),
+			ReadInputs: lo.Map(readInputs, func(i *proto.OperationInput, _ int) *ActionInput {
+				return protoInputToActionInput(i)
+			}),
+			// Some operation types will need all of the inputs no matter the mode (including Unknown mode for authenticate actions)
+			Inputs: lo.Map(op.Inputs, func(i *proto.OperationInput, _ int) *ActionInput {
+				return protoInputToActionInput(i)
+			}),
+		}
+	})
+}
+
 //go:embed templates/*.tmpl
 var templates embed.FS
 
@@ -299,6 +292,7 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 		return TSTypeID
 	case proto.Type_TYPE_MODEL:
 		if t.Repeated {
+			// e.g Post[]
 			return fmt.Sprintf("%s[]", t.ModelName.Value)
 		}
 		return t.ModelName.Value
@@ -313,6 +307,9 @@ func protoTypeToTypeScriptType(t *proto.TypeInfo) string {
 	case proto.Type_TYPE_PASSWORD: // todo: remove this and hide password fields going forward?
 		return TSTypeString
 	default:
+		// for anything else, utilize typescript's unknown type
+		// so that end user must be careful with the contents of the var:
+		// https://stackoverflow.com/a/51441168/1795862
 		return TSTypeUnknown
 	}
 }
