@@ -13,10 +13,22 @@ model Post {
             @where(post.isActive == true)
         }
 
+        get getActivePostWithRhsField(id) {
+            @where(post.theAuthor.thePublisher.isActive == post.theAuthor.thePublisher.booleanValue)
+            @where(post.theAuthor.isActive == post.theAuthor.thePublisher.booleanValue)
+            @where(post.isActive == post.theAuthor.thePublisher.booleanValue)
+        }
+
         list listActivePosts() {
             @where(post.theAuthor.thePublisher.isActive == true)
             @where(post.theAuthor.isActive == true)
             @where(post.isActive == true)
+        }
+
+        list listActivePostsWithRhsField() {
+            @where(post.theAuthor.thePublisher.isActive == post.theAuthor.thePublisher.booleanValue)
+            @where(post.theAuthor.isActive == post.theAuthor.thePublisher.booleanValue)
+            @where(post.isActive == post.theAuthor.thePublisher.booleanValue)
         }
     }
 
@@ -39,6 +51,7 @@ model Publisher {
         orgName Text
         theAuthors Author[]
         isActive Boolean
+        booleanValue Boolean?
     }
 
     operations {
@@ -48,10 +61,22 @@ model Publisher {
             @where(publisher.isActive == true)
         }
 
+        get getActivePublisherWithActivePostsWithRhsField(id) {
+            @where(publisher.theAuthors.thePosts.isActive == publisher.booleanValue)
+            @where(publisher.theAuthors.isActive == publisher.booleanValue)
+            @where(publisher.isActive == publisher.booleanValue)
+        }
+
         list listActivePublishersWithActivePosts() {
             @where(publisher.theAuthors.thePosts.isActive == true)
             @where(publisher.theAuthors.isActive == true)
             @where(publisher.isActive == true)
+        }
+
+        list listActivePublishersWithActivePostsWithRhsField() {
+            @where(publisher.theAuthors.thePosts.isActive == publisher.booleanValue)
+            @where(publisher.theAuthors.isActive == publisher.booleanValue)
+            @where(publisher.isActive == publisher.booleanValue)
         }
     }
 
@@ -64,7 +89,6 @@ api Web {
     models {
         Post
         Author
-
         Publisher
     }
 }

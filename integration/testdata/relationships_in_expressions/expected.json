@@ -70,5 +70,77 @@
   {
     "status": "pass",
     "testName": "list operation where expressions with 1:M relations - all Keel posts not active - Weave org returned"
+  },
+  {
+    "status": "pass",
+    "testName": "get operation where expressions with M:1 relations with RHS field operand - all models active - model returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with M:1 relations with RHS field operand - all models inactive - model returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with M:1 relations with RHS field operand - publisher not active - model not returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with M:1 relations with RHS field operand - author not active - model not returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with M:1 relations with RHS field operand - post not active - model not returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with 1:M relations with RHS field operand - all models active - publisher returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with 1:M relations with RHS field operand - one active author - publisher returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with 1:M relations with RHS field operand - no active author - publisher not returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with 1:M relations with RHS field operand - one active post - publisher returned"
+  },
+  {
+      "status": "pass",
+      "testName": "get operation where expressions with 1:M relations with RHS field operand - no active posts - publisher not returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with M:1 relations with RHS field operand - all models active - all models returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with M:1 relations with RHS field operand - matching active status - all models returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with M:1 relations with RHS field operand - one active author - Keelson posts returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with M:1 relations with RHS field operand - Weaveton author inactive and one active Keelson post - other Keelson post returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with 1:M relations with RHS field operand - all models active - all models returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with 1:M relations with RHS field operand - Weaveton post inactive - Keelson publisher returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with 1:M relations with RHS field operand - only one Keelson post inactive - all publishers returned"
+  },
+  {
+      "status": "pass",
+      "testName": "list operation where expressions with 1:M relations with RHS field operand - Keelson author inactive and Weaveton post inactive - no publishers returned"
   }
 ]
