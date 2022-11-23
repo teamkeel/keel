@@ -1,3 +1,10 @@
+## [0.217.1](https://github.com/teamkeel/keel/compare/v0.217.0...v0.217.1) (2022-11-23)
+
+
+### Bug Fixes
+
+* omit graphql object in an optional m:1 lookup ([#604](https://github.com/teamkeel/keel/issues/604)) ([a4bf69e](https://github.com/teamkeel/keel/commit/a4bf69eb7ff5757b16038ecbf890a3ea7a87eb89))
+
 # [0.217.0](https://github.com/teamkeel/keel/compare/v0.216.0...v0.217.0) (2022-11-22)
 
 
