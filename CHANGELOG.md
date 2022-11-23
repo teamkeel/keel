@@ -1,3 +1,10 @@
+# [0.218.0](https://github.com/teamkeel/keel/compare/v0.217.1...v0.218.0) (2022-11-23)
+
+
+### Features
+
+* upgrade validation to support relationship fields in create operations ([8dde9a9](https://github.com/teamkeel/keel/commit/8dde9a9841a329600c90e96b55b574049f613b4b))
+
 ## [0.217.1](https://github.com/teamkeel/keel/compare/v0.217.0...v0.217.1) (2022-11-23)
 
 
