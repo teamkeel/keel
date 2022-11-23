@@ -1,7 +1,7 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import url from "url";
 
-import { Config } from "./types";
+import { Config } from "../types";
 
 const startRuntimeServer = ({ functions, api }: Config) => {
   const listener = async (req: IncomingMessage, res: ServerResponse) => {
@@ -11,7 +11,7 @@ const startRuntimeServer = ({ functions, api }: Config) => {
 
       const normalisedPathname = pathname!.replace(/\//, "");
 
-      const buffers = [];
+      const buffers: Buffer[] = [];
 
       for await (const chunk of req) {
         buffers.push(chunk);

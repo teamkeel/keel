@@ -1,7 +1,7 @@
 {
-  "name": "@teamkeel/sdk",
+  "name": "@teamkeel/functions-runtime",
   "version": "0.0.1",
-  "description": "JavaScript SDK for implementing custom functions within the Keel universe",
+  "description": "Internal package used by @teamkeel/sdk",
   "main": "dist/index.js",
   "scripts": {
     "build": "node build.mjs && cp index.d.ts dist/",
@@ -21,7 +21,7 @@
   ],
   "devDependencies": {
     "@types/jest": "^28.1.6",
-    "@types/node": "^18.6.4",
+    "@types/node": "^18.11.9",
     "esbuild": "^0.14.53",
     "jest": "^28.1.3",
     "npm-dts": "^1.3.12",
@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-rds-data": "^3.200.0",
+    "@structured-types/api": "^3.46.12",
     "@types/pg": "^8.6.5",
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",

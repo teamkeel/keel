@@ -1,7 +1,7 @@
 import { build } from "esbuild";
-// import NpmDts from 'npm-dts';
+import NpmDts from 'npm-dts';
 
-// const { Generator } = NpmDts;
+const { Generator } = NpmDts;
 
 build({
   outdir: "dist",
@@ -14,7 +14,7 @@ build({
 
 // Doesnt generate absolutely correct types due to several annoying issues but renable
 // to get a good basis
-// new Generator({
-//   entry: './index.ts',
-//   output: 'dist/index.d.ts'
-// }, true, true).generate();
+new Generator({
+  entry: './index.ts',
+  output: 'dist/index.d.ts'
+}, true, true).generate();
