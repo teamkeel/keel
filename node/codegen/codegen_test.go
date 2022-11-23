@@ -225,15 +225,15 @@ func TestSdk(t *testing.T) {
 					Path: "index.d.ts",
 					Contents: `
 						export declare type CreatePersonReturnType = Promise<FunctionCreateResponse<Person>>;
-						export declare type CreatePersonCallbackFunction = (inputs: CreatePersonInput, api: API) => CreatePersonReturnType;
-						export declare const CreatePerson: (callback: CreatePersonCallbackFunction) => (inputs: CreatePersonInput, api: API) => CreatePersonReturnType
+						export declare type CreatePersonCallbackFunction = (inputs: CreatePersonInput, api: KeelApi) => CreatePersonReturnType;
+						export declare const CreatePerson: (callback: CreatePersonCallbackFunction) => (inputs: CreatePersonInput, api: KeelApi) => CreatePersonReturnType
 						export interface CreatePersonInput {
 							name: string
 							age: number
 						}
 						export declare type UpdatePersonReturnType = Promise<FunctionUpdateResponse<Person>>;
-						export declare type UpdatePersonCallbackFunction = (inputs: UpdatePersonInput, api: API) => UpdatePersonReturnType;
-						export declare const UpdatePerson: (callback: UpdatePersonCallbackFunction) => (inputs: UpdatePersonInput, api: API) => UpdatePersonReturnType
+						export declare type UpdatePersonCallbackFunction = (inputs: UpdatePersonInput, api: KeelApi) => UpdatePersonReturnType;
+						export declare const UpdatePerson: (callback: UpdatePersonCallbackFunction) => (inputs: UpdatePersonInput, api: KeelApi) => UpdatePersonReturnType
 						export interface UpdatePersonInput {
 							where: {
 								id: ID
@@ -244,21 +244,21 @@ func TestSdk(t *testing.T) {
 							}
 						}
 						export declare type DeletePersonReturnType = Promise<FunctionDeleteResponse<Person>>;
-						export declare type DeletePersonCallbackFunction = (inputs: DeletePersonInput, api: API) => DeletePersonReturnType;
-						export declare const DeletePerson: (callback: DeletePersonCallbackFunction) => (inputs: DeletePersonInput, api: API) => DeletePersonReturnType
+						export declare type DeletePersonCallbackFunction = (inputs: DeletePersonInput, api: KeelApi) => DeletePersonReturnType;
+						export declare const DeletePerson: (callback: DeletePersonCallbackFunction) => (inputs: DeletePersonInput, api: KeelApi) => DeletePersonReturnType
 						export interface DeletePersonInput {
 							id: ID
 						}
 						export declare type ListPersonReturnType = Promise<FunctionListResponse<Person>>;
-						export declare type ListPersonCallbackFunction = (inputs: ListPersonInput, api: API) => ListPersonReturnType;
-						export declare const ListPerson: (callback: ListPersonCallbackFunction) => (inputs: ListPersonInput, api: API) => ListPersonReturnType
+						export declare type ListPersonCallbackFunction = (inputs: ListPersonInput, api: KeelApi) => ListPersonReturnType;
+						export declare const ListPerson: (callback: ListPersonCallbackFunction) => (inputs: ListPersonInput, api: KeelApi) => ListPersonReturnType
 						export interface ListPersonInput {
 							where: {
 							}
 						}
 						export declare type GetPersonReturnType = Promise<FunctionGetResponse<Person>>;
-						export declare type GetPersonCallbackFunction = (inputs: GetPersonInput, api: API) => GetPersonReturnType;
-						export declare const GetPerson: (callback: GetPersonCallbackFunction) => (inputs: GetPersonInput, api: API) => GetPersonReturnType
+						export declare type GetPersonCallbackFunction = (inputs: GetPersonInput, api: KeelApi) => GetPersonReturnType;
+						export declare const GetPerson: (callback: GetPersonCallbackFunction) => (inputs: GetPersonInput, api: KeelApi) => GetPersonReturnType
 					`,
 				},
 			},
@@ -620,8 +620,99 @@ func TestTesting(t *testing.T) {
 					export const actions = new Actions();`,
 				},
 				{
-					Path:     "index.d.ts",
-					Contents: NO_CONTENT,
+					Path: "index.d.ts",
+					Contents: `
+						import * as SDK from '@teamkeel/sdk';
+						import * as ReturnTypes from '@teamkeel/functions-runtime/returnTypes';
+						import { ActionExecutor } from '@teamkeel/functions-testing';
+
+						declare class ActionsWithIdentity {
+							private identity : SDK.Identity;
+
+							constructor(identity: SDK.Identity | undefined)
+							createPost: (payload) => ReturnTypes.FunctionCreateResponse<SDK.Post>
+							updatePost: (payload) => ReturnTypes.FunctionUpdateResponse<SDK.Post>
+							deletePost: (payload) => ReturnTypes.FunctionDeleteResponse<SDK.Post>
+							listPosts: (payload) => ReturnTypes.FunctionListResponse<SDK.Post>
+							authenticate: (payload) => ReturnTypes.FunctionAuthenticateResponse<SDK.Identity>
+						}
+						export declare class Actions {
+							withIdentity: (identity: SDK.Identity | undefined) => ActionsWithIdentity
+							createPost: (payload) => ReturnTypes.FunctionCreateResponse<SDK.Post>
+							updatePost: (payload) => ReturnTypes.FunctionUpdateResponse<SDK.Post>
+							deletePost: (payload) => ReturnTypes.FunctionDeleteResponse<SDK.Post>
+							listPosts: (payload) => ReturnTypes.FunctionListResponse<SDK.Post>
+							authenticate: (payload) => ReturnTypes.FunctionAuthenticateResponse<SDK.Identity>
+						}
+						export declare const actions : Actions;
+					`,
+				},
+			},
+		},
+		{
+			Name:   "testing-model-api-identity",
+			Schema: "",
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path: "index.js",
+					Contents: `
+						class IdentityApi {
+							constructor() {
+								this.create = async (inputs) => {
+									const q = await this.query()
+									return q.create(inputs);
+								}
+								this.where = (conditions) => {
+									return new ChainableQuery({
+										tableName: 'identity',
+										queryResolver: qr,
+										conditions: [conditions],
+										logger: queryLogger,
+									})
+								}
+								this.delete = async (id) => {
+									const q = await this.query()
+									return q.delete(id);
+								}
+								this.findOne = async (query) => {
+									const q = await this.query()
+									return q.findOne(query as any);
+								}
+								this.update = async (id, inputs) => {
+									const q = await this.query()
+									return q.update(id, inputs as any);
+								}
+								this.findMany = async (query) => {
+									const q = await this.query()
+									return q.where(query as any).all();
+								}
+								this.query = async () => {
+									return new Query({
+										tableName: 'identity',
+										queryResolver: qr,
+										logger: queryLogger,
+									})
+								}
+							}
+						}
+						export const Identity = new IdentityApi();
+					`,
+				},
+				{
+					Path: "index.d.ts",
+					Contents: `
+						export declare class IdentityApi {
+							private query : Query<SDK.Identity>;
+							constructor();
+							create: (inputs: Partial<Omit<SDK.Identity, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionCreateResponse<SDK.Identity>>
+							where: (conditions: SDK.IdentityQuery) => ChainableQuery<SDK.Identity>
+							delete: (id: string) => Promise<ReturnTypes.FunctionDeleteResponse<SDK.Identity>>
+							findOne: (query: SDK.Identity) => Promise<ReturnTypes.FunctionGetResponse<SDK.Identity>>
+							update: (inputs: Partial<Omit<SDK.Identity, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionUpdateResponse<SDK.Identity>>
+							findMany: (query: SDK.IdentityQuery) => Promise<ReturnTypes.FunctionListResponse<SDK.Identity>>
+						}
+						export declare const Identity : IdentityApi;
+					`,
 				},
 			},
 		},
@@ -689,8 +780,20 @@ func TestTesting(t *testing.T) {
 					`,
 				},
 				{
-					Path:     "index.d.ts",
-					Contents: NO_CONTENT,
+					Path: "index.d.ts",
+					Contents: `
+						export declare class PostApi {
+							private query : Query<SDK.Post>;
+							constructor();
+							create: (inputs: Partial<Omit<SDK.Post, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionCreateResponse<SDK.Post>>
+							where: (conditions: SDK.PostQuery) => ChainableQuery<SDK.Post>
+							delete: (id: string) => Promise<ReturnTypes.FunctionDeleteResponse<SDK.Post>>
+							findOne: (query: SDK.Post) => Promise<ReturnTypes.FunctionGetResponse<SDK.Post>>
+							update: (inputs: Partial<Omit<SDK.Post, "id" | "createdAt" | "updatedAt">>) => Promise<ReturnTypes.FunctionUpdateResponse<SDK.Post>>
+							findMany: (query: SDK.PostQuery) => Promise<ReturnTypes.FunctionListResponse<SDK.Post>>
+						}
+						export declare const Post : PostApi;
+					`,
 				},
 			},
 		},
@@ -890,6 +993,8 @@ func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (out
 	}
 
 	defer f.Close()
+
+	// todo: remove skipLibCheck flag once we have the @teamkeel/functions-runtime package in place.
 	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty", "--skipLibCheck", "--incremental", "--project", filepath.Base(f.Name()))
 	cmd.Dir = tmpDir
 
@@ -949,6 +1054,9 @@ expected:
 	}
 
 	if match {
+		if matchStart < 0 {
+			matchStart = 0
+		}
 		matchingLines := strings.Join(actualLines[matchStart:min(matchEnd, len(actualLines))], "\n")
 		return matchingLines
 	}
