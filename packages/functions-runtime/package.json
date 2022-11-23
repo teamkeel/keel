@@ -20,6 +20,7 @@
     "dist"
   ],
   "devDependencies": {
+    "@types/commander": "^2.12.2",
     "@types/jest": "^28.1.6",
     "@types/node": "^18.11.9",
     "esbuild": "^0.14.53",
@@ -35,6 +36,7 @@
     "@types/pg": "^8.6.5",
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",
+    "commander": "^9.4.1",
     "ksuid": "^3.0.0",
     "node-fetch": "^3.2.10",
     "pg": "^8.8.0"
