@@ -5,6 +5,6 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=sdk
+      - POSTGRES_DB=functions-runtime
     ports:
       - "5432:5432"

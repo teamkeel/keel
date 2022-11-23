@@ -1,14 +1,10 @@
 import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
-import {
-  AwsRdsDataClientQueryResolver,
-  PgQueryResolver,
-  QueryResult,
-} from "./db/resolver";
+import { PgQueryResolver, QueryResult } from "./db/resolver";
 import { rawSql } from "./db/query";
 
-const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
+const connectionString = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 const queryResolver = new PgQueryResolver({ connectionString });
 // data api:
 // const queryResolver = new AwsRdsDataClientQueryResolver({
