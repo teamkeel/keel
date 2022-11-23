@@ -3,18 +3,18 @@
     {
       "message": "'identit' not found on 'Profile'",
       "short_message": "'identit' not found",
-      "hint": "Did you mean identity, or identityId?",
+      "hint": "Did you mean one of username, id, createdAt, or updatedAt?",
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
-        "offset": 241,
-        "line": 13,
+        "offset": 183,
+        "line": 10,
         "column": 26
       },
       "end_pos": {
         "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
-        "offset": 248,
-        "line": 13,
+        "offset": 190,
+        "line": 10,
         "column": 33
       }
     }

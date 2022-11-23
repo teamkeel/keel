@@ -1,6 +1,7 @@
 package query
 
 import (
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -142,6 +143,15 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	return append(ModelOperations(model), ModelFunctions(model)...)
 }
 
+// ModelCreateActions returns all the actions in the given model, which
+// are create-type actions.
+func ModelCreateActions(model *parser.ModelNode) (res []*parser.ActionNode) {
+	allActions := ModelActions(model)
+	return lo.Filter(allActions, func(a *parser.ActionNode, _ int) bool {
+		return a.Type.Value == parser.ActionTypeCreate
+	})
+}
+
 func ModelOperations(model *parser.ModelNode) (res []*parser.ActionNode) {
 	for _, section := range model.Sections {
 		res = append(res, section.Operations...)
@@ -269,4 +279,38 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 	}
 
 	return field
+}
+
+// PrimaryKey gives you the name of the primary key field on the given
+// model. It favours fields that have the AttributePrimaryKey attribute,
+// but drops back to the id field if none have.
+func PrimaryKey(modelName string, asts []*parser.AST) *parser.FieldNode {
+	model := Model(asts, modelName)
+	potentialFields := ModelFields(model)
+
+	for _, field := range potentialFields {
+		if FieldHasAttribute(field, parser.AttributePrimaryKey) {
+			return field
+		}
+	}
+
+	for _, field := range potentialFields {
+		if field.Name.Value == parser.ImplicitFieldNameId {
+			return field
+		}
+	}
+	return nil
+}
+
+// IsHasOneModelField returns true if the given field can be inferred to be
+// a field that references another model, and is not denoted as being repeated.
+func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
+	switch {
+	case !IsModel(asts, field.Type):
+		return false
+	case field.Repeated:
+		return false
+	default:
+		return true
+	}
 }

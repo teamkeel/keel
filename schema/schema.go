@@ -4,11 +4,12 @@ import (
 	"fmt"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 
-	"github.com/teamkeel/keel/schema/foreignkeys"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/schema/validation"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -116,7 +117,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	// Now insert the foreign key fields. We have to defer this until now,
 	// because we need access to the global model set.
-	fkInfo, errDetails := scm.insertForeignKeyFields(asts)
+	errDetails := scm.insertForeignKeyFields(asts)
 	if errDetails != nil {
 		parseErrors.Errors = append(parseErrors.Errors, &errorhandling.ValidationError{
 			ErrorDetails: errDetails,
@@ -136,7 +137,7 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 
 	scm.asts = asts
 
-	protoModels := scm.makeProtoModels(fkInfo)
+	protoModels := scm.makeProtoModels()
 	return protoModels, nil
 }
 
@@ -213,37 +214,69 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 }
 
 // insertForeignKeyFields works with the given GLOBAL set of asts, i.e. a set that has been
-// built and combined from all input files. It delegates to foreignkeys.NewForeignKeyInfo()
-// to analyse the foreign keys that should be auto generated and into which models, and then
-// generates and inserts suitable fields accordingly.
-func (scm *Builder) insertForeignKeyFields(asts []*parser.AST) ([]*foreignkeys.ForeignKeyInfo, *errorhandling.ErrorDetails) {
+// built and combined from all input files. It analyses the foreign key fields that should be auto
+// generated and injected into each model.
+func (scm *Builder) insertForeignKeyFields(
+	asts []*parser.AST) *errorhandling.ErrorDetails {
 
-	primaryKeys := foreignkeys.NewPrimaryKeys(asts)
-	foreignKeys, errDetails := foreignkeys.NewForeignKeyInfo(asts, primaryKeys)
-	if errDetails != nil {
-		return nil, errDetails
-	}
+	for _, mdl := range query.Models(asts) {
+		fkFieldsToAdd := []*parser.FieldNode{}
+		for _, field := range query.ModelFields(mdl) {
 
-	for _, fKInfo := range foreignKeys {
-		fkField := &parser.FieldNode{
-			BuiltIn:  true,
-			Optional: fKInfo.OwningFieldIsOptional,
-			Name: parser.NameNode{
-				Value: fKInfo.ForeignKeyName,
-			},
-			Type:       parser.FieldTypeID,
-			Attributes: []*parser.AttributeNode{},
+			if !query.IsHasOneModelField(asts, field) {
+				continue
+			}
+
+			referredToModelName := strcase.ToCamel(field.Type)
+			referredToModel := query.Model(asts, referredToModelName)
+
+			if referredToModel == nil {
+				errDetails := &errorhandling.ErrorDetails{
+					Message: fmt.Sprintf("cannot find the model referred to (%s) by field %s, on model %s",
+						referredToModelName, field.Name, mdl.Name),
+					ShortMessage: "cannot find model referenced by relationship field",
+					Hint:         "make sure you declare this model",
+				}
+				return errDetails
+			}
+
+			referredToModelPK := query.PrimaryKey(referredToModelName, asts)
+
+			// This is the single source of truth for how we name foreign key fields.
+			// Later on, we'll let the the user name them in the schema language.
+			generatedForeignKeyName := field.Name.Value + strcase.ToCamel(referredToModelPK.Name.Value)
+
+			fkField := &parser.FieldNode{
+				BuiltIn:  true,
+				Optional: field.Optional,
+				Name: parser.NameNode{
+					Value: generatedForeignKeyName,
+				},
+				Type:       parser.FieldTypeID,
+				Attributes: []*parser.AttributeNode{},
+			}
+
+			fkInfo := &parser.ForeignKeyAssociation{
+				OwningModel:               mdl,
+				OwningField:               field,
+				ReferredToModel:           referredToModel,
+				ReferredToModelPrimaryKey: referredToModelPK,
+				ForeignKeyField:           fkField,
+			}
+
+			fkField.FkInfo = fkInfo
+			field.FkInfo = fkInfo
+
+			fkFieldsToAdd = append(fkFieldsToAdd, fkField)
 		}
-		var fieldsSection *parser.ModelSectionNode
-		for _, section := range fKInfo.OwningModel.Sections {
-			if len(section.Fields) > 0 {
-				fieldsSection = section
-				break
+		// Add the new FK fields to the existing model's fields section.
+		for _, section := range mdl.Sections {
+			if section.Fields != nil {
+				section.Fields = append(section.Fields, fkFieldsToAdd...)
 			}
 		}
-		fieldsSection.Fields = append(fieldsSection.Fields, fkField)
 	}
-	return foreignKeys, nil
+	return nil
 }
 
 func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile reader.SchemaFile) {

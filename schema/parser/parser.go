@@ -93,6 +93,22 @@ type FieldNode struct {
 	// For these fields this value is set to true so we can distinguish
 	// them from fields defined by the user in the schema
 	BuiltIn bool
+
+	// This field is set only for fields that are either our auto-generated
+	// foreign key fields, or their sibling "owner" fields.
+	FkInfo *ForeignKeyAssociation
+}
+
+// ForeignKeyAssociation encapsulates everything relevant to the foreign key fields we auto
+// generate into the AST for some models. The generated fields are derived from an "Owning"
+// field (of type Model) defined explicitly in the keel schema, and with topology HasOne.
+type ForeignKeyAssociation struct {
+	OwningModel     *ModelNode
+	OwningField     *FieldNode // A field in the OwningModel that is of type MODEL, and topology HasOne.
+	ForeignKeyField *FieldNode // Field on owning model that carries the foreign key values.
+
+	ReferredToModel           *ModelNode
+	ReferredToModelPrimaryKey *FieldNode // Which field in the ReferredToModel is its Primary Key
 }
 
 func (field *FieldNode) String() string {

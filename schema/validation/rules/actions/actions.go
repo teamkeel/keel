@@ -101,91 +101,141 @@ func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 	return errs
 }
 
-// CreateOperationRequiredFieldsRule validates that all create actions
-// accept all required fields (that don't have default values) as write inputs
-func CreateOperationRequiredFieldsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+// CreateOperationRequiredFieldsRule validates that a create operation is specified in such a way
+// that all the fields that must be set, are covered by either inputs or set expressions.
+func CreateOperationRequiredFieldsRule(
+	asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
 	for _, model := range query.Models(asts) {
+		requiredFieldsWithAliases := requiredCreateFields(model)
+		createActions := query.ModelCreateActions(model)
+		for _, createAction := range createActions {
+			for _, fld := range requiredFieldsWithAliases {
+				satisfiedByWithInput := requiredFieldInWithClause(fld, createAction)
+				satisfiedBySetExpr := satisfiedBySetExpr(fld, model.Name.Value, createAction)
 
-		requiredFields := []*parser.FieldNode{}
-		for _, field := range query.ModelFields(model) {
-			// Optional and repeated fields are not required
-			if field.Optional || field.Repeated {
-				continue
-			}
-			if query.FieldHasAttribute(field, parser.AttributeDefault) {
-				continue
-			}
-			requiredFields = append(requiredFields, field)
-		}
-
-		for _, action := range query.ModelActions(model) {
-			if action.Type.Value != parser.ActionTypeCreate {
-				continue
-			}
-
-		fields:
-			for _, requiredField := range requiredFields {
-				for _, input := range action.With {
-					// short-hand syntax that matches the required field
-					if input.Label == nil && input.Type.ToString() == requiredField.Name.Value {
-						continue fields
-					}
+				if !satisfiedByWithInput && !satisfiedBySetExpr {
+					errs.Append(errorhandling.ErrorCreateOperationMissingInput,
+						map[string]string{
+							"FieldName": fld.Aliases(),
+						},
+						createAction.Name,
+					)
 				}
-
-				// if no explicitly an input we need to look for a @set() that references the field
-				for _, attr := range action.Attributes {
-					if attr.Name.Value != parser.AttributeSet {
-						continue
-					}
-
-					if len(attr.Arguments) == 0 {
-						continue
-					}
-
-					if attr.Arguments[0].Expression == nil {
-						continue
-					}
-
-					assignment, err := attr.Arguments[0].Expression.ToAssignmentCondition()
-					if err != nil {
-						continue
-					}
-
-					lhs := assignment.LHS
-
-					if len(lhs.Ident.Fragments) != 2 {
-						continue
-					}
-
-					modelName, fieldName := lhs.Ident.Fragments[0].Fragment, lhs.Ident.Fragments[1].Fragment
-
-					if modelName != strcase.ToLowerCamel(model.Name.Value) {
-						continue
-					}
-
-					// If we've found an assignment expression with a left hand side like:
-					//   {modelName}.{fieldName}
-					// then we are satisfied that this required field is being set
-					// We're not validating the RHS of the expression here as that is handled
-					// by the @set attribute rules
-					if fieldName == requiredField.Name.Value {
-						continue fields
-					}
-				}
-
-				// we didn't find an input or a @set that satisfies this required field
-				// so that's an error
-				errs.Append(errorhandling.ErrorCreateOperationMissingInput,
-					map[string]string{
-						"FieldName": requiredField.Name.Value,
-					},
-					action.Name,
-				)
 			}
 		}
 	}
+	return errs
+}
 
-	return
+// RequiredField is a generalisation of a field name, that allows a field name to
+// have aliases. For example "AuthorId", having an alias of "author.id".
+type requiredField []string
+
+// Aliases returns all the required field's aliases as a single comma delimited string.
+func (rf requiredField) Aliases() string {
+	return strings.Join([]string(rf), ", ")
+}
+
+// setExpressions returns all the non-nil expressions from all
+// the @set attributes on the given action.
+func setExpressions(action *parser.ActionNode) []*parser.Expression {
+	setters := lo.Filter(action.Attributes, func(a *parser.AttributeNode, _ int) bool {
+		return a.Name.Value == parser.AttributeSet
+	})
+	expressions := []*parser.Expression{}
+	for _, setAttr := range setters {
+		if len(setAttr.Arguments) == 0 {
+			continue
+		}
+		if setAttr.Arguments[0].Expression != nil {
+			expressions = append(expressions, setAttr.Arguments[0].Expression)
+		}
+	}
+	return expressions
+}
+
+// requiredCreateFields works out which of the fields on the given model,
+// must be specified for any create action on that model to be valid.
+func requiredCreateFields(model *parser.ModelNode) []*requiredField {
+	req := []*requiredField{}
+
+	for _, f := range query.ModelFields(model) {
+		if f.Optional {
+			continue
+		}
+		if f.Repeated {
+			continue
+		}
+		if query.FieldHasAttribute(f, parser.AttributeDefault) {
+			continue
+		}
+		// The model fields associated with foreign keys fields are not required
+		// because instead the auto-generated "authorId" field is - which is caught below.
+		if f.FkInfo != nil && f.FkInfo.OwningField == f {
+			continue
+		}
+
+		// We conclude this field IS required.
+
+		// A required FK field can be satisfied by its real field name like "authorId", or by "author.id".
+		if f.FkInfo != nil && f.FkInfo.ForeignKeyField == f {
+			dottedForm := strings.Join([]string{
+				f.FkInfo.OwningField.Name.Value,
+				f.FkInfo.ReferredToModelPrimaryKey.Name.Value}, ".")
+			requiredField := requiredField{f.Name.Value, dottedForm}
+			req = append(req, &requiredField)
+		} else {
+			// The general case
+			req = append(req, &requiredField{f.Name.Value})
+		}
+	}
+	return req
+}
+
+// requiredFieldInWithClause returns true if any of the names/aliases in the given requiredField are
+// present the the given action's "With" inputs.
+func requiredFieldInWithClause(requiredField *requiredField, action *parser.ActionNode) bool {
+	for _, altFieldName := range *requiredField {
+		for _, input := range action.With {
+			if input.Label == nil && input.Type.ToString() == altFieldName {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// satisfiedBySetExpr returns true if any of the names/aliases in the given requiredField are
+// present in any of the given action's @set expressions as the LHS of an assignment.
+// E.g
+// @set(mymodel.age =
+// @set(mymodel.authorId =
+
+func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *parser.ActionNode) bool {
+	setExpressions := setExpressions(action)
+	for _, expr := range setExpressions {
+		assignment, err := expr.ToAssignmentCondition()
+		if err != nil {
+			continue
+		}
+		lhs := assignment.LHS
+
+		if len(lhs.Ident.Fragments) != 2 {
+			continue
+		}
+		modelName, fieldName := lhs.Ident.Fragments[0].Fragment, lhs.Ident.Fragments[1].Fragment
+		if modelName != strcase.ToLowerCamel(modelName) {
+			continue
+		}
+
+		for _, altFieldName := range *requiredField {
+			if fieldName == altFieldName {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // UpdateOperationUniqueConstraintRule checks that all update operations

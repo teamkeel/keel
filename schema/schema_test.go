@@ -50,6 +50,7 @@ func TestSchema(t *testing.T) {
 			}
 
 			s2m := schema.Builder{}
+
 			protoSchema, err := s2m.MakeFromDirectory(testCaseDir)
 
 			var expectedJSON []byte
@@ -65,7 +66,6 @@ func TestSchema(t *testing.T) {
 
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
 				require.NotNil(t, err, "expected there to be validation errors")
-
 				expectedJSON = expectedErrors
 				actualJSON, err = json.Marshal(err)
 				require.NoError(t, err)
@@ -85,7 +85,6 @@ func TestSchema(t *testing.T) {
 			case jsondiff.FullMatch:
 				// success
 			case jsondiff.SupersetMatch, jsondiff.NoMatch:
-				//fmt.Printf("XXXX actual JSON: \n%s\n", actualJSONPretty)
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")
