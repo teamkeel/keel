@@ -8,13 +8,13 @@ build({
   platform: "node",
   entryPoints: ["index.ts"],
   bundle: true,
-  external: ["../client"],
   tsconfig: "tsconfig.build.json",
 });
 
-// Doesnt generate absolutely correct types due to several annoying issues but renable
-// to get a good basis
+// Generate an index.d.ts file automatically based on the typescript source code.
 new Generator({
   entry: './index.ts',
-  output: 'dist/index.d.ts'
+  output: 'dist/index.d.ts',
+  // use the build version of the tsconfig in order to exclude some test files
+  tsc: '-p tsconfig.build.json'
 }, true, true).generate();

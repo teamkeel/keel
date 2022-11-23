@@ -4,7 +4,7 @@
   "description": "Internal package used by @teamkeel/sdk",
   "main": "dist/index.js",
   "scripts": {
-    "build": "node build.mjs && cp index.d.ts dist/",
+    "build": "node build.mjs",
     "prepublishOnly": "npm run build",
     "test": "jest",
     "lint": "npx prettier --write ."
