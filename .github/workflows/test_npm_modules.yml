@@ -2,7 +2,7 @@ name: Test NPM packages
 on: [ pull_request ]
 
 jobs:
-  test-sdk:
+  test-functions-runtime:
     runs-on: ubuntu-latest
 
     services:
@@ -11,7 +11,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: sdk
+          POSTGRES_DB: functions-runtime
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -26,7 +26,7 @@ jobs:
           node-version: 16
       - uses: actions/checkout@v3
       - name: Run tests
-        working-directory: ./packages/sdk
+        working-directory: ./packages/functions-runtime
         run: npm install && npm test
   test-testing:
     runs-on: ubuntu-latest

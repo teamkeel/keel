@@ -12,10 +12,7 @@
         "pkgRoot": "packages/wasm"
       }],
       ["@semantic-release/npm", {
-        "pkgRoot": "packages/sdk"
-      }],
-      ["@semantic-release/npm", {
-        "pkgRoot": "packages/runtime"
+        "pkgRoot": "packages/functions-runtime"
       }],
       ["@semantic-release/npm", {
         "pkgRoot": "packages/testing"

@@ -98,8 +98,3 @@ func init() {
 
 	generateCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "the directory containing the Keel schema files")
 }
-
-var REQUIRED_DEPS = []string{
-	"@teamkeel/runtime",
-	"@teamkeel/sdk",
-}
