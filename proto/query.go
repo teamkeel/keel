@@ -65,6 +65,14 @@ func ForeignKeyFields(model *Model) []*Field {
 	})
 }
 
+func IsToManyRelationship(field *Field) bool {
+	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && field.Type.ModelName != nil && field.Type.Repeated
+}
+
+func IsToOneRelationship(field *Field) bool {
+	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && field.Type.ModelName != nil && !field.Type.Repeated
+}
+
 // ModelsExists returns true if the given schema contains a
 // model with the given name.
 func ModelExists(models []*Model, name string) bool {

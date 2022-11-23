@@ -435,14 +435,14 @@ func (statement *Statement) Execute(context context.Context) (int, error) {
 }
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
-func (statement *Statement) ExecuteWithResults(context context.Context) ([]map[string]any, int, bool, error) {
+func (statement *Statement) ExecuteToMany(context context.Context) ([]map[string]any, int, bool, error) {
 	db, err := runtimectx.GetDatabase(context)
 	if err != nil {
 		return nil, 0, false, err
 	}
 
 	results := []map[string]any{}
-	db = db.Raw(statement.template, statement.args...).Scan(&results)
+	db = db.Debug().Raw(statement.template, statement.args...).Scan(&results)
 	if db.Error != nil {
 		return nil, 0, false, db.Error
 	}
@@ -466,8 +466,8 @@ func (statement *Statement) ExecuteWithResults(context context.Context) ([]map[s
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
-func (statement *Statement) ExecuteAsSingle(context context.Context) (map[string]any, error) {
-	results, affected, _, err := statement.ExecuteWithResults(context)
+func (statement *Statement) ExecuteToSingle(context context.Context) (map[string]any, error) {
+	results, affected, _, err := statement.ExecuteToMany(context)
 	if err != nil {
 		return nil, err
 	}

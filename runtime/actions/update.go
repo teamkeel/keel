@@ -68,7 +68,7 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 	// Execute database request, expecting a single result
 	result, err := query.
 		UpdateStatement().
-		ExecuteAsSingle(scope.context)
+		ExecuteToSingle(scope.context)
 
 	if err != nil {
 		return nil, err

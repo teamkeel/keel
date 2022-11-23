@@ -107,7 +107,7 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	// Execute database request with results
 	results, _, hasNextPage, err := query.
 		SelectStatement().
-		ExecuteWithResults(scope.context)
+		ExecuteToMany(scope.context)
 
 	if err != nil {
 		return nil, err

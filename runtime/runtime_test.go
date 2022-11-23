@@ -397,7 +397,7 @@ const relationships string = `
 	api Test {
 		@graphql
 		models {
-			Post
+			BlogPost
 			Author
 			Publisher
 		}
@@ -1930,6 +1930,67 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_1")
 			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_2")
 			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+		},
+	},
+	{
+		name: "missing_lookup_in_has_a_relationship",
+		keelSchema: `
+			model BlogPost {
+				fields {
+					title Text
+					author Author?
+				}
+				operations {
+					get getPost(id)
+				}
+				@permission(
+					expression: true,
+					actions: [get]
+				)
+			}
+			
+			model Author {
+				fields {
+					name Text
+				}
+			}
+
+			api Test {
+				@graphql
+				models {
+					BlogPost
+					Author
+				}
+			}		
+		`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":    "post_1",
+					"title": "Without an Author",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query GetPost($postId: ID!) {
+				getPost(input: { id: $postId }) {
+					id
+					title
+					author {
+						name
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"postId": "post_1",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getPost.id", "post_1")
+			rtt.AssertValueAtPath(t, data, "getPost.title", "Without an Author")
+			rtt.AssertValueAtPath(t, data, "getPost.author", nil)
 		},
 	},
 }
