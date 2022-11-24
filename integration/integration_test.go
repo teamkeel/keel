@@ -29,8 +29,6 @@ type Assertion struct {
 }
 
 func TestIntegration(t *gotest.T) {
-	t.Skip()
-
 	entries, err := os.ReadDir("./testdata")
 	require.NoError(t, err)
 
