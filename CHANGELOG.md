@@ -1,3 +1,10 @@
+# [0.220.0](https://github.com/teamkeel/keel/compare/v0.219.0...v0.220.0) (2022-11-24)
+
+
+### Features
+
+* add functions-runtime readme ([#608](https://github.com/teamkeel/keel/issues/608)) ([e760dba](https://github.com/teamkeel/keel/commit/e760dbaa8a473af4cd25b62a31fc05a7cda40de5))
+
 # [0.219.0](https://github.com/teamkeel/keel/compare/v0.218.0...v0.219.0) (2022-11-24)
 
 
