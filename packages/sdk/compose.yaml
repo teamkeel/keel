@@ -1,0 +1,10 @@
+services:
+  postgres:
+    image: postgres:11.13-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=sdk
+    ports:
+      - "5432:5432"
