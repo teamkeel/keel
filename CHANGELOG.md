@@ -1,3 +1,10 @@
+# [0.219.0](https://github.com/teamkeel/keel/compare/v0.218.0...v0.219.0) (2022-11-24)
+
+
+### Features
+
+* combine sdk and runtime into functions-runtime ([#607](https://github.com/teamkeel/keel/issues/607)) ([c64996c](https://github.com/teamkeel/keel/commit/c64996c30fcfb8b6af12b54b731bc56660d3f757))
+
 # [0.218.0](https://github.com/teamkeel/keel/compare/v0.217.1...v0.218.0) (2022-11-23)
 
 
