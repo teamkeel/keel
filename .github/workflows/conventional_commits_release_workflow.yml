@@ -38,6 +38,9 @@ jobs:
       - name: Install functions runtime publish dependencies
         run: cd packages/runtime && npm ci
 
+      - name: Install functions-runtime publish dependencies (new package)
+        run: cd packages/functions-runtime && npm ci
+
       - name: Install testing package publish dependencies
         run: cd packages/testing && npm ci
 
