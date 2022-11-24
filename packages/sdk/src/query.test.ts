@@ -1,11 +1,7 @@
 import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
-import {
-  AwsRdsDataClientQueryResolver,
-  PgQueryResolver,
-  QueryResult,
-} from "./db/resolver";
+import { PgQueryResolver, QueryResult } from "./db/resolver";
 import { rawSql } from "./db/query";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/sdk`;
@@ -321,6 +317,67 @@ test("insert", async () => {
   expect(queryResult.object?.author_born_in).toEqual(
     postToCreate.author_born_in
   );
+});
+
+test("rawSql", async () => {
+  interface Food {
+    id: string;
+    name?: string;
+    rotten?: boolean;
+    //TODO add date here
+    stock?: number;
+  }
+
+  const prepareTestSql = `
+  DROP TABLE IF EXISTS food;
+
+  CREATE TABLE food(
+      id         text PRIMARY KEY,
+      name       text,
+      rotten     boolean,
+      stock      integer
+  );
+
+  INSERT INTO food (id, name, rotten, stock)
+  VALUES ('6cba2acc-a06b-4f4d-8671-bd87a5473ed9', 'Rotten apple', true, 10);
+  INSERT INTO food (id, name, rotten, stock)
+  VALUES ('6cba2acc-a06b-4f4d-8671-bd87a5473ed3', 'Gone off pineapple', true, 10);
+  INSERT INTO food (id, name, rotten, stock)
+  VALUES ('5a09be63-190f-4c77-a297-b4be4c023b71', 'Big Mac', false, 1);
+`;
+
+  const tableName = "food";
+
+  const logger = new Logger();
+  const query = new Query<Food>({
+    tableName,
+    queryResolver,
+    logger,
+  });
+
+  await runInitialSql(prepareTestSql);
+
+  const res = await query.rawSql(
+    "SELECT CASE WHEN rotten THEN 'rotten' ELSE 'fresh' END as status, count(*) as count from food GROUP BY rotten ORDER BY 2 DESC"
+  );
+
+  interface QueryResult {
+    status: string;
+    count: number;
+  }
+
+  const results: QueryResult[] = res.map((r) => ({
+    status: r["status"],
+    count: parseInt(r["count"], 10),
+  }));
+
+  expect(results.length).toEqual(2);
+
+  expect(results[0].count).toEqual(2);
+  expect(results[0].status).toEqual("rotten");
+
+  expect(results[1].count).toEqual(1);
+  expect(results[1].status).toEqual("fresh");
 });
 
 test("delete", async () => {
