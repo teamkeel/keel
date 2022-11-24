@@ -1,3 +1,10 @@
+# [0.221.0](https://github.com/teamkeel/keel/compare/v0.220.0...v0.221.0) (2022-11-24)
+
+
+### Features
+
+* expose raw sql method ([#609](https://github.com/teamkeel/keel/issues/609)) ([389b55c](https://github.com/teamkeel/keel/commit/389b55c9e54d1d0b0b2c975a7043abb00e001793))
+
 # [0.220.0](https://github.com/teamkeel/keel/compare/v0.219.0...v0.220.0) (2022-11-24)
 
 
