@@ -3,6 +3,7 @@ package actions
 import (
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -22,6 +23,10 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 
 		lhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.LHS)
 		rhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.RHS)
+		operandType, err := lhsResolver.GetOperandType()
+		if err != nil {
+			return err
+		}
 
 		if !(lhsResolver.IsDatabaseColumn() || lhsResolver.IsWriteValue()) {
 			return fmt.Errorf("lhs operand of assignment expression must be a model field")
@@ -33,6 +38,18 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 		}
 
 		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
+
+		// If targeting the field of a nested model, then combine into a camelCase field name.
+		// For example, post.author.id will become authorId.
+		if len(assignment.LHS.Ident.Fragments) == 3 {
+			fieldName = fmt.Sprintf("%s%s", fieldName, strcase.ToCamel(assignment.LHS.Ident.Fragments[2].Fragment))
+		}
+
+		// If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
+		// For example, @set(post.user = ctx.identity) will set post.userId with ctx.identity.id.
+		if operandType == proto.Type_TYPE_MODEL && value != nil {
+			fieldName = fmt.Sprintf("%sId", fieldName)
+		}
 
 		// Add a value to be written during an INSERT or UPDATE
 		query.AddWriteValue(fieldName, value)
@@ -52,8 +69,14 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args ValueArgs) erro
 		}
 
 		fieldName := input.Target[0]
-		value, ok := args[fieldName]
 
+		// If targeting the field of a nested model, then combine into a camelCase field name.
+		// For example, author.id will become authorId.
+		if len(input.Target) == 2 {
+			fieldName = fmt.Sprintf("%s%s", fieldName, strcase.ToCamel(input.Target[1]))
+		}
+
+		value, ok := args[fieldName]
 		if !ok {
 			continue
 		}

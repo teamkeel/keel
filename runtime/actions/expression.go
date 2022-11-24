@@ -404,13 +404,21 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any, writeValues m
 		}
 		return value, nil
 	case resolver.IsWriteValue():
-		inputName := strcase.ToSnake(resolver.operand.Ident.Fragments[1].Fragment)
-		value, ok := writeValues[inputName]
+		inputName := resolver.operand.Ident.Fragments[1].Fragment
+
+		// If the target is type MODEL, then refer to the
+		// foreign key id by appending "Id" to the field name
+		if operandType == proto.Type_TYPE_MODEL {
+			inputName = fmt.Sprintf("%sId", inputName)
+		}
+
+		value, ok := writeValues[strcase.ToSnake(inputName)]
 		if !ok {
 			return nil, fmt.Errorf("value '%s' does not exist in write values", inputName)
 		}
 		return value, nil
 	case resolver.IsDatabaseColumn():
+		// https://linear.app/keel/issue/RUN-153/set-attribute-to-support-targeting-database-fields
 		panic("cannot resolve operand value when IsDatabaseColumn() is true")
 	case resolver.IsContextField() && resolver.operand.Ident.IsContextIdentityField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.context)
@@ -455,8 +463,22 @@ func (resolver *OperandResolver) generateQueryOperand(args map[string]any, write
 		// Step through the fragments in order to determine the table and field referenced by the expression operand
 		fragments := lo.Map(resolver.operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
+		operandType, err := resolver.GetOperandType()
+		if err != nil {
+			return nil, err
+		}
+
+		// If the target is type MODEL, then refer to the
+		// foreign key id by appending "Id" to the field name
+		if operandType == proto.Type_TYPE_MODEL {
+			fragments[len(fragments)-1] = fmt.Sprintf("%sId", fragments[len(fragments)-1])
+		}
+
 		// Generate QueryOperand from the fragments that make up the expression operand
-		queryOperand, _ = operandFromFragments(resolver.schema, fragments)
+		queryOperand, err = operandFromFragments(resolver.schema, fragments)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return queryOperand, nil
@@ -508,7 +530,7 @@ func evaluateInProcess(
 		return compareBool(lhs.(bool), rhs.(bool), operator)
 	case proto.Type_TYPE_ENUM:
 		return compareEnum(lhs.(string), rhs.(string), operator)
-	case proto.Type_TYPE_IDENTITY:
+	case proto.Type_TYPE_ID, proto.Type_TYPE_MODEL:
 		return compareIdentity(lhs.(ksuid.KSUID), rhs.(ksuid.KSUID), operator)
 	default:
 		return false, fmt.Errorf("cannot yet handle comparision of type: %s", operandType)

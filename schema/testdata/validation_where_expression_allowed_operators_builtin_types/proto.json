@@ -28,7 +28,7 @@
           "modelName":  "Post",
           "name":  "identity",
           "type":  {
-            "type":  "TYPE_IDENTITY",
+            "type":  "TYPE_MODEL",
             "modelName":  "Identity"
           },
           "foreignKeyFieldName":  "identityId"
@@ -80,7 +80,7 @@
           "modelName":  "Post",
           "name":  "identity2",
           "type":  {
-            "type":  "TYPE_IDENTITY",
+            "type":  "TYPE_MODEL",
             "modelName":  "Identity"
           },
           "foreignKeyFieldName":  "identity2Id"

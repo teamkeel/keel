@@ -19,7 +19,6 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_DATETIME:  "TIMESTAMP",
 	proto.Type_TYPE_DATE:      "DATE",
 	proto.Type_TYPE_MODEL:     "TEXT", // id of the target
-	proto.Type_TYPE_IDENTITY:  "TEXT", // id of the target
 	proto.Type_TYPE_ENUM:      "TEXT",
 	proto.Type_TYPE_SECRET:    "TEXT",
 	proto.Type_TYPE_PASSWORD:  "TEXT",
