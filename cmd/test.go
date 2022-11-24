@@ -39,9 +39,10 @@ var testCmd = &cobra.Command{
 		}
 
 		err = packageJson.Inject(map[string]string{
-			"@teamkeel/testing":           "*",
-			"@teamkeel/functions-runtime": "*",
-			"ts-node":                     "*",
+			"@teamkeel/testing": "*",
+			"@teamkeel/sdk":     "*",
+			"@teamkeel/runtime": "*",
+			"ts-node":           "*",
 			// https://typestrong.org/ts-node/docs/swc/
 			"@swc/core":           "*",
 			"regenerator-runtime": "*",
