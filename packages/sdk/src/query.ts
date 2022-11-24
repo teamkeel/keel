@@ -14,9 +14,9 @@ import {
   OrderClauses,
 } from "./types";
 import * as ReturnTypes from "./returnTypes";
-import Logger from "./logger";
+import Logger, { Level as LogLevel } from "./logger";
 import { SqlQueryParts } from "./db/query";
-import { QueryResolver, QueryResult } from "./db/resolver";
+import { QueryResolver, QueryResult, QueryResultRow } from "./db/resolver";
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
@@ -111,6 +111,10 @@ export default class Query<T extends IDer> {
     this.queryResolver = queryResolver;
     this.logger = logger;
   }
+
+  rawSql = async (sql: string): Promise<QueryResultRow[]> => {
+    return this.queryResolver.runRawQuery(sql);
+  };
 
   create = async (
     inputs: Partial<T>

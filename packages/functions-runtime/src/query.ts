@@ -14,9 +14,9 @@ import {
   OrderClauses,
 } from "./types";
 import * as ReturnTypes from "./returnTypes";
-import Logger from "./logger";
+import Logger, { Level as LogLevel } from "./logger";
 import { SqlQueryParts } from "./db/query";
-import { QueryResolver, QueryResult } from "./db/resolver";
+import { QueryResolver, QueryResult, QueryResultRow } from "./db/resolver";
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
@@ -88,9 +88,6 @@ export class ChainableQuery<T extends IDer> {
   }
 
   private execute = async (query: SqlQueryParts): Promise<QueryResult> => {
-    // todo: reinstate
-    // this.logger.log(logSql<T>(query), LogLevel.Debug);
-
     return this.queryResolver.runQuery(query);
   };
 }
@@ -136,6 +133,10 @@ export default class Query<T extends IDer> {
       } as unknown as T,
       errors: [],
     };
+  };
+
+  rawSql = async (sql: string): Promise<QueryResultRow[]> => {
+    return this.queryResolver.runRawQuery(sql);
   };
 
   where = (conditions: Conditions<T>): ChainableQuery<T> => {
@@ -206,9 +207,6 @@ export default class Query<T extends IDer> {
   };
 
   private execute = async (query: SqlQueryParts): Promise<QueryResult> => {
-    // todo: reinstate
-    // this.logger.log(logSql<T>(query), LogLevel.Debug);
-
     return this.queryResolver.runQuery(query);
   };
 }
