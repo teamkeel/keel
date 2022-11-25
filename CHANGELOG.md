@@ -1,3 +1,10 @@
+## [0.221.1](https://github.com/teamkeel/keel/compare/v0.221.0...v0.221.1) (2022-11-25)
+
+
+### Bug Fixes
+
+* enums as explicit inputs ([#612](https://github.com/teamkeel/keel/issues/612)) ([027cf43](https://github.com/teamkeel/keel/commit/027cf43c3071d71c2a85eef9f071aed403cb5ce4))
+
 # [0.221.0](https://github.com/teamkeel/keel/compare/v0.220.0...v0.221.0) (2022-11-24)
 
 
