@@ -24,6 +24,7 @@ jobs:
           prettier: true
           prettier_dir: ./packages
           commit_message: "chore: autofix prettier issues"
+          check_name: "${linter} - ${dir}"
 
   lint-integration:
     name: Lint Integration
@@ -38,7 +39,7 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install Pretier
+      - name: Install Prettier
         run: npm install -g prettier
 
       - name: Run linters
@@ -47,3 +48,4 @@ jobs:
           prettier: true
           commit_message: "chore: autofix prettier issues"
           prettier_dir: ./integration
+          check_name: "${linter} - ${dir}"
