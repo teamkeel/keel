@@ -357,7 +357,7 @@ test("rawSql", async () => {
 
   await runInitialSql(prepareTestSql);
 
-  const res = await query.rawSql(
+  const res = await query.raw(
     "SELECT CASE WHEN rotten THEN 'rotten' ELSE 'fresh' END as status, count(*) as count from food GROUP BY rotten ORDER BY 2 DESC"
   );
 
