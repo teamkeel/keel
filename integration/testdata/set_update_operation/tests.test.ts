@@ -130,17 +130,19 @@ test("enum set attribute - set to null - is null", async () => {
 
 test("enum set attribute from explicit input - set to TypeTwo - is TypeTwo", async () => {
   const { object: thing } = await actions.create({});
-  const { object: thingUpdated } = await actions.updateEnumFromExplicitInput(
-    { where: { id: thing.id }, values: { explEnum: "TypeTwo" } }
-  );
+  const { object: thingUpdated } = await actions.updateEnumFromExplicitInput({
+    where: { id: thing.id },
+    values: { explEnum: "TypeTwo" },
+  });
   expect(thingUpdated.enum).toEqual("TypeTwo");
 });
 
 test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", async () => {
   const { object: thing } = await actions.create({});
-  const { object: thingUpdated } = await actions.updateEnumFromImplicitInput(
-    { where: { id: thing.id }, values: { otherEnum: "TypeTwo" } }
-  );
+  const { object: thingUpdated } = await actions.updateEnumFromImplicitInput({
+    where: { id: thing.id },
+    values: { otherEnum: "TypeTwo" },
+  });
   expect(thingUpdated.enum).toEqual("TypeTwo");
   expect(thingUpdated.otherEnum).toEqual("TypeTwo");
 });
