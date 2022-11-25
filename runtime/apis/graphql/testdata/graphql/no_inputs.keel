@@ -2,6 +2,7 @@ model Beatle {
     fields {
         identity Identity? @unique
         name Text @unique
+        code Text @unique
     }
 
     // This is testing that operations with no inputs
@@ -13,13 +14,16 @@ model Beatle {
         list listBeatles()
         update switchBeatle() {
             @where(beatle.identity == ctx.identity)
+            @where(beatle.code == "UNIQUEID")
             @set(beatle.name = "Ringo Starr")
         }
         create createBeatle() {
             @set(beatle.identity = ctx.identity)
+            @set(beatle.code = "UNIQUEID")
             @set(beatle.name = "John Lennon")
         }
         delete deleteBeatle() {
+            @where(beatle.code == "UNIQUEID")
             @where(beatle.identity == ctx.identity)
         }
     }

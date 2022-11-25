@@ -336,7 +336,6 @@ enum Type {
     TYPE_CURRENCY = 8;
     TYPE_DATETIME = 9;
     TYPE_ENUM = 10;
-    TYPE_IDENTITY = 11;
     TYPE_IMAGE = 12;
     TYPE_OBJECT = 13;
     // Used for sensitive data. Encrypted at rest, decrypted on read.

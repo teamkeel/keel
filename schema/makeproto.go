@@ -358,8 +358,6 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_SECRET
 	case parserType == parser.FieldTypePassword:
 		return proto.Type_TYPE_PASSWORD
-	case query.IsIdentityModel(scm.asts, parserType):
-		return proto.Type_TYPE_IDENTITY
 	case query.IsModel(scm.asts, parserType):
 		return proto.Type_TYPE_MODEL
 	case query.IsEnum(scm.asts, parserType):
@@ -377,7 +375,7 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 
 	switch protoType {
 
-	case proto.Type_TYPE_MODEL, proto.Type_TYPE_IDENTITY:
+	case proto.Type_TYPE_MODEL:
 		modelName = &wrapperspb.StringValue{
 			Value: query.Model(scm.asts, field.Type).Name.Value,
 		}

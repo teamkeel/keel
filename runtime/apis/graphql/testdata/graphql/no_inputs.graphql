@@ -31,6 +31,7 @@ type AuthenticateResponse {
 }
 
 type Beatle {
+  code: String!
   createdAt: Timestamp!
   id: ID!
   identity: Identity

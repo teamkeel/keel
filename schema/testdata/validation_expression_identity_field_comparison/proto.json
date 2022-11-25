@@ -7,7 +7,7 @@
           "modelName":  "Author",
           "name":  "identity",
           "type":  {
-            "type":  "TYPE_IDENTITY",
+            "type":  "TYPE_MODEL",
             "modelName":  "Identity"
           },
           "foreignKeyFieldName":  "identityId"
@@ -63,7 +63,7 @@
           "modelName":  "Publisher",
           "name":  "identity",
           "type":  {
-            "type":  "TYPE_IDENTITY",
+            "type":  "TYPE_MODEL",
             "modelName":  "Identity"
           },
           "foreignKeyFieldName":  "identityId"

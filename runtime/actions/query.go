@@ -442,7 +442,7 @@ func (statement *Statement) ExecuteToMany(context context.Context) ([]map[string
 	}
 
 	results := []map[string]any{}
-	db = db.Debug().Raw(statement.template, statement.args...).Scan(&results)
+	db = db.Raw(statement.template, statement.args...).Scan(&results)
 	if db.Error != nil {
 		return nil, 0, false, db.Error
 	}

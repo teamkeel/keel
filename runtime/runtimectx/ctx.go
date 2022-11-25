@@ -11,7 +11,7 @@ const (
 )
 
 var ContextFieldTypes = map[string]proto.Type{
-	ContextIdentityField:        proto.Type_TYPE_IDENTITY,
+	ContextIdentityField:        proto.Type_TYPE_MODEL,
 	ContextIsAuthenticatedField: proto.Type_TYPE_BOOL,
 	ContextNowField:             proto.Type_TYPE_DATETIME,
 }

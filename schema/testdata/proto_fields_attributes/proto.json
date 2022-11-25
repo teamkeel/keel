@@ -28,7 +28,7 @@
           "modelName":  "Foo",
           "name":  "identity",
           "type":  {
-            "type":  "TYPE_IDENTITY",
+            "type":  "TYPE_MODEL",
             "modelName":  "Identity"
           },
           "optional":  true,
