@@ -319,7 +319,7 @@ test("insert", async () => {
   );
 });
 
-test("rawSql", async () => {
+test("raw", async () => {
   interface Food {
     id: string;
     name?: string;
