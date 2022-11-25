@@ -91,6 +91,22 @@ func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
 	return sourceCodes, nil
 }
 
+func (g *Generator) GenerateDevelopmentHandler() ([]*GeneratedFile, error) {
+	src := renderTemplate(TemplateHandlerDevelopment, map[string]interface{}{})
+
+	sourceCodes := []*SourceCode{}
+
+	sourceCodes = append(sourceCodes, &SourceCode{Path: "index.js", Contents: src})
+
+	err := g.makeBuildDir(sourceCodes)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return sourceCodes, nil
+}
+
 // Generates the contents of the index.js file, containing vanilla
 // javascript code required by the testing package
 func (g *Generator) testingSrcCode() string {
@@ -129,6 +145,38 @@ func (g *Generator) sdkTypeDefinitions() string {
 
 //go:embed package.json.tmpl
 var templatePackageJson string
+
+const (
+	BUILD_DIR_NAME = ".build"
+)
+
+// makeBuildDir will create a hidden .build directory in the target directory,
+// containing the given source code files
+func (g *Generator) makeBuildDir(srcCodes []*SourceCode) error {
+	basePath := filepath.Join(g.dir, BUILD_DIR_NAME)
+
+	err := os.MkdirAll(basePath, os.ModePerm)
+
+	if err != nil {
+		return err
+	}
+
+	for _, code := range srcCodes {
+		f, err := os.Create(filepath.Join(basePath, code.Path))
+
+		if err != nil {
+			return err
+		}
+
+		_, err = f.WriteString(code.Contents)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // makeNpmPackage will create a new node_module at {dir}/node_modules/@teamkeel/{name},
 // with a simple package.json, as well as any srcCode files passed to this method.

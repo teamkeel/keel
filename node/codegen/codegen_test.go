@@ -804,6 +804,24 @@ func TestTesting(t *testing.T) {
 	})
 }
 
+func TestDevelopmentHandler(t *testing.T) {
+	cases := []TestCase{
+		{
+			Name: "basic",
+			ExpectedFiles: []*codegenerator.GeneratedFile{
+				{
+					Path:     "index.js",
+					Contents: ``,
+				},
+			},
+		},
+	}
+
+	runCases(t, cases, func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error) {
+		return cg.GenerateDevelopmentHandler()
+	})
+}
+
 func runCases(t *testing.T, cases []TestCase, codegenFn func(cg *codegenerator.Generator) ([]*codegenerator.GeneratedFile, error)) {
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
@@ -981,6 +999,22 @@ func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (out
 	}
 
 	f.WriteString(sampleTsConfig)
+
+	hasTypeScriptInputs := lo.SomeBy(generatedFiles, func(f *codegenerator.SourceCode) bool {
+		ext := filepath.Ext(f.Path)
+
+		switch ext {
+		case ".ts", ".d.ts":
+			return true
+		default:
+			return false
+		}
+	})
+
+	// dont typecheck if there are no typescript files to typecheck
+	if !hasTypeScriptInputs {
+		return "", nil
+	}
 
 	for _, file := range generatedFiles {
 		f, err := os.Create(filepath.Join(tmpDir, file.Path))

@@ -62,14 +62,14 @@ func GeneratePackages(dir string) error {
 
 	schema, err := builder.MakeFromDirectory(dir)
 
+	if err != nil {
+		return err
+	}
+
 	// Dont do any code generation if there are no functions in the schema
 	// or any Keel tests defined
 	if !hasFunctions(schema) && !hasTests(dir) {
 		return nil
-	}
-
-	if err != nil {
-		return err
 	}
 
 	cg := codegenerator.NewGenerator(schema, dir)
@@ -93,6 +93,28 @@ func GenerateDevelopmentServer(dir string) error {
 	// 1. make a single js file inside .build directory
 	// that imports custom function handler code from node_modules/@teamkeel/functions-runtime
 	// 2. bootstrap code to start a node server for the custom function runtime
+
+	builder := schema.Builder{}
+
+	schema, err := builder.MakeFromDirectory(dir)
+
+	if err != nil {
+		return err
+	}
+
+	// Dont do any code generation if there are no functions in the schema
+	// or any Keel tests defined
+	if !hasFunctions(schema) && !hasTests(dir) {
+		return nil
+	}
+
+	cg := codegenerator.NewGenerator(schema, dir)
+
+	_, err = cg.GenerateDevelopmentHandler()
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

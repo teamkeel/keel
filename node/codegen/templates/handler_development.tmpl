@@ -1,0 +1,57 @@
+import { handleCustomFunction } from '@teamkeel/functions-runtime';
+import { createServer } from "http";
+import url from "url";
+
+const startRuntimeServer = ({ functions, api }: Config) => {
+  const listener = async (req, res) => {
+    if (req.method === "POST") {
+      const parts = url.parse(req.url);
+      const { pathname } = parts;
+      const buffers = [];
+      for await (const chunk of req) {
+        buffers.push(chunk);
+      }
+      const data = Buffer.concat(buffers).toString();
+      const json = JSON.parse(data);
+
+      try {
+        const result = await handleCustomFunction(path, config);
+        res.write(JSON.stringify(result));
+      } catch (e) {
+        // todo: proper error handling
+        res.statusCode = 400;
+
+        if (e instanceof Error) {
+          const { message } = e;
+
+          res.write({
+            errors: [{
+              message
+            }]
+          });
+        }
+      }
+    }
+
+    res.end();
+  };
+
+  const server = createServer(listener);
+  const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;
+  server.listen(port);
+};
+
+startRuntimeServer({
+  functions: {
+  {{- range .Functions }}
+
+  {{- end }}
+  },
+  api: {
+    models: {
+    {{- range .Models }}
+
+    {{- end }}
+    }
+  }
+});
