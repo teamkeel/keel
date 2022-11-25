@@ -89,15 +89,13 @@ model Thing {
             @set(thing.requiredEnum = ThingType.TypeTwo)
         }
 
-        // https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
-        // create createEnumFromExplicitInput() with (explEnum: ThingType) {
-        //     @set(thing.requiredEnum = explEnum)
-        // }
+        create createEnumFromExplicitInput() with (explEnum: ThingType) {
+            @set(thing.requiredEnum = explEnum)
+        }
 
-        // https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
-        // create createEnumFromImplicitInput() with (requiredEnum) {
-        //     @set(thing.optionalEnum = explEnum)
-        // }
+        create createEnumFromImplicitInput() with (requiredEnum) {
+            @set(thing.optionalEnum = requiredEnum)
+        }
     }
 }
 

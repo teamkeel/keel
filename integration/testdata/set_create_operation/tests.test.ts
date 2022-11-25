@@ -104,35 +104,35 @@ test("boolean set attribute from implicit input - set to true - is true", async 
 
 /* 
   Enum Type 
+  Use enum type: https://linear.app/keel/issue/DEV-204/export-enum-types-from-teamkeeltesting
 */
 
-// Use enum type: https://linear.app/keel/issue/DEV-204/export-enum-types-from-teamkeeltesting
 test("enum set attribute on optional field - set to TypeTwo - is TypeTwo", async () => {
   const { object: thing } = await actions.createEnumOnOptional({});
   expect(thing.optionalEnum).toEqual("TypeTwo");
 });
 
-// https://linear.app/keel/issue/DEV-209/set-enum-to-null
 test("enum set attribute on optional field - set to null - is null", async () => {
   const { object: thing } = await actions.createNullEnumOnOptional({});
   expect(thing.optionalEnum).toEqual(null);
 });
 
-// Use enum type: https://linear.app/keel/issue/DEV-204/export-enum-types-from-teamkeeltesting
 test("enum set attribute on required field - set to TypeTwo - is TypeTwo", async () => {
   const { object: thing } = await actions.createEnumOnRequired({});
   expect(thing.requiredEnum).toEqual("TypeTwo");
 });
 
-// https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
-// test('enum set attribute from explicit input - set to TypeTwo - is TypeTwo', async () => {
-//   const { object: thing } = await actions.createEnumOnRequired({ explEnum: "TypeTwo" })
-//   expect(thing.requiredEnum).toEqual("TypeTwo")
-// })
+test("enum set attribute from explicit input - set to TypeTwo - is TypeTwo", async () => {
+  const { object: thing } = await actions.createEnumFromExplicitInput({
+    explEnum: "TypeTwo",
+  });
+  expect(thing.requiredEnum).toEqual("TypeTwo");
+});
 
-// https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
-// test('enum set attribute from implicit input - set to TypeTwo - is TypeTwo', async () => {
-//   const { object: thing } = await actions.createEnumOnRequired({ requiredEnum: "TypeTwo" })
-//   expect(thing.optionalEnum).toEqual("TypeTwo")
-//   expect(thing.requiredEnum).toEqual("TypeTwo")
-// })
+test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", async () => {
+  const { object: thing } = await actions.createEnumFromImplicitInput({
+    requiredEnum: "TypeTwo",
+  });
+  expect(thing.optionalEnum).toEqual("TypeTwo");
+  expect(thing.requiredEnum).toEqual("TypeTwo");
+});

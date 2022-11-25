@@ -289,6 +289,12 @@ func (scm *Builder) makeOperationInput(
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
+	if protoType == proto.Type_TYPE_ENUM {
+		enumName = &wrapperspb.StringValue{
+			Value: idents[0].Fragment,
+		}
+	}
+
 	if protoType == proto.Type_TYPE_UNKNOWN {
 		behaviour = proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
 

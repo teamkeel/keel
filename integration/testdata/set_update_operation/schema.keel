@@ -17,6 +17,8 @@ model Thing {
         otherBoolean Boolean?
 
         enum ThingType? @default(ThingType.TypeOne)
+
+        otherEnum ThingType?
     }
     operations {
         create create() 
@@ -77,6 +79,14 @@ model Thing {
 
         update updateNullEnum(id)  {
             @set(thing.enum = null)
+        }
+
+        update updateEnumFromExplicitInput(id) with (explEnum: ThingType) {
+            @set(thing.enum = explEnum)
+        }
+
+        update updateEnumFromImplicitInput(id) with (otherEnum) {
+            @set(thing.enum = ThingType.TypeTwo)
         }
     }
 }
