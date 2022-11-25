@@ -1,9 +1,9 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -39,10 +39,14 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 
 		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
 
-		// If targeting the field of a nested model, then combine into a camelCase field name.
+		// Currently we only support 3 fragments in an set expression operand if it is targeting an "id" field.
+		// If so, we generate the foreign key field name from the fragments.
 		// For example, post.author.id will become authorId.
 		if len(assignment.LHS.Ident.Fragments) == 3 {
-			fieldName = fmt.Sprintf("%s%s", fieldName, strcase.ToCamel(assignment.LHS.Ident.Fragments[2].Fragment))
+			if assignment.LHS.Ident.Fragments[2].Fragment != "id" {
+				return errors.New("currently only support 'id' as a third fragment in a set expression")
+			}
+			fieldName = fmt.Sprintf("%sId", fieldName)
 		}
 
 		// If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
@@ -70,10 +74,16 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args ValueArgs) erro
 
 		fieldName := input.Target[0]
 
-		// If targeting the field of a nested model, then combine into a camelCase field name.
+		// Currently we only support a single-fragment implicit input EXCEPT when the 'id' of a model is targeted.
+		// If so, we generate the foreign key field name from the fragments.
 		// For example, author.id will become authorId.
 		if len(input.Target) == 2 {
-			fieldName = fmt.Sprintf("%s%s", fieldName, strcase.ToCamel(input.Target[1]))
+			if input.Target[1] != "id" {
+				return errors.New("currently only support 'id' as a second fragment in an implicit input")
+			}
+			fieldName = fmt.Sprintf("%sId", fieldName)
+		} else if len(input.Target) > 2 {
+			return errors.New("nested implicit input not supported")
 		}
 
 		value, ok := args[fieldName]

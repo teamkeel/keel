@@ -418,7 +418,7 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any, writeValues m
 		}
 		return value, nil
 	case resolver.IsDatabaseColumn():
-		// https://linear.app/keel/issue/RUN-153/set-attribute-to-support-targeting-database-fields
+		// todo: https://linear.app/keel/issue/RUN-153/set-attribute-to-support-targeting-database-fields
 		panic("cannot resolve operand value when IsDatabaseColumn() is true")
 	case resolver.IsContextField() && resolver.operand.Ident.IsContextIdentityField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.context)
