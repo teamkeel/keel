@@ -30,9 +30,7 @@ const matchPathToFunction = (
   const normalisedPath = path.replace(/\//, "");
 
   if (!(normalisedPath in functions)) {
-    throw new NotFoundError(
-      `no matching function found for path ${path}`
-    );
+    throw new NotFoundError(`no matching function found for path ${path}`);
   }
 
   return functions[normalisedPath];
