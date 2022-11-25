@@ -69,6 +69,7 @@
               "operationName": "enumFailedExpressions",
               "name": "explType",
               "type": {
+                "enumName": "PostType",
                 "type": "TYPE_ENUM"
               },
               "mode": "INPUT_MODE_WRITE",

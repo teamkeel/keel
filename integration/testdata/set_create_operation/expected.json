@@ -70,5 +70,13 @@
   {
     "status": "pass",
     "testName": "enum set attribute on required field - set to TypeTwo - is TypeTwo"
+  },
+  {
+    "status": "pass",
+    "testName": "enum set attribute from explicit input - set to TypeTwo - is TypeTwo"
+  },
+  {
+    "status": "pass",
+    "testName": "enum set attribute from implicit input - set to TypeTwo - is TypeTwo"
   }
 ]

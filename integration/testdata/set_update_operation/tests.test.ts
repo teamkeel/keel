@@ -1,10 +1,5 @@
 import { test, expect, actions, Thing } from "@teamkeel/testing";
 
-// Outstanding tests & features:
-// - setting using implicit inputs
-// - setting using explicit inputs
-// - setting using explicit inputs overriding implicit write
-
 /* 
   Text Type 
 */
@@ -133,10 +128,19 @@ test("enum set attribute - set to null - is null", async () => {
   expect(updated.enum).toEqual(null);
 });
 
-// https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
-// test('enum set attribute from explicit input - set to TypeTwo - is TypeTwo', async () => {
-// })
+test("enum set attribute from explicit input - set to TypeTwo - is TypeTwo", async () => {
+  const { object: thing } = await actions.create({});
+  const { object: thingUpdated } = await actions.updateEnumFromExplicitInput(
+    { where: { id: thing.id }, values: { explEnum: "TypeTwo" } }
+  );
+  expect(thingUpdated.enum).toEqual("TypeTwo");
+});
 
-// https://linear.app/keel/issue/RUN-141/support-for-enums-as-explicit-inputs
-// test('enum set attribute from implicit input - set to TypeTwo - is TypeTwo', async () => {
-// })
+test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", async () => {
+  const { object: thing } = await actions.create({});
+  const { object: thingUpdated } = await actions.updateEnumFromImplicitInput(
+    { where: { id: thing.id }, values: { otherEnum: "TypeTwo" } }
+  );
+  expect(thingUpdated.enum).toEqual("TypeTwo");
+  expect(thingUpdated.otherEnum).toEqual("TypeTwo");
+});
