@@ -88,3 +88,15 @@ test("when there is an unexpected error in the custom function", async () => {
     },
   });
 });
+
+test("when there is no matching function for the path", async () => {
+  const config: Config = {
+    functions: {
+      createPost: () => {},
+    },
+    api: {},
+  };
+  await expect(
+    handle("/unknown", { title: "a post" }, config)
+  ).rejects.toThrowError("no matching function found for path /unknown");
+});
