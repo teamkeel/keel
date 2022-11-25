@@ -1,0 +1,48 @@
+
+model Post {
+    fields {
+        title Text
+        isActive Boolean
+        theAuthor Author?
+    }
+
+    operations {
+        get getPost(id) {
+            @permission(expression: post.theAuthor.isActive == true)
+        }
+
+        list listPosts() {
+            @permission(expression: post.theAuthor.isActive == true)
+        }
+    }
+}
+
+model Author {
+    fields {
+        name Text
+        isActive Boolean
+        thePosts Post[]
+    }
+
+    operations {
+        get getAuthor(id) {
+            @permission(expression: author.thePosts.isActive == true)
+        }
+
+        list listAuthors() {
+            @permission(expression: author.thePosts.isActive == true)
+        }
+    }
+}
+
+
+
+api Web {
+    @graphql
+
+    models {
+        Post
+        Author
+    }
+}
+

@@ -169,6 +169,12 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 							return nil, fmt.Errorf("the foreign key does not exist in source value map: %s", foreignKeyField)
 						}
 
+						// If the foreign key value is null (possible if the relationship
+						// is not required), then there is no need for a lookup.
+						if id == nil {
+							return nil, nil
+						}
+
 						query.Where(actions.IdField(), actions.Equals, actions.Value(id))
 						result, err := query.
 							SelectStatement().
@@ -178,10 +184,9 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 							return nil, err
 						}
 
-						// If the result is nil, then we must explicit return the untyped nil literal
-						// so to not confuse the GraphQL resolver in trying to retrieve nested fields.
+						// Return an error if no record if found for the corresponding foreign key
 						if result == nil {
-							return nil, nil
+							return nil, errors.New("record expected in database but nothing found")
 						}
 
 						return result, nil
