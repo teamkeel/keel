@@ -1,5 +1,5 @@
 import { Config } from "../types";
-import handle from "./";
+import handle from ".";
 
 test("when the custom function returns expected value", async () => {
   const config: Config = {

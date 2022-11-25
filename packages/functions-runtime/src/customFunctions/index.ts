@@ -7,7 +7,7 @@ class NoResultError extends Error {}
 // to execute a custom function correctly based on a path and a request payload
 // If an error occurs during execution of the function, then an error is thrown, and
 // should be handled accordingly in the caller.
-const handle = async (path: string, payload: Payload, config: Config) => {
+const handler = async (path: string, payload: Payload, config: Config) => {
   const { api, functions } = config;
 
   const fn = matchPathToFunction(path, functions);
@@ -29,4 +29,4 @@ const matchPathToFunction = (
   return functions[normalisedPath];
 };
 
-export default handle;
+export default handler;
