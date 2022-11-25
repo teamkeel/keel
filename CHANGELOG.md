@@ -1,3 +1,10 @@
+## [0.221.2](https://github.com/teamkeel/keel/compare/v0.221.1...v0.221.2) (2022-11-25)
+
+
+### Bug Fixes
+
+* create action to accept model, model.id and modelId ([#616](https://github.com/teamkeel/keel/issues/616)) ([3efbc3f](https://github.com/teamkeel/keel/commit/3efbc3f8816fb2d61e3bb44c33b1c98b2ba819ae))
+
 ## [0.221.1](https://github.com/teamkeel/keel/compare/v0.221.0...v0.221.1) (2022-11-25)
 
 
