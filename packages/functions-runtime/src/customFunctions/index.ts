@@ -14,7 +14,7 @@ import {
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
 const handler = async (
-  { method: name, params, id }: CustomFunctionRequestPayload,
+  { method: name, params: inputs, id }: CustomFunctionRequestPayload,
   config: Config
 ): Promise<CustomFunctionResponsePayload> => {
   const { api, functions } = config;
@@ -28,7 +28,7 @@ const handler = async (
   }
 
   try {
-    const result = await functions[name](params, api);
+    const result = await functions[name](inputs, api);
 
     if (!result) {
       // no result returned from custom function
