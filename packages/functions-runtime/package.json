@@ -37,6 +37,7 @@
     "chalk": "^4.1.2",
     "change-case": "^4.1.2",
     "commander": "^9.4.1",
+    "json-rpc-2.0": "^1.4.1",
     "ksuid": "^3.0.0",
     "node-fetch": "^3.2.10",
     "pg": "^8.8.0"

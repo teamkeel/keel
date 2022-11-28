@@ -1,3 +1,4 @@
+import { createJSONRPCRequest, JSONRPCErrorCode } from "json-rpc-2.0";
 import { Config } from "../types";
 import handle from ".";
 
@@ -14,9 +15,15 @@ test("when the custom function returns expected value", async () => {
     api: {},
   };
 
-  expect(await handle("/createPost", { title: "a post" }, config)).toEqual({
-    title: "a post",
-    id: "abcde",
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handle(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    result: {
+      title: "a post",
+      id: "abcde",
+    },
   });
 });
 
@@ -27,9 +34,17 @@ test("when the custom function doesnt return a value", async () => {
     },
     api: {},
   };
-  await expect(
-    handle("/createPost", { title: "a post" }, config)
-  ).rejects.toThrowError("no result returned from custom function");
+
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handle(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: JSONRPCErrorCode.InternalError,
+      message: "no result returned from function 'createPost'",
+    },
+  });
 });
 
 test("when there is no matching function for the path", async () => {
@@ -39,7 +54,15 @@ test("when there is no matching function for the path", async () => {
     },
     api: {},
   };
-  await expect(
-    handle("/unknown", { title: "a post" }, config)
-  ).rejects.toThrowError("no matching function found for path /unknown");
+
+  const rpcReq = createJSONRPCRequest("123", "unknown", { title: "a post" });
+
+  expect(await handle(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: JSONRPCErrorCode.InvalidRequest,
+      message: "no corresponding function found for 'unknown'",
+    },
+  });
 });

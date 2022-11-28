@@ -1,3 +1,5 @@
+import { JSONRPCParams, JSONRPCRequest, JSONRPCResponse } from "json-rpc-2.0";
+
 import {
   StringConstraint,
   BooleanConstraint,
@@ -51,10 +53,13 @@ export interface Identity {
   email: string;
 }
 
-export type Payload = Record<string, any>;
+// https://www.jsonrpc.org/specification#request_object
+export type CustomFunctionRequestPayload = JSONRPCRequest;
+
+export type CustomFunctionResponsePayload = JSONRPCResponse;
 
 export interface CustomFunction {
-  call: (payload: Payload, api: API) => Promise<any>;
+  call: (payload: JSONRPCParams, api: API) => Promise<any>;
 }
 
 type API = {
