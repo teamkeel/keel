@@ -41,7 +41,7 @@ test("when the custom function doesnt return a value", async () => {
     id: "123",
     jsonrpc: "2.0",
     error: {
-      code: JSONRPCErrorCode.InternalError,
+      code: JSONRPCErrorCode.ParseError,
       message: "no result returned from function 'createPost'",
     },
   });
@@ -61,8 +61,30 @@ test("when there is no matching function for the path", async () => {
     id: "123",
     jsonrpc: "2.0",
     error: {
-      code: JSONRPCErrorCode.InvalidRequest,
+      code: JSONRPCErrorCode.MethodNotFound,
       message: "no corresponding function found for 'unknown'",
+    },
+  });
+});
+
+test("when there is an unexpected error in the custom function", async () => {
+  const config: Config = {
+    functions: {
+      createPost: () => {
+        throw new Error("oopsie daisy");
+      },
+    },
+    api: {},
+  };
+
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handle(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: JSONRPCErrorCode.InternalError,
+      message: "oopsie daisy",
     },
   });
 });

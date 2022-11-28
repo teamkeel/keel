@@ -22,23 +22,39 @@ const handler = async (
   if (!(name in functions)) {
     return createJSONRPCErrorResponse(
       id,
-      JSONRPCErrorCode.InvalidRequest,
+      JSONRPCErrorCode.MethodNotFound,
       `no corresponding function found for '${name}'`
     );
   }
 
-  const result = await functions[name].call(params, api);
+  try {
+    const result = await functions[name].call(params, api);
 
-  if (!result) {
-    // no result returned from custom function
+    if (!result) {
+      // no result returned from custom function
+      return createJSONRPCErrorResponse(
+        id,
+        JSONRPCErrorCode.ParseError,
+        `no result returned from function '${name}'`
+      );
+    }
+
+    return createJSONRPCSuccessResponse(id, result);
+  } catch (e) {
+    let msg = "";
+
+    if (e instanceof Error) {
+      msg = e.message;
+    } else {
+      msg = JSON.stringify(e);
+    }
+
     return createJSONRPCErrorResponse(
       id,
       JSONRPCErrorCode.InternalError,
-      `no result returned from function '${name}'`
+      e.message
     );
   }
-
-  return createJSONRPCSuccessResponse(id, result);
 };
 
 export default handler;
