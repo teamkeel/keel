@@ -92,7 +92,12 @@ func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
 }
 
 func (g *Generator) GenerateDevelopmentHandler() ([]*GeneratedFile, error) {
-	src := renderTemplate(TemplateHandlerDevelopment, map[string]interface{}{})
+	src := renderTemplate(TemplateHandlerDevelopment, map[string]interface{}{
+		"Models": g.schemaModels(),
+		"Functions": g.schemaActions(func(a *proto.Operation) bool {
+			return a.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+		}),
+	})
 
 	sourceCodes := []*SourceCode{}
 
@@ -111,7 +116,7 @@ func (g *Generator) GenerateDevelopmentHandler() ([]*GeneratedFile, error) {
 // javascript code required by the testing package
 func (g *Generator) testingSrcCode() string {
 	return renderTemplate(TemplateTesting, map[string]interface{}{
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 		"Models":  g.schemaModels(),
 	})
 }
@@ -120,7 +125,7 @@ func (g *Generator) testingSrcCode() string {
 // type definitions for the index.js javascript file.
 func (g *Generator) testingTypeDefinitions() string {
 	return renderTemplate(TemplateTestingDefinitions, map[string]interface{}{
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 		"Models":  g.schemaModels(),
 	})
 }
@@ -129,7 +134,7 @@ func (g *Generator) testingTypeDefinitions() string {
 func (g *Generator) sdkSrcCode() string {
 	return renderTemplate(TemplateSdk, map[string]interface{}{
 		"Models":  g.schemaModels(),
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 	})
 }
 
@@ -139,7 +144,7 @@ func (g *Generator) sdkTypeDefinitions() string {
 	return renderTemplate(TemplateSdkDefinitions, map[string]interface{}{
 		"Models":  g.schemaModels(),
 		"Enums":   g.schemaEnums(),
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 	})
 }
 
@@ -284,9 +289,9 @@ func (g *Generator) schemaModels() (models []*Model) {
 	return models
 }
 
-func (g *Generator) schemaActions() []*Action {
+func (g *Generator) schemaActions(filter func(a *proto.Operation) bool) []*Action {
 	return lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
-		return true
+		return filter(op)
 	}), func(op *proto.Operation, _ int) *Action {
 		writeInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
 			return i.Mode == proto.InputMode_INPUT_MODE_WRITE

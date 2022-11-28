@@ -808,10 +808,71 @@ func TestDevelopmentHandler(t *testing.T) {
 	cases := []TestCase{
 		{
 			Name: "basic",
+			Schema: `
+				model Post {
+					fields {
+						title Text
+					}
+
+					functions {
+						create createPost() with(title)
+						update updatePost(id) with(title)
+					}
+				}
+			`,
 			ExpectedFiles: []*codegenerator.GeneratedFile{
 				{
-					Path:     "index.js",
-					Contents: ``,
+					Path: "index.js",
+					Contents: `
+						import { handleCustomFunction } from '@teamkeel/functions-runtime';
+						import { createServer } from "http";
+						import url from "url";
+						// Imports to custom functions
+						import createPost from '../functions/createPost';
+						import updatePost from '../functions/updatePost';
+						const startRuntimeServer = ({ functions, api }) => {
+							const listener = async (req, res) => {
+								if (req.method === "POST") {
+									const parts = url.parse(req.url);
+									const { pathname } = parts;
+									const buffers = [];
+									for await (const chunk of req) {
+										buffers.push(chunk);
+									}
+									const data = Buffer.concat(buffers).toString();
+									// jsonrpc-2.0 compliant payload
+									const json = JSON.parse(data);
+									const rpcResponse = await handleCustomFunction(json, config);
+									
+									res.statusCode = 200;
+									res.setHeader('Content-Type', 'application/json');
+									res.write(
+										JSON.stringify(rpcResponse)
+									);
+								}
+								res.end();
+							};
+							const server = createServer(listener);
+							const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;
+							server.listen(port);
+						};
+						startRuntimeServer({
+							functions: {
+								createPost: {
+									call: createPost
+								},
+								updatePost: {
+									call: updatePost
+								},
+							},
+							api: {
+								models: {
+									post: new PostApi(),
+									identity: new IdentityApi(),
+								}
+							}
+						});
+					`,
 				},
 			},
 		},

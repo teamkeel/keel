@@ -2,7 +2,12 @@ import { handleCustomFunction } from '@teamkeel/functions-runtime';
 import { createServer } from "http";
 import url from "url";
 
-const startRuntimeServer = ({ functions, api }: Config) => {
+// Imports to custom functions
+{{- range .Functions }}
+import {{ .NameLowerCamel }} from '../functions/{{ .NameLowerCamel }}';
+{{- end }}
+
+const startRuntimeServer = ({ functions, api }) => {
   const listener = async (req, res) => {
     if (req.method === "POST") {
       const parts = url.parse(req.url);
@@ -12,25 +17,18 @@ const startRuntimeServer = ({ functions, api }: Config) => {
         buffers.push(chunk);
       }
       const data = Buffer.concat(buffers).toString();
+
+      // jsonrpc-2.0 compliant payload
       const json = JSON.parse(data);
 
-      try {
-        const result = await handleCustomFunction(path, config);
-        res.write(JSON.stringify(result));
-      } catch (e) {
-        // todo: proper error handling
-        res.statusCode = 400;
+      const rpcResponse = await handleCustomFunction(json, config);
+      
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
 
-        if (e instanceof Error) {
-          const { message } = e;
-
-          res.write({
-            errors: [{
-              message
-            }]
-          });
-        }
-      }
+      res.write(
+        JSON.stringify(rpcResponse)
+      );
     }
 
     res.end();
@@ -44,13 +42,15 @@ const startRuntimeServer = ({ functions, api }: Config) => {
 startRuntimeServer({
   functions: {
   {{- range .Functions }}
-
+    {{ .NameLowerCamel }}: {
+      call: {{ .NameLowerCamel }}
+    },
   {{- end }}
   },
   api: {
     models: {
     {{- range .Models }}
-
+      {{ .NameLowerCamel }}: new {{ .ApiName }}(),
     {{- end }}
     }
   }
