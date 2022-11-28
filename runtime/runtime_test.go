@@ -364,10 +364,15 @@ const relationships string = `
 		}
 		operations {
 			get getPost(id)
+
+			create createPost() with (title, author.id)
+			create createPostWithFk() with (title, authorId)
+			update updatePost(id) with (title, author.id)
+			update updatePostWithFk(id) with (title, authorId)
 		}
 		@permission(
 			expression: true,
-			actions: [get]
+			actions: [get, create, update]
 		)
 	}
 	
@@ -797,8 +802,6 @@ var testCases = []testCase{
 	// 			"enum":      "Option1",
 	// 		})
 	// 		require.NoError(t, db.Table("thing").Create(row1).Error)
-	// 		// require.NoError(t, db.Table("person").Create(row2).Error)
-	// 		// require.NoError(t, db.Table("person").Create(row3).Error)
 	// 	},
 	// 	gqlOperation: `
 
@@ -865,11 +868,11 @@ var testCases = []testCase{
 	// 	},
 	// 	timestamp_after: listThings(input: {
 	// 		where: {
-	// 		timestamp: {
-	// 			after: {
-	// 				seconds: 9
+	// 			timestamp: {
+	// 				after: {
+	// 					seconds: 9
+	// 				}
 	// 			}
-	// 		}
 	// 		}
 	// 	}) {
 	// 		...Fields
@@ -1825,7 +1828,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name:       "update_operation_relationships",
+		name:       "update_operation_relationships_paging",
 		keelSchema: relationships,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -1991,6 +1994,228 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "getPost.id", "post_1")
 			rtt.AssertValueAtPath(t, data, "getPost.title", "Without an Author")
 			rtt.AssertValueAtPath(t, data, "getPost.author", nil)
+		},
+	},
+	{
+		name:       "create_relationship_with_parent_id",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			mutation CreatePost($authorId: ID!, $title: String!) {
+				createPost(input: { title: $title, authorId: $authorId }) {
+					id
+					title
+					author {
+			          id
+					  name
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"authorId": "author_1",
+			"title":    "Keelson Post",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createPost.title", "Keelson Post")
+			rtt.AssertValueAtPath(t, data, "createPost.author.id", "author_1")
+			rtt.AssertValueAtPath(t, data, "createPost.author.name", "Keelson")
+		},
+	},
+	{
+		name:       "create_relationship_with_parent_id_foreign_key",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			mutation CreatePost($authorId: ID!, $title: String!) {
+				createPostWithFk(input: { title: $title, authorId: $authorId }) {
+					id
+					title
+					author {
+			          id
+					  name
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"authorId": "author_1",
+			"title":    "Keelson Post",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createPostWithFk.title", "Keelson Post")
+			rtt.AssertValueAtPath(t, data, "createPostWithFk.author.id", "author_1")
+			rtt.AssertValueAtPath(t, data, "createPostWithFk.author.name", "Keelson")
+		},
+	},
+	{
+		name:       "update_relationship_with_parent_id",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			mutation UpdatePost($postId: ID!, $authorId: ID!, $title: String!) {
+				updatePost(input: { where: { id: $postId }, values: { title: $title, authorId: $authorId } }) {
+					id
+					title
+					author {
+			          id
+					  name
+					}
+				}
+		 	}`,
+		variables: map[string]any{
+			"postId":   "post_1",
+			"authorId": "author_2",
+			"title":    "Updated To Weaveton Post",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "updatePost.title", "Updated To Weaveton Post")
+			rtt.AssertValueAtPath(t, data, "updatePost.author.id", "author_2")
+			rtt.AssertValueAtPath(t, data, "updatePost.author.name", "Weaveton")
+		},
+	},
+	{
+		name:       "update_relationship_with_parent_id_foreign_key",
+		keelSchema: relationships,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":           "publisher_1",
+					"organisation": "Keelson Publishers",
+				}),
+				initRow(map[string]any{
+					"id":           "publisher_2",
+					"organisation": "Weaveton Publishers",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("publisher").Create(row).Error)
+			}
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":          "author_1",
+					"name":        "Keelson",
+					"publisherId": "publisher_1",
+				}),
+				initRow(map[string]any{
+					"id":          "author_2",
+					"name":        "Weaveton",
+					"publisherId": "publisher_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+				mutation UpdatePost($postId: ID!, $authorId: ID!, $title: String!) {
+					updatePostWithFk(input: { where: { id: $postId }, values: { title: $title, authorId: $authorId } }) {
+						id
+						title
+						author {
+						  id
+						  name
+						}
+					}
+				 }`,
+		variables: map[string]any{
+			"postId":   "post_1",
+			"authorId": "author_2",
+			"title":    "Updated To Weaveton Post",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "updatePostWithFk.title", "Updated To Weaveton Post")
+			rtt.AssertValueAtPath(t, data, "updatePostWithFk.author.id", "author_2")
+			rtt.AssertValueAtPath(t, data, "updatePostWithFk.author.name", "Weaveton")
 		},
 	},
 }
