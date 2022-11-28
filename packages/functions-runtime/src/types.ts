@@ -58,7 +58,7 @@ export type CustomFunctionRequestPayload = JSONRPCRequest;
 
 export type CustomFunctionResponsePayload = JSONRPCResponse;
 
-export type CustomFunction = (payload: JSONRPCParams, api: API) => Promise<any>;
+export type CustomFunction = (inputs: any, api: API) => Promise<any>;
 
 type API = {
   [apiName: string]: Query<BuiltInFields>;
