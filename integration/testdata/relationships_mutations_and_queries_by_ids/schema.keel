@@ -1,0 +1,54 @@
+
+model Post {
+    fields {
+        title Text
+        theAuthor Author
+    }
+
+    operations {
+        create createPost() with (title, theAuthor.id)
+        create createPostForeignKey() with (title, theAuthorId)
+        create createPostWithSet() with (title, explicitAuthorId: ID) {
+            @set(post.theAuthorId = explicitAuthorId)
+        }
+
+        update updatePost(id) with (title, theAuthor.id)
+        update updatePostForeignKey(id) with (title, theAuthorId)
+        update updatePostWithSet(id) with (title, explicitAuthorId: ID) {
+            @set(post.theAuthorId = explicitAuthorId)
+        }
+
+        get getPost(id)
+        get getPostByAuthor(id, theAuthor.id)
+        list listPost(theAuthor.id)
+    }
+
+    @permission(actions: [create, update, get, list], expression: true)
+}
+
+model Author {
+    fields {
+        name Text
+        thePosts Post[]
+    }
+
+    operations {
+        create createAuthor() with (name)
+        get getAuthorByPost(id, thePosts.id)
+        list listAuthors(thePosts.id)
+    }
+
+    @permission(actions: [create, update, get, list], expression: true)
+}
+
+
+
+api Web {
+    @graphql
+
+    models {
+        Post
+        Author
+    }
+}
+

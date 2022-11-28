@@ -1,0 +1,16 @@
+model ChildModel {
+    fields {
+        isActive Boolean
+        parent ParentModel
+    }
+
+    operations {
+        create createChild() with (isActive)
+    }
+}
+
+model ParentModel {
+    fields {
+        isActive Boolean
+    }
+}

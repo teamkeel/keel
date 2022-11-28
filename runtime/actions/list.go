@@ -40,7 +40,7 @@ inputs:
 				continue inputs
 			}
 
-			return fmt.Errorf("'%s' input value %v to not in correct format", fieldName, value)
+			return fmt.Errorf("'%s' input value %v is not in correct format", fieldName, value)
 		}
 
 		for operatorStr, operand := range valueMap {
