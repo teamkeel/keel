@@ -409,6 +409,31 @@ const relationships string = `
 	}		
 `
 
+const date_timestamp_parsing = `
+	model Thing {
+		fields {
+			theDate Date
+			theTimestamp Timestamp
+		}
+		operations {
+			create createThing() with (theDate, theTimestamp)
+			update updateThing(id) with (theDate, theTimestamp)
+			get getThing(id, theDate, theTimestamp)
+			list listThing(theDate, theTimestamp)
+		}
+		@permission(
+			expression: true,
+			actions: [get, create, update, list]
+		)
+	}
+	api Test {
+		@graphql
+		models {
+			Thing
+		}
+	}
+`
+
 // testCases is a list of testCase that is good for the top level test suite to
 // iterate over.
 var testCases = []testCase{
@@ -788,191 +813,190 @@ var testCases = []testCase{
 			// the integration test framework.
 		},
 	},
-	// {
-	// 	name:       "list_inputs",
-	// 	keelSchema: fieldTypes,
-	// 	databaseSetup: func(t *testing.T, db *gorm.DB) {
-	// 		row1 := initRow(map[string]any{
-	// 			"id":        "id_123",
-	// 			"text":      "some-interesting-text",
-	// 			"bool":      true,
-	// 			"timestamp": "1970-01-01 00:00:10",
-	// 			"date":      "2020-01-02",
-	// 			"number":    10,
-	// 			"enum":      "Option1",
-	// 		})
-	// 		require.NoError(t, db.Table("thing").Create(row1).Error)
-	// 	},
-	// 	gqlOperation: `
+	{
+		name:       "list_inputs",
+		keelSchema: fieldTypes,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row1 := initRow(map[string]any{
+				"id":        "id_123",
+				"text":      "some-interesting-text",
+				"bool":      true,
+				"timestamp": "1970-01-01 00:00:10",
+				"date":      "2020-01-02",
+				"number":    10,
+				"enum":      "Option1",
+			})
+			require.NoError(t, db.Table("thing").Create(row1).Error)
+		},
+		gqlOperation: `
 
-	// 	fragment Fields on ThingConnection {
-	// 		edges {
-	// 			node {
-	// 			text
-	// 			bool
-	// 			# timestamp {seconds}
-	// 			# date {day, month, year}
-	// 			number
-	// 			enum
-	// 			}
-	// 		}
-	// 	}
+		fragment Fields on ThingConnection {
+			edges {
+				node {
+				text
+				bool
+				# timestamp {seconds}
+				# date {day, month, year}
+				number
+				enum
+				}
+			}
+		}
+		{
+		string_equals: listThings(input: {where: {text: {equals: "some-interesting-text"}}}) {
+			...Fields
+		},
+		string_startsWith: listThings(input: {where: {text: {startsWith: "some"}}}) {
+			...Fields
+		},
+		string_endWith: listThings(input: {where: {text: {endsWith: "-text"}}}) {
+			...Fields
+		},
+		string_contains: listThings(input: {where: {text: {contains: "interesting"}}}) {
+			...Fields
+		},
+		string_oneOf: listThings(input: {where: {text: {oneOf: ["some-interesting-text", "Another"]}}}) {
+			...Fields
+		},
+		number_equals: listThings(input: {where: {number: {equals: 10}}}) {
+			...Fields
+		},
+		number_gt: listThings(input: {where: {number: {greaterThan: 9}}}) {
+			...Fields
+		},
+		number_gte: listThings(input: {where: {number: {greaterThanOrEquals: 10}}}) {
+			...Fields
+		},
+		number_lt: listThings(input: {where: {number: {lessThan: 11}}}) {
+			...Fields
+		},
+		number_lte: listThings(input: {where: {number: {lessThanOrEquals: 10}}}) {
+			...Fields
+		},
+		enum_equals: listThings(input: {where: {enum: {equals: Option1}}}) {
+			...Fields
+		},
+		enum_oneOf: listThings(input: {where: {enum: {oneOf: [Option1]}}}) {
+			...Fields
+		},
+		timestamp_before: listThings(input: {
+			where: {
+			timestamp: {
+				before: {
+					seconds: 11
+				}
+			}
+			}
+		}) {
+			...Fields
+		},
+		timestamp_after: listThings(input: {
+			where: {
+			timestamp: {
+				after: {
+					seconds: 9
+				}
+			}
+			}
+		}) {
+			...Fields
+		},
+		date_before: listThings(input: {where: {date: {before: {
+			year: 2020,
+			month: 1,
+			day: 3
+		}}}}) {
+			...Fields
+		},
+		date_after: listThings(input: {where: {date: {after: {
+			year: 2020,
+			month: 1,
+			day: 1
+		}}}}) {
+			...Fields
+		},
+		date_onOrbefore: listThings(input: {where: {date: {onOrBefore: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		date_onOrAfter: listThings(input: {where: {date: {onOrAfter: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		date_onOrEquals: listThings(input: {where: {date: {equals: {
+			year: 2020,
+			month: 1,
+			day: 2
+		}}}}) {
+			...Fields
+		},
+		bool: listThings(input: {
+			where: {
+			bool: {
+					equals: true
+				}
+			}
+		}) {
+			...Fields
+		}
+		combined: listThings(input: {
+			where: {
+			bool: {
+					equals: true
+			},
+			enum: {
+				equals: Option1
+			}
+			}
+		}) {
+			...Fields
+		}
+		}`,
+		assertData: func(t *testing.T, data map[string]any) {
 
-	// 	{
-	// 	string_equals: listThings(input: {where: {text: {equals: "some-interesting-text"}}}) {
-	// 		...Fields
-	// 	},
-	// 	string_startsWith: listThings(input: {where: {text: {startsWith: "some"}}}) {
-	// 		...Fields
-	// 	},
-	// 	string_endWith: listThings(input: {where: {text: {endsWith: "-text"}}}) {
-	// 		...Fields
-	// 	},
-	// 	string_contains: listThings(input: {where: {text: {contains: "interesting"}}}) {
-	// 		...Fields
-	// 	},
-	// 	string_oneOf: listThings(input: {where: {text: {oneOf: ["some-interesting-text", "Another"]}}}) {
-	// 		...Fields
-	// 	},
-	// 	number_equals: listThings(input: {where: {number: {equals: 10}}}) {
-	// 		...Fields
-	// 	},
-	// 	number_gt: listThings(input: {where: {number: {greaterThan: 9}}}) {
-	// 		...Fields
-	// 	},
-	// 	number_gte: listThings(input: {where: {number: {greaterThanOrEquals: 10}}}) {
-	// 		...Fields
-	// 	},
-	// 	number_lt: listThings(input: {where: {number: {lessThan: 11}}}) {
-	// 		...Fields
-	// 	},
-	// 	number_lte: listThings(input: {where: {number: {lessThanOrEquals: 10}}}) {
-	// 		...Fields
-	// 	},
-	// 	enum_equals: listThings(input: {where: {enum: {equals: Option1}}}) {
-	// 		...Fields
-	// 	},
-	// 	enum_oneOf: listThings(input: {where: {enum: {oneOf: [Option1]}}}) {
-	// 		...Fields
-	// 	},
-	// 	timestamp_before: listThings(input: {
-	// 		where: {
-	// 		timestamp: {
-	// 			before: {
-	// 				seconds: 11
-	// 			}
-	// 		}
-	// 		}
-	// 	}) {
-	// 		...Fields
-	// 	},
-	// 	timestamp_after: listThings(input: {
-	// 		where: {
-	// 			timestamp: {
-	// 				after: {
-	// 					seconds: 9
-	// 				}
-	// 			}
-	// 		}
-	// 	}) {
-	// 		...Fields
-	// 	},
-	// 	date_before: listThings(input: {where: {date: {before: {
-	// 		year: 2020,
-	// 		month: 1,
-	// 		day: 3
-	// 	}}}}) {
-	// 		...Fields
-	// 	},
-	// 	date_after: listThings(input: {where: {date: {after: {
-	// 		year: 2020,
-	// 		month: 1,
-	// 		day: 1
-	// 	}}}}) {
-	// 		...Fields
-	// 	},
-	// 	date_onOrbefore: listThings(input: {where: {date: {onOrBefore: {
-	// 		year: 2020,
-	// 		month: 1,
-	// 		day: 2
-	// 	}}}}) {
-	// 		...Fields
-	// 	},
-	// 	date_onOrAfter: listThings(input: {where: {date: {onOrAfter: {
-	// 		year: 2020,
-	// 		month: 1,
-	// 		day: 2
-	// 	}}}}) {
-	// 		...Fields
-	// 	},
-	// 	date_onOrEquals: listThings(input: {where: {date: {equals: {
-	// 		year: 2020,
-	// 		month: 1,
-	// 		day: 2
-	// 	}}}}) {
-	// 		...Fields
-	// 	},
-	// 	bool: listThings(input: {
-	// 		where: {
-	// 		bool: {
-	// 				equals: true
-	// 			}
-	// 		}
-	// 	}) {
-	// 		...Fields
-	// 	}
-	// 	combined: listThings(input: {
-	// 		where: {
-	// 		bool: {
-	// 				equals: true
-	// 		},
-	// 		enum: {
-	// 			equals: Option1
-	// 		}
-	// 		}
-	// 	}) {
-	// 		...Fields
-	// 	}
-	// 	}`,
-	// 	assertData: func(t *testing.T, data map[string]any) {
+			keys := []string{
+				"string_equals",
+				"string_startsWith",
+				"string_endWith",
+				"string_contains",
+				"string_oneOf",
+				"number_equals",
+				"number_gt",
+				"number_gte",
+				"number_lt",
+				"number_lte",
+				"enum_equals",
+				"enum_oneOf",
+				"timestamp_before",
+				"timestamp_after",
+				"date_before",
+				"date_after",
+				"date_onOrbefore",
+				"date_onOrAfter",
+				"date_onOrEquals",
+				"bool",
+				"combined",
+			}
 
-	// 		keys := []string{
-	// 			"string_equals",
-	// 			"string_startsWith",
-	// 			"string_endWith",
-	// 			"string_contains",
-	// 			"string_oneOf",
-	// 			"number_equals",
-	// 			"number_gt",
-	// 			"number_gte",
-	// 			"number_lt",
-	// 			"number_lte",
-	// 			"enum_equals",
-	// 			"enum_oneOf",
-	// 			"timestamp_before",
-	// 			"timestamp_after",
-	// 			"date_before",
-	// 			"date_after",
-	// 			"date_onOrbefore",
-	// 			"date_onOrAfter",
-	// 			"date_onOrEquals",
-	// 			"bool",
-	// 			"combined",
-	// 		}
-
-	// 		for _, key := range keys {
-	// 			edges := rtt.GetValueAtPath(t, data, key+".edges")
-	// 			edgesList, ok := edges.([]any)
-	// 			fmt.Println(key)
-	// 			require.True(t, ok)
-	// 			if len(edgesList) != 1 {
-	// 				a := 1
-	// 				_ = a
-	// 			}
-	// 			require.Len(t, edgesList, 1)
-	// 		}
-	// 	},
-	// },
+			for _, key := range keys {
+				edges := rtt.GetValueAtPath(t, data, key+".edges")
+				edgesList, ok := edges.([]any)
+				fmt.Println(key)
+				require.True(t, ok)
+				if len(edgesList) != 1 {
+					a := 1
+					_ = a
+				}
+				require.Len(t, edgesList, 1)
+			}
+		},
+	},
 	{
 		name:       "list_impl_and_expl_inputs",
 		keelSchema: listImplicitAndExplicitInputs,
@@ -1747,7 +1771,6 @@ var testCases = []testCase{
 			for _, row := range rows {
 				require.NoError(t, db.Table("author").Create(row).Error)
 			}
-
 			rows = []map[string]any{
 				initRow(map[string]any{
 					"id":       "post_1",
@@ -2216,6 +2239,181 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, data, "updatePostWithFk.title", "Updated To Weaveton Post")
 			rtt.AssertValueAtPath(t, data, "updatePostWithFk.author.id", "author_2")
 			rtt.AssertValueAtPath(t, data, "updatePostWithFk.author.name", "Weaveton")
+		},
+	},
+	{
+		name:       "create_operation_with_date_and_timestamp_implicit_inputs",
+		keelSchema: date_timestamp_parsing,
+		gqlOperation: `
+				mutation CreateThing {
+					createThing(input: { 
+						theDate: {
+							year: 2022,
+							month: 6,
+							day: 17
+						},
+						theTimestamp: {
+							seconds: 12345
+						}
+					}) {
+						theDate {
+							year
+							month
+							day
+						}
+						theTimestamp {
+							seconds
+						}
+					}
+				 }`,
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createThing.theDate.year", float64(2022))
+			rtt.AssertValueAtPath(t, data, "createThing.theDate.month", float64(6))
+			rtt.AssertValueAtPath(t, data, "createThing.theDate.day", float64(17))
+			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.seconds", float64(12345))
+		},
+	},
+	{
+		name:       "update_operation_with_date_and_timestamp_implicit_inputs",
+		keelSchema: date_timestamp_parsing,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row := initRow(map[string]any{
+				"id":           "thing_1",
+				"theDate":      "2022-06-17",
+				"theTimestamp": "2022-01-01",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+		},
+		gqlOperation: `
+				mutation UpdateThing {
+					updateThing(input: { 
+						where: {
+							id: "thing_1"
+						}
+						values: {
+							theDate: {
+								year: 2023,
+								month: 7,
+								day: 18
+							},
+							theTimestamp: {
+								seconds: 54321
+							}
+						}
+					}) {
+						theDate {
+							year
+							month
+							day
+						}
+						theTimestamp {
+							seconds
+						}
+					}
+				 }`,
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "updateThing.theDate.year", float64(2023))
+			rtt.AssertValueAtPath(t, data, "updateThing.theDate.month", float64(7))
+			rtt.AssertValueAtPath(t, data, "updateThing.theDate.day", float64(18))
+			rtt.AssertValueAtPath(t, data, "updateThing.theTimestamp.seconds", float64(54321))
+		},
+	},
+	{
+		name:       "get_operation_with_date_and_timestamp_implicit_inputs",
+		keelSchema: date_timestamp_parsing,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row := initRow(map[string]any{
+				"id":           "thing_1",
+				"theDate":      "2022-06-17",
+				"theTimestamp": "2022-01-01",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+		},
+		gqlOperation: `
+				query GetThing {
+					getThing(input: { 
+						id: "thing_1",
+						theDate: {
+							year: 2022,
+							month: 6,
+							day: 17
+						},
+						theTimestamp: {
+							seconds: 1640995200
+						}
+					}) {
+						theDate {
+							year
+							month
+							day
+						}
+						theTimestamp {
+							seconds
+						}
+					}
+				 }`,
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getThing.theDate.year", float64(2022))
+			rtt.AssertValueAtPath(t, data, "getThing.theDate.month", float64(6))
+			rtt.AssertValueAtPath(t, data, "getThing.theDate.day", float64(17))
+			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.seconds", float64(1640995200))
+		},
+	},
+	{
+		name:       "list_operation_with_date_and_timestamp_implicit_inputs",
+		keelSchema: date_timestamp_parsing,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row := initRow(map[string]any{
+				"id":           "thing_1",
+				"theDate":      "2022-06-17",
+				"theTimestamp": "2022-01-01",
+			})
+			require.NoError(t, db.Table("thing").Create(row).Error)
+		},
+		gqlOperation: `
+				query ListThing {
+					listThing(input: { 
+						where: {
+							theDate: {
+								equals: {
+									year: 2022,
+									month: 6,
+									day: 17
+								}
+							},
+                            theTimestamp: {
+								before: {
+                                    seconds: 1640995201
+                                },
+                                after: {
+                                    seconds: 1640995199
+                                }
+                            }
+						}
+					}) {
+						edges {
+							node {
+								theDate {
+									year
+									month
+									day
+								}
+								theTimestamp {
+									seconds
+								}
+							}
+						}
+					}
+				 }`,
+		assertData: func(t *testing.T, data map[string]any) {
+			things := rtt.GetValueAtPath(t, data, "listThing.edges").([]any)
+			require.Len(t, things, 1)
+
+			thing := things[0].(map[string]any)
+			rtt.AssertValueAtPath(t, thing, "node.theDate.year", float64(2022))
+			rtt.AssertValueAtPath(t, thing, "node.theDate.month", float64(6))
+			rtt.AssertValueAtPath(t, thing, "node.theDate.day", float64(17))
+			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.seconds", float64(1640995200))
 		},
 	},
 }
