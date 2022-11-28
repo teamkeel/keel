@@ -256,6 +256,14 @@ func (scm *Builder) insertForeignKeyFields(
 				Attributes: []*parser.AttributeNode{},
 			}
 
+			// Give the FK field the same "uniqueness" as the "owning" field.
+			if query.FieldHasAttribute(field, parser.AttributeUnique) {
+				attr := parser.AttributeNode{
+					Name: parser.AttributeNameToken{Value: parser.AttributeUnique},
+				}
+				fkField.Attributes = append(fkField.Attributes, &attr)
+			}
+
 			fkInfo := &parser.ForeignKeyAssociation{
 				OwningModel:               mdl,
 				OwningField:               field,

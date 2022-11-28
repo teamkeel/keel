@@ -55,7 +55,8 @@
           "foreignKeyInfo":  {
             "relatedModelName":  "Identity",
             "relatedModelField":  "id"
-          }
+          },
+          "unique": true
         }
       ],
       "operations":  [
