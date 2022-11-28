@@ -1,0 +1,30 @@
+
+model ChildModel {
+    fields {
+        isActive Boolean
+        parent ParentModel
+        parentOptional ParentModel?
+    }
+
+    operations {
+        create createChild1() with (isActive, explicitParentId: ID) {
+            @set(childModel.parentId = explicitParentId)
+            @set(childModel.parentOptionalId = explicitParentId)
+        }
+
+        create createChild2() with (isActive, explicitParentId: ID) {
+            @set(childModel.parentId = explicitParentId)
+            @set(childModel.parentOptionalId = childModel.parentId)
+        }
+
+        create createChild3() with (isActive, explicitParentId: ID) {
+            @set(childModel.parentId = explicitParentId)
+        }
+    }
+}
+
+model ParentModel {
+    fields {
+        isActive Boolean
+    }
+}

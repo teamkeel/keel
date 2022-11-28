@@ -1,0 +1,24 @@
+
+model ChildModel {
+    fields {
+        isActive Boolean
+        parent ParentModel
+        parentOptional ParentModel?
+    }
+
+    operations {
+        update updateChild1(id) with (isActive, parent.id)
+
+        update updateChild2(id) with (isActive, parentId)
+
+        update updateChild3(id) with (isActive, parent.id, parentOptional.id)
+
+        update updateChild4(id) with (isActive, parentId, parentOptionalId)
+    }
+}
+
+model ParentModel {
+    fields {
+        isActive Boolean
+    }
+}

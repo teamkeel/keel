@@ -1,0 +1,30 @@
+
+model ChildModel {
+    fields {
+        isActive Boolean
+        parent ParentModel
+        parentOptional ParentModel?
+    }
+
+    operations {
+        update updateChild1(id) with (isActive, explicitParentId: ID) {
+            @set(childModel.parentId = explicitParentId)
+            @set(childModel.parentOptionalId = explicitParentId)
+        }
+
+        update updateChild2(id) with (isActive, explicitParentId: ID) {
+            @set(childModel.parentId = explicitParentId)
+            @set(childModel.parentOptionalId = childModel.parentId)
+        }
+
+        update updateChild3(id) with (isActive, explicitParentId: ID) {
+            @set(childModel.parentId = explicitParentId)
+        }
+    }
+}
+
+model ParentModel {
+    fields {
+        isActive Boolean
+    }
+}

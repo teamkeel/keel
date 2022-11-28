@@ -1,0 +1,24 @@
+
+model ChildModel {
+    fields {
+        isActive Boolean
+        parent ParentModel
+        parentOptional ParentModel?
+    }
+
+    operations {
+        create createChild1() with (isActive, parent.id)
+
+        create createChild2() with (isActive, parentId)
+
+        create createChild3() with (isActive, parent.id, parentOptional.id)
+
+        create createChild4() with (isActive, parentId, parentOptionalId)
+    }
+}
+
+model ParentModel {
+    fields {
+        isActive Boolean
+    }
+}
