@@ -1,5 +1,5 @@
 import { build } from "esbuild";
-import NpmDts from 'npm-dts';
+import NpmDts from "npm-dts";
 
 const { Generator } = NpmDts;
 
@@ -12,9 +12,13 @@ build({
 });
 
 // Generate an index.d.ts file automatically based on the typescript source code.
-new Generator({
-  entry: './index.ts',
-  output: 'dist/index.d.ts',
-  // use the build version of the tsconfig in order to exclude some test files
-  tsc: '-p tsconfig.build.json'
-}, true, true).generate();
+new Generator(
+  {
+    entry: "./index.ts",
+    output: "dist/index.d.ts",
+    // use the build version of the tsconfig in order to exclude some test files
+    tsc: "-p tsconfig.build.json",
+  },
+  true,
+  true
+).generate();

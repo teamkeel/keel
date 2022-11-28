@@ -1,3 +1,5 @@
+import { JSONRPCParams, JSONRPCRequest, JSONRPCResponse } from "json-rpc-2.0";
+
 import {
   StringConstraint,
   BooleanConstraint,
@@ -6,6 +8,7 @@ import {
   EnumConstraint,
 } from "./constraints";
 import { Logger } from "./";
+import Query from "./query";
 import { QueryResolver } from "./db/resolver";
 
 export interface QueryOpts {
@@ -50,13 +53,24 @@ export interface Identity {
   email: string;
 }
 
+// https://www.jsonrpc.org/specification#request_object
+export type CustomFunctionRequestPayload = JSONRPCRequest;
+
+export type CustomFunctionResponsePayload = JSONRPCResponse;
+
 export interface CustomFunction {
-  call: any;
+  call: (payload: JSONRPCParams, api: API) => Promise<any>;
 }
+
+type API = {
+  [apiName: string]: Query<BuiltInFields>;
+};
+
+export type Functions = Record<string, CustomFunction>;
 
 // Config represents the configuration values
 // to be passed to the Custom Code runtime server
 export interface Config {
-  functions: Record<string, CustomFunction>;
-  api: unknown;
+  functions: Functions;
+  api: API;
 }
