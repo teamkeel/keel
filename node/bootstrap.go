@@ -119,10 +119,40 @@ func GenerateDevelopmentServer(dir string) error {
 	return nil
 }
 
-// maybe return a custom type over os.Process
-func RunDevelopmentServer(dir string, envVars map[string]any) (*os.Process, error) {
+type RuntimeServer interface {
+	Kill() error
+}
+
+type DevelopmentServer struct {
+	proc *os.Process
+}
+
+func (ds *DevelopmentServer) Kill() error {
+	return ds.proc.Kill()
+}
+
+// RunDevelopmentServer will start a new node runtime server
+// serving custom function requests
+func RunDevelopmentServer(dir string, envVars map[string]any) (RuntimeServer, error) {
 	// 1. run dev server with ts-node.
-	return nil, nil
+	handlerPath := filepath.Join(dir, codegenerator.BUILD_DIR_NAME, "index.js")
+
+	cmd := exec.Command("./node_modules/.bin/ts-node", handlerPath)
+	cmd.Env = os.Environ()
+
+	for key, value := range envVars {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	}
+
+	err := cmd.Start()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &DevelopmentServer{
+		proc: cmd.Process,
+	}, nil
 }
 
 func hasFunctions(sch *proto.Schema) bool {
