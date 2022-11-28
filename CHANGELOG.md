@@ -1,3 +1,10 @@
+## [0.221.3](https://github.com/teamkeel/keel/compare/v0.221.2...v0.221.3) (2022-11-28)
+
+
+### Bug Fixes
+
+* when Model field is [@unique](https://github.com/unique), then generated FK field should be made  [@unique](https://github.com/unique) ([#619](https://github.com/teamkeel/keel/issues/619)) ([2062277](https://github.com/teamkeel/keel/commit/20622777d3e993355f8178d2a6f76aa4c4c3a208))
+
 ## [0.221.2](https://github.com/teamkeel/keel/compare/v0.221.1...v0.221.2) (2022-11-25)
 
 
