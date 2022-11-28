@@ -833,8 +833,6 @@ func TestDevelopmentHandler(t *testing.T) {
 						const startRuntimeServer = ({ functions, api }) => {
 							const listener = async (req, res) => {
 								if (req.method === "POST") {
-									const parts = url.parse(req.url);
-									const { pathname } = parts;
 									const buffers = [];
 									for await (const chunk of req) {
 										buffers.push(chunk);
@@ -858,12 +856,8 @@ func TestDevelopmentHandler(t *testing.T) {
 						};
 						startRuntimeServer({
 							functions: {
-								createPost: {
-									call: createPost
-								},
-								updatePost: {
-									call: updatePost
-								},
+								createPost,
+								updatePost,
 							},
 							api: {
 								models: {

@@ -28,7 +28,7 @@ const handler = async (
   }
 
   try {
-    const result = await functions[name].call(params, api);
+    const result = await functions[name](params, api);
 
     if (!result) {
       // no result returned from custom function
