@@ -46,17 +46,16 @@ type GeneratedFile = SourceCode
 // GenerateSDK will generate a fresh @teamkeel/sdk package into the node_modules
 // of the target directory
 func (g *Generator) GenerateSDK() ([]*GeneratedFile, error) {
-	sourceCodes := []*SourceCode{}
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.js",
-		Contents: g.sdkSrcCode(),
-	})
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.d.ts",
-		Contents: g.sdkTypeDefinitions(),
-	})
+	sourceCodes := []*SourceCode{
+		{
+			Path:     "index.js",
+			Contents: g.sdkSrcCode(),
+		},
+		{
+			Path:     "index.d.ts",
+			Contents: g.sdkTypeDefinitions(),
+		},
+	}
 
 	err := g.makeNpmPackage(SdkPackageName, sourceCodes)
 
@@ -70,17 +69,16 @@ func (g *Generator) GenerateSDK() ([]*GeneratedFile, error) {
 // GenerateTesting will generate a fresh @teamkeel/testing package into the node_modules
 // of the target directory
 func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
-	sourceCodes := []*SourceCode{}
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.js",
-		Contents: g.testingSrcCode(),
-	})
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.d.ts",
-		Contents: g.testingTypeDefinitions(),
-	})
+	sourceCodes := []*SourceCode{
+		{
+			Path:     "index.js",
+			Contents: g.testingSrcCode(),
+		},
+		{
+			Path:     "index.d.ts",
+			Contents: g.testingTypeDefinitions(),
+		},
+	}
 
 	err := g.makeNpmPackage(TestingPackageName, sourceCodes)
 
@@ -99,9 +97,12 @@ func (g *Generator) GenerateDevelopmentHandler() ([]*GeneratedFile, error) {
 		}),
 	})
 
-	sourceCodes := []*SourceCode{}
-
-	sourceCodes = append(sourceCodes, &SourceCode{Path: "index.js", Contents: src})
+	sourceCodes := []*SourceCode{
+		{
+			Path:     "index.js",
+			Contents: src,
+		},
+	}
 
 	err := g.makeBuildDir(sourceCodes)
 
