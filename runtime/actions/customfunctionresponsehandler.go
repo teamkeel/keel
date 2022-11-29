@@ -22,7 +22,7 @@ func ParseGetObjectResponse(context context.Context, op *proto.Operation, args W
 		return nil, err
 	}
 
-	return TryParseObjectResponse(res)
+	return TryParseObjectResponse(res, op)
 }
 
 func ParseCreateObjectResponse(context context.Context, op *proto.Operation, args WhereArgs) (map[string]any, error) {
@@ -31,7 +31,7 @@ func ParseCreateObjectResponse(context context.Context, op *proto.Operation, arg
 		return nil, err
 	}
 
-	return TryParseObjectResponse(res)
+	return TryParseObjectResponse(res, op)
 }
 
 func ParseDeleteResponse(context context.Context, op *proto.Operation, args WhereArgs) (bool, error) {
@@ -93,7 +93,7 @@ func ParseUpdateResponse(context context.Context, op *proto.Operation, args Wher
 		return nil, err
 	}
 
-	return TryParseObjectResponse(res)
+	return TryParseObjectResponse(res, op)
 }
 
 func ParseListResponse(context context.Context, op *proto.Operation, args WhereArgs) (*ListResult, error) {
@@ -110,7 +110,7 @@ func ParseListResponse(context context.Context, op *proto.Operation, args WhereA
 	collection := typed.New(resMap).Maps("collection")
 	if collection != nil {
 		collection = lo.Map(collection, func(item map[string]interface{}, _ int) map[string]any {
-			return transformResponse(item)
+			return transformResponse(item, op)
 		})
 		return &ListResult{
 			Results: collection,
@@ -132,7 +132,7 @@ func ParseListResponse(context context.Context, op *proto.Operation, args WhereA
 // Tries to parse object returned from custom functions runtime into correct data type
 // Otherwise, tries to format error messages returned from custom functions runtime in a nice way in the error return type
 // Otherwise panics
-func TryParseObjectResponse(res any) (map[string]any, error) {
+func TryParseObjectResponse(res any, operation *proto.Operation) (map[string]any, error) {
 	resMap, ok := res.(map[string]any)
 
 	if !ok {
@@ -149,7 +149,7 @@ func TryParseObjectResponse(res any) (map[string]any, error) {
 			panic("custom functions object not a map")
 		}
 
-		objectMap = transformResponse(objectMap)
+		objectMap = transformResponse(objectMap, operation)
 
 		return objectMap, nil
 	} else if errorsPresent {
@@ -185,21 +185,34 @@ func TryParseObjectResponse(res any) (map[string]any, error) {
 	return nil, fmt.Errorf("incorrect data returned from custom function")
 }
 
-func transformResponse(response map[string]any) map[string]any {
+func transformResponse(response map[string]any, op *proto.Operation) map[string]any {
 	for key, value := range response {
-		timeStr, ok := value.(string)
+		input, found := lo.Find(op.Inputs, func(i *proto.OperationInput) bool {
+			return i.Name == key
+		})
 
-		if !ok {
+		if !found {
 			continue
 		}
 
-		t, err := time.Parse(time.RFC3339, timeStr)
+		switch input.Type.Type {
+		case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+			timeStr, ok := value.(string)
 
-		if err != nil {
+			if !ok {
+				continue
+			}
+
+			t, err := time.Parse(time.RFC3339, timeStr)
+
+			if err != nil {
+				continue
+			}
+
+			response[key] = t
+		default:
 			continue
 		}
-
-		response[key] = t
 	}
 
 	return response

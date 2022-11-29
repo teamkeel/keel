@@ -41,7 +41,22 @@ func TestCustomFunctionGetResponseTransformation(t *testing.T) {
 
 	ctx := context.WithValue(context.Background(), functions.FunctionsClientKey, client)
 
-	op := &proto.Operation{}
+	op := &proto.Operation{
+		Inputs: []*proto.OperationInput{
+			{
+				Name: "Id",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_ID,
+				},
+			},
+			{
+				Name: "aDate",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_TIMESTAMP,
+				},
+			},
+		},
+	}
 
 	result, err := actions.ParseGetObjectResponse(ctx, op, map[string]any{})
 
@@ -49,7 +64,7 @@ func TestCustomFunctionGetResponseTransformation(t *testing.T) {
 
 	assert.IsType(t, time.Now(), result["aDate"])
 
-	assert.Equal(t, result["aDate"], time.Date(2022, 11, 29, 15, 47, 22, 951000000, time.UTC))
+	assert.Equal(t, time.Date(2022, 11, 29, 15, 47, 22, 951000000, time.UTC), result["aDate"])
 }
 
 func TestCustomFunctionCreateResponseTransformation(t *testing.T) {
@@ -66,7 +81,22 @@ func TestCustomFunctionCreateResponseTransformation(t *testing.T) {
 
 	ctx := context.WithValue(context.Background(), functions.FunctionsClientKey, client)
 
-	op := &proto.Operation{}
+	op := &proto.Operation{
+		Inputs: []*proto.OperationInput{
+			{
+				Name: "Id",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_ID,
+				},
+			},
+			{
+				Name: "aDate",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_TIMESTAMP,
+				},
+			},
+		},
+	}
 
 	result, err := actions.ParseCreateObjectResponse(ctx, op, map[string]any{})
 
@@ -74,7 +104,7 @@ func TestCustomFunctionCreateResponseTransformation(t *testing.T) {
 
 	assert.IsType(t, time.Now(), result["aDate"])
 
-	assert.Equal(t, result["aDate"], time.Date(2022, 11, 29, 15, 47, 22, 951000000, time.UTC))
+	assert.Equal(t, time.Date(2022, 11, 29, 15, 47, 22, 951000000, time.UTC), result["aDate"])
 }
 
 func TestCustomFunctionUpdateResponseTransformation(t *testing.T) {
@@ -91,7 +121,22 @@ func TestCustomFunctionUpdateResponseTransformation(t *testing.T) {
 
 	ctx := context.WithValue(context.Background(), functions.FunctionsClientKey, client)
 
-	op := &proto.Operation{}
+	op := &proto.Operation{
+		Inputs: []*proto.OperationInput{
+			{
+				Name: "Id",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_ID,
+				},
+			},
+			{
+				Name: "aDate",
+				Type: &proto.TypeInfo{
+					Type: proto.Type_TYPE_TIMESTAMP,
+				},
+			},
+		},
+	}
 
 	result, err := actions.ParseUpdateResponse(ctx, op, map[string]any{})
 
@@ -99,5 +144,5 @@ func TestCustomFunctionUpdateResponseTransformation(t *testing.T) {
 
 	assert.IsType(t, time.Now(), result["aDate"])
 
-	assert.Equal(t, result["aDate"], time.Date(2022, 11, 29, 15, 47, 22, 951000000, time.UTC))
+	assert.Equal(t, time.Date(2022, 11, 29, 15, 47, 22, 951000000, time.UTC), result["aDate"])
 }
