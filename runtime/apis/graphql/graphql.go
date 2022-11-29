@@ -510,9 +510,8 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.
 		in, ok = protoTypeToGraphQLInput[op.Type.Type]
 
 		if !ok {
-			return nil, fmt.Errorf("operation %s has unsupposed input type %s", op.OperationName, op.Type.Type.String())
+			return nil, fmt.Errorf("operation %s has unsupported input type: %s", op.OperationName, op.Type.Type.String())
 		}
-
 	}
 
 	if !op.Optional {
