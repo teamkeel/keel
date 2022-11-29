@@ -134,7 +134,7 @@ func (ds *DevelopmentServer) Kill() error {
 // serving custom function requests
 func RunDevelopmentServer(dir string, envVars map[string]any) (RuntimeServer, error) {
 	// 1. run dev server with ts-node.
-	handlerPath := filepath.Join(dir, codegenerator.BUILD_DIR_NAME, "index.js")
+	handlerPath := filepath.Join(dir, codegenerator.BuildDirName, "index.js")
 
 	cmd := exec.Command("npx", "ts-node", handlerPath)
 	cmd.Dir = dir

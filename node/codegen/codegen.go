@@ -153,13 +153,13 @@ func (g *Generator) sdkTypeDefinitions() string {
 var templatePackageJson string
 
 const (
-	BUILD_DIR_NAME = ".build"
+	BuildDirName = ".build"
 )
 
 // makeBuildDir will create a hidden .build directory in the target directory,
 // containing the given source code files
 func (g *Generator) makeBuildDir(srcCodes []*SourceCode) error {
-	basePath := filepath.Join(g.dir, BUILD_DIR_NAME)
+	basePath := filepath.Join(g.dir, BuildDirName)
 
 	err := os.MkdirAll(basePath, os.ModePerm)
 
