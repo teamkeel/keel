@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,24 +18,22 @@ import (
 func Bootstrap(dir string) error {
 	_, err := os.Stat(filepath.Join(dir, "package.json"))
 
-	if err == nil {
-		return nil
+	if err != nil && errors.Is(err, os.ErrExist) {
+		return err
 	}
 
 	// Make a package JSON for the temp dir that references my-package
 	// as a local package
 	err = os.WriteFile(filepath.Join(dir, "package.json"), []byte(fmt.Sprintf(
-		`
-	{
+		`{
 		"name": "%s",
 		"dependencies": {
 			"@teamkeel/testing": "*",
 			"@teamkeel/sdk":     "*",
 			"@teamkeel/runtime": "*",
 			"ts-node":           "*",
-			// https://typestrong.org/ts-node/docs/swc/
 			"@swc/core":           "*",
-			"regenerator-runtime": "*",
+			"regenerator-runtime": "*"
 		}
 	}`, filepath.Base(dir),
 	)), 0644)
@@ -137,7 +136,7 @@ func RunDevelopmentServer(dir string, envVars map[string]any) (RuntimeServer, er
 	// 1. run dev server with ts-node.
 	handlerPath := filepath.Join(dir, codegenerator.BUILD_DIR_NAME, "index.js")
 
-	cmd := exec.Command("./node_modules/.bin/ts-node", handlerPath)
+	cmd := exec.Command("npx", "ts-node", handlerPath)
 	cmd.Dir = dir
 	cmd.Env = os.Environ()
 
