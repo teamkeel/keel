@@ -143,19 +143,21 @@ test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", asy
 
 test("model set attribute from explicit input - set to parent - has parent", async () => {
   const { object: parent } = await Parent.create({
-    name: "Keelson"
+    name: "Keelson",
   });
 
-  const { object: thing } = await actions.createParentFromExplicitInput({ explParent: parent.id });
+  const { object: thing } = await actions.createParentFromExplicitInput({
+    explParent: parent.id,
+  });
   expect(thing.optionalParentId).toEqual(parent.id);
 });
 
 test("model set attribute on optional foreign key ID field - set to null - is null", async () => {
-  const { object: thing } = await actions.createNullParentId({ });
+  const { object: thing } = await actions.createNullParentId({});
   expect(thing.optionalParentId).toEqual(null);
 });
 
 test("model set attribute on optional field - set to null - is null", async () => {
-  const { object: thing } = await actions.createNullParent({ });
+  const { object: thing } = await actions.createNullParent({});
   expect(thing.optionalParentId).toEqual(null);
 });
