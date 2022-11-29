@@ -14,14 +14,14 @@ type FunctionsClient interface {
 
 type functionsClientContextKey string
 
-var functionsClientKey functionsClientContextKey = "client"
+var FunctionsClientKey functionsClientContextKey = "client"
 
 func WithFunctionsClient(ctx context.Context, client FunctionsClient) context.Context {
-	return context.WithValue(ctx, functionsClientKey, client)
+	return context.WithValue(ctx, FunctionsClientKey, client)
 }
 
 func CallFunction(ctx context.Context, actionName string, opType proto.OperationType, body map[string]any) (any, error) {
-	client, ok := ctx.Value(functionsClientKey).(FunctionsClient)
+	client, ok := ctx.Value(FunctionsClientKey).(FunctionsClient)
 	if !ok {
 		return nil, errors.New("no functions client in context")
 	}
@@ -30,7 +30,7 @@ func CallFunction(ctx context.Context, actionName string, opType proto.Operation
 }
 
 func ToGraphQL(ctx context.Context, response any, opType proto.OperationType) (interface{}, error) {
-	client, ok := ctx.Value(functionsClientKey).(FunctionsClient)
+	client, ok := ctx.Value(FunctionsClientKey).(FunctionsClient)
 	if !ok {
 		return nil, errors.New("no functions client in context")
 	}
