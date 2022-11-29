@@ -138,6 +138,7 @@ func RunDevelopmentServer(dir string, envVars map[string]any) (RuntimeServer, er
 	handlerPath := filepath.Join(dir, codegenerator.BUILD_DIR_NAME, "index.js")
 
 	cmd := exec.Command("./node_modules/.bin/ts-node", handlerPath)
+	cmd.Dir = dir
 	cmd.Env = os.Environ()
 
 	for key, value := range envVars {
