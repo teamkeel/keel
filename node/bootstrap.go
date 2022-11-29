@@ -3,6 +3,7 @@ package node
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -134,8 +135,15 @@ func (ds *DevelopmentServer) Kill() error {
 	return ds.proc.Kill()
 }
 
+type ServerOpts struct {
+	Port    int
+	EnvVars map[string]any
+	Stdout  io.Writer
+	Stderr  io.Writer
+}
+
 // RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
-func RunDevelopmentServer(dir string, envVars map[string]any) (RuntimeServer, error) {
+func RunDevelopmentServer(dir string, options *ServerOpts) (RuntimeServer, error) {
 	// 1. run dev server with ts-node.
 	handlerPath := filepath.Join(dir, codegenerator.BuildDirName, "index.js")
 
@@ -143,8 +151,15 @@ func RunDevelopmentServer(dir string, envVars map[string]any) (RuntimeServer, er
 	cmd.Dir = dir
 	cmd.Env = os.Environ()
 
-	for key, value := range envVars {
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	if options != nil {
+		cmd.Stdout = options.Stdout
+		cmd.Stderr = options.Stderr
+
+		cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", options.Port))
+
+		for key, value := range options.EnvVars {
+			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+		}
 	}
 
 	err := cmd.Start()
