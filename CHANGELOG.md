@@ -1,3 +1,10 @@
+## [0.221.4](https://github.com/teamkeel/keel/compare/v0.221.3...v0.221.4) (2022-11-29)
+
+
+### Bug Fixes
+
+* date and timestamp input parsing fixed ([#620](https://github.com/teamkeel/keel/issues/620)) ([401cf5e](https://github.com/teamkeel/keel/commit/401cf5ee461adb7258b3857374fb737f3da6282c))
+
 ## [0.221.3](https://github.com/teamkeel/keel/compare/v0.221.2...v0.221.3) (2022-11-28)
 
 
