@@ -1,3 +1,10 @@
+# [0.222.0](https://github.com/teamkeel/keel/compare/v0.221.4...v0.222.0) (2022-11-29)
+
+
+### Features
+
+* new validation rule (reciprocal relationship count <= 1) ([#622](https://github.com/teamkeel/keel/issues/622)) ([e052514](https://github.com/teamkeel/keel/commit/e052514c6e704c85e168c82feb9e4325f2f51820))
+
 ## [0.221.4](https://github.com/teamkeel/keel/compare/v0.221.3...v0.221.4) (2022-11-29)
 
 
