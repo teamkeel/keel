@@ -139,7 +139,7 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 		// It is an error, if there are more than one such reverse fields.
 		if len(reverseFields) > 1 {
 			errs.Append(
-				errorhandling.ErrorNonSingularReverseField,
+				errorhandling.ErrorAmbiguousRelationship,
 				map[string]string{
 					"ModelA": singleEndModel.Name.Value,
 					"ModelB": reverseFields[0].Type,

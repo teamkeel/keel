@@ -59,7 +59,7 @@ const (
 	ErrorReservedActionName                 = "E042"
 	ErrorClashingImplicitInput              = "E043"
 	ErrorMissingRelationshipField           = "E044"
-	ErrorNonSingularReverseField            = "E045"
+	ErrorAmbiguousRelationship              = "E045"
 )
 
 type ErrorDetails struct {
