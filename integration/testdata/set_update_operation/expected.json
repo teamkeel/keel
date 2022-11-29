@@ -62,5 +62,17 @@
   {
     "status": "pass",
     "testName": "enum set attribute from implicit input - set to TypeTwo - is TypeTwo"
+  },
+  {
+    "status": "pass",
+    "testName": "model set attribute from explicit input - set to parent - has parent"
+  },
+  {
+    "status": "pass",
+    "testName": "model set attribute on optional foreign key ID field - set to null - is null"
+  },
+  {
+    "status": "pass",
+    "testName": "model set attribute on optional field - set to null - is null"
   }
 ]

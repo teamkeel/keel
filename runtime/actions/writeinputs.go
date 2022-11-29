@@ -51,7 +51,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 
 		// If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
 		// For example, @set(post.user = ctx.identity) will set post.userId with ctx.identity.id.
-		if operandType == proto.Type_TYPE_MODEL && value != nil {
+		if operandType == proto.Type_TYPE_MODEL {
 			fieldName = fmt.Sprintf("%sId", fieldName)
 		}
 

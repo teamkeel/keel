@@ -1,4 +1,4 @@
-import { test, expect, actions, Thing } from "@teamkeel/testing";
+import { test, expect, actions, Thing, Parent } from "@teamkeel/testing";
 
 /* 
   Text Type 
@@ -145,4 +145,62 @@ test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", asy
   });
   expect(thingUpdated.enum).toEqual("TypeTwo");
   expect(thingUpdated.otherEnum).toEqual("TypeTwo");
+});
+
+/*
+  Model Type
+*/
+
+test("model set attribute from explicit input - set to parent - has parent", async () => {
+  const { object: parent } = await Parent.create({
+    name: "Keelson",
+  });
+
+  const { object: thing } = await actions.create({});
+  expect(thing.parentId).toEqual(null);
+  const { object: updatedThing } = await actions.updateParentFromExplicitInput({
+    where: { id: thing.id },
+    values: { explParent: parent.id },
+  });
+  expect(updatedThing.parentId).toEqual(parent.id);
+});
+
+test("model set attribute on optional foreign key ID field - set to null - is null", async () => {
+  const { object: parent } = await Parent.create({
+    name: "Keelson",
+  });
+
+  const { object: thing } = await actions.create({});
+  expect(thing.parentId).toEqual(null);
+  const { object: updatedThing } = await actions.updateParentFromExplicitInput({
+    where: { id: thing.id },
+    values: { explParent: parent.id },
+  });
+  expect(updatedThing.parentId).toEqual(parent.id);
+
+  const { object: updatedThingWithNullParentId } =
+    await actions.updateNullParentId({
+      where: { id: thing.id },
+    });
+  expect(updatedThingWithNullParentId.parentId).toEqual(null);
+});
+
+test("model set attribute on optional field - set to null - is null", async () => {
+  const { object: parent } = await Parent.create({
+    name: "Keelson",
+  });
+
+  const { object: thing } = await actions.create({});
+  expect(thing.parentId).toEqual(null);
+  const { object: updatedThing } = await actions.updateParentFromExplicitInput({
+    where: { id: thing.id },
+    values: { explParent: parent.id },
+  });
+  expect(updatedThing.parentId).toEqual(parent.id);
+
+  const { object: updatedThingWithNullParentId } =
+    await actions.updateNullParent({
+      where: { id: thing.id },
+    });
+  expect(updatedThingWithNullParentId.parentId).toEqual(null);
 });
