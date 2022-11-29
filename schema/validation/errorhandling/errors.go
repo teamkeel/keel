@@ -60,6 +60,7 @@ const (
 	ErrorClashingImplicitInput              = "E043"
 	ErrorMissingRelationshipField           = "E044"
 	ErrorAmbiguousRelationship              = "E045"
+	ErrorCreateOperationMissingInputAliases = "E046"
 )
 
 type ErrorDetails struct {

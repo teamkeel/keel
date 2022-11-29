@@ -129,7 +129,7 @@ en:
   E034:
     short_message: "create actions must accept all required fields that have no default value"
     message: "create actions must accept all required fields that have no default value"
-    hint: "maybe add {{ .FieldName }} to the with() inputs"
+    hint: "maybe add {{ .FieldName }} to the with() inputs or a @set expression"
   E035:
     short_message: "{{ .Input }} is not a unique field"
     message: "{{ .Input }} is not a unique field. {{ .OperationType }} operations take only unique inputs"
@@ -173,3 +173,7 @@ en:
     short_message: "The '{{ .ModelA }}' model has more than one field that references the {{ .ModelB }} model"
     message: "The '{{ .ModelA }}' model has more than one field that references the {{ .ModelB }} model, only one is allowed if the {{ .ModelB }} model has a repeated, (i.e. []) reverse relationship field."
     hint: "Try removing all but one of these fields."
+  E046:
+    short_message: "create actions must accept all required fields that have no default value"
+    message: "create actions must accept all required fields that have no default value"
+    hint: "maybe add one of {{ .WithNames }} to with() inputs, or one of {{ .SetNames }} to a @set expression"

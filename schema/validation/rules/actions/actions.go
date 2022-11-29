@@ -111,16 +111,29 @@ func CreateOperationRequiredFieldsRule(
 		createActions := query.ModelCreateActions(model)
 		for _, createAction := range createActions {
 			for _, fld := range requiredFieldsWithAliases {
-				satisfiedByWithInput := requiredFieldInWithClause(fld, createAction)
-				satisfiedBySetExpr := satisfiedBySetExpr(fld, model.Name.Value, createAction)
+				satisfiedByWithInput := requiredFieldInWithClause(fld.allowedInputNames, createAction)
+				satisfiedBySetExpr := satisfiedBySetExpr(fld.allowedSetExprNames, model.Name.Value, createAction)
 
+				// If the missing field has aliases, we use an error format dedicated to that case.
 				if !satisfiedByWithInput && !satisfiedBySetExpr {
-					errs.Append(errorhandling.ErrorCreateOperationMissingInput,
-						map[string]string{
-							"FieldName": fld.Aliases(),
-						},
-						createAction.Name,
-					)
+					switch {
+					case len(fld.allowedInputNames) > 1:
+						errs.Append(errorhandling.ErrorCreateOperationMissingInputAliases,
+							map[string]string{
+								"WithNames": fld.fmtWithAliases(),
+								"SetNames":  fld.fmtSetAliases(),
+							},
+							createAction.Name,
+						)
+					default:
+						// The more general case.
+						errs.Append(errorhandling.ErrorCreateOperationMissingInput,
+							map[string]string{
+								"FieldName": fld.allowedInputNames[0],
+							},
+							createAction.Name,
+						)
+					}
 				}
 			}
 		}
@@ -128,13 +141,31 @@ func CreateOperationRequiredFieldsRule(
 	return errs
 }
 
-// RequiredField is a generalisation of a field name, that allows a field name to
-// have aliases. For example "AuthorId", having an alias of "author.id".
-type requiredField []string
+// RequiredField specifies a field name that is "required", and gives you a set of
+// alternative names by which the field may be referred to in either an operation input,
+// or in an operation assignment expression.
+// It is capable of modelling the following aliases for a foreign key field, such as
+//
+//	[Author, authorId, author.id]
+//
+// Or for more general fields with no additional alias names:
+//
+//	[Age]
+type requiredField struct {
+	allowedInputNames   []string
+	allowedSetExprNames []string
+}
 
-// Aliases returns all the required field's aliases as a single comma delimited string.
-func (rf requiredField) Aliases() string {
-	return strings.Join([]string(rf), ", ")
+// fmtWithAliases returns a single-string representation of the names in the
+// allowedInputNames.
+func (rf requiredField) fmtWithAliases() string {
+	return fmt.Sprintf("(%s)", strings.Join(rf.allowedInputNames, ","))
+}
+
+// fmtSetAliases returns a single-string representation of the names in the
+// allowedSetExprNames.
+func (rf requiredField) fmtSetAliases() string {
+	return fmt.Sprintf("(%s)", strings.Join(rf.allowedSetExprNames, ","))
 }
 
 // setExpressions returns all the non-nil expressions from all
@@ -178,25 +209,32 @@ func requiredCreateFields(model *parser.ModelNode) []*requiredField {
 
 		// We conclude this field IS required.
 
-		// A required FK field can be satisfied by its real field name like "authorId", or by "author.id", or if the entire model is being assigned to by "author".
 		if f.FkInfo != nil && f.FkInfo.ForeignKeyField == f {
+			// A required FK field can be satisfied by alternative (alias) names like
+			// 		"author", "authorId", "author.id"
 			dottedForm := strings.Join([]string{
 				f.FkInfo.OwningField.Name.Value,
 				f.FkInfo.ReferredToModelPrimaryKey.Name.Value}, ".")
-			requiredField := requiredField{f.Name.Value, dottedForm, f.FkInfo.OwningField.Name.Value}
+			requiredField := requiredField{
+				allowedInputNames:   []string{f.Name.Value, dottedForm},
+				allowedSetExprNames: []string{f.Name.Value, f.FkInfo.OwningField.Name.Value},
+			}
 			req = append(req, &requiredField)
 		} else {
 			// The general case
-			req = append(req, &requiredField{f.Name.Value})
+			req = append(req, &requiredField{
+				allowedInputNames:   []string{f.Name.Value},
+				allowedSetExprNames: []string{f.Name.Value},
+			})
 		}
 	}
 	return req
 }
 
-// requiredFieldInWithClause returns true if any of the names/aliases in the given requiredField are
+// requiredFieldInWithClause returns true if any of the given names/aliases are
 // present the the given action's "With" inputs.
-func requiredFieldInWithClause(requiredField *requiredField, action *parser.ActionNode) bool {
-	for _, altFieldName := range *requiredField {
+func requiredFieldInWithClause(fieldAliases []string, action *parser.ActionNode) bool {
+	for _, altFieldName := range fieldAliases {
 		for _, input := range action.With {
 			if input.Label == nil && input.Type.ToString() == altFieldName {
 				return true
@@ -206,13 +244,12 @@ func requiredFieldInWithClause(requiredField *requiredField, action *parser.Acti
 	return false
 }
 
-// satisfiedBySetExpr returns true if any of the names/aliases in the given requiredField are
+// satisfiedBySetExpr returns true if any of the given names/aliases are
 // present in any of the given action's @set expressions as the LHS of an assignment.
 // E.g
 // @set(mymodel.age =
 // @set(mymodel.authorId =
-
-func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *parser.ActionNode) bool {
+func satisfiedBySetExpr(fieldAliases []string, modelName string, action *parser.ActionNode) bool {
 	setExpressions := setExpressions(action)
 	for _, expr := range setExpressions {
 		assignment, err := expr.ToAssignmentCondition()
@@ -229,7 +266,7 @@ func satisfiedBySetExpr(requiredField *requiredField, modelName string, action *
 			continue
 		}
 
-		for _, altFieldName := range *requiredField {
+		for _, altFieldName := range fieldAliases {
 			if fieldName == altFieldName {
 				return true
 			}
