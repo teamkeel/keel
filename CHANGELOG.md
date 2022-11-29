@@ -1,3 +1,10 @@
+## [0.222.2](https://github.com/teamkeel/keel/compare/v0.222.1...v0.222.2) (2022-11-29)
+
+
+### Bug Fixes
+
+* convert timestamps returned in iso8601 from custom functions ([#625](https://github.com/teamkeel/keel/issues/625)) ([3c209e6](https://github.com/teamkeel/keel/commit/3c209e6f4607f443d9d3866c4d969d23f5d416b5))
+
 ## [0.222.1](https://github.com/teamkeel/keel/compare/v0.222.0...v0.222.1) (2022-11-29)
 
 
