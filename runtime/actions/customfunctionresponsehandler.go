@@ -4,10 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/karlseguin/typed"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 )
@@ -109,9 +107,6 @@ func ParseListResponse(context context.Context, op *proto.Operation, args WhereA
 
 	collection := typed.New(resMap).Maps("collection")
 	if collection != nil {
-		collection = lo.Map(collection, func(item map[string]interface{}, _ int) map[string]any {
-			return transformResponse(item)
-		})
 		return &ListResult{
 			Results: collection,
 		}, nil
@@ -149,8 +144,6 @@ func TryParseObjectResponse(res any) (map[string]any, error) {
 			panic("custom functions object not a map")
 		}
 
-		objectMap = transformResponse(objectMap)
-
 		return objectMap, nil
 	} else if errorsPresent {
 		errorArr, ok := errors.([]map[string]any)
@@ -183,24 +176,4 @@ func TryParseObjectResponse(res any) (map[string]any, error) {
 	}
 
 	return nil, fmt.Errorf("incorrect data returned from custom function")
-}
-
-func transformResponse(response map[string]any) map[string]any {
-	for key, value := range response {
-		timeStr, ok := value.(string)
-
-		if !ok {
-			continue
-		}
-
-		t, err := time.Parse(time.RFC3339, timeStr)
-
-		if err != nil {
-			continue
-		}
-
-		response[key] = t
-	}
-
-	return response
 }

@@ -50,10 +50,10 @@ var formattedDateType = &graphql.Field{
 		},
 	},
 	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		t, ok := p.Source.(time.Time)
+		t, err := sourceToTime(p.Source)
 
-		if !ok {
-			return nil, fmt.Errorf("not a valid time")
+		if err != nil {
+			return nil, err
 		}
 
 		formatArg, ok := p.Args["format"].(string)
@@ -68,7 +68,7 @@ var formattedDateType = &graphql.Field{
 		// provides a conversion inbetween standard date formats and go's
 		// layout format system
 		// Format spec: https://github.com/bykof/gostradamus/blob/master/formatting.go#L11-L42
-		dateTime := gostradamus.DateTimeFromTime(t)
+		dateTime := gostradamus.DateTimeFromTime(*t)
 
 		return dateTime.Format(formatArg), nil
 	},
@@ -82,10 +82,10 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 			Description: "Seconds since unix epoch",
 			Type:        graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, ok := p.Source.(time.Time)
+				t, err := sourceToTime(p.Source)
 
-				if !ok {
-					return nil, fmt.Errorf("not a valid time")
+				if err != nil {
+					return nil, err
 				}
 
 				return t.Unix(), nil
@@ -95,39 +95,39 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 			Name: "year",
 			Type: graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
+				t, err := sourceToTime(p.Source)
 
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+				if err != nil {
+					return nil, err
 				}
 
-				return d.Year(), nil
+				return t.Year(), nil
 			},
 		},
 		"month": &graphql.Field{
 			Name: "month",
 			Type: graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
+				t, err := sourceToTime(p.Source)
 
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+				if err != nil {
+					return nil, err
 				}
 
-				return int(d.Month()), nil
+				return int(t.Month()), nil
 			},
 		},
 		"day": &graphql.Field{
 			Name: "day",
 			Type: graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
+				t, err := sourceToTime(p.Source)
 
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+				if err != nil {
+					return nil, err
 				}
 
-				return d.Day(), nil
+				return t.Day(), nil
 			},
 		},
 		"formatted": formattedDateType,
@@ -142,39 +142,39 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 			Name: "year",
 			Type: graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
+				t, err := sourceToTime(p.Source)
 
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+				if err != nil {
+					return nil, err
 				}
 
-				return d.Year(), nil
+				return t.Year(), nil
 			},
 		},
 		"month": &graphql.Field{
 			Name: "month",
 			Type: graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
+				t, err := sourceToTime(p.Source)
 
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+				if err != nil {
+					return nil, err
 				}
 
-				return int(d.Month()), nil
+				return int(t.Month()), nil
 			},
 		},
 		"day": &graphql.Field{
 			Name: "day",
 			Type: graphql.NewNonNull(graphql.Int),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				d, ok := p.Source.(time.Time)
+				t, err := sourceToTime(p.Source)
 
-				if !ok {
-					return nil, fmt.Errorf("not a valid date")
+				if err != nil {
+					return nil, err
 				}
 
-				return d.Day(), nil
+				return t.Day(), nil
 			},
 		},
 		"formatted": formattedDateType,
@@ -331,4 +331,25 @@ var protoTypeToGraphQLQueryInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_TIMESTAMP: timestampQueryInputType,
 	proto.Type_TYPE_DATETIME:  timestampQueryInputType,
 	proto.Type_TYPE_DATE:      dateQueryInputType,
+}
+
+// for fields where the underlying source is a date/datetime
+// the actual underlying field value may either be a time.Time
+// or an ISO8601 string. So this method handles differing inputs for the
+// source value, and returns a time.Time
+func sourceToTime(source interface{}) (*time.Time, error) {
+	switch v := source.(type) {
+	case time.Time:
+		return &v, nil
+	case string:
+		t, err := time.Parse(time.RFC3339, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &t, nil
+	default:
+		return nil, fmt.Errorf("%v not a valid date / time", source)
+	}
 }
