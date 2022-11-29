@@ -1,3 +1,10 @@
+## [0.222.3](https://github.com/teamkeel/keel/compare/v0.222.2...v0.222.3) (2022-11-29)
+
+
+### Bug Fixes
+
+* move datetime conversion to graphql resolver level ([#628](https://github.com/teamkeel/keel/issues/628)) ([5480cf0](https://github.com/teamkeel/keel/commit/5480cf0fe0dc61ae2cb968319d275a16cfb0097b))
+
 ## [0.222.2](https://github.com/teamkeel/keel/compare/v0.222.1...v0.222.2) (2022-11-29)
 
 
