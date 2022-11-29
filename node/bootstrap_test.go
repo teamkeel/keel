@@ -105,7 +105,12 @@ func TestRunDevelopmentServer(t *testing.T) {
 	err = node.GenerateDevelopmentServer(tmpDir)
 	assert.NoError(t, err)
 
-	server, err := node.RunDevelopmentServer(tmpDir, map[string]any{})
+	server, err := node.RunDevelopmentServer(tmpDir, &node.ServerOpts{
+		Port:    1234,
+		EnvVars: map[string]any{},
+		Stdout:  os.Stdout,
+		Stderr:  os.Stderr,
+	})
 	assert.NoError(t, err)
 	assert.NoError(t, server.Kill())
 }
