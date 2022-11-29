@@ -69,6 +69,7 @@ var validatorFuncs = []validationFunc{
 	// Relationships
 	relationships.InvalidOneToOneRelationshipRule,
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
+	relationships.MoreThanOneReverseMany,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

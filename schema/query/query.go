@@ -314,3 +314,16 @@ func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 		return true
 	}
 }
+
+// IsHasManyModelField returns true if the given field can be inferred to be
+// a field that references another model, and is denoted as being REPEATED.
+func IsHasManyModelField(asts []*parser.AST, field *parser.FieldNode) bool {
+	switch {
+	case !IsModel(asts, field.Type):
+		return false
+	case !field.Repeated:
+		return false
+	default:
+		return true
+	}
+}

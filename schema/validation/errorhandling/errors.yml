@@ -169,3 +169,7 @@ en:
     short_message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
     message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
     hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."
+  E045:
+    short_message: "The '{{ .ModelA }}' model has more than one field that references the {{ .ModelB }} model"
+    message: "The '{{ .ModelA }}' model has more than one field that references the {{ .ModelB }} model, only one is allowed if the {{ .ModelB }} model has a repeated, (i.e. []) reverse relationship field."
+    hint: "Try removing all but one of these fields."
