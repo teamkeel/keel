@@ -6,6 +6,8 @@ const (
 
 	TemplateTesting            = "testing"
 	TemplateTestingDefinitions = "testing_definitions"
+
+	TemplateHandlerDevelopment = "handler_development"
 )
 
 const (

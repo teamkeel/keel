@@ -46,17 +46,16 @@ type GeneratedFile = SourceCode
 // GenerateSDK will generate a fresh @teamkeel/sdk package into the node_modules
 // of the target directory
 func (g *Generator) GenerateSDK() ([]*GeneratedFile, error) {
-	sourceCodes := []*SourceCode{}
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.js",
-		Contents: g.sdkSrcCode(),
-	})
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.d.ts",
-		Contents: g.sdkTypeDefinitions(),
-	})
+	sourceCodes := []*SourceCode{
+		{
+			Path:     "index.js",
+			Contents: g.sdkSrcCode(),
+		},
+		{
+			Path:     "index.d.ts",
+			Contents: g.sdkTypeDefinitions(),
+		},
+	}
 
 	err := g.makeNpmPackage(SdkPackageName, sourceCodes)
 
@@ -70,19 +69,42 @@ func (g *Generator) GenerateSDK() ([]*GeneratedFile, error) {
 // GenerateTesting will generate a fresh @teamkeel/testing package into the node_modules
 // of the target directory
 func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
-	sourceCodes := []*SourceCode{}
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.js",
-		Contents: g.testingSrcCode(),
-	})
-
-	sourceCodes = append(sourceCodes, &SourceCode{
-		Path:     "index.d.ts",
-		Contents: g.testingTypeDefinitions(),
-	})
+	sourceCodes := []*SourceCode{
+		{
+			Path:     "index.js",
+			Contents: g.testingSrcCode(),
+		},
+		{
+			Path:     "index.d.ts",
+			Contents: g.testingTypeDefinitions(),
+		},
+	}
 
 	err := g.makeNpmPackage(TestingPackageName, sourceCodes)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return sourceCodes, nil
+}
+
+func (g *Generator) GenerateDevelopmentHandler() ([]*GeneratedFile, error) {
+	src := renderTemplate(TemplateHandlerDevelopment, map[string]interface{}{
+		"Models": g.schemaModels(),
+		"Functions": g.schemaActions(func(a *proto.Operation) bool {
+			return a.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
+		}),
+	})
+
+	sourceCodes := []*SourceCode{
+		{
+			Path:     "index.js",
+			Contents: src,
+		},
+	}
+
+	err := g.makeBuildDir(sourceCodes)
 
 	if err != nil {
 		return nil, err
@@ -95,7 +117,7 @@ func (g *Generator) GenerateTesting() ([]*GeneratedFile, error) {
 // javascript code required by the testing package
 func (g *Generator) testingSrcCode() string {
 	return renderTemplate(TemplateTesting, map[string]interface{}{
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 		"Models":  g.schemaModels(),
 	})
 }
@@ -104,7 +126,7 @@ func (g *Generator) testingSrcCode() string {
 // type definitions for the index.js javascript file.
 func (g *Generator) testingTypeDefinitions() string {
 	return renderTemplate(TemplateTestingDefinitions, map[string]interface{}{
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 		"Models":  g.schemaModels(),
 	})
 }
@@ -113,7 +135,7 @@ func (g *Generator) testingTypeDefinitions() string {
 func (g *Generator) sdkSrcCode() string {
 	return renderTemplate(TemplateSdk, map[string]interface{}{
 		"Models":  g.schemaModels(),
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 	})
 }
 
@@ -123,12 +145,44 @@ func (g *Generator) sdkTypeDefinitions() string {
 	return renderTemplate(TemplateSdkDefinitions, map[string]interface{}{
 		"Models":  g.schemaModels(),
 		"Enums":   g.schemaEnums(),
-		"Actions": g.schemaActions(),
+		"Actions": g.schemaActions(func(a *proto.Operation) bool { return true }),
 	})
 }
 
 //go:embed package.json.tmpl
 var templatePackageJson string
+
+const (
+	BuildDirName = ".build"
+)
+
+// makeBuildDir will create a hidden .build directory in the target directory,
+// containing the given source code files
+func (g *Generator) makeBuildDir(srcCodes []*SourceCode) error {
+	basePath := filepath.Join(g.dir, BuildDirName)
+
+	err := os.MkdirAll(basePath, os.ModePerm)
+
+	if err != nil {
+		return err
+	}
+
+	for _, code := range srcCodes {
+		f, err := os.Create(filepath.Join(basePath, code.Path))
+
+		if err != nil {
+			return err
+		}
+
+		_, err = f.WriteString(code.Contents)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // makeNpmPackage will create a new node_module at {dir}/node_modules/@teamkeel/{name},
 // with a simple package.json, as well as any srcCode files passed to this method.
@@ -236,9 +290,9 @@ func (g *Generator) schemaModels() (models []*Model) {
 	return models
 }
 
-func (g *Generator) schemaActions() []*Action {
+func (g *Generator) schemaActions(filter func(a *proto.Operation) bool) []*Action {
 	return lo.Map(proto.FilterOperations(g.schema, func(op *proto.Operation) bool {
-		return true
+		return filter(op)
 	}), func(op *proto.Operation, _ int) *Action {
 		writeInputs := lo.Filter(op.Inputs, func(i *proto.OperationInput, _ int) bool {
 			return i.Mode == proto.InputMode_INPUT_MODE_WRITE

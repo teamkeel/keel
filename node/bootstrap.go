@@ -1,6 +1,7 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -17,24 +18,22 @@ import (
 func Bootstrap(dir string) error {
 	_, err := os.Stat(filepath.Join(dir, "package.json"))
 
-	if err == nil {
-		return nil
+	if err != nil && errors.Is(err, os.ErrExist) {
+		return err
 	}
 
 	// Make a package JSON for the temp dir that references my-package
 	// as a local package
 	err = os.WriteFile(filepath.Join(dir, "package.json"), []byte(fmt.Sprintf(
-		`
-	{
+		`{
 		"name": "%s",
 		"dependencies": {
 			"@teamkeel/testing": "*",
 			"@teamkeel/sdk":     "*",
 			"@teamkeel/runtime": "*",
 			"ts-node":           "*",
-			// https://typestrong.org/ts-node/docs/swc/
 			"@swc/core":           "*",
-			"regenerator-runtime": "*",
+			"regenerator-runtime": "*"
 		}
 	}`, filepath.Base(dir),
 	)), 0644)
@@ -62,14 +61,14 @@ func GeneratePackages(dir string) error {
 
 	schema, err := builder.MakeFromDirectory(dir)
 
+	if err != nil {
+		return err
+	}
+
 	// Dont do any code generation if there are no functions in the schema
 	// or any Keel tests defined
 	if !hasFunctions(schema) && !hasTests(dir) {
 		return nil
-	}
-
-	if err != nil {
-		return err
 	}
 
 	cg := codegenerator.NewGenerator(schema, dir)
@@ -94,13 +93,66 @@ func GenerateDevelopmentServer(dir string) error {
 	// that imports custom function handler code from node_modules/@teamkeel/functions-runtime
 	// 2. bootstrap code to start a node server for the custom function runtime
 
+	builder := schema.Builder{}
+
+	schema, err := builder.MakeFromDirectory(dir)
+
+	if err != nil {
+		return err
+	}
+
+	// Dont do any code generation if there are no functions in the schema
+	// or any Keel tests defined
+	if !hasFunctions(schema) && !hasTests(dir) {
+		return nil
+	}
+
+	cg := codegenerator.NewGenerator(schema, dir)
+
+	_, err = cg.GenerateDevelopmentHandler()
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-// maybe return a custom type over os.Process
-func RunDevelopmentServer(dir string, envVars map[string]any) (*os.Process, error) {
+type RuntimeServer interface {
+	Kill() error
+}
+
+type DevelopmentServer struct {
+	proc *os.Process
+}
+
+func (ds *DevelopmentServer) Kill() error {
+	return ds.proc.Kill()
+}
+
+// RunDevelopmentServer will start a new node runtime server
+// serving custom function requests
+func RunDevelopmentServer(dir string, envVars map[string]any) (RuntimeServer, error) {
 	// 1. run dev server with ts-node.
-	return nil, nil
+	handlerPath := filepath.Join(dir, codegenerator.BuildDirName, "index.js")
+
+	cmd := exec.Command("npx", "ts-node", handlerPath)
+	cmd.Dir = dir
+	cmd.Env = os.Environ()
+
+	for key, value := range envVars {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	}
+
+	err := cmd.Start()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &DevelopmentServer{
+		proc: cmd.Process,
+	}, nil
 }
 
 func hasFunctions(sch *proto.Schema) bool {

@@ -5,7 +5,7 @@ import handle from ".";
 test("when the custom function returns expected value", async () => {
   const config: Config = {
     functions: {
-      createPost: () => {
+      createPost: async () => {
         return {
           title: "a post",
           id: "abcde",
@@ -30,7 +30,7 @@ test("when the custom function returns expected value", async () => {
 test("when the custom function doesnt return a value", async () => {
   const config: Config = {
     functions: {
-      createPost: () => {},
+      createPost: async () => {},
     },
     api: {},
   };
@@ -50,7 +50,7 @@ test("when the custom function doesnt return a value", async () => {
 test("when there is no matching function for the path", async () => {
   const config: Config = {
     functions: {
-      createPost: () => {},
+      createPost: async () => {},
     },
     api: {},
   };
