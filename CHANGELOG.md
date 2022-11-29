@@ -1,3 +1,10 @@
+## [0.222.1](https://github.com/teamkeel/keel/compare/v0.222.0...v0.222.1) (2022-11-29)
+
+
+### Bug Fixes
+
+* assign model to null in set attribute ([#621](https://github.com/teamkeel/keel/issues/621)) ([1386786](https://github.com/teamkeel/keel/commit/138678663e36b471ad380e820e5caea878f846a1))
+
 # [0.222.0](https://github.com/teamkeel/keel/compare/v0.221.4...v0.222.0) (2022-11-29)
 
 
