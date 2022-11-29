@@ -19,6 +19,8 @@ model Thing {
         enum ThingType? @default(ThingType.TypeOne)
 
         otherEnum ThingType?
+
+        parent Parent?
     }
     operations {
         create create() 
@@ -88,6 +90,19 @@ model Thing {
         update updateEnumFromImplicitInput(id) with (otherEnum) {
             @set(thing.enum = ThingType.TypeTwo)
         }
+
+        update updateParentFromExplicitInput(id) with (explParent: ID) {
+            @set(thing.parentId = explParent)
+        }
+
+        update updateNullParentId(id)  {
+            @set(thing.parentId = null)
+        }
+
+        update updateNullParent(id)  {
+            @set(thing.parent = null)
+        }
+
     }
 }
 
@@ -96,9 +111,16 @@ enum ThingType {
     TypeTwo
 }
 
+model Parent {
+    fields {
+        name Text
+    }
+}
+
 api Test {
     @graphql
     models {
         Thing
+        Parent
     }
 }
