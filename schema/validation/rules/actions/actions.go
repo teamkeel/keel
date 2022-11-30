@@ -159,13 +159,13 @@ type requiredField struct {
 // fmtWithAliases returns a single-string representation of the names in the
 // allowedInputNames.
 func (rf requiredField) fmtWithAliases() string {
-	return fmt.Sprintf("(%s)", strings.Join(rf.allowedInputNames, ","))
+	return fmt.Sprintf("(%s)", formatting.HumanizeList(rf.allowedInputNames, ""))
 }
 
 // fmtSetAliases returns a single-string representation of the names in the
 // allowedSetExprNames.
 func (rf requiredField) fmtSetAliases() string {
-	return fmt.Sprintf("(%s)", strings.Join(rf.allowedSetExprNames, ","))
+	return fmt.Sprintf("(%s)", formatting.HumanizeList(rf.allowedSetExprNames, ""))
 }
 
 // setExpressions returns all the non-nil expressions from all
