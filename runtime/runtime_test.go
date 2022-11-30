@@ -36,6 +36,15 @@ func TestRuntime(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
+			fmt.Printf("XXXX test name is: %s\n", tCase.name)
+			if tCase.name == "delete_operation_happy" {
+				a := 1
+				_ = a
+			} else {
+				a := 1
+				_ = a
+			}
+
 			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name))
 
 			require.NoError(t, err)
@@ -237,6 +246,7 @@ const basicSchema string = `
 			create createPerson() with (name)
 			update updatePerson(id) with (name)
 			list listPeople(name)
+			delete deletePerson(id)
 		}
 	}
 	api Test {
@@ -528,6 +538,38 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "no records found for Get() operation", errors[0].Message)
+		},
+	},
+	{
+		name:       "delete_operation_happy",
+		keelSchema: basicSchema,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"name": "Sue",
+					"id":   "41",
+				}),
+				initRow(map[string]any{
+					"name": "Fred",
+					"id":   "42",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("person").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			mutation DeletePerson($id: ID!) {
+				deletePerson(input: {id: $id}) {
+					success
+				}
+			}
+		`,
+		variables: map[string]any{
+			"id": "42",
+		},
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "deletePerson.success", true)
 		},
 	},
 	{
