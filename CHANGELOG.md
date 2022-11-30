@@ -1,3 +1,10 @@
+# [0.224.0](https://github.com/teamkeel/keel/compare/v0.223.0...v0.224.0) (2022-11-30)
+
+
+### Features
+
+* use correct typescript compiler ([acc1a5d](https://github.com/teamkeel/keel/commit/acc1a5d52ca923a4d8c418db797c97cbe0a975f0))
+
 # [0.223.0](https://github.com/teamkeel/keel/compare/v0.222.4...v0.223.0) (2022-11-30)
 
 
