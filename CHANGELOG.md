@@ -1,3 +1,10 @@
+## [0.224.1](https://github.com/teamkeel/keel/compare/v0.224.0...v0.224.1) (2022-11-30)
+
+
+### Bug Fixes
+
+* validation rule incorrect logic ([#633](https://github.com/teamkeel/keel/issues/633)) ([ef3a04f](https://github.com/teamkeel/keel/commit/ef3a04f9eab9f26ebe88262dda23ece4f2310115))
+
 # [0.224.0](https://github.com/teamkeel/keel/compare/v0.223.0...v0.224.0) (2022-11-30)
 
 
