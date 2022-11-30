@@ -1,3 +1,10 @@
+## [0.222.4](https://github.com/teamkeel/keel/compare/v0.222.3...v0.222.4) (2022-11-30)
+
+
+### Bug Fixes
+
+* add typescript installation to readme ([2cc4f58](https://github.com/teamkeel/keel/commit/2cc4f58202c81f722d20b905b3b325027687c46d))
+
 ## [0.222.3](https://github.com/teamkeel/keel/compare/v0.222.2...v0.222.3) (2022-11-29)
 
 
