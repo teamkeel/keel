@@ -30,6 +30,7 @@ You need the following installed:
 
 - Go `brew install go`
 - Node via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Typescript `npm install -g typescript`
 - [Docker](https://docs.docker.com/desktop/install/mac-install/)
 
 A working setup will look something like this (paths will vary):
