@@ -1084,7 +1084,7 @@ func typecheck(t *testing.T, generatedFiles []*codegenerator.GeneratedFile) (out
 	defer f.Close()
 
 	// todo: remove skipLibCheck flag once we have the @teamkeel/functions-runtime package in place.
-	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty", "--skipLibCheck", "--incremental", "--project", filepath.Base(f.Name()))
+	cmd := exec.Command("npx", "-p", "typescript", "tsc", "--noEmit", "--pretty", "--skipLibCheck", "--incremental", "--project", filepath.Base(f.Name()))
 	cmd.Dir = tmpDir
 
 	b, e := cmd.CombinedOutput()
