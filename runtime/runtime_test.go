@@ -36,15 +36,6 @@ func TestRuntime(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
-			fmt.Printf("XXXX test name is: %s\n", tCase.name)
-			if tCase.name == "delete_operation_happy" {
-				a := 1
-				_ = a
-			} else {
-				a := 1
-				_ = a
-			}
-
 			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name))
 
 			require.NoError(t, err)
