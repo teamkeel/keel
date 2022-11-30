@@ -1,76 +1,76 @@
 {
   "Errors": [
     {
+      "code": "E038",
+      "end_pos": {
+          "column": 31,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 6,
+          "offset": 99
+      },
+      "hint": "",
       "message": "personId is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
-      "short_message": "personId is not used",
-      "hint": "",
-      "code": "E038",
       "pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 91,
-        "line": 6,
-        "column": 23
+          "column": 23,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 6,
+          "offset": 91
       },
+      "short_message": "personId is not used"
+  },
+  {
+      "code": "E038",
       "end_pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 99,
-        "line": 6,
-        "column": 31
-      }
-    },
-    {
+          "column": 47,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 7,
+          "offset": 151
+      },
+      "hint": "",
       "message": "personName is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
-      "short_message": "personName is not used",
-      "hint": "",
-      "code": "E038",
       "pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 141,
-        "line": 7,
-        "column": 37
+          "column": 37,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 7,
+          "offset": 141
       },
+      "short_message": "personName is not used"
+  },
+  {
+      "code": "E038",
       "end_pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 151,
-        "line": 7,
-        "column": 47
-      }
-    },
-    {
+          "column": 49,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 8,
+          "offset": 207
+      },
+      "hint": "",
       "message": "personName is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
-      "short_message": "personName is not used",
-      "hint": "",
-      "code": "E038",
       "pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 197,
-        "line": 8,
-        "column": 39
+          "column": 39,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 8,
+          "offset": 197
       },
-      "end_pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 207,
-        "line": 8,
-        "column": 49
-      }
-    },
-    {
-      "message": "create actions must accept all required fields that have no default value",
-      "short_message": "create actions must accept all required fields that have no default value",
-      "hint": "maybe add name to the with() inputs",
+      "short_message": "personName is not used"
+  },
+  {
       "code": "E034",
-      "pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 120,
-        "line": 7,
-        "column": 16
-      },
       "end_pos": {
-        "filename": "testdata/validation_operations_unused_inputs/schema.keel",
-        "offset": 132,
-        "line": 7,
-        "column": 28
-      }
-    }
+          "column": 28,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 7,
+          "offset": 132
+      },
+      "hint": "maybe add name to the with() inputs or a @set expression",
+      "message": "create actions must accept all required fields that have no default value",
+      "pos": {
+          "column": 16,
+          "filename": "testdata/validation_operations_unused_inputs/schema.keel",
+          "line": 7,
+          "offset": 120
+      },
+      "short_message": "create actions must accept all required fields that have no default value"
+  }
   ]
 }
