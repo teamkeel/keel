@@ -135,7 +135,7 @@ export default class Query<T extends IDer> {
     };
   };
 
-  raw = async (sql: string): Promise<QueryResultRow[]> => {
+  raw = async (sql: string): Promise<QueryResult> => {
     return this.queryResolver.runRawQuery(sql);
   };
 

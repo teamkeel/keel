@@ -1,5 +1,5 @@
 import pg from "pg";
-import { SqlQueryParts } from "./query";
+import { rawSql, SqlQueryParts } from "./query";
 import {
   ArrayValue,
   ExecuteStatementCommand,
@@ -13,7 +13,7 @@ import { ExecuteStatementCommandInput } from "@aws-sdk/client-rds-data/dist-type
 
 export interface QueryResolver {
   runQuery(query: SqlQueryParts): Promise<QueryResult>;
-  runRawQuery(query: string): Promise<QueryResultRow[]>;
+  runRawQuery(query: string): Promise<QueryResult>;
 }
 
 export interface QueryResult {
@@ -69,10 +69,8 @@ export class PgQueryResolver implements QueryResolver {
     this.pool = new pg.Pool({ connectionString: config.connectionString });
   }
 
-  async runRawQuery(query: string): Promise<QueryResultRow[]> {
-    const result = await this.pool.query(query);
-
-    return result.rows;
+  async runRawQuery(query: string): Promise<QueryResult> {
+    return this.runQuery([rawSql(query)]);
   }
 
   async runQuery(query: SqlQueryParts): Promise<QueryResult> {
@@ -128,59 +126,8 @@ export class AwsRdsDataClientQueryResolver implements QueryResolver {
     this.dbName = config.dbName;
   }
 
-  async runRawQuery(sql: string): Promise<QueryResultRow[]> {
-    const input: ExecuteStatementCommandInput = {
-      resourceArn: this.dbClusterResourceArn,
-      secretArn: this.dbCredentialsSecretArn,
-      database: this.dbName,
-      sql,
-      includeResultMetadata: true,
-    };
-    const command = new ExecuteStatementCommand(input);
-    const data = await this.client.send(command);
-
-    const rows = data.records.map((fieldArray) => {
-      const row: QueryResultRow = {};
-      for (let i = 0; i < fieldArray.length; i++) {
-        const field = fieldArray[i];
-        const column = data.columnMetadata[i].name;
-        const typeName = data.columnMetadata[i].typeName;
-        const value = Field.visit(field, {
-          isNull: function (value: boolean): any {
-            return null;
-          },
-          booleanValue: function (value: boolean): any {
-            return value;
-          },
-          longValue: function (value: number): any {
-            return value;
-          },
-          doubleValue: function (value: number): any {
-            return value;
-          },
-          stringValue: function (value: string): any {
-            if (typeName === "timestamp") {
-              return new Date(value);
-            } else {
-              return value;
-            }
-          },
-          blobValue: function (value: Uint8Array): any {
-            return value;
-          },
-          arrayValue: function (value: ArrayValue): any {
-            return value;
-          },
-          _: function (name: string, value: any): any {
-            return value;
-          },
-        });
-        row[column] = value;
-      }
-      return row;
-    });
-
-    return rows;
+  async runRawQuery(query: string): Promise<QueryResult> {
+    return this.runQuery([rawSql(query)]);
   }
 
   async runQuery(query: SqlQueryParts): Promise<QueryResult> {

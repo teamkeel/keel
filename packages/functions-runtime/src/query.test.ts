@@ -366,7 +366,7 @@ test("raw", async () => {
     count: number;
   }
 
-  const results: QueryResult[] = res.map((r) => ({
+  const results: QueryResult[] = res.rows.map((r) => ({
     status: r["status"],
     count: parseInt(r["count"], 10),
   }));
