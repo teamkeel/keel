@@ -13,6 +13,9 @@ var deleteResponseType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "DeleteResponse",
 	Fields: graphql.Fields{
 		"success": &graphql.Field{
+			Resolve: func(p graphql.ResolveParams) (any, error) {
+				return p.Source, nil
+			},
 			Type: graphql.NewNonNull(graphql.Boolean),
 		},
 	},
