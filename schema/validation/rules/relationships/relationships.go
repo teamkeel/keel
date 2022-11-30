@@ -138,8 +138,14 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 	// the model at the HasOne end of the relationship.
 	for _, hasManyF := range hasManyFields {
 
-		// todo: pch check this for nil
 		singleEndModel := query.Model(asts, hasManyF.theField.Type)
+
+		if singleEndModel == nil {
+			// This can be the case for invalid schemas but other rules check for that.
+			// For our purposes, it just means we can't proceed with this validation
+			// rule right now, for this hasMany field.
+			continue
+		}
 
 		// Given access to the model at the HasOne end, how many fields does it have that
 		// refer back to the model at the hasMany end?
