@@ -1,3 +1,10 @@
+## [0.224.2](https://github.com/teamkeel/keel/compare/v0.224.1...v0.224.2) (2022-11-30)
+
+
+### Bug Fixes
+
+* delete operation response not resolved properly in GraphQl api layer ([#634](https://github.com/teamkeel/keel/issues/634)) ([3e55ea7](https://github.com/teamkeel/keel/commit/3e55ea7fa8ab3d44af70f7143f81e3e956820c4e))
+
 ## [0.224.1](https://github.com/teamkeel/keel/compare/v0.224.0...v0.224.1) (2022-11-30)
 
 
