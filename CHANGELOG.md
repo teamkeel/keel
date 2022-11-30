@@ -1,3 +1,10 @@
+## [0.224.3](https://github.com/teamkeel/keel/compare/v0.224.2...v0.224.3) (2022-11-30)
+
+
+### Bug Fixes
+
+* nil pointer crash vulnerability ([#635](https://github.com/teamkeel/keel/issues/635)) ([1ad8d5d](https://github.com/teamkeel/keel/commit/1ad8d5d591e13eafcac3d2d8b7443ba651b23850))
+
 ## [0.224.2](https://github.com/teamkeel/keel/compare/v0.224.1...v0.224.2) (2022-11-30)
 
 
