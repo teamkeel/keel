@@ -8,7 +8,7 @@
           "line": 8,
           "offset": 134
       },
-      "hint": "maybe add one of (parentId,  parent.id) to with() inputs, or one of (parentId,  parent) to a @set expression",
+      "hint": "maybe add one of parentId,  parent.id to with() inputs, or one of parentId,  parent to a @set expression",
       "message": "create actions must accept all required fields that have no default value",
       "pos": {
           "column": 16,

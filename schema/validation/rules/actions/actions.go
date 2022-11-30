@@ -111,17 +111,17 @@ func CreateOperationRequiredFieldsRule(
 		createActions := query.ModelCreateActions(model)
 		for _, createAction := range createActions {
 			for _, fld := range requiredFieldsWithAliases {
-				satisfiedByWithInput := requiredFieldInWithClause(fld.allowedInputNames, createAction)
-				satisfiedBySetExpr := satisfiedBySetExpr(fld.allowedSetExprNames, model.Name.Value, createAction)
+				satisfiedByWithInput := requiredFieldInWithClause(fld.AllowedInputNames, createAction)
+				satisfiedBySetExpr := satisfiedBySetExpr(fld.AllowedSetExprNames, model.Name.Value, createAction)
 
 				// If the missing field has aliases, we use an error format dedicated to that case.
 				if !satisfiedByWithInput && !satisfiedBySetExpr {
 					switch {
-					case len(fld.allowedInputNames) > 1:
+					case len(fld.AllowedInputNames) > 1:
 						errs.Append(errorhandling.ErrorCreateOperationMissingInputAliases,
 							map[string]string{
-								"WithNames": fld.fmtWithAliases(),
-								"SetNames":  fld.fmtSetAliases(),
+								"WithNames": formatting.HumanizeList(fld.AllowedInputNames, ""),
+								"SetNames":  formatting.HumanizeList(fld.AllowedSetExprNames, ""),
 							},
 							createAction.Name,
 						)
@@ -129,7 +129,7 @@ func CreateOperationRequiredFieldsRule(
 						// The more general case.
 						errs.Append(errorhandling.ErrorCreateOperationMissingInput,
 							map[string]string{
-								"FieldName": fld.allowedInputNames[0],
+								"FieldName": fld.AllowedInputNames[0],
 							},
 							createAction.Name,
 						)
@@ -152,20 +152,8 @@ func CreateOperationRequiredFieldsRule(
 //
 //	[Age]
 type requiredField struct {
-	allowedInputNames   []string
-	allowedSetExprNames []string
-}
-
-// fmtWithAliases returns a single-string representation of the names in the
-// allowedInputNames.
-func (rf requiredField) fmtWithAliases() string {
-	return fmt.Sprintf("(%s)", formatting.HumanizeList(rf.allowedInputNames, ""))
-}
-
-// fmtSetAliases returns a single-string representation of the names in the
-// allowedSetExprNames.
-func (rf requiredField) fmtSetAliases() string {
-	return fmt.Sprintf("(%s)", formatting.HumanizeList(rf.allowedSetExprNames, ""))
+	AllowedInputNames   []string
+	AllowedSetExprNames []string
 }
 
 // setExpressions returns all the non-nil expressions from all
@@ -216,15 +204,15 @@ func requiredCreateFields(model *parser.ModelNode) []*requiredField {
 				f.FkInfo.OwningField.Name.Value,
 				f.FkInfo.ReferredToModelPrimaryKey.Name.Value}, ".")
 			requiredField := requiredField{
-				allowedInputNames:   []string{f.Name.Value, dottedForm},
-				allowedSetExprNames: []string{f.Name.Value, f.FkInfo.OwningField.Name.Value},
+				AllowedInputNames:   []string{f.Name.Value, dottedForm},
+				AllowedSetExprNames: []string{f.Name.Value, f.FkInfo.OwningField.Name.Value},
 			}
 			req = append(req, &requiredField)
 		} else {
 			// The general case
 			req = append(req, &requiredField{
-				allowedInputNames:   []string{f.Name.Value},
-				allowedSetExprNames: []string{f.Name.Value},
+				AllowedInputNames:   []string{f.Name.Value},
+				AllowedSetExprNames: []string{f.Name.Value},
 			})
 		}
 	}
