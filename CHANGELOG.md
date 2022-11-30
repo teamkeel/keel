@@ -1,3 +1,10 @@
+# [0.223.0](https://github.com/teamkeel/keel/compare/v0.222.4...v0.223.0) (2022-11-30)
+
+
+### Features
+
+* upgrade validation of missing Create inputs ([#626](https://github.com/teamkeel/keel/issues/626)) ([eda3880](https://github.com/teamkeel/keel/commit/eda3880e080c60abdd50f2db7a0cbfff9d8cdf02))
+
 ## [0.222.4](https://github.com/teamkeel/keel/compare/v0.222.3...v0.222.4) (2022-11-30)
 
 
