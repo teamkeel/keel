@@ -28,8 +28,12 @@ export interface Transport {
   log: (msg: Msg, level: Level, options: LoggerOptions) => void;
 }
 
-// The default (and only) transport implementation of Logger class
-// logs to STDOUT / STDERR
+// The default (and only) transport implementation of Logger class.
+// Logs to STDOUT.
+//
+// We do not want to `console.error` as this writes to the stderr,
+// which causes `go exec.Command` to fail.
+// So we use `console.log` for everything.
 export class ConsoleTransport implements Transport {
   log = (msg: Msg, level: Level = Level.Info, options: LoggerOptions): void => {
     if (options.timestamps) {
@@ -51,10 +55,6 @@ export class ConsoleTransport implements Transport {
 
     if (options.colorize) {
       const color = LevelColorPalette[level];
-
-      // we do not want to console.error as this writes to the stderr
-      // which causes go exec.Command to fail
-      // so therefore we will use console.log for everything
       console.log(color(msg));
     } else {
       console.log(msg);
