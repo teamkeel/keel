@@ -1,6 +1,10 @@
 import { queryResolverFromEnv } from "./resolver";
 
-test("dataapi queryResolverFromEnv", () => {
+test("queryResolverFromEnv throws", () => {
+  expect(() => queryResolverFromEnv({})).toThrow();
+});
+
+test("queryResolverFromEnv dataapi", () => {
   queryResolverFromEnv({
     DB_CONN_TYPE: "dataapi",
     DB_REGION: "eu-west-2",
