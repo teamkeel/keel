@@ -1,3 +1,16 @@
+# [0.225.0](https://github.com/teamkeel/keel/compare/v0.224.3...v0.225.0) (2022-12-01)
+
+
+### Bug Fixes
+
+* improve comment ([2eb962d](https://github.com/teamkeel/keel/commit/2eb962d624f44d5a4f8c67279308aae83bd8c24e))
+* logger comment ([f344fc0](https://github.com/teamkeel/keel/commit/f344fc0cf0ee5f40feb8fc890fbef0998fac7626))
+
+
+### Features
+
+* drop runInitialSql function ([3540cf3](https://github.com/teamkeel/keel/commit/3540cf395e4bd81c3c508f5f7c088d5271a0dd54))
+
 ## [0.224.3](https://github.com/teamkeel/keel/compare/v0.224.2...v0.224.3) (2022-11-30)
 
 
