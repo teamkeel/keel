@@ -14,11 +14,6 @@ const queryResolver = new PgQueryResolver({ connectionString });
 //   region: "eu-west-2"
 // });
 
-async function runInitialSql(sql: string): Promise<QueryResult> {
-  // don't do this outside of tests, this is vulnerable to sql injetions
-  return queryResolver.runQuery([rawSql(sql)]);
-}
-
 test("select", async () => {
   interface Person {
     id: string;
@@ -86,7 +81,7 @@ test("select", async () => {
     date: null,
   };
 
-  await runInitialSql(prepareTestSql);
+  await queryResolver.runRawQuery(prepareTestSql);
 
   const tableName = "person";
 
@@ -266,7 +261,7 @@ test("insert", async () => {
     logger,
   });
 
-  await runInitialSql(prepareTestSql);
+  await queryResolver.runRawQuery(prepareTestSql);
 
   expect(await query.all()).toEqual({ collection: [] });
 
@@ -355,7 +350,7 @@ test("raw", async () => {
     logger,
   });
 
-  await runInitialSql(prepareTestSql);
+  await queryResolver.runRawQuery(prepareTestSql);
 
   const res = await query.raw(
     "SELECT CASE WHEN rotten THEN 'rotten' ELSE 'fresh' END as status, count(*) as count from food GROUP BY rotten ORDER BY 2 DESC"
@@ -407,7 +402,7 @@ test("delete", async () => {
     logger,
   });
 
-  await runInitialSql(prepareTestSql);
+  await queryResolver.runRawQuery(prepareTestSql);
 
   let scoobyDoo = {
     id: "5a09be63-190f-4c77-a297-b4be4c023b71",
@@ -463,7 +458,7 @@ test("update", async () => {
     logger,
   });
 
-  await runInitialSql(prepareTestSql);
+  await queryResolver.runRawQuery(prepareTestSql);
 
   let apple = {
     id: "6cba2acc-a06b-4f4d-8671-bd87a5473ed9",
