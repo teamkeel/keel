@@ -16,7 +16,8 @@ import {
 import * as ReturnTypes from "./returnTypes";
 import Logger, { Level as LogLevel } from "./logger";
 import { SqlQueryParts } from "./db/query";
-import { QueryResolver, QueryResult, QueryResultRow } from "./db/resolver";
+import { QueryResolver, QueryResultRow } from "./db/resolver";
+import toCamelCase from "./util/camelCaser";
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;
@@ -53,10 +54,10 @@ export class ChainableQuery<T extends IDer> {
       this.orderClauses
     );
 
-    const result = await this.execute(sql);
+    const rows = await this.execute(sql);
 
     return {
-      collection: result.rows as T[],
+      collection: rows as T[],
     };
   };
 
@@ -69,10 +70,10 @@ export class ChainableQuery<T extends IDer> {
       1
     );
 
-    const result = await this.execute(sql);
+    const rows = await this.execute(sql);
 
     return {
-      object: result.rows[0] as T,
+      object: rows[0] as T,
       errors: [],
     };
   };
@@ -87,8 +88,10 @@ export class ChainableQuery<T extends IDer> {
     this.conditions.push(conditions);
   }
 
-  private execute = async (query: SqlQueryParts): Promise<QueryResult> => {
-    return this.queryResolver.runQuery(query);
+  private execute = async (query: SqlQueryParts): Promise<QueryResultRow[]> => {
+    return this.queryResolver
+      .runQuery(query)
+      .then(rowsWithObjectKeysCamelCased);
   };
 }
 
@@ -124,12 +127,12 @@ export default class Query<T extends IDer> {
 
     const query = buildCreateStatement(this.tableName, values);
 
-    const result = await this.execute(query);
+    const rows = await this.execute(query);
 
     return {
       object: {
         ...inputs,
-        id: result.rows[0].id as string,
+        id: rows[0].id as string,
       } as unknown as T,
       errors: [],
     };
@@ -156,10 +159,10 @@ export default class Query<T extends IDer> {
   ): Promise<ReturnTypes.FunctionDeleteResponse<T>> => {
     const query = buildDeleteStatement(this.tableName, id);
 
-    const result = await this.execute(query);
+    const rows = await this.execute(query);
 
     return {
-      success: result.rows.length === 1,
+      success: rows.length === 1,
     };
   };
 
@@ -168,12 +171,12 @@ export default class Query<T extends IDer> {
   ): Promise<ReturnTypes.FunctionGetResponse<T>> => {
     const query = buildSelectStatement<T>(this.tableName, [conditions]);
 
-    const result = await this.execute(query);
+    const rows = await this.execute(query);
 
     // buildSelectStatement stil returns an array despite applying a LIMIT 1
     // so return the first row anyhow.
     return {
-      object: result.rows[0] as T,
+      object: rows[0] as T,
       errors: [],
     };
   };
@@ -199,17 +202,35 @@ export default class Query<T extends IDer> {
   all = async (): Promise<ReturnTypes.FunctionListResponse<T>> => {
     const sql = buildSelectStatement(this.tableName, this.conditions);
 
-    const result = await this.execute(sql);
+    const rows = await this.execute(sql);
 
     return {
-      collection: result.rows as T[],
+      collection: rows as T[],
     };
   };
 
-  private execute = async (query: SqlQueryParts): Promise<QueryResult> => {
-    return this.queryResolver.runQuery(query);
+  private execute = async (query: SqlQueryParts): Promise<QueryResultRow[]> => {
+    return this.queryResolver
+      .runQuery(query)
+      .then(rowsWithObjectKeysCamelCased);
   };
 }
+
+const rowsWithObjectKeysCamelCased = (
+  rows: QueryResultRow[]
+): QueryResultRow[] => {
+  return rows.map((row) => {
+    if (row && typeof row === "object") {
+      const camelCasedKeysObject = {};
+      for (let key of Object.keys(row)) {
+        camelCasedKeysObject[toCamelCase(key)] = row[key];
+      }
+      return camelCasedKeysObject;
+    } else {
+      return row;
+    }
+  });
+};
 
 const logSql = <T extends IDer>(query: SqlQueryParts): string => {
   return query

@@ -1,8 +1,7 @@
 import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
-import { PgQueryResolver, QueryResult } from "./db/resolver";
-import { rawSql } from "./db/query";
+import { PgQueryResolver } from "./db/resolver";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 const queryResolver = new PgQueryResolver({ connectionString });
