@@ -104,7 +104,7 @@ type QueryBuilder struct {
 func NewQuery(model *proto.Model) *QueryBuilder {
 	return &QueryBuilder{
 		Model:       model.Name,
-		table:       strcase.ToSnake(model.Name),
+		table:       sqlIdentifier(strcase.ToSnake(model.Name)),
 		selection:   []string{},
 		distinctOn:  []string{},
 		joins:       []string{},
@@ -121,7 +121,7 @@ func NewQuery(model *proto.Model) *QueryBuilder {
 func (query *QueryBuilder) Copy() *QueryBuilder {
 	return &QueryBuilder{
 		Model:       query.Model,
-		table:       query.table,
+		table:       sqlIdentifier(query.table),
 		selection:   copySlice(query.selection),
 		distinctOn:  copySlice(query.distinctOn),
 		joins:       copySlice(query.joins),
@@ -196,7 +196,7 @@ func (query *QueryBuilder) Or() {
 // Include an INNER JOIN clause.
 func (query *QueryBuilder) InnerJoin(joinField *QueryOperand, modelField *QueryOperand) {
 	join := fmt.Sprintf("INNER JOIN %s ON %s = %s",
-		strcase.ToSnake(joinField.table),
+		sqlIdentifier(strcase.ToSnake(joinField.table)),
 		joinField.toColumnString(query),
 		modelField.toColumnString(query))
 
@@ -231,7 +231,7 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 // Apply pagination filters to the query.
 func (query *QueryBuilder) ApplyPaging(page Page) {
 	// Select hasNext clause
-	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", query.table)
+	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlIdentifier(query.table))
 	query.AppendSelectClause(hasNext)
 
 	// Add where condition to implement the after/before paging request
@@ -265,7 +265,7 @@ func (operand *QueryOperand) toColumnString(query *QueryBuilder) string {
 		table = query.table
 	}
 
-	return fmt.Sprintf("%s.%s", table, operand.column)
+	return sqlIdentifier(table, operand.column)
 }
 
 // Generates an executable SELECT statement with the list of arguments.
@@ -307,7 +307,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s",
 		distinctOn,
 		selection,
-		query.table,
+		sqlIdentifier(query.table),
 		joins,
 		filters,
 		orderBy,
@@ -335,7 +335,7 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 	}
 
 	template := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) %s",
-		query.table,
+		sqlIdentifier(query.table),
 		strings.Join(columns, ", "),
 		strings.Join(strings.Split(strings.Repeat("?", len(query.writeValues)), ""), ", "),
 		returning)
@@ -375,7 +375,7 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	}
 
 	template := fmt.Sprintf("UPDATE %s SET %s %s %s %s",
-		query.table,
+		sqlIdentifier(query.table),
 		strings.Join(sets, ", "),
 		joins,
 		filters,
@@ -408,7 +408,7 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 	}
 
 	template := fmt.Sprintf("DELETE FROM %s %s %s %s",
-		query.table,
+		sqlIdentifier(query.table),
 		joins,
 		filters,
 		returning)
@@ -580,4 +580,15 @@ func toLowerCamelMaps(maps []map[string]any) []map[string]any {
 		res = append(res, toLowerCamelMap(m))
 	}
 	return res
+}
+
+// given a variadic list of tokens (e.g sqlIdentifier("person", "id")),
+// returns sql friendly quoted tokens: "person"."id"
+func sqlIdentifier(tokens ...string) string {
+	quotedTokens := []string{}
+
+	for _, token := range tokens {
+		quotedTokens = append(quotedTokens, fmt.Sprintf("\"%s\"", strcase.ToSnake(token)))
+	}
+	return strings.Join(quotedTokens, ".")
 }
