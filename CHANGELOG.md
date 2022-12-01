@@ -1,3 +1,10 @@
+# [0.226.0](https://github.com/teamkeel/keel/compare/v0.225.1...v0.226.0) (2022-12-01)
+
+
+### Features
+
+* refactor query resolver ([c30d141](https://github.com/teamkeel/keel/commit/c30d141be9d6a584ab177592b2a156584e5b6761))
+
 ## [0.225.1](https://github.com/teamkeel/keel/compare/v0.225.0...v0.225.1) (2022-12-01)
 
 
