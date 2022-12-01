@@ -49,11 +49,7 @@ const handler = async (
       msg = JSON.stringify(e);
     }
 
-    return createJSONRPCErrorResponse(
-      id,
-      JSONRPCErrorCode.InternalError,
-      e.message
-    );
+    return createJSONRPCErrorResponse(id, JSONRPCErrorCode.InternalError, msg);
   }
 };
 

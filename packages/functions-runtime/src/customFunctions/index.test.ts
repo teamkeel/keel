@@ -88,3 +88,25 @@ test("when there is an unexpected error in the custom function", async () => {
     },
   });
 });
+
+test("when there is an unexpected object thrown in the custom function", async () => {
+  const config: Config = {
+    functions: {
+      createPost: () => {
+        throw { err: "oopsie daisy" };
+      },
+    },
+    api: {},
+  };
+
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handle(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    error: {
+      code: JSONRPCErrorCode.InternalError,
+      message: '{"err":"oopsie daisy"}',
+    },
+  });
+});
