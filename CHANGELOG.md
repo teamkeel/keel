@@ -1,3 +1,10 @@
+# [0.227.0](https://github.com/teamkeel/keel/compare/v0.226.0...v0.227.0) (2022-12-01)
+
+
+### Features
+
+* simplify raw query ([bd8f08a](https://github.com/teamkeel/keel/commit/bd8f08a329f4b45d1d091f96789095a82ea78b8a))
+
 # [0.226.0](https://github.com/teamkeel/keel/compare/v0.225.1...v0.226.0) (2022-12-01)
 
 
