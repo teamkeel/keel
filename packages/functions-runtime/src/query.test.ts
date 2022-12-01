@@ -1,7 +1,7 @@
 import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
-import { PgQueryResolver, QueryResult } from "./db/resolver";
+import { PgQueryResolver, QueryResultRow } from "./db/resolver";
 import { rawSql } from "./db/query";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
@@ -14,7 +14,7 @@ const queryResolver = new PgQueryResolver({ connectionString });
 //   region: "eu-west-2"
 // });
 
-async function runInitialSql(sql: string): Promise<QueryResult> {
+async function runInitialSql(sql: string): Promise<QueryResultRow[]> {
   // don't do this outside of tests, this is vulnerable to sql injetions
   return queryResolver.runQuery([rawSql(sql)]);
 }

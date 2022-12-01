@@ -12,12 +12,8 @@ import toCamelCase from "../util/camelCaser";
 import { ExecuteStatementCommandInput } from "@aws-sdk/client-rds-data/dist-types/commands/ExecuteStatementCommand";
 
 export interface QueryResolver {
-  runQuery(query: SqlQueryParts): Promise<QueryResult>;
+  runQuery(query: SqlQueryParts): Promise<QueryResultRow[]>;
   runRawQuery(query: string): Promise<QueryResultRow[]>;
-}
-
-export interface QueryResult {
-  rows: QueryResultRow[];
 }
 
 export interface QueryResultRow {
@@ -75,22 +71,9 @@ export class PgQueryResolver implements QueryResolver {
     return result.rows;
   }
 
-  async runQuery(query: SqlQueryParts): Promise<QueryResult> {
+  async runQuery(query: SqlQueryParts): Promise<QueryResultRow[]> {
     const result = await this.pool.query(this.toQuery(query));
-    if (result.rows) {
-      result.rows = result.rows.map((row) => {
-        if (row && typeof row === "object") {
-          const camelCasedKeysObject = {};
-          for (let key of Object.keys(row)) {
-            camelCasedKeysObject[toCamelCase(key)] = row[key];
-          }
-          return camelCasedKeysObject;
-        } else {
-          return row;
-        }
-      });
-    }
-    return result;
+    return result.rows;
   }
 
   private toQuery(query: SqlQueryParts): { text: string; values: any[] } {
@@ -183,7 +166,7 @@ export class AwsRdsDataClientQueryResolver implements QueryResolver {
     return rows;
   }
 
-  async runQuery(query: SqlQueryParts): Promise<QueryResult> {
+  async runQuery(query: SqlQueryParts): Promise<QueryResultRow[]> {
     const { sql, params } = this.toQuery(query);
     const input: ExecuteStatementCommandInput = {
       resourceArn: this.dbClusterResourceArn,
@@ -196,7 +179,7 @@ export class AwsRdsDataClientQueryResolver implements QueryResolver {
     const command = new ExecuteStatementCommand(input);
     const data = await this.client.send(command);
     if (!data.records) {
-      return { rows: [] };
+      return [];
     }
     const rows = data.records.map((fieldArray) => {
       const row: QueryResultRow = {};
@@ -238,18 +221,7 @@ export class AwsRdsDataClientQueryResolver implements QueryResolver {
       }
       return row;
     });
-    const rowsWithObjectKeysCamelCased = rows.map((row) => {
-      if (row && typeof row === "object") {
-        const camelCasedKeysObject = {};
-        for (let key of Object.keys(row)) {
-          camelCasedKeysObject[toCamelCase(key)] = row[key];
-        }
-        return camelCasedKeysObject;
-      } else {
-        return row;
-      }
-    });
-    return { rows: rowsWithObjectKeysCamelCased };
+    return rows;
   }
 
   private toQuery(query: SqlQueryParts): {
