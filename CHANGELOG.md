@@ -1,3 +1,16 @@
+# [0.228.0](https://github.com/teamkeel/keel/compare/v0.227.0...v0.228.0) (2022-12-01)
+
+
+### Bug Fixes
+
+* test not to throw ([117e3da](https://github.com/teamkeel/keel/commit/117e3daac9a5083510e9f8f848181207e2d415d3))
+
+
+### Features
+
+* add queryResolverFromEnv dataapi test ([8a39357](https://github.com/teamkeel/keel/commit/8a39357f334e4e58a844635821c25d60b418a5c9))
+* add queryResolverFromEnv throws test ([12e79b4](https://github.com/teamkeel/keel/commit/12e79b48308f046629ddeb6cf384c1f2aa8c7802))
+
 # [0.227.0](https://github.com/teamkeel/keel/compare/v0.226.0...v0.227.0) (2022-12-01)
 
 
