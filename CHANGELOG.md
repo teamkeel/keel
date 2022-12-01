@@ -1,3 +1,10 @@
+## [0.228.1](https://github.com/teamkeel/keel/compare/v0.228.0...v0.228.1) (2022-12-01)
+
+
+### Bug Fixes
+
+* quote table names ([#643](https://github.com/teamkeel/keel/issues/643)) ([ed92418](https://github.com/teamkeel/keel/commit/ed92418ff1963ad1c870e611f5ea43a0c1b8e818))
+
 # [0.228.0](https://github.com/teamkeel/keel/compare/v0.227.0...v0.228.0) (2022-12-01)
 
 
