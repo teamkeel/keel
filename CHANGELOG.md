@@ -1,3 +1,10 @@
+## [0.225.1](https://github.com/teamkeel/keel/compare/v0.225.0...v0.225.1) (2022-12-01)
+
+
+### Bug Fixes
+
+* message when what is thrown is not an error ([8c87f05](https://github.com/teamkeel/keel/commit/8c87f05d2ed96dc6015eb87bc154e7f49343aba9))
+
 # [0.225.0](https://github.com/teamkeel/keel/compare/v0.224.3...v0.225.0) (2022-12-01)
 
 
