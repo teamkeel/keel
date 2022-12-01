@@ -1,3 +1,10 @@
+## [0.228.2](https://github.com/teamkeel/keel/compare/v0.228.1...v0.228.2) (2022-12-01)
+
+
+### Bug Fixes
+
+* use pq.QuoteIdentifier for sql idents ([#644](https://github.com/teamkeel/keel/issues/644)) ([f757bee](https://github.com/teamkeel/keel/commit/f757beeb03ba878c2654e9488a22208c76ede152))
+
 ## [0.228.1](https://github.com/teamkeel/keel/compare/v0.228.0...v0.228.1) (2022-12-01)
 
 
