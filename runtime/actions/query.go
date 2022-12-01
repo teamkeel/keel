@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -593,7 +594,7 @@ func sqlIdentifier(tokens ...string) string {
 			// if the token is * then it doesnt need to be quoted e.g "post".*
 			quotedTokens = append(quotedTokens, token)
 		default:
-			quotedTokens = append(quotedTokens, fmt.Sprintf("\"%s\"", strcase.ToSnake(token)))
+			quotedTokens = append(quotedTokens, pq.QuoteIdentifier(strcase.ToSnake(token)))
 		}
 	}
 	return strings.Join(quotedTokens, ".")
