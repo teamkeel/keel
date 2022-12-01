@@ -104,7 +104,7 @@ type QueryBuilder struct {
 func NewQuery(model *proto.Model) *QueryBuilder {
 	return &QueryBuilder{
 		Model:       model.Name,
-		table:       sqlIdentifier(strcase.ToSnake(model.Name)),
+		table:       strcase.ToSnake(model.Name),
 		selection:   []string{},
 		distinctOn:  []string{},
 		joins:       []string{},
@@ -121,7 +121,7 @@ func NewQuery(model *proto.Model) *QueryBuilder {
 func (query *QueryBuilder) Copy() *QueryBuilder {
 	return &QueryBuilder{
 		Model:       query.Model,
-		table:       sqlIdentifier(query.table),
+		table:       query.table,
 		selection:   copySlice(query.selection),
 		distinctOn:  copySlice(query.distinctOn),
 		joins:       copySlice(query.joins),
@@ -588,7 +588,13 @@ func sqlIdentifier(tokens ...string) string {
 	quotedTokens := []string{}
 
 	for _, token := range tokens {
-		quotedTokens = append(quotedTokens, fmt.Sprintf("\"%s\"", strcase.ToSnake(token)))
+		switch token {
+		case "*":
+			// if the token is * then it doesnt need to be quoted e.g "post".*
+			quotedTokens = append(quotedTokens, token)
+		default:
+			quotedTokens = append(quotedTokens, fmt.Sprintf("\"%s\"", strcase.ToSnake(token)))
+		}
 	}
 	return strings.Join(quotedTokens, ".")
 }
