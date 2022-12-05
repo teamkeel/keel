@@ -83,7 +83,7 @@ func createTableStmt(model *proto.Model) string {
 }
 
 func dropTableStmt(name string) string {
-	return fmt.Sprintf("DROP TABLE %s;", Identifier(name))
+	return fmt.Sprintf("DROP TABLE %s CASCADE;", Identifier(name))
 }
 
 func addColumnStmt(modelName string, field *proto.Field) string {
