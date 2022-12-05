@@ -1,3 +1,10 @@
+## [0.228.3](https://github.com/teamkeel/keel/compare/v0.228.2...v0.228.3) (2022-12-05)
+
+
+### Bug Fixes
+
+* drop foreign keys that reference dropped table ([#645](https://github.com/teamkeel/keel/issues/645)) ([3ccd61e](https://github.com/teamkeel/keel/commit/3ccd61edd0009180981ae93908a6119c188abdad))
+
 ## [0.228.2](https://github.com/teamkeel/keel/compare/v0.228.1...v0.228.2) (2022-12-01)
 
 
