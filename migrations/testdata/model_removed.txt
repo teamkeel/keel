@@ -20,7 +20,7 @@ model Person {
 
 ===
 
-DROP TABLE "animal";
+DROP TABLE "animal" CASCADE;
 
 === 
 
