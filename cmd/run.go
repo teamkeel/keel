@@ -158,19 +158,24 @@ var runCmd = &cobra.Command{
 			protoSchema, err := b.MakeFromDirectory(schemaDir)
 
 			if err != nil {
-				errs, ok := err.(errorhandling.ValidationErrors)
+				errs, ok := err.(*errorhandling.ValidationErrors)
+
 				if !ok {
 					panic(err)
 				}
 
-				out, err := errs.ToConsole(b.SchemaFiles())
+				out, err := errs.ToAnnotatedSchema(b.SchemaFiles())
 				if err != nil {
 					panic(err)
 				}
 
-				fmt.Println(out)
-				fmt.Println("🚨 Schema has errors")
-				currSchema = nil
+				color.New(color.FgRed).Printf("\nThere is an error in your schema:\n")
+
+				fmt.Printf("\n%s\n", out)
+
+				fmt.Print("\a")
+
+				// currSchema = nil
 				return
 			}
 
