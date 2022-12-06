@@ -1,3 +1,10 @@
+## [0.228.4](https://github.com/teamkeel/keel/compare/v0.228.3...v0.228.4) (2022-12-06)
+
+
+### Bug Fixes
+
+* present schema errors inline without panicking ([#646](https://github.com/teamkeel/keel/issues/646)) ([d28e5b0](https://github.com/teamkeel/keel/commit/d28e5b0529a764ab983a0474b17bbc46fe4b50e9))
+
 ## [0.228.3](https://github.com/teamkeel/keel/compare/v0.228.2...v0.228.3) (2022-12-05)
 
 
