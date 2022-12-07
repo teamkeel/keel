@@ -473,12 +473,23 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+
+		for _, action := range query.ModelOperations(model) {
+			isFunction := false
 			for _, input := range action.Inputs {
-				errs.AppendError(validateInput(asts, input, model, action))
+				errs.AppendError(validateInput(isFunction, asts, input, model, action))
 			}
 			for _, input := range action.With {
-				errs.AppendError(validateInput(asts, input, model, action))
+				errs.AppendError(validateInput(isFunction, asts, input, model, action))
+			}
+		}
+		for _, action := range query.ModelFunctions(model) {
+			isFunction := true
+			for _, input := range action.Inputs {
+				errs.AppendError(validateInput(isFunction, asts, input, model, action))
+			}
+			for _, input := range action.With {
+				errs.AppendError(validateInput(isFunction, asts, input, model, action))
 			}
 		}
 	}
@@ -487,6 +498,7 @@ func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 }
 
 func validateInput(
+	isFunction bool,
 	asts []*parser.AST,
 	input *parser.ActionInputNode,
 	model *parser.ModelNode,
@@ -517,6 +529,11 @@ func validateInput(
 	// if not explicitly labelled then we don't need to check for the input being used
 	// as inputs using short-hand syntax are implicitly used
 	if input.Label == nil {
+		return nil
+	}
+
+	// For functions the input doesn't need to be used
+	if isFunction {
 		return nil
 	}
 
