@@ -1,3 +1,10 @@
+# [0.229.0](https://github.com/teamkeel/keel/compare/v0.228.4...v0.229.0) (2022-12-08)
+
+
+### Features
+
+* allow functions unused explicit input ([07f849c](https://github.com/teamkeel/keel/commit/07f849c15505e71d9f0d833db152957dc8ac94bf))
+
 ## [0.228.4](https://github.com/teamkeel/keel/compare/v0.228.3...v0.228.4) (2022-12-06)
 
 
