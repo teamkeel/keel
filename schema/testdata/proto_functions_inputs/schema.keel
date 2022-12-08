@@ -1,0 +1,11 @@
+model Foo {
+    fields {
+        bar Text
+    }
+
+    functions {
+        list operationA()
+        create operationB() with (bar)
+        create operationC() with (bar, baz: Text)
+    }
+}
