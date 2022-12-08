@@ -29,7 +29,7 @@ CREATE TABLE "animal" (
 "human_friend_id" TEXT NOT NULL
 );
 ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");
-ALTER TABLE "animal" ADD FOREIGN KEY ("human_friend_id") REFERENCES "person"("id");
+ALTER TABLE "animal" ADD FOREIGN KEY ("human_friend_id") REFERENCES "person"("id") ON DELETE CASCADE;
 
 === 
 
