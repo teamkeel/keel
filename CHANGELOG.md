@@ -1,3 +1,10 @@
+# [0.230.0](https://github.com/teamkeel/keel/compare/v0.229.0...v0.230.0) (2022-12-09)
+
+
+### Features
+
+* delete unused sort code ([65fa1f1](https://github.com/teamkeel/keel/commit/65fa1f17d5352dae31558d93d7274eba2aa40b89))
+
 # [0.229.0](https://github.com/teamkeel/keel/compare/v0.228.4...v0.229.0) (2022-12-08)
 
 
