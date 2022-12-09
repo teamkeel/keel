@@ -1,3 +1,10 @@
+# [0.231.0](https://github.com/teamkeel/keel/compare/v0.230.1...v0.231.0) (2022-12-09)
+
+
+### Features
+
+* cascading delete by default ([#648](https://github.com/teamkeel/keel/issues/648)) ([4e26de4](https://github.com/teamkeel/keel/commit/4e26de416bfb16bff68d213056a7c4e4ef803975))
+
 ## [0.230.1](https://github.com/teamkeel/keel/compare/v0.230.0...v0.230.1) (2022-12-09)
 
 
