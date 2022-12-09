@@ -1,3 +1,10 @@
+## [0.230.1](https://github.com/teamkeel/keel/compare/v0.230.0...v0.230.1) (2022-12-09)
+
+
+### Bug Fixes
+
+* api models need to exist ([d57a3c3](https://github.com/teamkeel/keel/commit/d57a3c3b10e7c0da8277a92c7334814035107f8f))
+
 # [0.230.0](https://github.com/teamkeel/keel/compare/v0.229.0...v0.230.0) (2022-12-09)
 
 
