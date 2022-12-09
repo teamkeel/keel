@@ -177,3 +177,7 @@ en:
     short_message: "create actions must accept all required fields that have no default value"
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add one of {{ .WithNames }} to with() inputs, or one of {{ .SetNames }} to a @set expression"
+  E047:
+    short_message: "Unrecognised model {{ .Model }}"
+    message: "api '{{ .API }}' has an unrecognised model {{ .Model }}"
+    hint: ""

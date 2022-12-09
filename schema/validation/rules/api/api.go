@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -27,4 +28,25 @@ func UniqueAPINamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors
 	}
 
 	return
+}
+
+func NamesCorrespondToModels(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	modelNames := query.ModelNames(asts)
+	for _, api := range query.APIs(asts) {
+		for _, section := range api.Sections {
+			for _, model := range section.Models {
+				if !lo.Contains(modelNames, model.Name.Value) {
+					errs.Append(errorhandling.ErrorModelNotFound,
+						map[string]string{
+							"API":   api.Name.Value,
+							"Model": model.Name.Value,
+						},
+						api.Name,
+					)
+				}
+			}
+		}
+	}
+
+	return errs
 }
