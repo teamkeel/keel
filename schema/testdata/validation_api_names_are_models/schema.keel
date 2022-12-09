@@ -1,0 +1,10 @@
+model Post {
+
+}
+
+api Web {
+  models {
+    Post
+    UnknownModel
+  }
+}

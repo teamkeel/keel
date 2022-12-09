@@ -61,6 +61,7 @@ const (
 	ErrorMissingRelationshipField           = "E044"
 	ErrorAmbiguousRelationship              = "E045"
 	ErrorCreateOperationMissingInputAliases = "E046"
+	ErrorModelNotFound                      = "E047"
 )
 
 type ErrorDetails struct {
