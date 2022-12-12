@@ -7,5 +7,6 @@ model Foo {
         list operationA()
         create operationB() with (bar)
         create operationC() with (bar, baz: Text)
+        create operationD() with (baz: Text)
     }
 }

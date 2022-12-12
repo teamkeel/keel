@@ -108,7 +108,7 @@ func CreateOperationRequiredFieldsRule(
 
 	for _, model := range query.Models(asts) {
 		requiredFieldsWithAliases := requiredCreateFields(model)
-		createActions := query.ModelCreateActions(model)
+		createActions := query.ModelCreateOperations(model)
 		for _, createAction := range createActions {
 			for _, fld := range requiredFieldsWithAliases {
 				satisfiedByWithInput := requiredFieldInWithClause(fld.AllowedInputNames, createAction)
