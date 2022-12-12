@@ -143,10 +143,10 @@ func ModelActions(model *parser.ModelNode) (res []*parser.ActionNode) {
 	return append(ModelOperations(model), ModelFunctions(model)...)
 }
 
-// ModelCreateActions returns all the actions in the given model, which
+// ModelCreateOperations returns all the operations in the given model, which
 // are create-type actions.
-func ModelCreateActions(model *parser.ModelNode) (res []*parser.ActionNode) {
-	allActions := ModelActions(model)
+func ModelCreateOperations(model *parser.ModelNode) (res []*parser.ActionNode) {
+	allActions := ModelOperations(model)
 	return lo.Filter(allActions, func(a *parser.ActionNode, _ int) bool {
 		return a.Type.Value == parser.ActionTypeCreate
 	})

@@ -100,6 +100,24 @@
           "modelName": "Foo",
           "name": "operationC",
           "type": "OPERATION_TYPE_CREATE"
+        },
+        {
+          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
+          "inputs": [
+            {
+              "behaviour": "INPUT_BEHAVIOUR_EXPLICIT",
+              "mode": "INPUT_MODE_WRITE",
+              "modelName": "Foo",
+              "name": "baz",
+              "operationName": "operationD",
+              "type": {
+                "type": "TYPE_STRING"
+              }
+            }
+          ],
+          "modelName": "Foo",
+          "name": "operationD",
+          "type": "OPERATION_TYPE_CREATE"
         }
       ]
     },
