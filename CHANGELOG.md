@@ -1,3 +1,10 @@
+# [0.232.0](https://github.com/teamkeel/keel/compare/v0.231.0...v0.232.0) (2022-12-12)
+
+
+### Features
+
+* change rule of all fields required to only operations ([e0bd763](https://github.com/teamkeel/keel/commit/e0bd763e5ce791cbbdbc065f453ddf31f148cab8))
+
 # [0.231.0](https://github.com/teamkeel/keel/compare/v0.230.1...v0.231.0) (2022-12-09)
 
 
