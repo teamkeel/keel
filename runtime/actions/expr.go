@@ -32,7 +32,7 @@ func toNative(v *parser.Operand, fieldType proto.Type) (any, error) {
 	case v.Null:
 		return nil, nil
 	case fieldType == proto.Type_TYPE_ENUM:
-		return v.Ident.Fragments[1].Fragment, nil
+		return v.Ident.Fragments[0].Fragment, nil
 	default:
 		return nil, fmt.Errorf("toNative() does yet support this expression operand: %+v", v)
 	}
