@@ -12,9 +12,7 @@ import (
 
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/iancoleman/strcase"
-	"github.com/karlseguin/typed"
 	"github.com/sanity-io/litter"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -1331,9 +1329,9 @@ var testCases = []testCase{
 				}
 			}
 		`,
-		assertData: func(t *testing.T, data map[string]any) {
-			assert.Equal(t, false, typed.New(data).Object("authenticate").Bool("identityCreated"))
-			assert.Equal(t, "", typed.New(data).Object("authenticate").String("token"))
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "failed to authenticate", errors[0].Message)
 		},
 	},
 	{
