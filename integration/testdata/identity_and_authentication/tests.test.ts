@@ -41,7 +41,7 @@ test("authenticate - empty password - respond with password cannot be empty erro
 });
 
 test("authenticate - new identity and createIfNotExists false - respond with failed to authenticate error", async () => {
-  expect( 
+  expect(
     await actions.authenticate({
       createIfNotExists: false,
       emailPassword: {
@@ -50,10 +50,9 @@ test("authenticate - new identity and createIfNotExists false - respond with fai
       },
     })
   ).toHaveError({
-    message: "failed to authenticate"
+    message: "failed to authenticate",
   });
 });
-
 
 test("authenticate - existing identity and createIfNotExists false - authenticated", async () => {
   const { identityId: id1, identityCreated: created1 } =
