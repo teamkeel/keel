@@ -120,9 +120,9 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 			Token:           token,
 			IdentityCreated: true,
 		}, nil
+	} else {
+		return nil, errors.New("failed to authenticate")
 	}
-
-	return &AuthenticateResult{}, nil
 }
 
 func find(ctx context.Context, email string) (*Identity, error) {
