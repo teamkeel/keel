@@ -1,3 +1,10 @@
+## [0.232.1](https://github.com/teamkeel/keel/compare/v0.232.0...v0.232.1) (2022-12-13)
+
+
+### Bug Fixes
+
+* authenticate returning empty token ([#652](https://github.com/teamkeel/keel/issues/652)) ([1326963](https://github.com/teamkeel/keel/commit/13269631a3e41e8fb18f0d8b7f430088ba19fc69))
+
 # [0.232.0](https://github.com/teamkeel/keel/compare/v0.231.0...v0.232.0) (2022-12-12)
 
 
