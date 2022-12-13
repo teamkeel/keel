@@ -40,17 +40,43 @@ test("authenticate - empty password - respond with password cannot be empty erro
   });
 });
 
-test("authenticate - new identity and createIfNotExists false - do not create identity", async () => {
-  const { identityId, identityCreated } = await actions.authenticate({
-    createIfNotExists: false,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
+test("authenticate - new identity and createIfNotExists false - respond with failed to authenticate error", async () => {
+  expect( 
+    await actions.authenticate({
+      createIfNotExists: false,
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "1234",
+      },
+    })
+  ).toHaveError({
+    message: "failed to authenticate"
   });
+});
 
-  expect(identityId).toBeEmpty();
-  expect(identityCreated).toEqual(false);
+
+test("authenticate - existing identity and createIfNotExists false - authenticated", async () => {
+  const { identityId: id1, identityCreated: created1 } =
+    await actions.authenticate({
+      createIfNotExists: true,
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "1234",
+      },
+    });
+
+  const { identityId: id2, identityCreated: created2 } =
+    await actions.authenticate({
+      createIfNotExists: false,
+      emailPassword: {
+        email: "user@keel.xyz",
+        password: "1234",
+      },
+    });
+
+  expect(id1).toEqual(id2);
+  expect(created1).toEqual(true);
+  expect(created2).toEqual(false);
 });
 
 test("authenticate - new identity - new identity created", async () => {

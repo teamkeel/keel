@@ -13,7 +13,11 @@
   },
   {
     "status": "pass",
-    "testName": "authenticate - new identity and createIfNotExists false - do not create identity"
+    "testName": "authenticate - new identity and createIfNotExists false - respond with failed to authenticate error"
+  },
+  {
+    "status": "pass",
+    "testName": "authenticate - existing identity and createIfNotExists false - authenticated"
   },
   {
     "status": "pass",
