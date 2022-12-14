@@ -160,7 +160,7 @@ func ValidateFieldAttributeRule(asts []*parser.AST) (errs errorhandling.Validati
 				}
 
 				errs.Concat(
-					validateModelFieldAttributeWithExpression(asts, model, field, attr),
+					validateModelFieldDefaultAttributeWithExpression(asts, model, field, attr),
 				)
 			}
 		}
@@ -187,10 +187,10 @@ func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 	return
 }
 
-// validateModelFieldAttributeWithExpression validates attributes that have the
+// validateModelFieldDefaultAttributeWithExpression validates attributes that have the
 // signature @attributeName(expression) and exist inside a field. This applies
 // to @default
-func validateModelFieldAttributeWithExpression(
+func validateModelFieldDefaultAttributeWithExpression(
 	asts []*parser.AST,
 	model *parser.ModelNode,
 	field *parser.FieldNode,
