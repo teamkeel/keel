@@ -2,7 +2,6 @@ package expression
 
 import (
 	"fmt"
-
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -16,6 +15,53 @@ func ValidateExpression(asts []*parser.AST, expression *parser.Expression, rules
 	for _, rule := range rules {
 		errs := rule(asts, expression, context)
 		errors = append(errors, errs...)
+	}
+
+	return errors
+}
+
+// Validates that the expression has a single value and it matches the expected type
+func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, context expressions.ExpressionContext) (errors []error) {
+	conditions := expression.Conditions()
+	if len(conditions) != 1 {
+		//TODO return an error here
+		return nil
+	}
+
+        //TODO also check RHS
+	operand := conditions[0].LHS
+
+	resolver := expressions.NewOperandResolver(
+		operand,
+		asts,
+		&context,
+		expressions.OperandPositionLhs,
+	)
+	expressionScopeEntity, err := resolver.Resolve()
+	if err != nil {
+		errors = append(errors, err.ToValidationError())
+		return errors
+	}
+
+	expectedType := context.Field.Type
+	resolvedType := expressionScopeEntity.GetType()
+
+	if expectedType != resolvedType {
+		errors = append(errors,
+			errorhandling.NewValidationError(
+				errorhandling.ErrorExpressionFieldTypeMismatch,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Exp":       operand.ToString(),
+						"Type":      resolvedType,
+						"FieldName": context.Field.Name.Value,
+						"FieldType": expectedType,
+					},
+				},
+				expression,
+			),
+		)
+		return errors
 	}
 
 	return errors
