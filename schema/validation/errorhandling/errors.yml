@@ -189,3 +189,7 @@ en:
     short_message: "expression should have a single value"
     message: "expression should have a single value"
     hint: ""
+  E050:
+    short_message: "default requires an expression"
+    message: "default requires an expression"
+    hint: "Try @default(MyDefaultValue) instead"

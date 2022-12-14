@@ -160,7 +160,7 @@ func ValidateFieldAttributeRule(asts []*parser.AST) (errs errorhandling.Validati
 				}
 
 				errs.Concat(
-					validateModelFieldDefaultAttributeWithExpression(asts, model, field, attr),
+					validateModelFieldDefaultAttribute(asts, model, field, attr),
 				)
 			}
 		}
@@ -186,20 +186,25 @@ func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 
 	return
 }
-
-// validateModelFieldDefaultAttributeWithExpression validates attributes that have the
-// signature @attributeName(expression) and exist inside a field. This applies
-// to @default
-func validateModelFieldDefaultAttributeWithExpression(
+func validateModelFieldDefaultAttribute(
 	asts []*parser.AST,
 	model *parser.ModelNode,
 	field *parser.FieldNode,
 	attr *parser.AttributeNode,
 ) (errs errorhandling.ValidationErrors) {
+	expressionContext := expressions.ExpressionContext{
+		Model:     model,
+		Attribute: attr,
+		Field:     field,
+	}
+
 	argLength := len(attr.Arguments)
 
 	if argLength == 0 {
-		//TODO you shouldn't be able to provide a @default with no value if the field type is an Enum
+		err := expression.DefaultCanUseZeroValueRule(asts, attr, expressionContext)
+		for _, e := range err {
+			errs.AppendError(e)
+		}
 		return
 	}
 
@@ -225,11 +230,7 @@ func validateModelFieldDefaultAttributeWithExpression(
 		asts,
 		expr,
 		rules,
-		expressions.ExpressionContext{
-			Model:     model,
-			Attribute: attr,
-			Field:     field,
-		},
+		expressionContext,
 	)
 	for _, e := range err {
 		// TODO: remove case when expression.ValidateExpression returns correct type

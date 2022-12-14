@@ -64,6 +64,7 @@ const (
 	ErrorModelNotFound                      = "E047"
 	ErrorExpressionFieldTypeMismatch        = "E048"
 	ErrorExpressionMultipleConditions       = "E049"
+	ErrorDefaultExpressionNeeded            = "E050"
 )
 
 type ErrorDetails struct {

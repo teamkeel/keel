@@ -1,0 +1,10 @@
+model Post {
+    fields {
+        type PostType @default
+    }
+}
+
+enum PostType {
+    Draft
+    Published
+}
