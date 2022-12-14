@@ -57,9 +57,23 @@ func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, cont
 		)
 		return errors
 	}
+	condition := conditions[0]
 
-	//TODO also check RHS
-	operand := conditions[0].LHS
+	if condition.RHS != nil {
+		errors = append(errors,
+			errorhandling.NewValidationError(
+				errorhandling.ErrorDefaultExpressionOperatorPresent,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Op": condition.Operator.Symbol,
+					},
+				},
+				condition,
+			),
+		)
+		return errors
+	}
+	operand := condition.LHS
 
 	resolver := expressions.NewOperandResolver(
 		operand,

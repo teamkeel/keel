@@ -65,6 +65,7 @@ const (
 	ErrorExpressionFieldTypeMismatch        = "E048"
 	ErrorExpressionMultipleConditions       = "E049"
 	ErrorDefaultExpressionNeeded            = "E050"
+	ErrorDefaultExpressionOperatorPresent   = "E051"
 )
 
 type ErrorDetails struct {

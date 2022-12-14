@@ -1,0 +1,5 @@
+model Post {
+    fields {
+        published Boolean @default(true == false)
+    }
+}
