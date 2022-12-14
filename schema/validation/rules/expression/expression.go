@@ -28,6 +28,7 @@ func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, cont
 		return nil
 	}
 
+        //TODO also check RHS
 	operand := conditions[0].LHS
 
 	resolver := expressions.NewOperandResolver(
