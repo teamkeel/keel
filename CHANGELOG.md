@@ -1,3 +1,10 @@
+# [0.233.0](https://github.com/teamkeel/keel/compare/v0.232.1...v0.233.0) (2022-12-14)
+
+
+### Features
+
+* add [@default](https://github.com/default) validation ([2730468](https://github.com/teamkeel/keel/commit/27304687b90f2c6060db3e2edc5fb212a1ff4baa))
+
 ## [0.232.1](https://github.com/teamkeel/keel/compare/v0.232.0...v0.232.1) (2022-12-13)
 
 
