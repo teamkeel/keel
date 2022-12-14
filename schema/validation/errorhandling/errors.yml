@@ -193,3 +193,7 @@ en:
     short_message: "default requires an expression"
     message: "default requires an expression"
     hint: "Try @default(MyDefaultValue) instead"
+  E051:
+    short_message: "default expression doesn't support operators"
+    message: "default expression doesn't support operators"
+    hint: "Try removing '{{ .Op }}'"
