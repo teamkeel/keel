@@ -181,3 +181,7 @@ en:
     short_message: "Unrecognised model {{ .Model }}"
     message: "api '{{ .API }}' has an unrecognised model {{ .Model }}"
     hint: ""
+  E048:
+    short_message: "{{ .Exp }} is {{ .Type }} but field {{ .FieldName }} is {{ .FieldType }}"
+    message: "{{ .Exp }} is {{ .Type }} but field {{ .FieldName }} is {{ .FieldType }}"
+    hint: "Please make sure that you provide a value of the field type"

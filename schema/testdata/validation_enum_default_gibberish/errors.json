@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "'Gibberish' not found",
+      "short_message": "'Gibberish' not found",
+      "hint": "Did you mean one of ctx, PostType, or post?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_enum_default_gibberish/schema.keel",
+        "offset": 57,
+        "line": 3,
+        "column": 32
+      },
+      "end_pos": {
+        "filename": "testdata/validation_enum_default_gibberish/schema.keel",
+        "offset": 66,
+        "line": 3,
+        "column": 41
+      }
+    }
+  ]
+}

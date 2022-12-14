@@ -133,7 +133,7 @@ func PermissionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationE
 	return
 }
 
-func ValidateAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func ValidateActionAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			for _, attr := range action.Attributes {
@@ -143,6 +143,24 @@ func ValidateAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 
 				errs.Concat(
 					validateActionAttributeWithExpression(asts, model, action, attr),
+				)
+			}
+		}
+	}
+
+	return
+}
+
+func ValidateFieldAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	for _, model := range query.Models(asts) {
+		for _, field := range query.ModelFields(model) {
+			for _, attr := range field.Attributes {
+				if attr.Name.Value != parser.AttributeDefault {
+					continue
+				}
+
+				errs.Concat(
+					validateModelFieldAttributeWithExpression(asts, model, field, attr),
 				)
 			}
 		}
@@ -164,6 +182,58 @@ func SetWhereAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 				)
 			}
 		}
+	}
+
+	return
+}
+
+// validateModelFieldAttributeWithExpression validates attributes that have the
+// signature @attributeName(expression) and exist inside a field. This applies
+// to @default
+func validateModelFieldAttributeWithExpression(
+	asts []*parser.AST,
+	model *parser.ModelNode,
+	field *parser.FieldNode,
+	attr *parser.AttributeNode,
+) (errs errorhandling.ValidationErrors) {
+	argLength := len(attr.Arguments)
+
+	if argLength == 0 {
+		//TODO you shouldn't be able to provide a @default with no value if the field type is an Enum
+		return
+	}
+
+	if argLength >= 2 {
+		errs.Append(
+			errorhandling.ErrorIncorrectArguments,
+			map[string]string{
+				"AttributeName":     attr.Name.Value,
+				"ActualArgsCount":   strconv.FormatInt(int64(argLength), 10),
+				"ExpectedArgsCount": "1",
+				"Signature":         "(expression)",
+			},
+			attr,
+		)
+		return
+	}
+
+	expr := attr.Arguments[0].Expression
+
+	rules := []expression.Rule{expression.ValueTypechecksRule}
+
+	err := expression.ValidateExpression(
+		asts,
+		expr,
+		rules,
+		expressions.ExpressionContext{
+			Model:     model,
+			Attribute: attr,
+			Field:     field,
+		},
+	)
+	for _, e := range err {
+		// TODO: remove case when expression.ValidateExpression returns correct type
+		errs.AppendError(e.(*errorhandling.ValidationError))
 	}
 
 	return

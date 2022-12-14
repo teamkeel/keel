@@ -19,6 +19,7 @@ type ExpressionContext struct {
 	Model     *parser.ModelNode
 	Action    *parser.ActionNode
 	Attribute *parser.AttributeNode
+	Field     *parser.FieldNode
 }
 
 type ResolutionError struct {
