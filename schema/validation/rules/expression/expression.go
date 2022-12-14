@@ -24,11 +24,17 @@ func ValidateExpression(asts []*parser.AST, expression *parser.Expression, rules
 func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, context expressions.ExpressionContext) (errors []error) {
 	conditions := expression.Conditions()
 	if len(conditions) != 1 {
-		//TODO return an error here
-		return nil
+		errors = append(errors,
+			errorhandling.NewValidationError(
+				errorhandling.ErrorExpressionMultipleConditions,
+				errorhandling.TemplateLiterals{},
+				expression,
+			),
+		)
+		return errors
 	}
 
-        //TODO also check RHS
+	//TODO also check RHS
 	operand := conditions[0].LHS
 
 	resolver := expressions.NewOperandResolver(

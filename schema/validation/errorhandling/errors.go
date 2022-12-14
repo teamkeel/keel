@@ -63,6 +63,7 @@ const (
 	ErrorCreateOperationMissingInputAliases = "E046"
 	ErrorModelNotFound                      = "E047"
 	ErrorExpressionFieldTypeMismatch        = "E048"
+	ErrorExpressionMultipleConditions       = "E049"
 )
 
 type ErrorDetails struct {

@@ -1,0 +1,22 @@
+{
+  "Errors": [
+    {
+      "message": "expression should have a single value",
+      "short_message": "expression should have a single value",
+      "hint": "",
+      "code": "E049",
+      "pos": {
+        "filename": "testdata/validation_enum_default_multiple_conditions/schema.keel",
+        "offset": 61,
+        "line": 3,
+        "column": 36
+      },
+      "end_pos": {
+        "filename": "testdata/validation_enum_default_multiple_conditions/schema.keel",
+        "offset": 74,
+        "line": 3,
+        "column": 49
+      }
+    }
+  ]
+}
