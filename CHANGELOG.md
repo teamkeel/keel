@@ -1,3 +1,12 @@
+# [0.234.0](https://github.com/teamkeel/keel/compare/v0.233.0...v0.234.0) (2022-12-14)
+
+
+### Features
+
+* add [@default](https://github.com/default) validation for expression required ([2560d24](https://github.com/teamkeel/keel/commit/2560d246c58ae2708a88bf065ba00078db777e9d))
+* add [@default](https://github.com/default) validation for multiple conditions ([472c727](https://github.com/teamkeel/keel/commit/472c727d832d6d9f605a88af1c2cdadd54441f72))
+* add [@default](https://github.com/default) validation for operators ([9cef9e7](https://github.com/teamkeel/keel/commit/9cef9e7127a67e7fb438aef5d4076951224307e2))
+
 # [0.233.0](https://github.com/teamkeel/keel/compare/v0.232.1...v0.233.0) (2022-12-14)
 
 
