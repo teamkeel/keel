@@ -101,6 +101,16 @@ test("select", async () => {
     ],
   });
 
+  expect(await query.where({}).all()).toEqual({
+    collection: [
+      janeDoe,
+      keelKeelson,
+      keelKeelgrandson,
+      agentSmith,
+      nullPerson,
+    ],
+  });
+
   expect(await query.where({ id: { equals: janeDoe.id } }).all()).toEqual({
     collection: [janeDoe],
   });
