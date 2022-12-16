@@ -1,3 +1,16 @@
+# [0.235.0](https://github.com/teamkeel/keel/compare/v0.234.0...v0.235.0) (2022-12-16)
+
+
+### Bug Fixes
+
+* backport fix ([39fb83e](https://github.com/teamkeel/keel/commit/39fb83e02de1fa2ae09357710698251b2827084e))
+* fix the issue ([7fc2b37](https://github.com/teamkeel/keel/commit/7fc2b370139bc7b4560816fe3ba1fbe00b1465f6))
+
+
+### Features
+
+* test with broken query ([a3b5ef9](https://github.com/teamkeel/keel/commit/a3b5ef93228d470ec477cbc68d51a8a0979f0cc1))
+
 # [0.234.0](https://github.com/teamkeel/keel/compare/v0.233.0...v0.234.0) (2022-12-14)
 
 
