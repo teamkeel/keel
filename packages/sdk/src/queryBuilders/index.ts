@@ -165,17 +165,19 @@ export const buildSelectStatement = <T>(
 
       const s = sqlAddSeparatorAndFlatten(ors, rawSql("AND"));
 
-      // group with ()
-      const grouping = [rawSql("("), ...s, rawSql(")")];
+      if (s.length) {
+        // group with ()
+        const grouping = [rawSql("("), ...s, rawSql(")")];
 
-      ands.push(grouping);
+        ands.push(grouping);
+      }
     });
 
-    const whereToken = sqlAddSeparatorAndFlatten(ands, rawSql("OR"));
+    if (ands.length) {
+      const whereToken = sqlAddSeparatorAndFlatten(ands, rawSql("OR"));
 
-    const limitToken = limit ? [rawSql("LIMIT"), sqlInput(limit)] : [];
-
-    query = [...query, rawSql("WHERE"), ...whereToken, ...limitToken];
+      query = [...query, rawSql("WHERE"), ...whereToken];
+    }
   }
 
   if (hasOrder) {
@@ -190,6 +192,10 @@ export const buildSelectStatement = <T>(
     const orderBy = sqlAddSeparatorAndFlatten(orderClauses, rawSql(","));
     query = [...query, rawSql("ORDER BY"), ...orderBy];
   }
+
+  const limitToken = limit ? [rawSql("LIMIT"), sqlInput(limit)] : [];
+
+  query = [...query, ...limitToken];
 
   return query;
 };
