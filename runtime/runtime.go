@@ -79,6 +79,20 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 				return
 			}
 
+			// Check that identity actually does exist as it could
+			// have been deleted after the bearer token was generated.
+			identity, err := actions.FindIdentityById(ctx, identityId)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(err.Error()))
+				return
+			}
+			if identity == nil {
+				w.WriteHeader(http.StatusUnauthorized)
+				w.Write([]byte(actions.ErrIdentityNotFound.Error()))
+				return
+			}
+
 			ctx = runtimectx.WithIdentity(ctx, identityId)
 			r = r.WithContext(ctx)
 		}

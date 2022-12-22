@@ -39,6 +39,7 @@ var (
 	ErrInvalidToken         = errors.New("cannot be parsed or vertified as a valid JWT")
 	ErrTokenExpired         = errors.New("token has expired")
 	ErrInvalidIdentityClaim = errors.New("the identity claim is invalid and cannot be parsed")
+	ErrIdentityNotFound     = errors.New("identity does not exist")
 )
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
@@ -60,7 +61,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, err
 	}
 
-	identity, err := find(ctx, emailPassword.String("email"))
+	identity, err := FindIdentityByEmail(ctx, emailPassword.String("email"))
 	if err != nil {
 		return nil, err
 	}
@@ -125,23 +126,53 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	}
 }
 
-func find(ctx context.Context, email string) (*Identity, error) {
-	db, _ := runtimectx.GetDatabase(ctx)
+func FindIdentityById(ctx context.Context, id *ksuid.KSUID) (*Identity, error) {
+	db, err := runtimectx.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	var identity Identity
 
 	result := db.
 		Table(strcase.ToSnake(parser.ImplicitIdentityModelName)).
-		Limit(1).
+		Where(IdColumnName, id).
+		Find(&identity)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, nil
+	}
+	if result.RowsAffected > 1 {
+		return nil, errors.New("more than one identity record found")
+	}
+
+	return &identity, nil
+}
+
+func FindIdentityByEmail(ctx context.Context, email string) (*Identity, error) {
+	db, err := runtimectx.GetDatabase(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var identity Identity
+
+	result := db.
+		Table(strcase.ToSnake(parser.ImplicitIdentityModelName)).
 		Where(EmailColumnName, email).
 		Find(&identity)
 
 	if result.Error != nil {
 		return nil, result.Error
 	}
-
 	if result.RowsAffected == 0 {
 		return nil, nil
+	}
+	if result.RowsAffected > 1 {
+		return nil, errors.New("more than one identity record found")
 	}
 
 	return &identity, nil
