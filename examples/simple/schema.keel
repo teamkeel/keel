@@ -1,0 +1,283 @@
+enum Day {
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
+    Sunday
+}
+
+enum ShiftType {
+    Day
+    Night
+}
+
+model Organization {
+    fields {
+        name Text
+        floors Floor[]
+    }
+
+    operations {
+        get getOrganization(id)
+        list allOrganization()
+        delete deleteOrganization(id)
+        update updateOrganization(id) with (name?)
+        create createOrganization() with (name)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Shift {
+    fields {
+        name Text
+        day Day
+        type ShiftType
+        staff StaffShift[]
+    }
+
+    operations {
+        get shift(id)
+        list allShift()
+        delete deleteShift(id)
+        update updateShift(id) with (name?)
+        create createShift() with (name, day, type)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Staff {
+    fields {
+        name Text
+        shift StaffShift[]
+        skill NeedStaff[]
+    }
+
+    operations {
+        get staff(id)
+        list allStaff()
+        delete deleteStaff(id)
+        update updateStaff(id) with (name?, shift.id)
+        create createStaff() with (name, shift.id, skill.id)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Floor {
+    // Floor or external space w/ rooms
+    fields {
+        name Text
+        org Organization
+        room Room[]
+        floormap Text
+    }
+
+    operations {
+        get floor(id)
+        list allFloor()
+        delete deleteFloor(id)
+        update updateFloor(id) with (name?, org.id, floormap)
+        create createFloor() with (name, org.id, floormap)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Room {
+    fields {
+        name Text
+        floor Floor
+        x Number
+        // xy coord on img floormap to door
+        y Number
+    }
+
+    operations {
+        get room(id)
+        list allRoom()
+        delete deleteRoom(id)
+        update updateRoom(id) with (name?, floor.id)
+        create createRoom() with (name, floor.id, x, y)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Patient {
+    fields {
+        name Text
+        age Number
+        checkin Checkin[]
+        room Room
+        need Need[]
+    }
+
+    operations {
+        get patient(id)
+        list allPatient()
+        delete deletePatient(id)
+        update updatePatient(id) with (name?, room.id, age)
+        create createPatient() with (name, room.id, age)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Tag {
+    // Physical device tag
+    fields {
+        name Text
+        room Room
+        device Text
+    }
+
+    operations {
+        get tag(id)
+        list allTag()
+        delete deleteTag(id)
+        update updateTag(id) with (name?, room.id)
+        create createTag() with (name, room.id, device)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Need {
+    fields {
+        name Text
+        patient Patient
+        staff NeedStaff[]
+    }
+
+    operations {
+        get need(id)
+        list allNeed()
+        delete deleteNeed(id)
+        update updateNeed(id) with (name?)
+        create createNeed() with (name, staff.id, patient.id)
+    }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+model Checkin {
+    fields {
+        name Text
+        staff Staff
+        patient Patient
+        device Tag
+    }
+
+    operations {
+        get checkin(id)
+        list allCheckin()
+        delete deleteCheckin(id)
+        update updateCheckin(id) with (name?, staff.id, patient.id)
+        create createCheckin() with (name, staff.id, patient.id, device.id)
+    }
+
+    // functions {
+    //     create deviceCheckin() with (name, staff.id, patient.id, device.id) {
+    //         @permission(expression: true)
+    //     }
+    // }
+
+    @permission(
+        actions: [get, list, update, delete, create],
+        expression: true
+    )
+}
+
+// Connections
+model StaffShift {
+    fields {
+        staff Staff
+        shift Shift
+    }
+
+    operations {
+        create staffShift() with (staffId, shiftId)
+    }
+}
+
+model PatientNeeds {
+    fields {
+        patient Patient
+        need Need
+    }
+
+    operations {
+        create patientNeed() with (patientId, needId)
+    }
+}
+
+model NeedStaff {
+    fields {
+        staff Staff
+        need Need
+    }
+
+    operations {
+        create needStaff() with (needId, staffId)
+    }
+}
+
+// API
+api Web {
+    @graphql
+
+    models {
+        Organization
+        Shift
+        Staff
+        Floor
+        Room
+        Patient
+        Tag
+        Checkin
+        Identity
+    }
+}
+
+api Console {
+    @rpc
+
+    models {
+        Organization
+        Shift
+        Staff
+        Floor
+        Room
+        Patient
+        Tag
+        Checkin
+    }
+}
