@@ -1,11 +1,9 @@
 package actions
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -142,32 +140,22 @@ func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.Perm
 // available directly in the scope object?
 func getEmailAndDomain(scope *Scope) (string, string, error) {
 
-	// Use the authenticated user's id to lookup their email address.
-	userKSUID, err := runtimectx.GetIdentity(scope.context)
+	// Use the authenticated identity's id to lookup their email address.
+	identityId, err := runtimectx.GetIdentity(scope.context)
 	if err != nil {
 		return "", "", err
 	}
 
-	db, err := runtimectx.GetDatabase(scope.context)
+	identity, err := FindIdentityById(scope.context, identityId)
 	if err != nil {
 		return "", "", err
 	}
-	rows := []map[string]any{}
-	tableName := strcase.ToSnake(parser.ImplicitIdentityModelName)
-	response := db.Table(tableName).Where("id = ?", userKSUID.String()).Find(&rows)
-	if response.Error != nil {
-		return "", "", err
+
+	if identity == nil {
+		return "", "", ErrIdentityNotFound
 	}
-	if response.RowsAffected != 1 {
-		return "", "", ErrNotOneRow
-	}
-	row := rows[0]
-	email := row["email"].(string)
-	segments := strings.Split(email, "@")
+
+	segments := strings.Split(identity.Email, "@")
 	domain := segments[1]
-	return email, domain, nil
+	return identity.Email, domain, nil
 }
-
-var (
-	ErrNotOneRow = errors.New("should be one row")
-)
