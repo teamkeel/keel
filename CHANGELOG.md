@@ -1,3 +1,10 @@
+## [0.235.1](https://github.com/teamkeel/keel/compare/v0.235.0...v0.235.1) (2022-12-22)
+
+
+### Bug Fixes
+
+* check that identity exists for jwt ([#659](https://github.com/teamkeel/keel/issues/659)) ([999b129](https://github.com/teamkeel/keel/commit/999b129c31a5df4c59c173d03e4d664b048dd1aa))
+
 # [0.235.0](https://github.com/teamkeel/keel/compare/v0.234.0...v0.235.0) (2022-12-16)
 
 
