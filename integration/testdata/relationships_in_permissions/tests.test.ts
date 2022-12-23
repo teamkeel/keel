@@ -1,5 +1,39 @@
 import { test, expect, actions, Post, Author } from "@teamkeel/testing";
 
+test("permission expression with create in M:1 relationship - related model satisfies condition - authorization successful", async () => {
+  const { object: author } = await Author.create({
+    name: "Keelson",
+    isActive: true,
+  });
+
+  const { object: createPost } = await actions.createPost({
+    title: "New Post",
+    theAuthorId: author.id,
+  });
+  const { collection } = await Post.where({}).all();
+
+  expect(createPost.theAuthorId).toEqual(author.id);
+  expect(collection[0].id).toEqual(createPost.id);
+  expect(collection[0].theAuthorId).toEqual(author.id);
+});
+
+test("permission expression with create in M:1 relationship - related model does not satisfy condition - authorization not successful", async () => {
+  const { object: author } = await Author.create({
+    name: "Keelson",
+    isActive: false,
+  });
+
+  expect(
+    await actions.createPost({
+      title: "New Post",
+      theAuthorId: author.id,
+    })
+  ).toHaveAuthorizationError();
+
+  const { collection } = await Post.where({}).all();
+  expect(collection.length).toEqual(0);
+});
+
 test("permission expression in M:1 relationship - all related models satisfy condition - authorization successful", async () => {
   const { object: author1 } = await Author.create({
     name: "Keelson",

@@ -7,6 +7,11 @@ model Post {
     }
 
     operations {
+        create createPost() with (title, theAuthor.id) {
+            @set(post.isActive = true)
+            @permission(expression: post.theAuthor.isActive == true)
+        }
+
         get getPost(id) {
             @permission(expression: post.theAuthor.isActive == true)
         }

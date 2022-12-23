@@ -274,13 +274,6 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 }
 
 func (resolver *OperandResolver) IsDatabaseColumn() bool {
-	// It is not possible to reference model fields on create, when no data exists in the database.
-	// Therefore a model name used in the expression will actually refer to a write value
-	// (i.e. new value to be written to the database)
-	if resolver.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
-		return false
-	}
-
 	isMultiFragmentIdent := resolver.operand.Ident != nil && len(resolver.operand.Ident.Fragments) > 1
 
 	if !isMultiFragmentIdent {

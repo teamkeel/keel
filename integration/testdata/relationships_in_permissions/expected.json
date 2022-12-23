@@ -1,6 +1,14 @@
 [
   {
     "status": "pass",
+    "testName": "permission expression with create in M:1 relationship - related model satisfies condition - authorization successful"
+  },
+  {
+    "status": "pass",
+    "testName": "permission expression with create in M:1 relationship - related model does not satisfy condition - authorization not successful"
+  },
+  {
+    "status": "pass",
     "testName": "permission expression in M:1 relationship - all related models satisfy condition - authorization successful"
   },
   {

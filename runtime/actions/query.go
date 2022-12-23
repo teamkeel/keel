@@ -71,10 +71,12 @@ func (o *QueryOperand) IsNull() bool {
 	return o.table == "" && o.column == "" && o.value == nil
 }
 
-// The templated SQL statement and associated values.
+// The templated SQL statement and associated values, ready to be executed.
 type Statement struct {
+	// The generated SQL template.
 	template string
-	args     []any
+	// The arguments associated with the generated SQL template.
+	args []any
 }
 
 type QueryBuilder struct {
@@ -100,6 +102,8 @@ type QueryBuilder struct {
 	args []any
 	// The columns and values to be written during an INSERT or UPDATE.
 	writeValues map[string]any
+	// The current transaction, if one exists.
+	transaction *Transaction
 }
 
 func NewQuery(model *proto.Model) *QueryBuilder {
@@ -420,6 +424,61 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 	}
 }
 
+// Begins a new SQL transaction.
+// All statements generated from this query builder will be included in the transaction.
+func (query *QueryBuilder) Begin(context context.Context) error {
+	if query.transaction == nil {
+		stmt := &Statement{
+			template: "BEGIN;",
+			args:     []any{},
+		}
+
+		_, err := stmt.Execute(context)
+		if err != nil {
+			return err
+		}
+
+		query.transaction = &Transaction{isCompleted: false}
+	}
+	return nil
+}
+
+// Commits the current SQL transaction, provided it hasn't been rolled back already.
+func (query *QueryBuilder) Commit(context context.Context) error {
+	if query.transaction != nil && !query.transaction.isCompleted {
+		stmt := &Statement{
+			template: "COMMIT;",
+			args:     []any{},
+		}
+
+		_, err := stmt.Execute(context)
+		if err != nil {
+			return err
+		}
+
+		query.transaction = &Transaction{isCompleted: true}
+	}
+	return nil
+}
+
+// Rolls back the current SQL transaction, provided it hasn't been committed already.
+func (query *QueryBuilder) Rollback(context context.Context) error {
+	if query.transaction != nil && !query.transaction.isCompleted {
+		stmt := &Statement{
+			template: "ROLLBACK;",
+			args:     []any{},
+		}
+
+		_, err := stmt.Execute(context)
+		if err != nil {
+			return err
+		}
+
+		query.transaction = &Transaction{isCompleted: true}
+	}
+	return nil
+}
+
 // Execute the SQL statement against the database, returning the number of rows affected.
 func (statement *Statement) Execute(context context.Context) (int, error) {
 	db, err := runtimectx.GetDatabase(context)
@@ -474,12 +533,17 @@ func (statement *Statement) ExecuteToSingle(context context.Context) (map[string
 	}
 
 	if affected > 1 {
-		return nil, errors.New("more than 1 result returned for ExecuteWithSingle which expects 0 or 1 results")
+		return nil, fmt.Errorf("%v results returned for ExecuteToSingle which expects 0 or 1 result", affected)
 	} else if affected == 0 {
 		return nil, nil
 	}
 
 	return results[0], nil
+}
+
+type Transaction struct {
+	// This will hold onto the transaction ID which we'll need when executing against the RDS API
+	isCompleted bool
 }
 
 // Builds a where conditional SQL template using the ? placeholder for values.

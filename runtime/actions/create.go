@@ -6,9 +6,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
-func Create(scope *Scope, input map[string]any) (map[string]any, error) {
-	var err error
-
+func Create(scope *Scope, input map[string]any) (res map[string]any, err error) {
 	query := NewQuery(scope.model)
 
 	defaultValues, err := initialValueForModel(scope.model, scope.schema)
@@ -28,6 +26,36 @@ func Create(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
+	op := scope.operation
+	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		return ParseCreateObjectResponse(scope.context, op, input)
+	}
+
+	// Return the inserted row
+	query.AppendReturning(AllFields())
+
+	// Begin a transaction and defer rollback which will run if a commit hasn't occurred.
+	query.Begin(scope.context)
+	// Defer ensures a rollback as the function may return early due to an error.
+	defer func() {
+		if err != nil {
+			query.Rollback(scope.context)
+		}
+	}()
+
+	// Execute database request, expecting a single result
+	result, err := query.
+		InsertStatement().
+		ExecuteToSingle(scope.context)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Retrieve the newly created row so we can check permissions
+	query.Where(IdField(), Equals, Value(result["id"]))
+
+	// Check permissions and roles conditions
 	isAuthorised, err := query.isAuthorised(scope, input)
 	if err != nil {
 		return nil, err
@@ -37,19 +65,7 @@ func Create(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, errors.New("not authorized to access this operation")
 	}
 
-	op := scope.operation
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		return ParseCreateObjectResponse(scope.context, op, input)
-	}
-
-	// Return the inserted row
-	query.AppendReturning(AllFields())
-
-	// Execute database request, expecting a single result
-	result, err := query.
-		InsertStatement().
-		ExecuteToSingle(scope.context)
-
+	err = query.Commit(scope.context)
 	if err != nil {
 		return nil, err
 	}
