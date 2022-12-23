@@ -1,4 +1,11 @@
-import { test, expect, actions, Post, ChildPost, Identity } from "@teamkeel/testing";
+import {
+  test,
+  expect,
+  actions,
+  Post,
+  ChildPost,
+  Identity,
+} from "@teamkeel/testing";
 
 test("create identity", async () => {
   const { identityId, identityCreated } = await actions.authenticate({
@@ -331,7 +338,7 @@ test("related model identity context permission - correct identity - permission 
     .createChild({ postId: post.id });
 
   const { collection } = await ChildPost.where({ postId: post.id }).all();
-  
+
   expect(child.postId).toEqual(post.id);
   expect(collection.length).toEqual(1);
   expect(collection[0].id).toEqual(child.id);
