@@ -268,7 +268,8 @@ func satisfiedBySetExpr(fieldAliases []string, modelName string, action *parser.
 func UpdateOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+		// Note - this is applied only to Operations, i.e. not Function.
+		for _, action := range query.ModelOperations(model) {
 			if action.Type.Value != parser.ActionTypeUpdate {
 				continue
 			}
@@ -319,7 +320,8 @@ func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.Validatio
 func GetOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+		// Note - this is applied only to Operations, i.e. not Functions.
+		for _, action := range query.ModelOperations(model) {
 			if action.Type.Value != parser.ActionTypeGet {
 				continue
 			}
@@ -336,7 +338,8 @@ func GetOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.Va
 func DeleteOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+		// Note - this is applied only to Operations, i.e. not Functions.
+		for _, action := range query.ModelOperations(model) {
 			if action.Type.Value != parser.ActionTypeDelete {
 				continue
 			}
