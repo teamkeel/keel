@@ -1,3 +1,10 @@
+## [0.235.2](https://github.com/teamkeel/keel/compare/v0.235.1...v0.235.2) (2023-01-04)
+
+
+### Bug Fixes
+
+* relax custom function unique filter validation ([#661](https://github.com/teamkeel/keel/issues/661)) ([f932a43](https://github.com/teamkeel/keel/commit/f932a43b2c1776e634a8238e299c1144cfca8404))
+
 ## [0.235.1](https://github.com/teamkeel/keel/compare/v0.235.0...v0.235.1) (2022-12-22)
 
 
