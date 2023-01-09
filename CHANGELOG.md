@@ -1,3 +1,10 @@
+## [0.235.3](https://github.com/teamkeel/keel/compare/v0.235.2...v0.235.3) (2023-01-09)
+
+
+### Bug Fixes
+
+* permissions on related model data in create op ([#660](https://github.com/teamkeel/keel/issues/660)) ([c2dd0fc](https://github.com/teamkeel/keel/commit/c2dd0fc4deb235e46dcfd7f734703093ecee1efd))
+
 ## [0.235.2](https://github.com/teamkeel/keel/compare/v0.235.1...v0.235.2) (2023-01-04)
 
 
