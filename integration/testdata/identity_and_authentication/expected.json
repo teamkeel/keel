@@ -62,5 +62,13 @@
   {
     "status": "pass",
     "testName": "isAuthenticated context set - not authenticated - is set to false"
+  },
+  {
+    "status": "pass",
+    "testName": "related model identity context permission - correct identity - permission satisfied"
+  },
+  {
+    "status": "pass",
+    "testName": "related model identity context permission - incorrect identity - permission not satisfied"
   }
 ]

@@ -4,8 +4,8 @@ model Post {
         identity Identity?
         isAuthenticated Boolean?
     }
-    operations {
 
+    operations {
         create createPostWithIdentity() with (title) {
             @set(post.identity = ctx.identity)
             @permission(expression: true)
@@ -30,10 +30,23 @@ model Post {
     }
 }
 
+model ChildPost {
+    fields {
+        post Post
+    }
+
+    operations {
+        create createChild() with (post.id) {
+            @permission(expression: childPost.post.identity == ctx.identity)
+        }
+    }
+}
+
 api Web {
     @graphql
 
     models {
         Post
+        ChildPost
     }
 }

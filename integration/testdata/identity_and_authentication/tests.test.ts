@@ -1,4 +1,11 @@
-import { test, expect, actions, Post, Identity } from "@teamkeel/testing";
+import {
+  test,
+  expect,
+  actions,
+  Post,
+  ChildPost,
+  Identity,
+} from "@teamkeel/testing";
 
 test("create identity", async () => {
   const { identityId, identityCreated } = await actions.authenticate({
@@ -310,3 +317,61 @@ test("isAuthenticated context set - not authenticated - is set to false", async 
 // todo:  permission test against null.  Requires this fix:  https://linear.app/keel/issue/DEV-195/permissions-support-null-operand-with-identity-type
 
 // todo:  permission test against another identity field.  Requires this fix: https://linear.app/keel/issue/DEV-196/permissions-support-identity-type-operand-with-identity-comparison
+
+test("related model identity context permission - correct identity - permission satisfied", async () => {
+  const { identityId: id1 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user1@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  const { object: identity1 } = await Identity.findOne({ id: id1 });
+
+  const { object: post } = await actions
+    .withIdentity(identity1)
+    .createPostWithIdentity({ title: "temp" });
+
+  const { object: child } = await actions
+    .withIdentity(identity1)
+    .createChild({ postId: post.id });
+
+  const { collection } = await ChildPost.where({ postId: post.id }).all();
+
+  expect(child.postId).toEqual(post.id);
+  expect(collection.length).toEqual(1);
+  expect(collection[0].id).toEqual(child.id);
+});
+
+test("related model identity context permission - incorrect identity - permission not satisfied", async () => {
+  const { identityId: id1 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user1@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  const { identityId: id2 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user2@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  const { object: identity1 } = await Identity.findOne({ id: id1 });
+  const { object: identity2 } = await Identity.findOne({ id: id2 });
+
+  const { object: post } = await actions
+    .withIdentity(identity1)
+    .createPostWithIdentity({ title: "temp" });
+
+  expect(
+    await actions.withIdentity(identity2).createChild({ postId: post.id })
+  ).toHaveAuthorizationError();
+
+  const { collection } = await ChildPost.where({ postId: post.id }).all();
+  expect(collection.length).toEqual(0);
+});
