@@ -1,19 +1,28 @@
-model Post {
-    fields {
-        name Text
-        blog Blog
+model MissingQueries {
+
+}
+
+model NotOnApi {
+ 
+}
+
+model WithQueryOperation {
+    operations{
+        get getOperation(id)
     }
 }
 
-model Blog {
-    fields {
-        name Text
+model WithQueryFunction {
+    functions {
+        get getFunction(id) 
     }
 }
 
 api Web {
     @graphql
     models {
-        Post
+        MissingQueries
+        WithQueryOperation
+        WithQueryFunction
     }
 }

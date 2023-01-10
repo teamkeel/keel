@@ -5,16 +5,16 @@
         "end_pos": {
             "column": 8,
             "filename": "testdata/validation_api_models_to_have_query_actions/schema.keel",
-            "line": 14,
-            "offset": 131
+            "line": 21,
+            "offset": 217
         },
-        "hint": "Add a get or list action to the Post model",
-        "message": "The model Post specified on API Web must have at least one query action defined",
+        "hint": "Add a get or list action to the MissingQueries model",
+        "message": "The model MissingQueries specified on API Web must have at least one query action defined",
         "pos": {
             "column": 5,
             "filename": "testdata/validation_api_models_to_have_query_actions/schema.keel",
-            "line": 14,
-            "offset": 128
+            "line": 21,
+            "offset": 214
         },
         "short_message": "Model must have at least one query action"
     }
