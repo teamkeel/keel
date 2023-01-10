@@ -246,7 +246,7 @@ func (a *ActionNode) IsWrite() bool {
 }
 
 func (a *ActionNode) IsRead() bool {
-	return a.Type.Value != ActionTypeCreate
+	return a.Type.Value == ActionTypeGet || a.Type.Value == ActionTypeList
 }
 
 func (a *ActionNode) AllInputs() []*ActionInputNode {

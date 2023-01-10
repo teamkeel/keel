@@ -1,6 +1,12 @@
 model Foo {
+    operations {
+        get getFoo(id)
+    }
 }
 model Bar {
+    operations {
+        get getBar(id)
+    }
 }
 api ApiOne {
     @graphql

@@ -9,7 +9,6 @@ import (
 
 func UniqueAPINamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	seenAPINames := map[string]bool{}
-
 	for _, api := range query.APIs(asts) {
 		if _, ok := seenAPINames[api.Name.Value]; ok {
 			errs.Append(errorhandling.ErrorUniqueAPIGlobally,
@@ -43,6 +42,35 @@ func NamesCorrespondToModels(asts []*parser.AST) (errs errorhandling.ValidationE
 						},
 						api.Name,
 					)
+				}
+			}
+		}
+	}
+
+	return
+}
+
+func ModelsToHaveQueryOperations(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	for _, api := range query.APIs(asts) {
+		for _, section := range api.Sections {
+			for _, model := range section.Models {
+				m := query.Model(asts, model.Name.Value)
+				if m == nil || m.BuiltIn {
+					continue
+				}
+
+				actions := query.ModelActions(m)
+				hasQuery := lo.SomeBy(actions, func(action *parser.ActionNode) bool {
+					return action.IsRead()
+				})
+
+				if !hasQuery {
+					errs.Append(errorhandling.ErrorModelHasNoQueryActions,
+						map[string]string{
+							"API":   api.Name.Value,
+							"Model": model.Name.Value,
+						},
+						api.Name)
 				}
 			}
 		}

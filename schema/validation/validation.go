@@ -66,6 +66,7 @@ var validatorFuncs = []validationFunc{
 	// API
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
+	api.ModelsToHaveQueryOperations,
 	// Enum
 	enum.UniqueEnumsRule,
 	// Relationships

@@ -34,7 +34,30 @@
             "useZeroValue":  true
           }
         }
-      ]
+      ],
+      "operations": [
+        {
+            "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+            "inputs": [
+                {
+                    "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+                    "mode": "INPUT_MODE_READ",
+                    "modelName": "Foo",
+                    "name": "id",
+                    "operationName": "getFoo",
+                    "target": [
+                        "id"
+                    ],
+                    "type": {
+                        "type": "TYPE_ID"
+                    }
+                }
+            ],
+            "modelName": "Foo",
+            "name": "getFoo",
+            "type": "OPERATION_TYPE_GET"
+        }
+    ]
     },
     {
       "name":  "Bar",
@@ -69,6 +92,30 @@
           "defaultValue":  {
             "useZeroValue":  true
           }
+          
+        }
+      ],
+      "operations": [
+        {
+            "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+            "inputs": [
+                {
+                    "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
+                    "mode": "INPUT_MODE_READ",
+                    "modelName": "Bar",
+                    "name": "id",
+                    "operationName": "getBar",
+                    "target": [
+                        "id"
+                    ],
+                    "type": {
+                        "type": "TYPE_ID"
+                    }
+                }
+            ],
+            "modelName": "Bar",
+            "name": "getBar",
+            "type": "OPERATION_TYPE_GET"
         }
       ]
     },

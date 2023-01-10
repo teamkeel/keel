@@ -7,11 +7,3 @@ model User {
         create authenticate() with (email)
     }
 }
-
-api Web {
-    @graphql
-
-    models {
-        User
-    }
-}

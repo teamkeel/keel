@@ -197,3 +197,7 @@ en:
     short_message: "default expression doesn't support operators"
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
+  E052:
+    short_message: "Model must have at least one query action"
+    message: "The model {{ .Model }} specified on API {{ .API }} must have at least one query action defined"
+    hint: "Add a get or list action to the {{ .Model }} model"

@@ -7,14 +7,14 @@
       "code": "E047",
       "pos": {
         "filename": "testdata/validation_api_names_are_models/schema.keel",
-        "offset": 21,
-        "line": 5,
+        "offset": 59,
+        "line": 7,
         "column": 5
       },
       "end_pos": {
         "filename": "testdata/validation_api_names_are_models/schema.keel",
-        "offset": 24,
-        "line": 5,
+        "offset": 62,
+        "line": 7,
         "column": 8
       }
     }

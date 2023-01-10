@@ -1,0 +1,19 @@
+model Post {
+    fields {
+        name Text
+        blog Blog
+    }
+}
+
+model Blog {
+    fields {
+        name Text
+    }
+}
+
+api Web {
+    @graphql
+    models {
+        Post
+    }
+}

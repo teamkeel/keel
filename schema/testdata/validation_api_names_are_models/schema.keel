@@ -1,5 +1,7 @@
 model Post {
-
+  operations {
+    get getPost(id)
+  }
 }
 
 api Web {
