@@ -1,3 +1,10 @@
+## [0.235.4](https://github.com/teamkeel/keel/compare/v0.235.3...v0.235.4) (2023-01-11)
+
+
+### Bug Fixes
+
+* handle empty graphql query object ([#663](https://github.com/teamkeel/keel/issues/663)) ([68eac9b](https://github.com/teamkeel/keel/commit/68eac9b1c5fa0e61347bbb51f4faf4abf4a08da9))
+
 ## [0.235.3](https://github.com/teamkeel/keel/compare/v0.235.2...v0.235.3) (2023-01-09)
 
 
