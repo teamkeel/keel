@@ -1020,10 +1020,6 @@ var testCases = []testCase{
 				edgesList, ok := edges.([]any)
 				fmt.Println(key)
 				require.True(t, ok)
-				if len(edgesList) != 1 {
-					a := 1
-					_ = a
-				}
 				require.Len(t, edgesList, 1)
 			}
 		},

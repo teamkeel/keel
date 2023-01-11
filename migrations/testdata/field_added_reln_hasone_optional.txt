@@ -1,0 +1,37 @@
+model Person {
+    fields {
+        name Text
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+model Person {
+    fields {
+        name Text
+        favouriteThing Thing?
+    }
+}
+
+model Thing {
+    fields {
+        description Text
+    }
+}
+
+===
+
+ALTER TABLE "person" ADD COLUMN "favourite_thing_id" TEXT;
+ALTER TABLE "person" ADD FOREIGN KEY ("favourite_thing_id") REFERENCES "thing"("id") ON DELETE SET NULL;
+
+=== 
+
+[
+  { "Model": "Person", "Field": "favouriteThingId", "Type": "ADDED" }
+]
