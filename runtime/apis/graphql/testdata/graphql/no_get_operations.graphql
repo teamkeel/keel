@@ -1,0 +1,22 @@
+type Query {
+  __Empty: Boolean
+}
+
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+}
+
+input AuthenticateEmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: AuthenticateEmailPasswordInput!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean
+  token: String
+}

@@ -35,14 +35,6 @@ func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, err
 	return m.build(api, proto)
 }
 
-type GraphQlNormalizer struct {
-}
-
-func (b GraphQlNormalizer) NormalizeArgs(args map[string]any) (map[string]any, error) {
-	//toddo
-	return args, nil
-}
-
 // A graphqlSchemaBuilder exposes a Make method, that makes a set of graphql.Schema objects - one for each
 // of the APIs defined in the keel schema provided at construction time.
 type graphqlSchemaBuilder struct {
@@ -66,13 +58,28 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 
 	modelInstances := proto.FindModels(mk.proto.Models, namesOfModelsUsedByAPI)
 
+	hasNoQueryOps := true
 	for _, model := range modelInstances {
 		for _, op := range model.Operations {
 			err := mk.addOperation(op, schema)
 			if err != nil {
 				return nil, err
 			}
+			if op.Type == proto.OperationType_OPERATION_TYPE_GET || op.Type == proto.OperationType_OPERATION_TYPE_LIST {
+				hasNoQueryOps = false
+			}
 		}
+	}
+
+	// The graphql handler cannot manage an empty query object,
+	// so if there are no get or list ops, we add the __Empty field
+	if hasNoQueryOps {
+		mk.query.AddFieldConfig("__Empty", &graphql.Field{
+			Type: graphql.Boolean,
+			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+				return true, nil
+			},
+		})
 	}
 
 	gSchema, err := graphql.NewSchema(graphql.SchemaConfig{

@@ -1,0 +1,11 @@
+model Person {
+
+}
+
+api Test {
+    @graphql
+
+    models {
+        Person
+    }
+}
