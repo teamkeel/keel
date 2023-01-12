@@ -38,7 +38,7 @@ func AllFields() *QueryOperand {
 // Some field from the fragments of an expression or input.
 func ExpressionField(fragments []string, field string) *QueryOperand {
 	return &QueryOperand{
-		table:  strcase.ToSnake(strings.Join(fragments, "_")),
+		table:  strcase.ToSnake(strings.Join(fragments, "$")),
 		column: strcase.ToSnake(field),
 	}
 }
