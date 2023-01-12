@@ -1,3 +1,10 @@
+# [0.236.0](https://github.com/teamkeel/keel/compare/v0.235.4...v0.236.0) (2023-01-12)
+
+
+### Features
+
+* use on delete set null when field is optional ([#664](https://github.com/teamkeel/keel/issues/664)) ([8ff6115](https://github.com/teamkeel/keel/commit/8ff61155d66bba946f8edf142ecef60e9b727851))
+
 ## [0.235.4](https://github.com/teamkeel/keel/compare/v0.235.3...v0.235.4) (2023-01-11)
 
 
