@@ -142,5 +142,9 @@
   {
     "status": "pass",
     "testName": "list operation where expressions with 1:M relations with RHS field operand - Keelson author inactive and Weaveton post inactive - no publishers returned"
+  },
+  {
+    "status": "pass",
+    "testName": "where expressions which references models multiple times - Keel has active posts, Weave has no active posts - Keel post returned, Weave not returned"
   }
 ]

@@ -14,7 +14,7 @@ import (
 
 // Include a filter (where condition) on the query based on an implicit input filter.
 func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, input *proto.OperationInput, fieldName string, operator ActionOperator, value any) error {
-	// Implicit inputs don't include the model as the first fragment (unlike expressions), so we include it
+	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
 	fragments := append([]string{strcase.ToLowerCamel(input.ModelName)}, input.Target...)
 
 	// The lhs QueryOperand is determined from the fragments in the implicit input field
@@ -151,46 +151,47 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 }
 
 // Constructs and adds an INNER JOIN from a splice of fragments (representing an operand in an expression or implicit input).
-// The fragment slice must include the base model as the first item, for example: post.author.publisher.isActive
+// The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
 	model := strcase.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
 
-	for i := 1; i < fragmentCount; i++ {
+	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
 
 		if !proto.ModelHasField(scope.schema, model, currentFragment) {
 			return fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
 		}
 
-		if i < fragmentCount-1 {
-			// We know that the current fragment is a related model because it's not the last fragment
-			relatedModelField := proto.FindField(scope.schema.Models, model, currentFragment)
-			relatedModel := relatedModelField.Type.ModelName.Value
-			identifierField := "id"
+		// We know that the current fragment is a related model because it's not the last fragment
+		relatedModelField := proto.FindField(scope.schema.Models, model, currentFragment)
+		relatedModel := relatedModelField.Type.ModelName.Value
+		identifierField := "id"
 
-			if relatedModelField.ForeignKeyFieldName != nil {
-				foreignKeyField := relatedModelField.ForeignKeyFieldName.Value
+		switch {
+		case proto.IsToOneRelationship(relatedModelField):
+			foreignKeyField := relatedModelField.ForeignKeyFieldName.Value
 
-				// Add a join to the primary key of the model that has-many in the M:1 relationship
-				query.InnerJoin(ModelField(relatedModel, identifierField), ModelField(model, foreignKeyField))
-			} else {
-				fkModel := proto.FindModel(scope.schema.Models, relatedModelField.Type.ModelName.Value)
-				fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
-					return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
-				})
-				if !found {
-					return fmt.Errorf("no foreign key field found on related model %s", model)
-				}
-
-				foreignKeyField := fkField.ForeignKeyFieldName.Value
-
-				// Add a join to the foreign key of the model that belongs-to in the 1:M relationship
-				query.InnerJoin(ModelField(relatedModel, foreignKeyField), ModelField(model, identifierField))
+			// Add a join to the primary key of the model that has-many in the M:1 relationship
+			query.InnerJoin(relatedModel, ExpressionField(fragments[:i+1], identifierField), ExpressionField(fragments[:i], foreignKeyField))
+		case proto.IsToManyRelationship(relatedModelField):
+			fkModel := proto.FindModel(scope.schema.Models, relatedModelField.Type.ModelName.Value)
+			fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
+				return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
+			})
+			if !found {
+				return fmt.Errorf("no foreign key field found on related model %s", model)
 			}
 
-			model = relatedModelField.Type.ModelName.Value
+			foreignKeyField := fkField.ForeignKeyFieldName.Value
+
+			// Add a join to the foreign key of the model that belongs-to in the 1:M relationship
+			query.InnerJoin(relatedModel, ExpressionField(fragments[:i+1], foreignKeyField), ExpressionField(fragments[:i], identifierField))
+		default:
+			return fmt.Errorf("unhandled model relationship configuration for field: %s on model: %s", relatedModelField, relatedModelField.ModelName)
 		}
+
+		model = relatedModelField.Type.ModelName.Value
 	}
 
 	return nil
@@ -220,7 +221,7 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 		}
 	}
 
-	return ModelField(model, field), nil
+	return ExpressionField(fragments[:len(fragments)-1], field), nil
 }
 
 type OperandResolver struct {

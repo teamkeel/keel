@@ -70,5 +70,9 @@
   {
     "status": "pass",
     "testName": "list operation implicit inputs with 1:M relations - all Keel posts not active - Weave org returned"
+  },
+  {
+    "status": "pass",
+    "testName": "implicit inputs which references models multiple times - Keel has active posts, Weave has no active posts - Keel post returned, Weave not returned"
   }
 ]

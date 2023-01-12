@@ -30,6 +30,10 @@ model Post {
             @where(post.theAuthor.isActive == post.theAuthor.thePublisher.booleanValue)
             @where(post.isActive == post.theAuthor.thePublisher.booleanValue)
         }
+
+        get getPostModelsReferencedMoreThanOnce(id) {
+            @where(post.theAuthor.thePublisher.theAuthors.thePosts.isActive == true)
+        }
     }
 
     @permission(actions: [get, list], expression: true)
@@ -77,6 +81,10 @@ model Publisher {
             @where(publisher.theAuthors.thePosts.isActive == publisher.booleanValue)
             @where(publisher.theAuthors.isActive == publisher.booleanValue)
             @where(publisher.isActive == publisher.booleanValue)
+        }
+
+        list listPublishersModelsReferencedMoreThanOnce() {
+            @where(publisher.theAuthors.thePosts.theAuthor.thePublisher.isActive == true)
         }
     }
 
