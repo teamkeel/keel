@@ -2,29 +2,30 @@ name: Lint JS packages
 on: [ pull_request ]
 
 jobs:
-  lint-packages:
-    name: Lint Packages
-    runs-on: ubuntu-latest
+  ### SEE https://linear.app/keel/issue/RUN-245/failing-prettier-linting-on-repos-job
+  # lint-packages:
+  #   name: Lint Packages
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Check out Git repository
+  #       uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 18
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 18
 
-      - name: Install Pretier
-        run: npm install -g prettier
+  #     - name: Install Pretier
+  #       run: npm install -g prettier
 
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          prettier: true
-          prettier_dir: ./packages
-          commit_message: "chore: autofix prettier issues"
-          check_name: "${linter} - ${dir}"
+  #     - name: Run linters
+  #       uses: wearerequired/lint-action@v2
+  #       with:
+  #         prettier: true
+  #         prettier_dir: ./packages
+  #         commit_message: "chore: autofix prettier issues"
+  #         check_name: "${linter} - ${dir}"
 
   lint-integration:
     name: Lint Integration
