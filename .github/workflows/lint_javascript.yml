@@ -9,22 +9,11 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
+      - name: Run Prettier
+        uses: actionsx/prettier@v2
         with:
-          node-version: 18
-
-      - name: Install Pretier
-        run: npm install -g prettier
-
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          prettier: true
-          prettier_dir: ./packages
-          commit_message: "chore: autofix prettier issues"
-          check_name: "${linter} - ${dir}"
+          args: --check .
+          working-directory: packages
 
   lint-integration:
     name: Lint Integration
@@ -33,19 +22,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
+      - name: Run Prettier
+        uses: actionsx/prettier@v2
         with:
-          node-version: 18
-
-      - name: Install Prettier
-        run: npm install -g prettier
-
-      - name: Run linters
-        uses: wearerequired/lint-action@v2
-        with:
-          prettier: true
-          commit_message: "chore: autofix prettier issues"
-          prettier_dir: ./integration
-          check_name: "${linter} - ${dir}"
+          args: --check .
+          working-directory: integration
