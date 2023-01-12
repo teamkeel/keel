@@ -263,11 +263,13 @@ func fkConstraintsForModel(model *proto.Model, schema *proto.Schema) (fkStatemen
 // fkConstraint generates a foreign key constraint statement for the given foreign key field.
 func fkConstraint(field *proto.Field, thisModel *proto.Model, schema *proto.Schema) (fkStatement string) {
 	fki := field.ForeignKeyInfo
+	onDelete := lo.Ternary(field.Optional, "SET NULL", "CASCADE")
 	stmt := addForeignKeyConstraintStmt(
 		Identifier(thisModel.Name),
 		Identifier(field.Name),
 		Identifier(fki.RelatedModelName),
 		Identifier(fki.RelatedModelField),
+		onDelete,
 	)
 	return stmt
 }
