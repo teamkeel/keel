@@ -1,3 +1,10 @@
+## [0.236.1](https://github.com/teamkeel/keel/compare/v0.236.0...v0.236.1) (2023-01-13)
+
+
+### Bug Fixes
+
+* model usable multiple times in input or expression ([#665](https://github.com/teamkeel/keel/issues/665)) ([33f27e9](https://github.com/teamkeel/keel/commit/33f27e9f1db3a09723ab691bafeea095a5bbf57f))
+
 # [0.236.0](https://github.com/teamkeel/keel/compare/v0.235.4...v0.236.0) (2023-01-12)
 
 
