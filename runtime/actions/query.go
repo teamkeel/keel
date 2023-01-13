@@ -14,31 +14,31 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// Represents a model field.
+// Some field on the query builder's model.
 func Field(field string) *QueryOperand {
 	return &QueryOperand{
 		column: strcase.ToSnake(field),
 	}
 }
 
-// Represents the model's identifier field.
+// The identifier field on the query builder's model.
 func IdField() *QueryOperand {
 	return &QueryOperand{
 		column: strcase.ToSnake(parser.ImplicitFieldNameId),
 	}
 }
 
-// Represents the model's identifier field.
+// All fields on the query builder's model.
 func AllFields() *QueryOperand {
 	return &QueryOperand{
 		column: "*",
 	}
 }
 
-// Represents a model field.
-func ModelField(model string, field string) *QueryOperand {
+// Some field from the fragments of an expression or input.
+func ExpressionField(fragments []string, field string) *QueryOperand {
 	return &QueryOperand{
-		table:  strcase.ToSnake(model),
+		table:  strcase.ToSnake(strings.Join(fragments, "$")),
 		column: strcase.ToSnake(field),
 	}
 }
@@ -69,6 +69,20 @@ func (o *QueryOperand) IsValue() bool {
 
 func (o *QueryOperand) IsNull() bool {
 	return o.table == "" && o.column == "" && o.value == nil
+}
+
+func (operand *QueryOperand) toColumnString(query *QueryBuilder) string {
+	if !operand.IsField() {
+		panic("operand is not of type field")
+	}
+
+	table := operand.table
+	// If no model table is specified, then use the base model in the query builder
+	if table == "" {
+		table = query.table
+	}
+
+	return sqlQuote(table, operand.column)
 }
 
 // The templated SQL statement and associated values, ready to be executed.
@@ -199,9 +213,10 @@ func (query *QueryBuilder) Or() {
 }
 
 // Include an INNER JOIN clause.
-func (query *QueryBuilder) InnerJoin(joinField *QueryOperand, modelField *QueryOperand) {
-	join := fmt.Sprintf("INNER JOIN %s ON %s = %s",
-		sqlIdentifier(strcase.ToSnake(joinField.table)),
+func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, modelField *QueryOperand) {
+	join := fmt.Sprintf("INNER JOIN %s AS %s ON %s = %s",
+		sqlQuote(strcase.ToSnake(joinModel)),
+		sqlQuote(joinField.table),
 		joinField.toColumnString(query),
 		modelField.toColumnString(query))
 
@@ -236,7 +251,7 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 // Apply pagination filters to the query.
 func (query *QueryBuilder) ApplyPaging(page Page) {
 	// Select hasNext clause
-	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlIdentifier(query.table))
+	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlQuote(query.table))
 	query.AppendSelectClause(hasNext)
 
 	// Add where condition to implement the after/before paging request
@@ -258,19 +273,6 @@ func (query *QueryBuilder) ApplyPaging(page Page) {
 	case page.Last != 0:
 		query.Limit(page.Last)
 	}
-}
-
-func (operand *QueryOperand) toColumnString(query *QueryBuilder) string {
-	if !operand.IsField() {
-		panic("operand is not of type field")
-	}
-
-	table := operand.table
-	if table == "" {
-		table = query.table
-	}
-
-	return sqlIdentifier(table, operand.column)
 }
 
 // Generates an executable SELECT statement with the list of arguments.
@@ -312,7 +314,7 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s",
 		distinctOn,
 		selection,
-		sqlIdentifier(query.table),
+		sqlQuote(query.table),
 		joins,
 		filters,
 		orderBy,
@@ -340,7 +342,7 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 	}
 
 	template := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) %s",
-		sqlIdentifier(query.table),
+		sqlQuote(query.table),
 		strings.Join(columns, ", "),
 		strings.Join(strings.Split(strings.Repeat("?", len(query.writeValues)), ""), ", "),
 		returning)
@@ -380,7 +382,7 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	}
 
 	template := fmt.Sprintf("UPDATE %s SET %s %s %s %s",
-		sqlIdentifier(query.table),
+		sqlQuote(query.table),
 		strings.Join(sets, ", "),
 		joins,
 		filters,
@@ -413,7 +415,7 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 	}
 
 	template := fmt.Sprintf("DELETE FROM %s %s %s %s",
-		sqlIdentifier(query.table),
+		sqlQuote(query.table),
 		joins,
 		filters,
 		returning)
@@ -647,9 +649,9 @@ func toLowerCamelMaps(maps []map[string]any) []map[string]any {
 	return res
 }
 
-// given a variadic list of tokens (e.g sqlIdentifier("person", "id")),
+// given a variadic list of tokens (e.g sqlQuote("person", "id")),
 // returns sql friendly quoted tokens: "person"."id"
-func sqlIdentifier(tokens ...string) string {
+func sqlQuote(tokens ...string) string {
 	quotedTokens := []string{}
 
 	for _, token := range tokens {
@@ -658,7 +660,7 @@ func sqlIdentifier(tokens ...string) string {
 			// if the token is * then it doesnt need to be quoted e.g "post".*
 			quotedTokens = append(quotedTokens, token)
 		default:
-			quotedTokens = append(quotedTokens, pq.QuoteIdentifier(strcase.ToSnake(token)))
+			quotedTokens = append(quotedTokens, pq.QuoteIdentifier(token))
 		}
 	}
 	return strings.Join(quotedTokens, ".")

@@ -9,6 +9,7 @@ model Post {
     operations {
         get getActivePost(id, theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
         list listActivePosts(theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
+        get getPostModelsReferencedMoreThanOnce(id, theAuthor.thePublisher.theAuthors.thePosts.isActive)
     }
 
     @permission(actions: [get, list], expression: true)

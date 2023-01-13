@@ -1307,3 +1307,56 @@ test("list operation where expressions with 1:M relations with RHS field operand
 
   expect(publishers.length).toEqual(0);
 });
+
+test("where expressions which references models multiple times - Keel has active posts, Weave has no active posts - Keel post returned, Weave not returned", async () => {
+  const { object: publisherKeel } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: true,
+  });
+  const { object: publisherWeave } = await Publisher.create({
+    orgName: "Weave Org",
+    isActive: true,
+  });
+  const { object: author1 } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: author2 } = await Author.create({
+    name: "Weaveton",
+    thePublisherId: publisherWeave.id,
+    isActive: true,
+  });
+  const { object: post1 } = await Post.create({
+    title: "Keelson First Post",
+    theAuthorId: author1.id,
+    isActive: true,
+  });
+  const { object: post2 } = await Post.create({
+    title: "Keelson Second Post",
+    theAuthorId: author1.id,
+    isActive: false,
+  });
+  const { object: post3 } = await Post.create({
+    title: "Weaveton First Post",
+    theAuthorId: author2.id,
+    isActive: false,
+  });
+  const { object: post4 } = await Post.create({
+    title: "Weaveton Second Post",
+    theAuthorId: author2.id,
+    isActive: false,
+  });
+
+  const { object: post } = await actions.getPostModelsReferencedMoreThanOnce({
+    id: post1.id,
+  });
+
+  expect(post.id).toEqual(post1.id);
+
+  expect(
+    await actions.getPostModelsReferencedMoreThanOnce({ id: post3.id })
+  ).toHaveError({
+    message: "no records found for Get() operation",
+  });
+});
