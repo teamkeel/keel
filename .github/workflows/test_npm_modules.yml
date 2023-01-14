@@ -1,5 +1,5 @@
 name: Test NPM packages
-on: [ pull_request ]
+on: [pull_request]
 
 jobs:
   test-functions-runtime:
@@ -23,11 +23,20 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
       - uses: actions/checkout@v3
+      - name: Install deps
+        working-directory: ./packages/functions-runtime
+        run: pnpm install --frozen-lockfile
       - name: Run tests
         working-directory: ./packages/functions-runtime
-        run: npm install && npm test
+        run: pnpm run test
+      - name: Compile
+        working-directory: ./packages/functions-runtime
+        run: pnpm run build
 
   test-sdk:
     runs-on: ubuntu-latest

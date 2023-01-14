@@ -8,7 +8,6 @@ import {
   SqlParameter,
   TypeHint,
 } from "@aws-sdk/client-rds-data";
-import toCamelCase from "../util/camelCaser";
 import { ExecuteStatementCommandInput } from "@aws-sdk/client-rds-data/dist-types/commands/ExecuteStatementCommand";
 
 export interface QueryResolver {

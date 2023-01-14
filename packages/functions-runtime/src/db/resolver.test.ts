@@ -1,4 +1,5 @@
 import { queryResolverFromEnv } from "./resolver";
+import { test, expect } from "vitest";
 
 test("queryResolverFromEnv throws", () => {
   expect(() => queryResolverFromEnv({})).toThrow();

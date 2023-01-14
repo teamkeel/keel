@@ -2,6 +2,7 @@ import Query from "./query";
 import Logger from "./logger";
 import { Input } from "./types";
 import { PgQueryResolver } from "./db/resolver";
+import { test, expect } from "vitest";
 
 const connectionString = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 const queryResolver = new PgQueryResolver({ connectionString });
@@ -162,7 +163,7 @@ test("select", async () => {
     collection: [janeDoe, keelKeelgrandson, agentSmith, nullPerson],
   });
 
-  expect(await query.where({ married: { equals: null } }).all()).toEqual({
+  expect(await query.where({ married: { equals: undefined } }).all()).toEqual({
     collection: [nullPerson],
   });
 
@@ -283,7 +284,7 @@ test("insert", async () => {
 
   let queryResult = await query.create(postToCreate);
 
-  expect(Object.keys(queryResult.object)).toEqual([
+  expect(Object.keys(queryResult.object!)).toEqual([
     "title",
     "relevance",
     "published",
@@ -299,15 +300,16 @@ test("insert", async () => {
   );
 
   postToCreate = {
-    title: null,
-    relevance: null,
-    published: null,
-    author_born_in: null,
+    title: undefined,
+    relevance: undefined,
+    published: undefined,
+    author_born_in: undefined,
   };
 
+  // TODO: this feels very wrong, none of the fields of
   queryResult = await query.create(postToCreate);
 
-  expect(Object.keys(queryResult.object)).toEqual([
+  expect(Object.keys(queryResult.object!)).toEqual([
     "title",
     "relevance",
     "published",

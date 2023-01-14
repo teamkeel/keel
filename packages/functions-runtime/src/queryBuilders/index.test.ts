@@ -1,4 +1,4 @@
-import { Conditions, OrderClauses } from "types";
+import { Conditions, OrderClauses } from "../types";
 import {
   buildSelectStatement,
   buildDeleteStatement,
@@ -6,6 +6,7 @@ import {
   buildUpdateStatement,
 } from "./";
 import { SqlQueryParts } from "../db/query";
+import { test, expect } from "vitest";
 
 interface Test {
   foo: string;
@@ -17,7 +18,7 @@ function toPreparedStatement(query: SqlQueryParts): {
   values: any[];
 } {
   let nextInterpolationIndex = 1;
-  let values = [];
+  let values: any[] = [];
   const sql = query
     .map((queryPart) => {
       switch (queryPart.type) {
