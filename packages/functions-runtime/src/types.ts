@@ -1,4 +1,4 @@
-import { JSONRPCParams, JSONRPCRequest, JSONRPCResponse } from "json-rpc-2.0";
+import { JSONRPCRequest, JSONRPCResponse } from "json-rpc-2.0";
 
 import {
   StringConstraint,

@@ -14,10 +14,10 @@ import {
   OrderClauses,
 } from "./types";
 import * as ReturnTypes from "./returnTypes";
-import Logger, { Level as LogLevel } from "./logger";
+import Logger from "./logger";
 import { SqlQueryParts } from "./db/query";
 import { QueryResolver, QueryResultRow } from "./db/resolver";
-import toCamelCase from "./util/camelCaser";
+import { camelCase as toCamelCase } from "change-case";
 
 export class ChainableQuery<T extends IDer> {
   private readonly tableName: string;

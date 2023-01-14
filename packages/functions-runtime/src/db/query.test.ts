@@ -7,6 +7,7 @@ import {
   sqlInput,
   sqlInputArray,
 } from "./query";
+import { test, expect } from "vitest";
 
 test("rawSql", () => {
   const input = randomUUID();

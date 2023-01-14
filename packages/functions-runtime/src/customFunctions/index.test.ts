@@ -1,6 +1,7 @@
 import { createJSONRPCRequest, JSONRPCErrorCode } from "json-rpc-2.0";
 import { Config } from "../types";
 import handle from ".";
+import { test, expect } from "vitest";
 
 test("when the custom function returns expected value", async () => {
   const config: Config = {

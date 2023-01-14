@@ -5,7 +5,7 @@ import {
   OrderDirection,
 } from "../types";
 
-import toSnakeCase from "../util/snakeCaser";
+import { snakeCase as toSnakeCase } from "change-case";
 import {
   rawSql,
   sqlAddSeparator,
@@ -213,7 +213,7 @@ export const buildCreateStatement = <T>(
     rawSql("("),
     ...sqlAddSeparator(
       Object.keys(inputs)
-        .map(toSnakeCase)
+        .map((x) => toSnakeCase(x))
         .map((f) => sqlIdentifier(f)),
       rawSql(",")
     ),
