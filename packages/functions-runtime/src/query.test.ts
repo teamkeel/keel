@@ -306,7 +306,6 @@ test("insert", async () => {
     author_born_in: undefined,
   };
 
-  // TODO: this feels very wrong, none of the fields of
   queryResult = await query.create(postToCreate);
 
   expect(Object.keys(queryResult.object!)).toEqual([
