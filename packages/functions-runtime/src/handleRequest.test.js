@@ -1,10 +1,9 @@
 import { createJSONRPCRequest, JSONRPCErrorCode } from "json-rpc-2.0";
-import { Config } from "../types";
-import handle from ".";
+import { handleRequest } from "./handleRequest";
 import { test, expect } from "vitest";
 
 test("when the custom function returns expected value", async () => {
-  const config: Config = {
+  const config = {
     functions: {
       createPost: async () => {
         return {
@@ -13,12 +12,12 @@ test("when the custom function returns expected value", async () => {
         };
       },
     },
-    api: {},
+    createFunctionAPI: () => {},
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
 
-  expect(await handle(rpcReq, config)).toEqual({
+  expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
     result: {
@@ -29,36 +28,36 @@ test("when the custom function returns expected value", async () => {
 });
 
 test("when the custom function doesnt return a value", async () => {
-  const config: Config = {
+  const config = {
     functions: {
       createPost: async () => {},
     },
-    api: {},
+    createFunctionAPI: () => {},
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
 
-  expect(await handle(rpcReq, config)).toEqual({
+  expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
     error: {
-      code: JSONRPCErrorCode.ParseError,
+      code: JSONRPCErrorCode.InternalError,
       message: "no result returned from function 'createPost'",
     },
   });
 });
 
 test("when there is no matching function for the path", async () => {
-  const config: Config = {
+  const config = {
     functions: {
       createPost: async () => {},
     },
-    api: {},
+    createFunctionAPI: () => {},
   };
 
   const rpcReq = createJSONRPCRequest("123", "unknown", { title: "a post" });
 
-  expect(await handle(rpcReq, config)).toEqual({
+  expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
     error: {
@@ -69,18 +68,18 @@ test("when there is no matching function for the path", async () => {
 });
 
 test("when there is an unexpected error in the custom function", async () => {
-  const config: Config = {
+  const config = {
     functions: {
       createPost: () => {
         throw new Error("oopsie daisy");
       },
     },
-    api: {},
+    createFunctionAPI: () => {},
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
 
-  expect(await handle(rpcReq, config)).toEqual({
+  expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
     error: {
@@ -91,18 +90,18 @@ test("when there is an unexpected error in the custom function", async () => {
 });
 
 test("when there is an unexpected object thrown in the custom function", async () => {
-  const config: Config = {
+  const config = {
     functions: {
       createPost: () => {
         throw { err: "oopsie daisy" };
       },
     },
-    api: {},
+    createFunctionAPI: () => {},
   };
 
   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
 
-  expect(await handle(rpcReq, config)).toEqual({
+  expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
     error: {

@@ -34,9 +34,6 @@ jobs:
       - name: Run tests
         working-directory: ./packages/functions-runtime
         run: pnpm run test
-      - name: Compile
-        working-directory: ./packages/functions-runtime
-        run: pnpm run build
 
   test-sdk:
     runs-on: ubuntu-latest
