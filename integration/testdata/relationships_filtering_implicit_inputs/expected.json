@@ -74,5 +74,33 @@
   {
     "status": "pass",
     "testName": "implicit inputs which references models multiple times - Keel has active posts, Weave has no active posts - Keel post returned, Weave not returned"
+  },
+  {
+    "status": "pass",
+    "testName": "delete operation where expressions with M:1 relations - all models active - model deleted"
+  },
+  {
+    "status": "pass",
+    "testName": "delete operation where expressions with M:1 relations - post model not active - no records found"
+  },
+  {
+    "status": "pass",
+    "testName": "delete operation where expressions with M:1 relations - publisher model not active - no records found"
+  },
+  {
+    "status": "pass",
+    "testName": "delete operation where expressions with 1:M relations - all models active - publisher deleted"
+  },
+  {
+    "status": "pass",
+    "testName": "delete operation where expressions with 1:M relations - publisher not active - no publisher found"
+  },
+  {
+    "status": "pass",
+    "testName": "delete operation where expressions with 1:M relations - single post active - publisher deleted"
+  },
+  {
+    "status": "pass",
+    "testName": "delete operation where expressions with 1:M relations - posts not active - no publisher found"
   }
 ]

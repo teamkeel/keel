@@ -10,9 +10,10 @@ model Post {
         get getActivePost(id, theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
         list listActivePosts(theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
         get getPostModelsReferencedMoreThanOnce(id, theAuthor.thePublisher.theAuthors.thePosts.isActive)
+        delete deleteActivePost(id, theAuthor.thePublisher.isActive, theAuthor.isActive, isActive)
     }
 
-    @permission(actions: [get, list], expression: true)
+    @permission(actions: [get, list, delete], expression: true)
 }
 
 model Author {
@@ -33,10 +34,11 @@ model Publisher {
 
     operations {
         get getActivePublisherWithActivePosts(id, theAuthors.thePosts.isActive, theAuthors.isActive, isActive)
-        list listActivePublishersWithActivePosts(theAuthors.thePosts.isActive, theAuthors.isActive, isActive) 
+        list listActivePublishersWithActivePosts(theAuthors.thePosts.isActive, theAuthors.isActive, isActive)
+        delete deleteActivePublisherWithActivePosts(id, theAuthors.thePosts.isActive, theAuthors.isActive, isActive) 
     }
 
-    @permission(actions: [get, list], expression: true)
+    @permission(actions: [get, list, delete], expression: true)
 }
 
 api Web {
@@ -45,7 +47,6 @@ api Web {
     models {
         Post
         Author
-
         Publisher
     }
 }
