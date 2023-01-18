@@ -1,0 +1,35 @@
+model Fee {
+    fields {
+        theFi Fi
+        theName Text
+    }
+
+    operations {
+        list searchFees(theFi.theFo.theFum.theName)
+    }
+}
+
+model Fi {
+    fields {
+        theFo Fo
+        theFees Fee[]
+    }
+}
+
+model Fo {
+    fields {
+        theFum Fum
+        theFis Fi[]
+    }
+}
+
+model Fum {
+    fields {
+        theFos Fo[]
+        theName Text
+    }
+
+    operations {
+        list searchFums(theFos.theFis.theFees.theName)
+    }
+}

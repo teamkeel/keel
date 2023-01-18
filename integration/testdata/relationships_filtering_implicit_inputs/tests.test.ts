@@ -25,7 +25,7 @@ test("get operation implicit inputs with M:1 relations - all models active - mod
 
   const { object: post } = await actions.getActivePost({
     id: firstpost.id,
-    thePublisherIsActive: true,
+    theAuthorThePublisherIsActive: true,
     theAuthorIsActive: true,
     isActive: true,
   });
@@ -52,7 +52,7 @@ test("get operation implicit inputs with M:1 relations - post model not active -
   expect(
     await actions.getActivePost({
       id: firstpost.id,
-      thePublisherIsActive: true,
+      theAuthorThePublisherIsActive: true,
       theAuthorIsActive: true,
       isActive: true,
     })
@@ -80,7 +80,7 @@ test("get operation implicit inputs with M:1 relations - nested author model not
   expect(
     await actions.getActivePost({
       id: firstpost.id,
-      thePublisherIsActive: true,
+      theAuthorThePublisherIsActive: true,
       theAuthorIsActive: true,
       isActive: true,
     })
@@ -108,7 +108,7 @@ test("get operation implicit inputs with M:1 relations - nested nested publisher
   expect(
     await actions.getActivePost({
       id: firstpost.id,
-      thePublisherIsActive: true,
+      theAuthorThePublisherIsActive: true,
       theAuthorIsActive: true,
       isActive: true,
     })
@@ -151,7 +151,7 @@ test("get operation implicit inputs with 1:M relations - all models active - pub
   const { object: publisher } = await actions.getActivePublisherWithActivePosts(
     {
       id: publisherKeel.id,
-      thePostsIsActive: true,
+      theAuthorsThePostsIsActive: true,
       theAuthorsIsActive: true,
       isActive: true,
     }
@@ -194,7 +194,7 @@ test("get operation implicit inputs with 1:M relations - publisher not active - 
   expect(
     await actions.getActivePublisherWithActivePosts({
       id: publisherKeel.id,
-      thePostsIsActive: true,
+      theAuthorsThePostsIsActive: true,
       theAuthorsIsActive: true,
       isActive: true,
     })
@@ -237,7 +237,7 @@ test("get operation implicit inputs with 1:M relations - one author active - pub
   const { object: publisher } = await actions.getActivePublisherWithActivePosts(
     {
       id: publisherKeel.id,
-      thePostsIsActive: true,
+      theAuthorsThePostsIsActive: true,
       theAuthorsIsActive: true,
       isActive: true,
     }
@@ -280,7 +280,7 @@ test("get operation implicit inputs with 1:M relations - active author with inac
   expect(
     await actions.getActivePublisherWithActivePosts({
       id: publisherKeel.id,
-      thePostsIsActive: true,
+      theAuthorsThePostsIsActive: true,
       theAuthorsIsActive: true,
       isActive: true,
     })
@@ -323,7 +323,7 @@ test("get operation implicit inputs with 1:M relations - no active posts  - publ
   expect(
     await actions.getActivePublisherWithActivePosts({
       id: publisherKeel.id,
-      thePostsIsActive: true,
+      theAuthorsThePostsIsActive: true,
       theAuthorsIsActive: true,
       isActive: true,
     })
@@ -369,7 +369,7 @@ test("list operation implicit inputs with M:1 relations - all models active - al
 
   const { collection: posts } = await actions.listActivePosts({
     where: {
-      thePublisherIsActive: { equals: true },
+      theAuthorThePublisherIsActive: { equals: true },
       theAuthorIsActive: { equals: true },
       isActive: { equals: true },
     },
@@ -415,7 +415,7 @@ test("list operation implicit inputs with M:1 relations - Keel org not active - 
 
   const { collection: posts } = await actions.listActivePosts({
     where: {
-      thePublisherIsActive: { equals: true },
+      theAuthorThePublisherIsActive: { equals: true },
       theAuthorIsActive: { equals: true },
       isActive: { equals: true },
     },
@@ -461,7 +461,7 @@ test("list operation implicit inputs with M:1 relations - Keelson author not act
 
   const { collection: posts } = await actions.listActivePosts({
     where: {
-      thePublisherIsActive: { equals: true },
+      theAuthorThePublisherIsActive: { equals: true },
       theAuthorIsActive: { equals: true },
       isActive: { equals: true },
     },
@@ -507,7 +507,7 @@ test("list operation implicit inputs with M:1 relations - one Keelson post not a
 
   const { collection: posts } = await actions.listActivePosts({
     where: {
-      thePublisherIsActive: { equals: true },
+      theAuthorThePublisherIsActive: { equals: true },
       theAuthorIsActive: { equals: true },
       isActive: { equals: true },
     },
@@ -554,7 +554,7 @@ test("list operation implicit inputs with 1:M relations - all models active - al
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        thePostsIsActive: { equals: true },
+        theAuthorsThePostsIsActive: { equals: true },
         theAuthorsIsActive: { equals: true },
         isActive: { equals: true },
       },
@@ -601,7 +601,7 @@ test("list operation implicit inputs with 1:M relations - Keel org not active - 
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        thePostsIsActive: { equals: true },
+        theAuthorsThePostsIsActive: { equals: true },
         theAuthorsIsActive: { equals: true },
         isActive: { equals: true },
       },
@@ -648,7 +648,7 @@ test("list operation implicit inputs with 1:M relations - Keel author not active
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        thePostsIsActive: { equals: true },
+        theAuthorsThePostsIsActive: { equals: true },
         theAuthorsIsActive: { equals: true },
         isActive: { equals: true },
       },
@@ -695,7 +695,7 @@ test("list operation implicit inputs with 1:M relations - one Keel post not acti
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        thePostsIsActive: { equals: true },
+        theAuthorsThePostsIsActive: { equals: true },
         theAuthorsIsActive: { equals: true },
         isActive: { equals: true },
       },
@@ -742,7 +742,7 @@ test("list operation implicit inputs with 1:M relations - all Keel posts not act
   const { collection: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        thePostsIsActive: { equals: true },
+        theAuthorsThePostsIsActive: { equals: true },
         theAuthorsIsActive: { equals: true },
         isActive: { equals: true },
       },
@@ -793,7 +793,7 @@ test("implicit inputs which references models multiple times - Keel has active p
 
   const { object: post } = await actions.getPostModelsReferencedMoreThanOnce({
     id: post1.id,
-    thePostsIsActive: true,
+    theAuthorThePublisherTheAuthorsThePostsIsActive: true,
   });
 
   expect(post.id).toEqual(post1.id);
@@ -801,7 +801,7 @@ test("implicit inputs which references models multiple times - Keel has active p
   expect(
     await actions.getPostModelsReferencedMoreThanOnce({
       id: post3.id,
-      thePostsIsActive: true,
+      theAuthorThePublisherTheAuthorsThePostsIsActive: true,
     })
   ).toHaveError({
     message: "no records found for Get() operation",
