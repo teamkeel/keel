@@ -19,9 +19,12 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: "^1.19"
-
-      - name: Print go version
-        run: go version
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
 
       - name: Install semantic release changelog plugin
         run: npm install @semantic-release/changelog -D
@@ -39,7 +42,7 @@ jobs:
         run: cd packages/runtime && npm ci
 
       - name: Install functions-runtime publish dependencies (new package)
-        run: cd packages/functions-runtime && npm ci
+        run: cd packages/functions-runtime && pnpm install --frozen-lockfile
 
       - name: Install testing package publish dependencies
         run: cd packages/testing && npm ci
