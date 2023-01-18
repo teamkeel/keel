@@ -275,16 +275,13 @@ func (a *ActionInputNode) Name() string {
 		return a.Label.Value
 	}
 
-	frags := a.Type.Fragments
-
 	// if label is not provided then it's computed from the type
-	// e.g. if type is `post.author.name` then the input is called `authorName`
-	name := frags[len(frags)-1].Fragment
-	if len(frags) > 1 {
-		name = frags[len(frags)-2].Fragment + strcase.ToCamel(name)
+	// e.g. if type is `post.author.name` then the input is called `postAuthorName`
+	builder := strings.Builder{}
+	for _, frag := range a.Type.Fragments {
+		builder.WriteString(strcase.ToCamel(frag.Fragment))
 	}
-
-	return name
+	return strcase.ToLowerCamel(builder.String())
 }
 
 type EnumNode struct {
