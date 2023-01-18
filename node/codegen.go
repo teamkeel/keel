@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
@@ -63,7 +64,8 @@ func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions))
 		return GeneratedFiles{}, nil
 	}
 
-	files := generateSdk(dir, schema)
+	files := generateSdkPackage(dir, schema)
+	files = append(files, generateTestingPackage(dir, schema)...)
 
 	if options.developmentServer {
 		files = append(files, generateDevelopmentServer(dir, schema)...)
@@ -72,7 +74,7 @@ func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions))
 	return files, nil
 }
 
-func generateSdk(dir string, schema *proto.Schema) GeneratedFiles {
+func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdk := &Writer{}
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
 	sdk.Writeln("")
@@ -422,26 +424,32 @@ func writeInputInterfaceFields(w *Writer, op *proto.Operation, mode proto.InputM
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
 	w.Writef("(fn: (inputs: %sInput, api: FunctionAPI) => ", strcase.ToCamel(op.Name))
+	w.Write(toOperationReturnType(model, op, false))
+	w.Write("): ")
+	w.Write(toOperationReturnType(model, op, false))
+	w.Writeln(";")
+}
 
+func toOperationReturnType(model *proto.Model, op *proto.Operation, isTestingPackage bool) string {
 	returnType := "Promise<"
+	sdkPrefix := ""
+	if isTestingPackage {
+		sdkPrefix = "sdk."
+	}
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		returnType += model.Name
+		returnType += sdkPrefix + model.Name
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		returnType += model.Name
+		returnType += sdkPrefix + model.Name
 	case proto.OperationType_OPERATION_TYPE_GET:
-		returnType += model.Name + " | null"
+		returnType += sdkPrefix + model.Name + " | null"
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		returnType += model.Name + "[]"
+		returnType += sdkPrefix + model.Name + "[]"
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		returnType += "string"
 	}
 	returnType += ">"
-
-	w.Write(returnType)
-	w.Write("): ")
-	w.Write(returnType)
-	w.Writeln(";")
+	return returnType
 }
 
 func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles {
@@ -514,6 +522,107 @@ server.listen(port);`)
 			Contents: w.String(),
 		},
 	}
+}
+
+func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
+	js := &Writer{}
+	types := &Writer{}
+
+	js.Writeln(`const crypto = require("crypto")`)
+	js.Writeln(`const { getDatabase, createFunctionAPI } = require("@teamkeel/sdk");`)
+	js.Writeln(`const { sql } = require("kysely");`)
+	js.Writeln("")
+
+	// If there ends up being significantly more generic code for this package then
+	// it would probably make sense to move it into a @teamkeel/testing-runtime package.
+	// But for now it's just this one class, so it can live here.
+	js.Writeln(`
+class ActionExecutor {
+	constructor() {
+		return new Proxy(this, {
+			get(target, prop, receiver) {
+				if (["withIdentity", "_execute"].includes(prop)) {
+					return Reflect.get(...arguments);
+				}
+				return target._execute.bind(target, prop);
+			},
+		});
+	}
+	withIdentity(i) {
+		this._identity = i;
+		return this;
+	}
+	_execute(method, params) {
+		const headers = { "Content-Type": "application/json" };
+		if (this._identity) {
+			headers["X-Testing-Identity-ID"] = this._identity.id;
+		}
+		return fetch(process.env.KEEL_ACTIONS_RPC_URL, {
+			method: "POST",
+			body: JSON.stringify({
+				jsonrpc: "2.0",
+				method,
+				params,
+				id: crypto.randomBytes(16).toString('hex'),
+			}),
+			headers,
+		}).then((r) => r.json());
+	}
+}
+
+module.exports.actions = new ActionExecutor()`)
+
+	js.Writeln("module.exports.models = createFunctionAPI().models;")
+
+	js.Writeln("async function resetDatabase() {")
+	js.Indent()
+	js.Write("await sql`TRUNCATE TABLE ")
+	tableNames := []string{}
+	for _, model := range schema.Models {
+		tableNames = append(tableNames, strcase.ToLowerCamel(model.Name))
+	}
+	js.Writef("%s CASCADE", strings.Join(tableNames, ","))
+	js.Writeln("`.execute(getDatabase());")
+	js.Dedent()
+	js.Writeln("}")
+	js.Writeln("module.exports.resetDatabase = resetDatabase;")
+
+	writeTestingTypes(types, schema)
+
+	return GeneratedFiles{
+		{
+			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/index.js"),
+			Contents: js.String(),
+		},
+		{
+			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/index.d.ts"),
+			Contents: types.String(),
+		},
+		{
+			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/package.json"),
+			Contents: `{"name": "@teamkeel/testing"}`,
+		},
+	}
+}
+
+func writeTestingTypes(w *Writer, schema *proto.Schema) {
+	w.Writeln(`import * as sdk from "@teamkeel/sdk"`)
+	w.Writeln("")
+
+	w.Writeln("declare class ActionExecutor {")
+	w.Indent()
+	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
+	for _, model := range schema.Models {
+		for _, op := range model.Operations {
+			w.Writef(`async %s(i: sdk.%sInput): %s`, op.Name, strcase.ToCamel(op.Name), toOperationReturnType(model, op, true))
+			w.Writeln(";")
+		}
+	}
+	w.Dedent()
+	w.Writeln("}")
+	w.Writeln("export declare const actions: ActionExecutor;")
+	w.Writeln("export declare const models: sdk.ModelsAPI;")
+	w.Writeln("export declare function resetDatabase(): Promise<void>;")
 }
 
 func toTypeScriptType(t *proto.TypeInfo) string {

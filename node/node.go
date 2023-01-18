@@ -2,6 +2,7 @@ package node
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/bmatcuk/doublestar/v4"
@@ -41,7 +42,7 @@ func HasTests(dir string) bool {
 	// so for each test, we do a naive check that the file contents includes a match
 	// for the string "@teamkeel/testing"
 	return lo.SomeBy(testFiles, func(path string) bool {
-		b, err := os.ReadFile(path)
+		b, err := os.ReadFile(filepath.Join(dir, path))
 
 		if err != nil {
 			return false

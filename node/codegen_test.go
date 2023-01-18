@@ -2,6 +2,11 @@ package node
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -382,6 +387,109 @@ export declare function ListPeople(fn: (inputs: ListPeopleInput, api: FunctionAP
 	})
 }
 
+func TestWriteTestingTypes(t *testing.T) {
+	schema := `
+model Person {
+	functions {
+		get getPerson(id)
+		create createPerson()
+		update updatePerson()
+		delete deletePerson()
+		list listPeople()
+	}
+}
+	`
+	expected := `
+import * as sdk from "@teamkeel/sdk"
+
+declare class ActionExecutor {
+	withIdentity(identity: sdk.Identity): ActionExecutor;
+	async getPerson(i: sdk.GetPersonInput): Promise<sdk.Person | null>;
+	async createPerson(i: sdk.CreatePersonInput): Promise<sdk.Person>;
+	async updatePerson(i: sdk.UpdatePersonInput): Promise<sdk.Person>;
+	async deletePerson(i: sdk.DeletePersonInput): Promise<string>;
+	async listPeople(i: sdk.ListPeopleInput): Promise<sdk.Person[]>;
+	async authenticate(i: sdk.AuthenticateInput): Promise<>;
+}
+export declare const actions: ActionExecutor;
+export declare const models: sdk.ModelsAPI;
+export declare function resetDatabase(): Promise<void>;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		writeTestingTypes(w, s)
+	})
+}
+
+func TestTestingActionExecutor(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
+	require.NoError(t, err)
+
+	err = GeneratedFiles{
+		{
+			Contents: `
+			model Person {
+				operations {
+					get getPerson(id)
+				}
+			}
+			`,
+			Path: filepath.Join(tmpDir, "schema.keel"),
+		},
+		{
+			Contents: `
+			import { actions } from "@teamkeel/testing";
+
+			actions.getPerson({id: "1234"}).then(p => console.log("Response:", JSON.stringify(p)))
+			`,
+			Path: filepath.Join(tmpDir, "code.test.ts"),
+		},
+	}.Write()
+	require.NoError(t, err)
+
+	files, err := Generate(context.Background(), tmpDir)
+	require.NoError(t, err)
+
+	err = files.Write()
+	require.NoError(t, err)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		b, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+
+		type Payload struct {
+			Method string
+			Params struct {
+				ID string
+			}
+		}
+		var payload Payload
+		json.Unmarshal(b, &payload)
+		assert.Equal(t, "getPerson", payload.Method)
+		assert.Equal(t, "1234", payload.Params.ID)
+
+		w.Write([]byte(`{"name": "Barney"}`))
+	}))
+	defer server.Close()
+
+	cmd := exec.Command("npx", "ts-node", "code.test.ts")
+	cmd.Dir = tmpDir
+	cmd.Env = append(os.Environ(), []string{
+		"DB_CONN_TYPE=pg",
+		"DB_CONN=postgresql://postgres:postgres@localhost:8001/keel",
+		fmt.Sprintf("KEEL_ACTIONS_RPC_URL=%s", server.URL),
+	}...)
+
+	b, err := cmd.CombinedOutput()
+	assert.NoError(t, err)
+	assert.Contains(t, string(b), `Response: {"name":"Barney"}`)
+}
+
 func TestSDKTypings(t *testing.T) {
 	tmpDir := t.TempDir()
 
@@ -391,30 +499,33 @@ func TestSDKTypings(t *testing.T) {
 	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
-	schema := []byte(`
-		model Person {
-			fields {
-				name Text
-				lastName Text?
-			}
-			functions {
-				get getPerson(id: Number)
-			}
-		}
-	`)
-	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), schema, 0666)
+	err = GeneratedFiles{
+		{
+			Path: filepath.Join(tmpDir, "schema.keel"),
+			Contents: `
+				model Person {
+					fields {
+						name Text
+						lastName Text?
+					}
+					functions {
+						get getPerson(id: Number)
+					}
+				}`,
+		},
+	}.Write()
 	require.NoError(t, err)
 
 	type fixture struct {
-		name     string
-		function string
-		error    string
+		name  string
+		code  string
+		error string
 	}
 
 	fixtures := []fixture{
 		{
 			name: "findOne",
-			function: `
+			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
 				export default GetPerson((inputs, api) => {
@@ -423,11 +534,11 @@ func TestSDKTypings(t *testing.T) {
 					});
 				});
 			`,
-			error: "myFunction.ts(6,7): error TS2322: Type 'number' is not assignable to type 'string'",
+			error: "code.ts(6,7): error TS2322: Type 'number' is not assignable to type 'string'",
 		},
 		{
 			name: "findOne - can return null",
-			function: `
+			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
 				export default GetPerson(async (inputs, api) => {
@@ -438,11 +549,11 @@ func TestSDKTypings(t *testing.T) {
 					return r;
 				});
 			`,
-			error: "myFunction.ts(8,18): error TS18047: 'r' is possibly 'null'",
+			error: "code.ts(8,18): error TS18047: 'r' is possibly 'null'",
 		},
 		{
 			name: "findMany - correct typings on where condition",
-			function: `
+			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
 				export default GetPerson(async (inputs, api) => {
@@ -454,11 +565,11 @@ func TestSDKTypings(t *testing.T) {
 					return r.length > 0 ? r[0] : null;
 				});
 			`,
-			error: "myFunction.ts(7,8): error TS2322: Type 'boolean' is not assignable to type 'string'",
+			error: "code.ts(7,8): error TS2322: Type 'boolean' is not assignable to type 'string'",
 		},
 		{
 			name: "optional model fields are typed as nullable",
-			function: `
+			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
 				export default GetPerson(async (inputs, api) => {
@@ -471,15 +582,58 @@ func TestSDKTypings(t *testing.T) {
 					return person;
 				});
 			`,
-			error: "myFunction.ts(9,7): error TS18047: 'person.lastName' is possibly 'null'",
+			error: "code.ts(9,7): error TS18047: 'person.lastName' is possibly 'null'",
+		},
+		{
+			name: "testing actions executor - input types",
+			code: `
+				import { actions } from "@teamkeel/testing";
+		
+				async function foo() {
+					await actions.getPerson({
+						id: "1234",
+					});
+				}
+			`,
+			error: "code.ts(6,7): error TS2322: Type 'string' is not assignable to type 'number'",
+		},
+		{
+			name: "testing actions executor - return types",
+			code: `
+				import { actions } from "@teamkeel/testing";
+		
+				async function foo() {
+					const p = await actions.getPerson({
+						id: 1234,
+					});
+					console.log(p.id);
+				}
+			`,
+			error: "code.ts(8,18): error TS18047: 'p' is possibly 'null'",
+		},
+		{
+			name: "testing actions executor - withIdentity",
+			code: `
+				import { actions } from "@teamkeel/testing";
+		
+				async function foo() {
+					await actions.withIdentity(null).getPerson({
+						id: 1234,
+					});
+				}
+			`,
+			error: "code.ts(5,33): error TS2345: Argument of type 'null' is not assignable to parameter of type 'Identity'",
 		},
 	}
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.name, func(t *testing.T) {
-
-			function := []byte(fixture.function)
-			err = os.WriteFile(filepath.Join(tmpDir, "myFunction.ts"), function, 0666)
+			err := GeneratedFiles{
+				{
+					Path:     filepath.Join(tmpDir, "code.ts"),
+					Contents: fixture.code,
+				},
+			}.Write()
 			require.NoError(t, err)
 
 			files, err := Generate(context.Background(), tmpDir)
