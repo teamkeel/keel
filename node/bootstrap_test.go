@@ -3,124 +3,60 @@ package node_test
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/teamkeel/keel/node"
 )
 
-// TestBootstrap merely tests that no error occurs during the execution of the function
-// More in depth tests for codegen happen in the codegen_test file in this package.
 func TestBootstrap(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "bootstrap")
-	assert.NoError(t, err)
+	tmpDir := t.TempDir()
 
-	t.Cleanup(func() {
-		os.Remove(tmpDir)
-	})
-
-	InsertSchemaIntoDir(t, `
+	os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
 		model Post {
-			fields {
-				title Text
-			}
-
 			functions {
-				create createPost() with(title)
+				create createPost()
 			}
 		}
-	`, tmpDir)
-	err = node.Bootstrap(tmpDir)
+	`), 0777)
+	err := node.Bootstrap(tmpDir)
 	assert.NoError(t, err)
+
+	entries, err := os.ReadDir(tmpDir)
+	assert.NoError(t, err)
+
+	names := []string{}
+	for _, e := range entries {
+		names = append(names, e.Name())
+	}
+	sort.Strings(names)
+
+	assert.Equal(t, []string{"node_modules", "package-lock.json", "package.json", "schema.keel", "tsconfig.json"}, names)
 }
 
-// TestGeneratePackages merely tests that no error occurs during the execution of the function
-// More in depth tests for codegen happen in the codegen_test file in this package.
-func TestGeneratePackages(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "generate-packages")
-	assert.NoError(t, err)
+func TestBootstrapPackageJSONExists(t *testing.T) {
+	tmpDir := t.TempDir()
 
-	t.Cleanup(func() {
-		os.Remove(tmpDir)
-	})
-
-	InsertSchemaIntoDir(t, `
+	os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
 		model Post {
-			fields {
-				title Text
-			}
-
 			functions {
-				create createPost() with(title)
+				create createPost()
 			}
 		}
-	`, tmpDir)
-	err = node.GeneratePackages(tmpDir)
-	assert.NoError(t, err)
-}
-
-func TestGenerateDevelopmentServer(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "generate-dev-server")
+	`), 0777)
+	os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte("{}"), 0777)
+	err := node.Bootstrap(tmpDir)
 	assert.NoError(t, err)
 
-	t.Cleanup(func() {
-		os.Remove(tmpDir)
-	})
-
-	InsertSchemaIntoDir(t, `
-		model Post {
-			fields {
-				title Text
-			}
-
-			functions {
-				create createPost() with(title)
-			}
-		}
-	`, tmpDir)
-	err = node.GenerateDevelopmentServer(tmpDir)
-	assert.NoError(t, err)
-}
-
-func TestRunDevelopmentServer(t *testing.T) {
-	tmpDir, err := os.MkdirTemp("", "generate-packages")
+	entries, err := os.ReadDir(tmpDir)
 	assert.NoError(t, err)
 
-	t.Cleanup(func() {
-		os.Remove(tmpDir)
-	})
+	names := []string{}
+	for _, e := range entries {
+		names = append(names, e.Name())
+	}
+	sort.Strings(names)
 
-	InsertSchemaIntoDir(t, `
-		model Post {
-			fields {
-				title Text
-			}
-
-			functions {
-				create createPost() with(title)
-			}
-		}
-	`, tmpDir)
-
-	err = node.GenerateDevelopmentServer(tmpDir)
-	assert.NoError(t, err)
-
-	server, err := node.RunDevelopmentServer(tmpDir, &node.ServerOpts{
-		Port:    1234,
-		EnvVars: map[string]any{},
-		Stdout:  os.Stdout,
-		Stderr:  os.Stderr,
-	})
-	assert.NoError(t, err)
-	assert.NoError(t, server.Kill())
-}
-
-func InsertSchemaIntoDir(t *testing.T, schema string, dir string) {
-	f, err := os.Create(filepath.Join(dir, "schema.keel"))
-
-	assert.NoError(t, err)
-
-	_, err = f.WriteString(schema)
-
-	assert.NoError(t, err)
+	assert.Equal(t, []string{"package.json", "schema.keel"}, names)
 }
