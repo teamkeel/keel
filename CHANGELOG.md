@@ -1,3 +1,11 @@
+## [0.236.2](https://github.com/teamkeel/keel/compare/v0.236.1...v0.236.2) (2023-01-18)
+
+
+### Bug Fixes
+
+* argument naming of nested model inputs ([#673](https://github.com/teamkeel/keel/issues/673)) ([a10a4dd](https://github.com/teamkeel/keel/commit/a10a4ddeab502d6d0977a8f0da38a12c4e10a1fb))
+* use pnpm install for functions-runtime package ([7a0c4be](https://github.com/teamkeel/keel/commit/7a0c4be3bc940974e41875182831babdc754cb7e))
+
 ## [0.236.1](https://github.com/teamkeel/keel/compare/v0.236.0...v0.236.1) (2023-01-13)
 
 
