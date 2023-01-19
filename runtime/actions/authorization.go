@@ -12,7 +12,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func (query *QueryBuilder) isAuthorised(scope *Scope, args WhereArgs) (authorized bool, err error) {
+func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (authorized bool, err error) {
 	permissions := []*proto.PermissionRule{}
 
 	// Combine all the permissions defined at model level, with those defined at
@@ -66,7 +66,7 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args WhereArgs) (authorize
 
 		// First check to see if we can resolve the condition "in proc"
 		if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
-			if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, args, query.writeValues) {
+			if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, args) {
 				return true, nil
 			} else if i == len(exprBasedPerms)-1 {
 				return false, nil

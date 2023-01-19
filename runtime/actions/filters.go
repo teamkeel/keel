@@ -8,7 +8,7 @@ import (
 )
 
 // Applies all implicit input filters to the query.
-func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args WhereArgs) error {
+func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]any) error {
 	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT || input.Mode == proto.InputMode_INPUT_MODE_WRITE {
 			continue
@@ -31,7 +31,7 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args WhereArgs) er
 }
 
 // Applies all exlicit where attribute filters to the query.
-func (query *QueryBuilder) applyExplicitFilters(scope *Scope, args WhereArgs) error {
+func (query *QueryBuilder) applyExplicitFilters(scope *Scope, args map[string]any) error {
 	for _, where := range scope.operation.WhereExpressions {
 		expression, err := parser.ParseExpression(where.Source)
 		if err != nil {

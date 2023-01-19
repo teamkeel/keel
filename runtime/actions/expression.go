@@ -31,7 +31,7 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, input *proto.Oper
 }
 
 // Include a filter (where condition) on the query based on a filter expression.
-func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Expression, args WhereArgs) error {
+func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Expression, args map[string]any) error {
 	if len(expression.Conditions()) != 1 {
 		return fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
 	}
@@ -54,7 +54,7 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 	var left, right *QueryOperand
 
 	// Generate lhs QueryOperand
-	left, err = generateQueryOperand(lhsResolver, args, query.writeValues)
+	left, err = generateQueryOperand(lhsResolver, args)
 	if err != nil {
 		return err
 	}
@@ -87,7 +87,7 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 		}
 
 		// Generate the rhs QueryOperand
-		right, err = generateQueryOperand(rhsResolver, args, query.writeValues)
+		right, err = generateQueryOperand(rhsResolver, args)
 		if err != nil {
 			return err
 		}
@@ -184,11 +184,11 @@ func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOpera
 }
 
 // Generates a database QueryOperand, either representing a field, a value or null.
-func generateQueryOperand(resolver *expressions.OperandResolver, args map[string]any, writeValues map[string]any) (*QueryOperand, error) {
+func generateQueryOperand(resolver *expressions.OperandResolver, args map[string]any) (*QueryOperand, error) {
 	var queryOperand *QueryOperand
 
 	if !resolver.IsDatabaseColumn() {
-		value, err := resolver.ResolveValue(args, writeValues)
+		value, err := resolver.ResolveValue(args)
 		if err != nil {
 			return nil, err
 		}

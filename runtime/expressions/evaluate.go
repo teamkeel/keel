@@ -27,12 +27,12 @@ func CanResolveInMemory(ctx context.Context, schema *proto.Schema, operation *pr
 }
 
 // Evaluated the expression in the runtime process without generated and query against the database.
-func ResolveInMemory(ctx context.Context, schema *proto.Schema, operation *proto.Operation, expression *parser.Expression, args map[string]any, writeValues map[string]any) bool {
+func ResolveInMemory(ctx context.Context, schema *proto.Schema, operation *proto.Operation, expression *parser.Expression, args map[string]any) bool {
 	condition := expression.Conditions()[0]
 
 	lhsResolver := NewOperandResolver(ctx, schema, operation, condition.LHS)
 	operandType, _ := lhsResolver.GetOperandType()
-	lhsValue, _ := lhsResolver.ResolveValue(args, writeValues)
+	lhsValue, _ := lhsResolver.ResolveValue(args)
 
 	if condition.Type() == parser.ValueCondition {
 		result, _ := evaluate(lhsValue, true, operandType, &parser.Operator{Symbol: parser.OperatorEquals})
@@ -41,7 +41,7 @@ func ResolveInMemory(ctx context.Context, schema *proto.Schema, operation *proto
 
 	rhsResolver := NewOperandResolver(ctx, schema, operation, condition.RHS)
 
-	rhsValue, _ := rhsResolver.ResolveValue(args, writeValues)
+	rhsValue, _ := rhsResolver.ResolveValue(args)
 
 	result, _ := evaluate(lhsValue, rhsValue, operandType, condition.Operator)
 
