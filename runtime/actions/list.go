@@ -56,12 +56,31 @@ inputs:
 }
 
 func List(scope *Scope, input map[string]any) (map[string]any, error) {
+	query := NewQuery(scope.model)
+
+	// Generate the SQL statement.
+	statement, err := GenerateListStatement(query, scope, input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Execute database request with results
+	results, _, hasNextPage, err := statement.ExecuteToMany(scope.context)
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]any{
+		"results":     results,
+		"hasNextPage": hasNextPage,
+	}, nil
+}
+
+func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
 	where, ok := input["where"].(map[string]any)
 	if !ok {
 		where = map[string]any{}
 	}
-
-	query := NewQuery(scope.model)
 
 	err := query.applyImplicitFiltersForList(scope, where)
 	if err != nil {
@@ -92,17 +111,5 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	query.AppendSelect(AllFields())
 	query.ApplyPaging(page)
 
-	// Execute database request with results
-	results, _, hasNextPage, err := query.
-		SelectStatement().
-		ExecuteToMany(scope.context)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return map[string]any{
-		"results":     results,
-		"hasNextPage": hasNextPage,
-	}, nil
+	return query.SelectStatement(), nil
 }
