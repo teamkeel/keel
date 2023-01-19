@@ -1,23 +1,19 @@
 package runtime
 
 import (
-	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/graphql-go/graphql"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/runtime/actions"
-	gql "github.com/teamkeel/keel/runtime/apis/graphql"
+	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
 	"github.com/teamkeel/keel/runtime/common"
 
-	"github.com/gorilla/handlers"
-	"github.com/rs/cors"
 	"github.com/teamkeel/keel/proto"
 
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -33,9 +29,9 @@ func init() {
 	log.SetLevel(logLevel())
 }
 
-func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request) {
+func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 
-	h := func(w http.ResponseWriter, r *http.Request) {
+	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 
 		log.WithFields(log.Fields{
 			"url":     r.URL,
@@ -101,8 +97,7 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 		w.Write(response.Body)
 	}
 
-	handler := http.HandlerFunc(h)
-	withCors := cors.New(cors.Options{
+	cors := cors.New(cors.Options{
 		AllowOriginFunc: CheckOrigin,
 		AllowedMethods: []string{
 			http.MethodHead,
@@ -114,9 +109,9 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 		},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: true,
-	}).Handler(handler)
+	})
 
-	return handlers.CompressHandler(withCors).ServeHTTP
+	return cors.Handler(http.HandlerFunc(httpHandler))
 }
 
 func CheckOrigin(origin string) bool {
@@ -130,7 +125,7 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 	for _, api := range s.Apis {
 		root := "/" + strings.ToLower(api.Name)
 
-		handlers[root+"/graphql"] = NewGraphQLHandler(s, api)
+		handlers[root+"/graphql"] = graphql.NewHandler(s, api)
 		handlers[root+"/rpc"] = jsonrpc.NewHandler(s, api)
 
 		httpJson := httpjson.NewHandler(s, api)
@@ -149,70 +144,6 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 		}
 
 		return handler(r)
-	}
-}
-
-func NewGraphQLHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
-	gqlSchema, err := gql.NewGraphQLSchema(s, api)
-	if err != nil {
-		panic(err)
-	}
-
-	// This enables the graphql-go extension for tracing
-	if os.Getenv("ENABLE_TRACING") == "true" {
-		gqlSchema.AddExtensions(&Tracer{})
-	}
-
-	return func(r *http.Request) common.Response {
-
-		var params struct {
-			Query         string                 `json:"query"`
-			OperationName string                 `json:"operationName"`
-			Variables     map[string]interface{} `json:"variables"`
-		}
-
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			return common.Response{
-				Status: 400,
-				// TODO: fix this
-				Body: []byte(`internal server error`),
-			}
-		}
-
-		err = json.Unmarshal(body, &params)
-		if err != nil {
-			return common.Response{
-				Status: 400,
-				// TODO: fix this
-				Body: []byte(`internal server error`),
-			}
-		}
-
-		log.WithFields(log.Fields{
-			"query": params.Query,
-		}).Debug("graphql")
-
-		result := graphql.Do(graphql.Params{
-			Schema:         *gqlSchema,
-			Context:        r.Context(),
-			RequestString:  params.Query,
-			VariableValues: params.Variables,
-		})
-
-		b, err := json.Marshal(result)
-		if err != nil {
-			return common.Response{
-				Status: 400,
-				// TODO: fix this
-				Body: []byte(`internal server error`),
-			}
-		}
-
-		return common.Response{
-			Body:   b,
-			Status: 200,
-		}
 	}
 }
 

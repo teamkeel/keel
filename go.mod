@@ -16,7 +16,6 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/fsnotify/fsnotify v1.5.4
 	github.com/golang-jwt/jwt/v4 v4.4.2
-	github.com/gorilla/handlers v1.5.1
 	github.com/graphql-go/graphql v0.8.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jonbretman/gotestpretty v0.0.0-20200908080245-691cf3e7550c
@@ -47,7 +46,6 @@ require (
 	github.com/aybabtme/flatjson v0.1.2 // indirect
 	github.com/aymanbagabas/go-osc52 v1.0.3 // indirect
 	github.com/containerd/console v1.0.3 // indirect
-	github.com/felixge/httpsnoop v1.0.1 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/kr/pretty v0.3.0 // indirect

@@ -228,8 +228,7 @@ var runCmd = &cobra.Command{
 			ctx = functions.WithFunctionsClient(ctx, nodeClient)
 			r = r.WithContext(ctx)
 
-			handler := runtime.Serve(currSchema)
-			handler(w, r)
+			runtime.NewHttpHandler(currSchema).ServeHTTP(w, r)
 		})
 
 		reloadSchema("")

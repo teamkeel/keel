@@ -1,19 +1,94 @@
 package graphql
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/iancoleman/strcase"
 	"github.com/nleeper/goment"
+	"github.com/sirupsen/logrus"
 
 	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/common"
 )
+
+type GraphQLRequest struct {
+	Query         string                 `json:"query"`
+	OperationName string                 `json:"operationName"`
+	Variables     map[string]interface{} `json:"variables"`
+}
+
+func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
+
+	var schema *graphql.Schema
+	var mutex sync.Mutex
+
+	return func(r *http.Request) common.Response {
+
+		// We lazily initialise the GraphQL schema as until there is actually
+		// a GraphQL request to handle we don't need it. Also we don't want the
+		// whole runtime to crash just because there is an issue with GraphQL.
+		// The other API's (JSON-RPC, HTTP-JSON) may work fine.
+		if schema == nil {
+			mutex.Lock()
+			var err error
+			schema, err = NewGraphQLSchema(s, api)
+			if err != nil {
+				return common.Response{
+					Status: http.StatusInternalServerError,
+					Body:   []byte(`internal server error`),
+				}
+			}
+			// This enables the graphql-go extension for tracing
+			if os.Getenv("ENABLE_TRACING") == "true" {
+				schema.AddExtensions(&Tracer{})
+			}
+			mutex.Unlock()
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			return common.Response{
+				Status: http.StatusInternalServerError,
+				// TODO: make this a valid GraphQL response
+				Body: []byte(`internal server error`),
+			}
+		}
+
+		var params GraphQLRequest
+		err = json.Unmarshal(body, &params)
+		if err != nil {
+			return common.Response{
+				Status: http.StatusBadRequest,
+				// TODO: make this a valid GraphQL response
+				Body: []byte(`invalid JSON body`),
+			}
+		}
+
+		logrus.WithFields(logrus.Fields{
+			"query": params.Query,
+		}).Debug("graphql")
+
+		result := graphql.Do(graphql.Params{
+			Schema:         *schema,
+			Context:        r.Context(),
+			RequestString:  params.Query,
+			VariableValues: params.Variables,
+		})
+
+		return common.NewJsonResponse(http.StatusOK, result)
+	}
+}
 
 // NewGraphQLSchema creates a map of graphql.Schema objects where the keys
 // are the API names from the provided proto.Schema
