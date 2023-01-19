@@ -45,7 +45,7 @@ func TestRuntime(t *testing.T) {
 
 			request := &http.Request{
 				URL: &url.URL{
-					Path: "/Test",
+					Path: "/test/graphql",
 				},
 				Method: http.MethodPost,
 				Body:   io.NopCloser(strings.NewReader(reqBody)),
@@ -61,8 +61,7 @@ func TestRuntime(t *testing.T) {
 			}
 
 			// Call the handler, and capture the response.
-			response, err := handler(request)
-			require.NoError(t, err)
+			response := handler(request)
 			body := string(response.Body)
 			bodyFields := respFields{}
 			require.NoError(t, json.Unmarshal([]byte(body), &bodyFields))
@@ -110,7 +109,7 @@ func TestRuntimeRPC(t *testing.T) {
 
 			request := &http.Request{
 				URL: &url.URL{
-					Path:     "/Test/" + tCase.Path,
+					Path:     "/test/json/" + tCase.Path,
 					RawQuery: tCase.QueryParams,
 				},
 				Method: tCase.Method,
@@ -127,8 +126,7 @@ func TestRuntimeRPC(t *testing.T) {
 			}
 
 			// Call the handler, and capture the response.
-			response, err := handler(request)
-			require.NoError(t, err)
+			response := handler(request)
 			body := string(response.Body)
 			var res interface{}
 			require.NoError(t, json.Unmarshal([]byte(body), &res))
