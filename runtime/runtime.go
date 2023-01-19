@@ -3,7 +3,6 @@ package runtime
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -13,7 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/runtime/actions"
 	gql "github.com/teamkeel/keel/runtime/apis/graphql"
-	rpc "github.com/teamkeel/keel/runtime/apis/rpc"
+	"github.com/teamkeel/keel/runtime/apis/httpjson"
+	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
 	"github.com/teamkeel/keel/runtime/common"
 
 	"github.com/gorilla/handlers"
@@ -26,8 +26,6 @@ import (
 const (
 	authorizationHeaderName string = "Authorization"
 )
-
-type Handler func(r *http.Request) (*common.Response, error)
 
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -97,14 +95,7 @@ func Serve(currSchema *proto.Schema) func(w http.ResponseWriter, r *http.Request
 			r = r.WithContext(ctx)
 		}
 
-		response, err := handler(r)
-
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
-			return
-		}
-
+		response := handler(r)
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(response.Status)
 		w.Write(response.Body)
@@ -133,69 +124,35 @@ func CheckOrigin(origin string) bool {
 	return true
 }
 
-func NewHandler(s *proto.Schema) Handler {
-	handlers := map[string]Handler{}
+func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
+	handlers := map[string]common.ApiHandlerFunc{}
 
 	for _, api := range s.Apis {
-		apiPath := strings.ToLower(api.Name)
-		switch api.Type {
-		case proto.ApiType_API_TYPE_GRAPHQL:
-			handlers[apiPath] = NewGraphQLHandler(s, api)
-		case proto.ApiType_API_TYPE_RPC:
-			handlers[apiPath] = NewRpcHandler(s, api)
-		default:
-			panic(fmt.Sprintf("api type %s not supported", api.Type.String()))
+		root := "/" + strings.ToLower(api.Name)
+
+		handlers[root+"/graphql"] = NewGraphQLHandler(s, api)
+		handlers[root+"/rpc"] = jsonrpc.NewHandler(s, api)
+
+		httpJson := httpjson.NewHandler(s, api)
+		for _, name := range proto.GetActionNamesForApi(s, api) {
+			handlers[root+"/json/"+name] = httpJson
 		}
 	}
 
-	return func(r *http.Request) (*common.Response, error) {
-		uriSegments := strings.Split(r.URL.Path, "/")
-		apiPath := strings.ToLower(uriSegments[1])
-
-		handler, ok := handlers[apiPath]
+	return func(r *http.Request) common.Response {
+		handler, ok := handlers[r.URL.Path]
 		if !ok {
-			return &common.Response{
+			return common.Response{
 				Status: 404,
 				Body:   []byte("Not found"),
-			}, nil
+			}
 		}
 
 		return handler(r)
 	}
 }
 
-func NewRpcHandler(s *proto.Schema, api *proto.Api) Handler {
-	handler := rpc.NewRpcApi(s, api)
-
-	return func(r *http.Request) (*common.Response, error) {
-		status := 200
-
-		data, err := handler(r)
-		if err != nil {
-			// TODO: add error codes
-			data = map[string]any{
-				"errors": []map[string]string{
-					{
-						"message": err.Error(),
-					},
-				},
-			}
-			status = 400
-		}
-
-		res, err := json.Marshal(data)
-		if err != nil {
-			return nil, err
-		}
-
-		return &common.Response{
-			Body:   res,
-			Status: status,
-		}, nil
-	}
-}
-
-func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
+func NewGraphQLHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 	gqlSchema, err := gql.NewGraphQLSchema(s, api)
 	if err != nil {
 		panic(err)
@@ -206,7 +163,7 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 		gqlSchema.AddExtensions(&Tracer{})
 	}
 
-	return func(r *http.Request) (*common.Response, error) {
+	return func(r *http.Request) common.Response {
 
 		var params struct {
 			Query         string                 `json:"query"`
@@ -216,12 +173,20 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			return nil, err
+			return common.Response{
+				Status: 400,
+				// TODO: fix this
+				Body: []byte(`internal server error`),
+			}
 		}
 
 		err = json.Unmarshal(body, &params)
 		if err != nil {
-			return nil, err
+			return common.Response{
+				Status: 400,
+				// TODO: fix this
+				Body: []byte(`internal server error`),
+			}
 		}
 
 		log.WithFields(log.Fields{
@@ -237,13 +202,17 @@ func NewGraphQLHandler(s *proto.Schema, api *proto.Api) Handler {
 
 		b, err := json.Marshal(result)
 		if err != nil {
-			return nil, err
+			return common.Response{
+				Status: 400,
+				// TODO: fix this
+				Body: []byte(`internal server error`),
+			}
 		}
 
-		return &common.Response{
+		return common.Response{
 			Body:   b,
 			Status: 200,
-		}, nil
+		}
 	}
 }
 

@@ -1,4 +1,4 @@
-package rpc_test
+package jsonschema_test
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/apis/rpc"
+	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/schema"
 )
 
@@ -580,7 +580,7 @@ func TestValidateRequest(t *testing.T) {
 
 				op := proto.FindOperation(schema, f.opName)
 
-				result, err := rpc.ValidateRequest(context.Background(), schema, op, req)
+				result, err := jsonschema.ValidateRequest(context.Background(), schema, op, req)
 				require.NoError(t, err)
 				require.NotNil(t, result)
 

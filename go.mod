@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	github.com/99designs/gqlgen v0.17.16
-	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
 	github.com/aybabtme/orderedjson v0.1.0
 	github.com/bmatcuk/doublestar/v4 v4.2.0

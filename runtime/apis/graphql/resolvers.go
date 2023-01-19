@@ -34,10 +34,7 @@ func getInput(operation *proto.Operation, args map[string]any) map[string]any {
 
 func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
-		scope, err := actions.NewScope(p.Context, operation, schema)
-		if err != nil {
-			return nil, err
-		}
+		scope := actions.NewScope(p.Context, operation, schema)
 
 		input := getInput(operation, p.Args)
 

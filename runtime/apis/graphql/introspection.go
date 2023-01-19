@@ -75,7 +75,7 @@ type IntrospectionQueryResult struct {
 // into a GraphQL schema string
 // Note: this implementation is not complete and only covers cases
 // that are relevant to us, for example directives are not handled
-func ToGraphQLSchemaLanguage(response *common.Response) string {
+func ToGraphQLSchemaLanguage(response common.Response) string {
 	// First we have the marshal the response bytes back into
 	// a graphql.Result
 	var result graphql.Result

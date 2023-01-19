@@ -17,7 +17,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
-	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 )
@@ -71,10 +70,9 @@ func TestGraphQL(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			var response *common.Response
-			response, err = handler(&http.Request{
+			response := handler(&http.Request{
 				URL: &url.URL{
-					Path: "/Test",
+					Path: "/test/graphql",
 				},
 				Method: http.MethodPost,
 				Body:   io.NopCloser(bytes.NewReader(body)),

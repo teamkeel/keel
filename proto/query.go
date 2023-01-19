@@ -195,6 +195,23 @@ func FindRole(roleName string, schema *Schema) *Role {
 	return nil
 }
 
+func GetActionNamesForApi(p *Schema, api *Api) []string {
+	modelNames := lo.Map(api.ApiModels, func(m *ApiModel, _ int) string {
+		return m.ModelName
+	})
+
+	models := FindModels(p.Models, modelNames)
+
+	actions := []string{}
+	for _, m := range models {
+		for _, op := range m.Operations {
+			actions = append(actions, op.Name)
+		}
+	}
+
+	return actions
+}
+
 // PermissionsWithRole returns a list of those permission present in the given permissions
 // list, which have at least one Role-based permission rule. This does not imply that the
 // returned Permissions might not also have some expression-based rules.
