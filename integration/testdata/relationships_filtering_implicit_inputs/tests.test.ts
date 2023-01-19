@@ -826,7 +826,7 @@ test("delete operation where expressions with M:1 relations - all models active 
 
   const { success } = await actions.deleteActivePost({
     id: firstpost.id,
-    thePublisherIsActive: true,
+    theAuthorThePublisherIsActive: true,
     theAuthorIsActive: true,
     isActive: true,
   });
@@ -853,7 +853,7 @@ test("delete operation where expressions with M:1 relations - post model not act
   expect(
     await actions.deleteActivePost({
       id: firstpost.id,
-      thePublisherIsActive: true,
+      theAuthorThePublisherIsActive: true,
       theAuthorIsActive: true,
       isActive: true,
     })
@@ -881,7 +881,7 @@ test("delete operation where expressions with M:1 relations - publisher model no
   expect(
     await actions.deleteActivePost({
       id: firstpost.id,
-      thePublisherIsActive: true,
+      theAuthorThePublisherIsActive: true,
       theAuthorIsActive: true,
       isActive: true,
     })
@@ -923,7 +923,7 @@ test("delete operation where expressions with 1:M relations - all models active 
 
   const { success } = await actions.deleteActivePublisherWithActivePosts({
     id: publisherKeel.id,
-    thePostsIsActive: true,
+    theAuthorsThePostsIsActive: true,
     theAuthorsIsActive: true,
     isActive: true,
   });
@@ -965,7 +965,7 @@ test("delete operation where expressions with 1:M relations - publisher not acti
   expect(
     await actions.deleteActivePublisherWithActivePosts({
       id: publisherKeel.id,
-      thePostsIsActive: true,
+      theAuthorsThePostsIsActive: true,
       theAuthorsIsActive: true,
       isActive: true,
     })
@@ -1007,7 +1007,7 @@ test("delete operation where expressions with 1:M relations - single post active
 
   const { success } = await actions.deleteActivePublisherWithActivePosts({
     id: publisherKeel.id,
-    thePostsIsActive: true,
+    theAuthorsThePostsIsActive: true,
     theAuthorsIsActive: true,
     isActive: true,
   });
@@ -1049,7 +1049,7 @@ test("delete operation where expressions with 1:M relations - posts not active -
   expect(
     await actions.deleteActivePublisherWithActivePosts({
       id: publisherKeel.id,
-      thePostsIsActive: true,
+      theAuthorsThePostsIsActive: true,
       theAuthorsIsActive: true,
       isActive: true,
     })
