@@ -1360,3 +1360,218 @@ test("where expressions which references models multiple times - Keel has active
     message: "no records found for Get() operation",
   });
 });
+
+test("delete operation where expressions with M:1 relations - all models active - model deleted", async () => {
+  const { object: publisher } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: true,
+  });
+  const { object: author } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisher.id,
+    isActive: true,
+  });
+  const { object: firstpost } = await Post.create({
+    title: "My First Post",
+    theAuthorId: author.id,
+    isActive: true,
+  });
+
+  const { success } = await actions.deleteActivePost({ id: firstpost.id });
+
+  expect(success).toEqual(true);
+});
+
+test("delete operation where expressions with M:1 relations - post model not active - no records found", async () => {
+  const { object: publisher } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: true,
+  });
+  const { object: author } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisher.id,
+    isActive: true,
+  });
+  const { object: firstpost } = await Post.create({
+    title: "My First Post",
+    theAuthorId: author.id,
+    isActive: false,
+  });
+
+  expect(await actions.deleteActivePost({ id: firstpost.id })).toHaveError({
+    message: "no records found for Delete() operation",
+  });
+});
+
+test("delete operation where expressions with M:1 relations - publisher model not active - no records found", async () => {
+  const { object: publisher } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: false,
+  });
+  const { object: author } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisher.id,
+    isActive: true,
+  });
+  const { object: firstpost } = await Post.create({
+    title: "My First Post",
+    theAuthorId: author.id,
+    isActive: true,
+  });
+
+  expect(await actions.deleteActivePost({ id: firstpost.id })).toHaveError({
+    message: "no records found for Delete() operation",
+  });
+});
+
+test("delete operation where expressions with 1:M relations - all models active - publisher deleted", async () => {
+  const { object: publisherKeel } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: true,
+  });
+  const { object: author1 } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: author2 } = await Author.create({
+    name: "Weaveton",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: post1 } = await Post.create({
+    title: "Keelson First Post",
+    theAuthorId: author1.id,
+    isActive: true,
+  });
+  const { object: post2 } = await Post.create({
+    title: "Keelson Second Post",
+    theAuthorId: author1.id,
+    isActive: true,
+  });
+  const { object: post3 } = await Post.create({
+    title: "Weaveton First Post",
+    theAuthorId: author2.id,
+    isActive: true,
+  });
+
+  const { success } = await actions.deleteActivePublisherWithActivePosts({
+    id: publisherKeel.id,
+  });
+
+  expect(success).toEqual(true);
+});
+
+test("delete operation where expressions with 1:M relations - publisher not active - no publisher found", async () => {
+  const { object: publisherKeel } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: false,
+  });
+  const { object: author1 } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: author2 } = await Author.create({
+    name: "Weaveton",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: post1 } = await Post.create({
+    title: "Keelson First Post",
+    theAuthorId: author1.id,
+    isActive: true,
+  });
+  const { object: post2 } = await Post.create({
+    title: "Keelson Second Post",
+    theAuthorId: author1.id,
+    isActive: true,
+  });
+  const { object: post3 } = await Post.create({
+    title: "Weaveton First Post",
+    theAuthorId: author2.id,
+    isActive: true,
+  });
+
+  expect(
+    await actions.deleteActivePublisherWithActivePosts({ id: publisherKeel.id })
+  ).toHaveError({
+    message: "no records found for Delete() operation",
+  });
+});
+
+test("delete operation where expressions with 1:M relations - single post active - publisher deleted", async () => {
+  const { object: publisherKeel } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: true,
+  });
+  const { object: author1 } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: author2 } = await Author.create({
+    name: "Weaveton",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: post1 } = await Post.create({
+    title: "Keelson First Post",
+    theAuthorId: author1.id,
+    isActive: false,
+  });
+  const { object: post2 } = await Post.create({
+    title: "Keelson Second Post",
+    theAuthorId: author1.id,
+    isActive: false,
+  });
+  const { object: post3 } = await Post.create({
+    title: "Weaveton First Post",
+    theAuthorId: author2.id,
+    isActive: true,
+  });
+
+  const { success } = await actions.deleteActivePublisherWithActivePosts({
+    id: publisherKeel.id,
+  });
+
+  expect(success).toEqual(true);
+});
+
+test("delete operation where expressions with 1:M relations - posts not active - no publisher found", async () => {
+  const { object: publisherKeel } = await Publisher.create({
+    orgName: "Keel Org",
+    isActive: true,
+  });
+  const { object: author1 } = await Author.create({
+    name: "Keelson",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: author2 } = await Author.create({
+    name: "Weaveton",
+    thePublisherId: publisherKeel.id,
+    isActive: true,
+  });
+  const { object: post1 } = await Post.create({
+    title: "Keelson First Post",
+    theAuthorId: author1.id,
+    isActive: false,
+  });
+  const { object: post2 } = await Post.create({
+    title: "Keelson Second Post",
+    theAuthorId: author1.id,
+    isActive: false,
+  });
+  const { object: post3 } = await Post.create({
+    title: "Weaveton First Post",
+    theAuthorId: author2.id,
+    isActive: false,
+  });
+
+  expect(
+    await actions.deleteActivePublisherWithActivePosts({ id: publisherKeel.id })
+  ).toHaveError({
+    message: "no records found for Delete() operation",
+  });
+});

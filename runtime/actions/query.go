@@ -103,7 +103,7 @@ type QueryBuilder struct {
 	// The columns and clause in DISTINCT ON.
 	distinctOn []string
 	// The join clauses required for the query.
-	joins []string
+	joins []join
 	// The filter fragments used to construct WHERE.
 	filters []string
 	// The columns and clauses in ORDER BY.
@@ -120,13 +120,19 @@ type QueryBuilder struct {
 	transaction *Transaction
 }
 
+type join struct {
+	table     string
+	alias     string
+	condition string
+}
+
 func NewQuery(model *proto.Model) *QueryBuilder {
 	return &QueryBuilder{
 		Model:       model.Name,
 		table:       strcase.ToSnake(model.Name),
 		selection:   []string{},
 		distinctOn:  []string{},
-		joins:       []string{},
+		joins:       []join{},
 		filters:     []string{},
 		orderBy:     []string{},
 		limit:       nil,
@@ -190,13 +196,14 @@ func (query *QueryBuilder) AppendDistinctOn(operand *QueryOperand) {
 	}
 }
 
-// Include a WHERE condition, ANDed to the existing filters.
+// Include a WHERE condition, ANDed to the existing filters (unless an OR has been specified)
 func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, right *QueryOperand) error {
 	template, args, err := query.generateWhereTemplate(left, operator, right)
 	if err != nil {
 		return err
 	}
 
+	// AND with existin filters unless an OR has been specified.
 	if len(query.filters) > 0 && query.filters[len(query.filters)-1] != "OR" {
 		query.filters = append(query.filters, "AND")
 	}
@@ -214,11 +221,11 @@ func (query *QueryBuilder) Or() {
 
 // Include an INNER JOIN clause.
 func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, modelField *QueryOperand) {
-	join := fmt.Sprintf("INNER JOIN %s AS %s ON %s = %s",
-		sqlQuote(strcase.ToSnake(joinModel)),
-		sqlQuote(joinField.table),
-		joinField.toColumnString(query),
-		modelField.toColumnString(query))
+	join := join{
+		table:     sqlQuote(strcase.ToSnake(joinModel)),
+		alias:     sqlQuote(joinField.table),
+		condition: fmt.Sprintf("%s = %s", joinField.toColumnString(query), modelField.toColumnString(query)),
+	}
 
 	if !lo.Contains(query.joins, join) {
 		query.joins = append(query.joins, join)
@@ -295,7 +302,9 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	selection = strings.Join(query.selection, ", ")
 
 	if len(query.joins) > 0 {
-		joins = strings.Join(query.joins, " ")
+		for _, j := range query.joins {
+			joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+		}
 	}
 
 	if len(query.filters) > 0 {
@@ -369,7 +378,9 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	args = append(args, query.args...)
 
 	if len(query.joins) > 0 {
-		joins = strings.Join(query.joins, " ")
+		for _, j := range query.joins {
+			joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+		}
 	}
 
 	if len(query.filters) > 0 {
@@ -396,18 +407,32 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 
 // Generates an executable DELETE statement with the list of arguments.
 func (query *QueryBuilder) DeleteStatement() *Statement {
-	joins := ""
+	usings := ""
 	filters := ""
 	returning := ""
 
 	if len(query.joins) > 0 {
-		joins = strings.Join(query.joins, " ")
+		usingTables := lo.Map(query.joins, func(j join, _ int) string {
+			return fmt.Sprintf("%s AS %s", j.table, j.alias)
+		})
+		usings = fmt.Sprintf("USING %s", strings.Join(usingTables, ", "))
+		filters = strings.Join(lo.Map(query.joins, func(j join, _ int) string { return j.condition }), " AND ")
+
+		// If there are also filters, then append another AND
+		if len(query.filters) > 0 {
+			filters += " AND "
+		}
 	}
 
 	if len(query.filters) > 0 {
-		// Removes any trailing OR or AND from the where fragments
-		q := lo.DropRightWhile(query.filters, func(s string) bool { return s == "OR" || s == "AND" })
-		filters = fmt.Sprintf("WHERE %s", strings.Join(q, " "))
+		// Removes any right trailing OR or AND from the where fragments
+		conditions := lo.DropRightWhile(query.filters, func(s string) bool { return s == "OR" || s == "AND" })
+
+		filters += strings.Join(conditions, " ")
+	}
+
+	if filters != "" {
+		filters = fmt.Sprintf("WHERE %s", filters)
 	}
 
 	if len(query.returning) > 0 {
@@ -416,7 +441,7 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 
 	template := fmt.Sprintf("DELETE FROM %s %s %s %s",
 		sqlQuote(query.table),
-		joins,
+		usings,
 		filters,
 		returning)
 
@@ -621,8 +646,8 @@ func (query *QueryBuilder) generateWhereTemplate(lhs *QueryOperand, operator Act
 	return template, args, nil
 }
 
-func copySlice(a []string) []string {
-	tmp := make([]string, len(a))
+func copySlice[T any](a []T) []T {
+	tmp := make([]T, len(a))
 	copy(tmp, a)
 	return tmp
 }

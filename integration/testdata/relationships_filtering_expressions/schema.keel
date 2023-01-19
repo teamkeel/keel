@@ -31,12 +31,18 @@ model Post {
             @where(post.isActive == post.theAuthor.thePublisher.booleanValue)
         }
 
+        delete deleteActivePost(id) {
+            @where(post.theAuthor.thePublisher.isActive == true)
+            @where(post.theAuthor.isActive == true)
+            @where(post.isActive == true)
+        }
+
         get getPostModelsReferencedMoreThanOnce(id) {
             @where(post.theAuthor.thePublisher.theAuthors.thePosts.isActive == true)
         }
     }
 
-    @permission(actions: [get, list], expression: true)
+    @permission(actions: [get, list, delete], expression: true)
 }
 
 model Author {
@@ -83,12 +89,18 @@ model Publisher {
             @where(publisher.isActive == publisher.booleanValue)
         }
 
+        delete deleteActivePublisherWithActivePosts(id) {
+            @where(publisher.theAuthors.thePosts.isActive == true)
+            @where(publisher.theAuthors.isActive == true)
+            @where(publisher.isActive == true)
+        }
+
         list listPublishersModelsReferencedMoreThanOnce() {
             @where(publisher.theAuthors.thePosts.theAuthor.thePublisher.isActive == true)
         }
     }
 
-    @permission(actions: [get, list], expression: true)
+    @permission(actions: [get, list, delete], expression: true)
 }
 
 api Web {
