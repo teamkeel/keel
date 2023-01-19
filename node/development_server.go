@@ -98,7 +98,7 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 
 	// Wait for process to have started successfully
 	n := time.Now()
-	maxWait := time.Second * 5
+	maxWait := time.Second * 10
 	for {
 		if cmd.ProcessState != nil {
 			return d, d.exitError

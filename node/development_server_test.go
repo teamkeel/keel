@@ -3,6 +3,7 @@ package node_test
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -39,7 +40,13 @@ func TestDevelopmentServer(t *testing.T) {
 	}
 
 	runDevelopmentServerTest(t, files, func(server *node.DevelopmentServer, err error) {
-		require.NoError(t, err)
+		if !assert.NoError(t, err) {
+			if server != nil {
+				fmt.Println("=== Development Server Output ===")
+				fmt.Println(server.Output())
+			}
+			return
+		}
 
 		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}}`)
 		res, err := http.Post(server.URL, "application/json", body)
