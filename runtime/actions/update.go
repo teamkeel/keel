@@ -1,9 +1,6 @@
 package actions
 
 import (
-	"errors"
-
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
@@ -58,11 +55,6 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
-	op := scope.operation
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		return ParseUpdateResponse(scope.context, op, input)
-	}
-
 	// Return the updated row
 	query.AppendReturning(AllFields())
 
@@ -71,12 +63,13 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 		UpdateStatement().
 		ExecuteToSingle(scope.context)
 
+	// TODO: if error is multiple rows affected then rollback transaction
 	if err != nil {
 		return nil, err
 	}
 
 	if result == nil {
-		return nil, errors.New("no records found for Update() operation")
+		return nil, common.RuntimeError{Code: common.ErrRecordNotFound, Message: "record not found"}
 	}
 
 	return result, nil

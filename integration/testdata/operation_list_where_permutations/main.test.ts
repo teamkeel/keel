@@ -1,11 +1,11 @@
-import { test, expect, actions, Thing, logger } from "@teamkeel/testing";
-import { LogLevel } from "@teamkeel/sdk";
+import { test, expect, beforeEach } from "vitest";
+import { actions, resetDatabase, models } from "@teamkeel/testing";
+
+beforeEach(resetDatabase);
 
 test("equalsGettingStarted", async () => {
-  await Thing.create({ title: "History of Art" });
-  await Thing.create({ title: "History of Cars" });
-
-  let resp;
+  await models.thing.create({ title: "History of Art" });
+  await models.thing.create({ title: "History of Cars" });
 
   // The operations follow a naming convention.
   // E.g. eqTextFieldToInput should be read as:
@@ -16,49 +16,43 @@ test("equalsGettingStarted", async () => {
   //
   // The other implied codes being Lit(eral) and null.
   //
-  resp = await actions.eqTextFieldToInp({
+  let resp = await actions.eqTextFieldToInp({
     where: { whereArg: "History of Art" },
   });
-  expect(resp.collection.length).toEqual(1);
+  expect(resp.results.length).toEqual(1);
 
   resp = await actions.eqTextFieldToField({});
-  expect(resp.collection.length).toEqual(2);
+  expect(resp.results.length).toEqual(2);
 
   resp = await actions.eqTextFieldToLit({});
-  expect(resp.collection.length).toEqual(1);
+  expect(resp.results.length).toEqual(1);
 
   resp = await actions.eqTextFieldToNil({});
-  expect(resp.collection.length).toEqual(0);
+  expect(resp.results.length).toEqual(0);
 });
 
 test("equalsSwapLHSWithRHS", async () => {
-  await Thing.create({ title: "History of Art" });
-  await Thing.create({ title: "History of Cars" });
+  await models.thing.create({ title: "History of Art" });
+  await models.thing.create({ title: "History of Cars" });
 
-  let resp;
-
-  resp = await actions.eqTextLitToField({});
-  expect(resp.collection.length).toEqual(1);
+  const resp = await actions.eqTextLitToField({});
+  expect(resp.results.length).toEqual(1);
 });
 
 test("notEqualSample", async () => {
-  await Thing.create({ title: "History of Art" });
-  await Thing.create({ title: "History of Cars" });
+  await models.thing.create({ title: "History of Art" });
+  await models.thing.create({ title: "History of Cars" });
 
-  let resp;
-
-  resp = await actions.notEqTextFieldToLit({});
-  expect(resp.collection.length).toEqual(1);
+  const resp = await actions.notEqTextFieldToLit({});
+  expect(resp.results.length).toEqual(1);
 });
 
 test("equalsWithNumberField", async () => {
-  await Thing.create({ length: 41 });
-  await Thing.create({ length: 42 });
+  await models.thing.create({ length: 41 });
+  await models.thing.create({ length: 42 });
 
-  let resp;
-
-  resp = await actions.eqNumberFieldToLit({});
-  expect(resp.collection.length).toEqual(1);
+  const resp = await actions.eqNumberFieldToLit({});
+  expect(resp.results.length).toEqual(1);
 });
 
 /*

@@ -23,6 +23,7 @@ type ApiHandlerFunc func(r *http.Request) Response
 const (
 	ErrInvalidInput     = "ERR_INVALID_INPUT"
 	ErrPermissionDenied = "ERR_PERMISSION_DENIED"
+	ErrRecordNotFound   = "ERR_RECORD_NOT_FOUND"
 )
 
 type RuntimeError struct {

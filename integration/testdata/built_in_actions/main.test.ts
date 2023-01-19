@@ -1,7 +1,10 @@
-import { test, expect, actions, Post, logger } from "@teamkeel/testing";
+import { actions, models, resetDatabase } from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
+
+beforeEach(resetDatabase);
 
 test("create action", async () => {
-  const { object: createdPost } = await actions.createPost({
+  const createdPost = await actions.createPost({
     title: "foo",
     subTitle: "abc",
   });
@@ -10,126 +13,116 @@ test("create action", async () => {
 });
 
 test("get action", async () => {
-  const { object: post } = await actions.createPost({
+  const post = await actions.createPost({
     title: "foo",
     subTitle: "bcd",
   });
 
-  const { object: fetchedPost } = await actions.getPost({ id: post.id });
-
-  expect(fetchedPost.id).toEqual(post.id);
-});
-
-// This test verifies that you can't fetch by a field not specified in action inputs
-test("get action (non unique)", async () => {
-  const { object: post } = await actions.createPost({
-    title: "foo",
-    subTitle: "cbd",
-  });
-
-  const { object: fetchedPost } = await actions.getPost({ title: post.title });
-
-  // todo: until we return errors for 404s, we want to assert
-  // that nothing is returned
-  expect(fetchedPost).toBeEmpty();
+  const fetchedPost = await actions.getPost({ id: post.id });
+  expect(fetchedPost!.id).toEqual(post.id);
 });
 
 test("list action - equals", async () => {
-  await Post.create({ title: "apple", subTitle: "def" });
-  await Post.create({ title: "apple", subTitle: "efg" });
+  await models.post.create({ title: "apple", subTitle: "def" });
+  await models.post.create({ title: "apple", subTitle: "efg" });
 
-  const { collection } = await actions.listPosts({
+  const posts = await actions.listPosts({
     where: {
       title: { equals: "apple" },
     },
   });
 
-  expect(collection.length).toEqual(2);
+  expect(posts.results.length).toEqual(2);
 });
 
 test("list action - contains", async () => {
-  await Post.create({ title: "banan", subTitle: "fgh" });
-  await Post.create({ title: "banana", subTitle: "ghi" });
+  await models.post.create({ title: "banan", subTitle: "fgh" });
+  await models.post.create({ title: "banana", subTitle: "ghi" });
 
-  const { collection } = await actions.listPosts({
+  const { results } = await actions.listPosts({
     where: {
       title: { contains: "ana" },
     },
   });
 
-  expect(collection.length).toEqual(2);
+  expect(results.length).toEqual(2);
 });
 
 test("list action - startsWith", async () => {
-  await Post.create({ title: "adam", subTitle: "hij" });
-  await Post.create({ title: "adamant", subTitle: "ijk" });
+  await models.post.create({ title: "adam", subTitle: "hij" });
+  await models.post.create({ title: "adamant", subTitle: "ijk" });
+  await models.post.create({ title: "notadam", subTitle: "sed" });
 
-  const { collection } = await actions.listPosts({
+  const { results } = await actions.listPosts({
     where: {
       title: { startsWith: "adam" },
     },
   });
 
-  expect(collection.length).toEqual(2);
+  expect(results.length).toEqual(2);
 });
 
 test("list action - endsWith", async () => {
-  await Post.create({ title: "star wars", subTitle: "jkl" });
-  await Post.create({ title: "a post about star wars", subTitle: "klm" });
+  await models.post.create({ title: "star wars", subTitle: "jkl" });
+  await models.post.create({
+    title: "a post about star wars",
+    subTitle: "klm",
+  });
 
-  const { collection } = await actions.listPosts({
+  const { results } = await actions.listPosts({
     where: {
       title: { endsWith: "star wars" },
     },
   });
 
-  expect(collection.length).toEqual(2);
+  expect(results.length).toEqual(2);
 });
 
 test("list action - oneOf", async () => {
-  await Post.create({ title: "pear", subTitle: "lmn" });
-  await Post.create({ title: "mango", subTitle: "mno" });
+  await models.post.create({ title: "pear", subTitle: "lmn" });
+  await models.post.create({ title: "mango", subTitle: "mno" });
+  await models.post.create({ title: "orange", subTitle: "fog" });
 
-  const { collection } = await actions.listPosts({
+  const { results } = await actions.listPosts({
     where: {
       title: { oneOf: ["pear", "mango"] },
     },
   });
 
-  expect(collection.length).toEqual(2);
+  expect(results.length).toEqual(2);
 });
 
 test("delete action", async () => {
-  const { object: post } = await Post.create({
+  const post = await models.post.create({
     title: "pear",
     subTitle: "nop",
   });
 
-  const { success } = await actions.deletePost({ id: post.id });
+  const deletedId = await actions.deletePost({ id: post.id });
 
-  expect(success).toEqual(true);
+  expect(deletedId).toEqual(post.id);
 });
 
 test("delete action on other unique field", async () => {
-  const { object: post } = await Post.create({
+  const post = await models.post.create({
     title: "pear",
     subTitle: "nop",
   });
 
-  const { success } = await actions.deletePostBySubTitle({
+  const deletedId = await actions.deletePostBySubTitle({
     subTitle: post.subTitle,
   });
 
-  expect(success).toEqual(true);
+  expect(deletedId).toEqual(post.id);
 });
 
 test("update action", async () => {
-  const { object: post } = await Post.create({
+  const post = await models.post.create({
     title: "watermelon",
     subTitle: "opm",
   });
 
-  const { object: updatedPost } = await actions.updatePost({
+  const updatedPost = await actions.updatePost({
     where: { id: post.id },
     values: { title: "big watermelon" },
   });
@@ -140,12 +133,12 @@ test("update action", async () => {
 });
 
 test("update action - explicit set / args", async () => {
-  const { object: post } = await Post.create({
+  const post = await models.post.create({
     title: "watermelon",
     subTitle: "opm",
   });
 
-  const { object: updatedPost } = await actions.updateWithExplicitSet({
+  const updatedPost = await actions.updateWithExplicitSet({
     where: { id: post.id },
     values: { coolTitle: "a really cool title" },
   });

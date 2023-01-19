@@ -107,6 +107,19 @@ test("ModelAPI.findMany", async () => {
   expect(rows.map((x) => x.id).sort()).toEqual([bob.id, sally.id].sort());
 });
 
+test("ModelAPI.findMany - no where conditions", async () => {
+  const jim = await api.create({
+    name: "Jim",
+  });
+  await api.create({
+    name: "Bob",
+  });
+
+  const rows = await api.findMany({});
+
+  expect(rows.length).toEqual(2);
+});
+
 test("ModelAPI.findMany - startsWith", async () => {
   const jim = await api.create({
     name: "Jim",

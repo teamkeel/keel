@@ -1,199 +1,192 @@
-import { test, expect, actions, Post, Identity } from "@teamkeel/testing";
+import { actions } from "@teamkeel/testing";
+import { test, expect } from "vitest";
 
 test("string permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTextPermissionLiteral({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithTextPermissionLiteral({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("string permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "goodbye" });
+  const post = await actions.createWithText({ title: "goodbye" });
 
-  expect(
-    await actions.getWithTextPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithTextPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("string permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: null });
+  const post = await actions.createWithText({ title: null });
 
-  expect(
-    await actions.getWithTextPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithTextPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("number permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 1 });
+  const post = await actions.createWithNumber({ views: 1 });
 
-  expect(
-    await actions.getWithNumberPermissionLiteral({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithNumberPermissionLiteral({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("number permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 100 });
+  const post = await actions.createWithNumber({ views: 100 });
 
-  expect(
-    await actions.getWithNumberPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithNumberPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("number permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: null });
+  const post = await actions.createWithNumber({ views: null });
 
-  expect(
-    await actions.getWithNumberPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithNumberPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: true });
+  const post = await actions.createWithBoolean({ active: true });
 
-  expect(
-    await actions.getWithBooleanPermissionLiteral({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithBooleanPermissionLiteral({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("boolean permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: false });
+  const post = await actions.createWithBoolean({ active: false });
 
-  expect(
-    await actions.getWithBooleanPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithBooleanPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: null });
+  const post = await actions.createWithBoolean({ active: null });
 
-  expect(
-    await actions.getWithBooleanPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithBooleanPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: "Technical" });
 
-  expect(
-    await actions.getWithEnumPermissionLiteral({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithEnumPermissionLiteral({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: "Lifestyle" });
 
-  expect(
-    await actions.getWithEnumPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithEnumPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ title: null });
+  const post = await actions.createWithEnum({ title: null });
 
-  expect(
-    await actions.getWithEnumPermissionLiteral({ id: post.id })
+  await expect(
+    actions.getWithEnumPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("string permission on field - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTextPermissionFromField({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithTextPermissionFromField({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("string permission on field - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "goodbye" });
+  const post = await actions.createWithText({ title: "goodbye" });
 
-  expect(
-    await actions.getWithTextPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithTextPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("string permission on field - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: null });
+  const post = await actions.createWithText({ title: null });
 
-  expect(
-    await actions.getWithTextPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithTextPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("number permission on field - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 1 });
+  const post = await actions.createWithNumber({ views: 1 });
 
-  expect(
-    await actions.getWithNumberPermissionFromField({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithNumberPermissionFromField({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("number permission on field - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 100 });
+  const post = await actions.createWithNumber({ views: 100 });
 
-  expect(
-    await actions.getWithNumberPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithNumberPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("number permission on field - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: null });
+  const post = await actions.createWithNumber({ views: null });
 
-  expect(
-    await actions.getWithNumberPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithNumberPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on field - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: true });
+  const post = await actions.createWithBoolean({ active: true });
 
-  expect(
-    await actions.getWithBooleanPermissionFromField({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithBooleanPermissionFromField({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("boolean permission on field - unmatching value - field is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: false });
+  const post = await actions.createWithBoolean({ active: false });
 
-  expect(
-    await actions.getWithBooleanPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithBooleanPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on field - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: null });
+  const post = await actions.createWithBoolean({ active: null });
 
-  expect(
-    await actions.getWithBooleanPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithBooleanPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on field name - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: "Technical" });
 
-  expect(
-    await actions.getWithEnumPermissionFromField({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithEnumPermissionFromField({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("enum permission on field name - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: "Lifestyle" });
 
-  expect(
-    await actions.getWithEnumPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithEnumPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on field name - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: null });
+  const post = await actions.createWithEnum({ type: null });
 
-  expect(
-    await actions.getWithEnumPermissionFromField({ id: post.id })
+  await expect(
+    actions.getWithEnumPermissionFromField({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -201,21 +194,16 @@ test("identity permission - correct identity in context - is authorized", async 
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
+  const post = await actions.withAuthToken(token).createWithIdentity({});
 
-  const { object: post } = await actions
-    .withIdentity(identity)
-    .createWithIdentity({});
-
-  expect(
-    await actions
-      .withIdentity(identity)
-      .getWithIdentityPermission({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions
+    .withAuthToken(token)
+    .getWithIdentityPermission({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("identity permission - incorrect identity in context - is not authorized", async () => {
-  const { identityId: id1 } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user1@keel.xyz",
@@ -223,7 +211,7 @@ test("identity permission - incorrect identity in context - is not authorized", 
     },
   });
 
-  const { identityId: id2 } = await actions.authenticate({
+  const { token: token2 } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user2@keel.xyz",
@@ -231,22 +219,15 @@ test("identity permission - incorrect identity in context - is not authorized", 
     },
   });
 
-  const { object: identity1 } = await Identity.findOne({ id: id1 });
-  const { object: identity2 } = await Identity.findOne({ id: id2 });
+  const post = await actions.withAuthToken(token).createWithIdentity({});
 
-  const { object: post } = await actions
-    .withIdentity(identity1)
-    .createWithIdentity({});
-
-  expect(
-    await actions
-      .withIdentity(identity2)
-      .getWithIdentityPermission({ id: post.id })
+  await expect(
+    actions.withAuthToken(token2).getWithIdentityPermission({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("identity permission - no identity in context - is not authorized", async () => {
-  const { identityId: id } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -254,59 +235,54 @@ test("identity permission - no identity in context - is not authorized", async (
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: id });
+  const post = await actions.withAuthToken(token).createWithIdentity({});
 
-  const { object: post } = await actions
-    .withIdentity(identity)
-    .createWithIdentity({});
-
-  expect(
-    await actions.getWithIdentityPermission({ id: post.id })
+  await expect(
+    actions.getWithIdentityPermission({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("true value permission - unauthenticated identity - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTrueValuePermission({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithTrueValuePermission({ id: post.id });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("permission on implicit input - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTextPermissionFromImplicitInput({ id: post.id })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithTextPermissionFromImplicitInput({
+    id: post.id,
+  });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("permission on implicit input - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTextPermissionFromImplicitInputNotMatching({
+  await expect(
+    actions.getWithTextPermissionFromImplicitInputNotMatching({
       id: post.id,
     })
   ).toHaveAuthorizationError();
 });
 
 test("permission on explicit input - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTextPermissionFromExplicitInput({
-      id: post.id,
-      explTitle: "hello",
-    })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithTextPermissionFromExplicitInput({
+    id: post.id,
+    explTitle: "hello",
+  });
+  expect(p!.id).toEqual(post.id);
 });
 
 test("permission on explicit input - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTextPermissionFromExplicitInput({
+  await expect(
+    actions.getWithTextPermissionFromExplicitInput({
       id: post.id,
       explTitle: "goodbye",
     })
@@ -314,10 +290,10 @@ test("permission on explicit input - not matching value - is not authorized", as
 });
 
 test("permission on explicit input - not matching null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.getWithTextPermissionFromExplicitInput({
+  await expect(
+    actions.getWithTextPermissionFromExplicitInput({
       id: post.id,
       explTitle: null,
     })
@@ -325,12 +301,11 @@ test("permission on explicit input - not matching null value - is not authorized
 });
 
 test("permission on explicit input - matching null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: null });
+  const post = await actions.createWithText({ title: null });
 
-  expect(
-    await actions.getWithTextPermissionFromExplicitInput({
-      id: post.id,
-      explTitle: null,
-    })
-  ).notToHaveAuthorizationError();
+  const p = await actions.getWithTextPermissionFromExplicitInput({
+    id: post.id,
+    explTitle: null,
+  });
+  expect(p!.id).toEqual(post.id);
 });

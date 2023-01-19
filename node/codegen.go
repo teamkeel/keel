@@ -176,6 +176,10 @@ func writeCreateValuesInterface(w *Writer, model *proto.Model) {
 	w.Writef("export interface %sCreateValues {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
+		// For now you can't create related models when creating a record
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
 		w.Write(field.Name)
 		if field.Optional || field.DefaultValue != nil {
 			w.Write("?")
@@ -487,8 +491,8 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		returnType += "{results: " + sdkPrefix + model.Name + "[], hasNextPage: boolean}"
 	case proto.OperationType_OPERATION_TYPE_DELETE:
-		// TODO: update runtime to return id of deleted object
-		returnType += "boolean"
+		// todo: create ID type
+		returnType += "string"
 	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
 		// TODO: fix this when authenticate has been re-worked following Arbitrary Functions
 		// https://www.notion.so/keelhq/Arbitrary-Functions-428c199902cf4353b18838434c8910d1

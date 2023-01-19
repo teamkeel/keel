@@ -39,13 +39,19 @@ class ModelAPI {
   }
 
   async findMany(where) {
-    const rows = await this._db
+    let query = this._db
       .selectFrom(this._tableName)
-      .selectAll()
-      .where((qb) => {
+      .selectAll();
+
+    // only apply constraints if there are keys in the where 
+    if (Object.keys(where).length > 0) {
+      query = query.where((qb) => {
         return applyWhereConditions(qb, where);
       })
-      .execute();
+    }
+
+    const rows = await query.execute();
+
     return rows.map((x) => camelCaseObject(x));
   }
 

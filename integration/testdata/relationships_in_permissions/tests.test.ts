@@ -1,16 +1,19 @@
-import { test, expect, actions, Post, Author } from "@teamkeel/testing";
+import { actions, models, resetDatabase } from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
+
+beforeEach(resetDatabase);
 
 test("permission expression with create in M:1 relationship - related model satisfies condition - authorization successful", async () => {
-  const { object: author } = await Author.create({
+  const author = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
 
-  const { object: createPost } = await actions.createPost({
+  const createPost = await actions.createPost({
     title: "New Post",
     theAuthorId: author.id,
   });
-  const { collection } = await Post.where({}).all();
+  const collection = await models.post.findMany({});
 
   expect(createPost.theAuthorId).toEqual(author.id);
   expect(collection[0].id).toEqual(createPost.id);
@@ -18,270 +21,270 @@ test("permission expression with create in M:1 relationship - related model sati
 });
 
 test("permission expression with create in M:1 relationship - related model does not satisfy condition - authorization not successful", async () => {
-  const { object: author } = await Author.create({
+  const author = await models.author.create({
     name: "Keelson",
     isActive: false,
   });
 
-  expect(
-    await actions.createPost({
+  await expect(
+    actions.createPost({
       title: "New Post",
       theAuthorId: author.id,
     })
   ).toHaveAuthorizationError();
 
-  const { collection } = await Post.where({}).all();
+  const collection = await models.post.findMany({});
   expect(collection.length).toEqual(0);
 });
 
 test("permission expression in M:1 relationship - all related models satisfy condition - authorization successful", async () => {
-  const { object: author1 } = await Author.create({
+  const author1 = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
-  const { object: author2 } = await Author.create({
+  const author2 = await models.author.create({
     name: "Weaveton",
     isActive: true,
   });
-  const { object: post1 } = await Post.create({
+  const post1 = await models.post.create({
     title: "Keelson First Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post2 } = await Post.create({
+  const post2 = await models.post.create({
     title: "Keelson Second Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post3 } = await Post.create({
+  const post3 = await models.post.create({
     title: "Weaveton First Post",
     theAuthorId: author2.id,
     isActive: true,
   });
 
-  const { collection: posts } = await actions.listPosts({});
+  const { results: posts } = await actions.listPosts({});
   expect(posts.length).toEqual(3);
 
-  const { object: getPost1 } = await actions.getPost({ id: post1.id });
-  expect(getPost1.id).toEqual(post1.id);
+  const getPost1 = await actions.getPost({ id: post1.id });
+  expect(getPost1!.id).toEqual(post1.id);
 
-  const { object: getPost2 } = await actions.getPost({ id: post2.id });
-  expect(getPost2.id).toEqual(post2.id);
+  const getPost2 = await actions.getPost({ id: post2.id });
+  expect(getPost2!.id).toEqual(post2.id);
 
-  const { object: getPost3 } = await actions.getPost({ id: post3.id });
-  expect(getPost3.id).toEqual(post3.id);
+  const getPost3 = await actions.getPost({ id: post3.id });
+  expect(getPost3!.id).toEqual(post3.id);
 });
 
 test("permission expression in M:1 relationship - Weaveton author not active - authorization response on Weaveton post", async () => {
-  const { object: author1 } = await Author.create({
+  const author1 = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
-  const { object: author2 } = await Author.create({
+  const author2 = await models.author.create({
     name: "Weaveton",
     isActive: false,
   });
-  const { object: post1 } = await Post.create({
+  const post1 = await models.post.create({
     title: "Keelson First Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post2 } = await Post.create({
+  const post2 = await models.post.create({
     title: "Keelson Second Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post3 } = await Post.create({
+  const post3 = await models.post.create({
     title: "Weaveton First Post",
     theAuthorId: author2.id,
     isActive: true,
   });
 
-  expect(await actions.listPosts({})).toHaveAuthorizationError();
+  await expect(actions.listPosts({})).toHaveAuthorizationError();
 
-  const { object: getPost1 } = await actions.getPost({ id: post1.id });
-  expect(getPost1.id).toEqual(post1.id);
+  const getPost1 = await actions.getPost({ id: post1.id });
+  expect(getPost1!.id).toEqual(post1.id);
 
-  const { object: getPost2 } = await actions.getPost({ id: post2.id });
-  expect(getPost2.id).toEqual(post2.id);
+  const getPost2 = await actions.getPost({ id: post2.id });
+  expect(getPost2!.id).toEqual(post2.id);
 
-  expect(await actions.getPost({ id: post3.id })).toHaveAuthorizationError();
+  await expect(actions.getPost({ id: post3.id })).toHaveAuthorizationError();
 });
 
 test("permission expression in M:1 relationship - posts not active - authorization successful", async () => {
-  const { object: author1 } = await Author.create({
+  const author1 = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
-  const { object: author2 } = await Author.create({
+  const author2 = await models.author.create({
     name: "Weaveton",
     isActive: true,
   });
-  const { object: post1 } = await Post.create({
+  const post1 = await models.post.create({
     title: "Keelson First Post",
     theAuthorId: author1.id,
     isActive: false,
   });
-  const { object: post2 } = await Post.create({
+  const post2 = await models.post.create({
     title: "Keelson Second Post",
     theAuthorId: author1.id,
     isActive: false,
   });
-  const { object: post3 } = await Post.create({
+  const post3 = await models.post.create({
     title: "Weaveton First Post",
     theAuthorId: author2.id,
     isActive: false,
   });
 
-  const { collection: posts } = await actions.listPosts({});
+  const { results: posts } = await actions.listPosts({});
   expect(posts.length).toEqual(3);
 
-  const { object: getPost1 } = await actions.getPost({ id: post1.id });
-  expect(getPost1.id).toEqual(post1.id);
+  const getPost1 = await actions.getPost({ id: post1.id });
+  expect(getPost1!.id).toEqual(post1.id);
 
-  const { object: getPost2 } = await actions.getPost({ id: post2.id });
-  expect(getPost2.id).toEqual(post2.id);
+  const getPost2 = await actions.getPost({ id: post2.id });
+  expect(getPost2!.id).toEqual(post2.id);
 
-  const { object: getPost3 } = await actions.getPost({ id: post3.id });
-  expect(getPost3.id).toEqual(post3.id);
+  const getPost3 = await actions.getPost({ id: post3.id });
+  expect(getPost3!.id).toEqual(post3.id);
 });
 
 test("permission expression in 1:M relationship - all related models satisfy condition - authorization successful", async () => {
-  const { object: author1 } = await Author.create({
+  const author1 = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
-  const { object: author2 } = await Author.create({
+  const author2 = await models.author.create({
     name: "Weaveton",
     isActive: true,
   });
-  const { object: post1 } = await Post.create({
+  await models.post.create({
     title: "Keelson First Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post2 } = await Post.create({
+  await models.post.create({
     title: "Keelson Second Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post3 } = await Post.create({
+  await models.post.create({
     title: "Weaveton First Post",
     theAuthorId: author2.id,
     isActive: true,
   });
 
-  const { collection: authors } = await actions.listAuthors({});
+  const { results: authors } = await actions.listAuthors({});
   expect(authors.length).toEqual(2);
 
-  const { object: getAuthor1 } = await actions.getAuthor({ id: author1.id });
-  expect(getAuthor1.id).toEqual(author1.id);
+  const getAuthor1 = await actions.getAuthor({ id: author1.id });
+  expect(getAuthor1!.id).toEqual(author1.id);
 
-  const { object: getAuthor2 } = await actions.getAuthor({ id: author2.id });
-  expect(getAuthor2.id).toEqual(author2.id);
+  const getAuthor2 = await actions.getAuthor({ id: author2.id });
+  expect(getAuthor2!.id).toEqual(author2.id);
 });
 
 test("permission expression in 1:M relationship - Weaveton post not active - authorization response on Weaveton author", async () => {
-  const { object: author1 } = await Author.create({
+  const author1 = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
-  const { object: author2 } = await Author.create({
+  const author2 = await models.author.create({
     name: "Weaveton",
     isActive: true,
   });
-  const { object: post1 } = await Post.create({
+  const post1 = await models.post.create({
     title: "Keelson First Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post2 } = await Post.create({
+  const post2 = await models.post.create({
     title: "Keelson Second Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post3 } = await Post.create({
+  const post3 = await models.post.create({
     title: "Weaveton First Post",
     theAuthorId: author2.id,
     isActive: false,
   });
 
-  expect(await actions.listAuthors({})).toHaveAuthorizationError();
+  await expect(actions.listAuthors({})).toHaveAuthorizationError();
 
-  const { object: getAuthor1 } = await actions.getAuthor({ id: author1.id });
-  expect(getAuthor1.id).toEqual(author1.id);
+  const getAuthor1 = await actions.getAuthor({ id: author1.id });
+  expect(getAuthor1!.id).toEqual(author1.id);
 
-  expect(
-    await actions.getAuthor({ id: author2.id })
+  await expect(
+    actions.getAuthor({ id: author2.id })
   ).toHaveAuthorizationError();
 });
 
 test("permission expression in 1:M relationship - one Keelson post not active - authorization successful", async () => {
-  const { object: author1 } = await Author.create({
+  const author1 = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
-  const { object: author2 } = await Author.create({
+  const author2 = await models.author.create({
     name: "Weaveton",
     isActive: true,
   });
-  const { object: post1 } = await Post.create({
+  const post1 = await models.post.create({
     title: "Keelson First Post",
     theAuthorId: author1.id,
     isActive: true,
   });
-  const { object: post2 } = await Post.create({
+  const post2 = await models.post.create({
     title: "Keelson Second Post",
     theAuthorId: author1.id,
     isActive: false,
   });
-  const { object: post3 } = await Post.create({
+  const post3 = await models.post.create({
     title: "Weaveton First Post",
     theAuthorId: author2.id,
     isActive: true,
   });
 
-  const { collection: authors } = await actions.listAuthors({});
+  const { results: authors } = await actions.listAuthors({});
   expect(authors.length).toEqual(2);
 
-  const { object: getAuthor1 } = await actions.getAuthor({ id: author1.id });
-  expect(getAuthor1.id).toEqual(author1.id);
+  const getAuthor1 = await actions.getAuthor({ id: author1.id });
+  expect(getAuthor1!.id).toEqual(author1.id);
 
-  const { object: getAuthor2 } = await actions.getAuthor({ id: author2.id });
-  expect(getAuthor2.id).toEqual(author2.id);
+  const getAuthor2 = await actions.getAuthor({ id: author2.id });
+  expect(getAuthor2!.id).toEqual(author2.id);
 });
 
 test("permission expression in 1:M relationship - all Keelsons post not active - authorization response on Keelson author", async () => {
-  const { object: author1 } = await Author.create({
+  const author1 = await models.author.create({
     name: "Keelson",
     isActive: true,
   });
-  const { object: author2 } = await Author.create({
+  const author2 = await models.author.create({
     name: "Weaveton",
     isActive: true,
   });
-  const { object: post1 } = await Post.create({
+  const post1 = await models.post.create({
     title: "Keelson First Post",
     theAuthorId: author1.id,
     isActive: false,
   });
-  const { object: post2 } = await Post.create({
+  const post2 = await models.post.create({
     title: "Keelson Second Post",
     theAuthorId: author1.id,
     isActive: false,
   });
-  const { object: post3 } = await Post.create({
+  const post3 = await models.post.create({
     title: "Weaveton First Post",
     theAuthorId: author2.id,
     isActive: true,
   });
 
-  expect(await actions.listAuthors({})).toHaveAuthorizationError();
+  await expect(actions.listAuthors({})).toHaveAuthorizationError();
 
-  expect(
-    await actions.getAuthor({ id: author1.id })
+  await expect(
+    actions.getAuthor({ id: author1.id })
   ).toHaveAuthorizationError();
 
-  const { object: getAuthor2 } = await actions.getAuthor({ id: author2.id });
-  expect(getAuthor2.id).toEqual(author2.id);
+  const getAuthor2 = await actions.getAuthor({ id: author2.id });
+  expect(getAuthor2!.id).toEqual(author2.id);
 });

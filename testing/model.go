@@ -24,6 +24,40 @@ import (
 	"github.com/teamkeel/keel/testing/viewport"
 )
 
+const (
+	StatusPass      = "pass"
+	StatusFail      = "fail"
+	StatusException = "exception"
+)
+
+type EventStatus string
+
+const (
+	EventStatusPending  EventStatus = "pending"
+	EventStatusComplete EventStatus = "complete"
+)
+
+type Event struct {
+	EventStatus EventStatus
+
+	Result *TestResult
+	Meta   *TestCase
+}
+
+type TestCase struct {
+	TestName string `json:"name"`
+	FilePath string `json:"filePath"`
+}
+
+type TestResult struct {
+	TestCase
+
+	Status   string          `json:"status"`
+	Expected json.RawMessage `json:"expected,omitempty"`
+	Actual   json.RawMessage `json:"actual,omitempty"`
+	Err      json.RawMessage `json:"err,omitempty"`
+}
+
 // A Bubbletea model is responsible for maintaining the CLI state
 // More about models at https://github.com/charmbracelet/bubbletea#the-model
 type Model struct {

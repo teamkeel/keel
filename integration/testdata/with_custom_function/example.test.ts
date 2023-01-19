@@ -1,87 +1,89 @@
-import { test, expect, actions, Person } from "@teamkeel/testing";
+import { actions, models } from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
 
 test("creating a person", async () => {
-  const { object } = await actions.createPerson({
+  const person = await actions.createPerson({
     name: "foo",
     gender: "female",
-    nINumber: "282",
+    niNumber: "282",
   });
 
-  expect(object.name).toEqual("foo");
+  expect(person.name).toEqual("foo");
 });
 
 test("fetching a person by id", async () => {
-  const { object: person } = await Person.create({
+  const person = await models.person.create({
     name: "bar",
     gender: "male",
-    nINumber: "123",
+    niNumber: "123",
   });
-  const { object } = await actions.getPerson({ id: person.id });
+  const fetchedPerson = await actions.getPerson({ id: person.id });
 
-  expect(object.id).toEqual(person.id);
-  expect(object.name).toEqual(person.name);
+  expect(person.id).toEqual(fetchedPerson!.id);
 });
 
 test("fetching person by additional unique field (not PK)", async () => {
-  const { object: person } = await Person.create({
+  const person = await models.person.create({
     name: "bar",
     gender: "male",
-    nINumber: "333",
+    niNumber: "333",
   });
 
-  const { object } = await actions.getPersonByNINumber({ nINumber: "333" });
+  const fetchedPerson = await actions.getPersonByNINumber({ niNumber: "333" });
 
-  expect(object.id).toEqual(person.id);
+  expect(person.id).toEqual(fetchedPerson!.id);
 });
 
 test("listing", async () => {
-  await Person.create({ name: "fred", gender: "male", nINumber: "000" });
-  const { object: x11 } = await Person.create({
+  await models.person.create({ name: "fred", gender: "male", niNumber: "000" });
+  const x11 = await models.person.create({
     name: "X11",
     gender: "alien",
-    nINumber: "920",
+    niNumber: "920",
   });
-  const { object: x22 } = await Person.create({
+  const x22 = await models.person.create({
     name: "X22",
     gender: "alien",
-    nINumber: "902",
+    niNumber: "902",
   });
 
-  const { collection: aliens } = await actions.listPeople({
+  const resp = await actions.listPeople({
     where: {
-      gender: { equals: "alien" },
+      gender: "alien",
     },
   });
 
-  const alienNames = aliens.map((a) => a.name);
+  const alienNames = resp.results.map((a) => a.name);
 
   expect(alienNames).toEqual([x11.name, x22.name]);
 });
 
 test("deletion", async () => {
-  const { object: person } = await Person.create({
+  const person = await models.person.create({
     name: "fred",
     gender: "male",
-    nINumber: "678",
+    niNumber: "678",
   });
 
-  const { success } = await actions.deletePerson({ id: person.id });
+  const deletedId = await actions.deletePerson({ id: person.id });
 
-  expect(success).toEqual(true);
+  expect(deletedId).toEqual(person.id);
 });
 
 test("updating", async () => {
-  const { object: person } = await Person.create({
+  const person = await models.person.create({
     name: "fred",
     gender: "male",
-    nINumber: "678",
+    niNumber: "678",
   });
 
-  const { object: updatedPerson } = await actions.updatePerson({
+  const updatedPerson = await actions.updatePerson({
     where: { id: person.id },
-    values: { name: "paul" },
+    values: { name: "paul", gender: "non-binary", niNumber: "789" },
   });
 
   expect(updatedPerson.name).toEqual("paul");
+  expect(updatedPerson.gender).toEqual("non-binary");
+  expect(updatedPerson.niNumber).toEqual("789");
   expect(updatedPerson.id).toEqual(person.id);
 });

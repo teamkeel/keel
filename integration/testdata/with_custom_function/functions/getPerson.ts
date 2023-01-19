@@ -1,5 +1,5 @@
 import { GetPerson } from "@teamkeel/sdk";
 
-export default GetPerson(async (inputs, api) => {
-  return await api.models.person.findOne(inputs);
+export default GetPerson((inputs, api) => {
+  return api.models.person.findOne(inputs);
 });

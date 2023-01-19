@@ -1,21 +1,24 @@
-import { test, expect, actions, Post, Identity } from "@teamkeel/testing";
+import { actions, resetDatabase } from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
+
+beforeEach(resetDatabase);
 
 test("string permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.updateWithTextPermissionLiteral({
+  await expect(
+    actions.updateWithTextPermissionLiteral({
       where: { id: post.id },
       values: { title: "goodbye" },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("string permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "goodbye" });
+  const post = await actions.createWithText({ title: "goodbye" });
 
-  expect(
-    await actions.updateWithTextPermissionLiteral({
+  await expect(
+    actions.updateWithTextPermissionLiteral({
       where: { id: post.id },
       values: { title: "hello" },
     })
@@ -23,10 +26,10 @@ test("string permission on literal - not matching value - is not authorized", as
 });
 
 test("string permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "goodbye" });
+  const post = await actions.createWithText({ title: "goodbye" });
 
-  expect(
-    await actions.updateWithTextPermissionLiteral({
+  await expect(
+    actions.updateWithTextPermissionLiteral({
       where: { id: post.id },
       values: { title: null },
     })
@@ -34,21 +37,21 @@ test("string permission on literal - null value - is not authorized", async () =
 });
 
 test("number permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 1 });
+  const post = await actions.createWithNumber({ views: 1 });
 
-  expect(
-    await actions.updateWithNumberPermissionLiteral({
+  await expect(
+    actions.updateWithNumberPermissionLiteral({
       where: { id: post.id },
       values: { views: 100 },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("number permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 100 });
+  const post = await actions.createWithNumber({ views: 100 });
 
-  expect(
-    await actions.updateWithNumberPermissionLiteral({
+  await expect(
+    actions.updateWithNumberPermissionLiteral({
       where: { id: post.id },
       values: { views: 1 },
     })
@@ -56,10 +59,10 @@ test("number permission on literal - not matching value - is not authorized", as
 });
 
 test("number permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 100 });
+  const post = await actions.createWithNumber({ views: 100 });
 
-  expect(
-    await actions.updateWithNumberPermissionLiteral({
+  await expect(
+    actions.updateWithNumberPermissionLiteral({
       where: { id: post.id },
       values: { views: null },
     })
@@ -67,21 +70,21 @@ test("number permission on literal - null value - is not authorized", async () =
 });
 
 test("boolean permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: true });
+  const post = await actions.createWithBoolean({ active: true });
 
-  expect(
-    await actions.updateWithBooleanPermissionLiteral({
+  await expect(
+    actions.updateWithBooleanPermissionLiteral({
       where: { id: post.id },
       values: { active: false },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("boolean permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: false });
+  const post = await actions.createWithBoolean({ active: false });
 
-  expect(
-    await actions.updateWithBooleanPermissionLiteral({
+  await expect(
+    actions.updateWithBooleanPermissionLiteral({
       where: { id: post.id },
       values: { active: true },
     })
@@ -89,10 +92,10 @@ test("boolean permission on literal - not matching value - is not authorized", a
 });
 
 test("boolean permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: false });
+  const post = await actions.createWithBoolean({ active: false });
 
-  expect(
-    await actions.updateWithBooleanPermissionLiteral({
+  await expect(
+    actions.updateWithBooleanPermissionLiteral({
       where: { id: post.id },
       values: { active: null },
     })
@@ -100,21 +103,21 @@ test("boolean permission on literal - null value - is not authorized", async () 
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: "Technical" });
 
-  expect(
-    await actions.updateWithEnumPermissionLiteral({
+  await expect(
+    actions.updateWithEnumPermissionLiteral({
       where: { id: post.id },
       values: { type: "Technical" },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: "Lifestyle" });
 
-  expect(
-    await actions.updateWithEnumPermissionLiteral({
+  await expect(
+    actions.updateWithEnumPermissionLiteral({
       where: { id: post.id },
       values: { type: "Lifestyle" },
     })
@@ -122,10 +125,10 @@ test("enum permission on literal - not matching value - is not authorized", asyn
 });
 
 test("enum permission on literal - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: null });
+  const post = await actions.createWithEnum({ type: null });
 
-  expect(
-    await actions.updateWithEnumPermissionLiteral({
+  await expect(
+    actions.updateWithEnumPermissionLiteral({
       where: { id: post.id },
       values: { type: null },
     })
@@ -133,21 +136,21 @@ test("enum permission on literal - null value - is not authorized", async () => 
 });
 
 test("string permission on field - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.updateWithTextPermissionFromField({
+  await expect(
+    actions.updateWithTextPermissionFromField({
       where: { id: post.id },
       values: { title: "goodbye" },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("string permission on field - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "goodbye" });
+  const post = await actions.createWithText({ title: "goodbye" });
 
-  expect(
-    await actions.updateWithTextPermissionFromField({
+  await expect(
+    actions.updateWithTextPermissionFromField({
       where: { id: post.id },
       values: { title: "hello" },
     })
@@ -155,10 +158,10 @@ test("string permission on field - not matching value - is not authorized", asyn
 });
 
 test("string permission on field - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "goodbye" });
+  const post = await actions.createWithText({ title: "goodbye" });
 
-  expect(
-    await actions.updateWithTextPermissionFromField({
+  await expect(
+    actions.updateWithTextPermissionFromField({
       where: { id: post.id },
       values: { title: null },
     })
@@ -166,21 +169,21 @@ test("string permission on field - null value - is not authorized", async () => 
 });
 
 test("number permission on field - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 1 });
+  const post = await actions.createWithNumber({ views: 1 });
 
-  expect(
-    await actions.updateWithNumberPermissionFromField({
+  await expect(
+    actions.updateWithNumberPermissionFromField({
       where: { id: post.id },
       values: { views: 100 },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("number permission on field - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 100 });
+  const post = await actions.createWithNumber({ views: 100 });
 
-  expect(
-    await actions.updateWithNumberPermissionFromField({
+  await expect(
+    actions.updateWithNumberPermissionFromField({
       where: { id: post.id },
       values: { views: 1 },
     })
@@ -188,10 +191,10 @@ test("number permission on field - not matching value - is not authorized", asyn
 });
 
 test("number permission on field - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithNumber({ views: 100 });
+  const post = await actions.createWithNumber({ views: 100 });
 
-  expect(
-    await actions.updateWithNumberPermissionFromField({
+  await expect(
+    actions.updateWithNumberPermissionFromField({
       where: { id: post.id },
       values: { views: null },
     })
@@ -199,21 +202,21 @@ test("number permission on field - null value - is not authorized", async () => 
 });
 
 test("boolean permission on field - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: true });
+  const post = await actions.createWithBoolean({ active: true });
 
-  expect(
-    await actions.updateWithBooleanPermissionFromField({
+  await expect(
+    actions.updateWithBooleanPermissionFromField({
       where: { id: post.id },
       values: { active: false },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("boolean permission on field - field is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: false });
+  const post = await actions.createWithBoolean({ active: false });
 
-  expect(
-    await actions.updateWithBooleanPermissionFromField({
+  await expect(
+    actions.updateWithBooleanPermissionFromField({
       where: { id: post.id },
       values: { active: true },
     })
@@ -221,10 +224,10 @@ test("boolean permission on field - field is not authorized", async () => {
 });
 
 test("boolean permission on field - null - is not authorized", async () => {
-  const { object: post } = await actions.createWithBoolean({ active: false });
+  const post = await actions.createWithBoolean({ active: false });
 
-  expect(
-    await actions.updateWithBooleanPermissionFromField({
+  await expect(
+    actions.updateWithBooleanPermissionFromField({
       where: { id: post.id },
       values: { active: null },
     })
@@ -232,21 +235,21 @@ test("boolean permission on field - null - is not authorized", async () => {
 });
 
 test("enum permission on field - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: "Technical" });
 
-  expect(
-    await actions.updateWithEnumPermissionFromField({
+  await expect(
+    actions.updateWithEnumPermissionFromField({
       where: { id: post.id },
       values: { type: "Lifestyle" },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("enum permission on field - field is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: "Lifestyle" });
 
-  expect(
-    await actions.updateWithEnumPermissionFromField({
+  await expect(
+    actions.updateWithEnumPermissionFromField({
       where: { id: post.id },
       values: { type: "Technical" },
     })
@@ -254,10 +257,10 @@ test("enum permission on field - field is not authorized", async () => {
 });
 
 test("enum permission on field - null - is not authorized", async () => {
-  const { object: post } = await actions.createWithEnum({ type: null });
+  const post = await actions.createWithEnum({ type: null });
 
-  expect(
-    await actions.updateWithEnumPermissionFromField({
+  await expect(
+    actions.updateWithEnumPermissionFromField({
       where: { id: post.id },
       values: { type: null },
     })
@@ -265,7 +268,7 @@ test("enum permission on field - null - is not authorized", async () => {
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -273,22 +276,18 @@ test("identity permission - correct identity in context - is authorized", async 
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
+  const post = await actions.withAuthToken(token).createWithIdentity({});
 
-  const { object: post } = await actions
-    .withIdentity(identity)
-    .createWithIdentity({});
-
-  expect(
-    await actions.withIdentity(identity).updateWithIdentityPermission({
+  await expect(
+    actions.withAuthToken(token).updateWithIdentityPermission({
       where: { id: post.id },
       values: { title: "hello" },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("identity permission - incorrect identity in context - is not authorized", async () => {
-  const { identityId: id1 } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user1@keel.xyz",
@@ -296,7 +295,7 @@ test("identity permission - incorrect identity in context - is not authorized", 
     },
   });
 
-  const { identityId: id2 } = await actions.authenticate({
+  const { token: token2 } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user2@keel.xyz",
@@ -304,15 +303,10 @@ test("identity permission - incorrect identity in context - is not authorized", 
     },
   });
 
-  const { object: identity1 } = await Identity.findOne({ id: id1 });
-  const { object: identity2 } = await Identity.findOne({ id: id2 });
+  const post = await actions.withAuthToken(token).createWithIdentity({});
 
-  const { object: post } = await actions
-    .withIdentity(identity1)
-    .createWithIdentity({});
-
-  expect(
-    await actions.withIdentity(identity2).updateWithIdentityPermission({
+  await expect(
+    actions.withAuthToken(token2).updateWithIdentityPermission({
       where: { id: post.id },
       values: { title: "hello" },
     })
@@ -320,7 +314,7 @@ test("identity permission - incorrect identity in context - is not authorized", 
 });
 
 test("identity permission - no identity in context - is not authorized", async () => {
-  const { identityId: id } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -328,14 +322,10 @@ test("identity permission - no identity in context - is not authorized", async (
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: id });
+  const post = await actions.withAuthToken(token).createWithIdentity({});
 
-  const { object: post } = await actions
-    .withIdentity(identity)
-    .createWithIdentity({});
-
-  expect(
-    await actions.updateWithIdentityPermission({
+  await expect(
+    actions.updateWithIdentityPermission({
       where: { id: post.id },
       values: { title: "hello" },
     })
@@ -343,32 +333,32 @@ test("identity permission - no identity in context - is not authorized", async (
 });
 
 test("true value permission - unauthenticated identity - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.updateWithTrueValuePermission({
+  await expect(
+    actions.updateWithTrueValuePermission({
       where: { id: post.id },
       values: { title: "hello again" },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("permission on implicit input - matching value - is authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "hello" });
+  const post = await actions.createWithText({ title: "hello" });
 
-  expect(
-    await actions.updateWithTextPermissionOnImplicitInput({
+  await expect(
+    actions.updateWithTextPermissionOnImplicitInput({
       where: { id: post.id },
       values: { title: "does not matter" },
     })
-  ).notToHaveAuthorizationError();
+  ).not.toHaveAuthorizationError();
 });
 
 test("permission on implicit input - not matching value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: "goodbye" });
+  const post = await actions.createWithText({ title: "goodbye" });
 
-  expect(
-    await actions.updateWithTextPermissionOnImplicitInput({
+  await expect(
+    actions.updateWithTextPermissionOnImplicitInput({
       where: { id: post.id },
       values: { title: "does not matter" },
     })
@@ -376,10 +366,10 @@ test("permission on implicit input - not matching value - is not authorized", as
 });
 
 test("permission on implicit input - null value - is not authorized", async () => {
-  const { object: post } = await actions.createWithText({ title: null });
+  const post = await actions.createWithText({ title: null });
 
-  expect(
-    await actions.updateWithTextPermissionOnImplicitInput({
+  await expect(
+    actions.updateWithTextPermissionOnImplicitInput({
       where: { id: post.id },
       values: { title: "does not matter" },
     })

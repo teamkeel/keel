@@ -8,16 +8,16 @@ export async function toHaveError(received, expected) {
     return {
       pass: false,
       message: () => 'expected value to reject',
-      actual: v,
-      expected
+      actual: JSON.stringify(v),
+      expected: JSON.stringify(expected)
     };
   } catch (err) {
     return {
       pass: isMatch(err, expected),
       message: () =>
         `expected ${isNot ? "no " : ""} ${JSON.stringify(err)} error`,
-      actual: err,
-      expected
+      actual: JSON.stringify(err),
+      expected: JSON.stringify(expected)
     };
   }
 }

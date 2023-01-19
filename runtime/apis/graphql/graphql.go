@@ -313,7 +313,10 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 							return nil, err
 						}
 
-						res, err := connectionResponse(results, hasNextPage)
+						res, err := connectionResponse(map[string]any{
+							"results":     results,
+							"hasNextPage": hasNextPage,
+						})
 						if err != nil {
 							return nil, err
 						}

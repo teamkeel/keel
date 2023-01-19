@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
@@ -23,11 +22,6 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	err = query.captureSetValues(scope, input)
 	if err != nil {
 		return nil, err
-	}
-
-	op := scope.operation
-	if op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		return ParseCreateObjectResponse(scope.context, op, input)
 	}
 
 	// Return the inserted row

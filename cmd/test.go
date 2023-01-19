@@ -4,71 +4,45 @@ import (
 	"fmt"
 
 	"os"
-	"path/filepath"
 
 	"github.com/spf13/cobra"
 
-	"github.com/teamkeel/keel/nodedeps"
-	"github.com/teamkeel/keel/testhelpers"
+	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/testing"
 )
 
 var testCmd = &cobra.Command{
 	Use:   "test",
 	Short: "Run Keel tests",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		var ch chan []*testing.Event
-		workingDir, err := testhelpers.WithTmpDir(inputDir)
+	Run: func(cmd *cobra.Command, args []string) {
 
+		opts := []node.BootstrapOption{}
+		if os.Getenv("KEEL_LOCAL_PACKAGES_PATH") != "" {
+			opts = append(opts, node.WithPackagesPath(os.Getenv("KEEL_LOCAL_PACKAGES_PATH")))
+		}
+
+		err := node.Bootstrap(inputDir, opts...)
 		if err != nil {
-			return err
+			panic(err)
 		}
 
-		onQuit := func() {
-			if ch != nil {
-				close(ch)
-			}
-		}
-		outputter := testing.NewOutputter(workingDir, onQuit)
-
-		outputter.Start()
-		packageJson, err := nodedeps.NewPackageJson(filepath.Join(workingDir, "package.json"))
-
+		_, dbConnInfo, err := database.Start(true)
 		if err != nil {
-			return err
+			panic(err)
+		}
+		defer database.Stop()
+
+		results, err := testing.Run(dbConnInfo, inputDir)
+		if results != nil {
+			fmt.Println(results.Output)
 		}
 
-		err = packageJson.Inject(map[string]string{
-			"@teamkeel/testing": "*",
-			"@teamkeel/sdk":     "*",
-			"@teamkeel/runtime": "*",
-			"ts-node":           "*",
-			// https://typestrong.org/ts-node/docs/swc/
-			"@swc/core":           "*",
-			"regenerator-runtime": "*",
-		}, true)
-
-		if err != nil {
-			return err
+		if err != nil || results != nil && !results.Success {
+			os.Exit(1)
 		}
-
-		ch, err = testing.Run(workingDir, pattern)
-
-		if err != nil {
-			return err
-		}
-
-		for newEvents := range ch {
-			outputter.Push(newEvents)
-		}
-
-		outputter.End()
-
-		return nil
 	},
 }
-
-var pattern string
 
 func init() {
 	rootCmd.AddCommand(testCmd)
@@ -77,5 +51,4 @@ func init() {
 		panic(fmt.Errorf("os.Getwd() errored: %v", err))
 	}
 	testCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "input directory to validate")
-	testCmd.Flags().StringVarP(&pattern, "pattern", "p", "(.*)", "pattern to isolate test")
 }

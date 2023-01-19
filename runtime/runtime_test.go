@@ -14,6 +14,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
@@ -34,7 +35,16 @@ func TestRuntime(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
-			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name))
+			// Use the docker compose database
+			dbConnInfo := &database.ConnectionInfo{
+				Host:     "localhost",
+				Port:     "8001",
+				Username: "postgres",
+				Database: "keel",
+				Password: "postgres",
+			}
+
+			testDB, err := testhelpers.SetupDatabaseForTestCase(dbConnInfo, schema, testhelpers.DbNameForTestName(tCase.name))
 
 			require.NoError(t, err)
 
@@ -101,7 +111,16 @@ func TestRuntimeRPC(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
-			testDB, err := testhelpers.SetupDatabaseForTestCase(schema, testhelpers.DbNameForTestName(tCase.name))
+			// Use the docker compose database
+			dbConnInfo := &database.ConnectionInfo{
+				Host:     "localhost",
+				Port:     "8001",
+				Username: "postgres",
+				Database: "keel",
+				Password: "postgres",
+			}
+
+			testDB, err := testhelpers.SetupDatabaseForTestCase(dbConnInfo, schema, testhelpers.DbNameForTestName(tCase.name))
 
 			require.NoError(t, err)
 
@@ -522,9 +541,8 @@ var testCases = []testCase{
 		variables: map[string]any{
 			"id": "42",
 		},
-		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
-			require.Len(t, errors, 1)
-			require.Equal(t, "no records found for Get() operation", errors[0].Message)
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "getPerson", nil)
 		},
 	},
 	{
@@ -617,7 +635,7 @@ var testCases = []testCase{
 		},
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
-			require.Equal(t, "no records found for Update() operation", errors[0].Message)
+			require.Equal(t, "record not found", errors[0].Message)
 		},
 	},
 	{
