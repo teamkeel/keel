@@ -1,3 +1,10 @@
+## [0.236.3](https://github.com/teamkeel/keel/compare/v0.236.2...v0.236.3) (2023-01-19)
+
+
+### Bug Fixes
+
+* delete op support for nested model lookups ([#671](https://github.com/teamkeel/keel/issues/671)) ([9d3a486](https://github.com/teamkeel/keel/commit/9d3a486d97c772d0de7c57de072c6328867f5a61))
+
 ## [0.236.2](https://github.com/teamkeel/keel/compare/v0.236.1...v0.236.2) (2023-01-18)
 
 
