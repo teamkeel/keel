@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -21,8 +22,8 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 			return err
 		}
 
-		lhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.LHS)
-		rhsResolver := NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.RHS)
+		lhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.LHS)
+		rhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.RHS)
 		operandType, err := lhsResolver.GetOperandType()
 		if err != nil {
 			return err

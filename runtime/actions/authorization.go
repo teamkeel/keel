@@ -6,6 +6,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"golang.org/x/exp/slices"
@@ -64,8 +65,8 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args WhereArgs) (authorize
 		}
 
 		// First check to see if we can resolve the condition "in proc"
-		if canResolveInMemory(scope, expression) {
-			if resolveInMemory(scope, expression, args, query.writeValues) {
+		if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
+			if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, args, query.writeValues) {
 				return true, nil
 			} else if i == len(exprBasedPerms)-1 {
 				return false, nil
