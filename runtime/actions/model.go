@@ -7,6 +7,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -127,11 +128,12 @@ func schemaDefault(field *proto.Field) (any, error) {
 	}
 	switch {
 	case expr.IsValue():
+
 		v, err := expr.ToValue()
 		if err != nil {
 			return nil, err
 		}
-		return toNative(v, field.Type.Type)
+		return expressions.ToNative(v, field.Type.Type)
 	default:
 		return nil, fmt.Errorf("expressions that are not simple values are not yet supported")
 	}
