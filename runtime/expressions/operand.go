@@ -91,23 +91,6 @@ func (resolver *OperandResolver) IsDatabaseColumn() bool {
 	return modelTarget == strcase.ToLowerCamel(resolver.Operation.ModelName)
 }
 
-// TODO: delete WriteValues since this is covered by using a transaction rollback on create and update
-func (resolver *OperandResolver) IsWriteValue() bool {
-	if resolver.Operation.Type != proto.OperationType_OPERATION_TYPE_CREATE {
-		return false
-	}
-
-	isMultiFragmentIdent := resolver.Operand.Ident != nil && len(resolver.Operand.Ident.Fragments) > 1
-
-	if !isMultiFragmentIdent {
-		return false
-	}
-
-	modelTarget := resolver.Operand.Ident.Fragments[0].Fragment
-
-	return modelTarget == strcase.ToLowerCamel(resolver.Operation.ModelName)
-}
-
 // IsContextField returns true if the expression operand refers to a value on the context.
 // For example, a permission condition may check against the current identity,
 // such as: @permission(thing.identity == ctx.identity)
@@ -159,14 +142,6 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 
 		operandType := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), fieldName).Type.Type
 		return operandType, nil
-	case resolver.IsWriteValue():
-		if operation.Type != proto.OperationType_OPERATION_TYPE_CREATE {
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("only the create operation can refer to write values in expressions")
-		}
-		modelTarget := resolver.Operand.Ident.Fragments[0].Fragment
-		fieldName := operand.Ident.Fragments[1].Fragment
-		operandType := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), fieldName).Type.Type
-		return operandType, nil
 	case resolver.IsImplicitInput():
 		modelTarget := strcase.ToCamel(operation.ModelName)
 		inputName := operand.Ident.Fragments[0].Fragment
@@ -185,7 +160,7 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 }
 
 // ResolveValue returns the actual value of the operand, provided a database read is not required.
-func (resolver *OperandResolver) ResolveValue(args map[string]any, writeValues map[string]any) (any, error) {
+func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) {
 	operandType, err := resolver.GetOperandType()
 	if err != nil {
 		return nil, err
@@ -206,20 +181,6 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any, writeValues m
 		value, ok := args[inputName]
 		if !ok {
 			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", inputName)
-		}
-		return value, nil
-	case resolver.IsWriteValue():
-		inputName := resolver.Operand.Ident.Fragments[1].Fragment
-
-		// If the target is type MODEL, then refer to the
-		// foreign key id by appending "Id" to the field name
-		if operandType == proto.Type_TYPE_MODEL {
-			inputName = fmt.Sprintf("%sId", inputName)
-		}
-
-		value, ok := writeValues[strcase.ToSnake(inputName)]
-		if !ok {
-			return nil, fmt.Errorf("value '%s' does not exist in write values", inputName)
 		}
 		return value, nil
 	case resolver.IsDatabaseColumn():

@@ -12,7 +12,7 @@ type ListResult struct {
 	HasNextPage bool             `json:"hasNextPage"`
 }
 
-func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args WhereArgs) error {
+func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[string]any) error {
 inputs:
 	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {

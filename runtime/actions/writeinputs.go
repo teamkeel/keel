@@ -10,7 +10,7 @@ import (
 )
 
 // Updates the query with all set attributes defined on the operation.
-func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error {
+func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
 	for _, setExpression := range scope.operation.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
@@ -29,11 +29,11 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 			return err
 		}
 
-		if !(lhsResolver.IsDatabaseColumn() || lhsResolver.IsWriteValue()) {
+		if !lhsResolver.IsDatabaseColumn() {
 			return fmt.Errorf("lhs operand of assignment expression must be a model field")
 		}
 
-		value, err := rhsResolver.ResolveValue(args, query.writeValues)
+		value, err := rhsResolver.ResolveValue(args)
 		if err != nil {
 			return err
 		}
@@ -63,7 +63,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args ValueArgs) error 
 }
 
 // Updates the query with all inputs defined on the operation.
-func (query *QueryBuilder) captureWriteValues(scope *Scope, args ValueArgs) error {
+func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
 	for _, input := range scope.operation.Inputs {
 		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			continue
