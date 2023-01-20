@@ -165,7 +165,7 @@ func TestWriteEnumWhereCondition(t *testing.T) {
 	expected := `
 export interface GenderWhereCondition {
 	equals?: Gender
-	oneOf?: [Gender]
+	oneOf?: Gender[]
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
@@ -233,7 +233,7 @@ function personDefaultValues() {
 	r.name = "";
 	r.isAdmin = false;
 	r.counter = 0;
-	r.id = KSUID.randomSync().string;
+	r.id = runtime.ksuid();
 	r.createdAt = new Date();
 	r.updatedAt = new Date();
 	return r;
@@ -245,7 +245,7 @@ function personDefaultValues() {
 	})
 }
 
-func TestWriteCustomFunctionInputTypesGet(t *testing.T) {
+func TestWriteActionInputTypesGet(t *testing.T) {
 	schema := `
 model Person {
 	functions {
@@ -260,11 +260,11 @@ export interface GetPersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeCustomFunctionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, m.Operations[0])
 	})
 }
 
-func TestWriteCustomFunctionInputTypesCreate(t *testing.T) {
+func TestWriteActionInputTypesCreate(t *testing.T) {
 	schema := `
 model Person {
 	fields {
@@ -282,11 +282,11 @@ export interface CreatePersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeCustomFunctionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, m.Operations[0])
 	})
 }
 
-func TestWriteCustomFunctionInputTypesUpdate(t *testing.T) {
+func TestWriteActionInputTypesUpdate(t *testing.T) {
 	schema := `
 model Person {
 	fields {
@@ -311,11 +311,11 @@ export interface UpdatePersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeCustomFunctionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, m.Operations[0])
 	})
 }
 
-func TestWriteCustomFunctionInputTypesList(t *testing.T) {
+func TestWriteActionInputTypesList(t *testing.T) {
 	schema := `
 model Person {
 	fields {
@@ -337,11 +337,42 @@ export interface ListPeopleInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeCustomFunctionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, m.Operations[0])
 	})
 }
 
-func TestWriteCustomFunctionInputTypesDelete(t *testing.T) {
+func TestWriteActionInputTypesListOperation(t *testing.T) {
+	schema := `
+enum Sport {
+	Football
+	Tennis
+}
+model Person {
+	fields {
+		name Text
+		favouriteSport Sport
+	}
+	operations {
+		list listPeople(name, favouriteSport)
+	}
+}
+	`
+	expected := `
+export interface ListPeopleInputWhere {
+	name: runtime.StringWhereCondition;
+	favouriteSport: SportWhereCondition;
+}
+export interface ListPeopleInput {
+	where: ListPeopleInputWhere;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, m.Operations[0])
+	})
+}
+
+func TestWriteActionInputTypesDelete(t *testing.T) {
 	schema := `
 model Person {
 	functions {
@@ -356,7 +387,7 @@ export interface DeletePersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeCustomFunctionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, m.Operations[0])
 	})
 }
 
@@ -407,8 +438,8 @@ declare class ActionExecutor {
 	async getPerson(i: sdk.GetPersonInput): Promise<sdk.Person | null>;
 	async createPerson(i: sdk.CreatePersonInput): Promise<sdk.Person>;
 	async updatePerson(i: sdk.UpdatePersonInput): Promise<sdk.Person>;
-	async deletePerson(i: sdk.DeletePersonInput): Promise<string>;
-	async listPeople(i: sdk.ListPeopleInput): Promise<sdk.Person[]>;
+	async deletePerson(i: sdk.DeletePersonInput): Promise<boolean>;
+	async listPeople(i: sdk.ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
 	async authenticate(i: sdk.AuthenticateInput): Promise<>;
 }
 export declare const actions: ActionExecutor;
@@ -473,7 +504,7 @@ func TestTestingActionExecutor(t *testing.T) {
 		assert.Equal(t, "getPerson", payload.Method)
 		assert.Equal(t, "1234", payload.Params.ID)
 
-		w.Write([]byte(`{"name": "Barney"}`))
+		w.Write([]byte(`{"result": {"name": "Barney"}}`))
 	}))
 	defer server.Close()
 

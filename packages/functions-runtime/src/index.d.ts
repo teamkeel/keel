@@ -1,3 +1,6 @@
+// These types are used both for the model API methods like where, findMany etc..
+// and also for query types for list action inputs
+
 export type IDWhereCondition = {
   equals?: string;
   oneOf?: string[];
@@ -26,10 +29,26 @@ export type NumberWhereCondition = {
   notEquals?: number;
 };
 
+// Date database API
 export type DateWhereCondition = {
-  equals?: Date;
-  before?: Date;
-  onOrBefore?: Date;
-  after?: Date;
-  onOrAfter?: Date;
+  equals?: Date | string;
+  before?: Date | string;
+  onOrBefore?: Date | string;
+  after?: Date | string;
+  onOrAfter?: Date | string;
+};
+
+// Date query input
+export type DateQueryInput = {
+  equals?: string;
+  before?: string;
+  onOrBefore?: string;
+  after?: string;
+  onOrAfter?: string;
+};
+
+// Timestamp query input
+export type TimestampQueryInput = {
+  before: string;
+  after: string;
 };

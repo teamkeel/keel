@@ -7,7 +7,7 @@ const {
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
-export async function handleRequest(request, config) {
+async function handleRequest(request, config) {
   const { createFunctionAPI, functions } = config;
 
   if (!(request.method in functions)) {
@@ -50,3 +50,5 @@ export async function handleRequest(request, config) {
     );
   }
 }
+
+module.exports.handleRequest = handleRequest;
