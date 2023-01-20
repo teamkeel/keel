@@ -105,7 +105,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 				continue
 			}
 
-			writeCustomFunctionInputTypes(sdkTypes, op)
+			writeActionInputTypes(sdkTypes, op)
 			writeCustomFunctionWrapperType(sdkTypes, model, op)
 
 			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(op.Name))
@@ -266,9 +266,9 @@ func writeEnumWhereCondition(w *Writer, enum *proto.Enum) {
 	w.Indent()
 	w.Write("equals?: ")
 	w.Writeln(enum.Name)
-	w.Write("oneOf?: [")
+	w.Write("oneOf?: ")
 	w.Write(enum.Name)
-	w.Writeln("]")
+	w.Writeln("[]")
 	w.Dedent()
 	w.Writeln("}")
 }
@@ -338,7 +338,7 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 			w.Writef("r.%s = ", field.Name)
 			switch field.Type.Type {
 			case proto.Type_TYPE_ID:
-				w.Write("KSUID.randomSync().string")
+				w.Write("runtime.ksuid()")
 			case proto.Type_TYPE_STRING:
 				w.Write(`""`)
 			case proto.Type_TYPE_BOOL:
@@ -358,13 +358,13 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeCustomFunctionInputTypes(w *Writer, op *proto.Operation) {
+func writeActionInputTypes(w *Writer, op *proto.Operation) {
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_UPDATE, proto.OperationType_OPERATION_TYPE_LIST:
 		w.Writef("export interface %sInputWhere ", strcase.ToCamel(op.Name))
 		w.Writeln("{")
 		w.Indent()
-		writeInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_READ)
+		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_READ)
 		w.Dedent()
 		w.Writeln("}")
 	}
@@ -374,7 +374,7 @@ func writeCustomFunctionInputTypes(w *Writer, op *proto.Operation) {
 		w.Writef("export interface %sInputValues ", strcase.ToCamel(op.Name))
 		w.Writeln("{")
 		w.Indent()
-		writeInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_WRITE)
+		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_WRITE)
 		w.Dedent()
 		w.Writeln("}")
 	}
@@ -385,9 +385,9 @@ func writeCustomFunctionInputTypes(w *Writer, op *proto.Operation) {
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		writeInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_WRITE)
+		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_WRITE)
 	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_DELETE:
-		writeInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_READ)
+		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_READ)
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		w.Write("where: ")
 		w.Writef("%sInputWhere", strcase.ToCamel(op.Name))
@@ -406,7 +406,7 @@ func writeCustomFunctionInputTypes(w *Writer, op *proto.Operation) {
 	w.Writeln("}")
 }
 
-func writeInputInterfaceFields(w *Writer, op *proto.Operation, mode proto.InputMode) {
+func writeActionInputInterfaceFields(w *Writer, op *proto.Operation, mode proto.InputMode) {
 	for _, input := range op.Inputs {
 		if input.Mode != mode {
 			continue
@@ -416,7 +416,28 @@ func writeInputInterfaceFields(w *Writer, op *proto.Operation, mode proto.InputM
 			w.Write("?")
 		}
 		w.Write(": ")
-		w.Write(toTypeScriptType(input.Type))
+
+		if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			switch input.Type.Type {
+			case proto.Type_TYPE_DATE:
+				w.Write("runtime.DateQueryInput")
+			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+				w.Write("runtime.TimestampQueryInput")
+			case proto.Type_TYPE_STRING:
+				w.Write("runtime.StringWhereCondition")
+			case proto.Type_TYPE_ID:
+				w.Write("runtime.IDWhereCondition")
+			case proto.Type_TYPE_BOOL:
+				w.Write("runtime.BooleanWhereCondition")
+			case proto.Type_TYPE_INT:
+				w.Write("runtime.NumberWhereCondition")
+			case proto.Type_TYPE_ENUM:
+				w.Writef("%sWhereCondition", input.Type.EnumName.Value)
+			}
+		} else {
+			w.Write(toTypeScriptType(input.Type))
+		}
+
 		w.Writeln(";")
 	}
 }
@@ -424,13 +445,13 @@ func writeInputInterfaceFields(w *Writer, op *proto.Operation, mode proto.InputM
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
 	w.Writef("(fn: (inputs: %sInput, api: FunctionAPI) => ", strcase.ToCamel(op.Name))
-	w.Write(toOperationReturnType(model, op, false))
+	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
-	w.Write(toOperationReturnType(model, op, false))
+	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Writeln(";")
 }
 
-func toOperationReturnType(model *proto.Model, op *proto.Operation, isTestingPackage bool) string {
+func toCustomFunctionReturnType(model *proto.Model, op *proto.Operation, isTestingPackage bool) string {
 	returnType := "Promise<"
 	sdkPrefix := ""
 	if isTestingPackage {
@@ -448,6 +469,28 @@ func toOperationReturnType(model *proto.Model, op *proto.Operation, isTestingPac
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		returnType += "string"
 	}
+	returnType += ">"
+	return returnType
+}
+
+func toActionReturnType(model *proto.Model, op *proto.Operation) string {
+	returnType := "Promise<"
+	sdkPrefix := "sdk."
+
+	switch op.Type {
+	case proto.OperationType_OPERATION_TYPE_CREATE:
+		returnType += sdkPrefix + model.Name
+	case proto.OperationType_OPERATION_TYPE_UPDATE:
+		returnType += sdkPrefix + model.Name
+	case proto.OperationType_OPERATION_TYPE_GET:
+		returnType += sdkPrefix + model.Name + " | null"
+	case proto.OperationType_OPERATION_TYPE_LIST:
+		returnType += "{results: " + sdkPrefix + model.Name + "[], hasNextPage: boolean}"
+	case proto.OperationType_OPERATION_TYPE_DELETE:
+		// TODO: update runtime to return id of deleted object
+		returnType += "boolean"
+	}
+
 	returnType += ">"
 	return returnType
 }
@@ -555,7 +598,9 @@ class ActionExecutor {
 	_execute(method, params) {
 		const headers = { "Content-Type": "application/json" };
 		if (this._identity) {
-			headers["X-Testing-Identity-ID"] = this._identity.id;
+			headers["Authorization"] = "Bearer " + jwt.sign({
+				id: this._identity.id,
+			}, "test", {algorithm: "HS256", expiresIn: 60 * 60 * 24})
 		}
 		return fetch(process.env.KEEL_ACTIONS_RPC_URL, {
 			method: "POST",
@@ -566,7 +611,12 @@ class ActionExecutor {
 				id: crypto.randomBytes(16).toString('hex'),
 			}),
 			headers,
-		}).then((r) => r.json());
+		}).then((r) => r.json()).then(r => {
+			if (r.error) {
+				throw r.error;
+			}
+			return r.result;
+		})
 	}
 }
 
@@ -614,7 +664,7 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
 	for _, model := range schema.Models {
 		for _, op := range model.Operations {
-			w.Writef(`async %s(i: sdk.%sInput): %s`, op.Name, strcase.ToCamel(op.Name), toOperationReturnType(model, op, true))
+			w.Writef(`async %s(i: sdk.%sInput): %s`, op.Name, strcase.ToCamel(op.Name), toActionReturnType(model, op))
 			w.Writeln(";")
 		}
 	}
