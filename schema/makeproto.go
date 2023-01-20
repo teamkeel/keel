@@ -259,12 +259,12 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 	model := query.Model(scm.asts, modelName)
 
 	for _, input := range parserFunction.Inputs {
-		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_READ)
+		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_READ, impl)
 		protoOp.Inputs = append(protoOp.Inputs, protoInput)
 	}
 
 	for _, input := range parserFunction.With {
-		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_WRITE)
+		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_WRITE, impl)
 		protoOp.Inputs = append(protoOp.Inputs, protoInput)
 	}
 
@@ -278,6 +278,7 @@ func (scm *Builder) makeOperationInput(
 	op *parser.ActionNode,
 	input *parser.ActionInputNode,
 	mode proto.InputMode,
+	impl proto.OperationImplementation,
 ) (inputs *proto.OperationInput) {
 
 	idents := input.Type.Fragments
@@ -296,7 +297,13 @@ func (scm *Builder) makeOperationInput(
 	}
 
 	if protoType == proto.Type_TYPE_UNKNOWN {
-		behaviour = proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
+		// The input must relate to a model field. For operations this makes the
+		// input behaviour implicit, meaning we will do something with this input
+		// automatically. What we'll do depends on whether it's a read or write
+		// input and the action type.
+		if impl == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
+			behaviour = proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
+		}
 
 		var field *parser.FieldNode
 		currModel := model
