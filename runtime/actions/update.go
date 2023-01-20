@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Update(scope *Scope, input map[string]any) (map[string]any, error) {
@@ -54,7 +55,7 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	if !isAuthorised {
-		return nil, errors.New("not authorized to access this operation")
+		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
 	op := scope.operation

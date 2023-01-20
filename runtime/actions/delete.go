@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Delete(scope *Scope, input map[string]any) (bool, error) {
@@ -25,7 +26,7 @@ func Delete(scope *Scope, input map[string]any) (bool, error) {
 	}
 
 	if !isAuthorised {
-		return false, errors.New("not authorized to access this operation")
+		return false, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
 	op := scope.operation

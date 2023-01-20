@@ -1,10 +1,10 @@
 package actions
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/common"
 )
 
 type ListResult struct {
@@ -84,7 +84,7 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 	}
 
 	if !isAuthorised {
-		return nil, errors.New("not authorized to access this operation")
+		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
 	op := scope.operation

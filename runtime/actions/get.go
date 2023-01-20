@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Get(scope *Scope, input map[string]any) (map[string]any, error) {
@@ -25,7 +26,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	if !isAuthorised {
-		return nil, errors.New("not authorized to access this operation")
+		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
 	if scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {

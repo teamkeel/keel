@@ -10,6 +10,7 @@ import (
 	"github.com/karlseguin/typed"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 
@@ -49,11 +50,11 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 
 	emailPassword := typedInput.Object("emailPassword")
 	if _, err := mail.ParseAddress(emailPassword.String("email")); err != nil {
-		return nil, errors.New("invalid email address")
+		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid email address"}
 	}
 
 	if emailPassword.String("password") == "" {
-		return nil, errors.New("password cannot be empty")
+		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "password cannot be empty"}
 	}
 
 	db, err := runtimectx.GetDatabase(ctx)
@@ -69,7 +70,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	if identity != nil {
 		authenticated := bcrypt.CompareHashAndPassword([]byte(identity.Password), []byte(emailPassword.String("password"))) == nil
 		if !authenticated {
-			return nil, errors.New("failed to authenticate")
+			return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "failed to authenticate"}
 		}
 
 		id, err := ksuid.Parse(identity.Id)
@@ -88,42 +89,43 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		}, nil
 	}
 
-	if typedInput.Bool("createIfNotExists") {
-		hashedBytes, err := bcrypt.GenerateFromPassword([]byte(emailPassword.String("password")), bcrypt.DefaultCost)
-
-		if err != nil {
-			return nil, err
-		}
-
-		identityModel := proto.FindModel(scope.schema.Models, parser.ImplicitIdentityModelName)
-
-		modelMap, err := initialValueForModel(identityModel, scope.schema)
-		if err != nil {
-			return nil, err
-		}
-
-		modelMap[strcase.ToSnake(EmailColumnName)] = emailPassword.String("email")
-		modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
-
-		err = db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error
-		if err != nil {
-			return nil, err
-		}
-
-		id := modelMap[IdColumnName].(ksuid.KSUID)
-
-		token, err := GenerateBearerToken(&id)
-		if err != nil {
-			return nil, err
-		}
-
-		return &AuthenticateResult{
-			Token:           token,
-			IdentityCreated: true,
-		}, nil
-	} else {
-		return nil, errors.New("failed to authenticate")
+	if !typedInput.Bool("createIfNotExists") {
+		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "failed to authenticate"}
 	}
+
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(emailPassword.String("password")), bcrypt.DefaultCost)
+
+	if err != nil {
+		return nil, err
+	}
+
+	identityModel := proto.FindModel(scope.schema.Models, parser.ImplicitIdentityModelName)
+
+	modelMap, err := initialValueForModel(identityModel, scope.schema)
+	if err != nil {
+		return nil, err
+	}
+
+	modelMap[strcase.ToSnake(EmailColumnName)] = emailPassword.String("email")
+	modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
+
+	err = db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error
+	if err != nil {
+		return nil, err
+	}
+
+	id := modelMap[IdColumnName].(ksuid.KSUID)
+
+	token, err := GenerateBearerToken(&id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &AuthenticateResult{
+		Token:           token,
+		IdentityCreated: true,
+	}, nil
+
 }
 
 func FindIdentityById(ctx context.Context, id *ksuid.KSUID) (*Identity, error) {
