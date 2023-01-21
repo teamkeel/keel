@@ -431,16 +431,18 @@ model Person {
 }
 	`
 	expected := `
-import * as sdk from "@teamkeel/sdk"
+import * as sdk from "@teamkeel/sdk";
+import "@teamkeel/testing-runtime";
 
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
+	withAuthToken(token: string): ActionExecutor;
 	async getPerson(i: sdk.GetPersonInput): Promise<sdk.Person | null>;
 	async createPerson(i: sdk.CreatePersonInput): Promise<sdk.Person>;
 	async updatePerson(i: sdk.UpdatePersonInput): Promise<sdk.Person>;
 	async deletePerson(i: sdk.DeletePersonInput): Promise<boolean>;
 	async listPeople(i: sdk.ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
-	async authenticate(i: sdk.AuthenticateInput): Promise<>;
+	async authenticate(i: sdk.AuthenticateInput): Promise<any>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
@@ -464,7 +466,7 @@ func TestTestingActionExecutor(t *testing.T) {
 		{
 			Contents: `
 			model Person {
-				operations {
+				functions {
 					get getPerson(id)
 				}
 			}
@@ -474,8 +476,19 @@ func TestTestingActionExecutor(t *testing.T) {
 		{
 			Contents: `
 			import { actions } from "@teamkeel/testing";
+			import { test, expect } from "vitest";
 
-			actions.getPerson({id: "1234"}).then(p => console.log("Response:", JSON.stringify(p)))
+			test("action execution", async () => {
+				const res = await actions.getPerson({id: "1234"});
+				expect(res).toEqual({
+					name: "Barney",
+				});
+			});
+
+			test("toHaveAuthorizationError custom matcher", async () => {
+				const p = Promise.reject({code: "ERR_PERMISSION_DENIED"});
+				await expect(p).toHaveAuthorizationError();
+			});
 			`,
 			Path: filepath.Join(tmpDir, "code.test.ts"),
 		},
@@ -490,35 +503,42 @@ func TestTestingActionExecutor(t *testing.T) {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		assert.True(t, strings.HasSuffix(r.URL.Path, "/getPerson"))
+
 		b, err := io.ReadAll(r.Body)
 		assert.NoError(t, err)
 
 		type Payload struct {
-			Method string
-			Params struct {
-				ID string
-			}
+			ID string
 		}
 		var payload Payload
 		json.Unmarshal(b, &payload)
-		assert.Equal(t, "getPerson", payload.Method)
-		assert.Equal(t, "1234", payload.Params.ID)
+		assert.Equal(t, "1234", payload.ID)
 
-		w.Write([]byte(`{"result": {"name": "Barney"}}`))
+		w.Write([]byte(`{"name": "Barney"}`))
 	}))
 	defer server.Close()
 
-	cmd := exec.Command("npx", "ts-node", "code.test.ts")
+	cmd := exec.Command("npx", "tsc", "--noEmit")
+	cmd.Dir = tmpDir
+	b, err := cmd.CombinedOutput()
+	if !assert.NoError(t, err) {
+		fmt.Println(string(b))
+		t.FailNow()
+	}
+
+	cmd = exec.Command("npx", "vitest", "run", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs")
 	cmd.Dir = tmpDir
 	cmd.Env = append(os.Environ(), []string{
 		"DB_CONN_TYPE=pg",
 		"DB_CONN=postgresql://postgres:postgres@localhost:8001/keel",
-		fmt.Sprintf("KEEL_ACTIONS_RPC_URL=%s", server.URL),
+		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s", server.URL),
 	}...)
 
-	b, err := cmd.CombinedOutput()
-	assert.NoError(t, err)
-	assert.Contains(t, string(b), `Response: {"name":"Barney"}`)
+	b, err = cmd.CombinedOutput()
+	if !assert.NoError(t, err) {
+		fmt.Println(string(b))
+	}
 }
 
 func TestSDKTypings(t *testing.T) {

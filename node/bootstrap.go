@@ -40,21 +40,24 @@ func Bootstrap(dir string, opts ...func(o *bootstrapOptions)) error {
 	}
 
 	functionsRuntimeVersion := "*"
+	testingRuntimeVersion := "*"
 	if options.packagesPath != "" {
 		functionsRuntimeVersion = filepath.Join(options.packagesPath, "functions-runtime")
+		testingRuntimeVersion = filepath.Join(options.packagesPath, "testing-runtime")
 	}
 
 	err = os.WriteFile(filepath.Join(dir, "package.json"), []byte(fmt.Sprintf(`{
 		"name": "%s",
 		"dependencies": {
 			"@teamkeel/functions-runtime": "%s",
+			"@teamkeel/testing-runtime": "%s",
 			"@types/node": "^18.11.18",
 			"kysely": "^0.23.4",
 			"ts-node": "^10.9.1",
 			"typescript": "^4.9.4",
 			"vitest": "^0.27.2"
 		}
-	}`, filepath.Base(dir), functionsRuntimeVersion)), 0644)
+	}`, filepath.Base(dir), functionsRuntimeVersion, testingRuntimeVersion)), 0644)
 	if err != nil {
 		return err
 	}
