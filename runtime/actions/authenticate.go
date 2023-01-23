@@ -11,7 +11,6 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 
 	"github.com/iancoleman/strcase"
@@ -46,7 +45,6 @@ var (
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
 func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, error) {
 	typedInput := typed.New(input)
-	ctx := scope.context
 
 	emailPassword := typedInput.Object("emailPassword")
 	if _, err := mail.ParseAddress(emailPassword.String("email")); err != nil {
@@ -57,12 +55,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "password cannot be empty"}
 	}
 
-	db, err := runtimectx.GetDatabase(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	identity, err := FindIdentityByEmail(ctx, emailPassword.String("email"))
+	identity, err := FindIdentityByEmail(scope.context, scope.schema, emailPassword.String("email"))
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +102,12 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	modelMap[strcase.ToSnake(EmailColumnName)] = emailPassword.String("email")
 	modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
 
-	err = db.Table(strcase.ToSnake(identityModel.Name)).Create(modelMap).Error
+	query := NewQuery(identityModel)
+	query.AddWriteValues(modelMap)
+	query.AppendSelect(AllFields())
+	query.AppendReturning(IdField())
+
+	_, err = query.InsertStatement().Execute(scope.context)
 	if err != nil {
 		return nil, err
 	}
@@ -128,56 +126,46 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 
 }
 
-func FindIdentityById(ctx context.Context, id *ksuid.KSUID) (*Identity, error) {
-	db, err := runtimectx.GetDatabase(ctx)
+func FindIdentityById(ctx context.Context, schema *proto.Schema, id *ksuid.KSUID) (*Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	query := NewQuery(identityModel)
+	query.Where(IdField(), Equals, Value(id))
+	query.AppendSelect(AllFields())
+	result, err := query.SelectStatement().ExecuteToSingle(ctx)
+
 	if err != nil {
 		return nil, err
 	}
-
-	var identity Identity
-
-	result := db.
-		Table(strcase.ToSnake(parser.ImplicitIdentityModelName)).
-		Where(IdColumnName, id).
-		Find(&identity)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	if result.RowsAffected == 0 {
+	if result == nil {
 		return nil, nil
 	}
-	if result.RowsAffected > 1 {
-		return nil, errors.New("more than one identity record found")
-	}
 
-	return &identity, nil
+	return &Identity{
+		Id:       result["id"].(string),
+		Email:    result["email"].(string),
+		Password: result["password"].(string),
+	}, nil
 }
 
-func FindIdentityByEmail(ctx context.Context, email string) (*Identity, error) {
-	db, err := runtimectx.GetDatabase(ctx)
+func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	query := NewQuery(identityModel)
+	query.Where(Field(EmailColumnName), Equals, Value(email))
+	query.AppendSelect(AllFields())
+	result, err := query.SelectStatement().ExecuteToSingle(ctx)
+
 	if err != nil {
 		return nil, err
 	}
-
-	var identity Identity
-
-	result := db.
-		Table(strcase.ToSnake(parser.ImplicitIdentityModelName)).
-		Where(EmailColumnName, email).
-		Find(&identity)
-
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	if result.RowsAffected == 0 {
+	if result == nil {
 		return nil, nil
 	}
-	if result.RowsAffected > 1 {
-		return nil, errors.New("more than one identity record found")
-	}
 
-	return &identity, nil
+	return &Identity{
+		Id:       result["id"].(string),
+		Email:    result["email"].(string),
+		Password: result["password"].(string),
+	}, nil
 }
 
 // https://pkg.go.dev/github.com/golang-jwt/jwt/v4#RegisteredClaims

@@ -10,6 +10,7 @@ import (
 	"os/exec"
 
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
@@ -19,8 +20,6 @@ import (
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
 )
-
-const functionsDbConn = "postgres://%s:%s@%s:%s/%s"
 
 type TestOutput struct {
 	Output  string
@@ -46,15 +45,17 @@ func Run(dbConnInfo *database.ConnectionInfo, dir string) (*TestOutput, error) {
 
 	schema.Apis = append(schema.Apis, testApi)
 
+	context := context.Background()
+
 	dbName := "keel_test"
-	db, err := testhelpers.SetupDatabaseForTestCase(dbConnInfo, schema, dbName)
+	mainDB, err := testhelpers.SetupDatabaseForTestCase(context, dbConnInfo, schema, dbName)
 	if err != nil {
 		return nil, err
 	}
 
-	dbConnString := fmt.Sprintf(functionsDbConn, dbConnInfo.Username, dbConnInfo.Password, dbConnInfo.Host, dbConnInfo.Port, dbName)
+	dbConnString := dbConnInfo.WithDatabase(dbName).String()
 
-	files, err := node.Generate(context.Background(), dir, node.WithDevelopmentServer(true))
+	files, err := node.Generate(context, dir, node.WithDevelopmentServer(true))
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,8 @@ func Run(dbConnInfo *database.ConnectionInfo, dir string) (*TestOutput, error) {
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			ctx := r.Context()
-			ctx = runtimectx.WithDatabase(ctx, db)
+			database, _ := db.LocalFromConnection(ctx, mainDB)
+			ctx = runtimectx.WithDatabase(ctx, database)
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
 			}
@@ -107,7 +109,7 @@ func Run(dbConnInfo *database.ConnectionInfo, dir string) (*TestOutput, error) {
 		}),
 	}
 	go runtimeServer.ListenAndServe()
-	defer runtimeServer.Shutdown(context.Background())
+	defer runtimeServer.Shutdown(context)
 
 	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
 	cmd.Dir = dir

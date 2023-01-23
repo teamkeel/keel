@@ -8,9 +8,9 @@ import (
 
 	"github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"google.golang.org/protobuf/encoding/protojson"
-	"gorm.io/gorm"
 )
 
 const (
@@ -50,7 +50,7 @@ func (m *Migrations) HasModelFieldChanges() bool {
 }
 
 // Apply executes the migrations against the database
-func (m *Migrations) Apply(db *gorm.DB) error {
+func (m *Migrations) Apply(ctx context.Context, database db.Db) error {
 
 	sql := strings.Builder{}
 
@@ -71,11 +71,9 @@ func (m *Migrations) Apply(db *gorm.DB) error {
 	insertStmt := fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON)
 	sql.WriteString(insertStmt)
 
-	tx := db.Session(&gorm.Session{
-		PrepareStmt: false,
-	})
+	_, err = database.ExecuteStatement(ctx, sql.String())
 
-	return tx.Exec(sql.String()).Error
+	return err
 }
 
 // Create inspects the database using gorm.DB connection
@@ -199,24 +197,21 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 	}
 }
 
-func keelSchemaTableExists(ctx context.Context, db *gorm.DB) (bool, error) {
-	var rows []struct {
-		Name *string
-	}
+func keelSchemaTableExists(ctx context.Context, database db.Db) (bool, error) {
 
 	// to_regclass docs - https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE
 	// translates a textual relation name to its OID ... this function will
 	// return NULL rather than throwing an error if the name is not found.
-	err := db.WithContext(ctx).Raw("SELECT to_regclass('keel_schema') AS name").Scan(&rows).Error
+	result, err := database.ExecuteQuery(ctx, "SELECT to_regclass('keel_schema') AS name")
 	if err != nil {
 		return false, err
 	}
 
-	return rows[0].Name != nil, nil
+	return result.Rows[0]["name"] != nil, nil
 }
 
-func GetCurrentSchema(ctx context.Context, db *gorm.DB) (*proto.Schema, error) {
-	exists, err := keelSchemaTableExists(ctx, db)
+func GetCurrentSchema(ctx context.Context, database db.Db) (*proto.Schema, error) {
+	exists, err := keelSchemaTableExists(ctx, database)
 	if err != nil {
 		return nil, err
 	}
@@ -225,22 +220,24 @@ func GetCurrentSchema(ctx context.Context, db *gorm.DB) (*proto.Schema, error) {
 		return nil, nil
 	}
 
-	var rows [][]byte
-	err = db.WithContext(ctx).Raw("SELECT schema FROM keel_schema").Scan(&rows).Error
+	result, err := database.ExecuteQuery(ctx, "SELECT schema FROM keel_schema")
 	if err != nil {
 		return nil, err
 	}
 
-	if len(rows) == 0 {
+	if len(result.Rows) == 0 {
 		return nil, ErrNoStoredSchema
-	}
-
-	if len(rows) > 1 {
+	} else if len(result.Rows) > 1 {
 		return nil, ErrMultipleStoredSchemas
 	}
 
+	schema, ok := result.Rows[0]["schema"].(string)
+	if !ok {
+		return nil, errors.New("schema could not be converted to string")
+	}
+
 	var protoSchema proto.Schema
-	err = protojson.Unmarshal(rows[0], &protoSchema)
+	err = protojson.Unmarshal([]byte(schema), &protoSchema)
 	if err != nil {
 		return nil, err
 	}

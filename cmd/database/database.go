@@ -37,13 +37,23 @@ type ConnectionInfo struct {
 
 func (dbConnInfo *ConnectionInfo) String() string {
 	return fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s",
+		"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
 		dbConnInfo.Username,
 		dbConnInfo.Password,
 		dbConnInfo.Host,
 		dbConnInfo.Port,
 		dbConnInfo.Database,
 	)
+}
+
+func (dbConnInfo *ConnectionInfo) WithDatabase(database string) *ConnectionInfo {
+	return &ConnectionInfo{
+		Host:     dbConnInfo.Host,
+		Port:     dbConnInfo.Port,
+		Username: dbConnInfo.Username,
+		Password: dbConnInfo.Password,
+		Database: database,
+	}
 }
 
 // BringUpPostgresLocally spins up a PostgreSQL server locally and returns
@@ -309,8 +319,7 @@ func makeHostConfig(port string) *container.HostConfig {
 // It makes a series of attempts over a small time span to give postgres the
 // change to be ready.
 func checkConnection(info *ConnectionInfo) (*sql.DB, error) {
-	connString := "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable"
-	db, err := sql.Open("postgres", fmt.Sprintf(connString, info.Host, info.Port, info.Username, info.Password, info.Database))
+	db, err := sql.Open("postgres", info.String())
 	if err != nil {
 		return nil, err
 	}

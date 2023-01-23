@@ -9,7 +9,7 @@ import (
 )
 
 type localDb struct {
-	conn               *sql.Conn
+	conn               *sql.DB
 	ongoingTransaction *sql.Tx
 }
 

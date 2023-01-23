@@ -2,24 +2,32 @@ package db_test
 
 import (
 	"context"
-	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/db"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/db"
 )
 
-func createDb(t *testing.T, ctx context.Context) db.Db {
-	connString := "host=%s port=%s user=%s password=%s dbname=%s sslmode=disable"
-	db, err := db.Local(ctx, fmt.Sprintf(connString, "localhost", "8001", "postgres", "postgres", "keel"))
+func CreateTestDb(t *testing.T, ctx context.Context) db.Db {
+	dbConnInfo := &database.ConnectionInfo{
+		Host:     "localhost",
+		Port:     "8001",
+		Username: "postgres",
+		Password: "postgres",
+		Database: "keel",
+	}
+
+	db, err := db.Local(ctx, dbConnInfo)
 	require.NoError(t, err)
 	return db
 }
 
 func TestLocalDbTransactionError(t *testing.T) {
 	ctx := context.Background()
-	db := createDb(t, ctx)
+	db := CreateTestDb(t, ctx)
 
 	err := db.CommitTransaction(ctx)
 	assert.ErrorContains(t, err, "cannot commit transaction when there is no ongoing transaction")
@@ -29,8 +37,8 @@ func TestLocalDbTransactionError(t *testing.T) {
 
 func TestLocalDbTransactionCommit(t *testing.T) {
 	ctx := context.Background()
-	db := createDb(t, ctx)
-	otherDb := createDb(t, ctx)
+	db := CreateTestDb(t, ctx)
+	otherDb := CreateTestDb(t, ctx)
 
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_commit_table")
 	assert.NoError(t, err)
@@ -61,8 +69,8 @@ func TestLocalDbTransactionCommit(t *testing.T) {
 
 func TestLocalDbTransactionRollback(t *testing.T) {
 	ctx := context.Background()
-	db := createDb(t, ctx)
-	otherDb := createDb(t, ctx)
+	db := CreateTestDb(t, ctx)
+	otherDb := CreateTestDb(t, ctx)
 
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testapi_local_transaction_rollback_table")
 	assert.NoError(t, err)
@@ -93,7 +101,7 @@ func TestLocalDbTransactionRollback(t *testing.T) {
 
 func TestLocalDbStatements(t *testing.T) {
 	ctx := context.Background()
-	db := createDb(t, ctx)
+	db := CreateTestDb(t, ctx)
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(

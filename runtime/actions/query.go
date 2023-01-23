@@ -453,108 +453,99 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 
 // Begins a new SQL transaction.
 // All statements generated from this query builder will be included in the transaction.
-func (query *QueryBuilder) Begin(context context.Context) error {
-	if query.transaction == nil {
-		stmt := &Statement{
-			template: "BEGIN;",
-			args:     []any{},
-		}
-
-		_, err := stmt.Execute(context)
-		if err != nil {
-			return err
-		}
-
-		query.transaction = &Transaction{isCompleted: false}
+func (query *QueryBuilder) Begin(ctx context.Context) error {
+	database, err := runtimectx.GetDatabase(ctx)
+	if err != nil {
+		return err
 	}
+
+	err = database.BeginTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // Commits the current SQL transaction, provided it hasn't been rolled back already.
-func (query *QueryBuilder) Commit(context context.Context) error {
-	if query.transaction != nil && !query.transaction.isCompleted {
-		stmt := &Statement{
-			template: "COMMIT;",
-			args:     []any{},
-		}
-
-		_, err := stmt.Execute(context)
-		if err != nil {
-			return err
-		}
-
-		query.transaction = &Transaction{isCompleted: true}
+func (query *QueryBuilder) Commit(ctx context.Context) error {
+	database, err := runtimectx.GetDatabase(ctx)
+	if err != nil {
+		return err
 	}
+
+	err = database.CommitTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // Rolls back the current SQL transaction, provided it hasn't been committed already.
-func (query *QueryBuilder) Rollback(context context.Context) error {
-	if query.transaction != nil && !query.transaction.isCompleted {
-		stmt := &Statement{
-			template: "ROLLBACK;",
-			args:     []any{},
-		}
-
-		_, err := stmt.Execute(context)
-		if err != nil {
-			return err
-		}
-
-		query.transaction = &Transaction{isCompleted: true}
+func (query *QueryBuilder) Rollback(ctx context.Context) error {
+	database, err := runtimectx.GetDatabase(ctx)
+	if err != nil {
+		return err
 	}
+
+	err = database.RollbackTransaction(ctx)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // Execute the SQL statement against the database, returning the number of rows affected.
-func (statement *Statement) Execute(context context.Context) (int, error) {
-	db, err := runtimectx.GetDatabase(context)
+func (statement *Statement) Execute(ctx context.Context) (int, error) {
+	database, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return 0, err
 	}
 
-	db = db.Exec(statement.template, statement.args...)
-	if db.Error != nil {
-		return 0, db.Error
+	result, err := database.ExecuteStatement(ctx, statement.template, statement.args...)
+	if err != nil {
+		return 0, err
 	}
 
-	return int(db.RowsAffected), nil
+	return int(result.RowsAffected), nil
 }
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
-func (statement *Statement) ExecuteToMany(context context.Context) ([]map[string]any, int, bool, error) {
-	db, err := runtimectx.GetDatabase(context)
+func (statement *Statement) ExecuteToMany(ctx context.Context) ([]map[string]any, int, bool, error) {
+	database, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, 0, false, err
 	}
 
-	results := []map[string]any{}
-	db = db.Raw(statement.template, statement.args...).Scan(&results)
-	if db.Error != nil {
-		return nil, 0, false, db.Error
+	result, err := database.ExecuteQuery(ctx, statement.template, statement.args...)
+	if err != nil {
+		return nil, 0, false, err
 	}
 
-	rowsAffected := int(db.RowsAffected)
+	rows := result.Rows
+	rowsAffected := len(result.Rows)
 
 	// Sort out the hasNextPage value, and clean up the response.
 	hasNextPage := false
 	if rowsAffected > 0 {
-		last := results[rowsAffected-1]
+		last := rows[rowsAffected-1]
 		var hasPagination bool
 		hasNextPage, hasPagination = last["hasnext"].(bool)
 		if hasPagination {
-			for _, row := range results {
+			for _, row := range rows {
 				delete(row, "hasnext")
 			}
 		}
 	}
 
-	return toLowerCamelMaps(results), rowsAffected, hasNextPage, nil
+	return toLowerCamelMaps(rows), rowsAffected, hasNextPage, nil
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
-func (statement *Statement) ExecuteToSingle(context context.Context) (map[string]any, error) {
-	results, affected, _, err := statement.ExecuteToMany(context)
+func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any, error) {
+	results, affected, _, err := statement.ExecuteToMany(ctx)
 	if err != nil {
 		return nil, err
 	}

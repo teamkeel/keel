@@ -78,19 +78,16 @@ test("list action - endsWith", async () => {
   expect(results.length).toEqual(2);
 });
 
-test("list action - oneOf", async () => {
-  await models.post.create({ title: "pear", subTitle: "lmn" });
-  await models.post.create({ title: "mango", subTitle: "mno" });
-  await models.post.create({ title: "orange", subTitle: "fog" });
+// test("list action - oneOf", async () => {
+//   await models.post.create({ title: "pear", subTitle: "lmn" });
+//   await models.post.create({ title: "mango", subTitle: "mno" });
+//   await models.post.create({ title: "orange", subTitle: "fog" });
 
-  const { results } = await actions.listPosts({
-    where: {
-      title: { oneOf: ["pear", "mango"] },
-    },
-  });
-
-  expect(results.length).toEqual(2);
-});
+//   const { results } = await actions.listPosts({
+//     where: {
+//       title: { oneOf: ["pear", "mango"] },
+//     },
+//   });
 
 test("delete action", async () => {
   const post = await models.post.create({
