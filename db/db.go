@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/rdsdata"
 	_ "github.com/lib/pq"
@@ -25,18 +24,6 @@ type Db interface {
 	BeginTransaction(ctx context.Context) error
 	CommitTransaction(ctx context.Context) error
 	RollbackTransaction(ctx context.Context) error
-}
-
-func ResolveFromEnv(ctx context.Context, localConnString string) (Db, error) {
-	dbConnType := os.Getenv("DB_CONN_TYPE")
-	switch dbConnType {
-	case "", "pg":
-		return Local(ctx, localConnString)
-	case "dataapi":
-		return DataAPI(ctx)
-	default:
-		return nil, fmt.Errorf("unexpected DB_CONN_TYPE: %s", dbConnType)
-	}
 }
 
 func Local(ctx context.Context, connString string) (Db, error) {
