@@ -34,11 +34,21 @@ func convertTime(value time.Time) time.Time {
 	return time.Date(value.Year(), value.Month(), value.Day(), value.Hour(), value.Minute(), value.Second(), nanos, time.UTC)
 }
 
-func (db *localDb) ExecuteQuery(ctx context.Context, sql string, values ...any) (*ExecuteQueryResult, error) {
+func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
 	rows := []map[string]any{}
-	result, err := db.conn.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sql), values...)
-	if err != nil {
-		return nil, err
+
+	var result *sql.Rows
+	var err error
+	if db.ongoingTransaction != nil {
+		result, err = db.ongoingTransaction.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		result, err = db.conn.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
+		if err != nil {
+			return nil, err
+		}
 	}
 	columns, err := result.Columns()
 	if err != nil {
@@ -67,10 +77,19 @@ func (db *localDb) ExecuteQuery(ctx context.Context, sql string, values ...any) 
 	return &ExecuteQueryResult{Rows: rows}, nil
 }
 
-func (db *localDb) ExecuteStatement(ctx context.Context, sql string, values ...any) (*ExecuteStatementResult, error) {
-	result, err := db.conn.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sql), values...)
-	if err != nil {
-		return nil, err
+func (db *localDb) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
+	var result sql.Result
+	var err error
+	if db.ongoingTransaction != nil {
+		result, err = db.ongoingTransaction.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		result, err = db.conn.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
+		if err != nil {
+			return nil, err
+		}
 	}
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
