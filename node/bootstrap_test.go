@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/node"
 )
 
@@ -20,8 +21,12 @@ func TestBootstrap(t *testing.T) {
 			}
 		}
 	`), 0777)
-	err := node.Bootstrap(tmpDir)
-	assert.NoError(t, err)
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+
+	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	require.NoError(t, err)
 
 	entries, err := os.ReadDir(tmpDir)
 	assert.NoError(t, err)

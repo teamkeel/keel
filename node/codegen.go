@@ -489,6 +489,10 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		// TODO: update runtime to return id of deleted object
 		returnType += "boolean"
+	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+		// TODO: fix this when authenticate has been re-worked following Arbitrary Functions
+		// https://www.notion.so/keelhq/Arbitrary-Functions-428c199902cf4353b18838434c8910d1
+		returnType += "any"
 	}
 
 	returnType += ">"
@@ -571,77 +575,33 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	js := &Writer{}
 	types := &Writer{}
 
-	js.Writeln(`const crypto = require("crypto")`)
-	js.Writeln(`const { getDatabase, createFunctionAPI } = require("@teamkeel/sdk");`)
-	js.Writeln(`const { sql } = require("kysely");`)
+	// The testing package uses ES modules as it only used in the context of running tests
+	// with Vitest
+	js.Writeln(`import crypto from "node:crypto";`)
+	js.Writeln(`import { getDatabase, createFunctionAPI } from "@teamkeel/sdk"`)
+	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 
-	// If there ends up being significantly more generic code for this package then
-	// it would probably make sense to move it into a @teamkeel/testing-runtime package.
-	// But for now it's just this one class, so it can live here.
-	js.Writeln(`
-class ActionExecutor {
-	constructor() {
-		return new Proxy(this, {
-			get(target, prop, receiver) {
-				if (["withIdentity", "_execute"].includes(prop)) {
-					return Reflect.get(...arguments);
-				}
-				return target._execute.bind(target, prop);
-			},
-		});
-	}
-	withIdentity(i) {
-		this._identity = i;
-		return this;
-	}
-	_execute(method, params) {
-		const headers = { "Content-Type": "application/json" };
-		if (this._identity) {
-			headers["Authorization"] = "Bearer " + jwt.sign({
-				id: this._identity.id,
-			}, "test", {algorithm: "HS256", expiresIn: 60 * 60 * 24})
-		}
-		return fetch(process.env.KEEL_ACTIONS_RPC_URL, {
-			method: "POST",
-			body: JSON.stringify({
-				jsonrpc: "2.0",
-				method,
-				params,
-				id: crypto.randomBytes(16).toString('hex'),
-			}),
-			headers,
-		}).then((r) => r.json()).then(r => {
-			if (r.error) {
-				throw r.error;
-			}
-			return r.result;
-		})
-	}
-}
+	js.Writeln(`export const actions = new ActionExecutor({});`)
+	js.Writeln("export const models = createFunctionAPI().models;")
 
-module.exports.actions = new ActionExecutor()`)
-
-	js.Writeln("module.exports.models = createFunctionAPI().models;")
-
-	js.Writeln("async function resetDatabase() {")
+	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{}
 	for _, model := range schema.Models {
-		tableNames = append(tableNames, strcase.ToLowerCamel(model.Name))
+		tableNames = append(tableNames, strcase.ToSnake(model.Name))
 	}
 	js.Writef("%s CASCADE", strings.Join(tableNames, ","))
 	js.Writeln("`.execute(getDatabase());")
 	js.Dedent()
 	js.Writeln("}")
-	js.Writeln("module.exports.resetDatabase = resetDatabase;")
 
 	writeTestingTypes(types, schema)
 
 	return GeneratedFiles{
 		{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/index.js"),
+			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/index.mjs"),
 			Contents: js.String(),
 		},
 		{
@@ -650,18 +610,23 @@ module.exports.actions = new ActionExecutor()`)
 		},
 		{
 			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/package.json"),
-			Contents: `{"name": "@teamkeel/testing"}`,
+			Contents: `{"name": "@teamkeel/testing", "type": "module", "exports": "./index.mjs"}`,
 		},
 	}
 }
 
 func writeTestingTypes(w *Writer, schema *proto.Schema) {
-	w.Writeln(`import * as sdk from "@teamkeel/sdk"`)
+	w.Writeln(`import * as sdk from "@teamkeel/sdk";`)
+
+	// We need to import the testing-runtime package to get
+	// the types for the extended vitest matchers e.g. expect(v).toHaveAuthorizationError()
+	w.Writeln(`import "@teamkeel/testing-runtime";`)
 	w.Writeln("")
 
 	w.Writeln("declare class ActionExecutor {")
 	w.Indent()
 	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
+	w.Writeln("withAuthToken(token: string): ActionExecutor;")
 	for _, model := range schema.Models {
 		for _, op := range model.Operations {
 			w.Writef(`async %s(i: sdk.%sInput): %s`, op.Name, strcase.ToCamel(op.Name), toActionReturnType(model, op))

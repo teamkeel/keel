@@ -35,6 +35,23 @@ jobs:
         working-directory: ./packages/functions-runtime
         run: pnpm run test
 
+  test-testing-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - uses: actions/checkout@v3
+      - name: Install deps
+        working-directory: ./packages/testing-runtime
+        run: pnpm install --frozen-lockfile
+      - name: Run tests
+        working-directory: ./packages/testing-runtime
+        run: pnpm run test
+
   test-sdk:
     runs-on: ubuntu-latest
 

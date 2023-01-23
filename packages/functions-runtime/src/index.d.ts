@@ -1,5 +1,5 @@
-// These types are used both for the model API methods like where, findMany etc..
-// and also for query types for list action inputs
+// This file doesn't contain types describing this package, rather it contains generic types
+// that are used by the generated @teamkeel/sdk package.
 
 export type IDWhereCondition = {
   equals?: string;
