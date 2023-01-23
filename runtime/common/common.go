@@ -19,3 +19,17 @@ func NewJsonResponse(status int, body any) Response {
 }
 
 type ApiHandlerFunc func(r *http.Request) Response
+
+const (
+	ErrInvalidInput     = "ERR_INVALID_INPUT"
+	ErrPermissionDenied = "ERR_PERMISSION_DENIED"
+)
+
+type RuntimeError struct {
+	Code    string
+	Message string
+}
+
+func (r RuntimeError) Error() string {
+	return r.Message
+}

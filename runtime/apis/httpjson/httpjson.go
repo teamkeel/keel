@@ -2,6 +2,7 @@ package httpjson
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,10 +14,6 @@ import (
 )
 
 type HttpJsonErrorResponse struct {
-	Error HttpJsonError `json:"error"`
-}
-
-type HttpJsonError struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
@@ -36,28 +33,22 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			inputs, err = parsePostBody(r.Body)
 			if err != nil {
 				return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
-					Error: HttpJsonError{
-						Code:    "ERR_INTERNAL",
-						Message: "error parsing POST body",
-					},
+					Code:    "ERR_INTERNAL",
+					Message: "error parsing POST body",
 				})
 			}
 		default:
 			return common.NewJsonResponse(http.StatusMethodNotAllowed, HttpJsonErrorResponse{
-				Error: HttpJsonError{
-					Code:    "ERR_HTTP_METHOD_NOT_ALLOWED",
-					Message: "only HTTP POST or GET accepted",
-				},
+				Code:    "ERR_HTTP_METHOD_NOT_ALLOWED",
+				Message: "only HTTP POST or GET accepted",
 			})
 		}
 
 		op := proto.FindOperation(p, actionName)
 		if op == nil {
 			return common.NewJsonResponse(http.StatusNotFound, HttpJsonErrorResponse{
-				Error: HttpJsonError{
-					Code:    "ERR_NOT_FOUND",
-					Message: "method not found",
-				},
+				Code:    "ERR_NOT_FOUND",
+				Message: "method not found",
 			})
 		}
 
@@ -65,12 +56,18 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		response, err := actions.Execute(scope, inputs)
 		if err != nil {
-			// TODO: map errors here properly e.g. record not found, unique constraints etc...
+			code := "ERR_INTERNAL"
+			message := "error executing request"
+
+			var runtimeErr common.RuntimeError
+			if errors.As(err, &runtimeErr) {
+				code = runtimeErr.Code
+				message = runtimeErr.Message
+			}
+
 			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
-				Error: HttpJsonError{
-					Code:    "ERR_INTERNAL",
-					Message: "error executing request",
-				},
+				Code:    code,
+				Message: message,
 			})
 		}
 

@@ -1,9 +1,8 @@
 package actions
 
 import (
-	"errors"
-
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/common"
 )
 
 func Create(scope *Scope, input map[string]any) (res map[string]any, err error) {
@@ -62,7 +61,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	}
 
 	if !isAuthorised {
-		return nil, errors.New("not authorized to access this operation")
+		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
 	err = query.Commit(scope.context)

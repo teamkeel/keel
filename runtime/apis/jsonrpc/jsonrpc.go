@@ -2,6 +2,7 @@ package jsonrpc
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -77,13 +78,22 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		response, err := actions.Execute(scope, inputs)
 		if err != nil {
-			// TODO: map errors here properly e.g. record not found, unique constraints etc...
+
+			code := JsonRpcInternalErrorCode
+			message := "error executing request"
+
+			var runtimeError common.RuntimeError
+			if errors.As(err, &runtimeError) {
+				code = runtimeErrorCodeToJsonRpcErrorCode(runtimeError.Code)
+				message = runtimeError.Message
+			}
+
 			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
 				JsonRpc: "2.0",
 				ID:      &req.ID,
 				Error: JsonRpcError{
-					Code:    JsonRpcInternalErrorCode,
-					Message: "error executing request",
+					Code:    code,
+					Message: message,
 				},
 			})
 		}
@@ -134,4 +144,13 @@ func parseJsonRpcRequest(b io.ReadCloser) (req *JsonRpcRequest, err error) {
 	req = &JsonRpcRequest{}
 	err = json.Unmarshal(body, req)
 	return req, err
+}
+
+func runtimeErrorCodeToJsonRpcErrorCode(code string) int {
+	switch code {
+	case common.ErrInvalidInput:
+		return JsonRpcInvalidParams
+	default:
+		return JsonRpcInternalErrorCode
+	}
 }
