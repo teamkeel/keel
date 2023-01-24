@@ -14,3 +14,24 @@ test("not.toHaveAuthorizationError", async () => {
   });
   await expect(p).not.toHaveAuthorizationError();
 });
+
+test("toHaveError", async () => {
+  const p = Promise.reject({
+    code: "ERR_INVALID_INPUT",
+    message: "Invalid input",
+  });
+
+  await expect(p).toHaveError({
+    code: "ERR_INVALID_INPUT",
+  });
+});
+
+test("not.toHaveError", async () => {
+  const p = Promise.resolve({
+    id: "foo",
+  });
+
+  await expect(p).not.toHaveError({
+    code: "ERR_INVALID_INPUT",
+  });
+});
