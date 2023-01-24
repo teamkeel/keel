@@ -18,6 +18,7 @@ test("not.toHaveAuthorizationError", async () => {
 test("toHaveError", async () => {
   const p = Promise.reject({
     code: "ERR_INVALID_INPUT",
+    message: "Invalid input",
   });
 
   await expect(p).toHaveError({

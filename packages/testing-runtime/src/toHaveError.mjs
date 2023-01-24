@@ -1,4 +1,4 @@
-import isEqual from 'lodash.isequal'
+import isMatch from 'lodash.ismatch'
 
 export async function toHaveError(received, expected) {
   const { isNot } = this;
@@ -13,7 +13,7 @@ export async function toHaveError(received, expected) {
     };
   } catch (err) {
     return {
-      pass: isEqual(expected, err),
+      pass: isMatch(err, expected),
       message: () =>
         `expected ${isNot ? "no " : ""} ${JSON.stringify(err)} error`,
       actual: err,
