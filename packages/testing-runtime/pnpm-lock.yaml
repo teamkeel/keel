@@ -9,13 +9,13 @@ specifiers:
   vitest: ^0.27.2
 
 dependencies:
-  '@types/lodash.ismatch': 4.4.7
   jsonwebtoken: 9.0.0
   kysely: 0.23.4
   lodash.ismatch: 4.4.0
   vitest: 0.27.2
 
 devDependencies:
+  '@types/lodash.ismatch': 4.4.7
   prettier: 2.7.1
 
 packages:
@@ -232,11 +232,11 @@ packages:
     resolution: {integrity: sha512-ybydj07Fw8332Q4+LQSiSkxQCPkAZTt6YQHXyAISfa/HfFq8yWhhDF8lVr8s09eyG6W++iPRCkXgT5tXMA3e9g==}
     dependencies:
       '@types/lodash': 4.14.191
-    dev: false
+    dev: true
 
   /@types/lodash/4.14.191:
     resolution: {integrity: sha512-BdZ5BCCvho3EIXw6wUCXHe7rS53AIDPLE+JzwgT+OsJk53oBfbSmZZ7CX4VaRoN78N+TJpFi9QPlfIVNmJYWxQ==}
-    dev: false
+    dev: true
 
   /@types/node/18.11.18:
     resolution: {integrity: sha512-DHQpWGjyQKSHj3ebjFI/wRKcqQcdR+MoFBygntYOZytCqNfkd2ZC4ARDJ2DQqhjH5p85Nnd3jhUJIXrszFX/JA==}
