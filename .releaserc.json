@@ -23,6 +23,9 @@
       ["@semantic-release/npm", {
         "pkgRoot": "packages/testing"
       }],
+      ["@semantic-release/npm", {
+        "pkgRoot": "packages/testing-runtime"
+      }],
       "@semantic-release/git"
     ]
 }
