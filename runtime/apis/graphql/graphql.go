@@ -50,7 +50,7 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				}
 			}
 			// This enables the graphql-go extension for tracing
-			if os.Getenv("ENABLE_TRACING") == "true" {
+			if os.Getenv("TRACING_ENABLED") == "true" {
 				schema.AddExtensions(&Tracer{})
 			}
 			mutex.Unlock()
