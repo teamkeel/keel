@@ -14,11 +14,13 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/lodash.isequal": "^4.5.6",
     "prettier": "2.7.1"
   },
   "dependencies": {
     "jsonwebtoken": "^9.0.0",
-    "vitest": "^0.27.2",
-    "kysely": "^0.23.4"
+    "kysely": "^0.23.4",
+    "lodash.isequal": "^4.5.0",
+    "vitest": "^0.27.2"
   }
 }
