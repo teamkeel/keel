@@ -1,3 +1,19 @@
+# [0.237.0](https://github.com/teamkeel/keel/compare/v0.236.3...v0.237.0) (2023-01-24)
+
+
+### Bug Fixes
+
+* drop unnecessary function ([1cfd88c](https://github.com/teamkeel/keel/commit/1cfd88c1b304adcd77125080c30261bb0ea9d8db))
+* inputs can only be implicit for operations, never for functions ([305456e](https://github.com/teamkeel/keel/commit/305456eb18b9f32f742760e697e592333380ed9c))
+* making local db internal transaction usage more explicit ([e60a694](https://github.com/teamkeel/keel/commit/e60a694f376c1b80db425f2e1a8da24a9f5e017c))
+* update wasm handler callsite ([#687](https://github.com/teamkeel/keel/issues/687)) ([8a90a57](https://github.com/teamkeel/keel/commit/8a90a579b378ba41ddafb1bbb031097894d8e54c))
+
+
+### Features
+
+* database api ([5e8f08a](https://github.com/teamkeel/keel/commit/5e8f08a6564b154afc13255949d9046bf37182b1))
+* publish testing-runtime pkg ([#686](https://github.com/teamkeel/keel/issues/686)) ([427ff4f](https://github.com/teamkeel/keel/commit/427ff4fa3dceb41df1ad5bc4679a4022fbb5de56))
+
 ## [0.236.3](https://github.com/teamkeel/keel/compare/v0.236.2...v0.236.3) (2023-01-19)
 
 
