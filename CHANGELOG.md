@@ -1,3 +1,10 @@
+# [0.238.0](https://github.com/teamkeel/keel/compare/v0.237.0...v0.238.0) (2023-01-24)
+
+
+### Features
+
+* custom toHaveError vitest matcher ([#688](https://github.com/teamkeel/keel/issues/688)) ([414af82](https://github.com/teamkeel/keel/commit/414af822771ed57f6d1b190d1e5e0e7c0bb4be74))
+
 # [0.237.0](https://github.com/teamkeel/keel/compare/v0.236.3...v0.237.0) (2023-01-24)
 
 
