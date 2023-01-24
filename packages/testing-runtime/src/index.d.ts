@@ -3,6 +3,7 @@
 
 interface ActionError {
   code: string;
+  message: string;
 }
 
 interface CustomMatchers<R = unknown> {
