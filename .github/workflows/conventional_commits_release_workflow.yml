@@ -47,6 +47,9 @@ jobs:
       - name: Install testing package publish dependencies
         run: cd packages/testing && npm ci
 
+      - name: Install testing-runtime package publish dependencies
+        run: cd packages/testing-runtime && pnpm install --frozen-lockfile
+
       - name: Generate wasm binary
         run: make wasm
 
