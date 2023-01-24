@@ -147,7 +147,7 @@ func getGraphQLSchemas(this js.Value, args []js.Value) any {
 			return nil, err
 		}
 
-		response, err := handler(&http.Request{
+		response := handler(&http.Request{
 			URL: &url.URL{
 				Path: "/" + api.Name,
 			},
