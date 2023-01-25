@@ -1,4 +1,3 @@
-
 model Post {
     fields {
         title Text
@@ -11,11 +10,9 @@ model Post {
             @set(post.isActive = true)
             @permission(expression: post.theAuthor.isActive == true)
         }
-
         get getPost(id) {
             @permission(expression: post.theAuthor.isActive == true)
         }
-
         list listPosts() {
             @permission(expression: post.theAuthor.isActive == true)
         }
@@ -33,21 +30,15 @@ model Author {
         get getAuthor(id) {
             @permission(expression: author.thePosts.isActive == true)
         }
-
         list listAuthors() {
             @permission(expression: author.thePosts.isActive == true)
         }
     }
 }
 
-
-
 api Web {
-    @graphql
-
     models {
         Post
         Author
     }
 }
-

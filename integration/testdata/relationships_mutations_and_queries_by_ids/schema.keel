@@ -1,4 +1,3 @@
-
 model Post {
     fields {
         title Text
@@ -11,19 +10,20 @@ model Post {
         create createPostWithSet() with (title, explicitAuthorId: ID) {
             @set(post.theAuthorId = explicitAuthorId)
         }
-
         update updatePost(id) with (title, theAuthor.id)
         update updatePostForeignKey(id) with (title, theAuthorId)
         update updatePostWithSet(id) with (title, explicitAuthorId: ID) {
             @set(post.theAuthorId = explicitAuthorId)
         }
-
         get getPost(id)
         get getPostByAuthor(id, theAuthor.id)
         list listPost(theAuthor.id)
     }
 
-    @permission(actions: [create, update, get, list], expression: true)
+    @permission(
+        actions: [create, update, get, list],
+        expression: true
+    )
 }
 
 model Author {
@@ -38,17 +38,15 @@ model Author {
         list listAuthors(thePosts.id)
     }
 
-    @permission(actions: [create, update, get, list], expression: true)
+    @permission(
+        actions: [create, update, get, list],
+        expression: true
+    )
 }
 
-
-
 api Web {
-    @graphql
-
     models {
         Post
         Author
     }
 }
-

@@ -30,8 +30,6 @@ model Beatle {
 }
 
 api Test {
-    @graphql
-
     models {
         Beatle
     }

@@ -16,8 +16,6 @@ model OrderItem {
 }
 
 api Test {
-    @graphql
-
     models {
         Order
         OrderItem

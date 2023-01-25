@@ -58,10 +58,6 @@ var attributeLocations = map[string][]string{
 		parser.AttributePermission,
 		parser.AttributeUnique,
 	},
-	parser.KeywordApi: {
-		parser.AttributeGraphQL,
-		parser.AttributeRPC,
-	},
 	parser.KeywordField: {
 		parser.AttributeUnique,
 		parser.AttributeDefault,

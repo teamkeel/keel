@@ -1,8 +1,4 @@
 model Post {
-    @permission(
-        expression: true,
-        actions: [create, get, list, update, delete]
-    )
     fields {
         title Text?
         length Number?
@@ -31,6 +27,11 @@ model Post {
             @where(post.aTimestamp < whereArg)
         }
     }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
 }
 
 enum Category {
@@ -40,8 +41,6 @@ enum Category {
 }
 
 api Web {
-    @graphql
-
     models {
         Post
     }

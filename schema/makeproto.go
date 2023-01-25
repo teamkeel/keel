@@ -149,8 +149,6 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) *proto.Api {
 	}
 	for _, section := range parserAPI.Sections {
 		switch {
-		case section.Attribute != nil:
-			protoAPI.Type = scm.mapToAPIType(section.Attribute.Name.Value)
 		case len(section.Models) > 0:
 			for _, parserApiModel := range section.Models {
 				protoModel := &proto.ApiModel{
@@ -498,15 +496,4 @@ func (scm *Builder) mapToOperationType(parsedOperation string) proto.OperationTy
 // stripQuotes removes all double quotes from the given string, regardless of where they are.
 func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
-}
-
-func (scm *Builder) mapToAPIType(parserAPIType string) proto.ApiType {
-	switch parserAPIType {
-	case parser.AttributeGraphQL:
-		return proto.ApiType_API_TYPE_GRAPHQL
-	case parser.AttributeRPC:
-		return proto.ApiType_API_TYPE_RPC
-	default:
-		return proto.ApiType_API_TYPE_UNKNOWN
-	}
 }

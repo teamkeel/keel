@@ -17,8 +17,6 @@ enum Occupation {
 }
 
 api Test {
-    @graphql
-
     models {
         Person
     }

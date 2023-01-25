@@ -100,8 +100,6 @@ const (
 	AttributePermission = "permission"
 	AttributeWhere      = "where"
 	AttributeSet        = "set"
-	AttributeGraphQL    = "graphql"
-	AttributeRPC        = "rpc"
 	AttributePrimaryKey = "primaryKey"
 	AttributeDefault    = "default"
 	AttributeValidate   = "validate"

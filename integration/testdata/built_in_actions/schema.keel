@@ -1,10 +1,4 @@
 model Post {
-
-    @permission(
-        expression: true,
-        actions: [create, get, list, update, delete]
-    )
-
     fields {
         title Text
         subTitle Text @unique
@@ -17,15 +11,18 @@ model Post {
         delete deletePost(id)
         delete deletePostBySubTitle(subTitle)
         list listPosts(title)
-        update updateWithExplicitSet(id) with(coolTitle: Text) {
+        update updateWithExplicitSet(id) with (coolTitle: Text) {
             @set(post.title = coolTitle)
         }
     }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
 }
 
 api Web {
-    @graphql
-
     models {
         Post
     }

@@ -23,8 +23,6 @@ role staff {
 }
 
 api web {
-    @graphql
-
     models {
         person
     }
@@ -57,8 +55,6 @@ role Staff {
 }
 
 api Web {
-    @graphql
-
     models {
         Person
     }

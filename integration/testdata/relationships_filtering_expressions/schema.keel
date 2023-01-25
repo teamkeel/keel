@@ -102,8 +102,6 @@ model Publisher {
 }
 
 api Web {
-    @graphql
-
     models {
         Post
         Author
