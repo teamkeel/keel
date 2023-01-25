@@ -1,4 +1,4 @@
-import isMatch from 'lodash.ismatch'
+import isMatch from "lodash.ismatch";
 
 export async function toHaveError(received, expected) {
   const { isNot } = this;
@@ -7,9 +7,9 @@ export async function toHaveError(received, expected) {
 
     return {
       pass: false,
-      message: () => 'expected value to reject',
+      message: () => "expected value to reject",
       actual: JSON.stringify(v),
-      expected: JSON.stringify(expected)
+      expected: JSON.stringify(expected),
     };
   } catch (err) {
     return {
@@ -17,7 +17,7 @@ export async function toHaveError(received, expected) {
       message: () =>
         `expected ${isNot ? "no " : ""} ${JSON.stringify(err)} error`,
       actual: JSON.stringify(err),
-      expected: JSON.stringify(expected)
+      expected: JSON.stringify(expected),
     };
   }
 }

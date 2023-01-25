@@ -35,7 +35,7 @@ jobs:
       - name: Install @teamkeel/functions-runtime deps
         working-directory: ./packages/functions-runtime
         run: pnpm install --frozen-lockfile --production
-      - name: Install @teamkeel/testinh-runtime deps
+      - name: Install @teamkeel/testing-runtime deps
         working-directory: ./packages/testing-runtime
         run: pnpm install --frozen-lockfile --production
       - name: Install Go deps
