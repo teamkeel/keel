@@ -1,7 +1,6 @@
 package graphql
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/graphql-go/graphql"
@@ -38,26 +37,18 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 
 		input := getInput(operation, p.Args)
 
-		switch operation.Type {
-		case proto.OperationType_OPERATION_TYPE_GET:
-			return actions.Get(scope, input)
-		case proto.OperationType_OPERATION_TYPE_UPDATE:
-			return actions.Update(scope, input)
-		case proto.OperationType_OPERATION_TYPE_CREATE:
-			return actions.Create(scope, input)
-		case proto.OperationType_OPERATION_TYPE_DELETE:
-			return actions.Delete(scope, input)
-		case proto.OperationType_OPERATION_TYPE_LIST:
-			res, err := actions.List(scope, input)
-			if err != nil {
-				return nil, err
-			}
-			return connectionResponse(res.Results, res.HasNextPage)
-		case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-			return actions.Authenticate(scope, input)
-		default:
-			panic(fmt.Errorf("unhandled operation type %s", operation.Type.String()))
+		res, err := actions.Execute(scope, input)
+		if err != nil {
+			return nil, err
 		}
+
+		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
+			// actions.Execute() returns any but a list action will return a map
+			m, _ := res.(map[string]any)
+			return connectionResponse(m)
+		}
+
+		return res, nil
 	}
 }
 

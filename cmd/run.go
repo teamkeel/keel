@@ -22,17 +22,18 @@ import (
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/migrations"
-	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"github.com/teamkeel/keel/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
 	"gorm.io/driver/postgres"
 )
+
+const dbConnString = "postgres://%s:%s@%s:%s/%s"
 
 // The Run command does this:
 //
@@ -47,7 +48,6 @@ var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run your Keel App locally",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		schemaDir, _ := cmd.Flags().GetString("dir")
 		b := &schema.Builder{}
 		useExistingContainer := !runCmdFlagReset
 		dbConn, dbConnInfo, err := database.Start(useExistingContainer)
@@ -87,54 +87,42 @@ var runCmd = &cobra.Command{
 			panic(err)
 		}
 
+		opts := []node.BootstrapOption{}
+		if os.Getenv("KEEL_LOCAL_PACKAGES_PATH") != "" {
+			opts = append(opts, node.WithPackagesPath(os.Getenv("KEEL_LOCAL_PACKAGES_PATH")))
+		}
+
+		err = node.Bootstrap(inputDir, opts...)
+		if err != nil {
+			panic(err)
+		}
+
 		var mutex sync.Mutex
-		var nodePort string
-		var nodeProcess *os.Process
-		var nodeClient = &functions.HttpFunctionsClient{
-			Port: nodePort,
-		}
-
-		generate := func(protoSchema *proto.Schema) {
-			customFunctionRuntime, err := functions.NewRuntime(protoSchema, schemaDir)
-
-			if err != nil {
-				panic(err)
-			}
-
-			err = customFunctionRuntime.Bootstrap()
-
-			if err != nil {
-				panic(err)
-			}
-		}
+		var functionsServer *node.DevelopmentServer
+		var functionsTransport functions.Transport
 
 		// We run a Node.js server in the background to handle requests to the
 		// Functions runtime, which in turn routes requests so that they can be
 		// passed to individual custom functions
-		spawnNodeProcess := func() *os.Process {
-			if nodeProcess != nil {
-				err = nodeProcess.Kill()
+		restartFunctionServer := func() {
+			if functionsServer != nil {
+				_ = functionsServer.Kill()
 			}
 
-			// Retrieves a free tcp to host the node server on
-			freePort, err := util.GetFreePort()
+			dbConnString := fmt.Sprintf(dbConnString, dbConnInfo.Username, dbConnInfo.Password, dbConnInfo.Host, dbConnInfo.Port, dbConnInfo.Database)
 
+			functionsServer, err = node.RunDevelopmentServer(inputDir, &node.ServerOpts{
+				EnvVars: map[string]string{
+					"DB_CONN_TYPE": "pg",
+					"DB_CONN":      dbConnString,
+				},
+			})
 			if err != nil {
+				fmt.Print(err.Error())
 				panic(err)
 			}
 
-			nodeProcess, err = functions.RunServer(schemaDir, freePort, dbConnInfo.String())
-
-			if err != nil {
-				panic(err)
-			}
-
-			// Update the references that are in the upper scope so that can be referrred back
-			// to by other things.
-			nodePort = freePort
-			nodeClient.Port = nodePort
-
-			return nodeProcess
+			functionsTransport = functions.NewHttpTransport(functionsServer.URL)
 		}
 
 		currSchema, err := migrations.GetCurrentSchema(context.Background(), db)
@@ -147,7 +135,7 @@ var runCmd = &cobra.Command{
 			defer mutex.Unlock()
 
 			clearTerminal()
-			printRunHeader(schemaDir, dbConnInfo)
+			printRunHeader(inputDir, dbConnInfo)
 
 			if changedFile != "" {
 				fmt.Println("Detected change to:", changedFile)
@@ -155,7 +143,7 @@ var runCmd = &cobra.Command{
 
 			fmt.Println("📂 Loading schema files")
 
-			protoSchema, err := b.MakeFromDirectory(schemaDir)
+			protoSchema, err := b.MakeFromDirectory(inputDir)
 
 			if err != nil {
 				errs, ok := err.(*errorhandling.ValidationErrors)
@@ -199,12 +187,20 @@ var runCmd = &cobra.Command{
 				}
 			}
 
-			if hasCustomFunctions(protoSchema) {
-				// Every time the schema changes, we want to run codegen again
-				generate(protoSchema)
+			files, err := node.Generate(context.Background(), inputDir, node.WithDevelopmentServer(true))
+			if err != nil {
+				panic(err)
+			}
+
+			err = files.Write()
+			if err != nil {
+				panic(err)
+			}
+
+			if node.HasFunctions(protoSchema) {
 				// kill the old node server hosting the old code, and
 				// spawn a new node server for the new version of the code
-				spawnNodeProcess()
+				restartFunctionServer()
 			}
 
 			currSchema = protoSchema
@@ -218,14 +214,16 @@ var runCmd = &cobra.Command{
 			fmt.Printf("Request: %s %s\n", r.Method, r.URL.Path)
 
 			if strings.HasSuffix(r.URL.Path, "/graphiql") {
-				handler := playground.Handler("GraphiQL", strings.TrimSuffix(r.URL.Path, "/graphiql"))
+				handler := playground.Handler("GraphiQL", strings.TrimSuffix(r.URL.Path, "/graphiql")+"/graphql")
 				handler(w, r)
 				return
 			}
 
 			ctx := r.Context()
 			ctx = runtimectx.WithDatabase(ctx, db)
-			ctx = functions.WithFunctionsClient(ctx, nodeClient)
+			if functionsTransport != nil {
+				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
+			}
 			r = r.WithContext(ctx)
 
 			runtime.NewHttpHandler(currSchema).ServeHTTP(w, r)
@@ -235,18 +233,13 @@ var runCmd = &cobra.Command{
 
 		// this needs to be executed here because
 		// reloadSchema populates the currSchema
-		hasCustomFunctions := hasCustomFunctions(currSchema)
+		hasCustomFunctions := node.HasFunctions(currSchema)
 
-		stopWatcher, err := onSchemaFileChanges(schemaDir, hasCustomFunctions, reloadSchema)
+		stopWatcher, err := onSchemaFileChanges(inputDir, hasCustomFunctions, reloadSchema)
 		if err != nil {
 			panic(err)
 		}
 		defer stopWatcher()
-
-		if hasCustomFunctions {
-			// Then spawn a node server
-			nodeProcess = spawnNodeProcess()
-		}
 
 		go http.ListenAndServe(":"+runCmdFlagPort, http.DefaultServeMux)
 
@@ -255,8 +248,8 @@ var runCmd = &cobra.Command{
 		<-c
 
 		// Kill the Functions node server when the command exits
-		if nodeProcess != nil {
-			nodeProcess.Kill()
+		if functionsServer != nil {
+			functionsServer.Kill()
 		}
 		fmt.Println("\n👋 Bye bye")
 		return nil
@@ -372,18 +365,6 @@ func onSchemaFileChanges(dir string, hasCustomFunctions bool, cb func(changedFil
 	}
 
 	return watcher.Close, nil
-}
-
-func hasCustomFunctions(schema *proto.Schema) bool {
-	var ops []*proto.Operation
-
-	for _, model := range schema.Models {
-		ops = append(ops, model.Operations...)
-	}
-
-	return lo.SomeBy(ops, func(o *proto.Operation) bool {
-		return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
-	})
 }
 
 func isRelevantEventType(op fsnotify.Op) bool {

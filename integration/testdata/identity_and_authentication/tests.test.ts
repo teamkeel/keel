@@ -1,14 +1,10 @@
-import {
-  test,
-  expect,
-  actions,
-  Post,
-  ChildPost,
-  Identity,
-} from "@teamkeel/testing";
+import { test, expect, expectTypeOf, beforeEach } from "vitest";
+import { actions, models, resetDatabase } from "@teamkeel/testing";
+
+beforeEach(resetDatabase);
 
 test("create identity", async () => {
-  const { identityId, identityCreated } = await actions.authenticate({
+  const { identityCreated } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -20,43 +16,46 @@ test("create identity", async () => {
 });
 
 test("authenticate - invalid email - respond with invalid email address error", async () => {
-  expect(
-    await actions.authenticate({
+  await expect(
+    actions.authenticate({
       createIfNotExists: true,
       emailPassword: {
         email: "user",
         password: "1234",
       },
     })
-  ).toHaveError({
+  ).rejects.toEqual({
+    code: "ERR_INVALID_INPUT",
     message: "invalid email address",
   });
 });
 
 test("authenticate - empty password - respond with password cannot be empty error", async () => {
-  expect(
-    await actions.authenticate({
+  await expect(
+    actions.authenticate({
       createIfNotExists: true,
       emailPassword: {
         email: "user@keel.xyz",
         password: "",
       },
     })
-  ).toHaveError({
+  ).rejects.toEqual({
+    code: "ERR_INVALID_INPUT",
     message: "password cannot be empty",
   });
 });
 
 test("authenticate - new identity and createIfNotExists false - respond with failed to authenticate error", async () => {
-  expect(
-    await actions.authenticate({
+  await expect(
+    actions.authenticate({
       createIfNotExists: false,
       emailPassword: {
         email: "user@keel.xyz",
         password: "1234",
       },
     })
-  ).toHaveError({
+  ).rejects.toEqual({
+    code: "ERR_INVALID_INPUT",
     message: "failed to authenticate",
   });
 });
@@ -86,49 +85,40 @@ test("authenticate - existing identity and createIfNotExists false - authenticat
 });
 
 test("authenticate - new identity - new identity created", async () => {
-  const { identityId: id, identityCreated: created } =
-    await actions.authenticate({
-      createIfNotExists: true,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "1234",
-      },
-    });
-
-  expect(id).notToBeEmpty();
-  expect(created).toEqual(true);
+  const authResponse = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
+  expect(authResponse.token).toBeTruthy();
+  expect(authResponse.identityCreated).toEqual(true);
 });
 
 test("authenticate - existing identity - authenticated", async () => {
-  const { identityId: id1, identityCreated: created1 } =
-    await actions.authenticate({
-      createIfNotExists: true,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "1234",
-      },
-    });
+  const { identityCreated: created1 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
 
-  const { identityId: id2, identityCreated: created2 } =
-    await actions.authenticate({
-      createIfNotExists: true,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "1234",
-      },
-    });
+  const { identityCreated: created2 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
 
-  expect(id1).toEqual(id2);
   expect(created1).toEqual(true);
   expect(created2).toEqual(false);
 });
 
 test("authenticate - incorrect credentials with existing identity - not authenticated", async () => {
-  const {
-    identityId: id1,
-    identityCreated: created1,
-    errors: errors1,
-  } = await actions.authenticate({
+  const { identityCreated: created1 } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -136,23 +126,24 @@ test("authenticate - incorrect credentials with existing identity - not authenti
     },
   });
 
-  const { identityId: id2, identityCreated: created2 } =
-    await actions.authenticate({
+  expect(created1).toEqual(true);
+
+  await expect(
+    actions.authenticate({
       createIfNotExists: true,
       emailPassword: {
         email: "user@keel.xyz",
         password: "zzzz",
       },
-    });
-
-  var notEqualIdentities = id1 != id2;
-  expect(notEqualIdentities).toEqual(true);
-  expect(created1).toEqual(true);
-  expect(created2).toEqual(false);
+    })
+  ).rejects.toEqual({
+    code: "ERR_INVALID_INPUT",
+    message: "failed to authenticate",
+  });
 });
 
 test("identity context permission - correct identity - permission satisfied", async () => {
-  const { identityId } = await actions.authenticate({
+  const authResponse = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -160,21 +151,17 @@ test("identity context permission - correct identity - permission satisfied", as
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
+  const authedActions = actions.withAuthToken(authResponse.token);
 
-  const { object: post } = await actions
-    .withIdentity(identity)
-    .createPostWithIdentity({ title: "temp" });
+  const post = await authedActions.createPostWithIdentity({ title: "temp" });
 
-  expect(
-    await actions
-      .withIdentity(identity)
-      .getPostRequiresIdentity({ id: post.id })
-  ).notToHaveAuthorizationError();
+  await expect(
+    authedActions.getPostRequiresIdentity({ id: post.id })
+  ).resolves.toEqual(post);
 });
 
 test("identity context permission - incorrect identity - permission not satisfied", async () => {
-  const { identityId: id1 } = await actions.authenticate({
+  const { token: token1 } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user1@keel.xyz",
@@ -182,7 +169,7 @@ test("identity context permission - incorrect identity - permission not satisfie
     },
   });
 
-  const { identityId: id2 } = await actions.authenticate({
+  const { token: token2 } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user2@keel.xyz",
@@ -190,22 +177,17 @@ test("identity context permission - incorrect identity - permission not satisfie
     },
   });
 
-  const { object: identity1 } = await Identity.findOne({ id: id1 });
-  const { object: identity2 } = await Identity.findOne({ id: id2 });
-
-  const { object: post } = await actions
-    .withIdentity(identity1)
+  const post = await actions
+    .withAuthToken(token1)
     .createPostWithIdentity({ title: "temp" });
 
-  expect(
-    await actions
-      .withIdentity(identity2)
-      .getPostRequiresIdentity({ id: post.id })
+  await expect(
+    actions.withAuthToken(token2).getPostRequiresIdentity({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("isAuthenticated context permission - authenticated - permission satisfied", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -213,21 +195,17 @@ test("isAuthenticated context permission - authenticated - permission satisfied"
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
-
-  const { object: post } = await actions
-    .withIdentity(identity)
+  const post = await actions
+    .withAuthToken(token)
     .createPostWithIdentity({ title: "temp" });
 
-  expect(
-    await actions
-      .withIdentity(identity)
-      .getPostRequiresAuthentication({ id: post.id })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.withAuthToken(token).getPostRequiresAuthentication({ id: post.id })
+  ).resolves.toEqual(post);
 });
 
 test("isAuthenticated context permission - not authenticated - permission not satisfied", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -235,19 +213,17 @@ test("isAuthenticated context permission - not authenticated - permission not sa
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
-
-  const { object: post } = await actions
-    .withIdentity(identity)
+  const post = await actions
+    .withAuthToken(token)
     .createPostWithIdentity({ title: "temp" });
 
-  expect(
-    await actions.getPostRequiresAuthentication({ id: post.id })
+  await expect(
+    actions.getPostRequiresAuthentication({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
 test("not isAuthenticated context permission - authenticated - permission satisfied", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -255,21 +231,19 @@ test("not isAuthenticated context permission - authenticated - permission satisf
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
-
-  const { object: post } = await actions
-    .withIdentity(identity)
+  const post = await actions
+    .withAuthToken(token)
     .createPostWithIdentity({ title: "temp" });
 
-  expect(
-    await actions
-      .withIdentity(identity)
+  await expect(
+    actions
+      .withAuthToken(token)
       .getPostRequiresNoAuthentication({ id: post.id })
   ).toHaveAuthorizationError();
 });
 
-test("not isAuthenticated context permission - not authenticated - permission not satisfied", async () => {
-  const { identityId } = await actions.authenticate({
+test("not isAuthenticated context permission - not authenticated - permission satisfied", async () => {
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -277,19 +251,17 @@ test("not isAuthenticated context permission - not authenticated - permission no
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
-
-  const { object: post } = await actions
-    .withIdentity(identity)
+  const post = await actions
+    .withAuthToken(token)
     .createPostWithIdentity({ title: "temp" });
 
-  expect(
-    await actions.getPostRequiresNoAuthentication({ id: post.id })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.getPostRequiresNoAuthentication({ id: post.id })
+  ).resolves.toEqual(post);
 });
 
 test("isAuthenticated context set - authenticated - is set to true", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -297,17 +269,15 @@ test("isAuthenticated context set - authenticated - is set to true", async () =>
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
-
-  const { object: post } = await actions
-    .withIdentity(identity)
+  const post = await actions
+    .withAuthToken(token)
     .createPostSetIsAuthenticated({ title: "temp" });
 
   expect(post.isAuthenticated).toEqual(true);
 });
 
 test("isAuthenticated context set - not authenticated - is set to false", async () => {
-  const { object: post } = await actions.createPostSetIsAuthenticated({
+  const post = await actions.createPostSetIsAuthenticated({
     title: "temp",
   });
 
@@ -319,7 +289,7 @@ test("isAuthenticated context set - not authenticated - is set to false", async 
 // todo:  permission test against another identity field.  Requires this fix: https://linear.app/keel/issue/DEV-196/permissions-support-identity-type-operand-with-identity-comparison
 
 test("related model identity context permission - correct identity - permission satisfied", async () => {
-  const { identityId: id1 } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user1@keel.xyz",
@@ -327,25 +297,23 @@ test("related model identity context permission - correct identity - permission 
     },
   });
 
-  const { object: identity1 } = await Identity.findOne({ id: id1 });
-
-  const { object: post } = await actions
-    .withIdentity(identity1)
+  const post = await actions
+    .withAuthToken(token)
     .createPostWithIdentity({ title: "temp" });
 
-  const { object: child } = await actions
-    .withIdentity(identity1)
+  const child = await actions
+    .withAuthToken(token)
     .createChild({ postId: post.id });
 
-  const { collection } = await ChildPost.where({ postId: post.id }).all();
+  const childPosts = await models.childPost.findMany({ postId: post.id });
 
   expect(child.postId).toEqual(post.id);
-  expect(collection.length).toEqual(1);
-  expect(collection[0].id).toEqual(child.id);
+  expect(childPosts.length).toEqual(1);
+  expect(childPosts[0].id).toEqual(child.id);
 });
 
 test("related model identity context permission - incorrect identity - permission not satisfied", async () => {
-  const { identityId: id1 } = await actions.authenticate({
+  const { token: token1 } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user1@keel.xyz",
@@ -353,7 +321,7 @@ test("related model identity context permission - incorrect identity - permissio
     },
   });
 
-  const { identityId: id2 } = await actions.authenticate({
+  const { token: token2 } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user2@keel.xyz",
@@ -361,17 +329,14 @@ test("related model identity context permission - incorrect identity - permissio
     },
   });
 
-  const { object: identity1 } = await Identity.findOne({ id: id1 });
-  const { object: identity2 } = await Identity.findOne({ id: id2 });
-
-  const { object: post } = await actions
-    .withIdentity(identity1)
+  const post = await actions
+    .withAuthToken(token1)
     .createPostWithIdentity({ title: "temp" });
 
-  expect(
-    await actions.withIdentity(identity2).createChild({ postId: post.id })
+  await expect(
+    actions.withAuthToken(token2).createChild({ postId: post.id })
   ).toHaveAuthorizationError();
 
-  const { collection } = await ChildPost.where({ postId: post.id }).all();
-  expect(collection.length).toEqual(0);
+  const childPosts = await models.childPost.findMany({ postId: post.id });
+  expect(childPosts.length).toEqual(0);
 });

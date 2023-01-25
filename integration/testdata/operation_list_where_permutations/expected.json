@@ -1,6 +1,0 @@
-[
-  { "testName": "equalsGettingStarted", "status": "pass" },
-  { "testName": "equalsSwapLHSWithRHS", "status": "pass" },
-  { "testName": "notEqualSample", "status": "pass" },
-  { "testName": "equalsWithNumberField", "status": "pass" }
-]

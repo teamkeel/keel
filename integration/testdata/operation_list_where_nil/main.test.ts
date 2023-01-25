@@ -1,21 +1,21 @@
-import { test, expect, actions, Thing, logger } from "@teamkeel/testing";
-import { LogLevel } from "@teamkeel/sdk";
+import { test, expect, beforeEach } from "vitest";
+import { actions, resetDatabase, models } from "@teamkeel/testing";
+
+beforeEach(resetDatabase);
 
 test("eqAndNotEq", async () => {
-  await Thing.create({ switchIsOn: null });
-  await Thing.create({ switchIsOn: false });
-  await Thing.create({ switchIsOn: true });
+  await models.thing.create({ switchIsOn: null });
+  await models.thing.create({ switchIsOn: false });
+  await models.thing.create({ switchIsOn: true });
 
-  let resp;
-
-  resp = await actions.eqArg({ where: { arg: null } });
-  expect(resp.collection.map((thing) => thing.switchIsOn)).toEqual([null]);
+  let resp = await actions.eqArg({ where: { arg: null } });
+  expect(resp.results.map((thing) => thing.switchIsOn)).toEqual([null]);
 
   resp = await actions.eqArg({ where: { arg: false } });
-  expect(resp.collection.map((thing) => thing.switchIsOn)).toEqual([false]);
+  expect(resp.results.map((thing) => thing.switchIsOn)).toEqual([false]);
 
   resp = await actions.eqArg({ where: { arg: true } });
-  expect(resp.collection.map((thing) => thing.switchIsOn)).toEqual([true]);
+  expect(resp.results.map((thing) => thing.switchIsOn)).toEqual([true]);
 
   let nullsLast = function (a, b) {
     if (a === null) {
@@ -28,17 +28,17 @@ test("eqAndNotEq", async () => {
   };
 
   resp = await actions.notEqArg({ where: { arg: null } });
-  expect(
-    resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
-  ).toEqual([false, true]);
+  expect(resp.results.map((thing) => thing.switchIsOn).sort(nullsLast)).toEqual(
+    [false, true]
+  );
 
   resp = await actions.notEqArg({ where: { arg: false } });
-  expect(
-    resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
-  ).toEqual([true, null]);
+  expect(resp.results.map((thing) => thing.switchIsOn).sort(nullsLast)).toEqual(
+    [true, null]
+  );
 
   resp = await actions.notEqArg({ where: { arg: true } });
-  expect(
-    resp.collection.map((thing) => thing.switchIsOn).sort(nullsLast)
-  ).toEqual([false, null]);
+  expect(resp.results.map((thing) => thing.switchIsOn).sort(nullsLast)).toEqual(
+    [false, null]
+  );
 });

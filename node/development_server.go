@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"time"
 
 	"github.com/teamkeel/keel/util"
@@ -55,7 +54,7 @@ type ServerOpts struct {
 
 // RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
 func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, error) {
-	cmd := exec.Command("npx", "ts-node", filepath.Join(dir, ".build/server.js"))
+	cmd := exec.Command("npx", "ts-node", ".build/server.js")
 	cmd.Dir = dir
 	cmd.Env = os.Environ()
 

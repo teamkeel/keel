@@ -1,151 +1,154 @@
-import { test, expect, actions, Post, Identity } from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
+import { actions, resetDatabase, models } from "@teamkeel/testing";
+
+beforeEach(resetDatabase);
 
 test("string permission on literal - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithTextPermissionLiteral({ title: "hello" })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithTextPermissionLiteral({ title: "hello" })
+  ).resolves.toMatchObject({ title: "hello" });
 });
 
 test("string permission on literal - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithTextPermissionLiteral({ title: "not hello" })
+  await expect(
+    actions.createWithTextPermissionLiteral({ title: "not hello" })
   ).toHaveAuthorizationError();
 });
 
 test("string permission on literal - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithTextPermissionLiteral({ title: null })
+  await expect(
+    actions.createWithTextPermissionLiteral({ title: null })
   ).toHaveAuthorizationError();
 });
 
 test("number permission on literal - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithNumberPermissioLiteral({ views: 5 })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithNumberPermissioLiteral({ views: 5 })
+  ).resolves.toMatchObject({ views: 5 });
 });
 
 test("number permission on literal - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithNumberPermissioLiteral({ views: 500 })
+  await expect(
+    actions.createWithNumberPermissioLiteral({ views: 500 })
   ).toHaveAuthorizationError();
 });
 
 test("number permission on literal - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithNumberPermissioLiteral({ views: null })
+  await expect(
+    actions.createWithNumberPermissioLiteral({ views: null })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on literal - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithBooleanPermissionLiteral({ active: true })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithBooleanPermissionLiteral({ active: true })
+  ).resolves.toMatchObject({ active: true });
 });
 
 test("boolean permission on literal - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithBooleanPermissionLiteral({ active: false })
+  await expect(
+    actions.createWithBooleanPermissionLiteral({ active: false })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on literal - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithBooleanPermissionLiteral({ active: null })
+  await expect(
+    actions.createWithBooleanPermissionLiteral({ active: null })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithEnumPermissionLiteral({ type: "Technical" })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithEnumPermissionLiteral({ type: "Technical" })
+  ).resolves.toMatchObject({ type: "Technical" });
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithEnumPermissionLiteral({ type: "Lifestyle" })
+  await expect(
+    actions.createWithEnumPermissionLiteral({ type: "Lifestyle" })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on literal - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithEnumPermissionLiteral({ type: null })
+  await expect(
+    actions.createWithEnumPermissionLiteral({ type: null })
   ).toHaveAuthorizationError();
 });
 
 test("string permission on field name - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithTextPermissionFromField({ title: "hello" })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithTextPermissionFromField({ title: "hello" })
+  ).resolves.toMatchObject({ title: "hello" });
 });
 
 test("string permission on field name - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithTextPermissionFromField({ title: "not hello" })
-  ).toHaveAuthorizationError(true);
+  await expect(
+    actions.createWithTextPermissionFromField({ title: "not hello" })
+  ).toHaveAuthorizationError();
 });
 
 test("string permission on field name - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithTextPermissionFromField({ title: null })
-  ).toHaveAuthorizationError(true);
+  await expect(
+    actions.createWithTextPermissionFromField({ title: null })
+  ).toHaveAuthorizationError();
 });
 
 test("number permission on field name - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithNumberPermissionFromField({ views: 5 })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithNumberPermissionFromField({ views: 5 })
+  ).resolves.toMatchObject({ views: 5 });
 });
 
 test("number permission on field name - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithNumberPermissionFromField({ views: 500 })
+  await expect(
+    actions.createWithNumberPermissionFromField({ views: 500 })
   ).toHaveAuthorizationError();
 });
 
 test("number permission on field name - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithNumberPermissionFromField({ views: null })
+  await expect(
+    actions.createWithNumberPermissionFromField({ views: null })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on field name - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithBooleanPermissionFromField({ active: true })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithBooleanPermissionFromField({ active: true })
+  ).resolves.toMatchObject({ active: true });
 });
 
 test("boolean permission on field name - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithBooleanPermissionFromField({ active: false })
+  await expect(
+    actions.createWithBooleanPermissionFromField({ active: false })
   ).toHaveAuthorizationError();
 });
 
 test("boolean permission on field name - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithBooleanPermissionFromField({ active: null })
+  await expect(
+    actions.createWithBooleanPermissionFromField({ active: null })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on field name - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithEnumPermissionFromField({ type: "Technical" })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithEnumPermissionFromField({ type: "Technical" })
+  ).resolves.toMatchObject({ type: "Technical" });
 });
 
 test("enum permission on field name - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithEnumPermissionFromField({ type: "Lifestyle" })
+  await expect(
+    actions.createWithEnumPermissionFromField({ type: "Lifestyle" })
   ).toHaveAuthorizationError();
 });
 
 test("enum permission on field name - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithEnumPermissionFromField({ type: null })
+  await expect(
+    actions.createWithEnumPermissionFromField({ type: null })
   ).toHaveAuthorizationError();
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "user@keel.xyz",
@@ -153,50 +156,42 @@ test("identity permission - correct identity in context - is authorized", async 
     },
   });
 
-  const { object: identity } = await Identity.findOne({ id: identityId });
-
-  expect(
-    await actions
-      .withIdentity(identity)
+  await expect(
+    actions
+      .withAuthToken(token)
       .createWithIdentityRequiresSameIdentity({ title: "hello" })
-  ).notToHaveAuthorizationError();
-});
-
-test("identity permission - missing identity in context - is not authorized", async () => {
-  expect(
-    await actions.createWithIdentityRequiresSameIdentity({ title: "hello" })
-  ).notToHaveAuthorizationError();
+  ).resolves.toMatchObject({ id: expect.any(String) });
 });
 
 test("true value permission - with unauthenticated identity - is authorized", async () => {
-  expect(
-    await actions.createWithTrueValuePermission({ title: "hello" })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithTrueValuePermission({ title: "hello" })
+  ).resolves.toMatchObject({ title: "hello" });
 });
 
 test("multiple ORed permissions - matching a single value - is authorized", async () => {
-  expect(
-    await actions.createWithMultipleOrPermissions({
+  await expect(
+    actions.createWithMultipleOrPermissions({
       title: "hello",
       views: 100,
       active: false,
     })
-  ).notToHaveAuthorizationError();
+  ).resolves.toMatchObject({ title: "hello", views: 100, active: false });
 });
 
 test("multiple ORed permissions - matching all values - is authorized", async () => {
-  expect(
-    await actions.createWithMultipleOrPermissions({
+  await expect(
+    actions.createWithMultipleOrPermissions({
       title: "hello",
       views: 5,
       active: true,
     })
-  ).notToHaveAuthorizationError();
+  ).resolves.toMatchObject({ title: "hello", views: 5, active: true });
 });
 
 test("multiple ORed permissions - matching no values - is not authorized", async () => {
-  expect(
-    await actions.createWithMultipleOrPermissions({
+  await expect(
+    actions.createWithMultipleOrPermissions({
       title: "goodbye",
       views: 100,
       active: false,
@@ -205,39 +200,39 @@ test("multiple ORed permissions - matching no values - is not authorized", async
 });
 
 test("permission on implicit input - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithPermissionFromImplicitInput({ title: "hello" })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithPermissionFromImplicitInput({ title: "hello" })
+  ).resolves.toMatchObject({ title: "hello" });
 });
 
 test("permission on implicit input - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithPermissionFromImplicitInput({ title: "goodbye" })
+  await expect(
+    actions.createWithPermissionFromImplicitInput({ title: "goodbye" })
   ).toHaveAuthorizationError();
 });
 
 test("permission on implicit input - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithPermissionFromImplicitInput({ title: null })
+  await expect(
+    actions.createWithPermissionFromImplicitInput({ title: null })
   ).toHaveAuthorizationError();
 });
 
 test("permission on explicit input - matching value - is authorized", async () => {
-  expect(
-    await actions.createWithPermissionFromExplicitInput({ explTitle: "hello" })
-  ).notToHaveAuthorizationError();
+  await expect(
+    actions.createWithPermissionFromExplicitInput({ explTitle: "hello" })
+  ).resolves.toMatchObject({ id: expect.any(String) });
 });
 
 test("permission on explicit input - not matching value - is not authorized", async () => {
-  expect(
-    await actions.createWithPermissionFromExplicitInput({
+  await expect(
+    actions.createWithPermissionFromExplicitInput({
       explTitle: "goodbye",
     })
   ).toHaveAuthorizationError();
 });
 
 test("permission on explicit input - null value - is not authorized", async () => {
-  expect(
-    await actions.createWithPermissionFromExplicitInput({ explTitle: null })
+  await expect(
+    actions.createWithPermissionFromExplicitInput({ explTitle: null })
   ).toHaveAuthorizationError();
 });

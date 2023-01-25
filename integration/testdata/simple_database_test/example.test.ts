@@ -1,100 +1,87 @@
-import { test, expect, Post } from "@teamkeel/testing";
+import { models, resetDatabase } from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
+
+beforeEach(resetDatabase);
 
 test("create", async () => {
-  const { object: post } = await Post.create({ title: "apple" });
+  const post = await models.post.create({ title: "apple" });
 
   expect(post.title).toEqual("apple");
 });
 
 test("update", async () => {
-  const { object: post } = await Post.create({ title: "star wars" });
+  const post = await models.post.create({ title: "star wars" });
 
-  const { object: updatedPost } = await Post.update(post.id, {
-    title: "star wars sucks!",
-  });
+  const updatedPost = await models.post.update(
+    { id: post.id },
+    {
+      title: "star wars sucks!",
+    }
+  );
 
   expect(updatedPost.title).toEqual("star wars sucks!");
 });
 
-test("chained findOne", async () => {
-  await Post.create({ title: "apple" });
-  await Post.create({ title: "granny apple" });
-
-  const { object: one } = await Post.where({
-    title: {
-      contains: "apple",
-    },
-  }).findOne();
-
-  expect(one.title).toEqual("apple");
-});
-
-test("simple all", async () => {
-  await Post.create({ title: "fruit" });
-  await Post.create({ title: "big fruit" });
-
-  const { collection } = await Post.where({
-    title: {
-      contains: "fruit",
-    },
-  }).all();
-
-  expect(collection.length).toEqual(2);
-});
-
-test("chained conditions with all", async () => {
-  await Post.create({ title: "melon" });
-  await Post.create({ title: "kiwi" });
-
-  const { collection } = await Post.where({
-    title: "melon",
-  })
-    .orWhere({
-      title: "kiwi",
-    })
-    .all();
-
-  expect(collection.length).toEqual(2);
-});
-
-test("order", async () => {
-  await Post.create({ title: "abc" });
-  await Post.create({ title: "bcd" });
-
-  const { collection } = await Post.where({
-    title: {
-      contains: "bc",
-    },
-  })
-    .order({
-      title: "DESC",
-    })
-    .all();
-
-  expect(collection.length).toEqual(2);
-  expect(collection[0].title).toEqual("bcd");
-});
-
 test("findMany", async () => {
-  await Post.create({ title: "io" });
-  await Post.create({ title: "iota" });
+  await models.post.create({ title: "apple" });
+  await models.post.create({ title: "apple pie" });
+  await models.post.create({ title: "pear" });
 
-  const { collection } = await Post.findMany({
+  const results = await models.post.findMany({
     title: {
-      contains: "io",
+      startsWith: "apple",
     },
   });
 
-  expect(collection.length).toEqual(2);
+  expect(results.length).toEqual(2);
 });
 
+test("where / orWhere / findMany", async () => {
+  await models.post.create({ title: "apple" });
+  await models.post.create({ title: "pear" });
+
+  const results = await models.post
+    .where({
+      title: {
+        equals: "apple",
+      },
+    })
+    .orWhere({
+      title: {
+        equals: "pear",
+      },
+    })
+    .findMany();
+
+  expect(results.length).toEqual(2);
+});
+
+// TODO: add order method back to model API
+// test("order", async () => {
+//   await models.post.create({ title: "abc" });
+//   await models.post.create({ title: "bcd" });
+
+//   const { collection } = await models.post
+//     .where({
+//       title: {
+//         contains: "bc",
+//       },
+//     })
+//     .order({
+//       title: "DESC",
+//     })
+//     .all();
+
+//   expect(collection.length).toEqual(2);
+//   expect(collection[0].title).toEqual("bcd");
+// });
+
 test("findOne", async () => {
-  const { object: post } = await Post.create({ title: "ghi" });
-  await Post.create({ title: "hij" });
+  const post = await models.post.create({ title: "ghi" });
+  await models.post.create({ title: "hij" });
 
   const { id } = post;
 
-  const { object } = await Post.findOne({ id: id! });
-
-  expect(post.id).toEqual(object.id);
+  const p = await models.post.findOne({ id });
+  expect(p!.id).toEqual(post.id);
 });

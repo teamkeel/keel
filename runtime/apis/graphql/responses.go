@@ -6,15 +6,18 @@ import "fmt"
 // and wraps them into a Node+Edges structure that is good for the connections pattern
 // return type and is expected by the GraphQL schema for the List operation.
 // See https://relay.dev/graphql/connections.htm
-func connectionResponse(records any, hasNextPage bool) (resp any, err error) {
-	recordsList, ok := records.([]map[string]any)
+func connectionResponse(data map[string]any) (resp any, err error) {
+	results, ok := data["results"].([]map[string]any)
 	if !ok {
-		return nil, fmt.Errorf("cannot cast this: %v to a []map[string]any", records)
+		return nil, fmt.Errorf("list result does not contain results keys")
 	}
+
+	hasNextPage, _ := data["hasNextPage"].(bool)
+
 	var startCursor string
 	var endCursor string
 	edges := []map[string]any{}
-	for i, record := range recordsList {
+	for i, record := range results {
 		edge := map[string]any{
 			"cursor": record["id"],
 			"node":   record,

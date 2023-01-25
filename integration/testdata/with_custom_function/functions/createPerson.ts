@@ -1,5 +1,5 @@
 import { CreatePerson } from "@teamkeel/sdk";
 
-export default CreatePerson(async (inputs, api) => {
-  return await api.models.person.create(inputs);
+export default CreatePerson((inputs, api) => {
+  return api.models.person.create(inputs);
 });

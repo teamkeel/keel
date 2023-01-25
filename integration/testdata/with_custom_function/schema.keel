@@ -2,16 +2,16 @@ model Person {
     fields {
         name Text
         gender Text
-        nINumber Text @unique
+        niNumber Text @unique
     }
 
     functions {
         get getPerson(id)
-        get getPersonByNINumber(nINumber)
-        create createPerson() with (name, gender, nINumber)
+        get getPersonByNINumber(niNumber)
+        create createPerson() with (name, gender, niNumber)
         list listPeople(gender)
         delete deletePerson(id)
-        update updatePerson(id) with (name, gender, nINumber)
+        update updatePerson(id) with (name, gender, niNumber)
     }
 
     @permission(

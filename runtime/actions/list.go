@@ -7,11 +7,6 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 )
 
-type ListResult struct {
-	Results     []map[string]any `json:"results"`
-	HasNextPage bool             `json:"hasNextPage"`
-}
-
 func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[string]any) error {
 inputs:
 	for _, input := range scope.operation.Inputs {
@@ -60,7 +55,7 @@ inputs:
 	return nil
 }
 
-func List(scope *Scope, input map[string]any) (*ListResult, error) {
+func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	where, ok := input["where"].(map[string]any)
 	if !ok {
 		where = map[string]any{}
@@ -87,13 +82,6 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
-	op := scope.operation
-	if scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		// TODO: the custom function should receive the whole input, not just the
-		// where's
-		return ParseListResponse(scope.context, op, where)
-	}
-
 	page, err := ParsePage(input)
 	if err != nil {
 		return nil, err
@@ -113,8 +101,8 @@ func List(scope *Scope, input map[string]any) (*ListResult, error) {
 		return nil, err
 	}
 
-	return &ListResult{
-		Results:     results,
-		HasNextPage: hasNextPage,
+	return map[string]any{
+		"results":     results,
+		"hasNextPage": hasNextPage,
 	}, nil
 }

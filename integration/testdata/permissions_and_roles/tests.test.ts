@@ -1,69 +1,67 @@
-import {
-  test,
-  expect,
-  actions,
-  Post,
-  Identity,
-  ModelWithExpressions,
-} from "@teamkeel/testing";
+import { test, expect, beforeEach } from "vitest";
+import { actions, resetDatabase } from "@teamkeel/testing";
+
+beforeEach(resetDatabase);
 
 test("permission set on model level for create op - matching title - is authorized", async () => {
-  expect(
-    await actions.create({ title: "hello" })
-  ).notToHaveAuthorizationError();
+  await expect(actions.create({ title: "hello" })).resolves.toMatchObject({
+    title: "hello",
+  });
 });
 
 test("permission set on model level for create op - not matching - is not authorized", async () => {
-  expect(await actions.create({ title: "goodbye" })).toHaveAuthorizationError();
+  await expect(actions.create({ title: "goodbye" })).toHaveAuthorizationError();
 });
 
 test("ORed permissions set on model level for get op - matching title - is authorized", async () => {
-  const { object: post } = await actions.create({
+  const post = await actions.create({
     title: "hello",
     views: null,
   });
 
-  expect(await actions.get({ id: post.id })).notToHaveAuthorizationError();
+  const p = await actions.get({ id: post.id });
+  expect(p).toEqual(post);
 });
 
 test("ORed permissions set on model level for get op - matching title and views - is authorized", async () => {
-  const { object: post } = await actions.create({ title: "hello", views: 5 });
+  const post = await actions.create({ title: "hello", views: 5 });
 
-  expect(await actions.get({ id: post.id })).notToHaveAuthorizationError();
+  const p = await actions.get({ id: post.id });
+  expect(p).toEqual(post);
 });
 
 test("ORed permissions set on model level for get op - none matching - is not authorized", async () => {
-  const { object: post } = await actions.create({ title: "hello", views: 500 });
+  const post = await actions.create({ title: "hello", views: 500 });
 
   await actions.update({
     where: { id: post.id },
     values: { title: "goodbye" },
   });
 
-  expect(await actions.get({ id: post.id })).toHaveAuthorizationError();
+  await expect(actions.get({ id: post.id })).toHaveAuthorizationError();
 });
 
 test("no permissions set on model level for delete op - can delete - is authorized", async () => {
-  const { object: post } = await actions.create({ title: "hello", views: 500 });
+  const post = await actions.create({ title: "hello", views: 500 });
 
-  expect(await actions.delete({ id: post.id })).notToHaveAuthorizationError();
+  await expect(actions.delete({ id: post.id })).resolves.toEqual(post.id);
 });
 
 test("text literal comparisons - all expressions fail - is not authorized", async () => {
-  expect(
-    await actions.textsFailedExpressions({ title: "hello", explTitle: "hello" })
+  await expect(
+    actions.textsFailedExpressions({ title: "hello", explTitle: "hello" })
   ).toHaveAuthorizationError();
 });
 
 test("number literal comparisons - all expressions fail - is not authorized", async () => {
-  expect(
-    await actions.numbersFailedExpressions({ views: 2, explViews: 2 })
+  await expect(
+    actions.numbersFailedExpressions({ views: 2, explViews: 2 })
   ).toHaveAuthorizationError();
 });
 
 test("boolean literal comparisons - all expressions fail - is not authorized", async () => {
-  expect(
-    await actions.booleansFailedExpressions({
+  await expect(
+    actions.booleansFailedExpressions({
       isActive: false,
       explIsActive: false,
     })
@@ -71,93 +69,90 @@ test("boolean literal comparisons - all expressions fail - is not authorized", a
 });
 
 test("enum literal comparisons - all expressions fail - is not authorized", async () => {
-  expect(
-    await actions.enumFailedExpressions({ option: "One", explOption: "One" })
+  await expect(
+    actions.enumFailedExpressions({ option: "One", explOption: "One" })
   ).toHaveAuthorizationError();
 });
 
 test("permission role email is authorized", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "editorFred99@agency.org",
       password: "1234",
     },
   });
-  const { object: identity } = await Identity.findOne({ id: identityId });
 
-  expect(
-    await actions
-      .withIdentity(identity)
+  await expect(
+    actions
+      .withAuthToken(token)
       .createUsingRole({ title: "nothing special about this title" })
-  ).notToHaveAuthorizationError();
+  ).resolves.toMatchObject({
+    title: "nothing special about this title",
+  });
 });
 
 test("permission role wrong email is not authorized", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "editorFred42@agency.org",
       password: "1234",
     },
   });
-  const { object: identity } = await Identity.findOne({ id: identityId });
 
-  expect(
-    await actions
-      .withIdentity(identity)
+  await expect(
+    actions
+      .withAuthToken(token)
       .createUsingRole({ title: "nothing special about this title" })
   ).toHaveAuthorizationError();
 });
 
 test("permission role domain is authorized", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "john.witherow@times.co.uk",
       password: "1234",
     },
   });
-  const { object: identity } = await Identity.findOne({ id: identityId });
 
-  expect(
-    await actions
-      .withIdentity(identity)
+  await expect(
+    actions
+      .withAuthToken(token)
       .createUsingRole({ title: "nothing special about this title" })
-  ).notToHaveAuthorizationError();
+  ).resolves.toMatchObject({
+    title: "nothing special about this title",
+  });
 });
 
 test("permission role wrong domain is not authorized", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
-      email: "jon.sargent@.bbc.co.uk",
+      email: "jon.sargent@bbc.co.uk",
       password: "1234",
     },
   });
-  const { object: identity } = await Identity.findOne({ id: identityId });
 
-  expect(
-    await actions
-      .withIdentity(identity)
+  await expect(
+    actions
+      .withAuthToken(token)
       .createUsingRole({ title: "nothing special about this title" })
   ).toHaveAuthorizationError();
 });
 
 // Regression test for: https://linear.app/keel/issue/RUN-179/role-based-permission-bug-fix
 test("permission from unauthorized email is denied when model has only role-based permissions", async () => {
-  const { identityId } = await actions.authenticate({
+  const { token } = await actions.authenticate({
     createIfNotExists: true,
     emailPassword: {
       email: "imposter@gmail.com",
       password: "1234",
     },
   });
-  const { object: identity } = await Identity.findOne({ id: identityId });
 
-  expect(
-    await actions
-      .withIdentity(identity)
-      .doProcedure({ name: "frontal lobotomy" })
+  await expect(
+    actions.withAuthToken(token).doProcedure({ name: "frontal lobotomy" })
   ).toHaveAuthorizationError();
 });

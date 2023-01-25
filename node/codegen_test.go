@@ -100,6 +100,29 @@ export interface PersonCreateValues {
 	})
 }
 
+func TestWriteCreateValuesInterfaceWithRelationships(t *testing.T) {
+	schema := `
+	model Author {}
+	model Post {
+		fields {
+			author Post
+		}
+	}
+	`
+	expected := `
+export interface PostCreateValues {
+	id?: string
+	createdAt?: Date
+	updatedAt?: Date
+	authorId: string
+}
+`
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Post")
+		writeCreateValuesInterface(w, m)
+	})
+}
+
 func TestWriteWhereConditionsInterface(t *testing.T) {
 	expected := `
 export interface PersonWhereConditions {
@@ -440,7 +463,7 @@ declare class ActionExecutor {
 	async getPerson(i: sdk.GetPersonInput): Promise<sdk.Person | null>;
 	async createPerson(i: sdk.CreatePersonInput): Promise<sdk.Person>;
 	async updatePerson(i: sdk.UpdatePersonInput): Promise<sdk.Person>;
-	async deletePerson(i: sdk.DeletePersonInput): Promise<boolean>;
+	async deletePerson(i: sdk.DeletePersonInput): Promise<string>;
 	async listPeople(i: sdk.ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
 	async authenticate(i: sdk.AuthenticateInput): Promise<any>;
 }

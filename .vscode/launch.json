@@ -19,9 +19,7 @@
             "program": "${workspaceFolder}/integration",
             "args": [
                 "-test.run",
-                "TestIntegration/${input:testCase}",
-                "-pattern",
-                "${input:testName}",
+                "TestIntegration/${input:testCase}"
             ]
         },
         {

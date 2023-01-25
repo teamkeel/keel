@@ -14,15 +14,17 @@ type bootstrapOptions struct {
 // WithPackagesPath causes any @teamkeel packages to be installed
 // from this path. The path should point to the directory that contains
 // all the different @teamkeel packages.
-func WithPackagesPath(p string) func(o *bootstrapOptions) {
+func WithPackagesPath(p string) BootstrapOption {
 	return func(o *bootstrapOptions) {
 		o.packagesPath = p
 	}
 }
 
+type BootstrapOption func(o *bootstrapOptions)
+
 // Bootstrap sets dir up to use either custom functions or write tests. It will do nothing
 // if there is already a package.json present in the directory.
-func Bootstrap(dir string, opts ...func(o *bootstrapOptions)) error {
+func Bootstrap(dir string, opts ...BootstrapOption) error {
 	_, err := os.Stat(filepath.Join(dir, "package.json"))
 	// No error - we have a package.json so we're done
 	if err == nil {

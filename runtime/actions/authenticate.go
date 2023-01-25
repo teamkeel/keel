@@ -229,5 +229,6 @@ func ParseBearerToken(jwtToken string) (*ksuid.KSUID, error) {
 }
 
 func getSigningKey() []byte {
-	return []byte("PLACEHOLDER_PRIVATE_KEY")
+	// TODO: make this a configuration to the runtime
+	return []byte("test")
 }

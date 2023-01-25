@@ -8,7 +8,7 @@ interface ActionError {
 
 interface CustomMatchers<R = unknown> {
   toHaveAuthorizationError(): void;
-  toHaveError(err: ActionError): void;
+  toHaveError(err: Partial<ActionError>): void;
 }
 
 declare global {

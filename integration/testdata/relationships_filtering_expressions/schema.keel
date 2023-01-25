@@ -1,4 +1,3 @@
-
 model Post {
     fields {
         title Text
@@ -12,37 +11,35 @@ model Post {
             @where(post.theAuthor.isActive == true)
             @where(post.isActive == true)
         }
-
         get getActivePostWithRhsField(id) {
             @where(post.theAuthor.thePublisher.isActive == post.theAuthor.thePublisher.booleanValue)
             @where(post.theAuthor.isActive == post.theAuthor.thePublisher.booleanValue)
             @where(post.isActive == post.theAuthor.thePublisher.booleanValue)
         }
-
         list listActivePosts() {
             @where(post.theAuthor.thePublisher.isActive == true)
             @where(post.theAuthor.isActive == true)
             @where(post.isActive == true)
         }
-
         list listActivePostsWithRhsField() {
             @where(post.theAuthor.thePublisher.isActive == post.theAuthor.thePublisher.booleanValue)
             @where(post.theAuthor.isActive == post.theAuthor.thePublisher.booleanValue)
             @where(post.isActive == post.theAuthor.thePublisher.booleanValue)
         }
-
         delete deleteActivePost(id) {
             @where(post.theAuthor.thePublisher.isActive == true)
             @where(post.theAuthor.isActive == true)
             @where(post.isActive == true)
         }
-
         get getPostModelsReferencedMoreThanOnce(id) {
             @where(post.theAuthor.thePublisher.theAuthors.thePosts.isActive == true)
         }
     }
 
-    @permission(actions: [get, list, delete], expression: true)
+    @permission(
+        actions: [get, list, delete],
+        expression: true
+    )
 }
 
 model Author {
@@ -53,7 +50,10 @@ model Author {
         thePublisher Publisher
     }
 
-    @permission(actions: [get, list], expression: true)
+    @permission(
+        actions: [get, list],
+        expression: true
+    )
 }
 
 model Publisher {
@@ -70,37 +70,35 @@ model Publisher {
             @where(publisher.theAuthors.isActive == true)
             @where(publisher.isActive == true)
         }
-
         get getActivePublisherWithActivePostsWithRhsField(id) {
             @where(publisher.theAuthors.thePosts.isActive == publisher.booleanValue)
             @where(publisher.theAuthors.isActive == publisher.booleanValue)
             @where(publisher.isActive == publisher.booleanValue)
         }
-
         list listActivePublishersWithActivePosts() {
             @where(publisher.theAuthors.thePosts.isActive == true)
             @where(publisher.theAuthors.isActive == true)
             @where(publisher.isActive == true)
         }
-
         list listActivePublishersWithActivePostsWithRhsField() {
             @where(publisher.theAuthors.thePosts.isActive == publisher.booleanValue)
             @where(publisher.theAuthors.isActive == publisher.booleanValue)
             @where(publisher.isActive == publisher.booleanValue)
         }
-
         delete deleteActivePublisherWithActivePosts(id) {
             @where(publisher.theAuthors.thePosts.isActive == true)
             @where(publisher.theAuthors.isActive == true)
             @where(publisher.isActive == true)
         }
-
         list listPublishersModelsReferencedMoreThanOnce() {
             @where(publisher.theAuthors.thePosts.theAuthor.thePublisher.isActive == true)
         }
     }
 
-    @permission(actions: [get, list, delete], expression: true)
+    @permission(
+        actions: [get, list, delete],
+        expression: true
+    )
 }
 
 api Web {
@@ -112,4 +110,3 @@ api Web {
         Publisher
     }
 }
-
