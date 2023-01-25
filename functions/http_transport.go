@@ -40,5 +40,4 @@ func NewHttpTransport(url string) Transport {
 
 		return &response, nil
 	}
-
 }

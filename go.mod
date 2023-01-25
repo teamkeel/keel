@@ -7,7 +7,6 @@ require (
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
 	github.com/aws/aws-sdk-go-v2/config v1.18.8
 	github.com/aws/aws-sdk-go-v2/service/rdsdata v1.13.0
-	github.com/aybabtme/orderedjson v0.1.0
 	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/bykof/gostradamus v1.0.4
 	github.com/charmbracelet/bubbles v0.14.0
@@ -56,7 +55,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.14.0 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.18.0 // indirect
 	github.com/aws/smithy-go v1.13.5 // indirect
-	github.com/aybabtme/flatjson v0.1.2 // indirect
 	github.com/aymanbagabas/go-osc52 v1.0.3 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -84,7 +82,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
-	github.com/evanw/esbuild v0.15.7
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
