@@ -1,3 +1,10 @@
+## [0.240.1](https://github.com/teamkeel/keel/compare/v0.240.0...v0.240.1) (2023-01-25)
+
+
+### Bug Fixes
+
+* highlight missing model in validation error ([#694](https://github.com/teamkeel/keel/issues/694)) ([7835992](https://github.com/teamkeel/keel/commit/783599299c8cb3d6e863498001e1854cc7bbe53b))
+
 # [0.240.0](https://github.com/teamkeel/keel/compare/v0.239.0...v0.240.0) (2023-01-25)
 
 
