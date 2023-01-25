@@ -1,3 +1,10 @@
+# [0.240.0](https://github.com/teamkeel/keel/compare/v0.239.0...v0.240.0) (2023-01-25)
+
+
+### Features
+
+* release packages ([#692](https://github.com/teamkeel/keel/issues/692)) ([44fb124](https://github.com/teamkeel/keel/commit/44fb1241c31f2e9ea56e8f4f35628cc039ebf64d))
+
 # [0.239.0](https://github.com/teamkeel/keel/compare/v0.238.0...v0.239.0) (2023-01-24)
 
 
