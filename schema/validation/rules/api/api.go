@@ -41,7 +41,7 @@ func NamesCorrespondToModels(asts []*parser.AST) (errs errorhandling.ValidationE
 							"API":   api.Name.Value,
 							"Model": model.Name.Value,
 						},
-						api.Name,
+						model.Name, // will highlight the name node in the preview
 					)
 				}
 			}
