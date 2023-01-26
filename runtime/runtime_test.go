@@ -915,6 +915,9 @@ var testCases = []testCase{
 		string_contains: listThings(input: {where: {text: {contains: "interesting"}}}) {
 			...Fields
 		},
+		string_oneOf: listThings(input: {where: {text: {oneOf: ["some-interesting-text", "Another"]}}}) {
+			...Fields
+		},
 		number_equals: listThings(input: {where: {number: {equals: 10}}}) {
 			...Fields
 		},
@@ -931,6 +934,9 @@ var testCases = []testCase{
 			...Fields
 		},
 		enum_equals: listThings(input: {where: {enum: {equals: Option1}}}) {
+			...Fields
+		},
+		enum_oneOf: listThings(input: {where: {enum: {oneOf: [Option1]}}}) {
 			...Fields
 		},
 		timestamp_before: listThings(input: {
@@ -1019,12 +1025,14 @@ var testCases = []testCase{
 				"string_startsWith",
 				"string_endWith",
 				"string_contains",
+				"string_oneOf",
 				"number_equals",
 				"number_gt",
 				"number_gte",
 				"number_lt",
 				"number_lte",
 				"enum_equals",
+				"enum_oneOf",
 				"timestamp_before",
 				"timestamp_after",
 				"date_before",
