@@ -33,7 +33,12 @@ var testCmd = &cobra.Command{
 		}
 		defer database.Stop()
 
-		results, err := testing.Run(dbConnInfo, inputDir, pattern)
+		results, err := testing.Run(&testing.RunnerOpts{
+			Dir:        inputDir,
+			Pattern:    pattern,
+			DbConnInfo: dbConnInfo,
+		})
+
 		if results != nil {
 			fmt.Println(results.Output)
 		}
