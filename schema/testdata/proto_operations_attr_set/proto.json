@@ -61,7 +61,9 @@
               "operationName":  "createPost",
               "name":  "f2",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Foo",
+                "fieldName":  "f2"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

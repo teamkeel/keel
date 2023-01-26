@@ -47,7 +47,9 @@
               "operationName":  "deletePerson",
               "name":  "id",
               "type":  {
-                "type":  "TYPE_ID"
+                "type":  "TYPE_ID",
+                "modelName":  "Person",
+                "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

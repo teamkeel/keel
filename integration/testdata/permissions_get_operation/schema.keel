@@ -55,7 +55,7 @@ model Post {
         get getWithTextPermissionFromImplicitInputNotMatching(id) {
             @permission(expression: post.id != id)
         }
-        get getWithTextPermissionFromExplicitInput(id, explTitle: Text) {
+        get getWithTextPermissionFromExplicitInput(id, explTitle: Text?) {
             @permission(expression: post.title == explTitle)
         }
     }

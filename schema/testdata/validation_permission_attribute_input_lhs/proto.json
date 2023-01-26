@@ -54,7 +54,9 @@
               "operationName":  "createPost",
               "name":  "title",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Post",
+                "fieldName":  "title"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

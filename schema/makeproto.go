@@ -286,6 +286,7 @@ func (scm *Builder) makeOperationInput(
 	target := []string{}
 
 	var modelName *wrapperspb.StringValue
+	var fieldName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
 	if protoType == proto.Type_TYPE_ENUM {
@@ -309,15 +310,19 @@ func (scm *Builder) makeOperationInput(
 		for _, ident := range idents {
 			target = append(target, ident.Fragment)
 			field = query.ModelField(currModel, ident.Fragment)
-			currModel = query.Model(scm.asts, field.Type)
+			m := query.Model(scm.asts, field.Type)
+			if m != nil {
+				currModel = m
+			}
 		}
 
 		protoType = scm.parserFieldToProtoTypeInfo(field).Type
 
-		if protoType == proto.Type_TYPE_MODEL {
-			modelName = &wrapperspb.StringValue{
-				Value: field.Type,
-			}
+		modelName = &wrapperspb.StringValue{
+			Value: currModel.Name.Value,
+		}
+		fieldName = &wrapperspb.StringValue{
+			Value: field.Name.Value,
 		}
 
 		if protoType == proto.Type_TYPE_ENUM {
@@ -335,6 +340,7 @@ func (scm *Builder) makeOperationInput(
 			Type:      protoType,
 			Repeated:  input.Repeated,
 			ModelName: modelName,
+			FieldName: fieldName,
 			EnumName:  enumName,
 		},
 		Optional:  input.Optional,

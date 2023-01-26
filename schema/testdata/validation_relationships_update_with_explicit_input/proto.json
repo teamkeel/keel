@@ -1,396 +1,408 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "ChildModel",
-      "fields": [
+      "name":  "ChildModel",
+      "fields":  [
         {
-          "modelName": "ChildModel",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL"
+          "modelName":  "ChildModel",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL"
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ParentModel"
+          "modelName":  "ChildModel",
+          "name":  "parent",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "ParentModel"
           },
-          "foreignKeyFieldName": "parentId"
+          "foreignKeyFieldName":  "parentId"
         },
         {
-          "modelName": "ChildModel",
-          "name": "parentOptional",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ParentModel"
+          "modelName":  "ChildModel",
+          "name":  "parentOptional",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "ParentModel"
           },
-          "optional": true,
-          "foreignKeyFieldName": "parentOptionalId"
+          "optional":  true,
+          "foreignKeyFieldName":  "parentOptionalId"
         },
         {
-          "modelName": "ChildModel",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ChildModel",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ChildModel",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ChildModel",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ChildModel",
+          "name":  "parentId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "foreignKeyInfo": {
-            "relatedModelName": "ParentModel",
-            "relatedModelField": "id"
+          "foreignKeyInfo":  {
+            "relatedModelName":  "ParentModel",
+            "relatedModelField":  "id"
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "parentOptionalId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ChildModel",
+          "name":  "parentOptionalId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "ParentModel",
-            "relatedModelField": "id"
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "ParentModel",
+            "relatedModelField":  "id"
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "ChildModel",
-          "name": "updateChild1",
-          "type": "OPERATION_TYPE_UPDATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "ChildModel",
+          "name":  "updateChild1",
+          "type":  "OPERATION_TYPE_UPDATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild1",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild1",
+              "name":  "id",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ChildModel",
+                "fieldName":  "id"
               },
-              "mode": "INPUT_MODE_READ",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_READ",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "id"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild1",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild1",
+              "name":  "isActive",
+              "type":  {
+                "type":  "TYPE_BOOL",
+                "modelName":  "ChildModel",
+                "fieldName":  "isActive"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "isActive"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild1",
-              "name": "explicitParentId",
-              "type": {
-                "type": "TYPE_ID"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild1",
+              "name":  "explicitParentId",
+              "type":  {
+                "type":  "TYPE_ID"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
             }
           ],
-          "setExpressions": [
+          "setExpressions":  [
             {
-              "source": "childModel.parentId = explicitParentId"
+              "source":  "childModel.parentId = explicitParentId"
             },
             {
-              "source": "childModel.parentOptionalId = explicitParentId"
+              "source":  "childModel.parentOptionalId = explicitParentId"
             }
           ]
         },
         {
-          "modelName": "ChildModel",
-          "name": "updateChild2",
-          "type": "OPERATION_TYPE_UPDATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "ChildModel",
+          "name":  "updateChild2",
+          "type":  "OPERATION_TYPE_UPDATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild2",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild2",
+              "name":  "id",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ChildModel",
+                "fieldName":  "id"
               },
-              "mode": "INPUT_MODE_READ",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_READ",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "id"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild2",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild2",
+              "name":  "isActive",
+              "type":  {
+                "type":  "TYPE_BOOL",
+                "modelName":  "ChildModel",
+                "fieldName":  "isActive"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "isActive"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild2",
-              "name": "explicitParentId",
-              "type": {
-                "type": "TYPE_ID"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild2",
+              "name":  "explicitParentId",
+              "type":  {
+                "type":  "TYPE_ID"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
             }
           ],
-          "setExpressions": [
+          "setExpressions":  [
             {
-              "source": "childModel.parentId = explicitParentId"
+              "source":  "childModel.parentId = explicitParentId"
             },
             {
-              "source": "childModel.parentOptionalId = childModel.parentId"
+              "source":  "childModel.parentOptionalId = childModel.parentId"
             }
           ]
         },
         {
-          "modelName": "ChildModel",
-          "name": "updateChild3",
-          "type": "OPERATION_TYPE_UPDATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "ChildModel",
+          "name":  "updateChild3",
+          "type":  "OPERATION_TYPE_UPDATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild3",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild3",
+              "name":  "id",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ChildModel",
+                "fieldName":  "id"
               },
-              "mode": "INPUT_MODE_READ",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_READ",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "id"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild3",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild3",
+              "name":  "isActive",
+              "type":  {
+                "type":  "TYPE_BOOL",
+                "modelName":  "ChildModel",
+                "fieldName":  "isActive"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_IMPLICIT",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
+              "target":  [
                 "isActive"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "updateChild3",
-              "name": "explicitParentId",
-              "type": {
-                "type": "TYPE_ID"
+              "modelName":  "ChildModel",
+              "operationName":  "updateChild3",
+              "name":  "explicitParentId",
+              "type":  {
+                "type":  "TYPE_ID"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "behaviour": "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE",
+              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
             }
           ],
-          "setExpressions": [
+          "setExpressions":  [
             {
-              "source": "childModel.parentId = explicitParentId"
+              "source":  "childModel.parentId = explicitParentId"
             }
           ]
         }
       ]
     },
     {
-      "name": "ParentModel",
-      "fields": [
+      "name":  "ParentModel",
+      "fields":  [
         {
-          "modelName": "ParentModel",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL"
+          "modelName":  "ParentModel",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL"
           }
         },
         {
-          "modelName": "ParentModel",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ParentModel",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ParentModel",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ParentModel",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ParentModel",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ParentModel",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ]
     },
     {
-      "name": "Identity",
-      "fields": [
+      "name":  "Identity",
+      "fields":  [
         {
-          "modelName": "Identity",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
-          "unique": true
+          "unique":  true
         },
         {
-          "modelName": "Identity",
-          "name": "password",
-          "type": {
-            "type": "TYPE_PASSWORD"
+          "modelName":  "Identity",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_PASSWORD"
           }
         },
         {
-          "modelName": "Identity",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Identity",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Identity",
-          "name": "authenticate",
-          "type": "OPERATION_TYPE_AUTHENTICATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "Identity",
+          "name":  "authenticate",
+          "type":  "OPERATION_TYPE_AUTHENTICATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "createIfNotExists",
+              "type":  {
+                "type":  "TYPE_BOOL"
               },
-              "optional": true
+              "optional":  true
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "emailPassword",
+              "type":  {
+                "type":  "TYPE_OBJECT"
               },
-              "inputs": [
+              "inputs":  [
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "email",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 },
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "password",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 }
               ]
             }
           ],
-          "outputs": [
+          "outputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "identityCreated",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "identityCreated",
+              "type":  {
+                "type":  "TYPE_BOOL"
               }
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "token",
-              "type": {
-                "type": "TYPE_STRING"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "token",
+              "type":  {
+                "type":  "TYPE_STRING"
               }
             }
           ]

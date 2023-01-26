@@ -54,7 +54,9 @@
               "operationName":  "opA",
               "name":  "id",
               "type":  {
-                "type":  "TYPE_ID"
+                "type":  "TYPE_ID",
+                "modelName":  "Foo",
+                "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -75,7 +77,9 @@
               "operationName":  "opB",
               "name":  "f1",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Foo",
+                "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_READ",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -96,7 +100,9 @@
               "operationName":  "opC",
               "name":  "id",
               "type":  {
-                "type":  "TYPE_ID"
+                "type":  "TYPE_ID",
+                "modelName":  "Foo",
+                "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -109,7 +115,9 @@
               "operationName":  "opC",
               "name":  "f1",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Foo",
+                "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -130,7 +138,9 @@
               "operationName":  "opD",
               "name":  "f1",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Foo",
+                "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

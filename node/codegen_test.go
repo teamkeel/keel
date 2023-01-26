@@ -283,7 +283,7 @@ export interface GetPersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, s, m.Operations[0], false)
 	})
 }
 
@@ -305,7 +305,29 @@ export interface CreatePersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionInputTypesCreateWithNull(t *testing.T) {
+	schema := `
+model Person {
+	fields {
+		name Text?
+	}
+	functions {
+		create createPerson() with (name)
+	}
+}
+	`
+	expected := `
+export interface CreatePersonInput {
+	name: string | null;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, s, m.Operations[0], false)
 	})
 }
 
@@ -334,7 +356,7 @@ export interface UpdatePersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, s, m.Operations[0], false)
 	})
 }
 
@@ -352,7 +374,7 @@ model Person {
 	expected := `
 export interface ListPeopleInputWhere {
 	name: string;
-	some?: boolean;
+	some?: boolean | null;
 }
 export interface ListPeopleInput {
 	where: ListPeopleInputWhere;
@@ -360,7 +382,7 @@ export interface ListPeopleInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, s, m.Operations[0], false)
 	})
 }
 
@@ -391,7 +413,7 @@ export interface ListPeopleInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, s, m.Operations[0], false)
 	})
 }
 
@@ -410,7 +432,7 @@ export interface DeletePersonInput {
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, m.Operations[0])
+		writeActionInputTypes(w, s, m.Operations[0], false)
 	})
 }
 
@@ -444,9 +466,11 @@ export declare function ListPeople(fn: (inputs: ListPeopleInput, api: FunctionAP
 func TestWriteTestingTypes(t *testing.T) {
 	schema := `
 model Person {
-	functions {
+	operations {
 		get getPerson(id)
 		create createPerson()
+	}
+	functions {
 		update updatePerson()
 		delete deletePerson()
 		list listPeople()
@@ -455,17 +479,74 @@ model Person {
 	`
 	expected := `
 import * as sdk from "@teamkeel/sdk";
+import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
+export interface GetPersonInput {
+	id: string;
+}
+export interface CreatePersonInput {
+}
+export interface UpdatePersonInput {
+}
+export interface DeletePersonInput {
+}
+export interface ListPeopleInput {
+}
+export interface AuthenticateInput {
+}
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	async getPerson(i: sdk.GetPersonInput): Promise<sdk.Person | null>;
-	async createPerson(i: sdk.CreatePersonInput): Promise<sdk.Person>;
-	async updatePerson(i: sdk.UpdatePersonInput): Promise<sdk.Person>;
-	async deletePerson(i: sdk.DeletePersonInput): Promise<string>;
-	async listPeople(i: sdk.ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
-	async authenticate(i: sdk.AuthenticateInput): Promise<any>;
+	getPerson(i: GetPersonInput): Promise<sdk.Person | null>;
+	createPerson(i: CreatePersonInput): Promise<sdk.Person>;
+	updatePerson(i: UpdatePersonInput): Promise<sdk.Person>;
+	deletePerson(i: DeletePersonInput): Promise<string>;
+	listPeople(i: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
+	authenticate(i: AuthenticateInput): Promise<any>;
+}
+export declare const actions: ActionExecutor;
+export declare const models: sdk.ModelsAPI;
+export declare function resetDatabase(): Promise<void>;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		writeTestingTypes(w, s)
+	})
+}
+
+func TestWriteTestingTypesEnums(t *testing.T) {
+	schema := `
+enum Hobby {
+	Tennis
+	Chess
+}
+model Person {
+	fields {
+		hobby Hobby
+	}
+	operations {
+		list peopleByHobby(hobby)
+	}
+}
+	`
+	expected := `
+import * as sdk from "@teamkeel/sdk";
+import * as runtime from "@teamkeel/functions-runtime";
+import "@teamkeel/testing-runtime";
+
+export interface PeopleByHobbyInputWhere {
+	hobby: sdk.HobbyWhereCondition;
+}
+export interface PeopleByHobbyInput {
+	where: PeopleByHobbyInputWhere;
+}
+export interface AuthenticateInput {
+}
+declare class ActionExecutor {
+	withIdentity(identity: sdk.Identity): ActionExecutor;
+	withAuthToken(token: string): ActionExecutor;
+	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
+	authenticate(i: AuthenticateInput): Promise<any>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;

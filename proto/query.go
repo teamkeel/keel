@@ -92,6 +92,14 @@ func FindModel(models []*Model, name string) *Model {
 	return model
 }
 
+// FindEnum locates the enum of the given name.
+func FindEnum(enums []*Enum, name string) *Enum {
+	enum, _ := lo.Find(enums, func(m *Enum) bool {
+		return m.Name == name
+	})
+	return enum
+}
+
 func FilterOperations(p *Schema, filter func(op *Operation) bool) (ops []*Operation) {
 	for _, model := range p.Models {
 		operations := model.Operations
