@@ -55,7 +55,9 @@
               "operationName":  "operationA",
               "name":  "f1",
               "type":  {
-                "type":  "TYPE_BOOL"
+                "type":  "TYPE_BOOL",
+                "modelName":  "Foo",
+                "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_READ",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

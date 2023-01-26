@@ -13,11 +13,11 @@ model Post {
     }
 
     operations {
-        create createWithText() with (title, isActive)
-        create createWithNumber() with (views, isActive)
-        create createWithBoolean() with (active, isActive)
-        create createWithEnum() with (type, isActive)
-        create createWithIdentity() with (isActive) {
+        create createWithText() with (title, isActive?)
+        create createWithNumber() with (views, isActive?)
+        create createWithBoolean() with (active, isActive?)
+        create createWithEnum() with (type, isActive?)
+        create createWithIdentity() with (isActive?) {
             @set(post.identity = ctx.identity)
         }
         list listWithTextPermissionLiteral(isActive) {

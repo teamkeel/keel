@@ -1,5 +1,6 @@
 import { actions, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
+import { PostType } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -103,23 +104,23 @@ test("boolean permission on literal - null value - is not authorized", async () 
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.updateWithEnumPermissionLiteral({
       where: { id: post.id },
-      values: { type: "Technical" },
+      values: { type: PostType.Technical },
     })
   ).not.toHaveAuthorizationError();
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
 
   await expect(
     actions.updateWithEnumPermissionLiteral({
       where: { id: post.id },
-      values: { type: "Lifestyle" },
+      values: { type: PostType.Lifestyle },
     })
   ).toHaveAuthorizationError();
 });
@@ -235,23 +236,23 @@ test("boolean permission on field - null - is not authorized", async () => {
 });
 
 test("enum permission on field - matching value - is authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.updateWithEnumPermissionFromField({
       where: { id: post.id },
-      values: { type: "Lifestyle" },
+      values: { type: PostType.Lifestyle },
     })
   ).not.toHaveAuthorizationError();
 });
 
 test("enum permission on field - field is not authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
 
   await expect(
     actions.updateWithEnumPermissionFromField({
       where: { id: post.id },
-      values: { type: "Technical" },
+      values: { type: PostType.Technical },
     })
   ).toHaveAuthorizationError();
 });

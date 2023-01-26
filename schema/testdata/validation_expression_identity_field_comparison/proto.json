@@ -210,7 +210,9 @@
               "operationName":  "createPost",
               "name":  "title",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Post",
+                "fieldName":  "title"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -224,7 +226,8 @@
               "name":  "publisher",
               "type":  {
                 "type":  "TYPE_MODEL",
-                "modelName":  "Publisher"
+                "modelName":  "Publisher",
+                "fieldName":  "publisher"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -238,7 +241,8 @@
               "name":  "owner",
               "type":  {
                 "type":  "TYPE_MODEL",
-                "modelName":  "Author"
+                "modelName":  "Author",
+                "fieldName":  "owner"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

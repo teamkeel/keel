@@ -1,5 +1,6 @@
 import { test, expect, beforeEach } from "vitest";
 import { actions, resetDatabase, models } from "@teamkeel/testing";
+import { PostType } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -59,13 +60,13 @@ test("boolean permission on literal - null value - is not authorized", async () 
 
 test("enum permission on literal - matching value - is authorized", async () => {
   await expect(
-    actions.createWithEnumPermissionLiteral({ type: "Technical" })
-  ).resolves.toMatchObject({ type: "Technical" });
+    actions.createWithEnumPermissionLiteral({ type: PostType.Technical })
+  ).resolves.toMatchObject({ type: PostType.Technical });
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
   await expect(
-    actions.createWithEnumPermissionLiteral({ type: "Lifestyle" })
+    actions.createWithEnumPermissionLiteral({ type: PostType.Lifestyle })
   ).toHaveAuthorizationError();
 });
 
@@ -131,13 +132,13 @@ test("boolean permission on field name - null value - is not authorized", async 
 
 test("enum permission on field name - matching value - is authorized", async () => {
   await expect(
-    actions.createWithEnumPermissionFromField({ type: "Technical" })
-  ).resolves.toMatchObject({ type: "Technical" });
+    actions.createWithEnumPermissionFromField({ type: PostType.Technical })
+  ).resolves.toMatchObject({ type: PostType.Technical });
 });
 
 test("enum permission on field name - not matching value - is not authorized", async () => {
   await expect(
-    actions.createWithEnumPermissionFromField({ type: "Lifestyle" })
+    actions.createWithEnumPermissionFromField({ type: PostType.Lifestyle })
   ).toHaveAuthorizationError();
 });
 

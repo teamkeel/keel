@@ -1,5 +1,6 @@
 import { test, expect, beforeEach } from "vitest";
 import { actions, resetDatabase } from "@teamkeel/testing";
+import { PostType } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -133,10 +134,10 @@ test("boolean permission on literal - one not matching null value - is not autho
 });
 
 test("enum permission on literal - all matching - is authorized", async () => {
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Food", isActive: false });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food, isActive: false });
   await actions.createWithEnum({ type: null, isActive: false });
 
   const r = await actions.listWithEnumPermissionLiteral({
@@ -148,9 +149,9 @@ test("enum permission on literal - all matching - is authorized", async () => {
 });
 
 test("enum permission on literal - one not matching value - is not authorized", async () => {
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Food" });
-  await actions.createWithEnum({ type: "Technical" });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionLiteral({
@@ -162,9 +163,9 @@ test("enum permission on literal - one not matching value - is not authorized", 
 });
 
 test("enum permission on literal - one not matching null value - is not authorized", async () => {
-  await actions.createWithEnum({ type: "Technical" });
+  await actions.createWithEnum({ type: PostType.Technical });
   await actions.createWithEnum({ type: null });
-  await actions.createWithEnum({ type: "Technical" });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionLiteral({
@@ -305,10 +306,10 @@ test("boolean permission on field - one not matching null value - is not authori
 });
 
 test("enum permission on field name - all matching - is authorized", async () => {
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Food", isActive: false });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food, isActive: false });
   await actions.createWithEnum({ type: null, isActive: false });
 
   await expect(
@@ -321,9 +322,9 @@ test("enum permission on field name - all matching - is authorized", async () =>
 });
 
 test("enum permission on field name - one not matching value - is not authorized", async () => {
-  await actions.createWithEnum({ type: "Technical" });
-  await actions.createWithEnum({ type: "Food" });
-  await actions.createWithEnum({ type: "Technical" });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionFromField({
@@ -335,9 +336,9 @@ test("enum permission on field name - one not matching value - is not authorized
 });
 
 test("enum permission on field name - one not matching null value - is not authorized", async () => {
-  await actions.createWithEnum({ type: "Technical" });
+  await actions.createWithEnum({ type: PostType.Technical });
   await actions.createWithEnum({ type: null });
-  await actions.createWithEnum({ type: "Technical" });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionFromField({
@@ -374,7 +375,7 @@ test("identity permission - correct identity in context - is authorized", async 
   await expect(
     actions
       .withAuthToken(token)
-      .listWithIdentityPermission({ isActive: { equals: true } })
+      .listWithIdentityPermission({ where: { isActive: { equals: true } } })
   ).not.toHaveAuthorizationError();
 });
 

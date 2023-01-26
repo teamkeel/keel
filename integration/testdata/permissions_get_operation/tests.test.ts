@@ -1,5 +1,6 @@
 import { actions } from "@teamkeel/testing";
 import { test, expect } from "vitest";
+import { PostType } from "@teamkeel/sdk";
 
 test("string permission on literal - matching value - is authorized", async () => {
   const post = await actions.createWithText({ title: "hello" });
@@ -71,14 +72,14 @@ test("boolean permission on literal - null value - is not authorized", async () 
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: PostType.Technical });
 
   const p = await actions.getWithEnumPermissionLiteral({ id: post.id });
   expect(p!.id).toEqual(post.id);
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
 
   await expect(
     actions.getWithEnumPermissionLiteral({ id: post.id })
@@ -86,7 +87,7 @@ test("enum permission on literal - not matching value - is not authorized", asyn
 });
 
 test("enum permission on literal - null value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ title: null });
+  const post = await actions.createWithEnum({ type: null });
 
   await expect(
     actions.getWithEnumPermissionLiteral({ id: post.id })
@@ -163,14 +164,14 @@ test("boolean permission on field - null value - is not authorized", async () =>
 });
 
 test("enum permission on field name - matching value - is authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: PostType.Technical });
 
   const p = await actions.getWithEnumPermissionFromField({ id: post.id });
   expect(p!.id).toEqual(post.id);
 });
 
 test("enum permission on field name - not matching value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
 
   await expect(
     actions.getWithEnumPermissionFromField({ id: post.id })

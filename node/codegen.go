@@ -80,13 +80,15 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdk.Writeln("")
 
 	sdkTypes := &Writer{}
-	sdkTypes.Writeln(`import { Generated } from "kysely"`)
+	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln("")
 
 	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
 		writeEnumWhereCondition(sdkTypes, enum)
+
+		writeEnumObject(sdk, enum)
 	}
 
 	for _, model := range schema.Models {
@@ -101,11 +103,12 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 		writeModelDefaultValuesFunction(sdk, model)
 
 		for _, op := range model.Operations {
+			// We only care about custom functions for the SDK
 			if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
 
-			writeActionInputTypes(sdkTypes, op)
+			writeActionInputTypes(sdkTypes, schema, op, false)
 			writeCustomFunctionWrapperType(sdkTypes, model, op)
 
 			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(op.Name))
@@ -252,6 +255,19 @@ func writeModelQueryBuilderDeclaration(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
+func writeEnumObject(w *Writer, enum *proto.Enum) {
+	w.Writef("module.exports.%s = {\n", enum.Name)
+	w.Indent()
+	for _, v := range enum.Values {
+		w.Write(v.Name)
+		w.Write(": ")
+		w.Writef(`"%s"`, v.Name)
+		w.Writeln(",")
+	}
+	w.Dedent()
+	w.Writeln("};")
+}
+
 func writeEnum(w *Writer, enum *proto.Enum) {
 	w.Writef("export enum %s {\n", enum.Name)
 	w.Indent()
@@ -362,25 +378,39 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeActionInputTypes(w *Writer, op *proto.Operation) {
+func writeActionInputTypes(w *Writer, schema *proto.Schema, op *proto.Operation, isTestingPackage bool) {
+	hasWhere := false
+	hasValues := false
+	for _, i := range op.Inputs {
+		if i.Mode == proto.InputMode_INPUT_MODE_READ {
+			hasWhere = true
+		}
+		if i.Mode == proto.InputMode_INPUT_MODE_WRITE {
+			hasValues = true
+		}
+	}
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_UPDATE, proto.OperationType_OPERATION_TYPE_LIST:
-		w.Writef("export interface %sInputWhere ", strcase.ToCamel(op.Name))
-		w.Writeln("{")
-		w.Indent()
-		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_READ)
-		w.Dedent()
-		w.Writeln("}")
+		if hasWhere {
+			w.Writef("export interface %sInputWhere ", strcase.ToCamel(op.Name))
+			w.Writeln("{")
+			w.Indent()
+			writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_READ, isTestingPackage)
+			w.Dedent()
+			w.Writeln("}")
+		}
 	}
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		w.Writef("export interface %sInputValues ", strcase.ToCamel(op.Name))
-		w.Writeln("{")
-		w.Indent()
-		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_WRITE)
-		w.Dedent()
-		w.Writeln("}")
+		if hasValues {
+			w.Writef("export interface %sInputValues ", strcase.ToCamel(op.Name))
+			w.Writeln("{")
+			w.Indent()
+			writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_WRITE, isTestingPackage)
+			w.Dedent()
+			w.Writeln("}")
+		}
 	}
 
 	w.Writef("export interface %sInput ", strcase.ToCamel(op.Name))
@@ -389,37 +419,51 @@ func writeActionInputTypes(w *Writer, op *proto.Operation) {
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_WRITE)
+		writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_WRITE, isTestingPackage)
 	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_DELETE:
-		writeActionInputInterfaceFields(w, op, proto.InputMode_INPUT_MODE_READ)
+		writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_READ, isTestingPackage)
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		w.Write("where: ")
-		w.Writef("%sInputWhere", strcase.ToCamel(op.Name))
-		w.Writeln(";")
+		if hasWhere {
+			w.Write("where: ")
+			w.Writef("%sInputWhere", strcase.ToCamel(op.Name))
+			w.Writeln(";")
+		}
 		// TODO: pagination params e.g. first, after etc...
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		w.Write("where: ")
-		w.Writef("%sInputWhere", strcase.ToCamel(op.Name))
-		w.Writeln(";")
-		w.Write("values: ")
-		w.Writef("%sInputValues", strcase.ToCamel(op.Name))
-		w.Writeln(";")
+		if hasWhere {
+			w.Write("where: ")
+			w.Writef("%sInputWhere", strcase.ToCamel(op.Name))
+			w.Writeln(";")
+		}
+		if hasValues {
+			w.Write("values: ")
+			w.Writef("%sInputValues", strcase.ToCamel(op.Name))
+			w.Writeln(";")
+		}
 	}
 
 	w.Dedent()
 	w.Writeln("}")
 }
 
-func writeActionInputInterfaceFields(w *Writer, op *proto.Operation, mode proto.InputMode) {
+func writeActionInputInterfaceFields(w *Writer, schema *proto.Schema, op *proto.Operation, mode proto.InputMode, isTestingPackage bool) {
 	for _, input := range op.Inputs {
 		if input.Mode != mode {
 			continue
 		}
 		w.Write(input.Name)
+
+		// An optional input doesn't need to be provided at all
 		if input.Optional {
 			w.Write("?")
 		}
+
 		w.Write(": ")
+
+		sdkPrefix := ""
+		if isTestingPackage {
+			sdkPrefix = "sdk."
+		}
 
 		if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 			switch input.Type.Type {
@@ -436,10 +480,33 @@ func writeActionInputInterfaceFields(w *Writer, op *proto.Operation, mode proto.
 			case proto.Type_TYPE_INT:
 				w.Write("runtime.NumberWhereCondition")
 			case proto.Type_TYPE_ENUM:
-				w.Writef("%sWhereCondition", input.Type.EnumName.Value)
+				w.Writef("%s%sWhereCondition", sdkPrefix, input.Type.EnumName.Value)
 			}
 		} else {
+			if input.Type.Type == proto.Type_TYPE_ENUM && isTestingPackage {
+				w.Write("sdk.")
+			}
+
 			w.Write(toTypeScriptType(input.Type))
+		}
+
+		nullable := false
+
+		// If an input isn't tied to a model field and it's optional then it's allowed to be null
+		if input.Type.FieldName == nil && input.Optional {
+			nullable = true
+		}
+
+		// If an input is tied to a model field and that field is nullable then the input is also nullable
+		if input.Type.FieldName != nil {
+			f := proto.FindField(schema.Models, input.Type.ModelName.Value, input.Type.FieldName.Value)
+			if f.Optional {
+				nullable = true
+			}
+		}
+
+		if nullable {
+			w.Write(" | null")
 		}
 
 		w.Writeln(";")
@@ -621,11 +688,19 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln(`import * as sdk from "@teamkeel/sdk";`)
+	w.Writeln(`import * as runtime from "@teamkeel/functions-runtime";`)
 
 	// We need to import the testing-runtime package to get
 	// the types for the extended vitest matchers e.g. expect(v).toHaveAuthorizationError()
 	w.Writeln(`import "@teamkeel/testing-runtime";`)
 	w.Writeln("")
+
+	// For the testing package we need input types for all actions
+	for _, model := range schema.Models {
+		for _, op := range model.Operations {
+			writeActionInputTypes(w, schema, op, true)
+		}
+	}
 
 	w.Writeln("declare class ActionExecutor {")
 	w.Indent()
@@ -633,7 +708,7 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
 	for _, model := range schema.Models {
 		for _, op := range model.Operations {
-			w.Writef(`async %s(i: sdk.%sInput): %s`, op.Name, strcase.ToCamel(op.Name), toActionReturnType(model, op))
+			w.Writef(`%s(i: %sInput): %s`, op.Name, strcase.ToCamel(op.Name), toActionReturnType(model, op))
 			w.Writeln(";")
 		}
 	}

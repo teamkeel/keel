@@ -1,5 +1,6 @@
 import { actions, resetDatabase, models } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
+import { ThingType } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -112,7 +113,7 @@ test("boolean set attribute from implicit input - set to true - is true", async 
 
 test("enum set attribute on optional field - set to TypeTwo - is TypeTwo", async () => {
   const thing = await actions.createEnumOnOptional({});
-  expect(thing.optionalEnum).toEqual("TypeTwo");
+  expect(thing.optionalEnum).toEqual(ThingType.TypeTwo);
 });
 
 test("enum set attribute on optional field - set to null - is null", async () => {
@@ -122,22 +123,22 @@ test("enum set attribute on optional field - set to null - is null", async () =>
 
 test("enum set attribute on required field - set to TypeTwo - is TypeTwo", async () => {
   const thing = await actions.createEnumOnRequired({});
-  expect(thing.requiredEnum).toEqual("TypeTwo");
+  expect(thing.requiredEnum).toEqual(ThingType.TypeTwo);
 });
 
 test("enum set attribute from explicit input - set to TypeTwo - is TypeTwo", async () => {
   const thing = await actions.createEnumFromExplicitInput({
-    explEnum: "TypeTwo",
+    explEnum: ThingType.TypeTwo,
   });
-  expect(thing.requiredEnum).toEqual("TypeTwo");
+  expect(thing.requiredEnum).toEqual(ThingType.TypeTwo);
 });
 
 test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", async () => {
   const thing = await actions.createEnumFromImplicitInput({
-    requiredEnum: "TypeTwo",
+    requiredEnum: ThingType.TypeTwo,
   });
-  expect(thing.optionalEnum).toEqual("TypeTwo");
-  expect(thing.requiredEnum).toEqual("TypeTwo");
+  expect(thing.optionalEnum).toEqual(ThingType.TypeTwo);
+  expect(thing.requiredEnum).toEqual(ThingType.TypeTwo);
 });
 
 /*

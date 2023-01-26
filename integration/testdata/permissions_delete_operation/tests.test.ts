@@ -1,4 +1,5 @@
 import { actions } from "@teamkeel/testing";
+import { PostType } from "@teamkeel/sdk";
 import { test, expect } from "vitest";
 
 test("string permission on literal - matching value - is authorized", async () => {
@@ -79,7 +80,7 @@ test("boolean permission on literal - not matching null value - is not authorize
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: PostType.Technical });
 
   const deleted = await actions.deleteWithEnumPermissionLiteral({
     id: post.id,
@@ -88,7 +89,7 @@ test("enum permission on literal - matching value - is authorized", async () => 
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ title: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
 
   await expect(
     actions.deleteWithEnumPermissionLiteral({ id: post.id })
@@ -96,7 +97,7 @@ test("enum permission on literal - not matching value - is not authorized", asyn
 });
 
 test("enum permission on literal - not matching null value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ title: null });
+  const post = await actions.createWithEnum({ type: null });
 
   await expect(
     actions.deleteWithEnumPermissionLiteral({ id: post.id })
@@ -181,7 +182,7 @@ test("boolean permission on field - not matching null value - is not authorized"
 });
 
 test("enum permission on field - matching value - is authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Technical" });
+  const post = await actions.createWithEnum({ type: PostType.Technical });
 
   const deleted = await actions.deleteWithEnumPermissionOnField({
     id: post.id,
@@ -190,7 +191,7 @@ test("enum permission on field - matching value - is authorized", async () => {
 });
 
 test("enum permission on field - not matching value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ type: "Lifestyle" });
+  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
 
   await expect(
     actions.deleteWithEnumPermissionOnField({ id: post.id })

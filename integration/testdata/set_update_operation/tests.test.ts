@@ -1,5 +1,6 @@
 import { actions, resetDatabase, models } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
+import { ThingType } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -123,7 +124,7 @@ test("enum set attribute - set to TypeTwo - is TypeTwo", async () => {
   const thing = await actions.create({});
   await actions.updateEnum({ where: { id: thing.id } });
   const updated = await actions.get({ id: thing.id });
-  expect(updated!.enum).toEqual("TypeTwo");
+  expect(updated!.enum).toEqual(ThingType.TypeTwo);
 });
 
 test("enum set attribute - set to null - is null", async () => {
@@ -137,19 +138,19 @@ test("enum set attribute from explicit input - set to TypeTwo - is TypeTwo", asy
   const thing = await actions.create({});
   const thingUpdated = await actions.updateEnumFromExplicitInput({
     where: { id: thing.id },
-    values: { explEnum: "TypeTwo" },
+    values: { explEnum: ThingType.TypeTwo },
   });
-  expect(thingUpdated.enum).toEqual("TypeTwo");
+  expect(thingUpdated.enum).toEqual(ThingType.TypeTwo);
 });
 
 test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", async () => {
   const thing = await actions.create({});
   const thingUpdated = await actions.updateEnumFromImplicitInput({
     where: { id: thing.id },
-    values: { otherEnum: "TypeTwo" },
+    values: { otherEnum: ThingType.TypeTwo },
   });
-  expect(thingUpdated.enum).toEqual("TypeTwo");
-  expect(thingUpdated.otherEnum).toEqual("TypeTwo");
+  expect(thingUpdated.enum).toEqual(ThingType.TypeTwo);
+  expect(thingUpdated.otherEnum).toEqual(ThingType.TypeTwo);
 });
 
 /*

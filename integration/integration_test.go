@@ -22,8 +22,6 @@ func TestIntegration(t *gotest.T) {
 
 	tmpDir := t.TempDir()
 
-	fmt.Println(tmpDir)
-
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 

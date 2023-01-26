@@ -28,11 +28,11 @@
         {
           "modelName":  "Person",
           "name":  "identity",
-          "optional": true,
           "type":  {
             "type":  "TYPE_MODEL",
             "modelName":  "Identity"
           },
+          "optional":  true,
           "foreignKeyFieldName":  "identityId"
         },
         {
@@ -91,7 +91,9 @@
               "operationName":  "getPeople",
               "name":  "name",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Person",
+                "fieldName":  "name"
               },
               "mode":  "INPUT_MODE_READ",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -126,7 +128,9 @@
               "operationName":  "createPerson",
               "name":  "name",
               "type":  {
-                "type":  "TYPE_STRING"
+                "type":  "TYPE_STRING",
+                "modelName":  "Person",
+                "fieldName":  "name"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
@@ -155,7 +159,9 @@
               "operationName":  "kill",
               "name":  "id",
               "type":  {
-                "type":  "TYPE_ID"
+                "type":  "TYPE_ID",
+                "modelName":  "Person",
+                "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

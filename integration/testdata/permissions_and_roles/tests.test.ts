@@ -1,22 +1,27 @@
 import { test, expect, beforeEach } from "vitest";
 import { actions, resetDatabase } from "@teamkeel/testing";
+import { Options } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
 test("permission set on model level for create op - matching title - is authorized", async () => {
-  await expect(actions.create({ title: "hello" })).resolves.toMatchObject({
+  await expect(
+    actions.create({ title: "hello", views: 0 })
+  ).resolves.toMatchObject({
     title: "hello",
   });
 });
 
 test("permission set on model level for create op - not matching - is not authorized", async () => {
-  await expect(actions.create({ title: "goodbye" })).toHaveAuthorizationError();
+  await expect(
+    actions.create({ title: "goodbye", views: 0 })
+  ).toHaveAuthorizationError();
 });
 
 test("ORed permissions set on model level for get op - matching title - is authorized", async () => {
   const post = await actions.create({
     title: "hello",
-    views: null,
+    views: 0,
   });
 
   const p = await actions.get({ id: post.id });
@@ -63,14 +68,13 @@ test("boolean literal comparisons - all expressions fail - is not authorized", a
   await expect(
     actions.booleansFailedExpressions({
       isActive: false,
-      explIsActive: false,
     })
   ).toHaveAuthorizationError();
 });
 
 test("enum literal comparisons - all expressions fail - is not authorized", async () => {
   await expect(
-    actions.enumFailedExpressions({ option: "One", explOption: "One" })
+    actions.enumFailedExpressions({ option: Options.One })
   ).toHaveAuthorizationError();
 });
 

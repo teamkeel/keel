@@ -69,8 +69,9 @@
               "operationName":  "createPost",
               "name":  "identity",
               "type":  {
-                "modelName": "Identity",
-                "type":  "TYPE_MODEL"
+                "type":  "TYPE_MODEL",
+                "modelName":  "Identity",
+                "fieldName":  "identity"
               },
               "mode":  "INPUT_MODE_WRITE",
               "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",

@@ -51,7 +51,7 @@ model Post {
         create createWithPermissionFromImplicitInput() with (title) {
             @permission(expression: title == "hello")
         }
-        create createWithPermissionFromExplicitInput() with (explTitle: Text) {
+        create createWithPermissionFromExplicitInput() with (explTitle: Text?) {
             @permission(expression: explTitle == "hello")
         }
     }
