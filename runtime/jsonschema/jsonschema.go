@@ -29,6 +29,15 @@ func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operat
 }
 
 func jsonSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
+	// TODO: implement proper support for authenticate once it's been re-done using
+	// arbitrary functions
+	if op.Type == proto.OperationType_OPERATION_TYPE_AUTHENTICATE {
+		return JSONSchema{
+			Type:                 "object",
+			AdditionalProperties: true,
+		}
+	}
+
 	root := JSONSchema{
 		Type:       "object",
 		Properties: map[string]JSONSchema{},
@@ -92,7 +101,7 @@ func jsonSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 }
 
 func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) JSONSchema {
-	if op.Type == proto.OperationType_OPERATION_TYPE_LIST {
+	if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 		return jsonSchemaForQueryObject(ctx, op, input, schema)
 	}
 

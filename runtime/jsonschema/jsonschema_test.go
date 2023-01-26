@@ -394,6 +394,11 @@ func TestValidateRequest(t *testing.T) {
 					}
 					operations {
 						list listBooks(id?, title?, genre?, price?, available?, createdAt?, releaseDate?)
+						list booksByTitleAndGenre(title: Text, genre: Genre, minPrice: Number?) {
+							@where(book.title == title)
+							@where(book.genre == genre)
+							@where(book.price > minPrice)
+						}
 					}
 				}
 			`,
@@ -518,6 +523,11 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"id": {"oneOf": ["123456789"]}}}`,
 				},
+				{
+					name:    "valid - non-query types",
+					opName:  "booksByTitleAndGenre",
+					request: `{"where": {"title": "Some title", "genre": "Horror", "minPrice": 10}}`,
+				},
 
 				// errors
 				{
@@ -559,6 +569,26 @@ func TestValidateRequest(t *testing.T) {
 					errors: map[string]string{
 						"where.releaseDate.after": `Does not match format 'date'`,
 					},
+				},
+				{
+					name:    "using query types for explicit filters",
+					opName:  "booksByTitleAndGenre",
+					request: `{"where": {"title": {"contains": "Some title"}, "genre": {"equals": "Horror"}}}`,
+					errors: map[string]string{
+						"where.title": `Invalid type. Expected: string, given: object`,
+						"where.genre": `Invalid type. Expected: string, given: object`,
+					},
+				},
+			},
+		},
+		{
+			name:   "authenticate",
+			schema: `model Whatever {}`,
+			cases: []fixture{
+				{
+					name:    "valid",
+					opName:  "authenticate",
+					request: `{"emailPassword": {"email": "foo@bar.com", "password": "pa33w0rd"}}`,
 				},
 			},
 		},
