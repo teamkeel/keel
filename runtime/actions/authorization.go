@@ -147,7 +147,7 @@ func getEmailAndDomain(scope *Scope) (string, string, error) {
 		return "", "", err
 	}
 
-	identity, err := FindIdentityById(scope.context, identityId)
+	identity, err := FindIdentityById(scope.context, scope.schema, identityId)
 	if err != nil {
 		return "", "", err
 	}

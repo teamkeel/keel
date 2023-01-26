@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -12,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/fatih/color"
@@ -20,6 +18,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
@@ -27,13 +26,7 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
-
-	"gorm.io/driver/postgres"
 )
-
-const dbConnString = "postgres://%s:%s@%s:%s/%s"
 
 // The Run command does this:
 //
@@ -49,8 +42,9 @@ var runCmd = &cobra.Command{
 	Short: "Run your Keel App locally",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := &schema.Builder{}
+
 		useExistingContainer := !runCmdFlagReset
-		dbConn, dbConnInfo, err := database.Start(useExistingContainer)
+		_, dbConnInfo, err := database.Start(useExistingContainer)
 
 		if err != nil {
 			if portErr, ok := err.(database.ErrPortInUse); ok {
@@ -62,27 +56,9 @@ var runCmd = &cobra.Command{
 		}
 		defer database.Stop()
 
-		logLevel := logger.Warn
-		if runCmdFlagVerbose {
-			logLevel = logger.Info
-		}
+		ctx := context.Background()
 
-		// todo: unify db logging with custom functions
-		logger := logger.New(
-			log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-			logger.Config{
-				SlowThreshold:             time.Second, // Slow SQL threshold
-				LogLevel:                  logLevel,    // Log level
-				IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
-				Colorful:                  true,        // Disable color
-			},
-		)
-
-		db, err := gorm.Open(postgres.New(postgres.Config{
-			Conn: dbConn,
-		}), &gorm.Config{
-			Logger: logger,
-		})
+		database, err := db.Local(ctx, dbConnInfo)
 		if err != nil {
 			panic(err)
 		}
@@ -109,12 +85,10 @@ var runCmd = &cobra.Command{
 				_ = functionsServer.Kill()
 			}
 
-			dbConnString := fmt.Sprintf(dbConnString, dbConnInfo.Username, dbConnInfo.Password, dbConnInfo.Host, dbConnInfo.Port, dbConnInfo.Database)
-
 			functionsServer, err = node.RunDevelopmentServer(inputDir, &node.ServerOpts{
 				EnvVars: map[string]string{
 					"DB_CONN_TYPE": "pg",
-					"DB_CONN":      dbConnString,
+					"DB_CONN":      dbConnInfo.String(),
 				},
 			})
 			if err != nil {
@@ -125,7 +99,7 @@ var runCmd = &cobra.Command{
 			functionsTransport = functions.NewHttpTransport(functionsServer.URL)
 		}
 
-		currSchema, err := migrations.GetCurrentSchema(context.Background(), db)
+		currSchema, err := migrations.GetCurrentSchema(ctx, database)
 		if err != nil {
 			panic(err)
 		}
@@ -147,7 +121,6 @@ var runCmd = &cobra.Command{
 
 			if err != nil {
 				errs, ok := err.(*errorhandling.ValidationErrors)
-
 				if !ok {
 					panic(err)
 				}
@@ -158,12 +131,8 @@ var runCmd = &cobra.Command{
 				}
 
 				color.New(color.FgRed).Printf("\nThere is an error in your schema:\n")
-
 				fmt.Printf("\n%s\n", out)
-
 				fmt.Print("\a")
-
-				// currSchema = nil
 				return
 			}
 
@@ -173,7 +142,7 @@ var runCmd = &cobra.Command{
 
 			if m.HasModelFieldChanges() {
 				fmt.Println("💿 Applying migrations")
-				err = m.Apply(db)
+				err = m.Apply(ctx, database)
 				if err != nil {
 					panic(err)
 				}
@@ -181,7 +150,7 @@ var runCmd = &cobra.Command{
 				printMigrationChanges(m.Changes)
 			} else {
 				fmt.Println("💿 Applying changes")
-				err = m.Apply(db)
+				err = m.Apply(ctx, database)
 				if err != nil {
 					panic(err)
 				}
@@ -219,12 +188,18 @@ var runCmd = &cobra.Command{
 				return
 			}
 
-			ctx := r.Context()
-			ctx = runtimectx.WithDatabase(ctx, db)
-			if functionsTransport != nil {
-				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
+			rContext := r.Context()
+
+			rDatabase, err := db.Local(rContext, dbConnInfo)
+			if err != nil {
+				panic(err)
 			}
-			r = r.WithContext(ctx)
+
+			rContext = runtimectx.WithDatabase(rContext, rDatabase)
+			if functionsTransport != nil {
+				rContext = functions.WithFunctionsTransport(ctx, functionsTransport)
+			}
+			r = r.WithContext(rContext)
 
 			runtime.NewHttpHandler(currSchema).ServeHTTP(w, r)
 		})

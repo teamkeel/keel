@@ -30,7 +30,6 @@ func init() {
 }
 
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
-
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 
 		log.WithFields(log.Fields{
@@ -75,7 +74,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 
 			// Check that identity actually does exist as it could
 			// have been deleted after the bearer token was generated.
-			identity, err := actions.FindIdentityById(ctx, identityId)
+			identity, err := actions.FindIdentityById(ctx, currSchema, identityId)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write([]byte(err.Error()))

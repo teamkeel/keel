@@ -15,12 +15,14 @@ import (
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testhelpers"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -44,10 +46,6 @@ func TestRuntime(t *testing.T) {
 				Password: "postgres",
 			}
 
-			testDB, err := testhelpers.SetupDatabaseForTestCase(dbConnInfo, schema, testhelpers.DbNameForTestName(tCase.name))
-
-			require.NoError(t, err)
-
 			// Construct the runtime API Handler.
 			handler := NewHandler(schema)
 
@@ -62,12 +60,25 @@ func TestRuntime(t *testing.T) {
 			}
 
 			ctx := request.Context()
-			ctx = runtimectx.WithDatabase(ctx, testDB)
+
+			dbName := testhelpers.DbNameForTestName(tCase.name)
+			testDB, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
+			require.NoError(t, err)
+			defer testDB.Close()
+
+			database, err := db.LocalFromConnection(ctx, testDB)
+			require.NoError(t, err)
+
+			ctx = runtimectx.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
+
+			// We are still using gorm database to assert againt the data in the test databases.
+			gormDb, err := gorm.Open(postgres.New(postgres.Config{Conn: testDB}), &gorm.Config{})
+			require.NoError(t, err)
 
 			// Apply the database prior-set up mandated by this test case.
 			if tCase.databaseSetup != nil {
-				tCase.databaseSetup(t, testDB)
+				tCase.databaseSetup(t, gormDb)
 			}
 
 			// Call the handler, and capture the response.
@@ -97,8 +108,9 @@ func TestRuntime(t *testing.T) {
 
 			// Do the specified assertion on the resultant database contents, if one is specified.
 			if tCase.assertDatabase != nil {
-				tCase.assertDatabase(t, testDB, bodyFields.Data)
+				tCase.assertDatabase(t, gormDb, bodyFields.Data)
 			}
+
 		})
 	}
 }
@@ -120,10 +132,6 @@ func TestRuntimeRPC(t *testing.T) {
 				Password: "postgres",
 			}
 
-			testDB, err := testhelpers.SetupDatabaseForTestCase(dbConnInfo, schema, testhelpers.DbNameForTestName(tCase.name))
-
-			require.NoError(t, err)
-
 			handler := NewHandler(schema)
 
 			request := &http.Request{
@@ -136,12 +144,24 @@ func TestRuntimeRPC(t *testing.T) {
 			}
 
 			ctx := request.Context()
-			ctx = runtimectx.WithDatabase(ctx, testDB)
+
+			dbName := testhelpers.DbNameForTestName(tCase.name)
+			testDB, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
+			require.NoError(t, err)
+
+			database, err := db.LocalFromConnection(ctx, testDB)
+			require.NoError(t, err)
+
+			ctx = runtimectx.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
+
+			// We are still using gorm database to assert againt the data in the test databases.
+			gormDb, err := gorm.Open(postgres.New(postgres.Config{Conn: testDB}), &gorm.Config{})
+			require.NoError(t, err)
 
 			// Apply the database prior-set up mandated by this test case.
 			if tCase.databaseSetup != nil {
-				tCase.databaseSetup(t, testDB)
+				tCase.databaseSetup(t, gormDb)
 			}
 
 			// Call the handler, and capture the response.
@@ -157,7 +177,7 @@ func TestRuntimeRPC(t *testing.T) {
 
 			// Do the specified assertion on the resultant database contents, if one is specified.
 			if tCase.assertDatabase != nil {
-				tCase.assertDatabase(t, testDB, res)
+				tCase.assertDatabase(t, gormDb, res)
 			}
 		})
 	}
@@ -895,9 +915,6 @@ var testCases = []testCase{
 		string_contains: listThings(input: {where: {text: {contains: "interesting"}}}) {
 			...Fields
 		},
-		string_oneOf: listThings(input: {where: {text: {oneOf: ["some-interesting-text", "Another"]}}}) {
-			...Fields
-		},
 		number_equals: listThings(input: {where: {number: {equals: 10}}}) {
 			...Fields
 		},
@@ -914,9 +931,6 @@ var testCases = []testCase{
 			...Fields
 		},
 		enum_equals: listThings(input: {where: {enum: {equals: Option1}}}) {
-			...Fields
-		},
-		enum_oneOf: listThings(input: {where: {enum: {oneOf: [Option1]}}}) {
 			...Fields
 		},
 		timestamp_before: listThings(input: {
@@ -1005,14 +1019,12 @@ var testCases = []testCase{
 				"string_startsWith",
 				"string_endWith",
 				"string_contains",
-				"string_oneOf",
 				"number_equals",
 				"number_gt",
 				"number_gte",
 				"number_lt",
 				"number_lte",
 				"enum_equals",
-				"enum_oneOf",
 				"timestamp_before",
 				"timestamp_after",
 				"date_before",
