@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 	"sync"
 	"time"
@@ -50,9 +49,8 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				}
 			}
 			// This enables the graphql-go extension for tracing
-			if os.Getenv("ENABLE_TRACING") == "true" {
-				schema.AddExtensions(&Tracer{})
-			}
+			schema.AddExtensions(&Tracer{})
+
 			mutex.Unlock()
 		}
 
