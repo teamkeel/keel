@@ -1,3 +1,12 @@
+## [0.240.3](https://github.com/teamkeel/keel/compare/v0.240.2...v0.240.3) (2023-01-26)
+
+
+### Bug Fixes
+
+* generate correct typings for testing action executor ([c203c77](https://github.com/teamkeel/keel/commit/c203c770fcf20c8ed8a9b22906691d9e2d37a756))
+* move ConnectionInfo struct to db package to remove wasm dep on docker ([#704](https://github.com/teamkeel/keel/issues/704)) ([0ba328b](https://github.com/teamkeel/keel/commit/0ba328b21014221326ec00d882630863f06b42ce))
+* oneOf list operator ([#700](https://github.com/teamkeel/keel/issues/700)) ([6a2923f](https://github.com/teamkeel/keel/commit/6a2923f9bee1d603c4bcb855aea155aebb1fbc3d))
+
 ## [0.240.2](https://github.com/teamkeel/keel/compare/v0.240.1...v0.240.2) (2023-01-26)
 
 
