@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
@@ -109,6 +110,34 @@ var testCases = []testCase{
 		input: map[string]any{
 			"where": map[string]any{
 				"name": map[string]any{
+					"contains": "bob"}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."name" LIKE ?
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{"%%bob%%"},
+	},
+	{
+		name: "list_op_implicit_input_text_startsWith",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+				}
+				operations {
+					list listThings(name) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"name": map[string]any{
 					"startsWith": "bob"}}},
 		expectedTemplate: `
 			SELECT 
@@ -120,6 +149,195 @@ var testCases = []testCase{
 			ORDER BY 
 				"thing"."id" LIMIT 50`,
 		expectedArgs: []any{"bob%%"},
+	},
+	{
+		name: "list_op_implicit_input_text_endsWith",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+				}
+				operations {
+					list listThings(name) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"name": map[string]any{
+					"endsWith": "bob"}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."name" LIKE ?
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{"%%bob"},
+	},
+	{
+		name: "list_op_implicit_input_text_oneof",
+		keelSchema: `
+            model Thing {
+                fields {
+                    name Text
+                }
+                operations {
+                    list listThings(name) 
+                }
+                @permission(expression: true, actions: [list])
+            }`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"name": map[string]any{
+					"oneOf": []any{"bob", "dave", "adam", "pete"}}}},
+		expectedTemplate: `
+            SELECT 
+                DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+            FROM 
+                "thing" 
+            WHERE
+                "thing"."name" IN (?, ?, ?, ?)
+            ORDER BY 
+                "thing"."id" LIMIT 50`,
+		expectedArgs: []any{"bob", "dave", "adam", "pete"},
+	},
+	{
+		name: "list_op_implicit_input_enum_oneof",
+		keelSchema: `
+            model Thing {
+                fields {
+                    category Category
+                }
+                operations {
+                    list listThings(category) 
+                }
+                @permission(expression: true, actions: [list])
+            }
+			enum Category {
+				Technical
+				Food
+				Lifestyle
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"category": map[string]any{
+					"oneOf": []any{"Technical", "Food"}}}},
+		expectedTemplate: `
+            SELECT 
+                DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+            FROM 
+                "thing" 
+            WHERE
+                "thing"."category" IN (?, ?)
+            ORDER BY 
+                "thing"."id" LIMIT 50`,
+		expectedArgs: []any{"Technical", "Food"},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_after",
+		keelSchema: `
+			model Thing {
+				operations {
+					list listThings(createdAt) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"after": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."created_at" > ? 
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_onorafter",
+		keelSchema: `
+			model Thing {
+				operations {
+					list listThings(createdAt) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"onOrAfter": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."created_at" >= ? 
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_after",
+		keelSchema: `
+			model Thing {
+				operations {
+					list listThings(createdAt) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"before": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."created_at" < ? 
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
+	},
+	{
+		name: "list_op_implicit_input_timestamp_onorbefore",
+		keelSchema: `
+			model Thing {
+				operations {
+					list listThings(createdAt) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"createdAt": map[string]any{
+					"onOrBefore": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."created_at" <= ? 
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
 	},
 	{
 		name: "list_op_implicit_input_on_nested_model",
