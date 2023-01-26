@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -91,6 +92,14 @@ type Statement struct {
 	template string
 	// The arguments associated with the generated SQL template.
 	args []any
+}
+
+func (statement *Statement) SqlTemplate() string {
+	return statement.template
+}
+
+func (statement *Statement) SqlArgs() []any {
+	return statement.args
 }
 
 type QueryBuilder struct {
@@ -341,9 +350,15 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 	columns := []string{}
 	args := []any{}
 
-	for k, v := range query.writeValues {
-		columns = append(columns, k)
-		args = append(args, v)
+	// Make iterating through the writeValues map deterministically ordered
+	orderedKeys := make([]string, 0, len(query.writeValues))
+	for k, _ := range query.writeValues {
+		orderedKeys = append(orderedKeys, k)
+	}
+	sort.Strings(orderedKeys)
+	for _, v := range orderedKeys {
+		columns = append(columns, v)
+		args = append(args, query.writeValues[v])
 	}
 
 	if len(query.returning) > 0 {
@@ -370,9 +385,15 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	sets := []string{}
 	args := []any{}
 
-	for k, v := range query.writeValues {
-		sets = append(sets, fmt.Sprintf("%s = ?", k))
-		args = append(args, v)
+	// Make iteratng through the writeValues map deterministically ordered
+	orderedKeys := make([]string, 0, len(query.writeValues))
+	for k, _ := range query.writeValues {
+		orderedKeys = append(orderedKeys, k)
+	}
+	sort.Strings(orderedKeys)
+	for _, v := range orderedKeys {
+		sets = append(sets, fmt.Sprintf("%s = ?", v))
+		args = append(args, query.writeValues[v])
 	}
 
 	args = append(args, query.args...)

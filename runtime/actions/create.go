@@ -7,26 +7,6 @@ import (
 func Create(scope *Scope, input map[string]any) (res map[string]any, err error) {
 	query := NewQuery(scope.model)
 
-	defaultValues, err := initialValueForModel(scope.model, scope.schema)
-	if err != nil {
-		return nil, err
-	}
-
-	query.AddWriteValues(defaultValues)
-
-	err = query.captureWriteValues(scope, input)
-	if err != nil {
-		return nil, err
-	}
-
-	err = query.captureSetValues(scope, input)
-	if err != nil {
-		return nil, err
-	}
-
-	// Return the inserted row
-	query.AppendReturning(AllFields())
-
 	// Begin a transaction and defer rollback which will run if a commit hasn't occurred.
 	query.Begin(scope.context)
 	// Defer ensures a rollback as the function may return early due to an error.
@@ -36,11 +16,14 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		}
 	}()
 
-	// Execute database request, expecting a single result
-	result, err := query.
-		InsertStatement().
-		ExecuteToSingle(scope.context)
+	// Generate the SQL statement
+	statement, err := GenerateCreateStatement(query, scope, input)
+	if err != nil {
+		return nil, err
+	}
 
+	// Execute database request, expecting a single result
+	result, err := statement.ExecuteToSingle(scope.context)
 	if err != nil {
 		return nil, err
 	}
@@ -64,4 +47,28 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	}
 
 	return result, nil
+}
+
+func GenerateCreateStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
+	defaultValues, err := initialValueForModel(scope.model, scope.schema)
+	if err != nil {
+		return nil, err
+	}
+
+	query.AddWriteValues(defaultValues)
+
+	err = query.captureWriteValues(scope, input)
+	if err != nil {
+		return nil, err
+	}
+
+	err = query.captureSetValues(scope, input)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the inserted row
+	query.AppendReturning(AllFields())
+
+	return query.InsertStatement(), nil
 }

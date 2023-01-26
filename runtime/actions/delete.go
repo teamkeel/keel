@@ -7,12 +7,8 @@ import (
 func Delete(scope *Scope, input map[string]any) (*string, error) {
 	query := NewQuery(scope.model)
 
-	err := query.applyImplicitFilters(scope, input)
-	if err != nil {
-		return nil, err
-	}
-
-	err = query.applyExplicitFilters(scope, input)
+	// Generate the SQL statement
+	statement, err := GenerateDeleteStatement(query, scope, input)
 	if err != nil {
 		return nil, err
 	}
@@ -26,12 +22,8 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
-	query.AppendReturning(Field("id"))
-
 	// Execute database request
-	row, err := query.
-		DeleteStatement().
-		ExecuteToSingle(scope.context)
+	row, err := statement.ExecuteToSingle(scope.context)
 
 	// TODO: if the error is multiple rows affected then rollback transaction
 	if err != nil {
@@ -44,4 +36,20 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 
 	id, _ := row["id"].(string)
 	return &id, nil
+}
+
+func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
+	err := query.applyImplicitFilters(scope, input)
+	if err != nil {
+		return nil, err
+	}
+
+	err = query.applyExplicitFilters(scope, input)
+	if err != nil {
+		return nil, err
+	}
+
+	query.AppendReturning(Field("id"))
+
+	return query.DeleteStatement(), nil
 }
