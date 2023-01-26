@@ -1,5 +1,6 @@
 import { actions, models, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
+import { Category } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
@@ -78,7 +79,7 @@ test("list action - endsWith", async () => {
   expect(results.length).toEqual(2);
 });
 
-test("list action - oneOf", async () => {
+test("list action - oneOf text", async () => {
   await models.post.create({ title: "pear", subTitle: "lmn" });
   await models.post.create({ title: "mango", subTitle: "mno" });
   await models.post.create({ title: "orange", subTitle: "fog" });
@@ -86,6 +87,32 @@ test("list action - oneOf", async () => {
   const { results } = await actions.listPosts({
     where: {
       title: { oneOf: ["pear", "mango"] },
+    },
+  });
+
+  expect(results.length).toEqual(2);
+});
+
+test("list action - oneOf enum", async () => {
+  await models.post.create({
+    title: "pear",
+    category: Category.Technical,
+    subTitle: "lmn",
+  });
+  await models.post.create({
+    title: "mango",
+    category: Category.Lifestyle,
+    subTitle: "mno",
+  });
+  await models.post.create({
+    title: "orange",
+    category: Category.Food,
+    subTitle: "fog",
+  });
+
+  const { results } = await actions.listPosts({
+    where: {
+      category: { oneOf: [Category.Technical, Category.Lifestyle] },
     },
   });
 

@@ -1,6 +1,7 @@
 model Post {
     fields {
         title Text
+        category Category?
         subTitle Text @unique
     }
 
@@ -10,7 +11,7 @@ model Post {
         update updatePost(id) with (title)
         delete deletePost(id)
         delete deletePostBySubTitle(subTitle)
-        list listPosts(title)
+        list listPosts(title?, category?)
         update updateWithExplicitSet(id) with (coolTitle: Text) {
             @set(post.title = coolTitle)
         }
@@ -20,6 +21,12 @@ model Post {
         expression: true,
         actions: [create, get, list, update, delete]
     )
+}
+
+enum Category {
+    Technical
+    Food
+    Lifestyle
 }
 
 api Web {
