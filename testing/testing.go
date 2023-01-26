@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/node"
@@ -29,7 +28,7 @@ type TestOutput struct {
 type RunnerOpts struct {
 	Dir        string
 	Pattern    string
-	DbConnInfo *database.ConnectionInfo
+	DbConnInfo *db.ConnectionInfo
 }
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {

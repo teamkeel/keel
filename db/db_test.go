@@ -7,12 +7,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/db"
 )
 
 func CreateTestDb(t *testing.T, ctx context.Context) db.Db {
-	dbConnInfo := &database.ConnectionInfo{
+	dbConnInfo := &db.ConnectionInfo{
 		Host:     "localhost",
 		Port:     "8001",
 		Username: "postgres",

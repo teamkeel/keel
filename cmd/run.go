@@ -242,7 +242,7 @@ func clearTerminal() {
 	cmd.Run()
 }
 
-func printRunHeader(dir string, dbConnInfo *database.ConnectionInfo) {
+func printRunHeader(dir string, dbConnInfo *db.ConnectionInfo) {
 	fmt.Printf("Watching schema files in: %s\n", color.CyanString(dir))
 
 	psql := color.CyanString("psql postgresql://%s:%s@%s:%s/%s",

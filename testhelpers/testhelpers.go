@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	cp "github.com/otiai10/copy"
-	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
@@ -34,7 +33,7 @@ func WithTmpDir(dir string) (string, error) {
 	return tmpDir, nil
 }
 
-func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *database.ConnectionInfo, schema *proto.Schema, dbName string) (*sql.DB, error) {
+func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string) (*sql.DB, error) {
 	mainDB, err := sql.Open("postgres", dbConnInfo.String())
 	if err != nil {
 		return nil, err

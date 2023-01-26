@@ -1,4 +1,3 @@
-// package postgres exists to keep all-things postgres in one place.
 package database
 
 import (
@@ -16,6 +15,7 @@ import (
 	"github.com/docker/go-connections/nat"
 	_ "github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/util"
 )
 
@@ -25,35 +25,6 @@ type ErrPortInUse struct {
 
 func (e ErrPortInUse) Error() string {
 	return fmt.Sprintf("port %s is in use", e.Port)
-}
-
-type ConnectionInfo struct {
-	Host     string
-	Port     string
-	Username string
-	Password string
-	Database string
-}
-
-func (dbConnInfo *ConnectionInfo) String() string {
-	return fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
-		dbConnInfo.Username,
-		dbConnInfo.Password,
-		dbConnInfo.Host,
-		dbConnInfo.Port,
-		dbConnInfo.Database,
-	)
-}
-
-func (dbConnInfo *ConnectionInfo) WithDatabase(database string) *ConnectionInfo {
-	return &ConnectionInfo{
-		Host:     dbConnInfo.Host,
-		Port:     dbConnInfo.Port,
-		Username: dbConnInfo.Username,
-		Password: dbConnInfo.Password,
-		Database: database,
-	}
 }
 
 // BringUpPostgresLocally spins up a PostgreSQL server locally and returns
@@ -73,7 +44,7 @@ func (dbConnInfo *ConnectionInfo) WithDatabase(database string) *ConnectionInfo 
 //
 // It sets the password for that user to "postgres".
 // It sets the default database name to "keel"
-func Start(useExistingContainer bool) (*sql.DB, *ConnectionInfo, error) {
+func Start(useExistingContainer bool) (*sql.DB, *db.ConnectionInfo, error) {
 	connectionInfo, err := bringUpContainer(useExistingContainer)
 	if err != nil {
 		return nil, nil, err
@@ -117,7 +88,7 @@ func Stop() error {
 	return nil
 }
 
-func bringUpContainer(useExistingContainer bool) (*ConnectionInfo, error) {
+func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
@@ -228,7 +199,7 @@ func bringUpContainer(useExistingContainer bool) (*ConnectionInfo, error) {
 		}
 	}
 
-	return &ConnectionInfo{
+	return &db.ConnectionInfo{
 		Username: "postgres",
 		Password: "postgres",
 		Database: "postgres",
@@ -318,7 +289,7 @@ func makeHostConfig(port string) *container.HostConfig {
 // checkConnection connects to the database, veryifies the connection and returns the connection.
 // It makes a series of attempts over a small time span to give postgres the
 // change to be ready.
-func checkConnection(info *ConnectionInfo) (*sql.DB, error) {
+func checkConnection(info *db.ConnectionInfo) (*sql.DB, error) {
 	db, err := sql.Open("postgres", info.String())
 	if err != nil {
 		return nil, err
