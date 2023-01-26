@@ -26,7 +26,7 @@ type TestOutput struct {
 	Success bool
 }
 
-func Run(dbConnInfo *database.ConnectionInfo, dir string) (*TestOutput, error) {
+func Run(dbConnInfo *database.ConnectionInfo, dir, pattern string) (*TestOutput, error) {
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromDirectory(dir)
 	if err != nil {
@@ -123,7 +123,7 @@ func Run(dbConnInfo *database.ConnectionInfo, dir string) (*TestOutput, error) {
 		return &TestOutput{Output: string(b), Success: false}, nil
 	}
 
-	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs")
+	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs", "--testNamePattern", pattern)
 	cmd.Dir = dir
 	cmd.Env = append(os.Environ(), []string{
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/testingactionsapi/json", runtimePort),

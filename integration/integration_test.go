@@ -89,7 +89,7 @@ func TestIntegration(t *gotest.T) {
 				Password: "postgres",
 			}
 
-			output, err := testing.Run(dbConnInfo, tmpDir)
+			output, err := testing.Run(dbConnInfo, tmpDir, "(.*)")
 			require.NoError(t, err)
 			if !output.Success {
 				fmt.Println(output.Output)
