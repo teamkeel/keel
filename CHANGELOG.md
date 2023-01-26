@@ -1,3 +1,10 @@
+## [0.240.2](https://github.com/teamkeel/keel/compare/v0.240.1...v0.240.2) (2023-01-26)
+
+
+### Bug Fixes
+
+* fix explicit list inputs in json schema and add temp support for authenticate ([b1c90d4](https://github.com/teamkeel/keel/commit/b1c90d41e4076ba653397ade9c07835124c48e95))
+
 ## [0.240.1](https://github.com/teamkeel/keel/compare/v0.240.0...v0.240.1) (2023-01-25)
 
 
