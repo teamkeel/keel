@@ -26,9 +26,15 @@ type TestOutput struct {
 	Success bool
 }
 
-func Run(dbConnInfo *database.ConnectionInfo, dir, pattern string) (*TestOutput, error) {
+type RunnerOpts struct {
+	Dir        string
+	Pattern    string
+	DbConnInfo *database.ConnectionInfo
+}
+
+func Run(opts *RunnerOpts) (*TestOutput, error) {
 	builder := &schema.Builder{}
-	schema, err := builder.MakeFromDirectory(dir)
+	schema, err := builder.MakeFromDirectory(opts.Dir)
 	if err != nil {
 		return nil, err
 	}
@@ -48,14 +54,14 @@ func Run(dbConnInfo *database.ConnectionInfo, dir, pattern string) (*TestOutput,
 	context := context.Background()
 
 	dbName := "keel_test"
-	mainDB, err := testhelpers.SetupDatabaseForTestCase(context, dbConnInfo, schema, dbName)
+	mainDB, err := testhelpers.SetupDatabaseForTestCase(context, opts.DbConnInfo, schema, dbName)
 	if err != nil {
 		return nil, err
 	}
 
-	dbConnString := dbConnInfo.WithDatabase(dbName).String()
+	dbConnString := opts.DbConnInfo.WithDatabase(dbName).String()
 
-	files, err := node.Generate(context, dir, node.WithDevelopmentServer(true))
+	files, err := node.Generate(context, opts.Dir, node.WithDevelopmentServer(true))
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +75,7 @@ func Run(dbConnInfo *database.ConnectionInfo, dir, pattern string) (*TestOutput,
 	var functionsTransport functions.Transport
 
 	if node.HasFunctions(schema) {
-		functionsServer, err = node.RunDevelopmentServer(dir, &node.ServerOpts{
+		functionsServer, err = node.RunDevelopmentServer(opts.Dir, &node.ServerOpts{
 			EnvVars: map[string]string{
 				"DB_CONN_TYPE": "pg",
 				"DB_CONN":      dbConnString,
@@ -112,7 +118,7 @@ func Run(dbConnInfo *database.ConnectionInfo, dir, pattern string) (*TestOutput,
 	defer runtimeServer.Shutdown(context)
 
 	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
-	cmd.Dir = dir
+	cmd.Dir = opts.Dir
 
 	b, err := cmd.CombinedOutput()
 	exitError := &exec.ExitError{}
@@ -123,8 +129,12 @@ func Run(dbConnInfo *database.ConnectionInfo, dir, pattern string) (*TestOutput,
 		return &TestOutput{Output: string(b), Success: false}, nil
 	}
 
-	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs", "--testNamePattern", pattern)
-	cmd.Dir = dir
+	if opts.Pattern == "" {
+		opts.Pattern = "(.*)"
+	}
+
+	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs", "--testNamePattern", opts.Pattern)
+	cmd.Dir = opts.Dir
 	cmd.Env = append(os.Environ(), []string{
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/testingactionsapi/json", runtimePort),
 		"DB_CONN_TYPE=pg",
