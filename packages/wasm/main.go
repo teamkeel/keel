@@ -9,11 +9,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"syscall/js"
 
 	"github.com/fatih/color"
 	"github.com/graphql-go/graphql/testutil"
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/schema"
@@ -105,8 +105,7 @@ func provideCompletions(this js.Value, args []js.Value) any {
 }
 
 // getGraphQLSchemas accepts a Keel schema string and returns
-// a map of GraphQL schemas where the keys are the names of
-// any api's in the Keel schema that used the @graphql attribute
+// a map of GraphQL schemas for each API
 func getGraphQLSchemas(this js.Value, args []js.Value) any {
 
 	return newPromise(func() (any, error) {
@@ -126,40 +125,30 @@ func getGraphQLSchemas(this js.Value, args []js.Value) any {
 
 		res := map[string]any{}
 
-		var api *proto.Api
-		for _, v := range protoSchema.Apis {
-			if v.Type == proto.ApiType_API_TYPE_GRAPHQL {
-				api = v
-				break
-			}
-		}
-
-		if api == nil {
-			return res, nil
-		}
-
 		handler := runtime.NewHandler(protoSchema)
+		for _, api := range protoSchema.Apis {
+			body, err := json.Marshal(map[string]string{
+				"query": testutil.IntrospectionQuery,
+			})
+			if err != nil {
+				return nil, err
+			}
 
-		body, err := json.Marshal(map[string]string{
-			"query": testutil.IntrospectionQuery,
-		})
-		if err != nil {
-			return nil, err
+			response := handler(&http.Request{
+				URL: &url.URL{
+					Path: "/" + strings.ToLower(api.Name) + "/graphql",
+				},
+				Method: http.MethodPost,
+				Body:   io.NopCloser(bytes.NewReader(body)),
+			})
+
+			if response.Status != 200 {
+				return nil, fmt.Errorf("error introspecting graphql schema: %s", response.Body)
+			}
+
+			res[api.Name] = graphql.ToGraphQLSchemaLanguage(response)
 		}
 
-		response := handler(&http.Request{
-			URL: &url.URL{
-				Path: "/" + api.Name,
-			},
-			Method: http.MethodPost,
-			Body:   io.NopCloser(bytes.NewReader(body)),
-		})
-
-		if response.Status != 200 {
-			return nil, fmt.Errorf("error introspecting graphql schema: %s", response.Body)
-		}
-
-		res[api.Name] = graphql.ToGraphQLSchemaLanguage(response)
 		return res, nil
 	})
 }

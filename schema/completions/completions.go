@@ -61,8 +61,7 @@ func Completions(schema string, pos *node.Position) []*CompletionItem {
 	case parser.KeywordRole:
 		return roleBlockKeywords
 	case parser.KeywordApi:
-		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributeGraphQL, parser.AttributeRPC})
-		return append(attributes, apiBlockKeywords...)
+		return append([]*CompletionItem{}, apiBlockKeywords...)
 	case parser.KeywordEnum:
 		// no completions for enum block
 		return []*CompletionItem{}

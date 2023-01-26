@@ -256,7 +256,6 @@ const basicSchema string = `
 		}
 	}
 	api Test {
-		@graphql
 		models {
 			Person
 		}
@@ -281,7 +280,6 @@ const getWhere string = `
 		}
 	}
 	api Test {
-		@graphql
 		models {
 			Person
 		}
@@ -306,7 +304,6 @@ const listImplicitAndExplicitInputs string = `
 		}
 	}
 	api Test {
-		@graphql
 		models {
 			Person
 		}
@@ -333,7 +330,6 @@ const multiSchema string = `
 		}
 	}
 	api Test {
-		@graphql
 		models {
 			Multi
 		}
@@ -365,7 +361,6 @@ const fieldTypes string = `
 		Option2
 	}
 	api Test {
-		@graphql
 		models {
 			Thing
 		}
@@ -416,7 +411,6 @@ const relationships string = `
 	}
 
 	api Test {
-		@graphql
 		models {
 			BlogPost
 			Author
@@ -443,7 +437,6 @@ const date_timestamp_parsing = `
 		)
 	}
 	api Test {
-		@graphql
 		models {
 			Thing
 		}
@@ -1132,7 +1125,6 @@ var testCases = []testCase{
 				}
 			}
 			api Test {
-				@graphql
 				models {
 					Person
 				}
@@ -1182,7 +1174,6 @@ var testCases = []testCase{
 				}
 			}
 			api Test {
-				@graphql
 				models {
 					Person
 				}
@@ -1232,7 +1223,6 @@ var testCases = []testCase{
 				}
 			}
 			api Test {
-				@graphql
 				models {
 					Person
 				}
@@ -1278,7 +1268,6 @@ var testCases = []testCase{
 				}
 			}
 			api Test {
-				@graphql
 				models {
 					Person
 				}
@@ -1321,7 +1310,6 @@ var testCases = []testCase{
 				}
 			}
 			api Test {
-				@graphql
 				models {
 					Person
 				}
@@ -1367,7 +1355,6 @@ var testCases = []testCase{
 			}
 		}
 		api Test {
-			@graphql
 			models {
 				Thing
 			}
@@ -2025,7 +2012,6 @@ var testCases = []testCase{
 			}
 
 			api Test {
-				@graphql
 				models {
 					BlogPost
 					Author
@@ -2475,7 +2461,6 @@ var rpcTestCases = []rpcTestCase{
 			)
 		}
 		api Test {
-			@rpc
 			models {
 				Thing
 			}
@@ -2515,7 +2500,6 @@ var rpcTestCases = []rpcTestCase{
 			)
 		}
 		api Test {
-			@rpc
 			models {
 				Thing
 			}
@@ -2564,7 +2548,6 @@ var rpcTestCases = []rpcTestCase{
 			)
 		}
 		api Test {
-			@rpc
 			models {
 				Thing
 			}
@@ -2597,7 +2580,6 @@ var rpcTestCases = []rpcTestCase{
 			)
 		}
 		api Test {
-			@rpc
 			models {
 				Thing
 			}
@@ -2633,7 +2615,6 @@ var rpcTestCases = []rpcTestCase{
 			)
 		}
 		api Test {
-			@rpc
 			models {
 				Thing
 			}
@@ -2669,7 +2650,6 @@ var rpcTestCases = []rpcTestCase{
 			)
 		}
 		api Test {
-			@rpc
 			models {
 				Thing
 			}

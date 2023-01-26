@@ -10,19 +10,15 @@ model Post {
             @set(post.identity = ctx.identity)
             @permission(expression: true)
         }
-
         get getPostRequiresIdentity(id) {
             @permission(expression: ctx.identity == post.identity)
         }
-
         get getPostRequiresAuthentication(id) {
             @permission(expression: ctx.isAuthenticated)
         }
-
         get getPostRequiresNoAuthentication(id) {
             @permission(expression: ctx.isAuthenticated == false)
         }
-
         create createPostSetIsAuthenticated() with (title) {
             @set(post.isAuthenticated = ctx.isAuthenticated)
             @permission(expression: true)
@@ -43,8 +39,6 @@ model ChildPost {
 }
 
 api Web {
-    @graphql
-
     models {
         Post
         ChildPost

@@ -1,109 +1,82 @@
 model Thing {
+    fields {
+        text Text? @default("hello")
+        otherText Text?
+        number Number? @default(1)
+        otherNumber Number?
+        boolean Boolean? @default(false)
+        otherBoolean Boolean?
+        enum ThingType? @default(ThingType.TypeOne)
+        otherEnum ThingType?
+        parent Parent?
+    }
+
+    operations {
+        create create()
+        get get(id)
+        update updateText(id) {
+            @set(thing.text = "goodbye")
+        }
+        update updateNullText(id) {
+            @set(thing.text = null)
+        }
+        update updateTextFromExplicitInput(id) with (explText: Text) {
+            @set(thing.text = explText)
+        }
+        update updateTextFromImplicitInput(id) with (otherText) {
+            @set(thing.text = otherText)
+        }
+        update updateNumber(id) {
+            @set(thing.number = 5)
+        }
+        update updateNullNumber(id) {
+            @set(thing.number = null)
+        }
+        update updateNumberFromExplicitInput(id) with (explNumber: Number) {
+            @set(thing.number = explNumber)
+        }
+        update updateNumberFromImplicitInput(id) with (otherNumber) {
+            @set(thing.number = otherNumber)
+        }
+        update updateBoolean(id) {
+            @set(thing.boolean = true)
+        }
+        update updateNullBoolean(id) {
+            @set(thing.boolean = null)
+        }
+        update updateBooleanFromExplicitInput(id) with (explBoolean: Boolean) {
+            @set(thing.boolean = explBoolean)
+        }
+        update updateBooleanFromImplicitInput(id) with (otherBoolean) {
+            @set(thing.boolean = otherBoolean)
+        }
+        update updateEnum(id) {
+            @set(thing.enum = ThingType.TypeTwo)
+        }
+        update updateNullEnum(id) {
+            @set(thing.enum = null)
+        }
+        update updateEnumFromExplicitInput(id) with (explEnum: ThingType) {
+            @set(thing.enum = explEnum)
+        }
+        update updateEnumFromImplicitInput(id) with (otherEnum) {
+            @set(thing.enum = ThingType.TypeTwo)
+        }
+        update updateParentFromExplicitInput(id) with (explParent: ID) {
+            @set(thing.parentId = explParent)
+        }
+        update updateNullParentId(id) {
+            @set(thing.parentId = null)
+        }
+        update updateNullParent(id) {
+            @set(thing.parent = null)
+        }
+    }
+
     @permission(
         expression: true,
         actions: [create, get, list, update, delete]
     )
-    fields {
-        text Text? @default("hello")
-
-        otherText Text?
-
-        number Number? @default(1)
-
-        otherNumber Number?
-
-        boolean Boolean? @default(false)
-
-        otherBoolean Boolean?
-
-        enum ThingType? @default(ThingType.TypeOne)
-
-        otherEnum ThingType?
-
-        parent Parent?
-    }
-    operations {
-        create create() 
-
-        get get(id)
-
-        update updateText(id) {
-            @set(thing.text = "goodbye")
-        }
-
-        update updateNullText(id) {
-            @set(thing.text = null)
-        }
-
-        update updateTextFromExplicitInput(id) with (explText: Text) {
-            @set(thing.text = explText)
-        }
-
-        update updateTextFromImplicitInput(id) with (otherText) {
-            @set(thing.text = otherText)
-        }
-
-        update updateNumber(id) {
-            @set(thing.number = 5)
-        }
-
-        update updateNullNumber(id) {
-            @set(thing.number = null)
-        }
-
-        update updateNumberFromExplicitInput(id) with (explNumber: Number) {
-            @set(thing.number = explNumber)
-        }
-
-        update updateNumberFromImplicitInput(id) with (otherNumber) {
-            @set(thing.number = otherNumber)
-        }
-
-        update updateBoolean(id) {
-            @set(thing.boolean = true)
-        }
-
-        update updateNullBoolean(id) {
-            @set(thing.boolean = null)
-        }
-
-        update updateBooleanFromExplicitInput(id) with (explBoolean: Boolean) {
-            @set(thing.boolean = explBoolean)
-        }
-
-        update updateBooleanFromImplicitInput(id) with (otherBoolean) {
-            @set(thing.boolean = otherBoolean)
-        }
-
-        update updateEnum(id) {
-            @set(thing.enum = ThingType.TypeTwo)
-        }
-
-        update updateNullEnum(id)  {
-            @set(thing.enum = null)
-        }
-
-        update updateEnumFromExplicitInput(id) with (explEnum: ThingType) {
-            @set(thing.enum = explEnum)
-        }
-
-        update updateEnumFromImplicitInput(id) with (otherEnum) {
-            @set(thing.enum = ThingType.TypeTwo)
-        }
-
-        update updateParentFromExplicitInput(id) with (explParent: ID) {
-            @set(thing.parentId = explParent)
-        }
-
-        update updateNullParentId(id)  {
-            @set(thing.parentId = null)
-        }
-
-        update updateNullParent(id)  {
-            @set(thing.parent = null)
-        }
-
-    }
 }
 
 enum ThingType {
@@ -118,7 +91,6 @@ model Parent {
 }
 
 api Test {
-    @graphql
     models {
         Thing
         Parent

@@ -6,11 +6,9 @@ model Post {
     }
 
     operations {
-        create create() with (title, views) 
+        create create() with (title, views)
         create createUsingRole() with (title) {
-            @permission(
-                roles: [Poster]
-            )
+            @permission(roles: [Poster])
         }
         get get(id)
         update update(id) with (title)
@@ -48,7 +46,6 @@ model ModelWithExpressions {
             @permission(expression: "hello" != title)
             @permission(expression: "hello" != explTitle)
         }
-
         create numbersFailedExpressions() with (views, explViews: Number) {
             @permission(expression: 2 == 1)
             @permission(expression: 1 != 1)
@@ -69,7 +66,6 @@ model ModelWithExpressions {
             @permission(expression: 1 >= explViews)
             @permission(expression: 3 <= explViews)
         }
-
         create booleansFailedExpressions() with (isActive) {
             @permission(expression: true == false)
             @permission(expression: true != true)
@@ -78,7 +74,6 @@ model ModelWithExpressions {
             //@permission(expression: false != isActive)
             //@permission(expression: false != explIsActive)
         }
-
         create enumFailedExpressions() with (option) {
             @permission(expression: Options.One == Options.Two)
             @permission(expression: Options.One != Options.One)
@@ -95,16 +90,16 @@ enum Options {
 }
 
 role Poster {
-  emails {
-    "editorFred99@agency.org"
-  }
-  domains {
-    "times.co.uk"
-  }
+    domains {
+        "times.co.uk"
+    }
+
+    emails {
+        "editorFred99@agency.org"
+    }
 }
 
 api Web {
-    @graphql
     models {
         Post
     }
@@ -119,21 +114,19 @@ model Procedure {
 
     operations {
         get getProc(name)
-
         create doProcedure() with (name) {
-            @permission(
-                roles: [Surgeon]
-            )
+            @permission(roles: [Surgeon])
         }
     }
 }
 
 role Surgeon {
+    domains {
+        "barts.org"
+    }
+
     emails {
         "sam.brainsurgeon@gmail.com"
         "sally.heartsurgeon@gmail.com"
-    }
-    domains {
-        "barts.org"
     }
 }

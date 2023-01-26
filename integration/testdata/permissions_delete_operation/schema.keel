@@ -5,79 +5,62 @@ model Post {
         active Boolean?
         type PostType?
         identity Identity?
-
         titlePermissionMatch Text @default("hello")
         viewsPermissionMatch Number @default(5)
         activePermissionMatch Boolean @default(true)
         typePermissionMatch PostType @default(PostType.Technical)
     }
 
-    @permission(
-        expression: true,
-        actions: [create]
-    )
-
     operations {
-        create createWithTitle() with (title) 
-
-        create createWithViews() with (views) 
-
-        create createWithActive() with (active) 
-
-        create createWithEnum() with (type) 
-
+        create createWithTitle() with (title)
+        create createWithViews() with (views)
+        create createWithActive() with (active)
+        create createWithEnum() with (type)
         delete deleteWithTextPermissionLiteral(id) {
             @permission(expression: post.title == "hello")
         }
-
         delete deleteWithNumberPermissionLiteral(id) {
             @permission(expression: post.views == 5)
         }
-
         delete deleteWithBooleanPermissionLiteral(id) {
             @permission(expression: post.active == true)
         }
-
         delete deleteWithEnumPermissionLiteral(id) {
             @permission(expression: post.type == PostType.Technical)
         }
-
         delete deleteWithTextPermissionOnField(id) {
             @permission(expression: post.title == post.titlePermissionMatch)
         }
-
         delete deleteWithNumberPermissionOnField(id) {
             @permission(expression: post.views == post.viewsPermissionMatch)
         }
-
         delete deleteWithBooleanPermissionOnField(id) {
             @permission(expression: post.active == post.activePermissionMatch)
         }
-
         delete deleteWithEnumPermissionOnField(id) {
             @permission(expression: post.type == post.typePermissionMatch)
         }
-
         create createWithIdentity() {
             @set(post.identity = ctx.identity)
         }
-
         delete deleteWithRequiresSameIdentity(id) {
             @permission(expression: post.identity == ctx.identity)
         }
-
         delete deleteWithTrueValuePermission(id) with (title) {
             @permission(expression: true)
         }
-
         delete deleteWithPermissionOnImplicitInput(id, title) {
             @permission(expression: title == "hello")
         }
-
         delete deleteWithPermissionOnExplicitInput(id, explTitle: Text) {
             @permission(expression: post.title == explTitle)
         }
     }
+
+    @permission(
+        expression: true,
+        actions: [create]
+    )
 }
 
 enum PostType {
@@ -87,7 +70,6 @@ enum PostType {
 }
 
 api Web {
-    @graphql
     models {
         Post
     }

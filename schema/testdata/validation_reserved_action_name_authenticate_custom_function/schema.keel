@@ -9,8 +9,6 @@ model User {
 }
 
 api Web {
-    @graphql
-
     models {
         User
     }

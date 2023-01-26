@@ -1,116 +1,92 @@
 model Thing {
-    @permission(
-        expression: true,
-        actions: [create, get, list, update, delete]
-    )
     fields {
         optionalText Text?
         requiredText Text @default("hello")
-
         optionalNumber Number?
         requiredNumber Number @default(1)
-
         optionalBoolean Boolean?
         requiredBoolean Boolean @default(false)
-
         optionalEnum ThingType?
         requiredEnum ThingType @default(ThingType.TypeOne)
-
         optionalParent Parent?
     }
+
     operations {
-        create createTextOnOptional()  {
+        create createTextOnOptional() {
             @set(thing.optionalText = "goodbye")
         }
-
-        create createNullTextOnOptional()  {
+        create createNullTextOnOptional() {
             @set(thing.optionalText = null)
         }
-    
         create createTextOnRequired() {
             @set(thing.requiredText = "goodbye")
         }
-
         create createTextFromExplicitInput() with (explText: Text) {
             @set(thing.requiredText = explText)
         }
-
         create createTextFromImplicitInput() with (requiredText) {
             @set(thing.optionalText = requiredText)
         }
-
-        create createNumberOnOptional()  {
+        create createNumberOnOptional() {
             @set(thing.optionalNumber = 5)
         }
-
-        create createNullNumberOnOptional()  {
+        create createNullNumberOnOptional() {
             @set(thing.optionalNumber = null)
         }
-    
         create createNumberOnRequired() {
             @set(thing.requiredNumber = 5)
         }
-
         create createNumberFromExplicitInput() with (explNumber: Number) {
             @set(thing.requiredNumber = explNumber)
         }
-
         create createNumberFromImplicitInput() with (requiredNumber) {
             @set(thing.optionalNumber = requiredNumber)
         }
-       
-        create createBooleanOnOptional()  {
+        create createBooleanOnOptional() {
             @set(thing.optionalBoolean = true)
         }
-
-        create createNullBooleanOnOptional()  {
+        create createNullBooleanOnOptional() {
             @set(thing.optionalBoolean = null)
         }
-    
         create createBooleanOnRequired() {
             @set(thing.requiredBoolean = true)
         }
-
         create createBooleanFromExplicitInput() with (explBoolean: Boolean) {
             @set(thing.requiredBoolean = explBoolean)
         }
-
         create createBooleanFromImplicitInput() with (requiredBoolean) {
             @set(thing.optionalBoolean = requiredBoolean)
         }
-
-        create createEnumOnOptional()  {
+        create createEnumOnOptional() {
             @set(thing.optionalEnum = ThingType.TypeTwo)
         }
-
-        create createNullEnumOnOptional()  {
+        create createNullEnumOnOptional() {
             @set(thing.optionalEnum = null)
         }
-    
         create createEnumOnRequired() {
             @set(thing.requiredEnum = ThingType.TypeTwo)
         }
-
         create createEnumFromExplicitInput() with (explEnum: ThingType) {
             @set(thing.requiredEnum = explEnum)
         }
-
         create createEnumFromImplicitInput() with (requiredEnum) {
             @set(thing.optionalEnum = requiredEnum)
         }
-
         create createParentFromExplicitInput() with (explParent: ID) {
             @set(thing.optionalParentId = explParent)
         }
-
         create createNullParentId() {
             @set(thing.optionalParentId = null)
         }
-
         create createNullParent() {
             @set(thing.optionalParent = null)
         }
     }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
 }
 
 enum ThingType {
@@ -125,7 +101,6 @@ model Parent {
 }
 
 api Test {
-    @graphql
     models {
         Thing
         Parent

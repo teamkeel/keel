@@ -228,7 +228,6 @@ message Expression {
 
 message Api {
     string name = 1;
-    ApiType type = 2;
     repeated ApiModel api_models = 3;
 }
 
@@ -266,12 +265,6 @@ message TypeInfo {
 
     // If true then is type is an array of it's `type`
     bool repeated = 4;
-}
-
-enum ApiType {
-    API_TYPE_UNKNOWN = 0;
-    API_TYPE_GRAPHQL = 1;
-    API_TYPE_RPC = 2;
 }
 
 enum OperationInputType {

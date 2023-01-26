@@ -64,8 +64,6 @@ enum PostType {
 }
 
 api Web {
-    @graphql
-
     models {
         Post
     }

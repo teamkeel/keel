@@ -213,8 +213,6 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 func TestAPI(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	api Web {
-		@graphql
-
 		models {
 			Author
 			Book
@@ -222,10 +220,8 @@ func TestAPI(t *testing.T) {
 	}`})
 	assert.Equal(t, "Web", schema.Declarations[0].API.Name.Value)
 
-	assert.Equal(t, "graphql", schema.Declarations[0].API.Sections[0].Attribute.Name.Value)
-
-	assert.Equal(t, "Author", schema.Declarations[0].API.Sections[1].Models[0].Name.Value)
-	assert.Equal(t, "Book", schema.Declarations[0].API.Sections[1].Models[1].Name.Value)
+	assert.Equal(t, "Author", schema.Declarations[0].API.Sections[0].Models[0].Name.Value)
+	assert.Equal(t, "Book", schema.Declarations[0].API.Sections[0].Models[1].Name.Value)
 }
 
 func TestParserPos(t *testing.T) {

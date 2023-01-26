@@ -1,8 +1,4 @@
 model Thing {
-    @permission(
-        expression: true,
-        actions: [create, get, list, update, delete]
-    )
     fields {
         something Text
     }
@@ -11,11 +7,14 @@ model Thing {
         list listOne()
         list listTwo()
     }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
 }
 
 api Test {
-    @graphql
-
     models {
         Thing
     }

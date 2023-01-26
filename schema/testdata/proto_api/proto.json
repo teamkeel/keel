@@ -190,7 +190,6 @@
   "apis":  [
     {
       "name":  "ApiOne",
-      "type":  "API_TYPE_GRAPHQL",
       "apiModels":  [
         {
           "modelName":  "Foo"
@@ -205,7 +204,6 @@
     },
     {
       "name":  "ApiTwo",
-      "type":  "API_TYPE_GRAPHQL",
       "apiModels":  [
         {
           "modelName":  "Foo"

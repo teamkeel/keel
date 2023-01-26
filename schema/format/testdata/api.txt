@@ -1,6 +1,4 @@
 api Web {
-    @graphql
-
     models {
         Person
     }
@@ -9,8 +7,6 @@ api Web {
 ===
 
 api Web {
-    @graphql
-
     models {
         Person
     }
