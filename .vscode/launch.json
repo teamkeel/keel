@@ -8,53 +8,69 @@
         "mode": "debug",
         "program": "${file}"
     },
-        {
-            "name": "Run / Debug integration test",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${workspaceFolder}/integration",
-            "args": [
-                "-test.run",
-                "TestIntegration/${input:testCase}"
-            ]
-        },
-        {
-            "name": "Execute Command",
-            "type": "go",
-            "request": "launch",
-            "mode": "debug",
-            "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/cmd/keel/main.go",
-            "args": [
-                "${input:cmd}",
-                "-d",
-                "${input:directory}",
-            ]
-        },
-        {
-            "name": "Run / debug schema validation test",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${workspaceFolder}/schema",
-            "args": [
-                "-test.run",
-                "TestSchema/${input:testCase}"
-            ]
-        },
-        {
-            "name": "Run / Debug runtime test",
-            "type": "go",
-            "request": "launch",
-            "mode": "test",
-            "program": "${workspaceFolder}/runtime",
-            "args": [
-                "-test.run",
-                "TestRuntime/${input:testCase}"
-            ]
-        }
+    {
+        "name": "Run / Debug integration test",
+        "type": "go",
+        "request": "launch",
+        "mode": "test",
+        "program": "${workspaceFolder}/integration",
+        "args": [
+            "-test.run",
+            "TestIntegration/${input:testCase}"
+        ]
+    },
+    {
+        "name": "Debug test",
+        "type": "go",
+        "request": "launch",
+        "mode": "debug",
+        "console": "integratedTerminal",
+        "cwd": "${workspaceFolder}",
+        "program": "${workspaceFolder}/cmd/keel/main.go",
+        "args": [
+            "test",
+            "-d",
+            "${input:directory}",
+            "--pattern",
+            "${input:pattern}"
+        ]
+    },
+    {
+        "name": "Execute Command",
+        "type": "go",
+        "request": "launch",
+        "mode": "debug",
+        "console": "integratedTerminal",
+        "cwd": "${workspaceFolder}",
+        "program": "${workspaceFolder}/cmd/keel/main.go",
+        "args": [
+            "${input:cmd}",
+            "-d",
+            "${input:directory}",
+        ]
+    },
+    {
+        "name": "Run / debug schema validation test",
+        "type": "go",
+        "request": "launch",
+        "mode": "test",
+        "program": "${workspaceFolder}/schema",
+        "args": [
+            "-test.run",
+            "TestSchema/${input:testCase}"
+        ]
+    },
+    {
+        "name": "Run / Debug runtime test",
+        "type": "go",
+        "request": "launch",
+        "mode": "test",
+        "program": "${workspaceFolder}/runtime",
+        "args": [
+            "-test.run",
+            "TestRuntime/${input:testCase}"
+        ]
+    }
     ],
     "inputs": [
         {
@@ -71,8 +87,8 @@
         },
         {
             "type": "promptString",
-            "id": "testName",
-            "default": "",
+            "id": "pattern",
+            "default": "(.*)",
             "description": "Regular expression pattern to isolate individual tests. Can just be the JS test case name if you don't want to do anything fancy."
         },
         {

@@ -33,7 +33,7 @@ var testCmd = &cobra.Command{
 		}
 		defer database.Stop()
 
-		results, err := testing.Run(dbConnInfo, inputDir)
+		results, err := testing.Run(dbConnInfo, inputDir, pattern)
 		if results != nil {
 			fmt.Println(results.Output)
 		}
@@ -44,6 +44,8 @@ var testCmd = &cobra.Command{
 	},
 }
 
+var pattern string
+
 func init() {
 	rootCmd.AddCommand(testCmd)
 	defaultDir, err := os.Getwd()
@@ -51,4 +53,5 @@ func init() {
 		panic(fmt.Errorf("os.Getwd() errored: %v", err))
 	}
 	testCmd.Flags().StringVarP(&inputDir, "dir", "d", defaultDir, "input directory to validate")
+	testCmd.Flags().StringVarP(&pattern, "pattern", "p", "(.*)", "pattern to isolate test")
 }
