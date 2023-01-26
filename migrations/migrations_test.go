@@ -14,7 +14,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/proto"
@@ -24,7 +23,7 @@ import (
 )
 
 func TestMigrations(t *testing.T) {
-	dbConnInfo := &database.ConnectionInfo{
+	dbConnInfo := &db.ConnectionInfo{
 		Host:     "localhost",
 		Port:     "8001",
 		Username: "postgres",

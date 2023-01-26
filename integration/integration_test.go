@@ -11,7 +11,7 @@ import (
 	cp "github.com/otiai10/copy"
 
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/testing"
 )
@@ -81,7 +81,7 @@ func TestIntegration(t *gotest.T) {
 			require.NoError(t, err)
 
 			// Use the docker compose database
-			dbConnInfo := &database.ConnectionInfo{
+			dbConnInfo := &db.ConnectionInfo{
 				Host:     "localhost",
 				Port:     "8001",
 				Username: "postgres",

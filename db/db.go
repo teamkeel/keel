@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/rdsdata"
 	_ "github.com/lib/pq"
-	"github.com/teamkeel/keel/cmd/database"
 )
 
 type ExecuteQueryResult struct {
@@ -34,7 +33,7 @@ type Db interface {
 }
 
 // Local data operations for a local database connection.
-func Local(ctx context.Context, dbConnInfo *database.ConnectionInfo) (Db, error) {
+func Local(ctx context.Context, dbConnInfo *ConnectionInfo) (Db, error) {
 	sqlDb, err := sql.Open("postgres", dbConnInfo.String())
 	if err != nil {
 		return nil, err

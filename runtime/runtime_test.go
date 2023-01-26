@@ -1,4 +1,4 @@
-package runtime
+package runtime_test
 
 import (
 	"encoding/json"
@@ -14,9 +14,9 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
 	"github.com/teamkeel/keel/schema"
@@ -38,7 +38,7 @@ func TestRuntime(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
 			// Use the docker compose database
-			dbConnInfo := &database.ConnectionInfo{
+			dbConnInfo := &db.ConnectionInfo{
 				Host:     "localhost",
 				Port:     "8001",
 				Username: "postgres",
@@ -47,7 +47,7 @@ func TestRuntime(t *testing.T) {
 			}
 
 			// Construct the runtime API Handler.
-			handler := NewHandler(schema)
+			handler := runtime.NewHandler(schema)
 
 			reqBody := queryAsJSONPayload(t, tCase.gqlOperation, tCase.variables)
 
@@ -124,7 +124,7 @@ func TestRuntimeRPC(t *testing.T) {
 			schema := protoSchema(t, tCase.keelSchema)
 
 			// Use the docker compose database
-			dbConnInfo := &database.ConnectionInfo{
+			dbConnInfo := &db.ConnectionInfo{
 				Host:     "localhost",
 				Port:     "8001",
 				Username: "postgres",
@@ -132,7 +132,7 @@ func TestRuntimeRPC(t *testing.T) {
 				Password: "postgres",
 			}
 
-			handler := NewHandler(schema)
+			handler := runtime.NewHandler(schema)
 
 			request := &http.Request{
 				URL: &url.URL{
