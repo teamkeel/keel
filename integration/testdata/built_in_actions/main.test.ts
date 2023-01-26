@@ -89,6 +89,9 @@ test("list action - oneOf", async () => {
     },
   });
 
+  expect(results.length).toEqual(2);
+});
+
 test("delete action", async () => {
   const post = await models.post.create({
     title: "pear",
