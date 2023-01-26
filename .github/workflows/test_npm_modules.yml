@@ -51,3 +51,28 @@ jobs:
       - name: Run tests
         working-directory: ./packages/testing-runtime
         run: pnpm run test
+
+  test-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - name: Setup golang
+        uses: actions/setup-go@v3
+        with:
+          go-version: "^1.19"
+      - uses: actions/checkout@v3
+      - name: Install Go deps
+        run: go mod download
+      - name: Generate wasm binary
+        run: make wasm
+      - name: Install package deps
+        working-directory: ./packages/wasm
+        run: pnpm install --frozen-lockfile
+      - name: Run tests
+        working-directory: ./packages/wasm
+        run: pnpm run test
