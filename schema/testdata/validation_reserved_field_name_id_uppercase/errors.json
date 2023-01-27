@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "You have a reserved field name ID",
-      "short_message": "cannot use ID",
+      "shortMessage": "cannot use ID",
       "hint": "Try 'IDer' instead",
       "code": "E006",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 9
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_reserved_field_name_id_uppercase/schema.keel",
         "offset": 38,
         "line": 3,
@@ -20,7 +20,7 @@
     },
     {
       "message": "You have a field name that is not lowerCamel ID",
-      "short_message": "ID isn't lower camel",
+      "shortMessage": "ID isn't lower camel",
       "hint": "Did you mean 'id'?",
       "code": "E012",
       "pos": {
@@ -29,7 +29,7 @@
         "line": 3,
         "column": 9
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_reserved_field_name_id_uppercase/schema.keel",
         "offset": 38,
         "line": 3,

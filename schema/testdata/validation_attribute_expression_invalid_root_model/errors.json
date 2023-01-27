@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "'pos' not found",
-      "short_message": "'pos' not found",
+      "shortMessage": "'pos' not found",
       "hint": "Did you mean post?",
       "code": "E020",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 17
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_attribute_expression_invalid_root_model/schema.keel",
         "offset": 78,
         "line": 7,

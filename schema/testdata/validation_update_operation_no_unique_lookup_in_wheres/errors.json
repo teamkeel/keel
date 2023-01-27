@@ -1,22 +1,22 @@
 {
-  "Errors": [
+  "errors": [
     {
-        "code": "E036",
-        "message": "myModel.nonUnique is not a unique field. update operations can only filter on unique fields",
-        "short_message": "myModel.nonUnique is not a unique field",
-        "hint": "",
-        "end_pos": {
-            "column": 37,
-            "filename": "testdata/validation_update_operation_no_unique_lookup_in_wheres/schema.keel",
-            "line": 8,
-            "offset": 145
-        },
-        "pos": {
-            "column": 20,
-            "filename": "testdata/validation_update_operation_no_unique_lookup_in_wheres/schema.keel",
-            "line": 8,
-            "offset": 128
-        }
+      "message": "myModel.nonUnique is not a unique field. update operations can only filter on unique fields",
+      "shortMessage": "myModel.nonUnique is not a unique field",
+      "hint": "",
+      "code": "E036",
+      "pos": {
+        "filename": "testdata/validation_update_operation_no_unique_lookup_in_wheres/schema.keel",
+        "offset": 128,
+        "line": 8,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_update_operation_no_unique_lookup_in_wheres/schema.keel",
+        "offset": 145,
+        "line": 8,
+        "column": 37
+      }
     }
   ]
 }

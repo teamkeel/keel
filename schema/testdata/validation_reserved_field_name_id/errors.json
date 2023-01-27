@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "You have a reserved field name id",
-      "short_message": "cannot use id",
+      "shortMessage": "cannot use id",
       "hint": "Try 'ider' instead",
       "code": "E006",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 9
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_reserved_field_name_id/schema.keel",
         "offset": 38,
         "line": 3,

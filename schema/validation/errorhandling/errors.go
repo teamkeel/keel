@@ -70,7 +70,7 @@ const (
 
 type ErrorDetails struct {
 	Message      string `json:"message" yaml:"message"`
-	ShortMessage string `json:"short_message" yaml:"short_message"`
+	ShortMessage string `json:"shortMessage" yaml:"short_message"`
 	Hint         string `json:"hint" yaml:"hint"`
 }
 
@@ -83,7 +83,7 @@ type ValidationError struct {
 
 	Code   string   `json:"code" regexp:"\\d+"`
 	Pos    LexerPos `json:"pos,omitempty"`
-	EndPos LexerPos `json:"end_pos,omitempty"`
+	EndPos LexerPos `json:"endPos,omitempty"`
 }
 
 type LexerPos struct {
@@ -102,7 +102,7 @@ func (e ValidationError) Error() string {
 func (e *ValidationError) Unwrap() error { return e }
 
 type ValidationErrors struct {
-	Errors []*ValidationError
+	Errors []*ValidationError `json:"errors"`
 }
 
 func (v *ValidationErrors) Append(code string, data map[string]string, node node.ParserNode) {

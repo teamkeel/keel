@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "You have a model name that is not UpperCamel Person_Thing",
-      "short_message": "Person_Thing is not UpperCamel",
+      "shortMessage": "Person_Thing is not UpperCamel",
       "hint": "Did you mean 'PersonThing'?",
       "code": "E001",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 1,
         "column": 7
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_model_names_upper_camel_underscore/schema.keel",
         "offset": 18,
         "line": 1,

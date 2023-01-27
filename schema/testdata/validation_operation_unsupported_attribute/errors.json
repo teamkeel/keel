@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "operation 'createProfile' has an unrecognised attribute @save",
-      "short_message": "Unrecognised attribute save",
+      "shortMessage": "Unrecognised attribute save",
       "hint": "Did you mean @set, @where, @permission, or @validate?",
       "code": "E011",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 13,
         "column": 13
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",
         "offset": 231,
         "line": 13,

@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "2 argument(s) provided to @where but expected 1",
-      "short_message": "Wrong number of arguments provided to @where",
+      "shortMessage": "Wrong number of arguments provided to @where",
       "hint": "the signature of this attribute is @where(expression)",
       "code": "E024",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 13,
         "column": 13
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_operation_where_too_many_arguments/schema.keel",
         "offset": 282,
         "line": 13,

@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Operator '=' not permitted on @permission",
-      "short_message": "Operator '=' not permitted on @permission",
+      "shortMessage": "Operator '=' not permitted on @permission",
       "hint": "Did you mean ==?",
       "code": "E022",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 38
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_permission_attribute_expression_forbidden_operator/schema.keel",
         "offset": 113,
         "line": 7,

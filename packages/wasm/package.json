@@ -9,9 +9,6 @@
     "format": "npx prettier --write *.{js,ts}"
   },
   "author": "Adam Bull (adam@keel.xyz)",
-  "dependencies": {
-    "deep-map-keys": "^2.0.1"
-  },
   "devDependencies": {
     "prettier": "^2.8.3",
     "vitest": "^0.28.2"

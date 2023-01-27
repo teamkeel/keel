@@ -1,22 +1,22 @@
-  {
-    "Errors": [
-      {
-        "code": "E019",
-        "hint": "Please remove one of the definitions",
-        "message": "You have a duplicate definition for 'enum TheBeatles'",
-        "end_pos": {
-          "column": 16,
-          "filename": "testdata/validation_unique_enum/schema.keel",
-          "line": 1,
-          "offset": 15
-        },
-        "pos": {
-          "column": 6,
-          "filename": "testdata/validation_unique_enum/schema.keel",
-          "line": 1,
-          "offset": 5
-        },
-        "short_message": "TheBeatles is duplicated"
+{
+  "errors": [
+    {
+      "message": "You have a duplicate definition for 'enum TheBeatles'",
+      "shortMessage": "TheBeatles is duplicated",
+      "hint": "Please remove one of the definitions",
+      "code": "E019",
+      "pos": {
+        "filename": "testdata/validation_unique_enum/schema.keel",
+        "offset": 5,
+        "line": 1,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_enum/schema.keel",
+        "offset": 15,
+        "line": 1,
+        "column": 16
       }
-    ]
-  }
+    }
+  ]
+}

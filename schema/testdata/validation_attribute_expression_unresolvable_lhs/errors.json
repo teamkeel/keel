@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "'autho' not found on 'Post'",
-      "short_message": "'autho' not found",
+      "shortMessage": "'autho' not found",
       "hint": "Did you mean author, or authorId?",
       "code": "E020",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 22
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_lhs/schema.keel",
         "offset": 88,
         "line": 7,

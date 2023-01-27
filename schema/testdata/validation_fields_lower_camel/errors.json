@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "You have a field name that is not lowerCamel EMAIL",
-      "short_message": "EMAIL isn't lower camel",
+      "shortMessage": "EMAIL isn't lower camel",
       "hint": "Did you mean 'email'?",
       "code": "E012",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 5
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_fields_lower_camel/schema.keel",
         "offset": 35,
         "line": 3,

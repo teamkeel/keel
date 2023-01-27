@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "1 argument(s) provided to @unique but expected 0",
-      "short_message": "Wrong number of arguments provided to @unique",
+      "shortMessage": "Wrong number of arguments provided to @unique",
       "hint": "@unique doesn't accept any arguments",
       "code": "E024",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 4,
         "column": 7
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_attribute_unique_invalids_args/schema.keel",
         "offset": 59,
         "line": 4,

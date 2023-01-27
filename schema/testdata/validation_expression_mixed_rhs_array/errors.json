@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Cannot have mixed types in an array literal",
-      "short_message": "Cannot have mixed types in an array literal",
+      "shortMessage": "Cannot have mixed types in an array literal",
       "hint": "Expected \"123\" to be of type Number",
       "code": "E032",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 30
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_expression_mixed_rhs_array/schema.keel",
         "offset": 62,
         "line": 3,
