@@ -4,6 +4,13 @@
 
 "use strict";
 
+const crypto = require("crypto");
+globalThis.crypto = {
+  getRandomValues(b) {
+    crypto.randomFillSync(b);
+  },
+};
+
 (() => {
   const enosys = () => {
     const err = new Error("not implemented");
