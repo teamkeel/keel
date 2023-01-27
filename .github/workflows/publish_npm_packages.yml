@@ -1,0 +1,48 @@
+name: Publish npm packages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  release:
+    name: Publish npm Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 7
+      - uses: actions/checkout@v3
+
+      - name: Install node deps
+        run: npm install
+
+      - name: Install Go deps
+        run: go mod download
+
+      - name: Generate wasm binary
+        run: make wasm
+
+      - name: Install wasm publish dependencies
+        working-directory: ./packages/wasm
+        run: pnpm install --frozen-lockfile --production
+
+      - name: Install functions-runtime publish dependencies
+        working-directory: ./packages/functions-runtime
+        run: pnpm install --frozen-lockfile --production
+
+      - name: Install testing-runtime publish dependencies
+        working-directory: ./packages/testing-runtime
+        run: pnpm install --frozen-lockfile --production
+
+      - name: Semantic release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release@18
