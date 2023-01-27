@@ -1,3 +1,11 @@
+## [0.240.4](https://github.com/teamkeel/keel/compare/v0.240.3...v0.240.4) (2023-01-27)
+
+
+### Bug Fixes
+
+* revert checkout action in npm publish workflow ([67508b0](https://github.com/teamkeel/keel/commit/67508b0af0205af1f96ac69609df33b310ba680c))
+* update npm publish github action workflow ([664a5cc](https://github.com/teamkeel/keel/commit/664a5cc6a39b14df1b73382f2099968648af6f20))
+
 ## [0.240.3](https://github.com/teamkeel/keel/compare/v0.240.2...v0.240.3) (2023-01-26)
 
 
