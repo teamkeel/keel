@@ -2,7 +2,7 @@
 globalThis.crypto = require("crypto");
 
 const { wasm } = require("./dist/wasm.js");
-require("./lib/wasm_exec");
+require("./lib/wasm_exec_node");
 
 async function keel() {
   if (globalThis.keel) {
