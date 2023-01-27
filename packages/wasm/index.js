@@ -1,8 +1,6 @@
-// Needed for wasm_exec
-globalThis.crypto = require("crypto");
+require("./lib/wasm_exec_node");
 
 const { wasm } = require("./dist/wasm.js");
-require("./lib/wasm_exec");
 
 async function keel() {
   if (globalThis.keel) {
