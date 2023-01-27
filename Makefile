@@ -22,7 +22,9 @@ testintegration:
 	go test ./integration -count=1 -v
 
 wasm:
-	GOOS=js GOARCH=wasm go build -o ./packages/wasm/keel.wasm ./packages/wasm/main.go
+	mkdir -p ./packages/wasm/dist
+	GOOS=js GOARCH=wasm go build -o ./packages/wasm/dist/keel.wasm ./packages/wasm/lib/main.go
+	node ./packages/wasm/encodeWasm.js
 
 prettier:
 	npx prettier --write './integration/**/*.{ts,json}'
