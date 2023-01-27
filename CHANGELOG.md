@@ -1,3 +1,10 @@
+## [0.240.5](https://github.com/teamkeel/keel/compare/v0.240.4...v0.240.5) (2023-01-27)
+
+
+### Bug Fixes
+
+* include dist files in npm pack for wasm package ([#709](https://github.com/teamkeel/keel/issues/709)) ([f4b1254](https://github.com/teamkeel/keel/commit/f4b1254179fe605e267d41257df24f0d2bea6b3e))
+
 ## [0.240.4](https://github.com/teamkeel/keel/compare/v0.240.3...v0.240.4) (2023-01-27)
 
 
