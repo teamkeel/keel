@@ -15,7 +15,8 @@ import (
 type AST struct {
 	node.Node
 
-	Declarations []*DeclarationNode `@@*`
+	Declarations         []*DeclarationNode `@@*`
+	EnvironmentVariables []string
 }
 
 func (ast *AST) String() string {

@@ -18,6 +18,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/migrations"
@@ -42,6 +43,16 @@ var runCmd = &cobra.Command{
 	Short: "Run your Keel App locally",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := &schema.Builder{}
+
+		config, err := config.Load(inputDir + "/" + "keelconfig.yaml")
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				color.Red("Unable to find config file, future versions will require a config file to run Keel")
+			}
+		}
+		if config != nil {
+			b.Config = config
+		}
 
 		useExistingContainer := !runCmdFlagReset
 		_, dbConnInfo, err := database.Start(useExistingContainer)

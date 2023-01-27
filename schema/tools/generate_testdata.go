@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
 	"github.com/nsf/jsondiff"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -47,6 +49,7 @@ func main() {
 		var hasCurrErrors bool
 		var hasCurrProto bool
 		var currContents []byte
+		var defaultConfig *config.ProjectConfig
 
 		for _, file := range files {
 			if file.Name() == "errors.json" {
@@ -65,6 +68,12 @@ func main() {
 				currContents = b
 				hasCurrProto = true
 			}
+			if strings.HasSuffix(file.Name(), ".yaml") {
+				defaultConfig, err = config.Load(filepath.Join(testdataDir, subDir.Name(), file.Name()))
+				if err != nil {
+					panic(err)
+				}
+			}
 		}
 
 		if hasCurrErrors && hasCurrProto {
@@ -77,6 +86,11 @@ func main() {
 		var outputContents []byte
 
 		s2m := schema.Builder{}
+
+		if defaultConfig != nil {
+			s2m.Config = defaultConfig
+		}
+
 		protoSchema, err := s2m.MakeFromDirectory(filepath.Join(testdataDir, subDir.Name()))
 		if err != nil {
 			verrs, ok := err.(*errorhandling.ValidationErrors)

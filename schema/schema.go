@@ -7,6 +7,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -20,6 +21,7 @@ import (
 type Builder struct {
 	asts        []*parser.AST
 	schemaFiles []reader.SchemaFile
+	Config      *config.ProjectConfig
 }
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
@@ -111,6 +113,9 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		// the relationship foreign key fields, because we need to defer that until all the
 		// models in the global set have been captured and modelled.
 		scm.insertBuiltInFields(declarations)
+
+		// Add environment variables to the ASTs
+		scm.addEnvironmentVariables(declarations)
 
 		asts = append(asts, declarations)
 	}
@@ -346,4 +351,17 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 			}
 		}
 	}
+}
+
+func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {
+	if scm.Config == nil {
+		return
+	}
+
+	var envVarNames []string
+	for _, envVar := range scm.Config.Environment.Default {
+		envVarNames = append(envVarNames, envVar.Name)
+	}
+
+	declarations.EnvironmentVariables = append(declarations.EnvironmentVariables, envVarNames...)
 }
