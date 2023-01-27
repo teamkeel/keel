@@ -1,11 +1,2 @@
 model MyModel {
-    fields {
-        isActive Boolean
-    }
-
-    operations {
-        get getMyModel(id) {
-            @where(myModel.isActive == true)
-        }
-    }
 }

@@ -3,9 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
-	"path"
 
-	"github.com/fatih/color"
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,14 +30,8 @@ type Input struct {
 	Required []string `yaml:"required,omitempty"`
 }
 
-func Load(configFileName string) (*ProjectConfig, error) {
-	dir, err := os.Getwd()
-	if err != nil {
-		color.Red("cannot read config file")
-		os.Exit(1)
-	}
-
-	loadConfig, err := os.ReadFile(path.Join(dir, configFileName))
+func Load(dir string) (*ProjectConfig, error) {
+	loadConfig, err := os.ReadFile(dir)
 	if err != nil {
 		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
