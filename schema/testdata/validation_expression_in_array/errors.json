@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "\"bob\" is Text and post.authors.name is an array of Number",
-      "short_message": "\"bob\" is Text and post.authors.name is an array of Number",
+      "shortMessage": "\"bob\" is Text and post.authors.name is an array of Number",
       "hint": "Please make sure that you are evaluating entities of the same type",
       "code": "E026",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 21
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_expression_in_array/schema.keel",
         "offset": 121,
         "line": 7,

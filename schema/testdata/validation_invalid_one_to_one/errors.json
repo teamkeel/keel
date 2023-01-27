@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Post and Author define a singular relationship with one another",
-      "short_message": "Post and Author define a singular relationship with one another",
+      "shortMessage": "Post and Author define a singular relationship with one another",
       "hint": "It is not clear where the foreign key should be placed. Remove the explicit reference from one side.",
       "code": "E039",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 9
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_invalid_one_to_one/schema.keel",
         "offset": 47,
         "line": 3,

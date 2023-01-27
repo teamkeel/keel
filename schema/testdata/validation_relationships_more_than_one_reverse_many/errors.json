@@ -1,22 +1,22 @@
 {
-  "Errors": [
+  "errors": [
     {
-      "code": "E045",
-      "end_pos": {
-          "column": 2,
-          "filename": "testdata/validation_relationships_more_than_one_reverse_many/schema.keel",
-          "line": 8,
-          "offset": 236
-      },
-      "hint": "Try removing all but one of these fields.",
       "message": "The 'Book' model has more than one field that references the Person model, only one is allowed if the Person model has a repeated, (i.e. []) reverse relationship field.",
+      "shortMessage": "The 'Book' model has more than one field that references the Person model",
+      "hint": "Try removing all but one of these fields.",
+      "code": "E045",
       "pos": {
-          "column": 7,
-          "filename": "testdata/validation_relationships_more_than_one_reverse_many/schema.keel",
-          "line": 1,
-          "offset": 6
+        "filename": "testdata/validation_relationships_more_than_one_reverse_many/schema.keel",
+        "offset": 6,
+        "line": 1,
+        "column": 7
       },
-      "short_message": "The 'Book' model has more than one field that references the Person model"
-  }
+      "endPos": {
+        "filename": "testdata/validation_relationships_more_than_one_reverse_many/schema.keel",
+        "offset": 236,
+        "line": 8,
+        "column": 2
+      }
+    }
   ]
 }

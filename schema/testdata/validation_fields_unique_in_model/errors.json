@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "You have duplicate field names name",
-      "short_message": "name is duplicated",
+      "shortMessage": "name is duplicated",
       "hint": "Remove 'name' on line 4",
       "code": "E003",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 4,
         "column": 5
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_fields_unique_in_model/schema.keel",
         "offset": 46,
         "line": 4,

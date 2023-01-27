@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "'identit' not found on 'Profile'",
-      "short_message": "'identit' not found",
+      "shortMessage": "'identit' not found",
       "hint": "Did you mean one of username, id, createdAt, or updatedAt?",
       "code": "E020",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 10,
         "column": 26
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_operation_set_expression_unresolvable_lhs/schema.keel",
         "offset": 190,
         "line": 10,

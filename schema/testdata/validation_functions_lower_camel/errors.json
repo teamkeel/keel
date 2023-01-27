@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Action names should be written in lowerCamelCase",
-      "short_message": "CREATE_PROFILE isn't a valid action name",
+      "shortMessage": "CREATE_PROFILE isn't a valid action name",
       "hint": "Did you mean 'createProfile'?",
       "code": "E002",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 12
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_functions_lower_camel/schema.keel",
         "offset": 91,
         "line": 7,

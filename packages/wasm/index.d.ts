@@ -1,20 +1,11 @@
-export function keel(): KeelAPI;
+export function format(schema: string): Promise<string>;
 
-export interface KeelAPI {
-  format: (schemaString: string) => Promise<string>;
-  validate: (
-    schemaString: string,
-    options?: ValidateOptions
-  ) => Promise<ValidationResult>;
-  completions: (
-    schemaString: string,
-    position: SimplePosition
-  ) => Promise<CompletionResult>;
-}
+export function validate(schemaString: string): Promise<ValidationResult>;
 
-export interface ValidateOptions {
-  color: boolean;
-}
+export function completions(
+  schemaString: string,
+  position: SimplePosition
+): Promise<CompletionResult>;
 
 export interface SimplePosition {
   column: number;
@@ -35,7 +26,6 @@ export interface CompletionItem {
 
 export interface CompletionResult {
   completions: CompletionItem[];
-  ast: any;
 }
 
 export interface ValidationError {
@@ -49,5 +39,4 @@ export interface ValidationError {
 
 export interface ValidationResult {
   errors: ValidationError[];
-  ast: any;
 }

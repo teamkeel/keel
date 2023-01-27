@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "field 'identity' has an unrecognised attribute @something",
-      "short_message": "Unrecognised attribute something",
+      "shortMessage": "Unrecognised attribute something",
       "hint": "Did you mean @unique, @default, or @primaryKey?",
       "code": "E011",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 4,
         "column": 7
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_field_unsupported_attribute/schema.keel",
         "offset": 64,
         "line": 4,

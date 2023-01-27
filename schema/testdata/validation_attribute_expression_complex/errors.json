@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "'postCod' not found on 'Address'",
-      "short_message": "'postCod' not found",
+      "shortMessage": "'postCod' not found",
       "hint": "Did you mean postCode?",
       "code": "E020",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 13,
         "column": 32
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_attribute_expression_complex/schema.keel",
         "offset": 267,
         "line": 13,

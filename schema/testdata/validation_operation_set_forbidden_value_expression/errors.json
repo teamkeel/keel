@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Value-only conditions such as 'profile.identity' not permitted on @set",
-      "short_message": "Value-only conditions such as 'profile.identity' not permitted on @set",
+      "shortMessage": "Value-only conditions such as 'profile.identity' not permitted on @set",
       "hint": "Please assign a value. Did you mean 'profile.identity = xxx'?",
       "code": "E023",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 13,
         "column": 18
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
         "offset": 248,
         "line": 13,

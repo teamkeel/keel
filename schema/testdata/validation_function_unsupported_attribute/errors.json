@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "function 'createProfile' has an unrecognised attribute @unknown",
-      "short_message": "Unrecognised attribute unknown",
+      "shortMessage": "Unrecognised attribute unknown",
       "hint": "Did you mean @permission?",
       "code": "E011",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 8,
         "column": 7
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_function_unsupported_attribute/schema.keel",
         "offset": 123,
         "line": 8,

@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "api 'Web' has an unrecognised attribute @what",
-      "short_message": "Unrecognised attribute what",
+      "shortMessage": "Unrecognised attribute what",
       "hint": "",
       "code": "E011",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 2,
         "column": 3
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_api_unsupported_attribute/schema.keel",
         "offset": 17,
         "line": 2,

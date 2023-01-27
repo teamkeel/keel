@@ -1,22 +1,22 @@
 {
-  "Errors": [
+  "errors": [
     {
-      "code": "E034",
-      "end_pos": {
-          "column": 28,
-          "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
-          "line": 7,
-          "offset": 115
-      },
-      "hint": "maybe add age to the with() inputs or a @set expression",
       "message": "create actions must accept all required fields that have no default value",
+      "shortMessage": "create actions must accept all required fields that have no default value",
+      "hint": "maybe add age to the with() inputs or a @set expression",
+      "code": "E034",
       "pos": {
-          "column": 16,
-          "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
-          "line": 7,
-          "offset": 103
+        "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
+        "offset": 103,
+        "line": 7,
+        "column": 16
       },
-      "short_message": "create actions must accept all required fields that have no default value"
-  }
+      "endPos": {
+        "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
+        "offset": 115,
+        "line": 7,
+        "column": 28
+      }
+    }
   ]
 }

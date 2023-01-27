@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "publisher is not a unique field. get operations take only unique inputs",
-      "short_message": "publisher is not a unique field",
+      "shortMessage": "publisher is not a unique field",
       "hint": "",
       "code": "E035",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 16,
         "column": 35
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_unique_input_non_unique_relationship/schema.keel",
         "offset": 209,
         "line": 16,

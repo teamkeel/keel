@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "The 'Author' model does not include a field that references Post",
-      "short_message": "The 'Author' model does not include a field that references Post",
+      "shortMessage": "The 'Author' model does not include a field that references Post",
       "hint": "Try adding 'post Post' to the fields definition of the Author model.",
       "code": "E044",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 9
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_relationships_invalid_implicit_belongs_to_with_has_many/schema.keel",
         "offset": 41,
         "line": 3,

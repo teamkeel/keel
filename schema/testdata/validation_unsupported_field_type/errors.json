@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "field something has an unsupported type Unknown",
-      "short_message": "Unknown isn't supported",
+      "shortMessage": "Unknown isn't supported",
       "hint": "Did you mean one of Boolean, Date, ID, Identity, Number, Password, Post, Secret, Text, or Timestamp?",
       "code": "E009",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 5
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_unsupported_field_type/schema.keel",
         "offset": 37,
         "line": 3,

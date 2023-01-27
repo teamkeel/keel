@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Action inputs must be one of the fields defined in the model",
-      "short_message": "blah is not a valid input",
+      "shortMessage": "blah is not a valid input",
       "hint": "Did you mean one of name, id, createdAt, or updatedAt?",
       "code": "E005",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 39
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_operation_inputs_match_model_fields/schema.keel",
         "offset": 102,
         "line": 7,

@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "'auth' not found on 'Post'",
-      "short_message": "'auth' not found",
+      "shortMessage": "'auth' not found",
       "hint": "Did you mean author, or authorId?",
       "code": "E020",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 14,
         "column": 41
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
         "offset": 251,
         "line": 14,

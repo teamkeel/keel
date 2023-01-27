@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Operation updateMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
-      "short_message": "updateMyModel does not specify a unique field to lookup by",
+      "shortMessage": "updateMyModel does not specify a unique field to lookup by",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 16
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_update_operation_no_unique_lookup/schema.keel",
         "offset": 61,
         "line": 3,

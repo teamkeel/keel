@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "default expression doesn't support operators",
-      "short_message": "default expression doesn't support operators",
+      "shortMessage": "default expression doesn't support operators",
       "hint": "Try removing '=='",
       "code": "E051",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 3,
         "column": 36
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_default_invalid_expression/schema.keel",
         "offset": 74,
         "line": 3,

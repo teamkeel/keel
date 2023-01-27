@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
-      "short_message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "shortMessage": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
       "hint": "",
       "code": "E015",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 5,
         "column": 5
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_permission_attribute_missing_condition/schema.keel",
         "offset": 79,
         "line": 5,

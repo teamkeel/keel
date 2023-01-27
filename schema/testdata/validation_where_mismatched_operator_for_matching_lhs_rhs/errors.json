@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Cannot compare Text with operator '\u003e='",
-      "short_message": "Cannot compare Text with operator '\u003e='",
+      "shortMessage": "Cannot compare Text with operator '\u003e='",
       "hint": "Did you mean ==, or !=?",
       "code": "E027",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 38
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_where_mismatched_operator_for_matching_lhs_rhs/schema.keel",
         "offset": 114,
         "line": 7,

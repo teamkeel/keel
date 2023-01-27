@@ -1,22 +1,22 @@
 {
-  "Errors": [
+  "errors": [
     {
-      "code": "E020",
-      "end_pos": {
-        "column": 44,
-        "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
-        "line": 10,
-        "offset": 183
-      },
-      "hint": "Did you mean ctx, or profile?",
       "message": "'context' not found",
+      "shortMessage": "'context' not found",
+      "hint": "Did you mean ctx, or profile?",
+      "code": "E020",
       "pos": {
-        "column": 37,
         "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
+        "offset": 176,
         "line": 10,
-        "offset": 176
+        "column": 37
       },
-      "short_message": "'context' not found"
+      "endPos": {
+        "filename": "testdata/validation_operation_set_expression_unresolvable_rhs/schema.keel",
+        "offset": 183,
+        "line": 10,
+        "column": 44
+      }
     }
   ]
 }

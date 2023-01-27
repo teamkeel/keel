@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "You have duplicate Models Model:Person",
-      "short_message": "Person is duplicated",
+      "shortMessage": "Person is duplicated",
       "hint": "Try to remove 'Person'",
       "code": "E010",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 5,
         "column": 7
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_unique_model_names/schema.keel",
         "offset": 31,
         "line": 5,

@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Value-only conditions such as 'true' not permitted on @set",
-      "short_message": "Value-only conditions such as 'true' not permitted on @set",
+      "shortMessage": "Value-only conditions such as 'true' not permitted on @set",
       "hint": "Please assign a value. Did you mean 'true = xxx'?",
       "code": "E023",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 8,
         "column": 12
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_set_expression_single_boolean_literal/schema.keel",
         "offset": 125,
         "line": 8,

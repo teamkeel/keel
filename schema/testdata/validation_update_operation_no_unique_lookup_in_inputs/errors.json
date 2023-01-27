@@ -1,22 +1,22 @@
 {
-  "Errors": [
+  "errors": [
     {
-        "code": "E035",
-        "message": "text is not a unique field. update operations take only unique inputs",
-        "short_message": "text is not a unique field",
-        "hint": "",
-        "end_pos": {
-            "column": 34,
-            "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
-            "line": 7,
-            "offset": 104
-        },
-        "pos": {
-            "column": 30,
-            "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
-            "line": 7,
-            "offset": 100
-        }
+      "message": "text is not a unique field. update operations take only unique inputs",
+      "shortMessage": "text is not a unique field",
+      "hint": "",
+      "code": "E035",
+      "pos": {
+        "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
+        "offset": 100,
+        "line": 7,
+        "column": 30
+      },
+      "endPos": {
+        "filename": "testdata/validation_update_operation_no_unique_lookup_in_inputs/schema.keel",
+        "offset": 104,
+        "line": 7,
+        "column": 34
+      }
     }
   ]
 }

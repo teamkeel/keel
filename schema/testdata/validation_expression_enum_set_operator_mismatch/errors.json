@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus",
-      "short_message": "post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus",
+      "shortMessage": "post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus",
       "hint": "Please make sure that you are evaluating entities of the same type",
       "code": "E026",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 8,
         "column": 12
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_expression_enum_set_operator_mismatch/schema.keel",
         "offset": 143,
         "line": 8,

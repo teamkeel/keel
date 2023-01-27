@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "'context' not found",
-      "short_message": "'context' not found",
+      "shortMessage": "'context' not found",
       "hint": "Did you mean one of ctx, profile, or username?",
       "code": "E020",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 13,
         "column": 40
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_operation_where_expression_unresolvable_rhs/schema.keel",
         "offset": 246,
         "line": 13,

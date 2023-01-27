@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "Value-only conditions such as 'profile.identity' not permitted on @where",
-      "short_message": "Value-only conditions such as 'profile.identity' not permitted on @where",
+      "shortMessage": "Value-only conditions such as 'profile.identity' not permitted on @where",
       "hint": "Please assign a value. Did you mean 'profile.identity = xxx'?",
       "code": "E023",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 13,
         "column": 20
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_operation_where_forbidden_value_expression/schema.keel",
         "offset": 235,
         "line": 13,

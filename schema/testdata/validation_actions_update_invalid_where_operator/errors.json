@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "The \u003e operator is not allowed in a update operation, only equality operators ('==' and 'in') are allowed",
-      "short_message": "only equality operators are allowed in get and update operations",
+      "shortMessage": "only equality operators are allowed in get and update operations",
       "hint": "",
       "code": "E037",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 8,
         "column": 36
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_actions_update_invalid_where_operator/schema.keel",
         "offset": 179,
         "line": 8,

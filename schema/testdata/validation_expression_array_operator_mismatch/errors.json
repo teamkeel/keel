@@ -1,8 +1,8 @@
 {
-  "Errors": [
+  "errors": [
     {
       "message": "post.authors.name is an array of Text. Only 'in' or 'not in' can be used",
-      "short_message": "You can only use operators 'in' or 'not in' when comparing to an array",
+      "shortMessage": "You can only use operators 'in' or 'not in' when comparing to an array",
       "hint": "Change '\u003e' to either 'in' or 'not in'.",
       "code": "E030",
       "pos": {
@@ -11,7 +11,7 @@
         "line": 7,
         "column": 27
       },
-      "end_pos": {
+      "endPos": {
         "filename": "testdata/validation_expression_array_operator_mismatch/schema.keel",
         "offset": 102,
         "line": 7,
