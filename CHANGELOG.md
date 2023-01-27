@@ -1,3 +1,10 @@
+# [0.241.0](https://github.com/teamkeel/keel/compare/v0.240.5...v0.241.0) (2023-01-27)
+
+
+### Features
+
+* wasm api change ([#712](https://github.com/teamkeel/keel/issues/712)) ([984202f](https://github.com/teamkeel/keel/commit/984202f229b0f6a67f44e41220f5847df767f80f))
+
 ## [0.240.5](https://github.com/teamkeel/keel/compare/v0.240.4...v0.240.5) (2023-01-27)
 
 
