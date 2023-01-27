@@ -65,3 +65,23 @@ test("equalsWithNumberField", async () => {
   - field
   - null  
   */
+
+test("inTextFieldToLit", async () => {
+  const matchingModel = await models.thing.create({ title: "title1" });
+  await models.thing.create({ title: "title2" });
+  await models.thing.create({ title: "title3" });
+
+  const resp = await actions.inTextFieldToLit({});
+  expect(resp.results.length).toEqual(1);
+  expect(resp.results[0].id).toEqual(matchingModel.id);
+});
+
+test("notInTextFieldToLit", async () => {
+  const matchingModel = await models.thing.create({ title: "title1" });
+  await models.thing.create({ title: "title2" });
+  await models.thing.create({ title: "title3" });
+
+  const resp = await actions.notInTextFieldToLit({});
+  expect(resp.results.length).toEqual(1);
+  expect(resp.results[0].id).toEqual(matchingModel.id);
+});

@@ -29,6 +29,7 @@ const (
 	LessThanEquals
 	NotContains
 	NotEquals
+	NotOneOf
 	OneOf
 	OnOrAfter
 	OnOrBefore
@@ -89,9 +90,9 @@ func expressionOperatorToActionOperator(in string) (out ActionOperator, err erro
 	case parser.OperatorGreaterThan:
 		return GreaterThan, nil
 	case parser.OperatorIn:
-		return Contains, nil
+		return OneOf, nil
 	case parser.OperatorNotIn:
-		return NotContains, nil
+		return NotOneOf, nil
 
 	default:
 		return Unknown, fmt.Errorf("this is not a recognized conditional operator: %s", in)

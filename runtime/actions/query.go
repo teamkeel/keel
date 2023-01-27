@@ -616,7 +616,7 @@ func (query *QueryBuilder) generateWhereTemplate(lhs *QueryOperand, operator Act
 	case rhs.IsField():
 		rhsSqlOperand = rhs.toColumnString(query)
 	case rhs.IsValue():
-		if operator == OneOf {
+		if operator == OneOf || operator == NotOneOf {
 			// The IN operator on an a value slice needs to have its template structured like this:
 			// WHERE x IN (?, ?, ?)
 			inPlaceholders := []string{}
@@ -648,6 +648,8 @@ func (query *QueryBuilder) generateWhereTemplate(lhs *QueryOperand, operator Act
 		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case OneOf:
 		template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
+	case NotOneOf:
+		template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
 	case LessThan:
 		template = fmt.Sprintf("%s < %s", lhsSqlOperand, rhsSqlOperand)
 	case LessThanEquals:

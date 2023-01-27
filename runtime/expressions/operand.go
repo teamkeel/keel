@@ -114,6 +114,8 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 				return proto.Type_TYPE_INT, nil
 			case operand.True || operand.False:
 				return proto.Type_TYPE_BOOL, nil
+			case operand.Array != nil:
+				return proto.Type_TYPE_UNKNOWN, nil
 			case operand.Null:
 				return proto.Type_TYPE_UNKNOWN, nil
 			default:
@@ -210,6 +212,18 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 }
 
 func ToNative(v *parser.Operand, fieldType proto.Type) (any, error) {
+	if v.Array != nil {
+		values := []any{}
+		for _, v := range v.Array.Values {
+			value, err := ToNative(v, fieldType)
+			if err != nil {
+				return nil, err
+			}
+			values = append(values, value)
+		}
+		return values, nil
+	}
+
 	switch {
 	case v.False:
 		return false, nil
