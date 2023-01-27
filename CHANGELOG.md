@@ -1,3 +1,10 @@
+## [0.241.1](https://github.com/teamkeel/keel/compare/v0.241.0...v0.241.1) (2023-01-27)
+
+
+### Bug Fixes
+
+* polyfill crypto.getRandomValues ([#713](https://github.com/teamkeel/keel/issues/713)) ([1b805a9](https://github.com/teamkeel/keel/commit/1b805a9a5c76437dd674bfbe718879ff9b3cd082))
+
 # [0.241.0](https://github.com/teamkeel/keel/compare/v0.240.5...v0.241.0) (2023-01-27)
 
 
