@@ -1,0 +1,3 @@
+# This file is required as the .gitignore in this directory excludes files in dist/ which are required because the wasm binary is generated to that location
+# npm will not respect the .gitignore file if there is a .npmignore present:
+# https://docs.npmjs.com/cli/v7/commands/npm-publish#:~:text=If%20there%20is%20a%20.gitignore%20or%20.npmignore%20file%2C%20then%20ignored%20files%20in%20that%20and%20all%20child%20directories%20will%20be%20excluded%20from%20the%20package.%20If%20both%20files%20exist%2C%20then%20the%20.gitignore%20is%20ignored%2C%20and%20only%20the%20.npmignore%20is%20used
