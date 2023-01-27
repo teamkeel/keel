@@ -4,8 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"regexp"
 	"strconv"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 type localDb struct {
@@ -34,6 +37,28 @@ func convertTime(value time.Time) time.Time {
 	return time.Date(value.Year(), value.Month(), value.Day(), value.Hour(), value.Minute(), value.Second(), nanos, time.UTC)
 }
 
+func toDbError(err error) error {
+	if value, ok := err.(*pq.Error); ok {
+		switch value.Code {
+		case "23502":
+			err = &DbError{Table: value.Table, Column: value.Column, Err: ErrNotNullConstraintViolation}
+		case "23503":
+			// Extract column and value from "Key (author_id)=(2L2ar5NCPvTTEdiDYqgcpF3f5QN1) is not present in table \"author\"."
+			out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(value.Detail, -1)
+			err = &DbError{Table: value.Table, Column: out[0][1], Value: out[1][1], Err: ErrForeignKeyConstraintViolation}
+		case "23505":
+			// Extract column and value from "Key (code)=(1234) already exists."
+			out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(value.Detail, -1)
+			err = &DbError{Table: value.Table, Column: out[0][1], Value: out[1][1], Err: ErrUniqueConstraintViolation}
+		default:
+			err = &DbError{Err: value}
+		}
+	} else {
+		err = &DbError{Err: err}
+	}
+	return err
+}
+
 func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
 	rows := []map[string]any{}
 
@@ -41,15 +66,13 @@ func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...
 	var err error
 	if db.ongoingTransaction != nil {
 		result, err = db.ongoingTransaction.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
-		if err != nil {
-			return nil, err
-		}
 	} else {
 		result, err = db.conn.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
-		if err != nil {
-			return nil, err
-		}
 	}
+	if err != nil {
+		return nil, toDbError(err)
+	}
+
 	columns, err := result.Columns()
 	if err != nil {
 		return nil, err
@@ -82,15 +105,13 @@ func (db *localDb) ExecuteStatement(ctx context.Context, sqlQuery string, values
 	var err error
 	if db.ongoingTransaction != nil {
 		result, err = db.ongoingTransaction.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
-		if err != nil {
-			return nil, err
-		}
 	} else {
 		result, err = db.conn.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
-		if err != nil {
-			return nil, err
-		}
 	}
+	if err != nil {
+		return nil, toDbError(err)
+	}
+
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		return nil, err

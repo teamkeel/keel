@@ -206,18 +206,18 @@ var runCmd = &cobra.Command{
 				return
 			}
 
-			rContext := r.Context()
+			ctx := r.Context()
 
-			rDatabase, err := db.Local(rContext, dbConnInfo)
+			rDatabase, err := db.Local(ctx, dbConnInfo)
 			if err != nil {
 				panic(err)
 			}
 
-			rContext = runtimectx.WithDatabase(rContext, rDatabase)
+			ctx = runtimectx.WithDatabase(ctx, rDatabase)
 			if functionsTransport != nil {
-				rContext = functions.WithFunctionsTransport(ctx, functionsTransport)
+				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
 			}
-			r = r.WithContext(rContext)
+			r = r.WithContext(ctx)
 
 			runtime.NewHttpHandler(currSchema).ServeHTTP(w, r)
 		})

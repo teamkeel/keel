@@ -19,6 +19,23 @@ type ExecuteStatementResult struct {
 	RowsAffected int64
 }
 
+var (
+	ErrNotNullConstraintViolation    = errors.New("null value violates not null column constraint")
+	ErrForeignKeyConstraintViolation = errors.New("insert or update violates foreign key constraint")
+	ErrUniqueConstraintViolation     = errors.New("duplicate key value violates unique constraint")
+)
+
+type DbError struct {
+	Table  string
+	Column string
+	Value  string
+	Err    error
+}
+
+func (r DbError) Error() string {
+	return r.Err.Error()
+}
+
 type Db interface {
 	// Executes SQL query statement and returns rows.
 	ExecuteQuery(ctx context.Context, sql string, values ...any) (*ExecuteQueryResult, error)
