@@ -5,5 +5,5 @@
     "@semantic-release/git": "^10.0.1",
     "prettier": "^2.7.1"
   },
-  "version": "0.241.1"
+  "version": "0.242.0"
 }

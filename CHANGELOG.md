@@ -1,3 +1,10 @@
+# [0.242.0](https://github.com/teamkeel/keel/compare/v0.241.1...v0.242.0) (2023-01-28)
+
+
+### Features
+
+* in and not in expression support for literals ([#706](https://github.com/teamkeel/keel/issues/706)) ([91ee2c4](https://github.com/teamkeel/keel/commit/91ee2c4716f464bedec71e8ac3fe2ace0a58e60a))
+
 ## [0.241.1](https://github.com/teamkeel/keel/compare/v0.241.0...v0.241.1) (2023-01-27)
 
 
