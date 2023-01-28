@@ -1,0 +1,19 @@
+enum Hobby {
+    Tennis
+    Chess
+}
+
+model Person {
+    fields {
+        name Text
+        favouriteNumber Number
+        birthday Date
+        hobby Hobby
+        isAdmin Boolean
+        lastSeenAt Timestamp
+    }
+
+    operations {
+        list testAction(name, favouriteNumber, birthday, hobby, isAdmin, lastSeenAt)
+    }
+}
