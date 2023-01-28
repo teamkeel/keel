@@ -1,27 +1,40 @@
 const { applyWhereConditions } = require("./applyWhereConditions");
+const { applyJoins } = require("./applyJoins");
 const { camelCaseObject } = require("./casing");
 
 class QueryBuilder {
-  constructor(db) {
+  /**
+   * @param {import("./QueryContext").QueryContext} context
+   * @param {import("kysely").Kysely} db
+   */
+  constructor(context, db) {
+    this._context = context;
     this._db = db;
   }
 
-  where(conditions) {
-    const q = this._db.where((qb) => {
-      return applyWhereConditions(qb, conditions);
-    });
-    return new QueryBuilder(q);
+  where(where) {
+    const context = this._context.clone();
+
+    let builder = applyJoins(context, this._db, where);
+    builder = applyWhereConditions(context, builder, where);
+
+    return new QueryBuilder(context, builder);
   }
 
-  orWhere(conditions) {
-    const q = this._db.orWhere((qb) => {
-      return applyWhereConditions(qb, conditions);
+  orWhere(where) {
+    const context = this._context.clone();
+
+    let builder = applyJoins(context, this._db, where);
+
+    builder = builder.orWhere((qb) => {
+      return applyWhereConditions(context, qb, where);
     });
-    return new QueryBuilder(q);
+
+    return new QueryBuilder(context, builder);
   }
 
   async findMany() {
-    const rows = await this._db.execute();
+    const rows = await this._db.orderBy("id").execute();
     return rows.map((x) => camelCaseObject(x));
   }
 }
