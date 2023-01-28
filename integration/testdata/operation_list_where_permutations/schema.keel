@@ -47,6 +47,14 @@ model Thing {
         list eqNumberFieldToLit() {
             @where(thing.length == 42)
         }
+
+        list inTextFieldToLit() {
+            @where(thing.title in ["title1", "notmatching1"])
+        }
+
+        list notInTextFieldToLit() {
+            @where(thing.title not in ["title2", "title3"])
+        }
     }
 }
 

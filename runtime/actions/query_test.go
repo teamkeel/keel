@@ -340,6 +340,114 @@ var testCases = []testCase{
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
 	},
 	{
+		name: "list_op_expression_text_in",
+		keelSchema: `
+			model Thing {
+				fields {
+                    title Text
+                }
+				operations {
+					list listThings() {
+						@where(thing.title in ["title1", "title2"])
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input:         map[string]any{},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE 
+				"thing"."title" IN (?, ?)
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{"title1", "title2"},
+	},
+	{
+		name: "list_op_expression_text_notin",
+		keelSchema: `
+			model Thing {
+				fields {
+                    title Text
+                }
+				operations {
+					list listThings() {
+						@where(thing.title not in ["title1", "title2"])
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input:         map[string]any{},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE 
+				"thing"."title" NOT IN (?, ?)
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{"title1", "title2"},
+	},
+	{
+		name: "list_op_expression_number_in",
+		keelSchema: `
+			model Thing {
+				fields {
+                    age Number
+                }
+				operations {
+					list listThings() {
+						@where(thing.age in [10, 20])
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input:         map[string]any{},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE 
+				"thing"."age" IN (?, ?)
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{int64(10), int64(20)},
+	},
+	{
+		name: "list_op_expression_number_notin",
+		keelSchema: `
+			model Thing {
+				fields {
+                    age Number
+                }
+				operations {
+					list listThings() {
+						@where(thing.age not in [10, 20])
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input:         map[string]any{},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE 
+				"thing"."age" NOT IN (?, ?)
+			ORDER BY 
+				"thing"."id" LIMIT 50`,
+		expectedArgs: []any{int64(10), int64(20)},
+	},
+	{
 		name: "list_op_implicit_input_on_nested_model",
 		keelSchema: `
 			model Parent {
