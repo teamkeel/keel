@@ -54,7 +54,12 @@ var runCmd = &cobra.Command{
 			}
 			panic(err)
 		}
-		defer database.Stop()
+		defer func() {
+			err = database.Stop()
+			if err != nil {
+				panic(err)
+			}
+		}()
 
 		ctx := context.Background()
 
@@ -214,9 +219,19 @@ var runCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		defer stopWatcher()
+		defer func() {
+			err = stopWatcher()
+			if err != nil {
+				panic(err)
+			}
+		}()
 
-		go http.ListenAndServe(":"+runCmdFlagPort, http.DefaultServeMux)
+		go func() {
+			err = http.ListenAndServe(":"+runCmdFlagPort, http.DefaultServeMux)
+			if err != nil {
+				panic(err)
+			}
+		}()
 
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
@@ -224,7 +239,10 @@ var runCmd = &cobra.Command{
 
 		// Kill the Functions node server when the command exits
 		if functionsServer != nil {
-			functionsServer.Kill()
+			err = functionsServer.Kill()
+			if err != nil {
+				panic(err)
+			}
 		}
 		fmt.Println("\n👋 Bye bye")
 		return nil
@@ -239,7 +257,7 @@ func clearTerminal() {
 	// because clear isn't implemented in some terminals
 	// and it fails in the VSCode debugger so we don't want
 	// to panic as we were doing originally.
-	cmd.Run()
+	_ = cmd.Run()
 }
 
 func printRunHeader(dir string, dbConnInfo *db.ConnectionInfo) {

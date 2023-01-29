@@ -79,7 +79,7 @@ func ToGraphQLSchemaLanguage(response common.Response) string {
 	// First we have the marshal the response bytes back into
 	// a graphql.Result
 	var result graphql.Result
-	json.Unmarshal(response.Body, &result)
+	_ = json.Unmarshal(response.Body, &result)
 
 	// Then we pull out the data contained in the result and convert
 	// back into JSON
@@ -88,7 +88,7 @@ func ToGraphQLSchemaLanguage(response common.Response) string {
 	// Finally we marshal that JSON into the IntrospectionQueryResult
 	// type... urgh
 	var r IntrospectionQueryResult
-	json.Unmarshal(b, &r)
+	_ = json.Unmarshal(b, &r)
 
 	definitions := []string{}
 

@@ -64,7 +64,11 @@ var validateCmd = &cobra.Command{
 		// 	return c.outputFormatter.Write(err)
 		// }
 
-		c.outputFormatter.Write([]byte(color.New(color.FgGreen).Sprint("VALID\n")))
+		err = c.outputFormatter.Write([]byte(color.New(color.FgGreen).Sprint("VALID\n")))
+		if err != nil {
+			panic(err)
+		}
+
 		return nil
 	},
 }

@@ -125,8 +125,6 @@ type QueryBuilder struct {
 	args []any
 	// The columns and values to be written during an INSERT or UPDATE.
 	writeValues map[string]any
-	// The current transaction, if one exists.
-	transaction *Transaction
 }
 
 type join struct {
@@ -265,7 +263,7 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 }
 
 // Apply pagination filters to the query.
-func (query *QueryBuilder) ApplyPaging(page Page) {
+func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Select hasNext clause
 	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlQuote(query.table))
 	query.AppendSelectClause(hasNext)
@@ -273,9 +271,15 @@ func (query *QueryBuilder) ApplyPaging(page Page) {
 	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
-		query.Where(IdField(), GreaterThan, Value(page.After))
+		err := query.Where(IdField(), GreaterThan, Value(page.After))
+		if err != nil {
+			return err
+		}
 	case page.Before != "":
-		query.Where(IdField(), LessThan, Value(page.Before))
+		err := query.Where(IdField(), LessThan, Value(page.Before))
+		if err != nil {
+			return err
+		}
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
@@ -289,6 +293,8 @@ func (query *QueryBuilder) ApplyPaging(page Page) {
 	case page.Last != 0:
 		query.Limit(page.Last)
 	}
+
+	return nil
 }
 
 // Generates an executable SELECT statement with the list of arguments.
@@ -352,7 +358,7 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 
 	// Make iterating through the writeValues map deterministically ordered
 	orderedKeys := make([]string, 0, len(query.writeValues))
-	for k, _ := range query.writeValues {
+	for k := range query.writeValues {
 		orderedKeys = append(orderedKeys, k)
 	}
 	sort.Strings(orderedKeys)
@@ -387,7 +393,7 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 
 	// Make iteratng through the writeValues map deterministically ordered
 	orderedKeys := make([]string, 0, len(query.writeValues))
-	for k, _ := range query.writeValues {
+	for k := range query.writeValues {
 		orderedKeys = append(orderedKeys, k)
 	}
 	sort.Strings(orderedKeys)
@@ -578,11 +584,6 @@ func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any
 	}
 
 	return results[0], nil
-}
-
-type Transaction struct {
-	// This will hold onto the transaction ID which we'll need when executing against the RDS API
-	isCompleted bool
 }
 
 // Builds a where conditional SQL template using the ? placeholder for values.

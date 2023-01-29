@@ -14,13 +14,14 @@ import (
 func TestBootstrap(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
+	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
 		model Post {
 			functions {
 				create createPost()
 			}
 		}
 	`), 0777)
+	require.NoError(t, err)
 
 	wd, err := os.Getwd()
 	require.NoError(t, err)
@@ -43,15 +44,19 @@ func TestBootstrap(t *testing.T) {
 func TestBootstrapPackageJSONExists(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
+	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
 		model Post {
 			functions {
 				create createPost()
 			}
 		}
 	`), 0777)
-	os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte("{}"), 0777)
-	err := node.Bootstrap(tmpDir)
+	assert.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte("{}"), 0777)
+	assert.NoError(t, err)
+
+	err = node.Bootstrap(tmpDir)
 	assert.NoError(t, err)
 
 	entries, err := os.ReadDir(tmpDir)
