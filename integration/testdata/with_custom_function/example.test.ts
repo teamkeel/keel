@@ -55,7 +55,7 @@ test("listing", async () => {
 
   const alienNames = resp.results.map((a) => a.name);
 
-  expect(alienNames).toEqual([x11.name, x22.name]);
+  expect(alienNames.sort()).toEqual([x11.name, x22.name].sort());
 });
 
 test("deletion", async () => {
