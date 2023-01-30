@@ -21,7 +21,7 @@ type ProjectConfig struct {
 type EnvironmentConfig struct {
 	Default    []Input `yaml:"default"`
 	Staging    []Input `yaml:"staging"`
-	Production []Input `yaml:"production,omitempty"`
+	Production []Input `yaml:"production"`
 }
 
 // Input is the configuration for a keel environment variable or secret
@@ -136,6 +136,9 @@ func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
 	}
 
 	results := make(map[string][]string, 2)
+	if len(stagingMissing) == 0 && len(productionMissing) == 0 {
+		return false, results
+	}
 
 	if len(stagingMissing) > 0 {
 		results["staging"] = stagingMissing
@@ -145,7 +148,7 @@ func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
 		results["production"] = productionMissing
 	}
 
-	return len(results) > 0, results
+	return true, results
 }
 
 func contains(s []Input, e string) bool {
@@ -156,4 +159,31 @@ func contains(s []Input, e string) bool {
 	}
 
 	return false
+}
+
+func (c *ProjectConfig) AllEnvironmentVariables() []string {
+	var environmentVariables []string
+
+	for _, envVar := range c.Environment.Default {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	for _, envVar := range c.Environment.Staging {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	for _, envVar := range c.Environment.Production {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	duplicateKeys := make(map[string]bool)
+	allEnvironmentVariables := []string{}
+	for _, item := range environmentVariables {
+		if _, value := duplicateKeys[item]; !value {
+			duplicateKeys[item] = true
+			allEnvironmentVariables = append(allEnvironmentVariables, item)
+		}
+	}
+
+	return allEnvironmentVariables
 }
