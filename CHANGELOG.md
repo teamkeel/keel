@@ -1,3 +1,10 @@
+# [0.243.0](https://github.com/teamkeel/keel/compare/v0.242.1...v0.243.0) (2023-01-30)
+
+
+### Features
+
+* config file loading for environment variables ([#708](https://github.com/teamkeel/keel/issues/708)) ([6f35e43](https://github.com/teamkeel/keel/commit/6f35e436410a8252a292fb4efdd7b88c97ec56d8))
+
 ## [0.242.1](https://github.com/teamkeel/keel/compare/v0.242.0...v0.242.1) (2023-01-30)
 
 
