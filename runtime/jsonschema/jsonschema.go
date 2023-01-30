@@ -2,21 +2,30 @@ package jsonschema
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/xeipuuv/gojsonschema"
 )
 
 type JSONSchema struct {
-	Type                 any                   `json:"type"`
+	// Type is generally just a string, but when we need a type to be
+	// null it is a list containing the type and the string "null".
+	// In JSON output for most cases we just want a string, not a list
+	// of one string, so we use any here so it can be either
+	Type any `json:"type,omitempty"`
+
 	Format               string                `json:"format,omitempty"`
-	AdditionalProperties bool                  `json:"additionalProperties"`
+	Properties           map[string]JSONSchema `json:"properties,omitempty"`
+	AdditionalProperties *bool                 `json:"additionalProperties,omitempty"`
 	AnyOf                []JSONSchema          `json:"anyOf,omitempty"`
 	Enum                 []string              `json:"enum,omitempty"`
 	Items                *JSONSchema           `json:"items,omitempty"`
-	Properties           map[string]JSONSchema `json:"properties,omitempty"`
 	Required             []string              `json:"required,omitempty"`
+	Ref                  string                `json:"$ref,omitempty"`
+	Defs                 map[string]JSONSchema `json:"$defs,omitempty"`
 }
 
 // ValidateRequest validates that the input is valid for the given operation and schema.
@@ -24,40 +33,44 @@ type JSONSchema struct {
 // is returned then validation could not be completed, likely to do an invalid JSON schema
 // being created.
 func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operation, input map[string]any) (*gojsonschema.Result, error) {
-	requestType := jsonSchemaForOperation(ctx, schema, op)
+	requestType := JSONSchemaForOperation(ctx, schema, op)
 	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestType), gojsonschema.NewGoLoader(input))
 }
 
-func jsonSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
+func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
 	// TODO: implement proper support for authenticate once it's been re-done using
 	// arbitrary functions
 	if op.Type == proto.OperationType_OPERATION_TYPE_AUTHENTICATE {
 		return JSONSchema{
 			Type:                 "object",
-			AdditionalProperties: true,
+			AdditionalProperties: boolPtr(true),
 		}
 	}
 
 	root := JSONSchema{
-		Type:       "object",
-		Properties: map[string]JSONSchema{},
+		Type:                 "object",
+		Properties:           map[string]JSONSchema{},
+		AdditionalProperties: boolPtr(false),
+		Defs:                 map[string]JSONSchema{},
 	}
 
 	where := JSONSchema{
-		Type:       "object",
-		Properties: map[string]JSONSchema{},
+		Type:                 "object",
+		Properties:           map[string]JSONSchema{},
+		AdditionalProperties: boolPtr(false),
 	}
 
 	values := JSONSchema{
-		Type:       "object",
-		Properties: map[string]JSONSchema{},
+		Type:                 "object",
+		Properties:           map[string]JSONSchema{},
+		AdditionalProperties: boolPtr(false),
 	}
 
 	isUpdate := op.Type == proto.OperationType_OPERATION_TYPE_UPDATE
 	isList := op.Type == proto.OperationType_OPERATION_TYPE_LIST
 
 	for _, input := range op.Inputs {
-		prop := jsonSchemaForInput(ctx, op, input, schema)
+		name, prop := jsonSchemaForInput(ctx, op, input, schema)
 
 		isWrite := input.Mode == proto.InputMode_INPUT_MODE_WRITE
 		isRead := input.Mode == proto.InputMode_INPUT_MODE_READ
@@ -73,7 +86,12 @@ func jsonSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 			obj = &root
 		}
 
-		obj.Properties[input.Name] = prop
+		if name != "" {
+			root.Defs[name] = prop
+			obj.Properties[input.Name] = JSONSchema{Ref: fmt.Sprintf("#/$defs/%s", name)}
+		} else {
+			obj.Properties[input.Name] = prop
+		}
 
 		// If the input is not optional then mark it required in the JSON schema
 		if !input.Optional {
@@ -83,7 +101,9 @@ func jsonSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 
 	if isUpdate || isList {
 		// Always add the "where" prop but only make it required if has any properties
-		root.Properties["where"] = where
+		typeName := strcase.ToCamel(op.Name) + "WhereInput"
+		root.Properties["where"] = JSONSchema{Ref: fmt.Sprintf("#/$defs/%s", typeName)}
+		root.Defs[typeName] = where
 		if len(where.Properties) > 0 {
 			root.Required = append(root.Required, "where")
 		}
@@ -91,7 +111,9 @@ func jsonSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 
 	if isUpdate {
 		// Always add the "values" prop but only make it required if has any properties
-		root.Properties["values"] = values
+		typeName := strcase.ToCamel(op.Name) + "ValuesInput"
+		root.Properties["values"] = JSONSchema{Ref: fmt.Sprintf("#/$defs/%s", typeName)}
+		root.Defs[typeName] = values
 		if len(values.Properties) > 0 {
 			root.Required = append(root.Required, "values")
 		}
@@ -100,11 +122,15 @@ func jsonSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 	return root
 }
 
-func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) JSONSchema {
+func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) (string, JSONSchema) {
 	if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
 		return jsonSchemaForQueryObject(ctx, op, input, schema)
 	}
 
+	isImplicit := input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
+	isWrite := input.Mode == proto.InputMode_INPUT_MODE_WRITE
+
+	name := ""
 	prop := JSONSchema{}
 
 	switch input.Type.Type {
@@ -112,16 +138,16 @@ func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.O
 		prop.Type = "string"
 	case proto.Type_TYPE_STRING:
 		prop.Type = "string"
-	case proto.Type_TYPE_DATE:
-		prop.Type = "string"
-		prop.Format = "date"
-	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		prop.Type = "string"
-		prop.Format = "date-time"
 	case proto.Type_TYPE_BOOL:
 		prop.Type = "boolean"
 	case proto.Type_TYPE_INT:
 		prop.Type = "number"
+
+	// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
+	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		prop.Type = "string"
+		prop.Format = "date-time"
+
 	case proto.Type_TYPE_ENUM:
 		prop.Type = "string"
 		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
@@ -130,10 +156,8 @@ func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.O
 		for _, v := range enum.Values {
 			prop.Enum = append(prop.Enum, v.Name)
 		}
+		name = enum.Name
 	}
-
-	isImplicit := input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
-	isWrite := input.Mode == proto.InputMode_INPUT_MODE_WRITE
 
 	// An input is allowed to be null if the field it relates to is marked
 	// optional. This is because "optional" has a slightly different meaning
@@ -146,33 +170,34 @@ func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.O
 			// OpenAPI differs from JSON Schema in that:
 			//   | Note that there is no null type; instead, the nullable
 			//   | attribute is used as a modifier of the base type.
-			// TODO: when we want to support OpenAPI generation we'll need
+			// TODO: if we want to support OpenAPI generation we'll need
 			// to support both styles. For now we only support JSON Schema.
 			prop.Type = []any{prop.Type, "null"}
 		}
 	}
 
-	return prop
+	return name, prop
 }
 
-func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) JSONSchema {
+func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) (string, JSONSchema) {
 	switch input.Type.Type {
 	case proto.Type_TYPE_ID:
 		t := JSONSchema{
 			Type: "string",
 		}
-		return JSONSchema{
-			Type: "object",
+		return "IDQueryInput", JSONSchema{
+			Type: []string{"object"},
 			Properties: map[string]JSONSchema{
 				"equals": t,
 				"oneOf":  {Type: "array", Items: &t},
 			},
+			AdditionalProperties: boolPtr(false),
 		}
 	case proto.Type_TYPE_STRING:
 		t := JSONSchema{
 			Type: "string",
 		}
-		return JSONSchema{
+		return "StringQueryInput", JSONSchema{
 			Type: "object",
 			Properties: map[string]JSONSchema{
 				"equals":     t,
@@ -181,13 +206,14 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 				"contains":   t,
 				"oneOf":      {Type: "array", Items: &t},
 			},
+			AdditionalProperties: boolPtr(false),
 		}
 	case proto.Type_TYPE_DATE:
 		t := JSONSchema{
 			Type:   "string",
-			Format: "date",
+			Format: "date-time",
 		}
-		return JSONSchema{
+		return "DateQueryInput", JSONSchema{
 			Type: "object",
 			Properties: map[string]JSONSchema{
 				"equals":     t,
@@ -196,31 +222,34 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 				"after":      t,
 				"onOrAfter":  t,
 			},
+			AdditionalProperties: boolPtr(false),
 		}
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		t := JSONSchema{
 			Type:   "string",
 			Format: "date-time",
 		}
-		return JSONSchema{
+		return "TimestampQueryInput", JSONSchema{
 			Type: "object",
 			Properties: map[string]JSONSchema{
 				"before": t,
 				"after":  t,
 			},
+			AdditionalProperties: boolPtr(false),
 		}
 	case proto.Type_TYPE_BOOL:
-		return JSONSchema{
+		return "BooleanQueryInput", JSONSchema{
 			Type: "object",
 			Properties: map[string]JSONSchema{
 				"equals": {Type: "boolean"},
 			},
+			AdditionalProperties: boolPtr(false),
 		}
 	case proto.Type_TYPE_INT:
 		t := JSONSchema{
 			Type: "number",
 		}
-		return JSONSchema{
+		return "IntQueryInput", JSONSchema{
 			Type: "object",
 			Properties: map[string]JSONSchema{
 				"equals":              t,
@@ -229,6 +258,7 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 				"greaterThan":         t,
 				"greaterThanOrEquals": t,
 			},
+			AdditionalProperties: boolPtr(false),
 		}
 	case proto.Type_TYPE_ENUM:
 		t := JSONSchema{
@@ -240,7 +270,7 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 		for _, v := range enum.Values {
 			t.Enum = append(t.Enum, v.Name)
 		}
-		return JSONSchema{
+		return fmt.Sprintf("%sQueryInput", enum.Name), JSONSchema{
 			Type: "object",
 			Properties: map[string]JSONSchema{
 				"equals": t,
@@ -249,8 +279,13 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 					Items: &t,
 				},
 			},
+			AdditionalProperties: boolPtr(false),
 		}
 	}
 
-	return JSONSchema{}
+	return "", JSONSchema{}
+}
+
+func boolPtr(b bool) *bool {
+	return &b
 }

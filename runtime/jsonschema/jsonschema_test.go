@@ -3,15 +3,75 @@ package jsonschema_test
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
+	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/schema"
 )
+
+func TestJSONSchemaGeneration(t *testing.T) {
+	entries, err := os.ReadDir("./testdata")
+	require.NoError(t, err)
+
+	type testCase struct {
+		keelSchema string
+		jsonSchema string
+	}
+
+	cases := map[string]*testCase{}
+
+	for _, e := range entries {
+		caseName := strings.TrimSuffix(e.Name(), filepath.Ext(e.Name()))
+		c, ok := cases[caseName]
+		if !ok {
+			c = &testCase{}
+			cases[caseName] = c
+		}
+		b, err := os.ReadFile(filepath.Join("./testdata", e.Name()))
+		require.NoError(t, err)
+		switch filepath.Ext(e.Name()) {
+		case ".keel":
+			c.keelSchema = string(b)
+		case ".json":
+			// bit of a dance here just to make sure the JSON from the fixture file
+			// is formatted the same as the JSON from the jsonschema package
+			m := jsonschema.JSONSchema{}
+			err = json.Unmarshal(b, &m)
+			require.NoError(t, err)
+			b, err = json.Marshal(m)
+			require.NoError(t, err)
+			c.jsonSchema = string(b)
+		}
+	}
+
+	for name, c := range cases {
+		t.Run(name, func(t *testing.T) {
+			builder := schema.Builder{}
+			schema, err := builder.MakeFromString(c.keelSchema)
+			require.NoError(t, err)
+
+			op := proto.FindOperation(schema, "testAction")
+
+			jsonSchema := jsonschema.JSONSchemaForOperation(context.Background(), schema, op)
+			jsonSchemaBytes, err := json.Marshal(jsonSchema)
+			require.NoError(t, err)
+
+			opts := jsondiff.DefaultConsoleOptions()
+			diff, explanation := jsondiff.Compare([]byte(c.jsonSchema), jsonSchemaBytes, &opts)
+
+			if diff != jsondiff.FullMatch {
+				t.Errorf("actual JSON schema does not match expected: %s", explanation)
+			}
+		})
+	}
+}
 
 func TestValidateRequest(t *testing.T) {
 	type fixture struct {
@@ -214,6 +274,11 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"name": "Jon", "birthday": "1986-03-18"}`,
 					opName:  "createPersonWithOptionalDOB",
 				},
+				{
+					name:    "valid - providing ISO8601 format for a Date",
+					request: `{"name": "Jon", "birthday": "1986-03-18T00:00:00.000Z"}`,
+					opName:  "createPersonWithOptionalDOB",
+				},
 
 				// errors
 				{
@@ -253,7 +318,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"name": "Jon", "birthday": "18th March 1986"}`,
 					opName:  "createPersonWithDOB",
 					errors: map[string]string{
-						"birthday": "Does not match format 'date'",
+						"birthday": "Does not match format 'date-time'",
 					},
 				},
 				{
@@ -567,7 +632,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"releaseDate": {"after": "not-a-date-time"}}}`,
 					errors: map[string]string{
-						"where.releaseDate.after": `Does not match format 'date'`,
+						"where.releaseDate.after": `Does not match format 'date-time'`,
 					},
 				},
 				{
@@ -619,16 +684,7 @@ func TestValidateRequest(t *testing.T) {
 				}
 
 				for _, e := range result.Errors() {
-					// this will be the full path to where the error is located
-					// for example "(root).someProp.someOtherProp"
-					jsonPath := e.Context().String()
-
-					// When we're not at the root, we don't really need that
-					// prefix, so trim it off
-					if jsonPath != "(root)" {
-						jsonPath = strings.TrimPrefix(jsonPath, "(root).")
-					}
-
+					jsonPath := e.Field()
 					expected, ok := f.errors[jsonPath]
 					if !ok {
 						assert.Fail(t, "unexpected error", "%s - %s", jsonPath, e.Description())

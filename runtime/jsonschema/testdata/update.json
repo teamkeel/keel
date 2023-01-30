@@ -1,0 +1,48 @@
+{
+  "$defs": {
+    "Hobby": {
+      "enum": ["Tennis", "Chess"],
+      "type": "string"
+    },
+    "TestActionValuesInput": {
+      "additionalProperties": false,
+      "properties": {
+        "birthday": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "hobby": {
+          "$ref": "#/$defs/Hobby"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nickName": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "TestActionWhereInput": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": ["id"],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "values": {
+      "$ref": "#/$defs/TestActionValuesInput"
+    },
+    "where": {
+      "$ref": "#/$defs/TestActionWhereInput"
+    }
+  },
+  "required": ["where", "values"],
+  "type": "object"
+}

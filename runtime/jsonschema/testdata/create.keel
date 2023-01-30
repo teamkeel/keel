@@ -1,0 +1,11 @@
+model Person {
+    fields {
+        name Text
+        nickName Text?
+        birthday Date
+    }
+
+    operations {
+        create testAction() with (name, nickName, birthday)
+    }
+}
