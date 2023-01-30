@@ -3,7 +3,6 @@ package parser
 import (
 	"fmt"
 
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/node"
 )
 
@@ -129,29 +128,37 @@ func (ident *Ident) ToString() string {
 }
 
 func (ident *Ident) IsContext() bool {
-	if len(ident.Fragments) == 2 {
-		return ident.Fragments[0].Fragment == runtimectx.ContextTarget
+	if len(ident.Fragments) == 2 || len(ident.Fragments) == 3 {
+		return ident.Fragments[0].Fragment == "ctx"
 	}
+
 	return false
 }
 
 func (ident *Ident) IsContextIdentityField() bool {
 	if ident.IsContext() {
-		return ident.Fragments[1].Fragment == runtimectx.ContextIdentityField
+		return ident.Fragments[1].Fragment == "identity"
 	}
 	return false
 }
 
 func (ident *Ident) IsContextIsAuthenticatedField() bool {
 	if ident.IsContext() {
-		return ident.Fragments[1].Fragment == runtimectx.ContextIsAuthenticatedField
+		return ident.Fragments[1].Fragment == "isAuthenticated"
 	}
 	return false
 }
 
 func (ident *Ident) IsContextNowField() bool {
 	if ident.IsContext() {
-		return ident.Fragments[1].Fragment == runtimectx.ContextNowField
+		return ident.Fragments[1].Fragment == "now"
+	}
+	return false
+}
+
+func (ident *Ident) IsContextEnvField() bool {
+	if ident.IsContext() {
+		return ident.Fragments[1].Fragment == "env"
 	}
 	return false
 }

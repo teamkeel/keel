@@ -34,6 +34,17 @@
             "useZeroValue": true
           }
         }
+      ],
+      "permissions": [
+        {
+          "modelName": "MyModel",
+          "expression": {
+            "source": "ctx.env.FOO == \"d\""
+          },
+          "operationsTypes": [
+            "OPERATION_TYPE_GET"
+          ]
+        }
       ]
     },
     {
@@ -153,7 +164,7 @@
   ],
   "environmentVariables": [
     {
-      "name": "TEST"
+      "name": "FOO"
     }
   ]
 }
