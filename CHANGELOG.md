@@ -1,3 +1,10 @@
+## [0.242.1](https://github.com/teamkeel/keel/compare/v0.242.0...v0.242.1) (2023-01-30)
+
+
+### Bug Fixes
+
+* make db test suite reusable ([c89777d](https://github.com/teamkeel/keel/commit/c89777da975d93d82ba15d4fda089aae50642ce3))
+
 # [0.242.0](https://github.com/teamkeel/keel/compare/v0.241.1...v0.242.0) (2023-01-28)
 
 
