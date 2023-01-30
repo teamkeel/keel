@@ -1,0 +1,7 @@
+linters:
+  enable:
+    - errcheck
+    - unconvert
+    - unused 
+  disable:
+    - govet

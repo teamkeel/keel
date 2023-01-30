@@ -31,7 +31,12 @@ var testCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		defer database.Stop()
+		defer func() {
+			err = database.Stop()
+			if err != nil {
+				panic(err)
+			}
+		}()
 
 		results, err := testing.Run(&testing.RunnerOpts{
 			Dir:        inputDir,

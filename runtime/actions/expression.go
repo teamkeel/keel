@@ -16,16 +16,25 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, input *proto.Oper
 	fragments := append([]string{strcase.ToLowerCamel(input.ModelName)}, input.Target...)
 
 	// The lhs QueryOperand is determined from the fragments in the implicit input field
-	left, _ := operandFromFragments(scope.schema, fragments)
+	left, err := operandFromFragments(scope.schema, fragments)
+	if err != nil {
+		return err
+	}
 
 	// The rhs QueryOperand is always a value in an implicit input
 	right := Value(value)
 
 	// Add join for the implicit input
-	query.addJoinFromFragments(scope, fragments)
+	err = query.addJoinFromFragments(scope, fragments)
+	if err != nil {
+		return err
+	}
 
 	// Add where condition to the query for the implicit input
-	query.Where(left, operator, right)
+	err = query.Where(left, operator, right)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -63,7 +72,7 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 		lhsFragments := lo.Map(lhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
 		// Generates joins based on the fragments that make up the operand
-		query.addJoinFromFragments(scope, lhsFragments)
+		err = query.addJoinFromFragments(scope, lhsFragments)
 		if err != nil {
 			return err
 		}
@@ -96,7 +105,7 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 			rhsFragments := lo.Map(rhsResolver.Operand.Ident.Fragments, func(fragment *parser.IdentFragment, _ int) string { return fragment.Fragment })
 
 			// Generates joins based on the fragments that make up the operand
-			query.addJoinFromFragments(scope, rhsFragments)
+			err = query.addJoinFromFragments(scope, rhsFragments)
 			if err != nil {
 				return err
 			}
@@ -104,7 +113,10 @@ func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Ex
 	}
 
 	// Adds where condition to the query for the expression
-	query.Where(left, operator, right)
+	err = query.Where(left, operator, right)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

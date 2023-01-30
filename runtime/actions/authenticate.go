@@ -123,13 +123,16 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		Token:           token,
 		IdentityCreated: true,
 	}, nil
-
 }
 
 func FindIdentityById(ctx context.Context, schema *proto.Schema, id *ksuid.KSUID) (*Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
-	query.Where(IdField(), Equals, Value(id))
+	err := query.Where(IdField(), Equals, Value(id))
+	if err != nil {
+		return nil, err
+	}
+
 	query.AppendSelect(AllFields())
 	result, err := query.SelectStatement().ExecuteToSingle(ctx)
 
@@ -150,7 +153,11 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id *ksuid.KSUID
 func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
-	query.Where(Field(EmailColumnName), Equals, Value(email))
+	err := query.Where(Field(EmailColumnName), Equals, Value(email))
+	if err != nil {
+		return nil, err
+	}
+
 	query.AppendSelect(AllFields())
 	result, err := query.SelectStatement().ExecuteToSingle(ctx)
 
@@ -194,7 +201,7 @@ func GenerateBearerToken(id *ksuid.KSUID) (string, error) {
 
 func ParseBearerToken(jwtToken string) (*ksuid.KSUID, error) {
 	token, err := jwt.ParseWithClaims(jwtToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(getSigningKey()), nil
+		return getSigningKey(), nil
 	})
 
 	if err != nil || !token.Valid {

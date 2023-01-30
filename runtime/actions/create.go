@@ -8,11 +8,15 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	query := NewQuery(scope.model)
 
 	// Begin a transaction and defer rollback which will run if a commit hasn't occurred.
-	query.Begin(scope.context)
+	err = query.Begin(scope.context)
+	if err != nil {
+		return nil, err
+	}
+
 	// Defer ensures a rollback as the function may return early due to an error.
 	defer func() {
 		if err != nil {
-			query.Rollback(scope.context)
+			_ = query.Rollback(scope.context)
 		}
 	}()
 
@@ -29,7 +33,10 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	}
 
 	// Retrieve the newly created row so we can check permissions
-	query.Where(IdField(), Equals, Value(result["id"]))
+	err = query.Where(IdField(), Equals, Value(result["id"]))
+	if err != nil {
+		return nil, err
+	}
 
 	// Check permissions and roles conditions
 	isAuthorised, err := query.isAuthorised(scope, input)

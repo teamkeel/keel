@@ -255,11 +255,14 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 							return nil, nil
 						}
 
-						query.Where(actions.IdField(), actions.Equals, actions.Value(id))
+						err = query.Where(actions.IdField(), actions.Equals, actions.Value(id))
+						if err != nil {
+							return nil, err
+						}
+
 						result, err := query.
 							SelectStatement().
 							ExecuteToSingle(p.Context)
-
 						if err != nil {
 							return nil, err
 						}
@@ -291,7 +294,10 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 							return nil, fmt.Errorf("the primary key does not exist in source value map: %s", primaryKeyField)
 						}
 
-						query.Where(actions.Field(foreignKeyField), actions.Equals, actions.Value(id))
+						err = query.Where(actions.Field(foreignKeyField), actions.Equals, actions.Value(id))
+						if err != nil {
+							return nil, err
+						}
 
 						page, err := actions.ParsePage(p.Args)
 						if err != nil {
@@ -301,7 +307,10 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						// Select all columns from this table and distinct on id
 						query.AppendDistinctOn(actions.IdField())
 						query.AppendSelect(actions.AllFields())
-						query.ApplyPaging(page)
+						err = query.ApplyPaging(page)
+						if err != nil {
+							return nil, err
+						}
 
 						results, _, hasNextPage, err := query.
 							SelectStatement().

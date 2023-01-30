@@ -42,7 +42,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 
 		if currSchema == nil {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Cannot serve requests when schema contains errors"))
+			_, _ = w.Write([]byte("Cannot serve requests when schema contains errors"))
 			return
 		}
 
@@ -55,7 +55,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			headerSplit := strings.Split(header, "Bearer ")
 			if len(headerSplit) != 2 {
 				w.WriteHeader(http.StatusBadRequest)
-				w.Write([]byte("no 'Bearer' prefix in the authentication header"))
+				_, _ = w.Write([]byte("no 'Bearer' prefix in the authentication header"))
 				return
 			}
 
@@ -64,11 +64,11 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			switch {
 			case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired):
 				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte(err.Error()))
+				_, _ = w.Write([]byte(err.Error()))
 				return
 			case errors.Is(err, actions.ErrInvalidIdentityClaim):
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
+				_, _ = w.Write([]byte(err.Error()))
 				return
 			}
 
@@ -77,12 +77,12 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			identity, err := actions.FindIdentityById(ctx, currSchema, identityId)
 			if err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write([]byte(err.Error()))
+				_, _ = w.Write([]byte(err.Error()))
 				return
 			}
 			if identity == nil {
 				w.WriteHeader(http.StatusUnauthorized)
-				w.Write([]byte(actions.ErrIdentityNotFound.Error()))
+				_, _ = w.Write([]byte(actions.ErrIdentityNotFound.Error()))
 				return
 			}
 
@@ -93,7 +93,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		response := handler(r)
 		w.Header().Add("Content-Type", "application/json")
 		w.WriteHeader(response.Status)
-		w.Write(response.Body)
+		_, _ = w.Write(response.Body)
 	}
 
 	cors := cors.New(cors.Options{

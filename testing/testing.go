@@ -87,7 +87,9 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			return nil, err
 		}
 
-		defer functionsServer.Kill()
+		defer func() {
+			_ = functionsServer.Kill()
+		}()
 
 		functionsTransport = functions.NewHttpTransport(functionsServer.URL)
 	}
@@ -113,8 +115,14 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			runtime.NewHttpHandler(schema).ServeHTTP(w, r)
 		}),
 	}
-	go runtimeServer.ListenAndServe()
-	defer runtimeServer.Shutdown(context)
+
+	go func() {
+		_ = runtimeServer.ListenAndServe()
+	}()
+
+	defer func() {
+		_ = runtimeServer.Shutdown(context)
+	}()
 
 	cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
 	cmd.Dir = opts.Dir

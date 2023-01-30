@@ -616,10 +616,12 @@ func TestTestingActionExecutor(t *testing.T) {
 			ID string
 		}
 		var payload Payload
-		json.Unmarshal(b, &payload)
+		err = json.Unmarshal(b, &payload)
+		assert.NoError(t, err)
 		assert.Equal(t, "1234", payload.ID)
 
-		w.Write([]byte(`{"name": "Barney"}`))
+		_, err = w.Write([]byte(`{"name": "Barney"}`))
+		require.NoError(t, err)
 	}))
 	defer server.Close()
 

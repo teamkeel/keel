@@ -43,7 +43,7 @@ A working setup will look something like this (paths will vary):
 /usr/local/bin/docker
 ```
 
-### Setting up conventional commits
+### Setting up linter and conventional commits
 
 Run the following setup command:
 

@@ -14,6 +14,7 @@ testdata:
 
 test:
 	go test ./... -count=1
+	@$(MAKE) lint
 
 testpretty:
 	go test ./... -count=1 -json | gotestpretty
@@ -28,3 +29,6 @@ wasm:
 
 prettier:
 	npx prettier --write './integration/**/*.{ts,json}'
+
+lint:
+	golangci-lint run  -c .golangci.yml

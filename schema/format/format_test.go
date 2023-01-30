@@ -27,7 +27,7 @@ func TestFormat(t *testing.T) {
 			require.Equal(t, 2, len(parts), "fixture file should contain two sections seperated by \"===\"")
 
 			ast, err := parser.Parse(&reader.SchemaFile{
-				Contents: string(parts[0]),
+				Contents: parts[0],
 			})
 			require.NoError(t, err)
 

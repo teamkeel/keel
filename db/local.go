@@ -57,7 +57,7 @@ func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...
 	for result.Next() {
 		row := make([]any, len(columns))
 		pointers := make([]interface{}, len(columns))
-		for i, _ := range pointers {
+		for i := range pointers {
 			pointers[i] = &row[i]
 		}
 		err = result.Scan(pointers...)
