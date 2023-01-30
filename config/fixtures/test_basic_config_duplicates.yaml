@@ -1,0 +1,13 @@
+# In this config, the staging config will be used over the default config block
+# The duplicate key will return an error only in staging.
+environment:
+  default:
+    - name: "TEST"
+      value: "test"
+      required:
+        - "staging"
+  staging:
+    - name: "TEST"
+      value: "test2_duplicate"
+    - name: "TEST"
+      value: "duplicate key"
