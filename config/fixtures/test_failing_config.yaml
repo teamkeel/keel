@@ -1,9 +1,9 @@
 environment:
   default:
     - name: "TEST"
-      value: 
-      - "test"
-      - "test2"
+      value:
+        - "test"
+        - "test2"
       required:
         - "staging"
         - "production"

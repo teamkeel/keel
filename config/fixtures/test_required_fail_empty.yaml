@@ -1,0 +1,9 @@
+environment:
+  default:
+    - name: "TEST"
+      required:
+        - "staging"
+  staging:
+    - name: "TEST"
+      value: "test2_duplicate"
+  production:

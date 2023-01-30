@@ -21,7 +21,7 @@ type ProjectConfig struct {
 type EnvironmentConfig struct {
 	Default    []Input `yaml:"default"`
 	Staging    []Input `yaml:"staging"`
-	Production []Input `yaml:"production"`
+	Production []Input `yaml:"production,omitempty"`
 }
 
 // Input is the configuration for a keel environment variable or secret
@@ -68,15 +68,21 @@ func Validate(config *ProjectConfig) error {
 
 	return nil
 }
-func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
-	stagingDuplicates, staging := getDuplicates(config.Environment.Staging)
-	productionDuplicates, production := getDuplicates(config.Environment.Production)
 
+// checkForDuplicates checks for duplicate environment variables in a keel project
+// We assume that any environment variable that is defined in staging/production will override the default
+func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
 	results := make(map[string][]string, 2)
+	stagingDuplicates, staging := findDuplicates(config.Environment.Staging)
 
 	if len(staging) > 0 {
 		results["staging"] = staging
 	}
+	if len(config.Environment.Production) == 0 {
+		return stagingDuplicates, results
+	}
+
+	productionDuplicates, production := findDuplicates(config.Environment.Production)
 	if len(production) > 0 {
 		results["production"] = production
 	}
@@ -88,24 +94,27 @@ func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
 	return false, results
 }
 
-func getDuplicates(environment []Input) (bool, []string) {
-	allKeys := make(map[string]bool)
+// findDuplicates checks for duplicate environment variables for a given environment
+func findDuplicates(environment []Input) (bool, []string) {
+	envVarKeys := make(map[string]bool)
 
-	dupes := []string{}
-	for _, item := range environment {
-		if _, value := allKeys[item.Name]; !value {
-			allKeys[item.Name] = true
+	duplicateEnvVars := []string{}
+	for _, envVar := range environment {
+		if _, value := envVarKeys[envVar.Name]; !value {
+			envVarKeys[envVar.Name] = true
 		} else {
-			dupes = append(dupes, item.Name)
+			duplicateEnvVars = append(duplicateEnvVars, envVar.Name)
 		}
 	}
 
-	return len(dupes) > 0, dupes
+	return len(duplicateEnvVars) > 0, duplicateEnvVars
 }
 
+// requiredValuesKeys checks for required environment variables in a keel project defined in the default block
+// A required environment variable must be defined in either staging or production
 func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
-	var staging []string
-	var production []string
+	var stagingMissing []string
+	var productionMissing []string
 
 	for _, v := range config.Environment.Default {
 		if v.Required == nil {
@@ -115,12 +124,12 @@ func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
 		for _, required := range v.Required {
 			if required == "staging" {
 				if !contains(config.Environment.Staging, v.Name) {
-					staging = append(staging, v.Name)
+					stagingMissing = append(stagingMissing, v.Name)
 				}
 			}
 			if required == "production" {
 				if !contains(config.Environment.Production, v.Name) {
-					production = append(production, v.Name)
+					productionMissing = append(productionMissing, v.Name)
 				}
 			}
 		}
@@ -128,22 +137,23 @@ func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
 
 	results := make(map[string][]string, 2)
 
-	if len(staging) > 0 {
-		results["staging"] = staging
+	if len(stagingMissing) > 0 {
+		results["staging"] = stagingMissing
 	}
 
-	if len(production) > 0 {
-		results["production"] = production
+	if len(productionMissing) > 0 {
+		results["production"] = productionMissing
 	}
 
 	return len(results) > 0, results
 }
 
 func contains(s []Input, e string) bool {
-	for _, a := range s {
-		if a.Name == e {
+	for _, input := range s {
+		if input.Name == e {
 			return true
 		}
 	}
+
 	return false
 }
