@@ -26,12 +26,23 @@ Complete documentation and examples for the `@teamkeel/testing` package can be f
 
 ## Development
 
-You need the following installed on your machine:
+### Nix
 
-- Go - `brew install go`
-- Node - recommended option is to use [nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-- PNPM - [installation instructions](https://pnpm.io/installation)
-- Docker - [installation for Mac](https://docs.docker.com/desktop/install/mac-install/)
+We use [nix](https://nix.dev/) to manage our development environment. To install nix on MacOS run:
+
+```sh
+$ curl -L https://nixos.org/nix/install | sh
+```
+
+Once you have nix installed you can start a nix shell by running `nix-shell` in the root of the repo. The first time you run this it will install all the required dependencies so might take a while to run, but subsequently should be fast. When developing in this repo always start by starting a nix-shell.
+
+### Docker
+
+You also need Docker (for runnning Postgres) which needs to be [installed separately](https://docs.docker.com/desktop/install/mac-install/). Once installed the Docker daemon needs to be running, which you can check by running:
+
+```sh
+$ docker ps
+```
 
 ### Installing project dependencies
 
@@ -42,7 +53,9 @@ Running `make install` will install project level dependencies.
 This repo follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/), which means commits must be written in a certain way. If you want you can run `make setup-conventional-commits` to install a pre-commit hook which will check your commit messages as you make them.
 
 ### Running Go tests
+
 To run tests first make sure you have running Postgres using Docker:
+
 ```sh
 docker compose up -d
 ```
@@ -61,13 +74,14 @@ $ make test PACKAGES=./integration RUN=TestIntegration/built_in_actions
 ```
 
 ### Running JS tests
+
 There are units tests in each of the JS packages in the `./packages` directory. In each of these directories you can run `pnpm run test` but to run all the tests from all the packages you can use the make command `make test-js`.
 
 ### Other useful make commands
 
-* `make lint` - lint Go code
-* `make testdata` - re-generate fixture data (check the diff carefully after doing this)
-* `make proto` - re-generate Go code in the `./proto` package (run this after changing the `.proto` file)
+- `make lint` - lint Go code
+- `make testdata` - re-generate fixture data (check the diff carefully after doing this)
+- `make proto` - re-generate Go code in the `./proto` package (run this after changing the `.proto` file)
 
 ### Using the CLI in development
 
