@@ -31,14 +31,14 @@ class DatabaseError extends Error {
   }
 }
 
+// handles cases where a promise rejection has not been handled
+// in a call to the model api within a custom function
+// will catch any unexpected database errors
 function handlePromiseRejection(fn) {
   return async function() {
     try {
       return await fn.apply(this, arguments);
     } catch (e) {
-      // do stuff
-
-      console.log('error handling')
       throw new DatabaseError(e);
     }
   }
