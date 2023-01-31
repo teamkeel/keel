@@ -148,6 +148,8 @@ class ModelAPI {
   }
 }
 
+// todo: find a nicer way of doing this
+// todo: add other methods in if needed
 Reflect.defineProperty(ModelAPI.prototype, 'delete', { value: handlePromiseRejection(ModelAPI.prototype.delete) })
 Reflect.defineProperty(ModelAPI.prototype, 'update', { value: handlePromiseRejection(ModelAPI.prototype.update) })
 
