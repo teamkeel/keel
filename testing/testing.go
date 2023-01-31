@@ -8,7 +8,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/node"
@@ -36,6 +38,15 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	schema, err := builder.MakeFromDirectory(opts.Dir)
 	if err != nil {
 		return nil, err
+	}
+
+	configFile := filepath.Join(opts.Dir, "keelconfig.yaml")
+	if _, err := os.Stat(configFile); err == nil {
+		cfg, err := config.Load(configFile)
+		if err != nil {
+			return nil, err
+		}
+		builder.Config = cfg
 	}
 
 	testApi := &proto.Api{
