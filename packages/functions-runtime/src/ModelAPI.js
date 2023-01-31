@@ -24,6 +24,26 @@ const { camelCaseObject, snakeCaseObject } = require("./casing");
  * @typedef {Object.<string, TableConfig>} TableConfigMap
  */
 
+class DatabaseError extends Error {
+  constructor(error) {
+    super(error.message);
+    this.error = error;
+  }
+}
+
+function handlePromiseRejection(fn) {
+  return async function() {
+    try {
+      return await fn.apply(this, arguments);
+    } catch (e) {
+      // do stuff
+
+      console.log('error handling')
+      throw new DatabaseError(e);
+    }
+  }
+}
+
 class ModelAPI {
   /**
    * @param {string} tableName The name of the table this API is for
@@ -128,6 +148,10 @@ class ModelAPI {
   }
 }
 
+Reflect.defineProperty(ModelAPI.prototype, 'delete', { value: handlePromiseRejection(ModelAPI.prototype.delete) })
+Reflect.defineProperty(ModelAPI.prototype, 'update', { value: handlePromiseRejection(ModelAPI.prototype.update) })
+
 module.exports = {
   ModelAPI,
+  DatabaseError,
 };

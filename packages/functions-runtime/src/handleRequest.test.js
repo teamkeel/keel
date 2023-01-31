@@ -1,5 +1,5 @@
 import { createJSONRPCRequest, JSONRPCErrorCode } from "json-rpc-2.0";
-import { handleRequest } from "./handleRequest";
+import { handleRequest, RuntimeErrors } from "./handleRequest";
 import { test, expect } from "vitest";
 
 test("when the custom function returns expected value", async () => {
@@ -83,8 +83,11 @@ test("when there is an unexpected error in the custom function", async () => {
     id: "123",
     jsonrpc: "2.0",
     error: {
-      code: JSONRPCErrorCode.InternalError,
+      code: RuntimeErrors.UnknownError,
       message: "oopsie daisy",
+      data: {
+        stack: expect.stringContaining('Error: oopsie daisy')
+      }
     },
   });
 });
@@ -105,7 +108,7 @@ test("when there is an unexpected object thrown in the custom function", async (
     id: "123",
     jsonrpc: "2.0",
     error: {
-      code: JSONRPCErrorCode.InternalError,
+      code: RuntimeErrors.UnknownError,
       message: '{"err":"oopsie daisy"}',
     },
   });
