@@ -35,13 +35,13 @@ class DatabaseError extends Error {
 // in a call to the model api within a custom function
 // will catch any unexpected database errors
 function handlePromiseRejection(fn) {
-  return async function() {
+  return async function () {
     try {
       return await fn.apply(this, arguments);
     } catch (e) {
       throw new DatabaseError(e);
     }
-  }
+  };
 }
 
 class ModelAPI {
@@ -150,8 +150,12 @@ class ModelAPI {
 
 // todo: find a nicer way of doing this
 // todo: add other methods in if needed
-Reflect.defineProperty(ModelAPI.prototype, 'delete', { value: handlePromiseRejection(ModelAPI.prototype.delete) })
-Reflect.defineProperty(ModelAPI.prototype, 'update', { value: handlePromiseRejection(ModelAPI.prototype.update) })
+Reflect.defineProperty(ModelAPI.prototype, "delete", {
+  value: handlePromiseRejection(ModelAPI.prototype.delete),
+});
+Reflect.defineProperty(ModelAPI.prototype, "update", {
+  value: handlePromiseRejection(ModelAPI.prototype.update),
+});
 
 module.exports = {
   ModelAPI,
