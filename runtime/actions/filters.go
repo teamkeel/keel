@@ -10,7 +10,7 @@ import (
 // Applies all implicit input filters to the query.
 func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]any) error {
 	for _, input := range scope.operation.Inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT || input.Mode == proto.InputMode_INPUT_MODE_WRITE {
+		if !input.IsModelField() || input.Mode == proto.InputMode_INPUT_MODE_WRITE {
 			continue
 		}
 

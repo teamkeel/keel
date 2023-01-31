@@ -3,14 +3,13 @@ package actions
 import (
 	"fmt"
 
-	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
 func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[string]any) error {
 inputs:
 	for _, input := range scope.operation.Inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+		if !input.IsModelField() {
 			continue
 		}
 

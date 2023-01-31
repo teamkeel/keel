@@ -742,7 +742,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 				allOptionalInputs = false
 			}
 
-			if in.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+			if in.IsModelField() {
 				fieldType, err = mk.queryInputTypeFor(in)
 			} else {
 				fieldType, err = mk.inputTypeFor(in)

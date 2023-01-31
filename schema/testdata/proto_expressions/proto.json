@@ -96,7 +96,6 @@
                 "fieldName":  "name"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "name"
               ]
@@ -133,7 +132,6 @@
                 "fieldName":  "name"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "name"
               ]
@@ -164,7 +162,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]

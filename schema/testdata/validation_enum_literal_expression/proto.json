@@ -61,7 +61,6 @@
                 "fieldName":  "type"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "type"
               ]
@@ -74,8 +73,7 @@
                 "type":  "TYPE_ENUM",
                 "enumName":  "PostType"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ],
           "permissions":  [

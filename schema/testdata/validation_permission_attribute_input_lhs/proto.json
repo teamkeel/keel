@@ -59,7 +59,6 @@
                 "fieldName":  "title"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "title"
               ]
@@ -71,8 +70,7 @@
               "type":  {
                 "type":  "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ],
           "permissions":  [

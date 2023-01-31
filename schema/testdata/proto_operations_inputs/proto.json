@@ -59,7 +59,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -82,7 +81,6 @@
                 "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "f1"
               ]
@@ -105,7 +103,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -120,7 +117,6 @@
                 "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "f1"
               ]
@@ -143,7 +139,6 @@
                 "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "f1"
               ]

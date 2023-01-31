@@ -123,11 +123,11 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 }
 
 func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) (string, JSONSchema) {
-	if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+	if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
 		return jsonSchemaForQueryObject(ctx, op, input, schema)
 	}
 
-	isImplicit := input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
+	isImplicit := input.IsModelField()
 	isWrite := input.Mode == proto.InputMode_INPUT_MODE_WRITE
 
 	name := ""

@@ -287,7 +287,6 @@ func (scm *Builder) makeOperationInput(
 	idents := input.Type.Fragments
 	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
 
-	behaviour := proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT
 	target := []string{}
 
 	var modelName *wrapperspb.StringValue
@@ -301,19 +300,20 @@ func (scm *Builder) makeOperationInput(
 	}
 
 	if protoType == proto.Type_TYPE_UNKNOWN {
-		// The input must relate to a model field. For operations this makes the
-		// input behaviour implicit, meaning we will do something with this input
-		// automatically. What we'll do depends on whether it's a read or write
-		// input and the action type.
-		if impl == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
-			behaviour = proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
-		}
+		// If we haven't been able to resolve the type of the input it
+		// must be a model field, so we need to resolve it
 
 		var field *parser.FieldNode
 		currModel := model
 
 		for _, ident := range idents {
-			target = append(target, ident.Fragment)
+			// For operations, inputs that refer to model fields are handled automatically
+			// by the runtime. For this to work we need to store the path to the field
+			// that the input refers to, as it may be in a nested model.
+			if impl == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
+				target = append(target, ident.Fragment)
+			}
+
 			field = query.ModelField(currModel, ident.Fragment)
 			m := query.Model(scm.asts, field.Type)
 			if m != nil {
@@ -348,10 +348,9 @@ func (scm *Builder) makeOperationInput(
 			FieldName: fieldName,
 			EnumName:  enumName,
 		},
-		Optional:  input.Optional,
-		Mode:      mode,
-		Behaviour: behaviour,
-		Target:    target,
+		Optional: input.Optional,
+		Mode:     mode,
+		Target:   target,
 	}
 }
 

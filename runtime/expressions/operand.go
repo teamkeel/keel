@@ -56,7 +56,7 @@ func (resolver *OperandResolver) IsImplicitInput() bool {
 		return in.Name == resolver.Operand.Ident.Fragments[0].Fragment
 	})
 
-	return found && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT
+	return found && input.IsModelField()
 }
 
 // IsExplicitInput returns true if the expression operand refers to an explicit input on an operation.
@@ -73,7 +73,7 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 		return in.Name == resolver.Operand.Ident.Fragments[0].Fragment
 	})
 
-	return found && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_EXPLICIT
+	return found && !input.IsModelField()
 }
 
 // IsDatabaseColumn returns true if the expression operand refers to a field value residing in the database.

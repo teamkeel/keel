@@ -245,3 +245,11 @@ func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule 
 	}
 	return withPermissions
 }
+
+// IsModelField returns true if the input targets a model field
+// and is handled automatically by the runtime.
+// This will only be true for inputs that are part of operations,
+// as functions never have this behaviour.
+func (i *OperationInput) IsModelField() bool {
+	return len(i.Target) > 0
+}

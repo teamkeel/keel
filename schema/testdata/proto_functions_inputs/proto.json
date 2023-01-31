@@ -64,11 +64,7 @@
                 "modelName":  "Foo",
                 "fieldName":  "bar"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT",
-              "target":  [
-                "bar"
-              ]
+              "mode":  "INPUT_MODE_WRITE"
             }
           ]
         },
@@ -87,11 +83,7 @@
                 "modelName":  "Foo",
                 "fieldName":  "bar"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT",
-              "target":  [
-                "bar"
-              ]
+              "mode":  "INPUT_MODE_WRITE"
             },
             {
               "modelName":  "Foo",
@@ -100,8 +92,7 @@
               "type":  {
                 "type":  "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ]
         },
@@ -118,8 +109,7 @@
               "type":  {
                 "type":  "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ]
         }
