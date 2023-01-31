@@ -32,8 +32,12 @@ type DbError struct {
 	Err    error
 }
 
-func (r DbError) Error() string {
-	return r.Err.Error()
+func (err DbError) Error() string {
+	return err.Err.Error()
+}
+
+func (err DbError) Unwrap() error {
+	return err.Err
 }
 
 type Db interface {

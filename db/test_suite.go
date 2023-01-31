@@ -165,10 +165,10 @@ func (suite dbTestSuite) testErrUniqueConstraintViolation(t *testing.T) {
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValues...)
-	assert.ErrorContains(t, err, "duplicate key value violates unique constraint")
+	assert.ErrorIs(t, err, ErrUniqueConstraintViolation)
 
 	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValues...)
-	assert.ErrorContains(t, err, "duplicate key value violates unique constraint")
+	assert.ErrorIs(t, err, ErrUniqueConstraintViolation)
 }
 
 func (suite dbTestSuite) testErrNotNullConstraintViolation(t *testing.T) {
@@ -194,10 +194,10 @@ func (suite dbTestSuite) testErrNotNullConstraintViolation(t *testing.T) {
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", notNameValues...)
-	assert.ErrorContains(t, err, "null value violates not null column constraint")
+	assert.ErrorIs(t, err, ErrNotNullConstraintViolation)
 
 	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", notNameValues...)
-	assert.ErrorContains(t, err, "null value violates not null column constraint")
+	assert.ErrorIs(t, err, ErrNotNullConstraintViolation)
 }
 
 func (suite dbTestSuite) testErrForeignKeyConstraintViolation(t *testing.T) {
@@ -237,8 +237,8 @@ func (suite dbTestSuite) testErrForeignKeyConstraintViolation(t *testing.T) {
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, companyId) VALUES (?, ?, ?)", noCompanyValues...)
-	assert.ErrorContains(t, err, "insert or update violates foreign key constraint")
+	assert.ErrorIs(t, err, ErrForeignKeyConstraintViolation)
 
 	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name, companyId) VALUES (?, ?, ?)", noCompanyValues...)
-	assert.ErrorContains(t, err, "insert or update violates foreign key constraint")
+	assert.ErrorIs(t, err, ErrForeignKeyConstraintViolation)
 }
