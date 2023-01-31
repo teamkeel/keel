@@ -4,7 +4,7 @@ keel-cli is a tool to build and deploy services.
 
 # Note
 
-Keel is currently pre-release (semver < 1). *Do not commit any major releases using conventional commits to bump the version to v1 until we have decided that this is the case*
+Keel is currently pre-release (semver < 1). _Do not commit any major releases using conventional commits to bump the version to v1 until we have decided that this is the case_
 
 ## Usage
 
@@ -26,30 +26,48 @@ Complete documentation and examples for the `@teamkeel/testing` package can be f
 
 ## Development
 
-You need the following installed:
+You need the following installed on your machine:
 
-- Go `brew install go`
-- Node via [nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-- [Docker](https://docs.docker.com/desktop/install/mac-install/)
+- Go - `brew install go`
+- Node - recommended option is to use [nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- PNPM - [installation instructions](https://pnpm.io/installation)
+- Docker - [installation for Mac](https://docs.docker.com/desktop/install/mac-install/)
 
-A working setup will look something like this (paths will vary):
+### Installing project dependencies
+
+Running `make install` will install project level dependencies.
+
+### Setting conventional commits git hook (Optional)
+
+This repo follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/), which means commits must be written in a certain way. If you want you can run `make setup-conventional-commits` to install a pre-commit hook which will check your commit messages as you make them.
+
+### Running Go tests
+To run tests first make sure you have running Postgres using Docker:
+```sh
+docker compose up -d
+```
+
+Then use `make test` to run the tests.
 
 ```sh
-~/code/keel main $ which go
-/usr/local/go/bin/go
-~/code/keel main $ which node
-/Users/jonbretman/.nvm/versions/node/v16.16.0/bin/node
-~/code/keel main $ which docker
-/usr/local/bin/docker
+# run all tests
+$ make test
+
+# run all test in the schema package (and all sub-packages)
+$ make test PACKAGES=./schema/...
+
+# A specific test from the integration package
+$ make test PACKAGES=./integration RUN=TestIntegration/built_in_actions
 ```
 
-### Setting up linter and conventional commits
+### Running JS tests
+There are units tests in each of the JS packages in the `./packages` directory. In each of these directories you can run `pnpm run test` but to run all the tests from all the packages you can use the make command `make test-js`.
 
-Run the following setup command:
+### Other useful make commands
 
-```bash
-sh ./scripts/setup.sh
-```
+* `make lint` - lint Go code
+* `make testdata` - re-generate fixture data (check the diff carefully after doing this)
+* `make proto` - re-generate Go code in the `./proto` package (run this after changing the `.proto` file)
 
 ### Using the CLI in development
 
@@ -59,16 +77,16 @@ go run cmd/keel/main.go [cmd] [args]
 
 ## Building from source
 
-You can build the CLI executable by running:
+You can build the CLI by running:
 
 ```bash
-make
+make build
 ```
 
-And to interact with the executable version of the CLI, simply run:
+To then use the built CLI binary you can run:
 
 ```bash
-./keel validate -f ...
+./bin/keel validate -f ...
 ```
 
 ## Contributing

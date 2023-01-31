@@ -1,7 +1,18 @@
 .PHONY: build proto testdata wasm test testpretty
 
+# Supply PACKAGES arg to only run tests for one page e.g. PACKAGES=./traing
+PACKAGES?=./...
+
+# Supply RUN to only run some tests e.g. `RUN=TestMyFunction make test`
+RUNARG=
+ifdef RUN
+# If running only some tests add -v for more verbose output
+RUNARG=-run $(RUN) -v
+endif
+
+
 build:
-	go build -o keel cmd/keel/main.go
+	go build -o ./bin/keel cmd/keel/main.go
 
 proto:
 	@protoc -I . \
@@ -13,14 +24,15 @@ testdata:
 	@cd ./schema && go run ./tools/generate_testdata.go ./testdata
 
 test:
-	go test ./... -count=1
-	@$(MAKE) lint
+	go test $(PACKAGES) -count=1 $(RUNARG)
 
-testpretty:
-	go test ./... -count=1 -json | gotestpretty
+test-js:
+	cd ./packages/functions-runtime && pnpm run test
+	cd ./packages/testing-runtime && pnpm run test
+	cd ./packages/wasm && pnpm run test
 
-testintegration:
-	go test ./integration -count=1 -v
+lint:
+	golangci-lint run  -c .golangci.yml
 
 wasm:
 	mkdir -p ./packages/wasm/dist
@@ -30,5 +42,14 @@ wasm:
 prettier:
 	npx prettier --write './integration/**/*.{ts,json}'
 
-lint:
-	golangci-lint run  -c .golangci.yml
+install:
+	brew install golangci-lint
+	go mod download
+	npm install
+	cd ./packages/functions-runtime && pnpm install
+	cd ./packages/testing-runtime && pnpm install
+	cd ./packages/wasm && pnpm install
+
+setup-conventional-commits:
+	brew install pre-commit -q
+	pre-commit install --hook-type commit-msg
