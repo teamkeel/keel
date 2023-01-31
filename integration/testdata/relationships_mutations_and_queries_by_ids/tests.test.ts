@@ -18,6 +18,19 @@ test("create with parent id as implicit input - get by id - parent id set correc
   expect(getPost!.title).toEqual("Keelson Post");
 });
 
+test("create with parent id as implicit input - id does not exist - returns error", async () => {
+  await expect(
+    actions.createPost({
+      title: "Keelson Post",
+      theAuthorId: "2L2ar5NCPvTTEdiDYqgcpF3f5QN1",
+    })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message:
+      "the relationship lookup for Post field 'theAuthorId' does not exist",
+  });
+});
+
 test("create with parent id as implicit input foreign key - get by id - parent id set correctly", async () => {
   const author = await actions.createAuthor({ name: "Keelson" });
   const post = await actions.createPostForeignKey({

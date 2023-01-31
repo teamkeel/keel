@@ -2,9 +2,10 @@ package db_test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/db"
-	"testing"
 )
 
 func CreateTestDb(t *testing.T, ctx context.Context) db.Db {

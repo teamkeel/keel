@@ -13,6 +13,23 @@ test("create action", async () => {
   expect(createdPost.title).toEqual("foo");
 });
 
+test("create action - required field is null - returns error", async () => {
+  await actions.createPost({
+    title: "foo",
+    subTitle: "not unique",
+  });
+
+  await expect(
+    actions.createPost({
+      title: "foo2",
+      subTitle: "not unique",
+    })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "Post field 'subTitle' can only contain unique values",
+  });
+});
+
 test("get action", async () => {
   const post = await actions.createPost({
     title: "foo",

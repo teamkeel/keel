@@ -25,7 +25,7 @@ func WithIdentity(ctx context.Context, id *ksuid.KSUID) context.Context {
 func GetIdentity(ctx context.Context) (*ksuid.KSUID, error) {
 	v := ctx.Value(identityIdContextKey)
 	if v == nil {
-		return nil, fmt.Errorf("context does not have a :%s key", identityIdContextKey)
+		return nil, fmt.Errorf("context does not have a %s key", identityIdContextKey)
 	}
 
 	id, ok := v.(*ksuid.KSUID)
