@@ -191,6 +191,16 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 }
 
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
+	var envVarEntities []*ExpressionScopeEntity
+	for _, ast := range asts {
+		for _, envVar := range ast.EnvironmentVariables {
+			envVarEntities = append(envVarEntities, &ExpressionScopeEntity{
+				Name: envVar,
+				Type: parser.FieldTypeText,
+			})
+		}
+	}
+
 	entities := []*ExpressionScopeEntity{
 		{
 			Name: "ctx",
@@ -208,6 +218,13 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 					{
 						Name: "now",
 						Type: parser.FieldTypeDatetime,
+					},
+					{
+						Name: "env",
+						Object: &ExpressionObjectEntity{
+							Name: "Environment Variables",
+							Fields: envVarEntities,
+						},
 					},
 				},
 			},
