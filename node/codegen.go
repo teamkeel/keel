@@ -35,8 +35,6 @@ func (files GeneratedFiles) Write() error {
 
 type generateOptions struct {
 	developmentServer bool
-	sdkPackageTypes   bool
-	testingPackage    bool
 }
 
 // WithDevelopmentServer enables or disables the generation of the development
@@ -47,29 +45,10 @@ func WithDevelopmentServer(b bool) func(o *generateOptions) {
 	}
 }
 
-// WithSdkPackageTypes enables or disables the generation of the types on
-// the sdk package. By default this is enabled.
-func WithSdkPackageTypes(b bool) func(o *generateOptions) {
-	return func(o *generateOptions) {
-		o.sdkPackageTypes = b
-	}
-}
-
-// WithTestingPackage enables or disables the generation of the testing
-// package. By default this is enabled.
-func WithTestingPackage(b bool) func(o *generateOptions) {
-	return func(o *generateOptions) {
-		o.testingPackage = b
-	}
-}
-
 // Generate generates and returns a list of objects that represent files to be written
 // to a project. Calling .Write() on the result will cause those files be written to disk.
 func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions)) (GeneratedFiles, error) {
-	options := &generateOptions{
-		sdkPackageTypes: true,
-		testingPackage:  true,
-	}
+	options := &generateOptions{}
 	for _, o := range opts {
 		o(options)
 	}
@@ -85,10 +64,8 @@ func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions))
 		return GeneratedFiles{}, nil
 	}
 
-	files := generateSdkPackage(dir, schema, options.sdkPackageTypes)
-	if options.testingPackage {
-		files = append(files, generateTestingPackage(dir, schema)...)
-	}
+	files := generateSdkPackage(dir, schema)
+	files = append(files, generateTestingPackage(dir, schema)...)
 
 	if options.developmentServer {
 		files = append(files, generateDevelopmentServer(dir, schema)...)
@@ -97,7 +74,7 @@ func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions))
 	return files, nil
 }
 
-func generateSdkPackage(dir string, schema *proto.Schema, generateTypes bool) GeneratedFiles {
+func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdk := &Writer{}
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
 	sdk.Writeln("")
@@ -145,25 +122,20 @@ func generateSdkPackage(dir string, schema *proto.Schema, generateTypes bool) Ge
 	writeDatabaseInterface(sdkTypes, schema)
 	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase")
 
-	generatedFiles := []*GeneratedFile{
+	return []*GeneratedFile{
 		{
 			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/index.js"),
 			Contents: sdk.String(),
+		},
+		{
+			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/index.d.ts"),
+			Contents: sdkTypes.String(),
 		},
 		{
 			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/package.json"),
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
-
-	if generateTypes {
-		generatedFiles = append(generatedFiles, &GeneratedFile{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/index.d.ts"),
-			Contents: sdkTypes.String(),
-		})
-	}
-
-	return generatedFiles
 }
 
 func writeTableInterface(w *Writer, model *proto.Model) {
