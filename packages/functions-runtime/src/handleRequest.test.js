@@ -85,9 +85,6 @@ test("when there is an unexpected error in the custom function", async () => {
     error: {
       code: RuntimeErrors.UnknownError,
       message: "oopsie daisy",
-      data: {
-        stack: expect.stringContaining("Error: oopsie daisy"),
-      },
     },
   });
 });

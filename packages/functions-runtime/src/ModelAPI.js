@@ -31,19 +31,6 @@ class DatabaseError extends Error {
   }
 }
 
-// handles cases where a promise rejection has not been handled
-// in a call to the model api within a custom function
-// will catch any unexpected database errors
-function handlePromiseRejection(fn) {
-  return async function () {
-    try {
-      return await fn.apply(this, arguments);
-    } catch (e) {
-      throw new DatabaseError(e);
-    }
-  };
-}
-
 class ModelAPI {
   /**
    * @param {string} tableName The name of the table this API is for
@@ -59,18 +46,22 @@ class ModelAPI {
   }
 
   async create(values) {
-    const row = await this._db
-      .insertInto(this._tableName)
-      .values(
-        snakeCaseObject({
-          ...this._defaultValues(),
-          ...values,
-        })
-      )
-      .returningAll()
-      .executeTakeFirst();
+    try {
+      const row = await this._db
+        .insertInto(this._tableName)
+        .values(
+          snakeCaseObject({
+            ...this._defaultValues(),
+            ...values,
+          })
+        )
+        .returningAll()
+        .executeTakeFirstOrThrow();
 
-    return camelCaseObject(row);
+      return camelCaseObject(row);
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
   }
 
   async findOne(where) {
@@ -117,8 +108,13 @@ class ModelAPI {
     // TODO: support joins for update
     builder = applyWhereConditions(context, builder, where);
 
-    const row = await builder.executeTakeFirstOrThrow();
-    return camelCaseObject(row);
+    try {
+      const row = await builder.executeTakeFirstOrThrow();
+
+      return camelCaseObject(row);
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
   }
 
   async delete(where) {
@@ -129,8 +125,13 @@ class ModelAPI {
     // TODO: support joins for delete
     builder = applyWhereConditions(context, builder, where);
 
-    const row = await builder.executeTakeFirstOrThrow();
-    return row.id;
+    try {
+      const row = await builder.executeTakeFirstOrThrow();
+      
+      return row.id;
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
   }
 
   where(where) {
@@ -147,15 +148,6 @@ class ModelAPI {
     return new QueryBuilder(context, builder);
   }
 }
-
-// todo: find a nicer way of doing this
-// todo: add other methods in if needed
-Reflect.defineProperty(ModelAPI.prototype, "delete", {
-  value: handlePromiseRejection(ModelAPI.prototype.delete),
-});
-Reflect.defineProperty(ModelAPI.prototype, "update", {
-  value: handlePromiseRejection(ModelAPI.prototype.update),
-});
 
 module.exports = {
   ModelAPI,
