@@ -1,3 +1,10 @@
+# [0.245.0](https://github.com/teamkeel/keel/compare/v0.244.1...v0.245.0) (2023-02-01)
+
+
+### Features
+
+* validation of config files ([#719](https://github.com/teamkeel/keel/issues/719)) ([90ca9a7](https://github.com/teamkeel/keel/commit/90ca9a7375151aac954a419d195e4ccf0bb7642d))
+
 ## [0.244.1](https://github.com/teamkeel/keel/compare/v0.244.0...v0.244.1) (2023-02-01)
 
 
