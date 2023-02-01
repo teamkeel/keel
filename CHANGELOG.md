@@ -1,3 +1,10 @@
+## [0.244.1](https://github.com/teamkeel/keel/compare/v0.244.0...v0.244.1) (2023-02-01)
+
+
+### Bug Fixes
+
+* improved error responses on apis ([#726](https://github.com/teamkeel/keel/issues/726)) ([b25a57e](https://github.com/teamkeel/keel/commit/b25a57ea3bf6c78cb60bf0010a08ce4329dff44d))
+
 # [0.244.0](https://github.com/teamkeel/keel/compare/v0.243.0...v0.244.0) (2023-02-01)
 
 
