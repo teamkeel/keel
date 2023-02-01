@@ -1,3 +1,10 @@
+## [0.245.1](https://github.com/teamkeel/keel/compare/v0.245.0...v0.245.1) (2023-02-01)
+
+
+### Bug Fixes
+
+* update error handling of custom functions ([#720](https://github.com/teamkeel/keel/issues/720)) ([3eb2702](https://github.com/teamkeel/keel/commit/3eb27021d3ceba83536f46b691598b75204241f8))
+
 # [0.245.0](https://github.com/teamkeel/keel/compare/v0.244.1...v0.245.0) (2023-02-01)
 
 
