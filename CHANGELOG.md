@@ -1,3 +1,10 @@
+# [0.244.0](https://github.com/teamkeel/keel/compare/v0.243.0...v0.244.0) (2023-02-01)
+
+
+### Features
+
+* add sdkPackageTypes and testingPackage generate options ([abb16e0](https://github.com/teamkeel/keel/commit/abb16e066f6d3f5c1752f036c81e43a331bcab0c))
+
 # [0.243.0](https://github.com/teamkeel/keel/compare/v0.242.1...v0.243.0) (2023-01-30)
 
 
