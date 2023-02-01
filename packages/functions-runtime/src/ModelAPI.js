@@ -24,6 +24,13 @@ const { camelCaseObject, snakeCaseObject } = require("./casing");
  * @typedef {Object.<string, TableConfig>} TableConfigMap
  */
 
+class DatabaseError extends Error {
+  constructor(error) {
+    super(error.message);
+    this.error = error;
+  }
+}
+
 class ModelAPI {
   /**
    * @param {string} tableName The name of the table this API is for
@@ -39,18 +46,22 @@ class ModelAPI {
   }
 
   async create(values) {
-    const row = await this._db
-      .insertInto(this._tableName)
-      .values(
-        snakeCaseObject({
-          ...this._defaultValues(),
-          ...values,
-        })
-      )
-      .returningAll()
-      .executeTakeFirst();
+    try {
+      const row = await this._db
+        .insertInto(this._tableName)
+        .values(
+          snakeCaseObject({
+            ...this._defaultValues(),
+            ...values,
+          })
+        )
+        .returningAll()
+        .executeTakeFirstOrThrow();
 
-    return camelCaseObject(row);
+      return camelCaseObject(row);
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
   }
 
   async findOne(where) {
@@ -97,8 +108,13 @@ class ModelAPI {
     // TODO: support joins for update
     builder = applyWhereConditions(context, builder, where);
 
-    const row = await builder.executeTakeFirstOrThrow();
-    return camelCaseObject(row);
+    try {
+      const row = await builder.executeTakeFirstOrThrow();
+
+      return camelCaseObject(row);
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
   }
 
   async delete(where) {
@@ -109,8 +125,13 @@ class ModelAPI {
     // TODO: support joins for delete
     builder = applyWhereConditions(context, builder, where);
 
-    const row = await builder.executeTakeFirstOrThrow();
-    return row.id;
+    try {
+      const row = await builder.executeTakeFirstOrThrow();
+
+      return row.id;
+    } catch (e) {
+      throw new DatabaseError(e);
+    }
   }
 
   where(where) {
@@ -130,4 +151,5 @@ class ModelAPI {
 
 module.exports = {
   ModelAPI,
+  DatabaseError,
 };

@@ -4,6 +4,8 @@ const {
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
 
+const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
+
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
@@ -35,20 +37,19 @@ async function handleRequest(request, config) {
 
     return createJSONRPCSuccessResponse(request.id, result);
   } catch (e) {
-    let msg = "";
-
     if (e instanceof Error) {
-      msg = e.message;
-    } else {
-      msg = JSON.stringify(e);
+      return errorToJSONRPCResponse(request, e);
     }
 
     return createJSONRPCErrorResponse(
       request.id,
-      JSONRPCErrorCode.InternalError,
-      msg
+      RuntimeErrors.UnknownError,
+      JSON.stringify(e)
     );
   }
 }
 
-module.exports.handleRequest = handleRequest;
+module.exports = {
+  handleRequest,
+  RuntimeErrors,
+};
