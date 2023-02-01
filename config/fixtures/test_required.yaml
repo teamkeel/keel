@@ -4,16 +4,12 @@ environment:
       value: "test"
       required:
         - "staging"
+        - "production"
   staging:
     - name: "TEST"
-      value: "value test"
-    - name: "TEST2"
-      value: "test2"
+      value: "test_duplicate"
   production:
     - name: "TEST"
-      value: "value test"
-
-secrets:
-  - name: API_KEY
-    required:
-      - "production"
+      value: "test_duplicate"
+    - name: "TEST_API_KEY"
+      value: "api-key"

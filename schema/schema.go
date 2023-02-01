@@ -358,10 +358,5 @@ func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {
 		return
 	}
 
-	var envVarNames []string
-	for _, envVar := range scm.Config.Environment.Default {
-		envVarNames = append(envVarNames, envVar.Name)
-	}
-
-	declarations.EnvironmentVariables = append(declarations.EnvironmentVariables, envVarNames...)
+	declarations.EnvironmentVariables = append(declarations.EnvironmentVariables, scm.Config.AllEnvironmentVariables()...)
 }

@@ -49,7 +49,7 @@ var runCmd = &cobra.Command{
 			if errors.Is(err, os.ErrNotExist) {
 				color.Red("Unable to find config file, future versions will require a config file to run Keel")
 			} else {
-				panic(err)
+				return fmt.Errorf("The following errors were found in your keelconfig.yaml file:\n\n%s", err.Error())
 			}
 		}
 		if config != nil {
