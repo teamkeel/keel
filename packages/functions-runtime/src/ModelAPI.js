@@ -127,7 +127,7 @@ class ModelAPI {
 
     try {
       const row = await builder.executeTakeFirstOrThrow();
-      
+
       return row.id;
     } catch (e) {
       throw new DatabaseError(e);
