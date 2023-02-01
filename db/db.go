@@ -68,30 +68,45 @@ func LocalFromConnection(ctx context.Context, sqlDb *sql.DB) (Db, error) {
 	return &localDb{conn: sqlDb}, nil
 }
 
+func WithDataApiCredentials(resourceArn, secretArn, dbName string) func(d *dataApi) {
+	return func(d *dataApi) {
+		d.dbResourceArn = resourceArn
+		d.dbSecretArn = secretArn
+		d.dbName = dbName
+	}
+}
+
 // DataAPI provides data operations for an Amazon Aurora database.
-func DataAPI(ctx context.Context) (Db, error) {
+func DataAPI(ctx context.Context, opts ...func(d *dataApi)) (Db, error) {
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	client := rdsdata.NewFromConfig(cfg)
-	dbResourceArn := os.Getenv("DB_RESOURCE_ARN")
-	if dbResourceArn == "" {
-		return nil, errors.New("the DB_RESOURCE_ARN env var is not set")
+
+	d := &dataApi{
+		client:        client,
+		dbResourceArn: os.Getenv("DB_RESOURCE_ARN"),
+		dbSecretArn:   os.Getenv("DB_SECRET_ARN"),
+		dbName:        os.Getenv("DB_NAME"),
 	}
-	dbSecretArn := os.Getenv("DB_SECRET_ARN")
-	if dbSecretArn == "" {
-		return nil, errors.New("the DB_SECRET_ARN env var is not set")
+
+	for _, o := range opts {
+		o(d)
 	}
-	dbName := os.Getenv("DB_NAME")
-	if dbName == "" {
-		return nil, errors.New("the DB_NAME env var is not set")
+
+	if d.dbResourceArn == "" {
+		return nil, errors.New("the resource ARN was not provided")
 	}
-	return &dataApi{
-		client:               client,
-		dbResourceArn:        dbResourceArn,
-		dbSecretArn:          dbSecretArn,
-		dbName:               dbName,
-		ongoingTransactionId: nil,
-	}, nil
+
+	if d.dbSecretArn == "" {
+		return nil, errors.New("the secret ARN was not provided")
+	}
+
+	if d.dbName == "" {
+		return nil, errors.New("the db name was not provided")
+	}
+
+	return d, nil
 }
