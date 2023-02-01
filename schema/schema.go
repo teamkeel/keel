@@ -1,9 +1,13 @@
 package schema
 
 import (
+	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/alecthomas/participle/v2/lexer"
+	"github.com/fatih/color"
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 
@@ -359,4 +363,23 @@ func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {
 	}
 
 	declarations.EnvironmentVariables = append(declarations.EnvironmentVariables, scm.Config.AllEnvironmentVariables()...)
+}
+
+func New(directory string) (*Builder, error) {
+	builder := &Builder{}
+
+	configFile := filepath.Join(directory, "keelconfig.yaml")
+	if _, err := os.Stat(configFile); err == nil {
+		cfg, err := config.Load(configFile)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				color.Red("Unable to find config file, future versions will require a config file to run Keel")
+			} else {
+				return builder, fmt.Errorf("The following errors were found in your keelconfig.yaml file:\n\n%s", err.Error())
+			}
+		}
+		builder.Config = cfg
+	}
+
+	return builder, nil
 }

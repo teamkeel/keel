@@ -20,9 +20,10 @@ type ProjectConfig struct {
 
 // EnvironmentConfig is the configuration for a keel environment default, staging, production
 type EnvironmentConfig struct {
-	Default    []Input `yaml:"default"`
-	Staging    []Input `yaml:"staging"`
-	Production []Input `yaml:"production"`
+	Default     []Input `yaml:"default"`
+	Development []Input `yaml:"development"`
+	Staging     []Input `yaml:"staging"`
+	Production  []Input `yaml:"production"`
 }
 
 // Input is the configuration for a keel environment variable or secret
@@ -52,7 +53,6 @@ func Load(dir string) (*ProjectConfig, error) {
 	var config ProjectConfig
 	err = yaml.Unmarshal(loadConfig, &config)
 	if err != nil {
-
 		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
 	}
 
@@ -188,6 +188,10 @@ func (c *ProjectConfig) AllEnvironmentVariables() []string {
 	var environmentVariables []string
 
 	for _, envVar := range c.Environment.Default {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	for _, envVar := range c.Environment.Development {
 		environmentVariables = append(environmentVariables, envVar.Name)
 	}
 

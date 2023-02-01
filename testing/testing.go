@@ -34,7 +34,11 @@ type RunnerOpts struct {
 }
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {
-	builder := &schema.Builder{}
+	builder, err := schema.New(opts.Dir)
+	if err != nil {
+		return nil, err
+	}
+
 	schema, err := builder.MakeFromDirectory(opts.Dir)
 	if err != nil {
 		return nil, err
