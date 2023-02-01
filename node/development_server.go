@@ -3,6 +3,7 @@ package node
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -14,12 +15,18 @@ import (
 type DevelopmentServer struct {
 	cmd       *exec.Cmd
 	exitError error
-	output    *bytes.Buffer
+	output    io.Writer
 	URL       string
 }
 
 func (ds *DevelopmentServer) Output() string {
-	return ds.output.String()
+	b, ok := ds.output.(*bytes.Buffer)
+
+	if !ok {
+		return ""
+	}
+
+	return b.String()
 }
 
 func (ds *DevelopmentServer) Kill() error {
@@ -50,6 +57,7 @@ func (ds *DevelopmentServer) Kill() error {
 type ServerOpts struct {
 	Port    string
 	EnvVars map[string]string
+	Output  io.Writer
 }
 
 // RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
@@ -69,9 +77,17 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 		}
 	}
 
+	var output io.Writer
+
+	if options == nil || options.Output == nil {
+		output = new(bytes.Buffer)
+	} else {
+		output = options.Output
+	}
+
 	d := &DevelopmentServer{
 		cmd:    cmd,
-		output: &bytes.Buffer{},
+		output: output,
 		URL:    fmt.Sprintf("http://localhost:%s", port),
 	}
 

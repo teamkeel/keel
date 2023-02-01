@@ -108,6 +108,7 @@ var runCmd = &cobra.Command{
 					"DB_CONN_TYPE": "pg",
 					"DB_CONN":      dbConnInfo.String(),
 				},
+				Output: os.Stdout,
 			})
 			if err != nil {
 				fmt.Print(err.Error())
