@@ -27,7 +27,7 @@ func TestDuplicates(t *testing.T) {
 	assert.Error(t, err)
 
 	assert.Equal(t, "TEST", config.Environment.Default[0].Name)
-	assert.Equal(t, "could not validate config file: duplicate environment variables found in staging: TEST", err.Error())
+	assert.Equal(t, " - environment variable TEST has a duplicate set in environment: [staging]\n", err.Error())
 }
 
 func TestRequiredFail(t *testing.T) {
@@ -35,7 +35,7 @@ func TestRequiredFail(t *testing.T) {
 	assert.Error(t, err)
 
 	assert.Equal(t, "TEST", config.Environment.Staging[0].Name)
-	assert.Equal(t, "could not validate config file: missing required environment variables in production: TEST", err.Error())
+	assert.Equal(t, " - environment variable TEST is required but not defined in the following environments: [production]\n", err.Error())
 }
 
 func TestRequired(t *testing.T) {
@@ -61,7 +61,7 @@ func TestRequiredValuesKeys(t *testing.T) {
 
 	notOk, keys = requiredValuesKeys(config)
 	assert.True(t, notOk)
-	assert.Equal(t, []string{"TEST"}, keys["production"])
+	assert.Equal(t, []string{"production"}, keys["TEST"])
 }
 
 func TestEmptyConfig(t *testing.T) {

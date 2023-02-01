@@ -1,10 +1,11 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
-	"strings"
 
+	"github.com/fatih/color"
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,6 +32,17 @@ type Input struct {
 	Required []string `yaml:"required,omitempty"`
 }
 
+type ConfigErrors struct {
+	Type         string   `json:"type,omitempty"`
+	Key          string   `json:"key,omitempty"`
+	Environments []string `json:"environments,omitempty"`
+}
+
+const (
+	DuplicateErrorString = " - environment variable %s has a duplicate set in environment: %s\n"
+	RequiredErrorString  = " - environment variable %s is required but not defined in the following environments: %s\n"
+)
+
 func Load(dir string) (*ProjectConfig, error) {
 	loadConfig, err := os.ReadFile(dir)
 	if err != nil {
@@ -40,33 +52,54 @@ func Load(dir string) (*ProjectConfig, error) {
 	var config ProjectConfig
 	err = yaml.Unmarshal(loadConfig, &config)
 	if err != nil {
+
 		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
 	}
 
-	err = Validate(&config)
-	if err != nil {
-		return &config, fmt.Errorf("could not validate config file: %w", err)
+	validationErrors := Validate(&config)
+	if validationErrors != nil {
+		var errorString string
+		for _, v := range validationErrors {
+			if v.Type == "duplicate" {
+				errorString = errorString + fmt.Sprintf(DuplicateErrorString, color.RedString(v.Key), v.Environments)
+			}
+			if v.Type == "missing" {
+				errorString = errorString + fmt.Sprintf(RequiredErrorString, color.RedString(v.Key), v.Environments)
+			}
+		}
+
+		return &config, errors.New(errorString)
 	}
 
 	return &config, nil
 }
 
-func Validate(config *ProjectConfig) error {
+func Validate(config *ProjectConfig) []ConfigErrors {
+	var errors []ConfigErrors
+
 	duplicates, results := checkForDuplicates(config)
 	if duplicates {
 		for k, v := range results {
-			return fmt.Errorf("duplicate environment variables found in %s: %v", k, strings.Join(v[:], ","))
+			errors = append(errors, ConfigErrors{
+				Type:         "duplicate",
+				Key:          k,
+				Environments: v,
+			})
 		}
 	}
 
 	missingKeys, keys := requiredValuesKeys(config)
 	if missingKeys {
 		for k, v := range keys {
-			return fmt.Errorf("missing required environment variables in %s: %v", k, strings.Join(v[:], ","))
+			errors = append(errors, ConfigErrors{
+				Type:         "missing",
+				Key:          k,
+				Environments: v,
+			})
 		}
 	}
 
-	return nil
+	return errors
 }
 
 // checkForDuplicates checks for duplicate environment variables in a keel project
@@ -76,7 +109,9 @@ func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
 	stagingDuplicates, staging := findDuplicates(config.Environment.Staging)
 
 	if len(staging) > 0 {
-		results["staging"] = staging
+		for _, key := range staging {
+			results[key] = append(results[key], "staging")
+		}
 	}
 	if len(config.Environment.Production) == 0 {
 		return stagingDuplicates, results
@@ -84,7 +119,9 @@ func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
 
 	productionDuplicates, production := findDuplicates(config.Environment.Production)
 	if len(production) > 0 {
-		results["production"] = production
+		for _, key := range production {
+			results[key] = append(results[key], "production")
+		}
 	}
 
 	if stagingDuplicates || productionDuplicates {
@@ -113,8 +150,7 @@ func findDuplicates(environment []Input) (bool, []string) {
 // requiredValuesKeys checks for required environment variables in a keel project defined in the default block
 // A required environment variable must be defined in either staging or production
 func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
-	var stagingMissing []string
-	var productionMissing []string
+	results := make(map[string][]string, 2)
 
 	for _, v := range config.Environment.Default {
 		if v.Required == nil {
@@ -124,31 +160,18 @@ func requiredValuesKeys(config *ProjectConfig) (bool, map[string][]string) {
 		for _, required := range v.Required {
 			if required == "staging" {
 				if !contains(config.Environment.Staging, v.Name) {
-					stagingMissing = append(stagingMissing, v.Name)
+					results[v.Name] = append(results[v.Name], "staging")
 				}
 			}
 			if required == "production" {
 				if !contains(config.Environment.Production, v.Name) {
-					productionMissing = append(productionMissing, v.Name)
+					results[v.Name] = append(results[v.Name], "production")
 				}
 			}
 		}
 	}
 
-	results := make(map[string][]string, 2)
-	if len(stagingMissing) == 0 && len(productionMissing) == 0 {
-		return false, results
-	}
-
-	if len(stagingMissing) > 0 {
-		results["staging"] = stagingMissing
-	}
-
-	if len(productionMissing) > 0 {
-		results["production"] = productionMissing
-	}
-
-	return true, results
+	return len(results) > 0, results
 }
 
 func contains(s []Input, e string) bool {
