@@ -7,7 +7,7 @@ export async function toHaveAuthorizationError(received) {
       message: () => "expected value to reject",
       actual: v,
       expected: {
-        code: "ERR_PERMISION_DENIED",
+        code: "ERR_PERMISSION_DENIED",
       },
     };
   } catch (err) {
@@ -17,7 +17,7 @@ export async function toHaveAuthorizationError(received) {
         `expected ${isNot ? "no " : ""}ERR_PERMISSION_DENIED error`,
       actual: err,
       expected: {
-        code: "ERR_PERMISION_DENIED",
+        code: "ERR_PERMISSION_DENIED",
       },
     };
   }
