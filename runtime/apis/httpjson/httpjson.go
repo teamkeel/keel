@@ -58,14 +58,24 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		if err != nil {
 			code := "ERR_INTERNAL"
 			message := "error executing request"
+			httpCode := http.StatusInternalServerError
 
 			var runtimeErr common.RuntimeError
 			if errors.As(err, &runtimeErr) {
 				code = runtimeErr.Code
 				message = runtimeErr.Message
+
+				switch code {
+				case common.ErrInvalidInput:
+					httpCode = http.StatusBadRequest
+				case common.ErrRecordNotFound:
+					httpCode = http.StatusNotFound
+				case common.ErrPermissionDenied:
+					httpCode = http.StatusUnauthorized
+				}
 			}
 
-			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
+			return common.NewJsonResponse(httpCode, HttpJsonErrorResponse{
 				Code:    code,
 				Message: message,
 			})

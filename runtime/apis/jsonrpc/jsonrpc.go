@@ -148,7 +148,7 @@ func parseJsonRpcRequest(b io.ReadCloser) (req *JsonRpcRequest, err error) {
 
 func runtimeErrorCodeToJsonRpcErrorCode(code string) int {
 	switch code {
-	case common.ErrInvalidInput:
+	case common.ErrInvalidInput, common.ErrRecordNotFound, common.ErrPermissionDenied:
 		return JsonRpcInvalidParams
 	default:
 		return JsonRpcInternalErrorCode

@@ -1,12 +1,16 @@
 package graphql
 
 import (
+	"errors"
 	"time"
 
 	"github.com/graphql-go/graphql"
+	"github.com/sirupsen/logrus"
+
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
+	"github.com/teamkeel/keel/runtime/common"
 )
 
 func getInput(operation *proto.Operation, args map[string]any) map[string]any {
@@ -39,6 +43,16 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 
 		res, err := actions.Execute(scope, input)
 		if err != nil {
+			var runtimeErr common.RuntimeError
+			if !errors.As(err, &runtimeErr) {
+				logrus.Error(err)
+				err = common.RuntimeError{
+					Code:    common.ErrInternal,
+					Message: "error executing request",
+				}
+			} else {
+				logrus.Trace(err)
+			}
 			return nil, err
 		}
 

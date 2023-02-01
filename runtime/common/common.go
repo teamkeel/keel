@@ -21,6 +21,7 @@ func NewJsonResponse(status int, body any) Response {
 type ApiHandlerFunc func(r *http.Request) Response
 
 const (
+	ErrInternal         = "ERR_INTERNAL"
 	ErrInvalidInput     = "ERR_INVALID_INPUT"
 	ErrPermissionDenied = "ERR_PERMISSION_DENIED"
 	ErrRecordNotFound   = "ERR_RECORD_NOT_FOUND"
