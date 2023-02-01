@@ -24,6 +24,7 @@ type EnvironmentConfig struct {
 	Development []Input `yaml:"development"`
 	Staging     []Input `yaml:"staging"`
 	Production  []Input `yaml:"production"`
+	Test        []Input `yaml:"test"`
 }
 
 // Input is the configuration for a keel environment variable or secret
