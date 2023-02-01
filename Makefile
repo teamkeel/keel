@@ -43,7 +43,6 @@ prettier:
 	npx prettier --write './integration/**/*.{ts,json}'
 
 install:
-	brew install golangci-lint
 	go mod download
 	npm install
 	cd ./packages/functions-runtime && pnpm install
