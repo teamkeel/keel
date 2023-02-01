@@ -570,7 +570,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	return returnType
 }
 
-func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles {
+func GenerateDevelopmentServerImportsAndFunctions(schema *proto.Schema) string {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createFunctionAPI } from '@teamkeel/sdk';`)
@@ -596,6 +596,12 @@ func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles 
 	}
 	w.Dedent()
 	w.Writeln("}")
+	return w.String()
+}
+
+func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles {
+	w := &Writer{}
+	w.Writeln(GenerateDevelopmentServerImportsAndFunctions(schema))
 
 	w.Writeln(`
 const listener = async (req, res) => {
