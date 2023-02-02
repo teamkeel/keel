@@ -48,7 +48,7 @@ func TestDevelopmentServer(t *testing.T) {
 			return
 		}
 
-		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}}`)
+		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}, "meta": { "headers": {}}}`)
 		res, err := http.Post(server.URL, "application/json", body)
 		require.NoError(t, err)
 		assert.Equal(t, res.StatusCode, 200)

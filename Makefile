@@ -40,7 +40,8 @@ wasm:
 	node ./packages/wasm/encodeWasm.js
 
 prettier:
-	npx prettier --write './integration/**/*.{ts,json}'
+	npx prettier --write './integration/**/*.{ts,js}'
+	npx prettier --write './packages/**/*.{ts,js}'
 
 install:
 	go mod download

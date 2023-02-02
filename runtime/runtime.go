@@ -87,8 +87,17 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			}
 
 			ctx = runtimectx.WithIdentity(ctx, identityId)
-			r = r.WithContext(ctx)
 		}
+
+		// Collect request headers and add to runtime context
+		// These are exposed in custom functions and in expressions
+		headers := map[string][]string{}
+		for k := range r.Header {
+			headers[k] = r.Header.Values(k)
+		}
+		ctx = runtimectx.WithRequestHeaders(ctx, headers)
+
+		r = r.WithContext(ctx)
 
 		response := handler(r)
 		w.Header().Add("Content-Type", "application/json")

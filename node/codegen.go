@@ -87,7 +87,6 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
 		writeEnumWhereCondition(sdkTypes, enum)
-
 		writeEnumObject(sdk, enum)
 	}
 
@@ -99,7 +98,6 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 		writeUniqueConditionsInterface(sdkTypes, model)
 		writeModelAPIDeclaration(sdkTypes, model)
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
-
 		writeModelDefaultValuesFunction(sdk, model)
 
 		for _, op := range model.Operations {
@@ -339,10 +337,16 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	w.Dedent()
 	w.Writeln("};")
 	w.Writeln("return {models};")
-
+	w.Dedent()
+	w.Writeln("}")
+	w.Writeln("function createContextAPI(meta) {")
+	w.Indent()
+	w.Writeln("const headers = new runtime.RequestHeaders(meta[\"headers\"]);")
+	w.Writeln("return {headers};")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")
+	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 }
 
 func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
@@ -515,7 +519,7 @@ func writeActionInputInterfaceFields(w *Writer, schema *proto.Schema, op *proto.
 
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
-	w.Writef("(fn: (inputs: %sInput, api: FunctionAPI) => ", strcase.ToCamel(op.Name))
+	w.Writef("(fn: (inputs: %sInput, api: FunctionAPI, ctx: runtime.ContextAPI) => ", strcase.ToCamel(op.Name))
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))
@@ -573,7 +577,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createFunctionAPI } from '@teamkeel/sdk';`)
+	w.Writeln(`import { createFunctionAPI, createContextAPI } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
 	functionNames := []string{}
@@ -593,6 +597,7 @@ func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles 
 	w.Indent()
 	for _, name := range functionNames {
 		w.Writef("%s: function_%s,", name, name)
+		w.Writeln("")
 	}
 	w.Dedent()
 	w.Writeln("}")
@@ -617,6 +622,7 @@ const listener = async (req, res) => {
 		const rpcResponse = await handleRequest(json, {
 			functions,
 			createFunctionAPI,
+			createContextAPI,
 		});
 
 		res.statusCode = 200;
