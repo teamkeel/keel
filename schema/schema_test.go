@@ -8,7 +8,6 @@ import (
 	"github.com/nsf/jsondiff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema"
 	"google.golang.org/protobuf/encoding/protojson"
 )
@@ -50,12 +49,6 @@ func TestSchema(t *testing.T) {
 				b, err := os.ReadFile(testCaseDir + "/" + f.Name())
 				require.NoError(t, err)
 				filesByName[f.Name()] = b
-
-				if f.Name() == "keelconfig.yaml" {
-					cfg, err := config.Load(testCaseDir + "/" + f.Name())
-					require.NoError(t, err)
-					s2m.Config = cfg
-				}
 			}
 
 			protoSchema, err := s2m.MakeFromDirectory(testCaseDir)

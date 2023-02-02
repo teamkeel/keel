@@ -48,7 +48,11 @@ var testCmd = &cobra.Command{
 			fmt.Println(results.Output)
 		}
 
-		if err != nil || results != nil && !results.Success {
+		if err != nil {
+			panic(err)	
+		}
+
+		if results != nil && !results.Success {
 			os.Exit(1)
 		}
 	},
