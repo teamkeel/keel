@@ -3,9 +3,9 @@
 
 pkgs.mkShell {
   buildInputs = [
-    pkgs.go
+    pkgs.go_1_19
     pkgs.golangci-lint
-    pkgs.nodejs
+    pkgs.nodejs-18_x
     pkgs.nodePackages_latest.pnpm
     pkgs.protobuf
     pkgs.protoc-gen-go
