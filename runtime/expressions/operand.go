@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -154,6 +155,11 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		input := proto.FindInput(operation, inputName)
 		return input.Type.Type, nil
 	case operand.Ident.IsContext():
+		fragmentCount := len(operand.Ident.Fragments)
+		if fragmentCount > 2 && operand.Ident.IsContextEnvField() {
+			return proto.Type_TYPE_STRING, nil
+		}
+
 		fieldName := operand.Ident.Fragments[1].Fragment
 		return runtimectx.ContextFieldTypes[fieldName], nil
 	default:
@@ -188,7 +194,7 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 	case resolver.IsDatabaseColumn():
 		// todo: https://linear.app/keel/issue/RUN-153/set-attribute-to-support-targeting-database-fields
 		panic("cannot resolve operand value when IsDatabaseColumn() is true")
-	case resolver.IsContextField() && resolver.Operand.Ident.IsContextIdentityField():
+	case resolver.Operand.Ident.IsContextIdentityField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.Context)
 		if !isAuthenticated {
 			return nil, nil
@@ -199,11 +205,16 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 			return nil, err
 		}
 		return *ksuid, nil
-	case resolver.IsContextField() && resolver.Operand.Ident.IsContextIsAuthenticatedField():
+	case resolver.Operand.Ident.IsContextIsAuthenticatedField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.Context)
 		return isAuthenticated, nil
-	case resolver.IsContextField() && resolver.Operand.Ident.IsContextNowField():
+	case resolver.Operand.Ident.IsContextNowField():
 		return runtimectx.GetNow(), nil
+	case resolver.Operand.Ident.IsContextEnvField():
+		envVarName := resolver.Operand.Ident.Fragments[2].Fragment
+
+		prefixedName := "CUSTOMER_ENV_" + envVarName
+		return os.Getenv(prefixedName), nil
 	case resolver.Operand.Type() == parser.TypeArray:
 		return nil, fmt.Errorf("cannot yet handle operand of type non-literal array")
 	default:

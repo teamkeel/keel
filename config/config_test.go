@@ -79,3 +79,11 @@ func TestAllEnvironmentVariables(t *testing.T) {
 	allEnvVars := config.AllEnvironmentVariables()
 	assert.Equal(t, []string{"TEST", "TEST_API_KEY"}, allEnvVars)
 }
+
+func TestGetEnvVars(t *testing.T) {
+	config, err := Load("fixtures/test_merge_envs_config.yaml")
+	assert.NoError(t, err)
+
+	envVars := config.GetEnvVars("test")
+	assert.Equal(t, map[string]string{"DOG_NAME": "Peggy", "PERSON_NAME": "Louisa"}, envVars)
+}
