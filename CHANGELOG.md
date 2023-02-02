@@ -1,3 +1,10 @@
+## [0.245.2](https://github.com/teamkeel/keel/compare/v0.245.1...v0.245.2) (2023-02-02)
+
+
+### Reverts
+
+* Revert "feat: add sdkPackageTypes and testingPackage generate options" ([e6a6b2f](https://github.com/teamkeel/keel/commit/e6a6b2fcc4bee9a0056e75969d0caf6baaaefb91))
+
 ## [0.245.1](https://github.com/teamkeel/keel/compare/v0.245.0...v0.245.1) (2023-02-01)
 
 
