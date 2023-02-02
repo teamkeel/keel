@@ -1,5 +1,4 @@
 environment:
   default:
     - name: PERSON_NAME
-      value: 'Pedro'
-    
+      value: "Pedro"
