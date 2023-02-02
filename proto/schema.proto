@@ -270,7 +270,8 @@ message TypeInfo {
 
 message EnvironmentVariable {
   string name = 1;
-  bool required = 2;
+  string value = 2;
+  bool required = 3;
 }
 
 enum OperationInputType {

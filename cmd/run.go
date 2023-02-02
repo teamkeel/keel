@@ -182,7 +182,7 @@ var runCmd = &cobra.Command{
 			fmt.Println("🎉 You're ready to roll")
 		}
 
-		config.SetEnvVars(inputDir, "development")
+		config.SetEnvVars(currSchema.EnvironmentVariables)
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			mutex.Lock()

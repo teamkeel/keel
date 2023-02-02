@@ -2,6 +2,7 @@ package schema
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
@@ -363,6 +364,10 @@ func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {
 	if scm.Config == nil {
 		return
 	}
+	var environment string
+	if env := os.Getenv("KEEL_ENVIRONMENT"); env != "" {
+		environment = env
+	}
 
-	declarations.EnvironmentVariables = append(declarations.EnvironmentVariables, scm.Config.AllEnvironmentVariables()...)
+	declarations.EnvironmentVariables = scm.Config.GetEnvVars(environment)
 }

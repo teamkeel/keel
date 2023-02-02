@@ -103,7 +103,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		return nil, err
 	}
 
-	config.SetEnvVars(opts.Dir, "test")
+	config.SetEnvVars(schema.EnvironmentVariables)
 
 	// Server to handle API calls to the runtime
 	runtimeServer := http.Server{

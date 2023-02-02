@@ -193,9 +193,9 @@ func (e *ExpressionScopeEntity) AllowedOperators() []string {
 func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 	var envVarEntities []*ExpressionScopeEntity
 	for _, ast := range asts {
-		for _, envVar := range ast.EnvironmentVariables {
+		for envVarKey := range ast.EnvironmentVariables {
 			envVarEntities = append(envVarEntities, &ExpressionScopeEntity{
-				Name: envVar,
+				Name: envVarKey,
 				Type: parser.FieldTypeText,
 			})
 		}
@@ -222,7 +222,7 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 					{
 						Name: "env",
 						Object: &ExpressionObjectEntity{
-							Name: "Environment Variables",
+							Name:   "Environment Variables",
 							Fields: envVarEntities,
 						},
 					},

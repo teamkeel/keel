@@ -72,14 +72,6 @@ func TestEmptyConfig(t *testing.T) {
 	assert.Equal(t, "test2_duplicate", config.Environment.Staging[0].Value)
 }
 
-func TestAllEnvironmentVariables(t *testing.T) {
-	config, err := Load("fixtures/test_required.yaml")
-	assert.NoError(t, err)
-
-	allEnvVars := config.AllEnvironmentVariables()
-	assert.Equal(t, []string{"TEST", "TEST_API_KEY"}, allEnvVars)
-}
-
 func TestGetEnvVars(t *testing.T) {
 	config, err := Load("fixtures/test_merge_envs_config.yaml")
 	assert.NoError(t, err)

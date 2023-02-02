@@ -16,7 +16,7 @@ type AST struct {
 	node.Node
 
 	Declarations         []*DeclarationNode `@@*`
-	EnvironmentVariables []string
+	EnvironmentVariables map[string]string
 }
 
 func (ast *AST) String() string {

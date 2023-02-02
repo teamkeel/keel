@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/teamkeel/keel/proto"
 	"gopkg.in/yaml.v3"
 )
 
@@ -50,50 +51,11 @@ func (p *ProjectConfig) GetEnvVars(env string) map[string]string {
 	return nameToValueMap
 }
 
-func (c *ProjectConfig) AllEnvironmentVariables() []string {
-	var environmentVariables []string
-
-	for _, envVar := range c.Environment.Default {
-		environmentVariables = append(environmentVariables, envVar.Name)
+func SetEnvVars(schemaEnvVars []*proto.EnvironmentVariable) {
+	for _, envVar := range schemaEnvVars {
+		name := "CUSTOMER_ENV_" + envVar.Name
+		os.Setenv(name, envVar.Value)
 	}
-
-	for _, envVar := range c.Environment.Staging {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	for _, envVar := range c.Environment.Development {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	for _, envVar := range c.Environment.Production {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	duplicateKeys := make(map[string]bool)
-	allEnvironmentVariables := []string{}
-	for _, item := range environmentVariables {
-		if _, value := duplicateKeys[item]; !value {
-			duplicateKeys[item] = true
-			allEnvironmentVariables = append(allEnvironmentVariables, item)
-		}
-	}
-
-	return allEnvironmentVariables
-}
-
-func SetEnvVars(directory, environment string) {
-	config, err := Load(directory)
-	if err != nil {
-		panic(err)
-	}
-
-	// Find another way to get the environment
-	envVars := config.GetEnvVars(environment)
-	for key, value := range envVars {
-		name := "CUSTOMER_ENV_" + key
-		os.Setenv(name, value)
-	}
-
 }
 
 // EnvironmentConfig is the configuration for a keel environment default, staging, production

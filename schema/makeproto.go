@@ -33,9 +33,10 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				panic("Case not recognized")
 			}
 		}
-		for _, envVar := range parserSchema.EnvironmentVariables {
+		for envVarKey, envVarValue := range parserSchema.EnvironmentVariables {
 			protoSchema.EnvironmentVariables = append(protoSchema.EnvironmentVariables, &proto.EnvironmentVariable{
-				Name: envVar,
+				Name:  envVarKey,
+				Value: envVarValue,
 			})
 		}
 	}

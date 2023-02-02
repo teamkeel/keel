@@ -164,7 +164,8 @@
   ],
   "environmentVariables": [
     {
-      "name": "FOO"
+      "name": "FOO",
+      "value": "bar"
     }
   ]
 }

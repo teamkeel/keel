@@ -7,4 +7,5 @@ test("create person with env var name", async () => {
   const person = await actions.createPerson({});
 
   expect(person.name).toEqual("Pedro");
+  expect(person.petName).toEqual("Peggy")
 });

@@ -2,11 +2,13 @@ model Person {
 
   fields {
     name Text
+    petName Text
   }
 
   operations {
     create createPerson() {
       @set(person.name = ctx.env.PERSON_NAME)
+      @set(person.petName = ctx.env.DOG_NAME)
       @permission(expression: true)
     }
   }
