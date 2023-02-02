@@ -59,7 +59,6 @@
                 "fieldName":  "name"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "name"
               ]

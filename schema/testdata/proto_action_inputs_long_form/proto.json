@@ -59,7 +59,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -84,8 +83,7 @@
               "type":  {
                 "type":  "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ],
           "setExpressions":  [

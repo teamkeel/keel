@@ -465,7 +465,7 @@ func writeActionInputInterfaceFields(w *Writer, schema *proto.Schema, op *proto.
 			sdkPrefix = "sdk."
 		}
 
-		if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+		if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
 			switch input.Type.Type {
 			case proto.Type_TYPE_DATE:
 				w.Write("runtime.DateQueryInput")

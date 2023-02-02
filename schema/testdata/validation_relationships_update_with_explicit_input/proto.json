@@ -101,7 +101,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -116,7 +115,6 @@
                 "fieldName":  "isActive"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "isActive"
               ]
@@ -128,8 +126,7 @@
               "type":  {
                 "type":  "TYPE_ID"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ],
           "setExpressions":  [
@@ -157,7 +154,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -172,7 +168,6 @@
                 "fieldName":  "isActive"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "isActive"
               ]
@@ -184,8 +179,7 @@
               "type":  {
                 "type":  "TYPE_ID"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ],
           "setExpressions":  [
@@ -213,7 +207,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -228,7 +221,6 @@
                 "fieldName":  "isActive"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "isActive"
               ]
@@ -240,8 +232,7 @@
               "type":  {
                 "type":  "TYPE_ID"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ],
           "setExpressions":  [

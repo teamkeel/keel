@@ -122,7 +122,6 @@
                 "fieldName":  "content"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "content"
               ]
@@ -137,7 +136,6 @@
                 "fieldName":  "authorId"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "authorId"
               ]
@@ -160,7 +158,6 @@
                 "fieldName":  "content"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "content"
               ]
@@ -175,7 +172,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "author",
                 "id"
@@ -199,7 +195,6 @@
                 "fieldName":  "content"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "content"
               ]
@@ -211,8 +206,7 @@
               "type":  {
                 "type":  "TYPE_ID"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_EXPLICIT"
+              "mode":  "INPUT_MODE_WRITE"
             }
           ],
           "setExpressions":  [

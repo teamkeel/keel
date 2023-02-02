@@ -76,7 +76,7 @@ func parseTypes(operation *proto.Operation, values map[string]any) map[string]an
 			continue
 		}
 
-		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST && input.Behaviour == proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
 			if input.Type.Type == proto.Type_TYPE_DATE {
 				listOpMap := v.(map[string]any)
 

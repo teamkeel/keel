@@ -60,7 +60,6 @@
                 "fieldName":  "f1"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "f1"
               ]

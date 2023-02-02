@@ -101,7 +101,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -116,7 +115,6 @@
                 "fieldName":  "isActive"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "isActive"
               ]
@@ -131,7 +129,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "parent",
                 "id"
@@ -155,7 +152,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -170,7 +166,6 @@
                 "fieldName":  "isActive"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "isActive"
               ]
@@ -185,7 +180,6 @@
                 "fieldName":  "parentId"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "parentId"
               ]
@@ -208,7 +202,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -223,7 +216,6 @@
                 "fieldName":  "isActive"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "isActive"
               ]
@@ -238,7 +230,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "parent",
                 "id"
@@ -254,7 +245,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "parentOptional",
                 "id"
@@ -278,7 +268,6 @@
                 "fieldName":  "id"
               },
               "mode":  "INPUT_MODE_READ",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "id"
               ]
@@ -293,7 +282,6 @@
                 "fieldName":  "isActive"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "isActive"
               ]
@@ -308,7 +296,6 @@
                 "fieldName":  "parentId"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "parentId"
               ]
@@ -323,7 +310,6 @@
                 "fieldName":  "parentOptionalId"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "parentOptionalId"
               ]

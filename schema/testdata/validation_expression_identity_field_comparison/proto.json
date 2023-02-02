@@ -215,7 +215,6 @@
                 "fieldName":  "title"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "title"
               ]
@@ -230,7 +229,6 @@
                 "fieldName":  "publisher"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "publisher"
               ]
@@ -245,7 +243,6 @@
                 "fieldName":  "owner"
               },
               "mode":  "INPUT_MODE_WRITE",
-              "behaviour":  "INPUT_BEHAVIOUR_IMPLICIT",
               "target":  [
                 "owner"
               ]

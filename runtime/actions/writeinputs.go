@@ -65,7 +65,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 // Updates the query with all inputs defined on the operation.
 func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
 	for _, input := range scope.operation.Inputs {
-		if input.Behaviour != proto.InputBehaviour_INPUT_BEHAVIOUR_IMPLICIT {
+		if !input.IsModelField() {
 			continue
 		}
 
