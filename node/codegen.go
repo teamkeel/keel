@@ -2,12 +2,14 @@ package node
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -116,10 +118,12 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 		}
 	}
 
-	writeAPIDeclarations(sdkTypes, schema.Models)
+	writeTableConfig(sdk, schema.Models)
 	writeAPIFactory(sdk, schema.Models)
 
 	writeDatabaseInterface(sdkTypes, schema)
+	writeAPIDeclarations(sdkTypes, schema.Models)
+
 	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase")
 
 	return []*GeneratedFile{
@@ -333,7 +337,7 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	for _, model := range models {
 		w.Write(strcase.ToLowerCamel(model.Name))
 		w.Write(": ")
-		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues)`, strcase.ToSnake(model.Name), strcase.ToLowerCamel(model.Name))
+		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, null, tableConfigMap)`, strcase.ToSnake(model.Name), strcase.ToLowerCamel(model.Name))
 		w.Writeln(",")
 	}
 	w.Dedent()
@@ -343,6 +347,56 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")
+}
+
+func writeTableConfig(w *Writer, models []*proto.Model) {
+	w.Write("const tableConfigMap = ")
+
+	// In case the words map and string over and over aren't clear enough
+	// for you see the packages/functions-runtime/src/ModelAPI.js file for
+	// docs on how this object is expected to be structured
+	tableConfigMap := map[string]map[string]map[string]string{}
+
+	for _, model := range models {
+		for _, field := range model.Fields {
+			if field.Type.Type != proto.Type_TYPE_MODEL {
+				continue
+			}
+
+			relationshipConfig := map[string]string{
+				"referencesTable": strcase.ToSnake(field.Type.ModelName.Value),
+			}
+
+			if field.ForeignKeyFieldName != nil {
+				relationshipConfig["relationshipType"] = "belongsTo"
+				relationshipConfig["foreignKey"] = strcase.ToSnake(field.ForeignKeyFieldName.Value)
+			} else {
+				if field.Type.Repeated {
+					relationshipConfig["relationshipType"] = "hasMany"
+				} else {
+					relationshipConfig["relationshipType"] = "hasOne"
+				}
+
+				relatedModel := proto.FindModel(models, field.Type.ModelName.Value)
+				relatedField, _ := lo.Find(relatedModel.Fields, func(field *proto.Field) bool {
+					return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
+				})
+				relationshipConfig["foreignKey"] = strcase.ToSnake(relatedField.ForeignKeyFieldName.Value)
+			}
+
+			tableConfig, ok := tableConfigMap[strcase.ToSnake(model.Name)]
+			if !ok {
+				tableConfig = map[string]map[string]string{}
+				tableConfigMap[strcase.ToSnake(model.Name)] = tableConfig
+			}
+
+			tableConfig[field.Name] = relationshipConfig
+		}
+	}
+
+	b, _ := json.MarshalIndent(tableConfigMap, "", "    ")
+	w.Write(string(b))
+	w.Writeln(";")
 }
 
 func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
