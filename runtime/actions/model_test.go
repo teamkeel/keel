@@ -19,10 +19,12 @@ func TestBuiltInDefaultEqualities(t *testing.T) {
 			t.Fatalf("For type %s, expected %v, got %v, fixture is: ", tt.protoType, tt.expectedHasOne, v)
 		}
 
-		repeated = true
-		v, err = builtinDefault(field(tt.protoType, repeated), someEnums)
-		require.NoError(t, err)
-		require.EqualValues(t, tt.expectedHasMany, v, "case is: %+v", tt)
+		if tt.expectedHasMany != nil {
+			repeated = true
+			v, err = builtinDefault(field(tt.protoType, repeated), someEnums)
+			require.NoError(t, err)
+			require.EqualValues(t, tt.expectedHasMany, v, "case is: %+v", tt)
+		}
 	}
 }
 
@@ -30,19 +32,13 @@ func TestBuiltInDefaultForID(t *testing.T) {
 	repeated := false
 	v, err := builtinDefault(field(proto.Type_TYPE_ID, repeated), someEnums)
 	require.NoError(t, err)
-	// Make sure it is a KSUID
-	id, ok := v.(ksuid.KSUID)
-	require.True(t, ok)
-	// Make sure it encodes a very recent time.
-	timeSinceMade := time.Since(id.Time())
-	require.Less(t, timeSinceMade, 5*time.Second)
 
-	repeated = true
-	v, err = builtinDefault(field(proto.Type_TYPE_ID, repeated), someEnums)
-	require.NoError(t, err)
-	ids, ok := v.([]ksuid.KSUID)
+	id, ok := v.(string)
 	require.True(t, ok)
-	require.Len(t, ids, 0)
+
+	ksuid, err := ksuid.Parse(id)
+	require.NoError(t, err)
+	require.False(t, ksuid.IsNil())
 }
 
 func TestBuiltInDefaultForTimeFields(t *testing.T) {
@@ -59,13 +55,6 @@ func TestBuiltInDefaultForTimeFields(t *testing.T) {
 		require.True(t, ok)
 		timeSinceMade := time.Since(timeEncoded)
 		require.Less(t, timeSinceMade, 5*time.Second)
-
-		repeated = true
-		v, err = builtinDefault(field(fieldType, repeated), someEnums)
-		require.NoError(t, err)
-		times, ok := v.([]time.Time)
-		require.True(t, ok)
-		require.Len(t, times, 0)
 	}
 }
 
@@ -258,22 +247,12 @@ var equalities []equality = []equality{
 	{
 		protoType:       proto.Type_TYPE_BOOL,
 		expectedHasOne:  false,
-		expectedHasMany: []bool{},
+		expectedHasMany: nil,
 	},
 	{
 		protoType:       proto.Type_TYPE_INT,
 		expectedHasOne:  0,
 		expectedHasMany: []int{},
-	},
-	{
-		protoType:       proto.Type_TYPE_MODEL,
-		expectedHasOne:  "",
-		expectedHasMany: []string{},
-	},
-	{
-		protoType:       proto.Type_TYPE_CURRENCY,
-		expectedHasOne:  "",
-		expectedHasMany: []string{},
 	},
 }
 

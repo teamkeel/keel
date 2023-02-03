@@ -58,60 +58,35 @@ func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, e
 }
 
 func builtinDefault(field *proto.Field, enums []*proto.Enum) (any, error) {
-	fType := field.Type.Type
 	rpt := field.Type.Repeated
 	now := time.Now().UTC()
-	kid, err := ksuid.NewRandomWithTime(now)
-	if err != nil {
-		return nil, err
-	}
 
-	switch {
-
-	case fType == proto.Type_TYPE_STRING && !rpt:
-		return "", nil
-	case fType == proto.Type_TYPE_STRING && rpt:
+	switch field.Type.Type {
+	case proto.Type_TYPE_STRING:
+		if !rpt {
+			return "", nil
+		}
 		return []string{}, nil
 
-	case fType == proto.Type_TYPE_BOOL && !rpt:
+	case proto.Type_TYPE_BOOL:
 		return false, nil
-	case fType == proto.Type_TYPE_BOOL && rpt:
-		return []bool{}, nil
 
-	case fType == proto.Type_TYPE_INT && !rpt:
-		return 0, nil
-	case fType == proto.Type_TYPE_INT && rpt:
+	case proto.Type_TYPE_INT:
+		if !rpt {
+			return 0, nil
+		}
 		return []int{}, nil
 
-	case fType == proto.Type_TYPE_TIMESTAMP && !rpt:
+	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		return now, nil
-	case fType == proto.Type_TYPE_TIMESTAMP && rpt:
-		return []time.Time{}, nil
 
-	case fType == proto.Type_TYPE_DATE && !rpt:
-		return now, nil
-	case fType == proto.Type_TYPE_DATE && rpt:
-		return []time.Time{}, nil
+	case proto.Type_TYPE_ID:
+		kid, err := ksuid.NewRandomWithTime(now)
+		if err != nil {
+			return nil, err
+		}
 
-	case fType == proto.Type_TYPE_ID && !rpt:
-		return kid, nil
-	case fType == proto.Type_TYPE_ID && rpt:
-		return []ksuid.KSUID{}, nil
-
-	case fType == proto.Type_TYPE_MODEL && !rpt:
-		return "", nil
-	case fType == proto.Type_TYPE_MODEL && rpt:
-		return []string{}, nil
-
-	case fType == proto.Type_TYPE_CURRENCY && !rpt:
-		return "", nil
-	case fType == proto.Type_TYPE_CURRENCY && rpt:
-		return []string{}, nil
-
-	case fType == proto.Type_TYPE_DATETIME && !rpt:
-		return now, nil
-	case fType == proto.Type_TYPE_DATETIME && rpt:
-		return []time.Time{}, nil
+		return kid.String(), nil
 
 	default:
 		// When we cannot provide a built-in default - we assing nil as the value
