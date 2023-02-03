@@ -10,7 +10,7 @@ const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
 async function handleRequest(request, config) {
-  const { createFunctionAPI, functions } = config;
+  const { createFunctionAPI, createContextAPI, functions } = config;
 
   if (!(request.method in functions)) {
     return createJSONRPCErrorResponse(
@@ -23,7 +23,8 @@ async function handleRequest(request, config) {
   try {
     const result = await functions[request.method](
       request.params,
-      createFunctionAPI()
+      createFunctionAPI(),
+      createContextAPI(request.meta)
     );
 
     if (result === undefined) {

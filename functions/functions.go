@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/segmentio/ksuid"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
 type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
@@ -14,6 +16,7 @@ type FunctionsRuntimeRequest struct {
 	ID     string         `json:"id"`
 	Method string         `json:"method"`
 	Params map[string]any `json:"params"`
+	Meta   map[string]any `json:"meta"`
 }
 
 type FunctionsRuntimeResponse struct {
@@ -41,10 +44,25 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 		return nil, errors.New("no functions client in context")
 	}
 
+	requestHeaders, err := runtimectx.GetRequestHeaders(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	joinedHeaders := map[string]string{}
+	for k, v := range requestHeaders {
+		joinedHeaders[k] = strings.Join(v, ", ")
+	}
+
+	meta := map[string]any{
+		"headers": requestHeaders,
+	}
+
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
 		Method: actionName,
 		Params: body,
+		Meta:   meta,
 	}
 
 	resp, err := transport(ctx, req)

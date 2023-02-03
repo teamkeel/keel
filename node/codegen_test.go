@@ -218,7 +218,12 @@ function createFunctionAPI() {
 	};
     return {models};
 }
-module.exports.createFunctionAPI = createFunctionAPI;`
+function createContextAPI(meta) {
+    const headers = new runtime.RequestHeaders(meta["headers"]);
+    return {headers};
+}
+module.exports.createFunctionAPI = createFunctionAPI;
+module.exports.createContextAPI = createContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
 		writeAPIFactory(w, s.Models)
@@ -449,11 +454,11 @@ model Person {
 }
 	`
 	expected := `
-export declare function GetPerson(fn: (inputs: GetPersonInput, api: FunctionAPI) => Promise<Person | null>): Promise<Person | null>;
-export declare function CreatePerson(fn: (inputs: CreatePersonInput, api: FunctionAPI) => Promise<Person>): Promise<Person>;
-export declare function UpdatePerson(fn: (inputs: UpdatePersonInput, api: FunctionAPI) => Promise<Person>): Promise<Person>;
-export declare function DeletePerson(fn: (inputs: DeletePersonInput, api: FunctionAPI) => Promise<string>): Promise<string>;
-export declare function ListPeople(fn: (inputs: ListPeopleInput, api: FunctionAPI) => Promise<Person[]>): Promise<Person[]>;`
+export declare function GetPerson(fn: (inputs: GetPersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person | null>): Promise<Person | null>;
+export declare function CreatePerson(fn: (inputs: CreatePersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person>): Promise<Person>;
+export declare function UpdatePerson(fn: (inputs: UpdatePersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person>): Promise<Person>;
+export declare function DeletePerson(fn: (inputs: DeletePersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<string>): Promise<string>;
+export declare function ListPeople(fn: (inputs: ListPeopleInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person[]>): Promise<Person[]>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")

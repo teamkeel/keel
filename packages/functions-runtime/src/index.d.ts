@@ -52,3 +52,14 @@ export type TimestampQueryInput = {
   before: string;
   after: string;
 };
+
+// Ctx API
+export type ContextAPI = {
+  headers: RequestHeaders;
+};
+
+// Request headers query API
+export type RequestHeaders = {
+  get(name: string): string;
+  has(name: string): boolean;
+};
