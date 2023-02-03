@@ -90,6 +90,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				"DB_CONN_TYPE": "pg",
 				"DB_CONN":      dbConnString,
 			},
+			Output: os.Stdout,
 		})
 		if err != nil {
 			if functionsServer != nil && functionsServer.Output() != "" {
