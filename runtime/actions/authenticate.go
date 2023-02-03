@@ -66,7 +66,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 			return nil, err
 		}
 
-		token, err := GenerateBearerToken(&id)
+		token, err := GenerateBearerToken(id.String())
 		if err != nil {
 			return nil, err
 		}
@@ -107,9 +107,9 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, err
 	}
 
-	id := modelMap[IdColumnName].(ksuid.KSUID)
+	id := modelMap[IdColumnName].(string)
 
-	token, err := GenerateBearerToken(&id)
+	token, err := GenerateBearerToken(id)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	}, nil
 }
 
-func FindIdentityById(ctx context.Context, schema *proto.Schema, id *ksuid.KSUID) (*runtimectx.Identity, error) {
+func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*runtimectx.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(IdField(), Equals, Value(id))
@@ -180,11 +180,11 @@ type claims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateBearerToken(id *ksuid.KSUID) (string, error) {
+func GenerateBearerToken(id string) (string, error) {
 	now := time.Now()
 
 	claims := claims{
-		Id: id.String(),
+		Id: id,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24)),
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -198,28 +198,28 @@ func GenerateBearerToken(id *ksuid.KSUID) (string, error) {
 	return tokenString, err
 }
 
-func ParseBearerToken(jwtToken string) (*ksuid.KSUID, error) {
+func ParseBearerToken(jwtToken string) (string, error) {
 	token, err := jwt.ParseWithClaims(jwtToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
 		return getSigningKey(), nil
 	})
 
 	if err != nil || !token.Valid {
-		return nil, ErrInvalidToken
+		return "", ErrInvalidToken
 	}
 
 	claims := token.Claims.(*claims)
 
 	if !claims.VerifyExpiresAt(time.Now(), true) {
-		return nil, ErrTokenExpired
+		return "", ErrTokenExpired
 	}
 
 	ksuid, err := ksuid.Parse(claims.Id)
 
 	if err != nil {
-		return nil, ErrInvalidIdentityClaim
+		return "", ErrInvalidIdentityClaim
 	}
 
-	return &ksuid, nil
+	return ksuid.String(), nil
 }
 
 func getSigningKey() []byte {
