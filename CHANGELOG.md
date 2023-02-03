@@ -1,3 +1,10 @@
+# [0.246.0](https://github.com/teamkeel/keel/compare/v0.245.2...v0.246.0) (2023-02-03)
+
+
+### Features
+
+* request headers in custom functions runtime ([#732](https://github.com/teamkeel/keel/issues/732)) ([61440ca](https://github.com/teamkeel/keel/commit/61440ca3be892fabe23eb519d4702377a6c47432))
+
 ## [0.245.2](https://github.com/teamkeel/keel/compare/v0.245.1...v0.245.2) (2023-02-02)
 
 
