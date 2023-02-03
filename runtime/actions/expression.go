@@ -137,30 +137,23 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 		// We know that the current fragment is a related model because it's not the last fragment
 		relatedModelField := proto.FindField(scope.schema.Models, model, currentFragment)
 		relatedModel := relatedModelField.Type.ModelName.Value
-		identifierField := "id"
+		foreignKeyField := proto.GetForignKeyFieldName(scope.schema.Models, relatedModelField)
+		primaryKey := "id"
 
-		switch {
-		case proto.IsToOneRelationship(relatedModelField):
-			foreignKeyField := relatedModelField.ForeignKeyFieldName.Value
+		var leftOperand *QueryOperand
+		var rightOperand *QueryOperand
 
-			// Add a join to the primary key of the model that has-many in the M:1 relationship
-			query.InnerJoin(relatedModel, ExpressionField(fragments[:i+1], identifierField), ExpressionField(fragments[:i], foreignKeyField))
-		case proto.IsToManyRelationship(relatedModelField):
-			fkModel := proto.FindModel(scope.schema.Models, relatedModelField.Type.ModelName.Value)
-			fkField, found := lo.Find(fkModel.Fields, func(field *proto.Field) bool {
-				return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model
-			})
-			if !found {
-				return fmt.Errorf("no foreign key field found on related model %s", model)
-			}
-
-			foreignKeyField := fkField.ForeignKeyFieldName.Value
-
-			// Add a join to the foreign key of the model that belongs-to in the 1:M relationship
-			query.InnerJoin(relatedModel, ExpressionField(fragments[:i+1], foreignKeyField), ExpressionField(fragments[:i], identifierField))
-		default:
-			return fmt.Errorf("unhandled model relationship configuration for field: %s on model: %s", relatedModelField, relatedModelField.ModelName)
+		if proto.IsBelongsTo(relatedModelField) {
+			// In a "belongs to" the foriegn key is on _this_ model
+			leftOperand = ExpressionField(fragments[:i+1], primaryKey)
+			rightOperand = ExpressionField(fragments[:i], foreignKeyField)
+		} else {
+			// In all others the foriegn key is on the _other_ model
+			leftOperand = ExpressionField(fragments[:i+1], foreignKeyField)
+			rightOperand = ExpressionField(fragments[:i], primaryKey)
 		}
+
+		query.InnerJoin(relatedModel, leftOperand, rightOperand)
 
 		model = relatedModelField.Type.ModelName.Value
 	}
