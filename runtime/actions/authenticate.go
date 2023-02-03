@@ -11,18 +11,13 @@ import (
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 
 	"github.com/iancoleman/strcase"
 
 	"golang.org/x/crypto/bcrypt"
 )
-
-type Identity struct {
-	Id       string `gorm:"column:id"`
-	Email    string `gorm:"column:email"`
-	Password string `gorm:"column:password"`
-}
 
 type AuthenticateResult struct {
 	Token           string `json:"token"`
@@ -125,7 +120,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	}, nil
 }
 
-func FindIdentityById(ctx context.Context, schema *proto.Schema, id *ksuid.KSUID) (*Identity, error) {
+func FindIdentityById(ctx context.Context, schema *proto.Schema, id *ksuid.KSUID) (*runtimectx.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(IdField(), Equals, Value(id))
@@ -143,14 +138,16 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id *ksuid.KSUID
 		return nil, nil
 	}
 
-	return &Identity{
-		Id:       result["id"].(string),
-		Email:    result["email"].(string),
-		Password: result["password"].(string),
+	return &runtimectx.Identity{
+		Id:        result["id"].(string),
+		Email:     result["email"].(string),
+		Password:  result["password"].(string),
+		CreatedAt: result["createdAt"].(time.Time),
+		UpdatedAt: result["updatedAt"].(time.Time),
 	}, nil
 }
 
-func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*Identity, error) {
+func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*runtimectx.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 	query := NewQuery(identityModel)
 	err := query.Where(Field(EmailColumnName), Equals, Value(email))
@@ -168,10 +165,12 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 		return nil, nil
 	}
 
-	return &Identity{
-		Id:       result["id"].(string),
-		Email:    result["email"].(string),
-		Password: result["password"].(string),
+	return &runtimectx.Identity{
+		Id:        result["id"].(string),
+		Email:     result["email"].(string),
+		Password:  result["password"].(string),
+		CreatedAt: result["createdAt"].(time.Time),
+		UpdatedAt: result["updatedAt"].(time.Time),
 	}, nil
 }
 

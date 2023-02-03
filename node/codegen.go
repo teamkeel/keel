@@ -320,6 +320,12 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 	w.Writeln("models: ModelsAPI;")
 	w.Dedent()
 	w.Writeln("}")
+
+	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
+	w.Indent()
+	w.Writeln("identity: Identity;")
+	w.Dedent()
+	w.Writeln("}")
 }
 
 func writeAPIFactory(w *Writer, models []*proto.Model) {
@@ -341,8 +347,9 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	w.Writeln("}")
 	w.Writeln("function createContextAPI(meta) {")
 	w.Indent()
-	w.Writeln("const headers = new runtime.RequestHeaders(meta[\"headers\"]);")
-	w.Writeln("return {headers};")
+	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
+	w.Writeln("const identity = meta.identity;")
+	w.Writeln("return {headers, identity};")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")
@@ -519,7 +526,7 @@ func writeActionInputInterfaceFields(w *Writer, schema *proto.Schema, op *proto.
 
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
-	w.Writef("(fn: (inputs: %sInput, api: FunctionAPI, ctx: runtime.ContextAPI) => ", strcase.ToCamel(op.Name))
+	w.Writef("(fn: (inputs: %sInput, api: FunctionAPI, ctx: ContextAPI) => ", strcase.ToCamel(op.Name))
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))

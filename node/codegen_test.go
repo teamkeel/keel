@@ -219,8 +219,9 @@ function createFunctionAPI() {
     return {models};
 }
 function createContextAPI(meta) {
-    const headers = new runtime.RequestHeaders(meta["headers"]);
-    return {headers};
+	const headers = new runtime.RequestHeaders(meta.headers);
+	const identity = meta.identity;
+    return {headers, identity};
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
@@ -238,6 +239,9 @@ export type ModelsAPI = {
 }
 export type FunctionAPI = {
 	models: ModelsAPI;
+}
+export interface ContextAPI extends runtime.ContextAPI {
+	identity: Identity;
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
@@ -454,11 +458,11 @@ model Person {
 }
 	`
 	expected := `
-export declare function GetPerson(fn: (inputs: GetPersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person | null>): Promise<Person | null>;
-export declare function CreatePerson(fn: (inputs: CreatePersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person>): Promise<Person>;
-export declare function UpdatePerson(fn: (inputs: UpdatePersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person>): Promise<Person>;
-export declare function DeletePerson(fn: (inputs: DeletePersonInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<string>): Promise<string>;
-export declare function ListPeople(fn: (inputs: ListPeopleInput, api: FunctionAPI, ctx: runtime.ContextAPI) => Promise<Person[]>): Promise<Person[]>;`
+export declare function GetPerson(fn: (inputs: GetPersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person | null>): Promise<Person | null>;
+export declare function CreatePerson(fn: (inputs: CreatePersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
+export declare function UpdatePerson(fn: (inputs: UpdatePersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
+export declare function DeletePerson(fn: (inputs: DeletePersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<string>): Promise<string>;
+export declare function ListPeople(fn: (inputs: ListPeopleInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person[]>): Promise<Person[]>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")

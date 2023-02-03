@@ -54,8 +54,17 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 		joinedHeaders[k] = strings.Join(v, ", ")
 	}
 
+	var identity *runtimectx.Identity
+	if runtimectx.IsAuthenticated(ctx) {
+		identity, err = runtimectx.GetIdentity(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	meta := map[string]any{
-		"headers": requestHeaders,
+		"headers":  requestHeaders,
+		"identity": identity,
 	}
 
 	req := &FunctionsRuntimeRequest{

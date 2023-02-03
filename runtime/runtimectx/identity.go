@@ -2,39 +2,40 @@ package runtimectx
 
 import (
 	"context"
-	"errors"
 	"fmt"
-
-	"github.com/segmentio/ksuid"
+	"time"
 )
 
 type contextKey string
 
 const (
-	identityIdContextKey contextKey = "identityId"
+	identityContextKey contextKey = "identityId"
 )
 
-func WithIdentity(ctx context.Context, id *ksuid.KSUID) context.Context {
-	if id != nil {
-		ctx = context.WithValue(ctx, identityIdContextKey, id)
+type Identity struct {
+	Id        string    `json:"id"`
+	Email     string    `json:"email"`
+	Password  string    `json:"-"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
+func WithIdentity(ctx context.Context, identity *Identity) context.Context {
+	if identity != nil {
+		ctx = context.WithValue(ctx, identityContextKey, identity)
 	}
 
 	return ctx
 }
 
-func GetIdentity(ctx context.Context) (*ksuid.KSUID, error) {
-	v := ctx.Value(identityIdContextKey)
-	if v == nil {
-		return nil, fmt.Errorf("context does not have a %s key", identityIdContextKey)
-	}
-
-	id, ok := v.(*ksuid.KSUID)
+func GetIdentity(ctx context.Context) (*Identity, error) {
+	v, ok := ctx.Value(identityContextKey).(*Identity)
 	if !ok {
-		return nil, errors.New("identity id on the context is not of type ksuid.KSUID")
+		return nil, fmt.Errorf("context does not have a key or is not Identity: %s", identityContextKey)
 	}
-	return id, nil
+	return v, nil
 }
 
 func IsAuthenticated(ctx context.Context) bool {
-	return ctx.Value(identityIdContextKey) != nil
+	return ctx.Value(identityContextKey) != nil
 }

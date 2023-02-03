@@ -142,12 +142,7 @@ func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.Perm
 func getEmailAndDomain(scope *Scope) (string, string, error) {
 
 	// Use the authenticated identity's id to lookup their email address.
-	identityId, err := runtimectx.GetIdentity(scope.context)
-	if err != nil {
-		return "", "", err
-	}
-
-	identity, err := FindIdentityById(scope.context, scope.schema, identityId)
+	identity, err := runtimectx.GetIdentity(scope.context)
 	if err != nil {
 		return "", "", err
 	}
