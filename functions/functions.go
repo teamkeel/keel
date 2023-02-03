@@ -3,11 +3,24 @@ package functions
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/segmentio/ksuid"
+	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+)
+
+// Custom error codes returned from custom
+// function runtime
+// See packages/functions-runtime for original definition and more info.
+const (
+	UnknownError              = -32001
+	DatabaseError             = -32002
+	NoResultError             = -32003
+	RecordNotFoundError       = -32004
+	ForeignKeyConstraintError = -32005
+	NotNullConstraintError    = -32006
+	UniqueConstraintError     = -32007
 )
 
 type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
@@ -25,9 +38,12 @@ type FunctionsRuntimeResponse struct {
 	Error  *FunctionsRuntimeError `json:"error"`
 }
 
+// FunctionsRuntimeError follows the error object specification
+// from the JSONRPC spec: https://www.jsonrpc.org/specification#error_object
 type FunctionsRuntimeError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Code    int            `json:"code"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data"`
 }
 
 type transportContextKey string
@@ -80,7 +96,30 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 	}
 
 	if resp.Error != nil {
-		return nil, fmt.Errorf("%s function returned error (%d) - %s", actionName, resp.Error.Code, resp.Error.Message)
+		data := resp.Error.Data
+
+		switch resp.Error.Code {
+		case ForeignKeyConstraintError:
+			return nil, common.NewForeignKeyConstraintError(data["column"].(string))
+		case NoResultError:
+			return nil, common.RuntimeError{
+				Code:    common.ErrInternal,
+				Message: "custom function returned no result",
+			}
+		case NotNullConstraintError:
+			return nil, common.NewNotNullError(data["column"].(string))
+		case UniqueConstraintError:
+			return nil, common.NewUniquenessError(data["column"].(string))
+		case RecordNotFoundError:
+			return nil, common.NewNotFoundError()
+		default:
+			// includes generic errors thrown by custom functions during execution, plus other types of DatabaseError's that aren't fk/uniqueness/null constraint errors:
+			// https://www.postgresql.org/docs/current/errcodes-appendix.html
+			return nil, common.RuntimeError{
+				Code:    common.ErrInternal,
+				Message: resp.Error.Message,
+			}
+		}
 	}
 
 	return resp.Result, nil

@@ -51,7 +51,7 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	if result == nil {
-		return nil, common.RuntimeError{Code: common.ErrRecordNotFound, Message: "record not found"}
+		return nil, common.NewNotFoundError()
 	}
 
 	return result, nil

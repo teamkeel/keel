@@ -724,26 +724,13 @@ func sqlQuote(tokens ...string) string {
 func toRuntimeError(err error) error {
 	var value *db.DbError
 	if errors.As(err, &value) {
-		// Parses from the database casing back to the schema casing.
-		// Important since these error messages are delivered to the user.
-		field := strcase.ToLowerCamel(value.Column)
-
 		switch value.Err {
 		case db.ErrNotNullConstraintViolation:
-			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
-				Message: fmt.Sprintf("field '%s' cannot be null", field),
-			}
+			return common.NewNotNullError(value.Column)
 		case db.ErrUniqueConstraintViolation:
-			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
-				Message: fmt.Sprintf("field '%s' can only contain unique values", field),
-			}
+			return common.NewUniquenessError(value.Column)
 		case db.ErrForeignKeyConstraintViolation:
-			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
-				Message: fmt.Sprintf("the relationship lookup for field '%s' does not exist", field),
-			}
+			return common.NewForeignKeyConstraintError(value.Column)
 		default:
 			return common.RuntimeError{
 				Code:    common.ErrInvalidInput,

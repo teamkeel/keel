@@ -47,11 +47,12 @@ class ModelAPI {
 
   async create(values) {
     try {
+      const defaults = this._defaultValues();
       const row = await this._db
         .insertInto(this._tableName)
         .values(
           snakeCaseObject({
-            ...this._defaultValues(),
+            ...defaults,
             ...values,
           })
         )
