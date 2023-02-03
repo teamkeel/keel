@@ -98,6 +98,10 @@ func TestIntegration(t *gotest.T) {
 				fmt.Println(output.Output)
 				t.Fail()
 			}
+
+			t.Cleanup(func() {
+				os.Stdout.Close()
+			})
 		})
 	}
 }
