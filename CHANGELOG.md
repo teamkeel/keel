@@ -1,3 +1,10 @@
+# [0.247.0](https://github.com/teamkeel/keel/compare/v0.246.0...v0.247.0) (2023-02-03)
+
+
+### Features
+
+* ctx.identity model in custom functions ([#737](https://github.com/teamkeel/keel/issues/737)) ([fa0fc02](https://github.com/teamkeel/keel/commit/fa0fc02abf7351587043afc2c9a995abaea4250e))
+
 # [0.246.0](https://github.com/teamkeel/keel/compare/v0.245.2...v0.246.0) (2023-02-03)
 
 
