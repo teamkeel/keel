@@ -42,6 +42,9 @@ func (suite dbTestSuite) testDbTransactionCommit(t *testing.T) {
 
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_commit_table")
 	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_commit_table")
+	})
 
 	err = db.BeginTransaction(ctx)
 	assert.NoError(t, err)
@@ -74,6 +77,9 @@ func (suite dbTestSuite) testDbTransactionRollback(t *testing.T) {
 
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testapi_local_transaction_rollback_table")
 	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testapi_local_transaction_rollback_table")
+	})
 
 	err = db.BeginTransaction(ctx)
 	assert.NoError(t, err)
@@ -104,6 +110,9 @@ func (suite dbTestSuite) testDbStatements(t *testing.T) {
 	db := suite.CreateTestDb(t, ctx)
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+	})
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
         id               text PRIMARY KEY,
         name             text,
@@ -148,6 +157,9 @@ func (suite dbTestSuite) testErrUniqueConstraintViolation(t *testing.T) {
 	db := suite.CreateTestDb(t, ctx)
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+	})
 
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
         id               text PRIMARY KEY,
@@ -176,6 +188,9 @@ func (suite dbTestSuite) testErrNotNullConstraintViolation(t *testing.T) {
 	db := suite.CreateTestDb(t, ctx)
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+	})
 
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
         id               text PRIMARY KEY,
@@ -206,9 +221,15 @@ func (suite dbTestSuite) testErrForeignKeyConstraintViolation(t *testing.T) {
 
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
 	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS person")
+	})
 
 	_, err = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS company")
 	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS company")
+	})
 
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
         id               text PRIMARY KEY,
