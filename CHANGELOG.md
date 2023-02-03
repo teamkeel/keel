@@ -1,3 +1,10 @@
+## [0.247.1](https://github.com/teamkeel/keel/compare/v0.247.0...v0.247.1) (2023-02-03)
+
+
+### Bug Fixes
+
+* redirect custom function output to os.stdout in test cmd ([#733](https://github.com/teamkeel/keel/issues/733)) ([aad2024](https://github.com/teamkeel/keel/commit/aad2024d2adeb82cb383af17f2c235e51fdc6429))
+
 # [0.247.0](https://github.com/teamkeel/keel/compare/v0.246.0...v0.247.0) (2023-02-03)
 
 
