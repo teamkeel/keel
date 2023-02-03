@@ -1,0 +1,27 @@
+model Person {
+    fields {
+        name Text
+        gender Text
+        niNumber Text @unique
+    }
+
+    functions {
+        get getPerson(id)
+        get getPersonByNINumber(niNumber)
+        create createPerson() with (name, gender, niNumber)
+        list listPeople(gender)
+        delete deletePerson(id)
+        update updatePerson(id) with (name, gender, niNumber)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
+
+api Web {
+    models {
+        Person
+    }
+}
