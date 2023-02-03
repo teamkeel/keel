@@ -3,12 +3,14 @@ model Person {
         name Text
         gender Text
         niNumber Text @unique
+        identity Identity?
     }
 
     functions {
         get getPerson(id)
         get getPersonByNINumber(niNumber)
         create createPerson() with (name, gender, niNumber)
+        create createPersonWithIdentity() with (name, gender, niNumber)
         list listPeople(gender)
         delete deletePerson(id)
         update updatePerson(id) with (name, gender, niNumber)

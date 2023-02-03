@@ -86,7 +86,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 				return
 			}
 
-			ctx = runtimectx.WithIdentity(ctx, identityId)
+			ctx = runtimectx.WithIdentity(ctx, identity)
 		}
 
 		// Collect request headers and add to runtime context

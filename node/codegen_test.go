@@ -220,7 +220,8 @@ function createFunctionAPI() {
 }
 function createContextAPI(meta) {
     const headers = new runtime.RequestHeaders(meta["headers"]);
-    return {headers};
+	const identity = meta["identity"];
+    return {headers, identity};
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
@@ -238,6 +239,9 @@ export type ModelsAPI = {
 }
 export type FunctionAPI = {
 	models: ModelsAPI;
+}
+export interface ContextAPI extends runtime.ContextAPI {
+	identity: Identity;
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {

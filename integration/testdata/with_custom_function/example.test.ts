@@ -1,5 +1,7 @@
-import { actions, models } from "@teamkeel/testing";
+import { actions, models, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
+
+beforeEach(resetDatabase);
 
 test("creating a person", async () => {
   const person = await actions.createPerson({
@@ -9,6 +11,28 @@ test("creating a person", async () => {
   });
 
   expect(person.name).toEqual("foo");
+});
+
+test("creating a person with identity", async () => {
+  const { token: token } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  const identity = await models.identity.findOne({ email: "user@keel.xyz" });
+  expect(identity).not.toBeNull();
+
+  const person = await actions.withAuthToken(token).createPersonWithIdentity({
+    name: "foo",
+    gender: "female",
+    niNumber: "771",
+  });
+
+  expect(person.name).toEqual("user@keel.xyz");
+  expect(person.identityId).toEqual(identity?.id);
 });
 
 test("fetching a person by id", async () => {

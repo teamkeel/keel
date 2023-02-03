@@ -194,11 +194,11 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 			return nil, nil
 		}
 
-		ksuid, err := runtimectx.GetIdentity(resolver.Context)
+		identity, err := runtimectx.GetIdentity(resolver.Context)
 		if err != nil {
 			return nil, err
 		}
-		return *ksuid, nil
+		return identity.Id, nil
 	case resolver.IsContextField() && resolver.Operand.Ident.IsContextIsAuthenticatedField():
 		isAuthenticated := runtimectx.IsAuthenticated(resolver.Context)
 		return isAuthenticated, nil
