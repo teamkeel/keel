@@ -1,13 +1,12 @@
 import { CreatePersonWithIdentity } from "@teamkeel/sdk";
 
 export default CreatePersonWithIdentity((inputs, api, ctx) => {
-  var identityId = ctx.identity.id;
-  var identityEmail = ctx.identity.email;
+  const { email, id } = ctx.identity;
 
   return api.models.person.create({
-    name: identityEmail,
-    gender: inputs["gender"],
-    niNumber: inputs["niNumber"],
-    identityId: identityId,
+    name: email,
+    gender: inputs.gender,
+    niNumber: inputs.niNumber,
+    identityId: id,
   });
 });

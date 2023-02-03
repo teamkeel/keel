@@ -219,8 +219,8 @@ function createFunctionAPI() {
     return {models};
 }
 function createContextAPI(meta) {
-    const headers = new runtime.RequestHeaders(meta["headers"]);
-	const identity = meta["identity"];
+	const headers = new runtime.RequestHeaders(meta.headers);
+	const identity = meta.identity;
     return {headers, identity};
 }
 module.exports.createFunctionAPI = createFunctionAPI;
