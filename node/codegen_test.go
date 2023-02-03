@@ -213,8 +213,8 @@ func TestWriteAPIFactory(t *testing.T) {
 	expected := `
 function createFunctionAPI() {
 	const models = {
-		person: new runtime.ModelAPI("person", personDefaultValues),
-		identity: new runtime.ModelAPI("identity", identityDefaultValues),
+		person: new runtime.ModelAPI("person", personDefaultValues, null, tableConfigMap),
+		identity: new runtime.ModelAPI("identity", identityDefaultValues, null, tableConfigMap),
 	};
     return {models};
 }
@@ -520,6 +520,59 @@ export declare function resetDatabase(): Promise<void>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		writeTestingTypes(w, s)
+	})
+}
+
+func TestWriteTableConfig(t *testing.T) {
+	schema := `
+model Publisher {
+	fields {
+		authors Author[]
+	}
+}
+model Author {
+	fields {
+		publisher Publisher
+		books Book[]
+	}
+}
+model Book {
+	fields {
+		author Author
+	}
+}`
+	expected := `
+const tableConfigMap = {
+	"author": {
+		"books": {
+			"foreignKey": "author_id",
+			"referencesTable": "book",
+			"relationshipType": "hasMany"
+		},
+		"publisher": {
+			"foreignKey": "publisher_id",
+			"referencesTable": "publisher",
+			"relationshipType": "belongsTo"
+		}
+	},
+	"book": {
+		"author": {
+			"foreignKey": "author_id",
+			"referencesTable": "author",
+			"relationshipType": "belongsTo"
+		}
+	},
+	"publisher": {
+		"authors": {
+			"foreignKey": "publisher_id",
+			"referencesTable": "author",
+			"relationshipType": "hasMany"
+		}
+	}
+};`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		writeTableConfig(w, s.Models)
 	})
 }
 
