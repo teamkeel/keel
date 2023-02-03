@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"google.golang.org/protobuf/encoding/protojson"
 
@@ -67,12 +66,6 @@ func main() {
 				}
 				currContents = b
 				hasCurrProto = true
-			}
-			if strings.HasSuffix(file.Name(), ".yaml") {
-				defaultConfig, err = config.Load(filepath.Join(testdataDir, subDir.Name(), file.Name()))
-				if err != nil {
-					panic(err)
-				}
 			}
 		}
 

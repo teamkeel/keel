@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -35,18 +34,10 @@ type RunnerOpts struct {
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {
 	builder := &schema.Builder{}
+
 	schema, err := builder.MakeFromDirectory(opts.Dir)
 	if err != nil {
 		return nil, err
-	}
-
-	configFile := filepath.Join(opts.Dir, "keelconfig.yaml")
-	if _, err := os.Stat(configFile); err == nil {
-		cfg, err := config.Load(configFile)
-		if err != nil {
-			return nil, err
-		}
-		builder.Config = cfg
 	}
 
 	testApi := &proto.Api{
@@ -110,6 +101,8 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	config.SetEnvVars(opts.Dir, "test")
 
 	// Server to handle API calls to the runtime
 	runtimeServer := http.Server{

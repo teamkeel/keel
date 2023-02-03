@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/fatih/color"
 	"gopkg.in/yaml.v3"
@@ -18,11 +20,88 @@ type ProjectConfig struct {
 	Secrets     []Input           `yaml:"secrets"`
 }
 
+func (p *ProjectConfig) GetEnvVars(env string) map[string]string {
+	nameToValueMap := map[string]string{}
+
+	var environmentInput []Input
+	switch env {
+	case "test":
+		environmentInput = p.Environment.Test
+	case "development":
+		environmentInput = p.Environment.Development
+	case "staging":
+		environmentInput = p.Environment.Staging
+	case "production":
+		environmentInput = p.Environment.Production
+	default:
+		environmentInput = p.Environment.Default
+	}
+
+	// make a copy of the default env vars
+	merged := append([]Input{}, p.Environment.Default...)
+	// merge with specific environment env vars
+	merged = append(merged, environmentInput...)
+
+	for _, input := range merged {
+		// override default env var with specific environment one, if it exists
+		nameToValueMap[input.Name] = input.Value
+	}
+
+	return nameToValueMap
+}
+
+func (c *ProjectConfig) AllEnvironmentVariables() []string {
+	var environmentVariables []string
+
+	for _, envVar := range c.Environment.Default {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	for _, envVar := range c.Environment.Staging {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	for _, envVar := range c.Environment.Development {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	for _, envVar := range c.Environment.Production {
+		environmentVariables = append(environmentVariables, envVar.Name)
+	}
+
+	duplicateKeys := make(map[string]bool)
+	allEnvironmentVariables := []string{}
+	for _, item := range environmentVariables {
+		if _, value := duplicateKeys[item]; !value {
+			duplicateKeys[item] = true
+			allEnvironmentVariables = append(allEnvironmentVariables, item)
+		}
+	}
+
+	return allEnvironmentVariables
+}
+
+func SetEnvVars(directory, environment string) {
+	config, err := Load(directory)
+	if err != nil {
+		panic(err)
+	}
+
+	// Find another way to get the environment
+	envVars := config.GetEnvVars(environment)
+	for key, value := range envVars {
+		os.Setenv(key, value)
+	}
+
+}
+
 // EnvironmentConfig is the configuration for a keel environment default, staging, production
 type EnvironmentConfig struct {
-	Default    []Input `yaml:"default"`
-	Staging    []Input `yaml:"staging"`
-	Production []Input `yaml:"production"`
+	Default     []Input `yaml:"default"`
+	Development []Input `yaml:"development"`
+	Staging     []Input `yaml:"staging"`
+	Production  []Input `yaml:"production"`
+	Test        []Input `yaml:"test"`
 }
 
 // Input is the configuration for a keel environment variable or secret
@@ -44,15 +123,22 @@ const (
 )
 
 func Load(dir string) (*ProjectConfig, error) {
+	// If an absolute path to a file is provided then use it, otherwise append the default
+	// file name
+	if !strings.HasSuffix(dir, ".yaml") {
+		dir = filepath.Join(dir, "keelconfig.yaml")
+	}
 	loadConfig, err := os.ReadFile(dir)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return &ProjectConfig{}, nil
+		}
 		return nil, fmt.Errorf("could not read config file: %w", err)
 	}
 
 	var config ProjectConfig
 	err = yaml.Unmarshal(loadConfig, &config)
 	if err != nil {
-
 		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
 	}
 
@@ -182,31 +268,4 @@ func contains(s []Input, e string) bool {
 	}
 
 	return false
-}
-
-func (c *ProjectConfig) AllEnvironmentVariables() []string {
-	var environmentVariables []string
-
-	for _, envVar := range c.Environment.Default {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	for _, envVar := range c.Environment.Staging {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	for _, envVar := range c.Environment.Production {
-		environmentVariables = append(environmentVariables, envVar.Name)
-	}
-
-	duplicateKeys := make(map[string]bool)
-	allEnvironmentVariables := []string{}
-	for _, item := range environmentVariables {
-		if _, value := duplicateKeys[item]; !value {
-			duplicateKeys[item] = true
-			allEnvironmentVariables = append(allEnvironmentVariables, item)
-		}
-	}
-
-	return allEnvironmentVariables
 }

@@ -40,7 +40,7 @@ wasm:
 	node ./packages/wasm/encodeWasm.js
 
 prettier:
-	npx prettier --write './integration/**/*.{ts,js}'
+	npx prettier --write './integration/**/*.{ts,json,yaml}'
 	npx prettier --write './packages/**/*.{ts,js}'
 
 install:

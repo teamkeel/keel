@@ -44,18 +44,6 @@ var runCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := &schema.Builder{}
 
-		config, err := config.Load(inputDir + "/" + "keelconfig.yaml")
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				color.Red("Unable to find config file, future versions will require a config file to run Keel")
-			} else {
-				return fmt.Errorf("The following errors were found in your keelconfig.yaml file:\n\n%s", err.Error())
-			}
-		}
-		if config != nil {
-			b.Config = config
-		}
-
 		useExistingContainer := !runCmdFlagReset
 		_, dbConnInfo, err := database.Start(useExistingContainer)
 
@@ -194,6 +182,8 @@ var runCmd = &cobra.Command{
 			currSchema = protoSchema
 			fmt.Println("🎉 You're ready to roll")
 		}
+
+		config.SetEnvVars(inputDir, "development")
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			mutex.Lock()

@@ -1,0 +1,13 @@
+model Person {
+
+  fields {
+    name Text
+  }
+
+  operations {
+    create createPerson() {
+      @set(person.name = ctx.env.PERSON_NAME)
+      @permission(expression: true)
+    }
+  }
+}
