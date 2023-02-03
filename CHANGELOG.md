@@ -1,3 +1,10 @@
+## [0.247.2](https://github.com/teamkeel/keel/compare/v0.247.1...v0.247.2) (2023-02-03)
+
+
+### Bug Fixes
+
+* dont pass ksuid's around, they are just strings ([a6d7adc](https://github.com/teamkeel/keel/commit/a6d7adc1e76feeb58f38f06f4fc7d11d1948b979))
+
 ## [0.247.1](https://github.com/teamkeel/keel/compare/v0.247.0...v0.247.1) (2023-02-03)
 
 
