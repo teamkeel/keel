@@ -212,9 +212,7 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		return runtimectx.GetNow(), nil
 	case resolver.Operand.Ident.IsContextEnvField():
 		envVarName := resolver.Operand.Ident.Fragments[2].Fragment
-
-		prefixedName := "CUSTOMER_ENV_" + envVarName
-		return os.Getenv(prefixedName), nil
+		return os.Getenv(envVarName), nil
 	case resolver.Operand.Type() == parser.TypeArray:
 		return nil, fmt.Errorf("cannot yet handle operand of type non-literal array")
 	default:

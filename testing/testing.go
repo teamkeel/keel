@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
@@ -38,7 +37,6 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	schema, err := builder.MakeFromDirectory(opts.Dir)
 	if err != nil {
-		litter.Dump(err)
 		return nil, err
 	}
 

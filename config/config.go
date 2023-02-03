@@ -90,8 +90,7 @@ func SetEnvVars(directory, environment string) {
 	// Find another way to get the environment
 	envVars := config.GetEnvVars(environment)
 	for key, value := range envVars {
-		name := "CUSTOMER_ENV_" + key
-		os.Setenv(name, value)
+		os.Setenv(key, value)
 	}
 
 }
