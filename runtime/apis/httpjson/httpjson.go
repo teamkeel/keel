@@ -11,11 +11,13 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/jsonschema"
 )
 
 type HttpJsonErrorResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Code    string         `json:"code"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data,omitempty"`
 }
 
 func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
@@ -49,6 +51,34 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return common.NewJsonResponse(http.StatusNotFound, HttpJsonErrorResponse{
 				Code:    "ERR_NOT_FOUND",
 				Message: "method not found",
+			})
+		}
+
+		validation, err := jsonschema.ValidateRequest(r.Context(), p, op, inputs)
+		if err != nil {
+			// I think this can only happen if we generate an invalid JSON Schema for the
+			// request type
+			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
+				Code:    "ERR_INTERNAL",
+				Message: "error validating request body",
+			})
+		}
+
+		if !validation.Valid() {
+			errs := []map[string]string{}
+			for _, e := range validation.Errors() {
+				errs = append(errs, map[string]string{
+					"field": e.Field(),
+					"error": e.Description(),
+				})
+			}
+
+			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
+				Code:    "ERR_INVALID_INPUT",
+				Message: "one or more errors found validating request object",
+				Data: map[string]any{
+					"errors": errs,
+				},
 			})
 		}
 

@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -27,9 +28,10 @@ type TestOutput struct {
 }
 
 type RunnerOpts struct {
-	Dir        string
-	Pattern    string
-	DbConnInfo *db.ConnectionInfo
+	Dir             string
+	Pattern         string
+	DbConnInfo      *db.ConnectionInfo
+	FunctionsOutput io.Writer
 }
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {
@@ -81,7 +83,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				"DB_CONN_TYPE": "pg",
 				"DB_CONN":      dbConnString,
 			},
-			Output: os.Stdout,
+			Output: opts.FunctionsOutput,
 		})
 		if err != nil {
 			if functionsServer != nil && functionsServer.Output() != "" {

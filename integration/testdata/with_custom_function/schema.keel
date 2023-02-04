@@ -29,6 +29,7 @@ model Profile {
 
     functions {
         create createProfile() with (person.id)
+        create createProfileWithNullPerson()
     }
 
     @permission(

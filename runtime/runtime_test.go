@@ -13,6 +13,7 @@ import (
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/iancoleman/strcase"
 	"github.com/sanity-io/litter"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
@@ -167,18 +168,26 @@ func TestRuntimeRPC(t *testing.T) {
 			// Call the handler, and capture the response.
 			response := handler(request)
 			body := string(response.Body)
-			var res interface{}
+			var res map[string]any
 			require.NoError(t, json.Unmarshal([]byte(body), &res))
+
+			// Do the specified assertion on the resultant database contents, if one is specified.
+			if tCase.assertDatabase != nil {
+				tCase.assertDatabase(t, gormDb, res)
+			}
+
+			if response.Status != 200 && tCase.assertError == nil {
+				t.Errorf("method %s returned non-200 (%d) but no assertError function provided", tCase.Path, response.Status)
+			}
+			if tCase.assertError != nil {
+				tCase.assertError(t, res)
+			}
 
 			// Do the specified assertion on the data returned, if one is specified.
 			if tCase.assertResponse != nil {
 				tCase.assertResponse(t, res)
 			}
 
-			// Do the specified assertion on the resultant database contents, if one is specified.
-			if tCase.assertDatabase != nil {
-				tCase.assertDatabase(t, gormDb, res)
-			}
 		})
 	}
 }
@@ -223,7 +232,8 @@ type rpcTestCase struct {
 	QueryParams    string
 	Body           string
 	Method         string
-	assertResponse func(t *testing.T, data interface{})
+	assertResponse func(t *testing.T, data map[string]any)
+	assertError    func(t *testing.T, data map[string]any)
 	assertDatabase func(t *testing.T, db *gorm.DB, data interface{})
 }
 
@@ -2494,8 +2504,7 @@ var rpcTestCases = []rpcTestCase{
 		},
 		Path:   "listThings",
 		Method: http.MethodGet,
-		assertResponse: func(t *testing.T, data interface{}) {
-			res := data.(map[string]any)
+		assertResponse: func(t *testing.T, res map[string]any) {
 
 			results := res["results"].([]interface{})
 			require.Len(t, results, 1)
@@ -2545,9 +2554,7 @@ var rpcTestCases = []rpcTestCase{
 		Path:   "listThings",
 		Body:   `{"where": { "text": { "startsWith": "foo" } }}`,
 		Method: http.MethodPost,
-		assertResponse: func(t *testing.T, data interface{}) {
-			res := data.(map[string]any)
-
+		assertResponse: func(t *testing.T, res map[string]any) {
 			results := res["results"].([]interface{})
 			require.Len(t, results, 2)
 
@@ -2582,9 +2589,8 @@ var rpcTestCases = []rpcTestCase{
 		Path:        "getThing",
 		QueryParams: "id=id_1",
 		Method:      http.MethodGet,
-		assertResponse: func(t *testing.T, data interface{}) {
-			res := data.(map[string]any)
-			require.Equal(t, res["id"], "id_1")
+		assertResponse: func(t *testing.T, data map[string]any) {
+			require.Equal(t, data["id"], "id_1")
 		},
 	},
 	{
@@ -2614,9 +2620,8 @@ var rpcTestCases = []rpcTestCase{
 		Path:   "getThing",
 		Body:   `{"id": "id_1"}`,
 		Method: http.MethodPost,
-		assertResponse: func(t *testing.T, data interface{}) {
-			res := data.(map[string]any)
-			require.Equal(t, res["id"], "id_1")
+		assertResponse: func(t *testing.T, data map[string]any) {
+			require.Equal(t, data["id"], "id_1")
 		},
 	},
 	{
@@ -2707,6 +2712,31 @@ var rpcTestCases = []rpcTestCase{
 			err = db.Table("thing").Where("id = ?", "id_2").Scan(&row).Error
 			require.NoError(t, err)
 			require.Equal(t, "bar", row["text"])
+		},
+	},
+	{
+		name: "rpc_json_schema_errors",
+		keelSchema: `
+		model Thing {
+			operations {
+				get getThing(id)
+			}
+		}
+		api Test {
+			models {
+				Thing
+			}
+		}
+	`,
+		Path:   "getThing",
+		Body:   `{"total": "nonsense"}`,
+		Method: http.MethodPost,
+		assertError: func(t *testing.T, data map[string]any) {
+			assert.Equal(t, "ERR_INVALID_INPUT", data["code"])
+			rtt.AssertValueAtPath(t, data, "data.errors[0].field", "(root)")
+			rtt.AssertValueAtPath(t, data, "data.errors[0].error", "id is required")
+			rtt.AssertValueAtPath(t, data, "data.errors[1].field", "(root)")
+			rtt.AssertValueAtPath(t, data, "data.errors[1].error", "Additional property total is not allowed")
 		},
 	},
 }

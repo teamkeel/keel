@@ -17,15 +17,27 @@ type JSONSchema struct {
 	// of one string, so we use any here so it can be either
 	Type any `json:"type,omitempty"`
 
-	Format               string                `json:"format,omitempty"`
+	// The enum field needs to be able to contains strings and null,
+	// so we use *string here
+	Enum []*string `json:"enum,omitempty"`
+
+	// Validation for strings
+	Format string `json:"format,omitempty"`
+
+	// Validation for objects
 	Properties           map[string]JSONSchema `json:"properties,omitempty"`
 	AdditionalProperties *bool                 `json:"additionalProperties,omitempty"`
-	AnyOf                []JSONSchema          `json:"anyOf,omitempty"`
-	Enum                 []string              `json:"enum,omitempty"`
-	Items                *JSONSchema           `json:"items,omitempty"`
 	Required             []string              `json:"required,omitempty"`
-	Ref                  string                `json:"$ref,omitempty"`
-	Defs                 map[string]JSONSchema `json:"$defs,omitempty"`
+
+	// For arrays
+	Items *JSONSchema `json:"items,omitempty"`
+
+	// Used to link to a type defined in the root $defs
+	Ref string `json:"$ref,omitempty"`
+
+	// Only used in the root JSONSchema object to define types that
+	// can then be referenced using $ref
+	Defs map[string]JSONSchema `json:"$defs,omitempty"`
 }
 
 // ValidateRequest validates that the input is valid for the given operation and schema.
@@ -123,57 +135,60 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 }
 
 func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) (string, JSONSchema) {
-	if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
-		return jsonSchemaForQueryObject(ctx, op, input, schema)
-	}
-
-	isImplicit := input.IsModelField()
-	isWrite := input.Mode == proto.InputMode_INPUT_MODE_WRITE
-
 	name := ""
 	prop := JSONSchema{}
 
-	switch input.Type.Type {
-	case proto.Type_TYPE_ID:
-		prop.Type = "string"
-	case proto.Type_TYPE_STRING:
-		prop.Type = "string"
-	case proto.Type_TYPE_BOOL:
-		prop.Type = "boolean"
-	case proto.Type_TYPE_INT:
-		prop.Type = "number"
+	if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
+		name, prop = jsonSchemaForQueryObject(ctx, op, input, schema)
+	} else {
+		switch input.Type.Type {
+		case proto.Type_TYPE_ID:
+			prop.Type = "string"
+		case proto.Type_TYPE_STRING:
+			prop.Type = "string"
+		case proto.Type_TYPE_BOOL:
+			prop.Type = "boolean"
+		case proto.Type_TYPE_INT:
+			prop.Type = "number"
 
-	// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
-	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		prop.Type = "string"
-		prop.Format = "date-time"
+		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+			// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
+			prop.Type = "string"
+			prop.Format = "date-time"
 
-	case proto.Type_TYPE_ENUM:
-		prop.Type = "string"
-		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
-			return e.Name == input.Type.EnumName.Value
-		})
-		for _, v := range enum.Values {
-			prop.Enum = append(prop.Enum, v.Name)
+		case proto.Type_TYPE_ENUM:
+			// For enum's we actually don't need to set the `type` field at all
+			enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
+				return e.Name == input.Type.EnumName.Value
+			})
+			for _, v := range enum.Values {
+				prop.Enum = append(prop.Enum, &v.Name)
+			}
+			name = enum.Name
 		}
-		name = enum.Name
 	}
+
+	nullable := input.Optional
 
 	// An input is allowed to be null if the field it relates to is marked
 	// optional. This is because "optional" has a slightly different meaning
 	// between model fields and action inputs:
 	//     - model field:  "can be null"
-	//     - action input: "can be ommitted"
-	if isImplicit && isWrite {
-		field := proto.FindField(schema.Models, op.ModelName, input.Target[0])
-		if field.Optional {
-			// OpenAPI differs from JSON Schema in that:
-			//   | Note that there is no null type; instead, the nullable
-			//   | attribute is used as a modifier of the base type.
-			// TODO: if we want to support OpenAPI generation we'll need
-			// to support both styles. For now we only support JSON Schema.
-			prop.Type = []any{prop.Type, "null"}
+	//     - action input: "can be ommitted or be provided as null"
+	if !nullable && input.IsModelField() {
+		model := proto.FindModel(schema.Models, op.ModelName)
+		var field *proto.Field
+		for i, fieldName := range input.Target {
+			field = proto.FindField(schema.Models, model.Name, fieldName)
+			if i < len(input.Target)-1 {
+				model = proto.FindModel(schema.Models, field.Type.ModelName.Value)
+			}
 		}
+		nullable = field.Optional
+	}
+
+	if nullable {
+		prop.allowNull()
 	}
 
 	return name, prop
@@ -186,7 +201,7 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 			Type: "string",
 		}
 		return "IDQueryInput", JSONSchema{
-			Type: []string{"object"},
+			Type: "object",
 			Properties: map[string]JSONSchema{
 				"equals": t,
 				"oneOf":  {Type: "array", Items: &t},
@@ -261,14 +276,12 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 			AdditionalProperties: boolPtr(false),
 		}
 	case proto.Type_TYPE_ENUM:
-		t := JSONSchema{
-			Type: "string",
-		}
+		t := JSONSchema{}
 		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
 			return e.Name == input.Type.EnumName.Value
 		})
 		for _, v := range enum.Values {
-			t.Enum = append(t.Enum, v.Name)
+			t.Enum = append(t.Enum, &v.Name)
 		}
 		return fmt.Sprintf("%sQueryInput", enum.Name), JSONSchema{
 			Type: "object",
@@ -286,6 +299,34 @@ func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *p
 	return "", JSONSchema{}
 }
 
-func boolPtr(b bool) *bool {
-	return &b
+// allowNull makes sure that s allows null, either by modifying
+// the type field or the enum field
+//
+// This is an area where OpenAPI differs from JSON Schema, from
+// the OpenAPI spec:
+//
+//	| Note that there is no null type; instead, the nullable
+//	| attribute is used as a modifier of the base type.
+//
+// We currently only support JSON schema
+func (s *JSONSchema) allowNull() {
+	t := s.Type
+	switch t := t.(type) {
+	case string:
+		s.Type = []string{t, "null"}
+	case []string:
+		if lo.Contains(t, "null") {
+			return
+		}
+		t = append(t, "null")
+		s.Type = t
+	}
+
+	if len(s.Enum) > 0 && !lo.Contains(s.Enum, nil) {
+		s.Enum = append(s.Enum, nil)
+	}
+}
+
+func boolPtr(v bool) *bool {
+	return &v
 }
