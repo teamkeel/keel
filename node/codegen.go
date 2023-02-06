@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -376,23 +375,16 @@ func writeTableConfig(w *Writer, models []*proto.Model) {
 
 			relationshipConfig := map[string]string{
 				"referencesTable": strcase.ToSnake(field.Type.ModelName.Value),
+				"foreignKey":      strcase.ToSnake(proto.GetForignKeyFieldName(models, field)),
 			}
 
-			if field.ForeignKeyFieldName != nil {
+			switch {
+			case proto.IsHasOne(field):
+				relationshipConfig["relationshipType"] = "hasOne"
+			case proto.IsHasMany(field):
+				relationshipConfig["relationshipType"] = "hasMany"
+			case proto.IsBelongsTo(field):
 				relationshipConfig["relationshipType"] = "belongsTo"
-				relationshipConfig["foreignKey"] = strcase.ToSnake(field.ForeignKeyFieldName.Value)
-			} else {
-				if field.Type.Repeated {
-					relationshipConfig["relationshipType"] = "hasMany"
-				} else {
-					relationshipConfig["relationshipType"] = "hasOne"
-				}
-
-				relatedModel := proto.FindModel(models, field.Type.ModelName.Value)
-				relatedField, _ := lo.Find(relatedModel.Fields, func(field *proto.Field) bool {
-					return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
-				})
-				relationshipConfig["foreignKey"] = strcase.ToSnake(relatedField.ForeignKeyFieldName.Value)
 			}
 
 			tableConfig, ok := tableConfigMap[strcase.ToSnake(model.Name)]

@@ -65,12 +65,40 @@ func ForeignKeyFields(model *Model) []*Field {
 	})
 }
 
-func IsToManyRelationship(field *Field) bool {
-	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && field.Type.ModelName != nil && field.Type.Repeated
+func IsHasMany(field *Field) bool {
+	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && field.Type.Repeated
 }
 
-func IsToOneRelationship(field *Field) bool {
-	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && field.Type.ModelName != nil && !field.Type.Repeated
+func IsHasOne(field *Field) bool {
+	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName == nil && !field.Type.Repeated
+}
+
+func IsBelongsTo(field *Field) bool {
+	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && !field.Type.Repeated
+}
+
+// GetForignKeyFieldName returns the foreign key field name for the relationship that
+// field has to another model, or an empty string if field's type is not a model.
+// Foreign key returned might exists on field's parent model, or on the model field
+// is related to, so this function would normally be used in conjunction with
+// IsBelongsTo or it's counterparts to determine on which side the foreign
+// key lives
+func GetForignKeyFieldName(models []*Model, field *Field) string {
+	if field.Type.Type != Type_TYPE_MODEL {
+		return ""
+	}
+
+	if field.ForeignKeyFieldName != nil {
+		return field.ForeignKeyFieldName.Value
+	}
+
+	model := FindModel(models, field.ModelName)
+	relatedModel := FindModel(models, field.Type.ModelName.Value)
+	relatedField, _ := lo.Find(relatedModel.Fields, func(field *Field) bool {
+		return field.Type.Type == Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
+	})
+
+	return relatedField.ForeignKeyFieldName.Value
 }
 
 // ModelsExists returns true if the given schema contains a
