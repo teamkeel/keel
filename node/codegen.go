@@ -122,7 +122,12 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema.Models)
 
-	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase")
+	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
+
+	// We will encourage users to use a keel sdk version of fetch() so that we can
+	// extend its capability later. But for now we'll just point to the global fetch().
+	sdk.Writeln("module.exports.fetch = global.fetch;")
+	sdkTypes.Writeln("export declare function fetch(input: RequestInfo | URL, init?: RequestInit) : Promise<Response>;")
 
 	return []*GeneratedFile{
 		{
