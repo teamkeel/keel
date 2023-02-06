@@ -35,7 +35,12 @@ type FunctionsRuntimeRequest struct {
 type FunctionsRuntimeResponse struct {
 	ID     string                 `json:"id"`
 	Result any                    `json:"result"`
+	Meta   *FunctionsRuntimeMeta  `json:"meta"`
 	Error  *FunctionsRuntimeError `json:"error"`
+}
+
+type FunctionsRuntimeMeta struct {
+	Headers map[string][]string `json:"headers"`
 }
 
 // FunctionsRuntimeError follows the error object specification
@@ -54,15 +59,15 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 	return context.WithValue(ctx, contextKey, transport)
 }
 
-func CallFunction(ctx context.Context, actionName string, body map[string]any) (any, error) {
+func CallFunction(ctx context.Context, actionName string, body map[string]any) (any, map[string][]string, error) {
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
-		return nil, errors.New("no functions client in context")
+		return nil, nil, errors.New("no functions client in context")
 	}
 
 	requestHeaders, err := runtimectx.GetRequestHeaders(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	joinedHeaders := map[string]string{}
@@ -74,7 +79,7 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 	if runtimectx.IsAuthenticated(ctx) {
 		identity, err = runtimectx.GetIdentity(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -92,7 +97,7 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 
 	resp, err := transport(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if resp.Error != nil {
@@ -122,5 +127,5 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 		}
 	}
 
-	return resp.Result, nil
+	return resp.Result, resp.Meta.Headers, nil
 }

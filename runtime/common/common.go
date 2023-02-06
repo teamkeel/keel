@@ -9,15 +9,17 @@ import (
 )
 
 type Response struct {
-	Body   []byte
-	Status int
+	Status  int
+	Body    []byte
+	Headers map[string][]string
 }
 
-func NewJsonResponse(status int, body any) Response {
+func NewJsonResponse(status int, body any, headers map[string][]string) Response {
 	b, _ := json.Marshal(body)
 	return Response{
-		Status: status,
-		Body:   b,
+		Status:  status,
+		Body:    b,
+		Headers: headers,
 	}
 }
 

@@ -30,11 +30,11 @@ func NewScope(
 	}
 }
 
-func Execute(scope *Scope, inputs map[string]any) (any, error) {
+func Execute(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
 	if scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		resp, err := functions.CallFunction(scope.context, scope.operation.Name, inputs)
+		resp, headers, err := functions.CallFunction(scope.context, scope.operation.Name, inputs)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		// For now a custom list function just returns a list of records, but the API's
@@ -47,10 +47,10 @@ func Execute(scope *Scope, inputs map[string]any) (any, error) {
 			return map[string]any{
 				"results":     results,
 				"hasNextPage": false,
-			}, nil
+			}, headers, nil
 		}
 
-		return resp, err
+		return resp, headers, err
 	}
 
 	switch scope.operation.Type {
@@ -61,20 +61,25 @@ func Execute(scope *Scope, inputs map[string]any) (any, error) {
 		// odd.
 		// Simple repo of this: https://play.golang.com/p/MbBzvhrdOm_f
 		if v == nil {
-			return nil, err
+			return nil, nil, err
 		}
-		return v, err
+		return v, nil, err
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		return Update(scope, inputs)
+		result, err := Update(scope, inputs)
+		return result, nil, err
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		return Create(scope, inputs)
+		result, err := Create(scope, inputs)
+		return result, nil, err
 	case proto.OperationType_OPERATION_TYPE_DELETE:
-		return Delete(scope, inputs)
+		result, err := Delete(scope, inputs)
+		return result, nil, err
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		return List(scope, inputs)
+		result, err := List(scope, inputs)
+		return result, nil, err
 	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-		return Authenticate(scope, inputs)
+		result, err := Authenticate(scope, inputs)
+		return result, nil, err
 	default:
-		return nil, fmt.Errorf("unhandled operation type %s", scope.operation.Type.String())
+		return nil, nil, fmt.Errorf("unhandled operation type %s", scope.operation.Type.String())
 	}
 }

@@ -56,7 +56,7 @@ func TestDevelopmentServer(t *testing.T) {
 		b, err := io.ReadAll(res.Body)
 		require.NoError(t, err)
 
-		assert.Equal(t, `{"jsonrpc":"2.0","result":{"id":"1234","createdAt":"2022-01-01T00:00:00.000Z","updatedAt":"2022-01-01T00:00:00.000Z"}}`, string(b))
+		assert.Equal(t, `{"jsonrpc":"2.0","result":{"id":"1234","createdAt":"2022-01-01T00:00:00.000Z","updatedAt":"2022-01-01T00:00:00.000Z"},"meta":{"headers":{}}}`, string(b))
 	})
 }
 

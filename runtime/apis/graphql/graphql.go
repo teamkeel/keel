@@ -76,14 +76,21 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			"query": params.Query,
 		}).Debug("graphql")
 
+		// This map can be mutated in the action resolver,
+		// allowing us to pass data upwards and into the response.
+		headers := map[string][]string{}
+
 		result := graphql.Do(graphql.Params{
 			Schema:         *schema,
 			Context:        r.Context(),
 			RequestString:  params.Query,
 			VariableValues: params.Variables,
+			RootObject: map[string]interface{}{
+				"headers": headers,
+			},
 		})
 
-		return common.NewJsonResponse(http.StatusOK, result)
+		return common.NewJsonResponse(http.StatusOK, result, headers)
 	}
 }
 
