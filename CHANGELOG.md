@@ -1,3 +1,10 @@
+## [0.247.3](https://github.com/teamkeel/keel/compare/v0.247.2...v0.247.3) (2023-02-06)
+
+
+### Bug Fixes
+
+* golangci-lint version mismatch ([#746](https://github.com/teamkeel/keel/issues/746)) ([7355501](https://github.com/teamkeel/keel/commit/7355501581004f9645370fd340bf763149ff727e))
+
 ## [0.247.2](https://github.com/teamkeel/keel/compare/v0.247.1...v0.247.2) (2023-02-03)
 
 
