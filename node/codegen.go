@@ -124,11 +124,6 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
 
-	// We will encourage users to use a keel sdk version of fetch() so that we can
-	// extend its capability later. But for now we'll just point to the global fetch().
-	sdk.Writeln("module.exports.fetch = global.fetch;")
-	sdkTypes.Writeln("export declare function fetch(input: RequestInfo | URL, init?: RequestInit) : Promise<Response>;")
-
 	return []*GeneratedFile{
 		{
 			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/index.js"),
@@ -327,6 +322,7 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 	w.Writeln("export type FunctionAPI = {")
 	w.Indent()
 	w.Writeln("models: ModelsAPI;")
+	w.Writeln("petesFunction: function(Number):String;")
 	w.Dedent()
 	w.Writeln("}")
 
@@ -351,7 +347,14 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	}
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("return {models};")
+	w.Writeln("const petesFunction = (myNumber) => {")
+	w.Indent()
+	w.Writeln(`const msg = "XXXX petesFunction fired with number: " + myNumber;`)
+	w.Writeln(`console.log(msg);`)
+	w.Writeln(`return ("XXXX petesFunction fired with number: " + myNumber);`)
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("return {models, petesFunction};")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("function createContextAPI(meta) {")
