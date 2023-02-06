@@ -26,7 +26,7 @@ test("create action - required field is null - returns error", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message: "Post field 'subTitle' can only contain unique values",
+    message: "field 'subTitle' can only contain unique values",
   });
 });
 
