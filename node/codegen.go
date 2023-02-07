@@ -322,7 +322,7 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 	w.Writeln("export type FunctionAPI = {")
 	w.Indent()
 	w.Writeln("models: ModelsAPI;")
-	w.Writeln("petesFunction: function(Number):String;")
+	w.Writeln("fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;")
 	w.Dedent()
 	w.Writeln("}")
 
@@ -347,14 +347,8 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	}
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("const petesFunction = (myNumber) => {")
-	w.Indent()
-	w.Writeln(`const msg = "XXXX petesFunction fired with number: " + myNumber;`)
-	w.Writeln(`console.log(msg);`)
-	w.Writeln(`return ("XXXX petesFunction fired with number: " + myNumber);`)
-	w.Dedent()
-	w.Writeln("};")
-	w.Writeln("return {models, petesFunction};")
+	w.Writeln("const wrappedFetch = fetch;") // We'll likely extend it later.
+	w.Writeln("return {models, fetch: wrappedFetch};")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("function createContextAPI(meta) {")
