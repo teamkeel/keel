@@ -1,5 +1,5 @@
 import { test, expect, beforeEach } from "vitest";
-const { ModelAPI } = require("./ModelAPI");
+const { ModelAPI, DatabaseError } = require("./ModelAPI");
 const { sql } = require("kysely");
 const { getDatabase } = require("./database");
 const KSUID = require("ksuid");
@@ -9,6 +9,7 @@ process.env.DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-r
 
 let personAPI;
 let postAPI;
+let authorAPI;
 
 beforeEach(async () => {
   const db = getDatabase();
@@ -16,6 +17,8 @@ beforeEach(async () => {
   await sql`
   DROP TABLE IF EXISTS post;
   DROP TABLE IF EXISTS person;
+  DROP TABLE IF EXISTS author;
+
   CREATE TABLE person(
       id               text PRIMARY KEY,
       name             text UNIQUE,
@@ -27,7 +30,11 @@ beforeEach(async () => {
     id               text PRIMARY KEY,
     title            text,
     author_id        text references person(id)
-);
+  );
+  CREATE TABLE author(
+    id               text PRIMARY KEY,
+    name             text NOT NULL
+  );
   `.execute(db);
 
   const tableConfigMap = {
@@ -69,6 +76,17 @@ beforeEach(async () => {
     db,
     tableConfigMap
   );
+
+  authorAPI = new ModelAPI(
+    "author",
+    () => {
+      return {
+        id: KSUID.randomSync().string,
+      };
+    },
+    db,
+    tableConfigMap
+  );
 });
 
 test("ModelAPI.create", async () => {
@@ -82,6 +100,14 @@ test("ModelAPI.create", async () => {
   expect(row.date).toEqual(new Date("2022-01-01"));
   expect(row.favouriteNumber).toEqual(10);
   expect(KSUID.parse(row.id).string).toEqual(row.id);
+});
+
+test("ModelAPI.create - throws if not not null constraint violation", async () => {
+  await expect(
+    authorAPI.create({
+      name: null,
+    })
+  ).rejects.toThrow('null value in column "name" violates not-null constraint');
 });
 
 test("ModelAPI.create - throws if database constraint fails", async () => {
@@ -588,6 +614,25 @@ test("ModelAPI.update - throws if not found", async () => {
     }
   );
   await expect(result).rejects.toThrow("no result");
+});
+
+test("ModelAPI.update - throws if not not null constraint violation", async () => {
+  const jim = await authorAPI.create({
+    name: "jim",
+  });
+
+  const result = authorAPI.update(
+    {
+      id: jim.id,
+    },
+    {
+      name: null,
+    }
+  );
+
+  await expect(result).rejects.toThrow(
+    'null value in column "name" violates not-null constraint'
+  );
 });
 
 test("ModelAPI.delete", async () => {

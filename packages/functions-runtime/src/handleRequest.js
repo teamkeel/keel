@@ -31,7 +31,7 @@ async function handleRequest(request, config) {
       // no result returned from custom function
       return createJSONRPCErrorResponse(
         request.id,
-        JSONRPCErrorCode.InternalError,
+        RuntimeErrors.NoResultError,
         `no result returned from function '${request.method}'`
       );
     }

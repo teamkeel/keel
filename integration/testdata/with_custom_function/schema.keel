@@ -21,3 +21,18 @@ model Person {
         actions: [create, get, list, update, delete]
     )
 }
+
+model Profile {
+    fields {
+        person Person
+    }
+
+    functions {
+        create createProfile() with (person.id)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
