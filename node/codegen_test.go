@@ -216,12 +216,13 @@ function createFunctionAPI() {
 		person: new runtime.ModelAPI("person", personDefaultValues, null, tableConfigMap),
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, null, tableConfigMap),
 	};
-    return {models};
+	const wrappedFetch = fetch;
+	return {models, fetch: wrappedFetch};
 }
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
 	const identity = meta.identity;
-    return {headers, identity};
+	return {headers, identity};
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
@@ -234,11 +235,12 @@ module.exports.createContextAPI = createContextAPI;`
 func TestWriteAPIDeclarations(t *testing.T) {
 	expected := `
 export type ModelsAPI = {
-    person: PersonAPI;
-    identity: IdentityAPI;
+	person: PersonAPI;
+	identity: IdentityAPI;
 }
 export type FunctionAPI = {
 	models: ModelsAPI;
+	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
 }
 export interface ContextAPI extends runtime.ContextAPI {
 	identity: Identity;
@@ -884,6 +886,7 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 	if lo.SomeBy(diffs, func(d diffmatchpatch.Diff) bool {
 		return d.Type != diffmatchpatch.DiffEqual
 	}) {
+		fmt.Printf("XXXX actual generated code: \n%s\n", w.String())
 		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
 	}
 }
