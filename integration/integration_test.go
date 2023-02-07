@@ -99,6 +99,9 @@ func TestIntegration(t *gotest.T) {
 				t.Fail()
 			}
 
+			t.Cleanup(func() {
+				os.Stdout.Close()
+			})
 		})
 	}
 }
