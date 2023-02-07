@@ -220,16 +220,26 @@ func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
 }
 
 func writeUniqueConditionsInterface(w *Writer, model *proto.Model) {
-	w.Writef("export type %sUniqueConditions = \n", model.Name)
+	w.Writef("export type %sUniqueConditions = ", model.Name)
 	w.Indent()
 	for _, f := range model.Fields {
-		if f.Unique || f.PrimaryKey {
-			w.Writef("| {%s: %s}\n", f.Name, toTypeScriptType(f.Type))
+		var tsType string
+
+		switch {
+		case f.Unique || f.PrimaryKey:
+			tsType = toTypeScriptType(f.Type)
+		case f.Type.Type == proto.Type_TYPE_MODEL:
+			// For relationships we can embed that models unique conditions
+			tsType = fmt.Sprintf("%sUniqueConditions", f.Type.ModelName.Value)
+		default:
+			// TODO: support f.UniqueWith for compound unique constraints
 			continue
 		}
 
-		// TODO: support f.UniqueWith for compound unique constraints
+		w.Writeln("")
+		w.Writef("| {%s: %s}", f.Name, tsType)
 	}
+	w.Writeln(";")
 	w.Dedent()
 }
 
