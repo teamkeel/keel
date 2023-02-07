@@ -108,7 +108,11 @@ type ExpressionScopeEntity struct {
 	String    *string
 	EnumValue *parser.EnumValueNode
 	Array     []*ExpressionScopeEntity
-	Type      string
+
+	// Type can be things like "Text", "Boolean" etc.. but can also be "Enum".
+	// If the value is "Enum" then the Field attribute will be populated
+	// with a model field that is an enum
+	Type string
 
 	Parent *ExpressionScopeEntity
 }
@@ -118,11 +122,11 @@ func (e *ExpressionScopeEntity) IsNull() bool {
 }
 
 func (e *ExpressionScopeEntity) IsOptional() bool {
-	return (e.Field != nil && e.Field.Optional) || (e.Enum != nil && e.Enum.Optional)
+	return e.Field != nil && e.Field.Optional
 }
 
 func (e *ExpressionScopeEntity) IsEnumField() bool {
-	return e.Enum != nil
+	return e.Field != nil && e.Type == parser.TypeEnum
 }
 
 func (e *ExpressionScopeEntity) IsEnumValue() bool {
@@ -364,9 +368,11 @@ func applyAdditionalOperandScopes(asts []*parser.AST, scope *ExpressionScope, co
 func applyInputsInScope(asts []*parser.AST, context *ExpressionContext, scope *ExpressionScope) *ExpressionScope {
 	additionalScope := &ExpressionScope{}
 
-	allInputs := context.Action.AllInputs()
+	inputs := []*parser.ActionInputNode{}
+	inputs = append(inputs, context.Action.Inputs...)
+	inputs = append(inputs, context.Action.With...)
 
-	for _, input := range allInputs {
+	for _, input := range inputs {
 		// inputs using short-hand syntax that refer to relationships
 		// don't get added to the scope
 		if input.Label == nil && len(input.Type.Fragments) > 1 {

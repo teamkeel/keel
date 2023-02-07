@@ -139,43 +139,24 @@ fragments:
 				// Post model and populates the new scope with them.
 				o.scope = scopeFromModel(o.scope, e, e.Model)
 			case e.Field != nil:
-				// covers fields which are associations to other models:
-				// e.g post.association.associationField
-				// repopulates the scope for the third fragment to be the fields of 'association'
+
 				model := query.Model(o.asts, e.Field.Type)
+				enum := query.Enum(o.asts, e.Field.Type)
 
-				// if no model is found for the field type, then we need to check other potential matches
-				// e.g enums in the schema
-				if model == nil {
-					// try matching the field name to a known enum instead
-					enum := query.Enum(o.asts, e.Field.Type)
-
-					if enum != nil {
-						// enum definitions aren't optional when they are defined
-						// declaratively in the schema, but instead you mark an enum's
-						// optionality at field level, so we need to attach it here based on the field's
-						// optional value.
-						enum.Optional = e.Field.Optional
-
-						// if we've reached a field that is an enum
-						// then we want to return the enum as the resolved
-						// scope entity. There will be no further nested entities
-						// added to the scope for enum types because you can't compare
-						// enum values if you are doing a field comparison
-						// e.g  expression: post.enumField.EnumValue == post.anotherEnumField.EnumValue
-						// doesnt make sense
-						return &ExpressionScopeEntity{
-							Enum: enum,
-						}, nil
-					} else {
-						// Did not find the model matching the field
-						o.scope = &ExpressionScope{
-							Parent: o.scope,
-						}
-					}
-				} else {
-					// move onto the associations' fields so we populate the new scope with them
+				if model != nil {
+					// If the field type is a model the scope is now that models fields
 					o.scope = scopeFromModel(o.scope, e, model)
+				} else {
+					// For enums we add some extra context to the scope entity so we can
+					// resolve it properly later on
+					if enum != nil {
+						e.Type = parser.TypeEnum
+					}
+
+					// Non-model fields have no sub-properties, so the scope is now empty
+					o.scope = &ExpressionScope{
+						Parent: o.scope,
+					}
 				}
 			case e.Object != nil:
 				// object is a special wrapper type to describe entities we want

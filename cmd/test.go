@@ -49,7 +49,7 @@ var testCmd = &cobra.Command{
 		}
 
 		if err != nil {
-			panic(err)	
+			panic(err)
 		}
 
 		if results != nil && !results.Success {
