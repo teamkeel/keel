@@ -1,14 +1,17 @@
 package completions_test
 
 import (
+	"os"
 	"sort"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
+	"gopkg.in/yaml.v3"
 )
 
 func TestCompletions(t *testing.T) {
@@ -599,7 +602,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"person", "ctx"},
+			expected: []string{"person", "ctx", "env"},
 		},
 		{
 			name: "set-expression-model-attribute",
@@ -631,7 +634,23 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"identity", "now"},
+			expected: []string{"env", "identity", "now"},
+		},
+		{
+			name: "set-expression-ctx-env-vars",
+			schema: `
+			model Person {
+				fields {
+					identity Identity
+				}
+				operations {
+					create createPerson() {
+						@set(person.identity = ctx.env.<Cursor>)
+					}
+				}
+			}	
+			`,
+			expected: []string{"TEST", "TEST2"},
 		},
 		{
 			name: "set-expression-unresolvable",
@@ -660,7 +679,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"person", "ctx"},
+			expected: []string{"person", "ctx", "env"},
 		},
 		{
 			name: "validate-expression",
@@ -676,7 +695,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"person", "ctx"},
+			expected: []string{"person", "ctx", "env"},
 		},
 		{
 			name: "model-permission-attribute-labels",
@@ -709,7 +728,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"person", "ctx"},
+			expected: []string{"person", "ctx", "env"},
 		},
 		{
 			name: "permission-attribute-expression-whitespace",
@@ -720,7 +739,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"person", "ctx"},
+			expected: []string{"person", "ctx", "env"},
 		},
 		{
 			name: "permission-attribute-model-fields",
@@ -886,7 +905,16 @@ func TestCompletions(t *testing.T) {
 			// remove cursor marker from schema
 			schema := strings.Replace(tc.schema, "<Cursor>", "", 1)
 
-			results := completions.Completions(schema, pos)
+			dir, err := os.Getwd()
+			assert.NoError(t, err)
+
+			configFile, err := config.Load(dir + "/fixtures")
+			assert.NoError(t, err)
+
+			configString, err := yaml.Marshal(configFile)
+			assert.NoError(t, err)
+
+			results := completions.Completions(schema, pos, string(configString))
 			values := []string{}
 			for _, r := range results {
 				values = append(values, r.Label)

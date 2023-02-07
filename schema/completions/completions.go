@@ -6,6 +6,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -35,7 +36,7 @@ const (
 	DescriptionSuggested = "Suggested"
 )
 
-func Completions(schema string, pos *node.Position) []*CompletionItem {
+func Completions(schema string, pos *node.Position, configFile string) []*CompletionItem {
 
 	// parse the schema ignoring any errors, it's very likely the
 	// schema is not in a valid state
@@ -43,9 +44,14 @@ func Completions(schema string, pos *node.Position) []*CompletionItem {
 		Contents: schema,
 	})
 
+	config, err := config.LoadFromBytes([]byte(configFile))
+	if err == nil {
+		ast.EnvironmentVariables = config.AllEnvironmentVariables()
+	}
+
 	tokenAtPos := NewTokensAtPosition(schema, pos)
 
-	// First check if we're within an attribute's argumens list
+	// First check if we're within an attribute's arguments list
 	// Attributes can appear in a number of places so easier to check
 	// for this up-front
 	_, isAttr := getParentAttribute(tokenAtPos)
@@ -511,12 +517,18 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 				Description: "Current context",
 				Kind:        KindVariable,
 			},
+			{
+				Label:       "env",
+				Description: "Environment Variables",
+				Kind:        KindVariable,
+			},
 		}
 	}
 
 	switch previousIdents[0] {
 	case "ctx":
-		return []*CompletionItem{
+		var completions []*CompletionItem
+		completions = []*CompletionItem{
 			{
 				Label:       "identity",
 				Description: "Identity",
@@ -527,7 +539,21 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 				Description: "Timestamp",
 				Kind:        KindField,
 			},
+			{
+				Label:       "env",
+				Description: "Environment Variables",
+				Kind:        KindField,
+			},
 		}
+
+		if len(previousIdents) == 2 {
+			switch previousIdents[1] {
+			case "env":
+				completions = getEnvironmentVariableCompletes(ast)
+			}
+		}
+
+		return completions
 
 	case expressionModelName:
 		model := query.Model([]*parser.AST{ast}, modelName)
@@ -738,4 +764,17 @@ func getAttributeCompletions(token *TokensAtPosition, names []string) []*Complet
 		})
 	}
 	return completions
+}
+
+func getEnvironmentVariableCompletes(ast *parser.AST) []*CompletionItem {
+	var builtInFieldCompletions []*CompletionItem
+	for _, key := range ast.EnvironmentVariables {
+		builtInFieldCompletions = append(builtInFieldCompletions, &CompletionItem{
+			Label:       key,
+			Description: "Environment Variables",
+			Kind:        KindField,
+		})
+
+	}
+	return builtInFieldCompletions
 }

@@ -1,10 +1,14 @@
 export function format(schema: string): Promise<string>;
 
-export function validate(schemaString: string): Promise<ValidationResult>;
+export function validate(
+  schemaString: string,
+  configFile: string
+): Promise<ValidationResult>;
 
 export function completions(
   schemaString: string,
-  position: SimplePosition
+  position: SimplePosition,
+  configFile: string
 ): Promise<CompletionResult>;
 
 export interface SimplePosition {
