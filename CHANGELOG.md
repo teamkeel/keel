@@ -1,3 +1,10 @@
+# [0.248.0](https://github.com/teamkeel/keel/compare/v0.247.3...v0.248.0) (2023-02-07)
+
+
+### Features
+
+* graceful custom function error handling ([#749](https://github.com/teamkeel/keel/issues/749)) ([adda4a1](https://github.com/teamkeel/keel/commit/adda4a122baa78b8646fae25e9e62ca374e4a9c9))
+
 ## [0.247.3](https://github.com/teamkeel/keel/compare/v0.247.2...v0.247.3) (2023-02-06)
 
 
