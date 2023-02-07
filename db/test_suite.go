@@ -2,9 +2,12 @@ package db
 
 import (
 	"context"
+	"errors"
+	"sync"
 	"testing"
 	"time"
 
+	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -12,33 +15,79 @@ func TestSuite(t *testing.T, createTestDb func(t *testing.T, ctx context.Context
 	suite := dbTestSuite{
 		CreateTestDb: createTestDb,
 	}
-	t.Run("testDbTransactionError", suite.testDbTransactionError)
+
 	t.Run("testDbTransactionCommit", suite.testDbTransactionCommit)
 	t.Run("testDbTransactionRollback", suite.testDbTransactionRollback)
 	t.Run("testDbStatements", suite.testDbStatements)
 	t.Run("testErrUniqueConstraintViolation", suite.testErrUniqueConstraintViolation)
 	t.Run("testErrForeignKeyConstraintViolation", suite.testErrForeignKeyConstraintViolation)
 	t.Run("testErrNotNullConstraintViolation", suite.testErrNotNullConstraintViolation)
+	t.Run("testDbTransactionConcurrency", suite.testDbTransactionConcurrency)
 }
 
 type dbTestSuite struct {
 	CreateTestDb func(t *testing.T, ctx context.Context) Db
 }
 
-func (suite dbTestSuite) testDbTransactionError(t *testing.T) {
+func (suite dbTestSuite) testDbTransactionConcurrency(t *testing.T) {
 	ctx := context.Background()
 	db := suite.CreateTestDb(t, ctx)
 
-	err := db.CommitTransaction(ctx)
-	assert.ErrorContains(t, err, "cannot commit transaction when there is no ongoing transaction")
-	err = db.RollbackTransaction(ctx)
-	assert.ErrorContains(t, err, "cannot rollback transaction when there is no ongoing transaction")
+	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testdbtransactionconcurrency")
+	assert.NoError(t, err)
+	t.Cleanup(func() {
+		_, err = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testdbtransactionconcurrency")
+		assert.NoError(t, err)
+	})
+
+	_, err = db.ExecuteStatement(ctx, `CREATE TABLE testdbtransactionconcurrency(
+        id               text PRIMARY KEY
+    );`)
+	assert.NoError(t, err)
+
+	wg := sync.WaitGroup{}
+	expectedRows := 0
+
+	for i := 0; i < 20; i++ {
+		wg.Add(1)
+
+		rollback := i%2 == 0
+		if !rollback {
+			expectedRows++
+		}
+
+		go func() {
+			defer wg.Done()
+
+			err = db.Transaction(ctx, func(ctx context.Context) error {
+				_, err = db.ExecuteStatement(ctx, `INSERT INTO testdbtransactionconcurrency (id) values (?)`, ksuid.New().String())
+				assert.NoError(t, err)
+
+				if rollback {
+					return errors.New("rollback pls")
+				}
+
+				return nil
+			})
+
+			if rollback {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		}()
+	}
+
+	wg.Wait()
+
+	r, err := db.ExecuteQuery(ctx, "select * from testdbtransactionconcurrency")
+	assert.NoError(t, err)
+	assert.Len(t, r.Rows, expectedRows)
 }
 
 func (suite dbTestSuite) testDbTransactionCommit(t *testing.T) {
 	ctx := context.Background()
 	db := suite.CreateTestDb(t, ctx)
-	otherDb := suite.CreateTestDb(t, ctx)
 
 	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_commit_table")
 	assert.NoError(t, err)
@@ -46,63 +95,61 @@ func (suite dbTestSuite) testDbTransactionCommit(t *testing.T) {
 		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_commit_table")
 	})
 
-	err = db.BeginTransaction(ctx)
-	assert.NoError(t, err)
-	err = db.BeginTransaction(ctx)
-	assert.ErrorContains(t, err, "cannot begin transaction when there is an ongoing transaction")
-
 	_, err = db.ExecuteStatement(ctx, "CREATE TABLE test_local_transaction_commit_table (id text, foo boolean)")
 	assert.NoError(t, err)
 
-	_, err = db.ExecuteQuery(ctx, "SELECT * FROM test_local_transaction_commit_table")
+	err = db.Transaction(ctx, func(ctx context.Context) error {
+		_, err = db.ExecuteQuery(ctx, "INSERT INTO test_local_transaction_commit_table (id, foo) values (?, ?)", "1", true)
+		assert.NoError(t, err)
+
+		// Querying table outside of the transaction should return no rows
+		result, err := db.ExecuteQuery(context.Background(), "SELECT * FROM test_local_transaction_commit_table")
+		assert.NoError(t, err)
+		assert.Equal(t, []map[string]any{}, result.Rows)
+
+		// Return no error - commit
+		return nil
+	})
 	assert.NoError(t, err)
 
-	_, err = otherDb.ExecuteQuery(ctx, "SELECT * FROM test_local_transaction_commit_table")
-	assert.ErrorContains(t, err, "relation \"test_local_transaction_commit_table\" does not exist")
-
-	err = db.CommitTransaction(ctx)
+	// Transaction was commited, row should be returned
+	result, err := db.ExecuteQuery(ctx, "SELECT * FROM test_local_transaction_commit_table")
 	assert.NoError(t, err)
-	err = db.CommitTransaction(ctx)
-	assert.ErrorContains(t, err, "cannot commit transaction when there is no ongoing transaction")
-
-	result, err := otherDb.ExecuteQuery(ctx, "SELECT * FROM test_local_transaction_commit_table")
-	assert.NoError(t, err)
-	assert.Equal(t, []map[string]any{}, result.Rows)
+	assert.Len(t, result.Rows, 1)
 }
 
 func (suite dbTestSuite) testDbTransactionRollback(t *testing.T) {
 	ctx := context.Background()
 	db := suite.CreateTestDb(t, ctx)
-	otherDb := suite.CreateTestDb(t, ctx)
 
-	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testapi_local_transaction_rollback_table")
+	_, err := db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_rollback_table")
 	assert.NoError(t, err)
 	t.Cleanup(func() {
-		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS testapi_local_transaction_rollback_table")
+		_, _ = db.ExecuteStatement(ctx, "DROP TABLE IF EXISTS test_local_transaction_rollback_table")
 	})
 
-	err = db.BeginTransaction(ctx)
+	_, err = db.ExecuteStatement(ctx, "CREATE TABLE test_local_transaction_rollback_table (id text, foo boolean)")
 	assert.NoError(t, err)
 
-	_, err = db.ExecuteStatement(ctx, "CREATE TABLE testapi_local_transaction_rollback_table (id text, foo boolean)")
+	err = db.Transaction(ctx, func(ctx context.Context) error {
+		_, err = db.ExecuteQuery(ctx, "INSERT INTO test_local_transaction_rollback_table (id, foo) values (?, ?)", "1", true)
+		assert.NoError(t, err)
+
+		// Querying table outside of the transaction should return no rows
+		result, err := db.ExecuteQuery(context.Background(), "SELECT * FROM test_local_transaction_rollback_table")
+		assert.NoError(t, err)
+		assert.Equal(t, []map[string]any{}, result.Rows)
+
+		// Return an error and rollback
+		return errors.New("my error message")
+	})
+	assert.Error(t, err)
+	assert.Equal(t, "my error message", err.Error())
+
+	// Transaction was rolled bad, no rows should be returned
+	result, err := db.ExecuteQuery(ctx, "SELECT * FROM test_local_transaction_rollback_table")
 	assert.NoError(t, err)
-
-	_, err = db.ExecuteQuery(ctx, "SELECT * FROM testapi_local_transaction_rollback_table")
-	assert.NoError(t, err)
-
-	_, err = otherDb.ExecuteQuery(ctx, "SELECT * FROM testapi_local_transaction_rollback_table")
-	assert.ErrorContains(t, err, "relation \"testapi_local_transaction_rollback_table\" does not exist")
-
-	err = db.RollbackTransaction(ctx)
-	assert.NoError(t, err)
-	err = db.RollbackTransaction(ctx)
-	assert.ErrorContains(t, err, "cannot rollback transaction when there is no ongoing transaction")
-
-	_, err = db.ExecuteQuery(ctx, "SELECT * FROM testapi_local_transaction_rollback_table")
-	assert.ErrorContains(t, err, "relation \"testapi_local_transaction_rollback_table\" does not exist")
-
-	_, err = otherDb.ExecuteQuery(ctx, "SELECT * FROM testapi_local_transaction_rollback_table")
-	assert.ErrorContains(t, err, "relation \"testapi_local_transaction_rollback_table\" does not exist")
+	assert.Len(t, result.Rows, 0)
 }
 
 func (suite dbTestSuite) testDbStatements(t *testing.T) {

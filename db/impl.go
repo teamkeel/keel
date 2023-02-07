@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -19,9 +18,10 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/db")
 
 type postgres struct {
-	conn               *sql.DB
-	ongoingTransaction *sql.Tx
+	conn *sql.DB
 }
+
+var _ Db = &postgres{}
 
 func replaceQuestionMarksWithNumberedInputs(query string) string {
 	output := ""
@@ -66,7 +66,7 @@ func validateSupportedType(value any) error {
 }
 
 func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
-	ctx, span := tracer.Start(ctx, "ExecuteQuery")
+	ctx, span := tracer.Start(ctx, "Execute Query")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("sql", sqlQuery))
@@ -81,11 +81,18 @@ func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ..
 
 	var result *sql.Rows
 	var err error
-	if db.ongoingTransaction != nil {
-		result, err = db.ongoingTransaction.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
-	} else {
-		result, err = db.conn.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
+	var conn interface {
+		QueryContext(ctx context.Context, query string, args ...any) (*sql.Rows, error)
 	}
+
+	conn = db.conn
+
+	// Check for transaction
+	if v, ok := ctx.Value(transactionCtxKey).(*sql.Tx); ok {
+		conn = v
+	}
+
+	result, err = conn.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -122,7 +129,7 @@ func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ..
 }
 
 func (db *postgres) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
-	ctx, span := tracer.Start(ctx, "ExecuteStatement")
+	ctx, span := tracer.Start(ctx, "Execute Statement")
 	defer span.End()
 
 	span.SetAttributes(attribute.String("sql", sqlQuery))
@@ -135,11 +142,18 @@ func (db *postgres) ExecuteStatement(ctx context.Context, sqlQuery string, value
 	}
 	var result sql.Result
 	var err error
-	if db.ongoingTransaction != nil {
-		result, err = db.ongoingTransaction.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
-	} else {
-		result, err = db.conn.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
+	var conn interface {
+		ExecContext(ctx context.Context, query string, args ...any) (sql.Result, error)
 	}
+
+	conn = db.conn
+
+	// Check for a transaction
+	if v, ok := ctx.Value(transactionCtxKey).(*sql.Tx); ok {
+		conn = v
+	}
+
+	result, err = conn.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -157,38 +171,45 @@ func (db *postgres) ExecuteStatement(ctx context.Context, sqlQuery string, value
 	return &ExecuteStatementResult{RowsAffected: rowsAffected}, nil
 }
 
-func (db *postgres) BeginTransaction(ctx context.Context) error {
-	if db.ongoingTransaction != nil {
-		return errors.New("cannot begin transaction when there is an ongoing transaction")
-	}
+var transactionCtxKey struct{}
+
+func (db *postgres) Transaction(ctx context.Context, fn func(context.Context) error) error {
+	ctx, span := tracer.Start(ctx, "Database Transaction")
+	defer span.End()
+
 	tx, err := db.conn.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
-	db.ongoingTransaction = tx
-	return nil
-}
 
-func (db *postgres) CommitTransaction(ctx context.Context) error {
-	if db.ongoingTransaction == nil {
-		return errors.New("cannot commit transaction when there is no ongoing transaction")
-	}
-	err := db.ongoingTransaction.Commit()
-	if err != nil {
-		return err
-	}
-	db.ongoingTransaction = nil
-	return nil
-}
+	// Make sure we rollback even if there is a panic
+	defer func() {
+		if r := recover(); r != nil {
+			span.SetAttributes(attribute.Bool("panic", true))
+			span.SetAttributes(attribute.Bool("rollback", true))
+			if err, ok := r.(error); ok {
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
+			}
+			_ = tx.Rollback()
+			panic(err)
+		}
+	}()
 
-func (db *postgres) RollbackTransaction(ctx context.Context) error {
-	if db.ongoingTransaction == nil {
-		return errors.New("cannot rollback transaction when there is no ongoing transaction")
-	}
-	err := db.ongoingTransaction.Rollback()
+	ctx = context.WithValue(ctx, transactionCtxKey, tx)
+
+	err = fn(ctx)
 	if err != nil {
-		return err
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		span.SetAttributes(attribute.Bool("rollback", true))
+		e := tx.Rollback()
+		if e == nil {
+			return err
+		}
+		return fmt.Errorf("error rolling back transaction: %s (original error: %w)", e.Error(), err)
 	}
-	db.ongoingTransaction = nil
-	return nil
+
+	span.SetAttributes(attribute.Bool("commit", true))
+	return tx.Commit()
 }

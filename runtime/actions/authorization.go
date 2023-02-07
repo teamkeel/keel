@@ -14,16 +14,10 @@ import (
 )
 
 func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (authorized bool, err error) {
-	originalCtx := scope.context
-
 	ctx, span := tracer.Start(scope.context, "Check Permissions")
-	scope.context = ctx
-
-	defer func() {
-		scope.context = originalCtx
-	}()
 	defer span.End()
 
+	scope = scope.WithContext(ctx)
 	permissions := proto.PermissionsForAction(scope.schema, scope.operation)
 
 	// No permissions declared means no permission can be granted.

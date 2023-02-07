@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
 	_ "github.com/lib/pq"
 )
 
@@ -39,12 +40,8 @@ type Db interface {
 	ExecuteQuery(ctx context.Context, sql string, values ...any) (*ExecuteQueryResult, error)
 	// Executes SQL statement and returns number of rows affected.
 	ExecuteStatement(ctx context.Context, sql string, values ...any) (*ExecuteStatementResult, error)
-	// Begins a new transaction.
-	BeginTransaction(ctx context.Context) error
-	// Commits the current transaction.
-	CommitTransaction(ctx context.Context) error
-	// Rolls back the current transaction.
-	RollbackTransaction(ctx context.Context) error
+	// Runs fn inside a transaction which is commited if fn returns a nil error
+	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
 func New(ctx context.Context, dbConnInfo *ConnectionInfo) (Db, error) {

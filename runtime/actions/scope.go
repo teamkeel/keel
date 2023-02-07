@@ -22,6 +22,15 @@ type Scope struct {
 	schema    *proto.Schema
 }
 
+func (s *Scope) WithContext(ctx context.Context) *Scope {
+	return &Scope{
+		context:   ctx,
+		operation: s.operation,
+		model:     s.model,
+		schema:    s.schema,
+	}
+}
+
 func NewScope(
 	ctx context.Context,
 	operation *proto.Operation,
@@ -38,15 +47,10 @@ func NewScope(
 }
 
 func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
-	originalCtx := scope.context
-
 	ctx, span := tracer.Start(scope.context, fmt.Sprintf("Action: %s/%s", scope.model.Name, scope.operation.Name))
-	scope.context = ctx
-
-	defer func() {
-		scope.context = originalCtx
-	}()
 	defer span.End()
+
+	scope = scope.WithContext(ctx)
 
 	// inputs can be anything - with arbitrary functions 'Any' type, they can be
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
