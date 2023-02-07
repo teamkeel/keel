@@ -886,7 +886,6 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 	if lo.SomeBy(diffs, func(d diffmatchpatch.Diff) bool {
 		return d.Type != diffmatchpatch.DiffEqual
 	}) {
-		fmt.Printf("XXXX actual generated code: \n%s\n", w.String())
 		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
 	}
 }
