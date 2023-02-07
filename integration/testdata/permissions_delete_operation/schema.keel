@@ -46,7 +46,7 @@ model Post {
         delete deleteWithRequiresSameIdentity(id) {
             @permission(expression: post.identity == ctx.identity)
         }
-        delete deleteWithTrueValuePermission(id) with (title) {
+        delete deleteWithTrueValuePermission(id) {
             @permission(expression: true)
         }
         delete deleteWithPermissionOnImplicitInput(id, title) {

@@ -231,15 +231,23 @@ func TestValidateRequest(t *testing.T) {
 		{
 			name: "create action",
 			schema: `
+				enum Hobby {
+					Tennis
+					Chess
+				}
 				model Person {
 					fields {
 						name Text
 						birthday Date?
+						hobby Hobby?
 					}
 					operations {
 						create createPerson() with (name)
 						create createPersonWithDOB() with (name, birthday)
 						create createPersonWithOptionalDOB() with (name, birthday?)
+						create createPersonWithEnum() with (hobby) {
+							@set(person.name = "")
+						}
 					}
 				}
 			`,
@@ -443,8 +451,15 @@ func TestValidateRequest(t *testing.T) {
 					Romance
 					Horror
 				}
+				model Publisher {
+					fields {
+						name Text
+						dateFounded Date?
+					}
+				}
 				model Author {
 					fields {
+						publisher Publisher
 						name Text
 					}
 				}
@@ -464,6 +479,8 @@ func TestValidateRequest(t *testing.T) {
 							@where(book.genre == genre)
 							@where(book.price > minPrice)
 						}
+						list listBooksByPublisherName(author.publisher.name)
+						list listBooksByPublisherDateFounded(author.publisher.dateFounded)
 					}
 				}
 			`,
@@ -472,6 +489,11 @@ func TestValidateRequest(t *testing.T) {
 					name:    "valid - no inputs",
 					opName:  "listBooks",
 					request: `{"where": {}}`,
+				},
+				{
+					name:    "valid - optional inputs can be null",
+					opName:  "listBooks",
+					request: `{"where": {"id": null, "title": null, "genre": null, "price": null, "available": null, "createdAt": null}}`,
 				},
 				{
 					name:    "valid - text equals",
@@ -593,6 +615,16 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "booksByTitleAndGenre",
 					request: `{"where": {"title": "Some title", "genre": "Horror", "minPrice": 10}}`,
 				},
+				{
+					name:    "valid - nested model field",
+					opName:  "listBooksByPublisherName",
+					request: `{"where": {"authorPublisherName": {"equals": "Jim"}}}`,
+				},
+				{
+					name:    "valid - nullable nested model field",
+					opName:  "listBooksByPublisherDateFounded",
+					request: `{"where": {"authorPublisherDateFounded": null}}`,
+				},
 
 				// errors
 				{
@@ -641,7 +673,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"title": {"contains": "Some title"}, "genre": {"equals": "Horror"}}}`,
 					errors: map[string]string{
 						"where.title": `Invalid type. Expected: string, given: object`,
-						"where.genre": `Invalid type. Expected: string, given: object`,
+						"where.genre": `where.genre must be one of the following: "Romance", "Horror"`,
 					},
 				},
 			},

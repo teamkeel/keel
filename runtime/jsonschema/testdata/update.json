@@ -1,24 +1,23 @@
 {
   "$defs": {
     "Hobby": {
-      "enum": ["Tennis", "Chess"],
-      "type": "string"
+      "enum": ["Tennis", "Chess", null]
     },
     "TestActionValuesInput": {
       "additionalProperties": false,
       "properties": {
         "birthday": {
           "format": "date-time",
-          "type": "string"
+          "type": ["string", "null"]
         },
         "hobby": {
           "$ref": "#/$defs/Hobby"
         },
         "name": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "nickName": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       },
       "type": "object"

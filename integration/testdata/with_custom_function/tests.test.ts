@@ -161,12 +161,7 @@ test("uniqueness constraint violation", async () => {
 });
 
 test("null value in foreign key column", async () => {
-  await expect(
-    actions.createProfile({
-      // @ts-ignore
-      personId: null,
-    })
-  ).toHaveError({
+  await expect(actions.createProfileWithNullPerson({})).toHaveError({
     code: "ERR_INVALID_INPUT",
     message: "field 'personId' cannot be null",
   });
@@ -175,7 +170,6 @@ test("null value in foreign key column", async () => {
 test("unrecognised value in foreign key column", async () => {
   await expect(
     actions.createProfile({
-      // @ts-ignore
       personId: "missing-id",
     })
   ).toHaveError({

@@ -39,13 +39,11 @@
       "additionalProperties": false,
       "properties": {
         "equals": {
-          "enum": ["Tennis", "Chess"],
-          "type": "string"
+          "enum": ["Tennis", "Chess"]
         },
         "oneOf": {
           "items": {
-            "enum": ["Tennis", "Chess"],
-            "type": "string"
+            "enum": ["Tennis", "Chess"]
           },
           "type": "array"
         }
