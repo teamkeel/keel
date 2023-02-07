@@ -1,3 +1,10 @@
+# [0.249.0](https://github.com/teamkeel/keel/compare/v0.248.0...v0.249.0) (2023-02-07)
+
+
+### Features
+
+* add json schema validation to http json api ([b9aca1d](https://github.com/teamkeel/keel/commit/b9aca1d09d6ae61fe05fe28d4ba7c95e3b1d0279))
+
 # [0.248.0](https://github.com/teamkeel/keel/compare/v0.247.3...v0.248.0) (2023-02-07)
 
 
