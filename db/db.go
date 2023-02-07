@@ -26,17 +26,15 @@ var (
 )
 
 type DbError struct {
-	Table  string
 	Column string
-	Value  string
 	Err    error
 }
 
-func (err DbError) Error() string {
+func (err *DbError) Error() string {
 	return err.Err.Error()
 }
 
-func (err DbError) Unwrap() error {
+func (err *DbError) Unwrap() error {
 	return err.Err
 }
 

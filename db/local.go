@@ -41,20 +41,18 @@ func toDbError(err error) error {
 	if value, ok := err.(*pq.Error); ok {
 		switch value.Code {
 		case "23502":
-			err = &DbError{Table: value.Table, Column: value.Column, Err: ErrNotNullConstraintViolation}
+			return &DbError{Column: value.Column, Err: ErrNotNullConstraintViolation}
 		case "23503":
 			// Extract column and value from "Key (author_id)=(2L2ar5NCPvTTEdiDYqgcpF3f5QN1) is not present in table \"author\"."
 			out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(value.Detail, -1)
-			err = &DbError{Table: value.Table, Column: out[0][1], Value: out[1][1], Err: ErrForeignKeyConstraintViolation}
+			return &DbError{Column: out[0][1], Err: ErrForeignKeyConstraintViolation}
 		case "23505":
 			// Extract column and value from "Key (code)=(1234) already exists."
 			out := regexp.MustCompile(`\(([^)]+)\)`).FindAllStringSubmatch(value.Detail, -1)
-			err = &DbError{Table: value.Table, Column: out[0][1], Value: out[1][1], Err: ErrUniqueConstraintViolation}
+			return &DbError{Column: out[0][1], Err: ErrUniqueConstraintViolation}
 		default:
-			err = &DbError{Err: value}
+			return err
 		}
-	} else {
-		err = &DbError{Err: err}
 	}
 	return err
 }
@@ -75,7 +73,7 @@ func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...
 
 	columns, err := result.Columns()
 	if err != nil {
-		return nil, err
+		return nil, toDbError(err)
 	}
 	for result.Next() {
 		row := make([]any, len(columns))
@@ -85,7 +83,7 @@ func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...
 		}
 		err = result.Scan(pointers...)
 		if err != nil {
-			return nil, err
+			return nil, toDbError(err)
 		}
 		rowMap := map[string]any{}
 		for i, cell := range row {
@@ -114,7 +112,7 @@ func (db *localDb) ExecuteStatement(ctx context.Context, sqlQuery string, values
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, err
+		return nil, toDbError(err)
 	}
 	return &ExecuteStatementResult{RowsAffected: rowsAffected}, nil
 }

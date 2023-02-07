@@ -171,16 +171,25 @@ func (suite dbTestSuite) testErrUniqueConstraintViolation(t *testing.T) {
 	assert.NoError(t, err)
 
 	keelKeelsonValues := []any{"id1", "Keel Keelson"}
+	keelKeelsonValuesNotUniqueName := []any{"id2", "Keel Keelson"}
 
 	statementResult, err := db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValues...)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
-	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValues...)
+	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValuesNotUniqueName...)
 	assert.ErrorIs(t, err, ErrUniqueConstraintViolation)
+	dbError1 := &DbError{}
+	if assert.ErrorAs(t, err, &dbError1) {
+		assert.Equal(t, dbError1.Column, "name")
+	}
 
-	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValues...)
+	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValuesNotUniqueName...)
 	assert.ErrorIs(t, err, ErrUniqueConstraintViolation)
+	dbError2 := &DbError{}
+	if assert.ErrorAs(t, err, &dbError2) {
+		assert.Equal(t, dbError2.Column, "name")
+	}
 }
 
 func (suite dbTestSuite) testErrNotNullConstraintViolation(t *testing.T) {
@@ -202,7 +211,7 @@ func (suite dbTestSuite) testErrNotNullConstraintViolation(t *testing.T) {
 	assert.NoError(t, err)
 
 	keelKeelsonValues := []any{"id1", "Keel Keelson"}
-	notNameValues := []any{"id1", nil}
+	notNameValues := []any{"id2", nil}
 
 	statementResult, err := db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", keelKeelsonValues...)
 	assert.NoError(t, err)
@@ -210,9 +219,17 @@ func (suite dbTestSuite) testErrNotNullConstraintViolation(t *testing.T) {
 
 	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", notNameValues...)
 	assert.ErrorIs(t, err, ErrNotNullConstraintViolation)
+	dbError1 := &DbError{}
+	if assert.ErrorAs(t, err, &dbError1) {
+		assert.Equal(t, dbError1.Column, "name")
+	}
 
 	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name) VALUES (?, ?)", notNameValues...)
 	assert.ErrorIs(t, err, ErrNotNullConstraintViolation)
+	dbError2 := &DbError{}
+	if assert.ErrorAs(t, err, &dbError2) {
+		assert.Equal(t, dbError2.Column, "name")
+	}
 }
 
 func (suite dbTestSuite) testErrForeignKeyConstraintViolation(t *testing.T) {
@@ -234,7 +251,7 @@ func (suite dbTestSuite) testErrForeignKeyConstraintViolation(t *testing.T) {
 	_, err = db.ExecuteStatement(ctx, `CREATE TABLE person(
         id               text PRIMARY KEY,
         name             text,
-		companyId		 text
+		company_id		 text
     );`)
 	assert.NoError(t, err)
 
@@ -243,7 +260,7 @@ func (suite dbTestSuite) testErrForeignKeyConstraintViolation(t *testing.T) {
     );`)
 	assert.NoError(t, err)
 
-	_, err = db.ExecuteStatement(ctx, "ALTER TABLE person ADD FOREIGN KEY (companyId) REFERENCES company(id)")
+	_, err = db.ExecuteStatement(ctx, "ALTER TABLE person ADD FOREIGN KEY (company_id) REFERENCES company(id)")
 	assert.NoError(t, err)
 
 	keelKeelsonValues := []any{"id1", "Keel Keelson", "123"}
@@ -253,13 +270,21 @@ func (suite dbTestSuite) testErrForeignKeyConstraintViolation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), statementResultCompany.RowsAffected)
 
-	statementResult, err := db.ExecuteStatement(ctx, "INSERT INTO person (id, name, companyId) VALUES (?, ?, ?)", keelKeelsonValues...)
+	statementResult, err := db.ExecuteStatement(ctx, "INSERT INTO person (id, name, company_id) VALUES (?, ?, ?)", keelKeelsonValues...)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), statementResult.RowsAffected)
 
-	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, companyId) VALUES (?, ?, ?)", noCompanyValues...)
+	_, err = db.ExecuteStatement(ctx, "INSERT INTO person (id, name, company_id) VALUES (?, ?, ?)", noCompanyValues...)
 	assert.ErrorIs(t, err, ErrForeignKeyConstraintViolation)
+	dbError1 := &DbError{}
+	if assert.ErrorAs(t, err, &dbError1) {
+		assert.Equal(t, dbError1.Column, "company_id")
+	}
 
-	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name, companyId) VALUES (?, ?, ?)", noCompanyValues...)
+	_, err = db.ExecuteQuery(ctx, "INSERT INTO person (id, name, company_id) VALUES (?, ?, ?)", noCompanyValues...)
 	assert.ErrorIs(t, err, ErrForeignKeyConstraintViolation)
+	dbError2 := &DbError{}
+	if assert.ErrorAs(t, err, &dbError2) {
+		assert.Equal(t, dbError2.Column, "company_id")
+	}
 }

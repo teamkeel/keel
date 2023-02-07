@@ -26,8 +26,7 @@ test("create with parent id as implicit input - id does not exist - returns erro
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message:
-      "the relationship lookup for Post field 'theAuthorId' does not exist",
+    message: "the relationship lookup for field 'theAuthorId' does not exist",
   });
 });
 
