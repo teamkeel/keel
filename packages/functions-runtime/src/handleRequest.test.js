@@ -25,6 +25,9 @@ test("when the custom function returns expected value", async () => {
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
+    meta: {
+      headers: {},
+    },
     result: {
       title: "a post",
       id: "abcde",

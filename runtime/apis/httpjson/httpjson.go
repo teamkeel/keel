@@ -37,13 +37,13 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
 					Code:    "ERR_INTERNAL",
 					Message: "error parsing POST body",
-				})
+				}, nil)
 			}
 		default:
 			return common.NewJsonResponse(http.StatusMethodNotAllowed, HttpJsonErrorResponse{
 				Code:    "ERR_HTTP_METHOD_NOT_ALLOWED",
 				Message: "only HTTP POST or GET accepted",
-			})
+			}, nil)
 		}
 
 		op := proto.FindOperation(p, actionName)
@@ -51,7 +51,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return common.NewJsonResponse(http.StatusNotFound, HttpJsonErrorResponse{
 				Code:    "ERR_NOT_FOUND",
 				Message: "method not found",
-			})
+			}, nil)
 		}
 
 		validation, err := jsonschema.ValidateRequest(r.Context(), p, op, inputs)
@@ -61,7 +61,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
 				Code:    "ERR_INTERNAL",
 				Message: "error validating request body",
-			})
+			}, nil)
 		}
 
 		if !validation.Valid() {
@@ -79,12 +79,12 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				Data: map[string]any{
 					"errors": errs,
 				},
-			})
+			}, nil)
 		}
 
 		scope := actions.NewScope(r.Context(), op, p)
 
-		response, err := actions.Execute(scope, inputs)
+		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
 			code := "ERR_INTERNAL"
 			message := "error executing request"
@@ -108,10 +108,10 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return common.NewJsonResponse(httpCode, HttpJsonErrorResponse{
 				Code:    code,
 				Message: message,
-			})
+			}, nil)
 		}
 
-		return common.NewJsonResponse(http.StatusOK, response)
+		return common.NewJsonResponse(http.StatusOK, response, headers)
 	}
 }
 

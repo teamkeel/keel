@@ -83,6 +83,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdkTypes := &Writer{}
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
 
 	for _, enum := range schema.Enums {
@@ -321,7 +322,9 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 	w.Writeln("export type FunctionAPI = {")
 	w.Indent()
 	w.Writeln("models: ModelsAPI;")
+	w.Writeln("headers: Headers;")
 	w.Dedent()
+
 	w.Writeln("}")
 
 	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
@@ -332,7 +335,7 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 }
 
 func writeAPIFactory(w *Writer, models []*proto.Model) {
-	w.Writeln("function createFunctionAPI() {")
+	w.Writeln("function createFunctionAPI(headers) {")
 	w.Indent()
 
 	w.Writeln("const models = {")
@@ -345,7 +348,8 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	}
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("return {models};")
+	w.Writeln("return {models, headers};")
+
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("function createContextAPI(meta) {")

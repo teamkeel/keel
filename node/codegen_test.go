@@ -211,12 +211,12 @@ export declare function getDatabase(): Kysely<database>;`
 
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
-function createFunctionAPI() {
+function createFunctionAPI(headers) {
 	const models = {
 		person: new runtime.ModelAPI("person", personDefaultValues, null, tableConfigMap),
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, null, tableConfigMap),
 	};
-    return {models};
+    return {models, headers};
 }
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
@@ -239,6 +239,7 @@ export type ModelsAPI = {
 }
 export type FunctionAPI = {
 	models: ModelsAPI;
+	headers: Headers;
 }
 export interface ContextAPI extends runtime.ContextAPI {
 	identity: Identity;
