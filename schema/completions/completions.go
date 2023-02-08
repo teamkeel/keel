@@ -44,9 +44,11 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 		Contents: schema,
 	})
 
-	config, err := config.LoadFromBytes([]byte(configFile))
-	if err == nil {
-		ast.EnvironmentVariables = config.AllEnvironmentVariables()
+	if configFile != "" {
+		config, err := config.LoadFromBytes([]byte(configFile))
+		if err == nil {
+			ast.EnvironmentVariables = config.AllEnvironmentVariables()
+		}
 	}
 
 	tokenAtPos := NewTokensAtPosition(schema, pos)
