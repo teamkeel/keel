@@ -1,0 +1,20 @@
+model FetchedThing {
+    fields {
+        fetchedBody Text
+    }
+
+    functions {
+        get getFetchedThing()
+    }
+
+    @permission(
+        expression: true,
+        actions: [get]
+    )
+}
+
+api Web {
+    models {
+        FetchedThing
+    }
+}

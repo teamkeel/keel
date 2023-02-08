@@ -216,12 +216,13 @@ function createFunctionAPI(headers) {
 		person: new runtime.ModelAPI("person", personDefaultValues, null, tableConfigMap),
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, null, tableConfigMap),
 	};
-    return {models, headers};
+	const wrappedFetch = fetch;
+	return {models, headers, fetch: wrappedFetch};
 }
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
 	const identity = meta.identity;
-    return {headers, identity};
+	return {headers, identity};
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
@@ -234,11 +235,12 @@ module.exports.createContextAPI = createContextAPI;`
 func TestWriteAPIDeclarations(t *testing.T) {
 	expected := `
 export type ModelsAPI = {
-    person: PersonAPI;
-    identity: IdentityAPI;
+	person: PersonAPI;
+	identity: IdentityAPI;
 }
 export type FunctionAPI = {
 	models: ModelsAPI;
+	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
 	headers: Headers;
 }
 export interface ContextAPI extends runtime.ContextAPI {

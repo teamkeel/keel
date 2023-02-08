@@ -123,7 +123,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema.Models)
 
-	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase")
+	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
 
 	return []*GeneratedFile{
 		{
@@ -323,6 +323,7 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 	w.Writeln("export type FunctionAPI = {")
 	w.Indent()
 	w.Writeln("models: ModelsAPI;")
+	w.Writeln("fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;")
 	w.Writeln("headers: Headers;")
 	w.Dedent()
 
@@ -349,8 +350,8 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	}
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("return {models, headers};")
-
+	w.Writeln("const wrappedFetch = fetch;") // We'll likely extend it later.
+	w.Writeln("return {models, headers, fetch: wrappedFetch};")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("function createContextAPI(meta) {")
