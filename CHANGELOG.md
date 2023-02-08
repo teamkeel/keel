@@ -1,3 +1,10 @@
+# [0.250.0](https://github.com/teamkeel/keel/compare/v0.249.0...v0.250.0) (2023-02-08)
+
+
+### Features
+
+* set response headers in functions runtime ([#748](https://github.com/teamkeel/keel/issues/748)) ([81b4ad2](https://github.com/teamkeel/keel/commit/81b4ad2e8d18c6b2ddac0b949b5e6cf4749b3ecf))
+
 # [0.249.0](https://github.com/teamkeel/keel/compare/v0.248.0...v0.249.0) (2023-02-07)
 
 
