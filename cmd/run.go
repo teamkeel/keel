@@ -146,6 +146,15 @@ var runCmd = &cobra.Command{
 			protoSchema, err := b.MakeFromDirectory(inputDir)
 
 			if err != nil {
+				var configErrs config.ConfigErrors
+				if errors.As(err, &configErrs) {
+					color.New(color.FgRed).Printf("\nThere is an error in your config file:\n")
+
+					for _, err := range configErrs.Errors {
+						fmt.Printf("%s\n", err.Message)
+					}
+				}
+
 				errs, ok := err.(*errorhandling.ValidationErrors)
 				if !ok {
 					panic(err)

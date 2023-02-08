@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/fatih/color"
 	"gopkg.in/yaml.v3"
 )
 
@@ -113,16 +112,31 @@ type Input struct {
 	Required []string `yaml:"required,omitempty"`
 }
 
-type ConfigErrors struct {
-	Type         string   `json:"type,omitempty"`
-	Key          string   `json:"key,omitempty"`
-	Environments []string `json:"environments,omitempty"`
+type ConfigError struct {
+	Type    string `json:"type,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 const (
-	DuplicateErrorString = " - environment variable %s has a duplicate set in environment: %s\n"
-	RequiredErrorString  = " - environment variable %s is required but not defined in the following environments: %s\n"
+	ConfigDuplicateErrorString = "environment variable %s has a duplicate set in environment: %s\n"
+	ConfigRequiredErrorString  = "environment variable %s is required but not defined in the following environments: %s\n"
 )
+
+type ConfigErrors struct {
+	Errors []*ConfigError `json:"errors"`
+}
+
+func (c ConfigErrors) Error() string {
+	str := ""
+
+	for _, err := range c.Errors {
+		str += fmt.Sprintf("%s\n", err.Message)
+	}
+
+	return str
+}
+
+func (c *ConfigErrors) Unwrap() error { return c }
 
 func Load(dir string) (*ProjectConfig, error) {
 	// If an absolute path to a file is provided then use it, otherwise append the default
@@ -168,32 +182,37 @@ func LoadFromBytes(data []byte) (*ProjectConfig, error) {
 	return &config, nil
 }
 
-func Validate(config *ProjectConfig) []ConfigErrors {
-	var errors []ConfigErrors
+func Validate(config *ProjectConfig) *ConfigErrors {
+	var errors []*ConfigError
 
 	duplicates, results := checkForDuplicates(config)
 	if duplicates {
-		for k, v := range results {
-			errors = append(errors, ConfigErrors{
-				Type:         "duplicate",
-				Key:          k,
-				Environments: v,
+		for duplicatedEnvVarName, environmentNames := range results {
+			errors = append(errors, &ConfigError{
+				Type:    "duplicate",
+				Message: fmt.Sprintf(ConfigDuplicateErrorString, duplicatedEnvVarName, environmentNames),
 			})
 		}
 	}
 
 	missingKeys, keys := requiredValuesKeys(config)
 	if missingKeys {
-		for k, v := range keys {
-			errors = append(errors, ConfigErrors{
-				Type:         "missing",
-				Key:          k,
-				Environments: v,
+		for duplicatedEnvVarName, environmentNames := range keys {
+			errors = append(errors, &ConfigError{
+				Type:    "missing",
+				Message: fmt.Sprintf(ConfigRequiredErrorString, duplicatedEnvVarName, environmentNames),
 			})
 		}
 	}
 
-	return errors
+
+	if len(errors) == 0 {
+		return nil
+	}
+
+	return &ConfigErrors{
+		Errors: errors,
+	}
 }
 
 // checkForDuplicates checks for duplicate environment variables in a keel project
