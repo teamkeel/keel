@@ -105,22 +105,22 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 
 		switch resp.Error.Code {
 		case ForeignKeyConstraintError:
-			return nil, common.NewForeignKeyConstraintError(data["column"].(string))
+			return nil, nil, common.NewForeignKeyConstraintError(data["column"].(string))
 		case NoResultError:
-			return nil, common.RuntimeError{
+			return nil, nil, common.RuntimeError{
 				Code:    common.ErrInternal,
 				Message: "custom function returned no result",
 			}
 		case NotNullConstraintError:
-			return nil, common.NewNotNullError(data["column"].(string))
+			return nil, nil, common.NewNotNullError(data["column"].(string))
 		case UniqueConstraintError:
-			return nil, common.NewUniquenessError(data["column"].(string))
+			return nil, nil, common.NewUniquenessError(data["column"].(string))
 		case RecordNotFoundError:
-			return nil, common.NewNotFoundError()
+			return nil, nil, common.NewNotFoundError()
 		default:
 			// includes generic errors thrown by custom functions during execution, plus other types of DatabaseError's that aren't fk/uniqueness/null constraint errors:
 			// https://www.postgresql.org/docs/current/errcodes-appendix.html
-			return nil, common.RuntimeError{
+			return nil, nil, common.RuntimeError{
 				Code:    common.ErrInternal,
 				Message: resp.Error.Message,
 			}

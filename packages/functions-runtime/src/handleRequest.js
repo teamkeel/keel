@@ -45,7 +45,7 @@ async function handleRequest(request, config) {
     for (const pair of headers.entries()) {
       responseHeaders[pair[0]] = pair[1].split(", ");
     }
-    response.meta = {headers: responseHeaders};
+    response.meta = { headers: responseHeaders };
 
     return response;
   } catch (e) {

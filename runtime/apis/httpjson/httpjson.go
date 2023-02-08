@@ -61,7 +61,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
 				Code:    "ERR_INTERNAL",
 				Message: "error validating request body",
-			})
+			}, nil)
 		}
 
 		if !validation.Valid() {
@@ -79,7 +79,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				Data: map[string]any{
 					"errors": errs,
 				},
-			})
+			}, nil)
 		}
 
 		scope := actions.NewScope(r.Context(), op, p)

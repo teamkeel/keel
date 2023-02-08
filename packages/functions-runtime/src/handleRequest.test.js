@@ -26,7 +26,7 @@ test("when the custom function returns expected value", async () => {
     id: "123",
     jsonrpc: "2.0",
     meta: {
-      headers: {}
+      headers: {},
     },
     result: {
       title: "a post",
