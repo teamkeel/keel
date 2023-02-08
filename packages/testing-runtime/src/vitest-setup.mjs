@@ -3,8 +3,8 @@
 // we tell Vitest to load that config file.
 
 import { expect } from "vitest";
-import { toHaveError } from "./toHaveError";
-import { toHaveAuthorizationError } from "./toHaveAuthorizationError";
+import { toHaveError } from "./toHaveError.mjs";
+import { toHaveAuthorizationError } from "./toHaveAuthorizationError.mjs";
 
 expect.extend({
   toHaveError,
