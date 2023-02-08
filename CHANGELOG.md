@@ -1,3 +1,10 @@
+# [0.251.0](https://github.com/teamkeel/keel/compare/v0.250.0...v0.251.0) (2023-02-08)
+
+
+### Features
+
+* support ctx.headers in parser ([#752](https://github.com/teamkeel/keel/issues/752)) ([4f1b08f](https://github.com/teamkeel/keel/commit/4f1b08fe6518f9aba6434f90919a5e5e407ddd13))
+
 # [0.250.0](https://github.com/teamkeel/keel/compare/v0.249.0...v0.250.0) (2023-02-08)
 
 
