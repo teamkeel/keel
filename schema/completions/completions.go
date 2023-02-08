@@ -551,7 +551,7 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 		if len(previousIdents) == 2 {
 			switch previousIdents[1] {
 			case "env":
-				completions = getEnvironmentVariableCompletes(ast)
+				completions = getEnvironmentVariableCompletions(ast)
 			}
 		}
 
@@ -768,7 +768,7 @@ func getAttributeCompletions(token *TokensAtPosition, names []string) []*Complet
 	return completions
 }
 
-func getEnvironmentVariableCompletes(ast *parser.AST) []*CompletionItem {
+func getEnvironmentVariableCompletions(ast *parser.AST) []*CompletionItem {
 	var builtInFieldCompletions []*CompletionItem
 	for _, key := range ast.EnvironmentVariables {
 		builtInFieldCompletions = append(builtInFieldCompletions, &CompletionItem{
