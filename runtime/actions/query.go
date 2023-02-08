@@ -10,7 +10,6 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
@@ -536,9 +535,6 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 
 	result, err := database.ExecuteStatement(ctx, statement.template, statement.args...)
 	if err != nil {
-		log.WithError(err).
-			WithFields(log.Fields{"sql": statement.template}).
-			Error("Database query execution error")
 		return 0, toRuntimeError(err)
 	}
 
@@ -554,9 +550,6 @@ func (statement *Statement) ExecuteToMany(ctx context.Context) ([]map[string]any
 
 	result, err := database.ExecuteQuery(ctx, statement.template, statement.args...)
 	if err != nil {
-		log.WithError(err).
-			WithFields(log.Fields{"sql": statement.template}).
-			Error("Database query execution error")
 		return nil, 0, false, toRuntimeError(err)
 	}
 
@@ -731,27 +724,13 @@ func sqlQuote(tokens ...string) string {
 func toRuntimeError(err error) error {
 	var value *db.DbError
 	if errors.As(err, &value) {
-		// Parses from the database casing back to the schema casing.
-		// Important since these error messages are delivered to the user.
-		model := strcase.ToCamel(value.Table)
-		field := strcase.ToLowerCamel(value.Column)
-
 		switch value.Err {
 		case db.ErrNotNullConstraintViolation:
-			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
-				Message: fmt.Sprintf("%s field '%s' cannot be null", model, field),
-			}
+			return common.NewNotNullError(value.Column)
 		case db.ErrUniqueConstraintViolation:
-			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
-				Message: fmt.Sprintf("%s field '%s' can only contain unique values", model, field),
-			}
+			return common.NewUniquenessError(value.Column)
 		case db.ErrForeignKeyConstraintViolation:
-			return common.RuntimeError{
-				Code:    common.ErrInvalidInput,
-				Message: fmt.Sprintf("the relationship lookup for %s field '%s' does not exist", model, field),
-			}
+			return common.NewForeignKeyConstraintError(value.Column)
 		default:
 			return common.RuntimeError{
 				Code:    common.ErrInvalidInput,

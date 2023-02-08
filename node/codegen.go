@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -68,6 +67,7 @@ func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions))
 
 	files := generateSdkPackage(dir, schema)
 	files = append(files, generateTestingPackage(dir, schema)...)
+	files = append(files, generateTestingSetup(dir)...)
 
 	if options.developmentServer {
 		files = append(files, generateDevelopmentServer(dir, schema)...)
@@ -84,6 +84,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdkTypes := &Writer{}
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
+	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
 
 	for _, enum := range schema.Enums {
@@ -323,7 +324,9 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 	w.Indent()
 	w.Writeln("models: ModelsAPI;")
 	w.Writeln("fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;")
+	w.Writeln("headers: Headers;")
 	w.Dedent()
+
 	w.Writeln("}")
 
 	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
@@ -334,7 +337,7 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 }
 
 func writeAPIFactory(w *Writer, models []*proto.Model) {
-	w.Writeln("function createFunctionAPI() {")
+	w.Writeln("function createFunctionAPI(headers) {")
 	w.Indent()
 
 	w.Writeln("const models = {")
@@ -348,7 +351,7 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	w.Dedent()
 	w.Writeln("};")
 	w.Writeln("const wrappedFetch = fetch;") // We'll likely extend it later.
-	w.Writeln("return {models, fetch: wrappedFetch};")
+	w.Writeln("return {models, headers, fetch: wrappedFetch};")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("function createContextAPI(meta) {")
@@ -378,23 +381,16 @@ func writeTableConfig(w *Writer, models []*proto.Model) {
 
 			relationshipConfig := map[string]string{
 				"referencesTable": strcase.ToSnake(field.Type.ModelName.Value),
+				"foreignKey":      strcase.ToSnake(proto.GetForignKeyFieldName(models, field)),
 			}
 
-			if field.ForeignKeyFieldName != nil {
+			switch {
+			case proto.IsHasOne(field):
+				relationshipConfig["relationshipType"] = "hasOne"
+			case proto.IsHasMany(field):
+				relationshipConfig["relationshipType"] = "hasMany"
+			case proto.IsBelongsTo(field):
 				relationshipConfig["relationshipType"] = "belongsTo"
-				relationshipConfig["foreignKey"] = strcase.ToSnake(field.ForeignKeyFieldName.Value)
-			} else {
-				if field.Type.Repeated {
-					relationshipConfig["relationshipType"] = "hasMany"
-				} else {
-					relationshipConfig["relationshipType"] = "hasOne"
-				}
-
-				relatedModel := proto.FindModel(models, field.Type.ModelName.Value)
-				relatedField, _ := lo.Find(relatedModel.Fields, func(field *proto.Field) bool {
-					return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
-				})
-				relationshipConfig["foreignKey"] = strcase.ToSnake(relatedField.ForeignKeyFieldName.Value)
 			}
 
 			tableConfig, ok := tableConfigMap[strcase.ToSnake(model.Name)]
@@ -751,6 +747,35 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 		{
 			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/package.json"),
 			Contents: `{"name": "@teamkeel/testing", "type": "module", "exports": "./index.mjs"}`,
+		},
+	}
+}
+
+func generateTestingSetup(dir string) GeneratedFiles {
+	return GeneratedFiles{
+		{
+			Path: filepath.Join(dir, ".build/vitest.config.mjs"),
+			Contents: `
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+	test: {
+		setupFiles: [__dirname + "/vitest.setup"],
+	},
+});
+			`,
+		},
+		{
+			Path: filepath.Join(dir, ".build/vitest.setup.mjs"),
+			Contents: `
+import { expect } from "vitest";
+import { toHaveError, toHaveAuthorizationError } from "@teamkeel/testing-runtime";
+
+expect.extend({
+	toHaveError,
+	toHaveAuthorizationError,
+});
+			`,
 		},
 	}
 }

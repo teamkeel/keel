@@ -82,18 +82,6 @@ test("listing", async () => {
   expect(alienNames.sort()).toEqual([x11.name, x22.name].sort());
 });
 
-test("deletion", async () => {
-  const person = await models.person.create({
-    name: "fred",
-    gender: "male",
-    niNumber: "678",
-  });
-
-  const deletedId = await actions.deletePerson({ id: person.id });
-
-  expect(deletedId).toEqual(person.id);
-});
-
 test("updating", async () => {
   const person = await models.person.create({
     name: "fred",
@@ -110,4 +98,82 @@ test("updating", async () => {
   expect(updatedPerson.gender).toEqual("non-binary");
   expect(updatedPerson.niNumber).toEqual("789");
   expect(updatedPerson.id).toEqual(person.id);
+});
+
+test("updating non existent record", async () => {
+  await expect(
+    actions.updatePerson({
+      where: {
+        id: "fake-id",
+      },
+      values: {
+        name: "something",
+        gender: "non-binary",
+        niNumber: "1929",
+      },
+    })
+  ).toHaveError({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "record not found",
+  });
+});
+
+test("deleting", async () => {
+  const person = await models.person.create({
+    name: "fred",
+    gender: "male",
+    niNumber: "678",
+  });
+
+  const deletedId = await actions.deletePerson({ id: person.id });
+
+  expect(deletedId).toEqual(person.id);
+});
+
+test("deleting non existent record", async () => {
+  await expect(
+    actions.deletePerson({
+      id: "fake-id",
+    })
+  ).toHaveError({
+    code: "ERR_RECORD_NOT_FOUND",
+    message: "record not found",
+  });
+});
+
+test("uniqueness constraint violation", async () => {
+  const person = await models.person.create({
+    name: "adam",
+    niNumber: "123",
+    gender: "non-binary",
+  });
+
+  await expect(
+    actions.createPerson({
+      name: "bob",
+      niNumber: person.niNumber,
+      gender: "non-binary",
+    })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "field 'niNumber' can only contain unique values",
+  });
+});
+
+test("null value in foreign key column", async () => {
+  await expect(actions.createProfileWithNullPerson({})).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "field 'personId' cannot be null",
+  });
+});
+
+test("unrecognised value in foreign key column", async () => {
+  await expect(
+    actions.createProfile({
+      personId: "missing-id",
+    })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message: "the relationship lookup for field 'personId' does not exist",
+  });
 });

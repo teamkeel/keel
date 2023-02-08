@@ -41,7 +41,7 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 
 		input := getInput(operation, p.Args)
 
-		res, err := actions.Execute(scope, input)
+		res, headers, err := actions.Execute(scope, input)
 		if err != nil {
 			var runtimeErr common.RuntimeError
 			if !errors.As(err, &runtimeErr) {
@@ -54,6 +54,12 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 				logrus.Trace(err)
 			}
 			return nil, err
+		}
+
+		rootValue := p.Info.RootValue.(map[string]interface{})
+		headersValue := rootValue["headers"].(map[string][]string)
+		for k, v := range headers {
+			headersValue[k] = v
 		}
 
 		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST {

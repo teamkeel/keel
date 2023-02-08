@@ -1,6 +1,7 @@
 package integration_test
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"os"
@@ -89,19 +90,26 @@ func TestIntegration(t *gotest.T) {
 				Password: "postgres",
 			}
 
+			var functionOutput bytes.Buffer
+
 			output, err := testing.Run(&testing.RunnerOpts{
-				Dir:        tmpDir,
-				DbConnInfo: dbConnInfo,
+				Dir:             tmpDir,
+				DbConnInfo:      dbConnInfo,
+				FunctionsOutput: &functionOutput,
 			})
 			require.NoError(t, err)
+
 			if !output.Success {
+				if functionOutput.Len() > 0 {
+					fmt.Println("=== Custom Functions Output ===")
+					fmt.Println(functionOutput.String())
+					fmt.Println("===============================")
+				}
+				fmt.Println("=== Vitest Output ===")
 				fmt.Println(output.Output)
+				fmt.Println("===============================")
 				t.Fail()
 			}
-
-			t.Cleanup(func() {
-				os.Stdout.Close()
-			})
 		})
 	}
 }

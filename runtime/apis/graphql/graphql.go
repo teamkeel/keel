@@ -10,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/nleeper/goment"
 	"github.com/sirupsen/logrus"
 
@@ -77,14 +76,21 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			"query": params.Query,
 		}).Debug("graphql")
 
+		// This map can be mutated in the action resolver,
+		// allowing us to pass data upwards and into the response.
+		headers := map[string][]string{}
+
 		result := graphql.Do(graphql.Params{
 			Schema:         *schema,
 			Context:        r.Context(),
 			RequestString:  params.Query,
 			VariableValues: params.Variables,
+			RootObject: map[string]interface{}{
+				"headers": headers,
+			},
 		})
 
-		return common.NewJsonResponse(http.StatusOK, result)
+		return common.NewJsonResponse(http.StatusOK, result, headers)
 	}
 }
 
@@ -183,6 +189,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 	mk.types[fmt.Sprintf("model-%s", model.Name)] = object
 
 	for _, field := range model.Fields {
+		field := field
+
 		// Passwords are omitted from GraphQL responses
 		if field.Type.Type == proto.Type_TYPE_PASSWORD {
 			continue
@@ -193,153 +201,138 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			return nil, err
 		}
 
-		if field.Type.Type == proto.Type_TYPE_MODEL {
-			fieldArgs := graphql.FieldConfigArgument{}
-			if proto.IsToManyRelationship(field) {
-				fieldArgs = graphql.FieldConfigArgument{
-					"first": &graphql.ArgumentConfig{
-						Type:        graphql.Int,
-						Description: "The requested number of nodes for each page.",
-					},
-					"last": &graphql.ArgumentConfig{
-						Type:        graphql.Int,
-						Description: "The requested number of nodes for each page.",
-					},
-					"after": &graphql.ArgumentConfig{
-						Type:        graphql.String,
-						Description: "The ID cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.",
-					},
-					"before": &graphql.ArgumentConfig{
-						Type:        graphql.String,
-						Description: "The ID cursor to retrieve nodes before in the connection. Typically, you should pass the startCursor of the previous page as before.",
-					},
-				}
-			}
-
-			object.AddFieldConfig(field.Name, &graphql.Field{
-				Name: field.Name,
-				Type: outputType,
-				Args: fieldArgs,
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					// The field to the parent or child model
-					modelField := proto.FindField(mk.proto.Models, model.Name, strcase.ToLowerCamel((p.Info.FieldName)))
-
-					// The model(s) to be fetched in the look up
-					lookupModelName := modelField.Type.ModelName.Value
-					lookupModel := proto.FindModel(mk.proto.Models, lookupModelName)
-
-					// Create a new query for that parent or child model
-					query := actions.NewQuery(lookupModel)
-					query.AppendSelect(actions.AllFields())
-
-					switch {
-					case proto.IsToOneRelationship(modelField):
-						// The foreign key id field name on this model
-						foreignKeyField := modelField.ForeignKeyFieldName.Value
-
-						// Get the current model
-						parent, ok := p.Source.(map[string]interface{})
-						if !ok {
-							return nil, errors.New("graphql source value is not map[string]interface{}")
-						}
-
-						// Retrieve the foreign key id value for the lookup
-						id, ok := parent[foreignKeyField]
-						if !ok {
-							return nil, fmt.Errorf("the foreign key does not exist in source value map: %s", foreignKeyField)
-						}
-
-						// If the foreign key value is null (possible if the relationship
-						// is not required), then there is no need for a lookup.
-						if id == nil {
-							return nil, nil
-						}
-
-						err = query.Where(actions.IdField(), actions.Equals, actions.Value(id))
-						if err != nil {
-							return nil, err
-						}
-
-						result, err := query.
-							SelectStatement().
-							ExecuteToSingle(p.Context)
-						if err != nil {
-							return nil, err
-						}
-
-						// Return an error if no record if found for the corresponding foreign key
-						if result == nil {
-							return nil, errors.New("record expected in database but nothing found")
-						}
-
-						return result, nil
-					case proto.IsToManyRelationship(modelField):
-						// A 1:M relationship lookup
-						primaryKeyField := "id"
-						fkField, found := lo.Find(lookupModel.Fields, func(field *proto.Field) bool {
-							return field.Type.Type == proto.Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
-						})
-						if !found {
-							return nil, fmt.Errorf("no foreign key field found on related model %s", model)
-						}
-
-						foreignKeyField := fkField.ForeignKeyFieldName.Value
-						parent, ok := p.Source.(map[string]interface{})
-						if !ok {
-							return nil, errors.New("graphql source value is not map[string]interface{}")
-						}
-
-						id, ok := parent[primaryKeyField]
-						if !ok {
-							return nil, fmt.Errorf("the primary key does not exist in source value map: %s", primaryKeyField)
-						}
-
-						err = query.Where(actions.Field(foreignKeyField), actions.Equals, actions.Value(id))
-						if err != nil {
-							return nil, err
-						}
-
-						page, err := actions.ParsePage(p.Args)
-						if err != nil {
-							return nil, err
-						}
-
-						// Select all columns from this table and distinct on id
-						query.AppendDistinctOn(actions.IdField())
-						query.AppendSelect(actions.AllFields())
-						err = query.ApplyPaging(page)
-						if err != nil {
-							return nil, err
-						}
-
-						results, _, hasNextPage, err := query.
-							SelectStatement().
-							ExecuteToMany(p.Context)
-
-						if err != nil {
-							return nil, err
-						}
-
-						res, err := connectionResponse(map[string]any{
-							"results":     results,
-							"hasNextPage": hasNextPage,
-						})
-						if err != nil {
-							return nil, err
-						}
-
-						return res, nil
-					default:
-						return nil, fmt.Errorf("unhandled model relationship configuration for field: %s on model: %s", field.Name, field.ModelName)
-					}
-				},
-			})
-		} else {
+		if field.Type.Type != proto.Type_TYPE_MODEL {
 			object.AddFieldConfig(field.Name, &graphql.Field{
 				Name: field.Name,
 				Type: outputType,
 			})
+			continue
 		}
+
+		fieldArgs := graphql.FieldConfigArgument{}
+		if proto.IsHasMany(field) {
+			fieldArgs = graphql.FieldConfigArgument{
+				"first": &graphql.ArgumentConfig{
+					Type:        graphql.Int,
+					Description: "The requested number of nodes for each page.",
+				},
+				"last": &graphql.ArgumentConfig{
+					Type:        graphql.Int,
+					Description: "The requested number of nodes for each page.",
+				},
+				"after": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "The ID cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.",
+				},
+				"before": &graphql.ArgumentConfig{
+					Type:        graphql.String,
+					Description: "The ID cursor to retrieve nodes before in the connection. Typically, you should pass the startCursor of the previous page as before.",
+				},
+			}
+		}
+
+		object.AddFieldConfig(field.Name, &graphql.Field{
+			Name: field.Name,
+			Type: outputType,
+			Args: fieldArgs,
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+
+				relatedModel := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+
+				// Create a new query for the related model
+				query := actions.NewQuery(relatedModel)
+				query.AppendSelect(actions.AllFields())
+
+				foreignKeyField := proto.GetForignKeyFieldName(mk.proto.Models, field)
+
+				// Get the value of the model
+				parent, ok := p.Source.(map[string]interface{})
+				if !ok {
+					return nil, errors.New("graphql source value is not map[string]interface{}")
+				}
+
+				// Depending on the relationship type we either need the primary key of this
+				// model or a foreign key
+				parentLookupField := "id"
+				if proto.IsBelongsTo(field) {
+					parentLookupField = foreignKeyField
+				}
+
+				// Retrieve the value for the lookup
+				parentFieldValue, ok := parent[parentLookupField]
+				if !ok {
+					return nil, fmt.Errorf("model %s did not have field %s", model.Name, parentLookupField)
+				}
+
+				// If the value is null (possible if the relationship is not required), then there
+				// is no need for a lookup.
+				if parentFieldValue == nil {
+					return nil, nil
+				}
+
+				var leftOperand *actions.QueryOperand
+				if proto.IsBelongsTo(field) {
+					leftOperand = actions.IdField()
+				} else {
+					leftOperand = actions.Field(foreignKeyField)
+				}
+
+				err = query.Where(leftOperand, actions.Equals, actions.Value(parentFieldValue))
+				if err != nil {
+					return nil, err
+				}
+
+				switch {
+				case proto.IsBelongsTo(field), proto.IsHasOne(field):
+					result, err := query.
+						SelectStatement().
+						ExecuteToSingle(p.Context)
+					if err != nil {
+						return nil, err
+					}
+
+					// Return an error if no record if found for the corresponding foreign key
+					if result == nil {
+						return nil, errors.New("record expected in database but nothing found")
+					}
+
+					return result, nil
+				case proto.IsHasMany(field):
+					page, err := actions.ParsePage(p.Args)
+					if err != nil {
+						return nil, err
+					}
+
+					// Select all columns from this table and distinct on id
+					query.AppendDistinctOn(actions.IdField())
+					query.AppendSelect(actions.AllFields())
+					err = query.ApplyPaging(page)
+					if err != nil {
+						return nil, err
+					}
+
+					results, _, hasNextPage, err := query.
+						SelectStatement().
+						ExecuteToMany(p.Context)
+
+					if err != nil {
+						return nil, err
+					}
+
+					res, err := connectionResponse(map[string]any{
+						"results":     results,
+						"hasNextPage": hasNextPage,
+					})
+					if err != nil {
+						return nil, err
+					}
+
+					return res, nil
+				default:
+					return nil, fmt.Errorf("unhandled model relationship configuration for field: %s on model: %s", field.Name, field.ModelName)
+				}
+			},
+		})
 	}
 
 	return object, nil

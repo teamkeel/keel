@@ -1,3 +1,45 @@
+## [0.251.1](https://github.com/teamkeel/keel/compare/v0.251.0...v0.251.1) (2023-02-08)
+
+
+### Bug Fixes
+
+* generate vitest config into .build so its not in node_modules ([9c3d333](https://github.com/teamkeel/keel/commit/9c3d3337488f68692a6d546ffdd8a8016d5e33fa))
+
+# [0.251.0](https://github.com/teamkeel/keel/compare/v0.250.0...v0.251.0) (2023-02-08)
+
+
+### Features
+
+* support ctx.headers in parser ([#752](https://github.com/teamkeel/keel/issues/752)) ([4f1b08f](https://github.com/teamkeel/keel/commit/4f1b08fe6518f9aba6434f90919a5e5e407ddd13))
+
+# [0.250.0](https://github.com/teamkeel/keel/compare/v0.249.0...v0.250.0) (2023-02-08)
+
+
+### Features
+
+* set response headers in functions runtime ([#748](https://github.com/teamkeel/keel/issues/748)) ([81b4ad2](https://github.com/teamkeel/keel/commit/81b4ad2e8d18c6b2ddac0b949b5e6cf4749b3ecf))
+
+# [0.249.0](https://github.com/teamkeel/keel/compare/v0.248.0...v0.249.0) (2023-02-07)
+
+
+### Features
+
+* add json schema validation to http json api ([b9aca1d](https://github.com/teamkeel/keel/commit/b9aca1d09d6ae61fe05fe28d4ba7c95e3b1d0279))
+
+# [0.248.0](https://github.com/teamkeel/keel/compare/v0.247.3...v0.248.0) (2023-02-07)
+
+
+### Features
+
+* graceful custom function error handling ([#749](https://github.com/teamkeel/keel/issues/749)) ([adda4a1](https://github.com/teamkeel/keel/commit/adda4a122baa78b8646fae25e9e62ca374e4a9c9))
+
+## [0.247.3](https://github.com/teamkeel/keel/compare/v0.247.2...v0.247.3) (2023-02-06)
+
+
+### Bug Fixes
+
+* golangci-lint version mismatch ([#746](https://github.com/teamkeel/keel/issues/746)) ([7355501](https://github.com/teamkeel/keel/commit/7355501581004f9645370fd340bf763149ff727e))
+
 ## [0.247.2](https://github.com/teamkeel/keel/compare/v0.247.1...v0.247.2) (2023-02-03)
 
 

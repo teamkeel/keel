@@ -21,9 +21,12 @@ async function handleRequest(request, config) {
   }
 
   try {
+    // headers reference passed to custom function where object data can be modified
+    const headers = new Headers();
+
     const result = await functions[request.method](
       request.params,
-      createFunctionAPI(),
+      createFunctionAPI(headers),
       createContextAPI(request.meta)
     );
 
@@ -31,12 +34,20 @@ async function handleRequest(request, config) {
       // no result returned from custom function
       return createJSONRPCErrorResponse(
         request.id,
-        JSONRPCErrorCode.InternalError,
+        RuntimeErrors.NoResultError,
         `no result returned from function '${request.method}'`
       );
     }
 
-    return createJSONRPCSuccessResponse(request.id, result);
+    const response = createJSONRPCSuccessResponse(request.id, result);
+
+    const responseHeaders = {};
+    for (const pair of headers.entries()) {
+      responseHeaders[pair[0]] = pair[1].split(", ");
+    }
+    response.meta = { headers: responseHeaders };
+
+    return response;
   } catch (e) {
     if (e instanceof Error) {
       return errorToJSONRPCResponse(request, e);

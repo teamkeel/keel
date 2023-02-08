@@ -211,13 +211,13 @@ export declare function getDatabase(): Kysely<database>;`
 
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
-function createFunctionAPI() {
+function createFunctionAPI(headers) {
 	const models = {
 		person: new runtime.ModelAPI("person", personDefaultValues, null, tableConfigMap),
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, null, tableConfigMap),
 	};
 	const wrappedFetch = fetch;
-	return {models, fetch: wrappedFetch};
+	return {models, headers, fetch: wrappedFetch};
 }
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
@@ -241,6 +241,7 @@ export type ModelsAPI = {
 export type FunctionAPI = {
 	models: ModelsAPI;
 	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
+	headers: Headers;
 }
 export interface ContextAPI extends runtime.ContextAPI {
 	identity: Identity;
@@ -697,7 +698,7 @@ func TestTestingActionExecutor(t *testing.T) {
 		t.FailNow()
 	}
 
-	cmd = exec.Command("npx", "vitest", "run", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs")
+	cmd = exec.Command("npx", "vitest", "run", "--config", ".build/vitest.config.mjs")
 	cmd.Dir = tmpDir
 	cmd.Env = append(os.Environ(), []string{
 		"DB_CONN_TYPE=pg",

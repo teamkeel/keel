@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -27,9 +28,10 @@ type TestOutput struct {
 }
 
 type RunnerOpts struct {
-	Dir        string
-	Pattern    string
-	DbConnInfo *db.ConnectionInfo
+	Dir             string
+	Pattern         string
+	DbConnInfo      *db.ConnectionInfo
+	FunctionsOutput io.Writer
 }
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {
@@ -81,7 +83,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				"DB_CONN_TYPE": "pg",
 				"DB_CONN":      dbConnString,
 			},
-			Output: os.Stdout,
+			Output: opts.FunctionsOutput,
 		})
 		if err != nil {
 			if functionsServer != nil && functionsServer.Output() != "" {
@@ -145,7 +147,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		opts.Pattern = "(.*)"
 	}
 
-	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs", "--testNamePattern", opts.Pattern)
+	cmd = exec.Command("npx", "vitest", "run", "--color", "--reporter", "verbose", "--config", "./.build/vitest.config.mjs", "--testNamePattern", opts.Pattern)
 	cmd.Dir = opts.Dir
 	cmd.Env = append(os.Environ(), []string{
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/testingactionsapi/json", runtimePort),

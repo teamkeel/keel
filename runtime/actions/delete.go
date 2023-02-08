@@ -31,7 +31,7 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 	}
 
 	if row == nil {
-		return nil, common.RuntimeError{Code: common.ErrRecordNotFound, Message: "record not found"}
+		return nil, common.NewNotFoundError()
 	}
 
 	id, _ := row["id"].(string)

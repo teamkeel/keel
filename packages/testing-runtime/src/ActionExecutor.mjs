@@ -67,6 +67,12 @@ export class ActionExecutor {
             throw new Error(t);
           }
           // Otherwise throw the parsed JSON error response
+          // We override toString as otherwise you get expect errors like:
+          //   `expected to resolve but rejected with "[object Object]"`
+          Object.defineProperty(d, "toString", {
+            value: () => t,
+            enumerable: false,
+          });
           throw d;
         });
       }

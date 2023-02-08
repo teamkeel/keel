@@ -34,7 +34,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 					Code:    HttpMethodNotAllowedCode,
 					Message: "only HTTP post accepted",
 				},
-			})
+			}, nil)
 		}
 
 		req, err := parseJsonRpcRequest(r.Body)
@@ -45,7 +45,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 					Code:    JsonRpcInvalidRequestCode,
 					Message: fmt.Sprintf("error parsing JSON: %s", err.Error()),
 				},
-			})
+			}, nil)
 		}
 
 		if !req.Valid() {
@@ -56,7 +56,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 					Code:    JsonRpcInvalidRequestCode,
 					Message: "invalid JSON-RPC 2.0 request",
 				},
-			})
+			}, nil)
 		}
 
 		inputs := req.Params
@@ -71,14 +71,13 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 					Code:    JsonRpcMethodNotFoundCode,
 					Message: "method not found",
 				},
-			})
+			}, nil)
 		}
 
 		scope := actions.NewScope(r.Context(), op, p)
 
-		response, err := actions.Execute(scope, inputs)
+		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
-
 			code := JsonRpcInternalErrorCode
 			message := "error executing request"
 
@@ -95,14 +94,14 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 					Code:    code,
 					Message: message,
 				},
-			})
+			}, nil)
 		}
 
 		return common.NewJsonResponse(http.StatusOK, JsonRpcSuccessResponse{
 			JsonRpc: "2.0",
 			ID:      req.ID,
 			Result:  response,
-		})
+		}, headers)
 	}
 }
 

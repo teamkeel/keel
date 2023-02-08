@@ -3,11 +3,24 @@ package functions
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/segmentio/ksuid"
+	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+)
+
+// Custom error codes returned from custom
+// function runtime
+// See packages/functions-runtime for original definition and more info.
+const (
+	UnknownError              = -32001
+	DatabaseError             = -32002
+	NoResultError             = -32003
+	RecordNotFoundError       = -32004
+	ForeignKeyConstraintError = -32005
+	NotNullConstraintError    = -32006
+	UniqueConstraintError     = -32007
 )
 
 type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
@@ -22,12 +35,20 @@ type FunctionsRuntimeRequest struct {
 type FunctionsRuntimeResponse struct {
 	ID     string                 `json:"id"`
 	Result any                    `json:"result"`
+	Meta   *FunctionsRuntimeMeta  `json:"meta"`
 	Error  *FunctionsRuntimeError `json:"error"`
 }
 
+type FunctionsRuntimeMeta struct {
+	Headers map[string][]string `json:"headers"`
+}
+
+// FunctionsRuntimeError follows the error object specification
+// from the JSONRPC spec: https://www.jsonrpc.org/specification#error_object
 type FunctionsRuntimeError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Code    int            `json:"code"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data"`
 }
 
 type transportContextKey string
@@ -38,15 +59,15 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 	return context.WithValue(ctx, contextKey, transport)
 }
 
-func CallFunction(ctx context.Context, actionName string, body map[string]any) (any, error) {
+func CallFunction(ctx context.Context, actionName string, body map[string]any) (any, map[string][]string, error) {
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
-		return nil, errors.New("no functions client in context")
+		return nil, nil, errors.New("no functions client in context")
 	}
 
 	requestHeaders, err := runtimectx.GetRequestHeaders(ctx)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	joinedHeaders := map[string]string{}
@@ -58,7 +79,7 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 	if runtimectx.IsAuthenticated(ctx) {
 		identity, err = runtimectx.GetIdentity(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -76,12 +97,35 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 
 	resp, err := transport(ctx, req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if resp.Error != nil {
-		return nil, fmt.Errorf("%s function returned error (%d) - %s", actionName, resp.Error.Code, resp.Error.Message)
+		data := resp.Error.Data
+
+		switch resp.Error.Code {
+		case ForeignKeyConstraintError:
+			return nil, nil, common.NewForeignKeyConstraintError(data["column"].(string))
+		case NoResultError:
+			return nil, nil, common.RuntimeError{
+				Code:    common.ErrInternal,
+				Message: "custom function returned no result",
+			}
+		case NotNullConstraintError:
+			return nil, nil, common.NewNotNullError(data["column"].(string))
+		case UniqueConstraintError:
+			return nil, nil, common.NewUniquenessError(data["column"].(string))
+		case RecordNotFoundError:
+			return nil, nil, common.NewNotFoundError()
+		default:
+			// includes generic errors thrown by custom functions during execution, plus other types of DatabaseError's that aren't fk/uniqueness/null constraint errors:
+			// https://www.postgresql.org/docs/current/errcodes-appendix.html
+			return nil, nil, common.RuntimeError{
+				Code:    common.ErrInternal,
+				Message: resp.Error.Message,
+			}
+		}
 	}
 
-	return resp.Result, nil
+	return resp.Result, resp.Meta.Headers, nil
 }
