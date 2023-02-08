@@ -1,0 +1,11 @@
+model ApiKey {
+    fields {
+        key Text
+    }
+
+    operations {
+        create createApiKey() {
+            @set(apiKey.key = ctx.headers.X_API_TOKEN)
+        }
+    }
+}
