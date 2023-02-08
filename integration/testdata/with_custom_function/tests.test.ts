@@ -25,14 +25,29 @@ test("creating a person with identity", async () => {
   const identity = await models.identity.findOne({ email: "user@keel.xyz" });
   expect(identity).not.toBeNull();
 
-  const person = await actions.withAuthToken(token).createPersonWithIdentity({
+  const person = await actions
+    .withAuthToken(token)
+    .createPersonWithContextInfo({
+      name: "foo",
+      gender: "female",
+      niNumber: "771",
+    });
+
+  expect(person.name).toEqual("user@keel.xyz");
+  expect(person.identityId).toEqual(identity?.id);
+  expect(person.ctxNow).not.toBeNull();
+});
+
+test("creating a person without identity", async () => {
+  const person = await actions.createPersonWithContextInfo({
     name: "foo",
     gender: "female",
     niNumber: "771",
   });
 
-  expect(person.name).toEqual("user@keel.xyz");
-  expect(person.identityId).toEqual(identity?.id);
+  expect(person.name).toEqual("none");
+  expect(person.identityId).toBeNull();
+  expect(person.ctxNow).not.toBeNull();
 });
 
 test("fetching a person by id", async () => {
