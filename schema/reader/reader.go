@@ -1,7 +1,6 @@
 package reader
 
 import (
-	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -31,15 +30,12 @@ func FromDir(dirName string) (*Inputs, error) {
 	globPattern := filepath.Join(dirName, "*.keel")
 	schemaFileNames, err := filepath.Glob(globPattern)
 	if err != nil {
-		return nil, fmt.Errorf("filepath.Glob errored with: %v", err)
-	}
-	if len(schemaFileNames) < 1 {
-		return nil, fmt.Errorf("no files matching: <%s> were found", globPattern)
+		return nil, err
 	}
 	for _, fName := range schemaFileNames {
 		fileBytes, err := os.ReadFile(fName)
 		if err != nil {
-			return nil, fmt.Errorf("error reading file: %v", err)
+			return nil, err
 		}
 		inputs.SchemaFiles = append(inputs.SchemaFiles, SchemaFile{
 			FileName: fName,

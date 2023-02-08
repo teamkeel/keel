@@ -44,18 +44,18 @@ func (e ErrPortInUse) Error() string {
 //
 // It sets the password for that user to "postgres".
 // It sets the default database name to "keel"
-func Start(useExistingContainer bool) (*sql.DB, *db.ConnectionInfo, error) {
+func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	connectionInfo, err := bringUpContainer(useExistingContainer)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	sqlDB, err := checkConnection(connectionInfo)
+	err = checkConnection(connectionInfo)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return sqlDB, connectionInfo, nil
+	return connectionInfo, nil
 }
 
 // Stop stops the postgres container - having checked first
@@ -289,10 +289,10 @@ func makeHostConfig(port string) *container.HostConfig {
 // checkConnection connects to the database, veryifies the connection and returns the connection.
 // It makes a series of attempts over a small time span to give postgres the
 // change to be ready.
-func checkConnection(info *db.ConnectionInfo) (*sql.DB, error) {
+func checkConnection(info *db.ConnectionInfo) error {
 	db, err := sql.Open("postgres", info.String())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Attempt to ping() the database at 250ms intervals a few times.
@@ -306,9 +306,9 @@ func checkConnection(info *db.ConnectionInfo) (*sql.DB, error) {
 
 	fmt.Printf("\n")
 	if pingError != nil {
-		return nil, fmt.Errorf("could not ping the database, despite several retries: %v", pingError)
+		return fmt.Errorf("could not ping the database, despite several retries: %v", pingError)
 	}
-	return db, nil
+	return nil
 }
 
 const postgresImageName string = "postgres"

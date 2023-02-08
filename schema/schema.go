@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/alecthomas/participle/v2/lexer"
@@ -25,12 +26,18 @@ type Builder struct {
 	proto       *proto.Schema
 }
 
+var ErrNoSchemaFiles = errors.New("no schema files found")
+
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
 // directory.
 func (scm *Builder) MakeFromDirectory(directory string) (*proto.Schema, error) {
 	allInputFiles, err := reader.FromDir(directory)
 	if err != nil {
-		return nil, fmt.Errorf("error assembling input files: %v", err)
+		return nil, err
+	}
+
+	if len(allInputFiles.SchemaFiles) == 0 {
+		return nil, ErrNoSchemaFiles
 	}
 
 	config, err := config.Load(directory)

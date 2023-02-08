@@ -6,14 +6,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+var (
+	flagProjectDir       string
+	flagReset            bool
+	flagPort             string
+	flagNodePackagesPath string
+	flagPattern          string
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "keel",
-	Short: "A CLI tool for building and deploying applications",
+	Short: "The Keel CLI",
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -22,5 +27,10 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	workingDir, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+
+	rootCmd.PersistentFlags().StringVarP(&flagProjectDir, "dir", "d", workingDir, "directory containing a Keel project")
 }
