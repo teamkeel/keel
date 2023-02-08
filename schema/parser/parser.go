@@ -19,10 +19,6 @@ type AST struct {
 	EnvironmentVariables []string
 }
 
-func (ast *AST) String() string {
-	return "AST"
-}
-
 type DeclarationNode struct {
 	node.Node
 
@@ -32,20 +28,12 @@ type DeclarationNode struct {
 	Enum  *EnumNode  `| "enum" @@)`
 }
 
-func (ast *DeclarationNode) String() string {
-	return "DeclarationNode"
-}
-
 type ModelNode struct {
 	node.Node
 
 	Name     NameNode            `@@`
 	Sections []*ModelSectionNode `"{" @@* "}"`
 	BuiltIn  bool
-}
-
-func (ast *ModelNode) String() string {
-	return "ModelNode"
 }
 
 type ModelSectionNode struct {
@@ -57,28 +45,16 @@ type ModelSectionNode struct {
 	Attribute  *AttributeNode `| @@)`
 }
 
-func (ast *ModelSectionNode) String() string {
-	return "ModelSectionNode"
-}
-
 type NameNode struct {
 	node.Node
 
 	Value string `@Ident`
 }
 
-func (ast *NameNode) String() string {
-	return "NameNode"
-}
-
 type AttributeNameToken struct {
 	node.Node
 
 	Value string `"@" @Ident`
-}
-
-func (ast *AttributeNameToken) String() string {
-	return "AttributeNameToken"
 }
 
 type FieldNode struct {
@@ -112,19 +88,11 @@ type ForeignKeyAssociation struct {
 	ReferredToModelPrimaryKey *FieldNode // Which field in the ReferredToModel is its Primary Key
 }
 
-func (field *FieldNode) String() string {
-	return field.Name.Value
-}
-
 type APINode struct {
 	node.Node
 
 	Name     NameNode          `@@`
 	Sections []*APISectionNode `"{" @@* "}"`
-}
-
-func (ast *APINode) String() string {
-	return "APINode"
 }
 
 type APISectionNode struct {
@@ -134,19 +102,11 @@ type APISectionNode struct {
 	Attribute *AttributeNode `| @@)`
 }
 
-func (ast *APISectionNode) String() string {
-	return "APISectionNode"
-}
-
 type RoleNode struct {
 	node.Node
 
 	Name     NameNode           `@@`
 	Sections []*RoleSectionNode `"{" @@* "}"`
-}
-
-func (ast *RoleNode) String() string {
-	return "RoleNode"
 }
 
 type RoleSectionNode struct {
@@ -156,18 +116,10 @@ type RoleSectionNode struct {
 	Emails  []*EmailsNode `| "emails" "{" @@* "}")`
 }
 
-func (ast *RoleSectionNode) String() string {
-	return "RoleSectionNode"
-}
-
 type DomainNode struct {
 	node.Node
 
 	Domain string `@String`
-}
-
-func (ast *DomainNode) String() string {
-	return "DomainNode"
 }
 
 type EmailsNode struct {
@@ -176,18 +128,10 @@ type EmailsNode struct {
 	Email string `@String`
 }
 
-func (ast *EmailsNode) String() string {
-	return "EmailsNode"
-}
-
 type ModelsNode struct {
 	node.Node
 
 	Name NameNode `@@`
-}
-
-func (ast *ModelsNode) String() string {
-	return "ModelsNode"
 }
 
 // Attributes:
@@ -209,19 +153,11 @@ type AttributeNode struct {
 	Arguments []*AttributeArgumentNode `(( "(" @@ ( "," @@ )* ")" ) | ( "(" ")" ) )?`
 }
 
-func (ast *AttributeNode) String() string {
-	return "AttributeNode"
-}
-
 type AttributeArgumentNode struct {
 	node.Node
 
 	Label      *NameNode   `(@@ ":")?`
 	Expression *Expression `@@`
-}
-
-func (ast *AttributeArgumentNode) String() string {
-	return "AttributeArgumentNode"
 }
 
 type ActionNode struct {
@@ -234,30 +170,6 @@ type ActionNode struct {
 	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
 
-func (a *ActionNode) ReadInputs() []*ActionInputNode {
-	return a.Inputs
-}
-
-func (a *ActionNode) WriteInputs() []*ActionInputNode {
-	return a.With
-}
-
-func (a *ActionNode) IsWrite() bool {
-	return a.Type.Value == ActionTypeCreate || a.Type.Value == ActionTypeUpdate
-}
-
-func (a *ActionNode) IsRead() bool {
-	return a.Type.Value != ActionTypeCreate
-}
-
-func (a *ActionNode) AllInputs() []*ActionInputNode {
-	return append(a.Inputs, a.With...)
-}
-
-func (a *ActionNode) String() string {
-	return "ActionNode"
-}
-
 type ActionInputNode struct {
 	node.Node
 
@@ -265,10 +177,6 @@ type ActionInputNode struct {
 	Type     Ident     `@@`
 	Repeated bool      `( @( "[" "]" )`
 	Optional bool      `| @( "?" ))?`
-}
-
-func (ast *ActionInputNode) String() string {
-	return "ActionInputNode"
 }
 
 func (a *ActionInputNode) Name() string {
@@ -290,14 +198,6 @@ type EnumNode struct {
 
 	Name   NameNode         `@@`
 	Values []*EnumValueNode `"{" @@* "}"`
-
-	// Because optionality for enums is set at field level,
-	// we set this virtually when evaluating operand types.
-	Optional bool
-}
-
-func (ast *EnumNode) String() string {
-	return "EnumNode"
 }
 
 type EnumValueNode struct {
@@ -306,13 +206,12 @@ type EnumValueNode struct {
 	Name NameNode `@@`
 }
 
-func (ast *EnumValueNode) String() string {
-	return "EnumValueNode"
-}
-
 type Error struct {
 	err participle.Error
 }
+
+// compile-time check that Error inplements node.ParserNode
+var _ node.ParserNode = Error{}
 
 func (e Error) Error() string {
 	msg := e.err.Error()
@@ -323,7 +222,6 @@ func (e Error) Error() string {
 	return strings.TrimPrefix(msg, fmt.Sprintf("%s:%d:%d:", pos.Filename, pos.Line, pos.Column))
 }
 
-// Implement node.Node interface
 func (e Error) GetPositionRange() (start lexer.Position, end lexer.Position) {
 	pos := e.err.Position()
 	return pos, pos
@@ -334,14 +232,13 @@ func (e Error) InRange(position node.Position) bool {
 	return node.Node{Pos: e.err.Position()}.InRange(position)
 }
 
-func (e Error) GetTokens() []lexer.Token {
-	return []lexer.Token{}
+func (e Error) HasEndPosition() bool {
+	// Just use Node's implementation of HasEndPosition
+	return node.Node{Pos: e.err.Position()}.HasEndPosition()
 }
 
-func (e Error) HasEndPosition() bool {
-	// Just use Node's implementation of InRange
-	return node.Node{Pos: e.err.Position()}.HasEndPosition()
-
+func (e Error) GetTokens() []lexer.Token {
+	return []lexer.Token{}
 }
 
 func Parse(s *reader.SchemaFile) (*AST, error) {
