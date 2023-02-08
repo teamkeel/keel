@@ -1,3 +1,10 @@
+## [0.251.1](https://github.com/teamkeel/keel/compare/v0.251.0...v0.251.1) (2023-02-08)
+
+
+### Bug Fixes
+
+* generate vitest config into .build so its not in node_modules ([9c3d333](https://github.com/teamkeel/keel/commit/9c3d3337488f68692a6d546ffdd8a8016d5e33fa))
+
 # [0.251.0](https://github.com/teamkeel/keel/compare/v0.250.0...v0.251.0) (2023-02-08)
 
 
