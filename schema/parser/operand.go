@@ -156,6 +156,13 @@ func (ident *Ident) IsContextNowField() bool {
 	return false
 }
 
+func (ident *Ident) IsContextHeadersField() bool {
+	if ident.IsContext() {
+		return ident.Fragments[1].Fragment == "headers"
+	}
+	return false
+}
+
 func (ident *Ident) IsContextEnvField() bool {
 	if ident.IsContext() {
 		return ident.Fragments[1].Fragment == "env"
