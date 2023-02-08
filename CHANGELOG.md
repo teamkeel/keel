@@ -1,3 +1,10 @@
+# [0.252.0](https://github.com/teamkeel/keel/compare/v0.251.1...v0.252.0) (2023-02-08)
+
+
+### Features
+
+* add fetch() to custom func api ([#745](https://github.com/teamkeel/keel/issues/745)) ([729ff39](https://github.com/teamkeel/keel/commit/729ff3935c41531b79bd904685e3b11e4458e553))
+
 ## [0.251.1](https://github.com/teamkeel/keel/compare/v0.251.0...v0.251.1) (2023-02-08)
 
 
