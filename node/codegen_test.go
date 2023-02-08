@@ -144,13 +144,39 @@ export interface PersonWhereConditions {
 }
 
 func TestWriteUniqueConditionsInterface(t *testing.T) {
-	expected := `
-export type PersonUniqueConditions = 
-    | {firstName: string}
-	| {id: string}`
+	schema := `
+	model Author {
+		fields {
+			books Book[]
+		}
+	}
+	model Book {
+		fields {
+			title Text @unique
+			author Author
+		}
+	}
+	`
+	expectedBookType := `
+export type BookUniqueConditions = 
+	| {title: string}
+	| {author: AuthorUniqueConditions}
+	| {id: string};
+	`
 
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
+	expectedAuthorType := `
+export type AuthorUniqueConditions = 
+	| {books: BookUniqueConditions}
+	| {id: string};
+	`
+
+	runWriterTest(t, schema, expectedBookType, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Book")
+		writeUniqueConditionsInterface(w, m)
+	})
+
+	runWriterTest(t, schema, expectedAuthorType, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Author")
 		writeUniqueConditionsInterface(w, m)
 	})
 }

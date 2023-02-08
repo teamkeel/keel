@@ -37,3 +37,21 @@ model Profile {
         actions: [create, get, list, update, delete]
     )
 }
+
+model Author {
+    fields {
+        name Text
+        books Book[]
+    }
+}
+
+model Book {
+    fields {
+        author Author
+        title Text
+    }
+
+    functions {
+        get getBookByAuthor(author.id)
+    }
+}

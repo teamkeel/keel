@@ -177,3 +177,18 @@ test("unrecognised value in foreign key column", async () => {
     message: "the relationship lookup for field 'personId' does not exist",
   });
 });
+
+test("relationships - fetch one using belongsTo relationship", async () => {
+  const author = await models.author.create({
+    name: "Philip K. Dick",
+  });
+  const book = await models.book.create({
+    title: "The Man In the High Castle",
+    authorId: author.id,
+  });
+  const res = await actions.getBookByAuthor({
+    authorId: author.id,
+  });
+  expect(res).not.toBe(null);
+  expect(res!.id).toEqual(book.id);
+});
