@@ -696,7 +696,7 @@ func TestTestingActionExecutor(t *testing.T) {
 		t.FailNow()
 	}
 
-	cmd = exec.Command("npx", "vitest", "run", "--config", "./node_modules/@teamkeel/testing-runtime/vitest.config.mjs")
+	cmd = exec.Command("npx", "vitest", "run", "--config", ".build/vitest.config.mjs")
 	cmd.Dir = tmpDir
 	cmd.Env = append(os.Environ(), []string{
 		"DB_CONN_TYPE=pg",

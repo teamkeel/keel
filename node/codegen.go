@@ -67,6 +67,7 @@ func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions))
 
 	files := generateSdkPackage(dir, schema)
 	files = append(files, generateTestingPackage(dir, schema)...)
+	files = append(files, generateTestingSetup(dir)...)
 
 	if options.developmentServer {
 		files = append(files, generateDevelopmentServer(dir, schema)...)
@@ -745,6 +746,35 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 		{
 			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/package.json"),
 			Contents: `{"name": "@teamkeel/testing", "type": "module", "exports": "./index.mjs"}`,
+		},
+	}
+}
+
+func generateTestingSetup(dir string) GeneratedFiles {
+	return GeneratedFiles{
+		{
+			Path: filepath.Join(dir, ".build/vitest.config.mjs"),
+			Contents: `
+import { defineConfig } from "vitest/config";
+
+export default defineConfig({
+	test: {
+		setupFiles: [__dirname + "/vitest.setup"],
+	},
+});
+			`,
+		},
+		{
+			Path: filepath.Join(dir, ".build/vitest.setup.mjs"),
+			Contents: `
+import { expect } from "vitest";
+import { toHaveError, toHaveAuthorizationError } from "@teamkeel/testing-runtime";
+
+expect.extend({
+	toHaveError,
+	toHaveAuthorizationError,
+});
+			`,
 		},
 	}
 }
