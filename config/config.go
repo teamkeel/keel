@@ -144,17 +144,23 @@ func Load(dir string) (*ProjectConfig, error) {
 
 	validationErrors := Validate(&config)
 	if validationErrors != nil {
-		var errorString string
-		for _, v := range validationErrors {
-			if v.Type == "duplicate" {
-				errorString = errorString + fmt.Sprintf(DuplicateErrorString, color.RedString(v.Key), v.Environments)
-			}
-			if v.Type == "missing" {
-				errorString = errorString + fmt.Sprintf(RequiredErrorString, color.RedString(v.Key), v.Environments)
-			}
-		}
+		return &config, generateOutput(validationErrors)
+	}
 
-		return &config, errors.New(errorString)
+	return &config, nil
+}
+
+func LoadFromBytes(data []byte) (*ProjectConfig, error) {
+	var config ProjectConfig
+
+	err := yaml.Unmarshal(data, &config)
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshal config file: %w", err)
+	}
+
+	validationErrors := Validate(&config)
+	if validationErrors != nil {
+		return &config, generateOutput(validationErrors)
 	}
 
 	return &config, nil
@@ -268,4 +274,18 @@ func contains(s []Input, e string) bool {
 	}
 
 	return false
+}
+
+func generateOutput(validationErrors []ConfigErrors) error {
+	var errorString string
+	for _, v := range validationErrors {
+		if v.Type == "duplicate" {
+			errorString = errorString + fmt.Sprintf(DuplicateErrorString, color.RedString(v.Key), v.Environments)
+		}
+		if v.Type == "missing" {
+			errorString = errorString + fmt.Sprintf(RequiredErrorString, color.RedString(v.Key), v.Environments)
+		}
+	}
+
+	return errors.New(errorString)
 }

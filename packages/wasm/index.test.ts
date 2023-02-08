@@ -1,6 +1,22 @@
 import { format, validate, completions } from "./index";
 import { test, expect } from "vitest";
 
+const configFile = `
+environment:
+  default:
+    - name: "TEST"
+      value: "test"
+
+  staging:
+    - name: "TEST2"
+      value: "test2"
+
+secrets:
+  - name: API_KEY
+    required:
+      - "production"
+`;
+
 test("format", async () => {
   const schema = `model Person { fields { name Text } }`;
   const formatted = await format(schema);
@@ -24,10 +40,14 @@ test("completions", async () => {
         name Te 
     }
 }`;
-  const result = await completions(schema, {
-    line: 3,
-    column: 16,
-  });
+  const result = await completions(
+    schema,
+    {
+      line: 3,
+      column: 16,
+    },
+    configFile
+  );
 
   expect(result.completions.map((x) => x.label)).toContain("Text");
 });
@@ -38,7 +58,7 @@ test("validate", async () => {
         name Foo
     }
 }`;
-  const { errors } = await validate(schema);
+  const { errors } = await validate(schema, configFile);
 
   expect(errors[0].message).toEqual("field name has an unsupported type Foo");
 });
@@ -46,7 +66,7 @@ test("validate", async () => {
 test("validate - invalid schema", async () => {
   const schema = `model Person {
     fields {`;
-  const { errors } = await validate(schema);
+  const { errors } = await validate(schema, configFile);
 
   expect(errors[0].code).toEqual("E025");
   expect(errors[0].message).toEqual(` unexpected token "<EOF>" (expected "}")`);

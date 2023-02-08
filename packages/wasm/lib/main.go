@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"syscall/js"
 
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/format"
@@ -83,7 +84,7 @@ func provideCompletions(this js.Value, args []js.Value) any {
 		completions := completions.Completions(args[0].String(), &node.Position{
 			Column: column,
 			Line:   line,
-		})
+		}, args[2].String())
 
 		untypedCompletions := toUntypedArray(completions)
 
@@ -120,6 +121,14 @@ func validate(this js.Value, args []js.Value) any {
 		}
 
 		builder := schema.Builder{}
+
+		if args[1].Truthy() {
+			config, err := config.LoadFromBytes([]byte(args[1].String()))
+			if err != nil {
+				return nil, err
+			}
+			builder.Config = config
+		}
 
 		_, err := builder.MakeFromInputs(&reader.Inputs{
 			SchemaFiles: []reader.SchemaFile{schemaFile},
