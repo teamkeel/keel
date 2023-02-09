@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/textproto"
 	"os"
 	"strconv"
 	"strings"
@@ -213,6 +214,19 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 	case resolver.Operand.Ident.IsContextEnvField():
 		envVarName := resolver.Operand.Ident.Fragments[2].Fragment
 		return os.Getenv(envVarName), nil
+	case resolver.Operand.Ident.IsContextHeadersField():
+		headerName := resolver.Operand.Ident.Fragments[2].Fragment
+		// Get canonical name, as this is what header keys are transformed into
+		// https://pkg.go.dev/net/http#Header.Get
+		canonicalName := textproto.CanonicalMIMEHeaderKey(headerName)
+		headers, err := runtimectx.GetRequestHeaders(resolver.Context)
+		if err != nil {
+			return nil, err
+		}
+		if value, ok := headers[canonicalName]; ok {
+			return strings.Join(value, ", "), nil
+		}
+		return "", nil
 	case resolver.Operand.Type() == parser.TypeArray:
 		return nil, fmt.Errorf("cannot yet handle operand of type non-literal array")
 	default:

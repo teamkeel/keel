@@ -734,7 +734,7 @@ func toRuntimeError(err error) error {
 		default:
 			return common.RuntimeError{
 				Code:    common.ErrInvalidInput,
-				Message: "Operation failed to complete",
+				Message: "operation failed to complete",
 			}
 		}
 	}
