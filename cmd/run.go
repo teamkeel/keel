@@ -46,9 +46,15 @@ var runCmd = &cobra.Command{
 
 		// Attempt to load keelconfig.yaml contents
 		cfg, err := config.Load(inputDir)
-
 		if err != nil {
-			return err
+			var configErrs *config.ConfigErrors
+			if errors.As(err, &configErrs) {
+				color.New(color.FgRed).Printf("\nThere is an error in your config file:\n")
+				fmt.Print(err.Error())
+				return nil
+			}
+
+			panic(err)
 		}
 
 		// todo: reload env vars on change to keelconfig.yaml
@@ -146,13 +152,11 @@ var runCmd = &cobra.Command{
 			protoSchema, err := b.MakeFromDirectory(inputDir)
 
 			if err != nil {
-				var configErrs config.ConfigErrors
+				var configErrs *config.ConfigErrors
 				if errors.As(err, &configErrs) {
 					color.New(color.FgRed).Printf("\nThere is an error in your config file:\n")
-
-					for _, err := range configErrs.Errors {
-						fmt.Printf("%s\n", err.Message)
-					}
+					fmt.Print(err.Error())
+					return
 				}
 
 				errs, ok := err.(*errorhandling.ValidationErrors)

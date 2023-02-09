@@ -7,7 +7,7 @@ environment:
   staging:
     - name: "TEST"
       value: "value test"
-    - name: "TEST2"
+    - name: "TEST_2"
       value: "test2"
   production:
     - name: "TEST"

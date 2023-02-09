@@ -10,7 +10,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/teamkeel/keel/config"
+	keelconfig "github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/node"
@@ -117,7 +117,15 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		return nil, err
 	}
 
-	config.SetEnvVars(opts.Dir, "test")
+	config, err := keelconfig.Load(opts.Dir)
+	if err != nil {
+		return nil, err
+	}
+
+	envVars := config.GetEnvVars("test")
+	for key, value := range envVars {
+		os.Setenv(key, value)
+	}
 
 	// Server to handle API calls to the runtime
 	runtimeServer := http.Server{

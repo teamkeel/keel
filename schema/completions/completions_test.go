@@ -650,7 +650,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"TEST", "TEST2"},
+			expected: []string{"TEST", "TEST_2"},
 		},
 		{
 			name: "set-expression-unresolvable",

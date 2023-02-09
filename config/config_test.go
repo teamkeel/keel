@@ -27,7 +27,7 @@ func TestDuplicates(t *testing.T) {
 	assert.Error(t, err)
 
 	assert.Equal(t, "TEST", config.Environment.Default[0].Name)
-	assert.Equal(t, " - environment variable TEST has a duplicate set in environment: [staging]\n", err.Error())
+	assert.Equal(t, "environment variable TEST has a duplicate set in environment: [staging]\n", err.Error())
 }
 
 func TestRequiredFail(t *testing.T) {
@@ -35,7 +35,7 @@ func TestRequiredFail(t *testing.T) {
 	assert.Error(t, err)
 
 	assert.Equal(t, "TEST", config.Environment.Staging[0].Name)
-	assert.Equal(t, " - environment variable TEST is required but not defined in the following environments: [production]\n", err.Error())
+	assert.Equal(t, "environment variable TEST is required but not defined in the following environments: [production]\n", err.Error())
 }
 
 func TestRequired(t *testing.T) {
@@ -86,4 +86,29 @@ func TestGetEnvVars(t *testing.T) {
 
 	envVars := config.GetEnvVars("test")
 	assert.Equal(t, map[string]string{"DOG_NAME": "Peggy", "PERSON_NAME": "Louisa"}, envVars)
+}
+
+func TestSnakecaseValidateFormat(t *testing.T) {
+	_, err := Load("fixtures/test_snakecase_config.yaml")
+	assert.Error(t, err)
+
+	assert.NotContains(t, err.Error(), "THIS_IS_ALLOWED")
+
+	assert.Contains(t, err.Error(), "environment variable this_is_not_Allowed1 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "environment variable THIS_IS_NOT_ALLOWEd2 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "environment variable thisIsNotAllowed3 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "environment variable This_IS_nOT_AlloWED4 must be written in upper snakecase\n")
+}
+
+func TestReservedNameValidateFormat(t *testing.T) {
+	_, err := Load("fixtures/test_reserved_name_config.yaml")
+	assert.Error(t, err)
+
+	assert.NotContains(t, err.Error(), "THIS_IS_ALLOWED")
+
+	assert.Contains(t, err.Error(), "environment variable AWS_NOT_ALLOWED1 cannot start with AWS_ as it is reserved\n")
+	assert.Contains(t, err.Error(), "environment variable KEEL_NOT_ALLOWED2 cannot start with KEEL_ as it is reserved\n")
+	assert.Contains(t, err.Error(), "environment variable OTEL_NOT_ALLOWED3 cannot start with OTEL_ as it is reserved\n")
+	assert.Contains(t, err.Error(), "environment variable OPENCOLLECTOR_CONFIG_NOT_ALLOWED4 cannot start with OPENCOLLECTOR_CONFIG as it is reserved\n")
+	assert.Contains(t, err.Error(), "environment variable _NOT_ALLOWED5 cannot start with _ as it is reserved\n")
 }
