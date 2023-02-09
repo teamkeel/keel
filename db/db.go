@@ -68,5 +68,6 @@ var SupportedValueTypes = []string{
 	"string",
 	"int",
 	"int64",
+	"float64",
 	"time.Time",
 }
