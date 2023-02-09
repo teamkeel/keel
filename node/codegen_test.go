@@ -252,15 +252,22 @@ function createFunctionAPI(headers) {
 }
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
-	const identity = meta.identity;
 	const now = () => { return new Date(); };
-	return {headers, identity, now};
+	const { identity } = meta;
+	const env = {
+		TEST: process.env["TEST"] || "",
+	};
+	return { headers, identity, env, now };
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
-		writeAPIFactory(w, s.Models)
+		envVarKeys := []string{
+			"TEST",
+		}
+
+		writeAPIFactory(w, s.Models, envVarKeys)
 	})
 }
 

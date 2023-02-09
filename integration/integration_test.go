@@ -12,6 +12,7 @@ import (
 	cp "github.com/otiai10/copy"
 
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/testing"
@@ -76,7 +77,16 @@ func TestIntegration(t *gotest.T) {
 				}
 			})
 
-			files, err := node.Generate(context.Background(), tmpDir, node.WithDevelopmentServer(true))
+			cfg, _ := config.Load(tmpDir)
+
+			envVars := cfg.GetEnvVars("test")
+
+			files, err := node.Generate(
+				context.Background(),
+				tmpDir,
+				node.WithDevelopmentServer(true),
+			)
+
 			require.NoError(t, err)
 			err = files.Write()
 			require.NoError(t, err)
@@ -96,6 +106,7 @@ func TestIntegration(t *gotest.T) {
 				Dir:             tmpDir,
 				DbConnInfo:      dbConnInfo,
 				FunctionsOutput: &functionOutput,
+				EnvVars:         envVars,
 			})
 			require.NoError(t, err)
 

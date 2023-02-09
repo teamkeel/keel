@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/testing"
 )
@@ -38,10 +39,21 @@ var testCmd = &cobra.Command{
 			}
 		}()
 
+		cfg, err := config.Load(inputDir)
+
+		if err != nil {
+			panic(err)
+		}
+
+		envVars := cfg.GetEnvVars("test")
+
 		results, err := testing.Run(&testing.RunnerOpts{
 			Dir:        inputDir,
 			Pattern:    pattern,
 			DbConnInfo: dbConnInfo,
+			// redirect any output from custom function to stdout
+			FunctionsOutput: os.Stdout,
+			EnvVars:         envVars,
 		})
 
 		if results != nil {

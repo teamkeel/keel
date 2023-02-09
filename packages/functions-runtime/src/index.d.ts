@@ -53,11 +53,13 @@ export type TimestampQueryInput = {
   after: string;
 };
 
-// Ctx API
+type Environment = Record<string, string>;
+
 export type ContextAPI = {
   headers: RequestHeaders;
   isAuthenticated: boolean;
   now(): Date;
+  env: Environment;
 };
 
 // Request headers query API

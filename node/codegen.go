@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -118,7 +119,16 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	}
 
 	writeTableConfig(sdk, schema.Models)
-	writeAPIFactory(sdk, schema.Models)
+
+	cfg, err := config.Load(dir)
+
+	envVarKeys := []string{}
+
+	if err == nil {
+		envVarKeys = cfg.AllEnvironmentVariables()
+	}
+
+	writeAPIFactory(sdk, schema.Models, envVarKeys)
 
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema.Models)
@@ -359,7 +369,7 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 	w.Writeln("}")
 }
 
-func writeAPIFactory(w *Writer, models []*proto.Model) {
+func writeAPIFactory(w *Writer, models []*proto.Model, envVarKeys []string) {
 	w.Writeln("function createFunctionAPI(headers) {")
 	w.Indent()
 
@@ -380,9 +390,20 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	w.Writeln("function createContextAPI(meta) {")
 	w.Indent()
 	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
-	w.Writeln("const identity = meta.identity;")
 	w.Writeln("const now = () => { return new Date(); };")
-	w.Writeln("return {headers, identity, now};")
+	w.Writeln("const { identity } = meta;")
+	w.Writeln("const env = {")
+	w.Indent()
+
+	for _, key := range envVarKeys {
+		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
+		// outputs "key: process.env["key"] || []"
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", key, key)
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("return { headers, identity, env, now };")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")

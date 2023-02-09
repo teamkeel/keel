@@ -44,6 +44,16 @@ var runCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		b := &schema.Builder{}
 
+		// Attempt to load keelconfig.yaml contents
+		cfg, err := config.Load(inputDir)
+
+		if err != nil {
+			return err
+		}
+
+		// todo: reload env vars on change to keelconfig.yaml
+		envVars := cfg.GetEnvVars("development")
+
 		useExistingContainer := !runCmdFlagReset
 		_, dbConnInfo, err := database.Start(useExistingContainer)
 
@@ -91,13 +101,22 @@ var runCmd = &cobra.Command{
 				_ = functionsServer.Kill()
 			}
 
+			keelEnvVars := map[string]string{
+				"DB_CONN_TYPE": "pg",
+				"DB_CONN":      dbConnInfo.String(),
+			}
+
+			// add in keel internal env vars - if the original env vars declares one of the internal env vars, it's
+			// value will be overwritten
+			for key, value := range keelEnvVars {
+				envVars[key] = value
+			}
+
 			functionsServer, err = node.RunDevelopmentServer(inputDir, &node.ServerOpts{
-				EnvVars: map[string]string{
-					"DB_CONN_TYPE": "pg",
-					"DB_CONN":      dbConnInfo.String(),
-				},
-				Output: os.Stdout,
+				EnvVars: envVars,
+				Output:  os.Stdout,
 			})
+
 			if err != nil {
 				fmt.Print(err.Error())
 				panic(err)
@@ -163,7 +182,12 @@ var runCmd = &cobra.Command{
 				}
 			}
 
-			files, err := node.Generate(context.Background(), inputDir, node.WithDevelopmentServer(true))
+			files, err := node.Generate(
+				context.Background(),
+				inputDir,
+				node.WithDevelopmentServer(true),
+			)
+
 			if err != nil {
 				panic(err)
 			}
@@ -182,8 +206,6 @@ var runCmd = &cobra.Command{
 			currSchema = protoSchema
 			fmt.Println("🎉 You're ready to roll")
 		}
-
-		config.SetEnvVars(inputDir, "development")
 
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 			mutex.Lock()
