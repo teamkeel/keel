@@ -105,7 +105,6 @@ type ExpressionScopeEntity struct {
 	Field     *parser.FieldNode
 	Literal   *parser.Operand
 	Enum      *parser.EnumNode
-	String    *string
 	EnumValue *parser.EnumValueNode
 	Array     []*ExpressionScopeEntity
 
@@ -148,10 +147,6 @@ func (e *ExpressionScopeEntity) GetType() string {
 
 	if e.Literal != nil {
 		return e.Literal.Type()
-	}
-
-	if e.String != nil {
-		return parser.TypeText
 	}
 
 	if e.Enum != nil {
@@ -237,10 +232,7 @@ func DefaultExpressionScope(asts []*parser.AST) *ExpressionScope {
 					},
 					{
 						Name: "headers",
-						Object: &ExpressionObjectEntity{
-							Name:   "Headers",
-							Fields: []*ExpressionScopeEntity{},
-						},
+						Type: TypeStringMap,
 					},
 				},
 			},

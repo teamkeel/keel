@@ -118,15 +118,21 @@ func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *Resolut
 	// then it will continue onto the next fragment, setting the new scope to Ctx
 	// so that the next fragment can be compared to fields that exist on the Ctx object
 fragments:
-	for i, fragment := range o.operand.Ident.Fragments {
-		// If the ident is conforms to the pattern 'ctx.headers.XXX' then XXX is assumed to be of type String (analogous to type Text). Fragment at index 2 is the fragment XXX.
-		if o.operand.Ident.IsContextHeadersField() && i == 2 {
-			return &ExpressionScopeEntity{
-				Name:   fragment.Fragment,
-				String: &fragment.Fragment,
-			}, nil
+	for _, fragment := range o.operand.Ident.Fragments {
+		if entity != nil && entity.Type == TypeStringMap {
+			o.scope = &ExpressionScope{
+				Parent: o.scope,
+			}
+
+			entity = &ExpressionScopeEntity{
+				Type: parser.TypeText,
+			}
+
+			continue
 		}
+
 		for _, e := range o.scope.Entities {
+
 			if e.Name != fragment.Fragment {
 				continue
 			}

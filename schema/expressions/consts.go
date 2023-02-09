@@ -9,6 +9,10 @@ const (
 	OperandPositionRhs OperandPosition = "rhs"
 )
 
+const (
+	TypeStringMap = "StringMap"
+)
+
 // Defines which operators can be used for each field type
 var operatorsForType = map[string][]string{
 	parser.FieldTypeText: {
