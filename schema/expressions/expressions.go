@@ -143,12 +143,11 @@ func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *Resolut
 			})
 
 			return nil, &ResolutionError{
-				errorType: Disallowed,
-				fragment:  f,
-				parent:    "headers",
-				scope:     scope,
-				operand:   o.operand,
-				node:      o.operand.Node,
+				fragment: f,
+				parent:   "headers",
+				scope:    scope,
+				operand:  o.operand,
+				node:     o.operand.Node,
 			}
 		}
 	}
@@ -228,12 +227,11 @@ fragments:
 		}
 
 		return nil, &ResolutionError{
-			errorType: Unresolvable,
-			fragment:  fragment.Fragment,
-			parent:    parent,
-			scope:     o.scope,
-			operand:   o.operand,
-			node:      fragment.Node,
+			fragment: fragment.Fragment,
+			parent:   parent,
+			scope:    o.scope,
+			operand:  o.operand,
+			node:     fragment.Node,
 		}
 	}
 

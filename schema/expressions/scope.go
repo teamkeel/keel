@@ -23,19 +23,11 @@ type ExpressionContext struct {
 	Field     *parser.FieldNode
 }
 
-type ErrorType = string
-
-const (
-	Unresolvable ErrorType = "unresolvable"
-	Disallowed   ErrorType = "disallowed"
-)
-
 type ResolutionError struct {
-	errorType ErrorType
-	scope     *ExpressionScope
-	fragment  string // the fragment of the operand that was not resolvable
-	parent    string // the resolved parent of the fragment that was not resolvable
-	operand   *parser.Operand
+	scope    *ExpressionScope
+	fragment string // the fragment of the operand that was not resolvable
+	parent   string // the resolved parent of the fragment that was not resolvable
+	operand  *parser.Operand
 
 	// the node to highlight in validation error summary
 	node node.Node
@@ -53,10 +45,6 @@ func (e *ResolutionError) Error() string {
 
 func (e *ResolutionError) ToValidationError() *errorhandling.ValidationError {
 	suggestions := errorhandling.NewCorrectionHint(e.InScopeEntities(), e.fragment)
-
-	if e.errorType == Disallowed {
-
-	}
 
 	return errorhandling.NewValidationError(
 		errorhandling.ErrorUnresolvableExpression,
