@@ -132,7 +132,7 @@ func (ident *Ident) IsContext() bool {
 }
 
 func (ident *Ident) IsContextIdentityField() bool {
-	if ident.IsContext() {
+	if ident.IsContext() && len(ident.Fragments) > 1 {
 		return ident.Fragments[1].Fragment == "identity"
 	}
 	return false
