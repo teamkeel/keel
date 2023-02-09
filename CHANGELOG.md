@@ -1,3 +1,10 @@
+# [0.253.0](https://github.com/teamkeel/keel/compare/v0.252.0...v0.253.0) (2023-02-09)
+
+
+### Features
+
+* headers in expressions ([#764](https://github.com/teamkeel/keel/issues/764)) ([264668b](https://github.com/teamkeel/keel/commit/264668b6c95b96cfbdfbc9302ef3c1bb1b026671))
+
 # [0.252.0](https://github.com/teamkeel/keel/compare/v0.251.1...v0.252.0) (2023-02-08)
 
 
