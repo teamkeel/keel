@@ -1,0 +1,11 @@
+model Something {
+    fields {
+        foo Text
+    }
+
+    operations {
+        create createSomething() with (foo) {
+            @permission(expression: something.createdAt == ctx.headers.KEY.KEY2)
+        }
+    }
+}

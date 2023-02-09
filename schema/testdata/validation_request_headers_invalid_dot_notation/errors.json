@@ -1,0 +1,22 @@
+{
+  "errors": [
+    {
+      "message": "'KEY2' not found on 'Text'",
+      "shortMessage": "'KEY2' not found",
+      "hint": "",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_request_headers_invalid_dot_notation/schema.keel",
+        "offset": 193,
+        "line": 8,
+        "column": 76
+      },
+      "endPos": {
+        "filename": "testdata/validation_request_headers_invalid_dot_notation/schema.keel",
+        "offset": 197,
+        "line": 8,
+        "column": 80
+      }
+    }
+  ]
+}
