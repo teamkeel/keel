@@ -153,14 +153,14 @@ func (ident *Ident) IsContextNowField() bool {
 }
 
 func (ident *Ident) IsContextHeadersField() bool {
-	if ident.IsContext() && len(ident.Fragments) == 2 {
+	if ident.IsContext() && len(ident.Fragments) == 3 {
 		return ident.Fragments[1].Fragment == "headers"
 	}
 	return false
 }
 
 func (ident *Ident) IsContextEnvField() bool {
-	if ident.IsContext() && len(ident.Fragments) == 2 {
+	if ident.IsContext() && len(ident.Fragments) == 3 {
 		return ident.Fragments[1].Fragment == "env"
 	}
 	return false
