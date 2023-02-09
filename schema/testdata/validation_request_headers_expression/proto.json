@@ -1,0 +1,174 @@
+{
+  "models": [
+    {
+      "name": "ApiKey",
+      "fields": [
+        {
+          "modelName": "ApiKey",
+          "name": "key",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "ApiKey",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "ApiKey",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "ApiKey",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "ApiKey",
+          "name": "createApiKey",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "setExpressions": [
+            {
+              "source": "apiKey.key = ctx.headers.X_API_TOKEN"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "OPERATION_TYPE_AUTHENTICATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "createIfNotExists",
+              "type": {
+                "type": "TYPE_BOOL"
+              },
+              "optional": true
+            },
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "emailPassword",
+              "type": {
+                "type": "TYPE_OBJECT"
+              },
+              "inputs": [
+                {
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "email",
+                  "type": {
+                    "type": "TYPE_STRING"
+                  }
+                },
+                {
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "password",
+                  "type": {
+                    "type": "TYPE_STRING"
+                  }
+                }
+              ]
+            }
+          ],
+          "outputs": [
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "identityCreated",
+              "type": {
+                "type": "TYPE_BOOL"
+              }
+            },
+            {
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "token",
+              "type": {
+                "type": "TYPE_STRING"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

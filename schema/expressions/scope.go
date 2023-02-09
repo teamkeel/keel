@@ -5,6 +5,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -22,11 +23,22 @@ type ExpressionContext struct {
 	Field     *parser.FieldNode
 }
 
+type ErrorType = string
+
+const (
+	Unresolvable ErrorType = "unresolvable"
+	Disallowed   ErrorType = "disallowed"
+)
+
 type ResolutionError struct {
-	scope    *ExpressionScope
-	fragment *parser.IdentFragment
-	parent   string
-	operand  *parser.Operand
+	errorType ErrorType
+	scope     *ExpressionScope
+	fragment  string // the fragment of the operand that was not resolvable
+	parent    string // the resolved parent of the fragment that was not resolvable
+	operand   *parser.Operand
+
+	// the node to highlight in validation error summary
+	node node.Node
 }
 
 func (e *ResolutionError) InScopeEntities() []string {
@@ -36,22 +48,26 @@ func (e *ResolutionError) InScopeEntities() []string {
 }
 
 func (e *ResolutionError) Error() string {
-	return fmt.Sprintf("Could not resolve %s in %s", e.fragment.Fragment, e.operand.ToString())
+	return fmt.Sprintf("Could not resolve %s in %s", e.fragment, e.operand.ToString())
 }
 
 func (e *ResolutionError) ToValidationError() *errorhandling.ValidationError {
-	suggestions := errorhandling.NewCorrectionHint(e.InScopeEntities(), e.fragment.Fragment)
+	suggestions := errorhandling.NewCorrectionHint(e.InScopeEntities(), e.fragment)
+
+	if e.errorType == Disallowed {
+
+	}
 
 	return errorhandling.NewValidationError(
 		errorhandling.ErrorUnresolvableExpression,
 		errorhandling.TemplateLiterals{
 			Literals: map[string]string{
-				"Fragment":   e.fragment.Fragment,
+				"Fragment":   e.fragment,
 				"Parent":     e.parent,
 				"Suggestion": suggestions.ToString(),
 			},
 		},
-		e.fragment,
+		e.node,
 	)
 }
 

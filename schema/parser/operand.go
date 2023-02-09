@@ -128,11 +128,7 @@ func (ident *Ident) ToString() string {
 }
 
 func (ident *Ident) IsContext() bool {
-	if len(ident.Fragments) == 2 || len(ident.Fragments) == 3 {
-		return ident.Fragments[0].Fragment == "ctx"
-	}
-
-	return false
+	return ident.Fragments[0].Fragment == "ctx"
 }
 
 func (ident *Ident) IsContextIdentityField() bool {
@@ -157,7 +153,7 @@ func (ident *Ident) IsContextNowField() bool {
 }
 
 func (ident *Ident) IsContextHeadersField() bool {
-	if ident.IsContext() {
+	if ident.IsContext() && len(ident.Fragments) > 1 {
 		return ident.Fragments[1].Fragment == "headers"
 	}
 	return false

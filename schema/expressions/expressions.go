@@ -1,6 +1,9 @@
 package expressions
 
 import (
+	"strings"
+
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 )
@@ -111,6 +114,45 @@ func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *Resolut
 		}
 	}
 
+	// If the ident is conforms to the pattern 'ctx.headers.XXX' then XXX is assumed to be of type String (analogous to type Text). Fragment at index 2 is the fragment XXX.
+	if o.operand.Ident.IsContextHeadersField() {
+		fragmentLength := len(o.operand.Ident.Fragments)
+		fragment := o.operand.Ident.LastFragment()
+
+		if fragmentLength == 3 {
+			return &ExpressionScopeEntity{
+				Name:   fragment,
+				String: &fragment,
+			}, nil
+		}
+
+		if fragmentLength > 3 {
+			relevantFragments := o.operand.Ident.Fragments[len(o.operand.Ident.Fragments)-2 : len(o.operand.Ident.Fragments)]
+			f := strings.Join(lo.Map(relevantFragments, func(frag *parser.IdentFragment, _ int) string {
+				return frag.Fragment
+			}), ".")
+
+			scope := &ExpressionScope{}
+
+			firstPart := o.operand.Ident.Fragments[len(o.operand.Ident.Fragments)-2].Fragment
+
+			// if the user has written the invalid header syntax "ctx.headers.FIRST.SECOND" then suggest "ctx.headers.FIRST" as a valid alternative.
+			scope.Entities = append(scope.Entities, &ExpressionScopeEntity{
+				Name:   firstPart,
+				String: &firstPart,
+			})
+
+			return nil, &ResolutionError{
+				errorType: Disallowed,
+				fragment:  f,
+				parent:    "headers",
+				scope:     scope,
+				operand:   o.operand,
+				node:      o.operand.Node,
+			}
+		}
+	}
+
 	// We want to loop over every fragment in the Ident, each time checking if the Ident matches anything
 	// stored in the expression scope.
 	// e.g if the first ident fragment is "ctx", and the ExpressionScope has a matching key
@@ -118,14 +160,7 @@ func (o *OperandResolver) Resolve() (entity *ExpressionScopeEntity, err *Resolut
 	// then it will continue onto the next fragment, setting the new scope to Ctx
 	// so that the next fragment can be compared to fields that exist on the Ctx object
 fragments:
-	for i, fragment := range o.operand.Ident.Fragments {
-		// If the ident is conforms to the pattern 'ctx.headers.XXX' then XXX is assumed to be of type String (analogous to type Text). Fragment at index 2 is the fragment XXX.
-		if o.operand.Ident.IsContextHeadersField() && i == 2 {
-			return &ExpressionScopeEntity{
-				Name:   fragment.Fragment,
-				String: &fragment.Fragment,
-			}, nil
-		}
+	for _, fragment := range o.operand.Ident.Fragments {
 		for _, e := range o.scope.Entities {
 			if e.Name != fragment.Fragment {
 				continue
@@ -193,10 +228,12 @@ fragments:
 		}
 
 		return nil, &ResolutionError{
-			fragment: fragment,
-			parent:   parent,
-			scope:    o.scope,
-			operand:  o.operand,
+			errorType: Unresolvable,
+			fragment:  fragment.Fragment,
+			parent:    parent,
+			scope:     o.scope,
+			operand:   o.operand,
+			node:      fragment.Node,
 		}
 	}
 

@@ -1,0 +1,22 @@
+{
+  "errors": [
+    {
+      "message": "'EXTRA.FRAGMENT' not found on 'headers'",
+      "shortMessage": "'EXTRA.FRAGMENT' not found",
+      "hint": "Did you mean EXTRA?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_ctx_headers_extra_fragment/schema.keel",
+        "offset": 131,
+        "line": 8,
+        "column": 31
+      },
+      "endPos": {
+        "filename": "testdata/validation_ctx_headers_extra_fragment/schema.keel",
+        "offset": 157,
+        "line": 8,
+        "column": 57
+      }
+    }
+  ]
+}
