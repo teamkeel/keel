@@ -12,7 +12,7 @@ function applyJoins(context, qb, where) {
     return qb;
   }
 
-  const srcTableName = context.tableName();
+  const srcTable = context.tableAlias();
 
   for (const key of Object.keys(where)) {
     const rel = conf[key];
@@ -33,7 +33,7 @@ function applyJoins(context, qb, where) {
           // and the foreign key is on the target table
           qb = qb.innerJoin(
             `${targetTable} as ${context.tableAlias()}`,
-            `${srcTableName}.id`,
+            `${srcTable}.id`,
             `${context.tableAlias()}.${rel.foreignKey}`
           );
           break;
@@ -43,7 +43,7 @@ function applyJoins(context, qb, where) {
           // and the foreign key is on the source table
           qb = qb.innerJoin(
             `${targetTable} as ${context.tableAlias()}`,
-            `${srcTableName}.${rel.foreignKey}`,
+            `${srcTable}.${rel.foreignKey}`,
             `${context.tableAlias()}.id`
           );
           break;

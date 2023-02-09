@@ -145,6 +145,9 @@ func writeTableInterface(w *Writer, model *proto.Model) {
 	w.Writef("export interface %sTable {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
 		w.Write(strcase.ToSnake(field.Name))
 		w.Write(": ")
 		t := toTypeScriptType(field.Type)
@@ -165,6 +168,9 @@ func writeModelInterface(w *Writer, model *proto.Model) {
 	w.Writef("export interface %s {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
 		w.Write(field.Name)
 		w.Write(": ")
 		t := toTypeScriptType(field.Type)
@@ -209,9 +215,14 @@ func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
 		w.Write(field.Name)
 		w.Write("?")
 		w.Write(": ")
-		w.Write(toTypeScriptType(field.Type))
-		w.Write(" | ")
-		w.Write(toWhereConditionType(field))
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			// Embed related models where conditions
+			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
+		} else {
+			w.Write(toTypeScriptType(field.Type))
+			w.Write(" | ")
+			w.Write(toWhereConditionType(field))
+		}
 		if field.Optional {
 			w.Write(" | null")
 		}
