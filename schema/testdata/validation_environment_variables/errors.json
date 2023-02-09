@@ -3,7 +3,7 @@
     {
       "message": "'FOO' not found on 'Environment Variables'",
       "shortMessage": "'FOO' not found",
-      "hint": "Did you mean ?",
+      "hint": "",
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_environment_variables/schema.keel",

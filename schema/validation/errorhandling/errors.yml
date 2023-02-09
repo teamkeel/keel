@@ -78,7 +78,7 @@ en:
   E020:
     short_message: "'{{ .Fragment }}' not found"
     message: "'{{ .Fragment }}' not found{{ if .Parent }} on '{{ .Parent }}'{{ end }}"
-    hint: "{{ .Suggestion }}"
+    hint: "{{if .Suggestion}}{{ .Suggestion }}{{end}}"
   E022:
     short_message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"

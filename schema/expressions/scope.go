@@ -42,14 +42,19 @@ func (e *ResolutionError) Error() string {
 func (e *ResolutionError) ToValidationError() *errorhandling.ValidationError {
 	suggestions := errorhandling.NewCorrectionHint(e.InScopeEntities(), e.fragment.Fragment)
 
+	literals := map[string]string{
+		"Fragment": e.fragment.Fragment,
+		"Parent":   e.parent,
+	}
+
+	if len(suggestions.Results) > 0 {
+		literals["Suggestion"] = suggestions.ToString()
+	}
+
 	return errorhandling.NewValidationError(
 		errorhandling.ErrorUnresolvableExpression,
 		errorhandling.TemplateLiterals{
-			Literals: map[string]string{
-				"Fragment":   e.fragment.Fragment,
-				"Parent":     e.parent,
-				"Suggestion": suggestions.ToString(),
-			},
+			Literals: literals,
 		},
 		e.fragment,
 	)

@@ -3,7 +3,7 @@
     {
       "message": "'KEY2' not found on 'Text'",
       "shortMessage": "'KEY2' not found",
-      "hint": "Did you mean ?",
+      "hint": "",
       "code": "E020",
       "pos": {
         "filename": "testdata/validation_request_headers_invalid_dot_notation/schema.keel",
