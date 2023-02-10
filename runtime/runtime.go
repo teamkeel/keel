@@ -148,6 +148,7 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 		for _, name := range proto.GetActionNamesForApi(s, api) {
 			handlers[root+"/json/"+name] = httpJson
 		}
+		handlers[root+"/json/openapi.json"] = httpJson
 	}
 
 	return func(r *http.Request) common.Response {

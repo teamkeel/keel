@@ -1,0 +1,200 @@
+{
+  "components": {
+    "schemas": {
+      "CustomersWhereInput": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          }
+        },
+        "type": "object"
+      },
+      "StringQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "contains": {
+            "type": "string"
+          },
+          "endsWith": {
+            "type": "string"
+          },
+          "equals": {
+            "type": "string"
+          },
+          "oneOf": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "startsWith": {
+            "type": "string"
+          }
+        },
+        "type": ["object", "null"]
+      },
+      "UpdateCustomerValuesInput": {
+        "additionalProperties": false,
+        "properties": {
+          "dateOfBirth": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
+          "name": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": "object"
+      },
+      "UpdateCustomerWhereInput": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": ["id"],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Web",
+    "version": "1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/web/json/authenticate": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            }
+          },
+          "description": "authenticate Request"
+        },
+        "responses": {
+          "200": {
+            "description": "authenticate Response"
+          }
+        }
+      }
+    },
+    "/web/json/createcustomer": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "dateOfBirth": {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["name", "dateOfBirth"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "createCustomer Request"
+        },
+        "responses": {
+          "200": {
+            "description": "createCustomer Response"
+          }
+        }
+      }
+    },
+    "/web/json/customers": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "where": {
+                    "$ref": "#/components/schemas/CustomersWhereInput"
+                  }
+                },
+                "required": ["where"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "customers Request"
+        },
+        "responses": {
+          "200": {
+            "description": "customers Response"
+          }
+        }
+      }
+    },
+    "/web/json/getcustomer": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": ["id"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "getCustomer Request"
+        },
+        "responses": {
+          "200": {
+            "description": "getCustomer Response"
+          }
+        }
+      }
+    },
+    "/web/json/updatecustomer": {
+      "post": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "values": {
+                    "$ref": "#/components/schemas/UpdateCustomerValuesInput"
+                  },
+                  "where": {
+                    "$ref": "#/components/schemas/UpdateCustomerWhereInput"
+                  }
+                },
+                "required": ["where", "values"],
+                "type": "object"
+              }
+            }
+          },
+          "description": "updateCustomer Request"
+        },
+        "responses": {
+          "200": {
+            "description": "updateCustomer Response"
+          }
+        }
+      }
+    }
+  }
+}
