@@ -38,9 +38,21 @@ model Profile {
     )
 }
 
+model Publisher {
+    fields {
+        name Text
+        authors Author[]
+    }
+
+    functions {
+        get getPublisherByBook(bookId: ID)
+    }
+}
+
 model Author {
     fields {
         name Text
+        publisher Publisher?
         books Book[]
     }
 }
@@ -53,5 +65,6 @@ model Book {
 
     functions {
         get getBookByAuthor(author.id)
+        list listBooksByPublisherName(author.publisher.name)
     }
 }

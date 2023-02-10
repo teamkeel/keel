@@ -178,7 +178,7 @@ test("unrecognised value in foreign key column", async () => {
   });
 });
 
-test("relationships - fetch one using belongsTo relationship", async () => {
+test("relationships - findOne using belongsTo relationship", async () => {
   const author = await models.author.create({
     name: "Philip K. Dick",
   });
@@ -191,4 +191,73 @@ test("relationships - fetch one using belongsTo relationship", async () => {
   });
   expect(res).not.toBe(null);
   expect(res!.id).toEqual(book.id);
+});
+
+test("relationships - findOne using multiple hasMany relationships", async () => {
+  const publisher1 = await models.publisher.create({
+    name: "Macmillan",
+  });
+  const publisher2 = await models.publisher.create({
+    name: "Harper Collins",
+  });
+  const author1 = await models.author.create({
+    publisherId: publisher1.id,
+    name: "Philip K. Dick",
+  });
+  const author2 = await models.author.create({
+    publisherId: publisher2.id,
+    name: "Charles Dickens",
+  });
+  await models.book.create({
+    title: "The Man In the High Castle",
+    authorId: author1.id,
+  });
+  const oliverTwist = await models.book.create({
+    title: "Oliver Twist",
+    authorId: author2.id,
+  });
+  const res = await actions.getPublisherByBook({
+    bookId: oliverTwist.id,
+  });
+  expect(res).not.toBe(null);
+  expect(res!.id).toBe(publisher2.id);
+});
+
+test("relationships - findMany using multiple belongsTo relationships", async () => {
+  const publisher1 = await models.publisher.create({
+    name: "Macmillan",
+  });
+  const publisher2 = await models.publisher.create({
+    name: "Harper Collins",
+  });
+  const author1 = await models.author.create({
+    publisherId: publisher1.id,
+    name: "Philip K. Dick",
+  });
+  const author2 = await models.author.create({
+    publisherId: publisher2.id,
+    name: "Charles Dickens",
+  });
+  await models.book.create({
+    title: "The Man In the High Castle",
+    authorId: author1.id,
+  });
+  await models.book.create({
+    title: "A Christmas Carol",
+    authorId: author2.id,
+  });
+  await models.book.create({
+    title: "Oliver Twist",
+    authorId: author2.id,
+  });
+  const res = await actions.listBooksByPublisherName({
+    where: {
+      authorPublisherName: "Harper Collins",
+    },
+  });
+  expect(res.results.length).toBe(2);
+  expect(res.results.map((x) => x.title).sort()).toEqual([
+    "A Christmas Carol",
+    "Oliver Twist",
+  ]);
 });
