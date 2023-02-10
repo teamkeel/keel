@@ -241,8 +241,9 @@ func writeUniqueConditionsInterface(w *Writer, model *proto.Model) {
 		switch {
 		case f.Unique || f.PrimaryKey:
 			tsType = toTypeScriptType(f.Type)
-		case f.Type.Type == proto.Type_TYPE_MODEL:
-			// For relationships we can embed that models unique conditions
+		case proto.IsHasMany(f):
+			// If a model "has one" of another model then you can
+			// do a lookup on any of that models unique fields
 			tsType = fmt.Sprintf("%sUniqueConditions", f.Type.ModelName.Value)
 		default:
 			// TODO: support f.UniqueWith for compound unique constraints
