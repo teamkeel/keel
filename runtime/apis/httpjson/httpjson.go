@@ -12,6 +12,7 @@ import (
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/jsonschema"
+	"github.com/teamkeel/keel/runtime/openapi"
 )
 
 type HttpJsonErrorResponse struct {
@@ -22,6 +23,12 @@ type HttpJsonErrorResponse struct {
 
 func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 	return func(r *http.Request) common.Response {
+
+		// Special case for exposing an OpenAPI response
+		if strings.HasSuffix(r.URL.Path, "/openapi.json") {
+			sch := openapi.Generate(r.Context(), p, api)
+			return common.NewJsonResponse(http.StatusOK, sch, nil)
+		}
 
 		pathParts := strings.Split(r.URL.Path, "/")
 		actionName := pathParts[len(pathParts)-1]

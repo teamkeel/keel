@@ -1,151 +1,153 @@
 {
-  "$defs": {
-    "BooleanQueryInput": {
-      "additionalProperties": false,
-      "properties": {
-        "equals": {
-          "type": "boolean"
-        }
+  "components": {
+    "schemas": {
+      "BooleanQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "equals": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
-      "type": "object"
-    },
-    "DateQueryInput": {
-      "additionalProperties": false,
-      "properties": {
-        "after": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "before": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "equals": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "onOrAfter": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "onOrBefore": {
-          "format": "date-time",
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "HobbyQueryInput": {
-      "additionalProperties": false,
-      "properties": {
-        "equals": {
-          "enum": ["Tennis", "Chess"]
-        },
-        "oneOf": {
-          "items": {
-            "enum": ["Tennis", "Chess"]
-          },
-          "type": "array"
-        }
-      },
-      "type": "object"
-    },
-    "IntQueryInput": {
-      "additionalProperties": false,
-      "properties": {
-        "equals": {
-          "type": "number"
-        },
-        "greaterThan": {
-          "type": "number"
-        },
-        "greaterThanOrEquals": {
-          "type": "number"
-        },
-        "lessThan": {
-          "type": "number"
-        },
-        "lessThanOrEquals": {
-          "type": "number"
-        }
-      },
-      "type": "object"
-    },
-    "StringQueryInput": {
-      "additionalProperties": false,
-      "properties": {
-        "contains": {
-          "type": "string"
-        },
-        "endsWith": {
-          "type": "string"
-        },
-        "equals": {
-          "type": "string"
-        },
-        "oneOf": {
-          "items": {
+      "DateQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "format": "date-time",
             "type": "string"
           },
-          "type": "array"
+          "before": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "equals": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "onOrAfter": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "onOrBefore": {
+            "format": "date-time",
+            "type": "string"
+          }
         },
-        "startsWith": {
-          "type": "string"
-        }
+        "type": "object"
       },
-      "type": "object"
-    },
-    "TestActionWhereInput": {
-      "additionalProperties": false,
-      "properties": {
-        "birthday": {
-          "$ref": "#/$defs/DateQueryInput"
+      "HobbyQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "equals": {
+            "enum": ["Tennis", "Chess"]
+          },
+          "oneOf": {
+            "items": {
+              "enum": ["Tennis", "Chess"]
+            },
+            "type": "array"
+          }
         },
-        "favouriteNumber": {
-          "$ref": "#/$defs/IntQueryInput"
-        },
-        "hobby": {
-          "$ref": "#/$defs/HobbyQueryInput"
-        },
-        "isAdmin": {
-          "$ref": "#/$defs/BooleanQueryInput"
-        },
-        "lastSeenAt": {
-          "$ref": "#/$defs/TimestampQueryInput"
-        },
-        "name": {
-          "$ref": "#/$defs/StringQueryInput"
-        }
+        "type": "object"
       },
-      "required": [
-        "name",
-        "favouriteNumber",
-        "birthday",
-        "hobby",
-        "isAdmin",
-        "lastSeenAt"
-      ],
-      "type": "object"
-    },
-    "TimestampQueryInput": {
-      "additionalProperties": false,
-      "properties": {
-        "after": {
-          "format": "date-time",
-          "type": "string"
+      "IntQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "equals": {
+            "type": "number"
+          },
+          "greaterThan": {
+            "type": "number"
+          },
+          "greaterThanOrEquals": {
+            "type": "number"
+          },
+          "lessThan": {
+            "type": "number"
+          },
+          "lessThanOrEquals": {
+            "type": "number"
+          }
         },
-        "before": {
-          "format": "date-time",
-          "type": "string"
-        }
+        "type": "object"
       },
-      "type": "object"
+      "StringQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "contains": {
+            "type": "string"
+          },
+          "endsWith": {
+            "type": "string"
+          },
+          "equals": {
+            "type": "string"
+          },
+          "oneOf": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "startsWith": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TestActionWhereInput": {
+        "additionalProperties": false,
+        "properties": {
+          "birthday": {
+            "$ref": "#/components/schemas/DateQueryInput"
+          },
+          "favouriteNumber": {
+            "$ref": "#/components/schemas/IntQueryInput"
+          },
+          "hobby": {
+            "$ref": "#/components/schemas/HobbyQueryInput"
+          },
+          "isAdmin": {
+            "$ref": "#/components/schemas/BooleanQueryInput"
+          },
+          "lastSeenAt": {
+            "$ref": "#/components/schemas/TimestampQueryInput"
+          },
+          "name": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          }
+        },
+        "required": [
+          "name",
+          "favouriteNumber",
+          "birthday",
+          "hobby",
+          "isAdmin",
+          "lastSeenAt"
+        ],
+        "type": "object"
+      },
+      "TimestampQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "before": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
     }
   },
   "additionalProperties": false,
   "properties": {
     "where": {
-      "$ref": "#/$defs/TestActionWhereInput"
+      "$ref": "#/components/schemas/TestActionWhereInput"
     }
   },
   "required": ["where"],

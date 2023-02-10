@@ -1,45 +1,47 @@
 {
-  "$defs": {
-    "Hobby": {
-      "enum": ["Tennis", "Chess", null]
-    },
-    "TestActionValuesInput": {
-      "additionalProperties": false,
-      "properties": {
-        "birthday": {
-          "format": "date-time",
-          "type": ["string", "null"]
-        },
-        "hobby": {
-          "$ref": "#/$defs/Hobby"
-        },
-        "name": {
-          "type": ["string", "null"]
-        },
-        "nickName": {
-          "type": ["string", "null"]
-        }
+  "components": {
+    "schemas": {
+      "Hobby": {
+        "enum": ["Tennis", "Chess", null]
       },
-      "type": "object"
-    },
-    "TestActionWhereInput": {
-      "additionalProperties": false,
-      "properties": {
-        "id": {
-          "type": "string"
-        }
+      "TestActionValuesInput": {
+        "additionalProperties": false,
+        "properties": {
+          "birthday": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
+          "hobby": {
+            "$ref": "#/components/schemas/Hobby"
+          },
+          "name": {
+            "type": ["string", "null"]
+          },
+          "nickName": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": "object"
       },
-      "required": ["id"],
-      "type": "object"
+      "TestActionWhereInput": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": ["id"],
+        "type": "object"
+      }
     }
   },
   "additionalProperties": false,
   "properties": {
     "values": {
-      "$ref": "#/$defs/TestActionValuesInput"
+      "$ref": "#/components/schemas/TestActionValuesInput"
     },
     "where": {
-      "$ref": "#/$defs/TestActionWhereInput"
+      "$ref": "#/components/schemas/TestActionWhereInput"
     }
   },
   "required": ["where", "values"],

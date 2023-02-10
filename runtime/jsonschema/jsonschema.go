@@ -37,7 +37,11 @@ type JSONSchema struct {
 
 	// Only used in the root JSONSchema object to define types that
 	// can then be referenced using $ref
-	Defs map[string]JSONSchema `json:"$defs,omitempty"`
+	Components *Components `json:"components,omitempty"`
+}
+
+type Components struct {
+	Schemas map[string]JSONSchema `json:"schemas"`
 }
 
 // ValidateRequest validates that the input is valid for the given operation and schema.
@@ -59,11 +63,14 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 		}
 	}
 
+	components := Components{
+		Schemas: map[string]JSONSchema{},
+	}
+
 	root := JSONSchema{
 		Type:                 "object",
 		Properties:           map[string]JSONSchema{},
 		AdditionalProperties: boolPtr(false),
-		Defs:                 map[string]JSONSchema{},
 	}
 
 	where := JSONSchema{
@@ -99,8 +106,8 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 		}
 
 		if name != "" {
-			root.Defs[name] = prop
-			obj.Properties[input.Name] = JSONSchema{Ref: fmt.Sprintf("#/$defs/%s", name)}
+			components.Schemas[name] = prop
+			obj.Properties[input.Name] = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
 		} else {
 			obj.Properties[input.Name] = prop
 		}
@@ -114,8 +121,8 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 	if isUpdate || isList {
 		// Always add the "where" prop but only make it required if has any properties
 		typeName := strcase.ToCamel(op.Name) + "WhereInput"
-		root.Properties["where"] = JSONSchema{Ref: fmt.Sprintf("#/$defs/%s", typeName)}
-		root.Defs[typeName] = where
+		root.Properties["where"] = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", typeName)}
+		components.Schemas[typeName] = where
 		if len(where.Properties) > 0 {
 			root.Required = append(root.Required, "where")
 		}
@@ -124,11 +131,15 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 	if isUpdate {
 		// Always add the "values" prop but only make it required if has any properties
 		typeName := strcase.ToCamel(op.Name) + "ValuesInput"
-		root.Properties["values"] = JSONSchema{Ref: fmt.Sprintf("#/$defs/%s", typeName)}
-		root.Defs[typeName] = values
+		root.Properties["values"] = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", typeName)}
+		components.Schemas[typeName] = values
 		if len(values.Properties) > 0 {
 			root.Required = append(root.Required, "values")
 		}
+	}
+
+	if len(components.Schemas) > 0 {
+		root.Components = &components
 	}
 
 	return root
