@@ -157,13 +157,18 @@ func TestWriteUniqueConditionsInterface(t *testing.T) {
 		}
 	}
 	`
+
+	// You can't find a single book by author, because an author
+	// writes many books
 	expectedBookType := `
 export type BookUniqueConditions = 
 	| {title: string}
-	| {author: AuthorUniqueConditions}
 	| {id: string};
 	`
 
+	// You can find a single author by a book, because a book
+	// is written by a single author. So we include the
+	// BookUniqueConditions type within AuthorUniqueConditions
 	expectedAuthorType := `
 export type AuthorUniqueConditions = 
 	| {books: BookUniqueConditions}

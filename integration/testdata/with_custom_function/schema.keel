@@ -64,7 +64,6 @@ model Book {
     }
 
     functions {
-        get getBookByAuthor(author.id)
         list listBooksByPublisherName(author.publisher.name)
     }
 }
