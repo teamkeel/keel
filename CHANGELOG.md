@@ -1,3 +1,10 @@
+## [0.253.1](https://github.com/teamkeel/keel/compare/v0.253.0...v0.253.1) (2023-02-10)
+
+
+### Bug Fixes
+
+* find one can't look up by a many relationship ([052bae1](https://github.com/teamkeel/keel/commit/052bae11bcc524ed5cfbf3908d7b8c4b61d2ab0f))
+
 # [0.253.0](https://github.com/teamkeel/keel/compare/v0.252.0...v0.253.0) (2023-02-09)
 
 
