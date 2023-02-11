@@ -1,3 +1,10 @@
+# [0.254.0](https://github.com/teamkeel/keel/compare/v0.253.1...v0.254.0) (2023-02-11)
+
+
+### Features
+
+* add openapi spec endpoint to http json api ([13a60d8](https://github.com/teamkeel/keel/commit/13a60d8a79503bbbd25ed983cab23515a462ca5f))
+
 ## [0.253.1](https://github.com/teamkeel/keel/compare/v0.253.0...v0.253.1) (2023-02-10)
 
 
