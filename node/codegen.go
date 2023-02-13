@@ -353,7 +353,8 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 
 	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
 	w.Indent()
-	w.Writeln("identity: Identity;")
+	w.Writeln("identity?: Identity;")
+	w.Writeln("now(): Date;")
 	w.Dedent()
 	w.Writeln("}")
 }
@@ -380,7 +381,8 @@ func writeAPIFactory(w *Writer, models []*proto.Model) {
 	w.Indent()
 	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
 	w.Writeln("const identity = meta.identity;")
-	w.Writeln("return {headers, identity};")
+	w.Writeln("const now = () => { return new Date(); };")
+	w.Writeln("return {headers, identity, now};")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")

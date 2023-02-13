@@ -56,6 +56,8 @@ export type TimestampQueryInput = {
 // Ctx API
 export type ContextAPI = {
   headers: RequestHeaders;
+  isAuthenticated: boolean;
+  now(): Date;
 };
 
 // Request headers query API
