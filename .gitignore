@@ -37,3 +37,5 @@ wasm/*.wasm
 .DS_Store
 
 bin
+
+dist
