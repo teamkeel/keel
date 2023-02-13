@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"golang.org/x/exp/slices"
 	"regexp"
 	"strconv"
 	"time"
@@ -57,7 +59,20 @@ func toDbError(err error) error {
 	return err
 }
 
+func validateSupportedType(value any) error {
+	if slices.Contains(SupportedValueTypes, fmt.Sprintf("%T", value)) {
+		return nil
+	}
+	return fmt.Errorf("unsupported %T", value)
+}
+
 func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
+	for _, value := range values {
+		err := validateSupportedType(value)
+		if err != nil {
+			return nil, err
+		}
+	}
 	rows := []map[string]any{}
 
 	var result *sql.Rows
@@ -99,6 +114,12 @@ func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...
 }
 
 func (db *localDb) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
+	for _, value := range values {
+		err := validateSupportedType(value)
+		if err != nil {
+			return nil, err
+		}
+	}
 	var result sql.Result
 	var err error
 	if db.ongoingTransaction != nil {

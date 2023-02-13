@@ -61,3 +61,13 @@ func Local(ctx context.Context, dbConnInfo *ConnectionInfo) (Db, error) {
 func LocalFromConnection(ctx context.Context, sqlDb *sql.DB) (Db, error) {
 	return &localDb{conn: sqlDb}, nil
 }
+
+var SupportedValueTypes = []string{
+	"<nil>",
+	"bool",
+	"string",
+	"int",
+	"int64",
+	"float64",
+	"time.Time",
+}
