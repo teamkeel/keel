@@ -1,3 +1,11 @@
+# [0.258.0](https://github.com/teamkeel/keel/compare/v0.257.0...v0.258.0) (2023-02-13)
+
+
+### Features
+
+* chmod binary ([#772](https://github.com/teamkeel/keel/issues/772)) ([d3103d4](https://github.com/teamkeel/keel/commit/d3103d4e8c4d43065fce189bc93bfea1673b0b34))
+* rename env vars using keel prefix ® ([#771](https://github.com/teamkeel/keel/issues/771)) ([f871ab1](https://github.com/teamkeel/keel/commit/f871ab147d75093770691a076c2b76affbe2440a))
+
 # [0.257.0](https://github.com/teamkeel/keel/compare/v0.256.0...v0.257.0) (2023-02-13)
 
 
