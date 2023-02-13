@@ -1,3 +1,10 @@
+# [0.259.0](https://github.com/teamkeel/keel/compare/v0.258.0...v0.259.0) (2023-02-13)
+
+
+### Features
+
+* remove chmod ([#773](https://github.com/teamkeel/keel/issues/773)) ([68568bf](https://github.com/teamkeel/keel/commit/68568bf64975267ae4ec1a393c024492ae9b8e09))
+
 # [0.258.0](https://github.com/teamkeel/keel/compare/v0.257.0...v0.258.0) (2023-02-13)
 
 
