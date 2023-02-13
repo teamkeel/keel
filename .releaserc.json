@@ -5,7 +5,6 @@
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
       ["@semantic-release/exec", {
-        "verifyConditionsCmd": "./verify.sh",
         "prepareCmd": "./publishcli.sh ${nextRelease.version}"
       }],
       [
