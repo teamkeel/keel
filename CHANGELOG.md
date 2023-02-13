@@ -1,3 +1,11 @@
+# [0.256.0](https://github.com/teamkeel/keel/compare/v0.255.0...v0.256.0) (2023-02-13)
+
+
+### Features
+
+* adds semantic release packages ([#769](https://github.com/teamkeel/keel/issues/769)) ([32c161b](https://github.com/teamkeel/keel/commit/32c161b268f8bf91e30eb86b7ced2f0fddf9040e))
+* publish keel cli binary as part of github release ([#768](https://github.com/teamkeel/keel/issues/768)) ([4ec5c7c](https://github.com/teamkeel/keel/commit/4ec5c7cd585fd6320d4c93e98039a7132cf3817d))
+
 # [0.255.0](https://github.com/teamkeel/keel/compare/v0.254.0...v0.255.0) (2023-02-13)
 
 
