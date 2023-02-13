@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
-	"github.com/fatih/color"
+	"github.com/iancoleman/strcase"
 	"gopkg.in/yaml.v3"
 )
 
@@ -83,20 +84,6 @@ func (c *ProjectConfig) AllEnvironmentVariables() []string {
 	return allEnvironmentVariables
 }
 
-func SetEnvVars(directory, environment string) {
-	config, err := Load(directory)
-	if err != nil {
-		panic(err)
-	}
-
-	// Find another way to get the environment
-	envVars := config.GetEnvVars(environment)
-	for key, value := range envVars {
-		os.Setenv(key, value)
-	}
-
-}
-
 // EnvironmentConfig is the configuration for a keel environment default, staging, production
 type EnvironmentConfig struct {
 	Default     []Input `yaml:"default"`
@@ -113,16 +100,35 @@ type Input struct {
 	Required []string `yaml:"required,omitempty"`
 }
 
-type ConfigErrors struct {
-	Type         string   `json:"type,omitempty"`
-	Key          string   `json:"key,omitempty"`
-	Environments []string `json:"environments,omitempty"`
+type ConfigError struct {
+	Type    string `json:"type,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 const (
-	DuplicateErrorString = " - environment variable %s has a duplicate set in environment: %s\n"
-	RequiredErrorString  = " - environment variable %s is required but not defined in the following environments: %s\n"
+	ConfigDuplicateErrorString       = "environment variable %s has a duplicate set in environment: %s"
+	ConfigRequiredErrorString        = "environment variable %s is required but not defined in the following environments: %s"
+	ConfigIncorrectNamingErrorString = "environment variable %s must be written in upper snakecase"
+	ConfigReservedNameErrorString    = "environment variable %s cannot start with %s as it is reserved"
 )
+
+type ConfigErrors struct {
+	Errors []*ConfigError `json:"errors"`
+}
+
+func (c ConfigError) Error() string {
+	return c.Message
+}
+
+func (c ConfigErrors) Error() string {
+	str := ""
+
+	for _, err := range c.Errors {
+		str += fmt.Sprintf("%s\n", err.Message)
+	}
+
+	return str
+}
 
 func Load(dir string) (*ProjectConfig, error) {
 	// If an absolute path to a file is provided then use it, otherwise append the default
@@ -146,7 +152,7 @@ func Load(dir string) (*ProjectConfig, error) {
 
 	validationErrors := Validate(&config)
 	if validationErrors != nil {
-		return &config, generateOutput(validationErrors)
+		return &config, validationErrors
 	}
 
 	return &config, nil
@@ -162,38 +168,66 @@ func LoadFromBytes(data []byte) (*ProjectConfig, error) {
 
 	validationErrors := Validate(&config)
 	if validationErrors != nil {
-		return &config, generateOutput(validationErrors)
+		return &config, validationErrors
 	}
 
 	return &config, nil
 }
 
-func Validate(config *ProjectConfig) []ConfigErrors {
-	var errors []ConfigErrors
+var reservedEnvVarRegex = regexp.MustCompile(`^AWS_|^_|^OTEL_|^OPENCOLLECTOR_CONFIG|^KEEL_`)
+
+func Validate(config *ProjectConfig) *ConfigErrors {
+	var errors []*ConfigError
 
 	duplicates, results := checkForDuplicates(config)
 	if duplicates {
-		for k, v := range results {
-			errors = append(errors, ConfigErrors{
-				Type:         "duplicate",
-				Key:          k,
-				Environments: v,
+		for duplicatedEnvVarName, environmentNames := range results {
+			errors = append(errors, &ConfigError{
+				Type:    "duplicate",
+				Message: fmt.Sprintf(ConfigDuplicateErrorString, duplicatedEnvVarName, environmentNames),
 			})
 		}
 	}
 
 	missingKeys, keys := requiredValuesKeys(config)
 	if missingKeys {
-		for k, v := range keys {
-			errors = append(errors, ConfigErrors{
-				Type:         "missing",
-				Key:          k,
-				Environments: v,
+		for requiredValueName, environmentNames := range keys {
+			errors = append(errors, &ConfigError{
+				Type:    "missing",
+				Message: fmt.Sprintf(ConfigRequiredErrorString, requiredValueName, environmentNames),
 			})
 		}
 	}
 
-	return errors
+	hasIncorrectNames, incorrectNames := validateFormat(config, "snakecase")
+	if hasIncorrectNames {
+		for incorrectName := range incorrectNames {
+			errors = append(errors, &ConfigError{
+				Type:    "nonSnakecase",
+				Message: fmt.Sprintf(ConfigIncorrectNamingErrorString, incorrectName),
+			})
+		}
+	}
+
+	hasIncorrectNames, incorrectNames = validateFormat(config, "reserved")
+	if hasIncorrectNames {
+		for incorrectName := range incorrectNames {
+			startsWith := reservedEnvVarRegex.FindString(incorrectName)
+
+			errors = append(errors, &ConfigError{
+				Type:    "reserved",
+				Message: fmt.Sprintf(ConfigReservedNameErrorString, incorrectName, startsWith),
+			})
+		}
+	}
+
+	if len(errors) == 0 {
+		return nil
+	}
+
+	return &ConfigErrors{
+		Errors: errors,
+	}
 }
 
 // checkForDuplicates checks for duplicate environment variables in a keel project
@@ -278,16 +312,44 @@ func contains(s []Input, e string) bool {
 	return false
 }
 
-func generateOutput(validationErrors []ConfigErrors) error {
-	var errorString string
-	for _, v := range validationErrors {
-		if v.Type == "duplicate" {
-			errorString = errorString + fmt.Sprintf(DuplicateErrorString, color.RedString(v.Key), v.Environments)
-		}
-		if v.Type == "missing" {
-			errorString = errorString + fmt.Sprintf(RequiredErrorString, color.RedString(v.Key), v.Environments)
+// validateFormat checks if any environment variables in default, staging and production environments
+// are written in the wrong format. Must be screaming snakecase or a non-reserved name.
+func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]bool) {
+	defaultEnv := config.Environment.Default
+	stagingEnv := config.Environment.Staging
+	productionEnv := config.Environment.Production
+	testEnv := config.Environment.Test
+
+	envsToCheck := [][]Input{defaultEnv, stagingEnv, productionEnv, testEnv}
+
+	incorrectNamesMap := make(map[string]bool)
+
+	for _, environment := range envsToCheck {
+		for _, envVar := range environment {
+			if ok := incorrectNamesMap[envVar.Name]; ok {
+				continue
+			}
+
+			switch formatType {
+			case "snakecase":
+				ssName := strcase.ToScreamingSnake(envVar.Name)
+
+				if envVar.Name != ssName {
+					incorrectNamesMap[envVar.Name] = true
+				}
+				continue
+			case "reserved":
+				found := reservedEnvVarRegex.FindString(envVar.Name)
+
+				if found != "" {
+					incorrectNamesMap[envVar.Name] = true
+				}
+				continue
+			default:
+				break
+			}
 		}
 	}
 
-	return errors.New(errorString)
+	return len(incorrectNamesMap) > 0, incorrectNamesMap
 }

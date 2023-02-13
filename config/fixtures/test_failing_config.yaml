@@ -8,7 +8,7 @@ environment:
         - "staging"
         - "production"
   staging:
-    - name: "TEST2"
+    - name: "TEST_2"
       value: "test2"
       required:
         - "production"

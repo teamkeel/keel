@@ -8,7 +8,7 @@ environment:
       value: "test"
 
   staging:
-    - name: "TEST2"
+    - name: "TEST_2"
       value: "test2"
 
 secrets:
