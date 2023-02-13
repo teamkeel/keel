@@ -20,7 +20,6 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
-	"golang.org/x/exp/maps"
 )
 
 type TestOutput struct {
@@ -90,7 +89,9 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			"DB_CONN":      dbConnString,
 		}
 
-		maps.Copy(opts.EnvVars, keelEnvVars)
+		for key, value := range keelEnvVars {
+			opts.EnvVars[key] = value
+		}
 
 		functionsServer, err = node.RunDevelopmentServer(opts.Dir, &node.ServerOpts{
 			EnvVars: opts.EnvVars,
