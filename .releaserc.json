@@ -5,7 +5,7 @@
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
       ["@semantic-release/exec", {
-        "prepareCmd": "./publishcli.sh ${nextRelease.version}"
+        "prepareCmd": "bash ./publishcli.sh ${nextRelease.version}"
       }],
       [
         "@semantic-release/git",
