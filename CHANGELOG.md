@@ -1,3 +1,10 @@
+# [0.261.0](https://github.com/teamkeel/keel/compare/v0.260.0...v0.261.0) (2023-02-13)
+
+
+### Features
+
+* revert [#774](https://github.com/teamkeel/keel/issues/774) ([#775](https://github.com/teamkeel/keel/issues/775)) ([4b77cb6](https://github.com/teamkeel/keel/commit/4b77cb6b73fab3d14e51d7d4473283f5ab4d7470))
+
 # [0.260.0](https://github.com/teamkeel/keel/compare/v0.259.0...v0.260.0) (2023-02-13)
 
 
