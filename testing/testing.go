@@ -85,8 +85,8 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	if node.HasFunctions(schema) {
 		keelEnvVars := map[string]string{
-			"DB_CONN_TYPE": "pg",
-			"DB_CONN":      dbConnString,
+			"KEEL_DB_CONN_TYPE": "pg",
+			"KEEL_DB_CONN":      dbConnString,
 		}
 
 		for key, value := range keelEnvVars {
@@ -164,8 +164,8 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	cmd.Dir = opts.Dir
 	cmd.Env = append(os.Environ(), []string{
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/testingactionsapi/json", runtimePort),
-		"DB_CONN_TYPE=pg",
-		fmt.Sprintf("DB_CONN=%s", dbConnString),
+		"KEEL_DB_CONN_TYPE=pg",
+		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 	}...)
 
 	b, err = cmd.CombinedOutput()

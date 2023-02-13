@@ -4,8 +4,8 @@ const { sql } = require("kysely");
 const { getDatabase } = require("./database");
 const KSUID = require("ksuid");
 
-process.env.DB_CONN_TYPE = "pg";
-process.env.DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
+process.env.KEEL_DB_CONN_TYPE = "pg";
+process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 
 let personAPI;
 let postAPI;

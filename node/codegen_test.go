@@ -741,8 +741,8 @@ func TestTestingActionExecutor(t *testing.T) {
 	cmd = exec.Command("npx", "vitest", "run", "--config", ".build/vitest.config.mjs")
 	cmd.Dir = tmpDir
 	cmd.Env = append(os.Environ(), []string{
-		"DB_CONN_TYPE=pg",
-		"DB_CONN=postgresql://postgres:postgres@localhost:8001/keel",
+		"KEEL_DB_CONN_TYPE=pg",
+		"KEEL_DB_CONN=postgresql://postgres:postgres@localhost:8001/keel",
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=%s", server.URL),
 	}...)
 
