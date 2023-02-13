@@ -1,3 +1,10 @@
+# [0.257.0](https://github.com/teamkeel/keel/compare/v0.256.0...v0.257.0) (2023-02-13)
+
+
+### Features
+
+* compile cli for apple silicon ([#770](https://github.com/teamkeel/keel/issues/770)) ([8891b41](https://github.com/teamkeel/keel/commit/8891b411b8add123bd9400834fe8f89d8f9dbb01))
+
 # [0.256.0](https://github.com/teamkeel/keel/compare/v0.255.0...v0.256.0) (2023-02-13)
 
 
