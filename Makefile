@@ -10,7 +10,6 @@ ifdef RUN
 RUNARG=-run $(RUN) -v
 endif
 
-
 build:
 	go build -o ./bin/keel cmd/keel/main.go
 
