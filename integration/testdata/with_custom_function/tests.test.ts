@@ -261,3 +261,14 @@ test("relationships - findMany using multiple belongsTo relationships", async ()
     "Oliver Twist",
   ]);
 });
+
+test("using an environment variable", async () => {
+  const res = await actions.createPersonWithEnvVar({
+    name: "adam",
+    gender: "non-binary",
+    niNumber: "123",
+  });
+
+  // see keelconfig.yaml
+  expect(res.name).toEqual("test");
+});

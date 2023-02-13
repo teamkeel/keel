@@ -50,6 +50,8 @@ func (p *ProjectConfig) GetEnvVars(env string) map[string]string {
 	return nameToValueMap
 }
 
+// AllEnvironmentVariables returns a slice of all of the unique environment variable key names
+// defined across all environments
 func (c *ProjectConfig) AllEnvironmentVariables() []string {
 	var environmentVariables []string
 

@@ -32,6 +32,7 @@ type RunnerOpts struct {
 	Pattern         string
 	DbConnInfo      *db.ConnectionInfo
 	FunctionsOutput io.Writer
+	EnvVars         map[string]string
 }
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {
@@ -64,7 +65,12 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	dbConnString := opts.DbConnInfo.WithDatabase(dbName).String()
 
-	files, err := node.Generate(context, opts.Dir, node.WithDevelopmentServer(true))
+	files, err := node.Generate(
+		context,
+		opts.Dir,
+		node.WithDevelopmentServer(true),
+	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -78,13 +84,20 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	var functionsTransport functions.Transport
 
 	if node.HasFunctions(schema) {
+		keelEnvVars := map[string]string{
+			"DB_CONN_TYPE": "pg",
+			"DB_CONN":      dbConnString,
+		}
+
+		for key, value := range keelEnvVars {
+			opts.EnvVars[key] = value
+		}
+
 		functionsServer, err = node.RunDevelopmentServer(opts.Dir, &node.ServerOpts{
-			EnvVars: map[string]string{
-				"DB_CONN_TYPE": "pg",
-				"DB_CONN":      dbConnString,
-			},
-			Output: opts.FunctionsOutput,
+			EnvVars: opts.EnvVars,
+			Output:  opts.FunctionsOutput,
 		})
+
 		if err != nil {
 			if functionsServer != nil && functionsServer.Output() != "" {
 				return nil, errors.New(functionsServer.Output())

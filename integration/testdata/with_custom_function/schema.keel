@@ -15,6 +15,7 @@ model Person {
         list listPeople(gender)
         delete deletePerson(id)
         update updatePerson(id) with (name, gender, niNumber)
+        create createPersonWithEnvVar() with (name, gender, niNumber)
     }
 
     @permission(
