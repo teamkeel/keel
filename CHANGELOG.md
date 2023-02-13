@@ -1,3 +1,11 @@
+# [0.255.0](https://github.com/teamkeel/keel/compare/v0.254.0...v0.255.0) (2023-02-13)
+
+
+### Features
+
+* add missing supported db type ([c0d6d32](https://github.com/teamkeel/keel/commit/c0d6d321ce920aa8fd7d24d57dbb5050726e2361))
+* validate database value input types ([6efce54](https://github.com/teamkeel/keel/commit/6efce54ff679064608220c429820a487d42e4e92))
+
 # [0.254.0](https://github.com/teamkeel/keel/compare/v0.253.1...v0.254.0) (2023-02-11)
 
 
