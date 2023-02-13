@@ -8,7 +8,6 @@ import (
 
 var Version string
 
-// diffCmd represents the diff command
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the Keel CLI version",
