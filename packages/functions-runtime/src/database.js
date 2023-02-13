@@ -12,12 +12,12 @@ function mustEnv(key) {
 }
 
 function getDialect() {
-  const dbConnType = process.env["DB_CONN_TYPE"];
+  const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
   switch (dbConnType) {
     case "pg":
       return new PostgresDialect({
         pool: new pg.Pool({
-          connectionString: mustEnv("DB_CONN"),
+          connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
 
@@ -26,16 +26,16 @@ function getDialect() {
         mode: "postgres",
         driver: {
           client: new RDSDataService({
-            region: mustEnv("DB_REGION"),
+            region: mustEnv("KEEL_DB_REGION"),
           }),
-          database: mustEnv("DB_NAME"),
-          secretArn: mustEnv("DB_SECRET_ARN"),
-          resourceArn: mustEnv("DB_RESOURCE_ARN"),
+          database: mustEnv("KEEL_DB_NAME"),
+          secretArn: mustEnv("KEEL_DB_SECRET_ARN"),
+          resourceArn: mustEnv("KEEL_DB_RESOURCE_ARN"),
         },
       });
 
     default:
-      throw Error("unexpected DB_CONN_TYPE: " + dbConnType);
+      throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
   }
 }
 

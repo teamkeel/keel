@@ -113,8 +113,8 @@ func runDevelopmentServerTest(t *testing.T, files node.GeneratedFiles, fn func(*
 
 	server, err := node.RunDevelopmentServer(tmpDir, &node.ServerOpts{
 		EnvVars: map[string]string{
-			"DB_CONN_TYPE": "pg",
-			"DB_CONN":      "postgresql://postgres:postgres@localhost:8001/keel",
+			"KEEL_DB_CONN_TYPE": "pg",
+			"KEEL_DB_CONN":      "postgresql://postgres:postgres@localhost:8001/keel",
 		},
 	})
 	t.Cleanup(func() {

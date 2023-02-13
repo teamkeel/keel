@@ -102,8 +102,8 @@ var runCmd = &cobra.Command{
 			}
 
 			keelEnvVars := map[string]string{
-				"DB_CONN_TYPE": "pg",
-				"DB_CONN":      dbConnInfo.String(),
+				"KEEL_DB_CONN_TYPE": "pg",
+				"KEEL_DB_CONN":      dbConnInfo.String(),
 			}
 
 			// add in keel internal env vars - if the original env vars declares one of the internal env vars, it's
