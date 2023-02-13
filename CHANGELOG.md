@@ -1,3 +1,10 @@
+# [0.260.0](https://github.com/teamkeel/keel/compare/v0.259.0...v0.260.0) (2023-02-13)
+
+
+### Features
+
+* compress binary with upx ([#774](https://github.com/teamkeel/keel/issues/774)) ([2150700](https://github.com/teamkeel/keel/commit/21507002173c902fce1f445be34c9e1f4543d496))
+
 # [0.259.0](https://github.com/teamkeel/keel/compare/v0.258.0...v0.259.0) (2023-02-13)
 
 
