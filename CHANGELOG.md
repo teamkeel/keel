@@ -1,3 +1,10 @@
+# [0.262.0](https://github.com/teamkeel/keel/compare/v0.261.0...v0.262.0) (2023-02-14)
+
+
+### Features
+
+* message type in proto schema ([#777](https://github.com/teamkeel/keel/issues/777)) ([f038f97](https://github.com/teamkeel/keel/commit/f038f97682bcf74a73a94486b367ecab5bd1ab93))
+
 # [0.261.0](https://github.com/teamkeel/keel/compare/v0.260.0...v0.261.0) (2023-02-13)
 
 
