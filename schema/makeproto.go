@@ -1,8 +1,10 @@
 package schema
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
@@ -29,6 +31,7 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				panic("Case not recognized")
 			}
 		}
+
 		for _, envVar := range parserSchema.EnvironmentVariables {
 			scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
 				Name: envVar,
@@ -37,6 +40,69 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	}
 
 	return scm.proto
+}
+
+// Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
+func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
+	switch action.Type.Value {
+	// create / delete
+	case parser.ActionTypeCreate:
+	case parser.ActionTypeGet:
+	case parser.ActionTypeUpdate:
+		wheres := []*proto.MessageField{}
+		values := []*proto.MessageField{}
+
+		for _, where := range action.Inputs {
+			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
+
+			wheres = append(wheres, &proto.MessageField{
+				Name:     where.Name(),
+				Type:     typeInfo,
+				Target:   target,
+				Optional: where.Optional,
+			})
+		}
+
+		for _, value := range action.With {
+			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
+
+			values = append(values, &proto.MessageField{
+				Name:     value.Name(),
+				Type:     typeInfo,
+				Target:   target,
+				Optional: value.Optional,
+			})
+		}
+
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name:   fmt.Sprintf("%sWhere", strcase.ToCamel(action.Name.Value)),
+			Fields: wheres,
+		})
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name:   fmt.Sprintf("%sValues", strcase.ToCamel(action.Name.Value)),
+			Fields: values,
+		})
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Fields: []*proto.MessageField{
+				{
+					Name: "where",
+					Type: &proto.TypeInfo{
+						MessageName: wrapperspb.String(fmt.Sprintf("%sWhere", action.Name.Value)),
+					},
+				},
+				{
+					Name: "values",
+					Type: &proto.TypeInfo{
+						MessageName: wrapperspb.String(fmt.Sprintf("%sValues", action.Name.Value)),
+					},
+				},
+			},
+		})
+	case parser.ActionTypeDelete:
+	case parser.ActionTypeList:
+
+	}
 }
 
 func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
@@ -291,13 +357,13 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {
 	protoOps := []*proto.Operation{}
 	for _, parserFunc := range parserFunctions {
-		protoOp := scm.makeOp(parserFunc, modelName, impl)
+		protoOp := scm.makeOperation(parserFunc, modelName, impl)
 		protoOps = append(protoOps, protoOp)
 	}
 	return protoOps
 }
 
-func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
+func (scm *Builder) makeOperation(parserFunction *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
 		ModelName:      modelName,
 		Name:           parserFunction.Name.Value,
@@ -306,6 +372,8 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 	}
 
 	model := query.Model(scm.asts, modelName)
+
+	scm.makeActionInputMessages(model, parserFunction, impl)
 
 	for _, input := range parserFunction.Inputs {
 		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_READ, impl)
@@ -320,6 +388,72 @@ func (scm *Builder) makeOp(parserFunction *parser.ActionNode, modelName string, 
 	scm.applyActionAttributes(parserFunction, protoOp, modelName)
 
 	return protoOp
+}
+
+func (scm *Builder) inferParserInputType(
+	model *parser.ModelNode,
+	op *parser.ActionNode,
+	input *parser.ActionInputNode,
+	impl proto.OperationImplementation,
+) (t *proto.TypeInfo, target []string) {
+	idents := input.Type.Fragments
+	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
+
+	var modelName *wrapperspb.StringValue
+	var fieldName *wrapperspb.StringValue
+	var enumName *wrapperspb.StringValue
+
+	if protoType == proto.Type_TYPE_ENUM {
+		enumName = &wrapperspb.StringValue{
+			Value: idents[0].Fragment,
+		}
+	}
+
+	if protoType == proto.Type_TYPE_UNKNOWN {
+		// If we haven't been able to resolve the type of the input it
+		// must be a model field, so we need to resolve it
+
+		var field *parser.FieldNode
+		currModel := model
+
+		for _, ident := range idents {
+			// For operations, inputs that refer to model fields are handled automatically
+			// by the runtime. For this to work we need to store the path to the field
+			// that the input refers to, as it may be in a nested model.
+			if impl == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
+				target = append(target, ident.Fragment)
+			}
+
+			field = query.ModelField(currModel, ident.Fragment)
+			m := query.Model(scm.asts, field.Type)
+			if m != nil {
+				currModel = m
+			}
+		}
+
+		protoType = scm.parserFieldToProtoTypeInfo(field).Type
+
+		modelName = &wrapperspb.StringValue{
+			Value: currModel.Name.Value,
+		}
+		fieldName = &wrapperspb.StringValue{
+			Value: field.Name.Value,
+		}
+
+		if protoType == proto.Type_TYPE_ENUM {
+			enumName = &wrapperspb.StringValue{
+				Value: field.Type,
+			}
+		}
+	}
+
+	return &proto.TypeInfo{
+		Type:      protoType,
+		Repeated:  input.Repeated,
+		ModelName: modelName,
+		FieldName: fieldName,
+		EnumName:  enumName,
+	}, target
 }
 
 func (scm *Builder) makeOperationInput(
