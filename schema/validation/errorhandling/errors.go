@@ -67,6 +67,7 @@ const (
 	ErrorDefaultExpressionNeeded            = "E050"
 	ErrorDefaultExpressionOperatorPresent   = "E051"
 	ErrorRelationAttrOnWrongFieldType       = "E052"
+	ErrorRelationAttrOnNonRepeatedField     = "E053"
 )
 
 type ErrorDetails struct {

@@ -201,3 +201,7 @@ en:
     short_message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
     message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
     hint: "Did you mean make to make field '{{.FieldName}}' refer to another Model?"
+  E053:
+    short_message: "Field '{{.FieldName}}' is not repeated, i.e. [], so it cannot have the @relation attribute"
+    message: "Field '{{.FieldName}}' is not repeated, i.e. [], so it cannot have the @relation attribute"
+    hint: "Did you mean make to add [] to the field?"

@@ -120,8 +120,8 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 				continue
 			}
 
-			// Make sure @relation only used on fields of type Model
-			if !query.IsFieldOfTypeModel(asts, thisField.Name.Value) {
+			// Make sure @relation is only used on fields of type Model
+			if !query.IsFieldOfTypeModel(asts, thisField.Type) {
 				errs.Append(
 					errorhandling.ErrorRelationAttrOnWrongFieldType,
 					map[string]string{
@@ -130,7 +130,17 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"Suggestion": thisField.Name.Value,
 					},
 					thisField)
-				continue // Additional @relation checks for this field are meaningful in this case.
+				continue // Additional @relation checks for this field are not meaningful in this case.
+			}
+
+			// Make sure thisField is repeated.
+			if !thisField.Repeated {
+				errs.Append(
+					errorhandling.ErrorRelationAttrOnNonRepeatedField,
+					map[string]string{
+						"FieldName": thisField.Name.Value,
+					},
+					thisField)
 			}
 
 			// must not be repeated

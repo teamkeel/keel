@@ -55,8 +55,11 @@ func TestSchema(t *testing.T) {
 			var expectedJSON []byte
 			var actualJSON []byte
 
-			// XXXX remove this
 			var actualProtoJSONPretty string
+
+			// This is used when expected error json differs from actual error json,
+			// and provides something you can copy and paste into your errors.json file,
+			// once you've got it looking right.
 			var prettyJSONErr string
 
 			if expectedProto, ok := filesByName["proto.json"]; ok {
@@ -73,7 +76,6 @@ func TestSchema(t *testing.T) {
 				capturedErr := err
 				actualJSON, err = json.Marshal(capturedErr)
 				require.NoError(t, err)
-				// XXXX remove next two lines
 				q, err := json.MarshalIndent(capturedErr, "", "  ")
 				prettyJSONErr = string(q)
 				require.NoError(t, err)
@@ -92,8 +94,7 @@ func TestSchema(t *testing.T) {
 			case jsondiff.FullMatch:
 				// success
 			case jsondiff.SupersetMatch, jsondiff.NoMatch:
-				// XXXX remove this
-				fmt.Printf("XXXX pretty json error: \n%s\n", prettyJSONErr)
+				fmt.Printf("Pretty json error: \n%s\n", prettyJSONErr)
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")
