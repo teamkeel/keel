@@ -45,7 +45,6 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 // Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
 func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
 	switch action.Type.Value {
-	// create / delete
 	case parser.ActionTypeCreate:
 		values := []*proto.MessageField{}
 
