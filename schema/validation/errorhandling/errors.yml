@@ -202,6 +202,10 @@ en:
     message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
     hint: "Did you mean make to make field '{{.FieldName}}' refer to another Model?"
   E053:
-    short_message: "Field '{{.FieldName}}' is not repeated, i.e. [], so it cannot have the @relation attribute"
-    message: "Field '{{.FieldName}}' is not repeated, i.e. [], so it cannot have the @relation attribute"
-    hint: "Did you mean make to add [] to the field?"
+    short_message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
+    message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
+    hint: "For many-to-one relationships, you put the @relation on the non-repeated end of the relationship"
+  E054:
+    short_message: "The @relation value should be a simple string"
+    message: "The @relation value should be a simple string"
+    hint: "Like myFieldName"  

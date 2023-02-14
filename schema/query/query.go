@@ -217,6 +217,37 @@ func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 	return false
 }
 
+// FieldGetAttribute returns the attribute of the given name on the given field,
+// or nil, to signal that it doesn't have one.
+func FieldGetAttribute(field *parser.FieldNode, name string) *parser.AttributeNode {
+	for _, attr := range field.Attributes {
+		if attr.Name.Value == name {
+			return attr
+		}
+	}
+	return nil
+}
+
+// AttributeValueAsIdentifier looks at the given attribute,
+// to see if it boils down to being a simple identifier.
+func AttributeValueAsIdentifier(attr *parser.AttributeNode, attributeName string) (theString string, ok bool) {
+	if len(attr.Arguments) != 1 {
+		return "", false
+	}
+	expr := attr.Arguments[0].Expression
+
+	// todo XXXX the remainder of this function should be moved into the expressions package
+	operand, err := expr.ToValue()
+	if err != nil {
+		return "", false
+	}
+	if operand.Ident == nil {
+		return "", false
+	}
+	theString = operand.Ident.Fragments[0].Fragment
+	return theString, true
+}
+
 func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
 }

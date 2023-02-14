@@ -109,6 +109,7 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 	return errs
 }
 
+// Make sure the @relation attribute is used only in appropriate places.
 func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		// init table of previous uses
@@ -116,7 +117,9 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 		for _, thisField := range query.ModelFields(model) {
 
 			// Only relevant if the field has @relation
-			if !query.FieldHasAttribute(thisField, parser.AttributeRelation) {
+			relationAttr := query.FieldGetAttribute(thisField, parser.AttributeRelation)
+
+			if relationAttr == nil {
 				continue
 			}
 
@@ -130,23 +133,41 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"Suggestion": thisField.Name.Value,
 					},
 					thisField)
-				continue // Additional @relation checks for this field are not meaningful in this case.
+				continue // Problem is too fundamental to merit remaining checks.
 			}
 
-			// Make sure thisField is repeated.
-			if !thisField.Repeated {
+			// Make sure @relation is only used on fields that are NOT repeated.
+			if thisField.Repeated {
 				errs.Append(
 					errorhandling.ErrorRelationAttrOnNonRepeatedField,
 					map[string]string{
 						"FieldName": thisField.Name.Value,
 					},
 					thisField)
+				continue // Problem is too fundamental to merit remaining checks.
 			}
 
-			// must not be repeated
-			// must be a name of a field in the related field [short circuit]
-			// the related field must be type model [short circuit]
-			// the related field must point to the originating field's model name [short circuit]
+			// Make sure that the attribute's argument (which is unfortunately a
+			// list of expressions), boils down to just a single plain string. E.g. @relation(written)
+			var attributeValueString string
+			var ok bool
+			if attributeValueString, ok = query.AttributeValueAsIdentifier(relationAttr, parser.AttributeRelation); !ok {
+				errs.Append(
+					errorhandling.ErrorRelationAttributShouldBeIdentifier,
+					map[string]string{
+						"FieldName": thisField.Name.Value,
+					},
+					relationAttr)
+
+				continue // Problem is too fundamental to merit remaining checks.
+			}
+			_ = attributeValueString
+
+			// Make sure the value of the @relation attribute (e.g. "written"), exists as a
+			// field in the related model.
+
+			// said field must be of type model
+			// said field's model type must point back to this model
 			// must not have been used thus previously [short circuit]
 			// the related field must be multiple
 			// update table of previous uses by this model
