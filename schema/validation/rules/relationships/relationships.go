@@ -109,6 +109,42 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 	return errs
 }
 
+func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	for _, model := range query.Models(asts) {
+		// init table of previous uses
+
+		for _, thisField := range query.ModelFields(model) {
+
+			// Only relevant if the field has @relation
+			if !query.FieldHasAttribute(thisField, parser.AttributeRelation) {
+				continue
+			}
+
+			// Make sure @relation only used on fields of type Model
+			if !query.IsFieldOfTypeModel(asts, thisField.Name.Value) {
+				errs.Append(
+					errorhandling.ErrorRelationAttrOnWrongFieldType,
+					map[string]string{
+						"FieldName":  thisField.Name.Value,
+						"WrongType":  thisField.Type,
+						"Suggestion": thisField.Name.Value,
+					},
+					thisField)
+				continue // Additional @relation checks for this field are meaningful in this case.
+			}
+
+			// must not be repeated
+			// must be a name of a field in the related field [short circuit]
+			// the related field must be type model [short circuit]
+			// the related field must point to the originating field's model name [short circuit]
+			// must not have been used thus previously [short circuit]
+			// the related field must be multiple
+			// update table of previous uses by this model
+		}
+	}
+	return errs
+}
+
 // When ModelA has a HasMany relationship field that references ModelB, then it is invalid for
 // ModelB to have more than one HasOne relation field that refers to ModelA.
 //

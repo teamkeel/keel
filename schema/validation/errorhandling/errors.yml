@@ -197,3 +197,7 @@ en:
     short_message: "default expression doesn't support operators"
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
+  E052:
+    short_message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
+    message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
+    hint: "Did you mean make to make field '{{.FieldName}}' refer to another Model?"

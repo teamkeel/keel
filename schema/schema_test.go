@@ -2,6 +2,7 @@ package schema_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 
@@ -32,8 +33,6 @@ func TestSchema(t *testing.T) {
 
 		testCaseDir := testdataDir + "/" + testCase.Name()
 
-		var actualJSONPretty string
-
 		t.Run(testCase.Name(), func(t *testing.T) {
 
 			files, err := os.ReadDir(testCaseDir)
@@ -56,20 +55,28 @@ func TestSchema(t *testing.T) {
 			var expectedJSON []byte
 			var actualJSON []byte
 
+			// XXXX remove this
+			var actualProtoJSONPretty string
+			var prettyJSONErr string
+
 			if expectedProto, ok := filesByName["proto.json"]; ok {
 				require.NoError(t, err)
 				expectedJSON = expectedProto
 				actualJSON, err = protojson.Marshal(protoSchema)
-				actualJSONPretty = protojson.Format(protoSchema)
-				_ = actualJSONPretty
 				require.NoError(t, err)
+				actualProtoJSONPretty = protojson.Format(protoSchema)
+				_ = actualProtoJSONPretty
 
 			} else if expectedErrors, ok := filesByName["errors.json"]; ok {
 				require.NotNil(t, err, "expected there to be validation errors")
 				expectedJSON = expectedErrors
-				actualJSON, err = json.Marshal(err)
+				capturedErr := err
+				actualJSON, err = json.Marshal(capturedErr)
 				require.NoError(t, err)
-
+				// XXXX remove next two lines
+				q, err := json.MarshalIndent(capturedErr, "", "  ")
+				prettyJSONErr = string(q)
+				require.NoError(t, err)
 			} else {
 				// if no proto.json file or errors.json file is provided then we assume this
 				// is a test case that is just expected to parse and validate with no errors
@@ -85,6 +92,8 @@ func TestSchema(t *testing.T) {
 			case jsondiff.FullMatch:
 				// success
 			case jsondiff.SupersetMatch, jsondiff.NoMatch:
+				// XXXX remove this
+				fmt.Printf("XXXX pretty json error: \n%s\n", prettyJSONErr)
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")

@@ -103,4 +103,5 @@ const (
 	AttributePrimaryKey = "primaryKey"
 	AttributeDefault    = "default"
 	AttributeValidate   = "validate"
+	AttributeRelation   = "relation"
 )

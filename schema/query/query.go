@@ -99,6 +99,11 @@ func Enums(asts []*parser.AST) (res []*parser.EnumNode) {
 	return res
 }
 
+func IsFieldOfTypeModel(asts []*parser.AST, name string) bool {
+	modelNames := ModelNames(asts)
+	return lo.Contains(modelNames, name)
+}
+
 func Enum(asts []*parser.AST, name string) *parser.EnumNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
