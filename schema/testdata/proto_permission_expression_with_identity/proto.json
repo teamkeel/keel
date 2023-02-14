@@ -6,11 +6,11 @@
         {
           "modelName":  "Account",
           "name":  "identity",
-          "optional": true,
           "type":  {
             "type":  "TYPE_MODEL",
             "modelName":  "Identity"
           },
+          "optional":  true,
           "unique":  true,
           "foreignKeyFieldName":  "identityId"
         },
@@ -52,11 +52,11 @@
             "type":  "TYPE_ID"
           },
           "optional":  true,
+          "unique":  true,
           "foreignKeyInfo":  {
             "relatedModelName":  "Identity",
             "relatedModelField":  "id"
-          },
-          "unique": true
+          }
         }
       ],
       "operations":  [
@@ -194,7 +194,65 @@
                 "type":  "TYPE_STRING"
               }
             }
-          ]
+          ],
+          "inputMessageName":  "AuthenticateInput",
+          "responseMessageName":  "AuthenticateResponse"
+        }
+      ]
+    }
+  ],
+  "messages":  [
+    {
+      "name":  "EmailPasswordInput",
+      "fields":  [
+        {
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
+          }
+        },
+        {
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name":  "AuthenticateInput",
+      "fields":  [
+        {
+          "name":  "createIfNotExists",
+          "type":  {
+            "type":  "TYPE_BOOL"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "emailPassword",
+          "type":  {
+            "type":  "TYPE_MESSAGE",
+            "messageName":  "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name":  "AuthenticateResponse",
+      "fields":  [
+        {
+          "name":  "identityCreated",
+          "type":  {
+            "type":  "TYPE_BOOL"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "token",
+          "type":  {
+            "type":  "TYPE_STRING"
+          }
         }
       ]
     }

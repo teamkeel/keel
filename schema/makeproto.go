@@ -12,38 +12,34 @@ import (
 
 // makeProtoModels derives and returns a proto.Schema from the given (known to be valid) set of parsed AST.
 func (scm *Builder) makeProtoModels() *proto.Schema {
-	protoSchema := &proto.Schema{}
+	scm.proto = &proto.Schema{}
 
 	for _, parserSchema := range scm.asts {
 		for _, decl := range parserSchema.Declarations {
 			switch {
 			case decl.Model != nil:
-				protoModel := scm.makeModel(decl)
-				protoSchema.Models = append(protoSchema.Models, protoModel)
+				scm.makeModel(decl)
 			case decl.Role != nil:
-				protoRole := scm.makeRole(decl)
-				protoSchema.Roles = append(protoSchema.Roles, protoRole)
+				scm.makeRole(decl)
 			case decl.API != nil:
-				protoAPI := scm.makeAPI(decl)
-				protoSchema.Apis = append(protoSchema.Apis, protoAPI)
+				scm.makeAPI(decl)
 			case decl.Enum != nil:
-				protoEnum := scm.makeEnum(decl)
-				protoSchema.Enums = append(protoSchema.Enums, protoEnum)
+				scm.makeEnum(decl)
 			default:
 				panic("Case not recognized")
 			}
 		}
 		for _, envVar := range parserSchema.EnvironmentVariables {
-			protoSchema.EnvironmentVariables = append(protoSchema.EnvironmentVariables, &proto.EnvironmentVariable{
+			scm.proto.EnvironmentVariables = append(scm.proto.EnvironmentVariables, &proto.EnvironmentVariable{
 				Name: envVar,
 			})
 		}
 	}
 
-	return protoSchema
+	return scm.proto
 }
 
-func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
+func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	parserModel := decl.Model
 	protoModel := &proto.Model{
 		Name: parserModel.Name.Value,
@@ -72,10 +68,12 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
 		protoOp := proto.Operation{
-			ModelName:      parser.ImplicitIdentityModelName,
-			Name:           parser.ImplicitAuthenticateOperationName,
-			Implementation: proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO,
-			Type:           proto.OperationType_OPERATION_TYPE_AUTHENTICATE,
+			ModelName:           parser.ImplicitIdentityModelName,
+			Name:                parser.ImplicitAuthenticateOperationName,
+			Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO,
+			Type:                proto.OperationType_OPERATION_TYPE_AUTHENTICATE,
+			InputMessageName:    "AuthenticateInput",
+			ResponseMessageName: "AuthenticateResponse",
 			Inputs: []*proto.OperationInput{
 				{
 					ModelName:     parser.ImplicitIdentityModelName,
@@ -124,13 +122,61 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) *proto.Model {
 			},
 		}
 
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name: "EmailPasswordInput",
+			Fields: []*proto.MessageField{
+				{
+					Name:     "email",
+					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+					Optional: false,
+				},
+				{
+					Name:     "password",
+					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+					Optional: false,
+				},
+			},
+		})
+
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name: "AuthenticateInput",
+			Fields: []*proto.MessageField{
+				{
+					Name:     "createIfNotExists",
+					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+					Optional: true,
+				},
+				{
+					Name:     "emailPassword",
+					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String("EmailPasswordInput")},
+					Optional: false,
+				},
+			},
+		})
+
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name: "AuthenticateResponse",
+			Fields: []*proto.MessageField{
+				{
+					Name:     "identityCreated",
+					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+					Optional: true,
+				},
+				{
+					Name:     "token",
+					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+					Optional: false,
+				},
+			},
+		})
+
 		protoModel.Operations = append(protoModel.Operations, &protoOp)
 	}
 
-	return protoModel
+	scm.proto.Models = append(scm.proto.Models, protoModel)
 }
 
-func (scm *Builder) makeRole(decl *parser.DeclarationNode) *proto.Role {
+func (scm *Builder) makeRole(decl *parser.DeclarationNode) {
 	parserRole := decl.Role
 	protoRole := &proto.Role{
 		Name: parserRole.Name.Value,
@@ -143,10 +189,10 @@ func (scm *Builder) makeRole(decl *parser.DeclarationNode) *proto.Role {
 			protoRole.Emails = append(protoRole.Emails, stripQuotes(parserEmail.Email))
 		}
 	}
-	return protoRole
+	scm.proto.Roles = append(scm.proto.Roles, protoRole)
 }
 
-func (scm *Builder) makeAPI(decl *parser.DeclarationNode) *proto.Api {
+func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 	parserAPI := decl.API
 	protoAPI := &proto.Api{
 		Name:      parserAPI.Name.Value,
@@ -163,10 +209,10 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) *proto.Api {
 			}
 		}
 	}
-	return protoAPI
+	scm.proto.Apis = append(scm.proto.Apis, protoAPI)
 }
 
-func (scm *Builder) makeEnum(decl *parser.DeclarationNode) *proto.Enum {
+func (scm *Builder) makeEnum(decl *parser.DeclarationNode) {
 	parserEnum := decl.Enum
 	enum := &proto.Enum{
 		Name:   parserEnum.Name.Value,
@@ -177,7 +223,7 @@ func (scm *Builder) makeEnum(decl *parser.DeclarationNode) *proto.Enum {
 			Name: value.Name.Value,
 		})
 	}
-	return enum
+	scm.proto.Enums = append(scm.proto.Enums, enum)
 }
 
 func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
