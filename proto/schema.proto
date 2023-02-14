@@ -12,6 +12,7 @@ message Schema {
     repeated Api apis = 3;
     repeated Enum enums = 4;
     repeated EnvironmentVariable environment_variables = 5;
+    repeated Message messages = 6;
 }
 
 message Model {
@@ -119,6 +120,13 @@ message Operation {
 
     // For operation types which have a non-uniform response and whose outputs defined in code.
     repeated OperationOutput outputs = 10;
+
+    // The name of the input message type for this operation.
+    string input_message_name = 11;
+
+    // The name of the response message type for this operation when not a built-in action. This is because
+    // built-in action responses are determined by the operation type (get, list, create, update, delete).
+    string response_message_name = 12;
 }
 
 message OperationInput {
@@ -230,6 +238,38 @@ message EnumValue {
     string name = 1;
 }
 
+message Message {
+    // Name of the input or response message. Either generated from built-in 
+    // actions, hard-coded into the runtime (e.g. AuthenticateResponseMessage), 
+    // or specified in the schema using the message keyword.
+    string name = 1;
+
+    // The input or response fields for this message.
+    repeated MessageField fields = 2;
+}
+
+message MessageField {
+    // Name of the parent message.
+    string message_name = 1;
+
+    // Name of the field.
+    string name = 2;
+
+    // The type of this field. 
+    TypeInfo type = 3;
+
+    // Set to true if this field is optional.
+    bool optional = 4;
+
+    // Only valid for implicit inputs on built-in actions (OPERATION_IMPLEMENTATION_AUTO)
+    // This field can be set to a path, from the current model, to a field that should
+    // be read from or written to automatically by the runtime.
+    // As an example if the parent model had a field called `item` which was a relationship to
+    // an `Item` model which itself had a field called `price`, and this input wanted to filter
+    // on the item price, then the value of `target` would be ["item", "price"].
+    repeated string target = 5;
+}
+
 message TypeInfo {
     // The type of the field.
     Type type = 1;
@@ -248,6 +288,9 @@ message TypeInfo {
     // This field indicates which field on `model_name` this type is referencing.
     // This field should only be set if `model_name` is set.
     google.protobuf.StringValue field_name = 5;
+
+    // Only valid within a Message
+    google.protobuf.StringValue message_name = 6;
 
     // If true then is type is an array of it's `type`
     bool repeated = 4;
@@ -326,4 +369,5 @@ enum Type {
     TYPE_SECRET = 14;
     // Used for hashing passwords and passcodes with the intention to verify admission.
     TYPE_PASSWORD = 15;
+    TYPE_MESSAGE = 16;
 }

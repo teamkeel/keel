@@ -22,6 +22,7 @@ type Builder struct {
 	asts        []*parser.AST
 	schemaFiles []reader.SchemaFile
 	Config      *config.ProjectConfig
+	proto       *proto.Schema
 }
 
 // MakeFromDirectory constructs a proto.Schema from the .keel files present in the given
