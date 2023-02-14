@@ -25,10 +25,10 @@ type Project struct {
 }
 
 type Environments struct {
-	Run        map[string]string `yaml:"run"`
-	Test       map[string]string `yaml:"test"`
-	Staging    map[string]string `yaml:"staging"`
-	Production map[string]string `yaml:"production"`
+	Development map[string]string `yaml:"development"`
+	Staging     map[string]string `yaml:"staging"`
+	Production  map[string]string `yaml:"production"`
+	Test        map[string]string `yaml:"test"`
 }
 
 type Options struct {
@@ -189,7 +189,7 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 
 	switch environment {
 	case "run":
-		environments.Run[key] = value
+		environments.Development[key] = value
 	case "test":
 		environments.Test[key] = value
 	case "staging":
@@ -206,9 +206,9 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 
 func createEnvironments() Environments {
 	return Environments{
-		Run:        make(map[string]string),
-		Test:       make(map[string]string),
-		Staging:    make(map[string]string),
-		Production: make(map[string]string),
+		Development: make(map[string]string),
+		Test:        make(map[string]string),
+		Staging:     make(map[string]string),
+		Production:  make(map[string]string),
 	}
 }
