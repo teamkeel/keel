@@ -39,6 +39,12 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				Name: envVar,
 			})
 		}
+
+		for _, secret := range parserSchema.Secrets {
+			scm.proto.Secrets = append(scm.proto.Secrets, &proto.Secret{
+				Name: secret,
+			})
+		}
 	}
 
 	return scm.proto

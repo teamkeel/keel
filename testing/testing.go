@@ -33,6 +33,7 @@ type RunnerOpts struct {
 	DbConnInfo      *db.ConnectionInfo
 	FunctionsOutput io.Writer
 	EnvVars         map[string]string
+	Secrets         map[string]string
 }
 
 func Run(opts *RunnerOpts) (*TestOutput, error) {
@@ -135,6 +136,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			ctx := r.Context()
 			database, _ := db.LocalFromConnection(ctx, mainDB)
 			ctx = runtimectx.WithDatabase(ctx, database)
+			ctx = runtimectx.SetCtxSecrets(ctx, opts.Secrets)
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
 			}

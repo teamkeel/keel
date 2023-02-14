@@ -9,6 +9,7 @@ const (
 	ContextIsAuthenticatedField = "isAuthenticated"
 	ContextNowField             = "now"
 	ContextEnvField             = "env"
+	ContextSecretField          = "secret"
 )
 
 var ContextFieldTypes = map[string]proto.Type{
@@ -16,4 +17,5 @@ var ContextFieldTypes = map[string]proto.Type{
 	ContextIsAuthenticatedField: proto.Type_TYPE_BOOL,
 	ContextNowField:             proto.Type_TYPE_DATETIME,
 	ContextEnvField:             proto.Type_TYPE_OBJECT,
+	ContextSecretField:          proto.Type_TYPE_SECRET,
 }

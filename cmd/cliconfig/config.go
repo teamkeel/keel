@@ -142,6 +142,49 @@ func (c *Config) SetSecret(environment, key, value string) error {
 	return c.writeConfig(*cfg)
 }
 
+func (c *Config) GetSecrets(environment string) (map[string]string, error) {
+	project, err := c.GetProject()
+	if err != nil {
+		return nil, err
+	}
+
+	switch environment {
+	case "development":
+		return project.Secrets.Development, nil
+	case "test":
+		return project.Secrets.Test, nil
+	case "staging":
+		return project.Secrets.Staging, nil
+	case "production":
+		return project.Secrets.Production, nil
+	default:
+		return nil, errors.New("invalid environment")
+	}
+}
+
+func (c *Config) AllSecrets() ([]string, error) {
+	project, err := c.GetProject()
+	if err != nil {
+		return nil, err
+	}
+
+	var secrets []string
+	for _, secret := range project.Secrets.Development {
+		secrets = append(secrets, secret)
+	}
+	for _, secret := range project.Secrets.Test {
+		secrets = append(secrets, secret)
+	}
+	for _, secret := range project.Secrets.Staging {
+		secrets = append(secrets, secret)
+	}
+	for _, secret := range project.Secrets.Production {
+		secrets = append(secrets, secret)
+	}
+
+	return secrets, nil
+}
+
 func (c *Config) writeConfig(cfg interface{}) error {
 	reflectCfg := reflect.ValueOf(cfg)
 	for i := 0; i < reflectCfg.NumField(); i++ {

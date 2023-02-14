@@ -17,6 +17,7 @@ type AST struct {
 
 	Declarations         []*DeclarationNode `@@*`
 	EnvironmentVariables []string
+	Secrets              []string
 }
 
 type DeclarationNode struct {

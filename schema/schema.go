@@ -131,6 +131,9 @@ func (scm *Builder) makeFromInputs(allInputFiles *reader.Inputs) (*proto.Schema,
 		// Add environment variables to the ASTs
 		scm.addEnvironmentVariables(declarations)
 
+		// Add secrets to the ASTs
+		scm.addSecrets(declarations)
+
 		asts = append(asts, declarations)
 	}
 
@@ -373,4 +376,12 @@ func (scm *Builder) addEnvironmentVariables(declarations *parser.AST) {
 	}
 
 	declarations.EnvironmentVariables = append(declarations.EnvironmentVariables, scm.Config.AllEnvironmentVariables()...)
+}
+
+func (scm *Builder) addSecrets(declarations *parser.AST) {
+	if scm.Config == nil {
+		return
+	}
+
+	declarations.Secrets = append(declarations.Secrets, scm.Config.AllSecrets()...)
 }
