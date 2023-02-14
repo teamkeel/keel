@@ -21,10 +21,10 @@ type UserConfig struct {
 }
 
 type Project struct {
-	Secrets Environments `yaml:"secrets"`
+	Secrets EnvironmentSecret `yaml:"secrets"`
 }
 
-type Environments struct {
+type EnvironmentSecret struct {
 	Development map[string]string `yaml:"development"`
 	Staging     map[string]string `yaml:"staging"`
 	Production  map[string]string `yaml:"production"`
@@ -32,22 +32,32 @@ type Environments struct {
 }
 
 type Options struct {
-	Path string
+	FileName string
 }
 
 func New(options *Options) *Config {
-	rootViper := viper.New()
+	viper := viper.New()
 
 	if options != nil {
-		rootViper.SetConfigFile(options.Path)
-		err := rootViper.ReadInConfig()
+		viper.SetConfigFile(options.FileName)
+		err := viper.ReadInConfig()
 		if os.IsNotExist(err) {
+			wd, err := os.Getwd()
+			if err != nil {
+				panic(err)
+			}
+
+			_, err = createEmptyConfig(viper, wd)
+			if err != nil {
+				panic(err)
+			}
 		} else if err != nil {
 			panic(err)
 		}
+
 		return &Config{
-			viper:      rootViper,
-			configPath: options.Path,
+			viper:      viper,
+			configPath: options.FileName,
 		}
 	}
 
@@ -60,15 +70,15 @@ func New(options *Options) *Config {
 
 	userConfigPath := path.Join(homeDir, UserConfigPartialPath)
 
-	rootViper.SetConfigFile(userConfigPath)
-	err = rootViper.ReadInConfig()
-	if os.IsNotExist(err) {
-	} else if err != nil {
+	viper.SetConfigFile(userConfigPath)
+
+	err = viper.ReadInConfig()
+	if err != nil {
 		panic(err)
 	}
 
 	return &Config{
-		viper:      rootViper,
+		viper:      viper,
 		configPath: userConfigPath,
 	}
 }
@@ -83,22 +93,7 @@ func (c *Config) GetConfig() (*UserConfig, error) {
 
 	b, err := os.ReadFile(c.configPath)
 	if os.IsNotExist(err) {
-		projects := make(map[string]Project)
-		project := Project{
-			Secrets: createEnvironments(),
-		}
-
-		projects[wd] = project
-		c.viper.Set("projects", projects)
-
-		err = c.viper.WriteConfig()
-		if err != nil {
-			return nil, err
-		}
-
-		return &UserConfig{
-			Projects: projects,
-		}, nil
+		return createEmptyConfig(c.viper, wd)
 	} else if err != nil {
 		return nil, err
 	}
@@ -177,8 +172,27 @@ func (c *Config) CreatePathIfNotExist(path string) error {
 	return nil
 }
 
-func createSecretEnvironments(environment, key, value string, secrets *Environments) Environments {
-	var environments Environments
+func createEmptyConfig(v *viper.Viper, wd string) (*UserConfig, error) {
+	projects := make(map[string]Project)
+	project := Project{
+		Secrets: createEnvironments(),
+	}
+
+	projects[wd] = project
+	v.Set("projects", projects)
+
+	err := v.WriteConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return &UserConfig{
+		Projects: projects,
+	}, nil
+}
+
+func createSecretEnvironments(environment, key, value string, secrets *EnvironmentSecret) EnvironmentSecret {
+	var environments EnvironmentSecret
 
 	if secrets == nil {
 		environments = createEnvironments()
@@ -188,7 +202,7 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 	}
 
 	switch environment {
-	case "run":
+	case "development":
 		environments.Development[key] = value
 	case "test":
 		environments.Test[key] = value
@@ -204,8 +218,8 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 	return environments
 }
 
-func createEnvironments() Environments {
-	return Environments{
+func createEnvironments() EnvironmentSecret {
+	return EnvironmentSecret{
 		Development: make(map[string]string),
 		Test:        make(map[string]string),
 		Staging:     make(map[string]string),

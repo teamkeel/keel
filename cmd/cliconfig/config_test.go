@@ -9,12 +9,12 @@ import (
 )
 
 func TestSetAndUpdateConfig(t *testing.T) {
-	filePath := "set_config.yaml"
-	c := New(&Options{Path: filePath})
+	fileName := "set_config.yaml"
+	c := New(&Options{FileName: fileName})
 	cfg, err := c.GetConfig()
 	assert.NoError(t, err)
 
-	configFile, err := os.ReadFile(filePath)
+	configFile, err := os.ReadFile(fileName)
 	assert.NoError(t, err)
 
 	var expected UserConfig
@@ -42,17 +42,17 @@ func TestSetAndUpdateConfig(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "updated", cfg.Projects[wd].Secrets.Staging["TEST_API_KEY"])
 
-	err = os.Remove(filePath)
+	err = os.Remove(fileName)
 	assert.NoError(t, err)
 }
 
 func TestGetConfig(t *testing.T) {
-	filePath := "get_config.yaml"
-	c := New(&Options{Path: filePath})
+	fileName := "get_config.yaml"
+	c := New(&Options{FileName: fileName})
 	cfg, err := c.GetConfig()
 	assert.NoError(t, err)
 
-	configFile, err := os.ReadFile(filePath)
+	configFile, err := os.ReadFile(fileName)
 	assert.NoError(t, err)
 
 	var expected UserConfig
@@ -61,6 +61,6 @@ func TestGetConfig(t *testing.T) {
 
 	assert.Equal(t, &expected, cfg)
 
-	err = os.Remove(filePath)
+	err = os.Remove(fileName)
 	assert.NoError(t, err)
 }
