@@ -47,21 +47,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	switch action.Type.Value {
 	// create / delete
 	case parser.ActionTypeCreate:
-	case parser.ActionTypeGet:
-	case parser.ActionTypeUpdate:
-		wheres := []*proto.MessageField{}
 		values := []*proto.MessageField{}
-
-		for _, where := range action.Inputs {
-			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
-
-			wheres = append(wheres, &proto.MessageField{
-				Name:     where.Name(),
-				Type:     typeInfo,
-				Target:   target,
-				Optional: where.Optional,
-			})
-		}
 
 		for _, value := range action.With {
 			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
@@ -75,11 +61,61 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   fmt.Sprintf("%sWhere", strcase.ToCamel(action.Name.Value)),
+			Name:   fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Fields: values,
+		})
+	case parser.ActionTypeGet, parser.ActionTypeDelete:
+		fields := []*proto.MessageField{}
+
+		for _, input := range action.Inputs {
+			typeInfo, target := scm.inferParserInputType(model, action, input, impl)
+
+			fields = append(fields, &proto.MessageField{
+				Name:     input.Name(),
+				Type:     typeInfo,
+				Target:   target,
+				Optional: input.Optional,
+			})
+		}
+
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name:   fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Fields: fields,
+		})
+	case parser.ActionTypeUpdate:
+		wheres := []*proto.MessageField{}
+
+		for _, where := range action.Inputs {
+			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
+
+			wheres = append(wheres, &proto.MessageField{
+				Name:     where.Name(),
+				Type:     typeInfo,
+				Target:   target,
+				Optional: where.Optional,
+			})
+		}
+
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name:   fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
 			Fields: wheres,
 		})
+
+		values := []*proto.MessageField{}
+
+		for _, value := range action.With {
+			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
+
+			values = append(values, &proto.MessageField{
+				Name:     value.Name(),
+				Type:     typeInfo,
+				Target:   target,
+				Optional: value.Optional,
+			})
+		}
+
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   fmt.Sprintf("%sValues", strcase.ToCamel(action.Name.Value)),
+			Name:   fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value)),
 			Fields: values,
 		})
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
@@ -88,20 +124,47 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				{
 					Name: "where",
 					Type: &proto.TypeInfo{
-						MessageName: wrapperspb.String(fmt.Sprintf("%sWhere", action.Name.Value)),
+						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
 				{
 					Name: "values",
 					Type: &proto.TypeInfo{
-						MessageName: wrapperspb.String(fmt.Sprintf("%sValues", action.Name.Value)),
+						MessageName: wrapperspb.String(fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
 			},
 		})
-	case parser.ActionTypeDelete:
 	case parser.ActionTypeList:
+		wheres := []*proto.MessageField{}
 
+		for _, where := range action.Inputs {
+			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
+
+			wheres = append(wheres, &proto.MessageField{
+				Name:     where.Name(),
+				Type:     typeInfo,
+				Target:   target,
+				Optional: where.Optional,
+			})
+		}
+
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name:   fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+			Fields: wheres,
+		})
+
+		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Fields: []*proto.MessageField{
+				{
+					Name: "where",
+					Type: &proto.TypeInfo{
+						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
+					},
+				},
+			},
+		})
 	}
 }
 

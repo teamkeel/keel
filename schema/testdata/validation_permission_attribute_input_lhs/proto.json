@@ -1,84 +1,84 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Post",
-      "fields":  [
+      "name": "Post",
+      "fields": [
         {
-          "modelName":  "Post",
-          "name":  "title",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Post",
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Post",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Post",
-          "name":  "createPost",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Post",
+          "name": "createPost",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "title",
-              "type":  {
-                "type":  "TYPE_STRING",
-                "modelName":  "Post",
-                "fieldName":  "title"
+              "modelName": "Post",
+              "operationName": "createPost",
+              "name": "title",
+              "type": {
+                "type": "TYPE_STRING",
+                "modelName": "Post",
+                "fieldName": "title"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "target": [
                 "title"
               ]
             },
             {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "name":  "coolTitle",
-              "type":  {
-                "type":  "TYPE_STRING"
+              "modelName": "Post",
+              "operationName": "createPost",
+              "name": "coolTitle",
+              "type": {
+                "type": "TYPE_STRING"
               },
-              "mode":  "INPUT_MODE_WRITE"
+              "mode": "INPUT_MODE_WRITE"
             }
           ],
-          "permissions":  [
+          "permissions": [
             {
-              "modelName":  "Post",
-              "operationName":  "createPost",
-              "expression":  {
-                "source":  "coolTitle == \"123\""
+              "modelName": "Post",
+              "operationName": "createPost",
+              "expression": {
+                "source": "coolTitle == \"123\""
               }
             }
           ]
@@ -86,173 +86,195 @@
       ]
     },
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "email",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
           },
-          "unique":  true
+          "unique": true
         },
         {
-          "modelName":  "Identity",
-          "name":  "password",
-          "type":  {
-            "type":  "TYPE_PASSWORD"
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Identity",
-          "name":  "authenticate",
-          "type":  "OPERATION_TYPE_AUTHENTICATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "OPERATION_TYPE_AUTHENTICATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "createIfNotExists",
-              "type":  {
-                "type":  "TYPE_BOOL"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "createIfNotExists",
+              "type": {
+                "type": "TYPE_BOOL"
               },
-              "optional":  true
+              "optional": true
             },
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "emailPassword",
-              "type":  {
-                "type":  "TYPE_OBJECT"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "emailPassword",
+              "type": {
+                "type": "TYPE_OBJECT"
               },
-              "inputs":  [
+              "inputs": [
                 {
-                  "modelName":  "Identity",
-                  "operationName":  "authenticate",
-                  "name":  "email",
-                  "type":  {
-                    "type":  "TYPE_STRING"
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "email",
+                  "type": {
+                    "type": "TYPE_STRING"
                   }
                 },
                 {
-                  "modelName":  "Identity",
-                  "operationName":  "authenticate",
-                  "name":  "password",
-                  "type":  {
-                    "type":  "TYPE_STRING"
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "password",
+                  "type": {
+                    "type": "TYPE_STRING"
                   }
                 }
               ]
             }
           ],
-          "outputs":  [
+          "outputs": [
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "identityCreated",
-              "type":  {
-                "type":  "TYPE_BOOL"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "identityCreated",
+              "type": {
+                "type": "TYPE_BOOL"
               }
             },
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "token",
-              "type":  {
-                "type":  "TYPE_STRING"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "token",
+              "type": {
+                "type": "TYPE_STRING"
               }
             }
           ],
-          "inputMessageName":  "AuthenticateInput",
-          "responseMessageName":  "AuthenticateResponse"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         }
       ]
     }
   ],
-  "messages":  [
+  "messages": [
     {
-      "name":  "EmailPasswordInput",
-      "fields":  [
+      "name": "CreatePostInput",
+      "fields": [
         {
-          "name":  "email",
-          "type":  {
-            "type":  "TYPE_STRING"
-          }
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "title"
+          },
+          "target": [
+            "title"
+          ]
         },
         {
-          "name":  "password",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "name": "coolTitle",
+          "type": {
+            "type": "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name":  "AuthenticateInput",
-      "fields":  [
+      "name": "EmailPasswordInput",
+      "fields": [
         {
-          "name":  "createIfNotExists",
-          "type":  {
-            "type":  "TYPE_BOOL"
-          },
-          "optional":  true
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
         },
         {
-          "name":  "emailPassword",
-          "type":  {
-            "type":  "TYPE_MESSAGE",
-            "messageName":  "EmailPasswordInput"
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name":  "AuthenticateResponse",
-      "fields":  [
+      "name": "AuthenticateInput",
+      "fields": [
         {
-          "name":  "identityCreated",
-          "type":  {
-            "type":  "TYPE_BOOL"
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
           },
-          "optional":  true
+          "optional": true
         },
         {
-          "name":  "token",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
           }
         }
       ]
