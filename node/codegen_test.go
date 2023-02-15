@@ -395,15 +395,15 @@ model Person {
 }
 	`
 	expected := `
-export interface UpdatePersonInputWhere {
-	id: string;
-}
-export interface UpdatePersonInputValues {
+export interface UpdatePersonValuesInput {
 	name: string;
 }
+export interface UpdatePersonWhereInput {
+	id: string;
+}
 export interface UpdatePersonInput {
-	where: UpdatePersonInputWhere;
-	values: UpdatePersonInputValues;
+	where: UpdatePersonWhereInput;
+	values: UpdatePersonValuesInput;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -424,12 +424,12 @@ model Person {
 }
 	`
 	expected := `
-export interface ListPeopleInputWhere {
+export interface ListPeopleWhereInput {
 	name: string;
 	some?: boolean | null;
 }
 export interface ListPeopleInput {
-	where: ListPeopleInputWhere;
+	where: ListPeopleWhereInput;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -455,12 +455,12 @@ model Person {
 }
 	`
 	expected := `
-export interface ListPeopleInputWhere {
+export interface ListPeopleWhereInput {
 	name: runtime.StringWhereCondition;
 	favouriteSport: SportWhereCondition;
 }
 export interface ListPeopleInput {
-	where: ListPeopleInputWhere;
+	where: ListPeopleWhereInput;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -539,13 +539,28 @@ export interface GetPersonInput {
 }
 export interface CreatePersonInput {
 }
+export interface UpdatePersonValuesInput {
+}
+export interface UpdatePersonWhereInput {
+}
 export interface UpdatePersonInput {
+	where: UpdatePersonWhereInput;
+	values: UpdatePersonValuesInput;
 }
 export interface DeletePersonInput {
 }
+export interface ListPeopleWhereInput {
+}
 export interface ListPeopleInput {
+	where: ListPeopleWhereInput;
+}
+export interface EmailPasswordInput {
+	email: string;
+	password: string;
 }
 export interface AuthenticateInput {
+	createIfNotExists?: boolean | null;
+	emailPassword: EmailPasswordInput;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -639,13 +654,19 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface PeopleByHobbyInputWhere {
+export interface PeopleByHobbyWhereInput {
 	hobby: sdk.HobbyWhereCondition;
 }
 export interface PeopleByHobbyInput {
-	where: PeopleByHobbyInputWhere;
+	where: PeopleByHobbyWhereInput;
+}
+export interface EmailPasswordInput {
+	email: string;
+	password: string;
 }
 export interface AuthenticateInput {
+	createIfNotExists?: boolean | null;
+	emailPassword: EmailPasswordInput;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -928,6 +949,10 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 		return d.Type != diffmatchpatch.DiffEqual
 	}) {
 		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
+
+		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
+		t.Errorf("\nActual:\n---------\n%s", normalise(w.String()))
+
 	}
 }
 

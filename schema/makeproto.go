@@ -125,14 +125,20 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			Fields: []*proto.MessageField{
 				{
-					Name:        "where",
+					Name: "where",
+					Optional: len(wheres) < 1 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
+						return f.Optional
+					}),
 					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
 						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
 				{
-					Name:        "values",
+					Name: "values",
+					Optional: len(values) < 1 || lo.EveryBy(values, func(f *proto.MessageField) bool {
+						return f.Optional
+					}),
 					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
 						MessageName: wrapperspb.String(fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value))),
@@ -164,7 +170,10 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			Fields: []*proto.MessageField{
 				{
-					Name:        "where",
+					Name: "where",
+					Optional: len(wheres) < 1 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
+						return f.Optional
+					}),
 					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
 						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
