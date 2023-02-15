@@ -69,6 +69,7 @@ const (
 	ErrorRelationAttrOnWrongFieldType       = "E052"
 	ErrorRelationAttrOnNonRepeatedField     = "E053"
 	ErrorRelationAttributShouldBeIdentifier = "E054"
+	ErrorRelationAttributeUnrecognizedField = "E055"
 )
 
 type ErrorDetails struct {

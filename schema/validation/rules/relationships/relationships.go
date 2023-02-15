@@ -4,10 +4,89 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
+	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
+
+// Make sure the @relation attribute is used properly.
+func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	for _, model := range query.Models(asts) {
+		// todo XXXX init table of previous uses
+
+		for _, thisField := range fieldsThatHaveRelationAttribute(model) {
+
+			relationAttr := query.FieldGetAttribute(thisField, parser.AttributeRelation)
+
+			// Make sure @relation is only used on fields of type Model
+			if !query.IsFieldOfTypeModel(asts, thisField.Type) {
+				errs.Append(
+					errorhandling.ErrorRelationAttrOnWrongFieldType,
+					map[string]string{
+						"FieldName":  thisField.Name.Value,
+						"WrongType":  thisField.Type,
+						"Suggestion": thisField.Name.Value,
+					},
+					thisField)
+				continue // Problem is too fundamental to merit remaining checks.
+			}
+
+			// Make sure @relation is only used on fields that are NOT repeated.
+			if thisField.Repeated {
+				errs.Append(
+					errorhandling.ErrorRelationAttrOnNonRepeatedField,
+					map[string]string{
+						"FieldName": thisField.Name.Value,
+					},
+					thisField)
+				continue // Problem is too fundamental to merit remaining checks.
+			}
+
+			// Make sure that the attribute's argument (which is unfortunately a
+			// list of expressions), boils down to just a single plain string. E.g. @relation(written)
+			var relatedFieldName string
+			var ok bool
+			if relatedFieldName, ok = query.AttributeValueAsIdentifier(relationAttr, parser.AttributeRelation); !ok {
+				errs.Append(
+					errorhandling.ErrorRelationAttributShouldBeIdentifier,
+					map[string]string{
+						"FieldName": thisField.Name.Value,
+					},
+					relationAttr)
+
+				continue // Problem is too fundamental to merit remaining checks.
+			}
+
+			// Make sure the value of the @relation attribute (e.g. "written"), exists as a
+			// field in the related model.
+			relatedModelName := thisField.Type
+			relatedModel := query.Model(asts, relatedModelName)
+			var relatedField *parser.FieldNode
+			if relatedField = query.Field(relatedModel, relatedFieldName); relatedField == nil {
+				fieldsAvailable := query.ModelFieldNames(relatedModel)
+				suggestedNames := formatting.HumanizeList(fieldsAvailable, formatting.DelimiterOr)
+				errs.Append(
+					errorhandling.ErrorRelationAttributeUnrecognizedField,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+						"RelatedModelName": relatedModelName,
+						"SuggestedNames":   suggestedNames,
+					},
+					relationAttr)
+				continue // Problem is too fundamental to merit remaining checks.
+			}
+
+			// said field must be of type model
+			// said field's model type must point back to this model
+			// must not have been used thus previously [short circuit]
+			// the related field must be multiple
+			// update table of previous uses by this model
+		}
+	}
+	return errs
+}
 
 func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	processed := map[string]bool{}
@@ -109,73 +188,6 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 	return errs
 }
 
-// Make sure the @relation attribute is used only in appropriate places.
-func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		// init table of previous uses
-
-		for _, thisField := range query.ModelFields(model) {
-
-			// Only relevant if the field has @relation
-			relationAttr := query.FieldGetAttribute(thisField, parser.AttributeRelation)
-
-			if relationAttr == nil {
-				continue
-			}
-
-			// Make sure @relation is only used on fields of type Model
-			if !query.IsFieldOfTypeModel(asts, thisField.Type) {
-				errs.Append(
-					errorhandling.ErrorRelationAttrOnWrongFieldType,
-					map[string]string{
-						"FieldName":  thisField.Name.Value,
-						"WrongType":  thisField.Type,
-						"Suggestion": thisField.Name.Value,
-					},
-					thisField)
-				continue // Problem is too fundamental to merit remaining checks.
-			}
-
-			// Make sure @relation is only used on fields that are NOT repeated.
-			if thisField.Repeated {
-				errs.Append(
-					errorhandling.ErrorRelationAttrOnNonRepeatedField,
-					map[string]string{
-						"FieldName": thisField.Name.Value,
-					},
-					thisField)
-				continue // Problem is too fundamental to merit remaining checks.
-			}
-
-			// Make sure that the attribute's argument (which is unfortunately a
-			// list of expressions), boils down to just a single plain string. E.g. @relation(written)
-			var attributeValueString string
-			var ok bool
-			if attributeValueString, ok = query.AttributeValueAsIdentifier(relationAttr, parser.AttributeRelation); !ok {
-				errs.Append(
-					errorhandling.ErrorRelationAttributShouldBeIdentifier,
-					map[string]string{
-						"FieldName": thisField.Name.Value,
-					},
-					relationAttr)
-
-				continue // Problem is too fundamental to merit remaining checks.
-			}
-			_ = attributeValueString
-
-			// Make sure the value of the @relation attribute (e.g. "written"), exists as a
-			// field in the related model.
-
-			// said field must be of type model
-			// said field's model type must point back to this model
-			// must not have been used thus previously [short circuit]
-			// the related field must be multiple
-			// update table of previous uses by this model
-		}
-	}
-	return errs
-}
-
 // When ModelA has a HasMany relationship field that references ModelB, then it is invalid for
 // ModelB to have more than one HasOne relation field that refers to ModelA.
 //
@@ -244,4 +256,14 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 	}
 
 	return errs
+}
+
+// fieldsThatHaveRelationAttribute provides a list of all the fields in the given model,
+// that have the @relation attribute.
+func fieldsThatHaveRelationAttribute(model *parser.ModelNode) []*parser.FieldNode {
+	allModelFields := query.ModelFields(model)
+	thoseWithRelationAttr := lo.Filter(allModelFields, func(f *parser.FieldNode, _ int) bool {
+		return query.FieldHasAttribute(f, parser.AttributeRelation)
+	})
+	return thoseWithRelationAttr
 }

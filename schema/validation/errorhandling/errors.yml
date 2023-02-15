@@ -208,4 +208,8 @@ en:
   E054:
     short_message: "The @relation value should be a simple string"
     message: "The @relation value should be a simple string"
-    hint: "Like myFieldName"  
+    hint: "Like myFieldName"
+  E055:
+    short_message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
+    message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
+    hint: "Did you mean one of: {{.SuggestedNames}}" 

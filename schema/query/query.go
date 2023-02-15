@@ -71,6 +71,16 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
+// Field provides the field of the given name from the given model. (Or nil).
+func Field(model *parser.ModelNode, name string) *parser.FieldNode {
+	for _, f := range ModelFields(model) {
+		if f.Name.Value == name {
+			return f
+		}
+	}
+	return nil
+}
+
 func IsModel(asts []*parser.AST, name string) bool {
 	return Model(asts, name) != nil
 }
