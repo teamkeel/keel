@@ -109,11 +109,6 @@ func Enums(asts []*parser.AST) (res []*parser.EnumNode) {
 	return res
 }
 
-func IsFieldOfTypeModel(asts []*parser.AST, name string) bool {
-	modelNames := ModelNames(asts)
-	return lo.Contains(modelNames, name)
-}
-
 func Enum(asts []*parser.AST, name string) *parser.EnumNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
@@ -236,26 +231,6 @@ func FieldGetAttribute(field *parser.FieldNode, name string) *parser.AttributeNo
 		}
 	}
 	return nil
-}
-
-// AttributeValueAsIdentifier looks at the given attribute,
-// to see if it boils down to being a simple identifier.
-func AttributeValueAsIdentifier(attr *parser.AttributeNode, attributeName string) (theString string, ok bool) {
-	if len(attr.Arguments) != 1 {
-		return "", false
-	}
-	expr := attr.Arguments[0].Expression
-
-	// todo the remainder of this function could / should be moved into the expressions package
-	operand, err := expr.ToValue()
-	if err != nil {
-		return "", false
-	}
-	if operand.Ident == nil {
-		return "", false
-	}
-	theString = operand.Ident.Fragments[0].Fragment
-	return theString, true
 }
 
 func FieldIsUnique(field *parser.FieldNode) bool {

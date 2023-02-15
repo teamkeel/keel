@@ -5,7 +5,6 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
-	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -15,10 +14,6 @@ import (
 
 // Make sure the @relation attribute is used properly.
 func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
-	// We accumulate a list of the related fields that referenced by
-	// @Relation attributes.
-	relatedFieldsCitedByAllModels := []*parser.FieldNode{}
 
 	for _, thisModel := range query.Models(asts) {
 
@@ -42,7 +37,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 			relationAttr := query.FieldGetAttribute(thisField, parser.AttributeRelation)
 
 			// Make sure @relation is only used on fields of type Model
-			if !query.IsFieldOfTypeModel(asts, thisField.Type) {
+			if !lo.Contains(query.ModelNames(asts), thisField.Type) {
 				errs.Append(
 					errorhandling.ErrorRelationAttrOnWrongFieldType,
 					map[string]string{
@@ -69,7 +64,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 			// list of expressions), boils down to just a single plain string. E.g. @relation(written)
 			var relatedFieldName string
 			var ok bool
-			if relatedFieldName, ok = query.AttributeValueAsIdentifier(relationAttr, parser.AttributeRelation); !ok {
+			if relatedFieldName, ok = attributeFirstArgAsIdentifier(relationAttr); !ok {
 				errs.Append(
 					errorhandling.ErrorRelationAttributShouldBeIdentifier,
 					map[string]string{
@@ -142,26 +137,6 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 				continue
 			}
 			relatedFieldsCitedByThisModel = append(relatedFieldsCitedByThisModel, relatedField)
-		}
-		relatedFieldsCitedByAllModels = append(relatedFieldsCitedByThisModel)
-	}
-
-	// It is invalid if any of the repeated relationship fields in the schema got missed out.
-	// I.e. that did NOT get referenced by an @Relation attribute.
-	allHasManyRelationFields := query.AllHasManyRelationFields(asts)
-	missedOut := lo.Without(allHasManyRelationFields, relatedFieldsCitedByAllModels...)
-	missingFieldNames := lo.Map(missedOut, func(f *parser.FieldNode, _ int) string {
-		return f.Name.Value
-	})
-
-	// We cannot enforce this final part of the rule yet. I.e. until we remove the old relations inference
-	// between relationships.
-	//
-	// But this debug output shows that the analysis is working.
-	if false {
-		if len(missingFieldNames) != 0 {
-			litter.Dump("Across the whole schema, the following has many relation fields are not cited by @relation attributes:")
-			litter.Dump(missingFieldNames)
 		}
 	}
 
@@ -346,4 +321,23 @@ func fieldsThatHaveRelationAttribute(model *parser.ModelNode) []*parser.FieldNod
 		return query.FieldHasAttribute(f, parser.AttributeRelation)
 	})
 	return thoseWithRelationAttr
+}
+
+// attributeFirstArgAsIdentifier looks at the given attribute,
+// to see if its first argument's expression is a simple identifier.
+func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) (theString string, ok bool) {
+	if len(attr.Arguments) != 1 {
+		return "", false
+	}
+	expr := attr.Arguments[0].Expression
+
+	operand, err := expr.ToValue()
+	if err != nil {
+		return "", false
+	}
+	if operand.Ident == nil {
+		return "", false
+	}
+	theString = operand.Ident.Fragments[0].Fragment
+	return theString, true
 }
