@@ -8,6 +8,10 @@ import (
 	"github.com/teamkeel/keel/proto"
 )
 
+const (
+	authenticateOperationName = "authenticate"
+)
+
 type Scope struct {
 	context   context.Context
 	operation *proto.Operation
@@ -31,28 +35,51 @@ func NewScope(
 }
 
 func Execute(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
-	if scope.operation.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
-		resp, headers, err := functions.CallFunction(scope.context, scope.operation.Name, inputs)
-		if err != nil {
-			return nil, nil, err
-		}
+	switch scope.operation.Implementation {
+	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM:
+		return executeCustomOperation(scope, inputs)
+	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME:
+		return executeRuntimeOperation(scope, inputs)
+	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
+		return executeAutoOperation(scope, inputs)
+	default:
+		return nil, nil, fmt.Errorf("unhandled unknown operation %s of type %s", scope.operation.Name, scope.operation.Implementation)
+	}
+}
 
-		// For now a custom list function just returns a list of records, but the API's
-		// all return an objects containing results and pagination info. So we need
-		// to "wrap" the results here.
-		// TODO: come up with a better implementation for list functions that can support
-		// pagination
-		if scope.operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
-			results, _ := resp.([]any)
-			return map[string]any{
-				"results":     results,
-				"hasNextPage": false,
-			}, headers, nil
-		}
-
-		return resp, headers, err
+func executeCustomOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+	resp, headers, err := functions.CallFunction(scope.context, scope.operation.Name, inputs)
+	if err != nil {
+		return nil, nil, err
 	}
 
+	// For now a custom list function just returns a list of records, but the API's
+	// all return an objects containing results and pagination info. So we need
+	// to "wrap" the results here.
+	// TODO: come up with a better implementation for list functions that can support
+	// pagination
+	if scope.operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
+		results, _ := resp.([]any)
+		return map[string]any{
+			"results":     results,
+			"hasNextPage": false,
+		}, headers, nil
+	}
+
+	return resp, headers, err
+}
+
+func executeRuntimeOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+	switch scope.operation.Name {
+	case authenticateOperationName:
+		result, err := Authenticate(scope, inputs)
+		return result, nil, err
+	default:
+		return nil, nil, fmt.Errorf("unhandled runtime operation: %s", scope.operation.Name)
+	}
+}
+
+func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
 	switch scope.operation.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
 		v, err := Get(scope, inputs)
@@ -76,10 +103,7 @@ func Execute(scope *Scope, inputs map[string]any) (any, map[string][]string, err
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		result, err := List(scope, inputs)
 		return result, nil, err
-	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
-		result, err := Authenticate(scope, inputs)
-		return result, nil, err
 	default:
-		return nil, nil, fmt.Errorf("unhandled operation type %s", scope.operation.Type.String())
+		return nil, nil, fmt.Errorf("unhandled auto operation type: %s", scope.operation.Type.String())
 	}
 }

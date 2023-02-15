@@ -56,7 +56,7 @@ func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operat
 func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
 	// TODO: implement proper support for authenticate once it's been re-done using
 	// arbitrary functions
-	if op.Type == proto.OperationType_OPERATION_TYPE_AUTHENTICATE {
+	if op.Type == proto.OperationType_OPERATION_TYPE_READ || op.Type == proto.OperationType_OPERATION_TYPE_WRITE {
 		return JSONSchema{
 			Type:                 "object",
 			AdditionalProperties: boolPtr(true),

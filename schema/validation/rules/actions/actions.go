@@ -13,8 +13,10 @@ import (
 )
 
 var (
-	reservedActionNames = []string{"authenticate"}
-	validActionTypes    = []string{
+	reservedActionNames = []string{
+		parser.ImplicitAuthenticateOperationName,
+	}
+	validActionTypes = []string{
 		parser.ActionTypeGet,
 		parser.ActionTypeCreate,
 		parser.ActionTypeUpdate,

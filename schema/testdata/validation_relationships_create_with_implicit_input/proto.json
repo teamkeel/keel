@@ -1,456 +1,456 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "ChildModel",
-      "fields": [
+      "name":  "ChildModel",
+      "fields":  [
         {
-          "modelName": "ChildModel",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL"
+          "modelName":  "ChildModel",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL"
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ParentModel"
+          "modelName":  "ChildModel",
+          "name":  "parent",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "ParentModel"
           },
-          "foreignKeyFieldName": "parentId"
+          "foreignKeyFieldName":  "parentId"
         },
         {
-          "modelName": "ChildModel",
-          "name": "parentOptional",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "ParentModel"
+          "modelName":  "ChildModel",
+          "name":  "parentOptional",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "ParentModel"
           },
-          "optional": true,
-          "foreignKeyFieldName": "parentOptionalId"
+          "optional":  true,
+          "foreignKeyFieldName":  "parentOptionalId"
         },
         {
-          "modelName": "ChildModel",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ChildModel",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ChildModel",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ChildModel",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ChildModel",
+          "name":  "parentId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "foreignKeyInfo": {
-            "relatedModelName": "ParentModel",
-            "relatedModelField": "id"
+          "foreignKeyInfo":  {
+            "relatedModelName":  "ParentModel",
+            "relatedModelField":  "id"
           }
         },
         {
-          "modelName": "ChildModel",
-          "name": "parentOptionalId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ChildModel",
+          "name":  "parentOptionalId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "ParentModel",
-            "relatedModelField": "id"
+          "optional":  true,
+          "foreignKeyInfo":  {
+            "relatedModelName":  "ParentModel",
+            "relatedModelField":  "id"
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "ChildModel",
-          "name": "createChild1",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "ChildModel",
+          "name":  "createChild1",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild1",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild1",
+              "name":  "isActive",
+              "type":  {
+                "type":  "TYPE_BOOL",
+                "modelName":  "ChildModel",
+                "fieldName":  "isActive"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "isActive"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild1",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ParentModel",
-                "fieldName": "id"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild1",
+              "name":  "parentId",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ParentModel",
+                "fieldName":  "id"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "parent",
                 "id"
               ]
             }
           ],
-          "inputMessageName": "CreateChild1Input"
+          "inputMessageName":  "CreateChild1Input"
         },
         {
-          "modelName": "ChildModel",
-          "name": "createChild2",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "ChildModel",
+          "name":  "createChild2",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild2",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild2",
+              "name":  "isActive",
+              "type":  {
+                "type":  "TYPE_BOOL",
+                "modelName":  "ChildModel",
+                "fieldName":  "isActive"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "isActive"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild2",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "parentId"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild2",
+              "name":  "parentId",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ChildModel",
+                "fieldName":  "parentId"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "parentId"
               ]
             }
           ],
-          "inputMessageName": "CreateChild2Input"
+          "inputMessageName":  "CreateChild2Input"
         },
         {
-          "modelName": "ChildModel",
-          "name": "createChild3",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "ChildModel",
+          "name":  "createChild3",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild3",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild3",
+              "name":  "isActive",
+              "type":  {
+                "type":  "TYPE_BOOL",
+                "modelName":  "ChildModel",
+                "fieldName":  "isActive"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "isActive"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild3",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ParentModel",
-                "fieldName": "id"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild3",
+              "name":  "parentId",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ParentModel",
+                "fieldName":  "id"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "parent",
                 "id"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild3",
-              "name": "parentOptionalId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ParentModel",
-                "fieldName": "id"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild3",
+              "name":  "parentOptionalId",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ParentModel",
+                "fieldName":  "id"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "parentOptional",
                 "id"
               ]
             }
           ],
-          "inputMessageName": "CreateChild3Input"
+          "inputMessageName":  "CreateChild3Input"
         },
         {
-          "modelName": "ChildModel",
-          "name": "createChild4",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "ChildModel",
+          "name":  "createChild4",
+          "type":  "OPERATION_TYPE_CREATE",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild4",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild4",
+              "name":  "isActive",
+              "type":  {
+                "type":  "TYPE_BOOL",
+                "modelName":  "ChildModel",
+                "fieldName":  "isActive"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "isActive"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild4",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "parentId"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild4",
+              "name":  "parentId",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ChildModel",
+                "fieldName":  "parentId"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "parentId"
               ]
             },
             {
-              "modelName": "ChildModel",
-              "operationName": "createChild4",
-              "name": "parentOptionalId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "parentOptionalId"
+              "modelName":  "ChildModel",
+              "operationName":  "createChild4",
+              "name":  "parentOptionalId",
+              "type":  {
+                "type":  "TYPE_ID",
+                "modelName":  "ChildModel",
+                "fieldName":  "parentOptionalId"
               },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
+              "mode":  "INPUT_MODE_WRITE",
+              "target":  [
                 "parentOptionalId"
               ]
             }
           ],
-          "inputMessageName": "CreateChild4Input"
+          "inputMessageName":  "CreateChild4Input"
         }
       ]
     },
     {
-      "name": "ParentModel",
-      "fields": [
+      "name":  "ParentModel",
+      "fields":  [
         {
-          "modelName": "ParentModel",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL"
+          "modelName":  "ParentModel",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL"
           }
         },
         {
-          "modelName": "ParentModel",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "ParentModel",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ParentModel",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ParentModel",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "ParentModel",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "ParentModel",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ]
     },
     {
-      "name": "Identity",
-      "fields": [
+      "name":  "Identity",
+      "fields":  [
         {
-          "modelName": "Identity",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
-          "unique": true
+          "unique":  true
         },
         {
-          "modelName": "Identity",
-          "name": "password",
-          "type": {
-            "type": "TYPE_PASSWORD"
+          "modelName":  "Identity",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_PASSWORD"
           }
         },
         {
-          "modelName": "Identity",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Identity",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Identity",
-          "name": "authenticate",
-          "type": "OPERATION_TYPE_AUTHENTICATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "Identity",
+          "name":  "authenticate",
+          "type":  "OPERATION_TYPE_WRITE",
+          "implementation":  "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "createIfNotExists",
+              "type":  {
+                "type":  "TYPE_BOOL"
               },
-              "optional": true
+              "optional":  true
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "emailPassword",
+              "type":  {
+                "type":  "TYPE_OBJECT"
               },
-              "inputs": [
+              "inputs":  [
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "email",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 },
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "password",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 }
               ]
             }
           ],
-          "outputs": [
+          "outputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "identityCreated",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "identityCreated",
+              "type":  {
+                "type":  "TYPE_BOOL"
               }
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "token",
-              "type": {
-                "type": "TYPE_STRING"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "token",
+              "type":  {
+                "type":  "TYPE_STRING"
               }
             }
           ],
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName":  "AuthenticateInput",
+          "responseMessageName":  "AuthenticateResponse"
         }
       ]
     }
   ],
-  "messages": [
+  "messages":  [
     {
-      "name": "CreateChild1Input",
-      "fields": [
+      "name":  "CreateChild1Input",
+      "fields":  [
         {
-          "messageName": "CreateChild1Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
+          "messageName":  "CreateChild1Input",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL",
+            "modelName":  "ChildModel",
+            "fieldName":  "isActive"
           },
-          "target": [
+          "target":  [
             "isActive"
           ]
         },
         {
-          "messageName": "CreateChild1Input",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
+          "messageName":  "CreateChild1Input",
+          "name":  "parentId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "ParentModel",
+            "fieldName":  "id"
           },
-          "target": [
+          "target":  [
             "parent",
             "id"
           ]
@@ -458,71 +458,71 @@
       ]
     },
     {
-      "name": "CreateChild2Input",
-      "fields": [
+      "name":  "CreateChild2Input",
+      "fields":  [
         {
-          "messageName": "CreateChild2Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
+          "messageName":  "CreateChild2Input",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL",
+            "modelName":  "ChildModel",
+            "fieldName":  "isActive"
           },
-          "target": [
+          "target":  [
             "isActive"
           ]
         },
         {
-          "messageName": "CreateChild2Input",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ChildModel",
-            "fieldName": "parentId"
+          "messageName":  "CreateChild2Input",
+          "name":  "parentId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "ChildModel",
+            "fieldName":  "parentId"
           },
-          "target": [
+          "target":  [
             "parentId"
           ]
         }
       ]
     },
     {
-      "name": "CreateChild3Input",
-      "fields": [
+      "name":  "CreateChild3Input",
+      "fields":  [
         {
-          "messageName": "CreateChild3Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
+          "messageName":  "CreateChild3Input",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL",
+            "modelName":  "ChildModel",
+            "fieldName":  "isActive"
           },
-          "target": [
+          "target":  [
             "isActive"
           ]
         },
         {
-          "messageName": "CreateChild3Input",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
+          "messageName":  "CreateChild3Input",
+          "name":  "parentId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "ParentModel",
+            "fieldName":  "id"
           },
-          "target": [
+          "target":  [
             "parent",
             "id"
           ]
         },
         {
-          "messageName": "CreateChild3Input",
-          "name": "parentOptionalId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel",
-            "fieldName": "id"
+          "messageName":  "CreateChild3Input",
+          "name":  "parentOptionalId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "ParentModel",
+            "fieldName":  "id"
           },
-          "target": [
+          "target":  [
             "parentOptional",
             "id"
           ]
@@ -530,96 +530,102 @@
       ]
     },
     {
-      "name": "CreateChild4Input",
-      "fields": [
+      "name":  "CreateChild4Input",
+      "fields":  [
         {
-          "messageName": "CreateChild4Input",
-          "name": "isActive",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "ChildModel",
-            "fieldName": "isActive"
+          "messageName":  "CreateChild4Input",
+          "name":  "isActive",
+          "type":  {
+            "type":  "TYPE_BOOL",
+            "modelName":  "ChildModel",
+            "fieldName":  "isActive"
           },
-          "target": [
+          "target":  [
             "isActive"
           ]
         },
         {
-          "messageName": "CreateChild4Input",
-          "name": "parentId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ChildModel",
-            "fieldName": "parentId"
+          "messageName":  "CreateChild4Input",
+          "name":  "parentId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "ChildModel",
+            "fieldName":  "parentId"
           },
-          "target": [
+          "target":  [
             "parentId"
           ]
         },
         {
-          "messageName": "CreateChild4Input",
-          "name": "parentOptionalId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ChildModel",
-            "fieldName": "parentOptionalId"
+          "messageName":  "CreateChild4Input",
+          "name":  "parentOptionalId",
+          "type":  {
+            "type":  "TYPE_ID",
+            "modelName":  "ChildModel",
+            "fieldName":  "parentOptionalId"
           },
-          "target": [
+          "target":  [
             "parentOptionalId"
           ]
         }
       ]
     },
     {
-      "name": "EmailPasswordInput",
-      "fields": [
+      "name":  "EmailPasswordInput",
+      "fields":  [
         {
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "EmailPasswordInput",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         },
         {
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
-    },
-    {
-      "name": "AuthenticateInput",
-      "fields": [
-        {
-          "name": "createIfNotExists",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
-        },
-        {
-          "name": "emailPassword",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+          "messageName":  "EmailPasswordInput",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
-      "fields": [
+      "name":  "AuthenticateInput",
+      "fields":  [
         {
-          "name": "identityCreated",
-          "type": {
-            "type": "TYPE_BOOL"
+          "messageName":  "AuthenticateInput",
+          "name":  "createIfNotExists",
+          "type":  {
+            "type":  "TYPE_BOOL"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "AuthenticateInput",
+          "name":  "emailPassword",
+          "type":  {
+            "type":  "TYPE_MESSAGE",
+            "messageName":  "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name":  "AuthenticateResponse",
+      "fields":  [
+        {
+          "messageName":  "AuthenticateResponse",
+          "name":  "identityCreated",
+          "type":  {
+            "type":  "TYPE_BOOL"
+          },
+          "optional":  true
+        },
+        {
+          "messageName":  "AuthenticateResponse",
+          "name":  "token",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]

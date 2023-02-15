@@ -1,85 +1,85 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Fee",
-      "fields": [
+      "name":  "Fee",
+      "fields":  [
         {
-          "modelName": "Fee",
-          "name": "theFi",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fi"
+          "modelName":  "Fee",
+          "name":  "theFi",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Fi"
           },
-          "foreignKeyFieldName": "theFiId"
+          "foreignKeyFieldName":  "theFiId"
         },
         {
-          "modelName": "Fee",
-          "name": "theName",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Fee",
+          "name":  "theName",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         },
         {
-          "modelName": "Fee",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Fee",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Fee",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Fee",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Fee",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Fee",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Fee",
-          "name": "theFiId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Fee",
+          "name":  "theFiId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "foreignKeyInfo": {
-            "relatedModelName": "Fi",
-            "relatedModelField": "id"
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Fi",
+            "relatedModelField":  "id"
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Fee",
-          "name": "searchFees",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "Fee",
+          "name":  "searchFees",
+          "type":  "OPERATION_TYPE_LIST",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "Fee",
-              "operationName": "searchFees",
-              "name": "theFiTheFoTheFumTheName",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Fum",
-                "fieldName": "theName"
+              "modelName":  "Fee",
+              "operationName":  "searchFees",
+              "name":  "theFiTheFoTheFumTheName",
+              "type":  {
+                "type":  "TYPE_STRING",
+                "modelName":  "Fum",
+                "fieldName":  "theName"
               },
-              "mode": "INPUT_MODE_READ",
-              "target": [
+              "mode":  "INPUT_MODE_READ",
+              "target":  [
                 "theFi",
                 "theFo",
                 "theFum",
@@ -87,209 +87,209 @@
               ]
             }
           ],
-          "inputMessageName": "SearchFeesInput"
+          "inputMessageName":  "SearchFeesInput"
         }
       ]
     },
     {
-      "name": "Fi",
-      "fields": [
+      "name":  "Fi",
+      "fields":  [
         {
-          "modelName": "Fi",
-          "name": "theFo",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fo"
+          "modelName":  "Fi",
+          "name":  "theFo",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Fo"
           },
-          "foreignKeyFieldName": "theFoId"
+          "foreignKeyFieldName":  "theFoId"
         },
         {
-          "modelName": "Fi",
-          "name": "theFees",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fee",
-            "repeated": true
+          "modelName":  "Fi",
+          "name":  "theFees",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Fee",
+            "repeated":  true
           }
         },
         {
-          "modelName": "Fi",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Fi",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Fi",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Fi",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Fi",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Fi",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Fi",
-          "name": "theFoId",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Fi",
+          "name":  "theFoId",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "foreignKeyInfo": {
-            "relatedModelName": "Fo",
-            "relatedModelField": "id"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Fo",
-      "fields": [
-        {
-          "modelName": "Fo",
-          "name": "theFum",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fum"
-          },
-          "foreignKeyFieldName": "theFumId"
-        },
-        {
-          "modelName": "Fo",
-          "name": "theFis",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fi",
-            "repeated": true
-          }
-        },
-        {
-          "modelName": "Fo",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Fo",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Fo",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Fo",
-          "name": "theFumId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Fum",
-            "relatedModelField": "id"
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Fo",
+            "relatedModelField":  "id"
           }
         }
       ]
     },
     {
-      "name": "Fum",
-      "fields": [
+      "name":  "Fo",
+      "fields":  [
         {
-          "modelName": "Fum",
-          "name": "theFos",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Fo",
-            "repeated": true
-          }
-        },
-        {
-          "modelName": "Fum",
-          "name": "theName",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Fum",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Fo",
+          "name":  "theFum",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Fum"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "foreignKeyFieldName":  "theFumId"
+        },
+        {
+          "modelName":  "Fo",
+          "name":  "theFis",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Fi",
+            "repeated":  true
           }
         },
         {
-          "modelName": "Fum",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Fo",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Fum",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Fo",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Fo",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Fo",
+          "name":  "theFumId",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "foreignKeyInfo":  {
+            "relatedModelName":  "Fum",
+            "relatedModelField":  "id"
+          }
+        }
+      ]
+    },
+    {
+      "name":  "Fum",
+      "fields":  [
+        {
+          "modelName":  "Fum",
+          "name":  "theFos",
+          "type":  {
+            "type":  "TYPE_MODEL",
+            "modelName":  "Fo",
+            "repeated":  true
+          }
+        },
+        {
+          "modelName":  "Fum",
+          "name":  "theName",
+          "type":  {
+            "type":  "TYPE_STRING"
+          }
+        },
+        {
+          "modelName":  "Fum",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
+          },
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Fum",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
+          }
+        },
+        {
+          "modelName":  "Fum",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
+          },
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Fum",
-          "name": "searchFums",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "Fum",
+          "name":  "searchFums",
+          "type":  "OPERATION_TYPE_LIST",
+          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs":  [
             {
-              "modelName": "Fum",
-              "operationName": "searchFums",
-              "name": "theFosTheFisTheFeesTheName",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Fee",
-                "fieldName": "theName"
+              "modelName":  "Fum",
+              "operationName":  "searchFums",
+              "name":  "theFosTheFisTheFeesTheName",
+              "type":  {
+                "type":  "TYPE_STRING",
+                "modelName":  "Fee",
+                "fieldName":  "theName"
               },
-              "mode": "INPUT_MODE_READ",
-              "target": [
+              "mode":  "INPUT_MODE_READ",
+              "target":  [
                 "theFos",
                 "theFis",
                 "theFees",
@@ -297,140 +297,140 @@
               ]
             }
           ],
-          "inputMessageName": "SearchFumsInput"
+          "inputMessageName":  "SearchFumsInput"
         }
       ]
     },
     {
-      "name": "Identity",
-      "fields": [
+      "name":  "Identity",
+      "fields":  [
         {
-          "modelName": "Identity",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
-          "unique": true
+          "unique":  true
         },
         {
-          "modelName": "Identity",
-          "name": "password",
-          "type": {
-            "type": "TYPE_PASSWORD"
+          "modelName":  "Identity",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_PASSWORD"
           }
         },
         {
-          "modelName": "Identity",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Identity",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Identity",
-          "name": "authenticate",
-          "type": "OPERATION_TYPE_AUTHENTICATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
+          "modelName":  "Identity",
+          "name":  "authenticate",
+          "type":  "OPERATION_TYPE_WRITE",
+          "implementation":  "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "createIfNotExists",
+              "type":  {
+                "type":  "TYPE_BOOL"
               },
-              "optional": true
+              "optional":  true
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "emailPassword",
+              "type":  {
+                "type":  "TYPE_OBJECT"
               },
-              "inputs": [
+              "inputs":  [
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "email",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 },
                 {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
+                  "modelName":  "Identity",
+                  "operationName":  "authenticate",
+                  "name":  "password",
+                  "type":  {
+                    "type":  "TYPE_STRING"
                   }
                 }
               ]
             }
           ],
-          "outputs": [
+          "outputs":  [
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "identityCreated",
-              "type": {
-                "type": "TYPE_BOOL"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "identityCreated",
+              "type":  {
+                "type":  "TYPE_BOOL"
               }
             },
             {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "token",
-              "type": {
-                "type": "TYPE_STRING"
+              "modelName":  "Identity",
+              "operationName":  "authenticate",
+              "name":  "token",
+              "type":  {
+                "type":  "TYPE_STRING"
               }
             }
           ],
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName":  "AuthenticateInput",
+          "responseMessageName":  "AuthenticateResponse"
         }
       ]
     }
   ],
-  "messages": [
+  "messages":  [
     {
-      "name": "SearchFeesWhereInput",
-      "fields": [
+      "name":  "SearchFeesWhereInput",
+      "fields":  [
         {
-          "messageName": "SearchFeesWhereInput",
-          "name": "theFiTheFoTheFumTheName",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Fum",
-            "fieldName": "theName"
+          "messageName":  "SearchFeesWhereInput",
+          "name":  "theFiTheFoTheFumTheName",
+          "type":  {
+            "type":  "TYPE_STRING",
+            "modelName":  "Fum",
+            "fieldName":  "theName"
           },
-          "target": [
+          "target":  [
             "theFi",
             "theFo",
             "theFum",
@@ -440,29 +440,29 @@
       ]
     },
     {
-      "name": "SearchFeesInput",
-      "fields": [
+      "name":  "SearchFeesInput",
+      "fields":  [
         {
-          "messageName": "SearchFeesInput",
-          "name": "where",
-          "type": {
-            "messageName": "SearchFeesWhereInput"
+          "messageName":  "SearchFeesInput",
+          "name":  "where",
+          "type":  {
+            "messageName":  "SearchFeesWhereInput"
           }
         }
       ]
     },
     {
-      "name": "SearchFumsWhereInput",
-      "fields": [
+      "name":  "SearchFumsWhereInput",
+      "fields":  [
         {
-          "messageName": "SearchFumsWhereInput",
-          "name": "theFosTheFisTheFeesTheName",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Fee",
-            "fieldName": "theName"
+          "messageName":  "SearchFumsWhereInput",
+          "name":  "theFosTheFisTheFeesTheName",
+          "type":  {
+            "type":  "TYPE_STRING",
+            "modelName":  "Fee",
+            "fieldName":  "theName"
           },
-          "target": [
+          "target":  [
             "theFos",
             "theFis",
             "theFees",
@@ -472,67 +472,73 @@
       ]
     },
     {
-      "name": "SearchFumsInput",
-      "fields": [
+      "name":  "SearchFumsInput",
+      "fields":  [
         {
-          "messageName": "SearchFumsInput",
-          "name": "where",
-          "type": {
-            "messageName": "SearchFumsWhereInput"
+          "messageName":  "SearchFumsInput",
+          "name":  "where",
+          "type":  {
+            "messageName":  "SearchFumsWhereInput"
           }
         }
       ]
     },
     {
-      "name": "EmailPasswordInput",
-      "fields": [
+      "name":  "EmailPasswordInput",
+      "fields":  [
         {
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "EmailPasswordInput",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         },
         {
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "EmailPasswordInput",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateInput",
-      "fields": [
+      "name":  "AuthenticateInput",
+      "fields":  [
         {
-          "name": "createIfNotExists",
-          "type": {
-            "type": "TYPE_BOOL"
+          "messageName":  "AuthenticateInput",
+          "name":  "createIfNotExists",
+          "type":  {
+            "type":  "TYPE_BOOL"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "name": "emailPassword",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+          "messageName":  "AuthenticateInput",
+          "name":  "emailPassword",
+          "type":  {
+            "type":  "TYPE_MESSAGE",
+            "messageName":  "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
-      "fields": [
+      "name":  "AuthenticateResponse",
+      "fields":  [
         {
-          "name": "identityCreated",
-          "type": {
-            "type": "TYPE_BOOL"
+          "messageName":  "AuthenticateResponse",
+          "name":  "identityCreated",
+          "type":  {
+            "type":  "TYPE_BOOL"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "AuthenticateResponse",
+          "name":  "token",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]

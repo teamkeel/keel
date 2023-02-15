@@ -668,7 +668,8 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
-	case proto.OperationType_OPERATION_TYPE_AUTHENTICATE:
+	case proto.OperationType_OPERATION_TYPE_READ,
+		proto.OperationType_OPERATION_TYPE_WRITE:
 		// TODO: fix this when authenticate has been re-worked following Arbitrary Functions
 		// https://www.notion.so/keelhq/Arbitrary-Functions-428c199902cf4353b18838434c8910d1
 		returnType += "any"
