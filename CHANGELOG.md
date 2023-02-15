@@ -1,3 +1,10 @@
+# [0.263.0](https://github.com/teamkeel/keel/compare/v0.262.0...v0.263.0) (2023-02-15)
+
+
+### Features
+
+* cli config ([#778](https://github.com/teamkeel/keel/issues/778)) ([1ffaa48](https://github.com/teamkeel/keel/commit/1ffaa48f092706e4303dec4e48e90f1f70180769))
+
 # [0.262.0](https://github.com/teamkeel/keel/compare/v0.261.0...v0.262.0) (2023-02-14)
 
 
