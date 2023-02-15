@@ -16,6 +16,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 	for _, thisModel := range query.Models(asts) {
 		// todo XXXX init table of previous uses
 
+		// We process here, only fields that have the @relation attribute.
 		for _, thisField := range fieldsThatHaveRelationAttribute(thisModel) {
 
 			// IMPORTANT NOTE
@@ -99,6 +100,18 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"RelatedFieldType": relatedField.Type,
 						"RequiredType":     thisModel.Name.Value,
 						"SuggestedNames":   suggestedFields,
+					},
+					relationAttr)
+
+				continue
+			}
+
+			// The related field must be a repeated field.
+			if !relatedField.Repeated {
+				errs.Append(
+					errorhandling.ErrorRelationAttributeRelatedFieldIsNotRepeated,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
 					},
 					relationAttr)
 

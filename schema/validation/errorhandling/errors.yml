@@ -217,3 +217,7 @@ en:
     short_message: "'{{.RelatedFieldName}}' is wrong type"
     message: "'@relation({{.RelatedFieldName}})' refers to a related field of type '{{.RelatedFieldType}}', which should be of type '{{.RequiredType}}"
     hint: "Did you mean one of: {{.SuggestedNames}} ?" 
+  E057:
+    short_message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
+    message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
+    hint: "You can make it repeated by adding [] to that field" 
