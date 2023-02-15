@@ -52,10 +52,11 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
 
 			values = append(values, &proto.MessageField{
-				Name:     value.Name(),
-				Type:     typeInfo,
-				Target:   target,
-				Optional: value.Optional,
+				Name:        value.Name(),
+				Type:        typeInfo,
+				Target:      target,
+				Optional:    value.Optional,
+				MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
 
@@ -70,10 +71,11 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			typeInfo, target := scm.inferParserInputType(model, action, input, impl)
 
 			fields = append(fields, &proto.MessageField{
-				Name:     input.Name(),
-				Type:     typeInfo,
-				Target:   target,
-				Optional: input.Optional,
+				Name:        input.Name(),
+				Type:        typeInfo,
+				Target:      target,
+				Optional:    input.Optional,
+				MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
 
@@ -88,10 +90,11 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
 
 			wheres = append(wheres, &proto.MessageField{
-				Name:     where.Name(),
-				Type:     typeInfo,
-				Target:   target,
-				Optional: where.Optional,
+				Name:        where.Name(),
+				Type:        typeInfo,
+				Target:      target,
+				Optional:    where.Optional,
+				MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
 
@@ -106,10 +109,11 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
 
 			values = append(values, &proto.MessageField{
-				Name:     value.Name(),
-				Type:     typeInfo,
-				Target:   target,
-				Optional: value.Optional,
+				Name:        value.Name(),
+				Type:        typeInfo,
+				Target:      target,
+				Optional:    value.Optional,
+				MessageName: fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
 
@@ -121,13 +125,15 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			Fields: []*proto.MessageField{
 				{
-					Name: "where",
+					Name:        "where",
+					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
 						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
 				{
-					Name: "values",
+					Name:        "values",
+					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
 						MessageName: wrapperspb.String(fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value))),
 					},
@@ -141,10 +147,11 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
 
 			wheres = append(wheres, &proto.MessageField{
-				Name:     where.Name(),
-				Type:     typeInfo,
-				Target:   target,
-				Optional: where.Optional,
+				Name:        where.Name(),
+				Type:        typeInfo,
+				Target:      target,
+				Optional:    where.Optional,
+				MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
 
@@ -157,7 +164,8 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			Fields: []*proto.MessageField{
 				{
-					Name: "where",
+					Name:        "where",
+					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
 						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
 					},
@@ -427,10 +435,11 @@ func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelNa
 
 func (scm *Builder) makeOperation(parserFunction *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
-		ModelName:      modelName,
-		Name:           parserFunction.Name.Value,
-		Implementation: impl,
-		Type:           scm.mapToOperationType(parserFunction.Type.Value),
+		ModelName:        modelName,
+		InputMessageName: fmt.Sprintf("%sInput", strcase.ToCamel(parserFunction.Name.Value)),
+		Name:             parserFunction.Name.Value,
+		Implementation:   impl,
+		Type:             scm.mapToOperationType(parserFunction.Type.Value),
 	}
 
 	model := query.Model(scm.asts, modelName)
