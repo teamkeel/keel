@@ -128,6 +128,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Name:        "where",
 					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
+						Type:        proto.Type_TYPE_MESSAGE,
 						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
@@ -135,6 +136,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Name:        "values",
 					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
+						Type:        proto.Type_TYPE_MESSAGE,
 						MessageName: wrapperspb.String(fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
@@ -167,6 +169,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Name:        "where",
 					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 					Type: &proto.TypeInfo{
+						Type:        proto.Type_TYPE_MESSAGE,
 						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
