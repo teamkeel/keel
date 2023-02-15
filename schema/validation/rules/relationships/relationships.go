@@ -9,12 +9,14 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"golang.org/x/exp/slices"
 )
 
 // Make sure the @relation attribute is used properly.
 func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, thisModel := range query.Models(asts) {
-		// todo XXXX init table of previous uses
+
+		relatedFieldsAlreadyReferredTo := []*parser.FieldNode{}
 
 		// We process here, only fields that have the @relation attribute.
 		for _, thisField := range fieldsThatHaveRelationAttribute(thisModel) {
@@ -118,9 +120,22 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 				continue
 			}
 
+			// None of the related fields cited by this model's @Relationships, must be
+			// duplicates. You CAN have more than one 1:many relationships now between model's
+			// A and B, but they must use different related fields.
+			if slices.Contains(relatedFieldsAlreadyReferredTo, relatedField) {
+				errs.Append(
+					errorhandling.ErrorRelationAttributeRelatedFieldIsDuplicated,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+					},
+					relationAttr)
+
+				continue
+			}
+			relatedFieldsAlreadyReferredTo = append(relatedFieldsAlreadyReferredTo, relatedField)
+
 			// must not have been used thus previously [short circuit]
-			// the related field must be multiple
-			// update table of previous uses by this model
 		}
 	}
 	return errs

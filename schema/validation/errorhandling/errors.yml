@@ -221,3 +221,7 @@ en:
     short_message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
     message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
     hint: "You can make it repeated by adding [] to that field" 
+  E058:
+    short_message: "Duplicate use of '{{.RelatedFieldName}}'"
+    message: "You have already used '{{.RelatedFieldName}}' in a @Relation. Duplicates are not allowed."
+    hint: "Did you mean a different related field?" 
