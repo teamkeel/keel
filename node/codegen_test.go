@@ -544,15 +544,15 @@ export interface UpdatePersonValuesInput {
 export interface UpdatePersonWhereInput {
 }
 export interface UpdatePersonInput {
-	where: UpdatePersonWhereInput;
-	values: UpdatePersonValuesInput;
+	where?: UpdatePersonWhereInput | null;
+	values?: UpdatePersonValuesInput | null;
 }
 export interface DeletePersonInput {
 }
 export interface ListPeopleWhereInput {
 }
 export interface ListPeopleInput {
-	where: ListPeopleWhereInput;
+	where?: ListPeopleWhereInput | null;
 }
 export interface EmailPasswordInput {
 	email: string;
@@ -566,10 +566,10 @@ declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
 	getPerson(i: GetPersonInput): Promise<sdk.Person | null>;
-	createPerson(i: CreatePersonInput): Promise<sdk.Person>;
-	updatePerson(i: UpdatePersonInput): Promise<sdk.Person>;
-	deletePerson(i: DeletePersonInput): Promise<string>;
-	listPeople(i: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
+	createPerson(i?: CreatePersonInput): Promise<sdk.Person>;
+	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
+	deletePerson(i?: DeletePersonInput): Promise<string>;
+	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
 	authenticate(i: AuthenticateInput): Promise<any>;
 }
 export declare const actions: ActionExecutor;
