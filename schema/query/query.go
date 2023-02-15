@@ -71,6 +71,16 @@ func Model(asts []*parser.AST, name string) *parser.ModelNode {
 	return nil
 }
 
+// Field provides the field of the given name from the given model. (Or nil).
+func Field(model *parser.ModelNode, name string) *parser.FieldNode {
+	for _, f := range ModelFields(model) {
+		if f.Name.Value == name {
+			return f
+		}
+	}
+	return nil
+}
+
 func IsModel(asts []*parser.AST, name string) bool {
 	return Model(asts, name) != nil
 }
@@ -212,6 +222,17 @@ func FieldHasAttribute(field *parser.FieldNode, name string) bool {
 	return false
 }
 
+// FieldGetAttribute returns the attribute of the given name on the given field,
+// or nil, to signal that it doesn't have one.
+func FieldGetAttribute(field *parser.FieldNode, name string) *parser.AttributeNode {
+	for _, attr := range field.Attributes {
+		if attr.Name.Value == name {
+			return attr
+		}
+	}
+	return nil
+}
+
 func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
 }
@@ -222,6 +243,32 @@ func ModelFieldNames(model *parser.ModelNode) []string {
 		names = append(names, field.Name.Value)
 	}
 	return names
+}
+
+// FieldsInModelOfType provides a list of the field names for the fields in the
+// given model, that have the given type name.
+func FieldsInModelOfType(model *parser.ModelNode, requiredType string) []string {
+	names := []string{}
+	for _, field := range ModelFields(model) {
+		if field.Type == requiredType {
+			names = append(names, field.Name.Value)
+		}
+	}
+	return names
+}
+
+// AllHasManyRelationFields provides a list of all the fields in the schema
+// which are of type Model and which are repeated.
+func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {
+	captured := []*parser.FieldNode{}
+	for _, model := range Models(asts) {
+		for _, field := range ModelFields(model) {
+			if IsHasManyModelField(asts, field) {
+				captured = append(captured, field)
+			}
+		}
+	}
+	return captured
 }
 
 // ResolveInputType returns a string represention of the type of the give input

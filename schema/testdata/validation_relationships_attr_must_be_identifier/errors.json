@@ -1,0 +1,22 @@
+{
+    "errors": [
+        {
+            "message": "The @relation value should be a simple string",
+            "shortMessage": "The @relation value should be a simple string",
+            "hint": "Like myFieldName",
+            "code": "E054",
+            "pos": {
+                "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
+                "offset": 108,
+                "line": 9,
+                "column": 23
+            },
+            "endPos": {
+                "filename": "testdata/validation_relationships_attr_must_be_identifier/schema.keel",
+                "offset": 122,
+                "line": 9,
+                "column": 37
+            }
+        }
+    ]
+}

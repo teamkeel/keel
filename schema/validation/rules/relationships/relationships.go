@@ -4,10 +4,144 @@ import (
 	"fmt"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
+	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
+	"golang.org/x/exp/slices"
 )
+
+// Make sure the @relation attribute is used properly.
+func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
+	for _, thisModel := range query.Models(asts) {
+
+		// We accumulate a list of the related fields that are referenced
+		// by @Relation attributes in THIS model.
+		relatedFieldsCitedByThisModel := []*parser.FieldNode{}
+
+		// We process here, only fields that have the @relation attribute.
+		for _, thisField := range fieldsThatHaveRelationAttribute(thisModel) {
+
+			// IMPORTANT NOTE
+			//
+			// This is a complex validation rule and its checks have (at least conceptually),
+			// a dependency order.
+			//
+			// Often if one fails, the remainder become either infeasible, or would
+			// create unhelpful and confusing noise.
+			//
+			// So as soon as one (in the dependency order) fails, we skip the remainder.
+
+			relationAttr := query.FieldGetAttribute(thisField, parser.AttributeRelation)
+
+			// Make sure @relation is only used on fields of type Model
+			if !lo.Contains(query.ModelNames(asts), thisField.Type) {
+				errs.Append(
+					errorhandling.ErrorRelationAttrOnWrongFieldType,
+					map[string]string{
+						"FieldName":  thisField.Name.Value,
+						"WrongType":  thisField.Type,
+						"Suggestion": thisField.Name.Value,
+					},
+					thisField)
+				continue
+			}
+
+			// Make sure @relation is only used on fields that are NOT repeated.
+			if thisField.Repeated {
+				errs.Append(
+					errorhandling.ErrorRelationAttrOnNonRepeatedField,
+					map[string]string{
+						"FieldName": thisField.Name.Value,
+					},
+					thisField)
+				continue
+			}
+
+			// Make sure that the attribute's argument (which is unfortunately a
+			// list of expressions), boils down to just a single plain string. E.g. @relation(written)
+			var relatedFieldName string
+			var ok bool
+			if relatedFieldName, ok = attributeFirstArgAsIdentifier(relationAttr); !ok {
+				errs.Append(
+					errorhandling.ErrorRelationAttributShouldBeIdentifier,
+					map[string]string{
+						"FieldName": thisField.Name.Value,
+					},
+					relationAttr)
+
+				continue
+			}
+
+			// Make sure the value of the @relation attribute (e.g. "written"), exists as a
+			// field in the related model.
+			relatedModelName := thisField.Type
+			relatedModel := query.Model(asts, relatedModelName)
+			var relatedField *parser.FieldNode
+			if relatedField = query.Field(relatedModel, relatedFieldName); relatedField == nil {
+				fieldsAvailable := query.ModelFieldNames(relatedModel)
+				suggestedNames := formatting.HumanizeList(fieldsAvailable, formatting.DelimiterOr)
+				errs.Append(
+					errorhandling.ErrorRelationAttributeUnrecognizedField,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+						"RelatedModelName": relatedModelName,
+						"SuggestedNames":   suggestedNames,
+					},
+					relationAttr)
+				continue
+			}
+
+			// Make sure the related field is of type <thisModel>
+			if relatedField.Type != thisModel.Name.Value {
+				suitableFields := query.FieldsInModelOfType(relatedModel, thisModel.Name.Value)
+				suggestedFields := formatting.HumanizeList(suitableFields, formatting.DelimiterOr)
+				errs.Append(
+					errorhandling.ErrorRelationAttributeRelatedFieldWrongType,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+						"RelatedFieldType": relatedField.Type,
+						"RequiredType":     thisModel.Name.Value,
+						"SuggestedNames":   suggestedFields,
+					},
+					relationAttr)
+
+				continue
+			}
+
+			// The related field must be a repeated field.
+			if !relatedField.Repeated {
+				errs.Append(
+					errorhandling.ErrorRelationAttributeRelatedFieldIsNotRepeated,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+					},
+					relationAttr)
+
+				continue
+			}
+
+			// None of the related fields cited by this model's @Relationships, must be
+			// duplicates. You CAN have more than one 1:many relationships now between model's
+			// A and B, but they must use different related fields.
+			if slices.Contains(relatedFieldsCitedByThisModel, relatedField) {
+				errs.Append(
+					errorhandling.ErrorRelationAttributeRelatedFieldIsDuplicated,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+					},
+					relationAttr)
+
+				continue
+			}
+			relatedFieldsCitedByThisModel = append(relatedFieldsCitedByThisModel, relatedField)
+		}
+	}
+
+	return errs
+}
 
 func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	processed := map[string]bool{}
@@ -177,4 +311,33 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 	}
 
 	return errs
+}
+
+// fieldsThatHaveRelationAttribute provides a list of all the fields in the given model,
+// that have the @relation attribute.
+func fieldsThatHaveRelationAttribute(model *parser.ModelNode) []*parser.FieldNode {
+	allModelFields := query.ModelFields(model)
+	thoseWithRelationAttr := lo.Filter(allModelFields, func(f *parser.FieldNode, _ int) bool {
+		return query.FieldHasAttribute(f, parser.AttributeRelation)
+	})
+	return thoseWithRelationAttr
+}
+
+// attributeFirstArgAsIdentifier looks at the given attribute,
+// to see if its first argument's expression is a simple identifier.
+func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) (theString string, ok bool) {
+	if len(attr.Arguments) != 1 {
+		return "", false
+	}
+	expr := attr.Arguments[0].Expression
+
+	operand, err := expr.ToValue()
+	if err != nil {
+		return "", false
+	}
+	if operand.Ident == nil {
+		return "", false
+	}
+	theString = operand.Ident.Fragments[0].Fragment
+	return theString, true
 }
