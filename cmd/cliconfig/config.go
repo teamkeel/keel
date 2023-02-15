@@ -151,7 +151,7 @@ func (c *Config) writeConfig(cfg interface{}) error {
 		c.viper.Set(k, v)
 	}
 
-	err := c.CreatePathIfNotExist(c.configPath)
+	err := c.createPathIfNotExist(c.configPath)
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (c *Config) writeConfig(cfg interface{}) error {
 	return c.viper.WriteConfig()
 }
 
-func (c *Config) CreatePathIfNotExist(path string) error {
+func (c *Config) createPathIfNotExist(path string) error {
 	dir := filepath.Dir(path)
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
