@@ -545,7 +545,7 @@ func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operati
 			}
 		} else {
 			if field.Type.Type == proto.Type_TYPE_ENUM && isTestingPackage {
-				w.Write("sdk.")
+				w.Writef("sdk.%s", toTypeScriptType(field.Type))
 			} else {
 				w.Write(toTypeScriptType(field.Type))
 			}
