@@ -72,9 +72,10 @@ var validatorFuncs = []validationFunc{
 	relationships.InvalidOneToOneRelationshipRule,
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
 
-	// todo XXXX this rule should replace MoreThanOneReverseMany (below), once it is finished.
+	// todo this rule should obsolete MoreThanOneReverseMany (below), once it is finished.
 	relationships.RelationAttributeRule,
-	relationships.MoreThanOneReverseMany, // todo XXXX this should become obsolete
+
+	relationships.MoreThanOneReverseMany, // todo this should become obsolete
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

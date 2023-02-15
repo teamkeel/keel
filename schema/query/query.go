@@ -246,7 +246,7 @@ func AttributeValueAsIdentifier(attr *parser.AttributeNode, attributeName string
 	}
 	expr := attr.Arguments[0].Expression
 
-	// todo XXXX the remainder of this function should be moved into the expressions package
+	// todo the remainder of this function could / should be moved into the expressions package
 	operand, err := expr.ToValue()
 	if err != nil {
 		return "", false
@@ -280,6 +280,20 @@ func FieldsInModelOfType(model *parser.ModelNode, requiredType string) []string 
 		}
 	}
 	return names
+}
+
+// AllHasManyRelationFields provides a list of all the fields in the schema
+// which are of type Model and which are repeated.
+func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {
+	captured := []*parser.FieldNode{}
+	for _, model := range Models(asts) {
+		for _, field := range ModelFields(model) {
+			if IsHasManyModelField(asts, field) {
+				captured = append(captured, field)
+			}
+		}
+	}
+	return captured
 }
 
 // ResolveInputType returns a string represention of the type of the give input

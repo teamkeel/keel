@@ -5,6 +5,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/sanity-io/litter"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -14,9 +15,16 @@ import (
 
 // Make sure the @relation attribute is used properly.
 func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+
+	// We accumulate a list of the related fields that referenced by
+	// @Relation attributes.
+	relatedFieldsCitedByAllModels := []*parser.FieldNode{}
+
 	for _, thisModel := range query.Models(asts) {
 
-		relatedFieldsAlreadyReferredTo := []*parser.FieldNode{}
+		// We accumulate a list of the related fields that are referenced
+		// by @Relation attributes in THIS model.
+		relatedFieldsCitedByThisModel := []*parser.FieldNode{}
 
 		// We process here, only fields that have the @relation attribute.
 		for _, thisField := range fieldsThatHaveRelationAttribute(thisModel) {
@@ -123,7 +131,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 			// None of the related fields cited by this model's @Relationships, must be
 			// duplicates. You CAN have more than one 1:many relationships now between model's
 			// A and B, but they must use different related fields.
-			if slices.Contains(relatedFieldsAlreadyReferredTo, relatedField) {
+			if slices.Contains(relatedFieldsCitedByThisModel, relatedField) {
 				errs.Append(
 					errorhandling.ErrorRelationAttributeRelatedFieldIsDuplicated,
 					map[string]string{
@@ -133,11 +141,30 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 
 				continue
 			}
-			relatedFieldsAlreadyReferredTo = append(relatedFieldsAlreadyReferredTo, relatedField)
+			relatedFieldsCitedByThisModel = append(relatedFieldsCitedByThisModel, relatedField)
+		}
+		relatedFieldsCitedByAllModels = append(relatedFieldsCitedByThisModel)
+	}
 
-			// must not have been used thus previously [short circuit]
+	// It is invalid if any of the repeated relationship fields in the schema got missed out.
+	// I.e. that did NOT get referenced by an @Relation attribute.
+	allHasManyRelationFields := query.AllHasManyRelationFields(asts)
+	missedOut := lo.Without(allHasManyRelationFields, relatedFieldsCitedByAllModels...)
+	missingFieldNames := lo.Map(missedOut, func(f *parser.FieldNode, _ int) string {
+		return f.Name.Value
+	})
+
+	// We cannot enforce this final part of the rule yet. I.e. until we remove the old relations inference
+	// between relationships.
+	//
+	// But this debug output shows that the analysis is working.
+	if false {
+		if len(missingFieldNames) != 0 {
+			litter.Dump("Across the whole schema, the following has many relation fields are not cited by @relation attributes:")
+			litter.Dump(missingFieldNames)
 		}
 	}
+
 	return errs
 }
 
