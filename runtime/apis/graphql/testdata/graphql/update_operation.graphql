@@ -7,14 +7,14 @@ type Mutation {
   updatePerson(input: UpdatePersonInput!): Person!
 }
 
-input AuthenticateEmailPasswordInput {
-  email: String!
-  password: String!
-}
-
 input AuthenticateInput {
   createIfNotExists: Boolean
-  emailPassword: AuthenticateEmailPasswordInput!
+  emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
 }
 
 input GetPersonInput {

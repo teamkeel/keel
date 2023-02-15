@@ -281,3 +281,10 @@ func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule 
 func (i *OperationInput) IsModelField() bool {
 	return len(i.Target) > 0
 }
+
+func FindMessage(messages []*Message, messageName string) *Message {
+	message, _ := lo.Find(messages, func(m *Message) bool {
+		return m.Name == messageName
+	})
+	return message
+}

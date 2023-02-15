@@ -206,8 +206,8 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 		protoOp := proto.Operation{
 			ModelName:           parser.ImplicitIdentityModelName,
 			Name:                parser.ImplicitAuthenticateOperationName,
-			Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO,
-			Type:                proto.OperationType_OPERATION_TYPE_AUTHENTICATE,
+			Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
+			Type:                proto.OperationType_OPERATION_TYPE_WRITE,
 			InputMessageName:    "AuthenticateInput",
 			ResponseMessageName: "AuthenticateResponse",
 			Inputs: []*proto.OperationInput{
@@ -262,14 +262,16 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 			Name: "EmailPasswordInput",
 			Fields: []*proto.MessageField{
 				{
-					Name:     "email",
-					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-					Optional: false,
+					Name:        "email",
+					MessageName: "EmailPasswordInput",
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+					Optional:    false,
 				},
 				{
-					Name:     "password",
-					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-					Optional: false,
+					Name:        "password",
+					MessageName: "EmailPasswordInput",
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+					Optional:    false,
 				},
 			},
 		})
@@ -278,14 +280,16 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 			Name: "AuthenticateInput",
 			Fields: []*proto.MessageField{
 				{
-					Name:     "createIfNotExists",
-					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-					Optional: true,
+					Name:        "createIfNotExists",
+					MessageName: "AuthenticateInput",
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+					Optional:    true,
 				},
 				{
-					Name:     "emailPassword",
-					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String("EmailPasswordInput")},
-					Optional: false,
+					Name:        "emailPassword",
+					MessageName: "AuthenticateInput",
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String("EmailPasswordInput")},
+					Optional:    false,
 				},
 			},
 		})
@@ -294,14 +298,16 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 			Name: "AuthenticateResponse",
 			Fields: []*proto.MessageField{
 				{
-					Name:     "identityCreated",
-					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-					Optional: true,
+					Name:        "identityCreated",
+					MessageName: "AuthenticateResponse",
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+					Optional:    true,
 				},
 				{
-					Name:     "token",
-					Type:     &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-					Optional: false,
+					Name:        "token",
+					MessageName: "AuthenticateResponse",
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+					Optional:    false,
 				},
 			},
 		})

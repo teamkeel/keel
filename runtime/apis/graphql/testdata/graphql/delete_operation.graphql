@@ -7,18 +7,18 @@ type Mutation {
   deletePerson(input: DeletePersonInput!): DeleteResponse
 }
 
-input AuthenticateEmailPasswordInput {
-  email: String!
-  password: String!
-}
-
 input AuthenticateInput {
   createIfNotExists: Boolean
-  emailPassword: AuthenticateEmailPasswordInput!
+  emailPassword: EmailPasswordInput!
 }
 
 input DeletePersonInput {
   id: ID!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
 }
 
 input GetPersonInput {
