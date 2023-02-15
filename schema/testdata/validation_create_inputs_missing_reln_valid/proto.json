@@ -1,390 +1,476 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Author",
-      "fields":  [
+      "name": "Author",
+      "fields": [
         {
-          "modelName":  "Author",
-          "name":  "name",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Author",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "modelName":  "Author",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Author",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Author",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Author",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Author",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Author",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         }
       ]
     },
     {
-      "name":  "Post",
-      "fields":  [
+      "name": "Post",
+      "fields": [
         {
-          "modelName":  "Post",
-          "name":  "content",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Post",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "author",
-          "type":  {
-            "type":  "TYPE_MODEL",
-            "modelName":  "Author"
+          "modelName": "Post",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Author"
           },
-          "foreignKeyFieldName":  "authorId"
+          "foreignKeyFieldName": "authorId"
         },
         {
-          "modelName":  "Post",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Post",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "authorId",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Post",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "foreignKeyInfo":  {
-            "relatedModelName":  "Author",
-            "relatedModelField":  "id"
+          "foreignKeyInfo": {
+            "relatedModelName": "Author",
+            "relatedModelField": "id"
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Post",
-          "name":  "createPostA",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Post",
+          "name": "createPostA",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Post",
-              "operationName":  "createPostA",
-              "name":  "content",
-              "type":  {
-                "type":  "TYPE_STRING",
-                "modelName":  "Post",
-                "fieldName":  "content"
+              "modelName": "Post",
+              "operationName": "createPostA",
+              "name": "content",
+              "type": {
+                "type": "TYPE_STRING",
+                "modelName": "Post",
+                "fieldName": "content"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "target": [
                 "content"
               ]
             },
             {
-              "modelName":  "Post",
-              "operationName":  "createPostA",
-              "name":  "authorId",
-              "type":  {
-                "type":  "TYPE_ID",
-                "modelName":  "Post",
-                "fieldName":  "authorId"
+              "modelName": "Post",
+              "operationName": "createPostA",
+              "name": "authorId",
+              "type": {
+                "type": "TYPE_ID",
+                "modelName": "Post",
+                "fieldName": "authorId"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "target": [
                 "authorId"
               ]
             }
-          ]
+          ],
+          "inputMessageName": "CreatePostAInput"
         },
         {
-          "modelName":  "Post",
-          "name":  "createPostB",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Post",
+          "name": "createPostB",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Post",
-              "operationName":  "createPostB",
-              "name":  "content",
-              "type":  {
-                "type":  "TYPE_STRING",
-                "modelName":  "Post",
-                "fieldName":  "content"
+              "modelName": "Post",
+              "operationName": "createPostB",
+              "name": "content",
+              "type": {
+                "type": "TYPE_STRING",
+                "modelName": "Post",
+                "fieldName": "content"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "target": [
                 "content"
               ]
             },
             {
-              "modelName":  "Post",
-              "operationName":  "createPostB",
-              "name":  "authorId",
-              "type":  {
-                "type":  "TYPE_ID",
-                "modelName":  "Author",
-                "fieldName":  "id"
+              "modelName": "Post",
+              "operationName": "createPostB",
+              "name": "authorId",
+              "type": {
+                "type": "TYPE_ID",
+                "modelName": "Author",
+                "fieldName": "id"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "target": [
                 "author",
                 "id"
               ]
             }
-          ]
+          ],
+          "inputMessageName": "CreatePostBInput"
         },
         {
-          "modelName":  "Post",
-          "name":  "createPostC",
-          "type":  "OPERATION_TYPE_CREATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Post",
+          "name": "createPostC",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Post",
-              "operationName":  "createPostC",
-              "name":  "content",
-              "type":  {
-                "type":  "TYPE_STRING",
-                "modelName":  "Post",
-                "fieldName":  "content"
+              "modelName": "Post",
+              "operationName": "createPostC",
+              "name": "content",
+              "type": {
+                "type": "TYPE_STRING",
+                "modelName": "Post",
+                "fieldName": "content"
               },
-              "mode":  "INPUT_MODE_WRITE",
-              "target":  [
+              "mode": "INPUT_MODE_WRITE",
+              "target": [
                 "content"
               ]
             },
             {
-              "modelName":  "Post",
-              "operationName":  "createPostC",
-              "name":  "someAuthorId",
-              "type":  {
-                "type":  "TYPE_ID"
+              "modelName": "Post",
+              "operationName": "createPostC",
+              "name": "someAuthorId",
+              "type": {
+                "type": "TYPE_ID"
               },
-              "mode":  "INPUT_MODE_WRITE"
+              "mode": "INPUT_MODE_WRITE"
             }
           ],
-          "setExpressions":  [
+          "setExpressions": [
             {
-              "source":  "post.authorId = someAuthorId"
+              "source": "post.authorId = someAuthorId"
             }
-          ]
+          ],
+          "inputMessageName": "CreatePostCInput"
         }
       ]
     },
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "email",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
           },
-          "unique":  true
+          "unique": true
         },
         {
-          "modelName":  "Identity",
-          "name":  "password",
-          "type":  {
-            "type":  "TYPE_PASSWORD"
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Identity",
-          "name":  "authenticate",
-          "type":  "OPERATION_TYPE_AUTHENTICATE",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs":  [
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "OPERATION_TYPE_AUTHENTICATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "createIfNotExists",
-              "type":  {
-                "type":  "TYPE_BOOL"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "createIfNotExists",
+              "type": {
+                "type": "TYPE_BOOL"
               },
-              "optional":  true
+              "optional": true
             },
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "emailPassword",
-              "type":  {
-                "type":  "TYPE_OBJECT"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "emailPassword",
+              "type": {
+                "type": "TYPE_OBJECT"
               },
-              "inputs":  [
+              "inputs": [
                 {
-                  "modelName":  "Identity",
-                  "operationName":  "authenticate",
-                  "name":  "email",
-                  "type":  {
-                    "type":  "TYPE_STRING"
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "email",
+                  "type": {
+                    "type": "TYPE_STRING"
                   }
                 },
                 {
-                  "modelName":  "Identity",
-                  "operationName":  "authenticate",
-                  "name":  "password",
-                  "type":  {
-                    "type":  "TYPE_STRING"
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "password",
+                  "type": {
+                    "type": "TYPE_STRING"
                   }
                 }
               ]
             }
           ],
-          "outputs":  [
+          "outputs": [
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "identityCreated",
-              "type":  {
-                "type":  "TYPE_BOOL"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "identityCreated",
+              "type": {
+                "type": "TYPE_BOOL"
               }
             },
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "token",
-              "type":  {
-                "type":  "TYPE_STRING"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "token",
+              "type": {
+                "type": "TYPE_STRING"
               }
             }
           ],
-          "inputMessageName":  "AuthenticateInput",
-          "responseMessageName":  "AuthenticateResponse"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         }
       ]
     }
   ],
-  "messages":  [
+  "messages": [
     {
-      "name":  "EmailPasswordInput",
-      "fields":  [
+      "name": "CreatePostAInput",
+      "fields": [
         {
-          "name":  "email",
-          "type":  {
-            "type":  "TYPE_STRING"
-          }
+          "messageName": "CreatePostAInput",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "content"
+          },
+          "target": [
+            "content"
+          ]
         },
         {
-          "name":  "password",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "messageName": "CreatePostAInput",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Post",
+            "fieldName": "authorId"
+          },
+          "target": [
+            "authorId"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreatePostBInput",
+      "fields": [
+        {
+          "messageName": "CreatePostBInput",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "content"
+          },
+          "target": [
+            "content"
+          ]
+        },
+        {
+          "messageName": "CreatePostBInput",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "target": [
+            "author",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreatePostCInput",
+      "fields": [
+        {
+          "messageName": "CreatePostCInput",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Post",
+            "fieldName": "content"
+          },
+          "target": [
+            "content"
+          ]
+        },
+        {
+          "messageName": "CreatePostCInput",
+          "name": "someAuthorId",
+          "type": {
+            "type": "TYPE_ID"
           }
         }
       ]
     },
     {
-      "name":  "AuthenticateInput",
-      "fields":  [
+      "name": "EmailPasswordInput",
+      "fields": [
         {
-          "name":  "createIfNotExists",
-          "type":  {
-            "type":  "TYPE_BOOL"
-          },
-          "optional":  true
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
         },
         {
-          "name":  "emailPassword",
-          "type":  {
-            "type":  "TYPE_MESSAGE",
-            "messageName":  "EmailPasswordInput"
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name":  "AuthenticateResponse",
-      "fields":  [
+      "name": "AuthenticateInput",
+      "fields": [
         {
-          "name":  "identityCreated",
-          "type":  {
-            "type":  "TYPE_BOOL"
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
           },
-          "optional":  true
+          "optional": true
         },
         {
-          "name":  "token",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
           }
         }
       ]
