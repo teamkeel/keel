@@ -13,10 +13,20 @@ import (
 
 // Make sure the @relation attribute is used properly.
 func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
+	for _, thisModel := range query.Models(asts) {
 		// todo XXXX init table of previous uses
 
-		for _, thisField := range fieldsThatHaveRelationAttribute(model) {
+		for _, thisField := range fieldsThatHaveRelationAttribute(thisModel) {
+
+			// IMPORTANT NOTE
+			//
+			// This is a complex validation rule and its checks have (at least conceptually),
+			// a dependency order.
+			//
+			// Often if one fails, the remainder become either infeasible, or would
+			// create unhelpful and confusing noise.
+			//
+			// So as soon as one (in the dependency order) fails, we skip the remainder.
 
 			relationAttr := query.FieldGetAttribute(thisField, parser.AttributeRelation)
 
@@ -30,7 +40,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"Suggestion": thisField.Name.Value,
 					},
 					thisField)
-				continue // Problem is too fundamental to merit remaining checks.
+				continue
 			}
 
 			// Make sure @relation is only used on fields that are NOT repeated.
@@ -41,7 +51,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"FieldName": thisField.Name.Value,
 					},
 					thisField)
-				continue // Problem is too fundamental to merit remaining checks.
+				continue
 			}
 
 			// Make sure that the attribute's argument (which is unfortunately a
@@ -56,7 +66,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 					},
 					relationAttr)
 
-				continue // Problem is too fundamental to merit remaining checks.
+				continue
 			}
 
 			// Make sure the value of the @relation attribute (e.g. "written"), exists as a
@@ -75,11 +85,26 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 						"SuggestedNames":   suggestedNames,
 					},
 					relationAttr)
-				continue // Problem is too fundamental to merit remaining checks.
+				continue
 			}
 
-			// said field must be of type model
-			// said field's model type must point back to this model
+			// Make sure the related field is of type <thisModel>
+			if relatedField.Type != thisModel.Name.Value {
+				suitableFields := query.FieldsInModelOfType(relatedModel, thisModel.Name.Value)
+				suggestedFields := formatting.HumanizeList(suitableFields, formatting.DelimiterOr)
+				errs.Append(
+					errorhandling.ErrorRelationAttributeRelatedFieldWrongType,
+					map[string]string{
+						"RelatedFieldName": relatedFieldName,
+						"RelatedFieldType": relatedField.Type,
+						"RequiredType":     thisModel.Name.Value,
+						"SuggestedNames":   suggestedFields,
+					},
+					relationAttr)
+
+				continue
+			}
+
 			// must not have been used thus previously [short circuit]
 			// the related field must be multiple
 			// update table of previous uses by this model

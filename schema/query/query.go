@@ -270,6 +270,18 @@ func ModelFieldNames(model *parser.ModelNode) []string {
 	return names
 }
 
+// FieldsInModelOfType provides a list of the field names for the fields in the
+// given model, that have the given type name.
+func FieldsInModelOfType(model *parser.ModelNode, requiredType string) []string {
+	names := []string{}
+	for _, field := range ModelFields(model) {
+		if field.Type == requiredType {
+			names = append(names, field.Name.Value)
+		}
+	}
+	return names
+}
+
 // ResolveInputType returns a string represention of the type of the give input
 // If the input is explicitly typed using a built in type that type is returned
 //
