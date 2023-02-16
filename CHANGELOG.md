@@ -1,3 +1,15 @@
+# [0.264.0](https://github.com/teamkeel/keel/compare/v0.263.0...v0.264.0) (2023-02-16)
+
+
+### Bug Fixes
+
+* address review comments ([e92e272](https://github.com/teamkeel/keel/commit/e92e2729800103c19ac3f1e11f934f98cea3667e))
+
+
+### Features
+
+* add request and response logging ([a5b73f1](https://github.com/teamkeel/keel/commit/a5b73f17d7b03399a85e0e89e680de69990edc3e))
+
 # [0.263.0](https://github.com/teamkeel/keel/compare/v0.262.0...v0.263.0) (2023-02-15)
 
 
