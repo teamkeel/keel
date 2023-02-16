@@ -31,29 +31,38 @@ func ParsePage(args map[string]any) (Page, error) {
 	page := Page{}
 
 	if first, ok := args["first"]; ok {
-		asInt, ok := first.(int)
-		if !ok {
-			var err error
-			asInt, err = strconv.Atoi(first.(string))
-			if err != nil {
-				return page, fmt.Errorf("cannot cast this: %v to an int", first)
+		switch v := first.(type) {
+		case int64:
+			page.First = int(v)
+		case int:
+			page.First = v
+		case string:
+			num, err := strconv.Atoi(v)
+
+			if err == nil {
+				page.First = num
 			}
 		}
-		page.First = asInt
 	}
 
 	if last, ok := args["last"]; ok {
-		asInt, ok := last.(int)
-		if !ok {
-			var err error
-			// todo: is a float64 from json:
-			//  http: panic serving [::1]:63370: interface conversion: interface {} is float64, not string
-			asInt, err = strconv.Atoi(last.(string))
-			if err != nil {
-				return page, fmt.Errorf("cannot cast this: %v to an int", last)
+		switch v := last.(type) {
+		case int64:
+			page.Last = int(v)
+		case int:
+			page.Last = v
+		case string:
+			num, err := strconv.Atoi(v)
+
+			if err == nil {
+				page.Last = num
 			}
 		}
-		page.Last = asInt
+	}
+
+	// If none specified - use a sensible default
+	if page.First == 0 && page.Last == 0 {
+		page.First = 50
 	}
 
 	if after, ok := args["after"]; ok {
@@ -70,11 +79,6 @@ func ParsePage(args map[string]any) (Page, error) {
 			return page, fmt.Errorf("cannot cast this: %v to a string", before)
 		}
 		page.Before = asString
-	}
-
-	// If none specified - use a sensible default
-	if page.First == 0 && page.Last == 0 {
-		page.First = 50
 	}
 
 	return page, nil

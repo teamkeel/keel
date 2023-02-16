@@ -131,11 +131,21 @@ func parseQueryParams(q url.Values) map[string]any {
 }
 
 func parsePostBody(b io.ReadCloser) (inputs map[string]any, err error) {
-	body, err := io.ReadAll(b)
-	if err != nil {
-		return nil, err
+	d := json.NewDecoder(b)
+	d.UseNumber()
+
+	inputs = map[string]any{}
+
+	err = d.Decode(&inputs)
+
+	for key, value := range inputs {
+		if num, ok := value.(json.Number); ok {
+			num, err := num.Int64()
+			if err == nil {
+				inputs[key] = num
+			}
+		}
 	}
 
-	err = json.Unmarshal(body, &inputs)
 	return inputs, err
 }
