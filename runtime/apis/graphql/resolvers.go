@@ -60,6 +60,7 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 		input := getInput(schema, operation, p.Args)
 
 		res, headers, err := actions.Execute(scope, input)
+
 		if err != nil {
 			var runtimeErr common.RuntimeError
 			if !errors.As(err, &runtimeErr) {

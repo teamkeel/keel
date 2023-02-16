@@ -92,7 +92,7 @@ var testCases = []testCase{
 			FROM 
 				"thing" 
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 	},
 	{
 		name: "list_op_implicit_input_text_contains",
@@ -119,7 +119,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."name" LIKE ?
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"%%bob%%"},
 	},
 	{
@@ -147,7 +147,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."name" LIKE ?
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"bob%%"},
 	},
 	{
@@ -175,7 +175,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."name" LIKE ?
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"%%bob"},
 	},
 	{
@@ -203,7 +203,7 @@ var testCases = []testCase{
             WHERE
                 "thing"."name" IN (?, ?, ?, ?)
             ORDER BY 
-                "thing"."id" LIMIT 50`,
+                "thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"bob", "dave", "adam", "pete"},
 	},
 	{
@@ -236,7 +236,7 @@ var testCases = []testCase{
             WHERE
                 "thing"."category" IN (?, ?)
             ORDER BY 
-                "thing"."id" LIMIT 50`,
+                "thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"Technical", "Food"},
 	},
 	{
@@ -261,7 +261,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" > ? 
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
 	},
 	{
@@ -286,7 +286,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" >= ? 
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
 	},
 	{
@@ -311,7 +311,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" < ? 
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
 	},
 	{
@@ -336,7 +336,7 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" <= ? 
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
 	},
 	{
@@ -363,7 +363,7 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."title" IN (?, ?)
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"title1", "title2"},
 	},
 	{
@@ -390,7 +390,7 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."title" NOT IN (?, ?)
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"title1", "title2"},
 	},
 	{
@@ -417,7 +417,7 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."age" IN (?, ?)
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{int64(10), int64(20)},
 	},
 	{
@@ -444,7 +444,7 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."age" NOT IN (?, ?)
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{int64(10), int64(20)},
 	},
 	{
@@ -480,7 +480,7 @@ var testCases = []testCase{
 			WHERE 
 				"thing$parent"."name" IS NOT DISTINCT FROM ?
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{"bob"},
 	},
 	{
@@ -517,7 +517,7 @@ var testCases = []testCase{
 			WHERE 
 				"thing$parent"."is_active" IS NOT DISTINCT FROM ?
 			ORDER BY 
-				"thing"."id" LIMIT 50`,
+				"thing"."id" ASC LIMIT 50`,
 		expectedArgs: []any{false},
 	},
 	{
@@ -637,7 +637,7 @@ func TestQueryBuilder(t *testing.T) {
 			case proto.OperationType_OPERATION_TYPE_GET:
 				statement, err = actions.GenerateGetStatement(query, scope, testCase.input)
 			case proto.OperationType_OPERATION_TYPE_LIST:
-				statement, err = actions.GenerateListStatement(query, scope, testCase.input)
+				statement, _, err = actions.GenerateListStatement(query, scope, testCase.input)
 			case proto.OperationType_OPERATION_TYPE_CREATE:
 				statement, err = actions.GenerateCreateStatement(query, scope, testCase.input)
 			case proto.OperationType_OPERATION_TYPE_UPDATE:

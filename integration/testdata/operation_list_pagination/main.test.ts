@@ -31,9 +31,7 @@ test("pagination - before", async () => {
   expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 3));
 });
 
-// todo: not working?
-// https://github.com/teamkeel/keel/blame/d24424a1f0e07a234dd0f3dac74ba2092cbbbbae/runtime/actions/query.go#L274-L301
-test.fails("pagination - last with before", async () => {
+test("pagination - last with before", async () => {
   const posts = await setupPosts({ count: 6 });
   const { endCursor, results: firstResults } = await actions.listPosts({
     first: 4,
@@ -46,11 +44,7 @@ test.fails("pagination - last with before", async () => {
 
   expect(results.length).toEqual(1);
 
-  expect(results.map((r) => r.id)).toEqual(
-    firstResults
-      .map((r) => r.id)
-      .slice(firstResults.length - 1, firstResults.length)
-  );
+  expect(results.map((r) => r.id)).toEqual(["3"]);
 });
 
 test("pagination - first", async () => {
@@ -64,8 +58,7 @@ test("pagination - first", async () => {
   expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 2));
 });
 
-// todo: this is more complicated
-test.fails("pagination - last only", async () => {
+test("pagination - last only", async () => {
   const posts = await setupPosts({ count: 6 });
 
   const { results } = await actions.listPosts({
