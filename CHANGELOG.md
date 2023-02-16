@@ -1,3 +1,10 @@
+## [0.264.1](https://github.com/teamkeel/keel/compare/v0.264.0...v0.264.1) (2023-02-16)
+
+
+### Bug Fixes
+
+* message type for nested messages ([#781](https://github.com/teamkeel/keel/issues/781)) ([c8359b1](https://github.com/teamkeel/keel/commit/c8359b1429863857c976544b04521963791392c2))
+
 # [0.264.0](https://github.com/teamkeel/keel/compare/v0.263.0...v0.264.0) (2023-02-16)
 
 
