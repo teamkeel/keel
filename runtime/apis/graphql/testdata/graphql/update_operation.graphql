@@ -23,20 +23,20 @@ input GetPersonInput {
 
 input UpdatePersonInput {
   values: UpdatePersonValuesInput!
-  where: UpdatePersonQueryInput!
-}
-
-input UpdatePersonQueryInput {
-  id: ID!
+  where: UpdatePersonWhereInput!
 }
 
 input UpdatePersonValuesInput {
   name: String!
 }
 
+input UpdatePersonWhereInput {
+  id: ID!
+}
+
 type AuthenticateResponse {
-  identityCreated: Boolean
-  token: String
+  identityCreated: Boolean!
+  token: String!
 }
 
 type Person {

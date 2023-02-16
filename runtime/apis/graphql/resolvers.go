@@ -13,21 +13,39 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 )
 
-func getInput(operation *proto.Operation, args map[string]any) map[string]any {
+func getInput(schema *proto.Schema, operation *proto.Operation, args map[string]any) map[string]any {
 	input, ok := args["input"].(map[string]any)
 	if !ok {
 		input = map[string]any{}
 	}
 
+	inputMessage := proto.FindMessage(schema.Messages, operation.InputMessageName)
+
 	switch operation.Type {
 	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_DELETE:
-		input = parseTypes(operation, input)
+		input = parseTypes(inputMessage, operation, input)
 	case proto.OperationType_OPERATION_TYPE_UPDATE, proto.OperationType_OPERATION_TYPE_LIST:
 		if where, ok := input["where"].(map[string]any); ok {
-			input["where"] = parseTypes(operation, where)
+
+			var whereMessage *proto.Message
+			for _, v := range inputMessage.Fields {
+				if v.Name == "where" && v.Type.Type == proto.Type_TYPE_MESSAGE {
+					whereMessage = proto.FindMessage(schema.Messages, v.Type.MessageName.Value)
+				}
+			}
+
+			input["where"] = parseTypes(whereMessage, operation, where)
 		}
 		if values, ok := input["values"].(map[string]any); ok {
-			input["values"] = parseTypes(operation, values)
+
+			var valuesMessage *proto.Message
+			for _, v := range inputMessage.Fields {
+				if v.Name == "values" && v.Type.Type == proto.Type_TYPE_MESSAGE {
+					valuesMessage = proto.FindMessage(schema.Messages, v.Type.MessageName.Value)
+				}
+			}
+
+			input["values"] = parseTypes(valuesMessage, operation, values)
 		}
 		return input
 	}
@@ -39,7 +57,7 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 	return func(p graphql.ResolveParams) (interface{}, error) {
 		scope := actions.NewScope(p.Context, operation, schema)
 
-		input := getInput(operation, p.Args)
+		input := getInput(schema, operation, p.Args)
 
 		res, headers, err := actions.Execute(scope, input)
 		if err != nil {
@@ -72,9 +90,10 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 	}
 }
 
-func parseTypes(operation *proto.Operation, values map[string]any) map[string]any {
+func parseTypes(message *proto.Message, operation *proto.Operation, values map[string]any) map[string]any {
+
 	for k, v := range values {
-		input, found := lo.Find(operation.Inputs, func(in *proto.OperationInput) bool {
+		input, found := lo.Find(message.Fields, func(in *proto.MessageField) bool {
 			return in.Name == k
 		})
 
@@ -106,7 +125,6 @@ func parseTypes(operation *proto.Operation, values map[string]any) map[string]an
 				values[k] = convertTimestamp(v)
 			}
 		}
-
 	}
 
 	return values

@@ -1641,25 +1641,25 @@ var testCases = []testCase{
 			}
 		},
 		gqlOperation: `
-				query GetAuthor($authorId: ID!, $first: Int!, $after: String!) {
-					getAuthor(input: { id: $authorId }) {
-						id
-						name
-						posts(first: $first, after: $after) {
-							edges {
-							  node {
-								id
-								title
-							  }
-							}
-							pageInfo {
-								hasNextPage
-								startCursor
-								endCursor
+			query GetAuthor($authorId: ID!, $first: Int!, $after: String!) {
+				getAuthor(input: { id: $authorId }) {
+					id
+					name
+					posts(first: $first, after: $after) {
+						edges {
+							node {
+							id
+							title
 							}
 						}
+						pageInfo {
+							hasNextPage
+							startCursor
+							endCursor
+						}
 					}
-				 }`,
+				}
+			}`,
 		variables: map[string]any{
 			"authorId": "author_1",
 			"first":    2,

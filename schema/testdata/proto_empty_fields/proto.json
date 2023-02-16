@@ -202,8 +202,7 @@
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
-          },
-          "optional": true
+          }
         },
         {
           "messageName": "AuthenticateResponse",

@@ -21,8 +21,8 @@ input GetOrderInput {
 }
 
 type AuthenticateResponse {
-  identityCreated: Boolean
-  token: String
+  identityCreated: Boolean!
+  token: String!
 }
 
 type Order {

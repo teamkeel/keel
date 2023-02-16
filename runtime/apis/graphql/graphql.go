@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 
@@ -344,39 +343,31 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	schema *proto.Schema) error {
 
 	model := proto.FindModel(schema.Models, op.ModelName)
-
-	outputType, err := mk.addModel(model)
+	modelType, err := mk.addModel(model)
 	if err != nil {
 		return err
 	}
 
 	field := &graphql.Field{
 		Name: op.Name,
-		Type: outputType,
 	}
 
-	// Only add args if there are inputs for this operation
-	// Unles it's a list and then we need to add pagination
-	if len(op.Inputs) > 0 || op.Type == proto.OperationType_OPERATION_TYPE_LIST {
-		operationInputType, err := mk.makeOperationInputType(op)
-		if err != nil {
-			return err
-		}
+	operationInputType, allOptionalInputs, err := mk.makeOperationInputType(op)
+	if err != nil {
+		return err
+	}
 
-		allOptionalInputs := true
-		for _, in := range op.Inputs {
-			if !in.Optional {
-				allOptionalInputs = false
-			}
-		}
-
+	// Only add input args if an input field exists.
+	if len(operationInputType.Fields()) > 0 {
 		if allOptionalInputs {
+			// Input field is optional if all its fields are optional
 			field.Args = graphql.FieldConfigArgument{
 				"input": &graphql.ArgumentConfig{
 					Type: operationInputType,
 				},
 			}
 		} else {
+			// Input field is required if any of its fields are required
 			field.Args = graphql.FieldConfigArgument{
 				"input": &graphql.ArgumentConfig{
 					Type: graphql.NewNonNull(operationInputType),
@@ -387,12 +378,11 @@ func (mk *graphqlSchemaBuilder) addOperation(
 
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
+		field.Type = modelType
 		mk.query.AddFieldConfig(op.Name, field)
-	case proto.OperationType_OPERATION_TYPE_CREATE:
-		field.Type = graphql.NewNonNull(field.Type)
-		mk.mutation.AddFieldConfig(op.Name, field)
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		field.Type = graphql.NewNonNull(field.Type)
+	case proto.OperationType_OPERATION_TYPE_CREATE,
+		proto.OperationType_OPERATION_TYPE_UPDATE:
+		field.Type = graphql.NewNonNull(modelType)
 		mk.mutation.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		field.Type = deleteResponseType
@@ -400,34 +390,27 @@ func (mk *graphqlSchemaBuilder) addOperation(
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		// for list types we need to wrap the output type in the
 		// connection type which allows for pagination
-		field.Type = mk.makeConnectionType(outputType)
+		field.Type = mk.makeConnectionType(modelType)
 		mk.query.AddFieldConfig(op.Name, field)
-	case proto.OperationType_OPERATION_TYPE_READ,
-		proto.OperationType_OPERATION_TYPE_WRITE:
-		// Construct the graphql input type from the operation's input message
-		// TODO: all operation types will eventually use this as message definitions will become standard
+	case proto.OperationType_OPERATION_TYPE_READ:
 		responseMessage := proto.FindMessage(schema.Messages, op.ResponseMessageName)
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
-
-		ouput := graphql.NewObject(graphql.ObjectConfig{
-			Name:   responseMessage.Name,
-			Fields: graphql.Fields{},
-		})
-
-		for _, field := range responseMessage.Fields {
-			outputType := protoTypeToGraphQLOutput[field.Type.Type]
-			if outputType == nil {
-				return fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
-			}
-
-			ouput.AddFieldConfig(field.Name, &graphql.Field{
-				Type: outputType,
-			})
+		field.Type, err = outputObjectFromMessage(responseMessage)
+		if err != nil {
+			return err
 		}
-		field.Type = ouput
-
+		mk.query.AddFieldConfig(op.Name, field)
+	case proto.OperationType_OPERATION_TYPE_WRITE:
+		responseMessage := proto.FindMessage(schema.Messages, op.ResponseMessageName)
+		if responseMessage == nil {
+			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
+		}
+		field.Type, err = outputObjectFromMessage(responseMessage)
+		if err != nil {
+			return err
+		}
 		mk.mutation.AddFieldConfig(op.Name, field)
 	default:
 		return fmt.Errorf("addOperation() does not yet support this op.Type: %v", op.Type)
@@ -516,6 +499,31 @@ var fromNowType = graphql.Field{
 	},
 }
 
+// outputObjectFromMessage makes a graphql.Object response output from a proto.Message.
+// Currently does not handle nested messages.
+func outputObjectFromMessage(message *proto.Message) (*graphql.Object, error) {
+	output := graphql.NewObject(graphql.ObjectConfig{
+		Name:   message.Name,
+		Fields: graphql.Fields{},
+	})
+
+	for _, field := range message.Fields {
+		fieldType := protoTypeToGraphQLOutput[field.Type.Type]
+		if fieldType == nil {
+			return nil, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+		}
+
+		if !field.Optional {
+			fieldType = graphql.NewNonNull(fieldType)
+		}
+
+		output.AddFieldConfig(field.Name, &graphql.Field{
+			Type: fieldType,
+		})
+	}
+	return output, nil
+}
+
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.Output, err error) {
 	switch field.Type.Type {
@@ -563,96 +571,42 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 	return out, nil
 }
 
-// inputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
-// TODO: deprecate this once Messages govern all input definitions
-func (mk *graphqlSchemaBuilder) inputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
+// inputTypeFromMessageField maps the type in the given proto.MessageField to a suitable graphql.Input type.
+func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageField, op *proto.Operation) (graphql.Input, error) {
 	var in graphql.Input
 
-	switch op.Type.Type {
-	case proto.Type_TYPE_ENUM:
-		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
-			return e.Name == op.Type.EnumName.Value
-		})
-		in = mk.addEnum(enum)
-	case proto.Type_TYPE_OBJECT:
-		operationNamePrefix := strings.ToUpper(op.OperationName[0:1]) + op.OperationName[1:]
-		inputObjectName := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
-
-		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   operationNamePrefix + inputObjectName + "Input",
-			Fields: graphql.InputObjectConfigFieldMap{},
-		})
-
-		for _, input := range op.Inputs {
-			inputField, err := mk.inputTypeFor(input)
-
-			if err != nil {
-				return nil, err
-			}
-
-			inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
-				Type: inputField,
-			})
-		}
-		in = inputObject
-	default:
-		var ok bool
-		in, ok = protoTypeToGraphQLInput[op.Type.Type]
-
-		if !ok {
-			return nil, fmt.Errorf("operation %s has unsupported input type: %s", op.OperationName, op.Type.Type.String())
-		}
-	}
-
-	if !op.Optional {
-		in = graphql.NewNonNull(in)
-	}
-
-	if op.Type.Repeated {
-		in = graphql.NewList(in)
-		in = graphql.NewNonNull(in)
-	}
-
-	return in, nil
-}
-
-// inputTypeForMessageField maps the type in the given proto.MessageField to a suitable graphql.Input type.
-func (mk *graphqlSchemaBuilder) inputTypeForMessageField(field *proto.MessageField) (graphql.Input, error) {
-	var in graphql.Input
-
-	switch field.Type.Type {
-	case proto.Type_TYPE_ENUM:
-		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
-			return e.Name == field.Type.EnumName.Value
-		})
-		in = mk.addEnum(enum)
-	case proto.Type_TYPE_MESSAGE: // Nested message type
+	switch {
+	case field.Type.Type == proto.Type_TYPE_MESSAGE:
 		inputObjectName := field.Type.MessageName.Value
-		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   inputObjectName,
-			Fields: graphql.InputObjectConfigFieldMap{},
-		})
-
 		message := proto.FindMessage(mk.proto.Messages, inputObjectName)
 
-		for _, input := range message.Fields {
-			inputField, err := mk.inputTypeForMessageField(input)
-
-			if err != nil {
-				return nil, err
-			}
-
-			inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
-				Type: inputField,
+		if len(message.Fields) > 0 {
+			inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
+				Name:   inputObjectName,
+				Fields: graphql.InputObjectConfigFieldMap{},
 			})
-		}
-		in = inputObject
-	default:
-		var ok bool
-		in, ok = protoTypeToGraphQLInput[field.Type.Type]
 
-		if !ok {
-			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.MessageName, field.Type.Type.String())
+			for _, input := range message.Fields {
+				inputField, err := mk.inputTypeFromMessageField(input, op)
+				if err != nil {
+					return nil, err
+				}
+
+				inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
+					Type: inputField,
+				})
+			}
+			in = inputObject
+		}
+	case field.IsModelField() && op.Type == proto.OperationType_OPERATION_TYPE_LIST:
+		var err error
+		if in, err = mk.inputTypeForList(field); err != nil {
+			return nil, err
+		}
+	default:
+		var err error
+		if in, err = mk.inputTypeFor(field); err != nil {
+			return nil, err
 		}
 	}
 
@@ -668,14 +622,29 @@ func (mk *graphqlSchemaBuilder) inputTypeForMessageField(field *proto.MessageFie
 	return in, nil
 }
 
-// queryInputTypeFor maps the type in the given proto.OperationInput to a suitable graphql.Input type.
-func (mk *graphqlSchemaBuilder) queryInputTypeFor(op *proto.OperationInput) (graphql.Input, error) {
+// inputTypeFor creates a graphql.Input for non-list operation input types.
+func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql.Input, error) {
 	var in graphql.Input
-
-	switch op.Type.Type {
-	case proto.Type_TYPE_ENUM:
+	if field.Type.Type == proto.Type_TYPE_ENUM {
 		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
-			return e.Name == op.Type.EnumName.Value
+			return e.Name == field.Type.EnumName.Value
+		})
+		in = mk.addEnum(enum)
+	} else {
+		var ok bool
+		if in, ok = protoTypeToGraphQLInput[field.Type.Type]; !ok {
+			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.MessageName, field.Type.Type.String())
+		}
+	}
+	return in, nil
+}
+
+// inputTypeFor creates a graphql.Input for list operation input types.
+func (mk *graphqlSchemaBuilder) inputTypeForList(field *proto.MessageField) (graphql.Input, error) {
+	var in graphql.Input
+	if field.Type.Type == proto.Type_TYPE_ENUM {
+		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
+			return e.Name == field.Type.EnumName.Value
 		})
 		enumType := mk.addEnum(enum)
 		in = graphql.NewInputObject(graphql.InputObjectConfig{
@@ -689,138 +658,43 @@ func (mk *graphqlSchemaBuilder) queryInputTypeFor(op *proto.OperationInput) (gra
 				},
 			},
 		})
-	default:
+	} else {
 		var ok bool
-		in, ok = protoTypeToGraphQLQueryInput[op.Type.Type]
-		if !ok {
-			return nil, fmt.Errorf("operation %s has unsupported input type %s", op.OperationName, op.Type)
+		if in, ok = protoTypeToGraphQLQueryInput[field.Type.Type]; !ok {
+			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.MessageName, field.Type.Type.String())
 		}
 	}
-
-	if !op.Optional {
-		in = graphql.NewNonNull(in)
-	}
-
 	return in, nil
 }
 
 // makeOperationInputType generates an input type to reflect the inputs of the given
 // proto.Operation - which can be used as the Args field in a graphql.Field.
-func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*graphql.InputObject, error) {
-
-	inputTypePrefix := strings.ToUpper(op.Name[0:1]) + op.Name[1:]
+func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*graphql.InputObject, bool, error) {
+	message := proto.FindMessage(mk.proto.Messages, op.InputMessageName)
+	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   inputTypePrefix + "Input",
+		Name:   message.Name,
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
-	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_GET,
-		proto.OperationType_OPERATION_TYPE_CREATE,
-		proto.OperationType_OPERATION_TYPE_DELETE:
-
-		for _, in := range op.Inputs {
-			fieldType, err := mk.inputTypeFor(in)
-			if err != nil {
-				return nil, err
-			}
-
-			inputType.AddFieldConfig(in.Name, &graphql.InputObjectFieldConfig{
-				Type: fieldType,
-			})
-		}
-	case proto.OperationType_OPERATION_TYPE_READ,
-		proto.OperationType_OPERATION_TYPE_WRITE:
-		// TODO: built-in types to also follow this logic once Messages govern all input definitions
-		message := proto.FindMessage(mk.proto.Messages, op.InputMessageName)
-
-		for _, in := range message.Fields {
-			fieldType, err := mk.inputTypeForMessageField(in)
-			if err != nil {
-				return nil, err
-			}
-
-			inputType.AddFieldConfig(in.Name, &graphql.InputObjectFieldConfig{
-				Type: fieldType,
-			})
-		}
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		where := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   inputTypePrefix + "QueryInput",
-			Fields: graphql.InputObjectConfigFieldMap{},
-		})
-		values := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   inputTypePrefix + "ValuesInput",
-			Fields: graphql.InputObjectConfigFieldMap{},
-		})
-
-		// Update operations could have no read or no write inputs if the filtering
-		// and updating is happening in @where or @set expressions
-		hasReadInputs := false
-		hasWriteInputs := false
-
-		for _, in := range op.Inputs {
-			fieldType, err := mk.inputTypeFor(in)
-			if err != nil {
-				return nil, err
-			}
-
-			field := &graphql.InputObjectFieldConfig{
-				Type: fieldType,
-			}
-
-			switch in.Mode {
-			case proto.InputMode_INPUT_MODE_READ:
-				hasReadInputs = true
-				where.AddFieldConfig(in.Name, field)
-			case proto.InputMode_INPUT_MODE_WRITE:
-				hasWriteInputs = true
-				values.AddFieldConfig(in.Name, field)
-			}
+	for _, field := range message.Fields {
+		fieldType, err := mk.inputTypeFromMessageField(field, op)
+		if err != nil {
+			return nil, false, err
 		}
 
-		if hasReadInputs {
-			inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
-				Type: graphql.NewNonNull(where),
-			})
-		}
-
-		if hasWriteInputs {
-			inputType.AddFieldConfig("values", &graphql.InputObjectFieldConfig{
-				Type: graphql.NewNonNull(values),
-			})
-		}
-	case proto.OperationType_OPERATION_TYPE_LIST:
-		where := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   inputTypePrefix + "QueryInput",
-			Fields: graphql.InputObjectConfigFieldMap{},
-		})
-
-		allOptionalInputs := true
-		for _, in := range op.Inputs {
-			var fieldType graphql.Input
-			var err error
-
-			if !in.Optional {
+		if fieldType != nil {
+			if !field.Optional {
 				allOptionalInputs = false
 			}
-
-			if in.IsModelField() {
-				fieldType, err = mk.queryInputTypeFor(in)
-			} else {
-				fieldType, err = mk.inputTypeFor(in)
-			}
-
-			if err != nil {
-				return nil, err
-			}
-
-			where.AddFieldConfig(in.Name, &graphql.InputObjectFieldConfig{
+			inputType.AddFieldConfig(field.Name, &graphql.InputObjectFieldConfig{
 				Type: fieldType,
 			})
 		}
+	}
 
+	if op.Type == proto.OperationType_OPERATION_TYPE_LIST {
 		inputType.AddFieldConfig("first", &graphql.InputObjectFieldConfig{
 			Type:        graphql.Int,
 			Description: "The requested number of nodes for each page.",
@@ -829,21 +703,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 			Type:        graphql.String,
 			Description: "The ID cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.",
 		})
-
-		if len(op.Inputs) > 0 {
-			// Nullable if all inputs are optional
-			if allOptionalInputs {
-				inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
-					Type: where,
-				})
-			} else {
-				inputType.AddFieldConfig("where", &graphql.InputObjectFieldConfig{
-					Type: graphql.NewNonNull(where),
-				})
-			}
-		}
-
 	}
 
-	return inputType, nil
+	return inputType, allOptionalInputs, nil
 }

@@ -38,10 +38,10 @@ input GetPersonInput {
 input ListPeopleInput {
   after: String
   first: Int
-  where: ListPeopleQueryInput!
+  where: ListPeopleWhereInput!
 }
 
-input ListPeopleQueryInput {
+input ListPeopleWhereInput {
   dateOfBirth: DateQueryInput!
   name: StringQueryInput!
   occupation: OccupationQueryInput!
@@ -61,8 +61,8 @@ input StringQueryInput {
 }
 
 type AuthenticateResponse {
-  identityCreated: Boolean
-  token: String
+  identityCreated: Boolean!
+  token: String!
 }
 
 type Date {
