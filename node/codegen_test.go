@@ -430,6 +430,10 @@ export interface ListPeopleWhereInput {
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhereInput;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -461,6 +465,10 @@ export interface ListPeopleWhereInput {
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhereInput;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -553,6 +561,10 @@ export interface ListPeopleWhereInput {
 }
 export interface ListPeopleInput {
 	where?: ListPeopleWhereInput | null;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }
 export interface EmailPasswordInput {
 	email: string;
@@ -659,6 +671,10 @@ export interface PeopleByHobbyWhereInput {
 }
 export interface PeopleByHobbyInput {
 	where: PeopleByHobbyWhereInput;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }
 export interface EmailPasswordInput {
 	email: string;

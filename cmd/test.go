@@ -20,6 +20,7 @@ var testCmd = &cobra.Command{
 
 		opts := []node.BootstrapOption{}
 		if os.Getenv("KEEL_LOCAL_PACKAGES_PATH") != "" {
+			fmt.Printf("Setting local packages path to %s", os.Getenv("KEEL_LOCAL_PACKAGES_PATH"))
 			opts = append(opts, node.WithPackagesPath(os.Getenv("KEEL_LOCAL_PACKAGES_PATH")))
 		}
 

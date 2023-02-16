@@ -46,6 +46,8 @@ func ParsePage(args map[string]any) (Page, error) {
 		asInt, ok := last.(int)
 		if !ok {
 			var err error
+			// todo: is a float64 from json:
+			//  http: panic serving [::1]:63370: interface conversion: interface {} is float64, not string
 			asInt, err = strconv.Atoi(last.(string))
 			if err != nil {
 				return page, fmt.Errorf("cannot cast this: %v to an int", last)
@@ -72,7 +74,7 @@ func ParsePage(args map[string]any) (Page, error) {
 
 	// If none specified - use a sensible default
 	if page.First == 0 && page.Last == 0 {
-		page = Page{First: 50}
+		page.First = 50
 	}
 
 	return page, nil
