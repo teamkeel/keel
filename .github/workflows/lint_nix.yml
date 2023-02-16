@@ -1,0 +1,13 @@
+name: Nixfmt
+on: [ pull_request ]
+
+jobs:
+  lint-packages:
+    runs-on: ubuntu-latest
+    name: Nixfmt
+    steps:
+      - uses: actions/checkout@v2
+      - uses: cachix/install-nix-action@v17
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+      - run: "nix-shell --command 'nixfmt -c shell.nix'"
