@@ -40,18 +40,8 @@ func New(options *Options) *Config {
 
 	if options != nil {
 		viper.SetConfigFile(options.FileName)
-		err := viper.ReadInConfig()
-		if os.IsNotExist(err) {
-			wd, err := os.Getwd()
-			if err != nil {
-				panic(err)
-			}
-
-			_, err = createEmptyConfig(viper, wd)
-			if err != nil {
-				panic(err)
-			}
-		} else if err != nil {
+		err := checkConfigFileExists(options.FileName, viper)
+		if err != nil {
 			panic(err)
 		}
 
@@ -71,6 +61,11 @@ func New(options *Options) *Config {
 	userConfigPath := path.Join(homeDir, UserConfigPartialPath)
 
 	viper.SetConfigFile(userConfigPath)
+
+	err = checkConfigFileExists(userConfigPath, viper)
+	if err != nil {
+		panic(err)
+	}
 
 	err = viper.ReadInConfig()
 	if err != nil {
@@ -268,4 +263,20 @@ func createEnvironments() EnvironmentSecret {
 		Staging:     make(map[string]string),
 		Production:  make(map[string]string),
 	}
+}
+
+func checkConfigFileExists(filename string, viper *viper.Viper) error {
+	err := viper.ReadInConfig()
+	if os.IsNotExist(err) {
+		wd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+
+		_, err = createEmptyConfig(viper, wd)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
