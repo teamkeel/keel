@@ -32,14 +32,6 @@ func init() {
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 
-		log.WithFields(log.Fields{
-			"url":     r.URL,
-			"uri":     r.RequestURI,
-			"headers": r.Header,
-			"method":  r.Method,
-			"host":    r.Host,
-		}).Debug("request received")
-
 		if currSchema == nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte("Cannot serve requests when schema contains errors"))
@@ -151,7 +143,7 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 		handlers[root+"/json/openapi.json"] = httpJson
 	}
 
-	return func(r *http.Request) common.Response {
+	return withRequestResponseLogging(func(r *http.Request) common.Response {
 		handler, ok := handlers[r.URL.Path]
 		if !ok {
 			return common.Response{
@@ -161,6 +153,31 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 		}
 
 		return handler(r)
+	})
+}
+
+func withRequestResponseLogging(handler common.ApiHandlerFunc) common.ApiHandlerFunc {
+	return func(request *http.Request) common.Response {
+		log.WithFields(log.Fields{
+			"url":     request.URL,
+			"uri":     request.RequestURI,
+			"headers": request.Header,
+			"method":  request.Method,
+			"host":    request.Host,
+		}).Info("request")
+
+		response := handler(request)
+
+		entry := log.WithFields(log.Fields{
+			"headers": response.Headers,
+			"status":  response.Status,
+		})
+		if response.Status >= 300 {
+			entry.WithField("body", string(response.Body))
+		}
+		entry.Info("response")
+
+		return response
 	}
 }
 
