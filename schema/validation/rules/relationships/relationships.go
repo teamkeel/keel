@@ -243,11 +243,18 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 	return errs
 }
 
-// When ModelA has a HasMany relationship field that references ModelB, then it is invalid for
-// ModelB to have more than one HasOne relation field that refers to ModelA.
+// When ModelA has a set of HasMany relationship fields that references ModelB, then we must make
+// sure that ModelB has a corresponding set of reverse HasOne relationships. We need to know
+// which field in ModelB *IS* the reverse relationship in order to
+// generate the SQL associated with ModelA's HasMany relationship fields.
 //
-// This is because we have no other way (at present) to infer which field of ModelB to use
-// in the SQL generated associated with ModelA's field.
+// When a field in ModelB is marked with an @relation attribute - it tells us directly
+// and unambiguously which hasMany field in ModelA it "reverses".
+// In the code below these are called "qualified".
+//
+// Provided there's only ONE that is not qualified - we can
+// deduce it and that's fine. So the rule is that there must be only one that does not
+// carry the @relation attribute.
 func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	type hasManyField struct {
@@ -282,7 +289,7 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 		}
 
 		// Given access to the model at the HasOne end, how many fields does it have that
-		// refer back to the model at the hasMany end?
+		// refer back to the model at the hasMany end - which are not *qualified*?
 		reverseFields := query.ModelFields(singleEndModel, func(f *parser.FieldNode) bool {
 
 			// It can't be a reverse relation field if it's not a hasOne relation field.
@@ -294,16 +301,25 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 			if f.Type != hasManyF.belongsTo.Name.Value {
 				return false
 			}
+
+			// If it is qualified - we don't count it.
+			if query.FieldHasAttribute(f, parser.AttributeRelation) {
+				return false
+			}
 			return true
 		})
 
-		// It is an error, if there are more than one such reverse fields.
+		// It is an error, if there are more than one un-qualified reverse fields.
 		if len(reverseFields) > 1 {
+			suggestedFields := lo.Map(reverseFields, func(f *parser.FieldNode, _ int) string {
+				return f.Name.Value
+			})
 			errs.Append(
 				errorhandling.ErrorAmbiguousRelationship,
 				map[string]string{
-					"ModelA": singleEndModel.Name.Value,
-					"ModelB": reverseFields[0].Type,
+					"ModelA":          singleEndModel.Name.Value,
+					"ModelB":          reverseFields[0].Type,
+					"SuggestedFields": formatting.HumanizeList(suggestedFields, formatting.DelimiterAnd),
 				},
 				singleEndModel,
 			)
