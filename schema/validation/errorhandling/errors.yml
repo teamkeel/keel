@@ -197,3 +197,31 @@ en:
     short_message: "default expression doesn't support operators"
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
+  E052:
+    short_message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
+    message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
+    hint: "Did you mean make to make field '{{.FieldName}}' refer to another Model?"
+  E053:
+    short_message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
+    message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
+    hint: "For many-to-one relationships, you put the @relation on the non-repeated end of the relationship"
+  E054:
+    short_message: "The @relation value should be a simple string"
+    message: "The @relation value should be a simple string"
+    hint: "Like myFieldName"
+  E055:
+    short_message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
+    message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
+    hint: "Did you mean one of: {{.SuggestedNames}}" 
+  E056:
+    short_message: "'{{.RelatedFieldName}}' is wrong type"
+    message: "'@relation({{.RelatedFieldName}})' refers to a related field of type '{{.RelatedFieldType}}', which should be of type '{{.RequiredType}}"
+    hint: "Did you mean one of: {{.SuggestedNames}} ?" 
+  E057:
+    short_message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
+    message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
+    hint: "You can make it repeated by adding [] to that field" 
+  E058:
+    short_message: "Duplicate use of '{{.RelatedFieldName}}'"
+    message: "You have already used '{{.RelatedFieldName}}' in a @Relation. Duplicates are not allowed."
+    hint: "Did you mean a different related field?" 

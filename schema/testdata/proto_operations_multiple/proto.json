@@ -182,7 +182,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "OperationAWhereInput"
-          }
+          },
+          "optional": true
         }
       ]
     },
@@ -198,7 +199,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "OperationBWhereInput"
-          }
+          },
+          "optional": true
         }
       ]
     },

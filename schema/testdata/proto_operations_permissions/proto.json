@@ -215,7 +215,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "OpAWhereInput"
-          }
+          },
+          "optional": true
         }
       ]
     },

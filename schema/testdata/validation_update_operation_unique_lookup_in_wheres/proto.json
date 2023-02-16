@@ -229,7 +229,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateMyModelValuesInput"
-          }
+          },
+          "optional": true
         }
       ]
     },

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
@@ -487,94 +488,46 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 }
 
 func writeActionInputTypes(w *Writer, schema *proto.Schema, op *proto.Operation, isTestingPackage bool) {
-	hasWhere := false
-	hasValues := false
-	for _, i := range op.Inputs {
-		if i.Mode == proto.InputMode_INPUT_MODE_READ {
-			hasWhere = true
-		}
-		if i.Mode == proto.InputMode_INPUT_MODE_WRITE {
-			hasValues = true
-		}
-	}
-	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_UPDATE, proto.OperationType_OPERATION_TYPE_LIST:
-		if hasWhere {
-			w.Writef("export interface %sInputWhere ", strcase.ToCamel(op.Name))
-			w.Writeln("{")
-			w.Indent()
-			writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_READ, isTestingPackage)
-			w.Dedent()
-			w.Writeln("}")
-		}
-	}
+	targetMessageType := op.InputMessageName
 
-	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		if hasValues {
-			w.Writef("export interface %sInputValues ", strcase.ToCamel(op.Name))
-			w.Writeln("{")
-			w.Indent()
-			writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_WRITE, isTestingPackage)
-			w.Dedent()
-			w.Writeln("}")
+	msgs := proto.FindAllLinkedMessages(schema.Messages, targetMessageType)
+
+	// todo: what if messages are shared by multiple operations? (dont think that can happen with inputs)
+	for _, msg := range msgs {
+		w.Writef("export interface %s {\n", msg.Name)
+
+		w.Indent()
+
+		for _, field := range msg.Fields {
+			messageFieldToTypeScript(w, schema, op, field, isTestingPackage)
 		}
+
+		w.Dedent()
+
+		w.Writef("}\n")
 	}
-
-	w.Writef("export interface %sInput ", strcase.ToCamel(op.Name))
-	w.Writeln("{")
-	w.Indent()
-
-	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_CREATE:
-		writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_WRITE, isTestingPackage)
-	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_DELETE:
-		writeActionInputInterfaceFields(w, schema, op, proto.InputMode_INPUT_MODE_READ, isTestingPackage)
-	case proto.OperationType_OPERATION_TYPE_LIST:
-		if hasWhere {
-			w.Write("where: ")
-			w.Writef("%sInputWhere", strcase.ToCamel(op.Name))
-			w.Writeln(";")
-		}
-		// TODO: pagination params e.g. first, after etc...
-	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		if hasWhere {
-			w.Write("where: ")
-			w.Writef("%sInputWhere", strcase.ToCamel(op.Name))
-			w.Writeln(";")
-		}
-		if hasValues {
-			w.Write("values: ")
-			w.Writef("%sInputValues", strcase.ToCamel(op.Name))
-			w.Writeln(";")
-		}
-	}
-
-	w.Dedent()
-	w.Writeln("}")
 }
 
-func writeActionInputInterfaceFields(w *Writer, schema *proto.Schema, op *proto.Operation, mode proto.InputMode, isTestingPackage bool) {
-	for _, input := range op.Inputs {
-		if input.Mode != mode {
-			continue
-		}
-		w.Write(input.Name)
+func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operation, field *proto.MessageField, isTestingPackage bool) {
+	w.Write(field.Name)
 
-		// An optional input doesn't need to be provided at all
-		if input.Optional {
-			w.Write("?")
-		}
+	if field.Optional {
+		w.Write("?")
+	}
 
-		w.Write(": ")
+	w.Write(": ")
 
+	// if the field relates to another message type, we need to find that message, and loop over it's fields
+	if field.Type.MessageName != nil {
+		w.Write(field.Type.MessageName.Value)
+	} else {
 		sdkPrefix := ""
 		if isTestingPackage {
 			sdkPrefix = "sdk."
 		}
 
-		if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
-			switch input.Type.Type {
+		if op.Type == proto.OperationType_OPERATION_TYPE_LIST && field.IsModelField() {
+			switch field.Type.Type {
 			case proto.Type_TYPE_DATE:
 				w.Write("runtime.DateQueryInput")
 			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
@@ -588,37 +541,38 @@ func writeActionInputInterfaceFields(w *Writer, schema *proto.Schema, op *proto.
 			case proto.Type_TYPE_INT:
 				w.Write("runtime.NumberWhereCondition")
 			case proto.Type_TYPE_ENUM:
-				w.Writef("%s%sWhereCondition", sdkPrefix, input.Type.EnumName.Value)
+				w.Writef("%s%sWhereCondition", sdkPrefix, field.Type.EnumName.Value)
 			}
 		} else {
-			if input.Type.Type == proto.Type_TYPE_ENUM && isTestingPackage {
-				w.Write("sdk.")
+			if field.Type.Type == proto.Type_TYPE_ENUM && isTestingPackage {
+				w.Writef("sdk.%s", toTypeScriptType(field.Type))
+			} else {
+				w.Write(toTypeScriptType(field.Type))
 			}
-
-			w.Write(toTypeScriptType(input.Type))
 		}
 
-		nullable := false
+	}
 
-		// If an input isn't tied to a model field and it's optional then it's allowed to be null
-		if input.Type.FieldName == nil && input.Optional {
+	nullable := false
+
+	// If a field isn't tied to a model field and it's optional then it's allowed to be null
+	if field.Type.FieldName == nil && field.Optional {
+		nullable = true
+	}
+
+	// If an input is tied to a model field and that field is nullable then the input is also nullable
+	if field.Type.FieldName != nil {
+		f := proto.FindField(schema.Models, field.Type.ModelName.Value, field.Type.FieldName.Value)
+		if f.Optional {
 			nullable = true
 		}
-
-		// If an input is tied to a model field and that field is nullable then the input is also nullable
-		if input.Type.FieldName != nil {
-			f := proto.FindField(schema.Models, input.Type.ModelName.Value, input.Type.FieldName.Value)
-			if f.Optional {
-				nullable = true
-			}
-		}
-
-		if nullable {
-			w.Write(" | null")
-		}
-
-		w.Writeln(";")
 	}
+
+	if nullable {
+		w.Write(" | null")
+	}
+
+	w.Writeln(";")
 }
 
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
@@ -848,7 +802,24 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
 	for _, model := range schema.Models {
 		for _, op := range model.Operations {
-			w.Writef(`%s(i: %sInput): %s`, op.Name, strcase.ToCamel(op.Name), toActionReturnType(model, op))
+			msg := proto.FindMessage(schema.Messages, op.InputMessageName)
+
+			w.Writef("%s(i", op.Name)
+
+			// Check that all of the top level fields in the matching message are optional
+			// If so, then we can make it so you don't even need to specify the key
+			// example, this allows for:
+			// await actions.listActivePublishersWithActivePosts();
+			// instead of:
+			// const { results: publishers } =
+			// await actions.listActivePublishersWithActivePosts({ where: {} });
+			if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+				return f.Optional
+			}) {
+				w.Write("?")
+			}
+
+			w.Writef(`: %sInput): %s`, strcase.ToCamel(op.Name), toActionReturnType(model, op))
 			w.Writeln(";")
 		}
 	}

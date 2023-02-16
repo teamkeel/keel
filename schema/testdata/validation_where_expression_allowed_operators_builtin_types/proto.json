@@ -453,7 +453,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListWithLiteralsWhereInput"
-          }
+          },
+          "optional": true
         }
       ]
     },
@@ -469,7 +470,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListWithFieldsWhereInput"
-          }
+          },
+          "optional": true
         }
       ]
     },

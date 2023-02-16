@@ -175,7 +175,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "OperationAWhereInput"
-          }
+          },
+          "optional": true
         }
       ]
     },

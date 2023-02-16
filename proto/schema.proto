@@ -369,6 +369,7 @@ enum Type {
     TYPE_DATETIME = 9;
     TYPE_ENUM = 10;
     TYPE_IMAGE = 12;
+    TYPE_OBJECT = 13;
     // Used for sensitive data. Encrypted at rest, decrypted on read.
     TYPE_SECRET = 14;
     // Used for hashing passwords and passcodes with the intention to verify admission.

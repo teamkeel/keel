@@ -1,0 +1,12 @@
+model Author {
+    fields {
+        age Number
+        written Post[]
+    }
+}
+
+model Post {
+    fields {
+        author Author @relation(age)
+    }
+}

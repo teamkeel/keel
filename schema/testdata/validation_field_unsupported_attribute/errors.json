@@ -3,7 +3,7 @@
     {
       "message": "field 'identity' has an unrecognised attribute @something",
       "shortMessage": "Unrecognised attribute something",
-      "hint": "Did you mean @unique, @default, or @primaryKey?",
+      "hint": "Did you mean @unique, @default, @primaryKey, or @relation?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_field_unsupported_attribute/schema.keel",

@@ -380,7 +380,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "KillValuesInput"
-          }
+          },
+          "optional": true
         }
       ]
     },

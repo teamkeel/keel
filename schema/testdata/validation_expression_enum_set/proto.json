@@ -242,7 +242,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "PublishedValuesInput"
-          }
+          },
+          "optional": true
         }
       ]
     },
