@@ -1,9 +1,7 @@
 package runtime
 
 import (
-	"bytes"
 	"errors"
-	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -160,29 +158,24 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 
 func withRequestResponseLogging(handler common.ApiHandlerFunc) common.ApiHandlerFunc {
 	return func(request *http.Request) common.Response {
-		entry := log.WithFields(log.Fields{
+		log.WithFields(log.Fields{
 			"url":     request.URL,
 			"uri":     request.RequestURI,
 			"headers": request.Header,
 			"method":  request.Method,
 			"host":    request.Host,
-		})
-		bodyBytes, err := io.ReadAll(request.Body)
-		if err != nil {
-			entry.WithField("body_err", err.Error())
-		} else {
-			entry.WithField("body", string(bodyBytes))
-		}
-		entry.Info("request")
-		request.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+		}).Info("request")
 
 		response := handler(request)
 
-		log.WithFields(log.Fields{
+		entry := log.WithFields(log.Fields{
 			"headers": response.Headers,
 			"status":  response.Status,
-			"body":    string(response.Body),
-		}).Info("response")
+		})
+		if response.Status >= 300 {
+			entry.WithField("body", string(response.Body))
+		}
+		entry.Info("response")
 
 		return response
 	}
