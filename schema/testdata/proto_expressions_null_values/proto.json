@@ -231,6 +231,7 @@
           "messageName": "RemoveTitleInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "RemoveTitleWhereInput"
           }
         },
@@ -238,6 +239,7 @@
           "messageName": "RemoveTitleInput",
           "name": "values",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "RemoveTitleValuesInput"
           },
           "optional": true
@@ -254,6 +256,7 @@
           "messageName": "ListPostsWithNoTitleInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "ListPostsWithNoTitleWhereInput"
           },
           "optional": true

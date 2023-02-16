@@ -180,6 +180,7 @@
           "messageName": "OperationAInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "OperationAWhereInput"
           },
           "optional": true
@@ -196,6 +197,7 @@
           "messageName": "OperationBInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "OperationBWhereInput"
           },
           "optional": true

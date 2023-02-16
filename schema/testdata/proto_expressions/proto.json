@@ -320,6 +320,7 @@
           "messageName": "GetPeopleInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "GetPeopleWhereInput"
           }
         }
@@ -369,6 +370,7 @@
           "messageName": "KillInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "KillWhereInput"
           }
         },
@@ -376,6 +378,7 @@
           "messageName": "KillInput",
           "name": "values",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "KillValuesInput"
           },
           "optional": true

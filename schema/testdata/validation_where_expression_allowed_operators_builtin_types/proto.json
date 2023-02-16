@@ -451,6 +451,7 @@
           "messageName": "ListWithLiteralsInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "ListWithLiteralsWhereInput"
           },
           "optional": true
@@ -467,6 +468,7 @@
           "messageName": "ListWithFieldsInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "ListWithFieldsWhereInput"
           },
           "optional": true

@@ -173,6 +173,7 @@
           "messageName": "OperationAInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "OperationAWhereInput"
           },
           "optional": true

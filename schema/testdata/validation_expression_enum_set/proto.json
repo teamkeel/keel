@@ -232,6 +232,7 @@
           "messageName": "PublishedInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "PublishedWhereInput"
           }
         },
@@ -239,6 +240,7 @@
           "messageName": "PublishedInput",
           "name": "values",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "PublishedValuesInput"
           },
           "optional": true

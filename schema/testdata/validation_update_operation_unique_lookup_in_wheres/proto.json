@@ -219,6 +219,7 @@
           "messageName": "UpdateMyModelInput",
           "name": "where",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "UpdateMyModelWhereInput"
           }
         },
@@ -226,6 +227,7 @@
           "messageName": "UpdateMyModelInput",
           "name": "values",
           "type": {
+            "type": "TYPE_MESSAGE",
             "messageName": "UpdateMyModelValuesInput"
           },
           "optional": true
