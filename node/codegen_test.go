@@ -581,7 +581,7 @@ declare class ActionExecutor {
 	createPerson(i?: CreatePersonInput): Promise<sdk.Person>;
 	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
 	deletePerson(i?: DeletePersonInput): Promise<string>;
-	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
+	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
 	authenticate(i: AuthenticateInput): Promise<any>;
 }
 export declare const actions: ActionExecutor;
@@ -687,7 +687,7 @@ export interface AuthenticateInput {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
+	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
 	authenticate(i: AuthenticateInput): Promise<any>;
 }
 export declare const actions: ActionExecutor;
