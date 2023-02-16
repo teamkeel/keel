@@ -4,32 +4,57 @@ import { actions, resetDatabase, models } from "@teamkeel/testing";
 
 beforeEach(resetDatabase);
 
-test("pagination - before", async () => {
-  const posts: Post[] = [];
-  posts.push(await models.post.create({ id: "1", title: "Post 1" }));
-  posts.push(await models.post.create({ id: "2", title: "Post 2" }));
-  posts.push(await models.post.create({ id: "3", title: "Post 3" }));
-  posts.push(await models.post.create({ id: "4", title: "Post 4" }));
-  posts.push(await models.post.create({ id: "5", title: "Post 5" }));
-  posts.push(await models.post.create({ id: "6", title: "Post 6" }));
+async function setupPosts({ count }: { count: number }): Promise<Post[]> {
+  return await Promise.all(
+    Array.from(Array(count)).map(async (_, i) => {
+      const p = await models.post.create({
+        id: (i + 1).toString(),
+        title: `Post ${i}`,
+      });
+      return p;
+    })
+  );
+}
 
-  const cursor = posts[3].id;
+test("pagination - before", async () => {
+  const posts = await setupPosts({ count: 6 });
+  const { endCursor } = await actions.listPosts({
+    first: 4,
+  });
 
   const { results } = await actions.listPosts({
-    before: cursor,
+    before: endCursor,
   });
 
   expect(results.length).toEqual(3);
+
+  expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 3));
+});
+
+// todo: not working?
+// https://github.com/teamkeel/keel/blame/d24424a1f0e07a234dd0f3dac74ba2092cbbbbae/runtime/actions/query.go#L274-L301
+test("pagination - last with before", async () => {
+  const posts = await setupPosts({ count: 6 });
+  const { endCursor, results: firstResults } = await actions.listPosts({
+    first: 4,
+  });
+
+  const { results } = await actions.listPosts({
+    last: 1,
+    before: endCursor,
+  });
+
+  expect(results.length).toEqual(1);
+
+  expect(results.map((r) => r.id)).toEqual(
+    firstResults
+      .map((r) => r.id)
+      .slice(firstResults.length - 1, firstResults.length)
+  );
 });
 
 test("pagination - first", async () => {
-  const posts: Post[] = [];
-  posts.push(await models.post.create({ id: "1", title: "Post 1" }));
-  posts.push(await models.post.create({ id: "2", title: "Post 2" }));
-  posts.push(await models.post.create({ id: "3", title: "Post 3" }));
-  posts.push(await models.post.create({ id: "4", title: "Post 4" }));
-  posts.push(await models.post.create({ id: "5", title: "Post 5" }));
-  posts.push(await models.post.create({ id: "6", title: "Post 6" }));
+  const posts = await setupPosts({ count: 6 });
 
   const { results } = await actions.listPosts({
     first: 2,
@@ -39,18 +64,12 @@ test("pagination - first", async () => {
   expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 2));
 });
 
-test("pagination - last", async () => {
-  const posts: Post[] = [];
-  posts.push(await models.post.create({ id: "1", title: "Post 1" }));
-  posts.push(await models.post.create({ id: "2", title: "Post 2" }));
-  posts.push(await models.post.create({ id: "3", title: "Post 3" }));
-  posts.push(await models.post.create({ id: "4", title: "Post 4" }));
-  posts.push(await models.post.create({ id: "5", title: "Post 5" }));
-  posts.push(await models.post.create({ id: "6", title: "Post 6" }));
+// todo: this is more complicated
+test("pagination - last only", async () => {
+  const posts = await setupPosts({ count: 6 });
 
   const { results } = await actions.listPosts({
     last: 2,
-    after: posts[posts.length - 3].id,
   });
 
   expect(results.length).toEqual(2);
@@ -59,20 +78,36 @@ test("pagination - last", async () => {
   );
 });
 
-test("pagination - after", async () => {
-  const posts: Post[] = [];
-  posts.push(await models.post.create({ id: "1", title: "Post 1" }));
-  posts.push(await models.post.create({ id: "2", title: "Post 2" }));
-  posts.push(await models.post.create({ id: "3", title: "Post 3" }));
-  posts.push(await models.post.create({ id: "4", title: "Post 4" }));
-  posts.push(await models.post.create({ id: "5", title: "Post 5" }));
-  posts.push(await models.post.create({ id: "6", title: "Post 6" }));
-
-  const cursor = posts[2].id;
+test("pagination - first with after", async () => {
+  const posts = await setupPosts({ count: 6 });
+  const { endCursor } = await actions.listPosts({
+    first: 4,
+  });
 
   const { results } = await actions.listPosts({
-    after: cursor,
+    first: 1,
+    after: endCursor,
+  });
+
+  expect(results.length).toEqual(1);
+  expect(results.map((r) => r.id)).toEqual(
+    posts.map((p) => p.id).slice(posts.length - 2, posts.length - 1)
+  );
+});
+
+test("pagination - after", async () => {
+  const posts = await setupPosts({ count: 6 });
+  const { endCursor } = await actions.listPosts({
+    first: 3,
+  });
+
+  const { results } = await actions.listPosts({
+    after: endCursor,
   });
 
   expect(results.length).toEqual(3);
+
+  expect(results.map((r) => r.id)).toEqual(
+    posts.map((p) => p.id).slice(posts.length - 3, posts.length)
+  );
 });

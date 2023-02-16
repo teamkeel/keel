@@ -14,21 +14,17 @@ func connectionResponse(data map[string]any) (resp any, err error) {
 
 	hasNextPage, _ := data["hasNextPage"].(bool)
 
-	var startCursor string
-	var endCursor string
+	startCursor := data["startCursor"].(string)
+	endCursor := data["endCursor"].(string)
+
 	edges := []map[string]any{}
-	for i, record := range results {
+
+	for _, record := range results {
 		edge := map[string]any{
 			"cursor": record["id"],
 			"node":   record,
 		}
 		edges = append(edges, edge)
-		if i == 0 {
-			startCursor, _ = record["id"].(string)
-		}
-		if i == len(edges)-1 {
-			endCursor, _ = record["id"].(string)
-		}
 	}
 
 	pageInfo := map[string]any{

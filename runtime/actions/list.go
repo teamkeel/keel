@@ -69,9 +69,22 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
+	var startCursor string
+	var endCursor string
+
+	for i, record := range results {
+		if i == 0 {
+			startCursor, _ = record["id"].(string)
+		} else if i == len(results)-1 {
+			endCursor, _ = record["id"].(string)
+		}
+	}
+
 	return map[string]any{
 		"results":     results,
 		"hasNextPage": hasNextPage,
+		"startCursor": startCursor,
+		"endCursor":   endCursor,
 	}, nil
 }
 

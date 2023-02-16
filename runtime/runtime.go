@@ -164,7 +164,7 @@ func withRequestResponseLogging(handler common.ApiHandlerFunc) common.ApiHandler
 			"headers": request.Header,
 			"method":  request.Method,
 			"host":    request.Host,
-		}).Info("request")
+		})
 
 		response := handler(request)
 
@@ -194,6 +194,6 @@ func logLevel() log.Level {
 	case "error":
 		return log.ErrorLevel
 	default:
-		return log.InfoLevel
+		return log.ErrorLevel
 	}
 }

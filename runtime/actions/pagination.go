@@ -36,6 +36,8 @@ func ParsePage(args map[string]any) (Page, error) {
 			page.First = int(v)
 		case int:
 			page.First = v
+		case float64:
+			page.First = int(v)
 		case string:
 			num, err := strconv.Atoi(v)
 
@@ -48,6 +50,8 @@ func ParsePage(args map[string]any) (Page, error) {
 	if last, ok := args["last"]; ok {
 		switch v := last.(type) {
 		case int64:
+			page.Last = int(v)
+		case float64:
 			page.Last = int(v)
 		case int:
 			page.Last = v
