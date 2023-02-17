@@ -147,11 +147,32 @@ func Format(ast *parser.AST) string {
 				printRole(writer, decl.Role)
 			case decl.API != nil:
 				printApi(writer, decl.API)
+			case decl.Message != nil:
+				printMessage(writer, decl.Message)
 			}
 		})
 	}
 
 	return writer.String()
+}
+
+func printMessage(writer *Writer, message *parser.MessageNode) {
+	writer.Comments(message, func() {
+		writer.Write("message %s", camel(message.Name.Value))
+		writer.Block(func() {
+
+			for _, field := range message.Fields {
+				writer.Write(
+					"%s %s",
+					lowerCamel(field.Name.Value),
+					field.Type,
+				)
+
+				writer.WriteLine("")
+			}
+		})
+
+	})
 }
 
 func printModel(writer *Writer, model *parser.ModelNode) {
