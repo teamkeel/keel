@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -36,11 +37,16 @@ func LoadSchema(dir, environment string) tea.Cmd {
 		b := schema.Builder{}
 		s, err := b.MakeFromDirectory(dir)
 
+		absolutePath, filepathErr := filepath.Abs(dir)
+		if filepathErr != nil {
+			err = filepathErr
+		}
+
 		cliConfig := cliconfig.New(&cliconfig.Options{
 			WorkingDir: dir,
 		})
 
-		secrets, configErr := cliConfig.GetSecrets(dir, environment)
+		secrets, configErr := cliConfig.GetSecrets(absolutePath, environment)
 		if configErr != nil {
 			err = configErr
 		}

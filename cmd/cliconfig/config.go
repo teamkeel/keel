@@ -37,9 +37,14 @@ type Options struct {
 func New(options *Options) *Config {
 	viper := viper.New()
 
+	absolutePath, err := filepath.Abs(options.WorkingDir)
+	if err != nil {
+		panic(err)
+	}
+
 	if options != nil && options.FileName != "" {
 		viper.SetConfigFile(options.FileName)
-		err := checkConfigFileExists(viper, options.WorkingDir)
+		err := checkConfigFileExists(viper, absolutePath)
 		if err != nil {
 			panic(err)
 		}
@@ -61,7 +66,7 @@ func New(options *Options) *Config {
 
 	viper.SetConfigFile(userConfigPath)
 
-	err = checkConfigFileExists(viper, options.WorkingDir)
+	err = checkConfigFileExists(viper, absolutePath)
 	if err != nil {
 		panic(err)
 	}
