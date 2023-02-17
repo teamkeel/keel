@@ -1,3 +1,10 @@
+# [0.266.0](https://github.com/teamkeel/keel/compare/v0.265.1...v0.266.0) (2023-02-17)
+
+
+### Features
+
+* codegen ctx.env declarations ([#794](https://github.com/teamkeel/keel/issues/794)) ([f3f58de](https://github.com/teamkeel/keel/commit/f3f58de20c07ab7dcd6eac4eeeeb5b25eb4df8fe))
+
 ## [0.265.1](https://github.com/teamkeel/keel/compare/v0.265.0...v0.265.1) (2023-02-17)
 
 
