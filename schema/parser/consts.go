@@ -5,6 +5,7 @@ const (
 	KeywordModel      = "model"
 	KeywordModels     = "models"
 	KeywordApi        = "api"
+	KeywordMessage    = "message"
 	KeywordField      = "field"
 	KeywordFields     = "fields"
 	KeywordOperations = "operations"

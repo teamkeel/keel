@@ -77,7 +77,7 @@ func TestCompletions(t *testing.T) {
 		{
 			name:     "top-level-keyword",
 			schema:   "mod<Cursor>",
-			expected: []string{"api", "enum", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role"},
 		},
 		{
 			name: "top-level-keyword-not-first",
@@ -87,12 +87,12 @@ func TestCompletions(t *testing.T) {
             }
 
             m<Cursor>`,
-			expected: []string{"api", "enum", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role"},
 		},
 		{
 			name:     "top-level-keyword-whitespace",
 			schema:   `<Cursor>`,
-			expected: []string{"api", "enum", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role"},
 		},
 		{
 			name: "top-level-keyword-whitespace-partial-schema",
@@ -103,7 +103,7 @@ func TestCompletions(t *testing.T) {
 
 			model B {}
 			`,
-			expected: []string{"api", "enum", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role"},
 		},
 		{
 			name: "model-block-keywords",
@@ -396,7 +396,7 @@ func TestCompletions(t *testing.T) {
 			name: "role-keyword",
 			schema: `
 			r<Cursor>`,
-			expected: []string{"api", "enum", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role"},
 		},
 		{
 			name: "domains-keyword",
@@ -418,7 +418,7 @@ func TestCompletions(t *testing.T) {
 			name: "api-keyword",
 			schema: `
 			a<Cursor>`,
-			expected: []string{"api", "enum", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role"},
 		},
 		{
 			name: "models-keyword",
@@ -877,6 +877,16 @@ func TestCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"createPostExtended"},
+		},
+		{
+			name: "message-field-completions",
+			schema: `
+			message AnotherMessage {}
+			message MyMessage {
+				foo <Cursor>
+			}
+			`,
+			expected: []string{"AnotherMessage", "Boolean", "Date", "ID", "Identity", "MyMessage", "Number", "Password", "Secret", "Text", "Timestamp"},
 		},
 	}
 
