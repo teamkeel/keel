@@ -128,6 +128,13 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 		}
 	}
 
+	if isList {
+		root.Properties["after"] = JSONSchema{Type: "string"}
+		root.Properties["before"] = JSONSchema{Type: "string"}
+		root.Properties["first"] = JSONSchema{Type: "number"}
+		root.Properties["last"] = JSONSchema{Type: "number"}
+	}
+
 	if isUpdate {
 		// Always add the "values" prop but only make it required if has any properties
 		typeName := strcase.ToCamel(op.Name) + "ValuesInput"

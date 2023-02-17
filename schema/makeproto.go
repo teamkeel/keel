@@ -179,6 +179,35 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
 					},
 				},
+				// Include pagination fields
+				{
+					Name:     "first",
+					Optional: true,
+					Type: &proto.TypeInfo{
+						Type: proto.Type_TYPE_INT,
+					},
+				},
+				{
+					Name:     "after",
+					Optional: true,
+					Type: &proto.TypeInfo{
+						Type: proto.Type_TYPE_STRING,
+					},
+				},
+				{
+					Name:     "last",
+					Optional: true,
+					Type: &proto.TypeInfo{
+						Type: proto.Type_TYPE_INT,
+					},
+				},
+				{
+					Name:     "before",
+					Optional: true,
+					Type: &proto.TypeInfo{
+						Type: proto.Type_TYPE_STRING,
+					},
+				},
 			},
 		})
 	}

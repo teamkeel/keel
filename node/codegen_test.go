@@ -430,6 +430,10 @@ export interface ListPeopleWhereInput {
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhereInput;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -461,6 +465,10 @@ export interface ListPeopleWhereInput {
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhereInput;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -553,6 +561,10 @@ export interface ListPeopleWhereInput {
 }
 export interface ListPeopleInput {
 	where?: ListPeopleWhereInput | null;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }
 export interface EmailPasswordInput {
 	email: string;
@@ -569,7 +581,7 @@ declare class ActionExecutor {
 	createPerson(i?: CreatePersonInput): Promise<sdk.Person>;
 	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
 	deletePerson(i?: DeletePersonInput): Promise<string>;
-	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
+	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
 	authenticate(i: AuthenticateInput): Promise<any>;
 }
 export declare const actions: ActionExecutor;
@@ -659,6 +671,10 @@ export interface PeopleByHobbyWhereInput {
 }
 export interface PeopleByHobbyInput {
 	where: PeopleByHobbyWhereInput;
+	first?: number | null;
+	after?: string | null;
+	last?: number | null;
+	before?: string | null;
 }
 export interface EmailPasswordInput {
 	email: string;
@@ -671,7 +687,7 @@ export interface AuthenticateInput {
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], hasNextPage: boolean}>;
+	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
 	authenticate(i: AuthenticateInput): Promise<any>;
 }
 export declare const actions: ActionExecutor;

@@ -3,7 +3,11 @@ package actions
 import (
 	"fmt"
 
+<<<<<<< HEAD
 	"github.com/teamkeel/keel/proto"
+=======
+	"github.com/samber/lo"
+>>>>>>> main
 	"github.com/teamkeel/keel/runtime/common"
 )
 
@@ -62,24 +66,42 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	query := NewQuery(scope.model)
 
 	// Generate the SQL statement.
-	statement, err := GenerateListStatement(query, scope, input)
+	statement, page, err := GenerateListStatement(query, scope, input)
 	if err != nil {
 		return nil, err
 	}
 
 	// Execute database request with results
 	results, _, hasNextPage, err := statement.ExecuteToMany(scope.context)
+
 	if err != nil {
 		return nil, err
+	}
+
+	if page.Last != 0 {
+		results = lo.Reverse(results)
+	}
+
+	var startCursor string
+	var endCursor string
+
+	for i, record := range results {
+		if i == 0 {
+			startCursor, _ = record["id"].(string)
+		} else if i == len(results)-1 {
+			endCursor, _ = record["id"].(string)
+		}
 	}
 
 	return map[string]any{
 		"results":     results,
 		"hasNextPage": hasNextPage,
+		"startCursor": startCursor,
+		"endCursor":   endCursor,
 	}, nil
 }
 
-func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
+func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, *Page, error) {
 	where, ok := input["where"].(map[string]any)
 	if !ok {
 		where = map[string]any{}
@@ -87,26 +109,26 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 
 	err := query.applyImplicitFiltersForList(scope, where)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	err = query.applyExplicitFilters(scope, where)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	isAuthorised, err := query.isAuthorised(scope, where)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if !isAuthorised {
-		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
+		return nil, nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
 	}
 
 	page, err := ParsePage(input)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Select all columns from this table and distinct on id
@@ -114,8 +136,8 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	query.AppendSelect(AllFields())
 	err = query.ApplyPaging(page)
 	if err != nil {
-		return nil, err
+		return nil, &page, err
 	}
 
-	return query.SelectStatement(), nil
+	return query.SelectStatement(), &page, nil
 }

@@ -430,11 +430,39 @@
       "name":  "ListWithLiteralsInput",
       "fields":  [
         {
-          "messageName": "ListWithLiteralsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListWithLiteralsWhereInput"
+          "messageName":  "ListWithLiteralsInput",
+          "name":  "where",
+          "type":  {
+            "type":  "TYPE_MESSAGE",
+            "messageName":  "ListWithLiteralsWhereInput"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "first",
+          "type":  {
+            "type":  "TYPE_INT"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "after",
+          "type":  {
+            "type":  "TYPE_STRING"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "last",
+          "type":  {
+            "type":  "TYPE_INT"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "before",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
           "optional":  true
         }
@@ -447,11 +475,39 @@
       "name":  "ListWithFieldsInput",
       "fields":  [
         {
-          "messageName": "ListWithFieldsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListWithFieldsWhereInput"
+          "messageName":  "ListWithFieldsInput",
+          "name":  "where",
+          "type":  {
+            "type":  "TYPE_MESSAGE",
+            "messageName":  "ListWithFieldsWhereInput"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "first",
+          "type":  {
+            "type":  "TYPE_INT"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "after",
+          "type":  {
+            "type":  "TYPE_STRING"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "last",
+          "type":  {
+            "type":  "TYPE_INT"
+          },
+          "optional":  true
+        },
+        {
+          "name":  "before",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
           "optional":  true
         }

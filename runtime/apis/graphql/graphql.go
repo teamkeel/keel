@@ -322,6 +322,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						"results":     results,
 						"hasNextPage": hasNextPage,
 					})
+
 					if err != nil {
 						return nil, err
 					}

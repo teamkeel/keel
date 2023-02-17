@@ -295,6 +295,34 @@
             "type": "TYPE_MESSAGE",
             "messageName": "OpBWhereInput"
           }
+        },
+        {
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         }
       ]
     },

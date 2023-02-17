@@ -1,0 +1,20 @@
+model Post {
+    fields {
+        title Text
+    }
+
+    operations {
+        list listPosts()
+    }
+
+    @permission(
+        expression: true,
+        actions: [list]
+    )
+}
+
+api Web {
+    models {
+        Post
+    }
+}

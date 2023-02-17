@@ -146,6 +146,18 @@
   },
   "additionalProperties": false,
   "properties": {
+    "after": {
+      "type": "string"
+    },
+    "before": {
+      "type": "string"
+    },
+    "first": {
+      "type": "number"
+    },
+    "last": {
+      "type": "number"
+    },
     "where": {
       "$ref": "#/components/schemas/TestActionWhereInput"
     }

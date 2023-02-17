@@ -174,6 +174,8 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/testingactionsapi/json", runtimePort),
 		"KEEL_DB_CONN_TYPE=pg",
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
+		// Disables experimental fetch warning that pollutes console experience when running tests
+		"NODE_NO_WARNINGS=1",
 	}...)
 
 	b, err = cmd.CombinedOutput()

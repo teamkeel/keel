@@ -37,7 +37,9 @@ input GetPersonInput {
 
 input ListPeopleInput {
   after: String
+  before: String
   first: Int
+  last: Int
   where: ListPeopleWhereInput!
 }
 
