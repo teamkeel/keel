@@ -3,11 +3,8 @@ package actions
 import (
 	"fmt"
 
-<<<<<<< HEAD
-	"github.com/teamkeel/keel/proto"
-=======
 	"github.com/samber/lo"
->>>>>>> main
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
