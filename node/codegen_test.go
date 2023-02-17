@@ -282,13 +282,22 @@ export type FunctionAPI = {
 	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
 	headers: Headers;
 }
+type Environment = {
+	TEST: string;
+}
+
 export interface ContextAPI extends runtime.ContextAPI {
+	env: Environment;
 	identity?: Identity;
 	now(): Date;
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
-		writeAPIDeclarations(w, s.Models)
+		envVarKeys := []string{
+			"TEST",
+		}
+
+		writeAPIDeclarations(w, s.Models, envVarKeys)
 	})
 }
 

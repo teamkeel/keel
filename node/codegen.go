@@ -132,7 +132,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	writeAPIFactory(sdk, schema.Models, envVarKeys)
 
 	writeDatabaseInterface(sdkTypes, schema)
-	writeAPIDeclarations(sdkTypes, schema.Models)
+	writeAPIDeclarations(sdkTypes, schema.Models, envVarKeys)
 
 	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
 
@@ -341,7 +341,7 @@ func writeDatabaseInterface(w *Writer, schema *proto.Schema) {
 	w.Write("export declare function getDatabase(): Kysely<database>;")
 }
 
-func writeAPIDeclarations(w *Writer, models []*proto.Model) {
+func writeAPIDeclarations(w *Writer, models []*proto.Model, envVarKeys []string) {
 	w.Writeln("export type ModelsAPI = {")
 	w.Indent()
 	for _, model := range models {
@@ -362,8 +362,21 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 
 	w.Writeln("}")
 
+	w.Writeln("type Environment = {")
+
+	w.Indent()
+
+	for _, key := range envVarKeys {
+		w.Writef("%s: string;\n", key)
+	}
+
+	w.Dedent()
+	w.Writeln("}")
+	w.Writeln("")
+
 	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
 	w.Indent()
+	w.Writeln("env: Environment;")
 	w.Writeln("identity?: Identity;")
 	w.Writeln("now(): Date;")
 	w.Dedent()

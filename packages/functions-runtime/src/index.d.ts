@@ -53,13 +53,10 @@ export type TimestampQueryInput = {
   after: string;
 };
 
-type Environment = Record<string, string>;
-
 export type ContextAPI = {
   headers: RequestHeaders;
   isAuthenticated: boolean;
   now(): Date;
-  env: Environment;
 };
 
 // Request headers query API
