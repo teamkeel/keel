@@ -1,3 +1,10 @@
+# [0.268.0](https://github.com/teamkeel/keel/compare/v0.267.0...v0.268.0) (2023-02-17)
+
+
+### Features
+
+* format message types ([#797](https://github.com/teamkeel/keel/issues/797)) ([96eee92](https://github.com/teamkeel/keel/commit/96eee92cfe4069ef852f2d2658a974a0b5e4ffce))
+
 # [0.267.0](https://github.com/teamkeel/keel/compare/v0.266.0...v0.267.0) (2023-02-17)
 
 
