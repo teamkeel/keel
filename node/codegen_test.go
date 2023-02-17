@@ -263,11 +263,11 @@ module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
-		envVarKeys := []string{
-			"TEST",
-		}
+		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
+			Name: "TEST",
+		})
 
-		writeAPIFactory(w, s.Models, envVarKeys)
+		writeAPIFactory(w, s)
 	})
 }
 
@@ -293,11 +293,11 @@ export interface ContextAPI extends runtime.ContextAPI {
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
-		envVarKeys := []string{
-			"TEST",
-		}
+		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
+			Name: "TEST",
+		})
 
-		writeAPIDeclarations(w, s.Models, envVarKeys)
+		writeAPIDeclarations(w, s)
 	})
 }
 
