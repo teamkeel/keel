@@ -61,8 +61,10 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 		return getAttributeArgCompletions(ast, tokenAtPos)
 	}
 
+	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
+
 	// switch on nearest (previous) keyword
-	switch getTypeOfEnclosingBlock(tokenAtPos) {
+	switch enclosingBlock {
 	case parser.KeywordModel:
 		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributePermission})
 		return append(attributes, modelBlockKeywords...)
@@ -75,6 +77,8 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 		return []*CompletionItem{}
 	case parser.KeywordFields:
 		return getFieldCompletions(ast, tokenAtPos)
+	case parser.KeywordMessage:
+		return getMessageFieldCompletions(ast, tokenAtPos)
 	case parser.KeywordOperations, parser.KeywordFunctions:
 		return getActionCompletions(ast, tokenAtPos)
 	case parser.KeywordModels:
@@ -124,6 +128,94 @@ func getUndefinedFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition)
 	}
 
 	return items
+}
+
+func getMessageFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
+	// First we find the start of the current block
+	startOfBlock := tokenAtPos.StartOfBlock()
+
+	// Now we have to work out if we're expecting a field name, a field type, or an
+	// inline attribute (not enclosed in a block)
+	curr := startOfBlock
+
+	// First we expecting a field name
+	expectingName := true
+
+	for {
+		// Move to the next token
+		curr = curr.Next()
+
+		// If this token is the token at the cursor position we can stop walking the tokens
+		if curr.Is(tokenAtPos) {
+			break
+		}
+
+		// If we were expecting a name then we're now expecting a type
+		// so we flip the flag and move on
+		if expectingName {
+			expectingName = false
+			continue
+		}
+
+		// otherwise we're now expecting a name again
+		expectingName = true
+
+		// skip past "?" token
+		if curr.ValueAt(1) == "?" {
+			curr = curr.Next()
+		}
+
+		// skip past "[]" tokens
+		if curr.ValueAt(1) == "[" {
+			curr = curr.Next().Next()
+		}
+
+		// skip past a field block
+		if curr.ValueAt(1) == "{" {
+			curr = curr.Next().EndOfBlock()
+			continue
+		}
+
+		// skip past any attributes
+	skippingAttributes:
+		for {
+			if curr.ValueAt(1) == "@" {
+				curr = curr.Next() // go to "@"
+				curr = curr.Next() // go to attribute name
+				if curr.ValueAt(1) == "(" {
+					curr = curr.Next().EndOfParen()
+				}
+				continue skippingAttributes
+			}
+			break skippingAttributes
+		}
+	}
+
+	// if we're expecting a name then there are two cases
+	if expectingName {
+		// The current token is on the same line as the previous token
+		// In this case we provide attribute name completions
+		if tokenAtPos.Line() == tokenAtPos.Prev().Line() {
+			return getAttributeCompletions(tokenAtPos, []string{
+				parser.AttributeUnique,
+				parser.AttributeDefault,
+			})
+		}
+
+		// We on a new line which means current token is field name for
+		// which we can't provide completions
+		return []*CompletionItem{}
+	}
+
+	// Provide completions for field type which is built-in and user-defined types
+	return lo.Flatten(
+		[][]*CompletionItem{
+			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordModel),
+			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordEnum),
+			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordMessage),
+			getBuiltInTypeCompletions(),
+		},
+	)
 }
 
 func getFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
@@ -359,6 +451,10 @@ var topLevelKeywords = []*CompletionItem{
 		Label: parser.KeywordApi,
 		Kind:  KindKeyword,
 	},
+	{
+		Label: parser.KeywordMessage,
+		Kind:  KindKeyword,
+	},
 }
 
 func getBuiltInTypeCompletions() []*CompletionItem {
@@ -581,6 +677,7 @@ var namedBlocks = []string{
 	parser.KeywordEnum,
 	parser.KeywordApi,
 	parser.KeywordRole,
+	parser.KeywordMessage,
 }
 
 var unNamedBlocks = []string{
