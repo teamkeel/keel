@@ -10,7 +10,6 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -121,18 +120,10 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 	writeTableConfig(sdk, schema.Models)
 
-	cfg, err := config.Load(dir)
-
-	envVarKeys := []string{}
-
-	if err == nil {
-		envVarKeys = cfg.AllEnvironmentVariables()
-	}
-
-	writeAPIFactory(sdk, schema.Models, envVarKeys)
+	writeAPIFactory(sdk, schema)
 
 	writeDatabaseInterface(sdkTypes, schema)
-	writeAPIDeclarations(sdkTypes, schema.Models)
+	writeAPIDeclarations(sdkTypes, schema)
 
 	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
 
@@ -341,10 +332,10 @@ func writeDatabaseInterface(w *Writer, schema *proto.Schema) {
 	w.Write("export declare function getDatabase(): Kysely<database>;")
 }
 
-func writeAPIDeclarations(w *Writer, models []*proto.Model) {
+func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 	w.Writeln("export type ModelsAPI = {")
 	w.Indent()
-	for _, model := range models {
+	for _, model := range schema.Models {
 		w.Write(strcase.ToLowerCamel(model.Name))
 		w.Write(": ")
 		w.Writef(`%sAPI`, model.Name)
@@ -362,21 +353,34 @@ func writeAPIDeclarations(w *Writer, models []*proto.Model) {
 
 	w.Writeln("}")
 
+	w.Writeln("type Environment = {")
+
+	w.Indent()
+
+	for _, variable := range schema.EnvironmentVariables {
+		w.Writef("%s: string;\n", variable.Name)
+	}
+
+	w.Dedent()
+	w.Writeln("}")
+	w.Writeln("")
+
 	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
 	w.Indent()
+	w.Writeln("env: Environment;")
 	w.Writeln("identity?: Identity;")
 	w.Writeln("now(): Date;")
 	w.Dedent()
 	w.Writeln("}")
 }
 
-func writeAPIFactory(w *Writer, models []*proto.Model, envVarKeys []string) {
+func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Writeln("function createFunctionAPI(headers) {")
 	w.Indent()
 
 	w.Writeln("const models = {")
 	w.Indent()
-	for _, model := range models {
+	for _, model := range schema.Models {
 		w.Write(strcase.ToLowerCamel(model.Name))
 		w.Write(": ")
 		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, null, tableConfigMap)`, strcase.ToSnake(model.Name), strcase.ToLowerCamel(model.Name))
@@ -396,10 +400,10 @@ func writeAPIFactory(w *Writer, models []*proto.Model, envVarKeys []string) {
 	w.Writeln("const env = {")
 	w.Indent()
 
-	for _, key := range envVarKeys {
+	for _, variable := range schema.EnvironmentVariables {
 		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
 		// outputs "key: process.env["key"] || []"
-		w.Writef("%s: process.env[\"%s\"] || \"\",\n", key, key)
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.Name, variable.Name)
 	}
 
 	w.Dedent()

@@ -263,11 +263,11 @@ module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
-		envVarKeys := []string{
-			"TEST",
-		}
+		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
+			Name: "TEST",
+		})
 
-		writeAPIFactory(w, s.Models, envVarKeys)
+		writeAPIFactory(w, s)
 	})
 }
 
@@ -282,13 +282,22 @@ export type FunctionAPI = {
 	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
 	headers: Headers;
 }
+type Environment = {
+	TEST: string;
+}
+
 export interface ContextAPI extends runtime.ContextAPI {
+	env: Environment;
 	identity?: Identity;
 	now(): Date;
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
-		writeAPIDeclarations(w, s.Models)
+		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
+			Name: "TEST",
+		})
+
+		writeAPIDeclarations(w, s)
 	})
 }
 
