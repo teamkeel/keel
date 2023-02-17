@@ -118,9 +118,6 @@ message Operation {
     // A list of expressions that perform some kind of validation (likely on the inputs)
     repeated Expression validation_expressions = 9;
 
-    // For operation types which have a non-uniform response and whose outputs defined in code.
-    repeated OperationOutput outputs = 10;
-
     // The name of the input message type for this operation.
     string input_message_name = 11;
 
@@ -158,20 +155,6 @@ message OperationInput {
 
     // For inputs of type TYPE_OBJECT
     repeated OperationInput inputs = 10;
-}
-
-message OperationOutput {
-    // Name of the parent model
-    string model_name = 1;
-
-    // Name of the parent operation
-    string operation_name = 2;
-
-    // Name of the output. 
-    string name = 3;
-
-    // The type of this output. 
-    TypeInfo type = 4;
 }
 
 enum InputMode {

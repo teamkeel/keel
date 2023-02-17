@@ -54,11 +54,24 @@ func (resolver *OperandResolver) IsImplicitInput() bool {
 		return false
 	}
 
-	input, found := lo.Find(resolver.Operation.Inputs, func(in *proto.OperationInput) bool {
-		return in.Name == resolver.Operand.Ident.Fragments[0].Fragment
-	})
+	foundImplicitWhereInput := false
+	foundImplicitValueInput := false
 
-	return found && input.IsModelField()
+	whereInputs := proto.FindWhereInputMessage(resolver.Schema, resolver.Operation.Name)
+	if whereInputs != nil {
+		_, foundImplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && in.IsModelField()
+		})
+	}
+
+	valuesInputs := proto.FindValuesInputMessage(resolver.Schema, resolver.Operation.Name)
+	if valuesInputs != nil {
+		_, foundImplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && in.IsModelField()
+		})
+	}
+
+	return foundImplicitWhereInput || foundImplicitValueInput
 }
 
 // IsExplicitInput returns true if the expression operand refers to an explicit input on an operation.
@@ -71,11 +84,24 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 		return false
 	}
 
-	input, found := lo.Find(resolver.Operation.Inputs, func(in *proto.OperationInput) bool {
-		return in.Name == resolver.Operand.Ident.Fragments[0].Fragment
-	})
+	foundExplicitWhereInput := false
+	foundExplicitValueInput := false
 
-	return found && !input.IsModelField()
+	whereInputs := proto.FindWhereInputMessage(resolver.Schema, resolver.Operation.Name)
+	if whereInputs != nil {
+		_, foundExplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && !in.IsModelField()
+		})
+	}
+
+	valuesInputs := proto.FindValuesInputMessage(resolver.Schema, resolver.Operation.Name)
+	if valuesInputs != nil {
+		_, foundExplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
+			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && !in.IsModelField()
+		})
+	}
+
+	return foundExplicitWhereInput || foundExplicitValueInput
 }
 
 // IsDatabaseColumn returns true if the expression operand refers to a field value residing in the database.

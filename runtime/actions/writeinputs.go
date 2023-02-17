@@ -64,12 +64,13 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 // Updates the query with all inputs defined on the operation.
 func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
-	for _, input := range scope.operation.Inputs {
-		if !input.IsModelField() {
-			continue
-		}
+	message := proto.FindValuesInputMessage(scope.schema, scope.operation.Name)
+	if message == nil {
+		return nil
+	}
 
-		if input.Mode != proto.InputMode_INPUT_MODE_WRITE {
+	for _, input := range message.Fields {
+		if !input.IsModelField() {
 			continue
 		}
 

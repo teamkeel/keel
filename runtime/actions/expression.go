@@ -11,9 +11,9 @@ import (
 )
 
 // Include a filter (where condition) on the query based on an implicit input filter.
-func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, input *proto.OperationInput, fieldName string, operator ActionOperator, value any) error {
+func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, fieldName string, operator ActionOperator, value any) error {
 	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
-	fragments := append([]string{strcase.ToLowerCamel(input.ModelName)}, input.Target...)
+	fragments := append([]string{strcase.ToLowerCamel(scope.operation.ModelName)}, targetField...)
 
 	// The lhs QueryOperand is determined from the fragments in the implicit input field
 	left, err := operandFromFragments(scope.schema, fragments)

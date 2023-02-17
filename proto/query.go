@@ -301,6 +301,46 @@ func FindMessage(messages []*Message, messageName string) *Message {
 	return message
 }
 
+// For built-in operation types, returns the "values" input message, which may be nested inside the
+// root message for some operation types, or returns nil if not found.
+func FindValuesInputMessage(schema *Schema, operationName string) *Message {
+	operation := FindOperation(schema, operationName)
+	message := FindMessage(schema.Messages, operation.InputMessageName)
+
+	switch operation.Type {
+	case OperationType_OPERATION_TYPE_CREATE:
+		return message
+	case OperationType_OPERATION_TYPE_UPDATE:
+		for _, v := range message.Fields {
+			if v.Name == "values" && v.Type.Type == Type_TYPE_MESSAGE {
+				return FindMessage(schema.Messages, v.Type.MessageName.Value)
+			}
+		}
+	}
+	return nil
+}
+
+// For built-in operation types, returns the "where" input message, which may be nested inside the
+// root message for some operation types, or returns nil if not found.
+func FindWhereInputMessage(schema *Schema, operationName string) *Message {
+	operation := FindOperation(schema, operationName)
+	message := FindMessage(schema.Messages, operation.InputMessageName)
+
+	switch operation.Type {
+	case OperationType_OPERATION_TYPE_GET,
+		OperationType_OPERATION_TYPE_DELETE:
+		return message
+	case OperationType_OPERATION_TYPE_LIST,
+		OperationType_OPERATION_TYPE_UPDATE:
+		for _, v := range message.Fields {
+			if v.Name == "where" && v.Type.Type == Type_TYPE_MESSAGE {
+				return FindMessage(schema.Messages, v.Type.MessageName.Value)
+			}
+		}
+	}
+	return nil
+}
+
 // FindAllLinkedMessages takes a messageName and will find all other Message definitions that are referenced inside of the message to an infinite depth of recursion
 func FindAllLinkedMessages(messages []*Message, messageName string) (ret []*Message) {
 	msg := FindMessage(messages, messageName)
