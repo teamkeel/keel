@@ -17,6 +17,6 @@ input EmailPasswordInput {
 }
 
 type AuthenticateResponse {
-  identityCreated: Boolean
-  token: String
+  identityCreated: Boolean!
+  token: String!
 }

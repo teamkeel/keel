@@ -47,7 +47,6 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	switch action.Type.Value {
 	case parser.ActionTypeCreate:
 		values := []*proto.MessageField{}
-
 		for _, value := range action.With {
 			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
 
@@ -85,7 +84,6 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		})
 	case parser.ActionTypeUpdate:
 		wheres := []*proto.MessageField{}
-
 		for _, where := range action.Inputs {
 			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
 
@@ -104,7 +102,6 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		})
 
 		values := []*proto.MessageField{}
-
 		for _, value := range action.With {
 			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
 
@@ -141,6 +138,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 						return f.Optional
 					}),
 					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+
 					Type: &proto.TypeInfo{
 						Type:        proto.Type_TYPE_MESSAGE,
 						MessageName: wrapperspb.String(fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value))),
@@ -150,7 +148,6 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		})
 	case parser.ActionTypeList:
 		wheres := []*proto.MessageField{}
-
 		for _, where := range action.Inputs {
 			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
 
@@ -313,7 +310,7 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 					Name:        "identityCreated",
 					MessageName: "AuthenticateResponse",
 					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-					Optional:    true,
+					Optional:    false,
 				},
 				{
 					Name:        "token",
