@@ -88,9 +88,20 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 
 	o, err := npmInstall.CombinedOutput()
 	if err != nil {
-		fmt.Print(string(o))
-		return err
+		return &NpmInstallError{
+			Output: string(o),
+			err:    err,
+		}
 	}
 
 	return nil
+}
+
+type NpmInstallError struct {
+	err    error
+	Output string
+}
+
+func (n *NpmInstallError) Error() string {
+	return fmt.Sprintf("npm install error (%s): %s", n.err.Error(), n.Output)
 }
