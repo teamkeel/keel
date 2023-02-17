@@ -120,8 +120,36 @@ func Enum(asts []*parser.AST, name string) *parser.EnumNode {
 	return nil
 }
 
+func MessageNames(asts []*parser.AST) (ret []string) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Message != nil {
+				ret = append(ret, decl.Message.Name.Value)
+			}
+		}
+	}
+
+	return ret
+}
+
+func Message(asts []*parser.AST, name string) *parser.MessageNode {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Message != nil && decl.Message.Name.Value == name {
+				return decl.Message
+			}
+		}
+	}
+
+	return nil
+}
+
 func IsEnum(asts []*parser.AST, name string) bool {
 	return Enum(asts, name) != nil
+}
+
+func IsMessage(asts []*parser.AST, name string) bool {
+	return Message(asts, name) != nil
 }
 
 func Roles(asts []*parser.AST) (res []*parser.RoleNode) {

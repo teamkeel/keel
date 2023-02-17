@@ -67,6 +67,10 @@ const (
 	ActionTypeUpdate = "update"
 	ActionTypeList   = "list"
 	ActionTypeDelete = "delete"
+
+	// Arbitrary function action types
+	ActionTypeRead  = "read"
+	ActionTypeWrite = "write"
 )
 
 var ActionTypes = []string{

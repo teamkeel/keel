@@ -22,10 +22,11 @@ type AST struct {
 type DeclarationNode struct {
 	node.Node
 
-	Model *ModelNode `("model" @@`
-	Role  *RoleNode  `| "role" @@`
-	API   *APINode   `| "api" @@`
-	Enum  *EnumNode  `| "enum" @@)`
+	Model   *ModelNode   `("model" @@`
+	Role    *RoleNode    `| "role" @@`
+	API     *APINode     `| "api" @@`
+	Enum    *EnumNode    `| "enum" @@`
+	Message *MessageNode `| "message" @@)`
 }
 
 type ModelNode struct {
@@ -166,7 +167,8 @@ type ActionNode struct {
 	Type       NameNode           `@@`
 	Name       NameNode           `@@`
 	Inputs     []*ActionInputNode `"(" ( @@ ( "," @@ )* )? ")"`
-	With       []*ActionInputNode `( "with" "(" ( @@ ( "," @@ )* ) ")" )?`
+	With       []*ActionInputNode `( ( "with" "(" ( @@ ( "," @@ )* ) ")" )`
+	Returns    []*ActionInputNode `| ( "returns" "(" ( @@ ( "," @@ )* ) ")" ) )?`
 	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
 
@@ -204,6 +206,15 @@ type EnumValueNode struct {
 	node.Node
 
 	Name NameNode `@@`
+}
+
+type MessageNode struct {
+	node.Node
+
+	Name NameNode `@@`
+
+	// todo: can we use field node here
+	Fields []*FieldNode `"{" @@* "}"`
 }
 
 type Error struct {

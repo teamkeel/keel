@@ -45,7 +45,24 @@ func ActionNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) 
 
 func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
+		for _, function := range query.ModelFunctions(model) {
+			validFunctionActionTypes := validActionTypes
+			if len(function.Returns) > 0 {
+				validFunctionActionTypes = append(validActionTypes, []string{parser.ActionTypeWrite, parser.ActionTypeRead}...)
+			}
+
+			if !lo.Contains(validFunctionActionTypes, function.Type.Value) {
+				errs.Append(errorhandling.ErrorInvalidActionType,
+					map[string]string{
+						"Type":       function.Type.Value,
+						"ValidTypes": formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr),
+					},
+					function.Type,
+				)
+			}
+		}
+
+		for _, action := range query.ModelOperations(model) {
 			if !lo.Contains(validActionTypes, action.Type.Value) {
 				errs.Append(errorhandling.ErrorInvalidActionType,
 					map[string]string{
@@ -511,7 +528,7 @@ func validateInput(
 	resolvedType := query.ResolveInputType(asts, input, model)
 
 	// If type cannot be resolved report error
-	if resolvedType == "" {
+	if resolvedType == "" && len(action.Returns) < 1 {
 		fieldNames := []string{}
 		for _, field := range query.ModelFields(model) {
 			fieldNames = append(fieldNames, field.Name.Value)
@@ -529,6 +546,27 @@ func validateInput(
 			},
 			input.Type,
 		)
+	}
+
+	if input.Label == nil && len(action.Returns) > 0 {
+		// arbitrary function inputs
+		availableMessages := query.MessageNames(asts)
+		hint := errorhandling.NewCorrectionHint(availableMessages, input.Type.ToString())
+
+		msg := query.Message(asts, input.Type.ToString())
+
+		if msg == nil {
+			return errorhandling.NewValidationError(
+				errorhandling.ErrorInvalidActionInput,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"Input":     input.Type.ToString(),
+						"Suggested": hint.ToString(),
+					},
+				},
+				input.Type,
+			)
+		}
 	}
 
 	// if not explicitly labelled then we don't need to check for the input being used

@@ -1,0 +1,22 @@
+{
+  "errors": [
+    {
+      "message": "Action inputs must be one of the fields defined in the model",
+      "shortMessage": "MyCustomFunctionInpu is not a valid input",
+      "hint": "Did you mean MyCustomFunctionInput?",
+      "code": "E005",
+      "pos": {
+        "filename": "testdata/validation_invalid_arbitrary_function_input_name/schema.keel",
+        "offset": 198,
+        "line": 16,
+        "column": 29
+      },
+      "endPos": {
+        "filename": "testdata/validation_invalid_arbitrary_function_input_name/schema.keel",
+        "offset": 218,
+        "line": 16,
+        "column": 49
+      }
+    }
+  ]
+}
