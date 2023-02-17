@@ -1,3 +1,10 @@
+# [0.265.0](https://github.com/teamkeel/keel/compare/v0.264.1...v0.265.0) (2023-02-17)
+
+
+### Features
+
+* add nix format check ([d56c318](https://github.com/teamkeel/keel/commit/d56c318a842bae27da35b307f6a12186e5f4dea7))
+
 ## [0.264.1](https://github.com/teamkeel/keel/compare/v0.264.0...v0.264.1) (2023-02-16)
 
 
