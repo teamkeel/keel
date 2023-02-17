@@ -1,3 +1,10 @@
+# [0.267.0](https://github.com/teamkeel/keel/compare/v0.266.0...v0.267.0) (2023-02-17)
+
+
+### Features
+
+* basic autocomplete for message types ([#796](https://github.com/teamkeel/keel/issues/796)) ([949fa44](https://github.com/teamkeel/keel/commit/949fa4424757f04c7d8e5466ba5506f53e7be8c2))
+
 # [0.266.0](https://github.com/teamkeel/keel/compare/v0.265.1...v0.266.0) (2023-02-17)
 
 
