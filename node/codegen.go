@@ -618,7 +618,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	case proto.OperationType_OPERATION_TYPE_GET:
 		returnType += sdkPrefix + model.Name + " | null"
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		returnType += "{results: " + sdkPrefix + model.Name + "[], hasNextPage: boolean}"
+		returnType += "{results: " + sdkPrefix + model.Name + "[], hasNextPage: boolean, startCursor: string, endCursor: string}"
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"

@@ -242,11 +242,11 @@ func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, 
 }
 
 // Include a column in ORDER BY.
-func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand) {
+func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand, sortOrder string) {
 	c := operand.toColumnString(query)
 
-	if !lo.Contains(query.orderBy, c) {
-		query.orderBy = append(query.orderBy, c)
+	if !lo.Contains(query.orderBy, fmt.Sprintf("%s %s", c, sortOrder)) {
+		query.orderBy = append(query.orderBy, fmt.Sprintf("%s %s", c, sortOrder))
 	}
 }
 
@@ -284,17 +284,23 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 		}
 	}
 
-	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
-	// that helps to determine "hasNextPage".
-	query.AppendOrderBy(IdField())
+	sortOrder := "ASC"
 
 	// Add where condition to implement the page size
 	switch {
 	case page.First != 0:
 		query.Limit(page.First)
 	case page.Last != 0:
+
+		// set the sort order to descending in order to make "last" work. the results are then reversed in the List execute method to restore the previous ascending order
+		// this isn't going to work when we allow the user to specify their own order by so we'll need to circle back on this then
+		sortOrder = "DESC"
 		query.Limit(page.Last)
 	}
+
+	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
+	// that helps to determine "hasNextPage"
+	query.AppendOrderBy(IdField(), sortOrder)
 
 	return nil
 }
