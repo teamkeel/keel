@@ -1,3 +1,10 @@
+## [0.265.1](https://github.com/teamkeel/keel/compare/v0.265.0...v0.265.1) (2023-02-17)
+
+
+### Bug Fixes
+
+* whitespace issue in testdata json ([15efee3](https://github.com/teamkeel/keel/commit/15efee3bf7f7e1bdb1dbfbd3c02bafe727864ef2))
+
 # [0.265.0](https://github.com/teamkeel/keel/compare/v0.264.1...v0.265.0) (2023-02-17)
 
 
