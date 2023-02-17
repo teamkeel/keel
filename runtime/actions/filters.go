@@ -9,8 +9,14 @@ import (
 
 // Applies all implicit input filters to the query.
 func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]any) error {
-	for _, input := range scope.operation.Inputs {
-		if !input.IsModelField() || input.Mode == proto.InputMode_INPUT_MODE_WRITE {
+	message := proto.FindWhereInputMessage(scope.schema, scope.operation.Name)
+	if message == nil {
+		return nil
+	}
+
+	for _, input := range message.Fields {
+		if !input.IsModelField() {
+			// Skip if this is an explicit input (probably used in a @where)
 			continue
 		}
 
@@ -21,7 +27,7 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]an
 			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)
 		}
 
-		err := query.whereByImplicitFilter(scope, input, fieldName, Equals, value)
+		err := query.whereByImplicitFilter(scope, input.Target, fieldName, Equals, value)
 		if err != nil {
 			return err
 		}

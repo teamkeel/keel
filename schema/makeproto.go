@@ -280,20 +280,6 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 					},
 				},
 			},
-			Outputs: []*proto.OperationOutput{
-				{
-					ModelName:     parser.ImplicitIdentityModelName,
-					OperationName: parser.ImplicitAuthenticateOperationName,
-					Name:          "identityCreated",
-					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-				},
-				{
-					ModelName:     parser.ImplicitIdentityModelName,
-					OperationName: parser.ImplicitAuthenticateOperationName,
-					Name:          "token",
-					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-				},
-			},
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{

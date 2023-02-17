@@ -19,35 +19,23 @@ func getInput(schema *proto.Schema, operation *proto.Operation, args map[string]
 		input = map[string]any{}
 	}
 
-	inputMessage := proto.FindMessage(schema.Messages, operation.InputMessageName)
-
 	switch operation.Type {
 	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_DELETE:
+		inputMessage := proto.FindMessage(schema.Messages, operation.InputMessageName)
 		input = parseTypes(inputMessage, operation, input)
 	case proto.OperationType_OPERATION_TYPE_UPDATE, proto.OperationType_OPERATION_TYPE_LIST:
 		if where, ok := input["where"].(map[string]any); ok {
-
-			var whereMessage *proto.Message
-			for _, v := range inputMessage.Fields {
-				if v.Name == "where" && v.Type.Type == proto.Type_TYPE_MESSAGE {
-					whereMessage = proto.FindMessage(schema.Messages, v.Type.MessageName.Value)
-				}
+			whereMessage := proto.FindWhereInputMessage(schema, operation.Name)
+			if whereMessage != nil {
+				input["where"] = parseTypes(whereMessage, operation, where)
 			}
-
-			input["where"] = parseTypes(whereMessage, operation, where)
 		}
 		if values, ok := input["values"].(map[string]any); ok {
-
-			var valuesMessage *proto.Message
-			for _, v := range inputMessage.Fields {
-				if v.Name == "values" && v.Type.Type == proto.Type_TYPE_MESSAGE {
-					valuesMessage = proto.FindMessage(schema.Messages, v.Type.MessageName.Value)
-				}
+			valuesMessage := proto.FindValuesInputMessage(schema, operation.Name)
+			if valuesMessage != nil {
+				input["values"] = parseTypes(valuesMessage, operation, values)
 			}
-
-			input["values"] = parseTypes(valuesMessage, operation, values)
 		}
-		return input
 	}
 
 	return input

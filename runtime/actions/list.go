@@ -4,12 +4,18 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
 func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[string]any) error {
+	message := proto.FindWhereInputMessage(scope.schema, scope.operation.Name)
+	if message == nil {
+		return nil
+	}
+
 inputs:
-	for _, input := range scope.operation.Inputs {
+	for _, input := range message.Fields {
 		if !input.IsModelField() {
 			continue
 		}
@@ -22,7 +28,6 @@ inputs:
 			if input.Optional {
 				continue inputs
 			}
-
 			return fmt.Errorf("did not find required '%s' input in where clause", fieldName)
 		}
 
@@ -34,7 +39,6 @@ inputs:
 				// as it is likely nil
 				continue inputs
 			}
-
 			return fmt.Errorf("'%s' input value %v is not in correct format", fieldName, value)
 		}
 
@@ -45,7 +49,7 @@ inputs:
 			}
 
 			// Resolve the database statement for this expression
-			err = query.whereByImplicitFilter(scope, input, fieldName, operator, operand)
+			err = query.whereByImplicitFilter(scope, input.Target, fieldName, operator, operand)
 			if err != nil {
 				return err
 			}

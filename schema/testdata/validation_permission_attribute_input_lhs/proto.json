@@ -179,24 +179,6 @@
               ]
             }
           ],
-          "outputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "identityCreated",
-              "type": {
-                "type": "TYPE_BOOL"
-              }
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "token",
-              "type": {
-                "type": "TYPE_STRING"
-              }
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }
