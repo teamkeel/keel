@@ -22,7 +22,9 @@ input EmailPasswordInput {
 
 input ListBeatlesInput {
   after: String
+  before: String
   first: Int
+  last: Int
 }
 
 type AuthenticateResponse {
