@@ -27,6 +27,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				scm.makeAPI(decl)
 			case decl.Enum != nil:
 				scm.makeEnum(decl)
+			case decl.Message != nil:
+				scm.makeMessage(decl)
 			default:
 				panic("Case not recognized")
 			}
@@ -378,6 +380,27 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 	scm.proto.Apis = append(scm.proto.Apis, protoAPI)
 }
 
+func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
+	parserMsg := decl.Message
+
+	fields := lo.Map(parserMsg.Fields, func(f *parser.FieldNode, _ int) *proto.MessageField {
+
+		return &proto.MessageField{
+			Name: f.Name.Value,
+			Type: &proto.TypeInfo{
+				Type: scm.parserTypeToProtoType(f.Type),
+			},
+			Optional:    f.Optional,
+			MessageName: parserMsg.Name.Value,
+		}
+	})
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name:   parserMsg.Name.Value,
+		Fields: fields,
+	})
+}
+
 func (scm *Builder) makeEnum(decl *parser.DeclarationNode) {
 	parserEnum := decl.Enum
 	enum := &proto.Enum{
@@ -658,6 +681,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_MODEL
 	case query.IsEnum(scm.asts, parserType):
 		return proto.Type_TYPE_ENUM
+	case query.IsMessage(scm.asts, parserType):
+		return proto.Type_TYPE_MESSAGE
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}

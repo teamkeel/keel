@@ -268,3 +268,52 @@ func TestAttributeArgsParsing(t *testing.T) {
 	assert.Len(t, model.Sections[1].Attribute.Arguments, 0)
 	assert.Len(t, model.Sections[2].Attribute.Arguments, 2)
 }
+
+func TestArbitraryFunctions(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	message MyInput {
+		id ID
+	}
+	message MyOutput {
+		name Text
+	}
+	model Person {
+		functions {
+			read myThing(MyInput) returns (MyOutput)
+		}
+	}`})
+
+	myInput := schema.Declarations[0].Message.Name.Value
+	assert.Equal(t, "MyInput", myInput)
+	myOutput := schema.Declarations[1].Message.Name.Value
+	assert.Equal(t, "MyOutput", myOutput)
+	model := schema.Declarations[2].Model
+	assert.Equal(t, "Person", model.Name.Value)
+	assert.Equal(t, "MyInput", model.Sections[0].Functions[0].Inputs[0].Type.Fragments[0].Fragment)
+	assert.Equal(t, "MyOutput", model.Sections[0].Functions[0].Returns[0].Type.Fragments[0].Fragment)
+}
+
+func TestArbitraryFunctionsNestedMessage(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	message MyInput {
+		nested NestedInput
+	}
+	message NestedInput {
+		title Text
+	}
+	message MyOutput {
+		name Text
+	}
+	model Person {
+		functions {
+			read myThing(MyInput) returns (MyOutput)
+		}
+	}`})
+
+	myInput := schema.Declarations[0].Message.Name.Value
+	assert.Equal(t, "MyInput", myInput)
+	nestedFieldType := schema.Declarations[0].Message.Fields[0].Type
+	assert.Equal(t, "NestedInput", nestedFieldType)
+	nestedInput := schema.Declarations[1].Message.Name.Value
+	assert.Equal(t, "NestedInput", nestedInput)
+}
