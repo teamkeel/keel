@@ -1,22 +1,22 @@
 {
-    "errors": [
-        {
-            "message": "'@relation(age)' refers to a related field of type 'Number', which should be of type 'Post",
-            "shortMessage": "'age' is wrong type",
-            "hint": "Did you mean one of: written ?",
-            "code": "E056",
-            "pos": {
-                "filename": "testdata/validation_relationships_attr_related_field_must_be_type_this_model/schema.keel",
-                "offset": 127,
-                "line": 10,
-                "column": 23
-            },
-            "endPos": {
-                "filename": "testdata/validation_relationships_attr_related_field_must_be_type_this_model/schema.keel",
-                "offset": 141,
-                "line": 10,
-                "column": 37
-            }
-        }
-    ]
+  "errors": [
+    {
+      "message": "'@relation(age)' refers to a related field of type 'Number', which should be of type 'Post",
+      "shortMessage": "'age' is wrong type",
+      "hint": "Did you mean one of: written ?",
+      "code": "E056",
+      "pos": {
+        "filename": "testdata/validation_relationships_attr_related_field_must_be_type_this_model/schema.keel",
+        "offset": 127,
+        "line": 10,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_relationships_attr_related_field_must_be_type_this_model/schema.keel",
+        "offset": 141,
+        "line": 10,
+        "column": 37
+      }
+    }
+  ]
 }
