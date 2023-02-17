@@ -1,0 +1,9 @@
+message Foo {
+  bar Text
+        baz Number
+}
+===
+message Foo {
+    bar Text
+    baz Number
+}
