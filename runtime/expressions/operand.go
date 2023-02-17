@@ -242,7 +242,7 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		return os.Getenv(envVarName), nil
 	case resolver.Operand.Ident.IsContextSecretField():
 		secret := resolver.Operand.Ident.Fragments[2].Fragment
-		return runtimectx.GetCtxSecret(resolver.Context, secret)
+		return runtimectx.GetSecret(resolver.Context, secret)
 	case resolver.Operand.Ident.IsContextHeadersField():
 		headerName := resolver.Operand.Ident.Fragments[2].Fragment
 		// Get canonical name, as this is what header keys are transformed into

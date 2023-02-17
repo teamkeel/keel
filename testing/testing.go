@@ -136,7 +136,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			ctx := r.Context()
 			database, _ := db.LocalFromConnection(ctx, mainDB)
 			ctx = runtimectx.WithDatabase(ctx, database)
-			ctx = runtimectx.SetCtxSecrets(ctx, opts.Secrets)
+			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
 			}

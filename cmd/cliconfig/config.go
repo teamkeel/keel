@@ -26,21 +26,20 @@ type Project struct {
 
 type EnvironmentSecret struct {
 	Development map[string]string `yaml:"development"`
-	Staging     map[string]string `yaml:"staging"`
-	Production  map[string]string `yaml:"production"`
 	Test        map[string]string `yaml:"test"`
 }
 
 type Options struct {
-	FileName string
+	FileName   string
+	WorkingDir string
 }
 
 func New(options *Options) *Config {
 	viper := viper.New()
 
-	if options != nil {
+	if options != nil && options.FileName != "" {
 		viper.SetConfigFile(options.FileName)
-		err := checkConfigFileExists(options.FileName, viper)
+		err := checkConfigFileExists(viper, options.WorkingDir)
 		if err != nil {
 			panic(err)
 		}
@@ -62,7 +61,7 @@ func New(options *Options) *Config {
 
 	viper.SetConfigFile(userConfigPath)
 
-	err = checkConfigFileExists(userConfigPath, viper)
+	err = checkConfigFileExists(viper, options.WorkingDir)
 	if err != nil {
 		panic(err)
 	}
@@ -78,17 +77,12 @@ func New(options *Options) *Config {
 	}
 }
 
-func (c *Config) GetConfig() (*UserConfig, error) {
+func (c *Config) GetConfig(path string) (*UserConfig, error) {
 	var cfg UserConfig
-
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
 
 	b, err := os.ReadFile(c.configPath)
 	if os.IsNotExist(err) {
-		return createEmptyConfig(c.viper, wd)
+		return createEmptyConfig(c.viper, path)
 	} else if err != nil {
 		return nil, err
 	}
@@ -97,18 +91,13 @@ func (c *Config) GetConfig() (*UserConfig, error) {
 	return &cfg, err
 }
 
-func (c *Config) GetProject() (*Project, error) {
-	cfg, err := c.GetConfig()
+func (c *Config) GetProject(path string) (*Project, error) {
+	cfg, err := c.GetConfig(path)
 	if err != nil {
 		return nil, err
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-
-	project, ok := cfg.Projects[wd]
+	project, ok := cfg.Projects[path]
 	if !ok {
 		return nil, errors.New("project not found")
 	}
@@ -116,29 +105,24 @@ func (c *Config) GetProject() (*Project, error) {
 	return &project, nil
 }
 
-func (c *Config) SetSecret(environment, key, value string) error {
-	cfg, err := c.GetConfig()
+func (c *Config) SetSecret(path, environment, key, value string) error {
+	cfg, err := c.GetConfig(path)
 	if err != nil {
 		return err
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
-	currentSecrets := cfg.Projects[wd].Secrets
+	currentSecrets := cfg.Projects[path].Secrets
 	secrets := createSecretEnvironments(environment, key, value, &currentSecrets)
 
-	cfg.Projects[wd] = Project{
+	cfg.Projects[path] = Project{
 		Secrets: secrets,
 	}
 
 	return c.writeConfig(*cfg)
 }
 
-func (c *Config) GetSecrets(environment string) (map[string]string, error) {
-	project, err := c.GetProject()
+func (c *Config) GetSecrets(path, environment string) (map[string]string, error) {
+	project, err := c.GetProject(path)
 	if err != nil {
 		return nil, err
 	}
@@ -148,36 +132,9 @@ func (c *Config) GetSecrets(environment string) (map[string]string, error) {
 		return project.Secrets.Development, nil
 	case "test":
 		return project.Secrets.Test, nil
-	case "staging":
-		return project.Secrets.Staging, nil
-	case "production":
-		return project.Secrets.Production, nil
 	default:
 		return nil, errors.New("invalid environment")
 	}
-}
-
-func (c *Config) AllSecrets() ([]string, error) {
-	project, err := c.GetProject()
-	if err != nil {
-		return nil, err
-	}
-
-	var secrets []string
-	for _, secret := range project.Secrets.Development {
-		secrets = append(secrets, secret)
-	}
-	for _, secret := range project.Secrets.Test {
-		secrets = append(secrets, secret)
-	}
-	for _, secret := range project.Secrets.Staging {
-		secrets = append(secrets, secret)
-	}
-	for _, secret := range project.Secrets.Production {
-		secrets = append(secrets, secret)
-	}
-
-	return secrets, nil
 }
 
 func (c *Config) writeConfig(cfg interface{}) error {
@@ -244,10 +201,6 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 		environments.Development[key] = value
 	case "test":
 		environments.Test[key] = value
-	case "staging":
-		environments.Staging[key] = value
-	case "production":
-		environments.Production[key] = value
 	default:
 		panic("invalid environment")
 
@@ -260,20 +213,13 @@ func createEnvironments() EnvironmentSecret {
 	return EnvironmentSecret{
 		Development: make(map[string]string),
 		Test:        make(map[string]string),
-		Staging:     make(map[string]string),
-		Production:  make(map[string]string),
 	}
 }
 
-func checkConfigFileExists(filename string, viper *viper.Viper) error {
+func checkConfigFileExists(viper *viper.Viper, path string) error {
 	err := viper.ReadInConfig()
 	if os.IsNotExist(err) {
-		wd, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
-		_, err = createEmptyConfig(viper, wd)
+		_, err = createEmptyConfig(viper, path)
 		if err != nil {
 			return err
 		}
