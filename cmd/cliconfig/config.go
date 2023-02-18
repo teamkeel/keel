@@ -2,6 +2,7 @@ package cliconfig
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -104,7 +105,12 @@ func (c *Config) GetProject(path string) (*Project, error) {
 
 	project, ok := cfg.Projects[path]
 	if !ok {
-		return nil, errors.New("project not found")
+		newProjectConfig, err := createProject(c, path)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to setup config in project directory: %s", path)
+		}
+		useConfig := newProjectConfig.Projects[path]
+		return &useConfig, nil
 	}
 
 	return &project, nil
@@ -182,6 +188,39 @@ func createEmptyConfig(v *viper.Viper, wd string) (*UserConfig, error) {
 	v.Set("projects", projects)
 
 	err := v.WriteConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	return &UserConfig{
+		Projects: projects,
+	}, nil
+}
+
+func createProject(c *Config, wd string) (*UserConfig, error) {
+	var cfg UserConfig
+
+	b, err := os.ReadFile(c.configPath)
+	if os.IsNotExist(err) {
+		return createEmptyConfig(c.viper, c.configPath)
+	} else if err != nil {
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(b, &cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	projects := cfg.Projects
+	project := Project{
+		Secrets: createEnvironments(),
+	}
+
+	projects[wd] = project
+	c.viper.Set("projects", projects)
+
+	err = c.viper.WriteConfig()
 	if err != nil {
 		return nil, err
 	}
