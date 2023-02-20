@@ -27,12 +27,24 @@ type Colors struct {
 	text           lipgloss.Style
 }
 
-func (c *Colors) Base() string {
-	return c.text.Foreground(c.BaseColor).String()
+func (c *Colors) String() string {
+	return c.text.String()
 }
 
-func (c *Colors) Highlight() string {
-	return c.text.Foreground(c.HighlightColor).String()
+func (c *Colors) Base() *Colors {
+	return &Colors{
+		BaseColor:      c.BaseColor,
+		HighlightColor: c.HighlightColor,
+		text:           c.text.Foreground(c.BaseColor),
+	}
+}
+
+func (c *Colors) Highlight() *Colors {
+	return &Colors{
+		BaseColor:      c.BaseColor,
+		HighlightColor: c.HighlightColor,
+		text:           c.text.Foreground(c.HighlightColor),
+	}
 }
 
 func (c *Colors) Bold() *Colors {

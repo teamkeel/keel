@@ -269,9 +269,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	var header, body string
 	if len(m.tests) < 1 {
-		header = colors.Cyan(fmt.Sprint("Preparing tests" + m.spinner.View())).Base()
+		header = colors.Cyan(fmt.Sprint("Preparing tests" + m.spinner.View())).Base().String()
 	} else {
-		header = colors.White(fmt.Sprintf("Running %d tests", len(m.tests))).Bold().Base()
+		header = colors.White(fmt.Sprintf("Running %d tests", len(m.tests))).Bold().Base().String()
 		m.viewport.SetContent(m.content())
 		body = m.viewport.View()
 	}
@@ -316,7 +316,7 @@ func (m *Model) content() string {
 			)
 		} else {
 			m.builder.WriteString(
-				fmt.Sprintf("        %s\n", colors.Green(fmt.Sprint(test.TestName)).Highlight()),
+				fmt.Sprintf("        %s\n", colors.Green(fmt.Sprint(test.TestName)).Highlight().String()),
 			)
 		}
 	}
@@ -373,7 +373,7 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 		BorderBottom(true)
 
 	s += "\n"
-	s += fmt.Sprintf("%s\n\n", colors.Red(fmt.Sprintf("%d failed tests:", len(failedTests))).Highlight())
+	s += fmt.Sprintf("%s\n\n", colors.Red(fmt.Sprintf("%d failed tests:", len(failedTests))).Highlight().String())
 
 	withinBox := ""
 
@@ -384,8 +384,8 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 
 			withinBox += lipgloss.JoinHorizontal(
 				lipgloss.Center,
-				dialogBoxStyle.Render(colors.Red(fmt.Sprintf("%s", failedTest.Expected)).Highlight()),
-				dialogBoxStyle.Render(colors.Red(fmt.Sprintf("%s", failedTest.Actual)).Highlight()),
+				dialogBoxStyle.Render(colors.Red(fmt.Sprintf("%s", failedTest.Expected)).Highlight().String()),
+				dialogBoxStyle.Render(colors.Red(fmt.Sprintf("%s", failedTest.Actual)).Highlight().String()),
 			)
 			withinBox += "\n"
 			labelsBox := lipgloss.NewStyle().
@@ -395,8 +395,8 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 
 			withinBox += lipgloss.JoinHorizontal(
 				lipgloss.Center,
-				labelsBox.Render(colors.Red("Expected").Highlight()),
-				labelsBox.Render(colors.Red("Actual").Highlight()),
+				labelsBox.Render(colors.Red("Expected").Highlight().String()),
+				labelsBox.Render(colors.Red("Actual").Highlight().String()),
 			)
 			withinBox += "\n\n"
 		case StatusException:
