@@ -13,11 +13,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/fatih/color"
 	"github.com/samber/lo"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -986,28 +986,19 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 func diffPrettyText(diffs []diffmatchpatch.Diff) string {
 	var buff strings.Builder
 
-	green := color.New(color.FgGreen)
-	green.EnableColor()
-	red := color.New(color.FgRed)
-	red.EnableColor()
-	bgGreen := color.New(color.BgGreen, color.FgWhite)
-	bgGreen.EnableColor()
-	bgRed := color.New(color.BgRed, color.FgWhite)
-	bgRed.EnableColor()
-
 	for _, diff := range diffs {
 		switch diff.Type {
 		case diffmatchpatch.DiffInsert:
 			if strings.TrimSpace(diff.Text) == "" {
-				buff.WriteString(bgGreen.Sprint(diff.Text))
+				buff.WriteString(colors.Green(fmt.Sprint(diff.Text)).Base())
 			} else {
-				buff.WriteString(green.Sprint(diff.Text))
+				buff.WriteString(colors.Green(fmt.Sprint(diff.Text)).Highlight())
 			}
 		case diffmatchpatch.DiffDelete:
 			if strings.TrimSpace(diff.Text) == "" {
-				buff.WriteString(bgRed.Sprintf("%s", diff.Text))
+				buff.WriteString(colors.Red(fmt.Sprintf("%s", diff.Text)).Base())
 			} else {
-				buff.WriteString(red.Sprint(diff.Text))
+				buff.WriteString(colors.Red(fmt.Sprint(diff.Text)).Highlight())
 			}
 		case diffmatchpatch.DiffEqual:
 			buff.WriteString(diff.Text)

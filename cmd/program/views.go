@@ -7,8 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/table"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -259,45 +257,4 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 	}
 
 	return b.String()
-}
-
-func renderSecrets(secrets map[string]string) string {
-	var rows []table.Row
-	var keys []string
-	for k := range secrets {
-		keys = append(keys, k)
-	}
-
-	sort.Sort(sort.StringSlice(keys))
-
-	for _, k := range keys {
-		rows = append(rows, table.Row{k, secrets[k]})
-	}
-
-	columns := []table.Column{
-		{Title: "Name", Width: 50},
-		{Title: "Value", Width: 50},
-	}
-
-	t := table.New(
-		table.WithColumns(columns),
-		table.WithRows(rows),
-		table.WithHeight(len(keys)),
-	)
-	s := table.DefaultStyles()
-	s.Header = s.Header.
-		BorderStyle(lipgloss.NormalBorder()).
-		BorderBottom(true).
-		Bold(false)
-	s.Selected = s.Selected.
-		Foreground(lipgloss.NoColor{}).
-		Bold(false)
-	s.Cell = s.Cell.
-		Foreground(colors.HighlightWhiteBright)
-
-	t.SetStyles(s)
-
-	secretsStyle := lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder())
-
-	return secretsStyle.Render(t.View()) + "\n"
 }

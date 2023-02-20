@@ -13,7 +13,6 @@ require (
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/docker/docker v20.10.17+incompatible
 	github.com/docker/go-connections v0.4.0
-	github.com/fatih/color v1.13.0
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/graphql-go/graphql v0.8.0
 	github.com/iancoleman/strcase v0.2.0
@@ -47,6 +46,7 @@ require (
 	github.com/PaesslerAG/gval v1.0.0 // indirect
 	github.com/aymanbagabas/go-osc52 v1.2.1 // indirect
 	github.com/containerd/console v1.0.3 // indirect
+	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

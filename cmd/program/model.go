@@ -27,7 +27,6 @@ const (
 	ModeValidate = iota
 	ModeRun
 	ModeTest
-	ModeSecret
 )
 
 const (
@@ -39,8 +38,6 @@ const (
 	StatusStartingFunctions
 	StatusRunning
 	StatusQuitting
-	StatusLoadSecrets
-	StatusListSecrets
 )
 
 func Run(model *Model) {
@@ -135,8 +132,6 @@ func (m *Model) Init() tea.Cmd {
 	case ModeRun, ModeTest:
 		m.Status = StatusSetupDatabase
 		return StartDatabase(m.ResetDatabase, m.Mode)
-	case ModeSecret:
-		return LoadSecrets(m.ProjectDir, m.Environment)
 	default:
 		return nil
 	}
@@ -362,18 +357,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Err = msg.Err
 		m.TestOutput = msg.Output
 		return m, tea.Quit
-
-	case LoadSecretsMsg:
-		m.Err = msg.Err
-		m.Secrets = msg.Secrets
-		if m.Status == StatusListSecrets {
-			return m, ListSecrets(msg.Secrets)
-		}
-
-	case ListSecretsMsg:
-		m.Err = msg.Err
-		m.Secrets = msg.Secrets
-		return m, tea.Quit
 	}
 
 	return m, nil
@@ -426,16 +409,6 @@ func (m *Model) View() string {
 	if m.Mode == ModeRun && m.Err == nil && m.Status >= StatusLoadSchema {
 		b.WriteString("\n")
 		b.WriteString(renderLog(m.RuntimeRequests, m.FunctionsLog))
-	}
-
-	if m.Mode == ModeSecret {
-		if m.Status == StatusListSecrets {
-			if len(m.Secrets) == 0 {
-				b.WriteString("No secrets found")
-			} else {
-				return renderSecrets(m.Secrets)
-			}
-		}
 	}
 
 	// The final "\n" is important as when Bubbletea exists it resets the last
