@@ -269,9 +269,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	var header, body string
 	if len(m.tests) < 1 {
-		header = colors.Cyan(fmt.Sprint("Preparing tests" + m.spinner.View())).Base().String()
+		header = colors.Cyan(fmt.Sprint("Preparing tests" + m.spinner.View())).String()
 	} else {
-		header = colors.White(fmt.Sprintf("Running %d tests", len(m.tests))).Bold().Base().String()
+		header = colors.White(fmt.Sprintf("Running %d tests", len(m.tests))).Bold().String()
 		m.viewport.SetContent(m.content())
 		body = m.viewport.View()
 	}
@@ -301,7 +301,7 @@ func (m *Model) content() string {
 			}
 
 			m.builder.WriteString(
-				fmt.Sprintf("%s  %s\n", c.UpdateText(fmt.Sprintf(" %s ", prettyStatusStr(test))).Base(), test.TestName),
+				fmt.Sprintf("%s  %s\n", c.UpdateText(fmt.Sprintf(" %s ", prettyStatusStr(test))).String(), test.TestName),
 			)
 		} else if i > 0 && m.tests[i-1].Completed || i == 0 && !m.tests[i].Completed {
 			m.builder.WriteString(
@@ -339,7 +339,7 @@ func (m *Model) content() string {
 
 		m.builder.WriteString(
 			dialogBoxStyle.Render(
-				fmt.Sprintf("%s · %s · %s", colors.Green(fmt.Sprintf("%d passed", m.passedCount)).Base(), colors.Red(fmt.Sprintf("%d failed", m.failedCount)).Base(), colors.White(fmt.Sprintf("%d total", len(m.tests))).Base()),
+				fmt.Sprintf("%s · %s · %s", colors.Green(fmt.Sprintf("%d passed", m.passedCount)).String(), colors.Red(fmt.Sprintf("%d failed", m.failedCount)).String(), colors.White(fmt.Sprintf("%d total", len(m.tests))).String()),
 			),
 		)
 
@@ -378,7 +378,7 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 	withinBox := ""
 
 	for _, failedTest := range failedTests {
-		withinBox += fmt.Sprintf("%s %s", colors.White(fmt.Sprintf(" %s ", prettyStatusStr(failedTest))).Background(colors.StatusRedBright).Base(), failedTest.TestName)
+		withinBox += fmt.Sprintf("%s %s", colors.White(fmt.Sprintf(" %s ", prettyStatusStr(failedTest))).Background(colors.StatusRedBright).String(), failedTest.TestName)
 		switch failedTest.StatusStr {
 		case StatusFail:
 

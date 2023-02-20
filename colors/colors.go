@@ -31,14 +31,6 @@ func (c *Colors) String() string {
 	return c.text.String()
 }
 
-func (c *Colors) Base() *Colors {
-	return &Colors{
-		BaseColor:      c.BaseColor,
-		HighlightColor: c.HighlightColor,
-		text:           c.text.Foreground(c.BaseColor),
-	}
-}
-
 func (c *Colors) Highlight() *Colors {
 	return &Colors{
 		BaseColor:      c.BaseColor,
@@ -55,11 +47,11 @@ func (c *Colors) Bold() *Colors {
 	}
 }
 
-func (C *Colors) Background(color lipgloss.AdaptiveColor) *Colors {
+func (c *Colors) Background(color lipgloss.AdaptiveColor) *Colors {
 	return &Colors{
-		BaseColor:      C.BaseColor,
-		HighlightColor: C.HighlightColor,
-		text:           C.text.Background(color),
+		BaseColor:      c.BaseColor,
+		HighlightColor: c.HighlightColor,
+		text:           c.text.Background(color),
 	}
 }
 
@@ -67,12 +59,13 @@ func (c *Colors) UpdateText(text string) *Colors {
 	return &Colors{
 		BaseColor:      c.BaseColor,
 		HighlightColor: c.HighlightColor,
-		text:           setText(text),
+		text:           setText(text, c.BaseColor),
 	}
 }
 
-func setText(text string) lipgloss.Style {
+func setText(text string, colour lipgloss.AdaptiveColor) lipgloss.Style {
 	return lipgloss.NewStyle().
+		Foreground(colour).
 		SetString(text)
 }
 
@@ -80,7 +73,7 @@ func Red(text string) *Colors {
 	return &Colors{
 		BaseColor:      StatusRed,
 		HighlightColor: StatusRedBright,
-		text:           setText(text),
+		text:           setText(text, StatusRed),
 	}
 }
 
@@ -88,7 +81,7 @@ func Green(text string) *Colors {
 	return &Colors{
 		BaseColor:      StatusGreen,
 		HighlightColor: StatusGreenBright,
-		text:           setText(text),
+		text:           setText(text, StatusGreen),
 	}
 }
 
@@ -96,7 +89,7 @@ func Yellow(text string) *Colors {
 	return &Colors{
 		BaseColor:      StatusYellow,
 		HighlightColor: StatusYellowBright,
-		text:           setText(text),
+		text:           setText(text, StatusYellow),
 	}
 }
 
@@ -104,7 +97,7 @@ func Blue(text string) *Colors {
 	return &Colors{
 		BaseColor:      StatusBlue,
 		HighlightColor: StatusBlueBright,
-		text:           setText(text),
+		text:           setText(text, StatusBlue),
 	}
 }
 
@@ -112,7 +105,7 @@ func Magenta(text string) *Colors {
 	return &Colors{
 		BaseColor:      HighlightMagenta,
 		HighlightColor: HighlightMagentaBright,
-		text:           setText(text),
+		text:           setText(text, HighlightMagenta),
 	}
 }
 
@@ -120,7 +113,7 @@ func Cyan(text string) *Colors {
 	return &Colors{
 		BaseColor:      HighlightCyan,
 		HighlightColor: HighlightCyanBright,
-		text:           setText(text),
+		text:           setText(text, HighlightCyan),
 	}
 }
 
@@ -128,7 +121,7 @@ func White(text string) *Colors {
 	return &Colors{
 		BaseColor:      HighlightWhite,
 		HighlightColor: HighlightWhiteBright,
-		text:           setText(text),
+		text:           setText(text, HighlightWhite),
 	}
 }
 
@@ -136,7 +129,7 @@ func Black(text string) *Colors {
 	return &Colors{
 		BaseColor:      HighlightBlack,
 		HighlightColor: HighlightBlackBright,
-		text:           setText(text),
+		text:           setText(text, HighlightBlack),
 	}
 }
 
@@ -144,7 +137,7 @@ func Gray(text string) *Colors {
 	return &Colors{
 		BaseColor:      HighlightBlackBright,
 		HighlightColor: HighlightWhite,
-		text:           setText(text),
+		text:           setText(text, HighlightBlackBright),
 	}
 }
 
@@ -152,6 +145,6 @@ func Heading(text string) *Colors {
 	return &Colors{
 		BaseColor:      HighlightBlack,
 		HighlightColor: HighlightBlackBright,
-		text:           setText(text).Underline(true),
+		text:           setText(text, HighlightBlack).Underline(true),
 	}
 }

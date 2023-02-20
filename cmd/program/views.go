@@ -19,7 +19,7 @@ import (
 func renderRun(m *Model) string {
 	b := strings.Builder{}
 	b.WriteString("Running Keel app in directory: ")
-	b.WriteString(colors.White(m.ProjectDir).Base().String())
+	b.WriteString(colors.White(m.ProjectDir).String())
 	b.WriteString("\n")
 
 	if m.DatabaseConnInfo != nil {
@@ -70,17 +70,17 @@ func renderRun(m *Model) string {
 
 	if len(m.MigrationChanges) > 0 {
 		b.WriteString("\n")
-		b.WriteString(colors.Heading("Schema changes:").Base().String())
+		b.WriteString(colors.Heading("Schema changes:").String())
 		for _, ch := range m.MigrationChanges {
 			b.WriteString("\n")
 			b.WriteString(" - ")
 			switch ch.Type {
 			case migrations.ChangeTypeAdded:
-				b.WriteString(colors.Green(ch.Type).Base().String())
+				b.WriteString(colors.Green(ch.Type).String())
 			case migrations.ChangeTypeRemoved:
-				b.WriteString(colors.Red(ch.Type).Base().String())
+				b.WriteString(colors.Red(ch.Type).String())
 			case migrations.ChangeTypeModified:
-				b.WriteString(colors.Black(ch.Type).Base().String())
+				b.WriteString(colors.Black(ch.Type).String())
 			}
 			b.WriteString(" ")
 			b.WriteString(ch.Model)
@@ -94,13 +94,13 @@ func renderRun(m *Model) string {
 
 	if m.Status == StatusRunning {
 		if len(m.Schema.Apis) == 0 {
-			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it").Base().String())
+			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it").String())
 		}
 
 		for _, api := range m.Schema.Apis {
 			b.WriteString("\n")
 			b.WriteString(api.Name)
-			b.WriteString(colors.White(" endpoints:").Base().String())
+			b.WriteString(colors.White(" endpoints:").String())
 			endpoints := [][]string{
 				{"graphiql", "GraphiQL Playground"},
 				{"graphql", "GraphQL"},
@@ -111,15 +111,15 @@ func renderRun(m *Model) string {
 				b.WriteString("\n")
 				b.WriteString(" - ")
 				b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Highlight().String())
-				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).Base().String())
+				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).String())
 			}
 		}
 	}
 
 	b.WriteString("\n")
-	b.WriteString(colors.White(" - press ").Base().String())
+	b.WriteString(colors.White(" - press ").String())
 	b.WriteString("q")
-	b.WriteString(colors.White(" to quit").Base().String())
+	b.WriteString(colors.White(" to quit").String())
 	b.WriteString("\n")
 
 	return b.String()
@@ -154,16 +154,16 @@ func renderError(m *Model) string {
 			b.WriteString(s)
 		case errors.As(m.Err, &configErrors):
 			b.WriteString("❌ The following errors were found in your ")
-			b.WriteString(colors.Yellow("keelconfig.yaml").Base().String())
+			b.WriteString(colors.Yellow("keelconfig.yaml").String())
 			b.WriteString(" file:\n\n")
 			for _, v := range configErrors.Errors {
 				b.WriteString(" - ")
-				b.WriteString(colors.Red(v.Message).Base().String())
+				b.WriteString(colors.Red(v.Message).String())
 				b.WriteString("\n")
 			}
 		case m.Err == schema.ErrNoSchemaFiles:
 			b.WriteString("❌ No Keel schema files found in: ")
-			b.WriteString(colors.White(m.ProjectDir).Base().String())
+			b.WriteString(colors.White(m.ProjectDir).String())
 		default:
 			b.WriteString("❌ There was an error loading your schema:\n\n")
 			b.WriteString(m.Err.Error())
@@ -176,11 +176,11 @@ func renderError(m *Model) string {
 		b.WriteString("  ")
 		if errors.As(m.Err, &dbErr) {
 			b.WriteString("column ")
-			b.WriteString(colors.Red(dbErr.Column).Base().String())
+			b.WriteString(colors.Red(dbErr.Column).String())
 			b.WriteString(": ")
-			b.WriteString(colors.Red(dbErr.Error()).Base().String())
+			b.WriteString(colors.Red(dbErr.Error()).String())
 		} else {
-			b.WriteString(colors.Red(m.Err.Error()).Base().String())
+			b.WriteString(colors.Red(m.Err.Error()).String())
 		}
 
 	case StatusUpdateFunctions:
@@ -225,9 +225,9 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 
 	for _, r := range requests {
 		b := strings.Builder{}
-		b.WriteString(colors.Yellow("[Request]").Base().String())
+		b.WriteString(colors.Yellow("[Request]").String())
 		b.WriteString(" ")
-		b.WriteString(colors.White(r.Method).Base().String())
+		b.WriteString(colors.White(r.Method).String())
 		b.WriteString(" ")
 		b.WriteString(r.Path)
 		logs = append(logs, &log{
@@ -238,7 +238,7 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 
 	for _, r := range functionLogs {
 		b := strings.Builder{}
-		b.WriteString(colors.Yellow("[Functions]").Base().String())
+		b.WriteString(colors.Yellow("[Functions]").String())
 		b.WriteString(" ")
 		b.WriteString(r.Value)
 		logs = append(logs, &log{

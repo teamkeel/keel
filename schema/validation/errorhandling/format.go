@@ -46,8 +46,8 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			}
 		}
 
-		result += colors.Gray(fmt.Sprintf(gutterFmt, " ")).Base().String()
-		result += colors.Green(fmt.Sprint(err.Pos.Filename)).Base().String()
+		result += colors.Gray(fmt.Sprintf(gutterFmt, " ")).String()
+		result += colors.Green(fmt.Sprint(err.Pos.Filename)).String()
 		newLine()
 
 		// not sure this can happen, but just in case we'll handle it
@@ -67,12 +67,12 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			}
 
 			// Render line numbers in gutter
-			result += colors.Gray(fmt.Sprintf(gutterFmt, fmt.Sprintf("%d", lineIndex+1))).Base().String()
+			result += colors.Gray(fmt.Sprintf(gutterFmt, fmt.Sprintf("%d", lineIndex+1))).String()
 
 			// If the error line doesn't match the currently enumerated line
 			// then we can render the whole line without any colorization
 			if (lineIndex + 1) != errorLine {
-				result += colors.Gray(line).Base().String()
+				result += colors.Gray(line).String()
 				newLine()
 				continue
 			}
@@ -89,13 +89,13 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 					continue
 				}
 
-				result += colors.Red(fmt.Sprint(char)).Base().String()
+				result += colors.Red(fmt.Sprint(char)).String()
 			}
 
 			newLine()
 
 			// Underline the token that caused the error
-			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).Base().String()
+			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
 			result += strings.Repeat(" ", err.Pos.Column-1)
 			tokenLength := err.EndPos.Column - err.Pos.Column
 			for i := 0; i < tokenLength; i++ {
@@ -108,19 +108,19 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			newLine()
 
 			// Render the down arrow
-			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).Base().String()
+			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
 			result += strings.Repeat(" ", err.Pos.Column-1)
 			result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
 			result += colors.Yellow("\u2570").Highlight().String()
 			result += colors.Yellow("\u2500").Highlight().String()
 
 			// Render the message
-			result += fmt.Sprintf(" %s %s", colors.Yellow(fmt.Sprint(err.ErrorDetails.Message)).Highlight().String(), colors.Red(fmt.Sprintf("(%s)", err.Code)).Base().String())
+			result += fmt.Sprintf(" %s %s", colors.Yellow(fmt.Sprint(err.ErrorDetails.Message)).Highlight().String(), colors.Red(fmt.Sprintf("(%s)", err.Code)).String())
 			newLine()
 
 			// Render the hint
 			if err.ErrorDetails.Hint != "" {
-				result += colors.Gray(fmt.Sprintf(gutterFmt, "")).Base().String()
+				result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
 				result += strings.Repeat(" ", err.Pos.Column-1)
 				result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
 				// Line up hint with the error message above (taking into account unicode arrows)

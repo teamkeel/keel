@@ -990,13 +990,13 @@ func diffPrettyText(diffs []diffmatchpatch.Diff) string {
 		switch diff.Type {
 		case diffmatchpatch.DiffInsert:
 			if strings.TrimSpace(diff.Text) == "" {
-				buff.WriteString(colors.Green(fmt.Sprint(diff.Text)).Base().String())
+				buff.WriteString(colors.Green(fmt.Sprint(diff.Text)).String())
 			} else {
 				buff.WriteString(colors.Green(fmt.Sprint(diff.Text)).Highlight().String())
 			}
 		case diffmatchpatch.DiffDelete:
 			if strings.TrimSpace(diff.Text) == "" {
-				buff.WriteString(colors.Red(diff.Text).Base().String())
+				buff.WriteString(colors.Red(diff.Text).String())
 			} else {
 				buff.WriteString(colors.Red(fmt.Sprint(diff.Text)).Highlight().String())
 			}
