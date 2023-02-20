@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/radovskyb/watcher"
+	"github.com/teamkeel/keel/cmd/cliconfig"
 	"github.com/teamkeel/keel/cmd/database"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -26,18 +28,39 @@ type LoadSchemaMsg struct {
 	Schema      *proto.Schema
 	Config      *config.ProjectConfig
 	SchemaFiles []reader.SchemaFile
+	Secrets     map[string]string
 	Err         error
 }
 
-func LoadSchema(dir string) tea.Cmd {
+func LoadSchema(dir, environment string) tea.Cmd {
 	return func() tea.Msg {
 		b := schema.Builder{}
 		s, err := b.MakeFromDirectory(dir)
+
+		absolutePath, filepathErr := filepath.Abs(dir)
+		if filepathErr != nil {
+			err = filepathErr
+		}
+
+		cliConfig := cliconfig.New(&cliconfig.Options{
+			WorkingDir: dir,
+		})
+
+		secrets, configErr := cliConfig.GetSecrets(absolutePath, environment)
+		if configErr != nil {
+			err = configErr
+		}
+
+		invalid, invalidSecrets := b.Config.ValidateSecrets(secrets)
+		if invalid {
+			err = fmt.Errorf("missing secrets from local config in ~/.keel/config.yaml: %s", strings.Join(invalidSecrets, ", "))
+		}
 
 		msg := LoadSchemaMsg{
 			Schema:      s,
 			Config:      b.Config,
 			SchemaFiles: b.SchemaFiles(),
+			Secrets:     secrets,
 			Err:         err,
 		}
 

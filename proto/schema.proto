@@ -13,6 +13,7 @@ message Schema {
     repeated Enum enums = 4;
     repeated EnvironmentVariable environment_variables = 5;
     repeated Message messages = 6;
+    repeated Secret secrets = 7;
 }
 
 message Model {
@@ -280,6 +281,11 @@ message TypeInfo {
 }
 
 message EnvironmentVariable {
+  string name = 1;
+  bool required = 2;
+}
+
+message Secret {
   string name = 1;
   bool required = 2;
 }

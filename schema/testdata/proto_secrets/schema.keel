@@ -1,0 +1,6 @@
+model MyModel {
+    @permission(
+        expression: ctx.secrets.TEST_SECRET == "d",
+        actions: [get]
+    )
+}

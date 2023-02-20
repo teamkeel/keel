@@ -81,6 +81,10 @@ func TestIntegration(t *gotest.T) {
 
 			envVars := cfg.GetEnvVars("test")
 
+			secrets := map[string]string{
+				"TEST_API_KEY": "1232132_2323",
+			}
+
 			files, err := node.Generate(
 				context.Background(),
 				tmpDir,
@@ -107,6 +111,7 @@ func TestIntegration(t *gotest.T) {
 				DbConnInfo:      dbConnInfo,
 				FunctionsOutput: &functionOutput,
 				EnvVars:         envVars,
+				Secrets:         secrets,
 			})
 			require.NoError(t, err)
 

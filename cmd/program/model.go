@@ -96,6 +96,8 @@ type Model struct {
 	RuntimeRequests  []*RuntimeRequest
 	FunctionsLog     []*FunctionLog
 	TestOutput       string
+	Secrets          map[string]string
+	Environment      string
 
 	// Channels for communication between long-running
 	// commands and the Bubbletea program
@@ -121,11 +123,12 @@ func (m *Model) Init() tea.Cmd {
 	m.runtimeRequestsCh = make(chan tea.Msg, 1)
 	m.functionsLogCh = make(chan tea.Msg, 1)
 	m.watcherCh = make(chan tea.Msg, 1)
+	m.Environment = lo.Ternary(m.Mode == ModeTest, "test", "development")
 
 	switch m.Mode {
 	case ModeValidate:
 		m.Status = StatusLoadSchema
-		return LoadSchema(m.ProjectDir)
+		return LoadSchema(m.ProjectDir, m.Environment)
 	case ModeRun, ModeTest:
 		m.Status = StatusSetupDatabase
 		return StartDatabase(m.ResetDatabase, m.Mode)
@@ -174,7 +177,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds := []tea.Cmd{
 			StartRuntimeServer(m.Port, m.runtimeRequestsCh),
 			NextMsgCommand(m.runtimeRequestsCh),
-			LoadSchema(m.ProjectDir),
+			LoadSchema(m.ProjectDir, m.Environment),
 		}
 
 		if m.Mode == ModeRun {
@@ -192,6 +195,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.SchemaFiles = msg.SchemaFiles
 		m.Config = msg.Config
 		m.Err = msg.Err
+		m.Secrets = msg.Secrets
 
 		// For validate mode we're done
 		if m.Mode == ModeValidate {
@@ -312,6 +316,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx := msg.r.Context()
 		database, _ := db.Local(ctx, m.DatabaseConnInfo)
 		ctx = runtimectx.WithDatabase(ctx, database)
+		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 		if m.FunctionsServer != nil {
 			ctx = functions.WithFunctionsTransport(
 				ctx,
@@ -345,7 +350,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, tea.Batch(
 			NextMsgCommand(m.watcherCh),
-			LoadSchema(m.ProjectDir),
+			LoadSchema(m.ProjectDir, m.Environment),
 		)
 
 	case RunTestsMsg:

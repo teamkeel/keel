@@ -19,7 +19,7 @@ Prefix your commit messages with:
 There is a handy helper script to generate the relevant test case files if you'd like to write a new test case for something in the schema / validation rules:
 
 ```
-sh ./scripts/new-test-case test_case_name
+sh ./scripts/new-test-case.sh test_case_name
 ```
 
 This will generate:

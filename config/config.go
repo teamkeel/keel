@@ -84,6 +84,16 @@ func (c *ProjectConfig) AllEnvironmentVariables() []string {
 	return allEnvironmentVariables
 }
 
+func (c *ProjectConfig) AllSecrets() []string {
+	var secrets []string
+
+	for _, secret := range c.Secrets {
+		secrets = append(secrets, secret.Name)
+	}
+
+	return secrets
+}
+
 // EnvironmentConfig is the configuration for a keel environment default, staging, production
 type EnvironmentConfig struct {
 	Default     []Input `yaml:"default"`
@@ -252,27 +262,34 @@ func checkForDuplicates(config *ProjectConfig) (bool, map[string][]string) {
 		}
 	}
 
-	if stagingDuplicates || productionDuplicates {
+	secretDuplicates, secrets := findDuplicates(config.Secrets)
+	if len(secrets) > 0 {
+		for _, key := range secrets {
+			results[key] = append(results[key], "secrets")
+		}
+	}
+
+	if stagingDuplicates || productionDuplicates || secretDuplicates {
 		return true, results
 	}
 
 	return false, results
 }
 
-// findDuplicates checks for duplicate environment variables for a given environment
+// findDuplicates checks for duplicate environment variables or secrets for a given environment
 func findDuplicates(environment []Input) (bool, []string) {
-	envVarKeys := make(map[string]bool)
+	keys := make(map[string]bool)
 
-	duplicateEnvVars := []string{}
+	duplicates := []string{}
 	for _, envVar := range environment {
-		if _, value := envVarKeys[envVar.Name]; !value {
-			envVarKeys[envVar.Name] = true
+		if _, value := keys[envVar.Name]; !value {
+			keys[envVar.Name] = true
 		} else {
-			duplicateEnvVars = append(duplicateEnvVars, envVar.Name)
+			duplicates = append(duplicates, envVar.Name)
 		}
 	}
 
-	return len(duplicateEnvVars) > 0, duplicateEnvVars
+	return len(duplicates) > 0, duplicates
 }
 
 // requiredValuesKeys checks for required environment variables in a keel project defined in the default block
@@ -352,4 +369,16 @@ func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]
 	}
 
 	return len(incorrectNamesMap) > 0, incorrectNamesMap
+}
+
+func (c *ProjectConfig) ValidateSecrets(localSecrets map[string]string) (bool, []string) {
+	var missing []string
+
+	for _, secret := range c.Secrets {
+		if _, ok := localSecrets[secret.Name]; !ok {
+			missing = append(missing, secret.Name)
+		}
+	}
+
+	return len(missing) > 0, missing
 }

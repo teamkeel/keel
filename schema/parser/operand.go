@@ -166,6 +166,13 @@ func (ident *Ident) IsContextEnvField() bool {
 	return false
 }
 
+func (ident *Ident) IsContextSecretField() bool {
+	if ident.IsContext() && len(ident.Fragments) == 3 {
+		return ident.Fragments[1].Fragment == "secrets"
+	}
+	return false
+}
+
 type IdentFragment struct {
 	node.Node
 
