@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "The 'Book' model has more than one field that references the Person model, only one is allowed if the Person model has a repeated, (i.e. []) reverse relationship field.",
+      "message": "Your model 'Book' has more than one field that references a 'Person', and a 'Person' has a (reverse) repeated field back to 'Book'.",
       "shortMessage": "The 'Book' model has more than one field that references the Person model",
-      "hint": "Try removing all but one of these fields.",
+      "hint": "This is only allowed if you put a @relation attribute on the following fields in Book: author, and editor",
       "code": "E045",
       "pos": {
         "filename": "testdata/validation_relationships_more_than_one_reverse_many/schema.keel",

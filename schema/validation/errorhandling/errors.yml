@@ -171,8 +171,8 @@ en:
     hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."
   E045:
     short_message: "The '{{ .ModelA }}' model has more than one field that references the {{ .ModelB }} model"
-    message: "The '{{ .ModelA }}' model has more than one field that references the {{ .ModelB }} model, only one is allowed if the {{ .ModelB }} model has a repeated, (i.e. []) reverse relationship field."
-    hint: "Try removing all but one of these fields."
+    message: "Your model '{{ .ModelA }}' has more than one field that references a '{{ .ModelB }}', and a '{{ .ModelB }}' has a (reverse) repeated field back to '{{.ModelA}}'."
+    hint: "This is only allowed if you put a @relation attribute on the following fields in {{.ModelA}}: {{.SuggestedFields}}"
   E046:
     short_message: "create actions must accept all required fields that have no default value"
     message: "create actions must accept all required fields that have no default value"
