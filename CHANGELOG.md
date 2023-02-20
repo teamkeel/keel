@@ -1,3 +1,10 @@
+# [0.269.0](https://github.com/teamkeel/keel/compare/v0.268.0...v0.269.0) (2023-02-20)
+
+
+### Features
+
+* add secrets to proto ([#788](https://github.com/teamkeel/keel/issues/788)) ([d12555a](https://github.com/teamkeel/keel/commit/d12555a41ffd41031e8eaf7ff88db03344575c9c))
+
 # [0.268.0](https://github.com/teamkeel/keel/compare/v0.267.0...v0.268.0) (2023-02-17)
 
 
