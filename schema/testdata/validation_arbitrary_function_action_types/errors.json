@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "The 'returns' keyword can only be used with 'read' or 'write' actions",
+      "hint": "Valid types with 'returns' are write, or read",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_arbitrary_function_action_types/schema.keel",
+        "offset": 61,
+        "line": 7,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_arbitrary_function_action_types/schema.keel",
+        "offset": 64,
+        "line": 7,
+        "column": 8
+      }
+    }
+  ]
+}

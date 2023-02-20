@@ -136,6 +136,40 @@ func (v ValidationErrors) Error() string {
 
 func (e ValidationErrors) Unwrap() error { return e }
 
+type ErrorType string
+
+const (
+	NamingError              ErrorType = "NamingError"
+	DuplicateDefinitionError ErrorType = "DuplicateDefinitionError"
+	TypeError                ErrorType = "TypeError"
+	UndefinedError           ErrorType = "UndefinedError"
+	ActionInputError         ErrorType = "ActionInputError"
+	AttributeArgumentError   ErrorType = "AttributeArgumentError"
+	AttributeNotAllowedError ErrorType = "AttributeNotAllowedError"
+	RelationshipError        ErrorType = "RelationshipError"
+)
+
+func NewValidationErrorWithDetails(t ErrorType, details ErrorDetails, position node.ParserNode) *ValidationError {
+	start, end := position.GetPositionRange()
+
+	return &ValidationError{
+		Code:         string(t),
+		ErrorDetails: &details,
+		Pos: LexerPos{
+			Filename: start.Filename,
+			Offset:   start.Offset,
+			Line:     start.Line,
+			Column:   start.Column,
+		},
+		EndPos: LexerPos{
+			Filename: end.Filename,
+			Offset:   end.Offset,
+			Line:     end.Line,
+			Column:   end.Column,
+		},
+	}
+}
+
 func NewValidationError(code string, data TemplateLiterals, position node.ParserNode) *ValidationError {
 	start, end := position.GetPositionRange()
 
