@@ -395,8 +395,8 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 
 			withinBox += lipgloss.JoinHorizontal(
 				lipgloss.Center,
-				labelsBox.Render(colors.Red(fmt.Sprint("Expected")).Highlight()),
-				labelsBox.Render(colors.Red(fmt.Sprint("Actual")).Highlight()),
+				labelsBox.Render(colors.Red("Expected").Highlight()),
+				labelsBox.Render(colors.Red("Actual").Highlight()),
 			)
 			withinBox += "\n\n"
 		case StatusException:

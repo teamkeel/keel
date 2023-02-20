@@ -996,7 +996,7 @@ func diffPrettyText(diffs []diffmatchpatch.Diff) string {
 			}
 		case diffmatchpatch.DiffDelete:
 			if strings.TrimSpace(diff.Text) == "" {
-				buff.WriteString(colors.Red(fmt.Sprintf("%s", diff.Text)).Base())
+				buff.WriteString(colors.Red(diff.Text).Base())
 			} else {
 				buff.WriteString(colors.Red(fmt.Sprint(diff.Text)).Highlight())
 			}

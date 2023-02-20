@@ -72,7 +72,7 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			// If the error line doesn't match the currently enumerated line
 			// then we can render the whole line without any colorization
 			if (lineIndex + 1) != errorLine {
-				result += colors.Gray(fmt.Sprintf("%s", line)).Base()
+				result += colors.Gray(line).Base()
 				newLine()
 				continue
 			}
@@ -102,7 +102,7 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 				if i == tokenLength/2 {
 					result += colors.Yellow("\u252C").Highlight()
 				} else {
-					result += colors.Yellow(fmt.Sprint("\u2500")).Highlight()
+					result += colors.Yellow("\u2500").Highlight()
 				}
 			}
 			newLine()
@@ -111,8 +111,8 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).Base()
 			result += strings.Repeat(" ", err.Pos.Column-1)
 			result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
-			result += colors.Yellow(fmt.Sprint("\u2570")).Highlight()
-			result += colors.Yellow(fmt.Sprint("\u2500")).Highlight()
+			result += colors.Yellow("\u2570").Highlight()
+			result += colors.Yellow("\u2500").Highlight()
 
 			// Render the message
 			result += fmt.Sprintf(" %s %s", colors.Yellow(fmt.Sprint(err.ErrorDetails.Message)).Highlight(), colors.Red(fmt.Sprintf("(%s)", err.Code)).Base())
