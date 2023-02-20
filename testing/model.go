@@ -18,7 +18,6 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/fatih/color"
 
 	"github.com/muesli/termenv"
 	"github.com/samber/lo"
@@ -317,7 +316,7 @@ func (m *Model) content() string {
 			)
 		} else {
 			m.builder.WriteString(
-				fmt.Sprintf("        %s\n", color.New(color.Faint).Sprint(test.TestName)),
+				fmt.Sprintf("        %s\n", colors.Green(fmt.Sprint(test.TestName)).Highlight()),
 			)
 		}
 	}
@@ -340,7 +339,7 @@ func (m *Model) content() string {
 
 		m.builder.WriteString(
 			dialogBoxStyle.Render(
-				fmt.Sprintf("%s · %s · %s", color.New(color.FgGreen).Sprintf("%d passed", m.passedCount), color.New(color.FgRed).Sprintf("%d failed", m.failedCount), color.New(color.FgWhite).Sprintf("%d total", len(m.tests))),
+				fmt.Sprintf("%s · %s · %s", colors.Green(fmt.Sprintf("%d passed", m.passedCount)).Base(), colors.Red(fmt.Sprintf("%d failed", m.failedCount)).Base(), colors.White(fmt.Sprintf("%d total", len(m.tests))).Base()),
 			),
 		)
 
@@ -374,19 +373,19 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 		BorderBottom(true)
 
 	s += "\n"
-	s += fmt.Sprintf("%s\n\n", color.New(color.FgRed).Sprintf("%d failed tests:", len(failedTests)))
+	s += fmt.Sprintf("%s\n\n", colors.Red(fmt.Sprintf("%d failed tests:", len(failedTests))).Highlight())
 
 	withinBox := ""
 
 	for _, failedTest := range failedTests {
-		withinBox += fmt.Sprintf("%s %s", color.New(color.BgRed).Add(color.FgWhite).Sprintf(" %s ", prettyStatusStr(failedTest)), failedTest.TestName)
+		withinBox += fmt.Sprintf("%s %s", colors.White(fmt.Sprintf(" %s ", prettyStatusStr(failedTest))).Background(colors.StatusRedBright).Base(), failedTest.TestName)
 		switch failedTest.StatusStr {
 		case StatusFail:
 
 			withinBox += lipgloss.JoinHorizontal(
 				lipgloss.Center,
-				dialogBoxStyle.Render(color.New(color.FgRed).Sprintf("%s", failedTest.Expected)),
-				dialogBoxStyle.Render(color.New(color.FgRed).Sprintf("%s", failedTest.Actual)),
+				dialogBoxStyle.Render(colors.Red(fmt.Sprintf("%s", failedTest.Expected)).Highlight()),
+				dialogBoxStyle.Render(colors.Red(fmt.Sprintf("%s", failedTest.Actual)).Highlight()),
 			)
 			withinBox += "\n"
 			labelsBox := lipgloss.NewStyle().
@@ -396,16 +395,16 @@ func (m *Model) failedTestSummary(failedTests []*UITestCase) (s string) {
 
 			withinBox += lipgloss.JoinHorizontal(
 				lipgloss.Center,
-				labelsBox.Render(color.New(color.FgRed).Sprint("Expected")),
-				labelsBox.Render(color.New(color.FgRed).Sprint("Actual")),
+				labelsBox.Render(colors.Red(fmt.Sprint("Expected")).Highlight()),
+				labelsBox.Render(colors.Red(fmt.Sprint("Actual")).Highlight()),
 			)
 			withinBox += "\n\n"
 		case StatusException:
 			withinBox += dialogBoxStyle.Width(m.viewport.Width - 5).Render(
 				fmt.Sprintf(
 					"%s\n%s",
-					color.New(color.FgRed).Sprint(failedTest.Err.Message),
-					color.New(color.FgRed).Sprint(failedTest.Err.Stack),
+					colors.Red(fmt.Sprint(failedTest.Err.Message)).Highlight(),
+					colors.Red(fmt.Sprint(failedTest.Err.Stack)).Highlight(),
 				),
 			)
 

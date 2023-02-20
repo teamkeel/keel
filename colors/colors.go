@@ -3,22 +3,22 @@ package colors
 import "github.com/charmbracelet/lipgloss"
 
 var (
-	statusGreen            = lipgloss.AdaptiveColor{Light: "#086c08", Dark: "#009900"}
-	statusGreenBright      = lipgloss.AdaptiveColor{Light: "#086c08", Dark: "#009900"}
-	statusYellow           = lipgloss.AdaptiveColor{Light: "#999900", Dark: "#999900"}
-	statusYellowBright     = lipgloss.AdaptiveColor{Light: "#FFFF00", Dark: "#FFFF00"}
-	statusRed              = lipgloss.AdaptiveColor{Light: "#990000", Dark: "#990000"}
-	statusRedBright        = lipgloss.AdaptiveColor{Light: "#FF0000", Dark: "#FF0000"}
-	statusBlue             = lipgloss.AdaptiveColor{Light: "#000099", Dark: "#000099"}
-	statusBlueBright       = lipgloss.AdaptiveColor{Light: "#0000FF", Dark: "#0000FF"}
-	highlightBlack         = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}
-	highlightBlackBright   = lipgloss.AdaptiveColor{Light: "#666666", Dark: "#666666"}
-	highlightWhite         = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}
-	highlightWhiteBright   = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}
-	highlightMagenta       = lipgloss.AdaptiveColor{Light: "#990099", Dark: "#FF00FF"}
-	highlightMagentaBright = lipgloss.AdaptiveColor{Light: "#990099", Dark: "#FF00FF"}
-	highlightCyan          = lipgloss.AdaptiveColor{Light: "#009999", Dark: "#00FFFF"}
-	highlightCyanBright    = lipgloss.AdaptiveColor{Light: "#009999", Dark: "#00FFFF"}
+	StatusGreen            = lipgloss.AdaptiveColor{Light: "#086c08", Dark: "#009900"}
+	StatusGreenBright      = lipgloss.AdaptiveColor{Light: "#086c08", Dark: "#009900"}
+	StatusYellow           = lipgloss.AdaptiveColor{Light: "#999900", Dark: "#999900"}
+	StatusYellowBright     = lipgloss.AdaptiveColor{Light: "#B3B300", Dark: "#FFFF00"}
+	StatusRed              = lipgloss.AdaptiveColor{Light: "#990000", Dark: "#CC0000"}
+	StatusRedBright        = lipgloss.AdaptiveColor{Light: "#FF0000", Dark: "#FF0000"}
+	StatusBlue             = lipgloss.AdaptiveColor{Light: "#000099", Dark: "#000099"}
+	StatusBlueBright       = lipgloss.AdaptiveColor{Light: "#0000FF", Dark: "#6699ff"}
+	HighlightBlack         = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}
+	HighlightBlackBright   = lipgloss.AdaptiveColor{Light: "#666666", Dark: "#666666"}
+	HighlightWhite         = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#999999"}
+	HighlightWhiteBright   = lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}
+	HighlightMagenta       = lipgloss.AdaptiveColor{Light: "#990099", Dark: "#FF00FF"}
+	HighlightMagentaBright = lipgloss.AdaptiveColor{Light: "#990099", Dark: "#FF00FF"}
+	HighlightCyan          = lipgloss.AdaptiveColor{Light: "#009999", Dark: "#00FFFF"}
+	HighlightCyanBright    = lipgloss.AdaptiveColor{Light: "#009999", Dark: "#00FFFF"}
 )
 
 type Colors struct {
@@ -43,6 +43,14 @@ func (c *Colors) Bold() *Colors {
 	}
 }
 
+func (C *Colors) Background(color lipgloss.AdaptiveColor) *Colors {
+	return &Colors{
+		BaseColor:      C.BaseColor,
+		HighlightColor: C.HighlightColor,
+		text:           C.text.Background(color),
+	}
+}
+
 func (c *Colors) UpdateText(text string) *Colors {
 	return &Colors{
 		BaseColor:      c.BaseColor,
@@ -53,85 +61,85 @@ func (c *Colors) UpdateText(text string) *Colors {
 
 func setText(text string) lipgloss.Style {
 	return lipgloss.NewStyle().
-		SetString(text).Width(len(text))
+		SetString(text)
 }
 
 func Red(text string) *Colors {
 	return &Colors{
-		BaseColor:      statusRed,
-		HighlightColor: statusRedBright,
+		BaseColor:      StatusRed,
+		HighlightColor: StatusRedBright,
 		text:           setText(text),
 	}
 }
 
 func Green(text string) *Colors {
 	return &Colors{
-		BaseColor:      statusGreen,
-		HighlightColor: statusGreenBright,
+		BaseColor:      StatusGreen,
+		HighlightColor: StatusGreenBright,
 		text:           setText(text),
 	}
 }
 
 func Yellow(text string) *Colors {
 	return &Colors{
-		BaseColor:      statusYellow,
-		HighlightColor: statusYellowBright,
+		BaseColor:      StatusYellow,
+		HighlightColor: StatusYellowBright,
 		text:           setText(text),
 	}
 }
 
 func Blue(text string) *Colors {
 	return &Colors{
-		BaseColor:      statusBlue,
-		HighlightColor: statusBlueBright,
+		BaseColor:      StatusBlue,
+		HighlightColor: StatusBlueBright,
 		text:           setText(text),
 	}
 }
 
 func Magenta(text string) *Colors {
 	return &Colors{
-		BaseColor:      highlightMagenta,
-		HighlightColor: highlightMagentaBright,
+		BaseColor:      HighlightMagenta,
+		HighlightColor: HighlightMagentaBright,
 		text:           setText(text),
 	}
 }
 
 func Cyan(text string) *Colors {
 	return &Colors{
-		BaseColor:      highlightCyan,
-		HighlightColor: highlightCyanBright,
+		BaseColor:      HighlightCyan,
+		HighlightColor: HighlightCyanBright,
 		text:           setText(text),
 	}
 }
 
 func White(text string) *Colors {
 	return &Colors{
-		BaseColor:      highlightWhite,
-		HighlightColor: highlightWhiteBright,
+		BaseColor:      HighlightWhite,
+		HighlightColor: HighlightWhiteBright,
 		text:           setText(text),
 	}
 }
 
 func Black(text string) *Colors {
 	return &Colors{
-		BaseColor:      highlightBlack,
-		HighlightColor: highlightBlackBright,
+		BaseColor:      HighlightBlack,
+		HighlightColor: HighlightBlackBright,
 		text:           setText(text),
 	}
 }
 
 func Gray(text string) *Colors {
 	return &Colors{
-		BaseColor:      highlightWhite,
-		HighlightColor: highlightWhiteBright,
+		BaseColor:      HighlightBlackBright,
+		HighlightColor: HighlightWhite,
 		text:           setText(text),
 	}
 }
 
 func Heading(text string) *Colors {
 	return &Colors{
-		BaseColor:      highlightBlack,
-		HighlightColor: highlightBlackBright,
+		BaseColor:      HighlightBlack,
+		HighlightColor: HighlightBlackBright,
 		text:           setText(text).Underline(true),
 	}
 }
