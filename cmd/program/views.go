@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/charmbracelet/bubbles/table"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
@@ -16,24 +17,15 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-var (
-	red     = color.New(color.FgRed)
-	green   = color.New(color.FgHiGreen, color.Faint)
-	blue    = color.New(color.FgHiBlue)
-	yellow  = color.New(color.FgYellow)
-	gray    = color.New(color.FgWhite, color.Faint)
-	heading = color.New(color.FgWhite, color.Underline, color.Bold)
-)
-
 func renderRun(m *Model) string {
 	b := strings.Builder{}
 	b.WriteString("Running Keel app in directory: ")
-	b.WriteString(gray.Sprint(m.ProjectDir))
+	b.WriteString(White(m.ProjectDir).Base())
 	b.WriteString("\n")
 
 	if m.DatabaseConnInfo != nil {
 		b.WriteString("Connect to your database using: ")
-		b.WriteString(yellow.Sprint(m.DatabaseConnInfo.String()))
+		b.WriteString(Yellow(m.DatabaseConnInfo.String()).Base())
 		b.WriteString("\n")
 	}
 
@@ -79,16 +71,17 @@ func renderRun(m *Model) string {
 
 	if len(m.MigrationChanges) > 0 {
 		b.WriteString("\n")
-		b.WriteString(heading.Sprint("Schema changes:\n"))
+		b.WriteString(Heading("Schema changes:").Base())
 		for _, ch := range m.MigrationChanges {
+			b.WriteString("\n")
 			b.WriteString(" - ")
 			switch ch.Type {
 			case migrations.ChangeTypeAdded:
-				b.WriteString(green.Sprint(ch.Type))
+				b.WriteString(Red(ch.Type).Base())
 			case migrations.ChangeTypeRemoved:
-				b.WriteString(red.Sprint(ch.Type))
+				b.WriteString(Red(ch.Type).Base())
 			case migrations.ChangeTypeModified:
-				b.WriteString(yellow.Sprint(ch.Type))
+				b.WriteString(Black(ch.Type).Base())
 			}
 			b.WriteString(" ")
 			b.WriteString(ch.Model)
@@ -102,13 +95,13 @@ func renderRun(m *Model) string {
 
 	if m.Status == StatusRunning {
 		if len(m.Schema.Apis) == 0 {
-			b.WriteString(yellow.Sprint("\n - Your schema doesn't have any API's defined in it"))
+			b.WriteString(Yellow("\n - Your schema doesn't have any API's defined in it").Base())
 		}
 
 		for _, api := range m.Schema.Apis {
 			b.WriteString("\n")
 			b.WriteString(api.Name)
-			b.WriteString(gray.Sprint(" endpoints:\n"))
+			b.WriteString(White(" endpoints:").Base())
 			endpoints := [][]string{
 				{"graphiql", "GraphiQL Playground"},
 				{"graphql", "GraphQL"},
@@ -116,17 +109,18 @@ func renderRun(m *Model) string {
 				{"rpc", "JSON-RPC"},
 			}
 			for _, values := range endpoints {
+				b.WriteString("\n")
 				b.WriteString(" - ")
-				b.WriteString(blue.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0]))
-				b.WriteString(gray.Sprintf(" (%s)\n", values[1]))
+				b.WriteString(Magenta(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Base())
+				b.WriteString(White(fmt.Sprintf(" (%s)", values[1])).Base())
 			}
 		}
 	}
 
 	b.WriteString("\n")
-	b.WriteString(gray.Sprint(" - press "))
+	b.WriteString(White(" - press ").Base())
 	b.WriteString("q")
-	b.WriteString(gray.Sprint(" to quit"))
+	b.WriteString(White(" to quit").Base())
 	b.WriteString("\n")
 
 	return b.String()
@@ -161,16 +155,16 @@ func renderError(m *Model) string {
 			b.WriteString(s)
 		case errors.As(m.Err, &configErrors):
 			b.WriteString("❌ The following errors were found in your ")
-			b.WriteString(yellow.Sprint("keelconfig.yaml"))
+			b.WriteString(Yellow("keelconfig.yaml").Base())
 			b.WriteString(" file:\n\n")
 			for _, v := range configErrors.Errors {
 				b.WriteString(" - ")
-				b.WriteString(red.Sprintf(v.Message))
+				b.WriteString(Red(v.Message).Base())
 				b.WriteString("\n")
 			}
 		case m.Err == schema.ErrNoSchemaFiles:
 			b.WriteString("❌ No Keel schema files found in: ")
-			b.WriteString(gray.Sprint(m.ProjectDir))
+			b.WriteString(White(m.ProjectDir).Base())
 		default:
 			b.WriteString("❌ There was an error loading your schema:\n\n")
 			b.WriteString(m.Err.Error())
@@ -183,11 +177,11 @@ func renderError(m *Model) string {
 		b.WriteString("  ")
 		if errors.As(m.Err, &dbErr) {
 			b.WriteString("column ")
-			b.WriteString(red.Sprint(dbErr.Column))
+			b.WriteString(Red(dbErr.Column).Base())
 			b.WriteString(": ")
-			b.WriteString(red.Sprint(dbErr.Error()))
+			b.WriteString(Red(dbErr.Error()).Base())
 		} else {
-			b.WriteString(red.Sprintf(m.Err.Error()))
+			b.WriteString(Red(m.Err.Error()).Base())
 		}
 
 	case StatusUpdateFunctions:
@@ -221,7 +215,7 @@ func renderError(m *Model) string {
 func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 	b := strings.Builder{}
 
-	b.WriteString(heading.Sprint("Log:"))
+	b.WriteString(Heading("Log:").Highlight())
 	b.WriteString("\n")
 
 	type log struct {
@@ -232,9 +226,9 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 
 	for _, r := range requests {
 		b := strings.Builder{}
-		b.WriteString(yellow.Sprint("[Request]"))
+		b.WriteString(Yellow("[Request]").Base())
 		b.WriteString(" ")
-		b.WriteString(gray.Sprintf(r.Method))
+		b.WriteString(White(r.Method).Base())
 		b.WriteString(" ")
 		b.WriteString(r.Path)
 		logs = append(logs, &log{
@@ -245,7 +239,7 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 
 	for _, r := range functionLogs {
 		b := strings.Builder{}
-		b.WriteString(yellow.Sprint("[Functions]"))
+		b.WriteString(Yellow("[Functions]").Base())
 		b.WriteString(" ")
 		b.WriteString(r.Value)
 		logs = append(logs, &log{
@@ -264,4 +258,45 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 	}
 
 	return b.String()
+}
+
+func renderSecrets(secrets map[string]string) string {
+	var rows []table.Row
+	var keys []string
+	for k := range secrets {
+		keys = append(keys, k)
+	}
+
+	sort.Sort(sort.StringSlice(keys))
+
+	for _, k := range keys {
+		rows = append(rows, table.Row{k, secrets[k]})
+	}
+
+	columns := []table.Column{
+		{Title: "Name", Width: 50},
+		{Title: "Value", Width: 50},
+	}
+
+	t := table.New(
+		table.WithColumns(columns),
+		table.WithRows(rows),
+		table.WithHeight(len(keys)),
+	)
+	s := table.DefaultStyles()
+	s.Header = s.Header.
+		BorderStyle(lipgloss.NormalBorder()).
+		BorderBottom(true).
+		Bold(false)
+	s.Selected = s.Selected.
+		Foreground(lipgloss.NoColor{}).
+		Bold(false)
+	s.Cell = s.Cell.
+		Foreground(highlightWhiteBright)
+
+	t.SetStyles(s)
+
+	secretsStyle := lipgloss.NewStyle().BorderStyle(lipgloss.NormalBorder())
+
+	return secretsStyle.Render(t.View()) + "\n"
 }

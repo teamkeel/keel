@@ -19,8 +19,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/fatih/color"
+
 	"github.com/muesli/termenv"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/testing/viewport"
 )
 
@@ -268,9 +270,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	var header, body string
 	if len(m.tests) < 1 {
-		header = color.New(color.FgCyan).Sprint("Preparing tests" + m.spinner.View())
+		header = colors.Cyan(fmt.Sprint("Preparing tests" + m.spinner.View())).Base()
 	} else {
-		header = color.New(color.FgWhite).Add(color.Bold).Sprintf("Running %d tests", len(m.tests))
+		header = colors.White(fmt.Sprintf("Running %d tests", len(m.tests))).Bold().Base()
 		m.viewport.SetContent(m.content())
 		body = m.viewport.View()
 	}
@@ -291,16 +293,16 @@ func (m *Model) content() string {
 
 	for i, test := range m.tests {
 		if test.Completed {
-			var c *color.Color
+			var c *colors.Colors
 
 			if test.StatusStr == "pass" {
-				c = color.New(color.BgGreen).Add(color.FgBlack)
+				c = colors.Green("")
 			} else {
-				c = color.New(color.BgRed).Add(color.FgWhite)
+				c = colors.Red("")
 			}
 
 			m.builder.WriteString(
-				fmt.Sprintf("%s  %s\n", c.Sprintf(" %s ", prettyStatusStr(test)), test.TestName),
+				fmt.Sprintf("%s  %s\n", c.UpdateText(fmt.Sprintf(" %s ", prettyStatusStr(test))).Base(), test.TestName),
 			)
 		} else if i > 0 && m.tests[i-1].Completed || i == 0 && !m.tests[i].Completed {
 			m.builder.WriteString(
