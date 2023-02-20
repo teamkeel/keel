@@ -1,0 +1,19 @@
+model Person {
+    fields {
+        firstName Text
+        company Company
+        previousCompany Company?
+    }
+
+    operations {
+        list listByCompany(company.name, company.tradingAs)
+        list listByPreviousCompany(previousCompany.name, previousCompany.tradingAs)
+    }
+}
+
+model Company {
+    fields {
+        name Text
+        tradingAs Text?
+    }
+}

@@ -203,6 +203,7 @@
             "modelName": "Identity",
             "fieldName": "identity"
           },
+          "optional": true,
           "target": [
             "identity"
           ]

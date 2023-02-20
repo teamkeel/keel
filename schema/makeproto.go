@@ -56,13 +56,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	case parser.ActionTypeCreate:
 		values := []*proto.MessageField{}
 		for _, value := range action.With {
-			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, value, impl)
 
 			values = append(values, &proto.MessageField{
 				Name:        value.Name(),
 				Type:        typeInfo,
 				Target:      target,
-				Optional:    value.Optional,
+				Optional:    value.Optional || targetsOptionalField,
 				MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
@@ -75,13 +75,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		fields := []*proto.MessageField{}
 
 		for _, input := range action.Inputs {
-			typeInfo, target := scm.inferParserInputType(model, action, input, impl)
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
 			fields = append(fields, &proto.MessageField{
 				Name:        input.Name(),
 				Type:        typeInfo,
 				Target:      target,
-				Optional:    input.Optional,
+				Optional:    input.Optional || targetsOptionalField,
 				MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
@@ -93,13 +93,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	case parser.ActionTypeUpdate:
 		wheres := []*proto.MessageField{}
 		for _, where := range action.Inputs {
-			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, where, impl)
 
 			wheres = append(wheres, &proto.MessageField{
 				Name:        where.Name(),
 				Type:        typeInfo,
 				Target:      target,
-				Optional:    where.Optional,
+				Optional:    where.Optional || targetsOptionalField,
 				MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
@@ -111,13 +111,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 		values := []*proto.MessageField{}
 		for _, value := range action.With {
-			typeInfo, target := scm.inferParserInputType(model, action, value, impl)
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, value, impl)
 
 			values = append(values, &proto.MessageField{
 				Name:        value.Name(),
 				Type:        typeInfo,
 				Target:      target,
-				Optional:    value.Optional,
+				Optional:    value.Optional || targetsOptionalField,
 				MessageName: fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
@@ -157,13 +157,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	case parser.ActionTypeList:
 		wheres := []*proto.MessageField{}
 		for _, where := range action.Inputs {
-			typeInfo, target := scm.inferParserInputType(model, action, where, impl)
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, where, impl)
 
 			wheres = append(wheres, &proto.MessageField{
 				Name:        where.Name(),
 				Type:        typeInfo,
 				Target:      target,
-				Optional:    where.Optional,
+				Optional:    where.Optional || targetsOptionalField,
 				MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
 			})
 		}
@@ -525,7 +525,7 @@ func (scm *Builder) inferParserInputType(
 	op *parser.ActionNode,
 	input *parser.ActionInputNode,
 	impl proto.OperationImplementation,
-) (t *proto.TypeInfo, target []string) {
+) (t *proto.TypeInfo, target []string, targetsOptionalField bool) {
 	idents := input.Type.Fragments
 	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
 
@@ -538,6 +538,10 @@ func (scm *Builder) inferParserInputType(
 			Value: idents[0].Fragment,
 		}
 	}
+
+	// If any target field is optional, then the input becomes optional,
+	// regardless of how it's specified in the schema definition
+	targetsOptionalField = false
 
 	if protoType == proto.Type_TYPE_UNKNOWN {
 		// If we haven't been able to resolve the type of the input it
@@ -555,6 +559,11 @@ func (scm *Builder) inferParserInputType(
 			}
 
 			field = query.ModelField(currModel, ident.Fragment)
+
+			if field.Optional {
+				targetsOptionalField = true
+			}
+
 			m := query.Model(scm.asts, field.Type)
 			if m != nil {
 				currModel = m
@@ -583,7 +592,7 @@ func (scm *Builder) inferParserInputType(
 		ModelName: modelName,
 		FieldName: fieldName,
 		EnumName:  enumName,
-	}, target
+	}, target, targetsOptionalField
 }
 
 func (scm *Builder) makeOperationInput(

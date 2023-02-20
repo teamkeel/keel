@@ -13,5 +13,5 @@
     }
   },
   "additionalProperties": false,
-  "required": ["name", "nickName", "birthday"]
+  "required": ["name", "birthday"]
 }

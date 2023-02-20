@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/xeipuuv/gojsonschema"
@@ -54,15 +53,13 @@ func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operat
 }
 
 func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
-	// TODO: implement proper support for authenticate once it's been re-done using
-	// arbitrary functions
-	if op.Type == proto.OperationType_OPERATION_TYPE_READ || op.Type == proto.OperationType_OPERATION_TYPE_WRITE {
-		return JSONSchema{
-			Type:                 "object",
-			AdditionalProperties: boolPtr(true),
-		}
-	}
+	inputMessage := proto.FindMessage(schema.Messages, op.InputMessageName)
+	return JSONSchemaForMessage(ctx, schema, op, inputMessage)
+}
 
+// Generates JSONSchema for an operation by generating properties for the root input message.
+// Any subsequent nested messages are referenced.
+func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.Operation, message *proto.Message) JSONSchema {
 	components := Components{
 		Schemas: map[string]JSONSchema{},
 	}
@@ -73,75 +70,22 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 		AdditionalProperties: boolPtr(false),
 	}
 
-	where := JSONSchema{
-		Type:                 "object",
-		Properties:           map[string]JSONSchema{},
-		AdditionalProperties: boolPtr(false),
-	}
+	for _, field := range message.Fields {
+		prop := jsonSchemaForField(ctx, field, op, schema)
 
-	values := JSONSchema{
-		Type:                 "object",
-		Properties:           map[string]JSONSchema{},
-		AdditionalProperties: boolPtr(false),
-	}
-
-	isUpdate := op.Type == proto.OperationType_OPERATION_TYPE_UPDATE
-	isList := op.Type == proto.OperationType_OPERATION_TYPE_LIST
-
-	for _, input := range op.Inputs {
-		name, prop := jsonSchemaForInput(ctx, op, input, schema)
-
-		isWrite := input.Mode == proto.InputMode_INPUT_MODE_WRITE
-		isRead := input.Mode == proto.InputMode_INPUT_MODE_READ
-
-		var obj *JSONSchema
-
-		switch {
-		case isUpdate && isRead, isList:
-			obj = &where
-		case isUpdate && isWrite:
-			obj = &values
-		default:
-			obj = &root
+		// Merge components from this request schema into OpenAPI components
+		if prop.Components != nil {
+			for name, comp := range prop.Components.Schemas {
+				components.Schemas[name] = comp
+			}
+			prop.Components = nil
 		}
 
-		if name != "" {
-			components.Schemas[name] = prop
-			obj.Properties[input.Name] = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
-		} else {
-			obj.Properties[input.Name] = prop
-		}
+		root.Properties[field.Name] = prop
 
 		// If the input is not optional then mark it required in the JSON schema
-		if !input.Optional {
-			obj.Required = append(obj.Required, input.Name)
-		}
-	}
-
-	if isUpdate || isList {
-		// Always add the "where" prop but only make it required if has any properties
-		typeName := strcase.ToCamel(op.Name) + "WhereInput"
-		root.Properties["where"] = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", typeName)}
-		components.Schemas[typeName] = where
-		if len(where.Properties) > 0 {
-			root.Required = append(root.Required, "where")
-		}
-	}
-
-	if isList {
-		root.Properties["after"] = JSONSchema{Type: "string"}
-		root.Properties["before"] = JSONSchema{Type: "string"}
-		root.Properties["first"] = JSONSchema{Type: "number"}
-		root.Properties["last"] = JSONSchema{Type: "number"}
-	}
-
-	if isUpdate {
-		// Always add the "values" prop but only make it required if has any properties
-		typeName := strcase.ToCamel(op.Name) + "ValuesInput"
-		root.Properties["values"] = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", typeName)}
-		components.Schemas[typeName] = values
-		if len(values.Properties) > 0 {
-			root.Required = append(root.Required, "values")
+		if !field.Optional {
+			root.Required = append(root.Required, field.Name)
 		}
 	}
 
@@ -152,67 +96,94 @@ func JSONSchemaForOperation(ctx context.Context, schema *proto.Schema, op *proto
 	return root
 }
 
-func jsonSchemaForInput(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) (string, JSONSchema) {
-	name := ""
+func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *proto.Operation, schema *proto.Schema) JSONSchema {
+	components := &Components{
+		Schemas: map[string]JSONSchema{},
+	}
+
 	prop := JSONSchema{}
+	nullable := field.Optional
 
-	if op.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
-		name, prop = jsonSchemaForQueryObject(ctx, op, input, schema)
+	if field.Type.Type == proto.Type_TYPE_MESSAGE {
+		// If the field is a nested message, then need to create a ref instead.
+		prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", field.Type.MessageName.Value)}
+		// And add the nested message to schema components.
+		message := proto.FindMessage(schema.Messages, field.Type.MessageName.Value)
+		component := JSONSchemaForMessage(ctx, schema, op, message)
+
+		// If that nested message component has ref fields itself, then its components must be bundled.
+		if component.Components != nil {
+			for name, comp := range component.Components.Schemas {
+				components.Schemas[name] = comp
+			}
+			component.Components = nil
+		}
+
+		components.Schemas[field.Type.MessageName.Value] = component
 	} else {
-		switch input.Type.Type {
-		case proto.Type_TYPE_ID:
-			prop.Type = "string"
-		case proto.Type_TYPE_STRING:
-			prop.Type = "string"
-		case proto.Type_TYPE_BOOL:
-			prop.Type = "boolean"
-		case proto.Type_TYPE_INT:
-			prop.Type = "number"
+		if op != nil && op.Type == proto.OperationType_OPERATION_TYPE_LIST && field.IsModelField() {
+			// If field is a list operation query input then generate query component.
+			// TODO: to remove with https://linear.app/keel/issue/BLD-305/list-query-input-types-in-proto
+			name, component := jsonSchemaForQueryObject(ctx, op, field, schema)
 
-		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-			// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
-			prop.Type = "string"
-			prop.Format = "date-time"
-
-		case proto.Type_TYPE_ENUM:
-			// For enum's we actually don't need to set the `type` field at all
-			enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
-				return e.Name == input.Type.EnumName.Value
-			})
-			for _, v := range enum.Values {
-				prop.Enum = append(prop.Enum, &v.Name)
+			if nullable {
+				component.allowNull()
+				name = "Nullable" + name
 			}
-			name = enum.Name
+
+			prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+			components.Schemas[name] = component
+
+		} else {
+			switch field.Type.Type {
+			case proto.Type_TYPE_ID:
+				prop.Type = "string"
+			case proto.Type_TYPE_STRING:
+				prop.Type = "string"
+			case proto.Type_TYPE_BOOL:
+				prop.Type = "boolean"
+			case proto.Type_TYPE_INT:
+				prop.Type = "number"
+			case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+				// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
+				prop.Type = "string"
+				prop.Format = "date-time"
+			case proto.Type_TYPE_ENUM:
+				// For enum's we actually don't need to set the `type` field at all
+				name := field.Type.EnumName.Value
+				enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
+					return e.Name == field.Type.EnumName.Value
+				})
+
+				component := JSONSchema{}
+				for _, v := range enum.Values {
+					component.Enum = append(component.Enum, &v.Name)
+				}
+
+				if nullable {
+					component.allowNull()
+					name = "Nullable" + name
+				}
+
+				prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+				components.Schemas[name] = component
+			}
+
+			if nullable {
+				prop.allowNull()
+			}
 		}
 	}
 
-	nullable := input.Optional
-
-	// An input is allowed to be null if the field it relates to is marked
-	// optional. This is because "optional" has a slightly different meaning
-	// between model fields and action inputs:
-	//     - model field:  "can be null"
-	//     - action input: "can be ommitted or be provided as null"
-	if !nullable && input.IsModelField() {
-		model := proto.FindModel(schema.Models, op.ModelName)
-		var field *proto.Field
-		for i, fieldName := range input.Target {
-			field = proto.FindField(schema.Models, model.Name, fieldName)
-			if i < len(input.Target)-1 {
-				model = proto.FindModel(schema.Models, field.Type.ModelName.Value)
-			}
-		}
-		nullable = field.Optional
+	if len(components.Schemas) > 0 {
+		prop.Components = components
 	}
 
-	if nullable {
-		prop.allowNull()
-	}
-
-	return name, prop
+	return prop
 }
 
-func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *proto.OperationInput, schema *proto.Schema) (string, JSONSchema) {
+// TODO: to remove with https://linear.app/keel/issue/BLD-305/list-query-input-types-in-proto
+func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *proto.MessageField, schema *proto.Schema) (string, JSONSchema) {
 	switch input.Type.Type {
 	case proto.Type_TYPE_ID:
 		t := JSONSchema{

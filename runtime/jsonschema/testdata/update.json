@@ -1,7 +1,7 @@
 {
   "components": {
     "schemas": {
-      "Hobby": {
+      "NullableHobby": {
         "enum": ["Tennis", "Chess", null]
       },
       "TestActionValuesInput": {
@@ -12,7 +12,7 @@
             "type": ["string", "null"]
           },
           "hobby": {
-            "$ref": "#/components/schemas/Hobby"
+            "$ref": "#/components/schemas/NullableHobby"
           },
           "name": {
             "type": ["string", "null"]
@@ -44,6 +44,6 @@
       "$ref": "#/components/schemas/TestActionWhereInput"
     }
   },
-  "required": ["where", "values"],
+  "required": ["where"],
   "type": "object"
 }

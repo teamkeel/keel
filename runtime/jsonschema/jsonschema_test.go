@@ -287,6 +287,26 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"name": "Jon", "birthday": "1986-03-18T00:00:00.000Z"}`,
 					opName:  "createPersonWithOptionalDOB",
 				},
+				{
+					name:    "valid - required input for optional field",
+					request: `{"name": "Jon"}`,
+					opName:  "createPersonWithDOB",
+				},
+				{
+					name:    "valid - ommitting optional enum",
+					request: `{}`,
+					opName:  "createPersonWithEnum",
+				},
+				{
+					name:    "valid - providing optional input for optional enum field as null",
+					request: `{"hobby": null}`,
+					opName:  "createPersonWithEnum",
+				},
+				{
+					name:    "valid - providing optional input for optional enum field",
+					request: `{"hobby": "Chess"}`,
+					opName:  "createPersonWithEnum",
+				},
 
 				// errors
 				{
@@ -295,14 +315,6 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "createPerson",
 					errors: map[string]string{
 						"(root)": "name is required",
-					},
-				},
-				{
-					name:    "missing required input for optional field",
-					request: `{"name": "Jon"}`,
-					opName:  "createPersonWithDOB",
-					errors: map[string]string{
-						"(root)": "birthday is required",
 					},
 				},
 				{
