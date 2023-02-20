@@ -1,3 +1,10 @@
+## [0.269.1](https://github.com/teamkeel/keel/compare/v0.269.0...v0.269.1) (2023-02-20)
+
+
+### Bug Fixes
+
+* reinstate ToAnnotatedSchema func on errorhandling.ValidationErrors ([042b682](https://github.com/teamkeel/keel/commit/042b682a7ce2125a03b7901f3096bb67ab7176ba))
+
 # [0.269.0](https://github.com/teamkeel/keel/compare/v0.268.0...v0.269.0) (2023-02-20)
 
 
