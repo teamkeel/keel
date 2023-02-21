@@ -1,3 +1,10 @@
+## [0.273.6](https://github.com/teamkeel/keel/compare/v0.273.5...v0.273.6) (2023-02-21)
+
+
+### Bug Fixes
+
+* fix ignoring of tags in semantic release action ([1c2d0be](https://github.com/teamkeel/keel/commit/1c2d0bee6b9602c85d1313f6d8e151dfdd9afec9))
+
 ## [0.273.5](https://github.com/teamkeel/keel/compare/v0.273.4...v0.273.5) (2023-02-21)
 
 
