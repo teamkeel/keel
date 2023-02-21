@@ -420,3 +420,22 @@ func RunTests(dir string, port string, cfg *config.ProjectConfig, conn *db.Conne
 		}
 	}
 }
+
+// LoadSecrets lists secrets from the given file and returns a command
+func LoadSecrets(path, environment string) (map[string]string, error) {
+	projectPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, err
+	}
+
+	config := cliconfig.New(&cliconfig.Options{
+		WorkingDir: projectPath,
+	})
+
+	secrets, err := config.GetSecrets(path, environment)
+	if err != nil {
+		return nil, err
+
+	}
+	return secrets, nil
+}
