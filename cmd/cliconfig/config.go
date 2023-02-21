@@ -56,18 +56,18 @@ func New(options *Options) *Config {
 		}
 	}
 
-	UserConfigPartialPath := ".keel/config.yaml"
+	configFileName := "config.yaml"
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
 
-	userConfigPath := path.Join(homeDir, UserConfigPartialPath)
+	userConfigPath := path.Join(homeDir, ".keel", configFileName)
 
 	viper.SetConfigFile(userConfigPath)
 
-	err = checkConfigFileExists(viper, absolutePath)
+	err = checkConfigFileExists(viper, homeDir+"/.keel")
 	if err != nil {
 		panic(err)
 	}
@@ -187,9 +187,14 @@ func createEmptyConfig(v *viper.Viper, wd string) (*UserConfig, error) {
 	projects[wd] = project
 	v.Set("projects", projects)
 
-	err := v.WriteConfig()
+	encoded, err := yaml.Marshal(projects)
 	if err != nil {
 		return nil, err
+	}
+
+	err = os.WriteFile(wd+"/config.yaml", encoded, os.ModePerm)
+	if err != nil {
+		return nil, fmt.Errorf("Overe here%s", err)
 	}
 
 	return &UserConfig{
@@ -204,7 +209,7 @@ func createProject(c *Config, wd string) (*UserConfig, error) {
 	if os.IsNotExist(err) {
 		return createEmptyConfig(c.viper, c.configPath)
 	} else if err != nil {
-		return nil, err
+		return nil, errors.New("OFve")
 	}
 
 	err = yaml.Unmarshal(b, &cfg)
@@ -222,7 +227,7 @@ func createProject(c *Config, wd string) (*UserConfig, error) {
 
 	err = c.viper.WriteConfig()
 	if err != nil {
-		return nil, err
+		return nil, errors.New("here222")
 	}
 
 	return &UserConfig{
@@ -261,12 +266,29 @@ func createEnvironments() EnvironmentSecret {
 }
 
 func checkConfigFileExists(viper *viper.Viper, path string) error {
-	err := viper.ReadInConfig()
+	err := createPathIfNotExist(path)
+	if err != nil {
+		return errors.New("dage")
+	}
+	err = viper.ReadInConfig()
 	if os.IsNotExist(err) {
 		_, err = createEmptyConfig(viper, path)
 		if err != nil {
-			return err
+			return fmt.Errorf("Unable to create config file: %s %s", err, path)
 		}
 	}
+	return nil
+}
+
+func createPathIfNotExist(path string) error {
+	dir := filepath.Dir(path)
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			return errors.New("HERERERER")
+		}
+	}
+
 	return nil
 }
