@@ -426,14 +426,6 @@ type ListSecretsMsg struct {
 	Secrets map[string]string
 }
 
-func ListSecrets(secrets map[string]string) tea.Cmd {
-	return func() tea.Msg {
-		return ListSecretsMsg{
-			Secrets: secrets,
-		}
-	}
-}
-
 type LoadSecretsMsg struct {
 	Err     error
 	Secrets map[string]string

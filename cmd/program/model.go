@@ -366,9 +366,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case LoadSecretsMsg:
 		m.Err = msg.Err
 		m.Secrets = msg.Secrets
-		if m.Status == StatusListSecrets {
-			return m, ListSecrets(msg.Secrets)
-		}
+		return m, tea.Quit
 
 	case ListSecretsMsg:
 		m.Err = msg.Err
