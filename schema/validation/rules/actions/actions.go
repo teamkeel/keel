@@ -323,7 +323,6 @@ func UpdateOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling
 }
 
 func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeList {
@@ -660,6 +659,17 @@ func validateInputType(
 	resolvedType := query.ResolveInputType(asts, input, model)
 	msg := query.Message(asts, input.Type.ToString())
 
+	// validate that labels are lower camel cased to avoid ambiguity with message types
+	if input.Label != nil && strcase.ToLowerCamel(input.Label.Value) != input.Label.Value {
+		return errorhandling.NewValidationErrorWithDetails(
+			errorhandling.ActionInputError,
+			errorhandling.ErrorDetails{
+				Message: fmt.Sprintf("Input label '%s' must be in lower camel case", input.Label.Value),
+				Hint:    fmt.Sprintf("Try '%s' instead", strcase.ToLowerCamel(input.Label.Value)),
+			},
+			input.Label,
+		)
+	}
 	// if not explicitly labelled then we don't need to check for the input being used
 	// as inputs using short-hand syntax are implicitly use
 	// For functions the input doesn't need to be used
@@ -680,7 +690,7 @@ func validateInputType(
 	}
 
 	if msg != nil {
-		if action.Type.Value != "read" && action.Type.Value != "write" {
+		if action.Type.Value != parser.ActionTypeRead && action.Type.Value != parser.ActionTypeWrite {
 			return errorhandling.NewValidationErrorWithDetails(
 				errorhandling.ActionInputError,
 				errorhandling.ErrorDetails{
