@@ -268,7 +268,7 @@ func renderSecrets(secrets map[string]string) string {
 		keys = append(keys, k)
 	}
 
-	sort.Sort(sort.StringSlice(keys))
+	sort.Strings(keys)
 
 	for _, k := range keys {
 		rows = append(rows, table.Row{k, secrets[k]})

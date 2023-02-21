@@ -126,7 +126,7 @@ func (m *Model) Init() tea.Cmd {
 	m.runtimeRequestsCh = make(chan tea.Msg, 1)
 	m.functionsLogCh = make(chan tea.Msg, 1)
 	m.watcherCh = make(chan tea.Msg, 1)
-	m.Environment = lo.Ternary(m.Mode == ModeTest, "test", "development")
+	m.Environment = lo.Ternary(m.Environment == "", lo.Ternary(m.Mode == ModeTest, "test", "development"), m.Environment)
 
 	switch m.Mode {
 	case ModeValidate:

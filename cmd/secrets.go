@@ -19,7 +19,7 @@ and list secrets that are stored in your cli config usually
 found at ~/.keel/config.yaml.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// list subcommands
-		cmd.Help()
+		_ = cmd.Help()
 	},
 }
 
@@ -27,7 +27,7 @@ func init() {
 	rootCmd.AddCommand(secretsCmd)
 	secretsCmd.AddCommand(secretsListCmd)
 
-	secretsCmd.Flags().StringVar(&environment, "environment", "development", "The environment to use (default \"development\")")
+	secretsListCmd.Flags().StringVar(&environment, "environment", "development", "The environment to use (default \"development\")")
 }
 
 var secretsListCmd = &cobra.Command{
