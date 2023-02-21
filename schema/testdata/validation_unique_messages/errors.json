@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Foo is already defined",
+      "message": "message type 'Foo' is already defined",
       "hint": "Please use a different name",
       "code": "DuplicateDefinitionError",
       "pos": {

@@ -37,7 +37,7 @@ func UniqueMessageNamesRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 				errorhandling.NewValidationErrorWithDetails(
 					errorhandling.DuplicateDefinitionError,
 					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("%s is already defined", message.Name.Value),
+						Message: fmt.Sprintf("message type '%s' is already defined", message.Name.Value),
 						Hint:    fmt.Sprintf("Please use a different name"),
 					},
 					message,
