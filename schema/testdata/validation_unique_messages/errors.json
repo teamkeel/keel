@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "Foo is already defined",
+      "hint": "Please use a different name",
+      "code": "DuplicateDefinitionError",
+      "pos": {
+        "filename": "testdata/validation_unique_messages/schema.keel",
+        "offset": 36,
+        "line": 5,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_messages/schema.keel",
+        "offset": 54,
+        "line": 7,
+        "column": 2
+      }
+    }
+  ]
+}

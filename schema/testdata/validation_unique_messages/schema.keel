@@ -1,0 +1,7 @@
+message Foo {
+  bar Text
+}
+
+message Foo {
+  baz Text
+}

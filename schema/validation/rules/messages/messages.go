@@ -27,3 +27,28 @@ func MessageNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) 
 
 	return
 }
+
+func UniqueMessageNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	seenMessageNames := map[string]bool{}
+
+	for _, message := range query.Messages(asts) {
+		if _, ok := seenMessageNames[message.Name.Value]; ok {
+			errs.AppendError(
+				errorhandling.NewValidationErrorWithDetails(
+					errorhandling.DuplicateDefinitionError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("%s is already defined", message.Name.Value),
+						Hint:    fmt.Sprintf("Please use a different name"),
+					},
+					message,
+				),
+			)
+
+			continue
+		}
+
+		seenMessageNames[message.Name.Value] = true
+	}
+
+	return
+}
