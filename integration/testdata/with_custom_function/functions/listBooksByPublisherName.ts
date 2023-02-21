@@ -5,7 +5,7 @@ export default ListBooksByPublisherName(async (inputs, api) => {
     author: {
       publisher: {
         name: {
-          equals: inputs.where.authorPublisherName,
+          equals: inputs.where?.authorPublisherName,
         },
       },
     },

@@ -72,6 +72,30 @@
         },
         "type": "object"
       },
+      "NullableHobbyQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+            "equals": {
+                "enum": [
+                    "Tennis",
+                    "Chess"
+                ]
+            },
+            "oneOf": {
+                "items": {
+                    "enum": [
+                        "Tennis",
+                        "Chess"
+                    ]
+                },
+                "type": "array"
+            }
+        },
+        "type": [
+          "object", 
+          "null"
+        ]
+    },
       "StringQueryInput": {
         "additionalProperties": false,
         "properties": {
@@ -96,6 +120,32 @@
         },
         "type": "object"
       },
+      "NullableStringQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "contains": {
+            "type": "string"
+          },
+          "endsWith": {
+            "type": "string"
+          },
+          "equals": {
+            "type": "string"
+          },
+          "oneOf": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "startsWith": {
+            "type": "string"
+          }
+        },
+        "type": [
+          "object",
+          "null"]
+      },
       "TestActionWhereInput": {
         "additionalProperties": false,
         "properties": {
@@ -108,6 +158,9 @@
           "hobby": {
             "$ref": "#/components/schemas/HobbyQueryInput"
           },
+          "secondHobby": {
+            "$ref": "#/components/schemas/NullableHobbyQueryInput"
+          },
           "isAdmin": {
             "$ref": "#/components/schemas/BooleanQueryInput"
           },
@@ -116,7 +169,17 @@
           },
           "name": {
             "$ref": "#/components/schemas/StringQueryInput"
+          },
+          "preferredName": {
+            "$ref": "#/components/schemas/NullableStringQueryInput"
+          }, 
+          "currentCityName": {
+            "$ref": "#/components/schemas/StringQueryInput"
+          },
+          "previousCityName": {
+            "$ref": "#/components/schemas/NullableStringQueryInput"
           }
+
         },
         "required": [
           "name",
@@ -124,7 +187,8 @@
           "birthday",
           "hobby",
           "isAdmin",
-          "lastSeenAt"
+          "lastSeenAt",
+          "currentCityName"
         ],
         "type": "object"
       },
@@ -147,16 +211,16 @@
   "additionalProperties": false,
   "properties": {
     "after": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "before": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "first": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "last": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "where": {
       "$ref": "#/components/schemas/TestActionWhereInput"

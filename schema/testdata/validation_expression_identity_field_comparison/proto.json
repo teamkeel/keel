@@ -384,6 +384,7 @@
             "modelName": "Publisher",
             "fieldName": "publisher"
           },
+          "optional": true,
           "target": [
             "publisher"
           ]
@@ -396,6 +397,7 @@
             "modelName": "Author",
             "fieldName": "owner"
           },
+          "optional": true,
           "target": [
             "owner"
           ]

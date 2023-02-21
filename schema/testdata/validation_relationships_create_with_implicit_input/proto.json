@@ -504,6 +504,7 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
+          "optional": true,
           "target": [
             "parentOptional",
             "id"
@@ -546,6 +547,7 @@
             "modelName": "ChildModel",
             "fieldName": "parentOptionalId"
           },
+          "optional": true,
           "target": [
             "parentOptionalId"
           ]

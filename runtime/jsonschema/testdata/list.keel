@@ -3,17 +3,27 @@ enum Hobby {
     Chess
 }
 
+model City {
+    fields { 
+        name Text
+    }
+}
+
 model Person {
     fields {
         name Text
+        preferredName Text?
         favouriteNumber Number
         birthday Date
         hobby Hobby
+        secondHobby Hobby?
         isAdmin Boolean
         lastSeenAt Timestamp
+        currentCity City
+        previousCity City?
     }
 
     operations {
-        list testAction(name, favouriteNumber, birthday, hobby, isAdmin, lastSeenAt)
+        list testAction(name, preferredName, favouriteNumber, birthday, hobby, secondHobby, isAdmin, lastSeenAt, currentCity.name, previousCity.name)
     }
 }
