@@ -383,7 +383,7 @@ model Person {
 	`
 	expected := `
 export interface CreatePersonInput {
-	name: string | null;
+	name?: string | null;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {

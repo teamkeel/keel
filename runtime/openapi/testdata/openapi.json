@@ -5,12 +5,28 @@
         "additionalProperties": false,
         "properties": {
           "name": {
-            "$ref": "#/components/schemas/StringQueryInput"
+            "$ref": "#/components/schemas/NullableStringQueryInput"
           }
         },
         "type": "object"
       },
-      "StringQueryInput": {
+      "EmailPasswordInput": {
+        "additionalProperties": false,
+        "properties": {
+            "email": {
+                "type": "string"
+            },
+            "password": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "email",
+            "password"
+        ],
+        "type": "object"
+      },
+      "NullableStringQueryInput": {
         "additionalProperties": false,
         "properties": {
           "contains": {
@@ -71,7 +87,21 @@
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": true,
+                "additionalProperties": false,
+                "properties": {
+                  "createIfNotExists": {
+                      "type": [
+                          "boolean",
+                          "null"
+                      ]
+                  },
+                  "emailPassword": {
+                      "$ref": "#/components/schemas/EmailPasswordInput"
+                  }
+              },
+              "required": [
+                  "emailPassword"
+              ],
                 "type": "object"
               }
             }
@@ -124,22 +154,21 @@
                 "additionalProperties": false,
                 "properties": {
                   "after": {
-                    "type": "string"
+                    "type": ["string", "null"]
                   },
                   "before": {
-                    "type": "string"
+                    "type": ["string", "null"]
                   },
                   "first": {
-                    "type": "number"
+                    "type": ["number", "null"]
                   },
                   "last": {
-                    "type": "number"
+                    "type": ["number", "null"]
                   },
                   "where": {
                     "$ref": "#/components/schemas/CustomersWhereInput"
                   }
                 },
-                "required": ["where"],
                 "type": "object"
               }
             }
@@ -194,7 +223,7 @@
                     "$ref": "#/components/schemas/UpdateCustomerWhereInput"
                   }
                 },
-                "required": ["where", "values"],
+                "required": ["where"],
                 "type": "object"
               }
             }
