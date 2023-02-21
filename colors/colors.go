@@ -4,7 +4,7 @@ import "github.com/charmbracelet/lipgloss"
 
 var (
 	StatusGreen            = lipgloss.AdaptiveColor{Light: "#086c08", Dark: "#009900"}
-	StatusGreenBright      = lipgloss.AdaptiveColor{Light: "#086c08", Dark: "#009900"}
+	StatusGreenBright      = lipgloss.AdaptiveColor{Light: "#086c08", Dark: "#00FF00"}
 	StatusYellow           = lipgloss.AdaptiveColor{Light: "#999900", Dark: "#999900"}
 	StatusYellowBright     = lipgloss.AdaptiveColor{Light: "#B3B300", Dark: "#FFFF00"}
 	StatusRed              = lipgloss.AdaptiveColor{Light: "#990000", Dark: "#CC0000"}

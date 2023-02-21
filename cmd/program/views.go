@@ -301,3 +301,11 @@ func RenderSecrets(secrets map[string]string) string {
 
 	return secretsStyle.Render(t.View()) + "\n"
 }
+
+func RenderError(message error) error {
+	return errors.New(colors.Red(message.Error()).Highlight().String())
+}
+
+func RenderSuccess(message string) {
+	fmt.Println(colors.Green(message).Highlight().String())
+}
