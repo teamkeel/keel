@@ -1,3 +1,10 @@
+## [0.273.5](https://github.com/teamkeel/keel/compare/v0.273.4...v0.273.5) (2023-02-21)
+
+
+### Bug Fixes
+
+* run semantic-release on main (no tag) and goreleaser on tags ([2e99063](https://github.com/teamkeel/keel/commit/2e990632f1eb32310f6381f9073bd5ae27ca2f00))
+
 ## [0.273.4](https://github.com/teamkeel/keel/compare/v0.273.3...v0.273.4) (2023-02-21)
 
 
