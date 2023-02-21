@@ -48,6 +48,7 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 		config, err := config.LoadFromBytes([]byte(configFile))
 		if err == nil {
 			ast.EnvironmentVariables = config.AllEnvironmentVariables()
+			ast.Secrets = config.AllSecrets()
 		}
 	}
 
@@ -620,6 +621,11 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 				Description: "Environment Variables",
 				Kind:        KindVariable,
 			},
+			{
+				Label:       "secrets",
+				Description: "Secrets",
+				Kind:        KindVariable,
+			},
 		}
 	}
 
@@ -642,12 +648,19 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 				Description: "Environment Variables",
 				Kind:        KindField,
 			},
+			{
+				Label:       "secrets",
+				Description: "Secrets",
+				Kind:        KindField,
+			},
 		}
 
 		if len(previousIdents) == 2 {
 			switch previousIdents[1] {
 			case "env":
 				completions = getEnvironmentVariableCompletions(ast)
+			case "secrets":
+				completions = getSecretsCompletions(ast)
 			}
 		}
 
@@ -871,6 +884,19 @@ func getEnvironmentVariableCompletions(ast *parser.AST) []*CompletionItem {
 		builtInFieldCompletions = append(builtInFieldCompletions, &CompletionItem{
 			Label:       key,
 			Description: "Environment Variables",
+			Kind:        KindField,
+		})
+
+	}
+	return builtInFieldCompletions
+}
+
+func getSecretsCompletions(ast *parser.AST) []*CompletionItem {
+	var builtInFieldCompletions []*CompletionItem
+	for _, key := range ast.Secrets {
+		builtInFieldCompletions = append(builtInFieldCompletions, &CompletionItem{
+			Label:       key,
+			Description: "Secret",
 			Kind:        KindField,
 		})
 

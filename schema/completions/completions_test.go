@@ -602,7 +602,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"person", "ctx", "env"},
+			expected: []string{"person", "ctx", "env", "secrets"},
 		},
 		{
 			name: "set-expression-model-attribute",
@@ -634,7 +634,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"env", "identity", "now"},
+			expected: []string{"env", "identity", "now", "secrets"},
 		},
 		{
 			name: "set-expression-ctx-env-vars",
@@ -651,6 +651,23 @@ func TestCompletions(t *testing.T) {
 			}	
 			`,
 			expected: []string{"TEST", "TEST_2"},
+		},
+		{
+			name: "set-expression-ctx-secrets",
+			schema: `
+			model Person {
+				fields {
+					identity Identity
+					apikey Secret
+				}
+				operations {
+					create createPerson() {
+						@set(person.apikey = ctx.secrets.<Cursor>)
+					}
+				}
+			}
+			`,
+			expected: []string{"API_KEY"},
 		},
 		{
 			name: "set-expression-unresolvable",
@@ -679,7 +696,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"person", "ctx", "env"},
+			expected: []string{"person", "ctx", "env", "secrets"},
 		},
 		{
 			name: "validate-expression",
@@ -695,7 +712,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"person", "ctx", "env"},
+			expected: []string{"person", "ctx", "env", "secrets"},
 		},
 		{
 			name: "model-permission-attribute-labels",
@@ -728,7 +745,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"person", "ctx", "env"},
+			expected: []string{"person", "ctx", "env", "secrets"},
 		},
 		{
 			name: "permission-attribute-expression-whitespace",
@@ -739,7 +756,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"person", "ctx", "env"},
+			expected: []string{"person", "ctx", "env", "secrets"},
 		},
 		{
 			name: "permission-attribute-model-fields",
