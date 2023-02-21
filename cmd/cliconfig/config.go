@@ -13,7 +13,7 @@ import (
 )
 
 type Config struct {
-	configPath string
+	configFile string
 	viper      *viper.Viper
 }
 
@@ -45,29 +45,27 @@ func New(options *Options) *Config {
 
 	if options != nil && options.FileName != "" {
 		viper.SetConfigFile(options.FileName)
-		err := checkConfigFileExists(viper, absolutePath)
+		err := checkConfigFileExists(viper, options.FileName, absolutePath)
 		if err != nil {
 			panic(err)
 		}
 
 		return &Config{
 			viper:      viper,
-			configPath: options.FileName,
+			configFile: options.FileName,
 		}
 	}
-
-	UserConfigPartialPath := ".keel/config.yaml"
 
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}
 
-	userConfigPath := path.Join(homeDir, UserConfigPartialPath)
+	userConfigPath := path.Join(homeDir, ".keel", "config.yaml")
 
 	viper.SetConfigFile(userConfigPath)
 
-	err = checkConfigFileExists(viper, absolutePath)
+	err = checkConfigFileExists(viper, userConfigPath, absolutePath)
 	if err != nil {
 		panic(err)
 	}
@@ -79,16 +77,16 @@ func New(options *Options) *Config {
 
 	return &Config{
 		viper:      viper,
-		configPath: userConfigPath,
+		configFile: userConfigPath,
 	}
 }
 
 func (c *Config) GetConfig(path string) (*UserConfig, error) {
 	var cfg UserConfig
 
-	b, err := os.ReadFile(c.configPath)
+	b, err := os.ReadFile(c.configFile)
 	if os.IsNotExist(err) {
-		return createEmptyConfig(c.viper, path)
+		return createEmptyConfig(c.viper, c.configFile, path)
 	} else if err != nil {
 		return nil, err
 	}
@@ -124,7 +122,6 @@ func (c *Config) SetSecret(path, environment, key, value string) error {
 
 	currentSecrets := cfg.Projects[path].Secrets
 	secrets := createSecretEnvironments(environment, key, value, &currentSecrets)
-
 	cfg.Projects[path] = Project{
 		Secrets: secrets,
 	}
@@ -157,7 +154,7 @@ func (c *Config) writeConfig(cfg interface{}) error {
 		c.viper.Set(k, v)
 	}
 
-	err := c.createPathIfNotExist(c.configPath)
+	err := createPathIfNotExist(c.configFile)
 	if err != nil {
 		return err
 	}
@@ -165,20 +162,12 @@ func (c *Config) writeConfig(cfg interface{}) error {
 	return c.viper.WriteConfig()
 }
 
-func (c *Config) createPathIfNotExist(path string) error {
-	dir := filepath.Dir(path)
-
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		err = os.MkdirAll(dir, os.ModePerm)
-		if err != nil {
-			return err
-		}
+func createEmptyConfig(v *viper.Viper, configPath, wd string) (*UserConfig, error) {
+	err := createPathIfNotExist(configPath)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
-}
-
-func createEmptyConfig(v *viper.Viper, wd string) (*UserConfig, error) {
 	projects := make(map[string]Project)
 	project := Project{
 		Secrets: createEnvironments(),
@@ -187,7 +176,16 @@ func createEmptyConfig(v *viper.Viper, wd string) (*UserConfig, error) {
 	projects[wd] = project
 	v.Set("projects", projects)
 
-	err := v.WriteConfig()
+	config := &UserConfig{
+		Projects: projects,
+	}
+
+	encoded, err := yaml.Marshal(config)
+	if err != nil {
+		return nil, err
+	}
+
+	err = os.WriteFile(configPath, encoded, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
@@ -200,9 +198,9 @@ func createEmptyConfig(v *viper.Viper, wd string) (*UserConfig, error) {
 func createProject(c *Config, wd string) (*UserConfig, error) {
 	var cfg UserConfig
 
-	b, err := os.ReadFile(c.configPath)
+	b, err := os.ReadFile(c.configFile)
 	if os.IsNotExist(err) {
-		return createEmptyConfig(c.viper, c.configPath)
+		return createEmptyConfig(c.viper, c.configFile, wd)
 	} else if err != nil {
 		return nil, err
 	}
@@ -233,9 +231,8 @@ func createProject(c *Config, wd string) (*UserConfig, error) {
 func createSecretEnvironments(environment, key, value string, secrets *EnvironmentSecret) EnvironmentSecret {
 	var environments EnvironmentSecret
 
-	if secrets == nil {
-		environments = createEnvironments()
-		return environments
+	if secrets.Development == nil || secrets.Test == nil {
+		return createEnvironments()
 	} else {
 		environments = *secrets
 	}
@@ -247,7 +244,6 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 		environments.Test[key] = value
 	default:
 		panic("invalid environment")
-
 	}
 
 	return environments
@@ -260,13 +256,29 @@ func createEnvironments() EnvironmentSecret {
 	}
 }
 
-func checkConfigFileExists(viper *viper.Viper, path string) error {
+func checkConfigFileExists(viper *viper.Viper, configPath, wd string) error {
 	err := viper.ReadInConfig()
 	if os.IsNotExist(err) {
-		_, err = createEmptyConfig(viper, path)
+		_, err = createEmptyConfig(viper, configPath, wd)
+		if err != nil {
+			return fmt.Errorf("Unable to create config file: %s", err)
+		}
+	}
+	return nil
+}
+
+func createPathIfNotExist(path string) error {
+	dir := filepath.Dir(path)
+
+	_, err := os.Stat(dir)
+	if os.IsNotExist(err) {
+		err = os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
 			return err
 		}
+	} else if err != nil {
+		return err
 	}
+
 	return nil
 }
