@@ -132,6 +132,18 @@ func MessageNames(asts []*parser.AST) (ret []string) {
 	return ret
 }
 
+func Messages(asts []*parser.AST) (ret []*parser.MessageNode) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Message != nil {
+				ret = append(ret, decl.Message)
+			}
+		}
+	}
+
+	return ret
+}
+
 func Message(asts []*parser.AST, name string) *parser.MessageNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
