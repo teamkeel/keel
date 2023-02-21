@@ -1,0 +1,16 @@
+model Post {
+  fields {
+    foo Text
+  }
+
+  operations {
+    get getPostNormal(id, Foo: Text) {
+      @set(post.foo = Foo)
+    }
+  }
+
+  functions {
+    read getPostSpecial(Foo: Text) returns (Bar)
+    get getPost(Foo: Text)
+  }
+}

@@ -316,7 +316,7 @@ func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {
 //
 //	example: (foo: Text) -> Text is returned
 //
-// If `i` refers to a field on the parent model (or a nested field) then the type of that field is returned
+// If `input` refers to a field on the parent model (or a nested field) then the type of that field is returned
 //
 //	example: (foo: some.field) -> The type of `field` on the model referrred to by `some` is returned
 func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentModel *parser.ModelNode) string {
