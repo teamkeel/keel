@@ -43,55 +43,82 @@ func ActionNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) 
 	return
 }
 
+// validate only read+write can be used with returns
+// validate returns has to be specified with read+write
 func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, function := range query.ModelFunctions(model) {
+			hasReturns := len(function.Returns) > 0
 			validFunctionActionTypes := validActionTypes
 
-			hasReturns := len(function.Returns) > 0
-
 			if hasReturns {
-				validFunctionActionTypes = []string{parser.ActionTypeWrite, parser.ActionTypeRead}
-			}
+				validFunctionActionTypes = []string{parser.ActionTypeRead, parser.ActionTypeWrite}
 
-			if !lo.Contains(validFunctionActionTypes, function.Type.Value) {
-				if hasReturns {
+				if function.Type.Value != parser.ActionTypeRead && function.Type.Value != parser.ActionTypeWrite {
 					errs.AppendError(
 						errorhandling.NewValidationErrorWithDetails(
 							errorhandling.TypeError,
 							errorhandling.ErrorDetails{
 								Message: "The 'returns' keyword can only be used with 'read' or 'write' actions",
-								Hint:    fmt.Sprintf("Valid types with 'returns' are %s", formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
 							},
 							function.Type,
 						),
 					)
-				} else {
-					errs.AppendError(
-						errorhandling.NewValidationErrorWithDetails(
-							errorhandling.TypeError,
-							errorhandling.ErrorDetails{
-								Message: fmt.Sprintf("%s is not a valid action type. Valid types are %s", function.Type.Value, formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
-								Hint:    fmt.Sprintf("Valid types are %s", formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
-							},
-							function.Type,
-						),
-					)
+					continue
 				}
 			}
-		}
 
-		for _, action := range query.ModelOperations(model) {
-			if !lo.Contains(validActionTypes, action.Type.Value) {
+			if !hasReturns && (function.Type.Value == parser.ActionTypeRead || function.Type.Value == parser.ActionTypeWrite) {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.TypeError,
+					errorhandling.ErrorDetails{
+						Message: "The 'returns' keyword must be specified when using a 'read' or 'write' action type",
+						Hint:    "Try to append 'returns(MyMessageType)'",
+					},
+					function.Node,
+				))
 
+				continue
+			}
+
+			// handles case where there is an unknown action type specified for a normal custom function
+			if !lo.Contains(validFunctionActionTypes, function.Type.Value) {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.TypeError,
 						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("%s is not a valid action type. Valid types are %s", action.Type.Value, formatting.HumanizeList(validActionTypes, formatting.DelimiterOr)),
+							Message: fmt.Sprintf("%s is not a valid action type. Valid types are %s", function.Type.Value, formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
+							Hint:    fmt.Sprintf("Valid types are %s", formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
+						},
+						function.Type,
+					),
+				)
+			}
+		}
+
+		for _, operation := range query.ModelOperations(model) {
+			hasReturns := len(operation.Returns) > 0
+
+			if hasReturns {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.TypeError,
+					errorhandling.ErrorDetails{
+						Message: "The 'returns' keyword is not valid in an operation",
+						Hint:    fmt.Sprintf("Did you mean to create '%s' as a function?", operation.Name.Value),
+					},
+					operation.Returns[0].Node,
+				))
+			}
+
+			if !lo.Contains(validActionTypes, operation.Type.Value) {
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.TypeError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("%s is not a valid action type. Valid types are %s", operation.Type.Value, formatting.HumanizeList(validActionTypes, formatting.DelimiterOr)),
 							Hint:    fmt.Sprintf("Valid types are %s", formatting.HumanizeList(validActionTypes, formatting.DelimiterOr)),
 						},
-						action.Type,
+						operation.Type,
 					),
 				)
 			}
