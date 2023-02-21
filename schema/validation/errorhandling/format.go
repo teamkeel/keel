@@ -4,24 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/fatih/color"
+	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/schema/reader"
-)
-
-var (
-	red    = color.New(color.FgRed)
-	green  = color.New(color.FgHiGreen, color.Faint)
-	yellow = color.New(color.FgYellow)
-	gray   = color.New(color.FgWhite, color.Faint)
 )
 
 // ToAnnotatedSchema formats the validation errors by pointing to the relevant line
 // in the source file that produced the error
 //
 // The output is formatted using ANSI colours (if supported by the environment).
-//
-// To force colour on or off set the github.com/fatih/color.NoColor flag to true or
-// false before calling this function.
 func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) string {
 
 	// Number of lines of the source code to render before and after the line with the error
@@ -56,8 +46,8 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			}
 		}
 
-		result += green.Sprintf(gutterFmt, " ")
-		result += green.Sprint(err.Pos.Filename)
+		result += colors.Gray(fmt.Sprintf(gutterFmt, " ")).String()
+		result += colors.Green(fmt.Sprint(err.Pos.Filename)).String()
 		newLine()
 
 		// not sure this can happen, but just in case we'll handle it
@@ -77,12 +67,12 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 			}
 
 			// Render line numbers in gutter
-			result += gray.Sprintf(gutterFmt, fmt.Sprintf("%d", lineIndex+1))
+			result += colors.Gray(fmt.Sprintf(gutterFmt, fmt.Sprintf("%d", lineIndex+1))).String()
 
 			// If the error line doesn't match the currently enumerated line
 			// then we can render the whole line without any colorization
 			if (lineIndex + 1) != errorLine {
-				result += gray.Sprintf("%s", line)
+				result += colors.Gray(line).String()
 				newLine()
 				continue
 			}
@@ -99,43 +89,43 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 					continue
 				}
 
-				result += red.Sprint(char)
+				result += colors.Red(fmt.Sprint(char)).String()
 			}
 
 			newLine()
 
 			// Underline the token that caused the error
-			result += gray.Sprintf(gutterFmt, "")
+			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
 			result += strings.Repeat(" ", err.Pos.Column-1)
 			tokenLength := err.EndPos.Column - err.Pos.Column
 			for i := 0; i < tokenLength; i++ {
 				if i == tokenLength/2 {
-					result += yellow.Sprint("\u252C")
+					result += colors.Yellow("\u252C").Highlight().String()
 				} else {
-					result += yellow.Sprint("\u2500")
+					result += colors.Yellow("\u2500").Highlight().String()
 				}
 			}
 			newLine()
 
 			// Render the down arrow
-			result += gray.Sprintf(gutterFmt, "")
+			result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
 			result += strings.Repeat(" ", err.Pos.Column-1)
 			result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
-			result += yellow.Sprint("\u2570")
-			result += yellow.Sprint("\u2500")
+			result += colors.Yellow("\u2570").Highlight().String()
+			result += colors.Yellow("\u2500").Highlight().String()
 
 			// Render the message
-			result += fmt.Sprintf(" %s %s", yellow.Sprint(err.ErrorDetails.Message), red.Sprintf("(%s)", err.Code))
+			result += fmt.Sprintf(" %s %s", colors.Yellow(fmt.Sprint(err.ErrorDetails.Message)).Highlight().String(), colors.Red(fmt.Sprintf("(%s)", err.Code)).String())
 			newLine()
 
 			// Render the hint
 			if err.ErrorDetails.Hint != "" {
-				result += gray.Sprintf(gutterFmt, "")
+				result += colors.Gray(fmt.Sprintf(gutterFmt, "")).String()
 				result += strings.Repeat(" ", err.Pos.Column-1)
 				result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
 				// Line up hint with the error message above (taking into account unicode arrows)
 				result += strings.Repeat(" ", 3)
-				result += yellow.Sprint(err.ErrorDetails.Hint)
+				result += colors.Yellow(fmt.Sprint(err.ErrorDetails.Hint)).Highlight().String()
 				newLine()
 			}
 		}

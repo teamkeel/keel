@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
+	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
@@ -16,24 +16,15 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-var (
-	red     = color.New(color.FgRed)
-	green   = color.New(color.FgHiGreen, color.Faint)
-	blue    = color.New(color.FgHiBlue)
-	yellow  = color.New(color.FgYellow)
-	gray    = color.New(color.FgWhite, color.Faint)
-	heading = color.New(color.FgWhite, color.Underline, color.Bold)
-)
-
 func renderRun(m *Model) string {
 	b := strings.Builder{}
 	b.WriteString("Running Keel app in directory: ")
-	b.WriteString(gray.Sprint(m.ProjectDir))
+	b.WriteString(colors.White(m.ProjectDir).String())
 	b.WriteString("\n")
 
 	if m.DatabaseConnInfo != nil {
 		b.WriteString("Connect to your database using: ")
-		b.WriteString(yellow.Sprint(m.DatabaseConnInfo.String()))
+		b.WriteString(colors.Yellow(m.DatabaseConnInfo.String()).Highlight().String())
 		b.WriteString("\n")
 	}
 
@@ -79,16 +70,17 @@ func renderRun(m *Model) string {
 
 	if len(m.MigrationChanges) > 0 {
 		b.WriteString("\n")
-		b.WriteString(heading.Sprint("Schema changes:\n"))
+		b.WriteString(colors.Heading("Schema changes:").String())
 		for _, ch := range m.MigrationChanges {
+			b.WriteString("\n")
 			b.WriteString(" - ")
 			switch ch.Type {
 			case migrations.ChangeTypeAdded:
-				b.WriteString(green.Sprint(ch.Type))
+				b.WriteString(colors.Green(ch.Type).String())
 			case migrations.ChangeTypeRemoved:
-				b.WriteString(red.Sprint(ch.Type))
+				b.WriteString(colors.Red(ch.Type).String())
 			case migrations.ChangeTypeModified:
-				b.WriteString(yellow.Sprint(ch.Type))
+				b.WriteString(colors.Black(ch.Type).String())
 			}
 			b.WriteString(" ")
 			b.WriteString(ch.Model)
@@ -102,13 +94,13 @@ func renderRun(m *Model) string {
 
 	if m.Status == StatusRunning {
 		if len(m.Schema.Apis) == 0 {
-			b.WriteString(yellow.Sprint("\n - Your schema doesn't have any API's defined in it"))
+			b.WriteString(colors.Yellow("\n - Your schema doesn't have any API's defined in it").String())
 		}
 
 		for _, api := range m.Schema.Apis {
 			b.WriteString("\n")
 			b.WriteString(api.Name)
-			b.WriteString(gray.Sprint(" endpoints:\n"))
+			b.WriteString(colors.White(" endpoints:").String())
 			endpoints := [][]string{
 				{"graphiql", "GraphiQL Playground"},
 				{"graphql", "GraphQL"},
@@ -116,17 +108,18 @@ func renderRun(m *Model) string {
 				{"rpc", "JSON-RPC"},
 			}
 			for _, values := range endpoints {
+				b.WriteString("\n")
 				b.WriteString(" - ")
-				b.WriteString(blue.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0]))
-				b.WriteString(gray.Sprintf(" (%s)\n", values[1]))
+				b.WriteString(colors.Blue(fmt.Sprintf("http://localhost:%s/%s/%s", m.Port, strings.ToLower(api.Name), values[0])).Highlight().String())
+				b.WriteString(colors.White(fmt.Sprintf(" (%s)", values[1])).String())
 			}
 		}
 	}
 
 	b.WriteString("\n")
-	b.WriteString(gray.Sprint(" - press "))
+	b.WriteString(colors.White(" - press ").String())
 	b.WriteString("q")
-	b.WriteString(gray.Sprint(" to quit"))
+	b.WriteString(colors.White(" to quit").String())
 	b.WriteString("\n")
 
 	return b.String()
@@ -161,16 +154,16 @@ func renderError(m *Model) string {
 			b.WriteString(s)
 		case errors.As(m.Err, &configErrors):
 			b.WriteString("❌ The following errors were found in your ")
-			b.WriteString(yellow.Sprint("keelconfig.yaml"))
+			b.WriteString(colors.Yellow("keelconfig.yaml").String())
 			b.WriteString(" file:\n\n")
 			for _, v := range configErrors.Errors {
 				b.WriteString(" - ")
-				b.WriteString(red.Sprintf(v.Message))
+				b.WriteString(colors.Red(v.Message).String())
 				b.WriteString("\n")
 			}
 		case m.Err == schema.ErrNoSchemaFiles:
 			b.WriteString("❌ No Keel schema files found in: ")
-			b.WriteString(gray.Sprint(m.ProjectDir))
+			b.WriteString(colors.White(m.ProjectDir).String())
 		default:
 			b.WriteString("❌ There was an error loading your schema:\n\n")
 			b.WriteString(m.Err.Error())
@@ -183,11 +176,11 @@ func renderError(m *Model) string {
 		b.WriteString("  ")
 		if errors.As(m.Err, &dbErr) {
 			b.WriteString("column ")
-			b.WriteString(red.Sprint(dbErr.Column))
+			b.WriteString(colors.Red(dbErr.Column).String())
 			b.WriteString(": ")
-			b.WriteString(red.Sprint(dbErr.Error()))
+			b.WriteString(colors.Red(dbErr.Error()).String())
 		} else {
-			b.WriteString(red.Sprintf(m.Err.Error()))
+			b.WriteString(colors.Red(m.Err.Error()).String())
 		}
 
 	case StatusUpdateFunctions:
@@ -221,7 +214,7 @@ func renderError(m *Model) string {
 func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 	b := strings.Builder{}
 
-	b.WriteString(heading.Sprint("Log:"))
+	b.WriteString(colors.Heading("Log:").Highlight().String())
 	b.WriteString("\n")
 
 	type log struct {
@@ -232,9 +225,9 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 
 	for _, r := range requests {
 		b := strings.Builder{}
-		b.WriteString(yellow.Sprint("[Request]"))
+		b.WriteString(colors.Yellow("[Request]").String())
 		b.WriteString(" ")
-		b.WriteString(gray.Sprintf(r.Method))
+		b.WriteString(colors.White(r.Method).String())
 		b.WriteString(" ")
 		b.WriteString(r.Path)
 		logs = append(logs, &log{
@@ -245,7 +238,7 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 
 	for _, r := range functionLogs {
 		b := strings.Builder{}
-		b.WriteString(yellow.Sprint("[Functions]"))
+		b.WriteString(colors.Yellow("[Functions]").String())
 		b.WriteString(" ")
 		b.WriteString(r.Value)
 		logs = append(logs, &log{

@@ -35,8 +35,6 @@ func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string
 // After that it tries to use our built-in default for the field's type.
 // But it can also return nil without an error when it cannot do either of those things.
 func initialValueForField(field *proto.Field, enums []*proto.Enum) (zeroV any, err error) {
-	zeroV = nil
-
 	switch {
 	case field.DefaultValue != nil && field.DefaultValue.Expression != nil:
 		v, err := schemaDefault(field) // Will need more arguments / context later.
