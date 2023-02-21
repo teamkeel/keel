@@ -1,3 +1,10 @@
+## [0.273.2](https://github.com/teamkeel/keel/compare/v0.273.1...v0.273.2) (2023-02-21)
+
+
+### Bug Fixes
+
+* testing goreleaser ([82cee83](https://github.com/teamkeel/keel/commit/82cee8308a20fc4a5d7fa1b99e8abaa90aa36fce))
+
 # [0.273.0](https://github.com/teamkeel/keel/compare/v0.272.0...v0.273.0) (2023-02-21)
 
 
