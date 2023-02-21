@@ -1,3 +1,10 @@
+# [0.272.0](https://github.com/teamkeel/keel/compare/v0.271.0...v0.272.0) (2023-02-21)
+
+
+### Features
+
+* secrets list command ([#807](https://github.com/teamkeel/keel/issues/807)) ([2303702](https://github.com/teamkeel/keel/commit/2303702effd0dd7eccd51c0d8532638eebe19315))
+
 # [0.271.0](https://github.com/teamkeel/keel/compare/v0.270.0...v0.271.0) (2023-02-21)
 
 
