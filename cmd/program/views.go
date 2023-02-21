@@ -261,7 +261,7 @@ func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
 	return b.String()
 }
 
-func renderSecrets(secrets map[string]string) string {
+func RenderSecrets(secrets map[string]string) string {
 	var rows []table.Row
 	var keys []string
 	for k := range secrets {

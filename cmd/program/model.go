@@ -27,7 +27,6 @@ const (
 	ModeValidate = iota
 	ModeRun
 	ModeTest
-	ModeSecret
 )
 
 const (
@@ -39,8 +38,6 @@ const (
 	StatusStartingFunctions
 	StatusRunning
 	StatusQuitting
-	StatusLoadSecrets
-	StatusListSecrets
 )
 
 func Run(model *Model) {
@@ -126,7 +123,7 @@ func (m *Model) Init() tea.Cmd {
 	m.runtimeRequestsCh = make(chan tea.Msg, 1)
 	m.functionsLogCh = make(chan tea.Msg, 1)
 	m.watcherCh = make(chan tea.Msg, 1)
-	m.Environment = lo.Ternary(m.Environment == "", lo.Ternary(m.Mode == ModeTest, "test", "development"), m.Environment)
+	m.Environment = lo.Ternary(m.Mode == ModeTest, "test", "development")
 
 	switch m.Mode {
 	case ModeValidate:
@@ -135,8 +132,6 @@ func (m *Model) Init() tea.Cmd {
 	case ModeRun, ModeTest:
 		m.Status = StatusSetupDatabase
 		return StartDatabase(m.ResetDatabase, m.Mode)
-	case ModeSecret:
-		return LoadSecrets(m.ProjectDir, m.Environment)
 	default:
 		return nil
 	}
@@ -362,16 +357,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Err = msg.Err
 		m.TestOutput = msg.Output
 		return m, tea.Quit
-
-	case LoadSecretsMsg:
-		m.Err = msg.Err
-		m.Secrets = msg.Secrets
-		return m, tea.Quit
-
-	case ListSecretsMsg:
-		m.Err = msg.Err
-		m.Secrets = msg.Secrets
-		return m, tea.Quit
 	}
 
 	return m, nil
@@ -424,16 +409,6 @@ func (m *Model) View() string {
 	if m.Mode == ModeRun && m.Err == nil && m.Status >= StatusLoadSchema {
 		b.WriteString("\n")
 		b.WriteString(renderLog(m.RuntimeRequests, m.FunctionsLog))
-	}
-
-	if m.Mode == ModeSecret {
-		if m.Status == StatusListSecrets {
-			if len(m.Secrets) == 0 {
-				b.WriteString("No secrets found")
-			} else {
-				return renderSecrets(m.Secrets)
-			}
-		}
 	}
 
 	// The final "\n" is important as when Bubbletea exists it resets the last

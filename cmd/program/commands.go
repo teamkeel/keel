@@ -421,35 +421,21 @@ func RunTests(dir string, port string, cfg *config.ProjectConfig, conn *db.Conne
 	}
 }
 
-type ListSecretsMsg struct {
-	Err     error
-	Secrets map[string]string
-}
-
-type LoadSecretsMsg struct {
-	Err     error
-	Secrets map[string]string
-}
-
 // LoadSecrets lists secrets from the given file and returns a command
-// that will send the secrets to the given channel
-func LoadSecrets(path, environment string) tea.Cmd {
-	return func() tea.Msg {
-		projectPath, err := filepath.Abs(path)
-		if err != nil {
-			return LoadSecretsMsg{
-				Err: err,
-			}
-		}
-
-		config := cliconfig.New(&cliconfig.Options{
-			WorkingDir: projectPath,
-		})
-
-		secrets, err := config.GetSecrets(path, environment)
-		return LoadSecretsMsg{
-			Secrets: secrets,
-			Err:     err,
-		}
+func LoadSecrets(path, environment string) (map[string]string, error) {
+	projectPath, err := filepath.Abs(path)
+	if err != nil {
+		return nil, err
 	}
+
+	config := cliconfig.New(&cliconfig.Options{
+		WorkingDir: projectPath,
+	})
+
+	secrets, err := config.GetSecrets(path, environment)
+	if err != nil {
+		return nil, err
+
+	}
+	return secrets, nil
 }
