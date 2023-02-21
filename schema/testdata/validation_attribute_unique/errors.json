@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Invalid value, expected at least two field names to be provided",
-      "shortMessage": "Invalid value, expected at least two field names to be provided",
       "hint": "",
       "code": "E016",
       "pos": {
@@ -20,7 +19,6 @@
     },
     {
       "message": "2 argument(s) provided to @unique but expected 1",
-      "shortMessage": "Wrong number of arguments provided to @unique",
       "hint": "the signature of this attribute is @unique([fieldName, otherFieldName])",
       "code": "E024",
       "pos": {
@@ -38,7 +36,6 @@
     },
     {
       "message": "Invalid value, expected any of the following identifiers - firstName, or lastName",
-      "shortMessage": "Invalid value, expected any of the following identifiers - firstName, or lastName",
       "hint": "",
       "code": "E016",
       "pos": {

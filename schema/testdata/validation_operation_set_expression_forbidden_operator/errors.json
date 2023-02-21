@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Operator '==' not permitted on @set",
-      "shortMessage": "Operator '==' not permitted on @set",
       "hint": "Did you mean =?",
       "code": "E022",
       "pos": {

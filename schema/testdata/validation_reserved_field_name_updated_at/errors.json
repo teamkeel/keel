@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a reserved field name updatedAt",
-      "shortMessage": "cannot use updatedAt",
       "hint": "Try 'updatedAter' instead",
       "code": "E006",
       "pos": {

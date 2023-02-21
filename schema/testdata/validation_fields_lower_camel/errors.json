@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a field name that is not lowerCamel EMAIL",
-      "shortMessage": "EMAIL isn't lower camel",
       "hint": "Did you mean 'email'?",
       "code": "E012",
       "pos": {

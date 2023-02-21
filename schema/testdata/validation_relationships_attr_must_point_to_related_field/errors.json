@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'noSuchField' is not a field in the 'Author'' model",
-      "shortMessage": "'noSuchField' is not a field in the 'Author'' model",
       "hint": "Did you mean one of: age, or written",
       "code": "E055",
       "pos": {

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'KEY2' not found on 'Text'",
-      "shortMessage": "'KEY2' not found",
       "hint": "",
       "code": "E020",
       "pos": {

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a model name that is not UpperCamel Person_Thing",
-      "shortMessage": "Person_Thing is not UpperCamel",
       "hint": "Did you mean 'PersonThing'?",
       "code": "E001",
       "pos": {

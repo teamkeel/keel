@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a reserved action name 'authenticate'",
-      "shortMessage": "cannot use 'authenticate'",
       "hint": "Try 'performAuthenticate' instead",
       "code": "E042",
       "pos": {

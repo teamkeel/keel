@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have duplicate Models Model:Person",
-      "shortMessage": "Person is duplicated",
       "hint": "Try to remove 'Person'",
       "code": "E010",
       "pos": {

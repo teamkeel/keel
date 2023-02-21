@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "published is Boolean and \"foo\" is Text",
-      "shortMessage": "published is Boolean and \"foo\" is Text",
       "hint": "Please make sure that you are evaluating entities of the same type",
       "code": "E026",
       "pos": {

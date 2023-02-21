@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "foo is not a valid action type. Valid types are get, create, update, list, or delete",
-      "shortMessage": "invalid action type",
       "hint": "",
       "code": "E040",
       "pos": {

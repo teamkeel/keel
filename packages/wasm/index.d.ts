@@ -37,7 +37,6 @@ export interface ValidationError {
   pos: Position;
   endPos: Position;
   hint: string;
-  shortMessage: string;
   message: string;
 }
 

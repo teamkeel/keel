@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a duplicate definition for 'api Web'",
-      "shortMessage": "Web is duplicated",
       "hint": "Please remove one of the definitions",
       "code": "E017",
       "pos": {

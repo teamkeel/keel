@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Your model 'Book' has more than one field that references a 'Person', and a 'Person' has a (reverse) repeated field back to 'Book'.",
-      "shortMessage": "The 'Book' model has more than one field that references the Person model",
       "hint": "This is only allowed if you put a @relation attribute on the following fields in Book: author, and editor",
       "code": "E045",
       "pos": {

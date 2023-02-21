@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Cannot compare Text with operator '\u003e='",
-      "shortMessage": "Cannot compare Text with operator '\u003e='",
       "hint": "Did you mean ==, or !=?",
       "code": "E027",
       "pos": {

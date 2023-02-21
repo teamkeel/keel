@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Operation deleteMyModel must either take a unique field as input or filter on a unique field using a @where attribute",
-      "shortMessage": "deleteMyModel does not specify a unique field to lookup by",
       "hint": "Did you mean to add 'id' as an input?",
       "code": "E008",
       "pos": {

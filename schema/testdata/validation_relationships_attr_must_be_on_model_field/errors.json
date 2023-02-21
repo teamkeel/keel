@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Field 'author'' has type 'Text', so it cannot have the @relation attribute",
-      "shortMessage": "Field 'author'' has type 'Text', so it cannot have the @relation attribute",
       "hint": "Did you mean make to make field 'author' refer to another Model?",
       "code": "E052",
       "pos": {

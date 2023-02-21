@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Cannot have mixed types in an array literal",
-      "shortMessage": "Cannot have mixed types in an array literal",
       "hint": "Expected \"123\" to be of type Number",
       "code": "E032",
       "pos": {

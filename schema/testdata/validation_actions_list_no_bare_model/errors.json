@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "author refers to the model Author which can't be used as an input to a list action",
-      "shortMessage": "models are not allowed as inputs to list actions",
       "hint": "did you mean author.id?",
       "code": "E041",
       "pos": {

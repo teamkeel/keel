@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
-      "shortMessage": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
       "hint": "",
       "code": "E015",
       "pos": {

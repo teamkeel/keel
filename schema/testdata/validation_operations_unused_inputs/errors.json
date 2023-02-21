@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "personId is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
-      "shortMessage": "personId is not used",
       "hint": "",
       "code": "E038",
       "pos": {
@@ -20,7 +19,6 @@
     },
     {
       "message": "personName is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
-      "shortMessage": "personName is not used",
       "hint": "",
       "code": "E038",
       "pos": {
@@ -38,7 +36,6 @@
     },
     {
       "message": "personName is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
-      "shortMessage": "personName is not used",
       "hint": "",
       "code": "E038",
       "pos": {
@@ -56,7 +53,6 @@
     },
     {
       "message": "create actions must accept all required fields that have no default value",
-      "shortMessage": "create actions must accept all required fields that have no default value",
       "hint": "maybe add name to the with() inputs or a @set expression",
       "code": "E034",
       "pos": {

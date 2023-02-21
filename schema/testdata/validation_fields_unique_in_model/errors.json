@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have duplicate field names name",
-      "shortMessage": "name is duplicated",
       "hint": "Remove 'name' on line 4",
       "code": "E003",
       "pos": {

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "expression should have a single value",
-      "shortMessage": "expression should have a single value",
       "hint": "",
       "code": "E049",
       "pos": {

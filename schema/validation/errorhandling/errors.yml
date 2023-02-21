@@ -1,227 +1,170 @@
 en:
   E001:
-    short_message: "{{ .Model }} is not UpperCamel"
     message: "You have a model name that is not UpperCamel {{ .Model }}"
     hint: "Did you mean '{{ .Suggested }}'?"
   E002:
-    short_message: "{{ .Name }} isn't a valid action name"
     message: "Action names should be written in lowerCamelCase"
     hint: "Did you mean '{{ .Suggested }}'?"
   E003:
-    short_message: "{{ .Name }} is duplicated"
     message: "You have duplicate field names {{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E004:
-    short_message: "{{ .Name }} is duplicated"
     message: "You have duplicate operations Model:{{ .Model }} Name:{{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E005:
-    short_message: "{{ .Input }} is not a valid input"
     message: "Action inputs must be one of the fields defined in the model"
     hint: "{{ .Suggested }}"
   E006:
-    short_message: "cannot use {{ .Name }}"
     message: "You have a reserved field name {{ .Name }}"
     hint: "Try '{{ .Suggestion }}' instead"
   E007:
-    short_message: "{{ .Name }} is reserved"
     message: "You have a reserved model name {{ .Name }}"
     hint: "Try '{{ .Suggestion }}' instead"
   E008:
-    short_message: "{{ .Name }} does not specify a unique field to lookup by"
     message: "Operation {{ .Name }} must either take a unique field as input or filter on a unique field using a @where attribute"
     hint: "Did you mean to add 'id' as an input?"
   E009:
-    short_message: "{{ .Type }} isn't supported"
     message: "field {{ .Name }} has an unsupported type {{ .Type }}"
     hint: "Did you mean one of {{ .Suggestions }}?"
   E010:
-    short_message: "{{ .Name }} is duplicated"
     message: "You have duplicate Models Model:{{ .Name }}"
     hint: "Try to remove '{{ .Name }}'"
   E011:
-    short_message: "Unrecognised attribute {{ .Name }}"
     message: "{{ .DefinedOn }} '{{ .ParentName }}' has an unrecognised attribute @{{ .Name }}"
     hint: "{{ if .Suggestions }}Did you mean {{ .Suggestions }}?{{ end }}"
   E012:
-    short_message: "{{ .Name }} isn't lower camel"
     message: "You have a field name that is not lowerCamel {{ .Name }}"
     hint: "Did you mean '{{ .Suggested }}'?"
   E013:
-    short_message: "{{ .ArgumentName }} isn't a valid argument for {{ .AttributeName }}"
     message: "The {{ .AttributeName }} attribute doesn't accept the argument {{ .ArgumentName }}{{ if .Location }} when used inside an {{ .Location }}{{ end }}"
     hint: "{{ if .ValidArgumentNames }}Did you mean one of {{ .ValidArgumentNames }}?{{ else }}Maybe remove the {{ .ArgumentName }} argument?{{ end }}"
   E014:
-    short_message: "{{ .AttributeName }} requires all arguments to be named"
     message: "{{ .AttributeName }} requires all arguments to be named, for example @permission(roles: [MyRole])"
     hint: "Valid argument names for {{ .AttributeName }} are {{ .ValidArgumentNames }}"
   E015:
-    short_message: "The @{{ .AttributeName }} attribute is missing required argument {{ .ArgumentName }}"
     message: "The @{{ .AttributeName }} attribute is missing required argument {{ .ArgumentName }}"
     hint: ""
   E016:
-    short_message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
     message: "Invalid value{{ if .Expected }}, expected {{ .Expected }}{{ end }}"
     hint: ""
   E017:
-    short_message: "{{ .Name }} is duplicated"
     message: "You have a duplicate definition for 'api {{ .Name }}'"
     hint: "Please remove one of the definitions"
   E018:
-    short_message: "{{ .Name }} is duplicated"
     message: "You have a duplicate definition for 'role {{ .Name }}'"
     hint: "Please remove one of the definitions"
   E019:
-    short_message: "{{ .Name }} is duplicated"
     message: "You have a duplicate definition for 'enum {{ .Name }}'"
     hint: "Please remove one of the definitions"
   E020:
-    short_message: "'{{ .Fragment }}' not found"
     message: "'{{ .Fragment }}' not found{{ if .Parent }} on '{{ .Parent }}'{{ end }}"
     hint: "{{if .Suggestion}}{{ .Suggestion }}{{end}}"
   E022:
-    short_message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     message: "Operator '{{ .Operator }}' not permitted on {{ .Attribute }}"
     hint: "{{ .Suggestion }}"
   E023:
-    short_message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
     message: "Value-only conditions such as '{{ .Value }}' not permitted on {{ .Attribute }}"
     hint: "Please assign a value. Did you mean '{{ .Suggestion }}'?"
   E024:
-    short_message: "Wrong number of arguments provided to @{{ .AttributeName }}"
     message: "{{ .ActualArgsCount }} argument(s) provided to @{{ .AttributeName }} but expected {{ .ExpectedArgsCount }}"
     hint: '{{ if eq .Signature "()" }}@{{ .AttributeName }} doesn''t accept any arguments{{ else }}the signature of this attribute is @{{ .AttributeName }}{{ .Signature }}{{ end }}'
   E025:
-    short_message: "Invalid syntax"
     message: "{{ .Message }}"
   E026:
-    short_message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
     message: "{{ .LHS }} is {{ .LHSType }} and {{ .RHS }} is {{ .RHSType }}"
     hint: "Please make sure that you are evaluating entities of the same type"
   E027:
-    short_message: "Cannot compare {{ .Type }} with operator '{{ .Operator }}'"
     message: "Cannot compare {{ .Type }} with operator '{{ .Operator }}'"
     hint: "{{ .Suggestion }}"
   E028:
-    short_message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
     message: "Cannot use '{{ .Value }}' as a single value in {{ .Attribute }}"
     hint: "Only boolean literals are allowed e.g true or false"
   E029:
-    short_message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is an array of {{ .RHSType }}s"
     message: "{{ .LHS }} is a {{ .LHSType }} and {{ .RHS }} is an array of {{ .RHSType }}s"
     hint: "Left hand side {{ .LHS }} can only be compared to an array of {{ .LHSType }}s"
   E030:
-    short_message: "You can only use operators 'in' or 'not in' when comparing to an array"
     message: "{{ .RHS }} is an array of {{ .RHSType }}. Only 'in' or 'not in' can be used"
     hint: "Change '{{ .Operator }}' to either 'in' or 'not in'."
   E031:
-    short_message: "Both sides of the expression cannot be an array"
     message: "Both sides of the expression cannot be an array"
     hint: "Left hand side of expression ('{{ .LHS }}') produced more than one result because one of the relationships was a collection."
   E032:
-    short_message: "Cannot have mixed types in an array literal"
     message: "Cannot have mixed types in an array literal"
     hint: "Expected {{ .Item }} to be of type {{ .Type }}"
   E033:
-    short_message: "create actions cannot take read inputs"
     message: "create actions cannot take read inputs"
     hint: "maybe add {{ .Input }} to the with() inputs"
   E034:
-    short_message: "create actions must accept all required fields that have no default value"
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add {{ .FieldName }} to the with() inputs or a @set expression"
   E035:
-    short_message: "{{ .Input }} is not a unique field"
     message: "{{ .Input }} is not a unique field. {{ .OperationType }} operations take only unique inputs"
     hint: ""
   E036:
-    short_message: "{{ .Ident }} is not a unique field"
     message: "{{ .Ident }} is not a unique field. {{ .OperationType }} operations can only filter on unique fields"
     hint: ""
   E037:
-    short_message: "only equality operators are allowed in get and update operations"
     message: "The {{ .Operator }} operator is not allowed in a {{ .OperationType }} operation, only equality operators ('==' and 'in') are allowed"
     hint: ""
   E038:
-    short_message: "{{ .InputName }} is not used"
     message: "{{ .InputName }} is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute"
     hint: ""
   E039:
-    short_message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
     message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"
     hint: "It is not clear where the foreign key should be placed. Remove the explicit reference from one side."
   E040:
-    short_message: "invalid action type"
     message: "{{ .Type }} is not a valid action type. Valid types are {{ .ValidTypes }}"
   E041:
-    short_message: "models are not allowed as inputs to {{ .ActionType }} actions"
     message: "{{ .Input }} refers to the model {{ .ModelName }} which can't be used as an input to a {{ .ActionType }} action"
     hint: "did you mean {{ .Input }}.id?"
   E042:
-    short_message: "cannot use '{{ .Name }}'"
     message: "You have a reserved action name '{{ .Name }}'"
     hint: "Try '{{ .Suggestion }}' instead"
   E043:
-    short_message: "'{{ .ImplicitInputName }}' overridden by explicit input"
     message: "You have overridden '{{ .ImplicitInputName }}' with an explicit input"
     hint: "Try removing '{{ .ImplicitInputName }}' from the inputs list"
   E044:
-    short_message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
     message: "The '{{ .ModelB }}' model does not include a field that references {{ .ModelA }}"
     hint: "Try adding '{{ .Suggestion }}' to the fields definition of the {{ .ModelB }} model."
   E045:
-    short_message: "The '{{ .ModelA }}' model has more than one field that references the {{ .ModelB }} model"
     message: "Your model '{{ .ModelA }}' has more than one field that references a '{{ .ModelB }}', and a '{{ .ModelB }}' has a (reverse) repeated field back to '{{.ModelA}}'."
     hint: "This is only allowed if you put a @relation attribute on the following fields in {{.ModelA}}: {{.SuggestedFields}}"
   E046:
-    short_message: "create actions must accept all required fields that have no default value"
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add one of {{ .WithNames }} to with() inputs, or one of {{ .SetNames }} to a @set expression"
   E047:
-    short_message: "Unrecognised model {{ .Model }}"
     message: "api '{{ .API }}' has an unrecognised model {{ .Model }}"
     hint: ""
   E048:
-    short_message: "{{ .Exp }} is {{ .Type }} but field {{ .FieldName }} is {{ .FieldType }}"
     message: "{{ .Exp }} is {{ .Type }} but field {{ .FieldName }} is {{ .FieldType }}"
     hint: "Please make sure that you provide a value of the field type"
   E049:
-    short_message: "expression should have a single value"
     message: "expression should have a single value"
     hint: ""
   E050:
-    short_message: "default requires an expression"
     message: "default requires an expression"
     hint: "Try @default(MyDefaultValue) instead"
   E051:
-    short_message: "default expression doesn't support operators"
     message: "default expression doesn't support operators"
     hint: "Try removing '{{ .Op }}'"
   E052:
-    short_message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
     message: "Field '{{.FieldName}}'' has type '{{.WrongType}}', so it cannot have the @relation attribute"
     hint: "Did you mean make to make field '{{.FieldName}}' refer to another Model?"
   E053:
-    short_message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
     message: "Field '{{.FieldName}}' is repeated, i.e. [], so it cannot have the @relation attribute"
     hint: "For many-to-one relationships, you put the @relation on the non-repeated end of the relationship"
   E054:
-    short_message: "The @relation value should be a simple string"
     message: "The @relation value should be a simple string"
     hint: "Like myFieldName"
   E055:
-    short_message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
     message: "'{{.RelatedFieldName}}' is not a field in the '{{.RelatedModelName}}'' model"
     hint: "Did you mean one of: {{.SuggestedNames}}" 
   E056:
-    short_message: "'{{.RelatedFieldName}}' is wrong type"
     message: "'@relation({{.RelatedFieldName}})' refers to a related field of type '{{.RelatedFieldType}}', which should be of type '{{.RequiredType}}"
     hint: "Did you mean one of: {{.SuggestedNames}} ?" 
   E057:
-    short_message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
     message: "The related field '{{.RelatedFieldName}}' must be a repeated field"
     hint: "You can make it repeated by adding [] to that field" 
   E058:
-    short_message: "Duplicate use of '{{.RelatedFieldName}}'"
     message: "You have already used '{{.RelatedFieldName}}' in a @Relation. Duplicates are not allowed."
     hint: "Did you mean a different related field?" 

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a reserved field name ID",
-      "shortMessage": "cannot use ID",
       "hint": "Try 'IDer' instead",
       "code": "E006",
       "pos": {
@@ -20,7 +19,6 @@
     },
     {
       "message": "You have a field name that is not lowerCamel ID",
-      "shortMessage": "ID isn't lower camel",
       "hint": "Did you mean 'id'?",
       "code": "E012",
       "pos": {

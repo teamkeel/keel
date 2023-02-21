@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a reserved model name Query",
-      "shortMessage": "Query is reserved",
       "hint": "Try 'Queryer' instead",
       "code": "E007",
       "pos": {

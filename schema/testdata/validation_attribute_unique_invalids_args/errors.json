@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "1 argument(s) provided to @unique but expected 0",
-      "shortMessage": "Wrong number of arguments provided to @unique",
       "hint": "@unique doesn't accept any arguments",
       "code": "E024",
       "pos": {

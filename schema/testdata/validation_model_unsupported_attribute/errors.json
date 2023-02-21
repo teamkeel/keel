@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "model 'Person' has an unrecognised attribute @whatisthis",
-      "shortMessage": "Unrecognised attribute whatisthis",
       "hint": "Did you mean @permission, or @unique?",
       "code": "E011",
       "pos": {

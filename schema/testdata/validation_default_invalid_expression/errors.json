@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "default expression doesn't support operators",
-      "shortMessage": "default expression doesn't support operators",
       "hint": "Try removing '=='",
       "code": "E051",
       "pos": {

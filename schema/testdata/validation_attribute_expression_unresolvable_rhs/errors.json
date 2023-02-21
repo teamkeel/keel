@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'auth' not found on 'Post'",
-      "shortMessage": "'auth' not found",
       "hint": "Did you mean author, or authorId?",
       "code": "E020",
       "pos": {

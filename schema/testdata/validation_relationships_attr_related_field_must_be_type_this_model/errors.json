@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'@relation(age)' refers to a related field of type 'Number', which should be of type 'Post",
-      "shortMessage": "'age' is wrong type",
       "hint": "Did you mean one of: written ?",
       "code": "E056",
       "pos": {

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "create actions must accept all required fields that have no default value",
-      "shortMessage": "create actions must accept all required fields that have no default value",
       "hint": "maybe add age to the with() inputs or a @set expression",
       "code": "E034",
       "pos": {

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Value-only conditions such as '\"something\"' not permitted on @where",
-      "shortMessage": "Value-only conditions such as '\"something\"' not permitted on @where",
       "hint": "Please assign a value. Did you mean '\"something\" = xxx'?",
       "code": "E023",
       "pos": {

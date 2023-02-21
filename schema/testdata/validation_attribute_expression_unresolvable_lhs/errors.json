@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'autho' not found on 'Post'",
-      "shortMessage": "'autho' not found",
       "hint": "Did you mean author, or authorId?",
       "code": "E020",
       "pos": {

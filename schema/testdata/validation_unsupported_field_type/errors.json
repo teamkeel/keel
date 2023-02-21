@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "field something has an unsupported type Unknown",
-      "shortMessage": "Unknown isn't supported",
       "hint": "Did you mean one of Boolean, Date, ID, Identity, Number, Password, Post, Secret, Text, or Timestamp?",
       "code": "E009",
       "pos": {
