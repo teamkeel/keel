@@ -7,7 +7,6 @@
     [
       "@semantic-release/git",
       {
-        "assets": ["dist/keel"],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],
