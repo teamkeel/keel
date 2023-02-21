@@ -10,6 +10,8 @@ builds:
       - windows
       - darwin
     main: ./cmd/keel
+    ldflags:
+      - -s -w -X github.com/teamkeel/keel/cmd.Version={{.Version}}
 archives:
   - replacements:
       darwin: Darwin

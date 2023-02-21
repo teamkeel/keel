@@ -34,6 +34,11 @@
         "pkgRoot": "packages/testing-runtime"
       }
     ],
-    "@semantic-release/git"
+    [
+      "@semantic-release/exec",
+      {
+        "publishCmd": "goreleaser release"
+      }
+    ]
   ]
 }
