@@ -69,6 +69,7 @@ var validatorFuncs = []validationFunc{
 	relationships.RelationAttributeRule,
 	relationships.MoreThanOneReverseMany, // todo this should become obsolete
 	messages.MessageNamesRule,
+	messages.UniqueMessageNamesRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
