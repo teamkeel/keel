@@ -1,3 +1,10 @@
+# [0.273.0](https://github.com/teamkeel/keel/compare/v0.272.0...v0.273.0) (2023-02-21)
+
+
+### Features
+
+* secrets set & remove commands ([#809](https://github.com/teamkeel/keel/issues/809)) ([0980dff](https://github.com/teamkeel/keel/commit/0980dffacccb34ff3692bb31217d4e0815e14ec5))
+
 # [0.272.0](https://github.com/teamkeel/keel/compare/v0.271.0...v0.272.0) (2023-02-21)
 
 
