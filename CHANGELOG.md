@@ -1,3 +1,10 @@
+# [0.270.0](https://github.com/teamkeel/keel/compare/v0.269.1...v0.270.0) (2023-02-21)
+
+
+### Features
+
+* Better support for colours in CLI ([#801](https://github.com/teamkeel/keel/issues/801)) ([1923ef4](https://github.com/teamkeel/keel/commit/1923ef481edbbde530b802252165ef72cb518c0f))
+
 ## [0.269.1](https://github.com/teamkeel/keel/compare/v0.269.0...v0.269.1) (2023-02-20)
 
 
