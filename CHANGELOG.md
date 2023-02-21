@@ -1,3 +1,10 @@
+# [0.271.0](https://github.com/teamkeel/keel/compare/v0.270.0...v0.271.0) (2023-02-21)
+
+
+### Features
+
+* remove short_message from validation error ([#803](https://github.com/teamkeel/keel/issues/803)) ([8ace621](https://github.com/teamkeel/keel/commit/8ace621538c3f1b530c68e0d77c3d6d596ff5aab))
+
 # [0.270.0](https://github.com/teamkeel/keel/compare/v0.269.1...v0.270.0) (2023-02-21)
 
 
