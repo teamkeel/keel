@@ -1,3 +1,10 @@
+## [0.273.4](https://github.com/teamkeel/keel/compare/v0.273.3...v0.273.4) (2023-02-21)
+
+
+### Bug Fixes
+
+* run goreleaser as part of semantic-release process ([c58d1fe](https://github.com/teamkeel/keel/commit/c58d1fe018c2bf28bee6ee5548ada35de4dc0dd2))
+
 ## [0.273.3](https://github.com/teamkeel/keel/compare/v0.273.2...v0.273.3) (2023-02-21)
 
 
