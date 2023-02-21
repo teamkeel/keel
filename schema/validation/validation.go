@@ -8,6 +8,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
 	"github.com/teamkeel/keel/schema/validation/rules/enum"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
+	"github.com/teamkeel/keel/schema/validation/rules/messages"
 	"github.com/teamkeel/keel/schema/validation/rules/model"
 	"github.com/teamkeel/keel/schema/validation/rules/relationships"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
@@ -33,11 +34,9 @@ func NewValidator(asts []*parser.AST) *Validator {
 type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
-	// Begin base model validations
 	model.ReservedModelNamesRule,
 	model.ModelNamingRule,
 	model.UniqueModelNamesRule,
-	// Begin actions
 	actions.ActionNamingRule,
 	actions.ActionTypesRule,
 	actions.UniqueOperationNamesRule,
@@ -50,33 +49,26 @@ var validatorFuncs = []validationFunc{
 	actions.CreateOperationNoReadInputsRule,
 	actions.CreateOperationRequiredFieldsRule,
 	actions.ReservedActionNameRule,
-	// Begin fields
 	field.ReservedNameRule,
 	field.ValidFieldTypesRule,
 	field.UniqueFieldNamesRule,
 	field.FieldNamingRule,
-	// Begin attribute validation
 	attribute.AttributeLocationsRule,
 	attribute.PermissionAttributeRule,
 	attribute.SetWhereAttributeRule,
 	attribute.ValidateActionAttributeRule,
 	attribute.ValidateFieldAttributeRule,
 	attribute.UniqueAttributeArgsRule,
-	// Role
 	role.UniqueRoleNamesRule,
-	// API
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
-	// Enum
 	enum.UniqueEnumsRule,
-	// Relationships
 	relationships.InvalidOneToOneRelationshipRule,
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
-
 	// todo this rule should obsolete MoreThanOneReverseMany (below), once it is finished.
 	relationships.RelationAttributeRule,
-
 	relationships.MoreThanOneReverseMany, // todo this should become obsolete
+	messages.MessageNamesRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
