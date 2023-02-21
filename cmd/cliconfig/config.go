@@ -270,11 +270,14 @@ func checkConfigFileExists(viper *viper.Viper, configPath, wd string) error {
 func createPathIfNotExist(path string) error {
 	dir := filepath.Dir(path)
 
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
+	_, err := os.Stat(dir)
+	if os.IsNotExist(err) {
 		err = os.MkdirAll(dir, os.ModePerm)
 		if err != nil {
 			return err
 		}
+	} else if err != nil {
+		return err
 	}
 
 	return nil
