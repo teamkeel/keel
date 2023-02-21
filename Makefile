@@ -52,3 +52,7 @@ install:
 setup-conventional-commits:
 	brew install pre-commit -q
 	pre-commit install --hook-type commit-msg
+
+goreleaser:
+	rm -rf dist
+	goreleaser release --snapshot

@@ -11,5 +11,6 @@ pkgs.mkShell {
     pkgs.protobuf
     pkgs.protoc-gen-go
     pkgs.nixfmt
+    pkgs.goreleaser
   ];
 }

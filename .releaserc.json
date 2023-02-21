@@ -1,38 +1,40 @@
 {
   "branches": ["main"],
-  "plugins":  [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog",
-      ["@semantic-release/exec", {
-        "prepareCmd": "bash ./publishcli.sh ${nextRelease.version}"
-      }],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "dist/keel"
-          ],
-          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-        }
-      ],
-      ["@semantic-release/github", {
-        "assets": [
-          { "path": "dist/keel", "label": "Keel CLI binary" }
-        ]
-      }],
-      ["@semantic-release/npm", {
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/changelog",
+    [
+      "@semantic-release/git",
+      {
+        "assets": ["dist/keel"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
         "npmPublish": false
-      }],
-      ["@semantic-release/npm", {
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
         "pkgRoot": "packages/wasm"
-      }],
-      ["@semantic-release/npm", {
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
         "pkgRoot": "packages/functions-runtime"
-      }],
-      ["@semantic-release/npm", {
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
         "pkgRoot": "packages/testing-runtime"
-      }],
-      "@semantic-release/git"
-    ]
+      }
+    ],
+    "@semantic-release/git"
+  ]
 }
