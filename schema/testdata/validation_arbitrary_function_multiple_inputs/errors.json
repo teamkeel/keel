@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "You cannot have multiple message-based inputs",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_arbitrary_function_multiple_inputs/schema.keel",
+        "offset": 134,
+        "line": 15,
+        "column": 25
+      },
+      "endPos": {
+        "filename": "testdata/validation_arbitrary_function_multiple_inputs/schema.keel",
+        "offset": 137,
+        "line": 15,
+        "column": 28
+      }
+    }
+  ]
+}

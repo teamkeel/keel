@@ -1,0 +1,9 @@
+message Foo {
+  bar Text
+}
+
+model Person {
+  operations {
+    create createPerson(Foo)
+  }
+}

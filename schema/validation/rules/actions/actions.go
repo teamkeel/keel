@@ -47,29 +47,52 @@ func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, function := range query.ModelFunctions(model) {
 			validFunctionActionTypes := validActionTypes
-			if len(function.Returns) > 0 {
-				validFunctionActionTypes = append(validActionTypes, []string{parser.ActionTypeWrite, parser.ActionTypeRead}...)
+
+			hasReturns := len(function.Returns) > 0
+
+			if hasReturns {
+				validFunctionActionTypes = []string{parser.ActionTypeWrite, parser.ActionTypeRead}
 			}
 
 			if !lo.Contains(validFunctionActionTypes, function.Type.Value) {
-				errs.Append(errorhandling.ErrorInvalidActionType,
-					map[string]string{
-						"Type":       function.Type.Value,
-						"ValidTypes": formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr),
-					},
-					function.Type,
-				)
+				if hasReturns {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.TypeError,
+							errorhandling.ErrorDetails{
+								Message: "The 'returns' keyword can only be used with 'read' or 'write' actions",
+								Hint:    fmt.Sprintf("Valid types with 'returns' are %s", formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
+							},
+							function.Type,
+						),
+					)
+				} else {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.TypeError,
+							errorhandling.ErrorDetails{
+								Message: fmt.Sprintf("%s is not a valid action type. Valid types are %s", function.Type.Value, formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
+								Hint:    fmt.Sprintf("Valid types are %s", formatting.HumanizeList(validFunctionActionTypes, formatting.DelimiterOr)),
+							},
+							function.Type,
+						),
+					)
+				}
 			}
 		}
 
 		for _, action := range query.ModelOperations(model) {
 			if !lo.Contains(validActionTypes, action.Type.Value) {
-				errs.Append(errorhandling.ErrorInvalidActionType,
-					map[string]string{
-						"Type":       action.Type.Value,
-						"ValidTypes": formatting.HumanizeList(validActionTypes, formatting.DelimiterOr),
-					},
-					action.Type,
+
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.TypeError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("%s is not a valid action type. Valid types are %s", action.Type.Value, formatting.HumanizeList(validActionTypes, formatting.DelimiterOr)),
+							Hint:    fmt.Sprintf("Valid types are %s", formatting.HumanizeList(validActionTypes, formatting.DelimiterOr)),
+						},
+						action.Type,
+					),
 				)
 			}
 		}
@@ -492,26 +515,27 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 	return
 }
 
-func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-
+func ValidActionInputTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
-
 		for _, action := range query.ModelOperations(model) {
 			isFunction := false
 			for _, input := range action.Inputs {
-				errs.AppendError(validateInput(isFunction, asts, input, model, action))
+				errs.AppendError(validateInputType(isFunction, asts, input, model, action))
 			}
+
 			for _, input := range action.With {
-				errs.AppendError(validateInput(isFunction, asts, input, model, action))
+				errs.AppendError(validateInputType(isFunction, asts, input, model, action))
 			}
 		}
+
 		for _, action := range query.ModelFunctions(model) {
 			isFunction := true
 			for _, input := range action.Inputs {
-				errs.AppendError(validateInput(isFunction, asts, input, model, action))
+				errs.AppendError(validateInputType(isFunction, asts, input, model, action))
 			}
+
 			for _, input := range action.With {
-				errs.AppendError(validateInput(isFunction, asts, input, model, action))
+				errs.AppendError(validateInputType(isFunction, asts, input, model, action))
 			}
 		}
 	}
@@ -519,64 +543,32 @@ func ValidActionInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 	return
 }
 
-func validateInput(
+func ValidOperationInputUsagesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	for _, model := range query.Models(asts) {
+		for _, operation := range query.ModelOperations(model) {
+			isFunction := false
+			for _, input := range operation.Inputs {
+				errs.AppendError(validateInputUsage(isFunction, asts, input, model, operation))
+			}
+
+			for _, input := range operation.With {
+				errs.AppendError(validateInputUsage(isFunction, asts, input, model, operation))
+			}
+		}
+	}
+
+	return errs
+}
+
+// Validate that inputs with labels are used somewhere (within an expression in any of the child attributes)
+func validateInputUsage(
 	isFunction bool,
 	asts []*parser.AST,
 	input *parser.ActionInputNode,
 	model *parser.ModelNode,
-	action *parser.ActionNode) *errorhandling.ValidationError {
-	resolvedType := query.ResolveInputType(asts, input, model)
-
-	// If type cannot be resolved report error
-	if resolvedType == "" && len(action.Returns) < 1 {
-		fieldNames := []string{}
-		for _, field := range query.ModelFields(model) {
-			fieldNames = append(fieldNames, field.Name.Value)
-		}
-
-		hint := errorhandling.NewCorrectionHint(fieldNames, input.Type.ToString())
-
-		return errorhandling.NewValidationError(
-			errorhandling.ErrorInvalidActionInput,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"Input":     input.Type.ToString(),
-					"Suggested": hint.ToString(),
-				},
-			},
-			input.Type,
-		)
-	}
-
-	if input.Label == nil && len(action.Returns) > 0 {
-		// arbitrary function inputs
-		availableMessages := query.MessageNames(asts)
-		hint := errorhandling.NewCorrectionHint(availableMessages, input.Type.ToString())
-
-		msg := query.Message(asts, input.Type.ToString())
-
-		if msg == nil {
-			return errorhandling.NewValidationError(
-				errorhandling.ErrorInvalidActionInput,
-				errorhandling.TemplateLiterals{
-					Literals: map[string]string{
-						"Input":     input.Type.ToString(),
-						"Suggested": hint.ToString(),
-					},
-				},
-				input.Type,
-			)
-		}
-	}
-
-	// if not explicitly labelled then we don't need to check for the input being used
-	// as inputs using short-hand syntax are implicitly used
+	action *parser.ActionNode,
+) *errorhandling.ValidationError {
 	if input.Label == nil {
-		return nil
-	}
-
-	// For functions the input doesn't need to be used
-	if isFunction {
 		return nil
 	}
 
@@ -653,6 +645,101 @@ func validateInput(
 		},
 		input.Label,
 	)
+}
+
+// validateInputType validates that an input's type is acceptable, according to the following three rules:
+// 1. input.Label is nil and input.Type matches name of a field on the current model (or nested field)
+// 2. input.Label is not nil and input.Type.Fragments[0] is a valid built-in type or enum
+// 3. isFunction is true, input.Label is nil, input.Type.Fragments[0] is a message name, and action.Inputs has a length of 1
+func validateInputType(
+	isFunction bool,
+	asts []*parser.AST,
+	input *parser.ActionInputNode,
+	model *parser.ModelNode,
+	action *parser.ActionNode) *errorhandling.ValidationError {
+	resolvedType := query.ResolveInputType(asts, input, model)
+	msg := query.Message(asts, input.Type.ToString())
+
+	// if not explicitly labelled then we don't need to check for the input being used
+	// as inputs using short-hand syntax are implicitly use
+	// For functions the input doesn't need to be used
+	if resolvedType != "" && (isFunction || input.Label == nil) {
+		return nil
+	}
+
+	if msg != nil && !isFunction {
+		// not allowed a message in an operation (return)
+		return errorhandling.NewValidationErrorWithDetails(
+			errorhandling.ActionInputError,
+			errorhandling.ErrorDetails{
+				Message: fmt.Sprintf("You cannot use message %s in an operation", msg.Name.Value),
+				Hint:    "Messages can only be used in functions",
+			},
+			input.Node,
+		)
+	}
+
+	if msg != nil {
+		if action.Type.Value != "read" && action.Type.Value != "write" {
+			return errorhandling.NewValidationErrorWithDetails(
+				errorhandling.ActionInputError,
+				errorhandling.ErrorDetails{
+					Message: "You can only use messages in a read/write function",
+					Hint:    "Messages can only be used in read/write functions",
+				},
+				action.Node,
+			)
+		}
+
+		if len(action.Inputs) > 0 && action.Inputs[0] == input {
+			// all good - message being used as input to function
+			return nil
+		}
+
+		// todo: move the below to separate rule
+
+		// not allowed to have more than one message (return)
+		// example of error is "ThisIsNot" message here
+		// create createFoo(ThisIsValid, ThisIsNot)
+
+		return errorhandling.NewValidationErrorWithDetails(
+			errorhandling.ActionInputError,
+			errorhandling.ErrorDetails{
+				Message: "You cannot have multiple message-based inputs",
+			},
+			action.Inputs[1],
+		)
+	}
+
+	// If type cannot be resolved report error
+	if resolvedType == "" {
+		types := []string{}
+		for _, field := range query.ModelFields(model) {
+			types = append(types, field.Name.Value)
+		}
+
+		types = append(types, query.MessageNames(asts)...)
+
+		// todo:
+		// if there is no label, suggest model field names
+		// if there is no label and only first input and isFunction, suggest message types
+		// if there is a label, then suggest built ins
+
+		hint := errorhandling.NewCorrectionHint(types, input.Type.ToString())
+
+		return errorhandling.NewValidationError(
+			errorhandling.ErrorInvalidActionInput,
+			errorhandling.TemplateLiterals{
+				Literals: map[string]string{
+					"Input":     input.Type.ToString(),
+					"Suggested": hint.ToString(),
+				},
+			},
+			input.Type,
+		)
+	}
+
+	return nil
 }
 
 // CreateOperationNoReadInputsRule validates that create actions don't accept

@@ -1,0 +1,9 @@
+message Foo {
+  bar Text
+}
+
+model Person {
+  functions {
+    create createPerson() with(Foo)
+  }
+}
