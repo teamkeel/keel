@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "The \u003e operator is not allowed in a update operation, only equality operators ('==' and 'in') are allowed",
-      "shortMessage": "only equality operators are allowed in get and update operations",
       "hint": "",
       "code": "E037",
       "pos": {

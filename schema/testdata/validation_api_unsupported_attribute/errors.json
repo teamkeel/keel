@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "api 'Web' has an unrecognised attribute @what",
-      "shortMessage": "Unrecognised attribute what",
       "hint": "",
       "code": "E011",
       "pos": {

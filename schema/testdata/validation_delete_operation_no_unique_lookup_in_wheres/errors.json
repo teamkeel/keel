@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "myModel.nonUnique is not a unique field. delete operations can only filter on unique fields",
-      "shortMessage": "myModel.nonUnique is not a unique field",
       "hint": "",
       "code": "E036",
       "pos": {

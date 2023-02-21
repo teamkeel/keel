@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "person.age is not a unique field. update operations can only filter on unique fields",
-      "shortMessage": "person.age is not a unique field",
       "hint": "",
       "code": "E036",
       "pos": {

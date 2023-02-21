@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have duplicate operations Model:Order Name:updateStatus",
-      "shortMessage": "updateStatus is duplicated",
       "hint": "Remove 'updateStatus' on line 17",
       "code": "E004",
       "pos": {

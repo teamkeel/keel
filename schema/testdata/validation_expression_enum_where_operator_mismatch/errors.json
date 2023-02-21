@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus",
-      "shortMessage": "post.status is PostStatus and OtherPostStatus.Something is OtherPostStatus",
       "hint": "Please make sure that you are evaluating entities of the same type",
       "code": "E026",
       "pos": {

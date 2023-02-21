@@ -72,9 +72,8 @@ const (
 )
 
 type ErrorDetails struct {
-	Message      string `json:"message" yaml:"message"`
-	ShortMessage string `json:"shortMessage" yaml:"short_message"`
-	Hint         string `json:"hint" yaml:"hint"`
+	Message string `json:"message" yaml:"message"`
+	Hint    string `json:"hint" yaml:"hint"`
 }
 
 type TemplateLiterals struct {
@@ -195,8 +194,7 @@ func buildErrorDetailsFromYaml(code string, locale string, literals TemplateLite
 	}
 
 	return &ErrorDetails{
-		Message:      renderTemplate(fmt.Sprintf("%s-%s", code, "message"), ed.Message, literals.Literals),
-		ShortMessage: renderTemplate(fmt.Sprintf("%s-%s", code, "short-message"), ed.ShortMessage, literals.Literals),
-		Hint:         renderTemplate(fmt.Sprintf("%s-%s", code, "hint"), ed.Hint, literals.Literals),
+		Message: renderTemplate(fmt.Sprintf("%s-%s", code, "message"), ed.Message, literals.Literals),
+		Hint:    renderTemplate(fmt.Sprintf("%s-%s", code, "hint"), ed.Hint, literals.Literals),
 	}
 }

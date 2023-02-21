@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'FOO' not found on 'Environment Variables'",
-      "shortMessage": "'FOO' not found",
       "hint": "",
       "code": "E020",
       "pos": {

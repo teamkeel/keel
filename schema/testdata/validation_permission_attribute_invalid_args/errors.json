@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "permission requires all arguments to be named, for example @permission(roles: [MyRole])",
-      "shortMessage": "permission requires all arguments to be named",
       "hint": "Valid argument names for permission are actions, expression, or roles",
       "code": "E014",
       "pos": {
@@ -20,7 +19,6 @@
     },
     {
       "message": "The @permission attribute is missing required argument actions",
-      "shortMessage": "The @permission attribute is missing required argument actions",
       "hint": "",
       "code": "E015",
       "pos": {
@@ -38,7 +36,6 @@
     },
     {
       "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
-      "shortMessage": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
       "hint": "",
       "code": "E015",
       "pos": {

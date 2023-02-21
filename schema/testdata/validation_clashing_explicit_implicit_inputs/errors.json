@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have overridden 'title' with an explicit input",
-      "shortMessage": "'title' overridden by explicit input",
       "hint": "Try removing 'title' from the inputs list",
       "code": "E043",
       "pos": {
@@ -20,7 +19,6 @@
     },
     {
       "message": "You have overridden 'id' with an explicit input",
-      "shortMessage": "'id' overridden by explicit input",
       "hint": "Try removing 'id' from the inputs list",
       "code": "E043",
       "pos": {

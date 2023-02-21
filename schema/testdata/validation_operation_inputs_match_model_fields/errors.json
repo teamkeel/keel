@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Action inputs must be one of the fields defined in the model",
-      "shortMessage": "blah is not a valid input",
       "hint": "Did you mean one of name, id, createdAt, or updatedAt?",
       "code": "E005",
       "pos": {

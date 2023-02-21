@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Value-only conditions such as 'profile.identity' not permitted on @set",
-      "shortMessage": "Value-only conditions such as 'profile.identity' not permitted on @set",
       "hint": "Please assign a value. Did you mean 'profile.identity = xxx'?",
       "code": "E023",
       "pos": {

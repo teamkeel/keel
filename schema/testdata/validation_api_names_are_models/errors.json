@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "api 'Web' has an unrecognised model UnknownModel",
-      "shortMessage": "Unrecognised model UnknownModel",
       "hint": "",
       "code": "E047",
       "pos": {

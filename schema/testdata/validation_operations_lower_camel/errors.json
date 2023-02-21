@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Action names should be written in lowerCamelCase",
-      "shortMessage": "CREATE_PROFILE isn't a valid action name",
       "hint": "Did you mean 'createProfile'?",
       "code": "E002",
       "pos": {

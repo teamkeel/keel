@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have already used 'written' in a @Relation. Duplicates are not allowed.",
-      "shortMessage": "Duplicate use of 'written'",
       "hint": "Did you mean a different related field?",
       "code": "E058",
       "pos": {

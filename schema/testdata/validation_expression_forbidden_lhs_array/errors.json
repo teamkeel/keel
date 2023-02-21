@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Both sides of the expression cannot be an array",
-      "shortMessage": "Both sides of the expression cannot be an array",
       "hint": "Left hand side of expression ('post.authors.name') produced more than one result because one of the relationships was a collection.",
       "code": "E031",
       "pos": {

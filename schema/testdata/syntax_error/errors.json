@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": " unexpected token \"fields\" (expected \"{\" ModelSectionNode* \"}\")",
-      "shortMessage": "Invalid syntax",
       "hint": "",
       "code": "E025",
       "pos": {

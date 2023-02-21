@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "2 argument(s) provided to @where but expected 1",
-      "shortMessage": "Wrong number of arguments provided to @where",
       "hint": "the signature of this attribute is @where(expression)",
       "code": "E024",
       "pos": {

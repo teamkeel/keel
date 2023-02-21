@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Author and Post define a singular relationship with one another",
-      "shortMessage": "Author and Post define a singular relationship with one another",
       "hint": "It is not clear where the foreign key should be placed. Remove the explicit reference from one side.",
       "code": "E039",
       "pos": {
@@ -20,7 +19,6 @@
     },
     {
       "message": "The related field 'written' must be a repeated field",
-      "shortMessage": "The related field 'written' must be a repeated field",
       "hint": "You can make it repeated by adding [] to that field",
       "code": "E057",
       "pos": {

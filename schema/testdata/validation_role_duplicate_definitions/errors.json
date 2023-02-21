@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a duplicate definition for 'role Admin'",
-      "shortMessage": "Admin is duplicated",
       "hint": "Please remove one of the definitions",
       "code": "E018",
       "pos": {

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'context' not found",
-      "shortMessage": "'context' not found",
       "hint": "Did you mean ctx, or profile?",
       "code": "E020",
       "pos": {

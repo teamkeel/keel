@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "The @permission attribute is missing required argument actions",
-      "shortMessage": "The @permission attribute is missing required argument actions",
       "hint": "",
       "code": "E015",
       "pos": {

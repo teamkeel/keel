@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Field 'author' is repeated, i.e. [], so it cannot have the @relation attribute",
-      "shortMessage": "Field 'author' is repeated, i.e. [], so it cannot have the @relation attribute",
       "hint": "For many-to-one relationships, you put the @relation on the non-repeated end of the relationship",
       "code": "E053",
       "pos": {

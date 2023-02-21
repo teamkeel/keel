@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "text is not a unique field. delete operations take only unique inputs",
-      "shortMessage": "text is not a unique field",
       "hint": "",
       "code": "E035",
       "pos": {

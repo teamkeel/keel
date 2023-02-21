@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'pos' not found",
-      "shortMessage": "'pos' not found",
       "hint": "Did you mean post?",
       "code": "E020",
       "pos": {

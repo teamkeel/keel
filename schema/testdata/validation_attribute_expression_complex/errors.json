@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "'postCod' not found on 'Address'",
-      "shortMessage": "'postCod' not found",
       "hint": "Did you mean postCode?",
       "code": "E020",
       "pos": {

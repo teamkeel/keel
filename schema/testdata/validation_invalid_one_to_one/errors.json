@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "Post and Author define a singular relationship with one another",
-      "shortMessage": "Post and Author define a singular relationship with one another",
       "hint": "It is not clear where the foreign key should be placed. Remove the explicit reference from one side.",
       "code": "E039",
       "pos": {

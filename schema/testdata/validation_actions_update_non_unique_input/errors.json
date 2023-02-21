@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "age is not a unique field. update operations take only unique inputs",
-      "shortMessage": "age is not a unique field",
       "hint": "",
       "code": "E035",
       "pos": {

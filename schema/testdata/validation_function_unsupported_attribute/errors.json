@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "function 'createProfile' has an unrecognised attribute @unknown",
-      "shortMessage": "Unrecognised attribute unknown",
       "hint": "Did you mean @permission?",
       "code": "E011",
       "pos": {

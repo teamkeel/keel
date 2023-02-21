@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "The 'Author' model does not include a field that references Post",
-      "shortMessage": "The 'Author' model does not include a field that references Post",
       "hint": "Try adding 'post Post' to the fields definition of the Author model.",
       "code": "E044",
       "pos": {

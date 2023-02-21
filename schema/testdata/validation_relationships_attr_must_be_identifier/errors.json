@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "The @relation value should be a simple string",
-      "shortMessage": "The @relation value should be a simple string",
       "hint": "Like myFieldName",
       "code": "E054",
       "pos": {

@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "You have a duplicate definition for 'enum TheBeatles'",
-      "shortMessage": "TheBeatles is duplicated",
       "hint": "Please remove one of the definitions",
       "code": "E019",
       "pos": {

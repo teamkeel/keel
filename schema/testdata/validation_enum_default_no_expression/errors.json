@@ -2,7 +2,6 @@
   "errors": [
     {
       "message": "default requires an expression",
-      "shortMessage": "default requires an expression",
       "hint": "Try @default(MyDefaultValue) instead",
       "code": "E050",
       "pos": {

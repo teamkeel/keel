@@ -256,8 +256,7 @@ func (scm *Builder) insertForeignKeyFields(
 				errDetails := &errorhandling.ErrorDetails{
 					Message: fmt.Sprintf("cannot find the model referred to (%s) by field %s, on model %s",
 						referredToModelName, field.Name, mdl.Name),
-					ShortMessage: "cannot find model referenced by relationship field",
-					Hint:         "make sure you declare this model",
+					Hint: "make sure you declare this model",
 				}
 				return errDetails
 			}
