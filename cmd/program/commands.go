@@ -439,3 +439,29 @@ func LoadSecrets(path, environment string) (map[string]string, error) {
 	}
 	return secrets, nil
 }
+
+func SetSecret(path, environment, key, value string) error {
+	projectPath, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+
+	config := cliconfig.New(&cliconfig.Options{
+		WorkingDir: projectPath,
+	})
+
+	return config.SetSecret(path, environment, key, value)
+}
+
+func RemoveSecret(path, environment, key string) error {
+	projectPath, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+
+	config := cliconfig.New(&cliconfig.Options{
+		WorkingDir: projectPath,
+	})
+
+	return config.RemoveSecret(path, environment, key)
+}

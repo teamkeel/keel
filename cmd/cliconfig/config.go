@@ -129,6 +129,30 @@ func (c *Config) SetSecret(path, environment, key, value string) error {
 	return c.writeConfig(*cfg)
 }
 
+func (c *Config) RemoveSecret(path, environment, key string) error {
+	cfg, err := c.GetConfig(path)
+	if err != nil {
+		return err
+	}
+
+	currentSecrets := cfg.Projects[path].Secrets
+
+	switch environment {
+	case "development":
+		delete(currentSecrets.Development, key)
+	case "test":
+		delete(currentSecrets.Test, key)
+	default:
+		return errors.New("invalid environment " + environment)
+	}
+
+	cfg.Projects[path] = Project{
+		Secrets: currentSecrets,
+	}
+
+	return c.writeConfig(*cfg)
+}
+
 func (c *Config) GetSecrets(path, environment string) (map[string]string, error) {
 	project, err := c.GetProject(path)
 	if err != nil {
@@ -141,7 +165,7 @@ func (c *Config) GetSecrets(path, environment string) (map[string]string, error)
 	case "test":
 		return project.Secrets.Test, nil
 	default:
-		return nil, errors.New("invalid environment")
+		return nil, errors.New("invalid environment " + environment)
 	}
 }
 
