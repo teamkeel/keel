@@ -1,3 +1,10 @@
+## [0.273.3](https://github.com/teamkeel/keel/compare/v0.273.2...v0.273.3) (2023-02-21)
+
+
+### Bug Fixes
+
+* run gorelease in same job as semantic release ([64331a6](https://github.com/teamkeel/keel/commit/64331a6318a084ad4bba122d5fe884e70cc4bf35))
+
 ## [0.273.2](https://github.com/teamkeel/keel/compare/v0.273.1...v0.273.2) (2023-02-21)
 
 
