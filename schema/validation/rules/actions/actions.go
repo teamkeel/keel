@@ -731,11 +731,12 @@ func validateInputType(
 		firstInput := len(action.Inputs) > 0 && action.Inputs[0] == input
 		moreThanOneInput := len(action.Inputs) > 1
 		matchesMessage := msg != nil
+		readOrWrite := action.Type.Value == parser.ActionTypeRead || action.Type.Value == parser.ActionTypeWrite
 
 		switch true {
 		case firstInput && matchesMessage && !moreThanOneInput:
 			return nil
-		case firstInput && matchesMessage && moreThanOneInput:
+		case readOrWrite && firstInput && matchesMessage && moreThanOneInput:
 			return errorhandling.NewValidationErrorWithDetails(
 				errorhandling.ActionInputError,
 				errorhandling.ErrorDetails{
