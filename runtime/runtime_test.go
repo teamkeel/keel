@@ -67,7 +67,7 @@ func TestRuntime(t *testing.T) {
 			require.NoError(t, err)
 			defer testDB.Close()
 
-			database, err := db.LocalFromConnection(ctx, testDB)
+			database, err := db.NewFromConnection(ctx, testDB)
 			require.NoError(t, err)
 
 			ctx = runtimectx.WithDatabase(ctx, database)
@@ -150,7 +150,7 @@ func TestRuntimeRPC(t *testing.T) {
 			testDB, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
 			require.NoError(t, err)
 
-			database, err := db.LocalFromConnection(ctx, testDB)
+			database, err := db.NewFromConnection(ctx, testDB)
 			require.NoError(t, err)
 
 			ctx = runtimectx.WithDatabase(ctx, database)

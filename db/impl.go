@@ -13,7 +13,7 @@ import (
 	"github.com/lib/pq"
 )
 
-type localDb struct {
+type dbImpl struct {
 	conn               *sql.DB
 	ongoingTransaction *sql.Tx
 }
@@ -60,13 +60,13 @@ func toDbError(err error) error {
 }
 
 func validateSupportedType(value any) error {
-	if slices.Contains(SupportedValueTypes, fmt.Sprintf("%T", value)) {
+	if slices.Contains(supportedValueTypes, fmt.Sprintf("%T", value)) {
 		return nil
 	}
 	return fmt.Errorf("unsupported %T", value)
 }
 
-func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
+func (db *dbImpl) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
 	for _, value := range values {
 		err := validateSupportedType(value)
 		if err != nil {
@@ -113,7 +113,7 @@ func (db *localDb) ExecuteQuery(ctx context.Context, sqlQuery string, values ...
 	return &ExecuteQueryResult{Rows: rows}, nil
 }
 
-func (db *localDb) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
+func (db *dbImpl) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
 	for _, value := range values {
 		err := validateSupportedType(value)
 		if err != nil {
@@ -138,7 +138,7 @@ func (db *localDb) ExecuteStatement(ctx context.Context, sqlQuery string, values
 	return &ExecuteStatementResult{RowsAffected: rowsAffected}, nil
 }
 
-func (db *localDb) BeginTransaction(ctx context.Context) error {
+func (db *dbImpl) BeginTransaction(ctx context.Context) error {
 	if db.ongoingTransaction != nil {
 		return errors.New("cannot begin transaction when there is an ongoing transaction")
 	}
@@ -150,7 +150,7 @@ func (db *localDb) BeginTransaction(ctx context.Context) error {
 	return nil
 }
 
-func (db *localDb) CommitTransaction(ctx context.Context) error {
+func (db *dbImpl) CommitTransaction(ctx context.Context) error {
 	if db.ongoingTransaction == nil {
 		return errors.New("cannot commit transaction when there is no ongoing transaction")
 	}
@@ -162,7 +162,7 @@ func (db *localDb) CommitTransaction(ctx context.Context) error {
 	return nil
 }
 
-func (db *localDb) RollbackTransaction(ctx context.Context) error {
+func (db *dbImpl) RollbackTransaction(ctx context.Context) error {
 	if db.ongoingTransaction == nil {
 		return errors.New("cannot rollback transaction when there is no ongoing transaction")
 	}

@@ -196,7 +196,7 @@ func (a *ApplyMigrationsError) Error() string {
 
 func RunMigrations(schema *proto.Schema, connInfo *db.ConnectionInfo) tea.Cmd {
 	return func() tea.Msg {
-		db, err := db.Local(context.Background(), connInfo)
+		db, err := db.New(context.Background(), connInfo)
 		if err != nil {
 			return RunMigrationsMsg{
 				Err: err,

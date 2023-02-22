@@ -71,7 +71,7 @@ func TestMigrations(t *testing.T) {
 				require.NoError(t, err)
 			}()
 
-			database, err := db.LocalFromConnection(context, testDB)
+			database, err := db.NewFromConnection(context, testDB)
 			require.NoError(t, err)
 
 			// Read the fixture file

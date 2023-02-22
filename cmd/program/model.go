@@ -314,7 +314,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		ctx := msg.r.Context()
-		database, _ := db.Local(ctx, m.DatabaseConnInfo)
+		database, _ := db.New(ctx, m.DatabaseConnInfo)
 		ctx = runtimectx.WithDatabase(ctx, database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 		if m.FunctionsServer != nil {

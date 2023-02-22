@@ -134,7 +134,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			ctx := r.Context()
-			database, _ := db.LocalFromConnection(ctx, mainDB)
+			database, _ := db.NewFromConnection(ctx, mainDB)
 			ctx = runtimectx.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 			if functionsTransport != nil {
