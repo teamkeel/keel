@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "The 'returns' keyword must be specified when using a 'read' or 'write' action type",
+      "hint": "Try to append 'returns(MyMessageType)'",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_returns_required_with_arbitrary_action_types/schema.keel",
+        "offset": 92,
+        "line": 11,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_returns_required_with_arbitrary_action_types/schema.keel",
+        "offset": 108,
+        "line": 11,
+        "column": 21
+      }
+    },
+    {
+      "message": "The 'returns' keyword must be specified when using a 'read' or 'write' action type",
+      "hint": "Try to append 'returns(MyMessageType)'",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_returns_required_with_arbitrary_action_types/schema.keel",
+        "offset": 113,
+        "line": 12,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_returns_required_with_arbitrary_action_types/schema.keel",
+        "offset": 133,
+        "line": 12,
+        "column": 25
+      }
+    }
+  ]
+}

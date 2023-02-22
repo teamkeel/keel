@@ -51,6 +51,10 @@ func main() {
 		var currContents []byte
 		var defaultConfig *config.ProjectConfig
 
+		if len(files) < 1 {
+			panic(fmt.Sprintf("No files present in directory %s", subDir.Name()))
+		}
+
 		for _, file := range files {
 			if file.Name() == "errors.json" {
 				b, err := os.ReadFile(filepath.Join(testdataDir, subDir.Name(), "errors.json"))
@@ -89,7 +93,7 @@ func main() {
 		if err != nil {
 			verrs, ok := err.(*errorhandling.ValidationErrors)
 			if !ok {
-				panic(fmt.Errorf("failed to make schema from directory: %v", err))
+				panic(fmt.Errorf("failed to make schema from directory %s: %v", subDir.Name(), err))
 			}
 
 			b, _ := json.MarshalIndent(verrs, "", "  ")

@@ -1,0 +1,14 @@
+message Foo {
+  bar Text
+}
+
+model Person {
+  fields {
+    bar Text
+  }
+  
+  functions {
+    read getPerson()
+    write updatePerson()
+  }
+}

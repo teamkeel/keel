@@ -125,7 +125,7 @@ func (verrs *ValidationErrors) ToAnnotatedSchema(sources []reader.SchemaFile) st
 				result += strings.Repeat(" ", (err.EndPos.Column-err.Pos.Column)/2)
 				// Line up hint with the error message above (taking into account unicode arrows)
 				result += strings.Repeat(" ", 3)
-				result += colors.Yellow(fmt.Sprint(err.ErrorDetails.Hint)).Highlight().String()
+				result += colors.Cyan(fmt.Sprint(err.ErrorDetails.Hint)).String()
 				newLine()
 			}
 		}
