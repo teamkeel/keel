@@ -35,13 +35,11 @@ type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
 	model.ReservedModelNamesRule,
-	model.ModelNamingRule,
 	model.UniqueModelNamesRule,
-	actions.ActionNamingRule,
+
 	actions.ActionTypesRule,
 	actions.UniqueOperationNamesRule,
 	actions.ValidActionInputTypesRule,
-	actions.ValidOperationInputUsagesRule,
 	actions.GetOperationUniqueConstraintRule,
 	actions.DeleteOperationUniqueConstraintRule,
 	actions.ListActionModelInputsRule,
@@ -49,27 +47,39 @@ var validatorFuncs = []validationFunc{
 	actions.CreateOperationNoReadInputsRule,
 	actions.CreateOperationRequiredFieldsRule,
 	actions.ReservedActionNameRule,
+
 	field.ReservedNameRule,
 	field.ValidFieldTypesRule,
 	field.UniqueFieldNamesRule,
-	field.FieldNamingRule,
+
 	attribute.AttributeLocationsRule,
 	attribute.PermissionAttributeRule,
 	attribute.SetWhereAttributeRule,
 	attribute.ValidateActionAttributeRule,
 	attribute.ValidateFieldAttributeRule,
 	attribute.UniqueAttributeArgsRule,
+
 	role.UniqueRoleNamesRule,
+
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
+
 	enum.UniqueEnumsRule,
+
 	relationships.InvalidOneToOneRelationshipRule,
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
 	// todo this rule should obsolete MoreThanOneReverseMany (below), once it is finished.
 	relationships.RelationAttributeRule,
 	relationships.MoreThanOneReverseMany, // todo this should become obsolete
+
 	messages.MessageNamesRule,
 	messages.UniqueMessageNamesRule,
+}
+
+var visitorFuncs = []VisitorFunc{
+	UnusedInputRule,
+	ConflictingInputsRule,
+	NamingRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
@@ -78,6 +88,13 @@ func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
 	for _, vf := range validatorFuncs {
 		errs.Concat(vf(v.asts))
 	}
+
+	visitors := []Visitor{}
+	for _, fn := range visitorFuncs {
+		visitors = append(visitors, fn(v.asts, errs))
+	}
+
+	runVisitors(v.asts, visitors)
 
 	if len(errs.Errors) == 0 {
 		return nil

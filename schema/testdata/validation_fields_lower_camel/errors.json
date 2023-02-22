@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "You have a field name that is not lowerCamel EMAIL",
-      "hint": "Did you mean 'email'?",
-      "code": "E012",
+      "message": "field names must use lowerCamelCase",
+      "hint": "e.g. email",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_fields_lower_camel/schema.keel",
         "offset": 30,

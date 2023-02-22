@@ -7,7 +7,7 @@
           "modelName": "Foo",
           "name": "f1",
           "type": {
-            "type": "TYPE_BOOL"
+            "type": "TYPE_STRING"
           },
           "unique": true
         },
@@ -51,7 +51,7 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "whereExpressions": [
             {
-              "source": "foo.f1 == true"
+              "source": "foo.f1 == \"foo\""
             }
           ],
           "inputMessageName": "OperationAInput"
@@ -122,21 +122,7 @@
   ],
   "messages": [
     {
-      "name": "OperationAInput",
-      "fields": [
-        {
-          "messageName": "OperationAInput",
-          "name": "f1",
-          "type": {
-            "type": "TYPE_BOOL",
-            "modelName": "Foo",
-            "fieldName": "f1"
-          },
-          "target": [
-            "f1"
-          ]
-        }
-      ]
+      "name": "OperationAInput"
     },
     {
       "name": "EmailPasswordInput",

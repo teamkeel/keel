@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Input label 'Foo' must be in lower camel case",
-      "hint": "Try 'foo' instead",
-      "code": "ActionInputError",
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. foo",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_capitalized_inputs/schema.keel",
         "offset": 83,
@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "Input label 'Foo' must be in lower camel case",
-      "hint": "Try 'foo' instead",
-      "code": "ActionInputError",
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. foo",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_capitalized_inputs/schema.keel",
         "offset": 172,
@@ -35,9 +35,9 @@
       }
     },
     {
-      "message": "Input label 'Foo' must be in lower camel case",
-      "hint": "Try 'foo' instead",
-      "code": "ActionInputError",
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. foo",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_capitalized_inputs/schema.keel",
         "offset": 213,
