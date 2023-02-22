@@ -51,6 +51,10 @@ func LoadSchema(dir, environment string) tea.Cmd {
 			err = configErr
 		}
 
+		if b.Config == nil {
+			b.Config = &config.ProjectConfig{}
+		}
+
 		invalid, invalidSecrets := b.Config.ValidateSecrets(secrets)
 		if invalid {
 			err = fmt.Errorf("missing secrets from local config in ~/.keel/config.yaml: %s", strings.Join(invalidSecrets, ", "))
