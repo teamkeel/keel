@@ -1,7 +1,5 @@
 const { Kysely, PostgresDialect } = require("kysely");
 const pg = require("pg");
-const { DataApiDialect } = require("kysely-data-api");
-const RDSDataService = require("aws-sdk/clients/rdsdataservice");
 
 function mustEnv(key) {
   const v = process.env[key];
@@ -19,19 +17,6 @@ function getDialect() {
         pool: new pg.Pool({
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
-      });
-
-    case "dataapi":
-      return new DataApiDialect({
-        mode: "postgres",
-        driver: {
-          client: new RDSDataService({
-            region: mustEnv("KEEL_DB_REGION"),
-          }),
-          database: mustEnv("KEEL_DB_NAME"),
-          secretArn: mustEnv("KEEL_DB_SECRET_ARN"),
-          resourceArn: mustEnv("KEEL_DB_RESOURCE_ARN"),
-        },
       });
 
     default:
