@@ -100,79 +100,64 @@ func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *prot
 	components := &Components{
 		Schemas: map[string]JSONSchema{},
 	}
-
 	prop := JSONSchema{}
 	nullable := field.Optional
 
-	if field.Type.Type == proto.Type_TYPE_MESSAGE {
-		// If the field is a nested message, then need to create a ref instead.
-		prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", field.Type.MessageName.Value)}
-		// And add the nested message to schema components.
+	switch field.Type.Type {
+	case proto.Type_TYPE_MESSAGE:
+		// Add the nested message to schema components.
 		message := proto.FindMessage(schema.Messages, field.Type.MessageName.Value)
 		component := JSONSchemaForMessage(ctx, schema, op, message)
 
 		// If that nested message component has ref fields itself, then its components must be bundled.
 		if component.Components != nil {
-			for name, comp := range component.Components.Schemas {
-				components.Schemas[name] = comp
+			for cName, comp := range component.Components.Schemas {
+				components.Schemas[cName] = comp
 			}
 			component.Components = nil
 		}
 
-		components.Schemas[field.Type.MessageName.Value] = component
-	} else {
-		if op != nil && op.Type == proto.OperationType_OPERATION_TYPE_LIST && field.IsModelField() {
-			// If field is a list operation query input then generate query component.
-			// TODO: to remove with https://linear.app/keel/issue/BLD-305/list-query-input-types-in-proto
-			name, component := jsonSchemaForQueryObject(ctx, op, field, schema)
-
-			if nullable {
-				component.allowNull()
-				name = "Nullable" + name
-			}
-
-			prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
-			components.Schemas[name] = component
-
-		} else {
-			switch field.Type.Type {
-			case proto.Type_TYPE_ID:
-				prop.Type = "string"
-			case proto.Type_TYPE_STRING:
-				prop.Type = "string"
-			case proto.Type_TYPE_BOOL:
-				prop.Type = "boolean"
-			case proto.Type_TYPE_INT:
-				prop.Type = "number"
-			case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-				// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
-				prop.Type = "string"
-				prop.Format = "date-time"
-			case proto.Type_TYPE_ENUM:
-				// For enum's we actually don't need to set the `type` field at all
-				name := field.Type.EnumName.Value
-				enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
-					return e.Name == field.Type.EnumName.Value
-				})
-
-				component := JSONSchema{}
-				for _, v := range enum.Values {
-					component.Enum = append(component.Enum, &v.Name)
-				}
-
-				if nullable {
-					component.allowNull()
-					name = "Nullable" + name
-				}
-
-				prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
-				components.Schemas[name] = component
-			}
-
-			if nullable {
-				prop.allowNull()
-			}
+		name := field.Type.MessageName.Value
+		if nullable {
+			component.allowNull()
+			name = "Nullable" + name
 		}
+
+		prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+		components.Schemas[name] = component
+	case proto.Type_TYPE_ID, proto.Type_TYPE_STRING:
+		prop.Type = "string"
+	case proto.Type_TYPE_BOOL:
+		prop.Type = "boolean"
+	case proto.Type_TYPE_INT:
+		prop.Type = "number"
+	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
+		prop.Type = "string"
+		prop.Format = "date-time"
+	case proto.Type_TYPE_ENUM:
+		// For enum's we actually don't need to set the `type` field at all
+		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
+			return e.Name == field.Type.EnumName.Value
+		})
+
+		for _, v := range enum.Values {
+			prop.Enum = append(prop.Enum, &v.Name)
+		}
+
+		if nullable {
+			prop.allowNull()
+		}
+	}
+
+	if field.Type.Repeated {
+		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum}
+		prop.Enum = nil
+		prop.Type = "array"
+	}
+
+	if nullable {
+		prop.allowNull()
 	}
 
 	if len(components.Schemas) > 0 {
@@ -180,112 +165,6 @@ func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *prot
 	}
 
 	return prop
-}
-
-// TODO: to remove with https://linear.app/keel/issue/BLD-305/list-query-input-types-in-proto
-func jsonSchemaForQueryObject(ctx context.Context, op *proto.Operation, input *proto.MessageField, schema *proto.Schema) (string, JSONSchema) {
-	switch input.Type.Type {
-	case proto.Type_TYPE_ID:
-		t := JSONSchema{
-			Type: "string",
-		}
-		return "IDQueryInput", JSONSchema{
-			Type: "object",
-			Properties: map[string]JSONSchema{
-				"equals": t,
-				"oneOf":  {Type: "array", Items: &t},
-			},
-			AdditionalProperties: boolPtr(false),
-		}
-	case proto.Type_TYPE_STRING:
-		t := JSONSchema{
-			Type: "string",
-		}
-		return "StringQueryInput", JSONSchema{
-			Type: "object",
-			Properties: map[string]JSONSchema{
-				"equals":     t,
-				"startsWith": t,
-				"endsWith":   t,
-				"contains":   t,
-				"oneOf":      {Type: "array", Items: &t},
-			},
-			AdditionalProperties: boolPtr(false),
-		}
-	case proto.Type_TYPE_DATE:
-		t := JSONSchema{
-			Type:   "string",
-			Format: "date-time",
-		}
-		return "DateQueryInput", JSONSchema{
-			Type: "object",
-			Properties: map[string]JSONSchema{
-				"equals":     t,
-				"before":     t,
-				"onOrBefore": t,
-				"after":      t,
-				"onOrAfter":  t,
-			},
-			AdditionalProperties: boolPtr(false),
-		}
-	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		t := JSONSchema{
-			Type:   "string",
-			Format: "date-time",
-		}
-		return "TimestampQueryInput", JSONSchema{
-			Type: "object",
-			Properties: map[string]JSONSchema{
-				"before": t,
-				"after":  t,
-			},
-			AdditionalProperties: boolPtr(false),
-		}
-	case proto.Type_TYPE_BOOL:
-		return "BooleanQueryInput", JSONSchema{
-			Type: "object",
-			Properties: map[string]JSONSchema{
-				"equals": {Type: "boolean"},
-			},
-			AdditionalProperties: boolPtr(false),
-		}
-	case proto.Type_TYPE_INT:
-		t := JSONSchema{
-			Type: "number",
-		}
-		return "IntQueryInput", JSONSchema{
-			Type: "object",
-			Properties: map[string]JSONSchema{
-				"equals":              t,
-				"lessThan":            t,
-				"lessThanOrEquals":    t,
-				"greaterThan":         t,
-				"greaterThanOrEquals": t,
-			},
-			AdditionalProperties: boolPtr(false),
-		}
-	case proto.Type_TYPE_ENUM:
-		t := JSONSchema{}
-		enum, _ := lo.Find(schema.Enums, func(e *proto.Enum) bool {
-			return e.Name == input.Type.EnumName.Value
-		})
-		for _, v := range enum.Values {
-			t.Enum = append(t.Enum, &v.Name)
-		}
-		return fmt.Sprintf("%sQueryInput", enum.Name), JSONSchema{
-			Type: "object",
-			Properties: map[string]JSONSchema{
-				"equals": t,
-				"oneOf": {
-					Type:  "array",
-					Items: &t,
-				},
-			},
-			AdditionalProperties: boolPtr(false),
-		}
-	}
-
-	return "", JSONSchema{}
 }
 
 // allowNull makes sure that s allows null, either by modifying

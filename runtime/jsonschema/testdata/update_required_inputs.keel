@@ -1,0 +1,16 @@
+enum Hobby {
+    Tennis
+    Chess
+}
+
+model Person {
+    fields {
+        name Text
+        birthday Date
+        hobby Hobby
+    }
+
+    operations {
+        update testAction(id) with (name, birthday, hobby)
+    }
+}

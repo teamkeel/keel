@@ -1,0 +1,9 @@
+environment:
+  default:
+    - name: "TEST"
+      value: "test"
+
+secrets:
+  - name: API_KEY
+    required:
+      - "production"

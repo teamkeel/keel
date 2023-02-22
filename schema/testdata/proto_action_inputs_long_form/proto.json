@@ -93,6 +93,29 @@
             }
           ],
           "inputMessageName": "CreatePersonInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "listPerson",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputs": [
+            {
+              "modelName": "Person",
+              "operationName": "listPerson",
+              "name": "name",
+              "type": {
+                "type": "TYPE_STRING"
+              },
+              "mode": "INPUT_MODE_READ"
+            }
+          ],
+          "whereExpressions": [
+            {
+              "source": "person.name == name"
+            }
+          ],
+          "inputMessageName": "ListPersonInput"
         }
       ]
     },
@@ -222,6 +245,59 @@
           "type": {
             "type": "TYPE_STRING"
           }
+        }
+      ]
+    },
+    {
+      "name": "ListPersonWhereInput",
+      "fields": [
+        {
+          "messageName": "ListPersonWhereInput",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListPersonInput",
+      "fields": [
+        {
+          "messageName": "ListPersonInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListPersonWhereInput"
+          }
+        },
+        {
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         }
       ]
     },

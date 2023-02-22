@@ -88,7 +88,7 @@ test("listing", async () => {
 
   const resp = await actions.listPeople({
     where: {
-      gender: "alien",
+      gender: { equals: "alien" },
     },
   });
 
@@ -252,7 +252,7 @@ test("relationships - findMany using multiple belongsTo relationships", async ()
   });
   const res = await actions.listBooksByPublisherName({
     where: {
-      authorPublisherName: "Harper Collins",
+      authorPublisherName: { equals: "Harper Collins" },
     },
   });
   expect(res.results.length).toBe(2);

@@ -1,26 +1,27 @@
 {
   "components": {
     "schemas": {
-      "NullableHobby": {
-        "enum": ["Tennis", "Chess", null]
-      },
       "TestActionValuesInput": {
         "additionalProperties": false,
         "properties": {
           "birthday": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           },
           "hobby": {
-            "$ref": "#/components/schemas/NullableHobby"
+            "enum": [
+              "Tennis",
+              "Chess"
+            ]
           },
           "name": {
-            "type": ["string", "null"]
-          },
-          "nickName": {
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
+        "required": [
+          "name", 
+          "birthday", 
+          "hobby"],
         "type": "object"
       },
       "TestActionWhereInput": {
@@ -44,6 +45,6 @@
       "$ref": "#/components/schemas/TestActionWhereInput"
     }
   },
-  "required": ["where"],
+  "required": ["where", "values"],
   "type": "object"
 }

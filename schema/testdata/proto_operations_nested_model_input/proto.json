@@ -402,15 +402,55 @@
   ],
   "messages": [
     {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "SearchFeesWhereInput",
       "fields": [
         {
           "messageName": "SearchFeesWhereInput",
           "name": "theFiTheFoTheFumTheName",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Fum",
-            "fieldName": "theName"
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
           },
           "target": [
             "theFi",
@@ -463,15 +503,55 @@
       ]
     },
     {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "SearchFumsWhereInput",
       "fields": [
         {
           "messageName": "SearchFumsWhereInput",
           "name": "theFosTheFisTheFeesTheName",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Fee",
-            "fieldName": "theName"
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
           },
           "target": [
             "theFos",

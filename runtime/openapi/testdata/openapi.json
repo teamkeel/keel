@@ -1,14 +1,17 @@
 {
   "components": {
     "schemas": {
-      "CustomersWhereInput": {
+      "NullableCustomersWhereInput": {
         "additionalProperties": false,
         "properties": {
-          "name": {
-            "$ref": "#/components/schemas/NullableStringQueryInput"
-          }
+            "name": {
+                "$ref": "#/components/schemas/NullableStringQueryInput"
+            }
         },
-        "type": "object"
+        "type": [
+            "object",
+            "null"
+        ]
       },
       "EmailPasswordInput": {
         "additionalProperties": false,
@@ -30,38 +33,47 @@
         "additionalProperties": false,
         "properties": {
           "contains": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "endsWith": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "equals": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "oneOf": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "type": ["array", "null"]
           },
           "startsWith": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": ["object", "null"]
       },
-      "UpdateCustomerValuesInput": {
+      "NullableUpdateCustomerValuesInput": {
         "additionalProperties": false,
         "properties": {
-          "dateOfBirth": {
-            "format": "date-time",
-            "type": ["string", "null"]
-          },
-          "name": {
-            "type": ["string", "null"]
-          }
+            "dateOfBirth": {
+                "format": "date-time",
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            "name": {
+                "type": [
+                    "string",
+                    "null"
+                ]
+            }
         },
-        "type": "object"
+        "type": [
+            "object",
+            "null"
+        ]
       },
       "UpdateCustomerWhereInput": {
         "additionalProperties": false,
@@ -166,7 +178,7 @@
                     "type": ["number", "null"]
                   },
                   "where": {
-                    "$ref": "#/components/schemas/CustomersWhereInput"
+                    "$ref": "#/components/schemas/NullableCustomersWhereInput"
                   }
                 },
                 "type": "object"
@@ -217,7 +229,7 @@
                 "additionalProperties": false,
                 "properties": {
                   "values": {
-                    "$ref": "#/components/schemas/UpdateCustomerValuesInput"
+                    "$ref": "#/components/schemas/NullableUpdateCustomerValuesInput"
                   },
                   "where": {
                     "$ref": "#/components/schemas/UpdateCustomerWhereInput"

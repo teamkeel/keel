@@ -1,0 +1,14 @@
+{
+		"compilerOptions": {
+			"lib": ["ES2016"],
+			"target": "ES2016",
+			"esModuleInterop": true,
+			"moduleResolution": "node",
+			"skipLibCheck": true,
+			"strictNullChecks": true,
+			"types": ["node"],
+			"allowJs": true
+		},
+		"include": ["**/*.ts"],
+		"exclude": ["node_modules"]
+	}
