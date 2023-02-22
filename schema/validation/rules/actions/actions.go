@@ -97,6 +97,21 @@ func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 		}
 
 		for _, operation := range query.ModelOperations(model) {
+			if operation.Type.Value == parser.ActionTypeRead || operation.Type.Value == parser.ActionTypeWrite {
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.TypeError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("The '%s' action type can only be used within a function", operation.Type.Value),
+							Hint:    fmt.Sprintf("Did you mean to define '%s' as a function?", operation.Name.Value),
+						},
+						operation.Type,
+					),
+				)
+
+				continue
+			}
+
 			hasReturns := len(operation.Returns) > 0
 
 			if hasReturns {
@@ -108,6 +123,8 @@ func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 					},
 					operation.Returns[0].Node,
 				))
+
+				continue
 			}
 
 			if !lo.Contains(validActionTypes, operation.Type.Value) {
