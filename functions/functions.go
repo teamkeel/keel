@@ -83,9 +83,12 @@ func CallFunction(ctx context.Context, actionName string, body map[string]any) (
 		}
 	}
 
+	secrets := runtimectx.GetSecrets(ctx)
+
 	meta := map[string]any{
 		"headers":  requestHeaders,
 		"identity": identity,
+		"secrets":  secrets,
 	}
 
 	req := &FunctionsRuntimeRequest{

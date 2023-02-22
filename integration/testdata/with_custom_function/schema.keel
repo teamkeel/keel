@@ -4,7 +4,7 @@ model Person {
         gender Text
         niNumber Text @unique
         identity Identity?
-        ctxNow  Timestamp?
+        ctxNow Timestamp?
     }
 
     functions {
@@ -16,6 +16,7 @@ model Person {
         delete deletePerson(id)
         update updatePerson(id) with (name, gender, niNumber)
         create createPersonWithEnvVar() with (name, gender, niNumber)
+        create createPersonWithSecret() with (name, gender, niNumber)
     }
 
     @permission(

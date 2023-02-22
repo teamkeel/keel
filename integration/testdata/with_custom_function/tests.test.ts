@@ -272,3 +272,14 @@ test("using an environment variable", async () => {
   // see keelconfig.yaml
   expect(res.name).toEqual("test");
 });
+
+test("using a secret", async () => {
+  const res = await actions.createPersonWithSecret({
+    name: "dave",
+    gender: "loD",
+    niNumber: "JS70",
+  });
+
+  // see keelconfig.yaml
+  expect(res.name).toEqual("worf");
+});
