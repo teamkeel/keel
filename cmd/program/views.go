@@ -73,8 +73,8 @@ func renderRun(m *Model) string {
 	if len(m.MigrationChanges) > 0 {
 		b.WriteString("\n")
 		b.WriteString(colors.Heading("Schema changes:").String())
+		b.WriteString("\n")
 		for _, ch := range m.MigrationChanges {
-			b.WriteString("\n")
 			b.WriteString(" - ")
 			switch ch.Type {
 			case migrations.ChangeTypeAdded:
