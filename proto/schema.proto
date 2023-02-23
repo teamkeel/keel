@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "github.com/teamkeel/proto";
+option go_package = "github.com/teamkeel/keel/proto";
 
 import "google/protobuf/wrappers.proto";
 
