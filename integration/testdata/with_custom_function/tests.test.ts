@@ -280,6 +280,6 @@ test("using a secret", async () => {
     niNumber: "JS70",
   });
 
-  // see keelconfig.yaml
+  // secret value is set in integration/integration_test.go
   expect(res.name).toEqual("worf");
 });

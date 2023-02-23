@@ -56,7 +56,6 @@ export type TimestampQueryInput = {
 export type ContextAPI = {
   headers: RequestHeaders;
   isAuthenticated: boolean;
-  secrets: Record<string, string>;
   now(): Date;
 };
 

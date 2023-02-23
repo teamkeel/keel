@@ -291,12 +291,12 @@ export type FunctionAPI = {
 type Environment = {
 	TEST: string;
 }
-type Secret = {
+type Secrets = {
 	SECRET_KEY: string;
 }
 
 export interface ContextAPI extends runtime.ContextAPI {
-	secrets: Secret;
+	secrets: Secrets;
 	env: Environment;
 	identity?: Identity;
 	now(): Date;

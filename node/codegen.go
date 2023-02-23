@@ -363,7 +363,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 
 	w.Dedent()
 	w.Writeln("}")
-	w.Writeln("type Secret = {")
+	w.Writeln("type Secrets = {")
 
 	w.Indent()
 
@@ -377,7 +377,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 
 	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
 	w.Indent()
-	w.Writeln("secrets: Secret;")
+	w.Writeln("secrets: Secrets;")
 	w.Writeln("env: Environment;")
 	w.Writeln("identity?: Identity;")
 	w.Writeln("now(): Date;")
