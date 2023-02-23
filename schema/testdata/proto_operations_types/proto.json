@@ -231,7 +231,7 @@
       "name": "opAResponse",
       "fields": [
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -239,21 +239,21 @@
           "optional": true
         },
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -322,7 +322,7 @@
       "name": "opBResponse",
       "fields": [
         {
-          "messageName": "opBResponse",
+          "messageName": "OpBResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -330,21 +330,21 @@
           "optional": true
         },
         {
-          "messageName": "opBResponse",
+          "messageName": "OpBResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "opBResponse",
+          "messageName": "OpBResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "opBResponse",
+          "messageName": "OpBResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -373,7 +373,7 @@
       "name": "opCResponse",
       "fields": [
         {
-          "messageName": "opCResponse",
+          "messageName": "OpCResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -381,21 +381,21 @@
           "optional": true
         },
         {
-          "messageName": "opCResponse",
+          "messageName": "OpCResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "opCResponse",
+          "messageName": "OpCResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "opCResponse",
+          "messageName": "OpCResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -452,7 +452,7 @@
       "name": "opDResponse",
       "fields": [
         {
-          "messageName": "opDResponse",
+          "messageName": "OpDResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
@@ -460,21 +460,21 @@
           "optional": true
         },
         {
-          "messageName": "opDResponse",
+          "messageName": "OpDResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "opDResponse",
+          "messageName": "OpDResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "opDResponse",
+          "messageName": "OpDResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

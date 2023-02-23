@@ -220,28 +220,28 @@
       "name": "boostViewsResponse",
       "fields": [
         {
-          "messageName": "boostViewsResponse",
+          "messageName": "BoostViewsResponse",
           "name": "views",
           "type": {
             "type": "TYPE_INT"
           }
         },
         {
-          "messageName": "boostViewsResponse",
+          "messageName": "BoostViewsResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "boostViewsResponse",
+          "messageName": "BoostViewsResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "boostViewsResponse",
+          "messageName": "BoostViewsResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

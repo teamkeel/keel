@@ -356,42 +356,42 @@
       "name": "createPostAResponse",
       "fields": [
         {
-          "messageName": "createPostAResponse",
+          "messageName": "CreatePostAResponse",
           "name": "content",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "createPostAResponse",
+          "messageName": "CreatePostAResponse",
           "name": "author",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "createPostAResponse",
+          "messageName": "CreatePostAResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "createPostAResponse",
+          "messageName": "CreatePostAResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostAResponse",
+          "messageName": "CreatePostAResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostAResponse",
+          "messageName": "CreatePostAResponse",
           "name": "authorId",
           "type": {
             "type": "TYPE_ID"
@@ -433,42 +433,42 @@
       "name": "createPostBResponse",
       "fields": [
         {
-          "messageName": "createPostBResponse",
+          "messageName": "CreatePostBResponse",
           "name": "content",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "createPostBResponse",
+          "messageName": "CreatePostBResponse",
           "name": "author",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "createPostBResponse",
+          "messageName": "CreatePostBResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "createPostBResponse",
+          "messageName": "CreatePostBResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostBResponse",
+          "messageName": "CreatePostBResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostBResponse",
+          "messageName": "CreatePostBResponse",
           "name": "authorId",
           "type": {
             "type": "TYPE_ID"
@@ -504,42 +504,42 @@
       "name": "createPostCResponse",
       "fields": [
         {
-          "messageName": "createPostCResponse",
+          "messageName": "CreatePostCResponse",
           "name": "content",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "createPostCResponse",
+          "messageName": "CreatePostCResponse",
           "name": "author",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "createPostCResponse",
+          "messageName": "CreatePostCResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "createPostCResponse",
+          "messageName": "CreatePostCResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostCResponse",
+          "messageName": "CreatePostCResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostCResponse",
+          "messageName": "CreatePostCResponse",
           "name": "authorId",
           "type": {
             "type": "TYPE_ID"

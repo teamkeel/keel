@@ -409,14 +409,14 @@
       "name": "createPostResponse",
       "fields": [
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "title",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "owner",
           "type": {
             "type": "TYPE_MODEL"
@@ -424,7 +424,7 @@
           "optional": true
         },
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "publisher",
           "type": {
             "type": "TYPE_MODEL"
@@ -432,28 +432,28 @@
           "optional": true
         },
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "ownerId",
           "type": {
             "type": "TYPE_ID"
@@ -461,7 +461,7 @@
           "optional": true
         },
         {
-          "messageName": "createPostResponse",
+          "messageName": "CreatePostResponse",
           "name": "publisherId",
           "type": {
             "type": "TYPE_ID"

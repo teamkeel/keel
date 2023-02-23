@@ -541,21 +541,21 @@
       "name": "updateChild1Response",
       "fields": [
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "parent",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "parentOptional",
           "type": {
             "type": "TYPE_MODEL"
@@ -563,35 +563,35 @@
           "optional": true
         },
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "parentId",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild1Response",
+          "messageName": "UpdateChild1Response",
           "name": "parentOptionalId",
           "type": {
             "type": "TYPE_ID"
@@ -671,21 +671,21 @@
       "name": "updateChild2Response",
       "fields": [
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "parent",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "parentOptional",
           "type": {
             "type": "TYPE_MODEL"
@@ -693,35 +693,35 @@
           "optional": true
         },
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "parentId",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild2Response",
+          "messageName": "UpdateChild2Response",
           "name": "parentOptionalId",
           "type": {
             "type": "TYPE_ID"
@@ -816,21 +816,21 @@
       "name": "updateChild3Response",
       "fields": [
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "parent",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "parentOptional",
           "type": {
             "type": "TYPE_MODEL"
@@ -838,35 +838,35 @@
           "optional": true
         },
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "parentId",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild3Response",
+          "messageName": "UpdateChild3Response",
           "name": "parentOptionalId",
           "type": {
             "type": "TYPE_ID"
@@ -959,21 +959,21 @@
       "name": "updateChild4Response",
       "fields": [
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "parent",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "parentOptional",
           "type": {
             "type": "TYPE_MODEL"
@@ -981,35 +981,35 @@
           "optional": true
         },
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "parentId",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "updateChild4Response",
+          "messageName": "UpdateChild4Response",
           "name": "parentOptionalId",
           "type": {
             "type": "TYPE_ID"

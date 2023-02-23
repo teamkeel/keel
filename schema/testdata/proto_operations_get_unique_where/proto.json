@@ -166,28 +166,28 @@
       "name": "getAuthorResponse",
       "fields": [
         {
-          "messageName": "getAuthorResponse",
+          "messageName": "GetAuthorResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "getAuthorResponse",
+          "messageName": "GetAuthorResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "getAuthorResponse",
+          "messageName": "GetAuthorResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "getAuthorResponse",
+          "messageName": "GetAuthorResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

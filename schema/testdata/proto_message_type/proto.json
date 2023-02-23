@@ -198,28 +198,28 @@
       "name": "createPostSpecialResponse",
       "fields": [
         {
-          "messageName": "createPostSpecialResponse",
+          "messageName": "CreatePostSpecialResponse",
           "name": "title",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "createPostSpecialResponse",
+          "messageName": "CreatePostSpecialResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "createPostSpecialResponse",
+          "messageName": "CreatePostSpecialResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPostSpecialResponse",
+          "messageName": "CreatePostSpecialResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

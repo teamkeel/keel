@@ -60,7 +60,7 @@ func (scm *Builder) makeActionResponseMessages(model *parser.ModelNode, action *
 		Fields: lo.Map(fs, func(f *parser.FieldNode, _ int) *proto.MessageField {
 			return &proto.MessageField{
 				Name:        f.Name.Value,
-				MessageName: fmt.Sprintf("%sResponse", action.Name.Value),
+				MessageName: fmt.Sprintf("%sResponse", strcase.ToCamel(action.Name.Value)),
 				Optional:    f.Optional,
 				Type: &proto.TypeInfo{
 					Type: scm.parserTypeToProtoType(f.Type),

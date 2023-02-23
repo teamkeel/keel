@@ -343,21 +343,21 @@
       "name": "getPeopleResponse",
       "fields": [
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "public",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "dateOfDeath",
           "type": {
             "type": "TYPE_DATE"
@@ -365,7 +365,7 @@
           "optional": true
         },
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "identity",
           "type": {
             "type": "TYPE_MODEL"
@@ -373,28 +373,28 @@
           "optional": true
         },
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "getPeopleResponse",
+          "messageName": "GetPeopleResponse",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
@@ -424,21 +424,21 @@
       "name": "createPersonResponse",
       "fields": [
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "public",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "dateOfDeath",
           "type": {
             "type": "TYPE_DATE"
@@ -446,7 +446,7 @@
           "optional": true
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "identity",
           "type": {
             "type": "TYPE_MODEL"
@@ -454,28 +454,28 @@
           "optional": true
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"
@@ -530,21 +530,21 @@
       "name": "killResponse",
       "fields": [
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "public",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "dateOfDeath",
           "type": {
             "type": "TYPE_DATE"
@@ -552,7 +552,7 @@
           "optional": true
         },
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "identity",
           "type": {
             "type": "TYPE_MODEL"
@@ -560,28 +560,28 @@
           "optional": true
         },
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "killResponse",
+          "messageName": "KillResponse",
           "name": "identityId",
           "type": {
             "type": "TYPE_ID"

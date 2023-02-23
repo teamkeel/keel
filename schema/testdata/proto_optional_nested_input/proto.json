@@ -395,21 +395,21 @@
       "name": "listByCompanyResponse",
       "fields": [
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "firstName",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "company",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "previousCompany",
           "type": {
             "type": "TYPE_MODEL"
@@ -417,35 +417,35 @@
           "optional": true
         },
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "companyId",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "listByCompanyResponse",
+          "messageName": "ListByCompanyResponse",
           "name": "previousCompanyId",
           "type": {
             "type": "TYPE_ID"
@@ -533,21 +533,21 @@
       "name": "listByPreviousCompanyResponse",
       "fields": [
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "firstName",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "company",
           "type": {
             "type": "TYPE_MODEL"
           }
         },
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "previousCompany",
           "type": {
             "type": "TYPE_MODEL"
@@ -555,35 +555,35 @@
           "optional": true
         },
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "companyId",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "listByPreviousCompanyResponse",
+          "messageName": "ListByPreviousCompanyResponse",
           "name": "previousCompanyId",
           "type": {
             "type": "TYPE_ID"

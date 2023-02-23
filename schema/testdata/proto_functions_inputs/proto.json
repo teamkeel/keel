@@ -272,28 +272,28 @@
       "name": "operationAResponse",
       "fields": [
         {
-          "messageName": "operationAResponse",
+          "messageName": "OperationAResponse",
           "name": "bar",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "operationAResponse",
+          "messageName": "OperationAResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "operationAResponse",
+          "messageName": "OperationAResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "operationAResponse",
+          "messageName": "OperationAResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -319,28 +319,28 @@
       "name": "operationBResponse",
       "fields": [
         {
-          "messageName": "operationBResponse",
+          "messageName": "OperationBResponse",
           "name": "bar",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "operationBResponse",
+          "messageName": "OperationBResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "operationBResponse",
+          "messageName": "OperationBResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "operationBResponse",
+          "messageName": "OperationBResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -373,28 +373,28 @@
       "name": "operationCResponse",
       "fields": [
         {
-          "messageName": "operationCResponse",
+          "messageName": "OperationCResponse",
           "name": "bar",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "operationCResponse",
+          "messageName": "OperationCResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "operationCResponse",
+          "messageName": "OperationCResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "operationCResponse",
+          "messageName": "OperationCResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -418,28 +418,28 @@
       "name": "operationDResponse",
       "fields": [
         {
-          "messageName": "operationDResponse",
+          "messageName": "OperationDResponse",
           "name": "bar",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "operationDResponse",
+          "messageName": "OperationDResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "operationDResponse",
+          "messageName": "OperationDResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "operationDResponse",
+          "messageName": "OperationDResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

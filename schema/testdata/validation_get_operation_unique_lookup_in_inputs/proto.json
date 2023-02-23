@@ -195,28 +195,28 @@
       "name": "getMyModelResponse",
       "fields": [
         {
-          "messageName": "getMyModelResponse",
+          "messageName": "GetMyModelResponse",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "getMyModelResponse",
+          "messageName": "GetMyModelResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "getMyModelResponse",
+          "messageName": "GetMyModelResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "getMyModelResponse",
+          "messageName": "GetMyModelResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

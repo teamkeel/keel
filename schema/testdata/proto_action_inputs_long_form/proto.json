@@ -219,28 +219,28 @@
       "name": "getPersonResponse",
       "fields": [
         {
-          "messageName": "getPersonResponse",
+          "messageName": "GetPersonResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "getPersonResponse",
+          "messageName": "GetPersonResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "getPersonResponse",
+          "messageName": "GetPersonResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "getPersonResponse",
+          "messageName": "GetPersonResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -264,28 +264,28 @@
       "name": "createPersonResponse",
       "fields": [
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "createPersonResponse",
+          "messageName": "CreatePersonResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

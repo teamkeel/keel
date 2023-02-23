@@ -234,7 +234,7 @@
       "name": "removeTitleResponse",
       "fields": [
         {
-          "messageName": "removeTitleResponse",
+          "messageName": "RemoveTitleResponse",
           "name": "title",
           "type": {
             "type": "TYPE_STRING"
@@ -242,21 +242,21 @@
           "optional": true
         },
         {
-          "messageName": "removeTitleResponse",
+          "messageName": "RemoveTitleResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "removeTitleResponse",
+          "messageName": "RemoveTitleResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "removeTitleResponse",
+          "messageName": "RemoveTitleResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -313,7 +313,7 @@
       "name": "listPostsWithNoTitleResponse",
       "fields": [
         {
-          "messageName": "listPostsWithNoTitleResponse",
+          "messageName": "ListPostsWithNoTitleResponse",
           "name": "title",
           "type": {
             "type": "TYPE_STRING"
@@ -321,21 +321,21 @@
           "optional": true
         },
         {
-          "messageName": "listPostsWithNoTitleResponse",
+          "messageName": "ListPostsWithNoTitleResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "listPostsWithNoTitleResponse",
+          "messageName": "ListPostsWithNoTitleResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "listPostsWithNoTitleResponse",
+          "messageName": "ListPostsWithNoTitleResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"

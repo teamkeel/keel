@@ -235,28 +235,28 @@
       "name": "opAResponse",
       "fields": [
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "f1",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
           }
         },
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
           }
         },
         {
-          "messageName": "opAResponse",
+          "messageName": "OpAResponse",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
