@@ -50,6 +50,26 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	return scm.proto
 }
 
+// Adds a proto message representing the response type of a built in operation to the schema messages
+// This will just be the fields of the model
+func (scm *Builder) makeActionResponseMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
+	fs := query.ModelFields(model)
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: fmt.Sprintf("%sResponse", action.Name.Value),
+		Fields: lo.Map(fs, func(f *parser.FieldNode, _ int) *proto.MessageField {
+			return &proto.MessageField{
+				Name:        f.Name.Value,
+				MessageName: fmt.Sprintf("%sResponse", action.Name.Value),
+				Optional:    f.Optional,
+				Type: &proto.TypeInfo{
+					Type: scm.parserTypeToProtoType(f.Type),
+				},
+			}
+		}),
+	})
+}
+
 // Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
 func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
 	switch action.Type.Value {
@@ -494,16 +514,18 @@ func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelNa
 
 func (scm *Builder) makeOperation(parserFunction *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
-		ModelName:        modelName,
-		InputMessageName: fmt.Sprintf("%sInput", strcase.ToCamel(parserFunction.Name.Value)),
-		Name:             parserFunction.Name.Value,
-		Implementation:   impl,
-		Type:             scm.mapToOperationType(parserFunction.Type.Value),
+		ModelName:           modelName,
+		InputMessageName:    fmt.Sprintf("%sInput", strcase.ToCamel(parserFunction.Name.Value)),
+		ResponseMessageName: fmt.Sprintf("%sResponse", strcase.ToCamel(parserFunction.Name.Value)),
+		Name:                parserFunction.Name.Value,
+		Implementation:      impl,
+		Type:                scm.mapToOperationType(parserFunction.Type.Value),
 	}
 
 	model := query.Model(scm.asts, modelName)
 
 	scm.makeActionInputMessages(model, parserFunction, impl)
+	scm.makeActionResponseMessages(model, parserFunction, impl)
 
 	for _, input := range parserFunction.Inputs {
 		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_READ, impl)

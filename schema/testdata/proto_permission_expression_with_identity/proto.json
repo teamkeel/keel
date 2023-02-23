@@ -70,7 +70,8 @@
               "source": "account.identity = ctx.identity"
             }
           ],
-          "inputMessageName": "CreateAccountInput"
+          "inputMessageName": "CreateAccountInput",
+          "responseMessageName": "CreateAccountResponse"
         }
       ],
       "permissions": [
@@ -187,6 +188,48 @@
   "messages": [
     {
       "name": "CreateAccountInput"
+    },
+    {
+      "name": "createAccountResponse",
+      "fields": [
+        {
+          "messageName": "createAccountResponse",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createAccountResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createAccountResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createAccountResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createAccountResponse",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        }
+      ]
     },
     {
       "name": "EmailPasswordInput",

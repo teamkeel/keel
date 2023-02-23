@@ -69,7 +69,8 @@
               "source": "post.views += 1"
             }
           ],
-          "inputMessageName": "BoostViewsInput"
+          "inputMessageName": "BoostViewsInput",
+          "responseMessageName": "BoostViewsResponse"
         }
       ]
     },
@@ -212,6 +213,39 @@
             "messageName": "BoostViewsValuesInput"
           },
           "optional": true
+        }
+      ]
+    },
+    {
+      "name": "boostViewsResponse",
+      "fields": [
+        {
+          "messageName": "boostViewsResponse",
+          "name": "views",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "messageName": "boostViewsResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "boostViewsResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "boostViewsResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },

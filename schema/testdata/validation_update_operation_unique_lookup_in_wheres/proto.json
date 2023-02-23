@@ -75,7 +75,8 @@
               "source": "myModel.code == explicitCode"
             }
           ],
-          "inputMessageName": "UpdateMyModelInput"
+          "inputMessageName": "UpdateMyModelInput",
+          "responseMessageName": "UpdateMyModelResponse"
         }
       ]
     },
@@ -213,6 +214,46 @@
             "messageName": "UpdateMyModelValuesInput"
           },
           "optional": true
+        }
+      ]
+    },
+    {
+      "name": "updateMyModelResponse",
+      "fields": [
+        {
+          "messageName": "updateMyModelResponse",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "updateMyModelResponse",
+          "name": "code",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "updateMyModelResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "updateMyModelResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "updateMyModelResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },

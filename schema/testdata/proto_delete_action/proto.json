@@ -57,7 +57,8 @@
               ]
             }
           ],
-          "inputMessageName": "DeletePersonInput"
+          "inputMessageName": "DeletePersonInput",
+          "responseMessageName": "DeletePersonResponse"
         }
       ]
     },
@@ -175,6 +176,32 @@
           "target": [
             "id"
           ]
+        }
+      ]
+    },
+    {
+      "name": "deletePersonResponse",
+      "fields": [
+        {
+          "messageName": "deletePersonResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "deletePersonResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "deletePersonResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },

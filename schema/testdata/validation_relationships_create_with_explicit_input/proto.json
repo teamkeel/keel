@@ -123,7 +123,8 @@
               "source": "childModel.parentOptionalId = explicitParentId"
             }
           ],
-          "inputMessageName": "CreateChild1Input"
+          "inputMessageName": "CreateChild1Input",
+          "responseMessageName": "CreateChild1Response"
         },
         {
           "modelName": "ChildModel",
@@ -163,7 +164,8 @@
               "source": "childModel.parentOptionalId = childModel.parentId"
             }
           ],
-          "inputMessageName": "CreateChild2Input"
+          "inputMessageName": "CreateChild2Input",
+          "responseMessageName": "CreateChild2Response"
         },
         {
           "modelName": "ChildModel",
@@ -200,7 +202,8 @@
               "source": "childModel.parentId = explicitParentId"
             }
           ],
-          "inputMessageName": "CreateChild3Input"
+          "inputMessageName": "CreateChild3Input",
+          "responseMessageName": "CreateChild3Response"
         }
       ]
     },
@@ -372,6 +375,69 @@
       ]
     },
     {
+      "name": "createChild1Response",
+      "fields": [
+        {
+          "messageName": "createChild1Response",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "createChild1Response",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "createChild1Response",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createChild1Response",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createChild1Response",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createChild1Response",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createChild1Response",
+          "name": "parentId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createChild1Response",
+          "name": "parentOptionalId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "CreateChild2Input",
       "fields": [
         {
@@ -396,6 +462,69 @@
       ]
     },
     {
+      "name": "createChild2Response",
+      "fields": [
+        {
+          "messageName": "createChild2Response",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "createChild2Response",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "createChild2Response",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createChild2Response",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createChild2Response",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createChild2Response",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createChild2Response",
+          "name": "parentId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createChild2Response",
+          "name": "parentOptionalId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "CreateChild3Input",
       "fields": [
         {
@@ -416,6 +545,69 @@
           "type": {
             "type": "TYPE_ID"
           }
+        }
+      ]
+    },
+    {
+      "name": "createChild3Response",
+      "fields": [
+        {
+          "messageName": "createChild3Response",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "createChild3Response",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "createChild3Response",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createChild3Response",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createChild3Response",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createChild3Response",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createChild3Response",
+          "name": "parentId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createChild3Response",
+          "name": "parentOptionalId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
         }
       ]
     },

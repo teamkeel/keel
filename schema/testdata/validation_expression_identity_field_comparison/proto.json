@@ -257,7 +257,8 @@
               }
             }
           ],
-          "inputMessageName": "CreatePostInput"
+          "inputMessageName": "CreatePostInput",
+          "responseMessageName": "CreatePostResponse"
         }
       ]
     },
@@ -401,6 +402,71 @@
           "target": [
             "owner"
           ]
+        }
+      ]
+    },
+    {
+      "name": "createPostResponse",
+      "fields": [
+        {
+          "messageName": "createPostResponse",
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "owner",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "publisher",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "ownerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "publisherId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
         }
       ]
     },

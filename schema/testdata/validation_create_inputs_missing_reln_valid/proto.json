@@ -141,7 +141,8 @@
               ]
             }
           ],
-          "inputMessageName": "CreatePostAInput"
+          "inputMessageName": "CreatePostAInput",
+          "responseMessageName": "CreatePostAResponse"
         },
         {
           "modelName": "Post",
@@ -179,7 +180,8 @@
               ]
             }
           ],
-          "inputMessageName": "CreatePostBInput"
+          "inputMessageName": "CreatePostBInput",
+          "responseMessageName": "CreatePostBResponse"
         },
         {
           "modelName": "Post",
@@ -216,7 +218,8 @@
               "source": "post.authorId = someAuthorId"
             }
           ],
-          "inputMessageName": "CreatePostCInput"
+          "inputMessageName": "CreatePostCInput",
+          "responseMessageName": "CreatePostCResponse"
         }
       ]
     },
@@ -350,6 +353,53 @@
       ]
     },
     {
+      "name": "createPostAResponse",
+      "fields": [
+        {
+          "messageName": "createPostAResponse",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createPostAResponse",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "createPostAResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPostAResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostAResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostAResponse",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
       "name": "CreatePostBInput",
       "fields": [
         {
@@ -380,6 +430,53 @@
       ]
     },
     {
+      "name": "createPostBResponse",
+      "fields": [
+        {
+          "messageName": "createPostBResponse",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createPostBResponse",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "createPostBResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPostBResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostBResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostBResponse",
+          "name": "authorId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
       "name": "CreatePostCInput",
       "fields": [
         {
@@ -397,6 +494,53 @@
         {
           "messageName": "CreatePostCInput",
           "name": "someAuthorId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "createPostCResponse",
+      "fields": [
+        {
+          "messageName": "createPostCResponse",
+          "name": "content",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createPostCResponse",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "createPostCResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPostCResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostCResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostCResponse",
+          "name": "authorId",
           "type": {
             "type": "TYPE_ID"
           }

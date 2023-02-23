@@ -88,7 +88,8 @@
               }
             }
           ],
-          "inputMessageName": "CreatePostInput"
+          "inputMessageName": "CreatePostInput",
+          "responseMessageName": "CreatePostResponse"
         }
       ]
     },
@@ -207,6 +208,48 @@
           "target": [
             "identity"
           ]
+        }
+      ]
+    },
+    {
+      "name": "createPostResponse",
+      "fields": [
+        {
+          "messageName": "createPostResponse",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPostResponse",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
         }
       ]
     },

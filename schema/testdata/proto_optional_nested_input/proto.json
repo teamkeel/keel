@@ -122,7 +122,8 @@
               ]
             }
           ],
-          "inputMessageName": "ListByCompanyInput"
+          "inputMessageName": "ListByCompanyInput",
+          "responseMessageName": "ListByCompanyResponse"
         },
         {
           "modelName": "Person",
@@ -161,7 +162,8 @@
               ]
             }
           ],
-          "inputMessageName": "ListByPreviousCompanyInput"
+          "inputMessageName": "ListByPreviousCompanyInput",
+          "responseMessageName": "ListByPreviousCompanyResponse"
         }
       ]
     },
@@ -390,6 +392,69 @@
       ]
     },
     {
+      "name": "listByCompanyResponse",
+      "fields": [
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "firstName",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "company",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "previousCompany",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "companyId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listByCompanyResponse",
+          "name": "previousCompanyId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "ListByPreviousCompanyWhereInput",
       "fields": [
         {
@@ -459,6 +524,69 @@
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "listByPreviousCompanyResponse",
+      "fields": [
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "firstName",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "company",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "previousCompany",
+          "type": {
+            "type": "TYPE_MODEL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "companyId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listByPreviousCompanyResponse",
+          "name": "previousCompanyId",
+          "type": {
+            "type": "TYPE_ID"
           },
           "optional": true
         }

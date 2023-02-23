@@ -75,7 +75,8 @@
               "source": "myModel.code == explicitCode"
             }
           ],
-          "inputMessageName": "GetMyModelInput"
+          "inputMessageName": "GetMyModelInput",
+          "responseMessageName": "GetMyModelResponse"
         }
       ]
     },
@@ -187,6 +188,46 @@
           "name": "explicitCode",
           "type": {
             "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "getMyModelResponse",
+      "fields": [
+        {
+          "messageName": "getMyModelResponse",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "getMyModelResponse",
+          "name": "code",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "getMyModelResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "getMyModelResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "getMyModelResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         }
       ]

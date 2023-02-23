@@ -86,7 +86,8 @@
               ]
             }
           ],
-          "inputMessageName": "CreatePersonInput"
+          "inputMessageName": "CreatePersonInput",
+          "responseMessageName": "CreatePersonResponse"
         },
         {
           "modelName": "Person",
@@ -137,7 +138,8 @@
               ]
             }
           ],
-          "inputMessageName": "UpdatePersonInput"
+          "inputMessageName": "UpdatePersonInput",
+          "responseMessageName": "UpdatePersonResponse"
         },
         {
           "modelName": "Person",
@@ -174,7 +176,8 @@
               ]
             }
           ],
-          "inputMessageName": "ListPersonInput"
+          "inputMessageName": "ListPersonInput",
+          "responseMessageName": "ListPersonResponse"
         }
       ]
     },
@@ -309,6 +312,47 @@
       ]
     },
     {
+      "name": "createPersonResponse",
+      "fields": [
+        {
+          "messageName": "createPersonResponse",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "preferredName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        }
+      ]
+    },
+    {
       "name": "UpdatePersonWhereInput",
       "fields": [
         {
@@ -372,6 +416,47 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "UpdatePersonValuesInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updatePersonResponse",
+      "fields": [
+        {
+          "messageName": "updatePersonResponse",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "updatePersonResponse",
+          "name": "preferredName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "updatePersonResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "updatePersonResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "updatePersonResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         }
       ]
@@ -444,6 +529,47 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        }
+      ]
+    },
+    {
+      "name": "listPersonResponse",
+      "fields": [
+        {
+          "messageName": "listPersonResponse",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listPersonResponse",
+          "name": "preferredName",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "listPersonResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listPersonResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listPersonResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },

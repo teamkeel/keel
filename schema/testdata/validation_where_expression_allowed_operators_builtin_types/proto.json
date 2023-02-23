@@ -1,573 +1,865 @@
 {
-  "models":  [
+  "models": [
     {
-      "name":  "Post",
-      "fields":  [
+      "name": "Post",
+      "fields": [
         {
-          "modelName":  "Post",
-          "name":  "text",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Post",
+          "name": "text",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "number",
-          "type":  {
-            "type":  "TYPE_INT"
+          "modelName": "Post",
+          "name": "number",
+          "type": {
+            "type": "TYPE_INT"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "bool",
-          "type":  {
-            "type":  "TYPE_BOOL"
+          "modelName": "Post",
+          "name": "bool",
+          "type": {
+            "type": "TYPE_BOOL"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "identity",
-          "type":  {
-            "type":  "TYPE_MODEL",
-            "modelName":  "Identity"
+          "modelName": "Post",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
           },
-          "foreignKeyFieldName":  "identityId"
+          "foreignKeyFieldName": "identityId"
         },
         {
-          "modelName":  "Post",
-          "name":  "date",
-          "type":  {
-            "type":  "TYPE_DATE"
+          "modelName": "Post",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "time",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "time",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "enum",
-          "type":  {
-            "type":  "TYPE_ENUM",
-            "enumName":  "Category"
+          "modelName": "Post",
+          "name": "enum",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Category"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "text2",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Post",
+          "name": "text2",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "number2",
-          "type":  {
-            "type":  "TYPE_INT"
+          "modelName": "Post",
+          "name": "number2",
+          "type": {
+            "type": "TYPE_INT"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "bool2",
-          "type":  {
-            "type":  "TYPE_BOOL"
+          "modelName": "Post",
+          "name": "bool2",
+          "type": {
+            "type": "TYPE_BOOL"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "identity2",
-          "type":  {
-            "type":  "TYPE_MODEL",
-            "modelName":  "Identity"
+          "modelName": "Post",
+          "name": "identity2",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Identity"
           },
-          "foreignKeyFieldName":  "identity2Id"
+          "foreignKeyFieldName": "identity2Id"
         },
         {
-          "modelName":  "Post",
-          "name":  "date2",
-          "type":  {
-            "type":  "TYPE_DATE"
+          "modelName": "Post",
+          "name": "date2",
+          "type": {
+            "type": "TYPE_DATE"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "time2",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "time2",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "enum2",
-          "type":  {
-            "type":  "TYPE_ENUM",
-            "enumName":  "Category"
+          "modelName": "Post",
+          "name": "enum2",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Category"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "textArray",
-          "type":  {
-            "type":  "TYPE_STRING",
-            "repeated":  true
+          "modelName": "Post",
+          "name": "textArray",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Post",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Post",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "identityId",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Post",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "foreignKeyInfo":  {
-            "relatedModelName":  "Identity",
-            "relatedModelField":  "id"
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
           }
         },
         {
-          "modelName":  "Post",
-          "name":  "identity2Id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Post",
+          "name": "identity2Id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "foreignKeyInfo":  {
-            "relatedModelName":  "Identity",
-            "relatedModelField":  "id"
+          "foreignKeyInfo": {
+            "relatedModelName": "Identity",
+            "relatedModelField": "id"
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Post",
-          "name":  "listWithLiterals",
-          "type":  "OPERATION_TYPE_LIST",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "whereExpressions":  [
+          "modelName": "Post",
+          "name": "listWithLiterals",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
             {
-              "source":  "post.text == \"literal\""
+              "source": "post.text == \"literal\""
             },
             {
-              "source":  "post.text != \"literal\""
+              "source": "post.text != \"literal\""
             },
             {
-              "source":  "post.number > 0"
+              "source": "post.number > 0"
             },
             {
-              "source":  "post.number < 0"
+              "source": "post.number < 0"
             },
             {
-              "source":  "post.number >= 0"
+              "source": "post.number >= 0"
             },
             {
-              "source":  "post.number <= 0"
+              "source": "post.number <= 0"
             },
             {
-              "source":  "post.number == 0"
+              "source": "post.number == 0"
             },
             {
-              "source":  "post.number != 0"
+              "source": "post.number != 0"
             },
             {
-              "source":  "post.bool == true"
+              "source": "post.bool == true"
             },
             {
-              "source":  "post.bool != true"
+              "source": "post.bool != true"
             },
             {
-              "source":  "post.bool == false"
+              "source": "post.bool == false"
             },
             {
-              "source":  "post.bool != false"
+              "source": "post.bool != false"
             },
             {
-              "source":  "post.enum == Category.Option1"
+              "source": "post.enum == Category.Option1"
             },
             {
-              "source":  "post.enum != Category.Option1"
+              "source": "post.enum != Category.Option1"
             },
             {
-              "source":  "post.text in [\"one\", \"two\"]"
+              "source": "post.text in [\"one\", \"two\"]"
             }
           ],
-          "inputMessageName":  "ListWithLiteralsInput"
+          "inputMessageName": "ListWithLiteralsInput",
+          "responseMessageName": "ListWithLiteralsResponse"
         },
         {
-          "modelName":  "Post",
-          "name":  "listWithFields",
-          "type":  "OPERATION_TYPE_LIST",
-          "implementation":  "OPERATION_IMPLEMENTATION_AUTO",
-          "whereExpressions":  [
+          "modelName": "Post",
+          "name": "listWithFields",
+          "type": "OPERATION_TYPE_LIST",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "whereExpressions": [
             {
-              "source":  "post.text == post.text2"
+              "source": "post.text == post.text2"
             },
             {
-              "source":  "post.text != post.text2"
+              "source": "post.text != post.text2"
             },
             {
-              "source":  "post.number > post.number2"
+              "source": "post.number > post.number2"
             },
             {
-              "source":  "post.number < post.number2"
+              "source": "post.number < post.number2"
             },
             {
-              "source":  "post.number >= post.number2"
+              "source": "post.number >= post.number2"
             },
             {
-              "source":  "post.number <= post.number2"
+              "source": "post.number <= post.number2"
             },
             {
-              "source":  "post.number == post.number2"
+              "source": "post.number == post.number2"
             },
             {
-              "source":  "post.number != post.number2"
+              "source": "post.number != post.number2"
             },
             {
-              "source":  "post.enum == post.enum2"
+              "source": "post.enum == post.enum2"
             },
             {
-              "source":  "post.enum != post.enum2"
+              "source": "post.enum != post.enum2"
             },
             {
-              "source":  "post.date > post.date2"
+              "source": "post.date > post.date2"
             },
             {
-              "source":  "post.date < post.date2"
+              "source": "post.date < post.date2"
             },
             {
-              "source":  "post.date >= post.date2"
+              "source": "post.date >= post.date2"
             },
             {
-              "source":  "post.date <= post.date2"
+              "source": "post.date <= post.date2"
             },
             {
-              "source":  "post.date == post.date2"
+              "source": "post.date == post.date2"
             },
             {
-              "source":  "post.date != post.date2"
+              "source": "post.date != post.date2"
             },
             {
-              "source":  "post.time > post.time2"
+              "source": "post.time > post.time2"
             },
             {
-              "source":  "post.time < post.time2"
+              "source": "post.time < post.time2"
             },
             {
-              "source":  "post.time >= post.time2"
+              "source": "post.time >= post.time2"
             },
             {
-              "source":  "post.time <= post.time2"
+              "source": "post.time <= post.time2"
             },
             {
-              "source":  "post.time == post.time2"
+              "source": "post.time == post.time2"
             },
             {
-              "source":  "post.time != post.time2"
+              "source": "post.time != post.time2"
             },
             {
-              "source":  "post.identity == post.identity2"
+              "source": "post.identity == post.identity2"
             },
             {
-              "source":  "post.identity != post.identity2"
+              "source": "post.identity != post.identity2"
             },
             {
-              "source":  "post.text in post.textArray"
+              "source": "post.text in post.textArray"
             }
           ],
-          "inputMessageName":  "ListWithFieldsInput"
+          "inputMessageName": "ListWithFieldsInput",
+          "responseMessageName": "ListWithFieldsResponse"
         }
       ]
     },
     {
-      "name":  "Identity",
-      "fields":  [
+      "name": "Identity",
+      "fields": [
         {
-          "modelName":  "Identity",
-          "name":  "email",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
           },
-          "unique":  true
+          "unique": true
         },
         {
-          "modelName":  "Identity",
-          "name":  "password",
-          "type":  {
-            "type":  "TYPE_PASSWORD"
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "id",
-          "type":  {
-            "type":  "TYPE_ID"
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
           },
-          "primaryKey":  true,
-          "defaultValue":  {
-            "useZeroValue":  true
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "createdAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         },
         {
-          "modelName":  "Identity",
-          "name":  "updatedAt",
-          "type":  {
-            "type":  "TYPE_DATETIME"
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           },
-          "defaultValue":  {
-            "useZeroValue":  true
+          "defaultValue": {
+            "useZeroValue": true
           }
         }
       ],
-      "operations":  [
+      "operations": [
         {
-          "modelName":  "Identity",
-          "name":  "authenticate",
-          "type":  "OPERATION_TYPE_WRITE",
-          "implementation":  "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs":  [
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputs": [
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "createIfNotExists",
-              "type":  {
-                "type":  "TYPE_BOOL"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "createIfNotExists",
+              "type": {
+                "type": "TYPE_BOOL"
               },
-              "optional":  true
+              "optional": true
             },
             {
-              "modelName":  "Identity",
-              "operationName":  "authenticate",
-              "name":  "emailPassword",
-              "type":  {
-                "type":  "TYPE_OBJECT"
+              "modelName": "Identity",
+              "operationName": "authenticate",
+              "name": "emailPassword",
+              "type": {
+                "type": "TYPE_OBJECT"
               },
-              "inputs":  [
+              "inputs": [
                 {
-                  "modelName":  "Identity",
-                  "operationName":  "authenticate",
-                  "name":  "email",
-                  "type":  {
-                    "type":  "TYPE_STRING"
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "email",
+                  "type": {
+                    "type": "TYPE_STRING"
                   }
                 },
                 {
-                  "modelName":  "Identity",
-                  "operationName":  "authenticate",
-                  "name":  "password",
-                  "type":  {
-                    "type":  "TYPE_STRING"
+                  "modelName": "Identity",
+                  "operationName": "authenticate",
+                  "name": "password",
+                  "type": {
+                    "type": "TYPE_STRING"
                   }
                 }
               ]
             }
           ],
-          "inputMessageName":  "AuthenticateInput",
-          "responseMessageName":  "AuthenticateResponse"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         }
       ]
     }
   ],
-  "enums":  [
+  "enums": [
     {
-      "name":  "Category",
-      "values":  [
+      "name": "Category",
+      "values": [
         {
-          "name":  "Option1"
+          "name": "Option1"
         },
         {
-          "name":  "Option2"
+          "name": "Option2"
         }
       ]
     }
   ],
-  "messages":  [
+  "messages": [
     {
-      "name":  "ListWithLiteralsWhereInput"
+      "name": "ListWithLiteralsWhereInput"
     },
     {
-      "name":  "ListWithLiteralsInput",
-      "fields":  [
+      "name": "ListWithLiteralsInput",
+      "fields": [
         {
-          "messageName":  "ListWithLiteralsInput",
-          "name":  "where",
-          "type":  {
-            "type":  "TYPE_MESSAGE",
-            "messageName":  "ListWithLiteralsWhereInput"
+          "messageName": "ListWithLiteralsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListWithLiteralsWhereInput"
           },
-          "optional":  true
+          "optional": true
         },
         {
-          "name":  "first",
-          "type":  {
-            "type":  "TYPE_INT"
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
           },
-          "optional":  true
+          "optional": true
         },
         {
-          "name":  "after",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
           },
-          "optional":  true
+          "optional": true
         },
         {
-          "name":  "last",
-          "type":  {
-            "type":  "TYPE_INT"
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
           },
-          "optional":  true
+          "optional": true
         },
         {
-          "name":  "before",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
           },
-          "optional":  true
+          "optional": true
         }
       ]
     },
     {
-      "name":  "ListWithFieldsWhereInput"
-    },
-    {
-      "name":  "ListWithFieldsInput",
-      "fields":  [
+      "name": "listWithLiteralsResponse",
+      "fields": [
         {
-          "messageName":  "ListWithFieldsInput",
-          "name":  "where",
-          "type":  {
-            "type":  "TYPE_MESSAGE",
-            "messageName":  "ListWithFieldsWhereInput"
-          },
-          "optional":  true
+          "messageName": "listWithLiteralsResponse",
+          "name": "text",
+          "type": {
+            "type": "TYPE_STRING"
+          }
         },
         {
-          "name":  "first",
-          "type":  {
-            "type":  "TYPE_INT"
-          },
-          "optional":  true
+          "messageName": "listWithLiteralsResponse",
+          "name": "number",
+          "type": {
+            "type": "TYPE_INT"
+          }
         },
         {
-          "name":  "after",
-          "type":  {
-            "type":  "TYPE_STRING"
-          },
-          "optional":  true
+          "messageName": "listWithLiteralsResponse",
+          "name": "bool",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
         },
         {
-          "name":  "last",
-          "type":  {
-            "type":  "TYPE_INT"
-          },
-          "optional":  true
+          "messageName": "listWithLiteralsResponse",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
         },
         {
-          "name":  "before",
-          "type":  {
-            "type":  "TYPE_STRING"
-          },
-          "optional":  true
+          "messageName": "listWithLiteralsResponse",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "time",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "enum",
+          "type": {
+            "type": "TYPE_ENUM"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "text2",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "number2",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "bool2",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "identity2",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "date2",
+          "type": {
+            "type": "TYPE_DATE"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "time2",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "enum2",
+          "type": {
+            "type": "TYPE_ENUM"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "textArray",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listWithLiteralsResponse",
+          "name": "identity2Id",
+          "type": {
+            "type": "TYPE_ID"
+          }
         }
       ]
     },
     {
-      "name":  "EmailPasswordInput",
-      "fields":  [
-        {
-          "messageName":  "EmailPasswordInput",
-          "name":  "email",
-          "type":  {
-            "type":  "TYPE_STRING"
-          }
-        },
-        {
-          "messageName":  "EmailPasswordInput",
-          "name":  "password",
-          "type":  {
-            "type":  "TYPE_STRING"
-          }
-        }
-      ]
+      "name": "ListWithFieldsWhereInput"
     },
     {
-      "name":  "AuthenticateInput",
-      "fields":  [
+      "name": "ListWithFieldsInput",
+      "fields": [
         {
-          "messageName":  "AuthenticateInput",
-          "name":  "createIfNotExists",
-          "type":  {
-            "type":  "TYPE_BOOL"
+          "messageName": "ListWithFieldsInput",
+          "name": "where",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "ListWithFieldsWhereInput"
           },
-          "optional":  true
+          "optional": true
         },
         {
-          "messageName":  "AuthenticateInput",
-          "name":  "emailPassword",
-          "type":  {
-            "type":  "TYPE_MESSAGE",
-            "messageName":  "EmailPasswordInput"
+          "name": "first",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "name": "after",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "last",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "name": "before",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "listWithFieldsResponse",
+      "fields": [
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "text",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "number",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "bool",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "identity",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "time",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "enum",
+          "type": {
+            "type": "TYPE_ENUM"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "text2",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "number2",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "bool2",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "identity2",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "date2",
+          "type": {
+            "type": "TYPE_DATE"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "time2",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "enum2",
+          "type": {
+            "type": "TYPE_ENUM"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "textArray",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "identityId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "listWithFieldsResponse",
+          "name": "identity2Id",
+          "type": {
+            "type": "TYPE_ID"
           }
         }
       ]
     },
     {
-      "name":  "AuthenticateResponse",
-      "fields":  [
+      "name": "EmailPasswordInput",
+      "fields": [
         {
-          "messageName":  "AuthenticateResponse",
-          "name":  "identityCreated",
-          "type":  {
-            "type":  "TYPE_BOOL"
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
           }
         },
         {
-          "messageName":  "AuthenticateResponse",
-          "name":  "token",
-          "type":  {
-            "type":  "TYPE_STRING"
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
           }
         }
       ]

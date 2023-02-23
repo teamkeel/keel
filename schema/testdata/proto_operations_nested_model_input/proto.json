@@ -87,7 +87,8 @@
               ]
             }
           ],
-          "inputMessageName": "SearchFeesInput"
+          "inputMessageName": "SearchFeesInput",
+          "responseMessageName": "SearchFeesResponse"
         }
       ]
     },
@@ -297,7 +298,8 @@
               ]
             }
           ],
-          "inputMessageName": "SearchFumsInput"
+          "inputMessageName": "SearchFumsInput",
+          "responseMessageName": "SearchFumsResponse"
         }
       ]
     },
@@ -463,6 +465,53 @@
       ]
     },
     {
+      "name": "searchFeesResponse",
+      "fields": [
+        {
+          "messageName": "searchFeesResponse",
+          "name": "theFi",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "searchFeesResponse",
+          "name": "theName",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "searchFeesResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "searchFeesResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "searchFeesResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "searchFeesResponse",
+          "name": "theFiId",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        }
+      ]
+    },
+    {
       "name": "SearchFumsWhereInput",
       "fields": [
         {
@@ -520,6 +569,46 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        }
+      ]
+    },
+    {
+      "name": "searchFumsResponse",
+      "fields": [
+        {
+          "messageName": "searchFumsResponse",
+          "name": "theFos",
+          "type": {
+            "type": "TYPE_MODEL"
+          }
+        },
+        {
+          "messageName": "searchFumsResponse",
+          "name": "theName",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "searchFumsResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "searchFumsResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "searchFumsResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },

@@ -53,7 +53,8 @@
               "source": "apiKey.key = ctx.headers.X_API_TOKEN"
             }
           ],
-          "inputMessageName": "CreateApiKeyInput"
+          "inputMessageName": "CreateApiKeyInput",
+          "responseMessageName": "CreateApiKeyResponse"
         }
       ]
     },
@@ -159,6 +160,39 @@
   "messages": [
     {
       "name": "CreateApiKeyInput"
+    },
+    {
+      "name": "createApiKeyResponse",
+      "fields": [
+        {
+          "messageName": "createApiKeyResponse",
+          "name": "key",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createApiKeyResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createApiKeyResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createApiKeyResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        }
+      ]
     },
     {
       "name": "EmailPasswordInput",

@@ -69,7 +69,8 @@
               "source": "person.id == personId"
             }
           ],
-          "inputMessageName": "GetPersonInput"
+          "inputMessageName": "GetPersonInput",
+          "responseMessageName": "GetPersonResponse"
         },
         {
           "modelName": "Person",
@@ -92,7 +93,8 @@
               "source": "person.name = name"
             }
           ],
-          "inputMessageName": "CreatePersonInput"
+          "inputMessageName": "CreatePersonInput",
+          "responseMessageName": "CreatePersonResponse"
         }
       ]
     },
@@ -214,6 +216,39 @@
       ]
     },
     {
+      "name": "getPersonResponse",
+      "fields": [
+        {
+          "messageName": "getPersonResponse",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "getPersonResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "getPersonResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "getPersonResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        }
+      ]
+    },
+    {
       "name": "CreatePersonInput",
       "fields": [
         {
@@ -221,6 +256,39 @@
           "name": "name",
           "type": {
             "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "createPersonResponse",
+      "fields": [
+        {
+          "messageName": "createPersonResponse",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         }
       ]

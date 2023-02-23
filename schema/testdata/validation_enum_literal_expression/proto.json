@@ -85,7 +85,8 @@
               }
             }
           ],
-          "inputMessageName": "EnumFailedExpressionsInput"
+          "inputMessageName": "EnumFailedExpressionsInput",
+          "responseMessageName": "EnumFailedExpressionsResponse"
         }
       ]
     },
@@ -224,6 +225,39 @@
           "type": {
             "type": "TYPE_ENUM",
             "enumName": "PostType"
+          }
+        }
+      ]
+    },
+    {
+      "name": "enumFailedExpressionsResponse",
+      "fields": [
+        {
+          "messageName": "enumFailedExpressionsResponse",
+          "name": "type",
+          "type": {
+            "type": "TYPE_ENUM"
+          }
+        },
+        {
+          "messageName": "enumFailedExpressionsResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "enumFailedExpressionsResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "enumFailedExpressionsResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
           }
         }
       ]

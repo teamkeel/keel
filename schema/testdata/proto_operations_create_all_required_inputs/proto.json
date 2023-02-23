@@ -72,7 +72,8 @@
               ]
             }
           ],
-          "inputMessageName": "CreatePersonInput"
+          "inputMessageName": "CreatePersonInput",
+          "responseMessageName": "CreatePersonResponse"
         }
       ]
     },
@@ -190,6 +191,47 @@
           "target": [
             "name"
           ]
+        }
+      ]
+    },
+    {
+      "name": "createPersonResponse",
+      "fields": [
+        {
+          "messageName": "createPersonResponse",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "age",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "createPersonResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },

@@ -64,7 +64,8 @@
               ]
             }
           ],
-          "inputMessageName": "OpAInput"
+          "inputMessageName": "OpAInput",
+          "responseMessageName": "OpAResponse"
         },
         {
           "modelName": "Foo",
@@ -87,7 +88,8 @@
               ]
             }
           ],
-          "inputMessageName": "OpBInput"
+          "inputMessageName": "OpBInput",
+          "responseMessageName": "OpBResponse"
         },
         {
           "modelName": "Foo",
@@ -124,7 +126,8 @@
               ]
             }
           ],
-          "inputMessageName": "OpCInput"
+          "inputMessageName": "OpCInput",
+          "responseMessageName": "OpCResponse"
         },
         {
           "modelName": "Foo",
@@ -147,7 +150,8 @@
               ]
             }
           ],
-          "inputMessageName": "OpDInput"
+          "inputMessageName": "OpDInput",
+          "responseMessageName": "OpDResponse"
         }
       ]
     },
@@ -269,6 +273,39 @@
       ]
     },
     {
+      "name": "opAResponse",
+      "fields": [
+        {
+          "messageName": "opAResponse",
+          "name": "f1",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "opAResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "opAResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "opAResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        }
+      ]
+    },
+    {
       "name": "OpBWhereInput",
       "fields": [
         {
@@ -323,6 +360,39 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        }
+      ]
+    },
+    {
+      "name": "opBResponse",
+      "fields": [
+        {
+          "messageName": "opBResponse",
+          "name": "f1",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "opBResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "opBResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "opBResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },
@@ -382,6 +452,39 @@
       ]
     },
     {
+      "name": "opCResponse",
+      "fields": [
+        {
+          "messageName": "opCResponse",
+          "name": "f1",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "opCResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "opCResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "opCResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        }
+      ]
+    },
+    {
       "name": "OpDInput",
       "fields": [
         {
@@ -395,6 +498,39 @@
           "target": [
             "f1"
           ]
+        }
+      ]
+    },
+    {
+      "name": "opDResponse",
+      "fields": [
+        {
+          "messageName": "opDResponse",
+          "name": "f1",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "opDResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "opDResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "opDResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
         }
       ]
     },

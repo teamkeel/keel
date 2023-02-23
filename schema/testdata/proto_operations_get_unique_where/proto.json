@@ -54,7 +54,8 @@
               "source": "author.name == \"Bob\""
             }
           ],
-          "inputMessageName": "GetAuthorInput"
+          "inputMessageName": "GetAuthorInput",
+          "responseMessageName": "GetAuthorResponse"
         }
       ]
     },
@@ -160,6 +161,39 @@
   "messages": [
     {
       "name": "GetAuthorInput"
+    },
+    {
+      "name": "getAuthorResponse",
+      "fields": [
+        {
+          "messageName": "getAuthorResponse",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "getAuthorResponse",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          }
+        },
+        {
+          "messageName": "getAuthorResponse",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        },
+        {
+          "messageName": "getAuthorResponse",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          }
+        }
+      ]
     },
     {
       "name": "EmailPasswordInput",
