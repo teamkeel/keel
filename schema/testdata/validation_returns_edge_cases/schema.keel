@@ -1,0 +1,10 @@
+message Foo {
+  bar Text
+}
+
+model Person {
+  functions {
+    read getPersonWithMultipleReturns() returns(Foo, Any)
+    read getPersonWithLowercaseAny() returns(any)
+  }
+}
