@@ -1,0 +1,13 @@
+message Foo {
+  bar Text
+}
+
+model Person {
+  fields {
+    name Text
+  }
+
+  functions {
+    read getPerson(Foo, baz: Text) returns(Foo)
+  }
+}

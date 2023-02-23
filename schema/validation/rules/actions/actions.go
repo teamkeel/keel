@@ -591,11 +591,11 @@ func ValidOperationInputUsagesRule(asts []*parser.AST) (errs errorhandling.Valid
 		for _, operation := range query.ModelOperations(model) {
 			isFunction := false
 			for _, input := range operation.Inputs {
-				errs.AppendError(validateInputUsage(isFunction, asts, input, model, operation))
+				errs.AppendError(validateInputLabelUsage(isFunction, asts, input, model, operation))
 			}
 
 			for _, input := range operation.With {
-				errs.AppendError(validateInputUsage(isFunction, asts, input, model, operation))
+				errs.AppendError(validateInputLabelUsage(isFunction, asts, input, model, operation))
 			}
 		}
 	}
@@ -604,7 +604,7 @@ func ValidOperationInputUsagesRule(asts []*parser.AST) (errs errorhandling.Valid
 }
 
 // Validate that inputs with labels are used somewhere (within an expression in any of the child attributes)
-func validateInputUsage(
+func validateInputLabelUsage(
 	isFunction bool,
 	asts []*parser.AST,
 	input *parser.ActionInputNode,
@@ -745,24 +745,26 @@ func validateInputType(
 			)
 		}
 
-		if len(action.Inputs) > 0 && action.Inputs[0] == input {
-			// all good - message being used as input to function
+		firstInput := len(action.Inputs) > 0 && action.Inputs[0] == input
+		moreThanOneInput := len(action.Inputs) > 1
+		matchesMessage := msg != nil
+		readOrWrite := action.Type.Value == parser.ActionTypeRead || action.Type.Value == parser.ActionTypeWrite
+
+		switch true {
+		case firstInput && matchesMessage && !moreThanOneInput:
 			return nil
+		case readOrWrite && firstInput && matchesMessage && moreThanOneInput:
+			return errorhandling.NewValidationErrorWithDetails(
+				errorhandling.ActionInputError,
+				errorhandling.ErrorDetails{
+					Message: "'read' and `write' actions must receive exactly one message-based input",
+					Hint:    fmt.Sprintf("'%s' can be the only input to '%s'. Additional inputs are not permitted.", msg.Name.Value, action.Name.Value),
+				},
+				action.Inputs[1],
+			)
 		}
 
-		// todo: move the below to separate rule
-
-		// not allowed to have more than one message (return)
-		// example of error is "ThisIsNot" message here
-		// create createFoo(ThisIsValid, ThisIsNot)
-
-		return errorhandling.NewValidationErrorWithDetails(
-			errorhandling.ActionInputError,
-			errorhandling.ErrorDetails{
-				Message: "You cannot have multiple message-based inputs",
-			},
-			action.Inputs[1],
-		)
+		return nil
 	}
 
 	// If type cannot be resolved report error
