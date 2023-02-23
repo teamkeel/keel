@@ -1,0 +1,13 @@
+model Account {
+    fields {
+        authoredPosts Post[]
+        reviewedPosts Post[]
+    }
+}
+
+model Post {
+    fields {
+        author Account @relation(authoredPosts)
+        reviewer Account @relation(reviewedPosts)
+    }
+}

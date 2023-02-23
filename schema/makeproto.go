@@ -480,7 +480,47 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 		}
 	}
 
+	// If this is a HasMany relationship field - see if we can mark it with
+	// an explicit InverseFieldName - i.e. one defined by an @relation attribute.
+	if protoField.Type.Type == proto.Type_TYPE_MODEL && protoField.Type.Repeated {
+		scm.setExplicitInverseFieldName(parserField, protoField)
+	}
+
 	return protoField
+}
+
+// setExplicitInverseFieldName works on fields of type Model that are repeated. It looks to
+// see if the schema defines an explicit inverse relationship field for it, and when so, sets
+// this field's InverseFieldName property accordingly.
+func (scm *Builder) setExplicitInverseFieldName(thisParserField *parser.FieldNode, thisProtoField *proto.Field) {
+
+	// We have to look in the related model's fields, to see if any of them have an @relation
+	// attribute that refers back to this field.
+
+	nameOfRelatedModel := thisProtoField.Type.ModelName.Value
+	relatedModel := query.Model(scm.asts, nameOfRelatedModel)
+	for _, remoteField := range query.ModelFields(relatedModel) {
+		if !query.FieldHasAttribute(remoteField, parser.AttributeRelation) {
+			continue
+		}
+		relationAttr := query.FieldGetAttribute(remoteField, parser.AttributeRelation)
+		inverseFieldName := attributeFirstArgAsIdentifier(relationAttr)
+		if inverseFieldName == thisProtoField.Name {
+			// We've found the inverse.
+			thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
+			return
+		}
+	}
+}
+
+// attributeFirstArgAsIdentifier fishes out the identifier being held
+// by the first argument of the given attribute. It must only be called when
+// you know that it is well formed for that.
+func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) string {
+	expr := attr.Arguments[0].Expression
+	operand, _ := expr.ToValue()
+	theString := operand.Ident.Fragments[0].Fragment
+	return theString
 }
 
 func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {
@@ -781,6 +821,24 @@ func (scm *Builder) applyFieldAttributes(parserField *parser.FieldNode, protoFie
 				defaultValue.UseZeroValue = true
 			}
 			protoField.DefaultValue = defaultValue
+		case parser.AttributeRelation:
+			// We cannot process this field attribute here. But here is an explanation
+			// of why that is so - for future readers.
+			//
+			// This attribute (the @relation attribute) is placed one HasOne relation fields in the input schema -
+			// to specify a field in its related model that is its inverse. We decided this because
+			// it seems most intuitive for the user - given that to use 1:many relations at all,
+			// you HAVE TO HAVE the hasOne end.
+			//
+			// HOWEVER we want the InverseFieldName field property in the protobuf representation
+			// to live on the RELATED model's field, i.e. the repeated relationship field - NOT this field.
+			//
+			// The problem is that the related model might not even be present yet in the proto.Schema that is
+			// currently under construction - because the call-graph of the construction process builds the proto
+			// for each model in turn, and might not have reached the related model yet.
+			//
+			// INSTEAD we sort it all out when we reach hasMany fields at the other end of the inverse relation.
+			// See the call to setExplicitInverseFieldName() at the end of scm.makeField().
 		}
 	}
 }

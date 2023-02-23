@@ -2,7 +2,8 @@ model Post {
     fields {
         title Text
         isActive Boolean
-        theAuthor Author?
+        theAuthor Author? @relation(thePosts)
+        theReviewer Author? @relation(reviewedPosts)
     }
 
     operations {
@@ -47,7 +48,12 @@ model Author {
         name Text
         isActive Boolean
         thePosts Post[]
+        reviewedPosts Post[]
         thePublisher Publisher
+    }
+
+    operations {
+        list listReviewerByPostId(reviewedPosts.id)
     }
 
     @permission(
