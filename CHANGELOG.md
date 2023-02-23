@@ -1,3 +1,10 @@
+## [0.273.7](https://github.com/teamkeel/keel/compare/v0.273.6...v0.273.7) (2023-02-23)
+
+
+### Bug Fixes
+
+* go_package option in proto file was wrong ([dead3d3](https://github.com/teamkeel/keel/commit/dead3d31f0a0bf0ba35ceafaa66fa3701d814c28))
+
 ## [0.273.6](https://github.com/teamkeel/keel/compare/v0.273.5...v0.273.6) (2023-02-21)
 
 
