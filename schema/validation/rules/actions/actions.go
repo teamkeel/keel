@@ -66,6 +66,33 @@ func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 					)
 					continue
 				}
+
+				// Validate multiple values aren't specified in a returns statement
+				if len(function.Returns) > 1 {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.TypeError,
+							errorhandling.ErrorDetails{
+								Message: "Only one type can be specified in a 'returns' statement",
+							},
+							function.Type,
+						),
+					)
+				}
+
+				// Validate that 'any' (lowercased) is not valid
+				if function.Returns[0].Type.Fragments[0].Fragment == "any" {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.TypeError,
+							errorhandling.ErrorDetails{
+								Message: "'any' is not a valid return type",
+								Hint:    "Did you mean 'Any'?",
+							},
+							function.Type,
+						),
+					)
+				}
 			}
 
 			if !hasReturns && (function.Type.Value == parser.ActionTypeRead || function.Type.Value == parser.ActionTypeWrite) {

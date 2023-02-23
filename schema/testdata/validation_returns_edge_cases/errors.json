@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "Only one type can be specified in a 'returns' statement",
+      "hint": "",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_returns_edge_cases/schema.keel",
+        "offset": 61,
+        "line": 7,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_returns_edge_cases/schema.keel",
+        "offset": 65,
+        "line": 7,
+        "column": 9
+      }
+    },
+    {
+      "message": "'any' is not a valid return type",
+      "hint": "Did you mean 'Any'?",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_returns_edge_cases/schema.keel",
+        "offset": 119,
+        "line": 8,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_returns_edge_cases/schema.keel",
+        "offset": 123,
+        "line": 8,
+        "column": 9
+      }
+    }
+  ]
+}
