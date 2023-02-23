@@ -66,7 +66,7 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 		return nil, err
 	}
 
-	database, err := db.LocalFromConnection(ctx, testDB)
+	database, err := db.NewFromConnection(ctx, testDB)
 	if err != nil {
 		return nil, err
 	}

@@ -47,22 +47,19 @@ type Db interface {
 	RollbackTransaction(ctx context.Context) error
 }
 
-// Local data operations for a local database connection.
-func Local(ctx context.Context, dbConnInfo *ConnectionInfo) (Db, error) {
+func New(ctx context.Context, dbConnInfo *ConnectionInfo) (Db, error) {
 	sqlDb, err := sql.Open("postgres", dbConnInfo.String())
 	if err != nil {
 		return nil, err
 	}
-	return &localDb{conn: sqlDb}, nil
+	return &postgres{conn: sqlDb}, nil
 }
 
-// LocalFromConnection using an existing sql.DB connection to provide data operations to a database.
-// Typically used for testing where it makes sense to reuse an existing connection.
-func LocalFromConnection(ctx context.Context, sqlDb *sql.DB) (Db, error) {
-	return &localDb{conn: sqlDb}, nil
+func NewFromConnection(ctx context.Context, sqlDb *sql.DB) (Db, error) {
+	return &postgres{conn: sqlDb}, nil
 }
 
-var SupportedValueTypes = []string{
+var supportedValueTypes = []string{
 	"<nil>",
 	"bool",
 	"string",
