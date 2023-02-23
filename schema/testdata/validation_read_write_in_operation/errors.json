@@ -1,0 +1,89 @@
+{
+  "errors": [
+    {
+      "message": "The 'read' action type can only be used within a function",
+      "hint": "Did you mean to define 'getPerson' as a function?",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 90,
+        "line": 11,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 94,
+        "line": 11,
+        "column": 9
+      }
+    },
+    {
+      "message": "The 'write' action type can only be used within a function",
+      "hint": "Did you mean to define 'updatePerson' as a function?",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 111,
+        "line": 12,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 116,
+        "line": 12,
+        "column": 10
+      }
+    },
+    {
+      "message": "The 'read' action type can only be used within a function",
+      "hint": "Did you mean to define 'getPersonWithReturns' as a function?",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 139,
+        "line": 13,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 143,
+        "line": 13,
+        "column": 9
+      }
+    },
+    {
+      "message": "The 'write' action type can only be used within a function",
+      "hint": "Did you mean to define 'updatePersonWithReturns' as a function?",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 184,
+        "line": 14,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 189,
+        "line": 14,
+        "column": 10
+      }
+    },
+    {
+      "message": "You cannot use message Foo in an operation",
+      "hint": "Messages can only be used in functions",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 130,
+        "line": 12,
+        "column": 24
+      },
+      "endPos": {
+        "filename": "testdata/validation_read_write_in_operation/schema.keel",
+        "offset": 133,
+        "line": 12,
+        "column": 27
+      }
+    }
+  ]
+}

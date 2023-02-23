@@ -1,0 +1,16 @@
+message Foo {
+  bar Text
+}
+
+message Bar {
+  baz Text
+}
+
+model Person {
+  operations {
+    read getPerson()
+    write updatePerson(Foo)
+    read getPersonWithReturns() returns(Bar)
+    write updatePersonWithReturns() returns(Bar)
+  }
+}
