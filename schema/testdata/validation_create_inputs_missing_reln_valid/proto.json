@@ -111,36 +111,6 @@
           "name": "createPostA",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Post",
-              "operationName": "createPostA",
-              "name": "content",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Post",
-                "fieldName": "content"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "content"
-              ]
-            },
-            {
-              "modelName": "Post",
-              "operationName": "createPostA",
-              "name": "authorId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "Post",
-                "fieldName": "authorId"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "authorId"
-              ]
-            }
-          ],
           "inputMessageName": "CreatePostAInput"
         },
         {
@@ -148,37 +118,6 @@
           "name": "createPostB",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Post",
-              "operationName": "createPostB",
-              "name": "content",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Post",
-                "fieldName": "content"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "content"
-              ]
-            },
-            {
-              "modelName": "Post",
-              "operationName": "createPostB",
-              "name": "authorId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "Author",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "author",
-                "id"
-              ]
-            }
-          ],
           "inputMessageName": "CreatePostBInput"
         },
         {
@@ -186,31 +125,6 @@
           "name": "createPostC",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Post",
-              "operationName": "createPostC",
-              "name": "content",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Post",
-                "fieldName": "content"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "content"
-              ]
-            },
-            {
-              "modelName": "Post",
-              "operationName": "createPostC",
-              "name": "someAuthorId",
-              "type": {
-                "type": "TYPE_ID"
-              },
-              "mode": "INPUT_MODE_WRITE"
-            }
-          ],
           "setExpressions": [
             {
               "source": "post.authorId = someAuthorId"
@@ -276,43 +190,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

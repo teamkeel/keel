@@ -16,6 +16,23 @@ import (
 func (scm *Builder) makeProtoModels() *proto.Schema {
 	scm.proto = &proto.Schema{}
 
+	// we need to add messages defined declaratively in a schema to the proto schema first so they are defined in proto.Messages by the time we come to attach to input/responses
+	messages := lo.Filter(
+		lo.FlatMap(scm.asts, func(ast *parser.AST, _ int) []*parser.DeclarationNode {
+			return ast.Declarations
+		}),
+		func(
+			d *parser.DeclarationNode,
+			_ int,
+		) bool {
+			return d.Message != nil
+		},
+	)
+
+	for _, msg := range messages {
+		scm.makeMessage(msg)
+	}
+
 	for _, parserSchema := range scm.asts {
 		for _, decl := range parserSchema.Declarations {
 			switch {
@@ -28,7 +45,7 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 			case decl.Enum != nil:
 				scm.makeEnum(decl)
 			case decl.Message != nil:
-				scm.makeMessage(decl)
+				// noop
 			default:
 				panic("Case not recognized")
 			}
@@ -431,11 +448,11 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 			protoModel.Fields = append(protoModel.Fields, fields...)
 
 		case section.Functions != nil:
-			ops := scm.makeOperations(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
+			ops := scm.makeActions(section.Functions, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM)
 			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Operations != nil:
-			ops := scm.makeOperations(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
+			ops := scm.makeActions(section.Operations, protoModel.Name, proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO)
 			protoModel.Operations = append(protoModel.Operations, ops...)
 
 		case section.Attribute != nil:
@@ -454,38 +471,6 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 			Type:                proto.OperationType_OPERATION_TYPE_WRITE,
 			InputMessageName:    "AuthenticateInput",
 			ResponseMessageName: "AuthenticateResponse",
-			Inputs: []*proto.OperationInput{
-				{
-					ModelName:     parser.ImplicitIdentityModelName,
-					OperationName: parser.ImplicitAuthenticateOperationName,
-					Name:          "createIfNotExists",
-					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-					Optional:      true,
-				},
-				{
-					ModelName:     parser.ImplicitIdentityModelName,
-					OperationName: parser.ImplicitAuthenticateOperationName,
-					Name:          "emailPassword",
-					Type:          &proto.TypeInfo{Type: proto.Type_TYPE_OBJECT},
-					Optional:      false,
-					Inputs: []*proto.OperationInput{
-						{
-							ModelName:     parser.ImplicitIdentityModelName,
-							OperationName: parser.ImplicitAuthenticateOperationName,
-							Name:          "email",
-							Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-							Optional:      false,
-						},
-						{
-							ModelName:     parser.ImplicitIdentityModelName,
-							OperationName: parser.ImplicitAuthenticateOperationName,
-							Name:          "password",
-							Type:          &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-							Optional:      false,
-						},
-					},
-				},
-			},
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
@@ -722,39 +707,38 @@ func attributeFirstArgAsIdentifier(attr *parser.AttributeNode) string {
 	return theString
 }
 
-func (scm *Builder) makeOperations(parserFunctions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {
+func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string, impl proto.OperationImplementation) []*proto.Operation {
 	protoOps := []*proto.Operation{}
-	for _, parserFunc := range parserFunctions {
-		protoOp := scm.makeOperation(parserFunc, modelName, impl)
+
+	for _, action := range actions {
+		protoOp := scm.makeAction(action, modelName, impl)
 		protoOps = append(protoOps, protoOp)
 	}
 	return protoOps
 }
 
-func (scm *Builder) makeOperation(parserFunction *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
+func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
 		ModelName:        modelName,
-		InputMessageName: fmt.Sprintf("%sInput", strcase.ToCamel(parserFunction.Name.Value)),
-		Name:             parserFunction.Name.Value,
+		InputMessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+		Name:             action.Name.Value,
 		Implementation:   impl,
-		Type:             scm.mapToOperationType(parserFunction.Type.Value),
+		Type:             scm.mapToOperationType(action.Type.Value),
 	}
 
-	model := query.Model(scm.asts, modelName)
+	if action.IsArbitraryFunction() {
+		// if its an arbitrary function, then the messages already exist in scm.Messages
+		// so no need to generate them
+		protoOp.InputMessageName = action.Inputs[0].Type.ToString()
+		protoOp.ResponseMessageName = action.Returns[0].Type.ToString()
+	} else {
+		// we need to generate the messages representing the inputs to the scm.Messages
+		model := query.Model(scm.asts, modelName)
 
-	scm.makeActionInputMessages(model, parserFunction, impl)
-
-	for _, input := range parserFunction.Inputs {
-		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_READ, impl)
-		protoOp.Inputs = append(protoOp.Inputs, protoInput)
+		scm.makeActionInputMessages(model, action, impl)
 	}
 
-	for _, input := range parserFunction.With {
-		protoInput := scm.makeOperationInput(model, parserFunction, input, proto.InputMode_INPUT_MODE_WRITE, impl)
-		protoOp.Inputs = append(protoOp.Inputs, protoInput)
-	}
-
-	scm.applyActionAttributes(parserFunction, protoOp, modelName)
+	scm.applyActionAttributes(action, protoOp, modelName)
 
 	return protoOp
 }
@@ -828,84 +812,6 @@ func (scm *Builder) inferParserInputType(
 		FieldName: fieldName,
 		EnumName:  enumName,
 	}, target, targetsOptionalField
-}
-
-func (scm *Builder) makeOperationInput(
-	model *parser.ModelNode,
-	op *parser.ActionNode,
-	input *parser.ActionInputNode,
-	mode proto.InputMode,
-	impl proto.OperationImplementation,
-) (inputs *proto.OperationInput) {
-
-	idents := input.Type.Fragments
-	protoType := scm.parserTypeToProtoType(idents[0].Fragment)
-
-	target := []string{}
-
-	var modelName *wrapperspb.StringValue
-	var fieldName *wrapperspb.StringValue
-	var enumName *wrapperspb.StringValue
-
-	if protoType == proto.Type_TYPE_ENUM {
-		enumName = &wrapperspb.StringValue{
-			Value: idents[0].Fragment,
-		}
-	}
-
-	if protoType == proto.Type_TYPE_UNKNOWN {
-		// If we haven't been able to resolve the type of the input it
-		// must be a model field, so we need to resolve it
-
-		var field *parser.FieldNode
-		currModel := model
-
-		for _, ident := range idents {
-			// For operations, inputs that refer to model fields are handled automatically
-			// by the runtime. For this to work we need to store the path to the field
-			// that the input refers to, as it may be in a nested model.
-			if impl == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
-				target = append(target, ident.Fragment)
-			}
-
-			field = query.ModelField(currModel, ident.Fragment)
-			m := query.Model(scm.asts, field.Type)
-			if m != nil {
-				currModel = m
-			}
-		}
-
-		protoType = scm.parserFieldToProtoTypeInfo(field).Type
-
-		modelName = &wrapperspb.StringValue{
-			Value: currModel.Name.Value,
-		}
-		fieldName = &wrapperspb.StringValue{
-			Value: field.Name.Value,
-		}
-
-		if protoType == proto.Type_TYPE_ENUM {
-			enumName = &wrapperspb.StringValue{
-				Value: field.Type,
-			}
-		}
-	}
-
-	return &proto.OperationInput{
-		ModelName:     model.Name.Value,
-		OperationName: op.Name.Value,
-		Name:          input.Name(),
-		Type: &proto.TypeInfo{
-			Type:      protoType,
-			Repeated:  input.Repeated,
-			ModelName: modelName,
-			FieldName: fieldName,
-			EnumName:  enumName,
-		},
-		Optional: input.Optional,
-		Mode:     mode,
-		Target:   target,
-	}
 }
 
 // parserType could be a built-in type or a user-defined model or enum

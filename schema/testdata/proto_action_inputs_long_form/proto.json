@@ -48,22 +48,6 @@
           "name": "getPerson",
           "type": "OPERATION_TYPE_GET",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "getPerson",
-              "name": "personId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "Person",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "id"
-              ]
-            }
-          ],
           "whereExpressions": [
             {
               "source": "person.id == personId"
@@ -76,17 +60,6 @@
           "name": "createPerson",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "createPerson",
-              "name": "name",
-              "type": {
-                "type": "TYPE_STRING"
-              },
-              "mode": "INPUT_MODE_WRITE"
-            }
-          ],
           "setExpressions": [
             {
               "source": "person.name = name"
@@ -99,17 +72,6 @@
           "name": "listPerson",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "listPerson",
-              "name": "name",
-              "type": {
-                "type": "TYPE_STRING"
-              },
-              "mode": "INPUT_MODE_READ"
-            }
-          ],
           "whereExpressions": [
             {
               "source": "person.name == name"
@@ -175,43 +137,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

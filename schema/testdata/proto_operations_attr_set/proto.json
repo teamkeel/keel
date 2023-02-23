@@ -55,22 +55,6 @@
           "name": "createPost",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Foo",
-              "operationName": "createPost",
-              "name": "f2",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Foo",
-                "fieldName": "f2"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "f2"
-              ]
-            }
-          ],
           "setExpressions": [
             {
               "source": "foo.f1 = true"
@@ -136,43 +120,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

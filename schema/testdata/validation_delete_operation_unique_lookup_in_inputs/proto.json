@@ -48,22 +48,6 @@
           "name": "deleteMyModel",
           "type": "OPERATION_TYPE_DELETE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "MyModel",
-              "operationName": "deleteMyModel",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "MyModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "id"
-              ]
-            }
-          ],
           "whereExpressions": [
             {
               "source": "myModel.isLocked == false"
@@ -129,43 +113,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

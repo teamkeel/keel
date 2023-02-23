@@ -90,38 +90,6 @@
           "name": "listByCompany",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "listByCompany",
-              "name": "companyName",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Company",
-                "fieldName": "name"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "company",
-                "name"
-              ]
-            },
-            {
-              "modelName": "Person",
-              "operationName": "listByCompany",
-              "name": "companyTradingAs",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Company",
-                "fieldName": "tradingAs"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "company",
-                "tradingAs"
-              ]
-            }
-          ],
           "inputMessageName": "ListByCompanyInput"
         },
         {
@@ -129,38 +97,6 @@
           "name": "listByPreviousCompany",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "listByPreviousCompany",
-              "name": "previousCompanyName",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Company",
-                "fieldName": "name"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "previousCompany",
-                "name"
-              ]
-            },
-            {
-              "modelName": "Person",
-              "operationName": "listByPreviousCompany",
-              "name": "previousCompanyTradingAs",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Company",
-                "fieldName": "tradingAs"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "previousCompany",
-                "tradingAs"
-              ]
-            }
-          ],
           "inputMessageName": "ListByPreviousCompanyInput"
         }
       ]
@@ -272,43 +208,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

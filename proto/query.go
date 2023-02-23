@@ -207,27 +207,6 @@ func ModelHasField(schema *Schema, model string, field string) bool {
 	return false
 }
 
-// FindInput returns the input on a given operation
-func FindInput(op *Operation, name string) *OperationInput {
-	for _, input := range op.Inputs {
-		if input.Name == name {
-			return input
-		}
-	}
-	return nil
-}
-
-// OperationHasInput returns true if the given Operation defines
-// an input of the given name.
-func OperationHasInput(op *Operation, name string) bool {
-	for _, input := range op.Inputs {
-		if input.Name == name {
-			return true
-		}
-	}
-	return false
-}
-
 // EnumExists returns true if the given schema contains a
 // enum with the given name.
 func EnumExists(enums []*Enum, name string) bool {
@@ -296,14 +275,6 @@ func PermissionsWithExpression(permissions []*PermissionRule) []*PermissionRule 
 // and is handled automatically by the runtime.
 // This will only be true for inputs that are part of operations,
 // as functions never have this behaviour.
-func (i *OperationInput) IsModelField() bool {
-	return len(i.Target) > 0
-}
-
-// IsModelField returns true if the input targets a model field
-// and is handled automatically by the runtime.
-// This will only be true for inputs that are part of operations,
-// as functions never have this behaviour.
 func (f *MessageField) IsModelField() bool {
 	return len(f.Target) > 0
 }
@@ -317,6 +288,16 @@ func FindMessage(messages []*Message, messageName string) *Message {
 		return m.Name == messageName
 	})
 	return message
+}
+
+func FindMessageField(message *Message, fieldName string) *MessageField {
+	for _, field := range message.Fields {
+		if field.Name == fieldName {
+			return field
+		}
+	}
+
+	return nil
 }
 
 // For built-in operation types, returns the "values" input message, which may be nested inside the

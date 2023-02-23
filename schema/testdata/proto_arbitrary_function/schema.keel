@@ -1,0 +1,13 @@
+message In {
+  foo Text
+}
+
+message Out {
+  bar Text
+}
+
+model Post {
+  functions {
+    read getPost(In) returns(Out)
+  }
+}

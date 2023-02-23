@@ -173,6 +173,10 @@ type ActionNode struct {
 	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
 
+func (a *ActionNode) IsArbitraryFunction() bool {
+	return len(a.Returns) > 0 && (a.Type.Value == ActionTypeRead || a.Type.Value == ActionTypeWrite)
+}
+
 type ActionInputNode struct {
 	node.Node
 
@@ -193,6 +197,7 @@ func (a *ActionInputNode) Name() string {
 	for _, frag := range a.Type.Fragments {
 		builder.WriteString(strcase.ToCamel(frag.Fragment))
 	}
+
 	return strcase.ToLowerCamel(builder.String())
 }
 
