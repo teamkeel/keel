@@ -13,7 +13,7 @@ import (
 	"github.com/lib/pq"
 )
 
-type dbImpl struct {
+type postgres struct {
 	conn               *sql.DB
 	ongoingTransaction *sql.Tx
 }
@@ -66,7 +66,7 @@ func validateSupportedType(value any) error {
 	return fmt.Errorf("unsupported %T", value)
 }
 
-func (db *dbImpl) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
+func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
 	for _, value := range values {
 		err := validateSupportedType(value)
 		if err != nil {
@@ -113,7 +113,7 @@ func (db *dbImpl) ExecuteQuery(ctx context.Context, sqlQuery string, values ...a
 	return &ExecuteQueryResult{Rows: rows}, nil
 }
 
-func (db *dbImpl) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
+func (db *postgres) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
 	for _, value := range values {
 		err := validateSupportedType(value)
 		if err != nil {
@@ -138,7 +138,7 @@ func (db *dbImpl) ExecuteStatement(ctx context.Context, sqlQuery string, values 
 	return &ExecuteStatementResult{RowsAffected: rowsAffected}, nil
 }
 
-func (db *dbImpl) BeginTransaction(ctx context.Context) error {
+func (db *postgres) BeginTransaction(ctx context.Context) error {
 	if db.ongoingTransaction != nil {
 		return errors.New("cannot begin transaction when there is an ongoing transaction")
 	}
@@ -150,7 +150,7 @@ func (db *dbImpl) BeginTransaction(ctx context.Context) error {
 	return nil
 }
 
-func (db *dbImpl) CommitTransaction(ctx context.Context) error {
+func (db *postgres) CommitTransaction(ctx context.Context) error {
 	if db.ongoingTransaction == nil {
 		return errors.New("cannot commit transaction when there is no ongoing transaction")
 	}
@@ -162,7 +162,7 @@ func (db *dbImpl) CommitTransaction(ctx context.Context) error {
 	return nil
 }
 
-func (db *dbImpl) RollbackTransaction(ctx context.Context) error {
+func (db *postgres) RollbackTransaction(ctx context.Context) error {
 	if db.ongoingTransaction == nil {
 		return errors.New("cannot rollback transaction when there is no ongoing transaction")
 	}

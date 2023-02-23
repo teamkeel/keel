@@ -52,11 +52,11 @@ func New(ctx context.Context, dbConnInfo *ConnectionInfo) (Db, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &dbImpl{conn: sqlDb}, nil
+	return &postgres{conn: sqlDb}, nil
 }
 
 func NewFromConnection(ctx context.Context, sqlDb *sql.DB) (Db, error) {
-	return &dbImpl{conn: sqlDb}, nil
+	return &postgres{conn: sqlDb}, nil
 }
 
 var supportedValueTypes = []string{
