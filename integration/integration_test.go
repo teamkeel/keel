@@ -83,6 +83,7 @@ func TestIntegration(t *gotest.T) {
 
 			secrets := map[string]string{
 				"TEST_API_KEY": "1232132_2323",
+				"NAME_API_KEY": "worf",
 			}
 
 			files, err := node.Generate(

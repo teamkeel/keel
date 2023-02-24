@@ -7,3 +7,4 @@ secrets:
   - name: API_KEY
     required:
       - "production"
+  - name: NAME_API_KEY

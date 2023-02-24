@@ -257,7 +257,10 @@ function createContextAPI(meta) {
 	const env = {
 		TEST: process.env["TEST"] || "",
 	};
-	return { headers, identity, env, now };
+	const secrets = {
+		SECRET_KEY: meta.secrets.SECRET_KEY || "",
+	};
+	return { headers, identity, env, now, secrets };
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
@@ -265,6 +268,9 @@ module.exports.createContextAPI = createContextAPI;`
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
 			Name: "TEST",
+		})
+		s.Secrets = append(s.Secrets, &proto.Secret{
+			Name: "SECRET_KEY",
 		})
 
 		writeAPIFactory(w, s)
@@ -285,8 +291,12 @@ export type FunctionAPI = {
 type Environment = {
 	TEST: string;
 }
+type Secrets = {
+	SECRET_KEY: string;
+}
 
 export interface ContextAPI extends runtime.ContextAPI {
+	secrets: Secrets;
 	env: Environment;
 	identity?: Identity;
 	now(): Date;
@@ -295,6 +305,9 @@ export interface ContextAPI extends runtime.ContextAPI {
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
 			Name: "TEST",
+		})
+		s.Secrets = append(s.Secrets, &proto.Secret{
+			Name: "SECRET_KEY",
 		})
 
 		writeAPIDeclarations(w, s)

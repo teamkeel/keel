@@ -363,10 +363,21 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 
 	w.Dedent()
 	w.Writeln("}")
+	w.Writeln("type Secrets = {")
+
+	w.Indent()
+
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: string;\n", secret.Name)
+	}
+
+	w.Dedent()
+	w.Writeln("}")
 	w.Writeln("")
 
 	w.Writeln("export interface ContextAPI extends runtime.ContextAPI {")
 	w.Indent()
+	w.Writeln("secrets: Secrets;")
 	w.Writeln("env: Environment;")
 	w.Writeln("identity?: Identity;")
 	w.Writeln("now(): Date;")
@@ -408,7 +419,17 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("return { headers, identity, env, now };")
+	w.Writeln("const secrets = {")
+	w.Indent()
+
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.Name, secret.Name)
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+
+	w.Writeln("return { headers, identity, env, now, secrets };")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")
