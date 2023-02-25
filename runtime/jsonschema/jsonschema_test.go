@@ -3,7 +3,6 @@ package jsonschema_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -719,10 +718,6 @@ func TestValidateRequest(t *testing.T) {
 				require.NoError(t, err)
 
 				op := proto.FindOperation(schema, f.opName)
-
-				if f.name == "valid - enum one of" {
-					fmt.Println()
-				}
 
 				result, err := jsonschema.ValidateRequest(context.Background(), schema, op, req)
 				require.NoError(t, err)

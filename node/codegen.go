@@ -570,11 +570,6 @@ func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operati
 		w.Write(toTypeScriptType(field.Type))
 	}
 
-	// TODO: The code below is currently commented out because adding null to the union type means we cannnot
-	// match custom function inputs with model API inputs for list operations when inputs are optional. They
-	// are always optional for list query inputs, such as startsWith in StringQueryInput.  We might want to suport
-	// null values on the database model API?
-
 	nullable := false
 
 	// If a field isn't tied to a model field and it's optional then it's allowed to be null

@@ -217,8 +217,8 @@ export enum Gender {
 func TestWriteEnumWhereCondition(t *testing.T) {
 	expected := `
 export interface GenderWhereCondition {
-	equals?: Gender
-	oneOf?: Gender[]
+	equals?: Gender | null;
+	oneOf?: Gender[] | null;
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
