@@ -126,17 +126,16 @@ export interface PostCreateValues {
 func TestWriteWhereConditionsInterface(t *testing.T) {
 	expected := `
 export interface PersonWhereConditions {
-	firstName?: string | runtime.StringWhereCondition
-	lastName?: string | runtime.StringWhereCondition | null
-	age?: number | runtime.NumberWhereCondition
-	dateOfBirth?: Date | runtime.DateWhereCondition
-	gender?: Gender | GenderWhereCondition
-	hasChildren?: boolean | runtime.BooleanWhereCondition
-	id?: string | runtime.IDWhereCondition
-	createdAt?: Date | runtime.DateWhereCondition
-	updatedAt?: Date | runtime.DateWhereCondition
-}
-`
+	firstName?: string | runtime.StringWhereCondition | null;
+	lastName?: string | runtime.StringWhereCondition | null;
+	age?: number | runtime.NumberWhereCondition | null;
+	dateOfBirth?: Date | runtime.DateWhereCondition | null;
+	gender?: Gender | GenderWhereCondition | null;
+	hasChildren?: boolean | runtime.BooleanWhereCondition | null;
+	id?: string | runtime.IDWhereCondition | null;
+	createdAt?: Date | runtime.DateWhereCondition | null;
+	updatedAt?: Date | runtime.DateWhereCondition | null;
+}`
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeWhereConditionsInterface(w, m)
@@ -218,8 +217,8 @@ export enum Gender {
 func TestWriteEnumWhereCondition(t *testing.T) {
 	expected := `
 export interface GenderWhereCondition {
-	equals?: Gender
-	oneOf?: Gender[]
+	equals?: Gender | null;
+	oneOf?: Gender[] | null;
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
@@ -447,8 +446,15 @@ model Person {
 	`
 	expected := `
 export interface ListPeopleWhereInput {
-	name: string;
+	name: string | StringQueryInput;
 	some?: boolean | null;
+}
+export interface StringQueryInput {
+	equals?: string | null;
+	startsWith?: string | null;
+	endsWith?: string | null;
+	contains?: string | null;
+	oneOf?: string[] | null;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhereInput;
@@ -482,8 +488,19 @@ model Person {
 	`
 	expected := `
 export interface ListPeopleWhereInput {
-	name: runtime.StringWhereCondition;
-	favouriteSport: SportWhereCondition;
+	name: string | StringQueryInput;
+	favouriteSport: Sport | SportQueryInput;
+}
+export interface StringQueryInput {
+	equals?: string | null;
+	startsWith?: string | null;
+	endsWith?: string | null;
+	contains?: string | null;
+	oneOf?: string[] | null;
+}
+export interface SportQueryInput {
+	equals?: Sport | null;
+	oneOf?: Sport[] | null;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhereInput;
@@ -689,7 +706,11 @@ import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
 export interface PeopleByHobbyWhereInput {
-	hobby: sdk.HobbyWhereCondition;
+	hobby: Hobby | HobbyQueryInput;
+}
+export interface HobbyQueryInput {
+	equals?: Hobby | null;
+	oneOf?: Hobby[] | null;
 }
 export interface PeopleByHobbyInput {
 	where: PeopleByHobbyWhereInput;

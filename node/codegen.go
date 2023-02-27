@@ -219,15 +219,14 @@ func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
 		w.Write(": ")
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			// Embed related models where conditions
-			w.Writef("%sWhereConditions", field.Type.ModelName.Value)
+			w.Writef("%sWhereConditions | null;", field.Type.ModelName.Value)
 		} else {
 			w.Write(toTypeScriptType(field.Type))
 			w.Write(" | ")
 			w.Write(toWhereConditionType(field))
+			w.Write(" | null;")
 		}
-		if field.Optional {
-			w.Write(" | null")
-		}
+
 		w.Writeln("")
 	}
 	w.Dedent()
@@ -312,10 +311,12 @@ func writeEnumWhereCondition(w *Writer, enum *proto.Enum) {
 	w.Writef("export interface %sWhereCondition {\n", enum.Name)
 	w.Indent()
 	w.Write("equals?: ")
-	w.Writeln(enum.Name)
+	w.Write(enum.Name)
+	w.Writeln(" | null;")
 	w.Write("oneOf?: ")
 	w.Write(enum.Name)
-	w.Writeln("[]")
+	w.Write("[]")
+	w.Writeln(" | null;")
 	w.Dedent()
 	w.Writeln("}")
 }
@@ -542,40 +543,31 @@ func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operati
 
 	w.Write(": ")
 
-	// if the field relates to another message type, we need to find that message, and loop over it's fields
-	if field.Type.MessageName != nil {
+	switch true {
+	case field.Type.Type == proto.Type_TYPE_MESSAGE && len(field.Target) == 1:
+		// Determine the target field on the current model from the targets slice
+		modelField := proto.FindField(schema.Models, op.ModelName, field.Target[0])
+		w.Write(toTypeScriptType(modelField.Type))
+		w.Write(" | ")
 		w.Write(field.Type.MessageName.Value)
-	} else {
-		sdkPrefix := ""
-		if isTestingPackage {
-			sdkPrefix = "sdk."
-		}
-
-		if op.Type == proto.OperationType_OPERATION_TYPE_LIST && field.IsModelField() {
-			switch field.Type.Type {
-			case proto.Type_TYPE_DATE:
-				w.Write("runtime.DateQueryInput")
-			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-				w.Write("runtime.TimestampQueryInput")
-			case proto.Type_TYPE_STRING:
-				w.Write("runtime.StringWhereCondition")
-			case proto.Type_TYPE_ID:
-				w.Write("runtime.IDWhereCondition")
-			case proto.Type_TYPE_BOOL:
-				w.Write("runtime.BooleanWhereCondition")
-			case proto.Type_TYPE_INT:
-				w.Write("runtime.NumberWhereCondition")
-			case proto.Type_TYPE_ENUM:
-				w.Writef("%s%sWhereCondition", sdkPrefix, field.Type.EnumName.Value)
-			}
-		} else {
-			if field.Type.Type == proto.Type_TYPE_ENUM && isTestingPackage {
-				w.Writef("sdk.%s", toTypeScriptType(field.Type))
-			} else {
-				w.Write(toTypeScriptType(field.Type))
+	case field.Type.Type == proto.Type_TYPE_MESSAGE && len(field.Target) > 1:
+		// Determine the target field in the relationship input by iterating through the targets slice
+		currModel := proto.FindModel(schema.Models, op.ModelName)
+		var currField *proto.Field
+		for i := range field.Target {
+			currField = proto.FindField(schema.Models, currModel.Name, field.Target[i])
+			if currField.Type.Type == proto.Type_TYPE_MODEL {
+				currModel = proto.FindModel(schema.Models, currField.Type.ModelName.Value)
 			}
 		}
 
+		w.Write(toTypeScriptType(currField.Type))
+		w.Write(" | ")
+		w.Write(field.Type.MessageName.Value)
+	case field.Type.Type == proto.Type_TYPE_MESSAGE:
+		w.Write(field.Type.MessageName.Value)
+	default:
+		w.Write(toTypeScriptType(field.Type))
 	}
 
 	nullable := false
@@ -855,23 +847,29 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
 }
 
-func toTypeScriptType(t *proto.TypeInfo) string {
+func toTypeScriptType(t *proto.TypeInfo) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
-		return "string"
+		ret = "string"
 	case proto.Type_TYPE_STRING:
-		return "string"
+		ret = "string"
 	case proto.Type_TYPE_BOOL:
-		return "boolean"
+		ret = "boolean"
 	case proto.Type_TYPE_INT:
-		return "number"
+		ret = "number"
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		return "Date"
+		ret = "Date"
 	case proto.Type_TYPE_ENUM:
-		return t.EnumName.Value
+		ret = t.EnumName.Value
 	default:
-		return "any"
+		ret = "any"
 	}
+
+	if t.Repeated {
+		ret += "[]"
+	}
+
+	return ret
 }
 
 func toWhereConditionType(f *proto.Field) string {

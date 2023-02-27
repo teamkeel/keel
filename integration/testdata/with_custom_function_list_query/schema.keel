@@ -1,0 +1,42 @@
+model Person {
+    fields {
+        text Text
+        bool Boolean
+        enum Status
+        number Number
+    }
+
+    functions {
+        list listRequiredInputs(text, bool, enum, number)
+        list listOptionalInputs(text?, bool?, enum?, number?)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
+
+model PersonOptionalFields {
+    fields {
+        text Text?
+        bool Boolean?
+        enum Status?
+        number Number?
+    }
+
+    functions {
+        list listOptionalFieldsWithRequiredInputs(text, bool, enum, number)
+        list listOptionalFieldsWithOptionalInputs(text?, bool?, enum?, number?)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}
+
+enum Status {
+    Option1
+    Option2
+}

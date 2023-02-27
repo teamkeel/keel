@@ -80,9 +80,8 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 }
 
 func parseTypes(message *proto.Message, operation *proto.Operation, values map[string]any) map[string]any {
-
 	for k, v := range values {
-		input, found := lo.Find(message.Fields, func(in *proto.MessageField) bool {
+		field, found := lo.Find(message.Fields, func(in *proto.MessageField) bool {
 			return in.Name == k
 		})
 
@@ -90,8 +89,8 @@ func parseTypes(message *proto.Message, operation *proto.Operation, values map[s
 			continue
 		}
 
-		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST && input.IsModelField() {
-			if input.Type.Type == proto.Type_TYPE_DATE {
+		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST && field.IsModelField() {
+			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "DateQueryInput" {
 				listOpMap := v.(map[string]any)
 
 				for kListOp, vListOp := range listOpMap {
@@ -99,7 +98,7 @@ func parseTypes(message *proto.Message, operation *proto.Operation, values map[s
 				}
 				values[k] = listOpMap
 			}
-			if input.Type.Type == proto.Type_TYPE_DATETIME {
+			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "TimestampQueryInput" {
 				listOpMap := v.(map[string]any)
 				for kListOp, vListOp := range listOpMap {
 					listOpMap[kListOp] = convertTimestamp(vListOp)
@@ -107,10 +106,10 @@ func parseTypes(message *proto.Message, operation *proto.Operation, values map[s
 				values[k] = listOpMap
 			}
 		} else {
-			if input.Type.Type == proto.Type_TYPE_DATE {
+			if field.Type.Type == proto.Type_TYPE_DATE {
 				values[k] = convertDate(v)
 			}
-			if input.Type.Type == proto.Type_TYPE_DATETIME {
+			if field.Type.Type == proto.Type_TYPE_DATETIME {
 				values[k] = convertTimestamp(v)
 			}
 		}

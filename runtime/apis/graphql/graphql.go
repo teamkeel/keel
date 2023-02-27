@@ -106,8 +106,9 @@ func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, err
 			Name:   "Mutation",
 			Fields: graphql.Fields{},
 		}),
-		types: map[string]*graphql.Object{},
-		enums: map[string]*graphql.Enum{},
+		inputs: map[string]*graphql.InputObject{},
+		types:  map[string]*graphql.Object{},
+		enums:  map[string]*graphql.Enum{},
 	}
 
 	return m.build(api, proto)
@@ -119,6 +120,7 @@ type graphqlSchemaBuilder struct {
 	proto    *proto.Schema
 	query    *graphql.Object
 	mutation *graphql.Object
+	inputs   map[string]*graphql.InputObject
 	types    map[string]*graphql.Object
 	enums    map[string]*graphql.Enum
 }
@@ -581,29 +583,34 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		inputObjectName := field.Type.MessageName.Value
 		message := proto.FindMessage(mk.proto.Messages, inputObjectName)
 
-		if len(message.Fields) > 0 {
-			inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
-				Name:   inputObjectName,
-				Fields: graphql.InputObjectConfigFieldMap{},
-			})
+		if len(message.Fields) == 0 {
+			break
+		}
 
-			for _, input := range message.Fields {
-				inputField, err := mk.inputTypeFromMessageField(input, op)
-				if err != nil {
-					return nil, err
-				}
+		if out, ok := mk.inputs[inputObjectName]; ok {
+			in = out
+			break
+		}
 
-				inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
-					Type: inputField,
-				})
+		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   inputObjectName,
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
+
+		for _, input := range message.Fields {
+			inputField, err := mk.inputTypeFromMessageField(input, op)
+			if err != nil {
+				return nil, err
 			}
-			in = inputObject
+
+			inputObject.AddFieldConfig(input.Name, &graphql.InputObjectFieldConfig{
+				Type: inputField,
+			})
 		}
-	case field.IsModelField() && op.Type == proto.OperationType_OPERATION_TYPE_LIST:
-		var err error
-		if in, err = mk.inputTypeForList(field); err != nil {
-			return nil, err
-		}
+
+		mk.inputs[inputObjectName] = inputObject
+
+		in = inputObject
 	default:
 		var err error
 		if in, err = mk.inputTypeFor(field); err != nil {
@@ -617,7 +624,9 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 
 	if field.Type.Repeated {
 		in = graphql.NewList(in)
-		in = graphql.NewNonNull(in)
+		if !field.Optional {
+			in = graphql.NewNonNull(in)
+		}
 	}
 
 	return in, nil
@@ -634,34 +643,6 @@ func (mk *graphqlSchemaBuilder) inputTypeFor(field *proto.MessageField) (graphql
 	} else {
 		var ok bool
 		if in, ok = protoTypeToGraphQLInput[field.Type.Type]; !ok {
-			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.MessageName, field.Type.Type.String())
-		}
-	}
-	return in, nil
-}
-
-// inputTypeFor creates a graphql.Input for list operation input types.
-func (mk *graphqlSchemaBuilder) inputTypeForList(field *proto.MessageField) (graphql.Input, error) {
-	var in graphql.Input
-	if field.Type.Type == proto.Type_TYPE_ENUM {
-		enum, _ := lo.Find(mk.proto.Enums, func(e *proto.Enum) bool {
-			return e.Name == field.Type.EnumName.Value
-		})
-		enumType := mk.addEnum(enum)
-		in = graphql.NewInputObject(graphql.InputObjectConfig{
-			Name: enum.Name + "QueryInput",
-			Fields: graphql.InputObjectConfigFieldMap{
-				"equals": &graphql.InputObjectFieldConfig{
-					Type: enumType,
-				},
-				"oneOf": &graphql.InputObjectFieldConfig{
-					Type: graphql.NewList(graphql.NewNonNull(enumType)),
-				},
-			},
-		})
-	} else {
-		var ok bool
-		if in, ok = protoTypeToGraphQLQueryInput[field.Type.Type]; !ok {
 			return nil, fmt.Errorf("message %s has unsupported message field type: %s", field.MessageName, field.Type.Type.String())
 		}
 	}
@@ -693,17 +674,6 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 				Type: fieldType,
 			})
 		}
-	}
-
-	if op.Type == proto.OperationType_OPERATION_TYPE_LIST {
-		inputType.AddFieldConfig("first", &graphql.InputObjectFieldConfig{
-			Type:        graphql.Int,
-			Description: "The requested number of nodes for each page.",
-		})
-		inputType.AddFieldConfig("after", &graphql.InputObjectFieldConfig{
-			Type:        graphql.String,
-			Description: "The ID cursor to retrieve nodes after in the connection. Typically, you should pass the endCursor of the previous page as after.",
-		})
 	}
 
 	return inputType, allOptionalInputs, nil

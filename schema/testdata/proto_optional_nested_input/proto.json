@@ -317,15 +317,96 @@
   ],
   "messages": [
     {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "ListByCompanyWhereInput",
       "fields": [
         {
           "messageName": "ListByCompanyWhereInput",
           "name": "companyName",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Company",
-            "fieldName": "name"
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
           },
           "target": [
             "company",
@@ -336,9 +417,8 @@
           "messageName": "ListByCompanyWhereInput",
           "name": "companyTradingAs",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Company",
-            "fieldName": "tradingAs"
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
           },
           "optional": true,
           "target": [
@@ -390,15 +470,96 @@
       ]
     },
     {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "ListByPreviousCompanyWhereInput",
       "fields": [
         {
           "messageName": "ListByPreviousCompanyWhereInput",
           "name": "previousCompanyName",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Company",
-            "fieldName": "name"
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
           },
           "optional": true,
           "target": [
@@ -410,9 +571,8 @@
           "messageName": "ListByPreviousCompanyWhereInput",
           "name": "previousCompanyTradingAs",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Company",
-            "fieldName": "tradingAs"
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
           },
           "optional": true,
           "target": [

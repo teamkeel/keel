@@ -652,7 +652,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"equals": "Sci-fi"}}}`,
 					errors: map[string]string{
-						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror"`,
+						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror", null`,
 					},
 				},
 				{
@@ -660,7 +660,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"oneOf": ["Sci-fi"]}}}`,
 					errors: map[string]string{
-						"where.genre.oneOf.0": `where.genre.oneOf.0 must be one of the following: "Romance", "Horror"`,
+						"where.genre.oneOf.0": `where.genre.oneOf.0 must be one of the following: "Romance", "Horror", null`,
 					},
 				},
 				{
@@ -680,9 +680,9 @@ func TestValidateRequest(t *testing.T) {
 					},
 				},
 				{
-					name:    "using query types for explicit filters",
+					name:    "using invalid query types for explicit filters",
 					opName:  "booksByTitleAndGenre",
-					request: `{"where": {"title": {"contains": "Some title"}, "genre": {"equals": "Horror"}}}`,
+					request: `{"where": {"title": {"contains": "Some title"}, "genre": {"equals": "Romance"}}}`,
 					errors: map[string]string{
 						"where.title": `Invalid type. Expected: string, given: object`,
 						"where.genre": `where.genre must be one of the following: "Romance", "Horror"`,

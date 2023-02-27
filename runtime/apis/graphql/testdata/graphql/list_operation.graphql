@@ -51,14 +51,14 @@ input ListPeopleWhereInput {
 
 input OccupationQueryInput {
   equals: Occupation
-  oneOf: [Occupation!]
+  oneOf: [Occupation]
 }
 
 input StringQueryInput {
   contains: String
   endsWith: String
   equals: String
-  oneOf: [String!]
+  oneOf: [String]
   startsWith: String
 }
 

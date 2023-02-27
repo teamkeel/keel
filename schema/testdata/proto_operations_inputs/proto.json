@@ -269,15 +269,55 @@
       ]
     },
     {
+      "name": "StringQueryInput",
+      "fields": [
+        {
+          "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "startsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "endsWith",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "contains",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "oneOf",
+          "type": {
+            "type": "TYPE_STRING",
+            "repeated": true
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "OpBWhereInput",
       "fields": [
         {
           "messageName": "OpBWhereInput",
           "name": "f1",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Foo",
-            "fieldName": "f1"
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
           },
           "target": [
             "f1"

@@ -6,12 +6,11 @@ enum Hobby {
 model Person {
     fields {
         name Text
-        nickName Text
         birthday Date
         hobby Hobby
     }
 
     operations {
-        update testAction(id) with (name?, nickName?, birthday?, hobby?)
+        update testAction(id) with (name?, birthday?, hobby?)
     }
 }

@@ -9,5 +9,8 @@ model Person {
         create createPerson() with(name: Text) {
             @set(person.name = name)
         }
+        list listPerson(name: Text) {
+            @where(person.name == name)
+        }
     }
 }

@@ -4,9 +4,7 @@ export default ListBooksByPublisherName(async (inputs, api) => {
   return api.models.book.findMany({
     author: {
       publisher: {
-        name: {
-          equals: inputs.where?.authorPublisherName,
-        },
+        name: inputs.where?.authorPublisherName,
       },
     },
   });

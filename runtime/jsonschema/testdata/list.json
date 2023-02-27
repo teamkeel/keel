@@ -5,7 +5,7 @@
         "additionalProperties": false,
         "properties": {
           "equals": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
           }
         },
         "type": "object"
@@ -15,23 +15,23 @@
         "properties": {
           "after": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "before": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "equals": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "onOrAfter": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "onOrBefore": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"
@@ -40,13 +40,24 @@
         "additionalProperties": false,
         "properties": {
           "equals": {
-            "enum": ["Tennis", "Chess"]
+            "enum": [
+              "Tennis",
+              "Chess",
+              null
+            ]
           },
           "oneOf": {
+            "type": [
+							"array",
+							"null"
+						],
             "items": {
-              "enum": ["Tennis", "Chess"]
-            },
-            "type": "array"
+              "enum": [
+                "Tennis",
+                "Chess",
+                null
+              ]
+            }
           }
         },
         "type": "object"
@@ -55,19 +66,19 @@
         "additionalProperties": false,
         "properties": {
           "equals": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "greaterThan": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "greaterThanOrEquals": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "lessThan": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "lessThanOrEquals": {
-            "type": "number"
+            "type": ["number", "null"]
           }
         },
         "type": "object"
@@ -75,76 +86,76 @@
       "NullableHobbyQueryInput": {
         "additionalProperties": false,
         "properties": {
-            "equals": {
-                "enum": [
-                    "Tennis",
-                    "Chess"
-                ]
-            },
-            "oneOf": {
-                "items": {
-                    "enum": [
-                        "Tennis",
-                        "Chess"
-                    ]
-                },
-                "type": "array"
-            }
-        },
-        "type": [
-          "object", 
-          "null"
-        ]
-    },
-      "StringQueryInput": {
-        "additionalProperties": false,
-        "properties": {
-          "contains": {
-            "type": "string"
-          },
-          "endsWith": {
-            "type": "string"
-          },
           "equals": {
-            "type": "string"
+            "enum": [
+              "Tennis",
+              "Chess",
+              null
+            ]
           },
           "oneOf": {
+            "type": [
+							"array",
+							"null"
+						],
             "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "startsWith": {
-            "type": "string"
+              "enum": [
+                "Tennis",
+                "Chess",
+                null
+              ]
+            }
           }
         },
-        "type": "object"
+        "type": ["object", "null"]
       },
       "NullableStringQueryInput": {
         "additionalProperties": false,
         "properties": {
           "contains": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "endsWith": {
-            "type": "string"
+            "type":["string", "null"]
           },
           "equals": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "oneOf": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "type": ["array", "null"]
           },
           "startsWith": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
-        "type": [
-          "object",
-          "null"]
+        "type": ["object", "null"]
+      },
+      "StringQueryInput": {
+        "additionalProperties": false,
+        "properties": {
+          "contains": {
+            "type": ["string", "null"]
+          },
+          "endsWith": {
+            "type":["string", "null"]
+          },
+          "equals": {
+            "type": ["string", "null"]
+          },
+          "oneOf": {
+            "items": {
+              "type": "string"
+            },
+            "type": ["array", "null"]
+          },
+          "startsWith": {
+            "type": ["string", "null"]
+          }
+        },
+        "type": "object"
       },
       "TestActionWhereInput": {
         "additionalProperties": false,
@@ -197,11 +208,11 @@
         "properties": {
           "after": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "before": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"

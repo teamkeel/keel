@@ -50,6 +50,193 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	return scm.proto
 }
 
+func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
+	switch typeInfo.Type {
+	case proto.Type_TYPE_ID:
+		return &proto.Message{Name: "IDQueryInput", Fields: []*proto.MessageField{
+			{
+				Name:     "equals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "oneOf",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					Repeated: true,
+				},
+			},
+		}}
+	case proto.Type_TYPE_STRING:
+		return &proto.Message{Name: "StringQueryInput", Fields: []*proto.MessageField{
+			{
+				Name:     "equals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "startsWith",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "endsWith",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "contains",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "oneOf",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					Repeated: true,
+				},
+			},
+		}}
+	case proto.Type_TYPE_INT:
+		return &proto.Message{Name: "IntQueryInput", Fields: []*proto.MessageField{
+			{
+				Name:     "equals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "lessThan",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "lessThanOrEquals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "greaterThan",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "greaterThanOrEquals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+		}}
+	case proto.Type_TYPE_BOOL:
+		return &proto.Message{Name: "BooleanQueryInput", Fields: []*proto.MessageField{
+			{
+				Name:     "equals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+		}}
+	case proto.Type_TYPE_DATE:
+		return &proto.Message{Name: "DateQueryInput", Fields: []*proto.MessageField{
+			{
+				Name:     "equals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "before",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "onOrBefore",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "after",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "onOrAfter",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+		}}
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		return &proto.Message{Name: "TimestampQueryInput", Fields: []*proto.MessageField{
+			{
+				Name:     "before",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "after",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+		}}
+	case proto.Type_TYPE_ENUM:
+		return &proto.Message{Name: fmt.Sprintf("%sQueryInput", typeInfo.EnumName.Value), Fields: []*proto.MessageField{
+			{
+				Name:     "equals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					EnumName: typeInfo.EnumName,
+				},
+			},
+			{
+				Name:     "oneOf",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					EnumName: typeInfo.EnumName,
+					Repeated: true,
+				},
+			},
+		}}
+	default:
+		panic("sdf")
+	}
+}
+
 // Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
 func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
 	switch action.Type.Value {
@@ -159,13 +346,24 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		for _, where := range action.Inputs {
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, where, impl)
 
-			wheres = append(wheres, &proto.MessageField{
-				Name:        where.Name(),
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    where.Optional || targetsOptionalField,
-				MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
-			})
+			if target != nil {
+				queryMessage := makeListQueryInputMessage(typeInfo)
+				scm.proto.Messages = append(scm.proto.Messages, queryMessage)
+				wheres = append(wheres, &proto.MessageField{
+					Name:        where.Name(),
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String(queryMessage.Name)},
+					Target:      target,
+					Optional:    where.Optional || targetsOptionalField,
+					MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+				})
+			} else {
+				wheres = append(wheres, &proto.MessageField{
+					Name:        where.Name(),
+					Type:        typeInfo,
+					Optional:    where.Optional || targetsOptionalField,
+					MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+				})
+			}
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
@@ -398,6 +596,7 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 			},
 			Optional:    f.Optional,
 			MessageName: parserMsg.Name.Value,
+			Target:      []string{f.Name.Value},
 		}
 	})
 
@@ -551,12 +750,8 @@ func (scm *Builder) inferParserInputType(
 		currModel := model
 
 		for _, ident := range idents {
-			// For operations, inputs that refer to model fields are handled automatically
-			// by the runtime. For this to work we need to store the path to the field
-			// that the input refers to, as it may be in a nested model.
-			if impl == proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
-				target = append(target, ident.Fragment)
-			}
+
+			target = append(target, ident.Fragment)
 
 			field = query.ModelField(currModel, ident.Fragment)
 
