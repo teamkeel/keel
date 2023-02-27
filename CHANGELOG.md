@@ -1,3 +1,10 @@
+# [0.274.0](https://github.com/teamkeel/keel/compare/v0.273.8...v0.274.0) (2023-02-27)
+
+
+### Features
+
+* provide fully working [@relation](https://github.com/relation) attribute ([#830](https://github.com/teamkeel/keel/issues/830)) ([eb45ae9](https://github.com/teamkeel/keel/commit/eb45ae99857dd21329492fd71eec5e292edadb28))
+
 ## [0.273.8](https://github.com/teamkeel/keel/compare/v0.273.7...v0.273.8) (2023-02-27)
 
 
