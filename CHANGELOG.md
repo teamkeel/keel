@@ -1,3 +1,10 @@
+## [0.273.8](https://github.com/teamkeel/keel/compare/v0.273.7...v0.273.8) (2023-02-27)
+
+
+### Bug Fixes
+
+* moving list query inputs into proto ([#821](https://github.com/teamkeel/keel/issues/821)) ([cfe2565](https://github.com/teamkeel/keel/commit/cfe2565cbfd7a51fe3c882933425a14e5627c9aa))
+
 ## [0.273.7](https://github.com/teamkeel/keel/compare/v0.273.6...v0.273.7) (2023-02-23)
 
 
