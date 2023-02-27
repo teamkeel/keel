@@ -1558,3 +1558,45 @@ test("delete operation where expressions with 1:M relations - posts not active -
     message: "record not found",
   });
 });
+
+test("get operation where expressions with M:1 relations - depends on @relation", async () => {
+  const publisher = await models.publisher.create({
+    orgName: "Keel Org",
+    isActive: true,
+  });
+  const scribe = await models.author.create({
+    name: "scribe42",
+    thePublisherId: publisher.id,
+    isActive: true,
+  });
+  const reviewerJane = await models.author.create({
+    name: "reviewerJane",
+    thePublisherId: publisher.id,
+    isActive: true,
+  });
+  const reviewerJohn = await models.author.create({
+    name: "reviewerJohn",
+    thePublisherId: publisher.id,
+    isActive: true,
+  });
+  const postReviewedByJane = await models.post.create({
+    title: "unused",
+    theAuthorId: scribe.id,
+    theReviewerId: reviewerJane.id,
+    isActive: true,
+  });
+  const postReviewedByJohn = await models.post.create({
+    title: "unused",
+    theAuthorId: scribe.id,
+    theReviewerId: reviewerJohn.id,
+    isActive: true,
+  });
+
+  const { results: reviewers } = await actions.listReviewerByPostId({
+    where: {
+      reviewedPostsId: { equals: postReviewedByJane.id },
+    },
+  });
+
+  expect(reviewers[0]!.name).toEqual("reviewerJane");
+});

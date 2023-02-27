@@ -77,27 +77,45 @@ func IsBelongsTo(field *Field) bool {
 	return field.Type.Type == Type_TYPE_MODEL && field.ForeignKeyFieldName != nil && !field.Type.Repeated
 }
 
-// GetForignKeyFieldName returns the foreign key field name for the relationship that
-// field has to another model, or an empty string if field's type is not a model.
-// Foreign key returned might exists on field's parent model, or on the model field
-// is related to, so this function would normally be used in conjunction with
+// GetForignKeyFieldName returns the foreign key field name for the given field if it
+// represents a relationship to another model. It returns an empty string if field's type is
+// not a model.
+// The foreign key returned might exists on field's parent model, or on the model field
+// it is related to, so this function would normally be used in conjunction with
 // IsBelongsTo or it's counterparts to determine on which side the foreign
 // key lives
 func GetForignKeyFieldName(models []*Model, field *Field) string {
+	// The query is not meaningful if the field is not of type Model.
 	if field.Type.Type != Type_TYPE_MODEL {
 		return ""
 	}
 
+	// The answer is trivial if the field is already marked with a FK field name.
 	if field.ForeignKeyFieldName != nil {
 		return field.ForeignKeyFieldName.Value
 	}
 
-	model := FindModel(models, field.ModelName)
+	// Repeated model fields will "know" their inverse field name if was defined in the input
+	// schema with an @relation attribute.
+	//
+	// When that is the case we can go off and find
+	// that field in the related model, and that related model field will in turn,
+	// know the name of its sibling foreign key field name.
+	if field.InverseFieldName != nil {
+		relatedModelName := field.Type.ModelName.Value
+		inverseField := FindField(models, relatedModelName, field.InverseFieldName.Value)
+		fkName := inverseField.ForeignKeyFieldName.Value
+		return fkName
+	}
+
+	// If we get this far, we must search for fields in the related thisModel to infer the answer.
+	// NB. Schema validation guarentees that there will never be more than one
+	// candidate in the latter case.
+	thisModel := FindModel(models, field.ModelName)
 	relatedModel := FindModel(models, field.Type.ModelName.Value)
 	relatedField, _ := lo.Find(relatedModel.Fields, func(field *Field) bool {
-		return field.Type.Type == Type_TYPE_MODEL && field.Type.ModelName.Value == model.Name
+		return field.Type.Type == Type_TYPE_MODEL && field.Type.ModelName.Value == thisModel.Name
 	})
-
 	return relatedField.ForeignKeyFieldName.Value
 }
 
