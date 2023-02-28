@@ -571,7 +571,8 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 		return &proto.MessageField{
 			Name: f.Name.Value,
 			Type: &proto.TypeInfo{
-				Type: scm.parserTypeToProtoType(f.Type),
+				Type:     scm.parserTypeToProtoType(f.Type),
+				Repeated: f.Repeated,
 			},
 			Optional:    f.Optional,
 			MessageName: parserMsg.Name.Value,
@@ -985,6 +986,10 @@ func (scm *Builder) mapToOperationType(parsedOperation string) proto.OperationTy
 		return proto.OperationType_OPERATION_TYPE_LIST
 	case parser.ActionTypeDelete:
 		return proto.OperationType_OPERATION_TYPE_DELETE
+	case parser.ActionTypeRead:
+		return proto.OperationType_OPERATION_TYPE_READ
+	case parser.ActionTypeWrite:
+		return proto.OperationType_OPERATION_TYPE_WRITE
 	default:
 		return proto.OperationType_OPERATION_TYPE_UNKNOWN
 	}
