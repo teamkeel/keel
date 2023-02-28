@@ -267,7 +267,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Name:   fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
 			Fields: values,
 		})
-	case parser.ActionTypeGet, parser.ActionTypeDelete:
+	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
 		fields := []*proto.MessageField{}
 
 		for _, input := range action.Inputs {
@@ -425,6 +425,8 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				},
 			},
 		})
+	default:
+		panic("unhandled operation type when creating input message types")
 	}
 }
 
@@ -718,15 +720,28 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl
 		Type:             scm.mapToOperationType(action.Type.Value),
 	}
 
+	model := query.Model(scm.asts, modelName)
+
 	if action.IsArbitraryFunction() {
-		// if its an arbitrary function, then the messages already exist in scm.Messages
-		// so no need to generate them
-		protoOp.InputMessageName = action.Inputs[0].Type.ToString()
+		// if its an arbitrary function, then the input will exist in scm.Messages unless the inputs were defined inline
+		// output messages will always be defined in scm.Messages
+		usingInlineInputs := true
+		for _, ast := range scm.asts {
+			for _, d := range ast.Declarations {
+				if d.Message != nil && d.Message.Name.Value == action.Inputs[0].Type.ToString() {
+					usingInlineInputs = false
+				}
+			}
+		}
+		if usingInlineInputs {
+			// if inline inputs are used then we need to generate the messages representing the inputs to the scm.Messages
+			scm.makeActionInputMessages(model, action, impl)
+		} else {
+			protoOp.InputMessageName = action.Inputs[0].Type.ToString()
+		}
 		protoOp.ResponseMessageName = action.Returns[0].Type.ToString()
 	} else {
 		// we need to generate the messages representing the inputs to the scm.Messages
-		model := query.Model(scm.asts, modelName)
-
 		scm.makeActionInputMessages(model, action, impl)
 	}
 
