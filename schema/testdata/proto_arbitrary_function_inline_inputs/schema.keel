@@ -1,0 +1,13 @@
+message Out {
+  bar Text
+}
+
+model Post {
+  fields {
+    name Text
+  }
+
+  functions {
+    read getPost(name, someBool: Boolean) returns(Out)
+  }
+}
