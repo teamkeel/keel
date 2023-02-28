@@ -1,3 +1,10 @@
+## [0.274.1](https://github.com/teamkeel/keel/compare/v0.274.0...v0.274.1) (2023-02-28)
+
+
+### Bug Fixes
+
+* proto schema handles arb funcs with inline inputs ([#833](https://github.com/teamkeel/keel/issues/833)) ([4d744a8](https://github.com/teamkeel/keel/commit/4d744a84e8d376591c2bc3153f7f47b6b30aa502))
+
 # [0.274.0](https://github.com/teamkeel/keel/compare/v0.273.8...v0.274.0) (2023-02-27)
 
 
