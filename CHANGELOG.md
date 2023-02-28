@@ -1,3 +1,10 @@
+# [0.275.0](https://github.com/teamkeel/keel/compare/v0.274.1...v0.275.0) (2023-02-28)
+
+
+### Features
+
+* arbitrary functions in custom functions ([#834](https://github.com/teamkeel/keel/issues/834)) ([a1e37d8](https://github.com/teamkeel/keel/commit/a1e37d84e8cd246b2291f0d17301bdcbf0b1b5cf))
+
 ## [0.274.1](https://github.com/teamkeel/keel/compare/v0.274.0...v0.274.1) (2023-02-28)
 
 
