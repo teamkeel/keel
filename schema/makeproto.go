@@ -16,21 +16,13 @@ import (
 func (scm *Builder) makeProtoModels() *proto.Schema {
 	scm.proto = &proto.Schema{}
 
-	// we need to add messages defined declaratively in a schema to the proto schema first so they are defined in proto.Messages by the time we come to attach to input/responses
-	messages := lo.Filter(
-		lo.FlatMap(scm.asts, func(ast *parser.AST, _ int) []*parser.DeclarationNode {
-			return ast.Declarations
-		}),
-		func(
-			d *parser.DeclarationNode,
-			_ int,
-		) bool {
-			return d.Message != nil
-		},
-	)
-
-	for _, msg := range messages {
-		scm.makeMessage(msg)
+	// we need to add messages defined in the schema to the proto schema first so they are defined in proto.Messages by the time we come to attach to input/responses
+	for _, ast := range scm.asts {
+		for _, d := range ast.Declarations {
+			if d.Message != nil {
+				scm.makeMessage(d)
+			}
+		}
 	}
 
 	for _, parserSchema := range scm.asts {
