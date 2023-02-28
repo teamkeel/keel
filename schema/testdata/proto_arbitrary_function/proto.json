@@ -117,10 +117,7 @@
           "name": "foo",
           "type": {
             "type": "TYPE_STRING"
-          },
-          "target": [
-            "foo"
-          ]
+          }
         }
       ]
     },
@@ -132,10 +129,7 @@
           "name": "bar",
           "type": {
             "type": "TYPE_STRING"
-          },
-          "target": [
-            "bar"
-          ]
+          }
         }
       ]
     },

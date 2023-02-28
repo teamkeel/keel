@@ -1,0 +1,36 @@
+message PersonResponse {
+    nested NestedResponseObject
+}
+
+message ReadPersonInput {
+    nested NestedInputObject
+}
+
+message WritePersonInput {
+    nested NestedInputObject
+}
+
+message NestedResponseObject {
+    bool Boolean
+}
+
+message NestedInputObject {
+    bool Boolean
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        read readPerson(ReadPersonInput) returns (PersonResponse)
+        write writePerson(WritePersonInput) returns (PersonResponse)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

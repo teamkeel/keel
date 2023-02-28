@@ -1,0 +1,44 @@
+type Query {
+  __Empty: Boolean
+  readPerson(input: ReadPersonInput!): PersonResponse
+}
+
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  writePerson(input: WritePersonInput!): PersonResponse
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input NestedInputObject {
+  bool: Boolean!
+}
+
+input ReadPersonInput {
+  nested: NestedInputObject!
+}
+
+input WritePersonInput {
+  nested: NestedInputObject!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
+}
+
+type NestedResponseObject {
+  bool: Boolean!
+}
+
+type PersonResponse {
+  nested: NestedResponseObject!
+}
