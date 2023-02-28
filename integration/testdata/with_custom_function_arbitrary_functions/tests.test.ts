@@ -14,7 +14,7 @@ test("arbitrary read function with inline inputs", async () => {
     name: "Keeler",
   });
 
-  var result = await actions.countName({ name: "Keelson" });
+  const result = await actions.countName({ name: "Keelson" });
   expect(result.count).toEqual(1);
 });
 
@@ -29,7 +29,7 @@ test("arbitrary read function with message input", async () => {
     name: "Keeler",
   });
 
-  var result = await actions.countNameAdvanced({
+  const result = await actions.countNameAdvanced({
     startsWith: "Kee",
     contains: "e",
     endsWith: "r",
@@ -38,21 +38,21 @@ test("arbitrary read function with message input", async () => {
 });
 
 test("arbitrary write function with inline inputs", async () => {
-  var result = await actions.createAndCount({ name: "Keelson" });
-  expect(result.count).toEqual(1);
+  const result1 = await actions.createAndCount({ name: "Keelson" });
+  expect(result1.count).toEqual(1);
 
-  result = await actions.createAndCount({ name: "Keelson" });
-  expect(result.count).toEqual(2);
+  const result2 = await actions.createAndCount({ name: "Keelson" });
+  expect(result2.count).toEqual(2);
 });
 
 test("arbitrary write function with message input", async () => {
-  var result = await actions.createManyAndCount({
+  const result1 = await actions.createManyAndCount({
     names: ["Keelson", "Weaveton"],
   });
-  expect(result.count).toEqual(2);
+  expect(result1.count).toEqual(2);
 
-  var result = await actions.createManyAndCount({
+  const result2 = await actions.createManyAndCount({
     names: ["Keelson", "Weaveton"],
   });
-  expect(result.count).toEqual(4);
+  expect(result2.count).toEqual(4);
 });
