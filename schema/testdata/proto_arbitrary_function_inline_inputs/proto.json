@@ -46,6 +46,7 @@
         {
           "modelName": "Post",
           "name": "getPost",
+          "type": "OPERATION_TYPE_READ",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
           "inputMessageName": "GetPostInput",
           "responseMessageName": "Out"

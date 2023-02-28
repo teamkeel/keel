@@ -61,25 +61,25 @@ test("authenticate - new identity and createIfNotExists false - respond with fai
 });
 
 test("authenticate - existing identity and createIfNotExists false - authenticated", async () => {
-  const { identityId: id1, identityCreated: created1 } =
-    await actions.authenticate({
-      createIfNotExists: true,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "1234",
-      },
-    });
+  const { identityCreated: created1 } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
 
-  const { identityId: id2, identityCreated: created2 } =
-    await actions.authenticate({
-      createIfNotExists: false,
-      emailPassword: {
-        email: "user@keel.xyz",
-        password: "1234",
-      },
-    });
+  const { identityCreated: created2 } = await actions.authenticate({
+    createIfNotExists: false,
+    emailPassword: {
+      email: "user@keel.xyz",
+      password: "1234",
+    },
+  });
 
-  expect(id1).toEqual(id2);
+  const count = (await models.identity.findMany({})).length;
+
+  expect(count).toEqual(1);
   expect(created1).toEqual(true);
   expect(created2).toEqual(false);
 });

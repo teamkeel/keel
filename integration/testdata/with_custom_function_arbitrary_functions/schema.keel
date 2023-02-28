@@ -1,0 +1,31 @@
+message CountResponse {
+    count Number
+}
+
+message AdvancedSearchInput {
+    contains Text?
+    startsWith Text?
+    endsWith Text?
+}
+
+message CreateManyInput {
+    names Text[]
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        read countName(name) returns (CountResponse)
+        read countNameAdvanced(AdvancedSearchInput) returns (CountResponse)
+        write createAndCount(name) returns (CountResponse)
+        write createManyAndCount(CreateManyInput) returns (CountResponse)
+    }
+
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+}

@@ -110,7 +110,14 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 				continue
 			}
 
+			// Generate input message types for operation
 			writeActionInputTypes(sdkTypes, schema, op, false)
+
+			if op.Type == proto.OperationType_OPERATION_TYPE_READ || op.Type == proto.OperationType_OPERATION_TYPE_WRITE {
+				// Response message types for operation
+				writeActionResponseTypes(sdkTypes, schema, op, false)
+			}
+
 			writeCustomFunctionWrapperType(sdkTypes, model, op)
 
 			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(op.Name))
@@ -514,14 +521,18 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 }
 
 func writeActionInputTypes(w *Writer, schema *proto.Schema, op *proto.Operation, isTestingPackage bool) {
-	targetMessageType := op.InputMessageName
+	writeActionTypes(w, schema, op, op.InputMessageName, isTestingPackage)
+}
 
-	msgs := proto.FindAllLinkedMessages(schema.Messages, targetMessageType)
+func writeActionResponseTypes(w *Writer, schema *proto.Schema, op *proto.Operation, isTestingPackage bool) {
+	writeActionTypes(w, schema, op, op.ResponseMessageName, isTestingPackage)
+}
 
-	// todo: what if messages are shared by multiple operations? (dont think that can happen with inputs)
+func writeActionTypes(w *Writer, schema *proto.Schema, op *proto.Operation, messageName string, isTestingPackage bool) {
+	msgs := proto.FindAllLinkedMessages(schema.Messages, messageName)
+
 	for _, msg := range msgs {
 		w.Writef("export interface %s {\n", msg.Name)
-
 		w.Indent()
 
 		for _, field := range msg.Fields {
@@ -529,7 +540,6 @@ func writeActionInputTypes(w *Writer, schema *proto.Schema, op *proto.Operation,
 		}
 
 		w.Dedent()
-
 		w.Writef("}\n")
 	}
 }
@@ -594,7 +604,7 @@ func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operati
 
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
-	w.Writef("(fn: (inputs: %sInput, api: FunctionAPI, ctx: ContextAPI) => ", strcase.ToCamel(op.Name))
+	w.Writef("(fn: (inputs: %s, api: FunctionAPI, ctx: ContextAPI) => ", op.InputMessageName)
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))
@@ -618,6 +628,8 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Operation, isTesti
 		returnType += sdkPrefix + model.Name + "[]"
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		returnType += "string"
+	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
+		returnType += op.ResponseMessageName
 	}
 	returnType += ">"
 	return returnType
@@ -639,11 +651,8 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		// todo: create ID type
 		returnType += "string"
-	case proto.OperationType_OPERATION_TYPE_READ,
-		proto.OperationType_OPERATION_TYPE_WRITE:
-		// TODO: fix this when authenticate has been re-worked following Arbitrary Functions
-		// https://www.notion.so/keelhq/Arbitrary-Functions-428c199902cf4353b18838434c8910d1
-		returnType += "any"
+	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
+		returnType += op.ResponseMessageName
 	}
 
 	returnType += ">"
@@ -806,10 +815,13 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln(`import "@teamkeel/testing-runtime";`)
 	w.Writeln("")
 
-	// For the testing package we need input types for all actions
+	// For the testing package we need input and response types for all actions
 	for _, model := range schema.Models {
 		for _, op := range model.Operations {
 			writeActionInputTypes(w, schema, op, true)
+			if op.Type == proto.OperationType_OPERATION_TYPE_READ || op.Type == proto.OperationType_OPERATION_TYPE_WRITE {
+				writeActionResponseTypes(w, schema, op, false)
+			}
 		}
 	}
 
@@ -836,7 +848,7 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 				w.Write("?")
 			}
 
-			w.Writef(`: %sInput): %s`, strcase.ToCamel(op.Name), toActionReturnType(model, op))
+			w.Writef(`: %s): %s`, op.InputMessageName, toActionReturnType(model, op))
 			w.Writeln(";")
 		}
 	}

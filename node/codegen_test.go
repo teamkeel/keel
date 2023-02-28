@@ -535,6 +535,158 @@ export interface DeletePersonInput {
 	})
 }
 
+func TestWriteActionInlineInputTypesRead(t *testing.T) {
+	schema := `
+message PersonNameResponse {
+	name Text
+}
+
+model Person {
+	functions {
+		read getPersonName(id) returns (PersonNameResponse)
+	}
+}`
+	expected := `
+export interface GetPersonNameInput {
+	id: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionMessageInputTypesRead(t *testing.T) {
+	schema := `
+message PersonNameResponse {
+	name Text
+}
+
+message GetInput {
+	id ID
+}
+
+model Person {
+	functions {
+		read deletePerson(GetInput) returns (PersonNameResponse)
+	}
+}
+	`
+	expected := `
+export interface GetInput {
+	id: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionResponseTypesRead(t *testing.T) {
+	schema := `
+message PersonNameResponse {
+	name Text
+}
+
+message GetInput {
+	id ID
+}
+
+model Person {
+	functions {
+		read deletePerson(GetInput) returns (PersonNameResponse)
+	}
+}
+	`
+	expected := `
+export interface PersonNameResponse {
+	name: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionResponseTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionInlineInputTypesWrite(t *testing.T) {
+	schema := `
+message DeleteResponse {
+	isDeleted Boolean
+}
+
+model Person {
+	functions {
+		write deletePerson(id) returns (DeleteResponse)
+	}
+}`
+	expected := `
+export interface DeletePersonInput {
+	id: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionMessageInputTypesWrite(t *testing.T) {
+	schema := `
+message DeleteResponse {
+	isDeleted Boolean
+}
+
+message DeleteInput {
+	id ID
+}
+
+model Person {
+	functions {
+		read deletePerson(DeleteInput) returns (DeleteResponse)
+	}
+}
+	`
+	expected := `
+export interface DeleteInput {
+	id: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionResponseTypesWrite(t *testing.T) {
+	schema := `
+message DeleteResponse {
+	isDeleted Boolean
+}
+
+message DeleteInput {
+	id ID
+}
+
+model Person {
+	functions {
+		read deletePerson(DeleteInput) returns (DeleteResponse)
+	}
+}
+	`
+	expected := `
+export interface DeleteResponse {
+	isDeleted: boolean;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionResponseTypes(w, s, m.Operations[0], false)
+	})
+}
+
 func TestWriteCustomFunctionWrapperType(t *testing.T) {
 	schema := `
 model Person {
@@ -613,6 +765,10 @@ export interface AuthenticateInput {
 	createIfNotExists?: boolean | null;
 	emailPassword: EmailPasswordInput;
 }
+export interface AuthenticateResponse {
+	identityCreated: boolean;
+	token: string;
+}
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
@@ -621,7 +777,7 @@ declare class ActionExecutor {
 	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
 	deletePerson(i?: DeletePersonInput): Promise<string>;
 	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
-	authenticate(i: AuthenticateInput): Promise<any>;
+	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
@@ -727,11 +883,15 @@ export interface AuthenticateInput {
 	createIfNotExists?: boolean | null;
 	emailPassword: EmailPasswordInput;
 }
+export interface AuthenticateResponse {
+	identityCreated: boolean;
+	token: string;
+}
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
 	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
-	authenticate(i: AuthenticateInput): Promise<any>;
+	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
