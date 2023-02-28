@@ -1,0 +1,20 @@
+message Foo {
+  bar Text
+}
+model Person {
+  functions {
+    read getPerson(Foo)        returns(Foo)
+    write        mutatePerson(Foo) returns (Foo)
+  }
+}
+===
+message Foo {
+    bar Text
+}
+
+model Person {
+    functions {
+        read getPerson(Foo) returns (Foo)
+        write mutatePerson(Foo) returns (Foo)
+    }
+}

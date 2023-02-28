@@ -42,6 +42,10 @@ func TestFormat(t *testing.T) {
 			if !assert.Equal(t, expected, formatted) {
 				// Print actual output as the output of the assert is not
 				// very readable
+
+				fmt.Println("Expected:")
+				fmt.Println(expected)
+				fmt.Println()
 				fmt.Println("Actual:")
 				fmt.Println(formatted)
 

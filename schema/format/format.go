@@ -282,7 +282,6 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 
 func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 	writer.Comments(section, func() {
-
 		actions := []*parser.ActionNode{}
 		if section.Operations != nil {
 			actions = section.Operations
@@ -295,6 +294,7 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 
 		writer.Block(func() {
 			for _, op := range actions {
+
 				writer.Comments(op, func() {
 					writer.Write(
 						"%s %s",
@@ -302,11 +302,16 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 						lowerCamel(op.Name.Value),
 					)
 
-					printOperationInputs(writer, op.Inputs)
+					printOperationInputs(writer, op.Inputs, op.IsArbitraryFunction())
 
 					if len(op.With) > 0 {
 						writer.Write(" with ")
-						printOperationInputs(writer, op.With)
+						printOperationInputs(writer, op.With, op.IsArbitraryFunction())
+					}
+
+					if len(op.Returns) > 0 {
+						writer.Write(" returns ")
+						printOperationInputs(writer, op.Returns, op.IsArbitraryFunction())
 					}
 
 					printAttributesBlock(writer, op.Attributes)
@@ -316,7 +321,7 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 	})
 }
 
-func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode) {
+func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbitraryFunction bool) {
 	writer.Write("(")
 	for i, arg := range inputs {
 		if i > 0 {
@@ -334,7 +339,13 @@ func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode) {
 				if i > 0 {
 					writer.Write(".")
 				}
-				writer.Write(lowerCamel(fragment.Fragment))
+
+				// if its an arbitrary function, then we dont want to automatically lowercase the input names
+				if isArbitraryFunction {
+					writer.Write(fragment.Fragment)
+				} else {
+					writer.Write(lowerCamel(fragment.Fragment))
+				}
 			}
 		}
 
