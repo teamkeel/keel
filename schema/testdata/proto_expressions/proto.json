@@ -85,22 +85,6 @@
           "name": "getPeople",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "getPeople",
-              "name": "name",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Person",
-                "fieldName": "name"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "name"
-              ]
-            }
-          ],
           "permissions": [
             {
               "modelName": "Person",
@@ -122,22 +106,6 @@
           "name": "createPerson",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "createPerson",
-              "name": "name",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Person",
-                "fieldName": "name"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "name"
-              ]
-            }
-          ],
           "setExpressions": [
             {
               "source": "person.identity = ctx.identity"
@@ -153,22 +121,6 @@
           "name": "kill",
           "type": "OPERATION_TYPE_UPDATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Person",
-              "operationName": "kill",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "Person",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "id"
-              ]
-            }
-          ],
           "setExpressions": [
             {
               "source": "person.dateOfDeath = ctx.now"
@@ -234,43 +186,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

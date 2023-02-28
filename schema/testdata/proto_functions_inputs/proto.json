@@ -55,19 +55,6 @@
           "name": "operationB",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputs": [
-            {
-              "modelName": "Foo",
-              "operationName": "operationB",
-              "name": "bar",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Foo",
-                "fieldName": "bar"
-              },
-              "mode": "INPUT_MODE_WRITE"
-            }
-          ],
           "inputMessageName": "OperationBInput"
         },
         {
@@ -75,28 +62,6 @@
           "name": "operationC",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputs": [
-            {
-              "modelName": "Foo",
-              "operationName": "operationC",
-              "name": "bar",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Foo",
-                "fieldName": "bar"
-              },
-              "mode": "INPUT_MODE_WRITE"
-            },
-            {
-              "modelName": "Foo",
-              "operationName": "operationC",
-              "name": "baz",
-              "type": {
-                "type": "TYPE_STRING"
-              },
-              "mode": "INPUT_MODE_WRITE"
-            }
-          ],
           "inputMessageName": "OperationCInput"
         },
         {
@@ -104,17 +69,6 @@
           "name": "operationD",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputs": [
-            {
-              "modelName": "Foo",
-              "operationName": "operationD",
-              "name": "baz",
-              "type": {
-                "type": "TYPE_STRING"
-              },
-              "mode": "INPUT_MODE_WRITE"
-            }
-          ],
           "inputMessageName": "OperationDInput"
         }
       ]
@@ -175,43 +129,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

@@ -90,51 +90,6 @@
           "name": "updateChild1",
           "type": "OPERATION_TYPE_UPDATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild1",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "id"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild1",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "isActive"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild1",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ParentModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "parent",
-                "id"
-              ]
-            }
-          ],
           "inputMessageName": "UpdateChild1Input"
         },
         {
@@ -142,50 +97,6 @@
           "name": "updateChild2",
           "type": "OPERATION_TYPE_UPDATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild2",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "id"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild2",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "isActive"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild2",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "parentId"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "parentId"
-              ]
-            }
-          ],
           "inputMessageName": "UpdateChild2Input"
         },
         {
@@ -193,66 +104,6 @@
           "name": "updateChild3",
           "type": "OPERATION_TYPE_UPDATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild3",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "id"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild3",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "isActive"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild3",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ParentModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "parent",
-                "id"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild3",
-              "name": "parentOptionalId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ParentModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "parentOptional",
-                "id"
-              ]
-            }
-          ],
           "inputMessageName": "UpdateChild3Input"
         },
         {
@@ -260,64 +111,6 @@
           "name": "updateChild4",
           "type": "OPERATION_TYPE_UPDATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild4",
-              "name": "id",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "id"
-              },
-              "mode": "INPUT_MODE_READ",
-              "target": [
-                "id"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild4",
-              "name": "isActive",
-              "type": {
-                "type": "TYPE_BOOL",
-                "modelName": "ChildModel",
-                "fieldName": "isActive"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "isActive"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild4",
-              "name": "parentId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "parentId"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "parentId"
-              ]
-            },
-            {
-              "modelName": "ChildModel",
-              "operationName": "updateChild4",
-              "name": "parentOptionalId",
-              "type": {
-                "type": "TYPE_ID",
-                "modelName": "ChildModel",
-                "fieldName": "parentOptionalId"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "parentOptionalId"
-              ]
-            }
-          ],
           "inputMessageName": "UpdateChild4Input"
         }
       ]
@@ -421,43 +214,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

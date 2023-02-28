@@ -49,33 +49,6 @@
           "name": "enumFailedExpressions",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Post",
-              "operationName": "enumFailedExpressions",
-              "name": "type",
-              "type": {
-                "type": "TYPE_ENUM",
-                "enumName": "PostType",
-                "modelName": "Post",
-                "fieldName": "type"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "type"
-              ]
-            },
-            {
-              "modelName": "Post",
-              "operationName": "enumFailedExpressions",
-              "name": "explType",
-              "type": {
-                "type": "TYPE_ENUM",
-                "enumName": "PostType"
-              },
-              "mode": "INPUT_MODE_WRITE"
-            }
-          ],
           "permissions": [
             {
               "modelName": "Post",
@@ -145,43 +118,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }

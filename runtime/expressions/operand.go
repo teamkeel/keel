@@ -179,8 +179,28 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		return operandType, nil
 	case resolver.IsExplicitInput():
 		inputName := operand.Ident.Fragments[0].Fragment
-		input := proto.FindInput(operation, inputName)
-		return input.Type.Type, nil
+		var field *proto.MessageField
+		switch operation.Type {
+		case proto.OperationType_OPERATION_TYPE_CREATE:
+			message := proto.FindValuesInputMessage(schema, operation.Name)
+			field = proto.FindMessageField(message, inputName)
+		case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_LIST, proto.OperationType_OPERATION_TYPE_DELETE:
+			message := proto.FindWhereInputMessage(schema, operation.Name)
+			field = proto.FindMessageField(message, inputName)
+		case proto.OperationType_OPERATION_TYPE_UPDATE:
+			message := proto.FindValuesInputMessage(schema, operation.Name)
+			field = proto.FindMessageField(message, inputName)
+			if field == nil {
+				message := proto.FindWhereInputMessage(schema, operation.Name)
+				field = proto.FindMessageField(message, inputName)
+			}
+		default:
+			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unhandled operation type %s for explicit input", operation.Type)
+		}
+		if field == nil {
+			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("could not find explicit input %s on operation %s", inputName, operation.Name)
+		}
+		return field.Type.Type, nil
 	case operand.Ident.IsContext():
 		fragmentCount := len(operand.Ident.Fragments)
 		if fragmentCount > 2 && operand.Ident.IsContextEnvField() {

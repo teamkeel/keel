@@ -204,50 +204,6 @@
           "name": "createPost",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputs": [
-            {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "name": "title",
-              "type": {
-                "type": "TYPE_STRING",
-                "modelName": "Post",
-                "fieldName": "title"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "title"
-              ]
-            },
-            {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "name": "publisher",
-              "type": {
-                "type": "TYPE_MODEL",
-                "modelName": "Publisher",
-                "fieldName": "publisher"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "publisher"
-              ]
-            },
-            {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "name": "owner",
-              "type": {
-                "type": "TYPE_MODEL",
-                "modelName": "Author",
-                "fieldName": "owner"
-              },
-              "mode": "INPUT_MODE_WRITE",
-              "target": [
-                "owner"
-              ]
-            }
-          ],
           "permissions": [
             {
               "modelName": "Post",
@@ -317,43 +273,6 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputs": [
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "createIfNotExists",
-              "type": {
-                "type": "TYPE_BOOL"
-              },
-              "optional": true
-            },
-            {
-              "modelName": "Identity",
-              "operationName": "authenticate",
-              "name": "emailPassword",
-              "type": {
-                "type": "TYPE_OBJECT"
-              },
-              "inputs": [
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "email",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                },
-                {
-                  "modelName": "Identity",
-                  "operationName": "authenticate",
-                  "name": "password",
-                  "type": {
-                    "type": "TYPE_STRING"
-                  }
-                }
-              ]
-            }
-          ],
           "inputMessageName": "AuthenticateInput",
           "responseMessageName": "AuthenticateResponse"
         }
