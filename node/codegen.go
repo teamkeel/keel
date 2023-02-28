@@ -604,7 +604,7 @@ func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operati
 
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
-	w.Writef("(fn: (inputs: %s, api: FunctionAPI, ctx: ContextAPI) => ", strcase.ToCamel(op.InputMessageName))
+	w.Writef("(fn: (inputs: %s, api: FunctionAPI, ctx: ContextAPI) => ", op.InputMessageName)
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))
