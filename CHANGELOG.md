@@ -1,3 +1,10 @@
+# [0.277.0](https://github.com/teamkeel/keel/compare/v0.276.0...v0.277.0) (2023-03-01)
+
+
+### Features
+
+* arrays and model support in messages ([#837](https://github.com/teamkeel/keel/issues/837)) ([77ca8a8](https://github.com/teamkeel/keel/commit/77ca8a86fad897654910eca38aca31e9d2937c59))
+
 # [0.276.0](https://github.com/teamkeel/keel/compare/v0.275.0...v0.276.0) (2023-03-01)
 
 
