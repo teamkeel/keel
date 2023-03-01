@@ -3,7 +3,6 @@ package completions
 import (
 	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
@@ -323,9 +322,29 @@ func getFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Compl
 
 func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	// if we are inside enclosing parenthesis then we are completing for
-	// action inputs
+	// action inputs, or for returns
 	if tokenAtPos.StartOfParen() != nil {
 		return getActionInputCompletions(ast, tokenAtPos)
+	}
+
+	// try to find the first matching token out of returns/read/write
+	// prev is the first match that was found when searching backwards through the token stream
+	// this will help identify the position (whether we are in a returns or in the inputs)
+	prev, _ := tokenAtPos.FindPrevMultiple(
+		parser.KeywordReturns,
+		parser.ActionTypeRead,
+		parser.ActionTypeWrite,
+	)
+
+	if tokenAtPos.Prev().EndOfParen() != nil && (prev == parser.ActionTypeWrite || prev == parser.ActionTypeRead) {
+		// target just after end of inputs
+
+		return []*CompletionItem{
+			{
+				Label: parser.KeywordReturns,
+				Kind:  KindKeyword,
+			},
+		}
 	}
 
 	// to see if we should provide attribute completions we see if we're inside an
@@ -505,14 +524,20 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 
 		actionType := block.Next().Value()
 
-		// if its an arbitrary function, we want to provide completions of Message types for returns and inputs
-		if actionType == parser.ActionTypeRead || actionType == parser.ActionTypeWrite {
+		readOrWriteActionType := actionType == parser.ActionTypeRead || actionType == parser.ActionTypeWrite
+
+		if readOrWriteActionType {
 			// find the first occurence of a given token in the previous token stream and return what match was found
 			match, _ := tokenAtPos.StartOfParen().FindPrevMultiple(
 				parser.KeywordReturns,
 				parser.ActionTypeRead,
 				parser.ActionTypeWrite,
 			)
+			// if insideInputs is true, it means the first preceeding token we're interested in was action type read or write
+			insideInputs := match == parser.ActionTypeRead || match == parser.ActionTypeWrite
+
+			// the first occurence was the 'returns' keyword, so we know we're inside a returns parentheses
+			insideReturns := match == parser.KeywordReturns
 
 			messages := lo.Map(query.MessageNames([]*parser.AST{ast}), func(msgName string, _ int) *CompletionItem {
 				return &CompletionItem{
@@ -521,13 +546,14 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 				}
 			})
 
-			switch match {
-			case parser.KeywordReturns:
-				// for returns, we only want to suggest the message types in the schema
-				return messages
-			case parser.ActionTypeRead, parser.ActionTypeWrite:
+			switch {
+			case insideInputs:
 				// for read and write actions, we want to suggest the field names (default behaviour) and the available message types
 				completions = append(completions, messages...)
+			case insideReturns:
+				// suggest the message types available in the schema only
+
+				return messages
 			}
 		}
 	}
@@ -564,6 +590,7 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 	}
 
 	return completions
+
 }
 
 func getAttributeArgCompletions(ast *parser.AST, t *TokensAtPosition) []*CompletionItem {
@@ -638,35 +665,9 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 		return getExpressionCompletions(ast, t)
 	case "actions":
 		if listStart != nil {
-			// if the list has already begun, we match the current token after the comma against a known action type
-			if comma != nil {
-				// there is a currently a token after the comma
-				nextTokenAfterComma := comma.Next().Value()
-
-				// check that the token after the comma _partially_ matches a known action type
-				results := lo.Filter(actionBlockKeywords, func(c *CompletionItem, _ int) bool {
-					return c.Label != parser.KeywordWith && strings.HasPrefix(c.Label, nextTokenAfterComma) && c.Label != nextTokenAfterComma
-				})
-
-				if len(results) > 0 {
-					return results
-				} else {
-					// suggest a comma if there is a completed prior token beforehand
-					// todo: this will suggest a comma if the previous token is an unknown action type
-					// however this will be caught by validation so maybe not a biggie
-					return []*CompletionItem{
-						{
-							Label: ",",
-							Kind:  KindPunctuation,
-						},
-					}
-				}
-			} else {
-				return lo.Filter(actionBlockKeywords, func(c *CompletionItem, _ int) bool {
-					return c.Label != parser.KeywordWith
-				})
-			}
-
+			return lo.Filter(actionBlockKeywords, func(c *CompletionItem, _ int) bool {
+				return c.Label != parser.KeywordWith
+			})
 		}
 		return []*CompletionItem{}
 	case "roles":

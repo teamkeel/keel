@@ -789,29 +789,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"create"},
-		},
-		{
-			name: "permission-attribute-actions-many-complete-token",
-			schema: `
-			model Person {
-				@permission(
-					actions: [get, update, create<Cursor>]
-				)
-			}
-			`,
-			expected: []string{","},
-		},
-		{
-			name: "permission-attribute-actions-many-complete-token",
-			schema: `
-			model Person {
-				@permission(
-					actions: [get, update, updated<Cursor>]
-				)
-			}
-			`,
-			expected: []string{","},
+			expected: []string{"create", "delete", "get", "list", "read", "update", "write"},
 		},
 		{
 			name: "permission-attribute-roles",
@@ -962,6 +940,19 @@ func TestCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"GetPersonInput", "GetPersonResponse"},
+		},
+		{
+			name: "arbitrary-function-returns-keyword-completions",
+			schema: `
+			message GetPersonInput {}
+			message GetPersonResponse {}
+			model Person {
+				functions {
+					read getPerson(GetPersonInput) <Cursor>
+				}
+			}
+			`,
+			expected: []string{"returns"},
 		},
 	}
 
