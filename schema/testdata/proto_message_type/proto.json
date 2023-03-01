@@ -124,10 +124,7 @@
           "name": "titleSpecial",
           "type": {
             "type": "TYPE_STRING"
-          },
-          "target": [
-            "titleSpecial"
-          ]
+          }
         }
       ]
     },
@@ -139,20 +136,14 @@
           "name": "id",
           "type": {
             "type": "TYPE_ID"
-          },
-          "target": [
-            "id"
-          ]
+          }
         },
         {
           "messageName": "MyCustomFunctionOutput",
           "name": "title",
           "type": {
             "type": "TYPE_STRING"
-          },
-          "target": [
-            "title"
-          ]
+          }
         }
       ]
     },

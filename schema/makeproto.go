@@ -567,17 +567,22 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 	parserMsg := decl.Message
 
 	fields := lo.Map(parserMsg.Fields, func(f *parser.FieldNode, _ int) *proto.MessageField {
-
-		return &proto.MessageField{
+		field := &proto.MessageField{
 			Name: f.Name.Value,
 			Type: &proto.TypeInfo{
-				Type:     scm.parserTypeToProtoType(f.Type),
+				Type: scm.parserTypeToProtoType(f.Type),
+
 				Repeated: f.Repeated,
 			},
 			Optional:    f.Optional,
 			MessageName: parserMsg.Name.Value,
-			Target:      []string{f.Name.Value},
 		}
+
+		if field.Type.Type == proto.Type_TYPE_MESSAGE {
+			field.Type.MessageName = wrapperspb.String(f.Type)
+		}
+
+		return field
 	})
 
 	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{

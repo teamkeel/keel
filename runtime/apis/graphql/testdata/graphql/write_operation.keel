@@ -1,0 +1,26 @@
+message PersonResponse {
+    text Text
+    optionalText Text?
+}
+
+message PersonInput {
+    name Text
+    optionalName Text?
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        write writePerson(name) returns (PersonResponse)
+        write writePersonWithMessage(PersonInput) returns (PersonResponse)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

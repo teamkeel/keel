@@ -400,7 +400,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
-		field.Type, err = outputObjectFromMessage(responseMessage)
+		field.Type, err = mk.outputTypeFromMessage(responseMessage)
 		if err != nil {
 			return err
 		}
@@ -410,7 +410,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
-		field.Type, err = outputObjectFromMessage(responseMessage)
+		field.Type, err = mk.outputTypeFromMessage(responseMessage)
 		if err != nil {
 			return err
 		}
@@ -502,18 +502,37 @@ var fromNowType = graphql.Field{
 	},
 }
 
-// outputObjectFromMessage makes a graphql.Object response output from a proto.Message.
-// Currently does not handle nested messages.
-func outputObjectFromMessage(message *proto.Message) (*graphql.Object, error) {
+// outputTypeFromMessage makes a graphql.Object response output from a proto.Message.
+func (mk *graphqlSchemaBuilder) outputTypeFromMessage(message *proto.Message) (graphql.Output, error) {
+	if out, ok := mk.types[message.Name]; ok {
+		return out, nil
+	}
+
 	output := graphql.NewObject(graphql.ObjectConfig{
 		Name:   message.Name,
 		Fields: graphql.Fields{},
 	})
 
 	for _, field := range message.Fields {
-		fieldType := protoTypeToGraphQLOutput[field.Type.Type]
-		if fieldType == nil {
-			return nil, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+		var fieldType graphql.Output
+
+		switch field.Type.Type {
+		case proto.Type_TYPE_MESSAGE:
+			fieldMessage := proto.FindMessage(mk.proto.Messages, field.Type.MessageName.Value)
+
+			var err error
+			fieldType, err = mk.outputTypeFromMessage(fieldMessage)
+			if err != nil {
+				return nil, err
+			}
+		case proto.Type_TYPE_MODEL:
+			// todo: https://linear.app/keel/issue/BLD-319/model-type-field-in-message-type
+			return nil, errors.New("not supporting nested models just yet")
+		default:
+			fieldType = protoTypeToGraphQLOutput[field.Type.Type]
+			if fieldType == nil {
+				return nil, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+			}
 		}
 
 		if !field.Optional {
@@ -524,13 +543,15 @@ func outputObjectFromMessage(message *proto.Message) (*graphql.Object, error) {
 			Type: fieldType,
 		})
 	}
+
+	mk.types[message.Name] = output
+
 	return output, nil
 }
 
 // outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.Output, err error) {
 	switch field.Type.Type {
-
 	case proto.Type_TYPE_ENUM:
 		for _, e := range mk.proto.Enums {
 			if e.Name == field.Type.EnumName.Value {
@@ -538,7 +559,6 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 				break
 			}
 		}
-
 	case proto.Type_TYPE_MODEL:
 		for _, m := range mk.proto.Models {
 			if m.Name == field.Type.ModelName.Value {
@@ -546,7 +566,6 @@ func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.O
 				break
 			}
 		}
-
 	default:
 		var ok bool
 		out, ok = protoTypeToGraphQLOutput[field.Type.Type]

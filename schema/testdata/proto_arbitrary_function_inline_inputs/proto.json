@@ -124,10 +124,7 @@
           "name": "bar",
           "type": {
             "type": "TYPE_STRING"
-          },
-          "target": [
-            "bar"
-          ]
+          }
         }
       ]
     },

@@ -1,0 +1,26 @@
+message PersonResponse {
+    text Text
+    optionalText Text?
+}
+
+message PersonInput {
+    name Text
+    optionalName Text?
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        read readPerson(name) returns (PersonResponse)
+        read readPersonWithMessage(PersonInput) returns (PersonResponse)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

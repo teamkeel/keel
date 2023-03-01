@@ -1,0 +1,41 @@
+{
+  "components": {
+    "schemas": {
+      "NestedObject": {
+        "additionalProperties": false,
+        "properties": {
+          "bool": {
+            "type": "boolean"
+          }
+        },
+        "required": ["bool"],
+        "type": "object"
+      },
+      "NullableNestedObject": {
+        "additionalProperties": false,
+        "properties": {
+          "bool": {
+            "type": "boolean"
+          }
+        },
+        "required": ["bool"],
+        "type": ["object", "null"]
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "nested": {
+      "$ref": "#/components/schemas/NestedObject"
+    },
+    "optionalNested": {
+      "$ref": "#/components/schemas/NullableNestedObject"
+    }
+  },
+  "additionalProperties": false,
+  "required": ["name", "nested"]
+}
+  

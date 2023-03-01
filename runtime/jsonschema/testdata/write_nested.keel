@@ -1,0 +1,29 @@
+message PersonResponse {
+    name Text
+}
+
+message PersonInput {
+    name Text
+    nested NestedObject
+    optionalNested NestedObject?
+}
+
+message NestedObject {
+    bool Boolean
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        write testAction(PersonInput) returns (PersonResponse)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}
