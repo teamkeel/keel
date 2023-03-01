@@ -1,0 +1,21 @@
+message ClassroomPeople {
+    teacher Person
+    substitute Person?
+    pupils Person[]
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        read inClassroom(classId: ID) returns (ClassroomPeople)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

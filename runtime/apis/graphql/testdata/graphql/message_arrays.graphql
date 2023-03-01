@@ -1,0 +1,31 @@
+type Query {
+  __Empty: Boolean
+  readPerson(input: PersonInput!): PersonResponse
+}
+
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input PersonInput {
+  id: [ID!]!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
+}
+
+type PersonResponse {
+  id: [ID]!
+}

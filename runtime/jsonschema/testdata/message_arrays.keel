@@ -1,0 +1,23 @@
+message PersonResponse {
+    ids ID[]
+}
+
+message PersonInput {
+    ids ID[]
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        read testAction(PersonInput) returns (PersonResponse)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}
