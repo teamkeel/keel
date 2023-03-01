@@ -789,7 +789,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"create", "delete", "get", "list", "read", "update", "write"},
+			expected: parser.FunctionActionTypes,
 		},
 		{
 			name: "permission-attribute-roles",
