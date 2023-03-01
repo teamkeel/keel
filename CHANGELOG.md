@@ -1,3 +1,10 @@
+# [0.276.0](https://github.com/teamkeel/keel/compare/v0.275.0...v0.276.0) (2023-03-01)
+
+
+### Features
+
+* nested and reuseable messages ([#836](https://github.com/teamkeel/keel/issues/836)) ([18773b1](https://github.com/teamkeel/keel/commit/18773b19b7de46b7cddc3878ad3f9c0f34a3efea))
+
 # [0.275.0](https://github.com/teamkeel/keel/compare/v0.274.1...v0.275.0) (2023-02-28)
 
 
