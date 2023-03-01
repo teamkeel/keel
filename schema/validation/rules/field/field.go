@@ -5,7 +5,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -35,27 +34,6 @@ func ReservedNameRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) 
 						field.Name,
 					)
 				}
-			}
-		}
-	}
-
-	return
-}
-
-func FieldNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, field := range query.ModelFields(model) {
-			if field.BuiltIn {
-				continue
-			}
-			if strcase.ToLowerCamel(field.Name.Value) != field.Name.Value {
-				errs.Append(errorhandling.ErrorFieldNameLowerCamel,
-					map[string]string{
-						"Name":      field.Name.Value,
-						"Suggested": strcase.ToLowerCamel(strings.ToLower(field.Name.Value)),
-					},
-					field.Name,
-				)
 			}
 		}
 	}

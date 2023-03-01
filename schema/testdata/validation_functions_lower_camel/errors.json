@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "Action names should be written in lowerCamelCase",
-      "hint": "Did you mean 'createProfile'?",
-      "code": "E002",
+      "message": "action names must use lowerCamelCase",
+      "hint": "e.g. cREATEPROFILE",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_functions_lower_camel/schema.keel",
         "offset": 77,

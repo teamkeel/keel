@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "You have a field name that is not lowerCamel ID",
-      "hint": "Did you mean 'id'?",
-      "code": "E012",
+      "message": "field names must use lowerCamelCase",
+      "hint": "e.g. id",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_reserved_field_name_id_uppercase/schema.keel",
         "offset": 36,

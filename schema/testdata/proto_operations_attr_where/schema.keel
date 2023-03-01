@@ -1,13 +1,11 @@
 model Foo {
     fields {
-        f1 Boolean {
-            @unique
-        }
+        f1 Text @unique
     }
 
     operations {
-        get operationA(f1) {
-            @where(foo.f1 == true)
+        get operationA() {
+            @where(foo.f1 == "foo")
         }
     }
 }

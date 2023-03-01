@@ -25,24 +25,6 @@ var (
 	}
 )
 
-func ActionNamingRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, action := range query.ModelActions(model) {
-			if strcase.ToLowerCamel(action.Name.Value) != action.Name.Value {
-				errs.Append(errorhandling.ErrorActionNameLowerCamel,
-					map[string]string{
-						"Name":      action.Name.Value,
-						"Suggested": strcase.ToLowerCamel(strings.ToLower(action.Name.Value)),
-					},
-					action.Name,
-				)
-			}
-		}
-	}
-
-	return
-}
-
 // validate only read+write can be used with returns
 // validate returns has to be specified with read+write
 func ActionTypesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
@@ -613,110 +595,6 @@ func ValidActionInputTypesRule(asts []*parser.AST) (errs errorhandling.Validatio
 	return
 }
 
-func ValidOperationInputUsagesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	for _, model := range query.Models(asts) {
-		for _, operation := range query.ModelOperations(model) {
-			isFunction := false
-			for _, input := range operation.Inputs {
-				errs.AppendError(validateInputLabelUsage(isFunction, asts, input, model, operation))
-			}
-
-			for _, input := range operation.With {
-				errs.AppendError(validateInputLabelUsage(isFunction, asts, input, model, operation))
-			}
-		}
-	}
-
-	return errs
-}
-
-// Validate that inputs with labels are used somewhere (within an expression in any of the child attributes)
-func validateInputLabelUsage(
-	isFunction bool,
-	asts []*parser.AST,
-	input *parser.ActionInputNode,
-	model *parser.ModelNode,
-	action *parser.ActionNode,
-) *errorhandling.ValidationError {
-	if input.Label == nil {
-		return nil
-	}
-
-	isUsed := false
-
-	fieldsAssignedWithExplicitInput := []string{}
-
-	for _, attr := range action.Attributes {
-		if !lo.Contains([]string{parser.AttributeWhere, parser.AttributeSet, parser.AttributePermission, parser.AttributeValidate}, attr.Name.Value) {
-			continue
-		}
-
-		if len(attr.Arguments) == 0 {
-			continue
-		}
-
-		expr := attr.Arguments[0].Expression
-		if expr == nil {
-			continue
-		}
-
-		for _, cond := range expr.Conditions() {
-			for _, operand := range []*parser.Operand{cond.LHS, cond.RHS} {
-				if operand.Ident != nil && operand.ToString() == input.Label.Value {
-					// we've found a usage of the input
-					isUsed = true
-
-					if cond.LHS != nil && cond.LHS != operand && cond.LHS.Ident != nil {
-						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.LHS.Ident.LastFragment())
-						continue
-					}
-
-					if cond.RHS != nil && cond.RHS != operand && cond.RHS.Ident != nil {
-						fieldsAssignedWithExplicitInput = append(fieldsAssignedWithExplicitInput, cond.RHS.Ident.LastFragment())
-					}
-				}
-			}
-		}
-	}
-
-	if isUsed {
-		// check explicit input doesn't clash with an implicit input already defined in the inputs list
-		allInputs := append(action.Inputs, action.With...)
-		implicitInputs := lo.Filter(allInputs, func(input *parser.ActionInputNode, _ int) bool {
-			// inputs without a label are deemed to be implicit
-			return input.Label == nil
-		})
-
-		for _, input := range implicitInputs {
-			if lo.Contains(fieldsAssignedWithExplicitInput, input.Name()) {
-				return errorhandling.NewValidationError(
-					errorhandling.ErrorClashingImplicitInput,
-					errorhandling.TemplateLiterals{
-						Literals: map[string]string{
-							"ImplicitInputName": input.Name(),
-						},
-					},
-					input,
-				)
-			}
-
-		}
-
-		return nil
-	}
-
-	// No usages of the input - report error
-	return errorhandling.NewValidationError(
-		errorhandling.ErrorUnusedInput,
-		errorhandling.TemplateLiterals{
-			Literals: map[string]string{
-				"InputName": input.Label.Value,
-			},
-		},
-		input.Label,
-	)
-}
-
 // validateInputType validates that an input's type is acceptable, according to the following three rules:
 // 1. input.Label is nil and input.Type matches name of a field on the current model (or nested field)
 // 2. input.Label is not nil and input.Type.Fragments[0] is a valid built-in type or enum
@@ -730,17 +608,6 @@ func validateInputType(
 	resolvedType := query.ResolveInputType(asts, input, model)
 	msg := query.Message(asts, input.Type.ToString())
 
-	// validate that labels are lower camel cased to avoid ambiguity with message types
-	if input.Label != nil && strcase.ToLowerCamel(input.Label.Value) != input.Label.Value {
-		return errorhandling.NewValidationErrorWithDetails(
-			errorhandling.ActionInputError,
-			errorhandling.ErrorDetails{
-				Message: fmt.Sprintf("Input label '%s' must be in lower camel case", input.Label.Value),
-				Hint:    fmt.Sprintf("Try '%s' instead", strcase.ToLowerCamel(input.Label.Value)),
-			},
-			input.Label,
-		)
-	}
 	// if not explicitly labelled then we don't need to check for the input being used
 	// as inputs using short-hand syntax are implicitly use
 	// For functions the input doesn't need to be used

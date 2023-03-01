@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "You have a model name that is not UpperCamel person",
-      "hint": "Did you mean 'Person'?",
-      "code": "E001",
+      "message": "model names must use UpperCamelCase",
+      "hint": "e.g. Person",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_model_names_upper_camel/schema.keel",
         "offset": 6,

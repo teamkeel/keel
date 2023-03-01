@@ -16,6 +16,23 @@
         "line": 14,
         "column": 45
       }
+    },
+    {
+      "message": "title is already being used as an input so cannot also be used in an expression",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
+        "offset": 153,
+        "line": 9,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
+        "offset": 163,
+        "line": 9,
+        "column": 28
+      }
     }
   ]
 }
