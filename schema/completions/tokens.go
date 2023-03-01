@@ -150,6 +150,21 @@ func (t *TokensAtPosition) FindPrev(value string) *TokensAtPosition {
 	}
 }
 
+func (t *TokensAtPosition) FindPrevMultiple(values ...string) (string, *TokensAtPosition) {
+	for {
+		for _, value := range values {
+			if t.Value() == value {
+				return value, t
+			}
+		}
+
+		t = t.Prev()
+		if t == nil {
+			return "", nil
+		}
+	}
+}
+
 func (t *TokensAtPosition) Is(others ...*TokensAtPosition) bool {
 	if t == nil {
 		return false

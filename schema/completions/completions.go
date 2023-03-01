@@ -3,6 +3,7 @@ package completions
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
@@ -23,13 +24,14 @@ type CompletionItem struct {
 }
 
 const (
-	KindModel     = "model"
-	KindField     = "field"
-	KindVariable  = "variable"
-	KindType      = "type"
-	KindKeyword   = "keyword"
-	KindLabel     = "label"
-	KindAttribute = "attribute"
+	KindModel       = "model"
+	KindField       = "field"
+	KindVariable    = "variable"
+	KindType        = "type"
+	KindKeyword     = "keyword"
+	KindLabel       = "label"
+	KindAttribute   = "attribute"
+	KindPunctuation = "punctuation"
 )
 
 const (
@@ -341,7 +343,7 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 
 	// current token is action name - can't auto-complete
 
-	if lo.Contains(parser.ActionTypes, tokenAtPos.ValueAt(-1)) {
+	if lo.Contains(append(parser.OperationActionTypes, parser.FunctionActionTypes...), tokenAtPos.ValueAt(-1)) {
 		modelName := getParentModelName(tokenAtPos)
 		actionType := tokenAtPos.ValueAt(-1)
 
@@ -353,8 +355,18 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 		}}
 	}
 
-	// action block keywords
-	return actionBlockKeywords
+	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
+
+	switch enclosingBlock {
+	case parser.KeywordFunctions:
+		return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
+			return i.Label != parser.KeywordWith
+		})
+	default:
+		return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
+			return i.Label != parser.ActionTypeRead && i.Label != parser.ActionTypeWrite
+		})
+	}
 }
 
 var builtInFieldCompletions = []*CompletionItem{
@@ -413,6 +425,14 @@ var actionBlockKeywords = []*CompletionItem{
 	},
 	{
 		Label: parser.KeywordWith,
+		Kind:  KindKeyword,
+	},
+	{
+		Label: parser.ActionTypeRead,
+		Kind:  KindKeyword,
+	},
+	{
+		Label: parser.ActionTypeWrite,
 		Kind:  KindKeyword,
 	},
 }
@@ -475,16 +495,49 @@ func getBuiltInTypeCompletions() []*CompletionItem {
 }
 
 func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
-	modelName := getParentModelName(tokenAtPos)
-	model := query.Model([]*parser.AST{ast}, modelName)
+	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
 
 	// inside action input args - auto-complete field names
 	completions := append([]*CompletionItem{}, builtInFieldCompletions...)
 
+	if enclosingBlock == "functions" {
+		block := tokenAtPos.StartOfBlock()
+
+		actionType := block.Next().Value()
+
+		// if its an arbitrary function, we want to provide completions of Message types for returns and inputs
+		if actionType == parser.ActionTypeRead || actionType == parser.ActionTypeWrite {
+			// find the first occurence of a given token in the previous token stream and return what match was found
+			match, _ := tokenAtPos.StartOfParen().FindPrevMultiple(
+				parser.KeywordReturns,
+				parser.ActionTypeRead,
+				parser.ActionTypeWrite,
+			)
+
+			messages := lo.Map(query.MessageNames([]*parser.AST{ast}), func(msgName string, _ int) *CompletionItem {
+				return &CompletionItem{
+					Label: msgName,
+					Kind:  KindLabel,
+				}
+			})
+
+			switch match {
+			case parser.KeywordReturns:
+				// for returns, we only want to suggest the message types in the schema
+				completions = messages
+			case parser.ActionTypeRead, parser.ActionTypeWrite:
+				// for read and write actions, we want to suggest the field names (default behaviour) and the available message types
+				completions = append(completions, messages...)
+			}
+		}
+	}
+
+	modelName := getParentModelName(tokenAtPos)
+	model := query.Model([]*parser.AST{ast}, modelName)
+
 	// if we have been able to get the model from the AST we can try to
 	// find the field names
 	if model != nil {
-
 		fieldNames := getModelFieldCompletions(model)
 
 		// if current or previous token is a "." then we need to provide
@@ -543,8 +596,8 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 
 	colon := t.FindPrev(":")
 	comma := t.FindPrev(",")
-	listStart := t.StartOfGroup("[", "]")
 
+	listStart := t.StartOfGroup("[", "]")
 	// This is a big "fudgy" but to detect if the current position is a label
 	// we see if the start of the attribute args is the current or previous token
 	// or if the current or previous token is a comma...
@@ -578,15 +631,42 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 	}
 
 	// completion for values
+
 	label := colon.Prev().Value()
 	switch label {
 	case "expression":
 		return getExpressionCompletions(ast, t)
 	case "actions":
 		if listStart != nil {
-			return lo.Filter(actionBlockKeywords, func(c *CompletionItem, _ int) bool {
-				return c.Label != parser.KeywordWith
-			})
+			// if the list has already begun, we match the current token after the comma against a known action type
+			if comma != nil {
+				// there is a currently a token after the comma
+				nextTokenAfterComma := comma.Next().Value()
+
+				// check that the token after the comma _partially_ matches a known action type
+				results := lo.Filter(actionBlockKeywords, func(c *CompletionItem, _ int) bool {
+					return c.Label != parser.KeywordWith && strings.HasPrefix(c.Label, nextTokenAfterComma) && c.Label != nextTokenAfterComma
+				})
+
+				if len(results) > 0 {
+					return results
+				} else {
+					// suggest a comma if there is a completed prior token beforehand
+					// todo: this will suggest a comma if the previous token is an unknown action type
+					// however this will be caught by validation so maybe not a biggie
+					return []*CompletionItem{
+						{
+							Label: ",",
+							Kind:  KindPunctuation,
+						},
+					}
+				}
+			} else {
+				return lo.Filter(actionBlockKeywords, func(c *CompletionItem, _ int) bool {
+					return c.Label != parser.KeywordWith
+				})
+			}
+
 		}
 		return []*CompletionItem{}
 	case "roles":
