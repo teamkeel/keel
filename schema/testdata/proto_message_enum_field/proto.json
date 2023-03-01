@@ -1,10 +1,17 @@
 {
   "models": [
     {
-      "name": "Post",
+      "name": "Person",
       "fields": [
         {
-          "modelName": "Post",
+          "modelName": "Person",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Person",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -15,7 +22,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "modelName": "Person",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -25,7 +32,7 @@
           }
         },
         {
-          "modelName": "Post",
+          "modelName": "Person",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -37,8 +44,8 @@
       ],
       "operations": [
         {
-          "modelName": "Post",
-          "name": "writePost",
+          "modelName": "Person",
+          "name": "writeSportInterests",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
           "inputMessageName": "Input",
@@ -110,13 +117,16 @@
   ],
   "enums": [
     {
-      "name": "Category",
+      "name": "Sport",
       "values": [
         {
-          "name": "Technical"
+          "name": "Cricket"
         },
         {
-          "name": "Sports"
+          "name": "Rugby"
+        },
+        {
+          "name": "Soccer"
         }
       ]
     }
@@ -127,11 +137,21 @@
       "fields": [
         {
           "messageName": "Input",
-          "name": "cat",
+          "name": "sports",
           "type": {
             "type": "TYPE_ENUM",
-            "enumName": "Category"
+            "enumName": "Sport",
+            "repeated": true
           }
+        },
+        {
+          "messageName": "Input",
+          "name": "favouriteSport",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Sport"
+          },
+          "optional": true
         }
       ]
     },
@@ -140,11 +160,21 @@
       "fields": [
         {
           "messageName": "Response",
-          "name": "cat",
+          "name": "sports",
           "type": {
             "type": "TYPE_ENUM",
-            "enumName": "Category"
+            "enumName": "Sport",
+            "repeated": true
           }
+        },
+        {
+          "messageName": "Response",
+          "name": "favouriteSport",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Sport"
+          },
+          "optional": true
         }
       ]
     },

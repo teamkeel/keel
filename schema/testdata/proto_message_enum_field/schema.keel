@@ -1,18 +1,25 @@
 message Input {
-  cat Category
+	sports Sport[]
+	favouriteSport Sport?
 }
 
 message Response {
-  cat Category
+	sports Sport[]
+	favouriteSport Sport?
 }
 
-model Post {
-  functions {
-    write writePost(Input) returns(Response)
-  }
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        write writeSportInterests(Input) returns (Response)
+    }
 }
 
-enum Category {
-  Technical
-  Sports
+enum Sport {
+    Cricket
+    Rugby
+    Soccer
 }
