@@ -524,7 +524,7 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 			switch match {
 			case parser.KeywordReturns:
 				// for returns, we only want to suggest the message types in the schema
-				completions = messages
+				return messages
 			case parser.ActionTypeRead, parser.ActionTypeWrite:
 				// for read and write actions, we want to suggest the field names (default behaviour) and the available message types
 				completions = append(completions, messages...)
