@@ -12,6 +12,15 @@ message CreateManyInput {
     names Text[]
 }
 
+message PeopleInput {
+    ids ID[]
+}
+
+message PeopleResponse {
+    people Person[]
+}
+
+
 model Person {
     fields {
         name Text
@@ -22,6 +31,7 @@ model Person {
         read countNameAdvanced(AdvancedSearchInput) returns (CountResponse)
         write createAndCount(name) returns (CountResponse)
         write createManyAndCount(CreateManyInput) returns (CountResponse)
+        read people(PeopleInput) returns (PeopleResponse)
     }
 
     @permission(

@@ -58,6 +58,7 @@ func TestJSONSchemaGeneration(t *testing.T) {
 			require.NoError(t, err)
 
 			op := proto.FindOperation(schema, "testAction")
+			require.NotNil(t, op, "operation with name testAction could not be found")
 
 			jsonSchema := jsonschema.JSONSchemaForOperation(context.Background(), schema, op)
 			jsonSchemaBytes, err := json.Marshal(jsonSchema)

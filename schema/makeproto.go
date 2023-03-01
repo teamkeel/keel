@@ -582,6 +582,10 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 			field.Type.MessageName = wrapperspb.String(f.Type)
 		}
 
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			field.Type.ModelName = wrapperspb.String(f.Type)
+		}
+
 		return field
 	})
 

@@ -526,13 +526,22 @@ func (mk *graphqlSchemaBuilder) outputTypeFromMessage(message *proto.Message) (g
 				return nil, err
 			}
 		case proto.Type_TYPE_MODEL:
-			// todo: https://linear.app/keel/issue/BLD-319/model-type-field-in-message-type
-			return nil, errors.New("not supporting nested models just yet")
+			modelMessage := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+
+			var err error
+			fieldType, err = mk.addModel(modelMessage)
+			if err != nil {
+				return nil, err
+			}
 		default:
 			fieldType = protoTypeToGraphQLOutput[field.Type.Type]
 			if fieldType == nil {
 				return nil, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
 			}
+		}
+
+		if field.Type.Repeated {
+			fieldType = graphql.NewList(fieldType)
 		}
 
 		if !field.Optional {

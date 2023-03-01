@@ -535,7 +535,7 @@ export interface DeletePersonInput {
 	})
 }
 
-func TestWriteActionInlineInputTypesRead(t *testing.T) {
+func TestWriteActionInputTypesInlineInputRead(t *testing.T) {
 	schema := `
 message PersonNameResponse {
 	name Text
@@ -557,7 +557,7 @@ export interface GetPersonNameInput {
 	})
 }
 
-func TestWriteActionMessageInputTypesRead(t *testing.T) {
+func TestWriteActionInputTypesMessageInputRead(t *testing.T) {
 	schema := `
 message PersonNameResponse {
 	name Text
@@ -611,7 +611,7 @@ export interface PersonNameResponse {
 	})
 }
 
-func TestWriteActionInlineInputTypesWrite(t *testing.T) {
+func TestWriteActionInputTypesInlineInputWrite(t *testing.T) {
 	schema := `
 message DeleteResponse {
 	isDeleted Boolean
@@ -633,7 +633,7 @@ export interface DeletePersonInput {
 	})
 }
 
-func TestWriteActionMessageInputTypesWrite(t *testing.T) {
+func TestWriteActionInputTypesMessageInputWrite(t *testing.T) {
 	schema := `
 message DeleteResponse {
 	isDeleted Boolean
@@ -645,7 +645,7 @@ message DeleteInput {
 
 model Person {
 	functions {
-		read deletePerson(DeleteInput) returns (DeleteResponse)
+		write deletePerson(DeleteInput) returns (DeleteResponse)
 	}
 }
 	`
@@ -679,6 +679,114 @@ model Person {
 	expected := `
 export interface DeleteResponse {
 	isDeleted: boolean;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionResponseTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionInputTypesArrayField(t *testing.T) {
+	schema := `
+message PeopleInput {
+	ids ID[]
+}
+
+message People {
+	names Text[]
+}
+
+model Person {
+	functions {
+		read readPerson(PeopleInput) returns (People)
+	}
+}`
+	expected := `
+export interface PeopleInput {
+	ids: string[];
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionResponseTypesArrayField(t *testing.T) {
+	schema := `
+message People {
+	names Text[]
+}
+
+model Person {
+	functions {
+		read readPerson(name: Text) returns (People)
+	}
+}`
+	expected := `
+export interface People {
+	names: string[];
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionResponseTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionResponseTypesArrayNestedMessage(t *testing.T) {
+	schema := `
+message People {
+	names Details[]
+}
+
+message Details {
+	names Text
+}
+
+model Person {
+	functions {
+		read readPerson(name: Text) returns (People)
+	}
+}`
+	expected := `
+export interface Details {
+	names: string;
+}
+export interface People {
+	names: Details[];
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionResponseTypes(w, s, m.Operations[0], false)
+	})
+}
+
+func TestWriteActionResponseTypesNestedModels(t *testing.T) {
+	schema := `
+message PersonResponse {
+	sales Sale[]
+	person Person
+	topSale Sale?
+}
+
+model Person {
+	functions {
+		read readPerson(id) returns (PersonResponse)
+	}
+}
+
+model Sale {
+
+}
+	`
+	expected := `
+export interface PersonResponse {
+	sales: Sale[];
+	person: Person;
+	topSale?: Sale | null;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {

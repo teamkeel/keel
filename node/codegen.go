@@ -114,7 +114,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 			writeActionInputTypes(sdkTypes, schema, op, false)
 
 			if op.Type == proto.OperationType_OPERATION_TYPE_READ || op.Type == proto.OperationType_OPERATION_TYPE_WRITE {
-				// Response message types for operation
+				// Generate response message types for operation
 				writeActionResponseTypes(sdkTypes, schema, op, false)
 			}
 
@@ -576,8 +576,14 @@ func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operati
 		w.Write(field.Type.MessageName.Value)
 	case field.Type.Type == proto.Type_TYPE_MESSAGE:
 		w.Write(field.Type.MessageName.Value)
+	case field.Type.Type == proto.Type_TYPE_MODEL:
+		w.Write(field.Type.ModelName.Value)
 	default:
 		w.Write(toTypeScriptType(field.Type))
+	}
+
+	if field.Type.Repeated {
+		w.Write("[]")
 	}
 
 	nullable := false
@@ -875,10 +881,6 @@ func toTypeScriptType(t *proto.TypeInfo) (ret string) {
 		ret = t.EnumName.Value
 	default:
 		ret = "any"
-	}
-
-	if t.Repeated {
-		ret += "[]"
 	}
 
 	return ret
