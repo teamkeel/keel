@@ -500,7 +500,7 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 	// inside action input args - auto-complete field names
 	completions := append([]*CompletionItem{}, builtInFieldCompletions...)
 
-	if enclosingBlock == "functions" {
+	if enclosingBlock == parser.KeywordFunctions {
 		block := tokenAtPos.StartOfBlock()
 
 		actionType := block.Next().Value()
