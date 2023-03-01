@@ -570,12 +570,15 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 		field := &proto.MessageField{
 			Name: f.Name.Value,
 			Type: &proto.TypeInfo{
-				Type: scm.parserTypeToProtoType(f.Type),
-
+				Type:     scm.parserTypeToProtoType(f.Type),
 				Repeated: f.Repeated,
 			},
 			Optional:    f.Optional,
 			MessageName: parserMsg.Name.Value,
+		}
+
+		if field.Type.Type == proto.Type_TYPE_ENUM {
+			field.Type.EnumName = wrapperspb.String(f.Type)
 		}
 
 		if field.Type.Type == proto.Type_TYPE_MESSAGE {

@@ -1,0 +1,39 @@
+type Query {
+  __Empty: Boolean
+}
+
+type Mutation {
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  writeSportInterests(input: Input!): Response
+}
+
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
+}
+
+input Input {
+  favouriteSport: Sport
+  sports: [Sport!]!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
+}
+
+type Response {
+  favouriteSport: Sport
+  sports: [Sport]!
+}
+
+enum Sport {
+  Cricket
+  Rugby
+  Soccer
+}

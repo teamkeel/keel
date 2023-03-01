@@ -1,0 +1,18 @@
+message Input {
+  cat Category
+}
+
+message Response {
+  cat Category
+}
+
+model Post {
+  functions {
+    write writePost(Input) returns(Response)
+  }
+}
+
+enum Category {
+  Technical
+  Sports
+}

@@ -7,9 +7,7 @@ import (
 	"io"
 	"net/http"
 	"sync"
-	"time"
 
-	"github.com/nleeper/goment"
 	"github.com/sirupsen/logrus"
 
 	"github.com/graphql-go/graphql"
@@ -197,7 +195,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			continue
 		}
 
-		outputType, err := mk.outputTypeFor(field)
+		outputType, err := mk.outputTypeForModelField(field)
 		if err != nil {
 			return nil, err
 		}
@@ -400,7 +398,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
-		field.Type, err = mk.outputTypeFromMessage(responseMessage)
+		field.Type, err = mk.addMessage(responseMessage)
 		if err != nil {
 			return err
 		}
@@ -410,7 +408,7 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
-		field.Type, err = mk.outputTypeFromMessage(responseMessage)
+		field.Type, err = mk.addMessage(responseMessage)
 		if err != nil {
 			return err
 		}
@@ -482,28 +480,8 @@ func (mk *graphqlSchemaBuilder) addEnum(e *proto.Enum) *graphql.Enum {
 	return enum
 }
 
-var fromNowType = graphql.Field{
-	Name: "fromNow",
-	Type: graphql.NewNonNull(graphql.String),
-	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-		t, ok := p.Source.(time.Time)
-
-		if !ok {
-			return nil, fmt.Errorf("not a valid time")
-		}
-
-		g, err := goment.New(t)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return g.FromNow(), nil
-	},
-}
-
-// outputTypeFromMessage makes a graphql.Object response output from a proto.Message.
-func (mk *graphqlSchemaBuilder) outputTypeFromMessage(message *proto.Message) (graphql.Output, error) {
+// addMessage makes a graphql.Object response output from a proto.Message.
+func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Output, error) {
 	if out, ok := mk.types[message.Name]; ok {
 		return out, nil
 	}
@@ -521,7 +499,7 @@ func (mk *graphqlSchemaBuilder) outputTypeFromMessage(message *proto.Message) (g
 			fieldMessage := proto.FindMessage(mk.proto.Messages, field.Type.MessageName.Value)
 
 			var err error
-			fieldType, err = mk.outputTypeFromMessage(fieldMessage)
+			fieldType, err = mk.addMessage(fieldMessage)
 			if err != nil {
 				return nil, err
 			}
@@ -533,6 +511,10 @@ func (mk *graphqlSchemaBuilder) outputTypeFromMessage(message *proto.Message) (g
 			if err != nil {
 				return nil, err
 			}
+		case proto.Type_TYPE_ENUM:
+			enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
+			fieldType = mk.addEnum(enumMessage)
+
 		default:
 			fieldType = protoTypeToGraphQLOutput[field.Type.Type]
 			if fieldType == nil {
@@ -543,7 +525,6 @@ func (mk *graphqlSchemaBuilder) outputTypeFromMessage(message *proto.Message) (g
 		if field.Type.Repeated {
 			fieldType = graphql.NewList(fieldType)
 		}
-
 		if !field.Optional {
 			fieldType = graphql.NewNonNull(fieldType)
 		}
@@ -558,27 +539,22 @@ func (mk *graphqlSchemaBuilder) outputTypeFromMessage(message *proto.Message) (g
 	return output, nil
 }
 
-// outputTypeFor maps the type in the given proto.Field to a suitable graphql.Output type.
-func (mk *graphqlSchemaBuilder) outputTypeFor(field *proto.Field) (out graphql.Output, err error) {
+// outputTypeForModelField maps the type in the given proto.Field to a suitable graphql.Output type.
+func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out graphql.Output, err error) {
 	switch field.Type.Type {
 	case proto.Type_TYPE_ENUM:
-		for _, e := range mk.proto.Enums {
-			if e.Name == field.Type.EnumName.Value {
-				out = mk.addEnum(e)
-				break
-			}
-		}
+		enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
+		out = mk.addEnum(enumMessage)
 	case proto.Type_TYPE_MODEL:
-		for _, m := range mk.proto.Models {
-			if m.Name == field.Type.ModelName.Value {
-				out, err = mk.addModel(m)
-				break
-			}
+		modelMessage := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+		var err error
+		out, err = mk.addModel(modelMessage)
+		if err != nil {
+			return nil, err
 		}
 	default:
 		var ok bool
 		out, ok = protoTypeToGraphQLOutput[field.Type.Type]
-
 		if !ok {
 			return out, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
 		}
