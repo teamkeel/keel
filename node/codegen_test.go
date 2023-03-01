@@ -713,6 +713,30 @@ export interface PeopleInput {
 	})
 }
 
+func TestMessageFieldAnyType(t *testing.T) {
+	schema := `
+	message Foo {
+		bar Any
+	}
+
+	model Person {
+		functions {
+			read getPerson(Foo) returns(Foo)
+		}
+	}
+	`
+	expected := `
+export interface Foo {
+    bar: any;
+}
+	`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionResponseTypes(w, s, m.Operations[0], false)
+	})
+}
+
 func TestWriteActionTypesEnumField(t *testing.T) {
 	schema := `
 message Input {

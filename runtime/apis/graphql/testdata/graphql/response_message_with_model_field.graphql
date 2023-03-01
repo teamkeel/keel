@@ -1,5 +1,4 @@
 type Query {
-  __Empty: Boolean
   inClassroom(input: inClassroom_input!): ClassroomPeople
 }
 

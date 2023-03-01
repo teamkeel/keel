@@ -1,5 +1,4 @@
 type Query {
-  __Empty: Boolean
   readPerson(input: readPerson_input!): PersonResponse
   readPersonWithMessage(input: PersonInput_input!): PersonResponse
 }

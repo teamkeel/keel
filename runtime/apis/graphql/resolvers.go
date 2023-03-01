@@ -11,34 +11,45 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
-func getInput(schema *proto.Schema, operation *proto.Operation, args map[string]any) map[string]any {
-	input, ok := args["input"].(map[string]any)
+func getInput(schema *proto.Schema, operation *proto.Operation, args map[string]any) any {
+	inputAsMap, ok := args["input"].(map[string]any)
 	if !ok {
-		input = map[string]any{}
+		inputAsMap = map[string]any{}
 	}
 
 	switch operation.Type {
+	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
+		inputMessage := proto.FindMessage(schema.Messages, operation.InputMessageName)
+
+		if inputMessage.Name == parser.MessageFieldTypeAny {
+			// we can't do any more processing of an Any type
+			return args["input"]
+		}
+
+		// we have a message type that we want to parse
+		inputAsMap = parseTypes(inputMessage, operation, inputAsMap)
 	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_DELETE:
 		inputMessage := proto.FindMessage(schema.Messages, operation.InputMessageName)
-		input = parseTypes(inputMessage, operation, input)
+		inputAsMap = parseTypes(inputMessage, operation, inputAsMap)
 	case proto.OperationType_OPERATION_TYPE_UPDATE, proto.OperationType_OPERATION_TYPE_LIST:
-		if where, ok := input["where"].(map[string]any); ok {
+		if where, ok := inputAsMap["where"].(map[string]any); ok {
 			whereMessage := proto.FindWhereInputMessage(schema, operation.Name)
 			if whereMessage != nil {
-				input["where"] = parseTypes(whereMessage, operation, where)
+				inputAsMap["where"] = parseTypes(whereMessage, operation, where)
 			}
 		}
-		if values, ok := input["values"].(map[string]any); ok {
+		if values, ok := inputAsMap["values"].(map[string]any); ok {
 			valuesMessage := proto.FindValuesInputMessage(schema, operation.Name)
 			if valuesMessage != nil {
-				input["values"] = parseTypes(valuesMessage, operation, values)
+				inputAsMap["values"] = parseTypes(valuesMessage, operation, values)
 			}
 		}
 	}
 
-	return input
+	return inputAsMap
 }
 
 func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql.ResolveParams) (interface{}, error) {

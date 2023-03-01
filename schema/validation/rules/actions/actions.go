@@ -370,7 +370,7 @@ func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.Validatio
 			}
 
 			for _, input := range action.Inputs {
-				resolvedType := query.ResolveInputType(asts, input, model)
+				resolvedType := query.ResolveInputType(asts, input, model, action)
 				if resolvedType == "" {
 					continue
 				}
@@ -592,7 +592,7 @@ func validateInputType(
 	input *parser.ActionInputNode,
 	model *parser.ModelNode,
 	action *parser.ActionNode) *errorhandling.ValidationError {
-	resolvedType := query.ResolveInputType(asts, input, model)
+	resolvedType := query.ResolveInputType(asts, input, model, action)
 	msg := query.Message(asts, input.Type.ToString())
 
 	// if not explicitly labelled then we don't need to check for the input being used

@@ -15,7 +15,10 @@ import (
 func (scm *Builder) makeProtoModels() *proto.Schema {
 	scm.proto = &proto.Schema{}
 
-	// we need to add messages defined in the schema to the proto schema first so they are defined in proto.Messages by the time we come to attach to input/responses
+	// makeAnyType adds a global 'Any' type to the messages registry which is useful for those who want untyped inputs and responses for arbitrary functions
+	scm.makeAnyType()
+
+	// Add any messages defined declaratively in the schema to the registry of message types
 	for _, ast := range scm.asts {
 		for _, d := range ast.Declarations {
 			if d.Message != nil {
@@ -570,7 +573,14 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 	scm.proto.Apis = append(scm.proto.Apis, protoAPI)
 }
 
-// Generates custom-defined messages from the schema
+func (scm *Builder) makeAnyType() {
+	any := &proto.Message{
+		Name: "Any",
+	}
+
+	scm.proto.Messages = append(scm.proto.Messages, any)
+}
+
 func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 	parserMsg := decl.Message
 
@@ -746,7 +756,9 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl
 	if action.IsArbitraryFunction() {
 		// if its an arbitrary function, then the input will exist in scm.Messages unless the inputs were defined inline
 		// output messages will always be defined in scm.Messages
+		usesAny := action.Inputs[0].Type.ToString() == parser.MessageFieldTypeAny
 		usingInlineInputs := true
+
 		for _, ast := range scm.asts {
 			for _, d := range ast.Declarations {
 				if d.Message != nil && d.Message.Name.Value == action.Inputs[0].Type.ToString() {
@@ -754,12 +766,16 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl
 				}
 			}
 		}
-		if usingInlineInputs {
-			// if inline inputs are used then we need to generate the messages representing the inputs to the scm.Messages
+
+		switch {
+		case usesAny:
+			protoOp.InputMessageName = action.Inputs[0].Type.ToString()
+		case usingInlineInputs:
 			scm.makeActionInputMessages(model, action, impl)
-		} else {
+		default:
 			protoOp.InputMessageName = action.Inputs[0].Type.ToString()
 		}
+
 		protoOp.ResponseMessageName = action.Returns[0].Type.ToString()
 	} else {
 		// we need to generate the messages representing the inputs to the scm.Messages
@@ -867,6 +883,8 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 		return proto.Type_TYPE_ENUM
 	case query.IsMessage(scm.asts, parserType):
 		return proto.Type_TYPE_MESSAGE
+	case parserType == parser.MessageFieldTypeAny:
+		return proto.Type_TYPE_ANY
 	default:
 		return proto.Type_TYPE_UNKNOWN
 	}

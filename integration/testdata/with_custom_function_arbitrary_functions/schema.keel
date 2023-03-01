@@ -20,6 +20,13 @@ message PeopleResponse {
     people Person[]
 }
 
+message CustomPersonSearchInput {
+    params Any
+}
+
+message CustomPersonSearchResponse {
+    people Any[]
+}
 
 model Person {
     fields {
@@ -32,10 +39,18 @@ model Person {
         write createAndCount(name) returns (CountResponse)
         write createManyAndCount(CreateManyInput) returns (CountResponse)
         read people(PeopleInput) returns (PeopleResponse)
+        read customPersonSearch(CustomPersonSearchInput) returns (CustomPersonSearchResponse)
+        read customSearch(Any) returns (Any)
     }
 
     @permission(
         expression: true,
         actions: [create, get, list, update, delete]
     )
+}
+
+api Web {
+    models {
+        Person
+    }
 }

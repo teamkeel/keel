@@ -109,6 +109,9 @@
   ],
   "messages": [
     {
+      "name": "Any"
+    },
+    {
       "name": "deletePerson_input",
       "fields": [
         {

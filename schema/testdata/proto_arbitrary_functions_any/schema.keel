@@ -1,0 +1,6 @@
+model Person {
+  functions {
+    read getPerson(Any) returns(Any)
+    write updatePerson(Any) returns(Any)
+  }
+}

@@ -3,6 +3,7 @@ package jsonschema_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -69,6 +70,9 @@ func TestJSONSchemaGeneration(t *testing.T) {
 
 			if diff != jsondiff.FullMatch {
 				t.Errorf("actual JSON schema does not match expected: %s", explanation)
+
+				fmt.Println("Actual:")
+				fmt.Print(string(jsonSchemaBytes))
 			}
 		})
 	}
@@ -702,6 +706,63 @@ func TestValidateRequest(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "arbitrary function with Any",
+			schema: `
+				model Whatever {
+					functions {
+						read getWhatever(Any) returns(Any)
+					}
+				}
+			`,
+			cases: []fixture{
+				{
+					name:   "valid - object",
+					opName: "getWhatever",
+					request: `{
+						"string": "hey",
+						"number": 1,
+						"simpleNumberArray": [1, 2, 3],
+						"simpleStringArray": ["one", "two", "three"],
+						"nestedObject": {
+							"foo": "bar"
+						},
+						"arrayOfObjects": [
+							{
+								"foo": "bar"
+							}
+						]
+					}`,
+				},
+				{
+					name:   "valid - array",
+					opName: "getWhatever",
+					request: `
+						[1, 2, 3]
+					`,
+				},
+				{
+					name:    "valid - string",
+					opName:  "getWhatever",
+					request: `"hello world"`,
+				},
+				{
+					name:    "valid - number",
+					opName:  "getWhatever",
+					request: "1234",
+				},
+				{
+					name:    "valid - boolean",
+					opName:  "getWhatever",
+					request: "true",
+				},
+				{
+					name:    "valid - null",
+					opName:  "getWhatever",
+					request: "null",
+				},
+			},
+		},
 	}
 
 	for _, group := range fixtures {
@@ -714,7 +775,7 @@ func TestValidateRequest(t *testing.T) {
 				schema, err := builder.MakeFromString(group.schema)
 				require.NoError(t, err)
 
-				var req map[string]any
+				var req any
 				err = json.Unmarshal([]byte(f.request), &req)
 				require.NoError(t, err)
 

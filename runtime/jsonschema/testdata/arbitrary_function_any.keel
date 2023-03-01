@@ -1,0 +1,9 @@
+message Foo {
+    bar Any
+}
+
+model Post {
+    functions {
+        read testAction(Any) returns (Foo)
+    }
+}

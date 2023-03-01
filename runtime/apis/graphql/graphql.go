@@ -16,6 +16,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 type GraphQLRequest struct {
@@ -42,7 +43,8 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			if err != nil {
 				return common.Response{
 					Status: http.StatusInternalServerError,
-					Body:   []byte(`internal server error`),
+					// todo: dont expose error to users
+					Body: makeGraphQLJsonError("internal server error: " + err.Error()),
 				}
 			}
 			// This enables the graphql-go extension for tracing
@@ -55,8 +57,8 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		if err != nil {
 			return common.Response{
 				Status: http.StatusInternalServerError,
-				// TODO: make this a valid GraphQL response
-				Body: []byte(`internal server error`),
+				// todo: dont expose error to users
+				Body: makeGraphQLJsonError("internal server error: " + err.Error()),
 			}
 		}
 
@@ -65,8 +67,8 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		if err != nil {
 			return common.Response{
 				Status: http.StatusBadRequest,
-				// TODO: make this a valid GraphQL response
-				Body: []byte(`invalid JSON body`),
+				// todo: dont expose error to users
+				Body: makeGraphQLJsonError("invalid JSON body: " + err.Error()),
 			}
 		}
 
@@ -144,7 +146,7 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 			if err != nil {
 				return nil, err
 			}
-			if op.Type == proto.OperationType_OPERATION_TYPE_GET || op.Type == proto.OperationType_OPERATION_TYPE_LIST {
+			if op.Type == proto.OperationType_OPERATION_TYPE_GET || op.Type == proto.OperationType_OPERATION_TYPE_LIST || op.Type == proto.OperationType_OPERATION_TYPE_READ {
 				hasNoQueryOps = false
 			}
 		}
@@ -376,6 +378,13 @@ func (mk *graphqlSchemaBuilder) addOperation(
 				},
 			}
 		}
+	} else if op.InputMessageName == parser.MessageFieldTypeAny {
+		// Any type
+		field.Args = graphql.FieldConfigArgument{
+			"input": &graphql.ArgumentConfig{
+				Type: anyType,
+			},
+		}
 	}
 
 	switch op.Type {
@@ -399,10 +408,16 @@ func (mk *graphqlSchemaBuilder) addOperation(
 		if responseMessage == nil {
 			return fmt.Errorf("response message does not exist: %s", op.ResponseMessageName)
 		}
-		field.Type, err = mk.addMessage(responseMessage)
-		if err != nil {
-			return err
+
+		if responseMessage.Name == parser.MessageFieldTypeAny {
+			field.Type = anyType
+		} else {
+			field.Type, err = mk.addMessage(responseMessage)
+			if err != nil {
+				return err
+			}
 		}
+
 		mk.query.AddFieldConfig(op.Name, field)
 	case proto.OperationType_OPERATION_TYPE_WRITE:
 		responseMessage := proto.FindMessage(schema.Messages, op.ResponseMessageName)
@@ -483,6 +498,9 @@ func (mk *graphqlSchemaBuilder) addEnum(e *proto.Enum) *graphql.Enum {
 
 // addMessage makes a graphql.Object response output from a proto.Message.
 func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Output, error) {
+	if message.Name == parser.MessageFieldTypeAny {
+		return anyType, nil
+	}
 	if out, ok := mk.types[message.Name]; ok {
 		return out, nil
 	}
@@ -692,4 +710,16 @@ func makeUniqueInputMessageName(name string) string {
 	} else {
 		return name
 	}
+}
+
+func makeGraphQLJsonError(msg string) []byte {
+	errors := []map[string]string{}
+
+	errors = append(errors, map[string]string{
+		"message": msg,
+	})
+
+	b, _ := json.Marshal(errors)
+
+	return b
 }

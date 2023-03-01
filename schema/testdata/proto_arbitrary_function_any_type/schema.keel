@@ -1,0 +1,9 @@
+message Foo {
+  bar Any
+}
+
+model Person {
+  functions {
+    read getPerson(id) returns (Foo)
+  }
+}

@@ -28,7 +28,7 @@ type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*Functio
 type FunctionsRuntimeRequest struct {
 	ID     string         `json:"id"`
 	Method string         `json:"method"`
-	Params map[string]any `json:"params"`
+	Params any            `json:"params"`
 	Meta   map[string]any `json:"meta"`
 }
 
@@ -46,9 +46,11 @@ type FunctionsRuntimeMeta struct {
 // FunctionsRuntimeError follows the error object specification
 // from the JSONRPC spec: https://www.jsonrpc.org/specification#error_object
 type FunctionsRuntimeError struct {
-	Code    int            `json:"code"`
-	Message string         `json:"message"`
-	Data    map[string]any `json:"data"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+
+	// Data represents any additional error metadata that the functions-runtime want to send in addition to the error code + message
+	Data map[string]any `json:"data"`
 }
 
 type transportContextKey string
@@ -59,7 +61,7 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 	return context.WithValue(ctx, contextKey, transport)
 }
 
-func CallFunction(ctx context.Context, actionName string, body map[string]any) (any, map[string][]string, error) {
+func CallFunction(ctx context.Context, actionName string, body any) (any, map[string][]string, error) {
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
 		return nil, nil, errors.New("no functions client in context")

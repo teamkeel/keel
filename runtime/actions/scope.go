@@ -34,20 +34,30 @@ func NewScope(
 	}
 }
 
-func Execute(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
+	// inputs can be anything - with arbitrary functions 'Any' type, they can be
+	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
+	inputsAsMap, inputWasAMap := inputs.(map[string]any)
+
 	switch scope.operation.Implementation {
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM:
 		return executeCustomOperation(scope, inputs)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME:
-		return executeRuntimeOperation(scope, inputs)
+		if !inputWasAMap {
+			return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+		}
+		return executeRuntimeOperation(scope, inputsAsMap)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
-		return executeAutoOperation(scope, inputs)
+		if !inputWasAMap {
+			return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+		}
+		return executeAutoOperation(scope, inputsAsMap)
 	default:
 		return nil, nil, fmt.Errorf("unhandled unknown operation %s of type %s", scope.operation.Name, scope.operation.Implementation)
 	}
 }
 
-func executeCustomOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+func executeCustomOperation(scope *Scope, inputs any) (any, map[string][]string, error) {
 	resp, headers, err := functions.CallFunction(scope.context, scope.operation.Name, inputs)
 	if err != nil {
 		return nil, nil, err
