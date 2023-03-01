@@ -20,7 +20,7 @@
         ]
     },
     {
-        "name": "Debug test",
+        "name": "Debug test framework",
         "type": "go",
         "request": "launch",
         "mode": "debug",
@@ -58,6 +58,17 @@
         "args": [
             "-test.run",
             "TestSchema/${input:testCase}"
+        ]
+    },
+    {
+        "name": "Run / debug completions test",
+        "type": "go",
+        "request": "launch",
+        "mode": "test",
+        "program": "${workspaceFolder}/schema/completions",
+        "args": [
+            "-test.run",
+            "TestCompletions/${input:testCase}"
         ]
     },
     {

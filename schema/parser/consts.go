@@ -17,6 +17,7 @@ const (
 	KeywordRole       = "role"
 	KeywordEnum       = "enum"
 	KeywordWith       = "with"
+	KeywordReturns    = "returns"
 )
 
 // Types are roughly analogous to field types but they are used to type expressions
@@ -74,12 +75,22 @@ const (
 	ActionTypeWrite = "write"
 )
 
-var ActionTypes = []string{
+var OperationActionTypes = []string{
 	ActionTypeGet,
 	ActionTypeUpdate,
 	ActionTypeCreate,
 	ActionTypeList,
 	ActionTypeDelete,
+}
+
+var FunctionActionTypes = []string{
+	ActionTypeCreate,
+	ActionTypeGet,
+	ActionTypeDelete,
+	ActionTypeList,
+	ActionTypeUpdate,
+	ActionTypeRead,
+	ActionTypeWrite,
 }
 
 // All models get a field named "id" implicitly. This set of constants provides

@@ -23,13 +23,14 @@ type CompletionItem struct {
 }
 
 const (
-	KindModel     = "model"
-	KindField     = "field"
-	KindVariable  = "variable"
-	KindType      = "type"
-	KindKeyword   = "keyword"
-	KindLabel     = "label"
-	KindAttribute = "attribute"
+	KindModel       = "model"
+	KindField       = "field"
+	KindVariable    = "variable"
+	KindType        = "type"
+	KindKeyword     = "keyword"
+	KindLabel       = "label"
+	KindAttribute   = "attribute"
+	KindPunctuation = "punctuation"
 )
 
 const (
@@ -321,9 +322,29 @@ func getFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Compl
 
 func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	// if we are inside enclosing parenthesis then we are completing for
-	// action inputs
+	// action inputs, or for returns
 	if tokenAtPos.StartOfParen() != nil {
 		return getActionInputCompletions(ast, tokenAtPos)
+	}
+
+	// try to find the first matching token out of returns/read/write
+	// prev is the first match that was found when searching backwards through the token stream
+	// this will help identify the position (whether we are in a returns or in the inputs)
+	prev, _ := tokenAtPos.FindPrevMultiple(
+		parser.KeywordReturns,
+		parser.ActionTypeRead,
+		parser.ActionTypeWrite,
+	)
+
+	if tokenAtPos.Prev().EndOfParen() != nil && (prev == parser.ActionTypeWrite || prev == parser.ActionTypeRead) {
+		// target just after end of inputs
+
+		return []*CompletionItem{
+			{
+				Label: parser.KeywordReturns,
+				Kind:  KindKeyword,
+			},
+		}
 	}
 
 	// to see if we should provide attribute completions we see if we're inside an
@@ -341,7 +362,7 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 
 	// current token is action name - can't auto-complete
 
-	if lo.Contains(parser.ActionTypes, tokenAtPos.ValueAt(-1)) {
+	if lo.Contains(append(parser.OperationActionTypes, parser.FunctionActionTypes...), tokenAtPos.ValueAt(-1)) {
 		modelName := getParentModelName(tokenAtPos)
 		actionType := tokenAtPos.ValueAt(-1)
 
@@ -353,8 +374,18 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 		}}
 	}
 
-	// action block keywords
-	return actionBlockKeywords
+	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
+
+	switch enclosingBlock {
+	case parser.KeywordFunctions:
+		return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
+			return i.Label != parser.KeywordWith
+		})
+	default:
+		return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
+			return i.Label != parser.ActionTypeRead && i.Label != parser.ActionTypeWrite
+		})
+	}
 }
 
 var builtInFieldCompletions = []*CompletionItem{
@@ -413,6 +444,14 @@ var actionBlockKeywords = []*CompletionItem{
 	},
 	{
 		Label: parser.KeywordWith,
+		Kind:  KindKeyword,
+	},
+	{
+		Label: parser.ActionTypeRead,
+		Kind:  KindKeyword,
+	},
+	{
+		Label: parser.ActionTypeWrite,
 		Kind:  KindKeyword,
 	},
 }
@@ -475,16 +514,56 @@ func getBuiltInTypeCompletions() []*CompletionItem {
 }
 
 func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
-	modelName := getParentModelName(tokenAtPos)
-	model := query.Model([]*parser.AST{ast}, modelName)
+	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
 
 	// inside action input args - auto-complete field names
 	completions := append([]*CompletionItem{}, builtInFieldCompletions...)
 
+	if enclosingBlock == parser.KeywordFunctions {
+		block := tokenAtPos.StartOfBlock()
+
+		actionType := block.Next().Value()
+
+		readOrWriteActionType := actionType == parser.ActionTypeRead || actionType == parser.ActionTypeWrite
+
+		if readOrWriteActionType {
+			// find the first occurence of a given token in the previous token stream and return what match was found
+			match, _ := tokenAtPos.StartOfParen().FindPrevMultiple(
+				parser.KeywordReturns,
+				parser.ActionTypeRead,
+				parser.ActionTypeWrite,
+			)
+			// if insideInputs is true, it means the first preceeding token we're interested in was action type read or write
+			insideInputs := match == parser.ActionTypeRead || match == parser.ActionTypeWrite
+
+			// the first occurence was the 'returns' keyword, so we know we're inside a returns parentheses
+			insideReturns := match == parser.KeywordReturns
+
+			messages := lo.Map(query.MessageNames([]*parser.AST{ast}), func(msgName string, _ int) *CompletionItem {
+				return &CompletionItem{
+					Label: msgName,
+					Kind:  KindLabel,
+				}
+			})
+
+			switch {
+			case insideInputs:
+				// for read and write actions, we want to suggest the field names (default behaviour) and the available message types
+				completions = append(completions, messages...)
+			case insideReturns:
+				// suggest the message types available in the schema only
+
+				return messages
+			}
+		}
+	}
+
+	modelName := getParentModelName(tokenAtPos)
+	model := query.Model([]*parser.AST{ast}, modelName)
+
 	// if we have been able to get the model from the AST we can try to
 	// find the field names
 	if model != nil {
-
 		fieldNames := getModelFieldCompletions(model)
 
 		// if current or previous token is a "." then we need to provide
@@ -511,6 +590,7 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 	}
 
 	return completions
+
 }
 
 func getAttributeArgCompletions(ast *parser.AST, t *TokensAtPosition) []*CompletionItem {
@@ -543,8 +623,8 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 
 	colon := t.FindPrev(":")
 	comma := t.FindPrev(",")
-	listStart := t.StartOfGroup("[", "]")
 
+	listStart := t.StartOfGroup("[", "]")
 	// This is a big "fudgy" but to detect if the current position is a label
 	// we see if the start of the attribute args is the current or previous token
 	// or if the current or previous token is a comma...
@@ -578,6 +658,7 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 	}
 
 	// completion for values
+
 	label := colon.Prev().Value()
 	switch label {
 	case "expression":

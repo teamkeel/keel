@@ -303,7 +303,7 @@ func TestCompletions(t *testing.T) {
                 c<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.ActionTypes...),
+			expected: append([]string{"with"}, parser.OperationActionTypes...),
 		},
 		{
 			name: "create-keyword-not-first",
@@ -314,7 +314,7 @@ func TestCompletions(t *testing.T) {
                 crea<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.ActionTypes...),
+			expected: append([]string{"with"}, parser.OperationActionTypes...),
 		},
 		{
 			name: "get-keyword",
@@ -325,7 +325,7 @@ func TestCompletions(t *testing.T) {
                 g<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.ActionTypes...),
+			expected: append([]string{"with"}, parser.OperationActionTypes...),
 		},
 		{
 			name: "with-keyword",
@@ -335,7 +335,7 @@ func TestCompletions(t *testing.T) {
                 create createA() wi<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.ActionTypes...),
+			expected: append([]string{"with"}, parser.OperationActionTypes...),
 		},
 		{
 			name: "with-keyword-whitespace",
@@ -345,7 +345,7 @@ func TestCompletions(t *testing.T) {
                 create createA() <Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.ActionTypes...),
+			expected: append([]string{"with"}, parser.OperationActionTypes...),
 		},
 		{
 			name: "action-attributes",
@@ -778,7 +778,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: parser.ActionTypes,
+			expected: parser.FunctionActionTypes,
 		},
 		{
 			name: "permission-attribute-actions-many",
@@ -789,7 +789,7 @@ func TestCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: parser.ActionTypes,
+			expected: parser.FunctionActionTypes,
 		},
 		{
 			name: "permission-attribute-roles",
@@ -904,6 +904,55 @@ func TestCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"AnotherMessage", "Boolean", "Date", "ID", "Identity", "MyMessage", "Number", "Password", "Secret", "Text", "Timestamp"},
+		},
+		{
+			name: "arbitrary-function-action-type-completions",
+			schema: `
+			model Person {
+				functions {
+					<Cursor>
+				}
+			}
+			`,
+			expected: parser.FunctionActionTypes,
+		},
+		{
+			name: "arbitrary-function-input-completions",
+			schema: `
+			message GetPersonInput {}
+			model Person {
+				functions {
+					read getPerson(<Cursor>
+				}
+			}
+			`,
+			expected: []string{"GetPersonInput", "createdAt", "id", "updatedAt"},
+		},
+		{
+			name: "arbitrary-function-returns-completions",
+			schema: `
+			message GetPersonInput {}
+			message GetPersonResponse {}
+			model Person {
+				functions {
+					read getPerson(GetPersonInput) returns(<Cursor>)
+				}
+			}
+			`,
+			expected: []string{"GetPersonInput", "GetPersonResponse"},
+		},
+		{
+			name: "arbitrary-function-returns-keyword-completions",
+			schema: `
+			message GetPersonInput {}
+			message GetPersonResponse {}
+			model Person {
+				functions {
+					read getPerson(GetPersonInput) <Cursor>
+				}
+			}
+			`,
+			expected: []string{"returns"},
 		},
 	}
 
