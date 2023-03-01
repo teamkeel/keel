@@ -1,3 +1,10 @@
+## [0.277.1](https://github.com/teamkeel/keel/compare/v0.277.0...v0.277.1) (2023-03-01)
+
+
+### Bug Fixes
+
+* enums in messages ([#839](https://github.com/teamkeel/keel/issues/839)) ([a7cca01](https://github.com/teamkeel/keel/commit/a7cca016150db8af98b5776e02a06bd8bb825c57))
+
 # [0.277.0](https://github.com/teamkeel/keel/compare/v0.276.0...v0.277.0) (2023-03-01)
 
 
