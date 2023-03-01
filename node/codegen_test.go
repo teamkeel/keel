@@ -713,6 +713,51 @@ export interface PeopleInput {
 	})
 }
 
+func TestWriteActionTypesEnumField(t *testing.T) {
+	schema := `
+message Input {
+	sports Sport[]
+	favouriteSport Sport?
+}
+
+message Response {
+	sports Sport[]
+	favouriteSport Sport?
+}
+
+model Person {
+	functions {
+		write writeSportInterests(Input) returns (Response)
+	}
+}
+
+enum Sport {
+	Cricket
+	Rugby
+	Soccer
+}`
+	inputExpected := `
+export interface Input {
+	sports: Sport[];
+	favouriteSport?: Sport | null;
+}`
+	responseExpected := `
+export interface Response {
+	sports: Sport[];
+	favouriteSport?: Sport | null;
+}`
+
+	runWriterTest(t, schema, inputExpected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionInputTypes(w, s, m.Operations[0], false)
+	})
+
+	runWriterTest(t, schema, responseExpected, func(s *proto.Schema, w *Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeActionResponseTypes(w, s, m.Operations[0], false)
+	})
+}
+
 func TestWriteActionResponseTypesArrayField(t *testing.T) {
 	schema := `
 message People {

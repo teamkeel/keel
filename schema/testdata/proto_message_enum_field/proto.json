@@ -1,0 +1,241 @@
+{
+  "models": [
+    {
+      "name": "Person",
+      "fields": [
+        {
+          "modelName": "Person",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Person",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "Person",
+          "name": "writeSportInterests",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
+          "inputMessageName": "Input",
+          "responseMessageName": "Response"
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
+        }
+      ]
+    }
+  ],
+  "enums": [
+    {
+      "name": "Sport",
+      "values": [
+        {
+          "name": "Cricket"
+        },
+        {
+          "name": "Rugby"
+        },
+        {
+          "name": "Soccer"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Input",
+      "fields": [
+        {
+          "messageName": "Input",
+          "name": "sports",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Sport",
+            "repeated": true
+          }
+        },
+        {
+          "messageName": "Input",
+          "name": "favouriteSport",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Sport"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "Response",
+      "fields": [
+        {
+          "messageName": "Response",
+          "name": "sports",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Sport",
+            "repeated": true
+          }
+        },
+        {
+          "messageName": "Response",
+          "name": "favouriteSport",
+          "type": {
+            "type": "TYPE_ENUM",
+            "enumName": "Sport"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "EmailPasswordInput",
+      "fields": [
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPasswordInput",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateInput",
+      "fields": [
+        {
+          "messageName": "AuthenticateInput",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "AuthenticateInput",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPasswordInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AuthenticateResponse",
+      "fields": [
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "AuthenticateResponse",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    }
+  ]
+}

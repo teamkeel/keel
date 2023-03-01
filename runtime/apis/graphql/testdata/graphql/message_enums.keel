@@ -1,0 +1,32 @@
+
+message Input {
+	sports Sport[]
+	favouriteSport Sport?
+}
+
+message Response {
+	sports Sport[]
+	favouriteSport Sport?
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        write writeSportInterests(Input) returns (Response)
+    }
+}
+
+enum Sport {
+    Cricket
+    Rugby
+    Soccer
+}
+
+api Test {
+    models {
+        Person
+    }
+}

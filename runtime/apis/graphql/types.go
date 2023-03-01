@@ -6,6 +6,7 @@ import (
 
 	"github.com/bykof/gostradamus"
 	"github.com/graphql-go/graphql"
+	"github.com/nleeper/goment"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -137,6 +138,26 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 		"fromNow":   &fromNowType,
 	},
 })
+
+var fromNowType = graphql.Field{
+	Name: "fromNow",
+	Type: graphql.NewNonNull(graphql.String),
+	Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+		t, ok := p.Source.(time.Time)
+
+		if !ok {
+			return nil, fmt.Errorf("not a valid time")
+		}
+
+		g, err := goment.New(t)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return g.FromNow(), nil
+	},
+}
 
 var dateType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Date",

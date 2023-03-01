@@ -1,0 +1,27 @@
+{
+    "additionalProperties": false,
+    "properties": {
+        "favouriteSport": {
+            "enum": [
+                "Cricket",
+                "Rugby",
+                "Soccer",
+                null
+            ]
+        },
+        "sports": {
+            "items": {
+                "enum": [
+                    "Cricket",
+                    "Rugby",
+                    "Soccer"
+                ]
+            },
+            "type": "array"
+        }
+    },
+    "required": [
+        "sports"
+    ],
+    "type": "object"
+}
