@@ -1,15 +1,10 @@
 type Query {
-  getPerson(input: GetPersonInput!): Person
-  listPeople(input: ListPeopleInput!): PersonConnection!
+  getPerson(input: getPerson_input!): Person
+  listPeople(input: listPeople_input!): Person_connection!
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
+  authenticate(input: authenticate_input!): authenticate_response
 }
 
 input DateInput {
@@ -18,7 +13,7 @@ input DateInput {
   year: Int!
 }
 
-input DateQueryInput {
+input DateQuery_input {
   after: DateInput
   before: DateInput
   equals: DateInput
@@ -26,35 +21,17 @@ input DateQueryInput {
   onOrBefore: DateInput
 }
 
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input GetPersonInput {
-  id: ID!
-}
-
-input ListPeopleInput {
-  after: String
-  before: String
-  first: Int
-  last: Int
-  where: ListPeopleWhereInput!
-}
-
-input ListPeopleWhereInput {
-  dateOfBirth: DateQueryInput!
-  name: StringQueryInput!
-  occupation: OccupationQueryInput!
-}
-
-input OccupationQueryInput {
+input OccupationQuery_input {
   equals: Occupation
   oneOf: [Occupation]
 }
 
-input StringQueryInput {
+input StringQuery_input {
   contains: String
   endsWith: String
   equals: String
@@ -62,9 +39,27 @@ input StringQueryInput {
   startsWith: String
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
+}
+
+input getPerson_input {
+  id: ID!
+}
+
+input listPeople_input {
+  after: String
+  before: String
+  first: Int
+  last: Int
+  where: listPeople_where!
+}
+
+input listPeople_where {
+  dateOfBirth: DateQuery_input!
+  name: StringQuery_input!
+  occupation: OccupationQuery_input!
 }
 
 type Date {
@@ -90,12 +85,12 @@ type Person {
   updatedAt: Timestamp!
 }
 
-type PersonConnection {
-  edges: [PersonEdge!]!
+type Person_connection {
+  edges: [Person_edge!]!
   pageInfo: PageInfo!
 }
 
-type PersonEdge {
+type Person_edge {
   node: Person!
 }
 
@@ -106,6 +101,11 @@ type Timestamp {
   month: Int!
   seconds: Int!
   year: Int!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }
 
 enum Occupation {

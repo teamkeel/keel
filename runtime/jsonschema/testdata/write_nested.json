@@ -11,7 +11,7 @@
         "required": ["bool"],
         "type": "object"
       },
-      "NullableNestedObject": {
+      "nullable_NestedObject": {
         "additionalProperties": false,
         "properties": {
           "bool": {
@@ -32,7 +32,7 @@
       "$ref": "#/components/schemas/NestedObject"
     },
     "optionalNested": {
-      "$ref": "#/components/schemas/NullableNestedObject"
+      "$ref": "#/components/schemas/nullable_NestedObject"
     }
   },
   "additionalProperties": false,

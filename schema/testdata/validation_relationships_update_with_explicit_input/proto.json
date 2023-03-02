@@ -98,7 +98,7 @@
               "source": "childModel.parentOptionalId = explicitParentId"
             }
           ],
-          "inputMessageName": "UpdateChild1Input"
+          "inputMessageName": "updateChild1_input"
         },
         {
           "modelName": "ChildModel",
@@ -113,7 +113,7 @@
               "source": "childModel.parentOptionalId = childModel.parentId"
             }
           ],
-          "inputMessageName": "UpdateChild2Input"
+          "inputMessageName": "updateChild2_input"
         },
         {
           "modelName": "ChildModel",
@@ -125,7 +125,7 @@
               "source": "childModel.parentId = explicitParentId"
             }
           ],
-          "inputMessageName": "UpdateChild3Input"
+          "inputMessageName": "updateChild3_input"
         }
       ]
     },
@@ -228,18 +228,18 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
         }
       ]
     }
   ],
   "messages": [
     {
-      "name": "UpdateChild1WhereInput",
+      "name": "updateChild1_where",
       "fields": [
         {
-          "messageName": "UpdateChild1WhereInput",
+          "messageName": "updateChild1_where",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -253,10 +253,10 @@
       ]
     },
     {
-      "name": "UpdateChild1ValuesInput",
+      "name": "updateChild1_values",
       "fields": [
         {
-          "messageName": "UpdateChild1ValuesInput",
+          "messageName": "updateChild1_values",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL",
@@ -268,7 +268,7 @@
           ]
         },
         {
-          "messageName": "UpdateChild1ValuesInput",
+          "messageName": "updateChild1_values",
           "name": "explicitParentId",
           "type": {
             "type": "TYPE_ID"
@@ -277,31 +277,31 @@
       ]
     },
     {
-      "name": "UpdateChild1Input",
+      "name": "updateChild1_input",
       "fields": [
         {
-          "messageName": "UpdateChild1Input",
+          "messageName": "updateChild1_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild1WhereInput"
+            "messageName": "updateChild1_where"
           }
         },
         {
-          "messageName": "UpdateChild1Input",
+          "messageName": "updateChild1_input",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild1ValuesInput"
+            "messageName": "updateChild1_values"
           }
         }
       ]
     },
     {
-      "name": "UpdateChild2WhereInput",
+      "name": "updateChild2_where",
       "fields": [
         {
-          "messageName": "UpdateChild2WhereInput",
+          "messageName": "updateChild2_where",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -315,10 +315,10 @@
       ]
     },
     {
-      "name": "UpdateChild2ValuesInput",
+      "name": "updateChild2_values",
       "fields": [
         {
-          "messageName": "UpdateChild2ValuesInput",
+          "messageName": "updateChild2_values",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL",
@@ -330,7 +330,7 @@
           ]
         },
         {
-          "messageName": "UpdateChild2ValuesInput",
+          "messageName": "updateChild2_values",
           "name": "explicitParentId",
           "type": {
             "type": "TYPE_ID"
@@ -339,31 +339,31 @@
       ]
     },
     {
-      "name": "UpdateChild2Input",
+      "name": "updateChild2_input",
       "fields": [
         {
-          "messageName": "UpdateChild2Input",
+          "messageName": "updateChild2_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild2WhereInput"
+            "messageName": "updateChild2_where"
           }
         },
         {
-          "messageName": "UpdateChild2Input",
+          "messageName": "updateChild2_input",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild2ValuesInput"
+            "messageName": "updateChild2_values"
           }
         }
       ]
     },
     {
-      "name": "UpdateChild3WhereInput",
+      "name": "updateChild3_where",
       "fields": [
         {
-          "messageName": "UpdateChild3WhereInput",
+          "messageName": "updateChild3_where",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -377,10 +377,10 @@
       ]
     },
     {
-      "name": "UpdateChild3ValuesInput",
+      "name": "updateChild3_values",
       "fields": [
         {
-          "messageName": "UpdateChild3ValuesInput",
+          "messageName": "updateChild3_values",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL",
@@ -392,7 +392,7 @@
           ]
         },
         {
-          "messageName": "UpdateChild3ValuesInput",
+          "messageName": "updateChild3_values",
           "name": "explicitParentId",
           "type": {
             "type": "TYPE_ID"
@@ -401,38 +401,38 @@
       ]
     },
     {
-      "name": "UpdateChild3Input",
+      "name": "updateChild3_input",
       "fields": [
         {
-          "messageName": "UpdateChild3Input",
+          "messageName": "updateChild3_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild3WhereInput"
+            "messageName": "updateChild3_where"
           }
         },
         {
-          "messageName": "UpdateChild3Input",
+          "messageName": "updateChild3_input",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "UpdateChild3ValuesInput"
+            "messageName": "updateChild3_values"
           }
         }
       ]
     },
     {
-      "name": "EmailPasswordInput",
+      "name": "EmailPassword_input",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -441,10 +441,10 @@
       ]
     },
     {
-      "name": "AuthenticateInput",
+      "name": "authenticate_input",
       "fields": [
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -452,27 +452,27 @@
           "optional": true
         },
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+            "messageName": "EmailPassword_input"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
+      "name": "authenticate_response",
       "fields": [
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"

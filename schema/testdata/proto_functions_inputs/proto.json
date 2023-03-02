@@ -48,28 +48,28 @@
           "name": "operationA",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "OperationAInput"
+          "inputMessageName": "operationA_input"
         },
         {
           "modelName": "Foo",
           "name": "operationB",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "OperationBInput"
+          "inputMessageName": "operationB_input"
         },
         {
           "modelName": "Foo",
           "name": "operationC",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "OperationCInput"
+          "inputMessageName": "operationC_input"
         },
         {
           "modelName": "Foo",
           "name": "operationD",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "OperationDInput"
+          "inputMessageName": "operationD_input"
         }
       ]
     },
@@ -129,29 +129,30 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
         }
       ]
     }
   ],
   "messages": [
     {
-      "name": "OperationAWhereInput"
+      "name": "operationA_where"
     },
     {
-      "name": "OperationAInput",
+      "name": "operationA_input",
       "fields": [
         {
-          "messageName": "OperationAInput",
+          "messageName": "operationA_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "OperationAWhereInput"
+            "messageName": "operationA_where"
           },
           "optional": true
         },
         {
+          "messageName": "operationA_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -159,6 +160,7 @@
           "optional": true
         },
         {
+          "messageName": "operationA_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -166,6 +168,7 @@
           "optional": true
         },
         {
+          "messageName": "operationA_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -173,6 +176,7 @@
           "optional": true
         },
         {
+          "messageName": "operationA_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -182,10 +186,10 @@
       ]
     },
     {
-      "name": "OperationBInput",
+      "name": "operationB_input",
       "fields": [
         {
-          "messageName": "OperationBInput",
+          "messageName": "operationB_input",
           "name": "bar",
           "type": {
             "type": "TYPE_STRING",
@@ -199,10 +203,10 @@
       ]
     },
     {
-      "name": "OperationCInput",
+      "name": "operationC_input",
       "fields": [
         {
-          "messageName": "OperationCInput",
+          "messageName": "operationC_input",
           "name": "bar",
           "type": {
             "type": "TYPE_STRING",
@@ -214,7 +218,7 @@
           ]
         },
         {
-          "messageName": "OperationCInput",
+          "messageName": "operationC_input",
           "name": "baz",
           "type": {
             "type": "TYPE_STRING"
@@ -223,10 +227,10 @@
       ]
     },
     {
-      "name": "OperationDInput",
+      "name": "operationD_input",
       "fields": [
         {
-          "messageName": "OperationDInput",
+          "messageName": "operationD_input",
           "name": "baz",
           "type": {
             "type": "TYPE_STRING"
@@ -235,17 +239,17 @@
       ]
     },
     {
-      "name": "EmailPasswordInput",
+      "name": "EmailPassword_input",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -254,10 +258,10 @@
       ]
     },
     {
-      "name": "AuthenticateInput",
+      "name": "authenticate_input",
       "fields": [
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -265,27 +269,27 @@
           "optional": true
         },
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+            "messageName": "EmailPassword_input"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
+      "name": "authenticate_response",
       "fields": [
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"

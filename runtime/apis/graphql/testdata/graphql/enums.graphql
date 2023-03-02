@@ -1,33 +1,28 @@
 type Query {
-  getPerson(input: GetPersonInput!): Person
+  getPerson(input: getPerson_input!): Person
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  createPerson(input: CreatePersonInput!): Person!
+  authenticate(input: authenticate_input!): authenticate_response
+  createPerson(input: createPerson_input!): Person!
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input CreatePersonInput {
-  occupation: Occupation!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input GetPersonInput {
-  id: ID!
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
+input createPerson_input {
+  occupation: Occupation!
+}
+
+input getPerson_input {
+  id: ID!
 }
 
 type Person {
@@ -44,6 +39,11 @@ type Timestamp {
   month: Int!
   seconds: Int!
   year: Int!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }
 
 enum Occupation {

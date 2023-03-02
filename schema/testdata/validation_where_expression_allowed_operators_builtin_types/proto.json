@@ -222,7 +222,7 @@
               "source": "post.text in [\"one\", \"two\"]"
             }
           ],
-          "inputMessageName": "ListWithLiteralsInput"
+          "inputMessageName": "listWithLiterals_input"
         },
         {
           "modelName": "Post",
@@ -306,7 +306,7 @@
               "source": "post.text in post.textArray"
             }
           ],
-          "inputMessageName": "ListWithFieldsInput"
+          "inputMessageName": "listWithFields_input"
         }
       ]
     },
@@ -366,8 +366,8 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
         }
       ]
     }
@@ -387,21 +387,22 @@
   ],
   "messages": [
     {
-      "name": "ListWithLiteralsWhereInput"
+      "name": "listWithLiterals_where"
     },
     {
-      "name": "ListWithLiteralsInput",
+      "name": "listWithLiterals_input",
       "fields": [
         {
-          "messageName": "ListWithLiteralsInput",
+          "messageName": "listWithLiterals_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "ListWithLiteralsWhereInput"
+            "messageName": "listWithLiterals_where"
           },
           "optional": true
         },
         {
+          "messageName": "listWithLiterals_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -409,6 +410,7 @@
           "optional": true
         },
         {
+          "messageName": "listWithLiterals_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -416,6 +418,7 @@
           "optional": true
         },
         {
+          "messageName": "listWithLiterals_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -423,6 +426,7 @@
           "optional": true
         },
         {
+          "messageName": "listWithLiterals_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -432,21 +436,22 @@
       ]
     },
     {
-      "name": "ListWithFieldsWhereInput"
+      "name": "listWithFields_where"
     },
     {
-      "name": "ListWithFieldsInput",
+      "name": "listWithFields_input",
       "fields": [
         {
-          "messageName": "ListWithFieldsInput",
+          "messageName": "listWithFields_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "ListWithFieldsWhereInput"
+            "messageName": "listWithFields_where"
           },
           "optional": true
         },
         {
+          "messageName": "listWithFields_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -454,6 +459,7 @@
           "optional": true
         },
         {
+          "messageName": "listWithFields_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -461,6 +467,7 @@
           "optional": true
         },
         {
+          "messageName": "listWithFields_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -468,6 +475,7 @@
           "optional": true
         },
         {
+          "messageName": "listWithFields_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -477,17 +485,17 @@
       ]
     },
     {
-      "name": "EmailPasswordInput",
+      "name": "EmailPassword_input",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -496,10 +504,10 @@
       ]
     },
     {
-      "name": "AuthenticateInput",
+      "name": "authenticate_input",
       "fields": [
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -507,27 +515,27 @@
           "optional": true
         },
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+            "messageName": "EmailPassword_input"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
+      "name": "authenticate_response",
       "fields": [
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"

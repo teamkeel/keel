@@ -350,7 +350,7 @@ model Person {
 }
 	`
 	expected := `
-export interface GetPersonInput {
+export interface getPerson_input {
 	id: string;
 }`
 
@@ -372,7 +372,7 @@ model Person {
 }
 	`
 	expected := `
-export interface CreatePersonInput {
+export interface createPerson_input {
 	name: string;
 }`
 
@@ -394,7 +394,7 @@ model Person {
 }
 	`
 	expected := `
-export interface CreatePersonInput {
+export interface createPerson_input {
 	name?: string | null;
 }`
 
@@ -416,15 +416,15 @@ model Person {
 }
 	`
 	expected := `
-export interface UpdatePersonValuesInput {
+export interface updatePerson_values {
 	name: string;
 }
-export interface UpdatePersonWhereInput {
+export interface updatePerson_where {
 	id: string;
 }
-export interface UpdatePersonInput {
-	where: UpdatePersonWhereInput;
-	values: UpdatePersonValuesInput;
+export interface updatePerson_input {
+	where: updatePerson_where;
+	values: updatePerson_values;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -445,19 +445,19 @@ model Person {
 }
 	`
 	expected := `
-export interface ListPeopleWhereInput {
-	name: string | StringQueryInput;
+export interface listPeople_where {
+	name: string | StringQuery_input;
 	some?: boolean | null;
 }
-export interface StringQueryInput {
+export interface StringQuery_input {
 	equals?: string | null;
 	startsWith?: string | null;
 	endsWith?: string | null;
 	contains?: string | null;
 	oneOf?: string[] | null;
 }
-export interface ListPeopleInput {
-	where: ListPeopleWhereInput;
+export interface listPeople_input {
+	where: listPeople_where;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
@@ -487,23 +487,23 @@ model Person {
 }
 	`
 	expected := `
-export interface ListPeopleWhereInput {
-	name: string | StringQueryInput;
-	favouriteSport: Sport | SportQueryInput;
+export interface listPeople_where {
+	name: string | StringQuery_input;
+	favouriteSport: Sport | SportQuery_input;
 }
-export interface StringQueryInput {
+export interface StringQuery_input {
 	equals?: string | null;
 	startsWith?: string | null;
 	endsWith?: string | null;
 	contains?: string | null;
 	oneOf?: string[] | null;
 }
-export interface SportQueryInput {
+export interface SportQuery_input {
 	equals?: Sport | null;
 	oneOf?: Sport[] | null;
 }
-export interface ListPeopleInput {
-	where: ListPeopleWhereInput;
+export interface listPeople_input {
+	where: listPeople_where;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
@@ -525,7 +525,7 @@ model Person {
 }
 	`
 	expected := `
-export interface DeletePersonInput {
+export interface deletePerson_input {
 	id: string;
 }`
 
@@ -547,7 +547,7 @@ model Person {
 	}
 }`
 	expected := `
-export interface GetPersonNameInput {
+export interface getPersonName_input {
 	id: string;
 }`
 
@@ -623,7 +623,7 @@ model Person {
 	}
 }`
 	expected := `
-export interface DeletePersonInput {
+export interface deletePerson_input {
 	id: string;
 }`
 
@@ -853,11 +853,11 @@ model Person {
 }
 	`
 	expected := `
-export declare function GetPerson(fn: (inputs: GetPersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person | null>): Promise<Person | null>;
-export declare function CreatePerson(fn: (inputs: CreatePersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
-export declare function UpdatePerson(fn: (inputs: UpdatePersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
-export declare function DeletePerson(fn: (inputs: DeletePersonInput, api: FunctionAPI, ctx: ContextAPI) => Promise<string>): Promise<string>;
-export declare function ListPeople(fn: (inputs: ListPeopleInput, api: FunctionAPI, ctx: ContextAPI) => Promise<Person[]>): Promise<Person[]>;`
+export declare function GetPerson(fn: (inputs: getPerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person | null>): Promise<Person | null>;
+export declare function CreatePerson(fn: (inputs: createPerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
+export declare function UpdatePerson(fn: (inputs: updatePerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
+export declare function DeletePerson(fn: (inputs: deletePerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<string>): Promise<string>;
+export declare function ListPeople(fn: (inputs: listPeople_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person[]>): Promise<Person[]>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
@@ -886,51 +886,51 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface GetPersonInput {
+export interface getPerson_input {
 	id: string;
 }
-export interface CreatePersonInput {
+export interface createPerson_input {
 }
-export interface UpdatePersonValuesInput {
+export interface updatePerson_values {
 }
-export interface UpdatePersonWhereInput {
+export interface updatePerson_where {
 }
-export interface UpdatePersonInput {
-	where?: UpdatePersonWhereInput | null;
-	values?: UpdatePersonValuesInput | null;
+export interface updatePerson_input {
+	where?: updatePerson_where | null;
+	values?: updatePerson_values | null;
 }
-export interface DeletePersonInput {
+export interface deletePerson_input {
 }
-export interface ListPeopleWhereInput {
+export interface listPeople_where {
 }
-export interface ListPeopleInput {
-	where?: ListPeopleWhereInput | null;
+export interface listPeople_input {
+	where?: listPeople_where | null;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
 	before?: string | null;
 }
-export interface EmailPasswordInput {
+export interface EmailPassword_input {
 	email: string;
 	password: string;
 }
-export interface AuthenticateInput {
+export interface authenticate_input {
 	createIfNotExists?: boolean | null;
-	emailPassword: EmailPasswordInput;
+	emailPassword: EmailPassword_input;
 }
-export interface AuthenticateResponse {
+export interface authenticate_response {
 	identityCreated: boolean;
 	token: string;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	getPerson(i: GetPersonInput): Promise<sdk.Person | null>;
-	createPerson(i?: CreatePersonInput): Promise<sdk.Person>;
-	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
-	deletePerson(i?: DeletePersonInput): Promise<string>;
-	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
-	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
+	getPerson(i: getPerson_input): Promise<sdk.Person | null>;
+	createPerson(i?: createPerson_input): Promise<sdk.Person>;
+	updatePerson(i?: updatePerson_input): Promise<sdk.Person>;
+	deletePerson(i?: deletePerson_input): Promise<string>;
+	listPeople(i?: listPeople_input): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
+	authenticate(i: authenticate_input): Promise<authenticate_response>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
@@ -1014,37 +1014,37 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface PeopleByHobbyWhereInput {
-	hobby: Hobby | HobbyQueryInput;
+export interface peopleByHobby_where {
+	hobby: Hobby | HobbyQuery_input;
 }
-export interface HobbyQueryInput {
+export interface HobbyQuery_input {
 	equals?: Hobby | null;
 	oneOf?: Hobby[] | null;
 }
-export interface PeopleByHobbyInput {
-	where: PeopleByHobbyWhereInput;
+export interface peopleByHobby_input {
+	where: peopleByHobby_where;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
 	before?: string | null;
 }
-export interface EmailPasswordInput {
+export interface EmailPassword_input {
 	email: string;
 	password: string;
 }
-export interface AuthenticateInput {
+export interface authenticate_input {
 	createIfNotExists?: boolean | null;
-	emailPassword: EmailPasswordInput;
+	emailPassword: EmailPassword_input;
 }
-export interface AuthenticateResponse {
+export interface authenticate_response {
 	identityCreated: boolean;
 	token: string;
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
-	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
+	peopleByHobby(i: peopleByHobby_input): Promise<{results: sdk.Person[], hasNextPage: boolean, startCursor: string, endCursor: string}>;
+	authenticate(i: authenticate_input): Promise<authenticate_response>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;

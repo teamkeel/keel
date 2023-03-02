@@ -1,35 +1,30 @@
 type Query {
   getBeatle: Beatle
-  listBeatles(input: ListBeatlesInput): BeatleConnection!
+  listBeatles(input: listBeatles_input): Beatle_connection!
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  authenticate(input: authenticate_input!): authenticate_response
   createBeatle: Beatle!
   deleteBeatle: DeleteResponse
   switchBeatle: Beatle!
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input ListBeatlesInput {
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
+}
+
+input listBeatles_input {
   after: String
   before: String
   first: Int
   last: Int
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type Beatle {
@@ -42,12 +37,12 @@ type Beatle {
   updatedAt: Timestamp!
 }
 
-type BeatleConnection {
-  edges: [BeatleEdge!]!
+type Beatle_connection {
+  edges: [Beatle_edge!]!
   pageInfo: PageInfo!
 }
 
-type BeatleEdge {
+type Beatle_edge {
   node: Beatle!
 }
 
@@ -76,4 +71,9 @@ type Timestamp {
   month: Int!
   seconds: Int!
   year: Int!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }

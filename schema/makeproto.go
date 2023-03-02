@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
@@ -62,7 +61,7 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
-		return &proto.Message{Name: "IDQueryInput", Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("IDQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -80,7 +79,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 			},
 		}}
 	case proto.Type_TYPE_STRING:
-		return &proto.Message{Name: "StringQueryInput", Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("StringQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -119,7 +118,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 			},
 		}}
 	case proto.Type_TYPE_INT:
-		return &proto.Message{Name: "IntQueryInput", Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("IntQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -157,7 +156,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 			},
 		}}
 	case proto.Type_TYPE_BOOL:
-		return &proto.Message{Name: "BooleanQueryInput", Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("BooleanQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -167,7 +166,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 			},
 		}}
 	case proto.Type_TYPE_DATE:
-		return &proto.Message{Name: "DateQueryInput", Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("DateQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -205,7 +204,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 			},
 		}}
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		return &proto.Message{Name: "TimestampQueryInput", Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("TimestampQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "before",
 				Optional: true,
@@ -222,7 +221,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 			},
 		}}
 	case proto.Type_TYPE_ENUM:
-		return &proto.Message{Name: fmt.Sprintf("%sQueryInput", typeInfo.EnumName.Value), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value)), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -259,17 +258,16 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				Type:        typeInfo,
 				Target:      target,
 				Optional:    value.Optional || targetsOptionalField,
-				MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+				MessageName: makeInputMessageName(action.Name.Value),
 			})
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Name:   makeInputMessageName(action.Name.Value),
 			Fields: values,
 		})
 	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
 		fields := []*proto.MessageField{}
-
 		for _, input := range action.Inputs {
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
@@ -278,12 +276,12 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				Type:        typeInfo,
 				Target:      target,
 				Optional:    input.Optional || targetsOptionalField,
-				MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+				MessageName: makeInputMessageName(action.Name.Value),
 			})
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Name:   makeInputMessageName(action.Name.Value),
 			Fields: fields,
 		})
 	case parser.ActionTypeUpdate:
@@ -296,12 +294,12 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				Type:        typeInfo,
 				Target:      target,
 				Optional:    where.Optional || targetsOptionalField,
-				MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+				MessageName: makeWhereMessageName(action.Name.Value),
 			})
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+			Name:   makeWhereMessageName(action.Name.Value),
 			Fields: wheres,
 		})
 
@@ -314,26 +312,26 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				Type:        typeInfo,
 				Target:      target,
 				Optional:    value.Optional || targetsOptionalField,
-				MessageName: fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value)),
+				MessageName: makeValuesMessageName(action.Name.Value),
 			})
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value)),
+			Name:   makeValuesMessageName(action.Name.Value),
 			Fields: values,
 		})
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Name: makeInputMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{
 				{
 					Name: "where",
 					Optional: len(wheres) < 1 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
 						return f.Optional
 					}),
-					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+					MessageName: makeInputMessageName(action.Name.Value),
 					Type: &proto.TypeInfo{
 						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
+						MessageName: wrapperspb.String(makeWhereMessageName(action.Name.Value)),
 					},
 				},
 				{
@@ -341,11 +339,10 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Optional: len(values) < 1 || lo.EveryBy(values, func(f *proto.MessageField) bool {
 						return f.Optional
 					}),
-					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
-
+					MessageName: makeInputMessageName(action.Name.Value),
 					Type: &proto.TypeInfo{
 						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(fmt.Sprintf("%sValuesInput", strcase.ToCamel(action.Name.Value))),
+						MessageName: wrapperspb.String(makeValuesMessageName(action.Name.Value)),
 					},
 				},
 			},
@@ -359,66 +356,72 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				queryMessage := makeListQueryInputMessage(typeInfo)
 				scm.proto.Messages = append(scm.proto.Messages, queryMessage)
 				wheres = append(wheres, &proto.MessageField{
-					Name:        where.Name(),
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String(queryMessage.Name)},
+					Name: where.Name(),
+					Type: &proto.TypeInfo{
+						Type:        proto.Type_TYPE_MESSAGE,
+						MessageName: wrapperspb.String(queryMessage.Name)},
 					Target:      target,
 					Optional:    where.Optional || targetsOptionalField,
-					MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			} else {
 				wheres = append(wheres, &proto.MessageField{
 					Name:        where.Name(),
 					Type:        typeInfo,
 					Optional:    where.Optional || targetsOptionalField,
-					MessageName: fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			}
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value)),
+			Name:   makeWhereMessageName(action.Name.Value),
 			Fields: wheres,
 		})
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+			Name: makeInputMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{
 				{
 					Name: "where",
 					Optional: len(wheres) < 1 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
 						return f.Optional
 					}),
-					MessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+					MessageName: makeInputMessageName(action.Name.Value),
 					Type: &proto.TypeInfo{
 						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(fmt.Sprintf("%sWhereInput", strcase.ToCamel(action.Name.Value))),
+						MessageName: wrapperspb.String(makeWhereMessageName(action.Name.Value)),
 					},
 				},
 				// Include pagination fields
 				{
-					Name:     "first",
-					Optional: true,
+					Name:        "first",
+					MessageName: makeInputMessageName(action.Name.Value),
+					Optional:    true,
 					Type: &proto.TypeInfo{
 						Type: proto.Type_TYPE_INT,
 					},
 				},
 				{
-					Name:     "after",
-					Optional: true,
+					Name:        "after",
+					MessageName: makeInputMessageName(action.Name.Value),
+					Optional:    true,
 					Type: &proto.TypeInfo{
 						Type: proto.Type_TYPE_STRING,
 					},
 				},
 				{
-					Name:     "last",
-					Optional: true,
+					Name:        "last",
+					MessageName: makeInputMessageName(action.Name.Value),
+					Optional:    true,
 					Type: &proto.TypeInfo{
 						Type: proto.Type_TYPE_INT,
 					},
 				},
 				{
-					Name:     "before",
-					Optional: true,
+					Name:        "before",
+					MessageName: makeInputMessageName(action.Name.Value),
+					Optional:    true,
 					Type: &proto.TypeInfo{
 						Type: proto.Type_TYPE_STRING,
 					},
@@ -458,27 +461,31 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
+		authInputMessageName := makeInputMessageName(parser.ImplicitAuthenticateOperationName)
+		authResponseMessageName := makeResponseMessageName(parser.ImplicitAuthenticateOperationName)
+		emailPasswordMessageName := makeInputMessageName("EmailPassword")
+
 		protoOp := proto.Operation{
 			ModelName:           parser.ImplicitIdentityModelName,
 			Name:                parser.ImplicitAuthenticateOperationName,
 			Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
 			Type:                proto.OperationType_OPERATION_TYPE_WRITE,
-			InputMessageName:    "AuthenticateInput",
-			ResponseMessageName: "AuthenticateResponse",
+			InputMessageName:    authInputMessageName,
+			ResponseMessageName: authResponseMessageName,
 		}
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: "EmailPasswordInput",
+			Name: emailPasswordMessageName,
 			Fields: []*proto.MessageField{
 				{
 					Name:        "email",
-					MessageName: "EmailPasswordInput",
+					MessageName: emailPasswordMessageName,
 					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 					Optional:    false,
 				},
 				{
 					Name:        "password",
-					MessageName: "EmailPasswordInput",
+					MessageName: emailPasswordMessageName,
 					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 					Optional:    false,
 				},
@@ -486,35 +493,35 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 		})
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: "AuthenticateInput",
+			Name: authInputMessageName,
 			Fields: []*proto.MessageField{
 				{
 					Name:        "createIfNotExists",
-					MessageName: "AuthenticateInput",
+					MessageName: authInputMessageName,
 					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
 					Optional:    true,
 				},
 				{
 					Name:        "emailPassword",
-					MessageName: "AuthenticateInput",
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String("EmailPasswordInput")},
+					MessageName: authInputMessageName,
+					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String(emailPasswordMessageName)},
 					Optional:    false,
 				},
 			},
 		})
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: "AuthenticateResponse",
+			Name: authResponseMessageName,
 			Fields: []*proto.MessageField{
 				{
 					Name:        "identityCreated",
-					MessageName: "AuthenticateResponse",
+					MessageName: authResponseMessageName,
 					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
 					Optional:    false,
 				},
 				{
 					Name:        "token",
-					MessageName: "AuthenticateResponse",
+					MessageName: authResponseMessageName,
 					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
 					Optional:    false,
 				},
@@ -563,6 +570,7 @@ func (scm *Builder) makeAPI(decl *parser.DeclarationNode) {
 	scm.proto.Apis = append(scm.proto.Apis, protoAPI)
 }
 
+// Generates custom-defined messages from the schema
 func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 	parserMsg := decl.Message
 
@@ -727,7 +735,7 @@ func (scm *Builder) makeActions(actions []*parser.ActionNode, modelName string, 
 func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl proto.OperationImplementation) *proto.Operation {
 	protoOp := &proto.Operation{
 		ModelName:        modelName,
-		InputMessageName: fmt.Sprintf("%sInput", strcase.ToCamel(action.Name.Value)),
+		InputMessageName: makeInputMessageName(action.Name.Value),
 		Name:             action.Name.Value,
 		Implementation:   impl,
 		Type:             scm.mapToOperationType(action.Type.Value),
@@ -1010,4 +1018,20 @@ func (scm *Builder) mapToOperationType(parsedOperation string) proto.OperationTy
 // stripQuotes removes all double quotes from the given string, regardless of where they are.
 func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
+}
+
+func makeInputMessageName(opName string) string {
+	return fmt.Sprintf("%s_input", opName)
+}
+
+func makeWhereMessageName(opName string) string {
+	return fmt.Sprintf("%s_where", opName)
+}
+
+func makeValuesMessageName(opName string) string {
+	return fmt.Sprintf("%s_values", opName)
+}
+
+func makeResponseMessageName(opName string) string {
+	return fmt.Sprintf("%s_response", opName)
 }

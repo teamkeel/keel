@@ -90,7 +90,7 @@ func parseTypes(message *proto.Message, operation *proto.Operation, values map[s
 		}
 
 		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST && field.IsModelField() {
-			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "DateQueryInput" {
+			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "DateQuery_input" {
 				listOpMap := v.(map[string]any)
 
 				for kListOp, vListOp := range listOpMap {
@@ -98,7 +98,7 @@ func parseTypes(message *proto.Message, operation *proto.Operation, values map[s
 				}
 				values[k] = listOpMap
 			}
-			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "TimestampQueryInput" {
+			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "TimestampQuery_input" {
 				listOpMap := v.(map[string]any)
 				for kListOp, vListOp := range listOpMap {
 					listOpMap[kListOp] = convertTimestamp(vListOp)

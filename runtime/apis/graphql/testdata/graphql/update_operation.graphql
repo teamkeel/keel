@@ -1,42 +1,37 @@
 type Query {
-  getPerson(input: GetPersonInput!): Person
+  getPerson(input: getPerson_input!): Person
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  updatePerson(input: UpdatePersonInput!): Person!
+  authenticate(input: authenticate_input!): authenticate_response
+  updatePerson(input: updatePerson_input!): Person!
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input GetPersonInput {
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
+}
+
+input getPerson_input {
   id: ID!
 }
 
-input UpdatePersonInput {
-  values: UpdatePersonValuesInput!
-  where: UpdatePersonWhereInput!
+input updatePerson_input {
+  values: updatePerson_values!
+  where: updatePerson_where!
 }
 
-input UpdatePersonValuesInput {
+input updatePerson_values {
   name: String!
 }
 
-input UpdatePersonWhereInput {
+input updatePerson_where {
   id: ID!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type Person {
@@ -53,4 +48,9 @@ type Timestamp {
   month: Int!
   seconds: Int!
   year: Int!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }

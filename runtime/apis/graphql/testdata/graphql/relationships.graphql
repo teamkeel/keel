@@ -1,34 +1,29 @@
 type Query {
-  getOrder(input: GetOrderInput!): Order
+  getOrder(input: getOrder_input!): Order
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  authenticate(input: authenticate_input!): authenticate_response
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input GetOrderInput {
-  id: ID!
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
+input getOrder_input {
+  id: ID!
 }
 
 type Order {
   createdAt: Timestamp!
   id: ID!
-  items(after: String, before: String, first: Int, last: Int): OrderItemConnection!
+  items(after: String, before: String, first: Int, last: Int): OrderItem_connection!
   updatedAt: Timestamp!
 }
 
@@ -41,12 +36,12 @@ type OrderItem {
   updatedAt: Timestamp!
 }
 
-type OrderItemConnection {
-  edges: [OrderItemEdge!]!
+type OrderItem_connection {
+  edges: [OrderItem_edge!]!
   pageInfo: PageInfo!
 }
 
-type OrderItemEdge {
+type OrderItem_edge {
   node: OrderItem!
 }
 
@@ -64,4 +59,9 @@ type Timestamp {
   month: Int!
   seconds: Int!
   year: Int!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }

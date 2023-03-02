@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/iancoleman/strcase"
 	"github.com/sirupsen/logrus"
 
 	"github.com/graphql-go/graphql"
@@ -428,7 +429,7 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 	}
 
 	edgeType := graphql.NewObject(graphql.ObjectConfig{
-		Name: itemType.Name() + "Edge",
+		Name: itemType.Name() + "_edge",
 		Fields: graphql.Fields{
 			"node": &graphql.Field{
 				Type: graphql.NewNonNull(
@@ -439,7 +440,7 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 	})
 
 	connection := graphql.NewObject(graphql.ObjectConfig{
-		Name: itemType.Name() + "Connection",
+		Name: itemType.Name() + "_connection",
 		Fields: graphql.Fields{
 			"edges": &graphql.Field{
 				Type: graphql.NewNonNull(
@@ -584,20 +585,24 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 
 	switch {
 	case field.Type.Type == proto.Type_TYPE_MESSAGE:
-		inputObjectName := field.Type.MessageName.Value
-		message := proto.FindMessage(mk.proto.Messages, inputObjectName)
+		messageName := field.Type.MessageName.Value
+		message := proto.FindMessage(mk.proto.Messages, messageName)
+
+		if message == nil {
+			fmt.Print("asd")
+		}
 
 		if len(message.Fields) == 0 {
 			break
 		}
 
-		if out, ok := mk.inputs[inputObjectName]; ok {
+		if out, ok := mk.inputs[messageName]; ok {
 			in = out
 			break
 		}
 
 		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   inputObjectName,
+			Name:   makeUniqueInputMessageName(messageName),
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
@@ -612,7 +617,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 			})
 		}
 
-		mk.inputs[inputObjectName] = inputObject
+		mk.inputs[messageName] = inputObject
 
 		in = inputObject
 	default:
@@ -660,7 +665,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   message.Name,
+		Name:   makeUniqueInputMessageName(message.Name),
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
@@ -681,4 +686,14 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	}
 
 	return inputType, allOptionalInputs, nil
+}
+
+// If this is a schemd-defined message, then append with _input
+func makeUniqueInputMessageName(name string) string {
+	if name == strcase.ToCamel(name) {
+
+		return fmt.Sprintf("%s_input", name)
+	} else {
+		return name
+	}
 }

@@ -1,7 +1,7 @@
 {
   "components": {
     "schemas": {
-      "TestActionValuesInput": {
+      "testAction_values": {
         "additionalProperties": false,
         "properties": {
           "birthday": {
@@ -24,7 +24,7 @@
           "hobby"],
         "type": "object"
       },
-      "TestActionWhereInput": {
+      "testAction_where": {
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -39,10 +39,10 @@
   "additionalProperties": false,
   "properties": {
     "values": {
-      "$ref": "#/components/schemas/TestActionValuesInput"
+      "$ref": "#/components/schemas/testAction_values"
     },
     "where": {
-      "$ref": "#/components/schemas/TestActionWhereInput"
+      "$ref": "#/components/schemas/testAction_where"
     }
   },
   "required": ["where", "values"],
