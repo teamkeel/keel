@@ -18,3 +18,7 @@ environment:
   test:
     - name: "ALLOWED"
       value: "test"
+secrets:
+  - name: "Not_Allowed_Secret_Name"
+    required:
+      - "production"
