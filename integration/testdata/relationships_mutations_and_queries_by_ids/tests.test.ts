@@ -30,21 +30,6 @@ test("create with parent id as implicit input - id does not exist - returns erro
   });
 });
 
-test("create with parent id as implicit input foreign key - get by id - parent id set correctly", async () => {
-  const author = await actions.createAuthor({ name: "Keelson" });
-  const post = await actions.createPostForeignKey({
-    title: "Keelson Post",
-    theAuthorId: author.id,
-  });
-
-  expect(post.theAuthorId).toEqual(author.id);
-
-  const getPost = await actions.getPost({ id: post.id });
-  expect(getPost!.id).toEqual(post.id);
-  expect(getPost!.theAuthorId).toEqual(author.id);
-  expect(getPost!.title).toEqual("Keelson Post");
-});
-
 test("create with parent id with set attribute - get by id - parent id set correctly", async () => {
   const author = await actions.createAuthor({ name: "Keelson" });
   const post = await actions.createPostWithSet({
@@ -74,30 +59,6 @@ test("update parent id as implicit input - get by id - parent id updated correct
   expect(getPost!.title).toEqual("Keelson Post");
 
   const updatePost = await actions.updatePost({
-    where: { id: post.id },
-    values: { title: "Updated", theAuthorId: author2.id },
-  });
-
-  const getUpdatedPost = await actions.getPost({ id: post.id });
-  expect(getUpdatedPost!.id).toEqual(post.id);
-  expect(getUpdatedPost!.theAuthorId).toEqual(author2.id);
-  expect(getUpdatedPost!.title).toEqual("Updated");
-});
-
-test("update parent id as implicit input foreign key - get by id - parent id updated correctly", async () => {
-  const author1 = await actions.createAuthor({ name: "Keelson" });
-  const post = await actions.createPost({
-    title: "Keelson Post",
-    theAuthorId: author1.id,
-  });
-  const author2 = await actions.createAuthor({ name: "Weaveton" });
-
-  const getPost = await actions.getPost({ id: post.id });
-  expect(getPost!.id).toEqual(post.id);
-  expect(getPost!.theAuthorId).toEqual(author1.id);
-  expect(getPost!.title).toEqual("Keelson Post");
-
-  const updatePost = await actions.updatePostForeignKey({
     where: { id: post.id },
     values: { title: "Updated", theAuthorId: author2.id },
   });

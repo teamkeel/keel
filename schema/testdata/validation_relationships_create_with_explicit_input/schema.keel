@@ -1,4 +1,3 @@
-
 model ChildModel {
     fields {
         isActive Boolean
@@ -8,17 +7,15 @@ model ChildModel {
 
     operations {
         create createChild1() with (isActive, explicitParentId: ID) {
-            @set(childModel.parentId = explicitParentId)
-            @set(childModel.parentOptionalId = explicitParentId)
+            @set(childModel.parent.id = explicitParentId)
+            @set(childModel.parentOptional.id = explicitParentId)
         }
-
         create createChild2() with (isActive, explicitParentId: ID) {
-            @set(childModel.parentId = explicitParentId)
-            @set(childModel.parentOptionalId = childModel.parentId)
+            @set(childModel.parent.id = explicitParentId)
+            @set(childModel.parentOptional.id = childModel.parent.id)
         }
-
         create createChild3() with (isActive, explicitParentId: ID) {
-            @set(childModel.parentId = explicitParentId)
+            @set(childModel.parent.id = explicitParentId)
         }
     }
 }
