@@ -1,3 +1,10 @@
+# [0.278.0](https://github.com/teamkeel/keel/compare/v0.277.1...v0.278.0) (2023-03-02)
+
+
+### Features
+
+* hide foreign key field names from the user ([#842](https://github.com/teamkeel/keel/issues/842)) ([1e9a5d7](https://github.com/teamkeel/keel/commit/1e9a5d78f6afd23536baa2ca2256c37dcf639146))
+
 ## [0.277.1](https://github.com/teamkeel/keel/compare/v0.277.0...v0.277.1) (2023-03-01)
 
 
