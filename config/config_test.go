@@ -94,10 +94,12 @@ func TestSnakecaseValidateFormat(t *testing.T) {
 
 	assert.NotContains(t, err.Error(), "THIS_IS_ALLOWED")
 
-	assert.Contains(t, err.Error(), "environment variable this_is_not_Allowed1 must be written in upper snakecase\n")
-	assert.Contains(t, err.Error(), "environment variable THIS_IS_NOT_ALLOWEd2 must be written in upper snakecase\n")
-	assert.Contains(t, err.Error(), "environment variable thisIsNotAllowed3 must be written in upper snakecase\n")
-	assert.Contains(t, err.Error(), "environment variable This_IS_nOT_AlloWED4 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "this_is_not_Allowed1 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "THIS_IS_NOT_ALLOWEd2 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "thisIsNotAllowed3 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "This_IS_nOT_AlloWED4 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "This_IS_nOT_AlloWED4 must be written in upper snakecase\n")
+	assert.Contains(t, err.Error(), "Not_Allowed_Secret_Name must be written in upper snakecase\n")
 }
 
 func TestReservedNameValidateFormat(t *testing.T) {

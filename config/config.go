@@ -118,7 +118,7 @@ type ConfigError struct {
 const (
 	ConfigDuplicateErrorString       = "environment variable %s has a duplicate set in environment: %s"
 	ConfigRequiredErrorString        = "environment variable %s is required but not defined in the following environments: %s"
-	ConfigIncorrectNamingErrorString = "environment variable %s must be written in upper snakecase"
+	ConfigIncorrectNamingErrorString = "%s must be written in upper snakecase"
 	ConfigReservedNameErrorString    = "environment variable %s cannot start with %s as it is reserved"
 )
 
@@ -329,17 +329,33 @@ func contains(s []Input, e string) bool {
 	return false
 }
 
-// validateFormat checks if any environment variables in default, staging and production environments
-// are written in the wrong format. Must be screaming snakecase or a non-reserved name.
+// validateFormat checks if any secret name or environment variables in default, staging and production environments
+// are written in the wrong format. Must be screaming snakecase or, if an environment variable, a non-reserved name.
 func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]bool) {
 	defaultEnv := config.Environment.Default
 	stagingEnv := config.Environment.Staging
 	productionEnv := config.Environment.Production
 	testEnv := config.Environment.Test
+	secrets := config.Secrets
 
 	envsToCheck := [][]Input{defaultEnv, stagingEnv, productionEnv, testEnv}
 
 	incorrectNamesMap := make(map[string]bool)
+
+	if formatType == "snakecase" {
+		for _, secret := range secrets {
+			if ok := incorrectNamesMap[secret.Name]; ok {
+				continue
+			}
+
+			ssName := strcase.ToScreamingSnake(secret.Name)
+
+			if secret.Name != ssName {
+				incorrectNamesMap[secret.Name] = true
+			}
+			continue
+		}
+	}
 
 	for _, environment := range envsToCheck {
 		for _, envVar := range environment {
