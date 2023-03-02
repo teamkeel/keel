@@ -108,13 +108,6 @@
       "operations": [
         {
           "modelName": "Post",
-          "name": "createPostA",
-          "type": "OPERATION_TYPE_CREATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "CreatePostAInput"
-        },
-        {
-          "modelName": "Post",
           "name": "createPostB",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
@@ -127,7 +120,7 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "setExpressions": [
             {
-              "source": "post.authorId = someAuthorId"
+              "source": "post.author.id = someAuthorId"
             }
           ],
           "inputMessageName": "CreatePostCInput"
@@ -197,35 +190,6 @@
     }
   ],
   "messages": [
-    {
-      "name": "CreatePostAInput",
-      "fields": [
-        {
-          "messageName": "CreatePostAInput",
-          "name": "content",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Post",
-            "fieldName": "content"
-          },
-          "target": [
-            "content"
-          ]
-        },
-        {
-          "messageName": "CreatePostAInput",
-          "name": "authorId",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Post",
-            "fieldName": "authorId"
-          },
-          "target": [
-            "authorId"
-          ]
-        }
-      ]
-    },
     {
       "name": "CreatePostBInput",
       "fields": [

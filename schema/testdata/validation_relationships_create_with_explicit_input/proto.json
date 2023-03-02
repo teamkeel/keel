@@ -92,10 +92,10 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "setExpressions": [
             {
-              "source": "childModel.parentId = explicitParentId"
+              "source": "childModel.parent.id = explicitParentId"
             },
             {
-              "source": "childModel.parentOptionalId = explicitParentId"
+              "source": "childModel.parentOptional.id = explicitParentId"
             }
           ],
           "inputMessageName": "CreateChild1Input"
@@ -107,10 +107,10 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "setExpressions": [
             {
-              "source": "childModel.parentId = explicitParentId"
+              "source": "childModel.parent.id = explicitParentId"
             },
             {
-              "source": "childModel.parentOptionalId = childModel.parentId"
+              "source": "childModel.parentOptional.id = childModel.parent.id"
             }
           ],
           "inputMessageName": "CreateChild2Input"
@@ -122,7 +122,7 @@
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "setExpressions": [
             {
-              "source": "childModel.parentId = explicitParentId"
+              "source": "childModel.parent.id = explicitParentId"
             }
           ],
           "inputMessageName": "CreateChild3Input"

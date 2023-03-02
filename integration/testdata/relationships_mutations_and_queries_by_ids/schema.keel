@@ -6,14 +6,12 @@ model Post {
 
     operations {
         create createPost() with (title, theAuthor.id)
-        create createPostForeignKey() with (title, theAuthorId)
         create createPostWithSet() with (title, explicitAuthorId: ID) {
-            @set(post.theAuthorId = explicitAuthorId)
+            @set(post.theAuthor.id = explicitAuthorId)
         }
         update updatePost(id) with (title, theAuthor.id)
-        update updatePostForeignKey(id) with (title, theAuthorId)
         update updatePostWithSet(id) with (title, explicitAuthorId: ID) {
-            @set(post.theAuthorId = explicitAuthorId)
+            @set(post.theAuthor.id = explicitAuthorId)
         }
         get getPost(id)
         get getPostByAuthor(id, theAuthor.id)

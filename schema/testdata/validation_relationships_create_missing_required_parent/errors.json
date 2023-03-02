@@ -2,8 +2,8 @@
   "errors": [
     {
       "message": "create actions must accept all required fields that have no default value",
-      "hint": "maybe add one of parentId,  parent.id to with() inputs, or one of parentId,  parent to a @set expression",
-      "code": "E046",
+      "hint": "maybe add parent.id to the with() inputs or a @set expression",
+      "code": "E034",
       "pos": {
         "filename": "testdata/validation_relationships_create_missing_required_parent/schema.keel",
         "offset": 123,
