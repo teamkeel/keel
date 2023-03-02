@@ -588,10 +588,6 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		messageName := field.Type.MessageName.Value
 		message := proto.FindMessage(mk.proto.Messages, messageName)
 
-		if message == nil {
-			fmt.Print("asd")
-		}
-
 		if len(message.Fields) == 0 {
 			break
 		}

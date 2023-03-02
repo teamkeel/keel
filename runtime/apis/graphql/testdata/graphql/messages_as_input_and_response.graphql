@@ -1,0 +1,31 @@
+type Query {
+  __Empty: Boolean
+}
+
+type Mutation {
+  authenticate(input: authenticate_input!): authenticate_response
+  writePerson(input: TheMessage_input!): TheMessage
+}
+
+input EmailPassword_input {
+  email: String!
+  password: String!
+}
+
+input TheMessage_input {
+  thing: Boolean!
+}
+
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
+}
+
+type TheMessage {
+  thing: Boolean!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
+}

@@ -1,0 +1,20 @@
+message TheMessage {
+    thing Boolean
+}
+
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        write writePerson(TheMessage) returns (TheMessage)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}
