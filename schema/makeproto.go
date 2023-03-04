@@ -662,21 +662,18 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 
 	scm.applyFieldAttributes(parserField, protoField)
 
-	// Apply data about relationship fields captured during the parsing phase.
-
-	if fki := parserField.FkInfo; fki != nil {
-		switch {
-		// This is a foreign key field
-		case protoField.Name == fki.ForeignKeyField.Name.Value:
-			protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
-				RelatedModelName:  fki.ReferredToModel.Name.Value,
-				RelatedModelField: fki.ReferredToModelPrimaryKey.Name.Value,
-			}
-
-			// This is model field that "owns" a FK field.
-		case protoField.Name == fki.OwningField.Name.Value:
-			protoField.ForeignKeyFieldName = wrapperspb.String(fki.ForeignKeyField.Name.Value)
+	// Auto-inserted foreign key field
+	if query.IsForeignKey(scm.asts, model, parserField) {
+		modelField := query.Field(model, strings.TrimSuffix(parserField.Name.Value, "Id"))
+		protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
+			RelatedModelName:  modelField.Type,
+			RelatedModelField: parser.ImplicitFieldNameId,
 		}
+	}
+
+	// Model field (sibling to foreign key)
+	if query.IsModel(scm.asts, parserField.Type) && !parserField.Repeated {
+		protoField.ForeignKeyFieldName = wrapperspb.String(fmt.Sprintf("%sId", parserField.Name.Value))
 	}
 
 	// If this is a HasMany relationship field - see if we can mark it with
