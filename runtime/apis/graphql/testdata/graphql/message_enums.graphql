@@ -3,33 +3,33 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  writeSportInterests(input: Input!): Response
+  authenticate(input: authenticate_input!): authenticate_response
+  writeSportInterests(input: Input_input!): Response
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input Input {
+input Input_input {
   favouriteSport: Sport
   sports: [Sport!]!
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
 }
 
 type Response {
   favouriteSport: Sport
   sports: [Sport]!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }
 
 enum Sport {

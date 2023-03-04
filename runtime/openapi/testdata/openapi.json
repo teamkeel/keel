@@ -1,11 +1,11 @@
 {
   "components": {
     "schemas": {
-      "NullableCustomersWhereInput": {
+      "nullable_customers_where": {
         "additionalProperties": false,
         "properties": {
             "name": {
-                "$ref": "#/components/schemas/NullableStringQueryInput"
+                "$ref": "#/components/schemas/nullable_StringQuery_input"
             }
         },
         "type": [
@@ -13,7 +13,7 @@
             "null"
         ]
       },
-      "EmailPasswordInput": {
+      "EmailPassword_input": {
         "additionalProperties": false,
         "properties": {
             "email": {
@@ -29,7 +29,7 @@
         ],
         "type": "object"
       },
-      "NullableStringQueryInput": {
+      "nullable_StringQuery_input": {
         "additionalProperties": false,
         "properties": {
           "contains": {
@@ -53,7 +53,7 @@
         },
         "type": ["object", "null"]
       },
-      "NullableUpdateCustomerValuesInput": {
+      "nullable_updateCustomer_values": {
         "additionalProperties": false,
         "properties": {
             "dateOfBirth": {
@@ -75,7 +75,7 @@
             "null"
         ]
       },
-      "UpdateCustomerWhereInput": {
+      "updateCustomer_where": {
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -108,7 +108,7 @@
                       ]
                   },
                   "emailPassword": {
-                      "$ref": "#/components/schemas/EmailPasswordInput"
+                      "$ref": "#/components/schemas/EmailPassword_input"
                   }
               },
               "required": [
@@ -178,7 +178,7 @@
                     "type": ["number", "null"]
                   },
                   "where": {
-                    "$ref": "#/components/schemas/NullableCustomersWhereInput"
+                    "$ref": "#/components/schemas/nullable_customers_where"
                   }
                 },
                 "type": "object"
@@ -229,10 +229,10 @@
                 "additionalProperties": false,
                 "properties": {
                   "values": {
-                    "$ref": "#/components/schemas/NullableUpdateCustomerValuesInput"
+                    "$ref": "#/components/schemas/nullable_updateCustomer_values"
                   },
                   "where": {
-                    "$ref": "#/components/schemas/UpdateCustomerWhereInput"
+                    "$ref": "#/components/schemas/updateCustomer_where"
                   }
                 },
                 "required": ["where"],

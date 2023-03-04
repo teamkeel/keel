@@ -54,7 +54,7 @@
               "source": "post.title = null"
             }
           ],
-          "inputMessageName": "RemoveTitleInput"
+          "inputMessageName": "removeTitle_input"
         },
         {
           "modelName": "Post",
@@ -66,7 +66,7 @@
               "source": "post.title == null"
             }
           ],
-          "inputMessageName": "ListPostsWithNoTitleInput"
+          "inputMessageName": "listPostsWithNoTitle_input"
         }
       ]
     },
@@ -126,18 +126,18 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
         }
       ]
     }
   ],
   "messages": [
     {
-      "name": "RemoveTitleWhereInput",
+      "name": "removeTitle_where",
       "fields": [
         {
-          "messageName": "RemoveTitleWhereInput",
+          "messageName": "removeTitle_where",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -151,46 +151,47 @@
       ]
     },
     {
-      "name": "RemoveTitleValuesInput"
+      "name": "removeTitle_values"
     },
     {
-      "name": "RemoveTitleInput",
+      "name": "removeTitle_input",
       "fields": [
         {
-          "messageName": "RemoveTitleInput",
+          "messageName": "removeTitle_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "RemoveTitleWhereInput"
+            "messageName": "removeTitle_where"
           }
         },
         {
-          "messageName": "RemoveTitleInput",
+          "messageName": "removeTitle_input",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "RemoveTitleValuesInput"
+            "messageName": "removeTitle_values"
           },
           "optional": true
         }
       ]
     },
     {
-      "name": "ListPostsWithNoTitleWhereInput"
+      "name": "listPostsWithNoTitle_where"
     },
     {
-      "name": "ListPostsWithNoTitleInput",
+      "name": "listPostsWithNoTitle_input",
       "fields": [
         {
-          "messageName": "ListPostsWithNoTitleInput",
+          "messageName": "listPostsWithNoTitle_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "ListPostsWithNoTitleWhereInput"
+            "messageName": "listPostsWithNoTitle_where"
           },
           "optional": true
         },
         {
+          "messageName": "listPostsWithNoTitle_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -198,6 +199,7 @@
           "optional": true
         },
         {
+          "messageName": "listPostsWithNoTitle_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -205,6 +207,7 @@
           "optional": true
         },
         {
+          "messageName": "listPostsWithNoTitle_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -212,6 +215,7 @@
           "optional": true
         },
         {
+          "messageName": "listPostsWithNoTitle_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -221,17 +225,17 @@
       ]
     },
     {
-      "name": "EmailPasswordInput",
+      "name": "EmailPassword_input",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -240,10 +244,10 @@
       ]
     },
     {
-      "name": "AuthenticateInput",
+      "name": "authenticate_input",
       "fields": [
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -251,27 +255,27 @@
           "optional": true
         },
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+            "messageName": "EmailPassword_input"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
+      "name": "authenticate_response",
       "fields": [
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"

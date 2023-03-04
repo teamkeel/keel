@@ -53,7 +53,7 @@
               "source": "name != \"\""
             }
           ],
-          "inputMessageName": "CreatePersonInput"
+          "inputMessageName": "createPerson_input"
         }
       ]
     },
@@ -113,18 +113,18 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
         }
       ]
     }
   ],
   "messages": [
     {
-      "name": "CreatePersonInput",
+      "name": "createPerson_input",
       "fields": [
         {
-          "messageName": "CreatePersonInput",
+          "messageName": "createPerson_input",
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
@@ -138,17 +138,17 @@
       ]
     },
     {
-      "name": "EmailPasswordInput",
+      "name": "EmailPassword_input",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -157,10 +157,10 @@
       ]
     },
     {
-      "name": "AuthenticateInput",
+      "name": "authenticate_input",
       "fields": [
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -168,27 +168,27 @@
           "optional": true
         },
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+            "messageName": "EmailPassword_input"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
+      "name": "authenticate_response",
       "fields": [
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"

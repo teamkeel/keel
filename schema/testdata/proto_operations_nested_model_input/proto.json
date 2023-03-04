@@ -68,7 +68,7 @@
           "name": "searchFees",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "SearchFeesInput"
+          "inputMessageName": "searchFees_input"
         }
       ]
     },
@@ -259,7 +259,7 @@
           "name": "searchFums",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "SearchFumsInput"
+          "inputMessageName": "searchFums_input"
         }
       ]
     },
@@ -319,15 +319,15 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
         }
       ]
     }
   ],
   "messages": [
     {
-      "name": "StringQueryInput",
+      "name": "StringQuery_input",
       "fields": [
         {
           "name": "equals",
@@ -368,14 +368,14 @@
       ]
     },
     {
-      "name": "SearchFeesWhereInput",
+      "name": "searchFees_where",
       "fields": [
         {
-          "messageName": "SearchFeesWhereInput",
+          "messageName": "searchFees_where",
           "name": "theFiTheFoTheFumTheName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "StringQuery_input"
           },
           "target": [
             "theFi",
@@ -387,17 +387,18 @@
       ]
     },
     {
-      "name": "SearchFeesInput",
+      "name": "searchFees_input",
       "fields": [
         {
-          "messageName": "SearchFeesInput",
+          "messageName": "searchFees_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "SearchFeesWhereInput"
+            "messageName": "searchFees_where"
           }
         },
         {
+          "messageName": "searchFees_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -405,6 +406,7 @@
           "optional": true
         },
         {
+          "messageName": "searchFees_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -412,6 +414,7 @@
           "optional": true
         },
         {
+          "messageName": "searchFees_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -419,6 +422,7 @@
           "optional": true
         },
         {
+          "messageName": "searchFees_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -428,7 +432,7 @@
       ]
     },
     {
-      "name": "StringQueryInput",
+      "name": "StringQuery_input",
       "fields": [
         {
           "name": "equals",
@@ -469,14 +473,14 @@
       ]
     },
     {
-      "name": "SearchFumsWhereInput",
+      "name": "searchFums_where",
       "fields": [
         {
-          "messageName": "SearchFumsWhereInput",
+          "messageName": "searchFums_where",
           "name": "theFosTheFisTheFeesTheName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "StringQuery_input"
           },
           "target": [
             "theFos",
@@ -488,17 +492,18 @@
       ]
     },
     {
-      "name": "SearchFumsInput",
+      "name": "searchFums_input",
       "fields": [
         {
-          "messageName": "SearchFumsInput",
+          "messageName": "searchFums_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "SearchFumsWhereInput"
+            "messageName": "searchFums_where"
           }
         },
         {
+          "messageName": "searchFums_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -506,6 +511,7 @@
           "optional": true
         },
         {
+          "messageName": "searchFums_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -513,6 +519,7 @@
           "optional": true
         },
         {
+          "messageName": "searchFums_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -520,6 +527,7 @@
           "optional": true
         },
         {
+          "messageName": "searchFums_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -529,17 +537,17 @@
       ]
     },
     {
-      "name": "EmailPasswordInput",
+      "name": "EmailPassword_input",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -548,10 +556,10 @@
       ]
     },
     {
-      "name": "AuthenticateInput",
+      "name": "authenticate_input",
       "fields": [
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -559,27 +567,27 @@
           "optional": true
         },
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+            "messageName": "EmailPassword_input"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
+      "name": "authenticate_response",
       "fields": [
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"

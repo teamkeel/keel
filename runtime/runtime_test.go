@@ -897,16 +897,15 @@ var testCases = []testCase{
 			require.NoError(t, db.Table("thing").Create(row1).Error)
 		},
 		gqlOperation: `
-
-		fragment Fields on ThingConnection {
+		fragment Fields on Thing_connection {
 			edges {
 				node {
-				text
-				bool
-				# timestamp {seconds}
-				# date {day, month, year}
-				number
-				enum
+					text
+					bool
+					# timestamp {seconds}
+					# date {day, month, year}
+					number
+					enum
 				}
 			}
 		}
@@ -1027,7 +1026,6 @@ var testCases = []testCase{
 		}
 		}`,
 		assertData: func(t *testing.T, data map[string]any) {
-
 			keys := []string{
 				"string_equals",
 				"string_startsWith",

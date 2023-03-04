@@ -120,7 +120,7 @@ func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *prot
 		name := field.Type.MessageName.Value
 		if nullable {
 			component.allowNull()
-			name = "Nullable" + name
+			name = "nullable_" + name
 		}
 
 		prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}

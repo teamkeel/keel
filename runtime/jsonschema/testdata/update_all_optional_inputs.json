@@ -1,7 +1,7 @@
 {
   "components": {
     "schemas": {
-      "NullableTestActionValuesInput": {
+      "nullable_testAction_values": {
         "additionalProperties": false,
         "properties": {
           "birthday": {
@@ -21,7 +21,7 @@
         },
         "type": ["object", "null"]
       },
-      "TestActionWhereInput": {
+      "testAction_where": {
         "additionalProperties": false,
         "properties": {
           "id": {
@@ -36,10 +36,10 @@
   "additionalProperties": false,
   "properties": {
     "values": {
-      "$ref": "#/components/schemas/NullableTestActionValuesInput"
+      "$ref": "#/components/schemas/nullable_testAction_values"
     },
     "where": {
-      "$ref": "#/components/schemas/TestActionWhereInput"
+      "$ref": "#/components/schemas/testAction_where"
     }
   },
   "required": ["where"],

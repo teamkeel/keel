@@ -1,10 +1,10 @@
 type Query {
   __Empty: Boolean
-  readPerson(input: PersonInput_input!): PersonResponse
 }
 
 type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
+  writePerson(input: TheMessage_input!): TheMessage
 }
 
 input EmailPassword_input {
@@ -12,8 +12,8 @@ input EmailPassword_input {
   password: String!
 }
 
-input PersonInput_input {
-  id: [ID!]!
+input TheMessage_input {
+  thing: Boolean!
 }
 
 input authenticate_input {
@@ -21,8 +21,8 @@ input authenticate_input {
   emailPassword: EmailPassword_input!
 }
 
-type PersonResponse {
-  id: [ID]!
+type TheMessage {
+  thing: Boolean!
 }
 
 type authenticate_response {

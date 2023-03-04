@@ -1,7 +1,7 @@
 {
   "components": {
     "schemas": {
-      "BooleanQueryInput": {
+      "BooleanQuery_input": {
         "additionalProperties": false,
         "properties": {
           "equals": {
@@ -10,7 +10,7 @@
         },
         "type": "object"
       },
-      "DateQueryInput": {
+      "DateQuery_input": {
         "additionalProperties": false,
         "properties": {
           "after": {
@@ -36,7 +36,7 @@
         },
         "type": "object"
       },
-      "HobbyQueryInput": {
+      "HobbyQuery_input": {
         "additionalProperties": false,
         "properties": {
           "equals": {
@@ -62,7 +62,7 @@
         },
         "type": "object"
       },
-      "IntQueryInput": {
+      "IntQuery_input": {
         "additionalProperties": false,
         "properties": {
           "equals": {
@@ -83,7 +83,7 @@
         },
         "type": "object"
       },
-      "NullableHobbyQueryInput": {
+      "nullable_HobbyQuery_input": {
         "additionalProperties": false,
         "properties": {
           "equals": {
@@ -109,7 +109,7 @@
         },
         "type": ["object", "null"]
       },
-      "NullableStringQueryInput": {
+      "nullable_StringQuery_input": {
         "additionalProperties": false,
         "properties": {
           "contains": {
@@ -133,7 +133,7 @@
         },
         "type": ["object", "null"]
       },
-      "StringQueryInput": {
+      "StringQuery_input": {
         "additionalProperties": false,
         "properties": {
           "contains": {
@@ -157,40 +157,39 @@
         },
         "type": "object"
       },
-      "TestActionWhereInput": {
+      "testAction_where": {
         "additionalProperties": false,
         "properties": {
           "birthday": {
-            "$ref": "#/components/schemas/DateQueryInput"
+            "$ref": "#/components/schemas/DateQuery_input"
           },
           "favouriteNumber": {
-            "$ref": "#/components/schemas/IntQueryInput"
+            "$ref": "#/components/schemas/IntQuery_input"
           },
           "hobby": {
-            "$ref": "#/components/schemas/HobbyQueryInput"
+            "$ref": "#/components/schemas/HobbyQuery_input"
           },
           "secondHobby": {
-            "$ref": "#/components/schemas/NullableHobbyQueryInput"
+            "$ref": "#/components/schemas/nullable_HobbyQuery_input"
           },
           "isAdmin": {
-            "$ref": "#/components/schemas/BooleanQueryInput"
+            "$ref": "#/components/schemas/BooleanQuery_input"
           },
           "lastSeenAt": {
-            "$ref": "#/components/schemas/TimestampQueryInput"
+            "$ref": "#/components/schemas/TimestampQuery_input"
           },
           "name": {
-            "$ref": "#/components/schemas/StringQueryInput"
+            "$ref": "#/components/schemas/StringQuery_input"
           },
           "preferredName": {
-            "$ref": "#/components/schemas/NullableStringQueryInput"
+            "$ref": "#/components/schemas/nullable_StringQuery_input"
           }, 
           "currentCityName": {
-            "$ref": "#/components/schemas/StringQueryInput"
+            "$ref": "#/components/schemas/StringQuery_input"
           },
           "previousCityName": {
-            "$ref": "#/components/schemas/NullableStringQueryInput"
+            "$ref": "#/components/schemas/nullable_StringQuery_input"
           }
-
         },
         "required": [
           "name",
@@ -203,7 +202,7 @@
         ],
         "type": "object"
       },
-      "TimestampQueryInput": {
+      "TimestampQuery_input": {
         "additionalProperties": false,
         "properties": {
           "after": {
@@ -234,7 +233,7 @@
       "type": ["number", "null"]
     },
     "where": {
-      "$ref": "#/components/schemas/TestActionWhereInput"
+      "$ref": "#/components/schemas/testAction_where"
     }
   },
   "required": ["where"],

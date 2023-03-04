@@ -1,38 +1,38 @@
 type Query {
   __Empty: Boolean
-  readPerson(input: ReadPersonInput!): PersonResponse
-  readPersonWithMessage(input: PersonInput!): PersonResponse
+  readPerson(input: readPerson_input!): PersonResponse
+  readPersonWithMessage(input: PersonInput_input!): PersonResponse
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  authenticate(input: authenticate_input!): authenticate_response
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input PersonInput {
+input PersonInput_input {
   name: String!
   optionalName: String
 }
 
-input ReadPersonInput {
-  name: String!
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
+input readPerson_input {
+  name: String!
 }
 
 type PersonResponse {
   optionalText: String
   text: String!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }

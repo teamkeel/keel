@@ -1,29 +1,24 @@
 type Query {
   __Empty: Boolean
-  inClassroom(input: InClassroomInput!): ClassroomPeople
+  inClassroom(input: inClassroom_input!): ClassroomPeople
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  authenticate(input: authenticate_input!): authenticate_response
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input InClassroomInput {
-  classId: ID!
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
+input inClassroom_input {
+  classId: ID!
 }
 
 type ClassroomPeople {
@@ -46,4 +41,9 @@ type Timestamp {
   month: Int!
   seconds: Int!
   year: Int!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }

@@ -3,36 +3,36 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: AuthenticateInput!): AuthenticateResponse
-  writePerson(input: WritePersonInput!): PersonResponse
-  writePersonWithMessage(input: PersonInput!): PersonResponse
+  authenticate(input: authenticate_input!): authenticate_response
+  writePerson(input: writePerson_input!): PersonResponse
+  writePersonWithMessage(input: PersonInput_input!): PersonResponse
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
-input EmailPasswordInput {
+input EmailPassword_input {
   email: String!
   password: String!
 }
 
-input PersonInput {
+input PersonInput_input {
   name: String!
   optionalName: String
 }
 
-input WritePersonInput {
-  name: String!
+input authenticate_input {
+  createIfNotExists: Boolean
+  emailPassword: EmailPassword_input!
 }
 
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
+input writePerson_input {
+  name: String!
 }
 
 type PersonResponse {
   optionalText: String
   text: String!
+}
+
+type authenticate_response {
+  identityCreated: Boolean!
+  token: String!
 }

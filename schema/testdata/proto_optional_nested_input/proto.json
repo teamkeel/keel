@@ -90,14 +90,14 @@
           "name": "listByCompany",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "ListByCompanyInput"
+          "inputMessageName": "listByCompany_input"
         },
         {
           "modelName": "Person",
           "name": "listByPreviousCompany",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "ListByPreviousCompanyInput"
+          "inputMessageName": "listByPreviousCompany_input"
         }
       ]
     },
@@ -208,15 +208,15 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
         }
       ]
     }
   ],
   "messages": [
     {
-      "name": "StringQueryInput",
+      "name": "StringQuery_input",
       "fields": [
         {
           "name": "equals",
@@ -257,7 +257,7 @@
       ]
     },
     {
-      "name": "StringQueryInput",
+      "name": "StringQuery_input",
       "fields": [
         {
           "name": "equals",
@@ -298,14 +298,14 @@
       ]
     },
     {
-      "name": "ListByCompanyWhereInput",
+      "name": "listByCompany_where",
       "fields": [
         {
-          "messageName": "ListByCompanyWhereInput",
+          "messageName": "listByCompany_where",
           "name": "companyName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "StringQuery_input"
           },
           "target": [
             "company",
@@ -313,11 +313,11 @@
           ]
         },
         {
-          "messageName": "ListByCompanyWhereInput",
+          "messageName": "listByCompany_where",
           "name": "companyTradingAs",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "StringQuery_input"
           },
           "optional": true,
           "target": [
@@ -328,17 +328,18 @@
       ]
     },
     {
-      "name": "ListByCompanyInput",
+      "name": "listByCompany_input",
       "fields": [
         {
-          "messageName": "ListByCompanyInput",
+          "messageName": "listByCompany_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "ListByCompanyWhereInput"
+            "messageName": "listByCompany_where"
           }
         },
         {
+          "messageName": "listByCompany_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -346,6 +347,7 @@
           "optional": true
         },
         {
+          "messageName": "listByCompany_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -353,6 +355,7 @@
           "optional": true
         },
         {
+          "messageName": "listByCompany_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -360,6 +363,7 @@
           "optional": true
         },
         {
+          "messageName": "listByCompany_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -369,7 +373,7 @@
       ]
     },
     {
-      "name": "StringQueryInput",
+      "name": "StringQuery_input",
       "fields": [
         {
           "name": "equals",
@@ -410,7 +414,7 @@
       ]
     },
     {
-      "name": "StringQueryInput",
+      "name": "StringQuery_input",
       "fields": [
         {
           "name": "equals",
@@ -451,14 +455,14 @@
       ]
     },
     {
-      "name": "ListByPreviousCompanyWhereInput",
+      "name": "listByPreviousCompany_where",
       "fields": [
         {
-          "messageName": "ListByPreviousCompanyWhereInput",
+          "messageName": "listByPreviousCompany_where",
           "name": "previousCompanyName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "StringQuery_input"
           },
           "optional": true,
           "target": [
@@ -467,11 +471,11 @@
           ]
         },
         {
-          "messageName": "ListByPreviousCompanyWhereInput",
+          "messageName": "listByPreviousCompany_where",
           "name": "previousCompanyTradingAs",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "StringQuery_input"
           },
           "optional": true,
           "target": [
@@ -482,18 +486,19 @@
       ]
     },
     {
-      "name": "ListByPreviousCompanyInput",
+      "name": "listByPreviousCompany_input",
       "fields": [
         {
-          "messageName": "ListByPreviousCompanyInput",
+          "messageName": "listByPreviousCompany_input",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "ListByPreviousCompanyWhereInput"
+            "messageName": "listByPreviousCompany_where"
           },
           "optional": true
         },
         {
+          "messageName": "listByPreviousCompany_input",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -501,6 +506,7 @@
           "optional": true
         },
         {
+          "messageName": "listByPreviousCompany_input",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -508,6 +514,7 @@
           "optional": true
         },
         {
+          "messageName": "listByPreviousCompany_input",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -515,6 +522,7 @@
           "optional": true
         },
         {
+          "messageName": "listByPreviousCompany_input",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -524,17 +532,17 @@
       ]
     },
     {
-      "name": "EmailPasswordInput",
+      "name": "EmailPassword_input",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
+          "messageName": "EmailPassword_input",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -543,10 +551,10 @@
       ]
     },
     {
-      "name": "AuthenticateInput",
+      "name": "authenticate_input",
       "fields": [
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -554,27 +562,27 @@
           "optional": true
         },
         {
-          "messageName": "AuthenticateInput",
+          "messageName": "authenticate_input",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+            "messageName": "EmailPassword_input"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
+      "name": "authenticate_response",
       "fields": [
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
+          "messageName": "authenticate_response",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
