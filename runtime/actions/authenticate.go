@@ -176,7 +176,6 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 
 // https://pkg.go.dev/github.com/golang-jwt/jwt/v4#RegisteredClaims
 type claims struct {
-	Id string `json:"id"`
 	jwt.RegisteredClaims
 }
 
@@ -184,8 +183,8 @@ func GenerateBearerToken(id string) (string, error) {
 	now := time.Now()
 
 	claims := claims{
-		Id: id,
 		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   id,
 			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24)),
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
@@ -213,7 +212,7 @@ func ParseBearerToken(jwtToken string) (string, error) {
 		return "", ErrTokenExpired
 	}
 
-	ksuid, err := ksuid.Parse(claims.Id)
+	ksuid, err := ksuid.Parse(claims.Subject)
 
 	if err != nil {
 		return "", ErrInvalidIdentityClaim
