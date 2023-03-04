@@ -19,7 +19,6 @@ func NamingRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	return Visitor{
 		EnterModel: func(n *parser.ModelNode) {
 			errs.AppendError(checkNamingError(n.Name, "model"))
-
 		},
 		EnterField: func(n *parser.FieldNode) {
 			errs.AppendError(checkNamingError(n.Name, "field"))
@@ -27,7 +26,7 @@ func NamingRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 		EnterAction: func(n *parser.ActionNode) {
 			errs.AppendError(checkNamingError(n.Name, "action"))
 		},
-		EnterInput: func(n *parser.ActionInputNode) {
+		EnterActionInput: func(n *parser.ActionInputNode) {
 			if n.Label == nil {
 				return
 			}
