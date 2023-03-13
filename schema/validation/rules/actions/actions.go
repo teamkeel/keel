@@ -202,7 +202,7 @@ func CreateOperationRequiredFieldsRule(
 	asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 
 	for _, model := range query.Models(asts) {
-		requiredFields := requiredCreateFields(model)
+		requiredFields := requiredCreateFields(asts, model)
 		createActions := query.ModelCreateOperations(model)
 		for _, createAction := range createActions {
 			for _, fld := range requiredFields {
@@ -246,7 +246,7 @@ func setExpressions(action *parser.ActionNode) []*parser.Expression {
 // must be specified for any create action on that model to be valid.
 // In the general case, what is returned is the field's name, but for
 // foreign key fields, it returns e.g. "author.id"
-func requiredCreateFields(model *parser.ModelNode) []string {
+func requiredCreateFields(asts []*parser.AST, model *parser.ModelNode) []string {
 	req := []string{}
 
 	for _, f := range query.ModelFields(model) {
@@ -259,25 +259,22 @@ func requiredCreateFields(model *parser.ModelNode) []string {
 		if query.FieldHasAttribute(f, parser.AttributeDefault) {
 			continue
 		}
-		// Model fields are never required.
-		// However fields that represent their sibling FK fields are - see below.
-		if f.FkInfo != nil && f.FkInfo.OwningField == f {
+		// Built-in fields are never required
+		if f.BuiltIn {
 			continue
 		}
 
-		// We conclude this field IS is required.
+		name := f.Name.Value
 
-		// When we encounter our auto=generate foreign key fields
-		// such as "authorID", we say there is a required field "author.id".
-		if f.FkInfo != nil && f.FkInfo.ForeignKeyField == f {
-			dottedForm := strings.Join([]string{
-				f.FkInfo.OwningField.Name.Value,
-				f.FkInfo.ReferredToModelPrimaryKey.Name.Value}, ".")
-			req = append(req, dottedForm)
-		} else {
-			// The general case
-			req = append(req, f.Name.Value)
+		// If this field is a model then in a create it would be specified as:
+		//   create myAction(<fieldName>.id)
+		//
+		// TODO: this will change with nested create
+		if query.IsHasOneModelField(asts, f) {
+			name += "." + parser.ImplicitFieldNameId
 		}
+
+		req = append(req, name)
 	}
 	return req
 }

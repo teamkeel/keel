@@ -1,6 +1,8 @@
 package query
 
 import (
+	"strings"
+
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -83,6 +85,14 @@ func Field(model *parser.ModelNode, name string) *parser.FieldNode {
 
 func IsModel(asts []*parser.AST, name string) bool {
 	return Model(asts, name) != nil
+}
+
+func IsForeignKey(asts []*parser.AST, model *parser.ModelNode, field *parser.FieldNode) bool {
+	if !field.BuiltIn {
+		return false
+	}
+	modelField := Field(model, strings.TrimSuffix(field.Name.Value, "Id"))
+	return modelField != nil && Model(asts, modelField.Type) != nil
 }
 
 func IsIdentityModel(asts []*parser.AST, name string) bool {

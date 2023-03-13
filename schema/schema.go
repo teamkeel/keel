@@ -285,17 +285,6 @@ func (scm *Builder) insertForeignKeyFields(
 				fkField.Attributes = append(fkField.Attributes, &attr)
 			}
 
-			fkInfo := &parser.ForeignKeyAssociation{
-				OwningModel:               mdl,
-				OwningField:               field,
-				ReferredToModel:           referredToModel,
-				ReferredToModelPrimaryKey: referredToModelPK,
-				ForeignKeyField:           fkField,
-			}
-
-			fkField.FkInfo = fkInfo
-			field.FkInfo = fkInfo
-
 			fkFieldsToAdd = append(fkFieldsToAdd, fkField)
 		}
 		// Add the new FK fields to the existing model's fields section.
