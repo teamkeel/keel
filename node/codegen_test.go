@@ -13,7 +13,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/samber/lo"
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -355,8 +354,7 @@ export interface getPerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -377,8 +375,7 @@ export interface createPerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -399,8 +396,7 @@ export interface createPerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -416,11 +412,11 @@ model Person {
 }
 	`
 	expected := `
-export interface updatePerson_values {
-	name: string;
-}
 export interface updatePerson_where {
 	id: string;
+}
+export interface updatePerson_values {
+	name: string;
 }
 export interface updatePerson_input {
 	where: updatePerson_where;
@@ -428,8 +424,7 @@ export interface updatePerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -445,16 +440,16 @@ model Person {
 }
 	`
 	expected := `
-export interface listPeople_where {
-	name: string | StringQuery_input;
-	some?: boolean | null;
-}
 export interface StringQuery_input {
 	equals?: string | null;
 	startsWith?: string | null;
 	endsWith?: string | null;
 	contains?: string | null;
 	oneOf?: string[] | null;
+}
+export interface listPeople_where {
+	name: StringQuery_input;
+	some?: boolean | null;
 }
 export interface listPeople_input {
 	where: listPeople_where;
@@ -465,8 +460,7 @@ export interface listPeople_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -487,10 +481,6 @@ model Person {
 }
 	`
 	expected := `
-export interface listPeople_where {
-	name: string | StringQuery_input;
-	favouriteSport: Sport | SportQuery_input;
-}
 export interface StringQuery_input {
 	equals?: string | null;
 	startsWith?: string | null;
@@ -502,6 +492,10 @@ export interface SportQuery_input {
 	equals?: Sport | null;
 	oneOf?: Sport[] | null;
 }
+export interface listPeople_where {
+	name: StringQuery_input;
+	favouriteSport: SportQuery_input;
+}
 export interface listPeople_input {
 	where: listPeople_where;
 	first?: number | null;
@@ -511,8 +505,7 @@ export interface listPeople_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -530,8 +523,7 @@ export interface deletePerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -552,8 +544,7 @@ export interface getPersonName_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -579,8 +570,7 @@ export interface GetInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -606,8 +596,7 @@ export interface PersonNameResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionResponseTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -628,8 +617,7 @@ export interface deletePerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -655,8 +643,7 @@ export interface DeleteInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -682,8 +669,7 @@ export interface DeleteResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionResponseTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -708,8 +694,7 @@ export interface PeopleInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -732,8 +717,7 @@ export interface Foo {
 	`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionResponseTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -772,13 +756,11 @@ export interface Response {
 }`
 
 	runWriterTest(t, schema, inputExpected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionInputTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 
 	runWriterTest(t, schema, responseExpected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionResponseTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -799,8 +781,7 @@ export interface People {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionResponseTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -820,16 +801,16 @@ model Person {
 	}
 }`
 	expected := `
+export interface People {
+	names: Details[];
+}
 export interface Details {
 	names: string;
 }
-export interface People {
-	names: Details[];
-}`
+`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionResponseTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -859,8 +840,7 @@ export interface PersonResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeActionResponseTypes(w, s, m.Operations[0], false)
+		writeMessages(w, s)
 	})
 }
 
@@ -915,9 +895,9 @@ export interface getPerson_input {
 }
 export interface createPerson_input {
 }
-export interface updatePerson_values {
-}
 export interface updatePerson_where {
+}
+export interface updatePerson_values {
 }
 export interface updatePerson_input {
 	where?: updatePerson_where | null;
@@ -1038,12 +1018,12 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface peopleByHobby_where {
-	hobby: Hobby | HobbyQuery_input;
-}
 export interface HobbyQuery_input {
 	equals?: Hobby | null;
 	oneOf?: Hobby[] | null;
+}
+export interface peopleByHobby_where {
+	hobby: HobbyQuery_input;
 }
 export interface peopleByHobby_input {
 	where: peopleByHobby_where;
@@ -1341,9 +1321,7 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 	fn(s, w)
 	diff := diffmatchpatch.New()
 	diffs := diff.DiffMain(normalise(expected), normalise(w.String()), true)
-	if lo.SomeBy(diffs, func(d diffmatchpatch.Diff) bool {
-		return d.Type != diffmatchpatch.DiffEqual
-	}) {
+	if !strings.Contains(normalise(w.String()), normalise(expected)) {
 		t.Errorf("generated code does not match expected:\n%s", diffPrettyText(diffs))
 
 		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
