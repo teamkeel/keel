@@ -1,3 +1,10 @@
+# [0.279.0](https://github.com/teamkeel/keel/compare/v0.278.0...v0.279.0) (2023-03-13)
+
+
+### Features
+
+* support 'Any' type  ([#840](https://github.com/teamkeel/keel/issues/840)) ([f00e56d](https://github.com/teamkeel/keel/commit/f00e56d3fca73a7a90978dfaa02452450b2c9c33))
+
 # [0.278.0](https://github.com/teamkeel/keel/compare/v0.277.1...v0.278.0) (2023-03-02)
 
 
