@@ -19,14 +19,16 @@ func ConflictingInputsRule(_ []*parser.AST, errs *errorhandling.ValidationErrors
 	modelInputs := map[*parser.ActionInputNode]bool{}
 
 	return Visitor{
-		EnterOperation: func(n *parser.ActionNode) {
-			isOperation = true
+		EnterModelSection: func(n *parser.ModelSectionNode) {
+			isOperation = len(n.Operations) > 0
 		},
-		ExitOperation: func(n *parser.ActionNode) {
+		LeaveModelSection: func(n *parser.ModelSectionNode) {
 			isOperation = false
+		},
+		EnterAction: func(n *parser.ActionNode) {
 			modelInputs = map[*parser.ActionInputNode]bool{}
 		},
-		EnterInput: func(n *parser.ActionInputNode) {
+		EnterActionInput: func(n *parser.ActionInputNode) {
 			if n.Label == nil && isOperation {
 				modelInputs[n] = true
 			}

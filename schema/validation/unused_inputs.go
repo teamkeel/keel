@@ -15,10 +15,17 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 	unused := map[string]*parser.NameNode{}
 
 	return Visitor{
-		EnterOperation: func(n *parser.ActionNode) {
-			isOperation = true
+		EnterModelSection: func(n *parser.ModelSectionNode) {
+			isOperation = len(n.Operations) > 0
 		},
-		ExitOperation: func(n *parser.ActionNode) {
+		LeaveModelSection: func(n *parser.ModelSectionNode) {
+			isOperation = false
+		},
+		LeaveAction: func(n *parser.ActionNode) {
+			if !isOperation {
+				return
+			}
+
 			for _, name := range unused {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(
@@ -31,11 +38,9 @@ func UnusedInputRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visi
 				)
 			}
 
-			// reset state
-			isOperation = false
 			unused = map[string]*parser.NameNode{}
 		},
-		EnterInput: func(n *parser.ActionInputNode) {
+		EnterActionInput: func(n *parser.ActionInputNode) {
 			if n.Label == nil || !isOperation {
 				return
 			}

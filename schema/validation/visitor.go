@@ -1,170 +1,100 @@
 package validation
 
 import (
+	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+// Visitor lets you define "enter" and "leave" functions for AST nodes.
+// This struct may not have fields for all AST nodes, so if you need to
+// visit a node that is not currently supported add the necessary fields
+// to this struct. For your functions to get called you must name these
+// fields correctly.
+//
+// For a node type called "SomethingNode" the hooks would be:
+//
+//	EnterSomething: func(n *parser.SomethingNode)
+//	LeaveSomething: func(n *parser.SomethingNode)
 type Visitor struct {
-	EnterModel             func(n *parser.ModelNode)
-	EnterField             func(n *parser.FieldNode)
-	EnterAction            func(n *parser.ActionNode)
-	ExitAction             func(n *parser.ActionNode)
-	EnterOperation         func(n *parser.ActionNode)
-	ExitOperation          func(n *parser.ActionNode)
-	EnterFunction          func(n *parser.ActionNode)
-	ExitFunction           func(n *parser.ActionNode)
-	EnterInput             func(n *parser.ActionInputNode)
-	EnterReadInput         func(n *parser.ActionInputNode)
-	EnterWriteInput        func(n *parser.ActionInputNode)
-	EnterEnum              func(n *parser.EnumNode)
-	EnterRole              func(n *parser.RoleNode)
-	EnterAttribute         func(n *parser.AttributeNode)
+	EnterModel func(n *parser.ModelNode)
+	LeaveModel func(n *parser.ModelNode)
+
+	EnterModelSection func(n *parser.ModelSectionNode)
+	LeaveModelSection func(n *parser.ModelSectionNode)
+
+	EnterMessage func(n *parser.MessageNode)
+	LeaveMessage func(n *parser.MessageNode)
+
+	EnterField func(n *parser.FieldNode)
+	LeaveField func(n *parser.FieldNode)
+
+	EnterAction func(n *parser.ActionNode)
+	LeaveAction func(n *parser.ActionNode)
+
+	EnterActionInput func(n *parser.ActionInputNode)
+	LeaveActionInput func(n *parser.ActionInputNode)
+
+	EnterEnum func(n *parser.EnumNode)
+	LeaveEnum func(n *parser.EnumNode)
+
+	EnterRole func(n *parser.RoleNode)
+	LeaveRole func(n *parser.RoleNode)
+
+	EnterAttribute func(n *parser.AttributeNode)
+	LeaveAttribute func(n *parser.AttributeNode)
+
 	EnterAttributeArgument func(n *parser.AttributeArgumentNode)
-	ExitAttribute          func(n *parser.AttributeNode)
-	EnterAPI               func(n *parser.APINode)
+	LeaveAttributeArgument func(n *parser.AttributeArgumentNode)
+
+	EnterAPI func(n *parser.APINode)
+	LeaveAPI func(n *parser.APINode)
 }
 
 type VisitorFunc func([]*parser.AST, *errorhandling.ValidationErrors) Visitor
 
 func runVisitors(asts []*parser.AST, visitors []Visitor) {
 	for _, ast := range asts {
-		for _, decl := range ast.Declarations {
-			switch {
-			case decl.Model != nil:
-				visitModel(decl.Model, visitors)
-			case decl.Role != nil:
-				for _, v := range visitors {
-					if v.EnterRole != nil {
-						v.EnterRole(decl.Role)
-					}
-				}
-			case decl.API != nil:
-				for _, v := range visitors {
-					if v.EnterAPI != nil {
-						v.EnterAPI(decl.API)
-					}
-				}
-			}
-		}
+		visit(reflect.ValueOf(ast), visitors)
 	}
 }
 
-func visitModel(m *parser.ModelNode, visitors []Visitor) {
-	for _, v := range visitors {
-		if v.EnterModel != nil {
-			v.EnterModel(m)
-		}
+func visit(v reflect.Value, visitors []Visitor) {
+	if v.Kind() == reflect.Pointer {
+		v = v.Elem()
 	}
-	for _, section := range m.Sections {
-		switch {
-		case len(section.Fields) > 0:
-			for _, field := range section.Fields {
-				visitField(field, visitors)
-			}
-		case len(section.Operations) > 0:
-			for _, op := range section.Operations {
-				visitAction(op, false, visitors)
-			}
-		case len(section.Functions) > 0:
-			for _, op := range section.Functions {
-				visitAction(op, true, visitors)
-			}
-		case section.Attribute != nil:
-			visitAttribute(section.Attribute, visitors)
+
+	if v.Kind() == reflect.Slice {
+		for i := 0; i < v.Len(); i++ {
+			visit(v.Index(i), visitors)
 		}
+		return
+	}
+
+	if v.Kind() != reflect.Struct {
+		return
+	}
+
+	callVisitHook("Enter", v, visitors)
+	defer callVisitHook("Leave", v, visitors)
+
+	for i := 0; i < v.NumField(); i++ {
+		visit(v.FieldByIndex([]int{i}), visitors)
 	}
 }
 
-func visitField(f *parser.FieldNode, visitors []Visitor) {
-	for _, v := range visitors {
-		if v.EnterField != nil {
-			v.EnterField(f)
-		}
-	}
-	for _, attr := range f.Attributes {
-		visitAttribute(attr, visitors)
-	}
-}
+func callVisitHook(action string, v reflect.Value, visitors []Visitor) {
+	hookName := fmt.Sprintf("%s%s", action, strings.TrimSuffix(v.Type().Name(), "Node"))
 
-func visitAttribute(n *parser.AttributeNode, visitors []Visitor) {
-	for _, v := range visitors {
-		if v.EnterAttribute != nil {
-			v.EnterAttribute(n)
-		}
-	}
-	for _, arg := range n.Arguments {
-		for _, v := range visitors {
-			if v.EnterAttributeArgument != nil {
-				v.EnterAttributeArgument(arg)
-			}
-		}
-	}
-	for _, v := range visitors {
-		if v.ExitAttribute != nil {
-			v.ExitAttribute(n)
-		}
-	}
-}
-
-func visitAction(n *parser.ActionNode, isFunction bool, visitors []Visitor) {
-	for _, v := range visitors {
-		if v.EnterAction != nil {
-			v.EnterAction(n)
-		}
-		if isFunction {
-			if v.EnterFunction != nil {
-				v.EnterFunction(n)
-			}
-		} else {
-			if v.EnterOperation != nil {
-				v.EnterOperation(n)
-			}
-		}
-	}
-
-	for _, input := range n.Inputs {
-		for _, v := range visitors {
-			if v.EnterInput != nil {
-				v.EnterInput(input)
-			}
-			if v.EnterReadInput != nil {
-				v.EnterReadInput(input)
-			}
-		}
-	}
-
-	for _, input := range n.With {
-		for _, v := range visitors {
-			if v.EnterInput != nil {
-				v.EnterInput(input)
-			}
-			if v.EnterWriteInput != nil {
-				v.EnterWriteInput(input)
-			}
-		}
-	}
-
-	for _, attr := range n.Attributes {
-		for _, v := range visitors {
-			if v.EnterAttribute != nil {
-				v.EnterAttribute(attr)
-			}
-		}
-	}
-
-	for _, v := range visitors {
-		if v.ExitAction != nil {
-			v.ExitAction(n)
-		}
-		if isFunction {
-			if v.ExitFunction != nil {
-				v.ExitFunction(n)
-			}
-		} else {
-			if v.ExitOperation != nil {
-				v.ExitOperation(n)
-			}
+	for _, visitor := range visitors {
+		hookFunc := reflect.ValueOf(visitor).FieldByName(hookName)
+		if hookFunc.Kind() == reflect.Func && !hookFunc.IsNil() {
+			hookFunc.Call([]reflect.Value{
+				v.Addr(),
+			})
 		}
 	}
 }
