@@ -550,6 +550,14 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 			case insideInputs:
 				// for read and write actions, we want to suggest the field names (default behaviour) and the available message types
 				completions = append(completions, messages...)
+
+				// in the proto generation, we append the 'Any' type as a new message to the proto schema's Messages
+				// However we haven't reached the proto generation yet, so we are still in schema land
+				// so it will be easiest just to append 'Any' here
+				completions = append(completions, &CompletionItem{
+					Label: "Any",
+					Kind:  KindLabel,
+				})
 			case insideReturns:
 				// suggest the message types available in the schema only
 

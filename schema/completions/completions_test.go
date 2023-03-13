@@ -926,7 +926,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}
 			`,
-			expected: []string{"GetPersonInput", "createdAt", "id", "updatedAt"},
+			expected: []string{"GetPersonInput", "Any", "createdAt", "id", "updatedAt"},
 		},
 		{
 			name: "arbitrary-function-returns-completions",
@@ -953,6 +953,17 @@ func TestCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"returns"},
+		},
+		{
+			name: "arbitrary-function-any-completions",
+			schema: `
+			model Person {
+				functions {
+					read getPerson(<Cursor>)
+				}
+			}
+			`,
+			expected: []string{"Any", "createdAt", "id", "updatedAt"},
 		},
 	}
 
