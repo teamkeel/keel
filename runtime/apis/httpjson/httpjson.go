@@ -32,7 +32,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		pathParts := strings.Split(r.URL.Path, "/")
 		actionName := pathParts[len(pathParts)-1]
-		var inputs map[string]any
+		var inputs any
 
 		switch r.Method {
 		case http.MethodGet:
@@ -130,7 +130,7 @@ func parseQueryParams(q url.Values) map[string]any {
 	return inputs
 }
 
-func parsePostBody(b io.ReadCloser) (inputs map[string]any, err error) {
+func parsePostBody(b io.ReadCloser) (inputs any, err error) {
 	body, err := io.ReadAll(b)
 	if err != nil {
 		return nil, err

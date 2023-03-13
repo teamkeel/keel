@@ -46,6 +46,11 @@ const (
 	FieldTypePassword = "Password"  // a hashed password
 )
 
+// Types for Message fields
+const (
+	MessageFieldTypeAny = "Any"
+)
+
 var BuiltInTypes = map[string]bool{
 	FieldTypeID:       true,
 	FieldTypeText:     true,

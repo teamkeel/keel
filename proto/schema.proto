@@ -335,4 +335,7 @@ enum Type {
     // Used for hashing passwords and passcodes with the intention to verify admission.
     TYPE_PASSWORD = 15;
     TYPE_MESSAGE = 16;
+
+    // Any is used in Message types to denote a field with any type
+    TYPE_ANY = 17;
 }

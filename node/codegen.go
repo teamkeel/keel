@@ -12,6 +12,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/schema/parser"
 )
 
 type GeneratedFile struct {
@@ -531,16 +532,24 @@ func writeActionResponseTypes(w *Writer, schema *proto.Schema, op *proto.Operati
 func writeActionTypes(w *Writer, schema *proto.Schema, op *proto.Operation, messageName string, isTestingPackage bool) {
 	msgs := proto.FindAllLinkedMessages(schema.Messages, messageName)
 
+	// Checking if the root message is Any
+	if len(msgs) == 1 && msgs[0].Name == parser.MessageFieldTypeAny {
+		return
+	}
+
 	for _, msg := range msgs {
-		w.Writef("export interface %s {\n", msg.Name)
-		w.Indent()
+		// Checking if a nested field in an Any message
+		if msg.Name != parser.MessageFieldTypeAny {
+			w.Writef("export interface %s {\n", msg.Name)
+			w.Indent()
 
-		for _, field := range msg.Fields {
-			messageFieldToTypeScript(w, schema, op, field, isTestingPackage)
+			for _, field := range msg.Fields {
+				messageFieldToTypeScript(w, schema, op, field, isTestingPackage)
+			}
+
+			w.Dedent()
+			w.Writef("}\n")
 		}
-
-		w.Dedent()
-		w.Writef("}\n")
 	}
 }
 
@@ -610,7 +619,13 @@ func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operati
 
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
-	w.Writef("(fn: (inputs: %s, api: FunctionAPI, ctx: ContextAPI) => ", op.InputMessageName)
+
+	inputType := op.InputMessageName
+	if inputType == parser.MessageFieldTypeAny {
+		inputType = "any"
+	}
+
+	w.Writef("(fn: (inputs: %s, api: FunctionAPI, ctx: ContextAPI) => ", inputType)
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))
@@ -635,7 +650,13 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Operation, isTesti
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		returnType += "string"
 	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
-		returnType += op.ResponseMessageName
+		isAny := op.ResponseMessageName == parser.MessageFieldTypeAny
+
+		if isAny {
+			returnType += "any"
+		} else {
+			returnType += op.ResponseMessageName
+		}
 	}
 	returnType += ">"
 	return returnType

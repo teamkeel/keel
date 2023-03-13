@@ -128,6 +128,9 @@
   ],
   "messages": [
     {
+      "name": "Any"
+    },
+    {
       "name": "createPost_input",
       "fields": [
         {

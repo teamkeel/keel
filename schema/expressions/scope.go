@@ -390,7 +390,7 @@ func applyInputsInScope(asts []*parser.AST, context *ExpressionContext, scope *E
 			continue
 		}
 
-		resolvedType := query.ResolveInputType(asts, input, context.Model)
+		resolvedType := query.ResolveInputType(asts, input, context.Model, context.Action)
 		if resolvedType == "" {
 			continue
 		}

@@ -6,7 +6,12 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/schema/parser"
 	"github.com/xeipuuv/gojsonschema"
+)
+
+var (
+	AnyTypes = []string{"string", "object", "array", "integer", "number", "boolean", "null"}
 )
 
 type JSONSchema struct {
@@ -47,7 +52,7 @@ type Components struct {
 // If validation errors are found they will be contained in the returned result. If an error
 // is returned then validation could not be completed, likely to do an invalid JSON schema
 // being created.
-func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operation, input map[string]any) (*gojsonschema.Result, error) {
+func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operation, input any) (*gojsonschema.Result, error) {
 	requestType := JSONSchemaForOperation(ctx, schema, op)
 	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestType), gojsonschema.NewGoLoader(input))
 }
@@ -64,28 +69,41 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.O
 		Schemas: map[string]JSONSchema{},
 	}
 
+	messageIsNil := message == nil
+	isAny := !messageIsNil && message.Name == parser.MessageFieldTypeAny
+
 	root := JSONSchema{
 		Type:                 "object",
 		Properties:           map[string]JSONSchema{},
-		AdditionalProperties: boolPtr(false),
+		AdditionalProperties: boolPtr(isAny),
 	}
 
-	for _, field := range message.Fields {
-		prop := jsonSchemaForField(ctx, field, op, schema)
+	if messageIsNil {
+		fmt.Print("banana")
+	}
 
-		// Merge components from this request schema into OpenAPI components
-		if prop.Components != nil {
-			for name, comp := range prop.Components.Schemas {
-				components.Schemas[name] = comp
+	if isAny {
+		root.Type = AnyTypes
+	}
+
+	if !isAny {
+		for _, field := range message.Fields {
+			prop := jsonSchemaForField(ctx, field, op, schema)
+
+			// Merge components from this request schema into OpenAPI components
+			if prop.Components != nil {
+				for name, comp := range prop.Components.Schemas {
+					components.Schemas[name] = comp
+				}
+				prop.Components = nil
 			}
-			prop.Components = nil
-		}
 
-		root.Properties[field.Name] = prop
+			root.Properties[field.Name] = prop
 
-		// If the input is not optional then mark it required in the JSON schema
-		if !field.Optional {
-			root.Required = append(root.Required, field.Name)
+			// If the input is not optional then mark it required in the JSON schema
+			if !field.Optional {
+				root.Required = append(root.Required, field.Name)
+			}
 		}
 	}
 
@@ -104,6 +122,8 @@ func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *prot
 	nullable := field.Optional
 
 	switch field.Type.Type {
+	case proto.Type_TYPE_ANY:
+		prop.Type = AnyTypes
 	case proto.Type_TYPE_MESSAGE:
 		// Add the nested message to schema components.
 		message := proto.FindMessage(schema.Messages, field.Type.MessageName.Value)

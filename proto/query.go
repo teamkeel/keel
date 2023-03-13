@@ -347,18 +347,20 @@ func FindAllLinkedMessages(messages []*Message, messageName string) (ret []*Mess
 	// first append the base message that matches the messageName
 	ret = append(ret, msg)
 
-	// Now loop over the fields in the message to find any linked message types
-	ret = append(ret, lo.Reduce(msg.Fields, func(arr []*Message, field *MessageField, _ int) []*Message {
-		// If the field's type has a MessageName that isn't nil, then the field references
-		// another Message type
-		if field.Type.MessageName != nil {
-			// We recursively call this func to get any further nested message types
-			arr = append(arr, FindAllLinkedMessages(messages, field.Type.MessageName.Value)...)
-		}
+	if msg.Fields != nil {
 
-		return arr
-	}, []*Message{})...)
+		// Now loop over the fields in the message to find any linked message types
+		ret = append(ret, lo.Reduce(msg.Fields, func(arr []*Message, field *MessageField, _ int) []*Message {
+			// If the field's type has a MessageName that isn't nil, then the field references
+			// another Message type
+			if field.Type.MessageName != nil {
+				// We recursively call this func to get any further nested message types
+				arr = append(arr, FindAllLinkedMessages(messages, field.Type.MessageName.Value)...)
+			}
 
+			return arr
+		}, []*Message{})...)
+	}
 	// Reverse the sort order of the matches so we end up with the children first so they can be written in order in the codegen
 	ret = lo.Reverse(ret)
 
