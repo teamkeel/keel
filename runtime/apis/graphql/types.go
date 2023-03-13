@@ -135,10 +135,10 @@ var formattedDateType = &graphql.Field{
 var timestampType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Timestamp",
 	Fields: graphql.Fields{
-		"seconds": &graphql.Field{
-			Name:        "seconds",
-			Description: "Seconds since unix epoch",
-			Type:        graphql.NewNonNull(graphql.Int),
+		"iso8601": &graphql.Field{
+			Name:        "iso8601",
+			Description: "ISO8601 representation of the timestamp",
+			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				t, err := sourceToTime(p.Source)
 
@@ -146,46 +146,8 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 					return nil, err
 				}
 
-				return t.Unix(), nil
-			},
-		},
-		"year": &graphql.Field{
-			Name: "year",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, err := sourceToTime(p.Source)
-
-				if err != nil {
-					return nil, err
-				}
-
-				return t.Year(), nil
-			},
-		},
-		"month": &graphql.Field{
-			Name: "month",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, err := sourceToTime(p.Source)
-
-				if err != nil {
-					return nil, err
-				}
-
-				return int(t.Month()), nil
-			},
-		},
-		"day": &graphql.Field{
-			Name: "day",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, err := sourceToTime(p.Source)
-
-				if err != nil {
-					return nil, err
-				}
-
-				return t.Day(), nil
+				// iso8601 layout
+				return t.Format("2006-01-02T15:04:05.000Z"), nil
 			},
 		},
 		"formatted": formattedDateType,
@@ -216,9 +178,10 @@ var fromNowType = graphql.Field{
 var dateType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Date",
 	Fields: graphql.Fields{
-		"year": &graphql.Field{
-			Name: "year",
-			Type: graphql.NewNonNull(graphql.Int),
+		"iso8601": &graphql.Field{
+			Name:        "iso8601",
+			Description: "ISO8601 representation of the date",
+			Type:        graphql.NewNonNull(graphql.String),
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 				t, err := sourceToTime(p.Source)
 
@@ -226,33 +189,8 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 					return nil, err
 				}
 
-				return t.Year(), nil
-			},
-		},
-		"month": &graphql.Field{
-			Name: "month",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, err := sourceToTime(p.Source)
-
-				if err != nil {
-					return nil, err
-				}
-
-				return int(t.Month()), nil
-			},
-		},
-		"day": &graphql.Field{
-			Name: "day",
-			Type: graphql.NewNonNull(graphql.Int),
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				t, err := sourceToTime(p.Source)
-
-				if err != nil {
-					return nil, err
-				}
-
-				return t.Day(), nil
+				// iso8601 layout
+				return t.Format("2006-01-02T15:04:05.000Z"), nil
 			},
 		},
 		"formatted": formattedDateType,
@@ -273,8 +211,8 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 var timestampInputType = graphql.NewInputObject(graphql.InputObjectConfig{
 	Name: "TimestampInput",
 	Fields: graphql.InputObjectConfigFieldMap{
-		"seconds": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
+		"iso8601": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 })
@@ -282,14 +220,8 @@ var timestampInputType = graphql.NewInputObject(graphql.InputObjectConfig{
 var dateInputType = graphql.NewInputObject(graphql.InputObjectConfig{
 	Name: "DateInput",
 	Fields: graphql.InputObjectConfigFieldMap{
-		"year": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
-		},
-		"month": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
-		},
-		"day": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.Int),
+		"iso8601": &graphql.InputObjectFieldConfig{
+			Type: graphql.NewNonNull(graphql.String),
 		},
 	},
 })
