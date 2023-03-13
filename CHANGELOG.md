@@ -1,3 +1,10 @@
+# [0.280.0](https://github.com/teamkeel/keel/compare/v0.279.0...v0.280.0) (2023-03-13)
+
+
+### Features
+
+* completion support for any inputs ([#848](https://github.com/teamkeel/keel/issues/848)) ([d2a4bcc](https://github.com/teamkeel/keel/commit/d2a4bcc12e6b0501098492715b1e5e13e8c3d036))
+
 # [0.279.0](https://github.com/teamkeel/keel/compare/v0.278.0...v0.279.0) (2023-03-13)
 
 
