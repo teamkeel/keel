@@ -1,0 +1,11 @@
+role lowerCamelCase {
+}
+
+role UPPERCASE {
+}
+
+role snake_case {
+}
+
+role SCREAMING_SNAKE_CASE {
+}

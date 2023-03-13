@@ -1,9 +1,0 @@
-model Profile {
-  fields {
-      username Text
-  }
-
-  functions {
-    create CREATE_PROFILE() with (username)
-  }
-}

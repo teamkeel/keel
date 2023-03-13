@@ -1,7 +1,0 @@
-message foo {
-  bar Text
-}
-
-message Foo_Bar {
-  bar Text
-}
