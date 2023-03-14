@@ -408,7 +408,7 @@ func RunTests(dir string, port string, cfg *config.ProjectConfig, conn *db.Conne
 		cmd.Env = os.Environ()
 
 		envVars := cfg.GetEnvVars("test")
-		envVars["KEEL_TESTING_ACTIONS_API_URL"] = fmt.Sprintf("http://localhost:%s/testingactionsapi/json", port)
+		envVars["KEEL_TESTING_ACTIONS_API_URL"] = fmt.Sprintf("http://localhost:%s/testingactionsapi", port)
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
 		envVars["KEEL_DB_CONN"] = conn.String()
 		envVars["NODE_OPTIONS"] = "--no-warnings"

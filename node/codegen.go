@@ -802,6 +802,7 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Indent()
 	w.Writeln("withIdentity(identity: sdk.Identity): ActionExecutor;")
 	w.Writeln("withAuthToken(token: string): ActionExecutor;")
+	w.Writeln("graphql<T = any>(params: {query: string, variables?: any}): Promise<{data: T} | {errors: Array<{message: string}>}>;")
 	for _, model := range schema.Models {
 		for _, op := range model.Operations {
 			msg := proto.FindMessage(schema.Messages, op.InputMessageName)

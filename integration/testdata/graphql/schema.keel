@@ -1,0 +1,27 @@
+model Publisher {
+    fields {
+        name Text
+        authors Author[]
+    }
+}
+
+model Author {
+    fields {
+        name Text
+        publisher Publisher
+        books Book[]
+    }
+}
+
+model Book {
+    fields {
+        title Text
+        author Author
+    }
+
+    operations {
+        list books(author.publisher.name) {
+            @permission(expression: true)
+        }
+    }
+}
