@@ -1,8 +1,8 @@
 {
   "errors": [
     {
-      "message": "there is already a message with the name Foo",
-      "hint": "use unique names between models, enums and messages",
+      "message": "There is already a message with the name Foo",
+      "hint": "Use unique names between models, enums and messages",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_unique_messages/schema.keel",
@@ -18,8 +18,8 @@
       }
     },
     {
-      "message": "there is already a message with the name Foo",
-      "hint": "use unique names between models, enums and messages",
+      "message": "There is already a message with the name Foo",
+      "hint": "Use unique names between models, enums and messages",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_unique_messages/schema.keel",
@@ -35,8 +35,8 @@
       }
     },
     {
-      "message": "there is already a message with the name Foo",
-      "hint": "use unique names between models, enums and messages",
+      "message": "There is already a message with the name Foo",
+      "hint": "Use unique names between models, enums and messages",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_unique_messages/schema.keel",

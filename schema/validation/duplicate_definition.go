@@ -48,8 +48,8 @@ func duplicateDefinitionError(n parser.NameNode, existingEntity string) *errorha
 	return errorhandling.NewValidationErrorWithDetails(
 		errorhandling.NamingError,
 		errorhandling.ErrorDetails{
-			Message: fmt.Sprintf("there is already a %s with the name %s", existingEntity, n.Value),
-			Hint:    "use unique names between models, enums and messages",
+			Message: fmt.Sprintf("There is already a %s with the name %s", existingEntity, n.Value),
+			Hint:    "Use unique names between models, enums and messages",
 		},
 		n,
 	)
