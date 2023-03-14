@@ -37,3 +37,7 @@ enum Sport {
   Rugby
   Soccer
 }
+
+scalar Any
+
+scalar ISO8601

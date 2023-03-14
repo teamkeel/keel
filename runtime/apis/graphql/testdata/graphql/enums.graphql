@@ -49,3 +49,7 @@ enum Occupation {
   Firefighter
   Teacher
 }
+
+scalar Any
+
+scalar ISO8601

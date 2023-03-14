@@ -7,16 +7,12 @@ type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
 }
 
-input DateInput {
-  iso8601: String!
-}
-
 input DateQuery_input {
-  after: DateInput
-  before: DateInput
-  equals: DateInput
-  onOrAfter: DateInput
-  onOrBefore: DateInput
+  after: ISO8601
+  before: ISO8601
+  equals: ISO8601
+  onOrAfter: ISO8601
+  onOrBefore: ISO8601
 }
 
 input EmailPassword_input {
@@ -106,3 +102,7 @@ enum Occupation {
   Doctor
   Teacher
 }
+
+scalar Any
+
+scalar ISO8601

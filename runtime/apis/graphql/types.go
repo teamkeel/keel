@@ -44,7 +44,7 @@ const (
 // and will automatically convert it to a time.Time instance in p.Args at the resolver level
 // this saves us doing any special parsing logic there for time.Time's
 var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
-	Name: "iso8601",
+	Name: "ISO8601",
 	ParseValue: func(value interface{}) interface{} {
 		switch v := value.(type) {
 		case string:
@@ -82,7 +82,7 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 			panic("disallowed value")
 		}
 	},
-	Description: "iso8601 date",
+	Description: "ISO8601 date",
 })
 
 func tryParseDateLike(input string) (*time.Time, error) {
