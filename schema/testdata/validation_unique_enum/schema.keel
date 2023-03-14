@@ -4,3 +4,11 @@ enum TheBeatles {
   John
   George
 }
+
+model TheBeatles {
+
+}
+
+message TheBeatles {
+  
+}

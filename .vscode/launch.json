@@ -16,7 +16,7 @@
         "program": "${workspaceFolder}/integration",
         "args": [
             "-test.run",
-            "TestIntegration/${input:testCase}"
+            "TestIntegration/${input:testCase}",
         ]
     },
     {
@@ -47,8 +47,9 @@
             "${input:cmd}",
             "-d",
             "${input:directory}",
-            "--node-packages-path",
-            "/packages"
+            //"--node-packages-path",
+            //"$(pwd)/packages",
+            //"--reset",
         ]
     },
     {
@@ -95,6 +96,17 @@
             "-test.run",
             "TestRuntime/${input:testCase}"
         ]
+    },
+    {
+        "name": "Run / Debug query builder test",
+        "type": "go",
+        "request": "launch",
+        "mode": "test",
+        "program": "${workspaceFolder}/runtime/actions",
+        "args": [
+            "-test.run",
+            "TestQueryBuilder/${input:testCase}"
+        ]
     }
     ],
     "inputs": [
@@ -102,7 +114,7 @@
             "type": "promptString",
             "id": "testCase",
             "description": "The test case directory to isolate",
-            "default": "identity_and_authentication"
+            "default": "with_custom_function_arbitrary_functions"
         },
         {
             "type": "promptString",
@@ -119,7 +131,7 @@
         {
             "type": "promptString",
             "id": "directory",
-            "default": "../../keelschemas/functioncontext",
+            "default": "../../keelschemas/store",
             "description": "Path to directory containing keel schema file."
         }
     ]

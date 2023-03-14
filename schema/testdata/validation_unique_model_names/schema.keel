@@ -5,3 +5,11 @@ model Person {
 model Person {
     
 }
+
+enum Person {
+
+}
+
+message Person {
+    
+}

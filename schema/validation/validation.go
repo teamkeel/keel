@@ -6,9 +6,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/actions"
 	"github.com/teamkeel/keel/schema/validation/rules/api"
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
-	"github.com/teamkeel/keel/schema/validation/rules/enum"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
-	"github.com/teamkeel/keel/schema/validation/rules/messages"
 	"github.com/teamkeel/keel/schema/validation/rules/model"
 	"github.com/teamkeel/keel/schema/validation/rules/relationships"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
@@ -35,7 +33,6 @@ type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
 	model.ReservedModelNamesRule,
-	model.UniqueModelNamesRule,
 
 	actions.ActionTypesRule,
 	actions.UniqueOperationNamesRule,
@@ -64,21 +61,18 @@ var validatorFuncs = []validationFunc{
 	api.UniqueAPINamesRule,
 	api.NamesCorrespondToModels,
 
-	enum.UniqueEnumsRule,
-
 	relationships.InvalidOneToOneRelationshipRule,
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
 	// todo this rule should obsolete MoreThanOneReverseMany (below), once it is finished.
 	relationships.RelationAttributeRule,
 	relationships.MoreThanOneReverseMany, // todo this should become obsolete
-
-	messages.UniqueMessageNamesRule,
 }
 
 var visitorFuncs = []VisitorFunc{
 	UnusedInputRule,
 	ConflictingInputsRule,
 	NamingRule,
+	DuplicateDefinitionRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

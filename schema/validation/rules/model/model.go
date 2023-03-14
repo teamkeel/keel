@@ -30,22 +30,3 @@ func ReservedModelNamesRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 
 	return
 }
-
-func UniqueModelNamesRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
-	seenModelNames := map[string]bool{}
-
-	for _, model := range query.Models(asts) {
-		if _, ok := seenModelNames[model.Name.Value]; ok {
-			errs.Append(errorhandling.ErrorUniqueModelsGlobally,
-				map[string]string{
-					"Name": model.Name.Value,
-				},
-				model.Name,
-			)
-			continue
-		}
-		seenModelNames[model.Name.Value] = true
-	}
-
-	return
-}
