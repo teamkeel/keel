@@ -53,7 +53,11 @@ inputs:
 			if err != nil {
 				return err
 			}
+
+			// Implicit input conditions are ANDed together
+			query.And()
 		}
+
 	}
 
 	return nil

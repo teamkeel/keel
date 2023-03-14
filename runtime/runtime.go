@@ -101,6 +101,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		}
 
 		w.Header().Add("Content-Type", "application/json")
+
 		w.WriteHeader(response.Status)
 		_, _ = w.Write(response.Body)
 	}

@@ -207,14 +207,9 @@ func (query *QueryBuilder) AppendDistinctOn(operand *QueryOperand) {
 
 // Include a WHERE condition, ANDed to the existing filters (unless an OR has been specified)
 func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, right *QueryOperand) error {
-	template, args, err := query.generateWhereTemplate(left, operator, right)
+	template, args, err := query.generateConditionTemplate(left, operator, right)
 	if err != nil {
 		return err
-	}
-
-	// AND with existin filters unless an OR has been specified.
-	if len(query.filters) > 0 && query.filters[len(query.filters)-1] != "OR" {
-		query.filters = append(query.filters, "AND")
 	}
 
 	query.filters = append(query.filters, template)
@@ -223,9 +218,36 @@ func (query *QueryBuilder) Where(left *QueryOperand, operator ActionOperator, ri
 	return nil
 }
 
-// Create a logical OR between existing filters and newly created filters.
+// Appends the next condition with a logical AND.
+func (query *QueryBuilder) And() {
+	query.filters = trimRhsOperators(query.filters)
+	if len(query.filters) > 0 {
+		query.filters = append(query.filters, "AND")
+	}
+}
+
+// Appends the next condition with a logical OR.
 func (query *QueryBuilder) Or() {
-	query.filters = append(query.filters, "OR")
+	query.filters = trimRhsOperators(query.filters)
+	if len(query.filters) > 0 {
+		query.filters = append(query.filters, "OR")
+	}
+}
+
+// Opens a new conditional scope in the where expression (i.e. open parethesis).
+func (query *QueryBuilder) OpenParenthesis() {
+	query.filters = append(query.filters, "(")
+}
+
+// Closes the current conditional scope in the where expression (i.e. close parethesis).
+func (query *QueryBuilder) CloseParenthesis() {
+	query.filters = trimRhsOperators(query.filters)
+	query.filters = append(query.filters, ")")
+}
+
+// Trims an excess OR / AND operators from the rhs side of the filter conditions.
+func trimRhsOperators(filters []string) []string {
+	return lo.DropRightWhile(filters, func(s string) bool { return s == "OR" || s == "AND" })
 }
 
 // Include an INNER JOIN clause.
@@ -270,6 +292,9 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlQuote(query.table))
 	query.AppendSelectClause(hasNext)
 
+	// Paging condition is ANDed to any existing conditions
+	query.And()
+
 	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
@@ -291,7 +316,6 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	case page.First != 0:
 		query.Limit(page.First)
 	case page.Last != 0:
-
 		// set the sort order to descending in order to make "last" work. the results are then reversed in the List execute method to restore the previous ascending order
 		// this isn't going to work when we allow the user to specify their own order by so we'll need to circle back on this then
 		sortOrder = "DESC"
@@ -330,9 +354,9 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 		}
 	}
 
-	if len(query.filters) > 0 {
-		q := lo.DropRightWhile(query.filters, func(s string) bool { return s == "OR" || s == "AND" })
-		filters = fmt.Sprintf("WHERE %s", strings.Join(q, " "))
+	conditions := trimRhsOperators(query.filters)
+	if len(conditions) > 0 {
+		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
 	if len(query.orderBy) > 0 {
@@ -340,7 +364,8 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	}
 
 	if query.limit != nil {
-		limit = fmt.Sprintf("LIMIT %v", *query.limit)
+		limit = "LIMIT ?"
+		query.args = append(query.args, *query.limit)
 	}
 
 	sql := fmt.Sprintf("SELECT %s %s FROM %s %s %s %s %s",
@@ -418,9 +443,9 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 		}
 	}
 
-	if len(query.filters) > 0 {
-		q := lo.DropRightWhile(query.filters, func(s string) bool { return s == "OR" || s == "AND" })
-		filters = fmt.Sprintf("WHERE %s", strings.Join(q, " "))
+	conditions := trimRhsOperators(query.filters)
+	if len(conditions) > 0 {
+		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
 	if len(query.returning) > 0 {
@@ -459,15 +484,9 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 		}
 	}
 
-	if len(query.filters) > 0 {
-		// Removes any right trailing OR or AND from the where fragments
-		conditions := lo.DropRightWhile(query.filters, func(s string) bool { return s == "OR" || s == "AND" })
-
-		filters += strings.Join(conditions, " ")
-	}
-
-	if filters != "" {
-		filters = fmt.Sprintf("WHERE %s", filters)
+	conditions := trimRhsOperators(query.filters)
+	if len(conditions) > 0 {
+		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
 	}
 
 	if len(query.returning) > 0 {
@@ -594,8 +613,8 @@ func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any
 	return results[0], nil
 }
 
-// Builds a where conditional SQL template using the ? placeholder for values.
-func (query *QueryBuilder) generateWhereTemplate(lhs *QueryOperand, operator ActionOperator, rhs *QueryOperand) (string, []any, error) {
+// Builds a condition SQL template using the ? placeholder for values.
+func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator ActionOperator, rhs *QueryOperand) (string, []any, error) {
 	var template string
 	var lhsSqlOperand, rhsSqlOperand any
 	args := []any{}

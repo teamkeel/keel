@@ -58,6 +58,8 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 		return false, nil
 	}
 
+	permissionQuery.And()
+	permissionQuery.OpenParenthesis()
 	for i, permission := range exprBasedPerms {
 		expression, err := parser.ParseExpression(permission.Expression.Source)
 		if err != nil {
@@ -77,10 +79,11 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 			if err != nil {
 				return false, err
 			}
-			// Or with the next
+			// Or with the next permission attribute
 			permissionQuery.Or()
 		}
 	}
+	permissionQuery.CloseParenthesis()
 
 	// Determine the number of rows in the current query which don't satisfy the permission conditions
 	stmt := &Statement{

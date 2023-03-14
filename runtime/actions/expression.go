@@ -41,12 +41,48 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 
 // Include a filter (where condition) on the query based on a filter expression.
 func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Expression, args map[string]any) error {
-	if len(expression.Conditions()) != 1 {
-		return fmt.Errorf("cannot yet handle multiple conditions, have: %d", len(expression.Conditions()))
+	// Only use parenthesis if there are multiple conditions
+	useParenthesis := len(expression.Or) > 1
+	for _, or := range expression.Or {
+		if len(or.And) > 1 {
+			useParenthesis = true
+			break
+		}
 	}
 
-	condition := expression.Conditions()[0]
+	if useParenthesis {
+		query.OpenParenthesis()
+	}
 
+	for _, or := range expression.Or {
+		for _, and := range or.And {
+			if and.Expression != nil {
+				err := query.whereByExpression(scope, and.Expression, args)
+				if err != nil {
+					return err
+				}
+			}
+
+			if and.Condition != nil {
+				err := query.whereByCondition(scope, and.Condition, args)
+				if err != nil {
+					return err
+				}
+			}
+			query.And()
+		}
+		query.Or()
+	}
+
+	if useParenthesis {
+		query.CloseParenthesis()
+	}
+
+	return nil
+}
+
+// Include a filter (where condition) on the query based on a single condition.
+func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Condition, args map[string]any) error {
 	if condition.Type() != parser.ValueCondition && condition.Type() != parser.LogicalCondition {
 		return fmt.Errorf("can only handle condition type of LogicalCondition or ValueCondition, have: %s", condition.Type())
 	}

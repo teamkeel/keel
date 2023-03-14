@@ -92,7 +92,8 @@ var testCases = []testCase{
 			FROM 
 				"thing" 
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
 	},
 	{
 		name: "list_op_implicit_input_text_contains",
@@ -119,8 +120,8 @@ var testCases = []testCase{
 			WHERE
 				"thing"."name" LIKE ?
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"%%bob%%"},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"%%bob%%", 50},
 	},
 	{
 		name: "list_op_implicit_input_text_startsWith",
@@ -147,8 +148,8 @@ var testCases = []testCase{
 			WHERE
 				"thing"."name" LIKE ?
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"bob%%"},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"bob%%", 50},
 	},
 	{
 		name: "list_op_implicit_input_text_endsWith",
@@ -175,8 +176,8 @@ var testCases = []testCase{
 			WHERE
 				"thing"."name" LIKE ?
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"%%bob"},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"%%bob", 50},
 	},
 	{
 		name: "list_op_implicit_input_text_oneof",
@@ -203,8 +204,8 @@ var testCases = []testCase{
             WHERE
                 "thing"."name" IN (?, ?, ?, ?)
             ORDER BY 
-                "thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"bob", "dave", "adam", "pete"},
+                "thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"bob", "dave", "adam", "pete", 50},
 	},
 	{
 		name: "list_op_implicit_input_enum_oneof",
@@ -236,8 +237,8 @@ var testCases = []testCase{
             WHERE
                 "thing"."category" IN (?, ?)
             ORDER BY 
-                "thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"Technical", "Food"},
+                "thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"Technical", "Food", 50},
 	},
 	{
 		name: "list_op_implicit_input_timestamp_after",
@@ -261,8 +262,8 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" > ? 
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
 	{
 		name: "list_op_implicit_input_timestamp_onorafter",
@@ -286,8 +287,8 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" >= ? 
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
 	{
 		name: "list_op_implicit_input_timestamp_after",
@@ -311,8 +312,8 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" < ? 
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
 	{
 		name: "list_op_implicit_input_timestamp_onorbefore",
@@ -336,8 +337,8 @@ var testCases = []testCase{
 			WHERE
 				"thing"."created_at" <= ? 
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
 	{
 		name: "list_op_expression_text_in",
@@ -363,8 +364,8 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."title" IN (?, ?)
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"title1", "title2"},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"title1", "title2", 50},
 	},
 	{
 		name: "list_op_expression_text_notin",
@@ -390,8 +391,8 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."title" NOT IN (?, ?)
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"title1", "title2"},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"title1", "title2", 50},
 	},
 	{
 		name: "list_op_expression_number_in",
@@ -417,8 +418,8 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."age" IN (?, ?)
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{int64(10), int64(20)},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{int64(10), int64(20), 50},
 	},
 	{
 		name: "list_op_expression_number_notin",
@@ -444,8 +445,8 @@ var testCases = []testCase{
 			WHERE 
 				"thing"."age" NOT IN (?, ?)
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{int64(10), int64(20)},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{int64(10), int64(20), 50},
 	},
 	{
 		name: "list_op_implicit_input_on_nested_model",
@@ -480,8 +481,8 @@ var testCases = []testCase{
 			WHERE 
 				"thing$parent"."name" IS NOT DISTINCT FROM ?
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{"bob"},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"bob", 50},
 	},
 	{
 		name: "list_op_where_expression_on_nested_model",
@@ -517,8 +518,8 @@ var testCases = []testCase{
 			WHERE 
 				"thing$parent"."is_active" IS NOT DISTINCT FROM ?
 			ORDER BY 
-				"thing"."id" ASC LIMIT 50`,
-		expectedArgs: []any{false},
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{false, 50},
 	},
 	{
 		name: "create_op_nested_model",
@@ -621,6 +622,355 @@ var testCases = []testCase{
 				"thing"."id" IS NOT DISTINCT FROM ?
 			RETURNING "thing"."id"`,
 		expectedArgs: []any{"123"},
+	},
+	{
+		name: "delete_op_relationship_condition",
+		keelSchema: `
+			model Parent {
+				fields {
+					name Text
+				}
+			}	
+			model Thing {
+				fields {
+					parent Parent
+				}
+				operations {
+					delete deleteThing(id) {
+						@where(thing.parent.name == "XYZ")
+					}
+				}
+				@permission(expression: true, actions: [delete])
+			}`,
+		operationName: "deleteThing",
+		input:         map[string]any{"id": "123"},
+		expectedTemplate: `
+			DELETE FROM 
+				"thing" 
+			USING 
+				"parent" AS "thing$parent" 
+			WHERE 
+				"thing"."id" IS NOT DISTINCT FROM ? AND
+				"thing$parent"."name" IS NOT DISTINCT FROM ? 
+			RETURNING "thing"."id"`,
+		expectedArgs: []any{"123", "XYZ"},
+	},
+	{
+		name: "list_op_forward_paging",
+		keelSchema: `
+			model Thing {
+				operations {
+					list listThings() 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"first": 2,
+			"after": "123",
+		},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."id" > ?
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"123", 2},
+	},
+	{
+		name: "list_op_backwards_paging",
+		keelSchema: `
+			model Thing {
+				operations {
+					list listThings() 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"last":   2,
+			"before": "123",
+		},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."id" < ?
+			ORDER BY 
+				"thing"."id" DESC LIMIT ?`,
+		expectedArgs: []any{"123", 2},
+	},
+	{
+		name: "list_multiple_conditions_no_parenthesis",
+		keelSchema: `
+			model Thing {
+				fields {
+					first Text
+					second Number
+					third Boolean
+				}
+				operations {
+					list listThing() {
+						@where(thing.first == "first" and thing.second == 10 or thing.third == true and thing.second > 100)
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThing",
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				( "thing"."first" IS NOT DISTINCT FROM ? AND
+				"thing"."second" IS NOT DISTINCT FROM ? OR
+				"thing"."third" IS NOT DISTINCT FROM ? AND
+				"thing"."second" > ? )
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"first", int64(10), true, int64(100), 50},
+	},
+	{
+		name: "list_multiple_conditions_parenthesis_on_ands",
+		keelSchema: `
+			model Thing {
+				fields {
+					first Text
+					second Number
+					third Boolean
+				}
+				operations {
+					list listThing() {
+						@where((thing.first == "first" and thing.second == 10) or (thing.third == true and thing.second > 100))
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThing",
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				( ( "thing"."first" IS NOT DISTINCT FROM ? AND "thing"."second" IS NOT DISTINCT FROM ? ) 
+					OR
+				( "thing"."third" IS NOT DISTINCT FROM ? AND "thing"."second" > ? ) )
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"first", int64(10), true, int64(100), 50},
+	},
+	{
+		name: "list_multiple_conditions_parenthesis_on_ors",
+		keelSchema: `
+			model Thing {
+				fields {
+					first Text
+					second Number
+					third Boolean
+				}
+				operations {
+					list listThing() {
+						@where((thing.first == "first" or thing.second == 10) and (thing.third == true or thing.second > 100))
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThing",
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				( ( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? ) 
+					AND
+				( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) )
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"first", int64(10), true, int64(100), 50},
+	},
+	{
+		name: "list_multiple_conditions_nested_parenthesis",
+		keelSchema: `
+			model Thing {
+				fields {
+					first Text
+					second Number
+					third Boolean
+				}
+				operations {
+					list listThing() {
+						@where(thing.first == "first" or (thing.second == 10 and (thing.third == true or thing.second > 100)))
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThing",
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				( "thing"."first" IS NOT DISTINCT FROM ? OR
+					( "thing"."second" IS NOT DISTINCT FROM ? AND
+						( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) ) )
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"first", int64(10), true, int64(100), 50},
+	},
+	{
+		name: "list_multiple_conditions_implicit_and_explicit",
+		keelSchema: `
+			model Thing {
+				fields {
+					first Text
+					second Number
+					third Boolean
+				}
+				operations {
+					list listThing(first, explicitSecond: Number) {
+						@where(thing.second == explicitSecond or thing.third == false)
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThing",
+		input: map[string]any{
+			"where": map[string]any{
+				"first": map[string]any{
+					"equals": "first"},
+				"explicitSecond": int64(10)}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."first" IS NOT DISTINCT FROM ? AND
+				( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? )
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"first", int64(10), false, 50},
+	},
+	{
+		name: "list_multiple_conditions_implicit_and_explicit_and_paging",
+		keelSchema: `
+			model Thing {
+				fields {
+					first Text
+					second Number
+					third Boolean
+				}
+				operations {
+					list listThing(first, explicitSecond: Number) {
+						@where(thing.second == explicitSecond or thing.third == false)
+					}
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThing",
+		input: map[string]any{
+			"first": 2,
+			"after": "123",
+			"where": map[string]any{
+				"first": map[string]any{
+					"equals": "first"},
+				"explicitSecond": int64(10)}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext 
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."first" IS NOT DISTINCT FROM ? AND
+				( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? ) AND
+				"thing"."id" > ? 
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"first", int64(10), false, "123", 2},
+	},
+	{
+		name: "update_with_expression",
+		keelSchema: `
+			model Parent {
+				fields {
+					name Text
+				}
+			}	
+			model Thing {
+				fields {
+					name Text
+					code Text @unique
+				}
+				operations {
+					update updateThing(id) with (name) {
+						@where(thing.code == "XYZ" or thing.code == "ABC")
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		operationName: "updateThing",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "789",
+			},
+			"values": map[string]any{
+				"name": "bob",
+			},
+		},
+		expectedTemplate: `
+			UPDATE 
+				"thing" 
+			SET 
+				name = ?
+			WHERE 
+				"thing"."id" IS NOT DISTINCT FROM ? AND
+				( "thing"."code" IS NOT DISTINCT FROM ? OR "thing"."code" IS NOT DISTINCT FROM ? )
+			RETURNING 
+				"thing".*`,
+		expectedArgs: []any{"bob", "789", "XYZ", "ABC"},
+	},
+	{
+		name: "delete_with_expression",
+		keelSchema: `
+			model Parent {
+				fields {
+					name Text
+				}
+			}	
+			model Thing {
+				fields {
+					name Text
+					code Text @unique
+				}
+				operations {
+					delete deleteThing(id) {
+						@where(thing.code == "XYZ" or thing.code == "ABC")
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		operationName: "deleteThing",
+		input: map[string]any{
+			"id": "789",
+		},
+		expectedTemplate: `
+			DELETE FROM
+				"thing" 
+			WHERE 
+				"thing"."id" IS NOT DISTINCT FROM ? AND
+				( "thing"."code" IS NOT DISTINCT FROM ? OR "thing"."code" IS NOT DISTINCT FROM ? )
+			RETURNING 
+				"thing"."id"`,
+		expectedArgs: []any{"789", "XYZ", "ABC"},
 	},
 }
 

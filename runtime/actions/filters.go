@@ -31,6 +31,9 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]an
 		if err != nil {
 			return err
 		}
+
+		// Implicit input filters are ANDed together
+		query.And()
 	}
 
 	return nil
@@ -49,6 +52,9 @@ func (query *QueryBuilder) applyExplicitFilters(scope *Scope, args map[string]an
 		if err != nil {
 			return err
 		}
+
+		// Where attributes are ANDed together
+		query.And()
 	}
 
 	return nil

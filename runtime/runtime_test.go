@@ -269,7 +269,6 @@ func protoSchema(t *testing.T, keelSchema string) *proto.Schema {
 // basicSchema is a DRY, simplest possible, schema that can be used in test cases.
 const basicSchema string = `
 	model Person {
-
 		@permission(
 			expression: true,
 			actions: [create, get, list, update, delete]
@@ -405,7 +404,6 @@ const relationships string = `
 		}
 		operations {
 			get getPost(id)
-
 			create createPost() with (title, author.id)
 			update updatePost(id) with (title, author.id)
 		}
@@ -1413,7 +1411,6 @@ var testCases = []testCase{
 			edgesList, ok := edges.([]any)
 			require.True(t, ok)
 			require.Len(t, edgesList, 1)
-
 		},
 	},
 	{
