@@ -2,7 +2,7 @@ package graphql
 
 import (
 	"errors"
-	"time"
+	"fmt"
 
 	"github.com/graphql-go/graphql"
 	"github.com/sirupsen/logrus"
@@ -105,23 +105,52 @@ func parseTypes(message *proto.Message, operation *proto.Operation, values map[s
 				listOpMap := v.(map[string]any)
 
 				for kListOp, vListOp := range listOpMap {
-					listOpMap[kListOp] = convertDate(vListOp)
+					d, err := convertDate(vListOp)
+
+					if err != nil {
+						// drop
+
+						continue
+					}
+					listOpMap[kListOp] = d
 				}
 				values[k] = listOpMap
 			}
 			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "TimestampQuery_input" {
 				listOpMap := v.(map[string]any)
 				for kListOp, vListOp := range listOpMap {
-					listOpMap[kListOp] = convertTimestamp(vListOp)
+					d, err := convertTimestamp(vListOp)
+
+					if err != nil {
+						// drop
+
+						continue
+					}
+					listOpMap[kListOp] = d
 				}
 				values[k] = listOpMap
 			}
 		} else {
 			if field.Type.Type == proto.Type_TYPE_DATE {
-				values[k] = convertDate(v)
+				d, err := convertDate(v)
+				if err != nil {
+					// drop
+
+					continue
+				}
+
+				values[k] = d
 			}
 			if field.Type.Type == proto.Type_TYPE_DATETIME {
-				values[k] = convertTimestamp(v)
+				d, err := convertTimestamp(v)
+
+				if err != nil {
+					// drop
+
+					continue
+				}
+
+				values[k] = d
 			}
 		}
 	}
@@ -129,32 +158,30 @@ func parseTypes(message *proto.Message, operation *proto.Operation, values map[s
 	return values
 }
 
-func convertDate(value any) time.Time {
+func convertDate(value any) (string, error) {
 	dateMap, ok := value.(map[string]any)
 	if !ok {
 		panic("date must be a map")
 	}
 
-	day, okDay := dateMap["day"].(int)
-	month, okMonth := dateMap["month"].(int)
-	year, okYear := dateMap["year"].(int)
+	str, ok := dateMap["iso8601"].(string)
 
-	if !(okDay && okMonth && okYear) {
-		panic("date badly formatted")
+	if !ok {
+		return "", fmt.Errorf("no iso8601 specified")
 	}
 
-	return time.Date(year, time.Month(month), day, 0, 0, 0, 0, time.UTC)
+	return str, nil
 }
 
-func convertTimestamp(value any) time.Time {
+func convertTimestamp(value any) (string, error) {
 	timeMap, ok := value.(map[string]any)
 	if !ok {
 		panic("date must be a map")
 	}
-	seconds, ok := timeMap["seconds"].(int) // todo: should be int64
+	str, ok := timeMap["iso8601"].(string)
 	if !ok {
-		panic("time badly formatted")
+		return "", fmt.Errorf("no iso8601 specified")
 	}
 
-	return time.Unix(int64(seconds), 0).UTC()
+	return str, nil
 }

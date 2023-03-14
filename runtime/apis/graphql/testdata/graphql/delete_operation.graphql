@@ -37,12 +37,9 @@ type Person {
 }
 
 type Timestamp {
-  day: Int!
   formatted(format: String!): String!
   fromNow: String!
-  month: Int!
-  seconds: Int!
-  year: Int!
+  iso8601: String!
 }
 
 type authenticate_response {

@@ -887,7 +887,7 @@ var testCases = []testCase{
 				"id":        "id_123",
 				"text":      "some-interesting-text",
 				"bool":      true,
-				"timestamp": "1970-01-01 00:00:10",
+				"timestamp": "2018-01-01 00:00:10",
 				"date":      "2020-01-02",
 				"number":    10,
 				"enum":      "Option1",
@@ -948,7 +948,7 @@ var testCases = []testCase{
 			where: {
 			timestamp: {
 				before: {
-					seconds: 11
+					iso8601: "2020-01-02T15:04:05.000Z"
 				}
 			}
 			}
@@ -959,7 +959,7 @@ var testCases = []testCase{
 			where: {
 			timestamp: {
 				after: {
-					seconds: 9
+					iso8601: "2017-01-02T15:04:05.000Z"
 				}
 			}
 			}
@@ -967,37 +967,27 @@ var testCases = []testCase{
 			...Fields
 		},
 		date_before: listThings(input: {where: {date: {before: {
-			year: 2020,
-			month: 1,
-			day: 3
+			iso8601: "2020-01-03"
 		}}}}) {
 			...Fields
 		},
 		date_after: listThings(input: {where: {date: {after: {
-			year: 2020,
-			month: 1,
-			day: 1
+			iso8601: "2020-01-01"
 		}}}}) {
 			...Fields
 		},
 		date_onOrbefore: listThings(input: {where: {date: {onOrBefore: {
-			year: 2020,
-			month: 1,
-			day: 2
+			iso8601: "2020-01-02"
 		}}}}) {
 			...Fields
 		},
 		date_onOrAfter: listThings(input: {where: {date: {onOrAfter: {
-			year: 2020,
-			month: 1,
-			day: 2
+			iso8601: "2020-01-02"
 		}}}}) {
 			...Fields
 		},
 		date_onOrEquals: listThings(input: {where: {date: {equals: {
-			year: 2020,
-			month: 1,
-			day: 2
+			iso8601: "2020-01-02"
 		}}}}) {
 			...Fields
 		},
@@ -2189,29 +2179,23 @@ var testCases = []testCase{
 				mutation CreateThing {
 					createThing(input: { 
 						theDate: {
-							year: 2022,
-							month: 6,
-							day: 17
+							iso8601: "2022-06-17"
 						},
 						theTimestamp: {
-							seconds: 12345
+							iso8601: "2017-01-02T15:04:05.000Z"
 						}
 					}) {
 						theDate {
-							year
-							month
-							day
+							iso8601
 						}
 						theTimestamp {
-							seconds
+							iso8601
 						}
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "createThing.theDate.year", float64(2022))
-			rtt.AssertValueAtPath(t, data, "createThing.theDate.month", float64(6))
-			rtt.AssertValueAtPath(t, data, "createThing.theDate.day", float64(17))
-			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.seconds", float64(12345))
+			rtt.AssertValueAtPath(t, data, "createThing.theDate.iso8601", "2022-06-17T00:00:00.000Z")
+			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2017-01-02T15:04:05.000Z")
 		},
 	},
 	{
@@ -2233,30 +2217,24 @@ var testCases = []testCase{
 						}
 						values: {
 							theDate: {
-								year: 2023,
-								month: 7,
-								day: 18
+								iso8601: "2023-07-18"
 							},
 							theTimestamp: {
-								seconds: 54321
+								iso8601: "2017-01-02T15:04:05.000Z"
 							}
 						}
 					}) {
 						theDate {
-							year
-							month
-							day
+							iso8601
 						}
 						theTimestamp {
-							seconds
+							iso8601
 						}
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "updateThing.theDate.year", float64(2023))
-			rtt.AssertValueAtPath(t, data, "updateThing.theDate.month", float64(7))
-			rtt.AssertValueAtPath(t, data, "updateThing.theDate.day", float64(18))
-			rtt.AssertValueAtPath(t, data, "updateThing.theTimestamp.seconds", float64(54321))
+			rtt.AssertValueAtPath(t, data, "updateThing.theDate.iso8601", "2023-07-18T00:00:00.000Z")
+			rtt.AssertValueAtPath(t, data, "updateThing.theTimestamp.iso8601", "2017-01-02T15:04:05.000Z")
 		},
 	},
 	{
@@ -2266,7 +2244,7 @@ var testCases = []testCase{
 			row := initRow(map[string]any{
 				"id":           "thing_1",
 				"theDate":      "2022-06-17",
-				"theTimestamp": "2022-01-01",
+				"theTimestamp": "2022-01-01T15:04:05.000Z",
 			})
 			require.NoError(t, db.Table("thing").Create(row).Error)
 		},
@@ -2275,29 +2253,23 @@ var testCases = []testCase{
 					getThing(input: { 
 						id: "thing_1",
 						theDate: {
-							year: 2022,
-							month: 6,
-							day: 17
+							iso8601: "2022-06-17"
 						},
 						theTimestamp: {
-							seconds: 1640995200
+							iso8601: "2022-01-01T15:04:05.000Z"
 						}
 					}) {
 						theDate {
-							year
-							month
-							day
+							iso8601
 						}
 						theTimestamp {
-							seconds
+							iso8601
 						}
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "getThing.theDate.year", float64(2022))
-			rtt.AssertValueAtPath(t, data, "getThing.theDate.month", float64(6))
-			rtt.AssertValueAtPath(t, data, "getThing.theDate.day", float64(17))
-			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.seconds", float64(1640995200))
+			rtt.AssertValueAtPath(t, data, "getThing.theDate.iso8601", "2022-06-17T00:00:00.000Z")
+			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.iso8601", "2022-01-01T15:04:05.000Z")
 		},
 	},
 	{
@@ -2307,7 +2279,7 @@ var testCases = []testCase{
 			row := initRow(map[string]any{
 				"id":           "thing_1",
 				"theDate":      "2022-06-17",
-				"theTimestamp": "2022-01-01",
+				"theTimestamp": "2023-03-13T12:00:00+00:00",
 			})
 			require.NoError(t, db.Table("thing").Create(row).Error)
 		},
@@ -2317,30 +2289,26 @@ var testCases = []testCase{
 						where: {
 							theDate: {
 								equals: {
-									year: 2022,
-									month: 6,
-									day: 17
+									iso8601: "2022-06-17"
 								}
 							},
-                            theTimestamp: {
+              theTimestamp: {
 								before: {
-                                    seconds: 1640995201
-                                },
-                                after: {
-                                    seconds: 1640995199
-                                }
-                            }
+									iso8601: "2023-03-13T17:39:04+00:00"
+								},
+								after: {
+									iso8601: "2023-03-13T10:39:04+00:00"
+								}
+							}
 						}
 					}) {
 						edges {
 							node {
 								theDate {
-									year
-									month
-									day
+									iso8601
 								}
 								theTimestamp {
-									seconds
+									iso8601
 								}
 							}
 						}
@@ -2351,10 +2319,8 @@ var testCases = []testCase{
 			require.Len(t, things, 1)
 
 			thing := things[0].(map[string]any)
-			rtt.AssertValueAtPath(t, thing, "node.theDate.year", float64(2022))
-			rtt.AssertValueAtPath(t, thing, "node.theDate.month", float64(6))
-			rtt.AssertValueAtPath(t, thing, "node.theDate.day", float64(17))
-			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.seconds", float64(1640995200))
+			rtt.AssertValueAtPath(t, thing, "node.theDate.iso8601", "2022-06-17T00:00:00.000Z")
+			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.iso8601", "2023-03-13T12:00:00.000Z")
 		},
 	},
 }
