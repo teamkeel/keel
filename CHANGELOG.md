@@ -1,3 +1,10 @@
+# [0.283.0](https://github.com/teamkeel/keel/compare/v0.282.0...v0.283.0) (2023-03-14)
+
+
+### Features
+
+* unify date/timestamp types in graphql with jsonrpc api ([#850](https://github.com/teamkeel/keel/issues/850)) ([6986f2f](https://github.com/teamkeel/keel/commit/6986f2f8932ebff83f78b143f362fc5cd48216fa))
+
 # [0.282.0](https://github.com/teamkeel/keel/compare/v0.281.0...v0.282.0) (2023-03-14)
 
 
