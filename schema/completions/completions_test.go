@@ -238,7 +238,7 @@ func TestCompletions(t *testing.T) {
                 name Text @u<Cursor>
 			  }
             }`,
-			expected: []string{"@unique", "@default"},
+			expected: []string{"@unique", "@default", "@relation"},
 		},
 		{
 			name: "field-attributes-block",
@@ -250,7 +250,7 @@ func TestCompletions(t *testing.T) {
 				}
 			  }
             }`,
-			expected: []string{"@unique", "@default"},
+			expected: []string{"@unique", "@default", "@relation"},
 		},
 		{
 			name: "field-attributes-block-whitespace",
@@ -262,7 +262,7 @@ func TestCompletions(t *testing.T) {
 					}
 				}
 			}`,
-			expected: []string{"@unique", "@default"},
+			expected: []string{"@unique", "@default", "@relation"},
 		},
 		{
 			name: "field-attributes-bare-at",
@@ -271,7 +271,7 @@ func TestCompletions(t *testing.T) {
 					name Text @<Cursor>
 				}
 			}`,
-			expected: []string{"@unique", "@default"},
+			expected: []string{"@unique", "@default", "@relation"},
 		},
 		{
 			name: "field-attributes-whitespace",
@@ -281,7 +281,7 @@ func TestCompletions(t *testing.T) {
 					name Text <Cursor>
 				}
 			}`,
-			expected: []string{"@unique", "@default"},
+			expected: []string{"@unique", "@default", "@relation"},
 		},
 		{
 			name: "functions-keyword",
