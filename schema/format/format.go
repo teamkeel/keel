@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	indentSize = 4
+	indentSize    = 4
+	maxLineLength = 80
 )
 
 type Writer struct {
@@ -66,6 +67,13 @@ func (w *Writer) Block(fn func()) {
 	}
 	w.Dedent()
 	w.WriteLine("}")
+}
+
+func (w *Writer) LineLength() int {
+	s := w.b.String()
+	lines := strings.Split(s, "\n")
+	curr := lines[len(lines)-1]
+	return len(curr)
 }
 
 func (w *Writer) Comments(node node.ParserNode, fn func()) {
@@ -125,6 +133,17 @@ func (w *Writer) String() string {
 func (w *Writer) isStartOfLine() bool {
 	s := w.b.String()
 	return len(s) > 0 && s[len(s)-1] == '\n'
+}
+
+func HasComments(nodes []node.ParserNode) bool {
+	for _, n := range nodes {
+		for _, t := range n.GetTokens() {
+			if t.Type == scanner.Comment {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func Format(ast *parser.AST) string {
@@ -323,40 +342,89 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 
 func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode, isArbitraryFunction bool) {
 	writer.Write("(")
-	for i, arg := range inputs {
-		if i > 0 {
-			writer.Write(", ")
-		}
+	writer.Indent()
 
-		if arg.Label != nil {
-			// explicit input
-			writer.Write("%s: %s", arg.Label.Value, arg.Type.Fragments[0].Fragment)
-		} else {
+	// If there any any comments in the action inputs then we need to print
+	// each input on it's own line, to allow space for the comments
+	isMultiline := HasComments(lo.Map(inputs, func(i *parser.ActionInputNode, _ int) node.ParserNode {
+		return i
+	}))
 
-			// Note: not using arg.Type.ToString() here as we want to try
-			// and fix any casing issues
-			for i, fragment := range arg.Type.Fragments {
-				if i > 0 {
-					writer.Write(".")
-				}
-
-				// if its an arbitrary function, then we dont want to automatically lowercase the input names
-				if isArbitraryFunction {
-					writer.Write(fragment.Fragment)
-				} else {
-					writer.Write(lowerCamel(fragment.Fragment))
+	// TODO: find a more generic way to do line-wrapping
+	if !isMultiline {
+		length := writer.LineLength()
+		for _, arg := range inputs {
+			if arg.Label != nil {
+				length += len(arg.Label.Value)
+				length += 2 // account for ": "
+				length += len(arg.Type.Fragments[0].Fragment)
+			} else {
+				for i, frag := range arg.Type.Fragments {
+					if i > 0 {
+						length += 1 // account for "."
+					}
+					length += len(frag.Fragment)
 				}
 			}
+			if arg.Optional {
+				length += 1 // account for "?"
+			}
+			if arg.Repeated {
+				length += 2 // account for "[]"
+			}
 		}
-
-		if arg.Optional {
-			writer.Write("?")
-		}
-		if arg.Repeated {
-			writer.Write("[]")
+		if length > maxLineLength {
+			isMultiline = true
 		}
 	}
 
+	for i, arg := range inputs {
+		if isMultiline {
+			writer.WriteLine("")
+		}
+
+		writer.Comments(arg, func() {
+			if arg.Label != nil {
+				// explicit input
+				writer.Write("%s: %s", arg.Label.Value, arg.Type.Fragments[0].Fragment)
+			} else {
+
+				// Note: not using arg.Type.ToString() here as we want to try
+				// and fix any casing issues
+				for i, fragment := range arg.Type.Fragments {
+					if i > 0 {
+						writer.Write(".")
+					}
+
+					// if its an arbitrary function, then we dont want to automatically lowercase the input names
+					if isArbitraryFunction {
+						writer.Write(fragment.Fragment)
+					} else {
+						writer.Write(lowerCamel(fragment.Fragment))
+					}
+				}
+			}
+
+			if arg.Optional {
+				writer.Write("?")
+			}
+			if arg.Repeated {
+				writer.Write("[]")
+			}
+		})
+
+		if isMultiline {
+			writer.Write(",")
+		} else if i < len(inputs)-1 {
+			writer.Write(", ")
+		}
+	}
+
+	if isMultiline {
+		writer.WriteLine("")
+	}
+
+	writer.Dedent()
 	writer.Write(")")
 }
 

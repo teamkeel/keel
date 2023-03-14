@@ -1,0 +1,25 @@
+model Order {
+    operations {
+        // Description of listOrders
+        list listOrders(
+            // Filter by price
+            items.price,
+            // Filter by created at
+            createdAt?
+        )
+    }
+}
+
+===
+
+model Order {
+    operations {
+        // Description of listOrders
+        list listOrders(
+            // Filter by price
+            items.price,
+            // Filter by created at
+            createdAt?,
+        )
+    }
+}
