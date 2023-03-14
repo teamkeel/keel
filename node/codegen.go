@@ -89,6 +89,8 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
 
+	writeMessages(sdkTypes, schema)
+
 	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
 		writeEnumWhereCondition(sdkTypes, enum)
@@ -109,14 +111,6 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 			// We only care about custom functions for the SDK
 			if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 				continue
-			}
-
-			// Generate input message types for operation
-			writeActionInputTypes(sdkTypes, schema, op, false)
-
-			if op.Type == proto.OperationType_OPERATION_TYPE_READ || op.Type == proto.OperationType_OPERATION_TYPE_WRITE {
-				// Generate response message types for operation
-				writeActionResponseTypes(sdkTypes, schema, op, false)
 			}
 
 			writeCustomFunctionWrapperType(sdkTypes, model, op)
@@ -238,6 +232,61 @@ func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
 		w.Writeln("")
 	}
 	w.Dedent()
+	w.Writeln("}")
+}
+
+func writeMessages(w *Writer, schema *proto.Schema) {
+	for _, msg := range schema.Messages {
+		if msg.Name == parser.MessageFieldTypeAny {
+			continue
+		}
+		writeMessage(w, schema, msg)
+	}
+}
+
+func writeMessage(w *Writer, schema *proto.Schema, message *proto.Message) {
+	w.Writef("export interface %s {\n", message.Name)
+	w.Indent()
+
+	for _, field := range message.Fields {
+		w.Write(field.Name)
+
+		if field.Optional {
+			w.Write("?")
+		}
+
+		w.Write(": ")
+
+		w.Write(toTypeScriptType(field.Type))
+
+		if field.Type.Repeated {
+			w.Write("[]")
+		}
+
+		nullable := false
+
+		// If a field isn't tied to a model field and it's optional then it's allowed to be null
+		if field.Type.FieldName == nil && field.Optional {
+			nullable = true
+		}
+
+		// If an input is tied to a model field and that field is nullable then the input is also nullable
+		if field.Type.FieldName != nil {
+			f := proto.FindField(schema.Models, field.Type.ModelName.Value, field.Type.FieldName.Value)
+			if f.Optional {
+				nullable = true
+			}
+		}
+
+		if nullable {
+			w.Write(" | null")
+		}
+
+		w.Writeln(";")
+	}
+
+	w.Dedent()
+
 	w.Writeln("}")
 }
 
@@ -521,102 +570,6 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeActionInputTypes(w *Writer, schema *proto.Schema, op *proto.Operation, isTestingPackage bool) {
-	writeActionTypes(w, schema, op, op.InputMessageName, isTestingPackage)
-}
-
-func writeActionResponseTypes(w *Writer, schema *proto.Schema, op *proto.Operation, isTestingPackage bool) {
-	writeActionTypes(w, schema, op, op.ResponseMessageName, isTestingPackage)
-}
-
-func writeActionTypes(w *Writer, schema *proto.Schema, op *proto.Operation, messageName string, isTestingPackage bool) {
-	msgs := proto.FindAllLinkedMessages(schema.Messages, messageName)
-
-	// Checking if the root message is Any
-	if len(msgs) == 1 && msgs[0].Name == parser.MessageFieldTypeAny {
-		return
-	}
-
-	for _, msg := range msgs {
-		// Checking if a nested field in an Any message
-		if msg.Name != parser.MessageFieldTypeAny {
-			w.Writef("export interface %s {\n", msg.Name)
-			w.Indent()
-
-			for _, field := range msg.Fields {
-				messageFieldToTypeScript(w, schema, op, field, isTestingPackage)
-			}
-
-			w.Dedent()
-			w.Writef("}\n")
-		}
-	}
-}
-
-func messageFieldToTypeScript(w *Writer, schema *proto.Schema, op *proto.Operation, field *proto.MessageField, isTestingPackage bool) {
-	w.Write(field.Name)
-
-	if field.Optional {
-		w.Write("?")
-	}
-
-	w.Write(": ")
-
-	switch true {
-	case field.Type.Type == proto.Type_TYPE_MESSAGE && len(field.Target) == 1:
-		// Determine the target field on the current model from the targets slice
-		modelField := proto.FindField(schema.Models, op.ModelName, field.Target[0])
-		w.Write(toTypeScriptType(modelField.Type))
-		w.Write(" | ")
-		w.Write(field.Type.MessageName.Value)
-	case field.Type.Type == proto.Type_TYPE_MESSAGE && len(field.Target) > 1:
-		// Determine the target field in the relationship input by iterating through the targets slice
-		currModel := proto.FindModel(schema.Models, op.ModelName)
-		var currField *proto.Field
-		for i := range field.Target {
-			currField = proto.FindField(schema.Models, currModel.Name, field.Target[i])
-			if currField.Type.Type == proto.Type_TYPE_MODEL {
-				currModel = proto.FindModel(schema.Models, currField.Type.ModelName.Value)
-			}
-		}
-
-		w.Write(toTypeScriptType(currField.Type))
-		w.Write(" | ")
-		w.Write(field.Type.MessageName.Value)
-	case field.Type.Type == proto.Type_TYPE_MESSAGE:
-		w.Write(field.Type.MessageName.Value)
-	case field.Type.Type == proto.Type_TYPE_MODEL:
-		w.Write(field.Type.ModelName.Value)
-	default:
-		w.Write(toTypeScriptType(field.Type))
-	}
-
-	if field.Type.Repeated {
-		w.Write("[]")
-	}
-
-	nullable := false
-
-	// If a field isn't tied to a model field and it's optional then it's allowed to be null
-	if field.Type.FieldName == nil && field.Optional {
-		nullable = true
-	}
-
-	// If an input is tied to a model field and that field is nullable then the input is also nullable
-	if field.Type.FieldName != nil {
-		f := proto.FindField(schema.Models, field.Type.ModelName.Value, field.Type.FieldName.Value)
-		if f.Optional {
-			nullable = true
-		}
-	}
-
-	if nullable {
-		w.Write(" | null")
-	}
-
-	w.Writeln(";")
-}
-
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
 
@@ -843,14 +796,7 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
-	for _, model := range schema.Models {
-		for _, op := range model.Operations {
-			writeActionInputTypes(w, schema, op, true)
-			if op.Type == proto.OperationType_OPERATION_TYPE_READ || op.Type == proto.OperationType_OPERATION_TYPE_WRITE {
-				writeActionResponseTypes(w, schema, op, false)
-			}
-		}
-	}
+	writeMessages(w, schema)
 
 	w.Writeln("declare class ActionExecutor {")
 	w.Indent()
@@ -900,6 +846,10 @@ func toTypeScriptType(t *proto.TypeInfo) (ret string) {
 		ret = "Date"
 	case proto.Type_TYPE_ENUM:
 		ret = t.EnumName.Value
+	case proto.Type_TYPE_MESSAGE:
+		ret = t.MessageName.Value
+	case proto.Type_TYPE_MODEL:
+		ret = t.ModelName.Value
 	default:
 		ret = "any"
 	}

@@ -339,30 +339,3 @@ func FindWhereInputMessage(schema *Schema, operationName string) *Message {
 	}
 	return nil
 }
-
-// FindAllLinkedMessages takes a messageName and will find all other Message definitions that are referenced inside of the message to an infinite depth of recursion
-func FindAllLinkedMessages(messages []*Message, messageName string) (ret []*Message) {
-	msg := FindMessage(messages, messageName)
-
-	// first append the base message that matches the messageName
-	ret = append(ret, msg)
-
-	if msg.Fields != nil {
-
-		// Now loop over the fields in the message to find any linked message types
-		ret = append(ret, lo.Reduce(msg.Fields, func(arr []*Message, field *MessageField, _ int) []*Message {
-			// If the field's type has a MessageName that isn't nil, then the field references
-			// another Message type
-			if field.Type.MessageName != nil {
-				// We recursively call this func to get any further nested message types
-				arr = append(arr, FindAllLinkedMessages(messages, field.Type.MessageName.Value)...)
-			}
-
-			return arr
-		}, []*Message{})...)
-	}
-	// Reverse the sort order of the matches so we end up with the children first so they can be written in order in the codegen
-	ret = lo.Reverse(ret)
-
-	return ret
-}
