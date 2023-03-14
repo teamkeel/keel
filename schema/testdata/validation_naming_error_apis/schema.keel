@@ -1,0 +1,15 @@
+api lowercase {
+}
+
+api lowerCamelCase {
+}
+
+api UPPERCASE {
+}
+
+api snake_case {
+}
+
+api SCREAMING_SNAKE_CASE {
+}
+

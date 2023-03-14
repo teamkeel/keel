@@ -1,0 +1,20 @@
+enum lowercase {
+  lowercase
+}
+
+enum UPPERCASE {
+  UPPERCASE
+}
+
+enum lowerCamelCase {
+  lowerCamelCase
+}
+
+enum snake_case {
+  snake_case
+}
+
+enum SCREAMING_SNAKE_CASE {
+  SCREAMING_SNAKE_CASE
+}
+

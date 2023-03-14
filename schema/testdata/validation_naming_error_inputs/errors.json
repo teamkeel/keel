@@ -1,0 +1,140 @@
+{
+  "errors": [
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. uppercase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 49,
+        "line": 3,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 58,
+        "line": 3,
+        "column": 28
+      }
+    },
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. upperCamelCase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 133,
+        "line": 6,
+        "column": 24
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 147,
+        "line": 6,
+        "column": 38
+      }
+    },
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. snakeCase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 222,
+        "line": 9,
+        "column": 19
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 232,
+        "line": 9,
+        "column": 29
+      }
+    },
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. screamingSnakeCase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 312,
+        "line": 12,
+        "column": 28
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 332,
+        "line": 12,
+        "column": 48
+      }
+    },
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. uppercase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 440,
+        "line": 18,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 449,
+        "line": 18,
+        "column": 36
+      }
+    },
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. upperCamelCase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 486,
+        "line": 19,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 500,
+        "line": 19,
+        "column": 46
+      }
+    },
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. snakeCase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 532,
+        "line": 20,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 542,
+        "line": 20,
+        "column": 37
+      }
+    },
+    {
+      "message": "input names must use lowerCamelCase",
+      "hint": "e.g. screamingSnakeCase",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 583,
+        "line": 21,
+        "column": 36
+      },
+      "endPos": {
+        "filename": "testdata/validation_naming_error_inputs/schema.keel",
+        "offset": 603,
+        "line": 21,
+        "column": 56
+      }
+    }
+  ]
+}

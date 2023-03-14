@@ -1,0 +1,15 @@
+model lowercase {
+}
+
+model lowerCamelCase {
+}
+
+model UPPERCASE {
+}
+
+model snake_case {
+}
+
+model SCREAMING_SNAKE_CASE {
+}
+

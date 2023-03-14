@@ -1,0 +1,15 @@
+model MyModel {
+    fields {
+        UPPERCASE Text
+        UpperCamelCase Text
+        snake_case Text
+        SCREAMING_SNAKE_CASE Text
+    }
+}
+
+message MyMessage {
+  UPPERCASE Text
+  UpperCamelCase Text
+  snake_case Text
+  SCREAMING_SNAKE_CASE Text
+}

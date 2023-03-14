@@ -38,6 +38,9 @@ func NamingRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 				errs.AppendError(checkNamingError(v.Name, "enum value"))
 			}
 		},
+		EnterMessage: func(n *parser.MessageNode) {
+			errs.AppendError(checkNamingError(n.Name, "message"))
+		},
 		EnterRole: func(n *parser.RoleNode) {
 			errs.AppendError(checkNamingError(n.Name, "role"))
 		},
@@ -57,6 +60,12 @@ func checkNamingError(node parser.NameNode, entity string) *errorhandling.Valida
 		casing = "lowerCamelCase"
 	}
 
+	if entity == "enum value" {
+		entity = "enum values"
+	} else {
+		entity = fmt.Sprintf("%s names", entity)
+	}
+
 	if node.Value == expected {
 		return nil
 	}
@@ -64,18 +73,22 @@ func checkNamingError(node parser.NameNode, entity string) *errorhandling.Valida
 	return errorhandling.NewValidationErrorWithDetails(
 		errorhandling.NamingError,
 		errorhandling.ErrorDetails{
-			Message: fmt.Sprintf("%s names must use %s", entity, casing),
+			Message: fmt.Sprintf("%s must use %s", entity, casing),
 			Hint:    fmt.Sprintf("e.g. %s", expected),
 		},
 		node,
 	)
 }
 
-var allCapsRe = regexp.MustCompile("^[A-Z]+$")
+var (
+	allCapsRe = regexp.MustCompile("^[A-Z_]+$")
+)
 
 func toCamelCase(s string) string {
-	// Special case if the string is "FOOBAR" we want "Foobar" but
-	// to get there we have to first lower case the string so
+	// Special cases:
+	//  - For "FOOBAR" we want "Foobar"
+	//  - For "FOO_BAR" we want "FooBar"
+	// To get there we have to first lower case the string so
 	// strcase.ToCamel does the right thing
 	if allCapsRe.MatchString(s) {
 		s = strings.ToLower(s)
@@ -85,9 +98,13 @@ func toCamelCase(s string) string {
 }
 
 func toLowerCamelCase(s string) string {
-	// Special case if the string is "FOOBAR" we want "foobar"
+	// Special cases:
+	//  - For "FOOBAR" we want "foobar"
+	//  - For "FOO_BAR" we want "fooBar"
+	// To get there we have to first lower case the string so
+	// strcase.ToCamel does the right thing
 	if allCapsRe.MatchString(s) {
-		return strings.ToLower(s)
+		s = strings.ToLower(s)
 	}
 
 	return strcase.ToLowerCamel(s)
