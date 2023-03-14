@@ -1,0 +1,28 @@
+model Order {
+    operations {
+        list veryLongOperationName(veryLong, listOfInputs, soVeryHardToRead, allOnOneLine)
+        update veryLongUpdateOperation(id) with (one?, two?, three?, four?, five?, six?, seven?)
+    }
+}
+
+===
+
+model Order {
+    operations {
+        list veryLongOperationName(
+            veryLong,
+            listOfInputs,
+            soVeryHardToRead,
+            allOnOneLine,
+        )
+        update veryLongUpdateOperation(id) with (
+            one?,
+            two?,
+            three?,
+            four?,
+            five?,
+            six?,
+            seven?,
+        )
+    }
+}

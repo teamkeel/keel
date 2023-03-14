@@ -151,8 +151,8 @@ type ActionNode struct {
 
 	Type       NameNode           `@@`
 	Name       NameNode           `@@`
-	Inputs     []*ActionInputNode `"(" ( @@ ( "," @@ )* )? ")"`
-	With       []*ActionInputNode `( ( "with" "(" ( @@ ( "," @@ )* ) ")" )`
+	Inputs     []*ActionInputNode `"(" ( @@ ( "," @@ )* ","? )? ")"`
+	With       []*ActionInputNode `( ( "with" "(" ( @@ ( "," @@ )* ","? ) ")" )`
 	Returns    []*ActionInputNode `| ( "returns" "(" ( @@ ( "," @@ )* ) ")" ) )?`
 	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
 }
