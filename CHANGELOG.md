@@ -1,3 +1,10 @@
+# [0.282.0](https://github.com/teamkeel/keel/compare/v0.281.0...v0.282.0) (2023-03-14)
+
+
+### Features
+
+* support [@relation](https://github.com/relation) in code completions ([#853](https://github.com/teamkeel/keel/issues/853)) ([73a16df](https://github.com/teamkeel/keel/commit/73a16df683e6417190485c0cd3d19db8b923257d))
+
 # [0.281.0](https://github.com/teamkeel/keel/compare/v0.280.0...v0.281.0) (2023-03-14)
 
 
