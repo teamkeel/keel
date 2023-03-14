@@ -1,3 +1,10 @@
+# [0.281.0](https://github.com/teamkeel/keel/compare/v0.280.0...v0.281.0) (2023-03-14)
+
+
+### Features
+
+* supporting multiple conditions, AND, OR, and parenthesis ([#847](https://github.com/teamkeel/keel/issues/847)) ([eb3d037](https://github.com/teamkeel/keel/commit/eb3d0373af76efcea4c8e5a2582ad3b8193546ce))
+
 # [0.280.0](https://github.com/teamkeel/keel/compare/v0.279.0...v0.280.0) (2023-03-13)
 
 
