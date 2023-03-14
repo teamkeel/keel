@@ -44,12 +44,20 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 		return executeCustomOperation(scope, inputs)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME:
 		if !inputWasAMap {
-			return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+			if inputs == nil {
+				inputsAsMap = make(map[string]any)
+			} else {
+				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+			}
 		}
 		return executeRuntimeOperation(scope, inputsAsMap)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
 		if !inputWasAMap {
-			return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+			if inputs == nil {
+				inputsAsMap = make(map[string]any)
+			} else {
+				return nil, nil, fmt.Errorf("inputs %v were not in correct format", inputs)
+			}
 		}
 		return executeAutoOperation(scope, inputsAsMap)
 	default:

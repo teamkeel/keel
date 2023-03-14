@@ -2,61 +2,20 @@ package graphql
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/graphql-go/graphql"
 	"github.com/sirupsen/logrus"
 
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/schema/parser"
 )
-
-func getInput(schema *proto.Schema, operation *proto.Operation, args map[string]any) any {
-	inputAsMap, ok := args["input"].(map[string]any)
-	if !ok {
-		inputAsMap = map[string]any{}
-	}
-
-	switch operation.Type {
-	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
-		inputMessage := proto.FindMessage(schema.Messages, operation.InputMessageName)
-
-		if inputMessage.Name == parser.MessageFieldTypeAny {
-			// we can't do any more processing of an Any type
-			return args["input"]
-		}
-
-		// we have a message type that we want to parse
-		inputAsMap = parseTypes(inputMessage, operation, inputAsMap)
-	case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_DELETE:
-		inputMessage := proto.FindMessage(schema.Messages, operation.InputMessageName)
-		inputAsMap = parseTypes(inputMessage, operation, inputAsMap)
-	case proto.OperationType_OPERATION_TYPE_UPDATE, proto.OperationType_OPERATION_TYPE_LIST:
-		if where, ok := inputAsMap["where"].(map[string]any); ok {
-			whereMessage := proto.FindWhereInputMessage(schema, operation.Name)
-			if whereMessage != nil {
-				inputAsMap["where"] = parseTypes(whereMessage, operation, where)
-			}
-		}
-		if values, ok := inputAsMap["values"].(map[string]any); ok {
-			valuesMessage := proto.FindValuesInputMessage(schema, operation.Name)
-			if valuesMessage != nil {
-				inputAsMap["values"] = parseTypes(valuesMessage, operation, values)
-			}
-		}
-	}
-
-	return inputAsMap
-}
 
 func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
 		scope := actions.NewScope(p.Context, operation, schema)
 
-		input := getInput(schema, operation, p.Args)
+		input := p.Args["input"]
 
 		res, headers, err := actions.Execute(scope, input)
 
@@ -88,100 +47,4 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 
 		return res, nil
 	}
-}
-
-func parseTypes(message *proto.Message, operation *proto.Operation, values map[string]any) map[string]any {
-	for k, v := range values {
-		field, found := lo.Find(message.Fields, func(in *proto.MessageField) bool {
-			return in.Name == k
-		})
-
-		if !found {
-			continue
-		}
-
-		if operation.Type == proto.OperationType_OPERATION_TYPE_LIST && field.IsModelField() {
-			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "DateQuery_input" {
-				listOpMap := v.(map[string]any)
-
-				for kListOp, vListOp := range listOpMap {
-					d, err := convertDate(vListOp)
-
-					if err != nil {
-						// drop
-
-						continue
-					}
-					listOpMap[kListOp] = d
-				}
-				values[k] = listOpMap
-			}
-			if field.Type.Type == proto.Type_TYPE_MESSAGE && field.Type.MessageName.Value == "TimestampQuery_input" {
-				listOpMap := v.(map[string]any)
-				for kListOp, vListOp := range listOpMap {
-					d, err := convertTimestamp(vListOp)
-
-					if err != nil {
-						// drop
-
-						continue
-					}
-					listOpMap[kListOp] = d
-				}
-				values[k] = listOpMap
-			}
-		} else {
-			if field.Type.Type == proto.Type_TYPE_DATE {
-				d, err := convertDate(v)
-				if err != nil {
-					// drop
-
-					continue
-				}
-
-				values[k] = d
-			}
-			if field.Type.Type == proto.Type_TYPE_DATETIME {
-				d, err := convertTimestamp(v)
-
-				if err != nil {
-					// drop
-
-					continue
-				}
-
-				values[k] = d
-			}
-		}
-	}
-
-	return values
-}
-
-func convertDate(value any) (string, error) {
-	dateMap, ok := value.(map[string]any)
-	if !ok {
-		panic("date must be a map")
-	}
-
-	str, ok := dateMap["iso8601"].(string)
-
-	if !ok {
-		return "", fmt.Errorf("no iso8601 specified")
-	}
-
-	return str, nil
-}
-
-func convertTimestamp(value any) (string, error) {
-	timeMap, ok := value.(map[string]any)
-	if !ok {
-		panic("date must be a map")
-	}
-	str, ok := timeMap["iso8601"].(string)
-	if !ok {
-		return "", fmt.Errorf("no iso8601 specified")
-	}
-
-	return str, nil
 }

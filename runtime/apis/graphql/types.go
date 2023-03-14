@@ -34,6 +34,73 @@ var anyType = graphql.NewScalar(graphql.ScalarConfig{
 	Description: parser.MessageFieldTypeAny,
 })
 
+const (
+	// todo: precision? different valid iso8601 layouts
+	iso8601WithTimepartLayout = "2006-01-02T15:04:05Z0700"
+	iso8601Layout             = "2006-01-02"
+)
+
+// the iso8601 input scalar type will take a iso8601 compliant string as an input
+// and will automatically convert it to a time.Time instance in p.Args at the resolver level
+// this saves us doing any special parsing logic there for time.Time's
+var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
+	Name: "iso8601",
+	ParseValue: func(value interface{}) interface{} {
+		switch v := value.(type) {
+		case string:
+			t, err := tryParseDateLike(v)
+
+			if err != nil {
+				panic(err)
+			}
+
+			return *t
+		default:
+			panic("not a date")
+		}
+	},
+	Serialize: func(value interface{}) interface{} {
+		t := value.(time.Time)
+
+		f := t.Format(iso8601WithTimepartLayout)
+
+		return f
+	},
+	ParseLiteral: func(v ast.Value) interface{} {
+		switch parsed := v.(type) {
+		case *ast.StringValue:
+			iso8601 := parsed.Value
+
+			t, err := tryParseDateLike(iso8601)
+
+			if err != nil {
+				panic(err)
+			}
+
+			return *t
+		default:
+			panic("disallowed value")
+		}
+	},
+	Description: "iso8601 date",
+})
+
+func tryParseDateLike(input string) (*time.Time, error) {
+	// first try to test the input string against the full iso8601 layout (including timepart and zone)
+	t, err := time.Parse(iso8601WithTimepartLayout, input)
+
+	if err != nil {
+		// test the string against the date only without the timepart layout instead
+		t, err = time.Parse(iso8601Layout, input)
+
+		if err != nil {
+			return nil, fmt.Errorf("could not parse as a date or timestamp")
+		}
+	}
+
+	return &t, nil
+}
+
 // parseASTValue attempts to parse the contents of the graphql value AST which represents many types of values (strings, bools, lists etc)
 func parseASTValue(v ast.Value) interface{} {
 	// todo: inspect the type switch here to ensure we covered all of the standard types
@@ -146,8 +213,7 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 					return nil, err
 				}
 
-				// iso8601 layout
-				return t.Format("2006-01-02T15:04:05.000Z"), nil
+				return t.Format(iso8601WithTimepartLayout), nil
 			},
 		},
 		"formatted": formattedDateType,
@@ -189,8 +255,7 @@ var dateType = graphql.NewObject(graphql.ObjectConfig{
 					return nil, err
 				}
 
-				// iso8601 layout
-				return t.Format("2006-01-02T15:04:05.000Z"), nil
+				return t.Format(iso8601Layout), nil
 			},
 		},
 		"formatted": formattedDateType,
@@ -208,23 +273,9 @@ var protoTypeToGraphQLOutput = map[proto.Type]graphql.Output{
 	proto.Type_TYPE_ANY:      anyType,
 }
 
-var timestampInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "TimestampInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"iso8601": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-})
+var timestampInputType = iso8601Type
 
-var dateInputType = graphql.NewInputObject(graphql.InputObjectConfig{
-	Name: "DateInput",
-	Fields: graphql.InputObjectConfigFieldMap{
-		"iso8601": &graphql.InputObjectFieldConfig{
-			Type: graphql.NewNonNull(graphql.String),
-		},
-	},
-})
+var dateInputType = iso8601Type
 
 var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
 	proto.Type_TYPE_ID:        graphql.ID,

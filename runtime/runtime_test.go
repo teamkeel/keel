@@ -947,9 +947,7 @@ var testCases = []testCase{
 		timestamp_before: listThings(input: {
 			where: {
 			timestamp: {
-				before: {
-					iso8601: "2020-01-02T15:04:05.000Z"
-				}
+				before: "2020-01-02T15:04:05Z"
 			}
 			}
 		}) {
@@ -958,37 +956,25 @@ var testCases = []testCase{
 		timestamp_after: listThings(input: {
 			where: {
 			timestamp: {
-				after: {
-					iso8601: "2017-01-02T15:04:05.000Z"
-				}
+				after: "2017-01-02T15:04:05Z"
 			}
 			}
 		}) {
 			...Fields
 		},
-		date_before: listThings(input: {where: {date: {before: {
-			iso8601: "2020-01-03"
-		}}}}) {
+		date_before: listThings(input: {where: {date: {before: "2020-01-03"}}}) {
 			...Fields
 		},
-		date_after: listThings(input: {where: {date: {after: {
-			iso8601: "2020-01-01"
-		}}}}) {
+		date_after: listThings(input: {where: {date: {after: "2020-01-01"}}}) {
 			...Fields
 		},
-		date_onOrbefore: listThings(input: {where: {date: {onOrBefore: {
-			iso8601: "2020-01-02"
-		}}}}) {
+		date_onOrbefore: listThings(input: {where: {date: {onOrBefore: "2020-01-02" }}}) {
 			...Fields
 		},
-		date_onOrAfter: listThings(input: {where: {date: {onOrAfter: {
-			iso8601: "2020-01-02"
-		}}}}) {
+		date_onOrAfter: listThings(input: {where: {date: {onOrAfter: "2020-01-02" }}}) {
 			...Fields
 		},
-		date_onOrEquals: listThings(input: {where: {date: {equals: {
-			iso8601: "2020-01-02"
-		}}}}) {
+		date_onOrEquals: listThings(input: {where: {date: {equals: "2020-01-02"}}}) {
 			...Fields
 		},
 		bool: listThings(input: {
@@ -2178,12 +2164,8 @@ var testCases = []testCase{
 		gqlOperation: `
 				mutation CreateThing {
 					createThing(input: { 
-						theDate: {
-							iso8601: "2022-06-17"
-						},
-						theTimestamp: {
-							iso8601: "2017-01-02T15:04:05.000Z"
-						}
+						theDate: "2022-06-17",
+						theTimestamp: "2017-01-02T15:04:05Z"
 					}) {
 						theDate {
 							iso8601
@@ -2194,8 +2176,8 @@ var testCases = []testCase{
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "createThing.theDate.iso8601", "2022-06-17T00:00:00.000Z")
-			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2017-01-02T15:04:05.000Z")
+			rtt.AssertValueAtPath(t, data, "createThing.theDate.iso8601", "2022-06-17")
+			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2017-01-02T15:04:05Z")
 		},
 	},
 	{
@@ -2216,12 +2198,8 @@ var testCases = []testCase{
 							id: "thing_1"
 						}
 						values: {
-							theDate: {
-								iso8601: "2023-07-18"
-							},
-							theTimestamp: {
-								iso8601: "2017-01-02T15:04:05.000Z"
-							}
+							theDate: "2023-07-18",
+							theTimestamp: "2017-01-02T15:04:05Z"
 						}
 					}) {
 						theDate {
@@ -2233,8 +2211,8 @@ var testCases = []testCase{
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "updateThing.theDate.iso8601", "2023-07-18T00:00:00.000Z")
-			rtt.AssertValueAtPath(t, data, "updateThing.theTimestamp.iso8601", "2017-01-02T15:04:05.000Z")
+			rtt.AssertValueAtPath(t, data, "updateThing.theDate.iso8601", "2023-07-18")
+			rtt.AssertValueAtPath(t, data, "updateThing.theTimestamp.iso8601", "2017-01-02T15:04:05Z")
 		},
 	},
 	{
@@ -2244,7 +2222,7 @@ var testCases = []testCase{
 			row := initRow(map[string]any{
 				"id":           "thing_1",
 				"theDate":      "2022-06-17",
-				"theTimestamp": "2022-01-01T15:04:05.000Z",
+				"theTimestamp": "2022-01-01T15:04:05Z",
 			})
 			require.NoError(t, db.Table("thing").Create(row).Error)
 		},
@@ -2252,12 +2230,8 @@ var testCases = []testCase{
 				query GetThing {
 					getThing(input: { 
 						id: "thing_1",
-						theDate: {
-							iso8601: "2022-06-17"
-						},
-						theTimestamp: {
-							iso8601: "2022-01-01T15:04:05.000Z"
-						}
+						theDate: "2022-06-17",
+						theTimestamp: "2022-01-01T15:04:05Z"
 					}) {
 						theDate {
 							iso8601
@@ -2268,8 +2242,8 @@ var testCases = []testCase{
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "getThing.theDate.iso8601", "2022-06-17T00:00:00.000Z")
-			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.iso8601", "2022-01-01T15:04:05.000Z")
+			rtt.AssertValueAtPath(t, data, "getThing.theDate.iso8601", "2022-06-17")
+			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.iso8601", "2022-01-01T15:04:05Z")
 		},
 	},
 	{
@@ -2288,17 +2262,11 @@ var testCases = []testCase{
 					listThing(input: { 
 						where: {
 							theDate: {
-								equals: {
-									iso8601: "2022-06-17"
-								}
+								equals: "2022-06-17"
 							},
               theTimestamp: {
-								before: {
-									iso8601: "2023-03-13T17:39:04+00:00"
-								},
-								after: {
-									iso8601: "2023-03-13T10:39:04+00:00"
-								}
+								before: "2024-03-13T17:39:04Z",
+								after: "2021-03-13T10:39:04Z"
 							}
 						}
 					}) {
@@ -2319,8 +2287,8 @@ var testCases = []testCase{
 			require.Len(t, things, 1)
 
 			thing := things[0].(map[string]any)
-			rtt.AssertValueAtPath(t, thing, "node.theDate.iso8601", "2022-06-17T00:00:00.000Z")
-			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.iso8601", "2023-03-13T12:00:00.000Z")
+			rtt.AssertValueAtPath(t, thing, "node.theDate.iso8601", "2022-06-17")
+			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.iso8601", "2023-03-13T12:00:00Z")
 		},
 	},
 }
