@@ -5,3 +5,11 @@ message Foo {
 message Foo {
   baz Text
 }
+
+model Foo {
+
+}
+
+enum Foo {
+  
+}

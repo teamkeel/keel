@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "message type 'Foo' is already defined",
-      "hint": "Please use a different name",
-      "code": "DuplicateDefinitionError",
+      "message": "There is already a message with the name Foo",
+      "hint": "Use unique names between models, enums and messages",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_unique_messages/schema.keel",
         "offset": 36,
@@ -12,9 +12,43 @@
       },
       "endPos": {
         "filename": "testdata/validation_unique_messages/schema.keel",
-        "offset": 54,
-        "line": 7,
-        "column": 2
+        "offset": 39,
+        "line": 5,
+        "column": 12
+      }
+    },
+    {
+      "message": "There is already a message with the name Foo",
+      "hint": "Use unique names between models, enums and messages",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_unique_messages/schema.keel",
+        "offset": 62,
+        "line": 9,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_messages/schema.keel",
+        "offset": 65,
+        "line": 9,
+        "column": 10
+      }
+    },
+    {
+      "message": "There is already a message with the name Foo",
+      "hint": "Use unique names between models, enums and messages",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_unique_messages/schema.keel",
+        "offset": 77,
+        "line": 13,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_messages/schema.keel",
+        "offset": 80,
+        "line": 13,
+        "column": 9
       }
     }
   ]

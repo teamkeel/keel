@@ -207,6 +207,22 @@ type MessageNode struct {
 	Fields []*FieldNode `"{" @@* "}"`
 }
 
+type TypeNode interface {
+	NameNode() NameNode
+}
+
+func (e *EnumNode) NameNode() NameNode {
+	return e.Name
+}
+
+func (e *MessageNode) NameNode() NameNode {
+	return e.Name
+}
+
+func (e *ModelNode) NameNode() NameNode {
+	return e.Name
+}
+
 type Error struct {
 	err participle.Error
 }
