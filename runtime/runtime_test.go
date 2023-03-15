@@ -2314,6 +2314,28 @@ var testCases = []testCase{
 			require.Equal(t, "Argument \"input\" has invalid value {theDate: \"20th December 2022\", theTimestamp: \"2023-03-13T12:00:00.00Z\"}.\nIn field \"theDate\": Expected type \"ISO8601\", found \"20th December 2022\".", errors[0].Message)
 		},
 	},
+	{
+		// because we use the timestamptz datatype, postgres will automatically 
+		name:       "non_utc_timezone_parsing_serialization",
+		keelSchema: date_timestamp_parsing,
+		gqlOperation: `
+				mutation CreateThing {
+					createThing(input: { 
+						theDate: "2022-06-17",
+						theTimestamp: "2023-03-13T17:00:00.00+07:00"
+					}) {
+						theDate {
+							iso8601
+						}
+						theTimestamp {
+							iso8601
+						}
+					}
+				 }`,
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2023-03-13T10:00:00.00Z")
+		},
+	},
 }
 
 var rpcTestCases = []rpcTestCase{
