@@ -2315,7 +2315,9 @@ var testCases = []testCase{
 		},
 	},
 	{
-		// because we use the timestamptz datatype, postgres will automatically 
+		// because we use the timestamptz datatype, postgres will automatically serialize back in reads in UTC despite being stored with whatever zone info is specified
+		// This test verifies that the runtime can take a zone specific timestamp input
+		// and serializes back in UTC
 		name:       "non_utc_timezone_parsing_serialization",
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
