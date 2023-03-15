@@ -12,16 +12,16 @@ CREATE TABLE "identity" (
 "email" TEXT NOT NULL,
 "password" TEXT NOT NULL,
 "id" TEXT NOT NULL,
-"created_at" TIMESTAMP NOT NULL,
-"updated_at" TIMESTAMP NOT NULL
+"created_at" TIMESTAMPTZ NOT NULL,
+"updated_at" TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
 "name" TEXT NOT NULL,
 "id" TEXT NOT NULL,
-"created_at" TIMESTAMP NOT NULL,
-"updated_at" TIMESTAMP NOT NULL
+"created_at" TIMESTAMPTZ NOT NULL,
+"updated_at" TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
 
