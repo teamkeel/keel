@@ -21,8 +21,8 @@ CREATE TABLE "identity" (
 "email" TEXT NOT NULL,
 "password" TEXT NOT NULL,
 "id" TEXT NOT NULL,
-"created_at" TIMESTAMP NOT NULL,
-"updated_at" TIMESTAMP NOT NULL
+"created_at" TIMESTAMPTZ NOT NULL,
+"updated_at" TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
@@ -32,10 +32,10 @@ CREATE TABLE "person" (
 "number" INTEGER NOT NULL,
 "enum" TEXT NOT NULL,
 "date" DATE NOT NULL,
-"timestamp" TIMESTAMP NOT NULL,
+"timestamp" TIMESTAMPTZ NOT NULL,
 "id" TEXT NOT NULL,
-"created_at" TIMESTAMP NOT NULL,
-"updated_at" TIMESTAMP NOT NULL
+"created_at" TIMESTAMPTZ NOT NULL,
+"updated_at" TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
 
