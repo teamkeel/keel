@@ -4,6 +4,9 @@ const {
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
 
+const { getDatabase } = require("./database");
+const { PERMISSION_STATE, PermitError } = require("./permissions");
+
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
@@ -24,11 +27,28 @@ async function handleRequest(request, config) {
     // headers reference passed to custom function where object data can be modified
     const headers = new Headers();
 
-    const result = await functions[request.method](
-      request.params,
-      createFunctionAPI(headers),
-      createContextAPI(request.meta)
-    );
+    const db = getDatabase();
+
+    // We want to wrap the execution of the custom function in a transaction so that any call the user makes
+    // to any of the model apis we provide to the custom function is processed in a transaction.
+    // This is useful for permissions where we want to only proceed with database writes if all permission rules
+    // have been validated.
+    const result = await db.transaction().execute(async (trx) => {
+      const api = createFunctionAPI({ headers, db: trx });
+      const ctx = createContextAPI(request.meta);
+      const fnResult = await functions[request.method](
+        request.params,
+        api,
+        ctx
+      );
+
+      if (api.permissions.getState() != PERMISSION_STATE.PERMITTED) {
+        // Any error thrown inside of Kysely's transaction execute() will cause the transaction to be rolled back.
+        throw new PermitError(`Not permitted to access ${request.method}`);
+      } else {
+        return fnResult;
+      }
+    });
 
     if (result === undefined) {
       // no result returned from custom function

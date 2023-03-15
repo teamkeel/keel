@@ -283,3 +283,23 @@ test("using a secret", async () => {
   // secret value is set in integration/integration_test.go
   expect(res.name).toEqual("worf");
 });
+
+test("custom permissions - permitted action", async () => {
+  const res = await actions.customPermission({
+    name: "Adam",
+    gender: "non-binary",
+    niNumber: "123",
+  });
+
+  expect(res.name).toEqual("Adam");
+});
+
+test("custom permissions - unpermitted action", async () => {
+  await expect(
+    actions.customPermission({
+      name: "Pete",
+      gender: "non-binary",
+      niNumber: "123",
+    })
+  ).rejects.toThrow("you are not permitted to execute this function");
+});

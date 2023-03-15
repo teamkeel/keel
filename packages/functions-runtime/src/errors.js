@@ -1,4 +1,5 @@
 const { createJSONRPCErrorResponse } = require("json-rpc-2.0");
+const { PermitError } = require("./permissions");
 
 const RuntimeErrors = {
   // Catchall error type for unhandled execution errors during custom function
@@ -12,21 +13,29 @@ const RuntimeErrors = {
   ForeignKeyConstraintError: -32005,
   NotNullConstraintError: -32006,
   UniqueConstraintError: -32007,
+  PermissionError: -32008,
 };
 
 // errorToJSONRPCResponse transforms a JavaScript Error instance (or derivative) into a valid JSONRPC response object to pass back to the Keel runtime.
 function errorToJSONRPCResponse(request, e) {
   if (!e.error) {
+    // it isnt wrapped
+
+    if (e instanceof PermitError) {
+      return createJSONRPCErrorResponse(
+        request.id,
+        RuntimeErrors.PermissionError,
+        e.message
+      );
+    }
+
     return createJSONRPCErrorResponse(
       request.id,
       RuntimeErrors.UnknownError,
-      e.message
+      e.message ? e.message : e
     );
   }
   // we want to switch on instanceof but there is no way to do that in js, so best to check the constructor class of the error
-
-  // todo: fuzzy matching on postgres errors from both rds-data-api and pg-protocol
-
   switch (e.error.constructor.name) {
     // Any error thrown in the ModelAPI class is
     // wrapped in a DatabaseError in order to differentiate 'our code' vs the user's own code.

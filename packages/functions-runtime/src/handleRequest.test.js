@@ -4,19 +4,29 @@ import { handleRequest, RuntimeErrors } from "./handleRequest";
 import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
 import { getDatabase } from "./database";
+import { Permissions } from "./permissions";
+
 import KSUID from "ksuid";
+
+process.env.KEEL_DB_CONN_TYPE = "pg";
+process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 
 test("when the custom function returns expected value", async () => {
   const config = {
     functions: {
-      createPost: async () => {
+      createPost: async (inputs, api, ctx) => {
+        api.permissions.allow();
         return {
           title: "a post",
           id: "abcde",
         };
       },
     },
-    createFunctionAPI: () => {},
+    createFunctionAPI: ({ headers, db }) => {
+      return {
+        permissions: new Permissions(),
+      };
+    },
     createContextAPI: () => {},
   };
 
@@ -38,9 +48,15 @@ test("when the custom function returns expected value", async () => {
 test("when the custom function doesnt return a value", async () => {
   const config = {
     functions: {
-      createPost: async () => {},
+      createPost: async (inputs, api, ctx) => {
+        api.permissions.allow();
+      },
     },
-    createFunctionAPI: () => {},
+    createFunctionAPI: ({ headers, db }) => {
+      return {
+        permissions: new Permissions(),
+      };
+    },
     createContextAPI: () => {},
   };
 
@@ -59,9 +75,13 @@ test("when the custom function doesnt return a value", async () => {
 test("when there is no matching function for the path", async () => {
   const config = {
     functions: {
-      createPost: async () => {},
+      createPost: async (inputs, api, ctx) => {},
     },
-    createFunctionAPI: () => {},
+    createFunctionAPI: ({ headers, db }) => {
+      return {
+        permissions: new Permissions(),
+      };
+    },
     createContextAPI: () => {},
   };
 
@@ -80,11 +100,17 @@ test("when there is no matching function for the path", async () => {
 test("when there is an unexpected error in the custom function", async () => {
   const config = {
     functions: {
-      createPost: () => {
+      createPost: (inputs, api, ctx) => {
+        api.permissions.allow();
+
         throw new Error("oopsie daisy");
       },
     },
-    createFunctionAPI: () => {},
+    createFunctionAPI: ({ headers, db }) => {
+      return {
+        permissions: new Permissions(),
+      };
+    },
     createContextAPI: () => {},
   };
 
@@ -103,11 +129,17 @@ test("when there is an unexpected error in the custom function", async () => {
 test("when there is an unexpected object thrown in the custom function", async () => {
   const config = {
     functions: {
-      createPost: () => {
+      createPost: (inputs, api, ctx) => {
+        api.permissions.allow();
+
         throw { err: "oopsie daisy" };
       },
     },
-    createFunctionAPI: () => {},
+    createFunctionAPI: ({ headers, db }) => {
+      return {
+        permissions: new Permissions(),
+      };
+    },
     createContextAPI: () => {},
   };
 
@@ -159,17 +191,22 @@ describe("ModelAPI error handling", () => {
     functionConfig = {
       functions: {
         createPost: async (inputs, api, ctx) => {
+          api.permissions.allow();
+
           const post = await api.models.post.create(inputs);
 
           return post;
         },
         deletePost: async (inputs, api, ctx) => {
+          api.permissions.allow();
+
           const deleted = await api.models.post.delete(inputs);
 
           return deleted;
         },
       },
-      createFunctionAPI: () => ({
+      createFunctionAPI: ({ headers, db }) => ({
+        permissions: new Permissions(),
         models: {
           post: new ModelAPI(
             "post",

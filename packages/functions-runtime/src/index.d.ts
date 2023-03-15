@@ -64,3 +64,16 @@ export type RequestHeaders = {
   get(name: string): string;
   has(name: string): boolean;
 };
+
+export declare class Permissions {
+  constructor();
+
+  // check() you to check the given row(s) against the permission rules defined in the schema
+  async check(rows: any | any[]): Promise<void>;
+
+  // allow() can be used to explicitly permit access to an action
+  allow(): void;
+
+  // deny() can be used to explicitly deny access to an action
+  deny(): void;
+}
