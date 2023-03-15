@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"os"
@@ -8,16 +9,20 @@ import (
 
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/runtime/apis/httpjson"
 	"github.com/teamkeel/keel/runtime/apis/jsonrpc"
 	"github.com/teamkeel/keel/runtime/common"
-
-	"github.com/teamkeel/keel/proto"
-
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
 
 const (
 	authorizationHeaderName string = "Authorization"
@@ -30,54 +35,26 @@ func init() {
 }
 
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
-	httpHandler := func(w http.ResponseWriter, r *http.Request) {
+	var handler common.ApiHandlerFunc
+	if currSchema != nil {
+		handler = NewHandler(currSchema)
+	}
 
-		if currSchema == nil {
+	httpHandler := func(w http.ResponseWriter, r *http.Request) {
+		ctx, span := tracer.Start(r.Context(), "Runtime")
+		span.End()
+
+		if handler == nil {
 			w.WriteHeader(http.StatusBadRequest)
 			_, _ = w.Write([]byte("Cannot serve requests when schema contains errors"))
 			return
 		}
 
-		handler := NewHandler(currSchema)
-
-		ctx := r.Context()
-
-		header := r.Header.Get(authorizationHeaderName)
-		if header != "" {
-			headerSplit := strings.Split(header, "Bearer ")
-			if len(headerSplit) != 2 {
-				w.WriteHeader(http.StatusBadRequest)
-				_, _ = w.Write([]byte("no 'Bearer' prefix in the authentication header"))
-				return
-			}
-
-			identityId, err := actions.ParseBearerToken(headerSplit[1])
-
-			switch {
-			case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired):
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte(err.Error()))
-				return
-			case errors.Is(err, actions.ErrInvalidIdentityClaim):
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(err.Error()))
-				return
-			}
-
-			// Check that identity actually does exist as it could
-			// have been deleted after the bearer token was generated.
-			identity, err := actions.FindIdentityById(ctx, currSchema, identityId)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(err.Error()))
-				return
-			}
-			if identity == nil {
-				w.WriteHeader(http.StatusUnauthorized)
-				_, _ = w.Write([]byte(actions.ErrIdentityNotFound.Error()))
-				return
-			}
-
+		identity, err := handleAuthorization(ctx, currSchema, r.Header, w)
+		if err != nil {
+			return
+		}
+		if identity != nil {
 			ctx = runtimectx.WithIdentity(ctx, identity)
 		}
 
@@ -101,6 +78,10 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		}
 
 		w.Header().Add("Content-Type", "application/json")
+
+		span.SetAttributes(
+			attribute.Int("response.status", response.Status),
+		)
 
 		w.WriteHeader(response.Status)
 		_, _ = w.Write(response.Body)
@@ -197,4 +178,59 @@ func logLevel() log.Level {
 	default:
 		return log.ErrorLevel
 	}
+}
+
+func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http.Header, w http.ResponseWriter) (*runtimectx.Identity, error) {
+	ctx, span := tracer.Start(ctx, "Authorization")
+	span.End()
+
+	header := headers.Get(authorizationHeaderName)
+	if header == "" {
+		return nil, nil
+	}
+
+	headerSplit := strings.Split(header, "Bearer ")
+	if len(headerSplit) != 2 {
+		span.SetStatus(codes.Error, "no 'Bearer' prefix in the authentication header")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("no 'Bearer' prefix in the authentication header"))
+		return nil, errors.New("invalid authorization header")
+	}
+
+	identityId, err := actions.ParseBearerToken(headerSplit[1])
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+	}
+
+	switch {
+	case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired) || errors.Is(err, actions.ErrInvalidIdentityClaim):
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(err.Error()))
+		return nil, err
+	case err != nil:
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte("error validating bearer token"))
+		return nil, err
+	}
+
+	// Check that identity actually does exist as it could
+	// have been deleted after the bearer token was generated.
+	identity, err := actions.FindIdentityById(ctx, schema, identityId)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte("error validating identity"))
+		return nil, err
+	}
+
+	if identity == nil {
+		span.SetStatus(codes.Error, "identity not found")
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(actions.ErrIdentityNotFound.Error()))
+		return nil, err
+	}
+
+	return identity, nil
 }

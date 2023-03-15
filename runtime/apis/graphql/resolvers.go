@@ -14,11 +14,9 @@ import (
 func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql.ResolveParams) (interface{}, error) {
 	return func(p graphql.ResolveParams) (interface{}, error) {
 		scope := actions.NewScope(p.Context, operation, schema)
-
 		input := p.Args["input"]
 
 		res, headers, err := actions.Execute(scope, input)
-
 		if err != nil {
 			var runtimeErr common.RuntimeError
 			if !errors.As(err, &runtimeErr) {
@@ -27,8 +25,6 @@ func ActionFunc(schema *proto.Schema, operation *proto.Operation) func(p graphql
 					Code:    common.ErrInternal,
 					Message: "error executing request",
 				}
-			} else {
-				logrus.Trace(err)
 			}
 			return nil, err
 		}
