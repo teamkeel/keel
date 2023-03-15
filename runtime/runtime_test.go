@@ -2291,6 +2291,29 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.iso8601", "2023-03-13T12:00:00.00Z")
 		},
 	},
+	{
+		name:       "invalid_iso8601_format",
+		keelSchema: date_timestamp_parsing,
+		gqlOperation: `
+				mutation CreateThing {
+					createThing(input: { 
+						theDate: "20th December 2022",
+						theTimestamp: "2023-03-13T12:00:00.00Z"
+					}) {
+						theDate {
+							iso8601
+						}
+						theTimestamp {
+							iso8601
+						}
+					}
+				 }`,
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+
+			require.Equal(t, "Argument \"input\" has invalid value {theDate: \"20th December 2022\", theTimestamp: \"2023-03-13T12:00:00.00Z\"}.\nIn field \"theDate\": Expected type \"ISO8601\", found \"20th December 2022\".", errors[0].Message)
+		},
+	},
 }
 
 var rpcTestCases = []rpcTestCase{

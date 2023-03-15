@@ -51,12 +51,12 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 			t, err := tryParseISO8601String(v)
 
 			if err != nil {
-				panic(err)
+				return nil
 			}
 
 			return *t
 		default:
-			panic("not a date")
+			return nil
 		}
 	},
 	Serialize: func(value interface{}) interface{} {
@@ -74,12 +74,12 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 			t, err := tryParseISO8601String(iso8601)
 
 			if err != nil {
-				panic(err)
+				return nil
 			}
 
 			return *t
 		default:
-			panic("disallowed value")
+			return nil
 		}
 	},
 	Description: "ISO8601 date",
