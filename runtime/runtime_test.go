@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/iancoleman/strcase"
 	"github.com/sanity-io/litter"
@@ -2312,7 +2311,6 @@ var testCases = []testCase{
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 
-			spew.Dump(errors)
 			require.Equal(t, "Argument \"input\" has invalid value {theDate: \"20th December 2022\", theTimestamp: \"2023-03-13T12:00:00.00Z\"}.\nIn field \"theDate\": Expected type \"ISO8601\", found \"20th December 2022\".", errors[0].Message)
 		},
 	},
