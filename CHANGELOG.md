@@ -1,3 +1,10 @@
+# [0.284.0](https://github.com/teamkeel/keel/compare/v0.283.0...v0.284.0) (2023-03-15)
+
+
+### Features
+
+* automatic iso8601 parsing ([#854](https://github.com/teamkeel/keel/issues/854)) ([7e220f5](https://github.com/teamkeel/keel/commit/7e220f5f07f6fbb108aabab4ad382e3cc2a56110))
+
 # [0.283.0](https://github.com/teamkeel/keel/compare/v0.282.0...v0.283.0) (2023-03-14)
 
 
