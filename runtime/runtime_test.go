@@ -2335,6 +2335,7 @@ var testCases = []testCase{
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
+			// 17:00 in +07:00 timezone is 10:00 UTC
 			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2023-03-13T10:00:00.00Z")
 		},
 	},
