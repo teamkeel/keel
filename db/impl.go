@@ -5,10 +5,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"golang.org/x/exp/slices"
 	"regexp"
 	"strconv"
-	"time"
+
+	"golang.org/x/exp/slices"
 
 	"github.com/lib/pq"
 )
@@ -31,12 +31,6 @@ func replaceQuestionMarksWithNumberedInputs(query string) string {
 		}
 	}
 	return output
-}
-
-func convertTime(value time.Time) time.Time {
-	// data api doesn't return nanos
-	nanos := 0
-	return time.Date(value.Year(), value.Month(), value.Day(), value.Hour(), value.Minute(), value.Second(), nanos, time.UTC)
 }
 
 func toDbError(err error) error {
@@ -102,10 +96,6 @@ func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ..
 		}
 		rowMap := map[string]any{}
 		for i, cell := range row {
-			timeCell, isTime := cell.(time.Time)
-			if isTime {
-				cell = convertTime(timeCell)
-			}
 			rowMap[columns[i]] = cell
 		}
 		rows = append(rows, rowMap)

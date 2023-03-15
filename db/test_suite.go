@@ -118,7 +118,7 @@ func (suite dbTestSuite) testDbStatements(t *testing.T) {
         name             text,
         married          boolean,
         favourite_number integer,
-        date             timestamp
+        date             timestamptz
     );`)
 	assert.NoError(t, err)
 
