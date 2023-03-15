@@ -8,6 +8,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/nleeper/goment"
+	"github.com/relvacode/iso8601"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
@@ -36,8 +37,7 @@ var anyType = graphql.NewScalar(graphql.ScalarConfig{
 
 const (
 	// todo: precision? different valid iso8601 layouts
-	iso8601WithTimepartLayout = "2006-01-02T15:04:05Z0700"
-	iso8601Layout             = "2006-01-02"
+	iso8601Layout = "2006-01-02T15:04:05.00Z0700"
 )
 
 // the iso8601 input scalar type will take a iso8601 compliant string as an input
@@ -48,7 +48,7 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 	ParseValue: func(value interface{}) interface{} {
 		switch v := value.(type) {
 		case string:
-			t, err := tryParseDateLike(v)
+			t, err := tryParseISO8601String(v)
 
 			if err != nil {
 				panic(err)
@@ -62,7 +62,7 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 	Serialize: func(value interface{}) interface{} {
 		t := value.(time.Time)
 
-		f := t.Format(iso8601WithTimepartLayout)
+		f := t.Format(iso8601Layout)
 
 		return f
 	},
@@ -71,7 +71,7 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 		case *ast.StringValue:
 			iso8601 := parsed.Value
 
-			t, err := tryParseDateLike(iso8601)
+			t, err := tryParseISO8601String(iso8601)
 
 			if err != nil {
 				panic(err)
@@ -85,17 +85,13 @@ var iso8601Type = graphql.NewScalar(graphql.ScalarConfig{
 	Description: "ISO8601 date",
 })
 
-func tryParseDateLike(input string) (*time.Time, error) {
-	// first try to test the input string against the full iso8601 layout (including timepart and zone)
-	t, err := time.Parse(iso8601WithTimepartLayout, input)
+// The built-in RFC3333 time layout in Go is too restrictive to support any ISO8601 date-time.
+// In reality, ISO8601 has a couple of different variants that include with timepart / without timepart / different ways of specifying the timezone
+func tryParseISO8601String(input string) (*time.Time, error) {
+	t, err := iso8601.ParseString(input)
 
 	if err != nil {
-		// test the string against the date only without the timepart layout instead
-		t, err = time.Parse(iso8601Layout, input)
-
-		if err != nil {
-			return nil, fmt.Errorf("could not parse as a date or timestamp")
-		}
+		return nil, err
 	}
 
 	return &t, nil
@@ -213,7 +209,7 @@ var timestampType = graphql.NewObject(graphql.ObjectConfig{
 					return nil, err
 				}
 
-				return t.Format(iso8601WithTimepartLayout), nil
+				return t.Format(iso8601Layout), nil
 			},
 		},
 		"formatted": formattedDateType,

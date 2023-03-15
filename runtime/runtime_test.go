@@ -2176,8 +2176,8 @@ var testCases = []testCase{
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "createThing.theDate.iso8601", "2022-06-17")
-			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2017-01-02T15:04:05Z")
+			rtt.AssertValueAtPath(t, data, "createThing.theDate.iso8601", "2022-06-17T00:00:00.00Z")
+			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2017-01-02T15:04:05.00Z")
 		},
 	},
 	{
@@ -2211,8 +2211,8 @@ var testCases = []testCase{
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "updateThing.theDate.iso8601", "2023-07-18")
-			rtt.AssertValueAtPath(t, data, "updateThing.theTimestamp.iso8601", "2017-01-02T15:04:05Z")
+			rtt.AssertValueAtPath(t, data, "updateThing.theDate.iso8601", "2023-07-18T00:00:00.00Z")
+			rtt.AssertValueAtPath(t, data, "updateThing.theTimestamp.iso8601", "2017-01-02T15:04:05.00Z")
 		},
 	},
 	{
@@ -2242,8 +2242,8 @@ var testCases = []testCase{
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
-			rtt.AssertValueAtPath(t, data, "getThing.theDate.iso8601", "2022-06-17")
-			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.iso8601", "2022-01-01T15:04:05Z")
+			rtt.AssertValueAtPath(t, data, "getThing.theDate.iso8601", "2022-06-17T00:00:00.00Z")
+			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.iso8601", "2022-01-01T15:04:05.00Z")
 		},
 	},
 	{
@@ -2287,8 +2287,8 @@ var testCases = []testCase{
 			require.Len(t, things, 1)
 
 			thing := things[0].(map[string]any)
-			rtt.AssertValueAtPath(t, thing, "node.theDate.iso8601", "2022-06-17")
-			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.iso8601", "2023-03-13T12:00:00Z")
+			rtt.AssertValueAtPath(t, thing, "node.theDate.iso8601", "2022-06-17T00:00:00.00Z")
+			rtt.AssertValueAtPath(t, thing, "node.theTimestamp.iso8601", "2023-03-13T12:00:00.00Z")
 		},
 	},
 }
