@@ -1,3 +1,10 @@
+# [0.285.0](https://github.com/teamkeel/keel/compare/v0.284.1...v0.285.0) (2023-03-15)
+
+
+### Features
+
+* use timestamptz for storing dates/timestamps ([#858](https://github.com/teamkeel/keel/issues/858)) ([8e4ad22](https://github.com/teamkeel/keel/commit/8e4ad2212bd117c26ca149951b5b3ccf601bab85))
+
 ## [0.284.1](https://github.com/teamkeel/keel/compare/v0.284.0...v0.284.1) (2023-03-15)
 
 
