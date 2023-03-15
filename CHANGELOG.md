@@ -1,3 +1,10 @@
+## [0.284.1](https://github.com/teamkeel/keel/compare/v0.284.0...v0.284.1) (2023-03-15)
+
+
+### Bug Fixes
+
+* handle bad iso8601 formats ([#857](https://github.com/teamkeel/keel/issues/857)) ([a3a0fd3](https://github.com/teamkeel/keel/commit/a3a0fd31f9f7ec89ad6cbfe00690ac47981f88b5))
+
 # [0.284.0](https://github.com/teamkeel/keel/compare/v0.283.0...v0.284.0) (2023-03-15)
 
 
