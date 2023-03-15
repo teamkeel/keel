@@ -137,8 +137,8 @@ func (suite dbTestSuite) testDbStatements(t *testing.T) {
 	result, err := db.ExecuteQuery(ctx, "SELECT * FROM person ORDER BY id ASC")
 	assert.NoError(t, err)
 	expectedData := []map[string]interface{}{
-		{"date": time.Date(2013, time.March, 1, 9, 10, 59, 0, time.UTC), "favourite_number": int64(10), "id": "id1", "married": true, "name": "Keel Keelson"},
-		{"date": time.Date(2022, time.April, 3, 12, 1, 33, 0, time.UTC), "favourite_number": int64(1), "id": "id2", "married": false, "name": "Agent Smith"},
+		{"date": time.Date(2013, time.March, 1, 9, 10, 59, 897000, time.UTC), "favourite_number": int64(10), "id": "id1", "married": true, "name": "Keel Keelson"},
+		{"date": time.Date(2022, time.April, 3, 12, 1, 33, 567000, time.UTC), "favourite_number": int64(1), "id": "id2", "married": false, "name": "Agent Smith"},
 		{"date": interface{}(nil), "favourite_number": interface{}(nil), "id": "id3", "married": interface{}(nil), "name": interface{}(nil)},
 	}
 	assert.Equal(t, expectedData, result.Rows)
