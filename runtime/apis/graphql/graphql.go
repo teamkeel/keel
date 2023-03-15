@@ -26,7 +26,6 @@ type GraphQLRequest struct {
 }
 
 func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
-
 	var schema *graphql.Schema
 	var mutex sync.Mutex
 
@@ -124,6 +123,7 @@ type graphqlSchemaBuilder struct {
 	inputs   map[string]*graphql.InputObject
 	types    map[string]*graphql.Object
 	enums    map[string]*graphql.Enum
+	globals  map[string]*graphql.Scalar
 }
 
 // build returns a graphql.Schema that implements the given API.
@@ -152,6 +152,8 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 		}
 	}
 
+	mk.addGlobals()
+
 	// The graphql handler cannot manage an empty query object,
 	// so if there are no get or list ops, we add the __Empty field
 	if hasNoQueryOps {
@@ -163,9 +165,15 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 		})
 	}
 
+	types := []graphql.Type{}
+
+	for _, global := range mk.globals {
+		types = append(types, global)
+	}
+
 	gSchema, err := graphql.NewSchema(graphql.SchemaConfig{
 		Query: mk.query,
-
+		Types: types,
 		// graphql won't accept a mutation object that has zero fields.
 		Mutation: lo.Ternary(len(mk.mutation.Fields()) > 0, mk.mutation, nil),
 	})
@@ -174,6 +182,12 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	}
 
 	return &gSchema, nil
+}
+
+func (mk *graphqlSchemaBuilder) addGlobals() {
+	mk.globals = map[string]*graphql.Scalar{}
+	mk.globals[anyType.Name()] = anyType
+	mk.globals[iso8601Type.Name()] = iso8601Type
 }
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into

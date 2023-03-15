@@ -3,6 +3,7 @@ package graphql
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strings"
 
@@ -71,6 +72,16 @@ type IntrospectionQueryResult struct {
 	} `json:"__schema"`
 }
 
+var (
+	BuiltInScalars = []string{
+		"Int",
+		"Float",
+		"String",
+		"Boolean",
+		"ID",
+	}
+)
+
 // ToGraphQLSchemaLanguage converts the result of an introspection query
 // into a GraphQL schema string
 // Note: this implementation is not complete and only covers cases
@@ -119,6 +130,12 @@ func ToGraphQLSchemaLanguage(response common.Response) string {
 
 	for _, t := range r.Schema.Types {
 		if t.Kind == "SCALAR" {
+			if lo.Contains(BuiltInScalars, t.Name) {
+				continue
+			}
+
+			definitions = append(definitions, fmt.Sprintf("scalar %s", t.Name))
+
 			continue
 		}
 		if strings.HasPrefix(t.Name, "__") {

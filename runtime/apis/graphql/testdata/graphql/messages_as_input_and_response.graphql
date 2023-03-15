@@ -29,3 +29,7 @@ type authenticate_response {
   identityCreated: Boolean!
   token: String!
 }
+
+scalar Any
+
+scalar ISO8601
