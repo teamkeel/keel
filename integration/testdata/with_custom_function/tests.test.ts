@@ -301,5 +301,11 @@ test("custom permissions - unpermitted action", async () => {
       gender: "non-binary",
       niNumber: "123",
     })
-  ).rejects.toThrow("you are not permitted to execute this function");
+  ).rejects.toThrow("not authorized to access this action");
+
+  // check there are no records in the db as the transaction should
+  // have rolled back
+  const records = await models.person.where({ name: "Pete" }).findMany();
+
+  expect(records.length).toEqual(0);
 });

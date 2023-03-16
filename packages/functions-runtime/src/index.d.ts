@@ -68,7 +68,7 @@ export type RequestHeaders = {
 export declare class Permissions {
   constructor();
 
-  // check() you to check the given row(s) against the permission rules defined in the schema
+  // check() can be used to check the given row(s) against the permission rules defined in the schema
   async check(rows: any | any[]): Promise<void>;
 
   // allow() can be used to explicitly permit access to an action

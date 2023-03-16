@@ -84,6 +84,6 @@ func NewForeignKeyConstraintError(column string) RuntimeError {
 func NewPermissionError() RuntimeError {
 	return RuntimeError{
 		Code:    ErrPermissionDenied,
-		Message: "you are not permitted to execute this function",
+		Message: "not authorized to access this action",
 	}
 }

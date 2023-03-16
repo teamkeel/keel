@@ -124,7 +124,7 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	}
 
 	if !isAuthorised {
-		return nil, nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
+		return nil, nil, common.NewPermissionError()
 	}
 
 	page, err := ParsePage(input)
