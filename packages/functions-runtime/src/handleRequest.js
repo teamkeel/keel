@@ -36,16 +36,24 @@ async function handleRequest(request, config) {
     const result = await db.transaction().execute(async (trx) => {
       const api = createFunctionAPI({ headers, db: trx });
       const ctx = createContextAPI(request.meta);
+
+      // Call the user's custom function!
       const fnResult = await functions[request.method](
         request.params,
         api,
         ctx
       );
 
+      // api.permissions maintains an internal state of whether the current operation has been permitted either by the user or by built-in permission rules
+      // we need to check that the final state is permitted. if it's not, then we want to rollback
+      // the transaction
       if (api.permissions.getState() !== PERMISSION_STATE.PERMITTED) {
         // Any error thrown inside of Kysely's transaction execute() will cause the transaction to be rolled back.
+        // PermitError is handled by our JSONRPC error serialisation code
         throw new PermitError(`Not permitted to access ${request.method}`);
       } else {
+        // otherwise, if everything is permitted, then we just return the function result from
+        // the transaction closure.
         return fnResult;
       }
     });

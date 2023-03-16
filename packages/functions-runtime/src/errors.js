@@ -32,7 +32,7 @@ function errorToJSONRPCResponse(request, e) {
     return createJSONRPCErrorResponse(
       request.id,
       RuntimeErrors.UnknownError,
-      e.message ? e.message : e
+      e.message
     );
   }
   // we want to switch on instanceof but there is no way to do that in js, so best to check the constructor class of the error
