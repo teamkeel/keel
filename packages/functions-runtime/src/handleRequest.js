@@ -42,7 +42,7 @@ async function handleRequest(request, config) {
         ctx
       );
 
-      if (api.permissions.getState() != PERMISSION_STATE.PERMITTED) {
+      if (api.permissions.getState() !== PERMISSION_STATE.PERMITTED) {
         // Any error thrown inside of Kysely's transaction execute() will cause the transaction to be rolled back.
         throw new PermitError(`Not permitted to access ${request.method}`);
       } else {
