@@ -80,3 +80,10 @@ func NewForeignKeyConstraintError(column string) RuntimeError {
 		Message: fmt.Sprintf("the relationship lookup for field '%s' does not exist", field),
 	}
 }
+
+func NewPermissionError() RuntimeError {
+	return RuntimeError{
+		Code:    ErrPermissionDenied,
+		Message: "not authorized to access this action",
+	}
+}

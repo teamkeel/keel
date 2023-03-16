@@ -21,6 +21,7 @@ const (
 	ForeignKeyConstraintError = -32005
 	NotNullConstraintError    = -32006
 	UniqueConstraintError     = -32007
+	PermissionError           = -32008
 )
 
 type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
@@ -109,6 +110,8 @@ func CallFunction(ctx context.Context, actionName string, body any) (any, map[st
 		data := resp.Error.Data
 
 		switch resp.Error.Code {
+		case PermissionError:
+			return nil, nil, common.NewPermissionError()
 		case ForeignKeyConstraintError:
 			return nil, nil, common.NewForeignKeyConstraintError(data["column"].(string))
 		case NoResultError:

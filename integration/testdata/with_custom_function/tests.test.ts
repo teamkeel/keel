@@ -283,3 +283,29 @@ test("using a secret", async () => {
   // secret value is set in integration/integration_test.go
   expect(res.name).toEqual("worf");
 });
+
+test("custom permissions - permitted action", async () => {
+  const res = await actions.customPermission({
+    name: "Adam",
+    gender: "non-binary",
+    niNumber: "123",
+  });
+
+  expect(res.name).toEqual("Adam");
+});
+
+test("custom permissions - unpermitted action", async () => {
+  await expect(
+    actions.customPermission({
+      name: "Pete",
+      gender: "non-binary",
+      niNumber: "123",
+    })
+  ).rejects.toThrow("not authorized to access this action");
+
+  // check there are no records in the db as the transaction should
+  // have rolled back
+  const records = await models.person.where({ name: "Pete" }).findMany();
+
+  expect(records.length).toEqual(0);
+});

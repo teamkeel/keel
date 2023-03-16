@@ -240,14 +240,14 @@ export declare function getDatabase(): Kysely<database>;`
 
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
-function createFunctionAPI(headers) {
+function createFunctionAPI({ headers, db }) {
 	const models = {
-		person: new runtime.ModelAPI("person", personDefaultValues, null, tableConfigMap),
-		identity: new runtime.ModelAPI("identity", identityDefaultValues, null, tableConfigMap),
+		person: new runtime.ModelAPI("person", personDefaultValues, db, tableConfigMap),
+		identity: new runtime.ModelAPI("identity", identityDefaultValues, db, tableConfigMap),
 	};
 	const wrappedFetch = fetch;
-	return {models, headers, fetch: wrappedFetch};
-}
+	return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions() };
+};
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
 	const now = () => { return new Date(); };
@@ -285,6 +285,7 @@ export type FunctionAPI = {
 	models: ModelsAPI;
 	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
 	headers: Headers;
+	permissions: runtime.Permissions;
 }
 type Environment = {
 	TEST: string;

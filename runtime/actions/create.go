@@ -45,7 +45,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	}
 
 	if !isAuthorised {
-		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
+		return nil, common.NewPermissionError()
 	}
 
 	err = query.Commit(scope.context)

@@ -1,6 +1,8 @@
 import { CreatePersonWithContextInfo } from "@teamkeel/sdk";
 
 export default CreatePersonWithContextInfo((inputs, api, ctx) => {
+  api.permissions.allow();
+
   const { identity } = ctx;
 
   return api.models.person.create({

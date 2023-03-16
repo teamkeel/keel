@@ -407,6 +407,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 	w.Writeln("models: ModelsAPI;")
 	w.Writeln("fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;")
 	w.Writeln("headers: Headers;")
+	w.Writeln("permissions: runtime.Permissions;")
 	w.Dedent()
 
 	w.Writeln("}")
@@ -444,7 +445,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 }
 
 func writeAPIFactory(w *Writer, schema *proto.Schema) {
-	w.Writeln("function createFunctionAPI(headers) {")
+	w.Writeln("function createFunctionAPI({ headers, db }) {")
 	w.Indent()
 
 	w.Writeln("const models = {")
@@ -452,15 +453,19 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	for _, model := range schema.Models {
 		w.Write(strcase.ToLowerCamel(model.Name))
 		w.Write(": ")
-		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, null, tableConfigMap)`, strcase.ToSnake(model.Name), strcase.ToLowerCamel(model.Name))
+		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, db, tableConfigMap)`, strcase.ToSnake(model.Name), strcase.ToLowerCamel(model.Name))
 		w.Writeln(",")
 	}
 	w.Dedent()
 	w.Writeln("};")
+
 	w.Writeln("const wrappedFetch = fetch;") // We'll likely extend it later.
-	w.Writeln("return {models, headers, fetch: wrappedFetch};")
+
+	w.Writeln("return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions() };")
+
 	w.Dedent()
-	w.Writeln("}")
+	w.Writeln("};")
+
 	w.Writeln("function createContextAPI(meta) {")
 	w.Indent()
 	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
@@ -719,13 +724,14 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
-	js.Writeln(`import crypto from "node:crypto";`)
 	js.Writeln(`import { getDatabase, createFunctionAPI } from "@teamkeel/sdk"`)
 	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 
+	js.Writeln("const db = getDatabase();")
+
 	js.Writeln(`export const actions = new ActionExecutor({});`)
-	js.Writeln("export const models = createFunctionAPI().models;")
+	js.Writeln("export const models = createFunctionAPI({ headers: new Headers(), db }).models;")
 
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
@@ -735,7 +741,7 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 		tableNames = append(tableNames, strcase.ToSnake(model.Name))
 	}
 	js.Writef("%s CASCADE", strings.Join(tableNames, ","))
-	js.Writeln("`.execute(getDatabase());")
+	js.Writeln("`.execute(db);")
 	js.Dedent()
 	js.Writeln("}")
 

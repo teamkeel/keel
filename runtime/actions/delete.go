@@ -19,7 +19,7 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 	}
 
 	if !isAuthorised {
-		return nil, common.RuntimeError{Code: common.ErrPermissionDenied, Message: "not authorized to access this operation"}
+		return nil, common.NewPermissionError()
 	}
 
 	// Execute database request

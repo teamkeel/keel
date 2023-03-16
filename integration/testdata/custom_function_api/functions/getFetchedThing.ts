@@ -1,6 +1,8 @@
 import { GetFetchedThing, FetchedThing } from "@teamkeel/sdk";
 
 export default GetFetchedThing(async (inputs, api) => {
+  api.permissions.allow();
+
   const response = await api.fetch("http://example.com/movies.json'");
   const bodyStr = await response.text();
 

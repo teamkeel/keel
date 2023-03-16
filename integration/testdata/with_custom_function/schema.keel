@@ -17,6 +17,7 @@ model Person {
         update updatePerson(id) with (name, gender, niNumber)
         create createPersonWithEnvVar() with (name, gender, niNumber)
         create createPersonWithSecret() with (name, gender, niNumber)
+        create customPermission() with(name, gender, niNumber)
     }
 
     @permission(
