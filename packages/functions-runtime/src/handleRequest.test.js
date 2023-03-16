@@ -5,6 +5,7 @@ import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
 import { getDatabase } from "./database";
 import { Permissions } from "./permissions";
+import { PROTO_ACTION_TYPES } from "./consts";
 
 import KSUID from "ksuid";
 
@@ -14,12 +15,15 @@ process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functi
 test("when the custom function returns expected value", async () => {
   const config = {
     functions: {
-      createPost: async (inputs, api, ctx) => {
-        api.permissions.allow();
-        return {
-          title: "a post",
-          id: "abcde",
-        };
+      createPost: {
+        fn: async (inputs, api, ctx) => {
+          api.permissions.allow();
+          return {
+            title: "a post",
+            id: "abcde",
+          };
+        },
+        actionType: PROTO_ACTION_TYPES.CREATE,
       },
     },
     createFunctionAPI: ({ headers, db }) => {
@@ -48,10 +52,14 @@ test("when the custom function returns expected value", async () => {
 test("when the custom function doesnt return a value", async () => {
   const config = {
     functions: {
-      createPost: async (inputs, api, ctx) => {
-        api.permissions.allow();
+      createPost: {
+        fn: async (inputs, api, ctx) => {
+          api.permissions.allow();
+        },
+        actionType: PROTO_ACTION_TYPES.CREATE,
       },
     },
+    permissions: {},
     createFunctionAPI: ({ headers, db }) => {
       return {
         permissions: new Permissions(),
@@ -100,10 +108,13 @@ test("when there is no matching function for the path", async () => {
 test("when there is an unexpected error in the custom function", async () => {
   const config = {
     functions: {
-      createPost: (inputs, api, ctx) => {
-        api.permissions.allow();
+      createPost: {
+        fn: (inputs, api, ctx) => {
+          api.permissions.allow();
 
-        throw new Error("oopsie daisy");
+          throw new Error("oopsie daisy");
+        },
+        actionType: PROTO_ACTION_TYPES.CREATE,
       },
     },
     createFunctionAPI: ({ headers, db }) => {
@@ -129,10 +140,13 @@ test("when there is an unexpected error in the custom function", async () => {
 test("when there is an unexpected object thrown in the custom function", async () => {
   const config = {
     functions: {
-      createPost: (inputs, api, ctx) => {
-        api.permissions.allow();
+      createPost: {
+        fn: (inputs, api, ctx) => {
+          api.permissions.allow();
 
-        throw { err: "oopsie daisy" };
+          throw { err: "oopsie daisy" };
+        },
+        actionType: PROTO_ACTION_TYPES.CREATE,
       },
     },
     createFunctionAPI: ({ headers, db }) => {
@@ -189,20 +203,27 @@ describe("ModelAPI error handling", () => {
     `.execute(db);
 
     functionConfig = {
+      permissions: {},
       functions: {
-        createPost: async (inputs, api, ctx) => {
-          api.permissions.allow();
+        createPost: {
+          fn: async (inputs, api, ctx) => {
+            api.permissions.allow();
 
-          const post = await api.models.post.create(inputs);
+            const post = await api.models.post.create(inputs);
 
-          return post;
+            return post;
+          },
+          actionType: "create",
         },
-        deletePost: async (inputs, api, ctx) => {
-          api.permissions.allow();
+        deletePost: {
+          fn: async (inputs, api, ctx) => {
+            api.permissions.allow();
 
-          const deleted = await api.models.post.delete(inputs);
+            const deleted = await api.models.post.delete(inputs);
 
-          return deleted;
+            return deleted;
+          },
+          actionType: "delete",
         },
       },
       createFunctionAPI: ({ headers, db }) => ({

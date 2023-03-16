@@ -252,13 +252,14 @@ function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
 	const now = () => { return new Date(); };
 	const { identity } = meta;
+	const isAuthenticated = identity != null;
 	const env = {
 		TEST: process.env["TEST"] || "",
 	};
 	const secrets = {
 		SECRET_KEY: meta.secrets.SECRET_KEY || "",
 	};
-	return { headers, identity, env, now, secrets };
+	return { headers, identity, env, now, secrets, isAuthenticated };
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`

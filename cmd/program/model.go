@@ -384,6 +384,10 @@ func (m *Model) View() string {
 	}
 
 	if m.Mode == ModeTest {
+		if len(m.FunctionsLog) > 0 {
+			b.WriteString(renderLog([]*RuntimeRequest{}, m.FunctionsLog))
+			b.WriteString("\n")
+		}
 		if m.TestOutput != "" {
 			b.WriteString(m.TestOutput)
 		} else {

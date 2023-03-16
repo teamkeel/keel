@@ -1,6 +1,3 @@
-// This file doesn't contain types describing this package, rather it contains generic types
-// that are used by the generated @teamkeel/sdk package.
-
 export type IDWhereCondition = {
   equals?: string | null;
   oneOf?: string[] | null;
@@ -67,9 +64,6 @@ export type RequestHeaders = {
 
 export declare class Permissions {
   constructor();
-
-  // check() can be used to check the given row(s) against the permission rules defined in the schema
-  async check(rows: any | any[]): Promise<void>;
 
   // allow() can be used to explicitly permit access to an action
   allow(): void;
