@@ -3,6 +3,7 @@ package httpjson
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -13,7 +14,13 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/runtime/openapi"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/httpjson")
 
 type HttpJsonErrorResponse struct {
 	Code    string         `json:"code"`
@@ -23,16 +30,23 @@ type HttpJsonErrorResponse struct {
 
 func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 	return func(r *http.Request) common.Response {
+		ctx, span := tracer.Start(r.Context(), "HttpJson")
+		defer span.End()
 
 		// Special case for exposing an OpenAPI response
 		if strings.HasSuffix(r.URL.Path, "/openapi.json") {
-			sch := openapi.Generate(r.Context(), p, api)
+			sch := openapi.Generate(ctx, p, api)
 			return common.NewJsonResponse(http.StatusOK, sch, nil)
 		}
 
 		pathParts := strings.Split(r.URL.Path, "/")
 		actionName := pathParts[len(pathParts)-1]
 		var inputs any
+
+		span.SetAttributes(
+			attribute.String("action", actionName),
+			attribute.String("http.method", r.Method),
+		)
 
 		switch r.Method {
 		case http.MethodGet:
@@ -55,14 +69,17 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		op := proto.FindOperation(p, actionName)
 		if op == nil {
+			span.SetStatus(codes.Error, "action not found")
 			return common.NewJsonResponse(http.StatusNotFound, HttpJsonErrorResponse{
 				Code:    "ERR_NOT_FOUND",
 				Message: "method not found",
 			}, nil)
 		}
 
-		validation, err := jsonschema.ValidateRequest(r.Context(), p, op, inputs)
+		validation, err := jsonschema.ValidateRequest(ctx, p, op, inputs)
 		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
 			// I think this can only happen if we generate an invalid JSON Schema for the
 			// request type
 			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
@@ -72,13 +89,20 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		}
 
 		if !validation.Valid() {
+			messages := []string{}
 			errs := []map[string]string{}
+			attrs := []attribute.KeyValue{}
 			for _, e := range validation.Errors() {
+				messages = append(messages, fmt.Sprintf("%s: %s", e.Field(), e.Description()))
+				attrs = append(attrs, attribute.String(e.Field(), e.Description()))
 				errs = append(errs, map[string]string{
 					"field": e.Field(),
 					"error": e.Description(),
 				})
 			}
+
+			span.AddEvent("errors", trace.WithAttributes(attrs...))
+			span.SetStatus(codes.Error, strings.Join(messages, ", "))
 
 			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
 				Code:    "ERR_INVALID_INPUT",
@@ -89,10 +113,13 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 
-		scope := actions.NewScope(r.Context(), op, p)
+		scope := actions.NewScope(ctx, op, p)
 
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+
 			code := "ERR_INTERNAL"
 			message := "error executing request"
 			httpCode := http.StatusInternalServerError
@@ -101,6 +128,11 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			if errors.As(err, &runtimeErr) {
 				code = runtimeErr.Code
 				message = runtimeErr.Message
+
+				span.SetAttributes(
+					attribute.String("error.code", runtimeErr.Code),
+					attribute.String("error.message", runtimeErr.Message),
+				)
 
 				switch code {
 				case common.ErrInvalidInput:

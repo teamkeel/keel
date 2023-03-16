@@ -3,12 +3,20 @@ package functions
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/trace"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/functions")
 
 // Custom error codes returned from custom
 // function runtime
@@ -63,6 +71,9 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 }
 
 func CallFunction(ctx context.Context, actionName string, body any) (any, map[string][]string, error) {
+	ctx, span := tracer.Start(ctx, fmt.Sprintf("Call Function: %s", actionName))
+	defer span.End()
+
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
 		return nil, nil, errors.New("no functions client in context")
@@ -88,10 +99,14 @@ func CallFunction(ctx context.Context, actionName string, body any) (any, map[st
 
 	secrets := runtimectx.GetSecrets(ctx)
 
+	tracingContext := propagation.MapCarrier{}
+	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
+
 	meta := map[string]any{
 		"headers":  requestHeaders,
 		"identity": identity,
 		"secrets":  secrets,
+		"tracing":  tracingContext,
 	}
 
 	req := &FunctionsRuntimeRequest{
@@ -101,12 +116,22 @@ func CallFunction(ctx context.Context, actionName string, body any) (any, map[st
 		Meta:   meta,
 	}
 
+	span.SetAttributes(
+		attribute.String("jsonrpc.id", req.ID),
+		attribute.String("jsonrpc.method", req.Method),
+	)
+
 	resp, err := transport(ctx, req)
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, nil, err
 	}
 
 	if resp.Error != nil {
+		span.SetStatus(codes.Error, resp.Error.Message)
+		span.SetAttributes(attribute.Int("error.code", resp.Error.Code))
+
 		data := resp.Error.Data
 
 		switch resp.Error.Code {

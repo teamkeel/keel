@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/iancoleman/strcase"
 )
 
@@ -35,6 +36,15 @@ const (
 type RuntimeError struct {
 	Code    string
 	Message string
+}
+
+var _ gqlerrors.ExtendedError = RuntimeError{}
+
+func (r RuntimeError) Extensions() map[string]any {
+	return map[string]any{
+		"code":    r.Code,
+		"message": r.Message,
+	}
 }
 
 func (r RuntimeError) Error() string {

@@ -8,10 +8,15 @@ import (
 	"regexp"
 	"strconv"
 
-	"golang.org/x/exp/slices"
-
 	"github.com/lib/pq"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
+	"golang.org/x/exp/slices"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/db")
 
 type postgres struct {
 	conn               *sql.DB
@@ -61,6 +66,11 @@ func validateSupportedType(value any) error {
 }
 
 func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ...any) (*ExecuteQueryResult, error) {
+	ctx, span := tracer.Start(ctx, "ExecuteQuery")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("sql", sqlQuery))
+
 	for _, value := range values {
 		err := validateSupportedType(value)
 		if err != nil {
@@ -77,11 +87,15 @@ func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ..
 		result, err = db.conn.QueryContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
 	}
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
 
 	columns, err := result.Columns()
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
 	for result.Next() {
@@ -92,6 +106,8 @@ func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ..
 		}
 		err = result.Scan(pointers...)
 		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
 			return nil, toDbError(err)
 		}
 		rowMap := map[string]any{}
@@ -100,10 +116,17 @@ func (db *postgres) ExecuteQuery(ctx context.Context, sqlQuery string, values ..
 		}
 		rows = append(rows, rowMap)
 	}
+
+	span.SetAttributes(attribute.Int("rows.count", len(rows)))
 	return &ExecuteQueryResult{Rows: rows}, nil
 }
 
 func (db *postgres) ExecuteStatement(ctx context.Context, sqlQuery string, values ...any) (*ExecuteStatementResult, error) {
+	ctx, span := tracer.Start(ctx, "ExecuteStatement")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("sql", sqlQuery))
+
 	for _, value := range values {
 		err := validateSupportedType(value)
 		if err != nil {
@@ -118,13 +141,19 @@ func (db *postgres) ExecuteStatement(ctx context.Context, sqlQuery string, value
 		result, err = db.conn.ExecContext(ctx, replaceQuestionMarksWithNumberedInputs(sqlQuery), values...)
 	}
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, toDbError(err)
 	}
+
+	span.SetAttributes(attribute.Int("rows.affected", int(rowsAffected)))
 	return &ExecuteStatementResult{RowsAffected: rowsAffected}, nil
 }
 

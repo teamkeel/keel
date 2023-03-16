@@ -10,7 +10,13 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/jsonrpc")
 
 const (
 	// JSON-RPC spec compliant error codes
@@ -26,6 +32,8 @@ const (
 
 func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 	return func(r *http.Request) common.Response {
+		ctx, span := tracer.Start(r.Context(), "JsonRpc")
+		defer span.End()
 
 		if r.Method != http.MethodPost {
 			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
@@ -39,6 +47,8 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		req, err := parseJsonRpcRequest(r.Body)
 		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
 			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
 				JsonRpc: "2.0",
 				Error: JsonRpcError{
@@ -49,6 +59,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		}
 
 		if !req.Valid() {
+			span.SetStatus(codes.Error, "invalid JSON-RPC request")
 			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
 				JsonRpc: "2.0",
 				ID:      &req.ID,
@@ -62,8 +73,14 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		inputs := req.Params
 		actionName := req.Method
 
+		span.SetAttributes(
+			attribute.String("request.id", req.ID),
+			attribute.String("action", req.Method),
+		)
+
 		op := proto.FindOperation(p, actionName)
 		if op == nil {
+			span.SetStatus(codes.Error, "action not found")
 			return common.NewJsonResponse(http.StatusOK, JsonRpcErrorResponse{
 				JsonRpc: "2.0",
 				ID:      &req.ID,
@@ -74,15 +91,22 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			}, nil)
 		}
 
-		scope := actions.NewScope(r.Context(), op, p)
+		scope := actions.NewScope(ctx, op, p)
 
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+
 			code := JsonRpcInternalErrorCode
 			message := "error executing request"
 
 			var runtimeError common.RuntimeError
 			if errors.As(err, &runtimeError) {
+				span.SetAttributes(
+					attribute.String("error.code", runtimeError.Code),
+					attribute.String("error.message", runtimeError.Message),
+				)
 				code = runtimeErrorCodeToJsonRpcErrorCode(runtimeError.Code)
 				message = runtimeError.Message
 			}

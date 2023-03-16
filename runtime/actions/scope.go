@@ -6,7 +6,10 @@ import (
 
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
+	"go.opentelemetry.io/otel"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
 
 const (
 	authenticateOperationName = "authenticate"
@@ -35,6 +38,16 @@ func NewScope(
 }
 
 func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
+	originalCtx := scope.context
+
+	ctx, span := tracer.Start(scope.context, fmt.Sprintf("Action: %s/%s", scope.model.Name, scope.operation.Name))
+	scope.context = ctx
+
+	defer func() {
+		scope.context = originalCtx
+	}()
+	defer span.End()
+
 	// inputs can be anything - with arbitrary functions 'Any' type, they can be
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
 	inputsAsMap, inputWasAMap := inputs.(map[string]any)

@@ -6,18 +6,26 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/iancoleman/strcase"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/schema/parser"
 )
+
+var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/graphql")
 
 type GraphQLRequest struct {
 	Query         string                 `json:"query"`
@@ -30,6 +38,8 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 	var mutex sync.Mutex
 
 	return func(r *http.Request) common.Response {
+		ctx, span := tracer.Start(r.Context(), "GraphQL")
+		defer span.End()
 
 		// We lazily initialise the GraphQL schema as until there is actually
 		// a GraphQL request to handle we don't need it. Also we don't want the
@@ -37,39 +47,54 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		// The other API's (JSON-RPC, HTTP-JSON) may work fine.
 		if schema == nil {
 			mutex.Lock()
+			defer mutex.Unlock()
+
 			var err error
 			schema, err = NewGraphQLSchema(s, api)
 			if err != nil {
-				return common.Response{
-					Status: http.StatusInternalServerError,
-					// todo: dont expose error to users
-					Body: makeGraphQLJsonError("internal server error: " + err.Error()),
-				}
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
+				return common.NewJsonResponse(http.StatusInternalServerError, graphql.Result{
+					Errors: []gqlerrors.FormattedError{
+						{
+							Message: fmt.Sprintf("error initialising GraphQL: %s", err.Error()),
+						},
+					},
+				}, nil)
 			}
-			// This enables the graphql-go extension for tracing
-			schema.AddExtensions(&Tracer{})
-
-			mutex.Unlock()
 		}
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
-			return common.Response{
-				Status: http.StatusInternalServerError,
-				// todo: dont expose error to users
-				Body: makeGraphQLJsonError("internal server error: " + err.Error()),
-			}
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+			return common.NewJsonResponse(http.StatusBadRequest, graphql.Result{
+				Errors: []gqlerrors.FormattedError{
+					{
+						Message: fmt.Sprintf("error reading body: %s", err.Error()),
+					},
+				},
+			}, nil)
 		}
 
 		var params GraphQLRequest
 		err = json.Unmarshal(body, &params)
 		if err != nil {
-			return common.Response{
-				Status: http.StatusBadRequest,
-				// todo: dont expose error to users
-				Body: makeGraphQLJsonError("invalid JSON body: " + err.Error()),
-			}
+			span.RecordError(err, trace.WithStackTrace(true))
+			span.SetStatus(codes.Error, err.Error())
+			return common.NewJsonResponse(http.StatusBadRequest, graphql.Result{
+				Errors: []gqlerrors.FormattedError{
+					{
+						Message: fmt.Sprintf("invalid request: %s", err.Error()),
+					},
+				},
+			}, nil)
 		}
+
+		span.SetAttributes(
+			attribute.String("params.query", params.Query),
+			attribute.String("params.operationName", params.OperationName),
+		)
 
 		logrus.WithFields(logrus.Fields{
 			"query": params.Query,
@@ -81,13 +106,24 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		result := graphql.Do(graphql.Params{
 			Schema:         *schema,
-			Context:        r.Context(),
+			Context:        ctx,
 			RequestString:  params.Query,
 			VariableValues: params.Variables,
 			RootObject: map[string]interface{}{
 				"headers": headers,
 			},
 		})
+
+		if result.HasErrors() {
+			messages := []string{}
+			attr := []attribute.KeyValue{}
+			for i, err := range result.Errors {
+				messages = append(messages, err.Message)
+				attr = append(attr, attribute.String(fmt.Sprintf("error.%d", i), err.Message))
+			}
+			span.AddEvent("errors", trace.WithAttributes(attr...))
+			span.SetStatus(codes.Error, strings.Join(messages, ", "))
+		}
 
 		return common.NewJsonResponse(http.StatusOK, result, headers)
 	}
@@ -252,6 +288,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 			Type: outputType,
 			Args: fieldArgs,
 			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				ctx, span := tracer.Start(p.Context, fmt.Sprintf("Resolve %s.%s", model.Name, field.Name))
+				defer span.End()
 
 				relatedModel := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
 
@@ -302,8 +340,10 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				case proto.IsBelongsTo(field), proto.IsHasOne(field):
 					result, err := query.
 						SelectStatement().
-						ExecuteToSingle(p.Context)
+						ExecuteToSingle(ctx)
 					if err != nil {
+						span.RecordError(err, trace.WithStackTrace(true))
+						span.SetStatus(codes.Error, err.Error())
 						return nil, err
 					}
 
@@ -316,6 +356,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 				case proto.IsHasMany(field):
 					page, err := actions.ParsePage(p.Args)
 					if err != nil {
+						span.RecordError(err, trace.WithStackTrace(true))
+						span.SetStatus(codes.Error, err.Error())
 						return nil, err
 					}
 
@@ -324,14 +366,18 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					query.AppendSelect(actions.AllFields())
 					err = query.ApplyPaging(page)
 					if err != nil {
+						span.RecordError(err, trace.WithStackTrace(true))
+						span.SetStatus(codes.Error, err.Error())
 						return nil, err
 					}
 
 					results, _, hasNextPage, err := query.
 						SelectStatement().
-						ExecuteToMany(p.Context)
+						ExecuteToMany(ctx)
 
 					if err != nil {
+						span.RecordError(err, trace.WithStackTrace(true))
+						span.SetStatus(codes.Error, err.Error())
 						return nil, err
 					}
 
@@ -339,8 +385,9 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						"results":     results,
 						"hasNextPage": hasNextPage,
 					})
-
 					if err != nil {
+						span.RecordError(err, trace.WithStackTrace(true))
+						span.SetStatus(codes.Error, err.Error())
 						return nil, err
 					}
 
@@ -724,16 +771,4 @@ func makeUniqueInputMessageName(name string) string {
 	} else {
 		return name
 	}
-}
-
-func makeGraphQLJsonError(msg string) []byte {
-	errors := []map[string]string{}
-
-	errors = append(errors, map[string]string{
-		"message": msg,
-	})
-
-	b, _ := json.Marshal(errors)
-
-	return b
 }

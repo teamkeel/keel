@@ -9,10 +9,23 @@ import (
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/exp/slices"
 )
 
 func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (authorized bool, err error) {
+	originalCtx := scope.context
+
+	ctx, span := tracer.Start(scope.context, "Check Permissions")
+	scope.context = ctx
+
+	defer func() {
+		scope.context = originalCtx
+	}()
+	defer span.End()
+
 	permissions := []*proto.PermissionRule{}
 
 	// Combine all the permissions defined at model level, with those defined at
@@ -29,6 +42,8 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 
 	// No permissions declared means no permission can be granted.
 	if len(permissions) == 0 {
+		span.SetAttributes(attribute.Bool("result", false))
+		span.SetAttributes(attribute.String("reason", "no permission rules"))
 		return false, nil
 	}
 
@@ -43,6 +58,8 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 			return false, err
 		}
 		if granted {
+			span.SetAttributes(attribute.Bool("result", true))
+			span.SetAttributes(attribute.String("reason", "role"))
 			return true, nil
 		}
 	}
@@ -55,6 +72,8 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 
 	// No expression permissions left means no permission can be granted.
 	if len(exprBasedPerms) == 0 {
+		span.SetAttributes(attribute.Bool("result", false))
+		span.SetAttributes(attribute.String("reason", "no matching permission rules"))
 		return false, nil
 	}
 
@@ -94,15 +113,22 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 
 	results, _, _, err := stmt.ExecuteToMany(scope.context)
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return false, err
 	}
 
 	unauthorisedRows, ok := results[0]["unauthorised"].(int64)
 
 	if !ok {
-		return false, fmt.Errorf("failed to query or parse unauthorised rows from database")
+		err := fmt.Errorf("failed to query or parse unauthorised rows from database")
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		span.SetAttributes(attribute.Bool("result", false))
+		return false, err
 	}
 
+	span.SetAttributes(attribute.Bool("result", unauthorisedRows == 0))
 	return unauthorisedRows == 0, nil
 }
 
