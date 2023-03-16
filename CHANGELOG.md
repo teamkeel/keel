@@ -1,3 +1,10 @@
+# [0.286.0](https://github.com/teamkeel/keel/compare/v0.285.0...v0.286.0) (2023-03-16)
+
+
+### Features
+
+* permissions sdk ([#860](https://github.com/teamkeel/keel/issues/860)) ([fcc7d21](https://github.com/teamkeel/keel/commit/fcc7d21ea0ba7225d32d8d83329f9a713339a201))
+
 # [0.285.0](https://github.com/teamkeel/keel/compare/v0.284.1...v0.285.0) (2023-03-15)
 
 
