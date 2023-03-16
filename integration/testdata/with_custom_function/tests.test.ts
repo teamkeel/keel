@@ -185,7 +185,7 @@ test("null value in foreign key column", async () => {
 test("unrecognised value in foreign key column", async () => {
   await expect(
     actions.createProfile({
-      personId: "missing-id",
+      person: { id: "missing-id" },
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",

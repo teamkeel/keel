@@ -69,8 +69,22 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 		return nil
 	}
 
+	err := query.captureWriteValuesFromMessage(scope, message, args)
+
+	return err
+}
+
+func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *proto.Message, args map[string]any) error {
 	for _, input := range message.Fields {
+		// If the input is not targeting a model field, then it is either a:
+		//  - Message, with nested fields which we must recurse into, or
+		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
+			if input.Type.Type == proto.Type_TYPE_MESSAGE {
+				nestedMessage := proto.FindMessage(scope.schema.Messages, input.Type.MessageName.Value)
+				return query.captureWriteValuesFromMessage(scope, nestedMessage, args)
+			}
+
 			continue
 		}
 
@@ -88,13 +102,36 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 			return errors.New("nested implicit input not supported")
 		}
 
-		value, ok := args[fieldName]
-		if !ok {
-			continue
-		}
+		if scope.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
+			// We are currently only supporting nested object input models for the create operation
+			currLevel := args
+			var ok bool
+			for i, fragment := range input.Target {
+				if i < len(input.Target)-1 {
+					currLevel, ok = currLevel[fragment].(map[string]any)
+					if !ok {
+						return fmt.Errorf("input args object structure does not match target fragments at fragment: %s", fragment)
+					}
+				} else {
+					value, ok := currLevel[fragment]
+					if !ok && !input.Optional {
+						return fmt.Errorf("cannot find required argument: %s", fragment)
+					} else if ok {
+						// Add a value to be written during an INSERT or UPDATE
+						query.AddWriteValue(fieldName, value)
+					}
+				}
+			}
+		} else {
+			value, ok := args[fieldName]
+			if !ok {
+				continue
+			}
 
-		// Add a value to be written during an INSERT or UPDATE
-		query.AddWriteValue(fieldName, value)
+			// Add a value to be written during an INSERT or UPDATE
+			query.AddWriteValue(fieldName, value)
+		}
 	}
+
 	return nil
 }

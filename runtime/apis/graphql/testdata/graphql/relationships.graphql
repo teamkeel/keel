@@ -1,5 +1,6 @@
 type Query {
   getOrder(input: getOrder_input!): Order
+  listOrderItems(input: listOrderItems_input!): OrderItem_connection!
 }
 
 type Mutation {
@@ -11,6 +12,11 @@ input EmailPassword_input {
   password: String!
 }
 
+input IDQuery_input {
+  equals: ID
+  oneOf: [ID]
+}
+
 input authenticate_input {
   createIfNotExists: Boolean
   emailPassword: EmailPassword_input!
@@ -18,6 +24,18 @@ input authenticate_input {
 
 input getOrder_input {
   id: ID!
+}
+
+input listOrderItems_input {
+  after: String
+  before: String
+  first: Int
+  last: Int
+  where: listOrderItems_where!
+}
+
+input listOrderItems_where {
+  orderId: IDQuery_input!
 }
 
 type Order {

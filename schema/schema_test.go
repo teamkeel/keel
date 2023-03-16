@@ -96,8 +96,8 @@ func TestSchema(t *testing.T) {
 			case jsondiff.SupersetMatch, jsondiff.NoMatch:
 				// These printfs produce output you can copy and paste to rectify
 				// errors during development.
-				fmt.Printf("Pretty json error: \n%s\n", prettyJSONErr)
-				fmt.Printf("Pretty actual proto json: \n%s\n", actualProtoJSONPretty)
+				fmt.Printf("Pretty json error (%s): \n%s\n", testCase.Name(), prettyJSONErr)
+				fmt.Printf("Pretty actual proto json (%s): \n%s\n", testCase.Name(), actualProtoJSONPretty)
 				assert.Fail(t, "actual result does not match expected", explanation)
 			case jsondiff.FirstArgIsInvalidJson:
 				assert.Fail(t, "expected JSON is invalid")

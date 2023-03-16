@@ -3,5 +3,5 @@ import { CreateProfile } from "@teamkeel/sdk";
 export default CreateProfile((inputs, api) => {
   api.permissions.allow();
 
-  return api.models.profile.create(inputs);
+  return api.models.profile.create({ personId: inputs.person.id });
 });

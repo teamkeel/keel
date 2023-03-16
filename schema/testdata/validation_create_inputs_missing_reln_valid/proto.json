@@ -210,7 +210,20 @@
         },
         {
           "messageName": "createPostB_input",
-          "name": "authorId",
+          "name": "author",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createPostB_author_input"
+          }
+        }
+      ]
+    },
+    {
+      "name": "createPostB_author_input",
+      "fields": [
+        {
+          "messageName": "createPostB_author_input",
+          "name": "id",
           "type": {
             "type": "TYPE_ID",
             "modelName": "Author",

@@ -1,0 +1,594 @@
+{
+  "models": [
+    {
+      "name": "Sale",
+      "fields": [
+        {
+          "modelName": "Sale",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE"
+          }
+        },
+        {
+          "modelName": "Sale",
+          "name": "items",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "SaleItem",
+            "repeated": true
+          }
+        },
+        {
+          "modelName": "Sale",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Sale",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Sale",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "Sale",
+          "name": "createSale",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "createSale_input"
+        },
+        {
+          "modelName": "Sale",
+          "name": "createSaleAndItems",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "createSaleAndItems_input"
+        },
+        {
+          "modelName": "Sale",
+          "name": "createSaleAndProduct",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "createSaleAndProduct_input"
+        }
+      ]
+    },
+    {
+      "name": "SaleItem",
+      "fields": [
+        {
+          "modelName": "SaleItem",
+          "name": "sale",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Sale"
+          },
+          "foreignKeyFieldName": "saleId"
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "Product"
+          },
+          "foreignKeyFieldName": "productId"
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "quantity",
+          "type": {
+            "type": "TYPE_INT"
+          }
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "saleId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Sale",
+            "relatedModelField": "id"
+          }
+        },
+        {
+          "modelName": "SaleItem",
+          "name": "productId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "foreignKeyInfo": {
+            "relatedModelName": "Product",
+            "relatedModelField": "id"
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "SaleItem",
+          "name": "createSaleItem",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "createSaleItem_input"
+        }
+      ]
+    },
+    {
+      "name": "Product",
+      "fields": [
+        {
+          "modelName": "Product",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Product",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Identity",
+      "fields": [
+        {
+          "modelName": "Identity",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "unique": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "password",
+          "type": {
+            "type": "TYPE_PASSWORD"
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Identity",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        }
+      ],
+      "operations": [
+        {
+          "modelName": "Identity",
+          "name": "authenticate",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "authenticate_input",
+          "responseMessageName": "authenticate_response"
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "name": "Any"
+    },
+    {
+      "name": "createSale_input",
+      "fields": [
+        {
+          "messageName": "createSale_input",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE",
+            "modelName": "Sale",
+            "fieldName": "date"
+          },
+          "target": [
+            "date"
+          ]
+        },
+        {
+          "messageName": "createSale_input",
+          "name": "items",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createSale_items_input",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "createSale_items_input",
+      "fields": [
+        {
+          "messageName": "createSale_items_input",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "SaleItem",
+            "fieldName": "id"
+          },
+          "target": [
+            "items",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createSaleAndItems_input",
+      "fields": [
+        {
+          "messageName": "createSaleAndItems_input",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE",
+            "modelName": "Sale",
+            "fieldName": "date"
+          },
+          "target": [
+            "date"
+          ]
+        },
+        {
+          "messageName": "createSaleAndItems_input",
+          "name": "items",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createSaleAndItems_items_input",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "createSaleAndItems_items_input",
+      "fields": [
+        {
+          "messageName": "createSaleAndItems_items_input",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createSaleAndItems_items_product_input"
+          }
+        },
+        {
+          "messageName": "createSaleAndItems_items_input",
+          "name": "quantity",
+          "type": {
+            "type": "TYPE_INT",
+            "modelName": "SaleItem",
+            "fieldName": "quantity"
+          },
+          "target": [
+            "items",
+            "quantity"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createSaleAndItems_items_product_input",
+      "fields": [
+        {
+          "messageName": "createSaleAndItems_items_product_input",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Product",
+            "fieldName": "id"
+          },
+          "target": [
+            "items",
+            "product",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createSaleAndProduct_input",
+      "fields": [
+        {
+          "messageName": "createSaleAndProduct_input",
+          "name": "date",
+          "type": {
+            "type": "TYPE_DATE",
+            "modelName": "Sale",
+            "fieldName": "date"
+          },
+          "target": [
+            "date"
+          ]
+        },
+        {
+          "messageName": "createSaleAndProduct_input",
+          "name": "items",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createSaleAndProduct_items_input",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "createSaleAndProduct_items_input",
+      "fields": [
+        {
+          "messageName": "createSaleAndProduct_items_input",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createSaleAndProduct_items_product_input"
+          }
+        },
+        {
+          "messageName": "createSaleAndProduct_items_input",
+          "name": "quantity",
+          "type": {
+            "type": "TYPE_INT",
+            "modelName": "SaleItem",
+            "fieldName": "quantity"
+          },
+          "target": [
+            "items",
+            "quantity"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createSaleAndProduct_items_product_input",
+      "fields": [
+        {
+          "messageName": "createSaleAndProduct_items_product_input",
+          "name": "name",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Product",
+            "fieldName": "name"
+          },
+          "target": [
+            "items",
+            "product",
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createSaleItem_input",
+      "fields": [
+        {
+          "messageName": "createSaleItem_input",
+          "name": "sale",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createSaleItem_sale_input"
+          }
+        },
+        {
+          "messageName": "createSaleItem_input",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "createSaleItem_product_input"
+          }
+        },
+        {
+          "messageName": "createSaleItem_input",
+          "name": "quantity",
+          "type": {
+            "type": "TYPE_INT",
+            "modelName": "SaleItem",
+            "fieldName": "quantity"
+          },
+          "target": [
+            "quantity"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createSaleItem_sale_input",
+      "fields": [
+        {
+          "messageName": "createSaleItem_sale_input",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Sale",
+            "fieldName": "id"
+          },
+          "target": [
+            "sale",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "createSaleItem_product_input",
+      "fields": [
+        {
+          "messageName": "createSaleItem_product_input",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Product",
+            "fieldName": "id"
+          },
+          "target": [
+            "product",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "EmailPassword_input",
+      "fields": [
+        {
+          "messageName": "EmailPassword_input",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "EmailPassword_input",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "authenticate_input",
+      "fields": [
+        {
+          "messageName": "authenticate_input",
+          "name": "createIfNotExists",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        },
+        {
+          "messageName": "authenticate_input",
+          "name": "emailPassword",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "EmailPassword_input"
+          }
+        }
+      ]
+    },
+    {
+      "name": "authenticate_response",
+      "fields": [
+        {
+          "messageName": "authenticate_response",
+          "name": "identityCreated",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "messageName": "authenticate_response",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    }
+  ]
+}

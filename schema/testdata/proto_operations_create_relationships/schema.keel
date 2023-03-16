@@ -1,0 +1,36 @@
+model Sale {
+    fields {
+        date Date
+        items SaleItem[]
+    }
+
+    operations {
+        // Create a sale with existing sale items
+        create createSale() with (date, items.id)
+        // Create a sale existing products
+        create createSaleAndItems() with (date, items.product.id, items.quantity)
+        // Create a sale with new products
+        create createSaleAndProduct() with (date, items.product.name, items.quantity)
+    }
+}
+
+model SaleItem {
+    fields {
+        sale Sale
+        product Product
+        quantity Number
+    }
+
+    operations {
+        create createSaleItem() with (sale.id, product.id, quantity)
+
+        // TODO: https://linear.app/keel/issue/BLD-343/validation-for-creating-relationship-on-m1
+        //create createSaleItemAndProduct() with (sale.id, product.name, quantity)
+    }
+}
+
+model Product {
+    fields {
+        name Text
+    }
+}

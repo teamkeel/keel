@@ -248,87 +248,152 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 	}
 }
 
+// Creates a proto.Message from a slice of action inputs.
+func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) *proto.Message {
+	fields := []*proto.MessageField{}
+	for _, input := range inputs {
+		typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
+
+		fields = append(fields, &proto.MessageField{
+			Name:        input.Name(),
+			Type:        typeInfo,
+			Target:      target,
+			Optional:    input.Optional || targetsOptionalField,
+			MessageName: name,
+		})
+	}
+
+	return &proto.Message{
+		Name:   name,
+		Fields: fields,
+	}
+}
+
+// Creates the message structure from an implicit input. For relationships, this will create a nested hierarchy of messages.
+func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Message, input *parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
+	target := lo.Map(input.Type.Fragments, func(ident *parser.IdentFragment, _ int) string {
+		return ident.Fragment
+	})
+
+	currMessage := rootMessage
+	currModel := model.Name.Value
+
+	for currIndex, fragment := range target {
+		if currIndex < len(target)-1 {
+			// If this is not the last target fragment, then we know the current fragment is referring to a related model field.
+			// Therefore, we must create a new message for this related model and add it to the current message as a field (if this hasn't already been done with a previous input).
+
+			// Message name of nested message appended with the target framements. E.g. createSale_items_input
+			relatedModelMessageName := makeInputMessageName(fmt.Sprintf("%s_%s", action.Name.Value, strings.Join(target[0:currIndex+1], "_")))
+
+			// Does the field already exist from a previous input?
+			fieldAlreadyCreated := false
+			for _, f := range currMessage.Fields {
+				if f.Name == fragment {
+					fieldAlreadyCreated = true
+				}
+			}
+
+			// Get field on the model.
+			field := query.ModelField(query.Model(scm.asts, currModel), fragment)
+			if field == nil {
+				panic(fmt.Sprintf("cannot find field %s on model %s", fragment, currModel))
+			}
+
+			if !fieldAlreadyCreated {
+				// Add the related model message as a field to the current message with typeInfo of Type_TYPE_MESSAGE.
+				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
+					Name: fragment,
+					Type: &proto.TypeInfo{
+						Type: proto.Type_TYPE_MESSAGE,
+						// Repeated with be true in a 1:M relationship.
+						Repeated: field.Repeated,
+						MessageName: &wrapperspb.StringValue{
+							Value: relatedModelMessageName,
+						},
+					},
+					Optional:    field.Optional,
+					MessageName: currMessage.Name,
+				})
+
+				currMessage = &proto.Message{
+					Name:   relatedModelMessageName,
+					Fields: []*proto.MessageField{},
+				}
+				scm.proto.Messages = append(scm.proto.Messages, currMessage)
+			} else {
+				for _, m := range scm.proto.Messages {
+					if m.Name == relatedModelMessageName {
+						currMessage = m
+					}
+				}
+			}
+
+			currModel = field.Type
+		} else {
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
+
+			// If this is the last or only target, then we add the field to the current message using the typeInfo.
+			currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
+				Name:        fragment,
+				Type:        typeInfo,
+				Target:      target,
+				Optional:    input.Optional || targetsOptionalField,
+				MessageName: currMessage.Name,
+			})
+		}
+	}
+}
+
 // Adds a set of proto.Messages to top level Messages registry for all inputs of an Action
 func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) {
 	switch action.Type.Value {
 	case parser.ActionTypeCreate:
-		values := []*proto.MessageField{}
-		for _, value := range action.With {
-			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, value, impl)
-
-			values = append(values, &proto.MessageField{
-				Name:        value.Name(),
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    value.Optional || targetsOptionalField,
-				MessageName: makeInputMessageName(action.Name.Value),
-			})
-		}
-
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		rootMessage := &proto.Message{
 			Name:   makeInputMessageName(action.Name.Value),
-			Fields: values,
-		})
+			Fields: []*proto.MessageField{},
+		}
+		scm.proto.Messages = append(scm.proto.Messages, rootMessage)
+
+		for _, input := range action.With {
+			if input.Label == nil {
+				// If its an implicit input, then create a nested object input structure.
+				scm.makeMessageHierarchyFromImplicitInput(rootMessage, input, model, action, impl)
+			} else {
+				// This is an explicit input, so the first and only fragment will reference the type used.
+				typeInfo := scm.explicitInputToTypeInfo(input)
+
+				rootMessage.Fields = append(rootMessage.Fields, &proto.MessageField{
+					Name:        input.Label.Value,
+					Type:        typeInfo,
+					Optional:    input.Optional,
+					MessageName: rootMessage.Name,
+				})
+			}
+		}
 	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
-		fields := []*proto.MessageField{}
-		for _, input := range action.Inputs {
-			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
-
-			fields = append(fields, &proto.MessageField{
-				Name:        input.Name(),
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    input.Optional || targetsOptionalField,
-				MessageName: makeInputMessageName(action.Name.Value),
-			})
-		}
-
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   makeInputMessageName(action.Name.Value),
-			Fields: fields,
-		})
+		// Create message and add it to the proto schema
+		messageName := makeInputMessageName(action.Name.Value)
+		message := scm.makeMessageFromActionInputNodes(messageName, action.Inputs, model, action, impl)
+		scm.proto.Messages = append(scm.proto.Messages, message)
 	case parser.ActionTypeUpdate:
-		wheres := []*proto.MessageField{}
-		for _, where := range action.Inputs {
-			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, where, impl)
+		// Create where message and add it to the proto schema
+		whereMessageName := makeWhereMessageName(action.Name.Value)
+		whereMessage := scm.makeMessageFromActionInputNodes(whereMessageName, action.Inputs, model, action, impl)
+		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
 
-			wheres = append(wheres, &proto.MessageField{
-				Name:        where.Name(),
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    where.Optional || targetsOptionalField,
-				MessageName: makeWhereMessageName(action.Name.Value),
-			})
-		}
+		// Create values message and add it to the proto schema
+		valuesMessageName := makeValuesMessageName(action.Name.Value)
+		valuesMessage := scm.makeMessageFromActionInputNodes(valuesMessageName, action.With, model, action, impl)
+		scm.proto.Messages = append(scm.proto.Messages, valuesMessage)
 
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   makeWhereMessageName(action.Name.Value),
-			Fields: wheres,
-		})
-
-		values := []*proto.MessageField{}
-		for _, value := range action.With {
-			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, value, impl)
-
-			values = append(values, &proto.MessageField{
-				Name:        value.Name(),
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    value.Optional || targetsOptionalField,
-				MessageName: makeValuesMessageName(action.Name.Value),
-			})
-		}
-
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   makeValuesMessageName(action.Name.Value),
-			Fields: values,
-		})
+		// Create root operation message with "where" and "values" fields.
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
 			Name: makeInputMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{
 				{
 					Name: "where",
-					Optional: len(wheres) < 1 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
+					Optional: len(whereMessage.Fields) == 0 || lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
 						return f.Optional
 					}),
 					MessageName: makeInputMessageName(action.Name.Value),
@@ -339,7 +404,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				},
 				{
 					Name: "values",
-					Optional: len(values) < 1 || lo.EveryBy(values, func(f *proto.MessageField) bool {
+					Optional: len(valuesMessage.Fields) == 0 || lo.EveryBy(valuesMessage.Fields, func(f *proto.MessageField) bool {
 						return f.Optional
 					}),
 					MessageName: makeInputMessageName(action.Name.Value),
@@ -352,26 +417,26 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		})
 	case parser.ActionTypeList:
 		wheres := []*proto.MessageField{}
-		for _, where := range action.Inputs {
-			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, where, impl)
+		for _, input := range action.Inputs {
+			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
 			if target != nil {
 				queryMessage := makeListQueryInputMessage(typeInfo)
 				scm.proto.Messages = append(scm.proto.Messages, queryMessage)
 				wheres = append(wheres, &proto.MessageField{
-					Name: where.Name(),
+					Name: input.Name(),
 					Type: &proto.TypeInfo{
 						Type:        proto.Type_TYPE_MESSAGE,
 						MessageName: wrapperspb.String(queryMessage.Name)},
 					Target:      target,
-					Optional:    where.Optional || targetsOptionalField,
+					Optional:    input.Optional || targetsOptionalField,
 					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			} else {
 				wheres = append(wheres, &proto.MessageField{
-					Name:        where.Name(),
+					Name:        input.Name(),
 					Type:        typeInfo,
-					Optional:    where.Optional || targetsOptionalField,
+					Optional:    input.Optional || targetsOptionalField,
 					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			}
@@ -387,7 +452,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Fields: []*proto.MessageField{
 				{
 					Name: "where",
-					Optional: len(wheres) < 1 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
+					Optional: len(wheres) == 0 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
 						return f.Optional
 					}),
 					MessageName: makeInputMessageName(action.Name.Value),
@@ -887,6 +952,32 @@ func (scm *Builder) parserTypeToProtoType(parserType string) proto.Type {
 	}
 }
 
+func (scm *Builder) explicitInputToTypeInfo(input *parser.ActionInputNode) *proto.TypeInfo {
+	protoType := scm.parserTypeToProtoType(input.Type.Fragments[0].Fragment)
+
+	disallowedExplicitInputTypes := []proto.Type{
+		proto.Type_TYPE_MODEL,
+		proto.Type_TYPE_MESSAGE,
+		proto.Type_TYPE_ANY,
+		proto.Type_TYPE_UNKNOWN}
+
+	if lo.Contains(disallowedExplicitInputTypes, protoType) {
+		panic(fmt.Sprintf("explicit input field %s cannot be of type %s", input.Name(), protoType))
+	}
+
+	var enumName *wrapperspb.StringValue
+	if protoType == proto.Type_TYPE_ENUM {
+		enumName = &wrapperspb.StringValue{
+			Value: query.Enum(scm.asts, input.Type.Fragments[0].Fragment).Name.Value,
+		}
+	}
+
+	return &proto.TypeInfo{
+		Type:     protoType,
+		EnumName: enumName,
+	}
+}
+
 func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.TypeInfo {
 
 	protoType := scm.parserTypeToProtoType(field.Type)
@@ -894,7 +985,6 @@ func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.T
 	var enumName *wrapperspb.StringValue
 
 	switch protoType {
-
 	case proto.Type_TYPE_MODEL:
 		modelName = &wrapperspb.StringValue{
 			Value: query.Model(scm.asts, field.Type).Name.Value,
