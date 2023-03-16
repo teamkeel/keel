@@ -5,7 +5,7 @@ const {
 } = require("json-rpc-2.0");
 
 const { getDatabase } = require("./database");
-const { PERMISSION_STATE, PermitError } = require("./permissions");
+const { PERMISSION_STATE, PermissionError } = require("./permissions");
 
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 
@@ -49,8 +49,8 @@ async function handleRequest(request, config) {
       // the transaction
       if (api.permissions.getState() !== PERMISSION_STATE.PERMITTED) {
         // Any error thrown inside of Kysely's transaction execute() will cause the transaction to be rolled back.
-        // PermitError is handled by our JSONRPC error serialisation code
-        throw new PermitError(`Not permitted to access ${request.method}`);
+        // PermissionError is handled by our JSONRPC error serialisation code
+        throw new PermissionError(`Not permitted to access ${request.method}`);
       } else {
         // otherwise, if everything is permitted, then we just return the function result from
         // the transaction closure.

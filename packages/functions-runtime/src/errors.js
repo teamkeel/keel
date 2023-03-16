@@ -1,5 +1,5 @@
 const { createJSONRPCErrorResponse } = require("json-rpc-2.0");
-const { PermitError } = require("./permissions");
+const { PermissionError } = require("./permissions");
 
 const RuntimeErrors = {
   // Catchall error type for unhandled execution errors during custom function
@@ -21,7 +21,7 @@ function errorToJSONRPCResponse(request, e) {
   if (!e.error) {
     // it isnt wrapped
 
-    if (e instanceof PermitError) {
+    if (e instanceof PermissionError) {
       return createJSONRPCErrorResponse(
         request.id,
         RuntimeErrors.PermissionError,

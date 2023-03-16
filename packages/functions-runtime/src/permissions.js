@@ -1,4 +1,4 @@
-class PermitError extends Error {}
+class PermissionError extends Error {}
 
 const PERMISSION_STATE = {
   PERMITTED: "permitted",
@@ -27,7 +27,7 @@ class Permissions {
     // so that any further execution of the custom function stops abruptly
     // we don't need to explicitly set pending to false as the error will have been thrown
     // so we know an action has been taken
-    throw new PermitError();
+    throw new PermissionError();
   }
 
   getState() {
@@ -41,6 +41,6 @@ class Permissions {
   }
 }
 
-module.exports.PermitError = PermitError;
+module.exports.PermissionError = PermissionError;
 module.exports.PERMISSION_STATE = PERMISSION_STATE;
 module.exports.Permissions = Permissions;

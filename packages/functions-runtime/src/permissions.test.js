@@ -1,4 +1,4 @@
-import { Permissions, PERMISSION_STATE, PermitError } from "./permissions";
+import { Permissions, PERMISSION_STATE, PermissionError } from "./permissions";
 
 import { beforeEach, expect, test } from "vitest";
 
@@ -19,7 +19,7 @@ test("explicitly allowing execution", () => {
 test("explicitly denying execution", () => {
   expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
 
-  expect(() => permissions.deny()).toThrowError(PermitError);
+  expect(() => permissions.deny()).toThrowError(PermissionError);
 
   expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
 });
