@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "'read' and `write' actions must receive exactly one message-based input",
+      "message": "read and write functions must receive exactly one message-based input",
       "hint": "'Foo' can be the only input to 'getPerson'. Additional inputs are not permitted.",
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_message_types_and_inline_inputs/schema.keel",
-        "offset": 111,
+        "offset": 106,
         "line": 11,
-        "column": 25
+        "column": 20
       },
       "endPos": {
         "filename": "testdata/validation_message_types_and_inline_inputs/schema.keel",
-        "offset": 120,
+        "offset": 109,
         "line": 11,
-        "column": 34
+        "column": 23
       }
     }
   ]

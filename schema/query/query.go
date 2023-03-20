@@ -154,6 +154,7 @@ func Messages(asts []*parser.AST) (ret []*parser.MessageNode) {
 	return ret
 }
 
+// Message finds the message in the schema of the given name. Or nil.
 func Message(asts []*parser.AST, name string) *parser.MessageNode {
 	for _, ast := range asts {
 		for _, decl := range ast.Declarations {
@@ -321,7 +322,8 @@ func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {
 	return captured
 }
 
-// ResolveInputType returns a string represention of the type of the give input
+// ResolveInputType returns a string represention of the type of the give input.
+//
 // If the input is explicitly typed using a built in type that type is returned
 //
 //	example: (foo: Text) -> Text is returned
