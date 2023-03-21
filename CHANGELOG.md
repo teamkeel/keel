@@ -1,3 +1,10 @@
+# [0.287.0](https://github.com/teamkeel/keel/compare/v0.286.0...v0.287.0) (2023-03-21)
+
+
+### Features
+
+* case insensitive urls ([86c4357](https://github.com/teamkeel/keel/commit/86c43570f754d87aeb6a6a1c363a13fb3c6030c2))
+
 # [0.286.0](https://github.com/teamkeel/keel/compare/v0.285.0...v0.286.0) (2023-03-16)
 
 
