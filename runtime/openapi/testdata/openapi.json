@@ -127,7 +127,7 @@
         }
       }
     },
-    "/web/json/createcustomer": {
+    "/web/json/createCustomer": {
       "post": {
         "requestBody": {
           "content": {
@@ -194,7 +194,7 @@
         }
       }
     },
-    "/web/json/getcustomer": {
+    "/web/json/getCustomer": {
       "post": {
         "requestBody": {
           "content": {
@@ -220,7 +220,7 @@
         }
       }
     },
-    "/web/json/updatecustomer": {
+    "/web/json/updateCustomer": {
       "post": {
         "requestBody": {
           "content": {

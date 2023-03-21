@@ -120,13 +120,13 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 
 		httpJson := httpjson.NewHandler(s, api)
 		for _, name := range proto.GetActionNamesForApi(s, api) {
-			handlers[root+"/json/"+name] = httpJson
+			handlers[root+"/json/"+strings.ToLower(name)] = httpJson
 		}
 		handlers[root+"/json/openapi.json"] = httpJson
 	}
 
 	return withRequestResponseLogging(func(r *http.Request) common.Response {
-		handler, ok := handlers[r.URL.Path]
+		handler, ok := handlers[strings.ToLower(r.URL.Path)]
 		if !ok {
 			return common.Response{
 				Status: 404,
