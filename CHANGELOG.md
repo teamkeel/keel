@@ -1,3 +1,10 @@
+# [0.288.0](https://github.com/teamkeel/keel/compare/v0.287.0...v0.288.0) (2023-03-22)
+
+
+### Features
+
+* add operationId to openAPI definitions ([81745ac](https://github.com/teamkeel/keel/commit/81745ac811af74bda9b27af7dcb0a00d0675b367))
+
 # [0.287.0](https://github.com/teamkeel/keel/compare/v0.286.0...v0.287.0) (2023-03-21)
 
 
