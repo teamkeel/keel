@@ -4,29 +4,23 @@
       "nullable_customers_where": {
         "additionalProperties": false,
         "properties": {
-            "name": {
-                "$ref": "#/components/schemas/nullable_StringQuery_input"
-            }
+          "name": {
+            "$ref": "#/components/schemas/nullable_StringQuery_input"
+          }
         },
-        "type": [
-            "object",
-            "null"
-        ]
+        "type": ["object", "null"]
       },
       "EmailPassword_input": {
         "additionalProperties": false,
         "properties": {
-            "email": {
-                "type": "string"
-            },
-            "password": {
-                "type": "string"
-            }
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
         },
-        "required": [
-            "email",
-            "password"
-        ],
+        "required": ["email", "password"],
         "type": "object"
       },
       "nullable_StringQuery_input": {
@@ -56,24 +50,15 @@
       "nullable_updateCustomer_values": {
         "additionalProperties": false,
         "properties": {
-            "dateOfBirth": {
-                "format": "date-time",
-                "type": [
-                    "string",
-                    "null"
-                ]
-            },
-            "name": {
-                "type": [
-                    "string",
-                    "null"
-                ]
-            }
+          "dateOfBirth": {
+            "format": "date-time",
+            "type": ["string", "null"]
+          },
+          "name": {
+            "type": ["string", "null"]
+          }
         },
-        "type": [
-            "object",
-            "null"
-        ]
+        "type": ["object", "null"]
       },
       "updateCustomer_where": {
         "additionalProperties": false,
@@ -95,6 +80,7 @@
   "paths": {
     "/web/json/authenticate": {
       "post": {
+        "operationId": "authenticate",
         "requestBody": {
           "content": {
             "application/json": {
@@ -102,18 +88,13 @@
                 "additionalProperties": false,
                 "properties": {
                   "createIfNotExists": {
-                      "type": [
-                          "boolean",
-                          "null"
-                      ]
+                    "type": ["boolean", "null"]
                   },
                   "emailPassword": {
-                      "$ref": "#/components/schemas/EmailPassword_input"
+                    "$ref": "#/components/schemas/EmailPassword_input"
                   }
-              },
-              "required": [
-                  "emailPassword"
-              ],
+                },
+                "required": ["emailPassword"],
                 "type": "object"
               }
             }
@@ -129,6 +110,7 @@
     },
     "/web/json/createCustomer": {
       "post": {
+        "operationId": "createCustomer",
         "requestBody": {
           "content": {
             "application/json": {
@@ -159,6 +141,7 @@
     },
     "/web/json/customers": {
       "post": {
+        "operationId": "customers",
         "requestBody": {
           "content": {
             "application/json": {
@@ -196,6 +179,7 @@
     },
     "/web/json/getCustomer": {
       "post": {
+        "operationId": "getCustomer",
         "requestBody": {
           "content": {
             "application/json": {
@@ -222,6 +206,7 @@
     },
     "/web/json/updateCustomer": {
       "post": {
+        "operationId": "updateCustomer",
         "requestBody": {
           "content": {
             "application/json": {

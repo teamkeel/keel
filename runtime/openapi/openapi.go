@@ -32,6 +32,7 @@ type PathItemObject struct {
 }
 
 type OperationObject struct {
+	OperationID string                    `json:"operationId"`
 	RequestBody ResponseObject            `json:"requestBody"`
 	Responses   map[string]ResponseObject `json:"responses,omitempty"`
 }
@@ -86,6 +87,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 
 			spec.Paths[endpoint] = PathItemObject{
 				Post: OperationObject{
+					OperationID: op.Name,
 					RequestBody: ResponseObject{
 						Description: op.Name + " Request",
 						Content: map[string]MediaTypeObject{
