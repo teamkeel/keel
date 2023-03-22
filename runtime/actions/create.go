@@ -57,14 +57,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 }
 
 func GenerateCreateStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {
-	defaultValues, err := initialValueForModel(scope.model, scope.schema)
-	if err != nil {
-		return nil, err
-	}
-
-	query.AddWriteValues(defaultValues)
-
-	err = query.captureWriteValues(scope, input)
+	err := query.captureWriteValues(scope, input)
 	if err != nil {
 		return nil, err
 	}

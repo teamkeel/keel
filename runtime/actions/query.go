@@ -125,8 +125,8 @@ type QueryBuilder struct {
 	limit *int
 	// The ordered slice of arguments for the SQL statement template.
 	args []any
-	// The columns and values to be written during an INSERT or UPDATE.
-	writeValues map[string]any
+	// The graph of rows to be written during an INSERT or UPDATE.
+	writeValues *Row
 }
 
 type join struct {
@@ -135,42 +135,57 @@ type join struct {
 	condition string
 }
 
+type Row struct {
+	// The schema model which this row represents data for.
+	model *proto.Model
+	// The values of the fields to insert.
+	values map[string]any
+	// Other rows to insert which are dependent on this row.
+	referencedBy []*Row
+	// Other rows to insert which this row depends on.
+	references []*Row
+}
+
 func NewQuery(model *proto.Model) *QueryBuilder {
 	return &QueryBuilder{
-		Model:       model.Name,
-		table:       strcase.ToSnake(model.Name),
-		selection:   []string{},
-		distinctOn:  []string{},
-		joins:       []join{},
-		filters:     []string{},
-		orderBy:     []string{},
-		limit:       nil,
-		returning:   []string{},
-		args:        []any{},
-		writeValues: map[string]any{},
+		Model:      model.Name,
+		table:      strcase.ToSnake(model.Name),
+		selection:  []string{},
+		distinctOn: []string{},
+		joins:      []join{},
+		filters:    []string{},
+		orderBy:    []string{},
+		limit:      nil,
+		returning:  []string{},
+		args:       []any{},
+		writeValues: &Row{
+			model:        nil,
+			values:       map[string]any{},
+			referencedBy: []*Row{},
+			references:   []*Row{},
+		},
 	}
 }
 
 // Creates a copy of the query builder.
 func (query *QueryBuilder) Copy() *QueryBuilder {
 	return &QueryBuilder{
-		Model:       query.Model,
-		table:       query.table,
-		selection:   copySlice(query.selection),
-		distinctOn:  copySlice(query.distinctOn),
-		joins:       copySlice(query.joins),
-		filters:     copySlice(query.filters),
-		orderBy:     copySlice(query.orderBy),
-		limit:       query.limit,
-		returning:   copySlice(query.returning),
-		args:        query.args,
-		writeValues: query.writeValues,
+		Model:      query.Model,
+		table:      query.table,
+		selection:  copySlice(query.selection),
+		distinctOn: copySlice(query.distinctOn),
+		joins:      copySlice(query.joins),
+		filters:    copySlice(query.filters),
+		orderBy:    copySlice(query.orderBy),
+		limit:      query.limit,
+		returning:  copySlice(query.returning),
+		args:       query.args,
 	}
 }
 
 // Includes a value to be written during an INSERT or UPDATE.
 func (query *QueryBuilder) AddWriteValue(fieldName string, value any) {
-	query.writeValues[strcase.ToSnake(fieldName)] = value
+	query.writeValues.values[strcase.ToSnake(fieldName)] = value
 }
 
 // Includes values to be written during an INSERT or UPDATE.
@@ -389,15 +404,15 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 	columns := []string{}
 	args := []any{}
 
-	// Make iterating through the writeValues map deterministically ordered
-	orderedKeys := make([]string, 0, len(query.writeValues))
-	for k := range query.writeValues {
+	// Make iterating through the map with deterministic ordering
+	orderedKeys := make([]string, 0, len(query.writeValues.values))
+	for k := range query.writeValues.values {
 		orderedKeys = append(orderedKeys, k)
 	}
 	sort.Strings(orderedKeys)
 	for _, v := range orderedKeys {
 		columns = append(columns, v)
-		args = append(args, query.writeValues[v])
+		args = append(args, query.writeValues.values[v])
 	}
 
 	if len(query.returning) > 0 {
@@ -407,7 +422,7 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 	template := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) %s",
 		sqlQuote(query.table),
 		strings.Join(columns, ", "),
-		strings.Join(strings.Split(strings.Repeat("?", len(query.writeValues)), ""), ", "),
+		strings.Join(strings.Split(strings.Repeat("?", len(query.writeValues.values)), ""), ", "),
 		returning)
 
 	return &Statement{
@@ -425,14 +440,14 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	args := []any{}
 
 	// Make iteratng through the writeValues map deterministically ordered
-	orderedKeys := make([]string, 0, len(query.writeValues))
-	for k := range query.writeValues {
+	orderedKeys := make([]string, 0, len(query.writeValues.values))
+	for k := range query.writeValues.values {
 		orderedKeys = append(orderedKeys, k)
 	}
 	sort.Strings(orderedKeys)
 	for _, v := range orderedKeys {
 		sets = append(sets, fmt.Sprintf("%s = ?", v))
-		args = append(args, query.writeValues[v])
+		args = append(args, query.writeValues.values[v])
 	}
 
 	args = append(args, query.args...)
