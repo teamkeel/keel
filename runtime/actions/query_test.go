@@ -545,9 +545,9 @@ var testCases = []testCase{
 			}`,
 		operationName: "createThing",
 		input: map[string]any{
-			"name":     "bob",
-			"age":      21,
-			"parentId": "123",
+			"name":   "bob",
+			"age":    21,
+			"parent": map[string]any{"id": "123"},
 		},
 		expectedTemplate: `
 			INSERT INTO "thing" 

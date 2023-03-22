@@ -7,7 +7,7 @@ test("create with parent id as implicit input - get by id - parent id set correc
   const author = await actions.createAuthor({ name: "Keelson" });
   const post = await actions.createPost({
     title: "Keelson Post",
-    theAuthorId: author.id,
+    theAuthor: { id: author.id },
   });
 
   expect(post.theAuthorId).toEqual(author.id);
@@ -22,7 +22,7 @@ test("create with parent id as implicit input - id does not exist - returns erro
   await expect(
     actions.createPost({
       title: "Keelson Post",
-      theAuthorId: "2L2ar5NCPvTTEdiDYqgcpF3f5QN1",
+      theAuthor: { id: "2L2ar5NCPvTTEdiDYqgcpF3f5QN1" },
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
@@ -49,7 +49,7 @@ test("update parent id as implicit input - get by id - parent id updated correct
   const author1 = await actions.createAuthor({ name: "Keelson" });
   const post = await actions.createPost({
     title: "Keelson Post",
-    theAuthorId: author1.id,
+    theAuthor: { id: author1.id },
   });
   const author2 = await actions.createAuthor({ name: "Weaveton" });
 
@@ -73,7 +73,7 @@ test("update parent id as implicit input with set attribute - get by id - parent
   const author1 = await actions.createAuthor({ name: "Keelson" });
   const post = await actions.createPost({
     title: "Keelson Post",
-    theAuthorId: author1.id,
+    theAuthor: { id: author1.id },
   });
   const author2 = await actions.createAuthor({ name: "Weaveton" });
 
@@ -97,12 +97,12 @@ test("get filter by parent id - get by id and parent id - filtered correctly", a
   const author1 = await actions.createAuthor({ name: "Keelson" });
   const post1 = await actions.createPost({
     title: "Keelson Post",
-    theAuthorId: author1.id,
+    theAuthor: { id: author1.id },
   });
   const author2 = await actions.createAuthor({ name: "Weaveton" });
   const post2 = await actions.createPost({
     title: "Weaveton Post",
-    theAuthorId: author2.id,
+    theAuthor: { id: author2.id },
   });
 
   const getPost1 = await actions.getPostByAuthor({
@@ -121,12 +121,12 @@ test("list filter by parent id - list and parent id - filtered correctly", async
   const author1 = await actions.createAuthor({ name: "Keelson" });
   const post1 = await actions.createPost({
     title: "Keelson Post",
-    theAuthorId: author1.id,
+    theAuthor: { id: author1.id },
   });
   const author2 = await actions.createAuthor({ name: "Weaveton" });
   const post2 = await actions.createPost({
     title: "Weaveton Post",
-    theAuthorId: author2.id,
+    theAuthor: { id: author2.id },
   });
 
   const { results: listPost } = await actions.listPost({
@@ -142,12 +142,12 @@ test("get filter by child id - get by id and parent id - filtered correctly", as
   const author1 = await actions.createAuthor({ name: "Keelson" });
   const post1 = await actions.createPost({
     title: "Keelson Post",
-    theAuthorId: author1.id,
+    theAuthor: { id: author1.id },
   });
   const author2 = await actions.createAuthor({ name: "Weaveton" });
   const post2 = await actions.createPost({
     title: "Weaveton Post",
-    theAuthorId: author2.id,
+    theAuthor: { id: author2.id },
   });
 
   const getAuthor1 = await actions.getAuthorByPost({
@@ -166,12 +166,12 @@ test("list filter by parent id - list and parent id - filtered correctly", async
   const author1 = await actions.createAuthor({ name: "Keelson" });
   const post1 = await actions.createPost({
     title: "Keelson Post",
-    theAuthorId: author1.id,
+    theAuthor: { id: author1.id },
   });
   const author2 = await actions.createAuthor({ name: "Weaveton" });
   const post2 = await actions.createPost({
     title: "Weaveton Post",
-    theAuthorId: author2.id,
+    theAuthor: { id: author2.id },
   });
 
   const { results: listAuthor } = await actions.listAuthors({

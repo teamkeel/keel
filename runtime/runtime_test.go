@@ -2073,12 +2073,16 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 			mutation CreatePost($authorId: ID!, $title: String!) {
-				createPost(input: { title: $title, authorId: $authorId }) {
-					id
-					title
-					author {
-			          id
-					  name
+				createPost(input: 
+					{ 
+						title: $title, author: { id: $authorId }
+					}) 
+					{
+						id
+						title
+						author {
+						id
+						name
 					}
 				}
 		 	}`,

@@ -1,0 +1,17 @@
+message MyCustomFunctionInput {
+  post Post
+}
+
+message MyCustomFunctionOutput {
+  post Post
+}
+
+model Post {
+  fields {
+    title Text
+  }
+
+  functions {
+    write createPostSpecial(MyCustomFunctionInput) returns(MyCustomFunctionOutput)
+  }
+}

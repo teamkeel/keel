@@ -303,7 +303,7 @@ test("related model identity context permission - correct identity - permission 
 
   const child = await actions
     .withAuthToken(token)
-    .createChild({ postId: post.id });
+    .createChild({ post: { id: post.id } });
 
   const childPosts = await models.childPost.findMany({ postId: post.id });
 
@@ -334,7 +334,7 @@ test("related model identity context permission - incorrect identity - permissio
     .createPostWithIdentity({ title: "temp" });
 
   await expect(
-    actions.withAuthToken(token2).createChild({ postId: post.id })
+    actions.withAuthToken(token2).createChild({ post: { id: post.id } })
   ).toHaveAuthorizationError();
 
   const childPosts = await models.childPost.findMany({ postId: post.id });

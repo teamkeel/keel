@@ -13,6 +13,10 @@ model OrderItem {
         order Order
         price Number
     }
+
+    operations {
+        list listOrderItems(order.id)
+    }
 }
 
 api Test {
