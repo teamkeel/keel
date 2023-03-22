@@ -179,8 +179,6 @@ func getMessageFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) [
 
 	}
 
-	// TODO XXXX code-reviewer - please check this change!!! (no longer considering attributes)
-	//
 	// if we're expecting a name then we can't offer completions
 	if expectingName {
 		return []*CompletionItem{}
