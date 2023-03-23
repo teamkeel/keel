@@ -21,7 +21,7 @@ test("when the custom function returns expected value", async () => {
           title: "a post",
           id: "abcde",
         };
-      }
+      },
     },
     createFunctionAPI: ({ headers, db }) => {
       return {

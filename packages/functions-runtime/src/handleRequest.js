@@ -67,9 +67,7 @@ async function handleRequest(request, config) {
 
           // We only want to run permission checks at the handleRequest level for action types list, get and create
           // Delete and update permission checks need to be baked into the model api because they require reading records to be deleted / updated from the database first in order to ascertain whether the records to be deleted or updated fulfil the permission
-          if (
-            PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(request.actionType)
-          ) {
+          if (PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(request.actionType)) {
             // check will throw a PermissionError if a permission rule is invalid
             await checkBuiltInPermissions({
               rows: fnResult,
