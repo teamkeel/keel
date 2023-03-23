@@ -34,12 +34,14 @@ export class ActionExecutor {
       headers["Authorization"] =
         "Bearer " +
         jwt.sign(
-          {
-            id: this._identity.id,
-          },
+          {},
           // TODO: make this an env var
           "test",
-          { algorithm: "HS256", expiresIn: 60 * 60 * 24 }
+          {
+            algorithm: "HS256",
+            expiresIn: 60 * 60 * 24,
+            subject: this._identity.id,
+          }
         );
     }
 
