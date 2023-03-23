@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/charmbracelet/lipgloss"
@@ -20,6 +19,7 @@ import (
 
 func renderRun(m *Model) string {
 	b := strings.Builder{}
+	b.WriteString("\n")
 	b.WriteString("Running Keel app in directory: ")
 	b.WriteString(colors.White(m.ProjectDir).String())
 	b.WriteString("\n")
@@ -213,50 +213,23 @@ func renderError(m *Model) string {
 	return b.String()
 }
 
-func renderLog(requests []*RuntimeRequest, functionLogs []*FunctionLog) string {
+func renderFunctionLog(log *FunctionLog) string {
+	b := strings.Builder{}
+	b.WriteString(colors.Yellow("[Functions]").String())
+	b.WriteString(" ")
+	b.WriteString(log.Value)
+
+	return b.String()
+}
+
+func renderRequestLog(request *RuntimeRequest) string {
 	b := strings.Builder{}
 
-	b.WriteString(colors.Heading("Log:").Highlight().String())
-	b.WriteString("\n")
-
-	type log struct {
-		t     time.Time
-		value string
-	}
-	logs := []*log{}
-
-	for _, r := range requests {
-		b := strings.Builder{}
-		b.WriteString(colors.Yellow("[Request]").String())
-		b.WriteString(" ")
-		b.WriteString(colors.White(r.Method).String())
-		b.WriteString(" ")
-		b.WriteString(r.Path)
-		logs = append(logs, &log{
-			t:     r.Time,
-			value: b.String(),
-		})
-	}
-
-	for _, r := range functionLogs {
-		b := strings.Builder{}
-		b.WriteString(colors.Yellow("[Functions]").String())
-		b.WriteString(" ")
-		b.WriteString(r.Value)
-		logs = append(logs, &log{
-			t:     r.Time,
-			value: b.String(),
-		})
-	}
-
-	sort.Slice(logs, func(i, j int) bool {
-		return logs[i].t.Before(logs[j].t)
-	})
-
-	for _, log := range logs {
-		b.WriteString(log.value)
-		b.WriteString("\n")
-	}
+	b.WriteString(colors.Cyan("[Request]").String())
+	b.WriteString(" ")
+	b.WriteString(colors.White(request.Method).String())
+	b.WriteString(" ")
+	b.WriteString(request.Path)
 
 	return b.String()
 }
