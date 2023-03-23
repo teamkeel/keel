@@ -1,3 +1,10 @@
+## [0.288.1](https://github.com/teamkeel/keel/compare/v0.288.0...v0.288.1) (2023-03-23)
+
+
+### Bug Fixes
+
+* use sub for JWT id ([59dbc8e](https://github.com/teamkeel/keel/commit/59dbc8e3f946347931781b4f06ff0feacbc73687))
+
 # [0.288.0](https://github.com/teamkeel/keel/compare/v0.287.0...v0.288.0) (2023-03-22)
 
 
