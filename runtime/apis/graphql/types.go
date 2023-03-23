@@ -198,6 +198,20 @@ var formattedDateType = &graphql.Field{
 var timestampType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Timestamp",
 	Fields: graphql.Fields{
+		"seconds": &graphql.Field{
+			Name:        "seconds",
+			Description: "Seconds since unix epoch",
+			Type:        graphql.NewNonNull(graphql.Int),
+			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+				t, err := sourceToTime(p.Source)
+
+				if err != nil {
+					return nil, err
+				}
+
+				return t.Unix(), nil
+			},
+		},
 		"iso8601": &graphql.Field{
 			Name:        "iso8601",
 			Description: "ISO8601 representation of the timestamp",
