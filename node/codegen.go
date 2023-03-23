@@ -740,7 +740,7 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	js.Writeln("const db = getDatabase();")
 
 	js.Writeln(`export const actions = new ActionExecutor({});`)
-	js.Writeln("export const models = createFunctionAPI({ headers: new Headers() }).models;")
+	js.Writeln("export const models = createFunctionAPI({ headers: new Headers(), db }).models;")
 
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
