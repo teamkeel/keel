@@ -210,10 +210,11 @@ func buildJoins(schema *proto.Schema, identFragments []*parser.IdentFragment) (j
 		// if the fragments end with a model rather than a field, then handle this special case
 		if IsFragmentTerminatingWithModel(schema, identFragments) && i == fragmentCount-1 {
 			relatedModelField := proto.FindField(schema.Models, model, currentFragment)
+			foreignKeyField := proto.GetForignKeyFieldName(schema.Models, relatedModelField)
 
 			joins = append(joins, &Join{
 				FromTable:  strcase.ToSnake(model),
-				FromColumn: strcase.ToSnake(relatedModelField.ForeignKeyFieldName.Value),
+				FromColumn: strcase.ToSnake(foreignKeyField),
 				ToTable:    strcase.ToSnake(relatedModelField.Type.ModelName.Value),
 				ToColumn:   "id",
 			})
@@ -224,11 +225,13 @@ func buildJoins(schema *proto.Schema, identFragments []*parser.IdentFragment) (j
 		if i < fragmentCount-1 {
 			relatedModelField := proto.FindField(schema.Models, model, currentFragment)
 
+			foreignKeyField := proto.GetForignKeyFieldName(schema.Models, relatedModelField)
+
 			if proto.IsBelongsTo(relatedModelField) {
 				// foreign key is on this model
 				joins = append(joins, &Join{
 					FromTable:  strcase.ToSnake(model),
-					FromColumn: strcase.ToSnake(relatedModelField.ForeignKeyFieldName.Value),
+					FromColumn: strcase.ToSnake(foreignKeyField),
 					ToTable:    strcase.ToSnake(relatedModelField.Type.ModelName.Value),
 					ToColumn:   "id",
 				})
@@ -238,7 +241,7 @@ func buildJoins(schema *proto.Schema, identFragments []*parser.IdentFragment) (j
 					FromTable:  strcase.ToSnake(model),
 					FromColumn: "id",
 					ToTable:    strcase.ToSnake(relatedModelField.Type.ModelName.Value),
-					ToColumn:   fmt.Sprintf("%s_id", strcase.ToSnake(model)),
+					ToColumn:   foreignKeyField,
 				})
 			}
 

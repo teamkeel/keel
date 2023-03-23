@@ -47,8 +47,9 @@ async function handleRequest(request, config) {
       });
 
       const customFunction = functions[request.method];
+
       // Call the user's custom function!
-      const fnResult = await customFunction.fn(request.params, api, ctx);
+      const fnResult = await customFunction(request.params, api, ctx);
 
       // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function.
       // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
@@ -67,9 +68,7 @@ async function handleRequest(request, config) {
           // We only want to run permission checks at the handleRequest level for action types list, get and create
           // Delete and update permission checks need to be baked into the model api because they require reading records to be deleted / updated from the database first in order to ascertain whether the records to be deleted or updated fulfil the permission
           if (
-            PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(
-              customFunction.actionType
-            )
+            PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(request.actionType)
           ) {
             // check will throw a PermissionError if a permission rule is invalid
             await checkBuiltInPermissions({

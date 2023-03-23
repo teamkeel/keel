@@ -673,7 +673,7 @@ func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles 
 	w.Writeln("const functions = {")
 	w.Indent()
 	for _, fn := range functions {
-		w.Writef("%s: { fn: function_%s, actionType: \"%s\" },", fn.Name, fn.Name, fn.Type)
+		w.Writef("%s: function_%s,", fn.Name, fn.Name)
 		w.Writeln("")
 	}
 	w.Dedent()
