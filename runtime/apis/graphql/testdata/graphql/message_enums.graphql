@@ -1,5 +1,5 @@
 type Query {
-  _Empty: Boolean
+  _health: Boolean
 }
 
 type Mutation {

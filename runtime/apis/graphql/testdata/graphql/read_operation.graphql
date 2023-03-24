@@ -1,4 +1,5 @@
 type Query {
+  _health: Boolean
   readPerson(input: readPerson_input!): PersonResponse
   readPersonWithMessage(input: PersonInput_input!): PersonResponse
 }
