@@ -2,10 +2,15 @@ model Order {
     fields {
         items Item[]
         promoCode Text
+        externalId ID
     }
     operations {
         list listOrders(items.price, code:     Text) {
             @where(order.promoCode == code)
+        }
+
+        create createOrder() with(externalId: ID, promoCode) {
+            @set(order.externalId = externalId)
         }
     }
 }
@@ -13,6 +18,7 @@ model Order {
 model Item {
     fields {
         price Number
+        order Order
     }
 }
 
@@ -22,11 +28,15 @@ model Order {
     fields {
         items Item[]
         promoCode Text
+        externalId ID
     }
 
     operations {
         list listOrders(items.price, code: Text) {
             @where(order.promoCode == code)
+        }
+        create createOrder() with (externalId: ID, promoCode) {
+            @set(order.externalId = externalId)
         }
     }
 }
@@ -34,5 +44,6 @@ model Order {
 model Item {
     fields {
         price Number
+        order Order
     }
 }

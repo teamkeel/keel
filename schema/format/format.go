@@ -231,7 +231,15 @@ func printModel(writer *Writer, model *parser.ModelNode) {
 								continue
 							}
 
-							fieldType := camel(field.Type)
+							fieldType := ""
+							switch field.Type {
+							case parser.FieldTypeID:
+								// we dont want to camel case ID as it should be in all caps
+								fieldType = field.Type
+							default:
+								fieldType = camel(field.Type)
+							}
+
 							if field.Optional {
 								fieldType += "?"
 							}
