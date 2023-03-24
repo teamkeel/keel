@@ -191,7 +191,7 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	mk.addGlobals()
 
 	// The graphql handler cannot manage an empty query object,
-	// so if there are no get or list ops, we add the __Empty field
+	// so if there are no get or list ops, we add the _Empty field
 	if hasNoQueryOps {
 		mk.query.AddFieldConfig("_Empty", &graphql.Field{
 			Type: graphql.Boolean,

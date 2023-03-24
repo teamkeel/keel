@@ -1,5 +1,5 @@
 type Query {
-  __Empty: Boolean
+  _Empty: Boolean
 }
 
 type Mutation {
