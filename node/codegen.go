@@ -679,6 +679,16 @@ func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles 
 	w.Dedent()
 	w.Writeln("}")
 
+	w.Writeln("const actionTypes = {")
+	w.Indent()
+
+	for _, fn := range functions {
+		w.Writef("%s: \"%s\",\n", fn.Name, fn.Type.String())
+	}
+
+	w.Dedent()
+	w.Writeln("}")
+
 	w.Writeln(`
 const listener = async (req, res) => {
 	const u = new URL(req.url, "http://" + req.headers.host);
@@ -700,6 +710,7 @@ const listener = async (req, res) => {
 			functions,
 			createFunctionAPI,
 			createContextAPI,
+			actionTypes,
 			permissions: permissionFns,
 		});
 

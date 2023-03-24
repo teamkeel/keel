@@ -238,6 +238,40 @@ export declare function getDatabase(): Kysely<database>;`
 	})
 }
 
+func TestWriteDevelopmentServer(t *testing.T) {
+	expected := `
+const functions = {
+	createPost: function_createPost,
+	updatePost: function_updatePost,
+}
+const actionTypes = {
+	createPost: "OPERATION_TYPE_CREATE",
+	updatePost: "OPERATION_TYPE_UPDATE",
+}
+	`
+
+	schema := `
+		model Post {
+			fields {
+				title Text
+			}
+
+			functions {
+				create createPost() with(title)
+				update updatePost(id) with(title)
+			}
+		}
+	`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+		files := generateDevelopmentServer("fakedir", s)
+
+		serverJs := files[0]
+
+		w.Write(serverJs.Contents)
+	})
+}
+
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
 function createFunctionAPI({ headers, db }) {
@@ -1328,7 +1362,6 @@ func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s
 
 		t.Errorf("\nExpected:\n---------\n%s", normalise(expected))
 		t.Errorf("\nActual:\n---------\n%s", normalise(w.String()))
-
 	}
 }
 

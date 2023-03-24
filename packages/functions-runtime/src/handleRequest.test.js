@@ -23,6 +23,9 @@ test("when the custom function returns expected value", async () => {
         };
       },
     },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
     createFunctionAPI: ({ headers, db }) => {
       return {
         permissions: new Permissions(),
@@ -54,6 +57,9 @@ test("when the custom function doesnt return a value", async () => {
       },
     },
     permissions: {},
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
     createFunctionAPI: ({ headers, db }) => {
       return {
         permissions: new Permissions(),
@@ -78,6 +84,9 @@ test("when there is no matching function for the path", async () => {
   const config = {
     functions: {
       createPost: async (inputs, api, ctx) => {},
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
     },
     createFunctionAPI: ({ headers, db }) => {
       return {
@@ -108,6 +117,9 @@ test("when there is an unexpected error in the custom function", async () => {
         throw new Error("oopsie daisy");
       },
     },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
     createFunctionAPI: ({ headers, db }) => {
       return {
         permissions: new Permissions(),
@@ -136,6 +148,9 @@ test("when there is an unexpected object thrown in the custom function", async (
 
         throw { err: "oopsie daisy" };
       },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
     },
     createFunctionAPI: ({ headers, db }) => {
       return {

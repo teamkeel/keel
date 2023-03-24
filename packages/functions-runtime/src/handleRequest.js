@@ -18,8 +18,13 @@ const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
 async function handleRequest(request, config) {
-  const { createFunctionAPI, createContextAPI, functions, permissions } =
-    config;
+  const {
+    createFunctionAPI,
+    createContextAPI,
+    functions,
+    permissions,
+    actionTypes,
+  } = config;
 
   if (!(request.method in functions)) {
     return createJSONRPCErrorResponse(
@@ -65,9 +70,10 @@ async function handleRequest(request, config) {
           // unknown state, proceed with checking against the built in permissions in the schema
           const relevantPermissions = permissions[request.method];
 
+          const actionType = actionTypes[request.method];
           // We only want to run permission checks at the handleRequest level for action types list, get and create
           // Delete and update permission checks need to be baked into the model api because they require reading records to be deleted / updated from the database first in order to ascertain whether the records to be deleted or updated fulfil the permission
-          if (PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(request.actionType)) {
+          if (PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(actionType)) {
             // check will throw a PermissionError if a permission rule is invalid
             await checkBuiltInPermissions({
               rows: fnResult,

@@ -35,11 +35,10 @@ const (
 type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
 
 type FunctionsRuntimeRequest struct {
-	ID         string         `json:"id"`
-	Method     string         `json:"method"`
-	ActionType string         `json:"actionType"`
-	Params     any            `json:"params"`
-	Meta       map[string]any `json:"meta"`
+	ID     string         `json:"id"`
+	Method string         `json:"method"`
+	Params any            `json:"params"`
+	Meta   map[string]any `json:"meta"`
 }
 
 type FunctionsRuntimeResponse struct {
@@ -71,7 +70,7 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 	return context.WithValue(ctx, contextKey, transport)
 }
 
-func CallFunction(ctx context.Context, actionName string, actionType string, body any) (any, map[string][]string, error) {
+func CallFunction(ctx context.Context, actionName string, body any) (any, map[string][]string, error) {
 	ctx, span := tracer.Start(ctx, fmt.Sprintf("Call Function: %s", actionName))
 	defer span.End()
 
@@ -111,11 +110,10 @@ func CallFunction(ctx context.Context, actionName string, actionType string, bod
 	}
 
 	req := &FunctionsRuntimeRequest{
-		ID:         ksuid.New().String(),
-		Method:     actionName,
-		ActionType: actionType,
-		Params:     body,
-		Meta:       meta,
+		ID:     ksuid.New().String(),
+		Method: actionName,
+		Params: body,
+		Meta:   meta,
 	}
 
 	span.SetAttributes(

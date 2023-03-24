@@ -82,7 +82,6 @@ func executeCustomOperation(scope *Scope, inputs any) (any, map[string][]string,
 	resp, headers, err := functions.CallFunction(
 		scope.context,
 		scope.operation.Name,
-		scope.operation.Type.String(),
 		inputs,
 	)
 
