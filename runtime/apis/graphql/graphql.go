@@ -143,7 +143,7 @@ func NewGraphQLSchema(proto *proto.Schema, api *proto.Api) (*graphql.Schema, err
 			Fields: graphql.Fields{},
 		}),
 		inputs: map[string]*graphql.InputObject{},
-		types:  map[string]*graphql.Object{},
+		types:  make(map[string]graphql.Type),
 		enums:  map[string]*graphql.Enum{},
 	}
 
@@ -157,7 +157,7 @@ type graphqlSchemaBuilder struct {
 	query    *graphql.Object
 	mutation *graphql.Object
 	inputs   map[string]*graphql.InputObject
-	types    map[string]*graphql.Object
+	types    map[string]graphql.Type
 	enums    map[string]*graphql.Enum
 	globals  map[string]*graphql.Scalar
 }
@@ -193,7 +193,7 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	// The graphql handler cannot manage an empty query object,
 	// so if there are no get or list ops, we add the __Empty field
 	if hasNoQueryOps {
-		mk.query.AddFieldConfig("__Empty", &graphql.Field{
+		mk.query.AddFieldConfig("_Empty", &graphql.Field{
 			Type: graphql.Boolean,
 			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
 				return true, nil
@@ -227,10 +227,10 @@ func (mk *graphqlSchemaBuilder) addGlobals() {
 }
 
 // addModel generates the graphql type to represent the given proto.Model, and inserts it into
-// the given fieldsUnderConstruction container.
+// mk.types
 func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, error) {
 	if out, ok := mk.types[fmt.Sprintf("model-%s", model.Name)]; ok {
-		return out, nil
+		return out.(*graphql.Object), nil
 	}
 
 	object := graphql.NewObject(graphql.ObjectConfig{
@@ -619,6 +619,77 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 	return output, nil
 }
 
+// addModel generates the graphql type to represent the given proto.Model, and inserts it into
+// mk.types
+func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input, error) {
+	if in, ok := mk.types[fmt.Sprintf("modelinput-%s", model.Name)]; ok {
+		return in.(graphql.Input), nil
+	}
+
+	input := graphql.NewInputObject(graphql.InputObjectConfig{
+		Name:   model.Name,
+		Fields: graphql.InputObjectConfigFieldMap{},
+	})
+
+	for _, field := range model.Fields {
+		if lo.Contains(parser.ImplicitFieldNames, field.Name) {
+			continue
+		}
+
+		inputType, err := mk.inputTypeForModelField(field)
+		if err != nil {
+			return nil, err
+		}
+
+		input.AddFieldConfig(field.Name, &graphql.InputObjectFieldConfig{
+			Type: inputType,
+		})
+
+		fmt.Print(input)
+	}
+
+	return input, nil
+}
+
+// inputTypeForModelField maps the type in the given proto.Field to a suitable graphql.Input type.
+func (mk *graphqlSchemaBuilder) inputTypeForModelField(field *proto.Field) (in graphql.Input, err error) {
+	switch field.Type.Type {
+	case proto.Type_TYPE_ENUM:
+		enumMessage := proto.FindEnum(mk.proto.Enums, field.Type.EnumName.Value)
+		in = mk.addEnum(enumMessage)
+	case proto.Type_TYPE_MODEL:
+		model := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+		var err error
+		in, err = mk.addModelInput(model)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		var ok bool
+		in, ok = protoTypeToGraphQLInput[field.Type.Type]
+		if !ok {
+			return in, fmt.Errorf("cannot yet make output type for: %s", field.Type.Type.String())
+		}
+	}
+
+	if err != nil {
+		return in, err
+	}
+
+	if field.Type.Repeated {
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			in = mk.makeConnectionType(in)
+		} else {
+			in = graphql.NewList(in)
+			in = graphql.NewNonNull(in)
+		}
+	} else if !field.Optional {
+		in = graphql.NewNonNull(in)
+	}
+
+	return in, nil
+}
+
 // outputTypeForModelField maps the type in the given proto.Field to a suitable graphql.Output type.
 func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out graphql.Output, err error) {
 	switch field.Type.Type {
@@ -695,6 +766,9 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		mk.inputs[messageName] = inputObject
 
 		in = inputObject
+	case field.Type.Type == proto.Type_TYPE_MODEL:
+		model := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
+		in, _ = mk.addModelInput(model)
 	default:
 		var err error
 		if in, err = mk.inputTypeFor(field); err != nil {
