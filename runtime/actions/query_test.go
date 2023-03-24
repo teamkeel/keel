@@ -3,7 +3,6 @@ package actions_test
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -75,6 +74,154 @@ var testCases = []testCase{
 				"thing"."id" IS NOT DISTINCT FROM ?
 				AND "thing"."is_active" IS NOT DISTINCT FROM ?`,
 		expectedArgs: []any{"123", true},
+	},
+	{
+		name: "create_op_default_attribute",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text @default("Bob")
+					age Number @default(100)
+					isActive Boolean @default(true)
+				}
+				operations {
+					create createPerson()
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		operationName: "createPerson",
+		input:         map[string]any{},
+		expectedTemplate: `
+			INSERT INTO "person" 
+				(age, created_at, id, is_active, name, updated_at)
+			VALUES 
+				(?, ?, ?, ?, ?, ?) 
+			RETURNING 
+				"person".*`,
+		expectedArgs: []any{100, ignore, ignore, true, "Bob", ignore},
+	},
+	{
+		name: "create_op_set_attribute",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					age Number
+					isActive Boolean
+				}
+				operations {
+					create createPerson() {
+						@set(person.name = "Bob")
+						@set(person.age = 100)
+						@set(person.isActive = true)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		operationName: "createPerson",
+		input:         map[string]any{},
+		expectedTemplate: `
+			INSERT INTO "person" 
+				(age, created_at, id, is_active, name, updated_at)
+			VALUES 
+				(?, ?, ?, ?, ?, ?) 
+			RETURNING 
+				"person".*`,
+		expectedArgs: []any{100, ignore, ignore, true, "Bob", ignore},
+	},
+	{
+		name: "create_op_optional_inputs",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text?
+					age Number?
+					isActive Boolean?
+				}
+				operations {
+					create createPerson() with (name?, age?, isActive?)
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		operationName: "createPerson",
+		input:         map[string]any{},
+		expectedTemplate: `
+			INSERT INTO "person" 
+				(age, created_at, id, is_active, name, updated_at)
+			VALUES 
+				(?, ?, ?, ?, ?, ?)
+			RETURNING 
+				"person".*`,
+		expectedArgs: []any{nil, ignore, ignore, nil, nil, ignore},
+	},
+	{
+		name: "update_op_set_attribute",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					age Number
+					isActive Boolean
+				}
+				operations {
+					update updatePerson(id) {
+						@set(person.name = "Bob")
+						@set(person.age = 100)
+						@set(person.isActive = true)
+					}
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		operationName: "updatePerson",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "xyz",
+			},
+		},
+		expectedTemplate: `
+			UPDATE 
+				"person" 
+			SET
+			    age = ?, is_active = ?, name = ?
+			WHERE
+				"person"."id" IS NOT DISTINCT FROM ?
+			RETURNING 
+				"person".*`,
+		expectedArgs: []any{100, true, "Bob", "xyz"},
+	},
+	{
+		name: "update_op_optional_inputs",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text?
+					age Number?
+					isActive Boolean?
+				}
+				operations {
+					update updatePerson(id) with (name?, age?, isActive?)
+				}
+				@permission(expression: true, actions: [create])
+			}`,
+		operationName: "updatePerson",
+		input: map[string]any{
+			"where": map[string]any{
+				"id": "xyz",
+			},
+			"values": map[string]any{
+				"name": "Bob",
+			},
+		},
+		expectedTemplate: `
+			UPDATE 
+				"person" 
+			SET
+			    name = ?
+			WHERE
+				"person"."id" IS NOT DISTINCT FROM ?
+			RETURNING 
+				"person".*`,
+		expectedArgs: []any{"Bob", "xyz"},
 	},
 	{
 		name: "list_op_no_filter",
@@ -533,13 +680,10 @@ var testCases = []testCase{
 				fields {
 					name Text
 					age Number
-					isActive Boolean
 					parent Parent
 				}
 				operations {
-					create createThing() with (name, age, parent.id) {
-						@set(thing.isActive = true)
-					}
+					create createThing() with (name, age, parent.id)
 				}
 				@permission(expression: true, actions: [create])
 			}`,
@@ -551,11 +695,12 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			INSERT INTO "thing" 
-				(age, created_at, id, is_active, name, parent_id, updated_at)
+				(age, created_at, id, name, parent_id, updated_at)
 			VALUES 
-				(?, ?, ?, ?, ?, ?, ?) 
+				(?, ?, ?, ?, ?, ?) 
 			RETURNING 
 				"thing".*`,
+		expectedArgs: []any{21, ignore, ignore, "bob", "123", ignore},
 	},
 	{
 		name: "update_op_nested_model",
@@ -573,9 +718,7 @@ var testCases = []testCase{
 					parent Parent
 				}
 				operations {
-					update updateThing(id) with (name, age, parent.id) {
-						@set(thing.isActive = true)
-					}
+					update updateThing(id) with (name, age, parent.id)
 				}
 				@permission(expression: true, actions: [create])
 			}`,
@@ -595,14 +738,13 @@ var testCases = []testCase{
 				"thing" 
 			SET 
 				age = ?, 
-				is_active = ?,
 				name = ?, 
 				parent_id = ?
 			WHERE 
 				"thing"."id" IS NOT DISTINCT FROM ? 
 			RETURNING 
 				"thing".*`,
-		expectedArgs: []any{21, true, "bob", "123", "789"},
+		expectedArgs: []any{21, "bob", "123", "789"},
 	},
 	{
 		name: "delete_op_by_id",
@@ -1005,11 +1147,29 @@ func TestQueryBuilder(t *testing.T) {
 			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
 
 			if testCase.expectedArgs != nil {
-				require.True(t, reflect.DeepEqual(testCase.expectedArgs, statement.SqlArgs()), fmt.Sprintf("SQL arguments not equal. Expected: %v, Actual: %v", testCase.expectedArgs, statement.SqlArgs()))
+
+				argumentsEqual := true
+				for i := 1; i < len(testCase.expectedArgs); i++ {
+					if testCase.expectedArgs[i] != ignore && testCase.expectedArgs[i] != statement.SqlArgs()[i] {
+						argumentsEqual = false
+						break
+					}
+				}
+
+				if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
+					argumentsEqual = false
+				}
+
+				require.True(t, argumentsEqual, fmt.Sprintf("SQL arguments not equal. Expected: %v, Actual: %v", testCase.expectedArgs, statement.SqlArgs()))
 			}
 		})
 	}
 }
+
+// Used as a placeholder to ignore asserting on sql argument values.
+var ignore Ignore
+
+type Ignore struct{}
 
 // Generates a scope and query builder
 func generateQueryScope(schemaText string, operationName string) (*actions.Scope, *actions.QueryBuilder, *proto.Operation, error) {
