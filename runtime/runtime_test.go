@@ -2241,13 +2241,15 @@ var testCases = []testCase{
 							iso8601
 						}
 						theTimestamp {
-							iso8601
+							iso8601,
+							seconds
 						}
 					}
 				 }`,
 		assertData: func(t *testing.T, data map[string]any) {
 			rtt.AssertValueAtPath(t, data, "getThing.theDate.iso8601", "2022-06-17T00:00:00.00Z")
 			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.iso8601", "2022-01-01T15:04:05.00Z")
+			rtt.AssertValueAtPath(t, data, "getThing.theTimestamp.seconds", float64(1641049445))
 		},
 	},
 	{
