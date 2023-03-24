@@ -175,15 +175,11 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 
 	modelInstances := proto.FindModels(mk.proto.Models, namesOfModelsUsedByAPI)
 
-	hasNoQueryOps := true
 	for _, model := range modelInstances {
 		for _, op := range model.Operations {
 			err := mk.addOperation(op, schema)
 			if err != nil {
 				return nil, err
-			}
-			if op.Type == proto.OperationType_OPERATION_TYPE_GET || op.Type == proto.OperationType_OPERATION_TYPE_LIST || op.Type == proto.OperationType_OPERATION_TYPE_READ {
-				hasNoQueryOps = false
 			}
 		}
 	}
@@ -191,15 +187,13 @@ func (mk *graphqlSchemaBuilder) build(api *proto.Api, schema *proto.Schema) (*gr
 	mk.addGlobals()
 
 	// The graphql handler cannot manage an empty query object,
-	// so if there are no get or list ops, we add the _Empty field
-	if hasNoQueryOps {
-		mk.query.AddFieldConfig("_Empty", &graphql.Field{
-			Type: graphql.Boolean,
-			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-				return true, nil
-			},
-		})
-	}
+	// so without _health everything would blow up.
+	mk.query.AddFieldConfig("_health", &graphql.Field{
+		Type: graphql.Boolean,
+		Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+			return true, nil
+		},
+	})
 
 	types := []graphql.Type{}
 
