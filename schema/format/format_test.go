@@ -48,9 +48,7 @@ func TestFormat(t *testing.T) {
 				fmt.Println()
 				fmt.Println("Actual:")
 				fmt.Println(formatted)
-
 			}
-
 		})
 	}
 }
