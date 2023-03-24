@@ -1,3 +1,10 @@
+## [0.288.2](https://github.com/teamkeel/keel/compare/v0.288.1...v0.288.2) (2023-03-24)
+
+
+### Bug Fixes
+
+* dont format ID type as Id ([#870](https://github.com/teamkeel/keel/issues/870)) ([f2f907f](https://github.com/teamkeel/keel/commit/f2f907f97f17f19cf0b14e7380f2ce0d60f10291))
+
 ## [0.288.1](https://github.com/teamkeel/keel/compare/v0.288.0...v0.288.1) (2023-03-23)
 
 
