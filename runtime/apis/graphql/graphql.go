@@ -638,8 +638,6 @@ func (mk *graphqlSchemaBuilder) addModelInput(model *proto.Model) (graphql.Input
 		input.AddFieldConfig(field.Name, &graphql.InputObjectFieldConfig{
 			Type: inputType,
 		})
-
-		fmt.Print(input)
 	}
 
 	return input, nil
