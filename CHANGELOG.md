@@ -1,3 +1,10 @@
+# [0.289.0](https://github.com/teamkeel/keel/compare/v0.288.2...v0.289.0) (2023-03-25)
+
+
+### Features
+
+* temporarily use tea.Println to expose logs ([#867](https://github.com/teamkeel/keel/issues/867)) ([6fa521f](https://github.com/teamkeel/keel/commit/6fa521f00f94d31e6f9b6fb1b233d7eb774872f0))
+
 ## [0.288.2](https://github.com/teamkeel/keel/compare/v0.288.1...v0.288.2) (2023-03-24)
 
 
