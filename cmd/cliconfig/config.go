@@ -121,7 +121,10 @@ func (c *Config) SetSecret(path, environment, key, value string) error {
 	}
 
 	currentSecrets := cfg.Projects[path].Secrets
-	secrets := createSecretEnvironments(environment, key, value, &currentSecrets)
+	secrets, err := createSecretEnvironments(environment, key, value, &currentSecrets)
+	if err != nil {
+		return err
+	}
 	cfg.Projects[path] = Project{
 		Secrets: secrets,
 	}
@@ -252,11 +255,11 @@ func createProject(c *Config, wd string) (*UserConfig, error) {
 	}, nil
 }
 
-func createSecretEnvironments(environment, key, value string, secrets *EnvironmentSecret) EnvironmentSecret {
+func createSecretEnvironments(environment, key, value string, secrets *EnvironmentSecret) (EnvironmentSecret, error) {
 	var environments EnvironmentSecret
 
 	if secrets.Development == nil || secrets.Test == nil {
-		return createEnvironments()
+		return createEnvironments(), nil
 	} else {
 		environments = *secrets
 	}
@@ -266,11 +269,9 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 		environments.Development[key] = value
 	case "test":
 		environments.Test[key] = value
-	default:
-		panic("invalid environment")
 	}
 
-	return environments
+	return environments, errors.New("invalid environment " + environment)
 }
 
 func createEnvironments() EnvironmentSecret {
