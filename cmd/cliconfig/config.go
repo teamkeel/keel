@@ -269,9 +269,11 @@ func createSecretEnvironments(environment, key, value string, secrets *Environme
 		environments.Development[key] = value
 	case "test":
 		environments.Test[key] = value
+	default:
+		return EnvironmentSecret{}, errors.New("invalid environment " + environment)
 	}
 
-	return environments, errors.New("invalid environment " + environment)
+	return environments, nil
 }
 
 func createEnvironments() EnvironmentSecret {
