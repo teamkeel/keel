@@ -283,21 +283,41 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case FunctionsOutputMsg:
-		m.FunctionsLog = append(m.FunctionsLog, &FunctionLog{
+		log := &FunctionLog{
 			Time:  time.Now(),
 			Value: msg.Output,
-		})
-		return m, NextMsgCommand(m.functionsLogCh)
+		}
+		m.FunctionsLog = append(m.FunctionsLog, log)
 
+		cmds := []tea.Cmd{
+			NextMsgCommand(m.functionsLogCh),
+		}
+
+		if m.Mode == ModeRun || m.Mode == ModeTest {
+			cmds = append(cmds, tea.Println(renderFunctionLog(log)))
+		}
+
+		return m, tea.Batch(cmds...)
 	case RuntimeRequestMsg:
 		r := msg.r
 		w := msg.w
 
-		m.RuntimeRequests = append(m.RuntimeRequests, &RuntimeRequest{
+		request := &RuntimeRequest{
 			Time:   time.Now(),
 			Method: r.Method,
 			Path:   r.URL.Path,
-		})
+		}
+
+		cmds := []tea.Cmd{
+			NextMsgCommand(m.runtimeRequestsCh),
+		}
+
+		m.RuntimeRequests = append(m.RuntimeRequests, request)
+
+		// log runtime requests for the run cmd
+		if m.Mode == ModeRun && m.Err == nil && m.Status >= StatusLoadSchema {
+			cmds = append(cmds, tea.Println(renderRequestLog(request)))
+		}
 
 		if strings.HasSuffix(r.URL.Path, "/graphiql") {
 			handler := playground.Handler("GraphiQL", strings.TrimSuffix(r.URL.Path, "/graphiql")+"/graphql")
@@ -337,8 +357,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		msg.done <- true
-		return m, NextMsgCommand(m.runtimeRequestsCh)
-
+		return m, tea.Batch(cmds...)
 	case WatcherMsg:
 		m.Err = msg.Err
 		m.Status = StatusLoadSchema
@@ -404,11 +423,6 @@ func (m *Model) View() string {
 		if m.Mode != ModeTest || m.TestOutput == "" {
 			b.WriteString(renderError(m))
 		}
-	}
-
-	if m.Mode == ModeRun && m.Err == nil && m.Status >= StatusLoadSchema {
-		b.WriteString("\n")
-		b.WriteString(renderLog(m.RuntimeRequests, m.FunctionsLog))
 	}
 
 	// The final "\n" is important as when Bubbletea exists it resets the last
