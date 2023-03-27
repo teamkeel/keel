@@ -188,8 +188,13 @@ func renderError(m *Model) string {
 	case StatusUpdateFunctions:
 		tscError := &TypeScriptError{}
 		if errors.As(m.Err, &tscError) && tscError.Output != "" {
-			b.WriteString("❌ We found the following errors in your function code:\n\n")
-			b.WriteString(tscError.Output)
+			if strings.Contains(tscError.Output, "No inputs were found in config file") {
+				b.WriteString("❌ Your functions/ folder is empty")
+			} else {
+				b.WriteString("❌ We found the following errors in your function code:\n\n")
+				b.WriteString(tscError.Output)
+			}
+
 		} else {
 			b.WriteString("❌ There was an error running your functions:\n\n")
 			b.WriteString(m.Err.Error())

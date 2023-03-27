@@ -106,6 +106,10 @@ const (
 	ImplicitFieldNameUpdatedAt = "updatedAt"
 )
 
+var (
+	ImplicitFieldNames = []string{ImplicitFieldNameId, ImplicitFieldNameCreatedAt, ImplicitFieldNameUpdatedAt}
+)
+
 const (
 	ImplicitIdentityModelName         = "Identity"
 	ImplicitIdentityFieldNameEmail    = "email"

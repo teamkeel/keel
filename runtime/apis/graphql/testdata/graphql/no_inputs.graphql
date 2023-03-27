@@ -1,4 +1,5 @@
 type Query {
+  _health: Boolean
   getBeatle: Beatle
   listBeatles(input: listBeatles_input): Beatle_connection!
 }

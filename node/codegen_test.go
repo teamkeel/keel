@@ -355,7 +355,7 @@ export interface getPerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -376,7 +376,7 @@ export interface createPerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -397,7 +397,7 @@ export interface createPerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -425,7 +425,7 @@ export interface updatePerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -461,7 +461,7 @@ export interface listPeople_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -506,7 +506,7 @@ export interface listPeople_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -524,7 +524,7 @@ export interface deletePerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -545,7 +545,7 @@ export interface getPersonName_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -571,7 +571,7 @@ export interface GetInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -597,7 +597,7 @@ export interface PersonNameResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -618,7 +618,7 @@ export interface deletePerson_input {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -644,7 +644,7 @@ export interface DeleteInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -670,7 +670,7 @@ export interface DeleteResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -695,7 +695,7 @@ export interface PeopleInput {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -718,7 +718,7 @@ export interface Foo {
 	`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -757,11 +757,11 @@ export interface Response {
 }`
 
 	runWriterTest(t, schema, inputExpected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 
 	runWriterTest(t, schema, responseExpected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -782,7 +782,7 @@ export interface People {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -811,7 +811,7 @@ export interface Details {
 `
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 
@@ -841,7 +841,7 @@ export interface PersonResponse {
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		writeMessages(w, s)
+		writeMessages(w, s, false)
 	})
 }
 

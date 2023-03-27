@@ -1,4 +1,5 @@
 type Query {
+  _health: Boolean
   getAnything(input: Any): Any
 }
 

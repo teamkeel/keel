@@ -28,6 +28,10 @@ message CustomPersonSearchResponse {
     people Any[]
 }
 
+message BulkPersonUpload {
+    people Person[]
+}
+
 model Person {
     fields {
         name Text
@@ -41,6 +45,7 @@ model Person {
         read people(PeopleInput) returns (PeopleResponse)
         read customPersonSearch(CustomPersonSearchInput) returns (CustomPersonSearchResponse)
         read customSearch(Any) returns (Any)
+        write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload)
     }
 
     @permission(
