@@ -37,6 +37,7 @@ type Timestamp {
   formatted(format: String!): String!
   fromNow: String!
   iso8601: String!
+  seconds: Int!
 }
 
 type authenticate_response {
