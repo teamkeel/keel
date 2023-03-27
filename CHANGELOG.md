@@ -1,3 +1,10 @@
+## [0.289.1](https://github.com/teamkeel/keel/compare/v0.289.0...v0.289.1) (2023-03-27)
+
+
+### Bug Fixes
+
+* graphql support model message field type ([#873](https://github.com/teamkeel/keel/issues/873)) ([99c7010](https://github.com/teamkeel/keel/commit/99c701080a72d78d6d3e9f5619325e0b7f8a6bd5))
+
 # [0.289.0](https://github.com/teamkeel/keel/compare/v0.288.2...v0.289.0) (2023-03-25)
 
 
