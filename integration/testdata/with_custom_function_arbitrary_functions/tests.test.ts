@@ -1,4 +1,5 @@
 import { actions, models, resetDatabase } from "@teamkeel/testing";
+import { Person } from "@teamkeel/sdk";
 import { test, expect, beforeEach } from "vitest";
 
 beforeEach(resetDatabase);
@@ -125,4 +126,28 @@ test("Message types with fields of 'Any' type", async () => {
 
   // result.people is also any in the return type
   expect(result.people.map((p) => p.name).sort()).toEqual(params.names.sort());
+});
+
+test("Message with field of type Model", async () => {
+  const person_1: Person = {
+    id: "234",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    name: "Adam",
+  };
+
+  const person_2: Person = {
+    id: "123",
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    name: "Bob",
+  };
+
+  const peopleToUpload = [person_1, person_2];
+
+  const result = await actions.bulkPersonUpload({ people: peopleToUpload });
+
+  expect(result.people.map((p) => p.id)).toEqual(
+    peopleToUpload.map((p) => p.id)
+  );
 });

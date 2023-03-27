@@ -1,4 +1,5 @@
 type Query {
+  _health: Boolean
   getOrder(input: getOrder_input!): Order
   listOrderItems(input: listOrderItems_input!): OrderItem_connection!
 }

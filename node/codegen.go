@@ -91,7 +91,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 	writePermissions(sdk, schema)
 
-	writeMessages(sdkTypes, schema)
+	writeMessages(sdkTypes, schema, false)
 
 	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
@@ -160,7 +160,7 @@ func writeTableInterface(w *Writer, model *proto.Model) {
 		}
 		w.Write(strcase.ToSnake(field.Name))
 		w.Write(": ")
-		t := toTypeScriptType(field.Type)
+		t := toTypeScriptType(field.Type, false)
 		if field.DefaultValue != nil {
 			t = fmt.Sprintf("Generated<%s>", t)
 		}
@@ -183,7 +183,7 @@ func writeModelInterface(w *Writer, model *proto.Model) {
 		}
 		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.Type)
+		t := toTypeScriptType(field.Type, false)
 		w.Write(t)
 		if field.Optional {
 			w.Write(" | null")
@@ -207,7 +207,7 @@ func writeCreateValuesInterface(w *Writer, model *proto.Model) {
 			w.Write("?")
 		}
 		w.Write(": ")
-		t := toTypeScriptType(field.Type)
+		t := toTypeScriptType(field.Type, false)
 		w.Write(t)
 		if field.Optional {
 			w.Write(" | null")
@@ -229,7 +229,7 @@ func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
 			// Embed related models where conditions
 			w.Writef("%sWhereConditions | null;", field.Type.ModelName.Value)
 		} else {
-			w.Write(toTypeScriptType(field.Type))
+			w.Write(toTypeScriptType(field.Type, false))
 			w.Write(" | ")
 			w.Write(toWhereConditionType(field))
 			w.Write(" | null;")
@@ -241,16 +241,16 @@ func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeMessages(w *Writer, schema *proto.Schema) {
+func writeMessages(w *Writer, schema *proto.Schema, isTestingPackage bool) {
 	for _, msg := range schema.Messages {
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, schema, msg)
+		writeMessage(w, schema, msg, isTestingPackage)
 	}
 }
 
-func writeMessage(w *Writer, schema *proto.Schema, message *proto.Message) {
+func writeMessage(w *Writer, schema *proto.Schema, message *proto.Message, isTestingPackage bool) {
 	w.Writef("export interface %s {\n", message.Name)
 	w.Indent()
 
@@ -263,7 +263,7 @@ func writeMessage(w *Writer, schema *proto.Schema, message *proto.Message) {
 
 		w.Write(": ")
 
-		w.Write(toTypeScriptType(field.Type))
+		w.Write(toTypeScriptType(field.Type, isTestingPackage))
 
 		if field.Type.Repeated {
 			w.Write("[]")
@@ -304,7 +304,7 @@ func writeUniqueConditionsInterface(w *Writer, model *proto.Model) {
 
 		switch {
 		case f.Unique || f.PrimaryKey:
-			tsType = toTypeScriptType(f.Type)
+			tsType = toTypeScriptType(f.Type, false)
 		case proto.IsHasMany(f):
 			// If a model "has one" of another model then you can
 			// do a lookup on any of that models unique fields
@@ -822,7 +822,7 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
-	writeMessages(w, schema)
+	writeMessages(w, schema, true)
 
 	w.Writeln("declare class ActionExecutor {")
 	w.Indent()
@@ -858,7 +858,7 @@ func writeTestingTypes(w *Writer, schema *proto.Schema) {
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
 }
 
-func toTypeScriptType(t *proto.TypeInfo) (ret string) {
+func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
@@ -875,7 +875,12 @@ func toTypeScriptType(t *proto.TypeInfo) (ret string) {
 	case proto.Type_TYPE_MESSAGE:
 		ret = t.MessageName.Value
 	case proto.Type_TYPE_MODEL:
-		ret = t.ModelName.Value
+		// models are imported from the sdk
+		if isTestingPackage {
+			ret = fmt.Sprintf("sdk.%s", t.ModelName.Value)
+		} else {
+			ret = t.ModelName.Value
+		}
 	default:
 		ret = "any"
 	}

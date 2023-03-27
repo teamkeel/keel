@@ -320,11 +320,16 @@ type FunctionsOutputWriter struct {
 }
 
 func (f *FunctionsOutputWriter) Write(p []byte) (n int, err error) {
-	if f.Buffer {
-		f.Output = append(f.Output, string(p))
-	} else {
-		f.ch <- FunctionsOutputMsg{
-			Output: string(p),
+	str := string(p)
+	lines := strings.Split(str, "\n")
+
+	for _, line := range lines {
+		if f.Buffer {
+			f.Output = append(f.Output, line)
+		} else {
+			f.ch <- FunctionsOutputMsg{
+				Output: line,
+			}
 		}
 	}
 

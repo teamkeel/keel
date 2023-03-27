@@ -1,4 +1,5 @@
 type Query {
+  _health: Boolean
   getPerson(input: getPerson_input!): Person
 }
 

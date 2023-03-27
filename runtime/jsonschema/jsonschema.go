@@ -78,10 +78,6 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.O
 		AdditionalProperties: boolPtr(isAny),
 	}
 
-	if messageIsNil {
-		fmt.Print("banana")
-	}
-
 	if isAny {
 		root.Type = AnyTypes
 	}

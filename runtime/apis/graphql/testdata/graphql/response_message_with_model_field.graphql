@@ -1,4 +1,5 @@
 type Query {
+  _health: Boolean
   inClassroom(input: inClassroom_input!): ClassroomPeople
 }
 

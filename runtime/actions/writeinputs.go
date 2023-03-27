@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -58,80 +59,150 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 		// Add a value to be written during an INSERT or UPDATE
 		query.AddWriteValue(fieldName, value)
+
 	}
 	return nil
 }
 
-// Updates the query with all inputs defined on the operation.
+// Updates the query with all write inputs defined on the operation.
 func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
 	message := proto.FindValuesInputMessage(scope.schema, scope.operation.Name)
 	if message == nil {
 		return nil
 	}
 
-	err := query.captureWriteValuesFromMessage(scope, message, args)
+	foreignKeys, row, err := query.captureInputValuesFromMessage(scope, message, scope.model, args)
+
+	for k, v := range foreignKeys {
+		row.values[strcase.ToSnake(k)] = v
+	}
+
+	query.writeValues = row
 
 	return err
 }
 
-func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *proto.Message, args map[string]any) error {
+func (query *QueryBuilder) captureInputValuesFromMessage(scope *Scope, message *proto.Message, model *proto.Model, args map[string]any) (map[string]any, *Row, error) {
+	defaultValues := map[string]any{}
+	var err error
+
+	if scope.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
+		defaultValues, err = initialValueForModel(model, scope.schema)
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	// Instantiate an empty row or with defaults if this is a create op
+	newRow := &Row{
+		model:        model,
+		values:       defaultValues,
+		referencedBy: []*Row{},
+		references:   []*Row{},
+	}
+
+	// For each field in this model either:
+	//   - add its values to the current row where an argument has been provided, OR
+	//   - create a new row and relate it to the current row (either referencedBy or references), OR
+	//   - determine that it is a primary key reference, do not create a row, and return the FK to the referencing row.
 	for _, input := range message.Fields {
+		field := proto.FindField(scope.schema.Models, model.Name, input.Name)
+
 		// If the input is not targeting a model field, then it is either a:
-		//  - Message, with nested fields which we must recurse into, or
+		//  - Message, with nested fields which we must recurse into, or an
 		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
 			if input.Type.Type == proto.Type_TYPE_MESSAGE {
+				messageModel := proto.FindModel(scope.schema.Models, field.Type.ModelName.Value)
 				nestedMessage := proto.FindMessage(scope.schema.Messages, input.Type.MessageName.Value)
-				return query.captureWriteValuesFromMessage(scope, nestedMessage, args)
+
+				var foreignKeys map[string]any
+
+				if input.Type.Repeated {
+					argsArraySectioned, ok := args[input.Name].([]any)
+					if !ok {
+						return nil, nil, fmt.Errorf("cannot convert args to []any for key %s", input.Name)
+					}
+
+					var rows []*Row
+					foreignKeys, rows, err = query.captureInputValuesArrayFromMessage(scope, nestedMessage, messageModel, argsArraySectioned)
+					if err != nil {
+						return nil, nil, err
+					}
+
+					if len(rows) > 0 {
+						newRow.referencedBy = append(newRow.referencedBy, rows...)
+					}
+
+				} else {
+					argsSectioned, ok := args[input.Name].(map[string]any)
+					if !ok {
+						return nil, nil, fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
+					}
+
+					var row *Row
+					foreignKeys, row, err = query.captureInputValuesFromMessage(scope, nestedMessage, messageModel, argsSectioned)
+					if err != nil {
+						return nil, nil, err
+					}
+
+					if row != nil {
+						newRow.references = append(newRow.references, row)
+					}
+				}
+
+				// If any nested messages referenced a primary key, then the
+				// foreign keys will be generated instead of a new row created.
+				for k, v := range foreignKeys {
+					newRow.values[strcase.ToSnake(k)] = v
+				}
 			}
 
 			continue
 		}
 
-		fieldName := input.Target[0]
+		if field.PrimaryKey {
+			// We know this needs to be a FK on the referencing row.
+			fieldName := fmt.Sprintf("%sId", input.Target[len(input.Target)-2])
 
-		// Currently we only support a single-fragment implicit input EXCEPT when the 'id' of a model is targeted.
-		// If so, we generate the foreign key field name from the fragments.
-		// For example, author.id will become authorId.
-		if len(input.Target) == 2 {
-			if input.Target[1] != "id" {
-				return errors.New("currently only support 'id' as a second fragment in an implicit input")
-			}
-			fieldName = fmt.Sprintf("%sId", fieldName)
-		} else if len(input.Target) > 2 {
-			return errors.New("nested implicit input not supported")
-		}
-
-		if scope.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
-			// We are currently only supporting nested object input models for the create operation
-			currLevel := args
-			var ok bool
-			for i, fragment := range input.Target {
-				if i < len(input.Target)-1 {
-					currLevel, ok = currLevel[fragment].(map[string]any)
-					if !ok {
-						return fmt.Errorf("input args object structure does not match target fragments at fragment: %s", fragment)
-					}
-				} else {
-					value, ok := currLevel[fragment]
-					if !ok && !input.Optional {
-						return fmt.Errorf("cannot find required argument: %s", fragment)
-					} else if ok {
-						// Add a value to be written during an INSERT or UPDATE
-						query.AddWriteValue(fieldName, value)
-					}
-				}
-			}
+			// Do not create a new row, and rather return this FK to add to the referencing row.
+			return map[string]any{
+				fieldName: args[input.Name],
+			}, nil, nil
 		} else {
-			value, ok := args[fieldName]
-			if !ok {
-				continue
+			value, ok := args[input.Name]
+			// Only add the arg value if it was provided as an input.
+			if ok {
+				newRow.values[strcase.ToSnake(input.Name)] = value
 			}
-
-			// Add a value to be written during an INSERT or UPDATE
-			query.AddWriteValue(fieldName, value)
 		}
 	}
 
-	return nil
+	return nil, newRow, nil
+}
+
+func (query *QueryBuilder) captureInputValuesArrayFromMessage(scope *Scope, message *proto.Message, model *proto.Model, argsArray []any) (map[string]any, []*Row, error) {
+	rows := []*Row{}
+	foreignKeys := map[string]any{}
+
+	// Capture all fields for each item in the array.
+	for _, v := range argsArray {
+		args, ok := v.(map[string]any)
+		if !ok {
+			return nil, nil, errors.New("cannot convert args to map[string]any")
+		}
+
+		fks, row, err := query.captureInputValuesFromMessage(scope, message, model, args)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		rows = append(rows, row)
+
+		for k, v := range fks {
+			foreignKeys[k] = v
+		}
+	}
+
+	return foreignKeys, rows, nil
 }

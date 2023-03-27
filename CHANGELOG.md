@@ -1,3 +1,31 @@
+## [0.289.1](https://github.com/teamkeel/keel/compare/v0.289.0...v0.289.1) (2023-03-27)
+
+
+### Bug Fixes
+
+* graphql support model message field type ([#873](https://github.com/teamkeel/keel/issues/873)) ([99c7010](https://github.com/teamkeel/keel/commit/99c701080a72d78d6d3e9f5619325e0b7f8a6bd5))
+
+# [0.289.0](https://github.com/teamkeel/keel/compare/v0.288.2...v0.289.0) (2023-03-25)
+
+
+### Features
+
+* temporarily use tea.Println to expose logs ([#867](https://github.com/teamkeel/keel/issues/867)) ([6fa521f](https://github.com/teamkeel/keel/commit/6fa521f00f94d31e6f9b6fb1b233d7eb774872f0))
+
+## [0.288.2](https://github.com/teamkeel/keel/compare/v0.288.1...v0.288.2) (2023-03-24)
+
+
+### Bug Fixes
+
+* dont format ID type as Id ([#870](https://github.com/teamkeel/keel/issues/870)) ([f2f907f](https://github.com/teamkeel/keel/commit/f2f907f97f17f19cf0b14e7380f2ce0d60f10291))
+
+## [0.288.1](https://github.com/teamkeel/keel/compare/v0.288.0...v0.288.1) (2023-03-23)
+
+
+### Bug Fixes
+
+* use sub for JWT id ([59dbc8e](https://github.com/teamkeel/keel/commit/59dbc8e3f946347931781b4f06ff0feacbc73687))
+
 # [0.288.0](https://github.com/teamkeel/keel/compare/v0.287.0...v0.288.0) (2023-03-22)
 
 
