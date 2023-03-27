@@ -1,3 +1,12 @@
+## [0.289.2](https://github.com/teamkeel/keel/compare/v0.289.1...v0.289.2) (2023-03-27)
+
+
+### Bug Fixes
+
+* add seconds back to timestamp gql object (#BLD-344) ([f52ead7](https://github.com/teamkeel/keel/commit/f52ead7407a7bf238401ac02382637cf59df0180)), closes [#BLD-344](https://github.com/teamkeel/keel/issues/BLD-344)
+* update tests to check for seconds ([8ce9ba5](https://github.com/teamkeel/keel/commit/8ce9ba55fa95a587e909afb709ca6e928b94ea50))
+* update tests to include seconds field in timestamp object (#BLD-344) ([7ea8139](https://github.com/teamkeel/keel/commit/7ea81390dc8d25ad2a31211a633cd9be5903474c)), closes [#BLD-344](https://github.com/teamkeel/keel/issues/BLD-344)
+
 ## [0.289.1](https://github.com/teamkeel/keel/compare/v0.289.0...v0.289.1) (2023-03-27)
 
 
