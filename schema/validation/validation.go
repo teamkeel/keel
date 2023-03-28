@@ -37,6 +37,7 @@ var validatorFuncs = []validationFunc{
 	actions.ActionTypesRule,
 	actions.UniqueOperationNamesRule,
 	actions.ValidActionInputTypesRule,
+	actions.ValidArbitraryFunctionReturns,
 	actions.GetOperationUniqueConstraintRule,
 	actions.DeleteOperationUniqueConstraintRule,
 	actions.ListActionModelInputsRule,

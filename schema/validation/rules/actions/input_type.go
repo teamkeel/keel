@@ -24,6 +24,52 @@ func ValidActionInputTypesRule(asts []*parser.AST) (errs errorhandling.Validatio
 	return errs
 }
 
+func ValidArbitraryFunctionReturns(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
+			if !action.IsArbitraryFunction() {
+				continue
+			}
+
+			returns := action.Returns
+
+			returnType := returns[0].Type.ToString()
+			message := query.Message(asts, returnType)
+
+			switch {
+			case len(returns) < 1:
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.ActionInputError,
+					errorhandling.ErrorDetails{
+						Message: "read and write functions must return exactly one message-based response",
+						Hint:    fmt.Sprintf("Add a return type to %s.", action.Name.Value),
+					},
+					action,
+				))
+			case len(returns) > 1:
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.ActionInputError,
+					errorhandling.ErrorDetails{
+						Message: "read and write functions must return exactly one message-based response",
+						Hint:    fmt.Sprintf("'%s' can be the only response to '%s'. Additional returns are not permitted.", returns[0].Type.ToString(), action.Name.Value),
+					},
+					returns[0].Type,
+				))
+			case message == nil && returnType != parser.MessageFieldTypeAny:
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.ActionInputError,
+					errorhandling.ErrorDetails{
+						Message: "read and write functions must return a message-based response, or Any",
+						Hint:    fmt.Sprintf("'%s' was not recognised as a known message.", returns[0].Type.ToString()),
+					},
+					returns[0].Type,
+				))
+			}
+		}
+	}
+	return errs
+}
+
 // validateInputType makes sure that one particular action input
 // is well formed and conform to various rules.
 func validateInputType(
