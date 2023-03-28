@@ -105,8 +105,8 @@ func (statement *Statement) SqlArgs() []any {
 }
 
 type QueryBuilder struct {
-	// The model this query building is acting on.
-	Model string
+	// The base model this query builder is acting on.
+	Model *proto.Model
 	// The table name in the database.
 	table string
 	// The columns and clauses in SELECT.
@@ -126,7 +126,7 @@ type QueryBuilder struct {
 	// The ordered slice of arguments for the SQL statement template.
 	args []any
 	// The graph of rows to be written during an INSERT or UPDATE.
-	writeValues *Row
+	writeValues *Row //used to be a map[string]any
 }
 
 type join struct {
@@ -140,15 +140,22 @@ type Row struct {
 	model *proto.Model
 	// The values of the fields to insert.
 	values map[string]any
-	// Other rows to insert which are dependent on this row.
-	referencedBy []*Row
 	// Other rows to insert which this row depends on.
-	references []*Row
+	references []*Relationship
+	// Other rows to insert which are dependent on this row.
+	referencedBy []*Relationship
+}
+
+type Relationship struct {
+	// The row which is either referenced to or by in a relationship.
+	row *Row
+	// The foreign key in the relationship.
+	foreignKey *proto.Field
 }
 
 func NewQuery(model *proto.Model) *QueryBuilder {
 	return &QueryBuilder{
-		Model:      model.Name,
+		Model:      model,
 		table:      strcase.ToSnake(model.Name),
 		selection:  []string{},
 		distinctOn: []string{},
@@ -161,8 +168,8 @@ func NewQuery(model *proto.Model) *QueryBuilder {
 		writeValues: &Row{
 			model:        nil,
 			values:       map[string]any{},
-			referencedBy: []*Row{},
-			references:   []*Row{},
+			referencedBy: []*Relationship{},
+			references:   []*Relationship{},
 		},
 	}
 }
@@ -185,11 +192,12 @@ func (query *QueryBuilder) Copy() *QueryBuilder {
 
 // Includes a value to be written during an INSERT or UPDATE.
 func (query *QueryBuilder) AddWriteValue(fieldName string, value any) {
-	query.writeValues.values[strcase.ToSnake(fieldName)] = value
+	query.writeValues.values[fieldName] = value
 }
 
-// Includes values to be written during an INSERT or UPDATE.
+// Includes root values to be written during an INSERT or UPDATE for a model.
 func (query *QueryBuilder) AddWriteValues(values map[string]any) {
+	query.writeValues.model = query.Model
 	for k, v := range values {
 		query.AddWriteValue(k, v)
 	}
@@ -439,35 +447,131 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 
 // Generates an executable INSERT statement with the list of arguments.
 func (query *QueryBuilder) InsertStatement() *Statement {
-	returning := ""
-	columns := []string{}
-	args := []any{}
-
-	// Make iterating through the map with deterministic ordering
-	orderedKeys := make([]string, 0, len(query.writeValues.values))
-	for k := range query.writeValues.values {
-		orderedKeys = append(orderedKeys, k)
-	}
-	sort.Strings(orderedKeys)
-	for _, v := range orderedKeys {
-		columns = append(columns, v)
-		args = append(args, query.writeValues.values[v])
-	}
-
-	if len(query.returning) > 0 {
-		returning = fmt.Sprintf("RETURNING %s", strings.Join(query.returning, ", "))
-	}
-
-	template := fmt.Sprintf("INSERT INTO %s (%s) VALUES (%s) %s",
-		sqlQuote(query.table),
-		strings.Join(columns, ", "),
-		strings.Join(strings.Split(strings.Repeat("?", len(query.writeValues.values)), ""), ", "),
-		returning)
+	sql, args, _, alias := query.generateInsertCte(query.writeValues, nil, "")
 
 	return &Statement{
-		template: template,
+		template: fmt.Sprintf("WITH %s SELECT * FROM %s", sql, alias),
 		args:     args,
 	}
+}
+
+// Recursively generates in common table expression insert query for the write values graph.
+func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) (string, []any, *proto.Field, string) {
+	sql := ""
+	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), strcase.ToSnake(row.model.Name))
+
+	columnNames := []string{}
+	args := []any{}
+
+	// Rows which this row references need to created first, and the primary needs to be extracted (as a SELECT statement from them to insert into this row.
+	// The foreign key field for this row is returned, along with the alias of the table needed to extract the primary key from.
+	for _, r := range row.references {
+		var foreignKeyField *proto.Field
+		var primaryKeyTable string
+
+		s, a, foreignKeyField, primaryKeyTable := query.generateInsertCte(r.row, r.foreignKey, alias)
+		if len(sql) > 0 {
+			sql += ", "
+		}
+		sql += s
+		args = append(args, a...)
+
+		// For every row that this references, we need to set the foreign key.
+		// For example, on the Sale row; customerId = (SELECT id FROM new_customer_1)
+		if foreignKeyField != nil && row.model.Name == foreignKeyField.ModelName {
+			row.values[foreignKeyField.ForeignKeyFieldName.Value] = &inlineSelect{sql: fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTable)}
+		}
+	}
+
+	// Does this foreign key of the relationship exist on this row?
+	// This means this row exists as a referencedBy row for another.
+	// For example, on the SaleItem row; saleId = (SELECT id FROM new_sale_1)
+	if foreignKey != nil && row.model.Name == foreignKey.ModelName {
+		row.values[foreignKey.ForeignKeyFieldName.Value] = &inlineSelect{sql: fmt.Sprintf("(SELECT id FROM %s)", primaryKeyTableAlias)}
+	}
+
+	// Make iterating through the map with deterministic ordering
+	orderedKeys := make([]string, 0, len(row.values))
+	for k := range row.values {
+		orderedKeys = append(orderedKeys, k)
+	}
+
+	columnValues := []string{}
+	sort.Strings(orderedKeys)
+	for _, col := range orderedKeys {
+		colName := strcase.ToSnake(col)
+		columnNames = append(columnNames, colName)
+
+		if inline, ok := row.values[col].(*inlineSelect); ok {
+			columnValues = append(columnValues, inline.sql)
+		} else {
+			args = append(args, row.values[col])
+			columnValues = append(columnValues, "?")
+		}
+	}
+
+	cte := fmt.Sprintf("%s AS (INSERT INTO %s (%s) VALUES (%s) RETURNING *)",
+		alias,
+		sqlQuote(strcase.ToSnake(row.model.Name)),
+		strings.Join(columnNames, ", "),
+		strings.Join(columnValues, ", "))
+
+	if len(sql) > 0 {
+		sql += ", "
+	}
+	sql += cte
+
+	// If this row is referenced by other rows, then we need to create these rows afterwards. We need to pass in this row table alias in order to extract the primary key.
+	for _, r := range row.referencedBy {
+		s, a, _, _ := query.generateInsertCte(r.row, r.foreignKey, alias)
+		if len(sql) > 0 {
+			sql += ", "
+		}
+		sql += s
+		args = append(args, a...)
+	}
+
+	return sql, args, foreignKey, alias
+}
+
+type inlineSelect struct {
+	sql string
+}
+
+// Generates a unique alias for this row in the graph.
+func makeAlias(graph *Row, row *Row) int {
+	rows := orderGraphNodes(graph)
+
+	modelCount := map[string]int{}
+
+	for _, r := range rows {
+		modelCount[r.model.Name] += 1
+
+		if r == row {
+			return modelCount[r.model.Name]
+		}
+	}
+
+	panic("the row does not exist within this graph")
+}
+
+// Generates an ordered slice of rows by insertion order.
+func orderGraphNodes(graph *Row) []*Row {
+	rows := []*Row{}
+
+	for _, r := range graph.references {
+		g := orderGraphNodes(r.row)
+		rows = append(rows, g...)
+	}
+
+	rows = append(rows, graph)
+
+	for _, r := range graph.referencedBy {
+		g := orderGraphNodes(r.row)
+		rows = append(rows, g...)
+	}
+
+	return rows
 }
 
 // Generates an executable UPDATE statement with the list of arguments.
@@ -485,7 +589,7 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	}
 	sort.Strings(orderedKeys)
 	for _, v := range orderedKeys {
-		sets = append(sets, fmt.Sprintf("%s = ?", v))
+		sets = append(sets, fmt.Sprintf("%s = ?", strcase.ToSnake(v)))
 		args = append(args, query.writeValues.values[v])
 	}
 

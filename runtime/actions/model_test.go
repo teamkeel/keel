@@ -228,8 +228,8 @@ func TestZeroValueForModel(t *testing.T) {
 	}
 	modelMap, err := initialValueForModel(&model, schema)
 	require.NoError(t, err)
-	require.Equal(t, 0, modelMap["int_field"])
-	require.Equal(t, "", modelMap["string_field"])
+	require.Equal(t, 0, modelMap["intField"])
+	require.Equal(t, "", modelMap["stringField"])
 }
 
 type equality struct {

@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -92,12 +93,14 @@ var testCases = []testCase{
 		operationName: "createPerson",
 		input:         map[string]any{},
 		expectedTemplate: `
-			INSERT INTO "person" 
-				(age, created_at, id, is_active, name, updated_at)
-			VALUES 
-				(?, ?, ?, ?, ?, ?) 
-			RETURNING 
-				"person".*`,
+			WITH 
+				new_1_person AS 
+					(INSERT INTO "person" 
+						(age, created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
 		expectedArgs: []any{100, ignore, ignore, true, "Bob", ignore},
 	},
 	{
@@ -121,12 +124,14 @@ var testCases = []testCase{
 		operationName: "createPerson",
 		input:         map[string]any{},
 		expectedTemplate: `
-			INSERT INTO "person" 
-				(age, created_at, id, is_active, name, updated_at)
-			VALUES 
-				(?, ?, ?, ?, ?, ?) 
-			RETURNING 
-				"person".*`,
+			WITH 
+				new_1_person AS 
+					(INSERT INTO "person" 
+						(age, created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
 		expectedArgs: []any{100, ignore, ignore, true, "Bob", ignore},
 	},
 	{
@@ -146,12 +151,14 @@ var testCases = []testCase{
 		operationName: "createPerson",
 		input:         map[string]any{},
 		expectedTemplate: `
-			INSERT INTO "person" 
-				(age, created_at, id, is_active, name, updated_at)
-			VALUES 
-				(?, ?, ?, ?, ?, ?)
-			RETURNING 
-				"person".*`,
+			WITH 
+				new_1_person AS 
+					(INSERT INTO "person" 
+						(age, created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
 		expectedArgs: []any{nil, ignore, ignore, nil, nil, ignore},
 	},
 	{
@@ -710,12 +717,14 @@ var testCases = []testCase{
 			"parent": map[string]any{"id": "123"},
 		},
 		expectedTemplate: `
-			INSERT INTO "thing" 
-				(age, created_at, id, name, parent_id, updated_at)
-			VALUES 
-				(?, ?, ?, ?, ?, ?) 
-			RETURNING 
-				"thing".*`,
+			WITH 
+				new_1_thing AS 
+					(INSERT INTO "thing" 
+						(age, created_at, id, name, parent_id, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_thing`,
 		expectedArgs: []any{21, ignore, ignore, "bob", "123", ignore},
 	},
 	{
@@ -1138,6 +1147,395 @@ var testCases = []testCase{
 				"thing"."id"`,
 		expectedArgs: []any{"789", "XYZ", "ABC"},
 	},
+	{
+		name: "create_relationships_1_to_M",
+		keelSchema: `
+			model Order {
+				fields {
+					onPromotion Boolean
+					items OrderItem[]
+				}
+				operations {
+					create createOrder() with (onPromotion, items.quantity, items.product.id)
+				}
+				@permission(expression: true, actions: [create])
+			}	
+			model Product {
+				fields {
+					name Text
+				}
+			}
+			model OrderItem {
+				fields {
+					order Order
+					quantity Text
+					product Product
+				}
+			}`,
+		operationName: "createOrder",
+		input: map[string]any{
+			"onPromotion": true,
+			"items": []any{
+				map[string]any{
+					"quantity": 2,
+					"product": map[string]any{
+						"id": "xyz",
+					},
+				},
+				map[string]any{
+					"quantity": 4,
+					"product": map[string]any{
+						"id": "abc",
+					},
+				},
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				new_1_order AS 
+					(INSERT INTO "order" 
+						(created_at, id, on_promotion, updated_at) 
+					VALUES 
+						(?, ?, ?, ?) 
+					RETURNING *), 
+				new_1_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, id, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+					RETURNING *), 
+				new_2_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, id, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_order`,
+		expectedArgs: []any{
+			ignore, ignore, true, ignore, // new_1_order
+			ignore, ignore, "xyz", 2, ignore, // new_1_order_item
+			ignore, ignore, "abc", 4, ignore, // new_2_order_item
+		},
+	},
+	{
+		name: "create_relationships_M_to_1_to_M",
+		keelSchema: `
+			model Order {
+				fields {
+					product Product
+				}
+				operations {
+					create createOrder() with (product.name, product.attributes.name, product.attributes.status)
+				}
+				@permission(expression: true, actions: [create])
+			}	
+			model Product {
+				fields {
+					name Text
+					isActive Boolean @default(true)
+					attributes ProductAttribute[]
+				}
+			}
+			model ProductAttribute {
+				fields {
+					product Product
+					name Text
+					status AttributeStatus
+				}
+			}
+			enum AttributeStatus {
+				NotApplicable
+				Unknown
+				Yes
+				No
+			}`,
+		operationName: "createOrder",
+		input: map[string]any{
+			"product": map[string]any{
+				"name": "Child Bicycle",
+				"attributes": []any{
+					map[string]any{
+						"name":   "FDA approved",
+						"status": "NotApplicable",
+					},
+					map[string]any{
+						"name":   "Toy-safety-council approved",
+						"status": "Yes",
+					},
+				},
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				new_1_product AS 
+					(INSERT INTO "product" 
+						(created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?) 
+					RETURNING *), 
+				new_1_product_attribute AS 
+					(INSERT INTO "product_attribute" 
+						(created_at, id, name, product_id, status, updated_at) 
+					VALUES 
+						(?, ?, ?, (SELECT id FROM new_1_product), ?, ?) 
+					RETURNING *), 
+				new_2_product_attribute AS 
+					(INSERT INTO "product_attribute" 
+						(created_at, id, name, product_id, status, updated_at) 
+					VALUES (?, ?, ?, 
+						(SELECT id FROM new_1_product), ?, ?) 
+					RETURNING *), 
+				new_1_order AS 
+					(INSERT INTO "order" 
+						(created_at, id, product_id, updated_at) 
+					VALUES 
+						(?, ?, (SELECT id FROM new_1_product), ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_order`,
+		expectedArgs: []any{
+			ignore, ignore, true, "Child Bicycle", ignore, // new_1_product
+			ignore, ignore, "FDA approved", "NotApplicable", ignore, // new_1_product_attribute
+			ignore, ignore, "Toy-safety-council approved", "Yes", ignore, // new_2_product_attribute
+			ignore, ignore, ignore, // new_1_order
+		},
+	},
+	{
+		name: "create_relationships_1_to_M_to_1",
+		keelSchema: `
+			model Order {
+				fields {
+					items OrderItem[]
+				}
+				operations {
+					create createOrder() with (items.quantity, items.product.name)
+				}
+				@permission(expression: true, actions: [create])
+			}	
+			model Product {
+				fields {
+					name Text
+					isActive Boolean @default(true)
+				}
+			}
+			model OrderItem {
+				fields {
+					order Order
+					quantity Text
+					product Product
+					isReturned Boolean @default(false)
+				}
+			}`,
+		operationName: "createOrder",
+		input: map[string]any{
+			"items": []any{
+				map[string]any{
+					"quantity": 2,
+					"product": map[string]any{
+						"name": "Hair dryer",
+					},
+				},
+				map[string]any{
+					"quantity": 4,
+					"product": map[string]any{
+						"name": "Hair clips",
+					},
+				},
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				new_1_order AS 
+					(INSERT INTO "order" 
+						(created_at, id, updated_at) 
+					VALUES 
+						(?, ?, ?) 
+					RETURNING *), 
+				new_1_product AS 
+					(INSERT INTO "product" 
+						(created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?) 
+					RETURNING *),
+				new_1_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, id, is_returned, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, ?, ?, (SELECT id FROM new_1_order), (SELECT id FROM new_1_product), ?, ?) 
+					RETURNING *), 
+				new_2_product AS 
+					(INSERT INTO "product" 
+						(created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?) 
+					RETURNING *),
+				new_2_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, id, is_returned, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, ?, ?, (SELECT id FROM new_1_order), (SELECT id FROM new_2_product), ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_order`,
+		expectedArgs: []any{
+			ignore, ignore, ignore, // new_1_order
+			ignore, ignore, true, "Hair dryer", ignore, // new_1_product
+			ignore, ignore, false, 2, ignore, //new_1_order_item
+			ignore, ignore, true, "Hair clips", ignore, // new_2_product
+			ignore, ignore, false, 4, ignore, //new_2_order_item
+		},
+	},
+	{
+		name: "create_relationships_M_to_1_multiple",
+		keelSchema: `
+			model Order {
+				fields {
+					product1 Product
+					product2 Product
+				}
+				operations {
+					create createOrder() with (product1.name, product2.name)
+				}
+				@permission(expression: true, actions: [create])
+			}	
+			model Product {
+				fields {
+					name Text
+					isActive Boolean @default(true)
+				}
+			}`,
+		operationName: "createOrder",
+		input: map[string]any{
+			"product1": map[string]any{
+				"name": "Child Bicycle",
+			},
+			"product2": map[string]any{
+				"name": "Adult Bicycle",
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				new_1_product AS 
+					(INSERT INTO "product" 
+						(created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?) 
+					RETURNING *), 
+				new_2_product AS 
+					(INSERT INTO "product" 
+						(created_at, id, is_active, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?) 
+					RETURNING *), 
+				new_1_order AS 
+					(INSERT INTO "order" 
+						(created_at, id, product_1_id, product_2_id, updated_at) 
+					VALUES 
+						(?, ?, (SELECT id FROM new_1_product), (SELECT id FROM new_2_product), ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_order`,
+		expectedArgs: []any{
+			ignore, ignore, true, "Child Bicycle", ignore, // new_1_product
+			ignore, ignore, true, "Adult Bicycle", ignore, // new_2_product
+			ignore, ignore, ignore, // new_1_order
+		},
+	},
+	{
+		name: "create_relationships_1_to_M_multiple1",
+		keelSchema: `
+			model Order {
+				fields {
+					items OrderItem[] 
+					freeItems OrderItem[]
+				}
+				operations {
+					create createOrder() with (items.quantity, items.product.id, freeItems.quantity, freeItems.product.id)
+				}
+				@permission(expression: true, actions: [create])
+			}	
+			model Product {
+				fields {
+					name Text
+				}
+			}
+			model OrderItem {
+				fields {
+					order Order? @relation(items)
+					freeOnOrder Order? @relation(freeItems)
+					quantity Text
+					product Product
+				}
+			}`,
+		operationName: "createOrder",
+		input: map[string]any{
+			"items": []any{
+				map[string]any{
+					"quantity": 2,
+					"product": map[string]any{
+						"id": "paid1",
+					},
+				},
+				map[string]any{
+					"quantity": 4,
+					"product": map[string]any{
+						"id": "paid2",
+					},
+				},
+			},
+			"freeItems": []any{
+				map[string]any{
+					"quantity": 6,
+					"product": map[string]any{
+						"id": "free1",
+					},
+				},
+				map[string]any{
+					"quantity": 8,
+					"product": map[string]any{
+						"id": "free2",
+					},
+				},
+			},
+		},
+		expectedTemplate: `
+			WITH 
+				new_1_order AS 
+					(INSERT INTO "order" 
+						(created_at, id, updated_at) 
+					VALUES 
+						(?, ?, ?) 
+					RETURNING *), 
+				new_1_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, ?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+					RETURNING *), 
+				new_2_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, ?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+					RETURNING *), 
+				new_3_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, (SELECT id FROM new_1_order), ?, ?, ?, ?, ?) 
+					RETURNING *), 
+				new_4_order_item AS 
+					(INSERT INTO "order_item" 
+						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+					VALUES 
+						(?, (SELECT id FROM new_1_order), ?, ?, ?, ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_order`,
+		expectedArgs: []any{
+			ignore, ignore, ignore, // new_1_order
+			ignore, ignore, ignore, "paid1", 2, ignore, // new_1_order_item
+			ignore, ignore, ignore, "paid2", 4, ignore, // new_2_order_item
+			ignore, ignore, ignore, "free1", 6, ignore, // new_3_order_item
+			ignore, ignore, ignore, "free2", 8, ignore, // new_4_order_item
+		},
+	},
 }
 
 func TestQueryBuilder(t *testing.T) {
@@ -1171,20 +1569,16 @@ func TestQueryBuilder(t *testing.T) {
 			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
 
 			if testCase.expectedArgs != nil {
-
-				argumentsEqual := true
 				for i := 1; i < len(testCase.expectedArgs); i++ {
 					if testCase.expectedArgs[i] != ignore && testCase.expectedArgs[i] != statement.SqlArgs()[i] {
-						argumentsEqual = false
+						assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
 						break
 					}
 				}
 
 				if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
-					argumentsEqual = false
+					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
 				}
-
-				require.True(t, argumentsEqual, fmt.Sprintf("SQL arguments not equal. Expected: %v, Actual: %v", testCase.expectedArgs, statement.SqlArgs()))
 			}
 		})
 	}
