@@ -27,6 +27,7 @@ const (
 	ModeValidate = iota
 	ModeRun
 	ModeTest
+	ModeScaffold
 )
 
 const (
@@ -38,6 +39,7 @@ const (
 	StatusStartingFunctions
 	StatusRunning
 	StatusQuitting
+	StatusScaffolded
 )
 
 func Run(model *Model) {
@@ -90,6 +92,7 @@ type Model struct {
 	Config           *config.ProjectConfig
 	SchemaFiles      []reader.SchemaFile
 	DatabaseConnInfo *db.ConnectionInfo
+	GeneratedFiles   node.GeneratedFiles
 	MigrationChanges []*migrations.DatabaseChange
 	FunctionsServer  *node.DevelopmentServer
 	RuntimeHandler   http.Handler
@@ -127,6 +130,9 @@ func (m *Model) Init() tea.Cmd {
 
 	switch m.Mode {
 	case ModeValidate:
+		m.Status = StatusLoadSchema
+		return LoadSchema(m.ProjectDir, m.Environment)
+	case ModeScaffold:
 		m.Status = StatusLoadSchema
 		return LoadSchema(m.ProjectDir, m.Environment)
 	case ModeRun, ModeTest:
@@ -189,13 +195,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		return m, tea.Batch(cmds...)
-
+	case ScaffoldMsg:
+		m.GeneratedFiles = msg.GeneratedFiles
+		m.Status = StatusScaffolded
+		return m, tea.Quit
 	case LoadSchemaMsg:
 		m.Schema = msg.Schema
 		m.SchemaFiles = msg.SchemaFiles
 		m.Config = msg.Config
 		m.Err = msg.Err
 		m.Secrets = msg.Secrets
+
+		if m.Mode == ModeScaffold {
+			return m, Scaffold(m.ProjectDir)
+		}
 
 		// For validate mode we're done
 		if m.Mode == ModeValidate {
@@ -384,45 +397,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	b := strings.Builder{}
 
-	if m.Status == StatusQuitting {
-		b.WriteString("Goodbye 👋")
-		return b.String() + "\n"
-	}
-
-	if m.Mode == ModeValidate {
-		if m.Err == nil && m.Schema == nil {
-			b.WriteString("⏳ Loading schema")
-		}
-		if m.Err == nil && m.Schema != nil {
-			b.WriteString("✨ Everything's looking good!")
-		}
-	}
-
-	if m.Mode == ModeRun {
+	// Mode specific output
+	switch m.Mode {
+	case ModeRun:
 		b.WriteString(renderRun(m))
-	}
-
-	if m.Mode == ModeTest {
-		if m.TestOutput != "" {
-			b.WriteString(m.TestOutput)
-		} else {
-			switch m.Status {
-			case StatusRunning:
-				b.WriteString("🏃‍♂️ Running tests")
-			default:
-				b.WriteString("⏳ Setting up tests")
-			}
-		}
+	case ModeValidate:
+		b.WriteString(renderValidate(m))
+	case ModeTest:
+		b.WriteString(renderTest(m))
+	case ModeScaffold:
+		b.WriteString(renderScaffold(m))
 	}
 
 	if m.Err != nil {
-		if m.Mode != ModeValidate {
-			b.WriteString("\n")
-		}
-
-		if m.Mode != ModeTest || m.TestOutput == "" {
-			b.WriteString(renderError(m))
-		}
+		b.WriteString(renderError(m))
 	}
 
 	// The final "\n" is important as when Bubbletea exists it resets the last
