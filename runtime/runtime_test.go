@@ -31,7 +31,7 @@ import (
 // This suite of tests has on the most part been replaced by the integration test framework (see https://github.com/teamkeel/keel/tree/main/integration/testdata)
 // HOWEVER, if you want to explicitly test the graphql layer, please add a test here
 
-func TestRuntime(t *testing.T) {
+func TestRuntimeGraphQL(t *testing.T) {
 	// We connect to the "main" database here only so we can create a new database
 	// for each sub-test
 	for _, tCase := range testCases {
@@ -846,6 +846,8 @@ var testCases = []testCase{
 						hasNextPage
 						startCursor
 						endCursor
+						count
+						totalCount
 					}
 					edges {
 					  node {
@@ -874,6 +876,8 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "Fred_0009_id")
 			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "Fred_0018_id")
 			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+			rtt.AssertValueAtPath(t, pageInfoMap, "count", float64(10))
+			rtt.AssertValueAtPath(t, pageInfoMap, "totalCount", float64(100))
 
 			// todo - we should test hasNextPage when there isn't one - but defer until we switch over to
 			// the integration test framework.
@@ -1519,6 +1523,8 @@ var testCases = []testCase{
 							hasNextPage
 							startCursor
 							endCursor
+							totalCount
+							count
 						}
 					}
 				}
@@ -1548,6 +1554,8 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_1")
 			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_2")
 			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+			rtt.AssertValueAtPath(t, pageInfoMap, "totalCount", float64(3))
+			rtt.AssertValueAtPath(t, pageInfoMap, "count", float64(2))
 		},
 	},
 	{
@@ -1625,6 +1633,8 @@ var testCases = []testCase{
 							hasNextPage
 							startCursor
 							endCursor
+							totalCount
+							count
 						}
 					}
 				}
@@ -1651,6 +1661,8 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_3")
 			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_3")
 			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", false)
+			rtt.AssertValueAtPath(t, pageInfoMap, "totalCount", float64(3))
+			rtt.AssertValueAtPath(t, pageInfoMap, "count", float64(1))
 		},
 	},
 	{
@@ -1730,6 +1742,8 @@ var testCases = []testCase{
 									hasNextPage
 									startCursor
 									endCursor
+									totalCount
+									count
 								}
 							}
 						}
@@ -1766,6 +1780,8 @@ var testCases = []testCase{
 			rtt.AssertValueAtPath(t, pageInfoMap, "startCursor", "post_1")
 			rtt.AssertValueAtPath(t, pageInfoMap, "endCursor", "post_2")
 			rtt.AssertValueAtPath(t, pageInfoMap, "hasNextPage", true)
+			rtt.AssertValueAtPath(t, pageInfoMap, "totalCount", float64(3))
+			rtt.AssertValueAtPath(t, pageInfoMap, "count", float64(2))
 		},
 	},
 	{
@@ -2378,8 +2394,9 @@ var rpcTestCases = []rpcTestCase{
 
 			results := res["results"].([]interface{})
 			require.Len(t, results, 1)
+			pageInfo := res["pageInfo"].(map[string]any)
 
-			hasNextPage := res["hasNextPage"].(bool)
+			hasNextPage := pageInfo["hasNextPage"].(bool)
 			require.Equal(t, false, hasNextPage)
 		},
 	},
@@ -2427,9 +2444,71 @@ var rpcTestCases = []rpcTestCase{
 		assertResponse: func(t *testing.T, res map[string]any) {
 			results := res["results"].([]interface{})
 			require.Len(t, results, 2)
+			pageInfo := res["pageInfo"].(map[string]any)
 
-			hasNextPage := res["hasNextPage"].(bool)
+			hasNextPage := pageInfo["hasNextPage"].(bool)
 			require.Equal(t, false, hasNextPage)
+		},
+	},
+	{
+		name: "rpc_list_paging",
+		keelSchema: `
+		model Thing {
+			fields {
+				text Text
+			}
+			operations {
+				list listThings()
+			}
+			@permission(
+				expression: true,
+				actions: [list]
+			)
+		}
+		api Test {
+			models {
+				Thing
+			}
+		}
+	`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			row1 := initRow(map[string]any{
+				"id":   "id_1",
+				"text": "foobar",
+			})
+			require.NoError(t, db.Table("thing").Create(row1).Error)
+			row2 := initRow(map[string]any{
+				"id":   "id_2",
+				"text": "foobaz",
+			})
+			require.NoError(t, db.Table("thing").Create(row2).Error)
+			row3 := initRow(map[string]any{
+				"id":   "id_3",
+				"text": "boop",
+			})
+			require.NoError(t, db.Table("thing").Create(row3).Error)
+			row4 := initRow(map[string]any{
+				"id":   "id_4",
+				"text": "boop",
+			})
+			require.NoError(t, db.Table("thing").Create(row4).Error)
+		},
+		Path:   "listThings",
+		Body:   `{"where": { }, "first": 2}`,
+		Method: http.MethodPost,
+		assertResponse: func(t *testing.T, res map[string]any) {
+			results := res["results"].([]interface{})
+			require.Len(t, results, 2)
+
+			pageInfo := res["pageInfo"].(map[string]any)
+
+			hasNextPage := pageInfo["hasNextPage"].(bool)
+			require.Equal(t, true, hasNextPage)
+
+			assert.Equal(t, "id_2", pageInfo["endCursor"].(string))
+
+			totalCount := pageInfo["totalCount"].(float64)
+			assert.Equal(t, float64(4), totalCount)
 		},
 	},
 	{

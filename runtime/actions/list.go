@@ -73,7 +73,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Execute database request with results
-	results, _, hasNextPage, err := statement.ExecuteToMany(scope.context)
+	results, pageInfo, err := statement.ExecuteToMany(scope.context)
 
 	if err != nil {
 		return nil, err
@@ -83,22 +83,9 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		results = lo.Reverse(results)
 	}
 
-	var startCursor string
-	var endCursor string
-
-	for i, record := range results {
-		if i == 0 {
-			startCursor, _ = record["id"].(string)
-		} else if i == len(results)-1 {
-			endCursor, _ = record["id"].(string)
-		}
-	}
-
 	return map[string]any{
-		"results":     results,
-		"hasNextPage": hasNextPage,
-		"startCursor": startCursor,
-		"endCursor":   endCursor,
+		"results":  results,
+		"pageInfo": pageInfo.ToMap(),
 	}, nil
 }
 

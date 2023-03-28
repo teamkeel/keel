@@ -18,7 +18,9 @@ async function setupPosts({ count }: { count: number }): Promise<Post[]> {
 
 test("pagination - before", async () => {
   const posts = await setupPosts({ count: 6 });
-  const { endCursor } = await actions.listPosts({
+  const {
+    pageInfo: { endCursor },
+  } = await actions.listPosts({
     first: 4,
   });
 
@@ -32,8 +34,10 @@ test("pagination - before", async () => {
 });
 
 test("pagination - last with before", async () => {
-  const posts = await setupPosts({ count: 6 });
-  const { endCursor, results: firstResults } = await actions.listPosts({
+  await setupPosts({ count: 6 });
+  const {
+    pageInfo: { endCursor },
+  } = await actions.listPosts({
     first: 4,
   });
 
@@ -73,7 +77,9 @@ test("pagination - last only", async () => {
 
 test("pagination - first with after", async () => {
   const posts = await setupPosts({ count: 6 });
-  const { endCursor } = await actions.listPosts({
+  const {
+    pageInfo: { endCursor },
+  } = await actions.listPosts({
     first: 4,
   });
 
@@ -90,7 +96,9 @@ test("pagination - first with after", async () => {
 
 test("pagination - after", async () => {
   const posts = await setupPosts({ count: 6 });
-  const { endCursor } = await actions.listPosts({
+  const {
+    pageInfo: { endCursor },
+  } = await actions.listPosts({
     first: 3,
   });
 

@@ -59,6 +59,7 @@ type Identity {
 }
 
 type PageInfo {
+  count: Int!
   endCursor: String!
   hasNextPage: Boolean!
   startCursor: String!

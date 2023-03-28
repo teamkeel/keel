@@ -307,6 +307,14 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlQuote(query.table))
 	query.AppendSelectClause(hasNext)
 
+	// We add a subquery to the select list that fetches the total count of records
+	// matching the constraints specified by the main query without the offset/limit applied
+	// This is actually more performant than COUNT(*) OVER() [window function]
+	totalResults := fmt.Sprintf("(%s) AS totalCount", query.countQuery())
+	query.AppendSelectClause(totalResults)
+	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
+	query.args = append(query.args, query.args...)
+
 	// Paging condition is ANDed to any existing conditions
 	query.And()
 
@@ -342,6 +350,37 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	query.AppendOrderBy(IdField(), sortOrder)
 
 	return nil
+}
+
+func (query *QueryBuilder) countQuery() string {
+	selection := "COUNT("
+	joins := ""
+	filters := ""
+	if len(query.distinctOn) > 0 {
+		selection += fmt.Sprintf("DISTINCT %s", strings.Join(query.distinctOn, ", "))
+	} else {
+		selection += "*"
+	}
+	selection += ")"
+
+	if len(query.joins) > 0 {
+		for _, j := range query.joins {
+			joins += fmt.Sprintf("INNER JOIN %s AS %s ON %s ", j.table, j.alias, j.condition)
+		}
+	}
+
+	conditions := trimRhsOperators(query.filters)
+	if len(conditions) > 0 {
+		filters = fmt.Sprintf("WHERE %s", strings.Join(conditions, " "))
+	}
+
+	sql := fmt.Sprintf("SELECT %s FROM %s %s %s",
+		selection,
+		sqlQuote(query.table),
+		joins,
+		filters)
+
+	return sql
 }
 
 // Generates an executable SELECT statement with the list of arguments.
@@ -581,47 +620,99 @@ func (statement *Statement) Execute(ctx context.Context) (int, error) {
 	return int(result.RowsAffected), nil
 }
 
+type Rows = []map[string]interface{}
+
+type PageInfo struct {
+	// Count returns the number of rows returned for the current page
+	Count int
+
+	// TotalCount returns the total number of rows across all pages
+	TotalCount int
+
+	// HasNextPage indicates if there is a subsequent page after the current page
+	HasNextPage bool
+
+	// StartCursor is the identifier representing the first row in the set
+	StartCursor string
+
+	// EndCursor is the identifier representing the last row in the set
+	EndCursor string
+}
+
+func (pi *PageInfo) ToMap() map[string]any {
+	return map[string]any{
+		"count":       pi.Count,
+		"totalCount":  pi.TotalCount,
+		"startCursor": pi.StartCursor,
+		"endCursor":   pi.EndCursor,
+		"hasNextPage": pi.HasNextPage,
+	}
+}
+
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
-func (statement *Statement) ExecuteToMany(ctx context.Context) ([]map[string]any, int, bool, error) {
+func (statement *Statement) ExecuteToMany(ctx context.Context) (Rows, *PageInfo, error) {
 	database, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
-		return nil, 0, false, err
+		return nil, nil, err
 	}
 
 	result, err := database.ExecuteQuery(ctx, statement.template, statement.args...)
 	if err != nil {
-		return nil, 0, false, toRuntimeError(err)
+		return nil, nil, toRuntimeError(err)
 	}
 
 	rows := result.Rows
-	rowsAffected := len(result.Rows)
+	returnedCount := len(result.Rows)
 
 	// Sort out the hasNextPage value, and clean up the response.
 	hasNextPage := false
-	if rowsAffected > 0 {
-		last := rows[rowsAffected-1]
+	var totalCount int64
+	var startCursor string
+	var endCursor string
+
+	if returnedCount > 0 {
+		last := rows[returnedCount-1]
 		var hasPagination bool
 		hasNextPage, hasPagination = last["hasnext"].(bool)
+
 		if hasPagination {
-			for _, row := range rows {
+			totalCount = last["totalcount"].(int64)
+
+			for i, row := range rows {
 				delete(row, "hasnext")
+				delete(row, "totalcount")
+
+				if i == 0 {
+					startCursor, _ = row["id"].(string)
+				}
+				if i == returnedCount-1 {
+					endCursor, _ = row["id"].(string)
+				}
 			}
 		}
 	}
 
-	return toLowerCamelMaps(rows), rowsAffected, hasNextPage, nil
+	pageInfo := &PageInfo{
+		Count:       returnedCount,
+		TotalCount:  int(totalCount),
+		HasNextPage: hasNextPage,
+		StartCursor: startCursor,
+		EndCursor:   endCursor,
+	}
+
+	return toLowerCamelMaps(rows), pageInfo, nil
 }
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
 func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any, error) {
-	results, affected, _, err := statement.ExecuteToMany(ctx)
+	results, pageInfo, err := statement.ExecuteToMany(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if affected > 1 {
-		return nil, fmt.Errorf("%v results returned for ExecuteToSingle which expects 0 or 1 result", affected)
-	} else if affected == 0 {
+	if pageInfo.Count > 1 {
+		return nil, fmt.Errorf("%v results returned for ExecuteToSingle which expects 0 or 1 result", pageInfo.Count)
+	} else if pageInfo.Count == 0 {
 		return nil, nil
 	}
 

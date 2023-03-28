@@ -111,7 +111,7 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 			permissionQuery.SelectStatement().template),
 		args: append(query.args, permissionQuery.args...)}
 
-	results, _, _, err := stmt.ExecuteToMany(scope.context)
+	results, _, err := stmt.ExecuteToMany(scope.context)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
