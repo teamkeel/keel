@@ -1,0 +1,34 @@
+model Business {
+    fields {
+        name Text
+        identity Identity
+    }
+}
+
+model Post {
+    fields {
+        title Text
+        business Business
+    }
+
+    functions {
+        get getSecretPost(id) {
+            @permission(expression: ctx.isAuthenticated)
+        }
+        get getPost(id) {
+            @permission(expression: post.business.identity == ctx.identity)
+        }
+        list listPosts() {
+            @permission(expression: post.business.identity == ctx.identity)
+        }
+        create createPost() with (title, business.id) {
+            @permission(expression: post.business.identity == ctx.identity)
+        }
+    }
+}
+
+api Web {
+    models {
+        Post
+    }
+}

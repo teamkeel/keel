@@ -5,7 +5,12 @@ const {
 } = require("json-rpc-2.0");
 
 const { getDatabase } = require("./database");
-const { PERMISSION_STATE, PermissionError } = require("./permissions");
+const {
+  PERMISSION_STATE,
+  PermissionError,
+  checkBuiltInPermissions,
+} = require("./permissions");
+const { PROTO_ACTION_TYPES_REQUEST_HANDLER } = require("./consts");
 
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 
@@ -13,7 +18,13 @@ const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
 async function handleRequest(request, config) {
-  const { createFunctionAPI, createContextAPI, functions } = config;
+  const {
+    createFunctionAPI,
+    createContextAPI,
+    functions,
+    permissions,
+    actionTypes,
+  } = config;
 
   if (!(request.method in functions)) {
     return createJSONRPCErrorResponse(
@@ -33,28 +44,48 @@ async function handleRequest(request, config) {
     // to any of the model apis we provide to the custom function is processed in a transaction.
     // This is useful for permissions where we want to only proceed with database writes if all permission rules
     // have been validated.
-    const result = await db.transaction().execute(async (trx) => {
-      const api = createFunctionAPI({ headers, db: trx });
+    const result = await db.transaction().execute(async (transaction) => {
       const ctx = createContextAPI(request.meta);
+      const api = createFunctionAPI({
+        headers,
+        db: transaction,
+      });
+
+      const customFunction = functions[request.method];
 
       // Call the user's custom function!
-      const fnResult = await functions[request.method](
-        request.params,
-        api,
-        ctx
-      );
+      const fnResult = await customFunction(request.params, api, ctx);
 
-      // api.permissions maintains an internal state of whether the current operation has been permitted either by the user or by built-in permission rules
-      // we need to check that the final state is permitted. if it's not, then we want to rollback
-      // the transaction
-      if (api.permissions.getState() !== PERMISSION_STATE.PERMITTED) {
-        // Any error thrown inside of Kysely's transaction execute() will cause the transaction to be rolled back.
-        // PermissionError is handled by our JSONRPC error serialisation code
-        throw new PermissionError(`Not permitted to access ${request.method}`);
-      } else {
-        // otherwise, if everything is permitted, then we just return the function result from
-        // the transaction closure.
-        return fnResult;
+      // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function.
+      // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
+      // and therefore we default to checking the permissions defined in the schema automatically.
+      switch (api.permissions.getState()) {
+        case PERMISSION_STATE.PERMITTED:
+          return fnResult;
+        case PERMISSION_STATE.UNPERMITTED:
+          throw new PermissionError(
+            `Not permitted to access ${request.method}`
+          );
+        default:
+          // unknown state, proceed with checking against the built in permissions in the schema
+          const relevantPermissions = permissions[request.method];
+
+          const actionType = actionTypes[request.method];
+          // We only want to run permission checks at the handleRequest level for action types list, get and create
+          // Delete and update permission checks need to be baked into the model api because they require reading records to be deleted / updated from the database first in order to ascertain whether the records to be deleted or updated fulfil the permission
+          if (PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(actionType)) {
+            // check will throw a PermissionError if a permission rule is invalid
+            await checkBuiltInPermissions({
+              rows: fnResult,
+              permissions: relevantPermissions,
+              db: transaction,
+              ctx,
+              functionName: request.method,
+            });
+          }
+
+          // If the built in permission check above doesn't throw, then it means that the request is permitted and we can continue returning the return value from the custom function out of the transaction
+          return fnResult;
       }
     });
 

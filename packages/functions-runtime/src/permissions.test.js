@@ -1,31 +1,120 @@
-import { Permissions, PERMISSION_STATE, PermissionError } from "./permissions";
+import {
+  Permissions,
+  PERMISSION_STATE,
+  PermissionError,
+  checkBuiltInPermissions,
+} from "./permissions";
+import { getDatabase } from "./database";
 
-import { beforeEach, expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
+
+process.env.KEEL_DB_CONN_TYPE = "pg";
+process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 
 let permissions;
+let ctx = {};
+let db = getDatabase();
 
-beforeEach(() => {
-  permissions = new Permissions();
+describe("explicit", () => {
+  beforeEach(() => {
+    permissions = new Permissions();
+  });
+
+  test("explicitly allowing execution", () => {
+    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
+
+    permissions.allow();
+
+    expect(permissions.getState()).toEqual(PERMISSION_STATE.PERMITTED);
+  });
+
+  test("explicitly denying execution", () => {
+    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
+
+    expect(() => permissions.deny()).toThrowError(PermissionError);
+
+    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
+  });
 });
 
-test("explicitly allowing execution", () => {
-  expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
+describe("check", () => {
+  const functionName = "createPerson";
 
-  permissions.allow();
+  test("check - success", async () => {
+    const permissionRule1 = (records, ctx, db) => {
+      // Only allow names starting with Adam
+      return records.every((r) => r.name.startsWith("Adam"));
+    };
 
-  expect(permissions.getState()).toEqual(PERMISSION_STATE.PERMITTED);
-});
+    const rows = [
+      {
+        id: "123",
+        name: "Adam Bull",
+      },
+      {
+        id: "234",
+        name: "Adam Lambert",
+      },
+    ];
 
-test("explicitly denying execution", () => {
-  expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
+    await expect(
+      checkBuiltInPermissions({
+        rows,
+        ctx,
+        db,
+        functionName,
+        permissions: [permissionRule1],
+      })
+    ).resolves.ok;
+  });
 
-  expect(() => permissions.deny()).toThrowError(PermissionError);
+  test("check - failure", async () => {
+    // only allow Petes
+    const permissionRule1 = (records, ctx, db) => {
+      return records.every((r) => r.name === "Pete");
+    };
 
-  expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
-});
+    const rows = [
+      {
+        id: "123",
+        name: "Adam", // this one will cause an error to be thrown because Adam is not Pete
+      },
+      {
+        id: "234",
+        name: "Pete",
+      },
+    ];
 
-test("check", async () => {
-  await expect(() => permissions.check()).rejects.toThrowError(
-    "Not implemented"
-  );
+    await expect(
+      checkBuiltInPermissions({
+        rows,
+        ctx,
+        db,
+        functionName,
+        permissions: [permissionRule1],
+      })
+    ).rejects.toThrow();
+  });
+
+  test("with a single row", async () => {
+    const permissionRule1 = (records, ctx, db) => {
+      // Only allow names starting with Adam
+      return records.every((r) => r.name.startsWith("Adam"));
+    };
+
+    const rows = {
+      id: "123",
+      name: "Adam Bull",
+    };
+
+    await expect(
+      checkBuiltInPermissions({
+        rows,
+        ctx,
+        db,
+        functionName,
+        permissions: [permissionRule1],
+      })
+    ).resolves.ok;
+  });
 });

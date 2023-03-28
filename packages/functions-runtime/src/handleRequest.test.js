@@ -5,6 +5,7 @@ import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
 import { getDatabase } from "./database";
 import { Permissions } from "./permissions";
+import { PROTO_ACTION_TYPES } from "./consts";
 
 import KSUID from "ksuid";
 
@@ -21,6 +22,9 @@ test("when the custom function returns expected value", async () => {
           id: "abcde",
         };
       },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
     },
     createFunctionAPI: ({ headers, db }) => {
       return {
@@ -52,6 +56,10 @@ test("when the custom function doesnt return a value", async () => {
         api.permissions.allow();
       },
     },
+    permissions: {},
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
     createFunctionAPI: ({ headers, db }) => {
       return {
         permissions: new Permissions(),
@@ -77,6 +85,9 @@ test("when there is no matching function for the path", async () => {
     functions: {
       createPost: async (inputs, api, ctx) => {},
     },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
     createFunctionAPI: ({ headers, db }) => {
       return {
         permissions: new Permissions(),
@@ -100,11 +111,14 @@ test("when there is no matching function for the path", async () => {
 test("when there is an unexpected error in the custom function", async () => {
   const config = {
     functions: {
-      createPost: (inputs, api, ctx) => {
+      createPost: async (inputs, api, ctx) => {
         api.permissions.allow();
 
         throw new Error("oopsie daisy");
       },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
     },
     createFunctionAPI: ({ headers, db }) => {
       return {
@@ -129,11 +143,14 @@ test("when there is an unexpected error in the custom function", async () => {
 test("when there is an unexpected object thrown in the custom function", async () => {
   const config = {
     functions: {
-      createPost: (inputs, api, ctx) => {
+      createPost: async (inputs, api, ctx) => {
         api.permissions.allow();
 
         throw { err: "oopsie daisy" };
       },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
     },
     createFunctionAPI: ({ headers, db }) => {
       return {
@@ -189,6 +206,7 @@ describe("ModelAPI error handling", () => {
     `.execute(db);
 
     functionConfig = {
+      permissions: {},
       functions: {
         createPost: async (inputs, api, ctx) => {
           api.permissions.allow();

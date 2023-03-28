@@ -258,6 +258,27 @@ func PermissionsWithRole(permissions []*PermissionRule) []*PermissionRule {
 	return withRoles
 }
 
+func PermissionsForAction(schema *Schema, action *Operation) (permissions []*PermissionRule) {
+	// if there are any action level permissions, then these take priority
+	if len(action.Permissions) > 0 {
+		return action.Permissions
+	}
+
+	// if there are no action level permissions, then we fallback to model level permissions
+	// that match the type of the action
+	model := FindModel(schema.Models, action.ModelName)
+
+	actionType := action.Type
+
+	for _, modelPerm := range model.Permissions {
+		if lo.Contains(modelPerm.OperationsTypes, actionType) {
+			permissions = append(permissions, modelPerm)
+		}
+	}
+
+	return permissions
+}
+
 // PermissionsWithExpression returns a list of those permission present in the given permissions
 // list, which have at least one expression-based permission rule. This does not imply that the
 // returned Permissions might not also have some role-based rules.
