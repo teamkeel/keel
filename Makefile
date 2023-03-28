@@ -13,6 +13,11 @@ endif
 build:
 	go build -o ./bin/keel cmd/keel/main.go
 
+
+generate:
+	make proto
+	make testdata
+
 proto:
 	@protoc -I . \
 		--go_out=. \
