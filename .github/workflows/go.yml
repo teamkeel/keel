@@ -61,11 +61,6 @@ jobs:
     name: Check we didn't forget to run code generation
     steps:
       - uses: actions/checkout@v3
-      - name: git-config
-        env:
-          GITHUB_API_TOKEN: ${{secrets.CI_GITHUB_API_TOKEN}}
-        run: git config --global url."https://${{ secrets.CI_GITHUB_API_TOKEN }}:x-oauth-basic@github.com/teamkeel".insteadOf "https://github.com/teamkeel"
-      - uses: actions/checkout@v2
       - uses: cachix/install-nix-action@v17
         with:
           nix_path: nixpkgs=channel:nixos-unstable
