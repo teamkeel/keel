@@ -1,3 +1,10 @@
+# [0.290.0](https://github.com/teamkeel/keel/compare/v0.289.2...v0.290.0) (2023-03-28)
+
+
+### Features
+
+* built-in permissions in custom functions ([#861](https://github.com/teamkeel/keel/issues/861)) ([9387a38](https://github.com/teamkeel/keel/commit/9387a38d2b55d354963fceb4590971f8c8e9d741))
+
 ## [0.289.2](https://github.com/teamkeel/keel/compare/v0.289.1...v0.289.2) (2023-03-27)
 
 
