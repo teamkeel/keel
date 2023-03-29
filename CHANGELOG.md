@@ -1,3 +1,10 @@
+## [0.293.1](https://github.com/teamkeel/keel/compare/v0.293.0...v0.293.1) (2023-03-29)
+
+
+### Bug Fixes
+
+* validate arbitrary function return types ([#881](https://github.com/teamkeel/keel/issues/881)) ([04548b3](https://github.com/teamkeel/keel/commit/04548b3f9cdb7fde0b4ee70a7c0f0f800d1db97b))
+
 # [0.293.0](https://github.com/teamkeel/keel/compare/v0.292.0...v0.293.0) (2023-03-29)
 
 
