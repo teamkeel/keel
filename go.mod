@@ -1,6 +1,6 @@
 module github.com/teamkeel/keel
 
-go 1.19
+go 1.20
 
 require (
 	github.com/99designs/gqlgen v0.17.16
@@ -20,7 +20,6 @@ require (
 	github.com/ka-weihe/fast-levenshtein v0.0.0-20201227151214-4c99ee36a1ba
 	github.com/karlseguin/typed v1.1.8
 	github.com/lib/pq v1.10.7
-	github.com/muesli/termenv v0.14.0
 	github.com/nleeper/goment v1.4.4
 	github.com/nsf/jsondiff v0.0.0-20210926074059-1e845ec5d249
 	github.com/otiai10/copy v1.7.0
@@ -61,6 +60,7 @@ require (
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/reflow v0.3.0 // indirect
+	github.com/muesli/termenv v0.14.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
