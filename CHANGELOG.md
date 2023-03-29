@@ -1,3 +1,10 @@
+# [0.293.0](https://github.com/teamkeel/keel/compare/v0.292.0...v0.293.0) (2023-03-29)
+
+
+### Features
+
+* scaffold command ([#883](https://github.com/teamkeel/keel/issues/883)) ([a270a7d](https://github.com/teamkeel/keel/commit/a270a7da8a67070cea13b3dab82139a85464a1b0))
+
 # [0.292.0](https://github.com/teamkeel/keel/compare/v0.291.0...v0.292.0) (2023-03-29)
 
 
