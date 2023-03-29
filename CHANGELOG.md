@@ -1,3 +1,20 @@
+# [0.291.0](https://github.com/teamkeel/keel/compare/v0.290.1...v0.291.0) (2023-03-29)
+
+
+### Bug Fixes
+
+* change makefile to use nix shell on some commands ([c7d16cc](https://github.com/teamkeel/keel/commit/c7d16cc9c46948f57438b4ed2454a7b1ae29f456))
+* check code generation on ci ([3e1f122](https://github.com/teamkeel/keel/commit/3e1f122ac33ebf3dc85ebddf5b1b173dba176e60))
+* drop useless bit on yaml ([98b4224](https://github.com/teamkeel/keel/commit/98b42241c497237658afb2d968a15573e6d55382))
+* pb schema version ([99e0a03](https://github.com/teamkeel/keel/commit/99e0a037c726648e3c526f8a05841eb0f84e32c7))
+* try a different approach ([d3825f6](https://github.com/teamkeel/keel/commit/d3825f695114765ed1d56b2e7b1a76fbd67ac85f))
+* update go.mod ([ebae9ea](https://github.com/teamkeel/keel/commit/ebae9ea60e01b2c97afd280b2c0a6737466e8f43))
+
+
+### Features
+
+* update go to 1.20 ([005ac83](https://github.com/teamkeel/keel/commit/005ac835557c20ccfe1167425764006c901c4c15))
+
 ## [0.290.1](https://github.com/teamkeel/keel/compare/v0.290.0...v0.290.1) (2023-03-29)
 
 
