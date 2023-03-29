@@ -1,3 +1,11 @@
+## [0.290.1](https://github.com/teamkeel/keel/compare/v0.290.0...v0.290.1) (2023-03-29)
+
+
+### Bug Fixes
+
+* disable cgo ([0f24d19](https://github.com/teamkeel/keel/commit/0f24d19e31546b4eaeb6bca1e3482ba1f549d0cb))
+* update Makefile ([b4a430a](https://github.com/teamkeel/keel/commit/b4a430a466c670af76be481166240acd77f49bbc))
+
 # [0.290.0](https://github.com/teamkeel/keel/compare/v0.289.2...v0.290.0) (2023-03-28)
 
 
