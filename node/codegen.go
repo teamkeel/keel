@@ -89,6 +89,8 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
 
+	writePermissions(sdk, schema)
+
 	writeMessages(sdkTypes, schema, false)
 
 	for _, enum := range schema.Enums {
@@ -143,6 +145,10 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
+}
+
+func writePermissions(w *Writer, schema *proto.Schema) {
+	GeneratePermissionFunctions(w, schema)
 }
 
 func writeTableInterface(w *Writer, model *proto.Model) {
@@ -471,6 +477,7 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
 	w.Writeln("const now = () => { return new Date(); };")
 	w.Writeln("const { identity } = meta;")
+	w.Writeln("const isAuthenticated = identity != null;")
 	w.Writeln("const env = {")
 	w.Indent()
 
@@ -492,7 +499,7 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("return { headers, identity, env, now, secrets };")
+	w.Writeln("return { headers, identity, env, now, secrets, isAuthenticated };")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")
@@ -647,16 +654,16 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createFunctionAPI, createContextAPI } from '@teamkeel/sdk';`)
+	w.Writeln(`import { createFunctionAPI, createContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
-	functionNames := []string{}
+	functions := []*proto.Operation{}
 	for _, model := range schema.Models {
 		for _, op := range model.Operations {
 			if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
 				continue
 			}
-			functionNames = append(functionNames, op.Name)
+			functions = append(functions, op)
 			// namespace import to avoid naming clashes
 			w.Writef(`import function_%s from "../functions/%s.ts"`, op.Name, op.Name)
 			w.Writeln(";")
@@ -665,10 +672,20 @@ func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles 
 
 	w.Writeln("const functions = {")
 	w.Indent()
-	for _, name := range functionNames {
-		w.Writef("%s: function_%s,", name, name)
+	for _, fn := range functions {
+		w.Writef("%s: function_%s,", fn.Name, fn.Name)
 		w.Writeln("")
 	}
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writeln("const actionTypes = {")
+	w.Indent()
+
+	for _, fn := range functions {
+		w.Writef("%s: \"%s\",\n", fn.Name, fn.Type.String())
+	}
+
 	w.Dedent()
 	w.Writeln("}")
 
@@ -693,6 +710,8 @@ const listener = async (req, res) => {
 			functions,
 			createFunctionAPI,
 			createContextAPI,
+			actionTypes,
+			permissions: permissionFns,
 		});
 
 		res.statusCode = 200;
@@ -724,7 +743,8 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
-	js.Writeln(`import { getDatabase, createFunctionAPI } from "@teamkeel/sdk"`)
+	js.Writeln(`import sdk from "@teamkeel/sdk"`)
+	js.Writeln("const { getDatabase, createFunctionAPI } = sdk;")
 	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 

@@ -79,7 +79,12 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 }
 
 func executeCustomOperation(scope *Scope, inputs any) (any, map[string][]string, error) {
-	resp, headers, err := functions.CallFunction(scope.context, scope.operation.Name, inputs)
+	resp, headers, err := functions.CallFunction(
+		scope.context,
+		scope.operation.Name,
+		inputs,
+	)
+
 	if err != nil {
 		return nil, nil, err
 	}

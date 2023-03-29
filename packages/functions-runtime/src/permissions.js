@@ -1,6 +1,7 @@
 class PermissionError extends Error {}
 
 const PERMISSION_STATE = {
+  UNKNOWN: "unknown",
   PERMITTED: "permitted",
   UNPERMITTED: "unpermitted",
 };
@@ -14,10 +15,6 @@ class Permissions {
     };
   }
 
-  async check(rows) {
-    throw new Error("Not implemented");
-  }
-
   allow() {
     this.state.permitted = true;
   }
@@ -25,22 +22,49 @@ class Permissions {
   deny() {
     // if a user is explicitly calling deny() then we want to throw an error
     // so that any further execution of the custom function stops abruptly
-    // we don't need to explicitly set pending to false as the error will have been thrown
-    // so we know an action has been taken
+    this.state.permitted = false;
+
     throw new PermissionError();
   }
 
   getState() {
     switch (true) {
-      // this will cover both permitted being false, and null (initial state)
-      case !this.state.permitted:
+      case this.state.permitted === false:
         return PERMISSION_STATE.UNPERMITTED;
-      default:
+      case this.state.permitted === null:
+        return PERMISSION_STATE.UNKNOWN;
+      case this.state.permitted === true:
         return PERMISSION_STATE.PERMITTED;
     }
   }
 }
 
+const checkBuiltInPermissions = async ({
+  rows,
+  permissions,
+  ctx,
+  db,
+  functionName,
+}) => {
+  // rows can actually just be a single record too so we need to wrap it
+  if (!Array.isArray(rows)) {
+    rows = [rows];
+  }
+
+  for (const permissionFn of permissions) {
+    const result = await permissionFn(rows, ctx, db);
+
+    // if any of the permission functions return true,
+    // then we return early
+    if (result) {
+      return;
+    }
+  }
+
+  throw new PermissionError(`Not permitted to access ${functionName}`);
+};
+
+module.exports.checkBuiltInPermissions = checkBuiltInPermissions;
 module.exports.PermissionError = PermissionError;
 module.exports.PERMISSION_STATE = PERMISSION_STATE;
 module.exports.Permissions = Permissions;
