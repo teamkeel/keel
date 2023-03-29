@@ -14,13 +14,13 @@ build:
 	export CGO_ENABLED=0 && go build -o ./bin/keel cmd/keel/main.go
 
 proto:
-	@protoc -I . \
+	nix-shell --command "protoc -I . \
 		--go_out=. \
 		--go_opt=paths=source_relative \
-		proto/schema.proto
+		proto/schema.proto"
 
 testdata:
-	@cd ./schema && go run ./tools/generate_testdata.go ./testdata
+	nix-shell --command "cd ./schema && go run ./tools/generate_testdata.go ./testdata"
 
 test:
 	go test $(PACKAGES) -count=1 $(RUNARG)
