@@ -1,3 +1,10 @@
+# [0.292.0](https://github.com/teamkeel/keel/compare/v0.291.0...v0.292.0) (2023-03-29)
+
+
+### Features
+
+* support totalCount ([#876](https://github.com/teamkeel/keel/issues/876)) ([331e4ab](https://github.com/teamkeel/keel/commit/331e4ab484f25200d6801a31958366a92cc85354))
+
 # [0.291.0](https://github.com/teamkeel/keel/compare/v0.290.1...v0.291.0) (2023-03-29)
 
 
