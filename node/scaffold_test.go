@@ -127,3 +127,38 @@ export default CustomFunctionWrite(async (inputs, api, ctx) => {
 		}
 	}
 }
+
+func TestExistingFunction(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
+	model Post {
+		fields {
+			title Text
+		}
+		functions {
+			create existingCreatePost() with(title)
+		}
+	}
+`), 0777)
+	require.NoError(t, err)
+
+	err = os.Mkdir(filepath.Join(tmpDir, "functions"), os.ModePerm)
+
+	assert.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(tmpDir, "functions", "existingCreatePost.ts"), []byte(`import { ExistingCreatePost } from '@teamkeel/sdk';
+
+	export default ExistingCreatePost(async (inputs, api, ctx) => {
+		const post = await api.models.post.create(inputs);
+		return post;
+	});`), 0777)
+
+	assert.NoError(t, err)
+
+	actualFiles, err := node.Scaffold(tmpDir)
+
+	assert.NoError(t, err)
+
+	assert.Len(t, actualFiles, 0)
+}
