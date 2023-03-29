@@ -3,6 +3,7 @@ package program
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -29,7 +30,15 @@ func renderScaffold(m *Model) string {
 			b.WriteString("The following files were generated:\n\n")
 
 			for _, generatedFile := range m.GeneratedFiles {
-				b.WriteString(colors.Cyan(fmt.Sprintf("- %s", generatedFile.Path)).String())
+				functionName := strings.Split(filepath.Base(generatedFile.Path), ".")[0]
+				parts := strings.Split(generatedFile.Path, "/")
+				prePath := filepath.Join(parts[0 : len(parts)-1]...)
+
+				b.WriteString(
+					colors.Gray(
+						fmt.Sprintf("- %s/%s.ts", prePath, colors.Cyan(functionName).String()),
+					).Highlight().String(),
+				)
 				b.WriteString("\n")
 			}
 
@@ -39,7 +48,6 @@ func renderScaffold(m *Model) string {
 		}
 	}
 
-	b.WriteString("\n")
 	return b.String()
 }
 

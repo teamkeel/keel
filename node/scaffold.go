@@ -23,8 +23,6 @@ func Scaffold(dir string) (GeneratedFiles, error) {
 		return nil, err
 	}
 
-	// generate beforehand
-
 	files, err := Generate(context.TODO(), dir)
 
 	if err != nil {
@@ -39,7 +37,6 @@ func Scaffold(dir string) (GeneratedFiles, error) {
 
 	functionsDir := filepath.Join(dir, FUNCTIONS_DIR)
 	if err := ensureDir(functionsDir); err != nil {
-		// could not create dir
 		return nil, err
 	}
 
