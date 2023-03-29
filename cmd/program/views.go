@@ -3,6 +3,7 @@ package program
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -17,8 +18,76 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
+func renderScaffold(m *Model) string {
+	b := strings.Builder{}
+	b.WriteString("\n")
+
+	if m.Schema != nil && m.Status == StatusScaffolded {
+		switch {
+		case m.Err != nil:
+			b.WriteString(m.Err.Error())
+		case len(m.GeneratedFiles) > 0:
+			b.WriteString("The following files were generated:\n\n")
+
+			for _, generatedFile := range m.GeneratedFiles {
+				functionName := strings.Split(filepath.Base(generatedFile.Path), ".")[0]
+				parts := strings.Split(generatedFile.Path, "/")
+				prePath := filepath.Join(parts[0 : len(parts)-1]...)
+
+				b.WriteString(
+					colors.Gray(
+						fmt.Sprintf("- %s/%s.ts", prePath, colors.Cyan(functionName).String()),
+					).Highlight().String(),
+				)
+				b.WriteString("\n")
+			}
+
+			b.WriteString("\n\n")
+		default:
+			b.WriteString("No functions to generate.")
+		}
+	}
+
+	return b.String()
+}
+
+func renderValidate(m *Model) string {
+	b := strings.Builder{}
+
+	if m.Err == nil && m.Schema == nil {
+		b.WriteString("⏳ Loading schema")
+	}
+	if m.Err == nil && m.Schema != nil {
+		b.WriteString("✨ Everything's looking good!")
+	}
+
+	return b.String()
+}
+
+func renderTest(m *Model) string {
+	b := strings.Builder{}
+
+	if m.TestOutput != "" {
+		b.WriteString(m.TestOutput)
+	} else {
+		switch m.Status {
+		case StatusRunning:
+			b.WriteString("🏃‍♂️ Running tests")
+		default:
+			b.WriteString("⏳ Setting up tests")
+		}
+	}
+
+	return b.String()
+}
+
 func renderRun(m *Model) string {
 	b := strings.Builder{}
+	if m.Status == StatusQuitting {
+		b.WriteString("Goodbye 👋")
+		return b.String() + "\n"
+	}
+
 	b.WriteString("\n")
 	b.WriteString("Running Keel app in directory: ")
 	b.WriteString(colors.White(m.ProjectDir).String())

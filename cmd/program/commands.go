@@ -72,6 +72,26 @@ func LoadSchema(dir, environment string) tea.Cmd {
 	}
 }
 
+type ScaffoldMsg struct {
+	Err            error
+	GeneratedFiles node.GeneratedFiles
+}
+
+func Scaffold(dir string) tea.Cmd {
+	return func() tea.Msg {
+		files, err := node.Scaffold(dir)
+
+		if err != nil {
+			return ScaffoldMsg{
+				Err: err,
+			}
+		}
+		return ScaffoldMsg{
+			GeneratedFiles: files,
+		}
+	}
+}
+
 type StartDatabaseMsg struct {
 	ConnInfo *db.ConnectionInfo
 	Err      error
