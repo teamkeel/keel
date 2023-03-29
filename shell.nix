@@ -1,6 +1,6 @@
 { pkgs ? import (fetchTarball
   "https://github.com/NixOS/nixpkgs/archive/cfe5833be50b3f0a3c77cb03b43483f139c9ec04.tar.gz")
-  { } }:
+  { } }
 
 pkgs.mkShell {
   buildInputs = [
