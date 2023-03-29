@@ -11,7 +11,7 @@ RUNARG=-run $(RUN) -v
 endif
 
 build:
-	go build -o ./bin/keel cmd/keel/main.go
+	export CGO_ENABLED=0 && go build -o ./bin/keel cmd/keel/main.go
 
 proto:
 	@protoc -I . \
@@ -31,7 +31,7 @@ test-js:
 	cd ./packages/wasm && pnpm run test
 
 lint:
-	golangci-lint run  -c .golangci.yml
+	export CGO_ENABLED=0 && golangci-lint run  -c .golangci.yml
 
 wasm:
 	mkdir -p ./packages/wasm/dist
