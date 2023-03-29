@@ -95,9 +95,9 @@ export default CustomFunctionRead(async (inputs, api, ctx) => {
 			Path: "customFunctionWrite.ts",
 			Contents: `import { CustomFunctionWrite } from '@teamkeel/sdk';
 
-		export default CustomFunctionWrite(async (inputs, api, ctx) => {
-			// Build something cool
-		});`,
+export default CustomFunctionWrite(async (inputs, api, ctx) => {
+	// Build something cool
+});`,
 		},
 	}
 
