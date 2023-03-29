@@ -97,10 +97,13 @@ test("pagination - first with after", async () => {
 test("pagination - after", async () => {
   const posts = await setupPosts({ count: 6 });
   const {
-    pageInfo: { endCursor },
+    pageInfo: { endCursor, hasNextPage },
   } = await actions.listPosts({
     first: 3,
   });
+
+  expect(endCursor).toEqual("3");
+  expect(hasNextPage).toEqual(true);
 
   const { results } = await actions.listPosts({
     after: endCursor,
@@ -111,4 +114,33 @@ test("pagination - after", async () => {
   expect(results.map((r) => r.id)).toEqual(
     posts.map((p) => p.id).slice(posts.length - 3, posts.length)
   );
+});
+
+test("counts", async () => {
+  const posts = await setupPosts({ count: 6 });
+
+  const take = 3;
+
+  const {
+    pageInfo: { totalCount, count },
+  } = await actions.listPosts({
+    first: take,
+  });
+
+  expect(totalCount).toEqual(posts.length);
+  expect(count).toEqual(take);
+});
+
+// todo: hasNextPage doesnt seem to return the correct value here
+// https://github.com/teamkeel/keel/blob/055ec3629bc7e1cfb5f6284d6019cef116ac9a92/runtime/actions/query.go#L307-L308
+test.fails("hasNextPage", async () => {
+  await setupPosts({ count: 6 });
+
+  const {
+    pageInfo: { hasNextPage },
+  } = await actions.listPosts({
+    last: 2,
+  });
+
+  expect(hasNextPage).toEqual(false);
 });
