@@ -65,6 +65,7 @@ type OrderItem_edge {
 }
 
 type PageInfo {
+  count: Int!
   endCursor: String!
   hasNextPage: Boolean!
   startCursor: String!

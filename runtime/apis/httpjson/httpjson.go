@@ -115,6 +115,8 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		scope := actions.NewScope(ctx, op, p)
 
+
+
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
 			span.RecordError(err, trace.WithStackTrace(true))

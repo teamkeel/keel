@@ -365,7 +365,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						return nil, err
 					}
 
-					results, _, hasNextPage, err := query.
+					results, pageInfo, err := query.
 						SelectStatement().
 						ExecuteToMany(ctx)
 
@@ -376,8 +376,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					}
 
 					res, err := connectionResponse(map[string]any{
-						"results":     results,
-						"hasNextPage": hasNextPage,
+						"results":  results,
+						"pageInfo": pageInfo.ToMap(),
 					})
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))

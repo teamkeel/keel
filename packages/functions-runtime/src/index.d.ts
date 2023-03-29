@@ -56,6 +56,14 @@ export type ContextAPI = {
   now(): Date;
 };
 
+export type PageInfo = {
+  startCursor: string;
+  endCursor: string;
+  totalCount: number;
+  hasNextPage: boolean;
+  count: number;
+};
+
 // Request headers query API
 export type RequestHeaders = {
   get(name: string): string;
