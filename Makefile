@@ -23,7 +23,7 @@ testdata:
 	@cd ./schema && go run ./tools/generate_testdata.go ./testdata
 
 test:
-	export CGO_ENABLED=0 && go test $(PACKAGES) -count=1 $(RUNARG)
+	go test $(PACKAGES) -count=1 $(RUNARG)
 
 test-js:
 	cd ./packages/functions-runtime && pnpm run test
