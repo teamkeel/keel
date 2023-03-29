@@ -33,9 +33,6 @@ func ValidArbitraryFunctionReturns(asts []*parser.AST) (errs errorhandling.Valid
 
 			returns := action.Returns
 
-			returnType := returns[0].Type.ToString()
-			message := query.Message(asts, returnType)
-
 			switch {
 			case len(returns) < 1:
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
@@ -55,7 +52,7 @@ func ValidArbitraryFunctionReturns(asts []*parser.AST) (errs errorhandling.Valid
 					},
 					returns[0].Type,
 				))
-			case message == nil && returnType != parser.MessageFieldTypeAny:
+			case query.Message(asts, returns[0].Type.ToString()) == nil && returns[0].Type.ToString() != parser.MessageFieldTypeAny:
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.ActionInputError,
 					errorhandling.ErrorDetails{
