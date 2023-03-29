@@ -1,0 +1,5 @@
+model Person {
+    functions {
+        write createBulkPeople(Any) returns (UnknownMessage)
+    }
+}
