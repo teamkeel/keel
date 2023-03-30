@@ -1,3 +1,10 @@
+## [0.293.4](https://github.com/teamkeel/keel/compare/v0.293.3...v0.293.4) (2023-03-30)
+
+
+### Bug Fixes
+
+* add ctx.isAuthenticated to completions ([#877](https://github.com/teamkeel/keel/issues/877)) ([9b74915](https://github.com/teamkeel/keel/commit/9b74915108f5f5cc244db6fbfc19db2e23b89c77))
+
 ## [0.293.3](https://github.com/teamkeel/keel/compare/v0.293.2...v0.293.3) (2023-03-30)
 
 
