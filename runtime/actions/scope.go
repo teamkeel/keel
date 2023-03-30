@@ -97,8 +97,11 @@ func executeCustomOperation(scope *Scope, inputs any) (any, map[string][]string,
 	if scope.operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
 		results, _ := resp.([]any)
 		return map[string]any{
-			"results":     results,
-			"hasNextPage": false,
+			"results": results,
+			"pageInfo": map[string]any{
+				// todo: need to get this from custom fn
+				"hasNextPage": false,
+			},
 		}, headers, nil
 	}
 

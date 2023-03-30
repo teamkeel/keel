@@ -26,7 +26,7 @@ const opMapping = {
  * @param {Object} where
  * @returns {import("kysely").Kysely}
  */
-function applyWhereConditions(context, qb, where) {
+function applyWhereConditions(context, qb, where = {}) {
   const conf = context.tableConfig();
 
   for (const key of Object.keys(where)) {

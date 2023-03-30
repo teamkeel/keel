@@ -357,6 +357,26 @@ test("ModelAPI.findMany - before", async () => {
   expect(rows[0].id).toEqual(p.id);
 });
 
+test("ModelAPI.findMany - empty where", async () => {
+  const p = await personAPI.create({
+    date: new Date("2022-01-01"),
+  });
+
+  const p2 = await personAPI.create({
+    date: new Date("2022-01-02"),
+  });
+
+  // with no param specified at all
+  const rows = await personAPI.findMany();
+
+  expect(rows.map(r => r.id).sort()).toEqual([p, p2].map(r => r.id).sort())
+
+  // with empty object
+  const rows2 = await personAPI.findMany({});
+
+  expect(rows2.map(r => r.id).sort()).toEqual([p, p2].map(r => r.id).sort())
+})
+
 test("ModelAPI.findMany - onOrBefore", async () => {
   const p = await personAPI.create({
     date: new Date("2022-01-01"),

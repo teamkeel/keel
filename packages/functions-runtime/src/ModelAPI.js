@@ -65,7 +65,7 @@ class ModelAPI {
     }
   }
 
-  async findOne(where) {
+  async findOne(where = {}) {
     let builder = this._db
       .selectFrom(this._tableName)
       .distinctOn(`${this._tableName}.id`)
@@ -84,7 +84,7 @@ class ModelAPI {
     return camelCaseObject(row);
   }
 
-  async findMany(where) {
+  async findMany(where = {}) {
     let builder = this._db
       .selectFrom(this._tableName)
       .distinctOn(`${this._tableName}.id`)
