@@ -74,6 +74,7 @@ var visitorFuncs = []VisitorFunc{
 	ConflictingInputsRule,
 	NamingRule,
 	DuplicateDefinitionRule,
+	InvalidWithUsage,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
