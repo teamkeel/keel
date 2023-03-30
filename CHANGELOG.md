@@ -1,3 +1,10 @@
+## [0.293.2](https://github.com/teamkeel/keel/compare/v0.293.1...v0.293.2) (2023-03-30)
+
+
+### Bug Fixes
+
+* guard against empty list inputs ([#886](https://github.com/teamkeel/keel/issues/886)) ([672d545](https://github.com/teamkeel/keel/commit/672d545703c7eb79aae21293ce8cb80ccd41c3a4))
+
 ## [0.293.1](https://github.com/teamkeel/keel/compare/v0.293.0...v0.293.1) (2023-03-29)
 
 
