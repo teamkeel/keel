@@ -1,3 +1,10 @@
+## [0.293.3](https://github.com/teamkeel/keel/compare/v0.293.2...v0.293.3) (2023-03-30)
+
+
+### Bug Fixes
+
+* validate 'with' keyword usage ([#887](https://github.com/teamkeel/keel/issues/887)) ([338a2bb](https://github.com/teamkeel/keel/commit/338a2bb3853f3cdc750d0a3156499f210901c3aa))
+
 ## [0.293.2](https://github.com/teamkeel/keel/compare/v0.293.1...v0.293.2) (2023-03-30)
 
 
