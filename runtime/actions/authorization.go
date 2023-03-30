@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -12,7 +11,6 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
-	"golang.org/x/exp/slices"
 )
 
 func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (authorized bool, err error) {
@@ -26,19 +24,7 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 	}()
 	defer span.End()
 
-	permissions := []*proto.PermissionRule{}
-
-	// Combine all the permissions defined at model level, with those defined at
-	// operation level.
-	model := proto.FindModel(scope.schema.Models, scope.operation.ModelName)
-	modelPermissions := lo.Filter(model.Permissions, func(modelPermission *proto.PermissionRule, _ int) bool {
-		return slices.Contains(modelPermission.OperationsTypes, scope.operation.Type)
-	})
-	permissions = append(permissions, modelPermissions...)
-
-	if scope.operation.Permissions != nil {
-		permissions = append(permissions, scope.operation.Permissions...)
-	}
+	permissions := proto.PermissionsForAction(scope.schema, scope.operation)
 
 	// No permissions declared means no permission can be granted.
 	if len(permissions) == 0 {
