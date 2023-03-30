@@ -369,13 +369,15 @@ test("ModelAPI.findMany - empty where", async () => {
   // with no param specified at all
   const rows = await personAPI.findMany();
 
-  expect(rows.map(r => r.id).sort()).toEqual([p, p2].map(r => r.id).sort())
+  expect(rows.map((r) => r.id).sort()).toEqual([p, p2].map((r) => r.id).sort());
 
   // with empty object
   const rows2 = await personAPI.findMany({});
 
-  expect(rows2.map(r => r.id).sort()).toEqual([p, p2].map(r => r.id).sort())
-})
+  expect(rows2.map((r) => r.id).sort()).toEqual(
+    [p, p2].map((r) => r.id).sort()
+  );
+});
 
 test("ModelAPI.findMany - onOrBefore", async () => {
   const p = await personAPI.create({
