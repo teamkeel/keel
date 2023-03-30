@@ -36,7 +36,6 @@ var anyType = graphql.NewScalar(graphql.ScalarConfig{
 })
 
 const (
-	// todo: precision? different valid iso8601 layouts
 	iso8601Layout = "2006-01-02T15:04:05.00Z0700"
 )
 

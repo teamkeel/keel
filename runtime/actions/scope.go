@@ -97,8 +97,17 @@ func executeCustomOperation(scope *Scope, inputs any) (any, map[string][]string,
 	if scope.operation.Type == proto.OperationType_OPERATION_TYPE_LIST {
 		results, _ := resp.([]any)
 		return map[string]any{
-			"results":     results,
-			"hasNextPage": false,
+			"results": results,
+			"pageInfo": map[string]any{
+				// todo: need to get these values from custom function return value
+				// once we have changed the return type in the codegen and made changes
+				// to the model api to support paging in some guise.
+				"hasNextPage": false,
+				"totalCount":  0,
+				"count":       0,
+				"startCursor": "",
+				"endCursor":   "",
+			},
 		}, headers, nil
 	}
 
