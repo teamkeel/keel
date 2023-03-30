@@ -1,0 +1,11 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    operations {
+        get getPerson(id) with (name)
+        list listPerson() with (name)
+        delete deletePerson(id) with (name)
+    }
+}
