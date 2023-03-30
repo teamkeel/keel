@@ -634,7 +634,7 @@ func TestCompletions(t *testing.T) {
 				}
 			}	
 			`,
-			expected: []string{"env", "identity", "now", "secrets"},
+			expected: []string{"env", "identity", "now", "secrets", "isAuthenticated"},
 		},
 		{
 			name: "set-expression-ctx-env-vars",

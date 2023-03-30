@@ -719,6 +719,11 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 				Description: "Secrets",
 				Kind:        KindField,
 			},
+			{
+				Label:       "isAuthenticated",
+				Description: "Authentication Indicator",
+				Kind:        KindField,
+			},
 		}
 
 		if len(previousIdents) == 2 {
