@@ -115,8 +115,6 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		scope := actions.NewScope(ctx, op, p)
 
-
-
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
 			span.RecordError(err, trace.WithStackTrace(true))
@@ -168,6 +166,11 @@ func parsePostBody(b io.ReadCloser) (inputs any, err error) {
 	body, err := io.ReadAll(b)
 	if err != nil {
 		return nil, err
+	}
+
+	// if no json body has been sent, just return an empty map for the inputs
+	if string(body) == "" {
+		return map[string]any{}, nil
 	}
 
 	err = json.Unmarshal(body, &inputs)
