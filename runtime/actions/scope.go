@@ -99,8 +99,14 @@ func executeCustomOperation(scope *Scope, inputs any) (any, map[string][]string,
 		return map[string]any{
 			"results": results,
 			"pageInfo": map[string]any{
-				// todo: need to get this from custom fn
+				// todo: need to get these values from custom function return value
+				// once we have changed the return type in the codegen and made changes
+				// to the model api to support paging in some guise.
 				"hasNextPage": false,
+				"totalCount":  0,
+				"count":       0,
+				"startCursor": "",
+				"endCursor":   "",
 			},
 		}, headers, nil
 	}
