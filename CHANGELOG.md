@@ -1,3 +1,10 @@
+# [0.294.0](https://github.com/teamkeel/keel/compare/v0.293.4...v0.294.0) (2023-03-31)
+
+
+### Features
+
+* creating relationships ([#882](https://github.com/teamkeel/keel/issues/882)) ([f494e00](https://github.com/teamkeel/keel/commit/f494e00d1287554e6f5fa932be33aa3211a0b1ae))
+
 ## [0.293.4](https://github.com/teamkeel/keel/compare/v0.293.3...v0.293.4) (2023-03-30)
 
 
