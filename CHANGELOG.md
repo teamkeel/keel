@@ -1,3 +1,10 @@
+## [0.294.3](https://github.com/teamkeel/keel/compare/v0.294.2...v0.294.3) (2023-03-31)
+
+
+### Bug Fixes
+
+* action level permission rules take precedence ([#889](https://github.com/teamkeel/keel/issues/889)) ([a4b07a5](https://github.com/teamkeel/keel/commit/a4b07a55bc50c0e792ca0655a5489185e3b70f72))
+
 ## [0.294.2](https://github.com/teamkeel/keel/compare/v0.294.1...v0.294.2) (2023-03-31)
 
 
