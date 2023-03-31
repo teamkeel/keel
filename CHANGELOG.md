@@ -1,3 +1,10 @@
+## [0.294.2](https://github.com/teamkeel/keel/compare/v0.294.1...v0.294.2) (2023-03-31)
+
+
+### Bug Fixes
+
+* fixing assumption in runtime test ([#892](https://github.com/teamkeel/keel/issues/892)) ([ad20f80](https://github.com/teamkeel/keel/commit/ad20f80430dcfada604f71ec57aa52707f266500))
+
 ## [0.294.1](https://github.com/teamkeel/keel/compare/v0.294.0...v0.294.1) (2023-03-31)
 
 
