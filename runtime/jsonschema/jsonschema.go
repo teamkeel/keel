@@ -139,7 +139,13 @@ func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *prot
 			name = "nullable_" + name
 		}
 
-		prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+		if field.Type.Repeated {
+			prop.Type = "array"
+			prop.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+		} else {
+			prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+		}
+
 		components.Schemas[name] = component
 	case proto.Type_TYPE_ID, proto.Type_TYPE_STRING:
 		prop.Type = "string"
@@ -166,7 +172,7 @@ func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *prot
 		}
 	}
 
-	if field.Type.Repeated {
+	if field.Type.Repeated && field.Type.Type != proto.Type_TYPE_MESSAGE {
 		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum}
 		prop.Enum = nil
 		prop.Type = "array"
