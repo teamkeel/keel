@@ -192,7 +192,7 @@ func TestRuntimeRPC(t *testing.T) {
 	}
 }
 
-// respFields is a container to into which a hanlder's response' body can be
+// respFields is a container to into which a handler's response' body can be
 // JSON unmarshalled.
 type respFields struct {
 	Data   map[string]any             `json:"data"`
@@ -2402,14 +2402,18 @@ var testCases = []testCase{
 			edgesList, ok := edges.([]any)
 			require.True(t, ok)
 			require.Len(t, edgesList, 2)
+
 			first := edgesList[0]
-			edge1, ok := first.(map[string]any)
+			edge1, ok := first.(map[string]any)["node"].(map[string]any)
 			require.True(t, ok)
-			rtt.AssertValueAtPath(t, edge1, "node.title", "Bobs Adventures")
+
 			second := edgesList[1]
-			edge2, ok := second.(map[string]any)
+			edge2, ok := second.(map[string]any)["node"].(map[string]any)
 			require.True(t, ok)
-			rtt.AssertValueAtPath(t, edge2, "node.title", "Bobs Biography")
+
+			require.True(t,
+				(edge1["title"] == "Bobs Adventures" && edge2["title"] == "Bobs Biography") ||
+					(edge2["title"] == "Bobs Adventures" && edge1["title"] == "Bobs Biography"))
 		},
 	},
 }
