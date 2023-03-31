@@ -1,3 +1,10 @@
+## [0.294.1](https://github.com/teamkeel/keel/compare/v0.294.0...v0.294.1) (2023-03-31)
+
+
+### Bug Fixes
+
+* rpc and json api support for creating relationships  ([#891](https://github.com/teamkeel/keel/issues/891)) ([1f02d92](https://github.com/teamkeel/keel/commit/1f02d92712ea3a8d6cd008c00519c55d0b348c5c))
+
 # [0.294.0](https://github.com/teamkeel/keel/compare/v0.293.4...v0.294.0) (2023-03-31)
 
 
