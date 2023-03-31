@@ -110,21 +110,6 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.O
 	return root
 }
 
-// FROM:
-// "items": {
-// 	"type": "array",
-// 	"items": {},
-// 	"$ref": "#/components/schemas/createOrder_items_input"
-// }
-
-// TO:
-//"items": {
-// 	"type": "array",
-// 	"items": {
-//    "$ref": "#/components/schemas/createOrder_items_input"
-//   },
-// }
-
 func jsonSchemaForField(ctx context.Context, field *proto.MessageField, op *proto.Operation, schema *proto.Schema) JSONSchema {
 	components := &Components{
 		Schemas: map[string]JSONSchema{},
