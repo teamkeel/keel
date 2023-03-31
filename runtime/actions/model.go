@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
@@ -14,7 +13,7 @@ import (
 // initialValueForModel provides a map[string]any that corresponds to all the fields
 // that exist in the given proto.Model - with their value set to schema-default value if
 // one is specified for this field in the schema, or failing that our built-in default value for
-// the corresponding type. E.g. emtpy string for string fields, or integer zero for a Number field.
+// the corresponding type. E.g. empty string for string fields, or integer zero for a Number field.
 func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string]any, error) {
 	zeroValue := map[string]any{}
 	var err error
@@ -23,7 +22,7 @@ func initialValueForModel(pModel *proto.Model, schema *proto.Schema) (map[string
 			continue
 		}
 
-		if zeroValue[strcase.ToSnake(field.Name)], err = initialValueForField(field, schema.Enums); err != nil {
+		if zeroValue[field.Name], err = initialValueForField(field, schema.Enums); err != nil {
 			return nil, err
 		}
 	}

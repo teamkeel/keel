@@ -244,8 +244,7 @@ func setExpressions(action *parser.ActionNode) []*parser.Expression {
 
 // requiredCreateFields works out which of the fields on the given model,
 // must be specified for any create action on that model to be valid.
-// In the general case, what is returned is the field's name, but for
-// foreign key fields, it returns e.g. "author.id"
+// In the general case, what is returned is the field's name.
 func requiredCreateFields(asts []*parser.AST, model *parser.ModelNode) []string {
 	req := []string{}
 
@@ -266,12 +265,9 @@ func requiredCreateFields(asts []*parser.AST, model *parser.ModelNode) []string 
 
 		name := f.Name.Value
 
-		// If this field is a model then in a create it would be specified as:
-		//   create myAction(<fieldName>.id)
-		//
-		// TODO: this will change with nested create
+		// TODO: validation for creating or associating relationships
 		if query.IsHasOneModelField(asts, f) {
-			name += "." + parser.ImplicitFieldNameId
+			continue
 		}
 
 		req = append(req, name)
@@ -550,7 +546,6 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 
 	return
 }
-
 
 // CreateOperationNoReadInputsRule validates that create actions don't accept
 // any read-only inputs

@@ -14,8 +14,6 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 
-	"github.com/iancoleman/strcase"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -94,8 +92,8 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, err
 	}
 
-	modelMap[strcase.ToSnake(EmailColumnName)] = emailPassword.String("email")
-	modelMap[strcase.ToSnake(PasswordColumnName)] = string(hashedBytes)
+	modelMap[EmailColumnName] = emailPassword.String("email")
+	modelMap[PasswordColumnName] = string(hashedBytes)
 
 	query := NewQuery(identityModel)
 	query.AddWriteValues(modelMap)
