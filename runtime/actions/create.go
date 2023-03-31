@@ -1,59 +1,54 @@
 package actions
 
 import (
+	"context"
+
 	"github.com/teamkeel/keel/runtime/common"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
 func Create(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	query := NewQuery(scope.model)
-
-	// Begin a transaction and defer rollback which will run if a commit hasn't occurred.
-	err = query.Begin(scope.context)
+	database, err := runtimectx.GetDatabase(scope.context)
 	if err != nil {
 		return nil, err
 	}
 
-	// Defer ensures a rollback as the function may return early due to an error.
-	defer func() {
+	err = database.Transaction(scope.context, func(ctx context.Context) error {
+		scope := scope.WithContext(ctx)
+		query := NewQuery(scope.model)
+
+		// Generate the SQL statement
+		statement, err := GenerateCreateStatement(query, scope, input)
 		if err != nil {
-			_ = query.Rollback(scope.context)
+			return err
 		}
-	}()
 
-	// Generate the SQL statement
-	statement, err := GenerateCreateStatement(query, scope, input)
-	if err != nil {
-		return nil, err
-	}
+		// Execute database request, expecting a single result
+		res, err = statement.ExecuteToSingle(scope.context)
+		if err != nil {
+			return err
+		}
 
-	// Execute database request, expecting a single result
-	result, err := statement.ExecuteToSingle(scope.context)
-	if err != nil {
-		return nil, err
-	}
+		// Retrieve the newly created row so we can check permissions
+		err = query.Where(IdField(), Equals, Value(res["id"]))
+		if err != nil {
+			return err
+		}
 
-	// Retrieve the newly created row so we can check permissions
-	err = query.Where(IdField(), Equals, Value(result["id"]))
-	if err != nil {
-		return nil, err
-	}
+		// Check permissions and roles conditions
+		isAuthorised, err := query.isAuthorised(scope, input)
+		if err != nil {
+			return err
+		}
 
-	// Check permissions and roles conditions
-	isAuthorised, err := query.isAuthorised(scope, input)
-	if err != nil {
-		return nil, err
-	}
+		if !isAuthorised {
+			return common.NewPermissionError()
+		}
 
-	if !isAuthorised {
-		return nil, common.NewPermissionError()
-	}
+		return nil
+	})
 
-	err = query.Commit(scope.context)
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return res, err
 }
 
 func GenerateCreateStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {

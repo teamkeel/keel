@@ -663,52 +663,6 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 	}
 }
 
-// Begins a new SQL transaction.
-// All statements generated from this query builder will be included in the transaction.
-func (query *QueryBuilder) Begin(ctx context.Context) error {
-	database, err := runtimectx.GetDatabase(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = database.BeginTransaction(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Commits the current SQL transaction, provided it hasn't been rolled back already.
-func (query *QueryBuilder) Commit(ctx context.Context) error {
-	database, err := runtimectx.GetDatabase(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = database.CommitTransaction(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Rolls back the current SQL transaction, provided it hasn't been committed already.
-func (query *QueryBuilder) Rollback(ctx context.Context) error {
-	database, err := runtimectx.GetDatabase(ctx)
-	if err != nil {
-		return err
-	}
-
-	err = database.RollbackTransaction(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Execute the SQL statement against the database, returning the number of rows affected.
 func (statement *Statement) Execute(ctx context.Context) (int, error) {
 	database, err := runtimectx.GetDatabase(ctx)
