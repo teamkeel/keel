@@ -423,10 +423,11 @@ const relationships string = `
 			get getAuthor(id)
 			list listAuthors(name)
 			update updateAuthor(id) with (name)
+			create createAuthorWithPosts() with (name, posts.title, publisher.organisation)
 		}
 		@permission(
 			expression: true,
-			actions: [get, list, update]
+			actions: [get, list, update, create]
 		)
 	}
 
@@ -2097,8 +2098,8 @@ var testCases = []testCase{
 						id
 						title
 						author {
-						id
-						name
+							id
+							name
 					}
 				}
 		 	}`,
@@ -2359,6 +2360,56 @@ var testCases = []testCase{
 		assertData: func(t *testing.T, data map[string]any) {
 			// 17:00 in +07:00 timezone is 10:00 UTC
 			rtt.AssertValueAtPath(t, data, "createThing.theTimestamp.iso8601", "2023-03-13T10:00:00.00Z")
+		},
+	},
+	{
+		name:       "create_relationship_with_related_models",
+		keelSchema: relationships,
+		gqlOperation: `
+			mutation CreateAuthorWithPosts {
+				createAuthorWithPosts(input: 
+					{ 
+						name: "Bob",
+						posts: [
+							{ title: "Bobs Adventures" },
+							{ title: "Bobs Biography" },
+						],
+						publisher: {
+							organisation: "Bobs Publishers"
+						}
+					}) 
+					{
+						id
+						name
+						posts {
+							edges {
+								node {
+									title
+								}
+							}
+						}
+						publisher {
+							organisation
+						}
+					}
+				}
+			`,
+		assertData: func(t *testing.T, data map[string]any) {
+			rtt.AssertValueAtPath(t, data, "createAuthorWithPosts.name", "Bob")
+			rtt.AssertValueAtPath(t, data, "createAuthorWithPosts.publisher.organisation", "Bobs Publishers")
+
+			edges := rtt.GetValueAtPath(t, data, "createAuthorWithPosts.posts.edges")
+			edgesList, ok := edges.([]any)
+			require.True(t, ok)
+			require.Len(t, edgesList, 2)
+			first := edgesList[0]
+			edge1, ok := first.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, edge1, "node.title", "Bobs Adventures")
+			second := edgesList[1]
+			edge2, ok := second.(map[string]any)
+			require.True(t, ok)
+			rtt.AssertValueAtPath(t, edge2, "node.title", "Bobs Biography")
 		},
 	},
 }

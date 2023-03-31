@@ -1,0 +1,32 @@
+model Order {
+    fields {
+        onPromotion Boolean
+        customer Customer
+        items OrderItem[]
+    }
+    operations {
+        create testAction() with (customer.name, onPromotion, items.quantity, items.price, items.product.name)
+    }
+    @permission(expression: true, actions: [create])
+}
+
+model Product {
+    fields {
+        name Text
+    }
+}
+
+model OrderItem {
+    fields {
+        order Order
+        quantity Number
+        price Number
+        product Product
+    }
+}
+
+model Customer {
+    fields {
+        name Text
+    }
+}

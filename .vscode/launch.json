@@ -46,7 +46,10 @@
         "args": [
             "${input:cmd}",
             "-d",
-            "${input:directory}"
+            "${input:directory}",
+            "--node-packages-path",
+            "/packages",
+            "--reset"
         ]
     },
     {
@@ -117,7 +120,7 @@
         {
             "type": "promptString",
             "id": "directory",
-            "default": "../../keelschemas/functioncontext",
+            "default": "../../keelschemas/store",
             "description": "Path to directory containing keel schema file."
         }
     ]
