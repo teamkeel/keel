@@ -1,3 +1,10 @@
+# [0.295.0](https://github.com/teamkeel/keel/compare/v0.294.3...v0.295.0) (2023-03-31)
+
+
+### Features
+
+* upgrade validation of Create ops for nested creation ([#888](https://github.com/teamkeel/keel/issues/888)) ([3a7ef1c](https://github.com/teamkeel/keel/commit/3a7ef1c4cc24bbf054638e464739128f0ac091bf))
+
 ## [0.294.3](https://github.com/teamkeel/keel/compare/v0.294.2...v0.294.3) (2023-03-31)
 
 
