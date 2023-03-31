@@ -64,9 +64,8 @@ var validatorFuncs = []validationFunc{
 
 	relationships.InvalidOneToOneRelationshipRule,
 	relationships.InvalidImplicitBelongsToWithHasManyRule,
-	// todo this rule should obsolete MoreThanOneReverseMany (below), once it is finished.
 	relationships.RelationAttributeRule,
-	relationships.MoreThanOneReverseMany, // todo this should become obsolete
+	relationships.MoreThanOneReverseMany,
 }
 
 var visitorFuncs = []VisitorFunc{

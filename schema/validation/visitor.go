@@ -35,6 +35,9 @@ type Visitor struct {
 	EnterAction func(n *parser.ActionNode)
 	LeaveAction func(n *parser.ActionNode)
 
+	EnterWith func(n *parser.ActionNode)
+	LeaveWith func(n *parser.ActionNode)
+
 	EnterActionInput func(n *parser.ActionInputNode)
 	LeaveActionInput func(n *parser.ActionInputNode)
 

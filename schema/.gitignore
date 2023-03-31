@@ -1,0 +1,7 @@
+testdata/package.json
+testdata/package-lock.json
+testdata/tsconfig.json
+
+testdata/*/package.json
+testdata/*/package-lock.json
+testdata/*/tsconfig.json

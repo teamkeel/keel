@@ -6,15 +6,15 @@
       "code": "E034",
       "pos": {
         "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
-        "offset": 103,
+        "offset": 96,
         "line": 7,
-        "column": 16
+        "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_operation_create_missing_inputs/schema.keel",
-        "offset": 115,
+        "offset": 129,
         "line": 7,
-        "column": 28
+        "column": 42
       }
     }
   ]
