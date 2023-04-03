@@ -80,6 +80,7 @@ func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions))
 
 func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	sdk := &Writer{}
+	sdk.Writeln(`const { sql } = require("kysely")`)
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
 	sdk.Writeln("")
 
@@ -145,10 +146,6 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
-}
-
-func writePermissions(w *Writer, schema *proto.Schema) {
-	GeneratePermissionFunctions(w, schema)
 }
 
 func writeTableInterface(w *Writer, model *proto.Model) {
