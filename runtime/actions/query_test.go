@@ -162,6 +162,37 @@ var testCases = []testCase{
 		expectedArgs: []any{nil, ignore, ignore, nil, nil, ignore},
 	},
 	{
+		name: "create_op_optional_inputs_on_M_to_1_relationship",
+		keelSchema: `
+			model Person {
+				fields {
+					name Text
+					company Company?
+				}
+				operations {
+					create createPerson() with (name, company?)
+				}
+				@permission(expression: true, actions: [create])
+			}
+			model Company {
+				
+			}`,
+		operationName: "createPerson",
+		input: map[string]any{
+			"name": "Bob",
+		},
+		expectedTemplate: `
+			WITH 
+				new_1_person AS 
+					(INSERT INTO "person" 
+						(company_id, created_at, id, name, updated_at) 
+					VALUES 
+						(?, ?, ?, ?, ?) 
+					RETURNING *) 
+			SELECT * FROM new_1_person`,
+		expectedArgs: []any{nil, ignore, ignore, "Bob", ignore},
+	},
+	{
 		name: "update_op_set_attribute",
 		keelSchema: `
 			model Person {
