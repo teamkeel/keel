@@ -1,3 +1,10 @@
+## [0.295.2](https://github.com/teamkeel/keel/compare/v0.295.1...v0.295.2) (2023-04-03)
+
+
+### Bug Fixes
+
+* return 400 for json validation errors ([33c6e8d](https://github.com/teamkeel/keel/commit/33c6e8d7beafdbdb48589d78f349005696b951e5))
+
 ## [0.295.1](https://github.com/teamkeel/keel/compare/v0.295.0...v0.295.1) (2023-04-03)
 
 
