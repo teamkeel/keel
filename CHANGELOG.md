@@ -1,3 +1,10 @@
+# [0.296.0](https://github.com/teamkeel/keel/compare/v0.295.2...v0.296.0) (2023-04-03)
+
+
+### Features
+
+* add version to traces ([b1de1ec](https://github.com/teamkeel/keel/commit/b1de1ec8816bac5e668d91fa18e570047cb77bab))
+
 ## [0.295.2](https://github.com/teamkeel/keel/compare/v0.295.1...v0.295.2) (2023-04-03)
 
 
