@@ -104,7 +104,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			span.AddEvent("errors", trace.WithAttributes(attrs...))
 			span.SetStatus(codes.Error, strings.Join(messages, ", "))
 
-			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
+			return common.NewJsonResponse(http.StatusBadRequest, HttpJsonErrorResponse{
 				Code:    "ERR_INVALID_INPUT",
 				Message: "one or more errors found validating request object",
 				Data: map[string]any{
