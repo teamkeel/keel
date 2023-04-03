@@ -168,7 +168,16 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 					//  - we will have a single of model to parse,
 					//  - this model will have the primary ID that needs to be referenced from the current model.
 
-					argsSectioned, ok := args[input.Name].(map[string]any)
+					argValue, hasArg := args[input.Name]
+					if !hasArg {
+						if !field.Optional {
+							return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.Name)
+						} else {
+							continue
+						}
+					}
+
+					argsSectioned, ok := argValue.(map[string]any)
 					if !ok {
 						return nil, nil, fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
 					}
