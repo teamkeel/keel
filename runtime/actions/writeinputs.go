@@ -32,7 +32,7 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		}
 
 		if !lhsResolver.IsDatabaseColumn() {
-			return fmt.Errorf("lhs operand of assignment expression must be a model field")
+			return errors.New("lhs operand of assignment expression must be a model field")
 		}
 
 		value, err := rhsResolver.ResolveValue(args)
@@ -53,6 +53,11 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		// Iterate through the fragments in the @set expression AND traverse the graph until we have a set of rows to update.
 		for i, frag := range targetsLessField {
 			nextRows := []*Row{}
+
+			if len(currRows) == 0 {
+				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input model data", setExpression.Source)
+			}
+
 			for _, row := range currRows {
 				if frag == row.target[i] {
 					if i == len(targetsLessField)-1 {
