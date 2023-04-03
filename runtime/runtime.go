@@ -23,6 +23,7 @@ import (
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime")
+var Version string
 
 const (
 	authorizationHeaderName string = "Authorization"
@@ -34,6 +35,10 @@ func init() {
 	log.SetLevel(logLevel())
 }
 
+func GetVersion() string {
+	return Version
+}
+
 func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	var handler common.ApiHandlerFunc
 	if currSchema != nil {
@@ -43,6 +48,10 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		ctx, span := tracer.Start(r.Context(), "Runtime")
 		span.End()
+
+		span.SetAttributes(
+			attribute.String("library.version", Version),
+		)
 
 		if handler == nil {
 			w.WriteHeader(http.StatusBadRequest)
