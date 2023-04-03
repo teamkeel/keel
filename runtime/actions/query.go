@@ -126,7 +126,7 @@ type QueryBuilder struct {
 	// The ordered slice of arguments for the SQL statement template.
 	args []any
 	// The graph of rows to be written during an INSERT or UPDATE.
-	writeValues *Row //used to be a map[string]any
+	writeValues *Row
 }
 
 type join struct {
@@ -138,6 +138,8 @@ type join struct {
 type Row struct {
 	// The schema model which this row represents data for.
 	model *proto.Model
+	// The target fragments that this row represents in the input.
+	target []string
 	// The values of the fields to insert.
 	values map[string]any
 	// Other rows to insert which this row depends on.
@@ -167,6 +169,7 @@ func NewQuery(model *proto.Model) *QueryBuilder {
 		args:       []any{},
 		writeValues: &Row{
 			model:        nil,
+			target:       nil,
 			values:       map[string]any{},
 			referencedBy: []*Relationship{},
 			references:   []*Relationship{},

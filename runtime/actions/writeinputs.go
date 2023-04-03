@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
@@ -39,26 +40,73 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		fieldName := assignment.LHS.Ident.Fragments[1].Fragment
+		target := lo.Map(assignment.LHS.Ident.Fragments, func(f *parser.IdentFragment, _ int) string {
+			return f.Fragment
+		})
+		// finalTarget := strings.Join(target, ".")
 
-		// Currently we only support 3 fragments in an set expression operand if it is targeting an "id" field.
-		// If so, we generate the foreign key field name from the fragments.
-		// For example, post.author.id will become authorId.
-		if len(assignment.LHS.Ident.Fragments) == 3 {
-			if assignment.LHS.Ident.Fragments[2].Fragment != "id" {
-				return errors.New("currently only support 'id' as a third fragment in a set expression")
+		currRows := []*Row{query.writeValues}
+
+		withoutField := target[:len(target)-1]
+
+		// order.items.product.isActive
+		for i, frag := range withoutField {
+
+			nextRows := []*Row{}
+
+			for _, row := range currRows {
+
+				// if this row matches the current fragment, then append all related fragments for the next iteration
+				if frag == row.target[i] {
+
+					if i == len(withoutField)-1 {
+						nextRows = append(nextRows, row)
+					} else {
+						for _, ref := range row.references {
+							nextRows = append(nextRows, ref.row)
+						}
+						for _, refBy := range row.referencedBy {
+							nextRows = append(nextRows, refBy.row)
+						}
+					}
+				}
 			}
-			fieldName = fmt.Sprintf("%sId", fieldName)
+
+			currRows = nextRows
 		}
+
+		field := target[len(target)-1]
 
 		// If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
 		// For example, @set(post.user = ctx.identity) will set post.userId with ctx.identity.id.
 		if operandType == proto.Type_TYPE_MODEL {
-			fieldName = fmt.Sprintf("%sId", fieldName)
+			field = fmt.Sprintf("%sId", field)
 		}
 
-		// Add a value to be written during an INSERT or UPDATE
-		query.AddWriteValue(fieldName, value)
+		for _, row := range currRows {
+			row.values[field] = value
+		}
+
+		// fieldName := assignment.LHS.Ident.Fragments[1].Fragment
+
+		// // Currently we only support 3 fragments in an set expression operand if it is targeting an "id" field.
+		// // If so, we generate the foreign key field name from the fragments.
+		// // For example, post.author.id will become authorId.
+		// if len(assignment.LHS.Ident.Fragments) == 3 {
+		// 	if assignment.LHS.Ident.Fragments[2].Fragment != "id" {
+		// 		return errors.New("currently only support 'id' as a third fragment in a set expression")
+		// 	}
+		// 	fieldName = fmt.Sprintf("%sId", fieldName)
+		// }
+
+		// // If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
+		// // For example, @set(post.user = ctx.identity) will set post.userId with ctx.identity.id.
+		// if operandType == proto.Type_TYPE_MODEL {
+		// 	fieldName = fmt.Sprintf("%sId", fieldName)
+		// }
+
+		// // Add a value to be written during an INSERT or UPDATE
+		// query.AddWriteValue(fieldName, value)
 
 	}
 	return nil
@@ -71,7 +119,9 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 		return nil
 	}
 
-	foreignKeys, row, err := query.captureWriteValuesFromMessage(scope, message, scope.model, args)
+	target := []string{strcase.ToLowerCamel(scope.model.Name)}
+
+	foreignKeys, row, err := query.captureWriteValuesFromMessage(scope, message, scope.model, target, args)
 
 	// Add any foreign keys to the root row from rows which it references.
 	for k, v := range foreignKeys {
@@ -85,7 +135,7 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 
 // Parses the input data and builds a graph of row data which is organised by how this data would be stored in the database.
 // Uses the protobuf schema to determine which rows are referenced by using (i.e. it determines where the foreign key sits).
-func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *proto.Message, model *proto.Model, args map[string]any) (map[string]any, *Row, error) {
+func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *proto.Message, model *proto.Model, currentTarget []string, args map[string]any) (map[string]any, *Row, error) {
 	defaultValues := map[string]any{}
 	var err error
 
@@ -99,6 +149,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	// Instantiate an empty row. And with default values if this is a create op.
 	newRow := &Row{
 		model:        model,
+		target:       currentTarget,
 		values:       defaultValues,
 		referencedBy: []*Relationship{},
 		references:   []*Relationship{},
@@ -116,6 +167,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
 			if input.Type.Type == proto.Type_TYPE_MESSAGE {
+
+				target := append(newRow.target, strcase.ToLowerCamel(input.Name))
 				messageModel := proto.FindModel(scope.schema.Models, field.Type.ModelName.Value)
 				nestedMessage := proto.FindMessage(scope.schema.Messages, input.Type.MessageName.Value)
 
@@ -133,7 +186,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 
 					// Create (or associate with) all the models which this model will be referenced by.
 					var rows []*Row
-					foreignKeys, rows, err = query.captureWriteValuesArrayFromMessage(scope, nestedMessage, messageModel, argsArraySectioned)
+					foreignKeys, rows, err = query.captureWriteValuesArrayFromMessage(scope, nestedMessage, messageModel, target, argsArraySectioned)
 					if err != nil {
 						return nil, nil, err
 					}
@@ -184,7 +237,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 
 					// Create (or associate with) the model which this model references.
 					var row *Row
-					foreignKeys, row, err = query.captureWriteValuesFromMessage(scope, nestedMessage, messageModel, argsSectioned)
+					foreignKeys, row, err = query.captureWriteValuesFromMessage(scope, nestedMessage, messageModel, target, argsSectioned)
 					if err != nil {
 						return nil, nil, err
 					}
@@ -242,7 +295,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	return nil, newRow, nil
 }
 
-func (query *QueryBuilder) captureWriteValuesArrayFromMessage(scope *Scope, message *proto.Message, model *proto.Model, argsArray []any) (map[string]any, []*Row, error) {
+func (query *QueryBuilder) captureWriteValuesArrayFromMessage(scope *Scope, message *proto.Message, model *proto.Model, currentTarget []string, argsArray []any) (map[string]any, []*Row, error) {
 	rows := []*Row{}
 	foreignKeys := map[string]any{}
 
@@ -253,7 +306,7 @@ func (query *QueryBuilder) captureWriteValuesArrayFromMessage(scope *Scope, mess
 			return nil, nil, errors.New("cannot convert args to map[string]any")
 		}
 
-		fks, row, err := query.captureWriteValuesFromMessage(scope, message, model, args)
+		fks, row, err := query.captureWriteValuesFromMessage(scope, message, model, currentTarget, args)
 		if err != nil {
 			return nil, nil, err
 		}
