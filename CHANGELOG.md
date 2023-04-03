@@ -1,3 +1,10 @@
+## [0.295.1](https://github.com/teamkeel/keel/compare/v0.295.0...v0.295.1) (2023-04-03)
+
+
+### Bug Fixes
+
+* omitting optional model association ([#894](https://github.com/teamkeel/keel/issues/894)) ([0a55877](https://github.com/teamkeel/keel/commit/0a558777cb0754382a3a1adc942bcdcb95bde5fc))
+
 # [0.295.0](https://github.com/teamkeel/keel/compare/v0.294.3...v0.295.0) (2023-03-31)
 
 
