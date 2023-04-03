@@ -43,23 +43,19 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 		target := lo.Map(assignment.LHS.Ident.Fragments, func(f *parser.IdentFragment, _ int) string {
 			return f.Fragment
 		})
-		// finalTarget := strings.Join(target, ".")
 
 		currRows := []*Row{query.writeValues}
 
-		withoutField := target[:len(target)-1]
+		// Iterate through all fragments until the final fragment, which represents the field.
+		// e.g. 'order.items.product' from 'order.items.product.isActive'
+		targetsLessField := target[:len(target)-1]
 
-		// order.items.product.isActive
-		for i, frag := range withoutField {
-
+		// Iterate through the fragments in the @set expression AND traverse the graph until we have a set of rows to update.
+		for i, frag := range targetsLessField {
 			nextRows := []*Row{}
-
 			for _, row := range currRows {
-
-				// if this row matches the current fragment, then append all related fragments for the next iteration
 				if frag == row.target[i] {
-
-					if i == len(withoutField)-1 {
+					if i == len(targetsLessField)-1 {
 						nextRows = append(nextRows, row)
 					} else {
 						for _, ref := range row.references {
@@ -71,10 +67,10 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 					}
 				}
 			}
-
 			currRows = nextRows
 		}
 
+		// The model field to update.
 		field := target[len(target)-1]
 
 		// If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
@@ -83,31 +79,10 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			field = fmt.Sprintf("%sId", field)
 		}
 
+		// Set the value on all rows.
 		for _, row := range currRows {
 			row.values[field] = value
 		}
-
-		// fieldName := assignment.LHS.Ident.Fragments[1].Fragment
-
-		// // Currently we only support 3 fragments in an set expression operand if it is targeting an "id" field.
-		// // If so, we generate the foreign key field name from the fragments.
-		// // For example, post.author.id will become authorId.
-		// if len(assignment.LHS.Ident.Fragments) == 3 {
-		// 	if assignment.LHS.Ident.Fragments[2].Fragment != "id" {
-		// 		return errors.New("currently only support 'id' as a third fragment in a set expression")
-		// 	}
-		// 	fieldName = fmt.Sprintf("%sId", fieldName)
-		// }
-
-		// // If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
-		// // For example, @set(post.user = ctx.identity) will set post.userId with ctx.identity.id.
-		// if operandType == proto.Type_TYPE_MODEL {
-		// 	fieldName = fmt.Sprintf("%sId", fieldName)
-		// }
-
-		// // Add a value to be written during an INSERT or UPDATE
-		// query.AddWriteValue(fieldName, value)
-
 	}
 	return nil
 }
