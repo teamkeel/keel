@@ -50,7 +50,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		span.End()
 
 		span.SetAttributes(
-			attribute.String("library.version", Version),
+			attribute.String("runtime_version", Version),
 		)
 
 		if handler == nil {
