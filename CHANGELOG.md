@@ -1,3 +1,10 @@
+## [0.296.2](https://github.com/teamkeel/keel/compare/v0.296.1...v0.296.2) (2023-04-04)
+
+
+### Bug Fixes
+
+* message field autoformatting ([#890](https://github.com/teamkeel/keel/issues/890)) ([11fdbf0](https://github.com/teamkeel/keel/commit/11fdbf03ff5eeb638131935ae8ed6ea4021f90a5))
+
 ## [0.296.1](https://github.com/teamkeel/keel/compare/v0.296.0...v0.296.1) (2023-04-04)
 
 
