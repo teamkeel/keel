@@ -1,3 +1,10 @@
+## [0.296.1](https://github.com/teamkeel/keel/compare/v0.296.0...v0.296.1) (2023-04-04)
+
+
+### Bug Fixes
+
+* runtime version key ([f098670](https://github.com/teamkeel/keel/commit/f098670e6732c4792cdd7253da631e949927a973))
+
 # [0.296.0](https://github.com/teamkeel/keel/compare/v0.295.2...v0.296.0) (2023-04-03)
 
 
