@@ -181,13 +181,23 @@ func printMessage(writer *Writer, message *parser.MessageNode) {
 		writer.Block(func() {
 
 			for _, field := range message.Fields {
-				writer.Write(
-					"%s %s",
-					lowerCamel(field.Name.Value),
-					field.Type,
-				)
+				writer.Comments(field, func() {
+					writer.Write(
+						"%s %s",
+						lowerCamel(field.Name.Value),
+						field.Type,
+					)
 
-				writer.WriteLine("")
+					if field.Optional {
+						writer.Write("?")
+					}
+
+					if field.Repeated {
+						writer.Write("[]")
+					}
+
+					writer.WriteLine("")
+				})
 			}
 		})
 

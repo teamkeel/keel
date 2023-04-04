@@ -1,0 +1,30 @@
+message PersonInput {
+    interests Text[]
+}
+
+model Person {
+    fields {
+      name Text
+    }
+
+    functions {
+      write setPersonInterests(PersonInput) returns (Any)
+    }
+}
+
+===
+
+
+message PersonInput {
+    interests Text[]
+}
+
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        write setPersonInterests(PersonInput) returns (Any)
+    }
+}

@@ -1,9 +1,17 @@
 message Foo {
+  // bar field
   bar Text
+        // baz field
         baz Number
+        // boo field
+        boo Text?
 }
 ===
 message Foo {
+    // bar field
     bar Text
+    // baz field
     baz Number
+    // boo field
+    boo Text?
 }
