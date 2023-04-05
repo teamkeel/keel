@@ -1,3 +1,10 @@
+# [0.297.0](https://github.com/teamkeel/keel/compare/v0.296.2...v0.297.0) (2023-04-05)
+
+
+### Features
+
+* [@set](https://github.com/set) in nested related data on create op ([#896](https://github.com/teamkeel/keel/issues/896)) ([b43a7df](https://github.com/teamkeel/keel/commit/b43a7dfa43c116f3d447fb64670ffd0bfebaf069))
+
 ## [0.296.2](https://github.com/teamkeel/keel/compare/v0.296.1...v0.296.2) (2023-04-04)
 
 
