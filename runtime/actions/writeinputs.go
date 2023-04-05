@@ -61,7 +61,8 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			nextRows := []*Row{}
 
 			if len(currRows) == 0 {
-				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input data", setExpression.Source)
+				// We cannot set order.customer.name if the input is order.customer.id (implying an assocation).
+				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input data and cannot set associated model fields", setExpression.Source)
 			}
 
 			for _, row := range currRows {
