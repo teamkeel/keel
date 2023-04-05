@@ -46,16 +46,22 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 		currRows := []*Row{query.writeValues}
 
-		// Iterate through all fragments until the final fragment, which represents the field.
-		// e.g. 'order.items.product' from 'order.items.product.isActive'
+		// The model field to update.
+		field := target[len(target)-1]
 		targetsLessField := target[:len(target)-1]
+
+		// If the target field is id, then we need to update the foreign key field on the previous target fragment model
+		if field == "id" {
+			field = fmt.Sprintf("%sId", target[len(target)-2])
+			targetsLessField = target[:len(target)-2]
+		}
 
 		// Iterate through the fragments in the @set expression AND traverse the graph until we have a set of rows to update.
 		for i, frag := range targetsLessField {
 			nextRows := []*Row{}
 
 			if len(currRows) == 0 {
-				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input model data", setExpression.Source)
+				return fmt.Errorf("set expression operand out of range of inputs: %s. we currently only support setting fields within the input data", setExpression.Source)
 			}
 
 			for _, row := range currRows {
@@ -75,16 +81,13 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			currRows = nextRows
 		}
 
-		// The model field to update.
-		field := target[len(target)-1]
-
 		// If targeting the nested model (without a field), then set the foreign key with the "id" of the assigning model.
 		// For example, @set(post.user = ctx.identity) will set post.userId with ctx.identity.id.
 		if operandType == proto.Type_TYPE_MODEL {
 			field = fmt.Sprintf("%sId", field)
 		}
 
-		// Set the value on all rows.
+		// Set the field on all rows.
 		for _, row := range currRows {
 			row.values[field] = value
 		}
