@@ -1256,7 +1256,9 @@ var testCases = []testCase{
 					product Product
 				}
 				operations {
-					create createOrder() with (product.name, product.attributes.name, product.attributes.status)
+					create createOrder() with (product.name, product.attributes.name, product.attributes.status) {
+						@set(order.product.createdOnOrder = true)
+					}
 				}
 				@permission(expression: true, actions: [create])
 			}	
@@ -1264,6 +1266,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 					isActive Boolean @default(true)
+					createdOnOrder Boolean @default(false)
 					attributes ProductAttribute[]
 				}
 			}
@@ -1300,9 +1303,9 @@ var testCases = []testCase{
 			WITH 
 				new_1_product AS 
 					(INSERT INTO "product" 
-						(created_at, id, is_active, name, updated_at) 
+						(created_at, created_on_order, id, is_active, name, updated_at) 
 					VALUES 
-						(?, ?, ?, ?, ?) 
+						(?, ?, ?, ?, ?, ?) 
 					RETURNING *), 
 				new_1_product_attribute AS 
 					(INSERT INTO "product_attribute" 
@@ -1324,7 +1327,7 @@ var testCases = []testCase{
 					RETURNING *) 
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
-			ignore, ignore, true, "Child Bicycle", ignore, // new_1_product
+			ignore, true, ignore, true, "Child Bicycle", ignore, // new_1_product
 			ignore, ignore, "FDA approved", "NotApplicable", ignore, // new_1_product_attribute
 			ignore, ignore, "Toy-safety-council approved", "Yes", ignore, // new_2_product_attribute
 			ignore, ignore, ignore, // new_1_order
@@ -1338,7 +1341,9 @@ var testCases = []testCase{
 					items OrderItem[]
 				}
 				operations {
-					create createOrder() with (items.quantity, items.product.name)
+					create createOrder() with (items.quantity, items.product.name) {
+						@set(order.items.product.createdOnOrder = true)
+					}
 				}
 				@permission(expression: true, actions: [create])
 			}	
@@ -1346,6 +1351,7 @@ var testCases = []testCase{
 				fields {
 					name Text
 					isActive Boolean @default(true)
+					createdOnOrder Boolean @default(false)
 				}
 			}
 			model OrderItem {
@@ -1383,9 +1389,9 @@ var testCases = []testCase{
 					RETURNING *), 
 				new_1_product AS 
 					(INSERT INTO "product" 
-						(created_at, id, is_active, name, updated_at) 
+						(created_at, created_on_order, id, is_active, name, updated_at) 
 					VALUES 
-						(?, ?, ?, ?, ?) 
+						(?, ?, ?, ?, ?, ?) 
 					RETURNING *),
 				new_1_order_item AS 
 					(INSERT INTO "order_item" 
@@ -1395,9 +1401,9 @@ var testCases = []testCase{
 					RETURNING *), 
 				new_2_product AS 
 					(INSERT INTO "product" 
-						(created_at, id, is_active, name, updated_at) 
+						(created_at, created_on_order, id, is_active, name, updated_at) 
 					VALUES 
-						(?, ?, ?, ?, ?) 
+						(?, ?, ?, ?, ?, ?) 
 					RETURNING *),
 				new_2_order_item AS 
 					(INSERT INTO "order_item" 
@@ -1408,9 +1414,9 @@ var testCases = []testCase{
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			ignore, ignore, ignore, // new_1_order
-			ignore, ignore, true, "Hair dryer", ignore, // new_1_product
+			ignore, true, ignore, true, "Hair dryer", ignore, // new_1_product
 			ignore, ignore, false, 2, ignore, //new_1_order_item
-			ignore, ignore, true, "Hair clips", ignore, // new_2_product
+			ignore, true, ignore, true, "Hair clips", ignore, // new_2_product
 			ignore, ignore, false, 4, ignore, //new_2_order_item
 		},
 	},
@@ -1470,7 +1476,7 @@ var testCases = []testCase{
 		},
 	},
 	{
-		name: "create_relationships_1_to_M_multiple1",
+		name: "create_relationships_1_to_M_multiple",
 		keelSchema: `
 			model Order {
 				fields {

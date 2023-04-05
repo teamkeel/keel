@@ -3,6 +3,7 @@ model Post {
         title Text
         identity Identity?
         isAuthenticated Boolean?
+        comments Comment[]
     }
 
     operations {
@@ -23,6 +24,20 @@ model Post {
             @set(post.isAuthenticated = ctx.isAuthenticated)
             @permission(expression: true)
         }
+        create createPostWithComments() with (title, comments.comment) {
+            @permission(expression: ctx.isAuthenticated)
+            @set(post.comments.createdBy = ctx.identity)
+            @set(post.comments.isActive = true)
+        }
+    }
+}
+
+model Comment {
+    fields {
+        comment Text
+        createdBy Identity
+        isActive Boolean
+        post Post
     }
 }
 
