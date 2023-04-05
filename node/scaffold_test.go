@@ -1,4 +1,4 @@
-package node_test
+package node
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/node"
 )
 
 func TestScaffold(t *testing.T) {
@@ -33,11 +32,11 @@ func TestScaffold(t *testing.T) {
 	`), 0777)
 	require.NoError(t, err)
 
-	actualFiles, err := node.Scaffold(tmpDir)
+	actualFiles, err := Scaffold(tmpDir)
 
 	assert.NoError(t, err)
 
-	expectedFiles := []node.GeneratedFile{
+	expectedFiles := []GeneratedFile{
 		{
 			Path: "deletePost.ts",
 			Contents: `import { DeletePost } from '@teamkeel/sdk';
@@ -102,7 +101,7 @@ export default CustomFunctionWrite(async (inputs, api, ctx) => {
 	}
 
 	for _, f := range expectedFiles {
-		matchingActualFile, found := lo.Find(actualFiles, func(a *node.GeneratedFile) bool {
+		matchingActualFile, found := lo.Find(actualFiles, func(a *GeneratedFile) bool {
 			base := filepath.Base(a.Path)
 
 			return base == f.Path
@@ -118,7 +117,7 @@ export default CustomFunctionWrite(async (inputs, api, ctx) => {
 	for _, f := range actualFiles {
 		base := filepath.Base(f.Path)
 
-		_, found := lo.Find(expectedFiles, func(e node.GeneratedFile) bool {
+		_, found := lo.Find(expectedFiles, func(e GeneratedFile) bool {
 			return base == e.Path
 		})
 
@@ -156,7 +155,7 @@ func TestExistingFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	actualFiles, err := node.Scaffold(tmpDir)
+	actualFiles, err := Scaffold(tmpDir)
 
 	assert.NoError(t, err)
 
