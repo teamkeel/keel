@@ -232,7 +232,6 @@ type rpcTestCase struct {
 	QueryParams    string
 	Body           string
 	Method         string
-	StatusCode     int
 	assertResponse func(t *testing.T, data map[string]any)
 	assertError    func(t *testing.T, data map[string]any, statusCode int)
 	assertDatabase func(t *testing.T, db *gorm.DB, data interface{})
@@ -2621,10 +2620,9 @@ var rpcTestCases = []rpcTestCase{
 			})
 			require.NoError(t, db.Table("thing").Create(row).Error)
 		},
-		Path:       "getThing",
-		Body:       `{"id": "id_1"}`,
-		Method:     http.MethodPost,
-		StatusCode: http.StatusOK,
+		Path:   "getThing",
+		Body:   `{"id": "id_1"}`,
+		Method: http.MethodPost,
 		assertResponse: func(t *testing.T, data map[string]any) {
 			require.Equal(t, data["id"], "id_1")
 		},
@@ -2685,10 +2683,9 @@ var rpcTestCases = []rpcTestCase{
 			}
 		}
 	`,
-		Path:       "updateThing",
-		Body:       `{"where": {"id": "id_1"}, "values": {"text": "new value"}}`,
-		Method:     http.MethodPost,
-		StatusCode: http.StatusOK,
+		Path:   "updateThing",
+		Body:   `{"where": {"id": "id_1"}, "values": {"text": "new value"}}`,
+		Method: http.MethodPost,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row := initRow(map[string]any{
 				"id":   "id_1",
@@ -2734,10 +2731,9 @@ var rpcTestCases = []rpcTestCase{
 			}
 		}
 	`,
-		Path:       "getThing",
-		Body:       `{"total": "nonsense"}`,
-		Method:     http.MethodPost,
-		StatusCode: http.StatusBadRequest,
+		Path:   "getThing",
+		Body:   `{"total": "nonsense"}`,
+		Method: http.MethodPost,
 		assertError: func(t *testing.T, data map[string]any, statusCode int) {
 			assert.Equal(t, statusCode, http.StatusBadRequest)
 			assert.Equal(t, "ERR_INVALID_INPUT", data["code"])
