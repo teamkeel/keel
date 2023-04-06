@@ -180,7 +180,7 @@ func TestRuntimeRPC(t *testing.T) {
 				t.Errorf("method %s returned non-200 (%d) but no assertError function provided", tCase.Path, response.Status)
 			}
 			if tCase.assertError != nil {
-				tCase.assertError(t, res)
+				tCase.assertError(t, res, response.Status)
 			}
 
 			// Do the specified assertion on the data returned, if one is specified.
@@ -232,8 +232,9 @@ type rpcTestCase struct {
 	QueryParams    string
 	Body           string
 	Method         string
+	StatusCode     int
 	assertResponse func(t *testing.T, data map[string]any)
-	assertError    func(t *testing.T, data map[string]any)
+	assertError    func(t *testing.T, data map[string]any, statusCode int)
 	assertDatabase func(t *testing.T, db *gorm.DB, data interface{})
 }
 
@@ -2446,7 +2447,6 @@ var rpcTestCases = []rpcTestCase{
 		Path:   "listThings",
 		Method: http.MethodGet,
 		assertResponse: func(t *testing.T, res map[string]any) {
-
 			results := res["results"].([]interface{})
 			require.Len(t, results, 1)
 			pageInfo := res["pageInfo"].(map[string]any)
@@ -2621,9 +2621,10 @@ var rpcTestCases = []rpcTestCase{
 			})
 			require.NoError(t, db.Table("thing").Create(row).Error)
 		},
-		Path:   "getThing",
-		Body:   `{"id": "id_1"}`,
-		Method: http.MethodPost,
+		Path:       "getThing",
+		Body:       `{"id": "id_1"}`,
+		Method:     http.MethodPost,
+		StatusCode: http.StatusOK,
 		assertResponse: func(t *testing.T, data map[string]any) {
 			require.Equal(t, data["id"], "id_1")
 		},
@@ -2684,9 +2685,10 @@ var rpcTestCases = []rpcTestCase{
 			}
 		}
 	`,
-		Path:   "updateThing",
-		Body:   `{"where": {"id": "id_1"}, "values": {"text": "new value"}}`,
-		Method: http.MethodPost,
+		Path:       "updateThing",
+		Body:       `{"where": {"id": "id_1"}, "values": {"text": "new value"}}`,
+		Method:     http.MethodPost,
+		StatusCode: http.StatusOK,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			row := initRow(map[string]any{
 				"id":   "id_1",
@@ -2732,10 +2734,12 @@ var rpcTestCases = []rpcTestCase{
 			}
 		}
 	`,
-		Path:   "getThing",
-		Body:   `{"total": "nonsense"}`,
-		Method: http.MethodPost,
-		assertError: func(t *testing.T, data map[string]any) {
+		Path:       "getThing",
+		Body:       `{"total": "nonsense"}`,
+		Method:     http.MethodPost,
+		StatusCode: http.StatusBadRequest,
+		assertError: func(t *testing.T, data map[string]any, statusCode int) {
+			assert.Equal(t, statusCode, http.StatusBadRequest)
 			assert.Equal(t, "ERR_INVALID_INPUT", data["code"])
 			rtt.AssertValueAtPath(t, data, "data.errors[0].field", "(root)")
 			rtt.AssertValueAtPath(t, data, "data.errors[0].error", "id is required")
