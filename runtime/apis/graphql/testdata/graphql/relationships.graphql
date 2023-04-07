@@ -6,7 +6,7 @@ type Query {
 
 type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
-  resetPassword(input: passwordReset_input!): passwordReset_response
+  resetPassword(input: resetPassword_input!): passwordReset_response
   requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
 }
 
@@ -41,7 +41,7 @@ input listOrderItems_where {
   orderId: IDQuery_input!
 }
 
-input passwordReset_input {
+input resetPassword_input {
   password: String!
   token: String!
 }

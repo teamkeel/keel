@@ -8,7 +8,7 @@ type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
   createBeatle: Beatle!
   deleteBeatle: DeleteResponse
-  resetPassword(input: passwordReset_input!): passwordReset_response
+  resetPassword(input: resetPassword_input!): passwordReset_response
   requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
   switchBeatle: Beatle!
 }
@@ -30,7 +30,7 @@ input listBeatles_input {
   last: Int
 }
 
-input passwordReset_input {
+input resetPassword_input {
   password: String!
   token: String!
 }

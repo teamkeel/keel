@@ -4,7 +4,7 @@ type Query {
 
 type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
-  resetPassword(input: passwordReset_input!): passwordReset_response
+  resetPassword(input: resetPassword_input!): passwordReset_response
   requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
   writePerson(input: TheMessage_input!): TheMessage
 }
@@ -23,7 +23,7 @@ input authenticate_input {
   emailPassword: EmailPassword_input!
 }
 
-input passwordReset_input {
+input resetPassword_input {
   password: String!
   token: String!
 }
