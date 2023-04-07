@@ -6,6 +6,8 @@ type Query {
 
 type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
+  resetPassword(input: passwordReset_input!): passwordReset_response
+  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
 }
 
 input DateQuery_input {
@@ -57,6 +59,16 @@ input listPeople_where {
   occupation: OccupationQuery_input!
 }
 
+input passwordReset_input {
+  password: String!
+  token: String!
+}
+
+input requestPasswordReset_input {
+  email: String!
+  redirectUrl: String!
+}
+
 type Date {
   formatted(format: String!): String!
   iso8601: String!
@@ -98,6 +110,14 @@ type Timestamp {
 type authenticate_response {
   identityCreated: Boolean!
   token: String!
+}
+
+type passwordReset_response {
+  success: Boolean
+}
+
+type requestPasswordReset_response {
+  success: Boolean
 }
 
 enum Occupation {

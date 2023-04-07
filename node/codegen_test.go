@@ -962,6 +962,18 @@ export interface authenticate_response {
 	identityCreated: boolean;
 	token: string;
 }
+export interface requestPasswordReset_input {
+	email: string;
+	redirectUrl: string;
+}
+export interface requestPasswordReset_response {
+}
+export interface passwordReset_input {
+	token: string;
+	password: string;
+}
+export interface passwordReset_response {
+}
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
@@ -971,6 +983,8 @@ declare class ActionExecutor {
 	deletePerson(i?: deletePerson_input): Promise<string>;
 	listPeople(i?: listPeople_input): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	authenticate(i: authenticate_input): Promise<authenticate_response>;
+	requestPasswordReset(i: requestPasswordReset_input): Promise<requestPasswordReset_response>;
+	resetPassword(i: passwordReset_input): Promise<passwordReset_response>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
@@ -1080,11 +1094,25 @@ export interface authenticate_response {
 	identityCreated: boolean;
 	token: string;
 }
+export interface requestPasswordReset_input {
+	email: string;
+	redirectUrl: string;
+}
+export interface requestPasswordReset_response {
+}
+export interface passwordReset_input {
+	token: string;
+	password: string;
+}
+export interface passwordReset_response {
+}
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
 	peopleByHobby(i: peopleByHobby_input): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	authenticate(i: authenticate_input): Promise<authenticate_response>;
+	requestPasswordReset(i: requestPasswordReset_input): Promise<requestPasswordReset_response>;
+	resetPassword(i: passwordReset_input): Promise<passwordReset_response>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;

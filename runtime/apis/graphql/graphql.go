@@ -608,6 +608,13 @@ func (mk *graphqlSchemaBuilder) addMessage(message *proto.Message) (graphql.Outp
 		})
 	}
 
+	if len(message.Fields) == 0 {
+		output.AddFieldConfig("success", &graphql.Field{
+			Type:    graphql.Boolean,
+			Resolve: func(_ graphql.ResolveParams) (interface{}, error) { return true, nil },
+		})
+	}
+
 	mk.types[message.Name] = output
 
 	return output, nil

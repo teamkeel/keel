@@ -529,77 +529,161 @@ func (scm *Builder) makeModel(decl *parser.DeclarationNode) {
 	}
 
 	if decl.Model.Name.Value == parser.ImplicitIdentityModelName {
-		authInputMessageName := makeInputMessageName(parser.ImplicitAuthenticateOperationName)
-		authResponseMessageName := makeResponseMessageName(parser.ImplicitAuthenticateOperationName)
-		emailPasswordMessageName := makeInputMessageName("EmailPassword")
-
-		protoOp := proto.Operation{
-			ModelName:           parser.ImplicitIdentityModelName,
-			Name:                parser.ImplicitAuthenticateOperationName,
-			Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
-			Type:                proto.OperationType_OPERATION_TYPE_WRITE,
-			InputMessageName:    authInputMessageName,
-			ResponseMessageName: authResponseMessageName,
-		}
-
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: emailPasswordMessageName,
-			Fields: []*proto.MessageField{
-				{
-					Name:        "email",
-					MessageName: emailPasswordMessageName,
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-					Optional:    false,
-				},
-				{
-					Name:        "password",
-					MessageName: emailPasswordMessageName,
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-					Optional:    false,
-				},
-			},
-		})
-
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: authInputMessageName,
-			Fields: []*proto.MessageField{
-				{
-					Name:        "createIfNotExists",
-					MessageName: authInputMessageName,
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-					Optional:    true,
-				},
-				{
-					Name:        "emailPassword",
-					MessageName: authInputMessageName,
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String(emailPasswordMessageName)},
-					Optional:    false,
-				},
-			},
-		})
-
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name: authResponseMessageName,
-			Fields: []*proto.MessageField{
-				{
-					Name:        "identityCreated",
-					MessageName: authResponseMessageName,
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
-					Optional:    false,
-				},
-				{
-					Name:        "token",
-					MessageName: authResponseMessageName,
-					Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
-					Optional:    false,
-				},
-			},
-		})
-
-		protoModel.Operations = append(protoModel.Operations, &protoOp)
+		protoModel.Operations = append(protoModel.Operations, scm.makeAuthenticate())
+		protoModel.Operations = append(protoModel.Operations, scm.makeRequestPasswordReset())
+		protoModel.Operations = append(protoModel.Operations, scm.makePasswordReset())
 	}
 
 	scm.proto.Models = append(scm.proto.Models, protoModel)
+}
+
+func (scm *Builder) makeAuthenticate() *proto.Operation {
+	inputMessageName := makeInputMessageName(parser.AuthenticateOperationName)
+	responseMessageName := makeResponseMessageName(parser.AuthenticateOperationName)
+	emailPasswordMessageName := makeInputMessageName("EmailPassword")
+
+	op := proto.Operation{
+		ModelName:           parser.ImplicitIdentityModelName,
+		Name:                parser.AuthenticateOperationName,
+		Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
+		Type:                proto.OperationType_OPERATION_TYPE_WRITE,
+		InputMessageName:    inputMessageName,
+		ResponseMessageName: responseMessageName,
+	}
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: emailPasswordMessageName,
+		Fields: []*proto.MessageField{
+			{
+				Name:        "email",
+				MessageName: emailPasswordMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Optional:    false,
+			},
+			{
+				Name:        "password",
+				MessageName: emailPasswordMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Optional:    false,
+			},
+		},
+	})
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: inputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				Name:        "createIfNotExists",
+				MessageName: inputMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+				Optional:    true,
+			},
+			{
+				Name:        "emailPassword",
+				MessageName: inputMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_MESSAGE, MessageName: wrapperspb.String(emailPasswordMessageName)},
+				Optional:    false,
+			},
+		},
+	})
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: responseMessageName,
+		Fields: []*proto.MessageField{
+			{
+				Name:        "identityCreated",
+				MessageName: responseMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_BOOL},
+				Optional:    false,
+			},
+			{
+				Name:        "token",
+				MessageName: responseMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Optional:    false,
+			},
+		},
+	})
+
+	return &op
+}
+
+func (scm *Builder) makeRequestPasswordReset() *proto.Operation {
+	inputMessageName := makeInputMessageName(parser.RequestPasswordResetOperationName)
+	responseMessageName := makeResponseMessageName(parser.RequestPasswordResetOperationName)
+
+	op := proto.Operation{
+		ModelName:           parser.ImplicitIdentityModelName,
+		Name:                parser.RequestPasswordResetOperationName,
+		Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
+		Type:                proto.OperationType_OPERATION_TYPE_WRITE,
+		InputMessageName:    inputMessageName,
+		ResponseMessageName: responseMessageName,
+	}
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: inputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				Name:        "email",
+				MessageName: inputMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Optional:    false,
+			},
+			{
+				Name:        "redirectUrl",
+				MessageName: inputMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Optional:    false,
+			},
+		},
+	})
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name:   responseMessageName,
+		Fields: []*proto.MessageField{},
+	})
+
+	return &op
+}
+
+func (scm *Builder) makePasswordReset() *proto.Operation {
+	inputMessageName := makeInputMessageName(parser.PasswordResetOperationName)
+	responseMessageName := makeResponseMessageName(parser.PasswordResetOperationName)
+
+	op := proto.Operation{
+		ModelName:           parser.ImplicitIdentityModelName,
+		Name:                parser.PasswordResetOperationName,
+		Implementation:      proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME,
+		Type:                proto.OperationType_OPERATION_TYPE_WRITE,
+		InputMessageName:    inputMessageName,
+		ResponseMessageName: responseMessageName,
+	}
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name: inputMessageName,
+		Fields: []*proto.MessageField{
+			{
+				Name:        "token",
+				MessageName: inputMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Optional:    false,
+			},
+			{
+				Name:        "password",
+				MessageName: inputMessageName,
+				Type:        &proto.TypeInfo{Type: proto.Type_TYPE_STRING},
+				Optional:    false,
+			},
+		},
+	})
+
+	scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		Name:   responseMessageName,
+		Fields: []*proto.MessageField{},
+	})
+
+	return &op
 }
 
 func (scm *Builder) makeRole(decl *parser.DeclarationNode) {

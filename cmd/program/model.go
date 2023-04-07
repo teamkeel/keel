@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
+	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/migrations"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
@@ -348,8 +349,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		ctx := msg.r.Context()
 		database, _ := db.New(ctx, m.DatabaseConnInfo)
+
 		ctx = runtimectx.WithDatabase(ctx, database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
+		ctx = runtimectx.WithMailClient(ctx, &mail.Client{Enabled: false})
+
 		if m.FunctionsServer != nil {
 			ctx = functions.WithFunctionsTransport(
 				ctx,

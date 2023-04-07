@@ -3,11 +3,14 @@ package actions
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/mail"
+	"net/url"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/karlseguin/typed"
+	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
@@ -29,11 +32,18 @@ const (
 )
 
 var (
-	ErrInvalidToken         = errors.New("cannot be parsed or vertified as a valid JWT")
+	ErrInvalidToken         = errors.New("cannot be parsed or verified as a valid JWT")
 	ErrTokenExpired         = errors.New("token has expired")
 	ErrInvalidIdentityClaim = errors.New("the identity claim is invalid and cannot be parsed")
 	ErrIdentityNotFound     = errors.New("identity does not exist")
 )
+
+const (
+	bearerTokenExpiry time.Duration = time.Hour * 24
+	resetTokenExpiry  time.Duration = time.Minute * 15
+)
+
+const resetPasswordAudClaim = "password-reset"
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
 func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, error) {
@@ -64,7 +74,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 			return nil, err
 		}
 
-		token, err := GenerateBearerToken(id.String())
+		token, err := GenerateToken(id.String(), []string{}, bearerTokenExpiry)
 		if err != nil {
 			return nil, err
 		}
@@ -80,7 +90,6 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	}
 
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(emailPassword.String("password")), bcrypt.DefaultCost)
-
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +116,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 
 	id := modelMap[IdColumnName].(string)
 
-	token, err := GenerateBearerToken(id)
+	token, err := GenerateToken(id, []string{}, bearerTokenExpiry)
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +125,91 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		Token:           token,
 		IdentityCreated: true,
 	}, nil
+}
+
+func ResetRequestPassword(scope *Scope, input map[string]any) error {
+	var err error
+	typedInput := typed.New(input)
+
+	email := typedInput.String("email")
+	if _, err = mail.ParseAddress(email); err != nil {
+		return common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid email address"}
+	}
+
+	var redirectUrl *url.URL
+	if redirectUrl, err = url.ParseRequestURI(typedInput.String("redirectUrl")); err != nil {
+		return common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid redirect URL"}
+	}
+
+	var identity *runtimectx.Identity
+	identity, err = FindIdentityByEmail(scope.context, scope.schema, email)
+	if err != nil {
+		return err
+	}
+	if identity == nil {
+		return nil
+	}
+
+	token, err := GenerateToken(identity.Id, []string{resetPasswordAudClaim}, resetTokenExpiry)
+	if err != nil {
+		return err
+	}
+
+	q := redirectUrl.Query()
+	q.Add("token", token)
+	redirectUrl.RawQuery = q.Encode()
+
+	client, err := runtimectx.GetMailClient(scope.context)
+	if err != nil {
+		return err
+	}
+
+	err = client.SendResetPasswordMail(identity.Email, redirectUrl.String())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ResetPassword(scope *Scope, input map[string]any) error {
+	typedInput := typed.New(input)
+
+	token := typedInput.String("token")
+	password := typedInput.String("password")
+
+	identityId, err := ParseResetToken(token)
+	switch {
+	case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired) || errors.Is(err, ErrInvalidIdentityClaim):
+		return common.RuntimeError{Code: common.ErrInvalidInput, Message: err.Error()}
+	case err != nil:
+		return err
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	identityModel := proto.FindModel(scope.schema.Models, parser.ImplicitIdentityModelName)
+
+	query := NewQuery(identityModel)
+	err = query.Where(Field("id"), Equals, Value(identityId))
+	if err != nil {
+		return err
+	}
+
+	query.AddWriteValue("password", string(hashedPassword))
+
+	affected, err := query.UpdateStatement().Execute(scope.context)
+	if err != nil {
+		return err
+	}
+	if affected != 1 {
+		return fmt.Errorf("expected 1 row to be updated, but %v rows were updated", affected)
+	}
+
+	return nil
 }
 
 func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*runtimectx.Identity, error) {
@@ -177,13 +271,14 @@ type claims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateBearerToken(id string) (string, error) {
+func GenerateToken(sub string, aud []string, expiresIn time.Duration) (string, error) {
 	now := time.Now()
 
 	claims := claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   id,
-			ExpiresAt: jwt.NewNumericDate(now.Add(time.Hour * 24)),
+			Subject:   sub,
+			Audience:  aud,
+			ExpiresAt: jwt.NewNumericDate(now.Add(expiresIn)),
 			IssuedAt:  jwt.NewNumericDate(now),
 		},
 	}
@@ -208,6 +303,34 @@ func ParseBearerToken(jwtToken string) (string, error) {
 
 	if !claims.VerifyExpiresAt(time.Now(), true) {
 		return "", ErrTokenExpired
+	}
+
+	ksuid, err := ksuid.Parse(claims.Subject)
+
+	if err != nil {
+		return "", ErrInvalidIdentityClaim
+	}
+
+	return ksuid.String(), nil
+}
+
+func ParseResetToken(jwtToken string) (string, error) {
+	token, err := jwt.ParseWithClaims(jwtToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
+		return getSigningKey(), nil
+	})
+
+	if err != nil || !token.Valid {
+		return "", ErrInvalidToken
+	}
+
+	claims := token.Claims.(*claims)
+
+	if !claims.VerifyExpiresAt(time.Now(), true) {
+		return "", ErrTokenExpired
+	}
+
+	if !lo.Contains(claims.Audience, resetPasswordAudClaim) {
+		return "", ErrInvalidToken
 	}
 
 	ksuid, err := ksuid.Parse(claims.Subject)
