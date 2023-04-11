@@ -5,8 +5,8 @@ type Query {
 
 type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
-  resetPassword(input: resetPassword_input!): passwordReset_response
   requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
+  resetPassword(input: resetPassword_input!): resetPassword_response
 }
 
 input EmailPassword_input {
@@ -23,14 +23,14 @@ input inClassroom_input {
   classId: ID!
 }
 
-input resetPassword_input {
-  password: String!
-  token: String!
-}
-
 input requestPasswordReset_input {
   email: String!
   redirectUrl: String!
+}
+
+input resetPassword_input {
+  password: String!
+  token: String!
 }
 
 type ClassroomPeople {
@@ -58,11 +58,11 @@ type authenticate_response {
   token: String!
 }
 
-type passwordReset_response {
+type requestPasswordReset_response {
   success: Boolean
 }
 
-type requestPasswordReset_response {
+type resetPassword_response {
   success: Boolean
 }
 
