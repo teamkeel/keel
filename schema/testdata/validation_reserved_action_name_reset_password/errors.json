@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "You have a reserved action name 'resetPassword'",
+      "hint": "Try 'performResetPassword' instead",
+      "code": "E042",
+      "pos": {
+        "filename": "testdata/validation_reserved_action_name_reset_password/schema.keel",
+        "offset": 84,
+        "line": 7,
+        "column": 16
+      },
+      "endPos": {
+        "filename": "testdata/validation_reserved_action_name_reset_password/schema.keel",
+        "offset": 97,
+        "line": 7,
+        "column": 29
+      }
+    }
+  ]
+}

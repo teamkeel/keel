@@ -14,6 +14,8 @@ import (
 var (
 	reservedActionNames = []string{
 		parser.AuthenticateOperationName,
+		parser.RequestPasswordResetOperationName,
+		parser.PasswordResetOperationName,
 	}
 	validActionTypes = []string{
 		parser.ActionTypeGet,

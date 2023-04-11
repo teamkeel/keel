@@ -1,0 +1,15 @@
+model User {
+    fields {
+        email Text
+    }
+
+    functions {
+        create requestPasswordReset() with (email)
+    }
+}
+
+api Web {
+    models {
+        User
+    }
+}
