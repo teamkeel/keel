@@ -919,8 +919,8 @@ model Person {
 		delete deletePerson()
 		list listPeople()
 	}
-}
-	`
+}`
+
 	expected := `
 import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
@@ -968,11 +968,11 @@ export interface requestPasswordReset_input {
 }
 export interface requestPasswordReset_response {
 }
-export interface passwordReset_input {
+export interface resetPassword_input {
 	token: string;
 	password: string;
 }
-export interface passwordReset_response {
+export interface resetPassword_response {
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -984,7 +984,7 @@ declare class ActionExecutor {
 	listPeople(i?: listPeople_input): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	authenticate(i: authenticate_input): Promise<authenticate_response>;
 	requestPasswordReset(i: requestPasswordReset_input): Promise<requestPasswordReset_response>;
-	resetPassword(i: passwordReset_input): Promise<passwordReset_response>;
+	resetPassword(i: resetPassword_input): Promise<resetPassword_response>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
@@ -1100,11 +1100,11 @@ export interface requestPasswordReset_input {
 }
 export interface requestPasswordReset_response {
 }
-export interface passwordReset_input {
+export interface resetPassword_input {
 	token: string;
 	password: string;
 }
-export interface passwordReset_response {
+export interface resetPassword_response {
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
@@ -1112,7 +1112,7 @@ declare class ActionExecutor {
 	peopleByHobby(i: peopleByHobby_input): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	authenticate(i: authenticate_input): Promise<authenticate_response>;
 	requestPasswordReset(i: requestPasswordReset_input): Promise<requestPasswordReset_response>;
-	resetPassword(i: passwordReset_input): Promise<passwordReset_response>;
+	resetPassword(i: resetPassword_input): Promise<resetPassword_response>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
