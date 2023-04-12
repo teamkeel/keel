@@ -1,3 +1,10 @@
+## [0.297.1](https://github.com/teamkeel/keel/compare/v0.297.0...v0.297.1) (2023-04-12)
+
+
+### Bug Fixes
+
+* missing defer on span ending in runtime ([ee4a106](https://github.com/teamkeel/keel/commit/ee4a106f76e1c45e38d3ade79e274a6f181c53d3))
+
 # [0.297.0](https://github.com/teamkeel/keel/compare/v0.296.2...v0.297.0) (2023-04-05)
 
 
