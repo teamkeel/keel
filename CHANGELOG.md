@@ -1,3 +1,10 @@
+# [0.299.0](https://github.com/teamkeel/keel/compare/v0.298.0...v0.299.0) (2023-04-12)
+
+
+### Features
+
+* schema validation new nested create ambiguity rule ([#907](https://github.com/teamkeel/keel/issues/907)) ([5fb4bbb](https://github.com/teamkeel/keel/commit/5fb4bbb76be0f1171423809a0e50c3c26746666c))
+
 # [0.298.0](https://github.com/teamkeel/keel/compare/v0.297.1...v0.298.0) (2023-04-12)
 
 
