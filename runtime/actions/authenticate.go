@@ -38,8 +38,8 @@ var (
 )
 
 const (
-	bearerTokenExpiry time.Duration = time.Hour * 24
-	resetTokenExpiry  time.Duration = time.Minute * 15
+	BearerTokenExpiry time.Duration = time.Hour * 24
+	ResetTokenExpiry  time.Duration = time.Minute * 15
 )
 
 const resetPasswordAudClaim = "password-reset"
@@ -73,7 +73,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 			return nil, err
 		}
 
-		token, err := GenerateToken(scope.context, id.String(), []string{}, bearerTokenExpiry)
+		token, err := GenerateBearerToken(scope.context, id.String())
 		if err != nil {
 			return nil, err
 		}
@@ -115,7 +115,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 
 	id := modelMap[IdColumnName].(string)
 
-	token, err := GenerateToken(scope.context, id, []string{}, bearerTokenExpiry)
+	token, err := GenerateBearerToken(scope.context, id)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return nil
 	}
 
-	token, err := GenerateToken(identity.Id, []string{resetPasswordAudClaim}, resetTokenExpiry)
+	token, err := GenerateResetToken(scope.context, identity.Id)
 	if err != nil {
 		return err
 	}
@@ -177,9 +177,9 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 	token := typedInput.String("token")
 	password := typedInput.String("password")
 
-	identityId, err := ParseResetToken(token)
+	identityId, err := ValidateToken(scope.context, token, resetPasswordAudClaim)
 	switch {
-	case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired) || errors.Is(err, ErrInvalidIdentityClaim):
+	case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired):
 		return common.RuntimeError{Code: common.ErrInvalidInput, Message: err.Error()}
 	case err != nil:
 		return err
@@ -270,7 +270,15 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(ctx context.Context, sub string, aud []string, expiresIn time.Duration) (string, error) {
+func GenerateBearerToken(ctx context.Context, identityId string) (string, error) {
+	return generateToken(ctx, identityId, []string{}, BearerTokenExpiry)
+}
+
+func GenerateResetToken(ctx context.Context, identityId string) (string, error) {
+	return generateToken(ctx, identityId, []string{resetPasswordAudClaim}, ResetTokenExpiry)
+}
+
+func generateToken(ctx context.Context, sub string, aud []string, expiresIn time.Duration) (string, error) {
 	now := time.Now().UTC()
 	claims := Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -305,7 +313,7 @@ func GenerateToken(ctx context.Context, sub string, aud []string, expiresIn time
 	}
 }
 
-func ParseBearerToken(ctx context.Context, tokenString string) (string, error) {
+func ValidateToken(ctx context.Context, tokenString string, audienceClaim string) (string, error) {
 	privateKey, err := runtimectx.GetPrivateKey(ctx)
 	if err != nil {
 		return "", err
@@ -337,8 +345,14 @@ func ParseBearerToken(ctx context.Context, tokenString string) (string, error) {
 		return "", ErrInvalidToken
 	}
 
-	if !claims.VerifyExpiresAt(time.Now(), true) {
+	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
 		return "", ErrTokenExpired
+	}
+
+	if audienceClaim != "" {
+		if !lo.Contains(claims.Audience, audienceClaim) {
+			return "", ErrInvalidToken
+		}
 	}
 
 	if err != nil || !token.Valid {
@@ -351,37 +365,4 @@ func ParseBearerToken(ctx context.Context, tokenString string) (string, error) {
 	}
 
 	return ksuid.String(), nil
-}
-
-func ParseResetToken(jwtToken string) (string, error) {
-	token, err := jwt.ParseWithClaims(jwtToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
-		return getSigningKey(), nil
-	})
-
-	if err != nil || !token.Valid {
-		return "", ErrInvalidToken
-	}
-
-	claims := token.Claims.(*claims)
-
-	if !claims.VerifyExpiresAt(time.Now(), true) {
-		return "", ErrTokenExpired
-	}
-
-	if !lo.Contains(claims.Audience, resetPasswordAudClaim) {
-		return "", ErrInvalidToken
-	}
-
-	ksuid, err := ksuid.Parse(claims.Subject)
-
-	if err != nil {
-		return "", ErrInvalidIdentityClaim
-	}
-
-	return ksuid.String(), nil
-}
-
-func getSigningKey() []byte {
-	// TODO: make this a configuration to the runtime
-	return []byte("test")
 }

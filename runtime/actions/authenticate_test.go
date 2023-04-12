@@ -23,7 +23,7 @@ func TestGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
 
-	parsedId, err := actions.ParseBearerToken(ctx, bearerJwt)
+	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
 	require.NoError(t, err)
 	require.Equal(t, identityId.String(), parsedId)
 }
@@ -41,7 +41,7 @@ func TestGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
 
-	parsedId, err := actions.ParseBearerToken(ctx, bearerJwt)
+	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
 	require.NoError(t, err)
 	require.Equal(t, identityId.String(), parsedId)
 }
@@ -60,7 +60,7 @@ func TestGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testing.T) {
 	require.NotEmpty(t, bearerJwt)
 
 	ctx = context.Background()
-	parsedId, err := actions.ParseBearerToken(ctx, bearerJwt)
+	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
 	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
@@ -78,7 +78,7 @@ func TestGenerationWithoutPrivateKeyAndParsingWithPrivateKey(t *testing.T) {
 	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
 	require.NoError(t, err)
 
-	parsedId, err := actions.ParseBearerToken(ctx, bearerJwt)
+	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
 	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
@@ -101,7 +101,7 @@ func TestGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
 	ctx = runtimectx.WithPrivateKey(ctx, privateKey2)
 	require.NoError(t, err)
 
-	parsedId, err := actions.ParseBearerToken(ctx, bearerJwt)
+	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
 	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
@@ -195,7 +195,7 @@ func TestExpiredBearerTokenIsInvalid(t *testing.T) {
 	tokenString, err := token.SignedString(privateKey)
 	require.NoError(t, err)
 
-	parsedId, err := actions.ParseBearerToken(ctx, tokenString)
+	parsedId, err := actions.ValidateToken(ctx, tokenString, "")
 	require.ErrorIs(t, actions.ErrTokenExpired, err)
 	require.Empty(t, parsedId)
 }

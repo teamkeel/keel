@@ -206,7 +206,7 @@ func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http
 		return nil, errors.New("invalid authorization header")
 	}
 
-	identityId, err := actions.ParseBearerToken(ctx, headerSplit[1])
+	identityId, err := actions.ValidateToken(ctx, headerSplit[1], "")
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
