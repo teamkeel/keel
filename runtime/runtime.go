@@ -47,7 +47,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 
 	httpHandler := func(w http.ResponseWriter, r *http.Request) {
 		ctx, span := tracer.Start(r.Context(), "Runtime")
-		span.End()
+		defer span.End()
 
 		span.SetAttributes(
 			attribute.String("runtime_version", Version),
@@ -191,7 +191,7 @@ func logLevel() log.Level {
 
 func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http.Header, w http.ResponseWriter) (*runtimectx.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Authorization")
-	span.End()
+	defer span.End()
 
 	header := headers.Get(authorizationHeaderName)
 	if header == "" {
