@@ -32,15 +32,14 @@ const (
 )
 
 var (
-	ErrInvalidToken         = errors.New("cannot be parsed or verified as a valid JWT")
-	ErrTokenExpired         = errors.New("token has expired")
-	ErrInvalidIdentityClaim = errors.New("the identity claim is invalid and cannot be parsed")
-	ErrIdentityNotFound     = errors.New("identity does not exist")
+	ErrInvalidToken     = errors.New("cannot be parsed or vertified as a valid JWT")
+	ErrTokenExpired     = errors.New("token has expired")
+	ErrIdentityNotFound = errors.New("identity does not exist")
 )
 
 const (
-	bearerTokenExpiry time.Duration = time.Hour * 24
-	resetTokenExpiry  time.Duration = time.Minute * 15
+	BearerTokenExpiry time.Duration = time.Hour * 24
+	ResetTokenExpiry  time.Duration = time.Minute * 15
 )
 
 const resetPasswordAudClaim = "password-reset"
@@ -74,7 +73,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 			return nil, err
 		}
 
-		token, err := GenerateToken(id.String(), []string{}, bearerTokenExpiry)
+		token, err := GenerateBearerToken(scope.context, id.String())
 		if err != nil {
 			return nil, err
 		}
@@ -116,7 +115,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 
 	id := modelMap[IdColumnName].(string)
 
-	token, err := GenerateToken(id, []string{}, bearerTokenExpiry)
+	token, err := GenerateBearerToken(scope.context, id)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +149,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return nil
 	}
 
-	token, err := GenerateToken(identity.Id, []string{resetPasswordAudClaim}, resetTokenExpiry)
+	token, err := GenerateResetToken(scope.context, identity.Id)
 	if err != nil {
 		return err
 	}
@@ -178,9 +177,9 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 	token := typedInput.String("token")
 	password := typedInput.String("password")
 
-	identityId, err := ParseResetToken(token)
+	identityId, err := ValidateToken(scope.context, token, resetPasswordAudClaim)
 	switch {
-	case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired) || errors.Is(err, ErrInvalidIdentityClaim):
+	case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired):
 		return common.RuntimeError{Code: common.ErrInvalidInput, Message: err.Error()}
 	case err != nil:
 		return err
@@ -267,14 +266,21 @@ func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string
 }
 
 // https://pkg.go.dev/github.com/golang-jwt/jwt/v4#RegisteredClaims
-type claims struct {
+type Claims struct {
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(sub string, aud []string, expiresIn time.Duration) (string, error) {
-	now := time.Now()
+func GenerateBearerToken(ctx context.Context, identityId string) (string, error) {
+	return generateToken(ctx, identityId, []string{}, BearerTokenExpiry)
+}
 
-	claims := claims{
+func GenerateResetToken(ctx context.Context, identityId string) (string, error) {
+	return generateToken(ctx, identityId, []string{resetPasswordAudClaim}, ResetTokenExpiry)
+}
+
+func generateToken(ctx context.Context, sub string, aud []string, expiresIn time.Duration) (string, error) {
+	now := time.Now().UTC()
+	claims := Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   sub,
 			Audience:  aud,
@@ -283,66 +289,80 @@ func GenerateToken(sub string, aud []string, expiresIn time.Duration) (string, e
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	privateKey, err := runtimectx.GetPrivateKey(ctx)
+	if err != nil {
+		return "", err
+	}
 
-	tokenString, err := token.SignedString(getSigningKey())
-
-	return tokenString, err
+	if privateKey != nil {
+		// If the private key is set, sign the token with the private key.
+		token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+		tokenString, err := token.SignedString(privateKey)
+		if err != nil {
+			return "", fmt.Errorf("cannot create signed jwt: %w", err)
+		}
+		return tokenString, nil
+	} else {
+		// If the private key is not set, do not sign the token.
+		token := jwt.NewWithClaims(jwt.SigningMethodNone, claims)
+		tokenString, err := token.SignedString(jwt.UnsafeAllowNoneSignatureType)
+		if err != nil {
+			return "", fmt.Errorf("cannot create unsecured jwt: %w", err)
+		}
+		return tokenString, nil
+	}
 }
 
-func ParseBearerToken(jwtToken string) (string, error) {
-	token, err := jwt.ParseWithClaims(jwtToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
-		return getSigningKey(), nil
-	})
+func ValidateToken(ctx context.Context, tokenString string, audienceClaim string) (string, error) {
+	privateKey, err := runtimectx.GetPrivateKey(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	var token *jwt.Token
+	if privateKey != nil {
+		// If the private key is set, parse the token with the public key.
+		token, err = jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+			if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+				return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
+			}
+
+			return &privateKey.PublicKey, nil
+		})
+	} else {
+		// If the private key is not set, parse the token without the signature.
+		token, err = jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+			if t.Header["alg"] != "none" {
+				return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
+			}
+
+			return jwt.UnsafeAllowNoneSignatureType, nil
+		})
+	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok {
+		return "", ErrInvalidToken
+	}
+
+	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
+		return "", ErrTokenExpired
+	}
+
+	if audienceClaim != "" {
+		if !lo.Contains(claims.Audience, audienceClaim) {
+			return "", ErrInvalidToken
+		}
+	}
 
 	if err != nil || !token.Valid {
 		return "", ErrInvalidToken
 	}
 
-	claims := token.Claims.(*claims)
-
-	if !claims.VerifyExpiresAt(time.Now(), true) {
-		return "", ErrTokenExpired
-	}
-
 	ksuid, err := ksuid.Parse(claims.Subject)
-
 	if err != nil {
-		return "", ErrInvalidIdentityClaim
+		return "", errors.New("token does not contain a parsable subject claim")
 	}
 
 	return ksuid.String(), nil
-}
-
-func ParseResetToken(jwtToken string) (string, error) {
-	token, err := jwt.ParseWithClaims(jwtToken, &claims{}, func(token *jwt.Token) (interface{}, error) {
-		return getSigningKey(), nil
-	})
-
-	if err != nil || !token.Valid {
-		return "", ErrInvalidToken
-	}
-
-	claims := token.Claims.(*claims)
-
-	if !claims.VerifyExpiresAt(time.Now(), true) {
-		return "", ErrTokenExpired
-	}
-
-	if !lo.Contains(claims.Audience, resetPasswordAudClaim) {
-		return "", ErrInvalidToken
-	}
-
-	ksuid, err := ksuid.Parse(claims.Subject)
-
-	if err != nil {
-		return "", ErrInvalidIdentityClaim
-	}
-
-	return ksuid.String(), nil
-}
-
-func getSigningKey() []byte {
-	// TODO: make this a configuration to the runtime
-	return []byte("test")
 }
