@@ -206,14 +206,14 @@ func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http
 		return nil, errors.New("invalid authorization header")
 	}
 
-	identityId, err := actions.ParseBearerToken(headerSplit[1])
+	identityId, err := actions.ParseBearerToken(ctx, headerSplit[1])
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
 	}
 
 	switch {
-	case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired) || errors.Is(err, actions.ErrInvalidIdentityClaim):
+	case errors.Is(err, actions.ErrInvalidToken) || errors.Is(err, actions.ErrTokenExpired):
 		w.WriteHeader(http.StatusUnauthorized)
 		_, _ = w.Write([]byte(err.Error()))
 		return nil, err

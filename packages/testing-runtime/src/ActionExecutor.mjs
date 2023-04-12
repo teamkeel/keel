@@ -35,10 +35,10 @@ export class ActionExecutor {
         "Bearer " +
         jwt.sign(
           {},
-          // TODO: make this an env var
-          "test",
+          // Not using a signing algorithm, therefore the private key is undefined
+          undefined,
           {
-            algorithm: "HS256",
+            algorithm: "none",
             expiresIn: 60 * 60 * 24,
             subject: this._identity.id,
           }
