@@ -112,20 +112,20 @@ func checkHasOneRelationField(
 
 	// e.g. author.pet.id
 
-	pathForReferencing := extendDotDelimPath(dotDelimPath, field.Name.Value)
-	pathForReferencing = extendDotDelimPath(pathForReferencing, parser.ImplicitFieldNameId)
+	nestedModel := query.Model(asts, field.Type)
+	pathToReferenceModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
+	pathToReferenceDotID := extendDotDelimPath(pathToReferenceModel, parser.ImplicitFieldNameId)
 
-	// If it is referencing, then the fields inside the reference model are not expected
-	// for this Create op.
-	if satisfied(rootModelName, pathForReferencing, model.Name.Value, op) {
+	// If it is referencing an existing model, then it is invalid to provide inputs for the
+	// fields INSIDE the referenced model.
+	if satisfied(rootModelName, pathToReferenceDotID, model.Name.Value, op) {
+		makeSureReferencedFieldsAreNotGiven(asts, nestedModel, rootModelName, pathToReferenceModel, op, errs)
 		return
 	}
 
-	// So it is creating the related model... We must recurse to make sure the
+	// If it IS creating the related model... We must recurse to make sure the
 	// those of the related model's fields that are required for creation are
 	// provided as inputs.
-
-	nestedModel := query.Model(asts, field.Type)
 	nestedPath := extendDotDelimPath(dotDelimPath, field.Name.Value)
 	for _, nestedModelField := range query.ModelFields(nestedModel) {
 
@@ -146,6 +146,39 @@ func satisfied(rootModelName string, requiredField string, modelName string, op 
 		return true
 	}
 	return false
+}
+
+// makeSureReferencedFieldsAreNotGiven creates validation errors if the given operation has any
+// inputs, or @set expressions that target fields of the given referenced model using the given dotted
+// path ancestry. (apart from the one that ends in ".id")
+func makeSureReferencedFieldsAreNotGiven(
+	asts []*parser.AST,
+	referencedModel *parser.ModelNode,
+	rootModelName string,
+	pathToReferencedModel string,
+	op *parser.ActionNode,
+	errs *errorhandling.ValidationErrors) {
+
+	referencedModelName := strcase.ToLowerCamel(referencedModel.Name.Value)
+	pathToIgnore := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
+	for _, referencedField := range query.ModelFields(referencedModel) {
+		pathToField := extendDotDelimPath(pathToReferencedModel, referencedField.Name.Value)
+		if pathToField == pathToIgnore {
+			continue
+		}
+		// Note we are making sure the path is NOT satisfied.
+		if satisfied(rootModelName, pathToField, referencedModelName, op) {
+			errs.Append(
+				errorhandling.ErrorCreateOperationAmbiguousRelationship,
+				map[string]string{
+					"IdPath":          pathToIgnore,
+					"ConflictingPath": pathToField,
+					"ModelName":       referencedModelName,
+				},
+				op,
+			)
+		}
+	}
 }
 
 // setExpressions returns all the non-nil expressions from all
