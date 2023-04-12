@@ -1,3 +1,10 @@
+# [0.298.0](https://github.com/teamkeel/keel/compare/v0.297.1...v0.298.0) (2023-04-12)
+
+
+### Features
+
+* requestPasswordReset and passwordReset actions ([#901](https://github.com/teamkeel/keel/issues/901)) ([04ea252](https://github.com/teamkeel/keel/commit/04ea252910cf2ca12472707dc4604b99da51f2c3))
+
 ## [0.297.1](https://github.com/teamkeel/keel/compare/v0.297.0...v0.297.1) (2023-04-12)
 
 
