@@ -160,3 +160,107 @@ test("creating a post with a permission rule", async () => {
     })
   ).not.toHaveAuthorizationError();
 });
+
+test("creating a post with a role based permission rule - email based - permitted", async () => {
+  const { token } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "adam@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  const identity = await models.identity.create({
+    email: "businessowner@keel.xyz",
+    password: "foo",
+  });
+  const business = await models.business.create({
+    name: "Adam Inc",
+    identityId: identity.id,
+  });
+
+  await expect(
+    actions.withAuthToken(token).createPostWithRole({
+      title: "a post created via a special role",
+      business: { id: business.id },
+    })
+  ).not.toHaveAuthorizationError();
+});
+
+test("creating a post with a role based permission rule - email based - unpermitted", async () => {
+  const { token } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "disallowed@keel.xyz",
+      password: "1234",
+    },
+  });
+
+  const identity = await models.identity.create({
+    email: "businessowner@keel.xyz",
+    password: "foo",
+  });
+  const business = await models.business.create({
+    name: "Adam Inc",
+    identityId: identity.id,
+  });
+
+  await expect(
+    actions.withAuthToken(token).createPostWithRole({
+      title: "a post created via a special role",
+      business: { id: business.id },
+    })
+  ).toHaveAuthorizationError();
+});
+
+test("creating a post with a role based permission rule - domain based - permitted", async () => {
+  const { token } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "adam@abc.com",
+      password: "1234",
+    },
+  });
+
+  const identity = await models.identity.create({
+    email: "businessowner@keel.xyz",
+    password: "foo",
+  });
+  const business = await models.business.create({
+    name: "Adam Inc",
+    identityId: identity.id,
+  });
+
+  await expect(
+    actions.withAuthToken(token).createPostWithRole({
+      title: "a post created via a special role",
+      business: { id: business.id },
+    })
+  ).not.toHaveAuthorizationError();
+});
+
+test("creating a post with a role based permission rule - domain based - unpermitted", async () => {
+  const { token } = await actions.authenticate({
+    createIfNotExists: true,
+    emailPassword: {
+      email: "blah@bca.com",
+      password: "1234",
+    },
+  });
+
+  const identity = await models.identity.create({
+    email: "businessowner@keel.xyz",
+    password: "foo",
+  });
+  const business = await models.business.create({
+    name: "Adam Inc",
+    identityId: identity.id,
+  });
+
+  await expect(
+    actions.withAuthToken(token).createPostWithRole({
+      title: "a post created via a special role",
+      business: { id: business.id },
+    })
+  ).toHaveAuthorizationError();
+});

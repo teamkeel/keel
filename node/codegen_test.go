@@ -274,13 +274,14 @@ const actionTypes = {
 
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
-function createFunctionAPI({ headers, db }) {
+function createFunctionAPI({ headers, db, meta }) {
 	const models = {
 		person: new runtime.ModelAPI("person", personDefaultValues, db, tableConfigMap),
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, db, tableConfigMap),
 	};
+	const { permissionState } = meta || { permissionState: { status: 'unknown' } };
 	const wrappedFetch = fetch;
-	return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions() };
+	return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions(permissionState) };
 };
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);

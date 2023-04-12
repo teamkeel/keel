@@ -33,6 +33,36 @@ const (
 	ErrRecordNotFound   = "ERR_RECORD_NOT_FOUND"
 )
 
+type PermissionStatus string
+
+const (
+	PermissionGranted PermissionStatus = "granted"
+	PermissionUnknown PermissionStatus = "unknown"
+)
+
+type PermissionState struct {
+	Status PermissionStatus `json:"status"`
+	Reason GrantReason      `json:"reason"`
+}
+
+type GrantReason string
+
+const (
+	GrantReasonRole       GrantReason = "role"
+	GrantReasonExpression GrantReason = "expression"
+)
+
+func NewPermissionState() *PermissionState {
+	return &PermissionState{
+		Status: PermissionUnknown,
+	}
+}
+
+func (ps *PermissionState) Grant(reason GrantReason) {
+	ps.Status = PermissionGranted
+	ps.Reason = reason
+}
+
 type RuntimeError struct {
 	Code    string
 	Message string

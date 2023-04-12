@@ -70,7 +70,7 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 	return context.WithValue(ctx, contextKey, transport)
 }
 
-func CallFunction(ctx context.Context, actionName string, body any) (any, map[string][]string, error) {
+func CallFunction(ctx context.Context, actionName string, body any, permissionState *common.PermissionState) (any, map[string][]string, error) {
 	ctx, span := tracer.Start(ctx, fmt.Sprintf("Call Function: %s", actionName))
 	defer span.End()
 
@@ -103,10 +103,11 @@ func CallFunction(ctx context.Context, actionName string, body any) (any, map[st
 	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
 
 	meta := map[string]any{
-		"headers":  requestHeaders,
-		"identity": identity,
-		"secrets":  secrets,
-		"tracing":  tracingContext,
+		"headers":         requestHeaders,
+		"identity":        identity,
+		"secrets":         secrets,
+		"tracing":         tracingContext,
+		"permissionState": permissionState,
 	}
 
 	req := &FunctionsRuntimeRequest{

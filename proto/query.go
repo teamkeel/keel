@@ -258,7 +258,9 @@ func PermissionsWithRole(permissions []*PermissionRule) []*PermissionRule {
 	return withRoles
 }
 
-func PermissionsForAction(schema *Schema, action *Operation) (permissions []*PermissionRule) {
+type PermissionFilter = func(p *PermissionRule) bool
+
+func PermissionsForAction(schema *Schema, action *Operation, filters ...PermissionFilter) (permissions []*PermissionRule) {
 	// if there are any action level permissions, then these take priority
 	if len(action.Permissions) > 0 {
 		return action.Permissions
@@ -276,7 +278,24 @@ func PermissionsForAction(schema *Schema, action *Operation) (permissions []*Per
 		}
 	}
 
-	return permissions
+	if len(filters) == 0 {
+		return permissions
+	}
+
+	filtered := []*PermissionRule{}
+
+permissions:
+	for _, permission := range permissions {
+		for _, filter := range filters {
+			if !filter(permission) {
+				filtered = append(filtered, permission)
+
+				continue permissions
+			}
+		}
+	}
+
+	return filtered
 }
 
 // PermissionsWithExpression returns a list of those permission present in the given permissions

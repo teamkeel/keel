@@ -448,7 +448,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 }
 
 func writeAPIFactory(w *Writer, schema *proto.Schema) {
-	w.Writeln("function createFunctionAPI({ headers, db }) {")
+	w.Writeln("function createFunctionAPI({ headers, db, meta }) {")
 	w.Indent()
 
 	w.Writeln("const models = {")
@@ -461,10 +461,10 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	}
 	w.Dedent()
 	w.Writeln("};")
-
+	w.Writeln("const { permissionState } = meta || { permissionState: { status: 'unknown' } };")
 	w.Writeln("const wrappedFetch = fetch;") // We'll likely extend it later.
 
-	w.Writeln("return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions() };")
+	w.Writeln("return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions(permissionState) };")
 
 	w.Dedent()
 	w.Writeln("};")
