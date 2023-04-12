@@ -15,7 +15,7 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
-func TestGenerationAndParsingWithoutPrivateKey(t *testing.T) {
+func TestBearerTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	ctx := context.Background()
 	identityId := ksuid.New()
 
@@ -23,12 +23,12 @@ func TestGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
 
-	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
+	parsedId, err := actions.ValidateBearerToken(ctx, bearerJwt)
 	require.NoError(t, err)
 	require.Equal(t, identityId.String(), parsedId)
 }
 
-func TestGenerationAndParsingWithSamePrivateKey(t *testing.T) {
+func TestBearerTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 	ctx := context.Background()
 	identityId := ksuid.New()
 
@@ -41,12 +41,12 @@ func TestGenerationAndParsingWithSamePrivateKey(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, bearerJwt)
 
-	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
+	parsedId, err := actions.ValidateBearerToken(ctx, bearerJwt)
 	require.NoError(t, err)
 	require.Equal(t, identityId.String(), parsedId)
 }
 
-func TestGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testing.T) {
+func TestBearerTokenGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testing.T) {
 	ctx := context.Background()
 	identityId := ksuid.New()
 
@@ -60,12 +60,12 @@ func TestGenerationWithPrivateKeyAndParsingWithoutPrivateKey(t *testing.T) {
 	require.NotEmpty(t, bearerJwt)
 
 	ctx = context.Background()
-	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
+	parsedId, err := actions.ValidateBearerToken(ctx, bearerJwt)
 	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
 
-func TestGenerationWithoutPrivateKeyAndParsingWithPrivateKey(t *testing.T) {
+func TestBearerTokenGenerationWithoutPrivateKeyAndParsingWithPrivateKey(t *testing.T) {
 	ctx := context.Background()
 	identityId := ksuid.New()
 
@@ -78,12 +78,12 @@ func TestGenerationWithoutPrivateKeyAndParsingWithPrivateKey(t *testing.T) {
 	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
 	require.NoError(t, err)
 
-	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
+	parsedId, err := actions.ValidateBearerToken(ctx, bearerJwt)
 	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
 
-func TestGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
+func TestBearerTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
 	ctx := context.Background()
 	identityId := ksuid.New()
 
@@ -101,7 +101,7 @@ func TestGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
 	ctx = runtimectx.WithPrivateKey(ctx, privateKey2)
 	require.NoError(t, err)
 
-	parsedId, err := actions.ValidateToken(ctx, bearerJwt, "")
+	parsedId, err := actions.ValidateBearerToken(ctx, bearerJwt)
 	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
@@ -159,7 +159,6 @@ func TestBearerTokenHasExpiryClaims(t *testing.T) {
 	require.NotEmpty(t, jwtToken)
 
 	claims := &actions.Claims{}
-
 	_, err = jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) {
 		return &privateKey.PublicKey, nil
 	})
@@ -181,8 +180,8 @@ func TestExpiredBearerTokenIsInvalid(t *testing.T) {
 	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
 	require.NoError(t, err)
 
-	// Create the jwt 25 hours in past, which means it is 1 hour expired.
-	now := time.Now().UTC().Add(time.Hour * -25)
+	// Create the jwt 1 second expired.
+	now := time.Now().UTC().Add(-actions.BearerTokenExpiry).Add(time.Second * -1)
 	claims := actions.Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   identityId.String(),
@@ -195,7 +194,166 @@ func TestExpiredBearerTokenIsInvalid(t *testing.T) {
 	tokenString, err := token.SignedString(privateKey)
 	require.NoError(t, err)
 
-	parsedId, err := actions.ValidateToken(ctx, tokenString, "")
+	parsedId, err := actions.ValidateBearerToken(ctx, tokenString)
 	require.ErrorIs(t, actions.ErrTokenExpired, err)
+	require.Empty(t, parsedId)
+}
+
+func TestResetTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
+	ctx := context.Background()
+	identityId := ksuid.New()
+
+	bearerJwt, err := actions.GenerateResetToken(ctx, identityId.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, bearerJwt)
+
+	parsedId, err := actions.ValidateResetToken(ctx, bearerJwt)
+	require.NoError(t, err)
+	require.Equal(t, identityId.String(), parsedId)
+}
+
+func TestResetTokenGenerationAndParsingWithSamePrivateKey(t *testing.T) {
+	ctx := context.Background()
+	identityId := ksuid.New()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
+	require.NoError(t, err)
+
+	bearerJwt, err := actions.GenerateResetToken(ctx, identityId.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, bearerJwt)
+
+	parsedId, err := actions.ValidateResetToken(ctx, bearerJwt)
+	require.NoError(t, err)
+	require.Equal(t, identityId.String(), parsedId)
+}
+
+func TestResetTokenGenerationAndParsingWithDifferentPrivateKeys(t *testing.T) {
+	ctx := context.Background()
+	identityId := ksuid.New()
+
+	privateKey1, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ctx = runtimectx.WithPrivateKey(ctx, privateKey1)
+	require.NoError(t, err)
+
+	bearerJwt, err := actions.GenerateResetToken(ctx, identityId.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, bearerJwt)
+
+	privateKey2, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ctx = runtimectx.WithPrivateKey(ctx, privateKey2)
+	require.NoError(t, err)
+
+	parsedId, err := actions.ValidateResetToken(ctx, bearerJwt)
+	require.ErrorIs(t, actions.ErrInvalidToken, err)
+	require.Empty(t, parsedId)
+}
+
+func TestResetTokenIsRSAMethodWithPrivateKey(t *testing.T) {
+	ctx := context.Background()
+	identityId := ksuid.New()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
+	require.NoError(t, err)
+
+	jwtToken, err := actions.GenerateResetToken(ctx, identityId.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, jwtToken)
+
+	_, err = jwt.ParseWithClaims(jwtToken, &actions.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+			assert.Fail(t, "Invalid signing method. Expected RSA.")
+		}
+		return &privateKey.PublicKey, nil
+	})
+	require.NoError(t, err)
+}
+
+func TestResetTokenHasExpiryClaims(t *testing.T) {
+	ctx := context.Background()
+	identityId := ksuid.New()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
+	require.NoError(t, err)
+
+	jwtToken, err := actions.GenerateResetToken(ctx, identityId.String())
+	require.NoError(t, err)
+	require.NotEmpty(t, jwtToken)
+
+	claims := &actions.Claims{}
+	_, err = jwt.ParseWithClaims(jwtToken, claims, func(token *jwt.Token) (interface{}, error) {
+		return &privateKey.PublicKey, nil
+	})
+	require.NoError(t, err)
+
+	issuedAt := claims.IssuedAt.Time
+	expiry := claims.ExpiresAt.Time
+
+	require.Greater(t, expiry, time.Now().UTC())
+	require.Equal(t, issuedAt.Add(actions.ResetTokenExpiry), expiry)
+}
+
+func TestExpiredResetTokenIsInvalid(t *testing.T) {
+	ctx := context.Background()
+	identityId := ksuid.New()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
+	require.NoError(t, err)
+
+	// Create the jwt 1 second expired.
+	now := time.Now().UTC().Add(-actions.ResetTokenExpiry).Add(time.Second * -1)
+	claims := actions.Claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   identityId.String(),
+			Audience:  jwt.ClaimStrings{"password-reset"},
+			ExpiresAt: jwt.NewNumericDate(now.Add(actions.ResetTokenExpiry)),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err := token.SignedString(privateKey)
+	require.NoError(t, err)
+
+	parsedId, err := actions.ValidateResetToken(ctx, tokenString)
+	require.ErrorIs(t, actions.ErrTokenExpired, err)
+	require.Empty(t, parsedId)
+}
+
+func TestResetTokenMissingAudIsInvalid(t *testing.T) {
+	ctx := context.Background()
+	identityId := ksuid.New()
+
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	ctx = runtimectx.WithPrivateKey(ctx, privateKey)
+	require.NoError(t, err)
+
+	// Create the jwt with missing aud claim.
+	now := time.Now().UTC()
+	claims := actions.Claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   identityId.String(),
+			ExpiresAt: jwt.NewNumericDate(now.Add(actions.ResetTokenExpiry)),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	tokenString, err := token.SignedString(privateKey)
+	require.NoError(t, err)
+
+	parsedId, err := actions.ValidateResetToken(ctx, tokenString)
+	require.ErrorIs(t, actions.ErrInvalidToken, err)
 	require.Empty(t, parsedId)
 }
