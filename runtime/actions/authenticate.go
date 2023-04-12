@@ -177,7 +177,7 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 	token := typedInput.String("token")
 	password := typedInput.String("password")
 
-	identityId, err := ValidateToken(scope.context, token, resetPasswordAudClaim)
+	identityId, err := ValidateResetToken(scope.context, token)
 	switch {
 	case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired):
 		return common.RuntimeError{Code: common.ErrInvalidInput, Message: err.Error()}
@@ -313,16 +313,25 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 	}
 }
 
-func ValidateToken(ctx context.Context, tokenString string, audienceClaim string) (string, error) {
+func ValidateBearerToken(ctx context.Context, tokenString string) (string, error) {
+	return validateToken(ctx, tokenString, "")
+}
+
+func ValidateResetToken(ctx context.Context, tokenString string) (string, error) {
+	return validateToken(ctx, tokenString, resetPasswordAudClaim)
+}
+
+func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, error) {
 	privateKey, err := runtimectx.GetPrivateKey(ctx)
 	if err != nil {
 		return "", err
 	}
 
 	var token *jwt.Token
+	claims := &Claims{}
 	if privateKey != nil {
 		// If the private key is set, parse the token with the public key.
-		token, err = jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
 				return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
 			}
@@ -331,18 +340,13 @@ func ValidateToken(ctx context.Context, tokenString string, audienceClaim string
 		})
 	} else {
 		// If the private key is not set, parse the token without the signature.
-		token, err = jwt.ParseWithClaims(tokenString, &Claims{}, func(t *jwt.Token) (interface{}, error) {
+		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			if t.Header["alg"] != "none" {
 				return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
 			}
 
 			return jwt.UnsafeAllowNoneSignatureType, nil
 		})
-	}
-
-	claims, ok := token.Claims.(*Claims)
-	if !ok {
-		return "", ErrInvalidToken
 	}
 
 	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
