@@ -204,6 +204,72 @@
         }
       }
     },
+    "/web/json/resetPassword": {
+      "post": {
+          "operationId": "resetPassword",
+          "requestBody": {
+              "content": {
+                  "application/json": {
+                      "schema": {
+                          "additionalProperties": false,
+                          "properties": {
+                              "password": {
+                                  "type": "string"
+                              },
+                              "token": {
+                                  "type": "string"
+                              }
+                          },
+                          "required": [
+                            "token",
+                            "password"
+                          ],
+                          "type": "object"
+                      }
+                  }
+              },
+              "description": "resetPassword Request"
+          },
+          "responses": {
+              "200": {
+                  "description": "resetPassword Response"
+              }
+          }
+      }
+    },
+    "/web/json/requestPasswordReset": {
+        "post": {
+            "operationId": "requestPasswordReset",
+            "requestBody": {
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "additionalProperties": false,
+                            "properties": {
+                                "email": {
+                                    "type": "string"
+                                },
+                                "redirectUrl": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                              "email",
+                              "redirectUrl"
+                            ],
+                            "type": "object"
+                        }
+                    }
+                },
+                "description": "requestPasswordReset Request"
+            },
+            "responses": {
+                "200": {
+                    "description": "requestPasswordReset Response"
+                }
+            }
+        }
+    },
     "/web/json/updateCustomer": {
       "post": {
         "operationId": "updateCustomer",

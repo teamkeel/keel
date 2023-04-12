@@ -13,7 +13,9 @@ import (
 
 var (
 	reservedActionNames = []string{
-		parser.ImplicitAuthenticateOperationName,
+		parser.AuthenticateOperationName,
+		parser.RequestPasswordResetOperationName,
+		parser.PasswordResetOperationName,
 	}
 	validActionTypes = []string{
 		parser.ActionTypeGet,
@@ -194,7 +196,6 @@ func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 
 	return errs
 }
-
 
 // UpdateOperationUniqueConstraintRule checks that all update operations
 // are filtering on unique fields only

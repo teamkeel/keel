@@ -321,6 +321,22 @@
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
           "inputMessageName": "authenticate_input",
           "responseMessageName": "authenticate_response"
+        },
+        {
+          "modelName": "Identity",
+          "name": "requestPasswordReset",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "requestPasswordReset_input",
+          "responseMessageName": "requestPasswordReset_response"
+        },
+        {
+          "modelName": "Identity",
+          "name": "resetPassword",
+          "type": "OPERATION_TYPE_WRITE",
+          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName": "resetPassword_input",
+          "responseMessageName": "resetPassword_response"
         }
       ]
     }
@@ -597,6 +613,50 @@
           }
         }
       ]
+    },
+    {
+      "name": "requestPasswordReset_input",
+      "fields": [
+        {
+          "messageName": "requestPasswordReset_input",
+          "name": "email",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "requestPasswordReset_input",
+          "name": "redirectUrl",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "requestPasswordReset_response"
+    },
+    {
+      "name": "resetPassword_input",
+      "fields": [
+        {
+          "messageName": "resetPassword_input",
+          "name": "token",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "messageName": "resetPassword_input",
+          "name": "password",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        }
+      ]
+    },
+    {
+      "name": "resetPassword_response"
     }
   ]
 }

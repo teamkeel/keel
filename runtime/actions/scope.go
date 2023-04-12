@@ -12,7 +12,9 @@ import (
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
 
 const (
-	authenticateOperationName = "authenticate"
+	authenticateOperationName         = "authenticate"
+	requestPasswordResetOperationName = "requestPasswordReset"
+	passwordResetOperationName        = "resetPassword"
 )
 
 type Scope struct {
@@ -58,7 +60,7 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 
 	switch scope.operation.Implementation {
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM:
-		return executeCustomOperation(scope, inputs)
+		return executeCustomFunction(scope, inputs)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME:
 		if !inputWasAMap {
 			if inputs == nil {
@@ -82,7 +84,7 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 	}
 }
 
-func executeCustomOperation(scope *Scope, inputs any) (any, map[string][]string, error) {
+func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, error) {
 	resp, headers, err := functions.CallFunction(
 		scope.context,
 		scope.operation.Name,
@@ -123,6 +125,12 @@ func executeRuntimeOperation(scope *Scope, inputs map[string]any) (any, map[stri
 	case authenticateOperationName:
 		result, err := Authenticate(scope, inputs)
 		return result, nil, err
+	case requestPasswordResetOperationName:
+		err := ResetRequestPassword(scope, inputs)
+		return map[string]any{}, nil, err
+	case passwordResetOperationName:
+		err := ResetPassword(scope, inputs)
+		return map[string]any{}, nil, err
 	default:
 		return nil, nil, fmt.Errorf("unhandled runtime operation: %s", scope.operation.Name)
 	}

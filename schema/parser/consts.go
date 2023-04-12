@@ -117,7 +117,9 @@ const (
 )
 
 const (
-	ImplicitAuthenticateOperationName = "authenticate"
+	AuthenticateOperationName         = "authenticate"
+	RequestPasswordResetOperationName = "requestPasswordReset"
+	PasswordResetOperationName        = "resetPassword"
 )
 
 const (

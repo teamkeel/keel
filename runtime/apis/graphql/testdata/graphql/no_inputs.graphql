@@ -8,6 +8,8 @@ type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
   createBeatle: Beatle!
   deleteBeatle: DeleteResponse
+  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
+  resetPassword(input: resetPassword_input!): resetPassword_response
   switchBeatle: Beatle!
 }
 
@@ -26,6 +28,16 @@ input listBeatles_input {
   before: String
   first: Int
   last: Int
+}
+
+input requestPasswordReset_input {
+  email: String!
+  redirectUrl: String!
+}
+
+input resetPassword_input {
+  password: String!
+  token: String!
 }
 
 type Beatle {
@@ -76,6 +88,14 @@ type Timestamp {
 type authenticate_response {
   identityCreated: Boolean!
   token: String!
+}
+
+type requestPasswordReset_response {
+  success: Boolean
+}
+
+type resetPassword_response {
+  success: Boolean
 }
 
 scalar Any
