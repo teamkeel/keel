@@ -69,11 +69,11 @@ func (c *smtpClient) Send(ctx context.Context, req *SendEmailRequest) error {
 type noOpClient struct {
 }
 
+// No op email client does not send a mail.
 func NoOpClient() EmailClient {
 	return &noOpClient{}
 }
 
 func (c *noOpClient) Send(context.Context, *SendEmailRequest) error {
-	// No op client does not send a mail.
 	return nil
 }

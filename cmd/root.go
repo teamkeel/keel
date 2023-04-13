@@ -9,7 +9,6 @@ import (
 var (
 	flagProjectDir       string
 	flagReset            bool
-	flagEnableSmtp       bool
 	flagPort             string
 	flagNodePackagesPath string
 	flagPattern          string
