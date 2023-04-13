@@ -1,3 +1,10 @@
+# [0.300.0](https://github.com/teamkeel/keel/compare/v0.299.0...v0.300.0) (2023-04-13)
+
+
+### Features
+
+* role based permissions in custom functions ([#906](https://github.com/teamkeel/keel/issues/906)) ([0391ff5](https://github.com/teamkeel/keel/commit/0391ff559fecb84ceac563e1ec2709f3ffdf35f4))
+
 # [0.299.0](https://github.com/teamkeel/keel/compare/v0.298.0...v0.299.0) (2023-04-12)
 
 
