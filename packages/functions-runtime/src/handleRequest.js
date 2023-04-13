@@ -73,8 +73,9 @@ async function handleRequest(request, config) {
 
           const actionType = actionTypes[request.method];
 
-          const peakInsideTransaction = actionType === PROTO_ACTION_TYPES.CREATE
-          
+          const peakInsideTransaction =
+            actionType === PROTO_ACTION_TYPES.CREATE;
+
           // check will throw a PermissionError if a permission rule is invalid
           await checkBuiltInPermissions({
             rows: fnResult,
@@ -82,12 +83,11 @@ async function handleRequest(request, config) {
             // it is important that we pass db here as db represents the connection to the database
             // *outside* of the current transaction. Given that any changes inside of a transaction
             // are opaque to the outside, we can utilize this when running permission rules and then deciding to
-            // rollback any changes if they do not pass.
+            // rollback any changes if they do not pass. However, for creates we need to be able to 'peak' inside the transaction to read the created record, as this won't exist outside of the transaction.
             db: peakInsideTransaction ? transaction : db,
             ctx,
             functionName: request.method,
           });
-          
 
           // If the built in permission check above doesn't throw, then it means that the request is permitted and we can continue returning the return value from the custom function out of the transaction
           return fnResult;
