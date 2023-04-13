@@ -14,8 +14,8 @@ export async function toHaveAuthorizationError(received) {
         `expected there to be ${isNot ? "no " : ""}ERR_PERMISSION_DENIED error`,
       actual: err,
       expected: {
-        ...err
-      }
+        ...err,
+      },
     };
   }
 }
