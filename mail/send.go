@@ -25,22 +25,14 @@ type smtpClient struct {
 	password string
 }
 
-func (c *smtpClient) Send(ctx context.Context, req *SendEmailRequest) error {
-	host := fmt.Sprintf("%s:%s", c.host, c.port)
-	auth := smtp.PlainAuth("", c.username, c.password, c.host)
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n%s.\r\n",
-		req.From, req.To, req.Subject, req.PlainText)
-	err := smtp.SendMail(host, auth, req.From, []string{req.To}, []byte(msg))
-
-	return err
-}
-
 func NewSMTPClient(host, port, username, password string) EmailClient {
 	return &smtpClient{
 		host, port, username, password,
 	}
 }
 
+// Uses env var SMTP settings to establish new mail client. If settings are missing, nil is returned.
+// Requires KEEL_SMTP_HOST, KEEL_SMTP_PORT, KEEL_SMTP_USER, and KEEL_SMTP_PASSWORD.
 func NewSMTPClientFromEnv() EmailClient {
 	var host, port, username, password string
 
@@ -63,6 +55,15 @@ func NewSMTPClientFromEnv() EmailClient {
 		username: username,
 		password: password,
 	}
+}
+
+func (c *smtpClient) Send(ctx context.Context, req *SendEmailRequest) error {
+	host := fmt.Sprintf("%s:%s", c.host, c.port)
+	auth := smtp.PlainAuth("", c.username, c.password, c.host)
+	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n%s.\r\n",
+		req.From, req.To, req.Subject, req.PlainText)
+
+	return smtp.SendMail(host, auth, req.From, []string{req.To}, []byte(msg))
 }
 
 type noOpClient struct {
