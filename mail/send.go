@@ -5,101 +5,74 @@ import (
 	"fmt"
 	"net/smtp"
 	"os"
-	"strconv"
-	"strings"
-
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/codes"
 )
 
-var tracer = otel.Tracer("github.com/teamkeel/keel/db")
-
-type Client struct {
-	Enabled  bool
-	ConnInfo *SmtpConnInfo
+type EmailClient interface {
+	Send(context.Context, *SendEmailRequest) error
 }
 
-type SmtpConnInfo struct {
-	Host     string
-	Port     int
-	From     string
-	Username string
-	Password string
+type SendEmailRequest struct {
+	To        string
+	From      string
+	Subject   string
+	PlainText string
 }
 
-func Local() *Client {
-	var host, from, username, password string
-	var port int
-	var err error
+type smtpClient struct {
+	host     string
+	port     string
+	username string
+	password string
+}
 
-	if port, err = strconv.Atoi(os.Getenv("KEEL_SMTP_PORT")); err != nil {
-		panic("set KEEL_SMTP_PORT to enable SMTP")
+func (c *smtpClient) Send(ctx context.Context, req *SendEmailRequest) error {
+	host := fmt.Sprintf("%s:%s", c.host, c.port)
+	auth := smtp.PlainAuth("", c.username, c.password, c.host)
+	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n%s.\r\n",
+		req.From, req.To, req.Subject, req.PlainText)
+	err := smtp.SendMail(host, auth, req.From, []string{req.To}, []byte(msg))
+
+	return err
+}
+
+func NewSMTPClient(host, port, username, password string) EmailClient {
+	return &smtpClient{
+		host, port, username, password,
 	}
+}
+
+func NewSMTPClientFromEnv() EmailClient {
+	var host, port, username, password string
 
 	if host = os.Getenv("KEEL_SMTP_HOST"); host == "" {
-		panic("set KEEL_SMTP_HOST to enable SMTP")
+		return nil
 	}
-
-	if from = os.Getenv("KEEL_SMTP_FROM"); from == "" {
-		panic("set KEEL_SMTP_FROM to enable SMTP")
+	if port = os.Getenv("KEEL_SMTP_PORT"); port == "" {
+		return nil
 	}
-
 	if username = os.Getenv("KEEL_SMTP_USER"); username == "" {
-		panic("set KEEL_SMTP_USER to enable SMTP")
+		return nil
 	}
-
 	if password = os.Getenv("KEEL_SMTP_PASSWORD"); password == "" {
-		panic("set KEEL_SMTP_PASSWORD to enable SMTP")
+		return nil
 	}
 
-	smtpConnInfo := &SmtpConnInfo{
-		Host:     host,
-		Port:     port,
-		From:     from,
-		Username: username,
-		Password: password,
-	}
-
-	return &Client{
-		Enabled:  true,
-		ConnInfo: smtpConnInfo,
+	return &smtpClient{
+		host:     host,
+		port:     port,
+		username: username,
+		password: password,
 	}
 }
 
-func Disabled() *Client {
-	return &Client{
-		Enabled:  false,
-		ConnInfo: nil,
-	}
+type noOpClient struct {
 }
 
-func (c Client) SendMail(ctx context.Context, to []string, subject string, contents string) {
-	if !c.Enabled {
-		return
-	}
-
-	_, span := tracer.Start(ctx, "SendMail")
-
-	host := fmt.Sprintf("%s:%v", c.ConnInfo.Host, c.ConnInfo.Port)
-	auth := smtp.PlainAuth("", c.ConnInfo.Username, c.ConnInfo.Password, c.ConnInfo.Host)
-
-	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n%s.\r\n",
-		c.ConnInfo.From, strings.Join(to, ","), subject, contents)
-
-	go func() {
-		err := smtp.SendMail(host, auth, c.ConnInfo.From, to, []byte(msg))
-		if err != nil {
-			span.SetStatus(codes.Error, "Email failured to send")
-			span.RecordError(err)
-		} else {
-			span.SetStatus(codes.Ok, "Email successfully sent")
-		}
-		span.End()
-	}()
+func NoOpClient() EmailClient {
+	return &noOpClient{}
 }
 
-func (c Client) SendResetPasswordMail(ctx context.Context, to string, redirectUrl string) {
-	subject := "[Keel] Reset password request"
-	contents := fmt.Sprintf("Please follow this link to reset your password: %s", redirectUrl)
-	c.SendMail(ctx, []string{to}, subject, contents)
+func (c *noOpClient) Send(context.Context, *SendEmailRequest) error {
+	// No op client does not send a mail.
+	return nil
 }

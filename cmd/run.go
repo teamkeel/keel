@@ -15,7 +15,6 @@ var runCmd = &cobra.Command{
 			Mode:             program.ModeRun,
 			ProjectDir:       flagProjectDir,
 			ResetDatabase:    flagReset,
-			EnableSmtp:       flagEnableSmtp,
 			Port:             flagPort,
 			NodePackagesPath: flagNodePackagesPath,
 		})
@@ -26,7 +25,6 @@ func init() {
 	rootCmd.AddCommand(runCmd)
 
 	runCmd.Flags().BoolVar(&flagReset, "reset", false, "if set the database will be reset")
-	runCmd.Flags().BoolVar(&flagEnableSmtp, "enableSmtp", false, "if email sending will be enabled")
 	runCmd.Flags().StringVar(&flagPort, "port", "8000", "the port to run the Keel application on")
 
 	if Debug {

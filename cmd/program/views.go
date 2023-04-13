@@ -137,11 +137,6 @@ func renderRun(m *Model) string {
 		b.WriteString("✅ Schema\n")
 		b.WriteString("✅ Database Migrations\n")
 		b.WriteString("✅ Functions\n")
-		if m.EnableSmtp {
-			b.WriteString("✅ SMTP\n")
-		} else {
-			b.WriteString("❌ SMTP\n")
-		}
 	}
 
 	if len(m.MigrationChanges) > 0 {

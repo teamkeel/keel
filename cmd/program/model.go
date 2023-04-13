@@ -79,10 +79,6 @@ type Model struct {
 	// applies to ModeRun.
 	ResetDatabase bool
 
-	// If true then SMTP connection info will be retrieved from
-	// env vars, and email sending will be enabled.
-	EnableSmtp bool
-
 	// If set then @teamkeel/* npm packages will be installed
 	// from this path, rather than NPM.
 	NodePackagesPath string
@@ -358,10 +354,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		ctx = runtimectx.WithDatabase(ctx, database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 
-		if m.EnableSmtp {
-			ctx = runtimectx.WithMailClient(ctx, mail.Local())
+		mailClient := mail.NewSMTPClientFromEnv()
+		if mailClient != nil {
+			ctx = runtimectx.WithMailClient(ctx, mail.NewSMTPClientFromEnv())
 		} else {
-			ctx = runtimectx.WithMailClient(ctx, mail.Disabled())
+			ctx = runtimectx.WithMailClient(ctx, mail.NoOpClient())
 		}
 
 		if m.FunctionsServer != nil {
