@@ -277,7 +277,6 @@ func renderError(m *Model) string {
 			b.WriteString("\n\n")
 			b.WriteString(startFunctionsError.Output)
 		}
-
 	default:
 		b.WriteString("❌ Oh no, looks like something went wrong:\n\n")
 		b.WriteString(m.Err.Error())

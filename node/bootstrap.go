@@ -55,7 +55,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 			"@teamkeel/testing-runtime": "%s",
 			"@types/node": "^18.11.18",
 			"kysely": "^0.23.4",
-			"ts-node": "^10.9.1",
+			"tsx": "^3.12.6",
 			"typescript": "^4.9.4",
 			"vitest": "^0.27.2",
 			"node-fetch": "^3.3.0"

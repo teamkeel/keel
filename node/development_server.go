@@ -34,8 +34,6 @@ func (ds *DevelopmentServer) Kill() error {
 		return nil
 	}
 
-	// For some reason ts-node doesn't seem to die on SIGKILL, but
-	// SIGINT seems to work fine
 	err := ds.cmd.Process.Signal(os.Interrupt)
 	if err != nil {
 		return err
@@ -62,7 +60,7 @@ type ServerOpts struct {
 
 // RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
 func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, error) {
-	cmd := exec.Command("npx", "ts-node", ".build/server.js")
+	cmd := exec.Command("npx", "tsx", ".build/server.js")
 	cmd.Dir = dir
 	cmd.Env = os.Environ()
 

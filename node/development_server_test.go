@@ -77,6 +77,9 @@ func TestDevelopmentServerStartError(t *testing.T) {
 			Path: "functions/getPerson.ts",
 			Contents: `
 				import { GetPerson } from "@teamkeel/sdk";
+				
+				console.error('unexpected error')
+				process.exit(1);
 
 				export default GetPerson(async (inputs, api, ctx) => {
 					api.permissions.allow();
@@ -89,7 +92,7 @@ func TestDevelopmentServerStartError(t *testing.T) {
 
 	runDevelopmentServerTest(t, files, func(server *node.DevelopmentServer, err error) {
 		assert.Error(t, err)
-		assert.Contains(t, server.Output(), "Type 'string' is not assignable to type 'Person'.")
+		assert.Contains(t, server.Output(), "unexpected error")
 	})
 }
 
