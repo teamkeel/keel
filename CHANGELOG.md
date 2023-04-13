@@ -1,3 +1,10 @@
+## [0.300.1](https://github.com/teamkeel/keel/compare/v0.300.0...v0.300.1) (2023-04-13)
+
+
+### Bug Fixes
+
+* show errors emitted from node process failing to start ([#911](https://github.com/teamkeel/keel/issues/911)) ([f993d4f](https://github.com/teamkeel/keel/commit/f993d4f58682edef2bccb8125cc40d48a8026c8f))
+
 # [0.300.0](https://github.com/teamkeel/keel/compare/v0.299.0...v0.300.0) (2023-04-13)
 
 
