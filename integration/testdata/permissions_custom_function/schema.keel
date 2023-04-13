@@ -36,6 +36,7 @@ model Post {
         }
         create createPostWithRole() with (title, business.id) {
             @permission(roles: [Admin])
+            @permission(expression: false)
         }
     }
 }
