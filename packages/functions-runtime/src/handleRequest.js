@@ -10,7 +10,7 @@ const {
   PermissionError,
   checkBuiltInPermissions,
 } = require("./permissions");
-const { PROTO_ACTION_TYPES_REQUEST_HANDLER } = require("./consts");
+const { PROTO_ACTION_TYPES } = require("./consts");
 
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 
@@ -72,18 +72,22 @@ async function handleRequest(request, config) {
           const relevantPermissions = permissions[request.method];
 
           const actionType = actionTypes[request.method];
-          // We only want to run permission checks at the handleRequest level for action types list, get and create
-          // Delete and update permission checks need to be baked into the model api because they require reading records to be deleted / updated from the database first in order to ascertain whether the records to be deleted or updated fulfil the permission
-          if (PROTO_ACTION_TYPES_REQUEST_HANDLER.includes(actionType)) {
-            // check will throw a PermissionError if a permission rule is invalid
-            await checkBuiltInPermissions({
-              rows: fnResult,
-              permissions: relevantPermissions,
-              db: transaction,
-              ctx,
-              functionName: request.method,
-            });
-          }
+
+          const peakInsideTransaction = actionType === PROTO_ACTION_TYPES.CREATE
+          
+          // check will throw a PermissionError if a permission rule is invalid
+          await checkBuiltInPermissions({
+            rows: fnResult,
+            permissions: relevantPermissions,
+            // it is important that we pass db here as db represents the connection to the database
+            // *outside* of the current transaction. Given that any changes inside of a transaction
+            // are opaque to the outside, we can utilize this when running permission rules and then deciding to
+            // rollback any changes if they do not pass.
+            db: peakInsideTransaction ? transaction : db,
+            ctx,
+            functionName: request.method,
+          });
+          
 
           // If the built in permission check above doesn't throw, then it means that the request is permitted and we can continue returning the return value from the custom function out of the transaction
           return fnResult;

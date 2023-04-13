@@ -161,6 +161,84 @@ test("creating a post with a permission rule", async () => {
   ).not.toHaveAuthorizationError();
 });
 
+test("updating a post with a permission rule", async () => {
+  const identity = await models.identity.create({
+    email: "adam@keel.xyz",
+    password: "foo",
+  });
+
+  const otherIdentity = await models.identity.create({
+    email: "jon@keel.xyz",
+    password: "foo",
+  });
+
+  const business = await models.business.create({
+    name: "Adam Inc",
+    identityId: identity.id,
+  });
+
+  const post = await models.post.create({
+    title: "a post",
+    businessId: business.id,
+  });
+
+  await expect(
+    actions.withIdentity(identity).updatePost({
+      where: { id: post.id },
+      values: {
+        title: "changed post title",
+      },
+    })
+  ).not.toHaveAuthorizationError();
+
+  await expect(
+    actions.withIdentity(otherIdentity).updatePost({
+      where: { id: post.id },
+      values: {
+        title: "changed by an unauthorized user",
+      },
+    })
+  ).toHaveAuthorizationError();
+
+  const postFromDb = await models.post.findOne({ id: post.id });
+
+  expect(postFromDb?.title).toEqual("changed post title");
+});
+
+test.fails("deleting a post with a permission rule", async () => {
+  const identity = await models.identity.create({
+    email: "adam@keel.xyz",
+    password: "foo",
+  });
+
+  const otherIdentity = await models.identity.create({
+    email: "jon@keel.xyz",
+    password: "foo",
+  });
+
+  const business = await models.business.create({
+    name: "Adam Inc",
+    identityId: identity.id,
+  });
+
+  const post = await models.post.create({
+    title: "a post",
+    businessId: business.id,
+  });
+
+  await expect(
+    actions.withIdentity(identity).deletePost({
+      id: post.id,
+    })
+  ).not.toHaveAuthorizationError();
+
+  await expect(
+    actions.withIdentity(otherIdentity).deletePost({
+      id: post.id,
+    })
+  ).toHaveAuthorizationError();
+});
+
 test("creating a post with a role based permission rule - email based - permitted", async () => {
   const { token } = await actions.authenticate({
     createIfNotExists: true,
