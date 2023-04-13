@@ -9,6 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/playground"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
@@ -108,6 +109,10 @@ type Model struct {
 	runtimeRequestsCh chan tea.Msg
 	functionsLogCh    chan tea.Msg
 	watcherCh         chan tea.Msg
+
+	// Maintain the current dimensions of the user's terminal
+	width  int
+	height int
 }
 
 type RuntimeRequest struct {
@@ -158,7 +163,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Status = StatusQuitting
 			return m, tea.Quit
 		}
+	case tea.WindowSizeMsg:
+		// This msg is sent once on program start
+		// and then subsequently every time the user
+		// resizes their terminal window.
+		m.width = msg.Width
+		m.height = msg.Height
 
+		return m, nil
 	case StartDatabaseMsg:
 		m.DatabaseConnInfo = msg.ConnInfo
 		m.Err = msg.Err
@@ -403,6 +415,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	b := strings.Builder{}
 
+	// lipgloss will automatically wrap any text based on the current dimensions of the user's term
+	s := lipgloss.NewStyle().Width(m.width).Height(m.height)
+
 	// Mode specific output
 	switch m.Mode {
 	case ModeRun:
@@ -421,5 +436,5 @@ func (m *Model) View() string {
 
 	// The final "\n" is important as when Bubbletea exists it resets the last
 	// line of output, meaning without a new line we'd lose the final line
-	return b.String() + "\n"
+	return s.Render(b.String() + "\n")
 }
