@@ -1,3 +1,10 @@
+## [0.300.2](https://github.com/teamkeel/keel/compare/v0.300.1...v0.300.2) (2023-04-13)
+
+
+### Bug Fixes
+
+* wrap terminal text ([#912](https://github.com/teamkeel/keel/issues/912)) ([c91bb06](https://github.com/teamkeel/keel/commit/c91bb06e77370417f555e793ffa1a2cb6f1556be))
+
 ## [0.300.1](https://github.com/teamkeel/keel/compare/v0.300.0...v0.300.1) (2023-04-13)
 
 
