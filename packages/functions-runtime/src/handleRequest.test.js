@@ -140,6 +140,40 @@ test("when there is an unexpected error in the custom function", async () => {
   });
 });
 
+test("when a role based permission has already been granted by the main runtime", async () => {
+  const config = {
+    functions: {
+      createPost: async (inputs, api, ctx) => {
+        return {
+          title: inputs.title,
+        };
+      },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
+    createFunctionAPI: ({ headers, db }) => {
+      return {
+        permissions: new Permissions({ status: "granted", reason: "role" }),
+      };
+    },
+    createContextAPI: () => {},
+  };
+
+  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+
+  expect(await handleRequest(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    result: {
+      title: "a post",
+    },
+    meta: {
+      headers: {},
+    },
+  });
+});
+
 test("when there is an unexpected object thrown in the custom function", async () => {
   const config = {
     functions: {

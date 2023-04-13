@@ -14,10 +14,13 @@ process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functi
 let permissions;
 let ctx = {};
 let db = getDatabase();
+let permissionState = {
+  status: "unknown",
+};
 
 describe("explicit", () => {
   beforeEach(() => {
-    permissions = new Permissions();
+    permissions = new Permissions(permissionState);
   });
 
   test("explicitly allowing execution", () => {
@@ -34,6 +37,25 @@ describe("explicit", () => {
     expect(() => permissions.deny()).toThrowError(PermissionError);
 
     expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
+  });
+});
+
+describe("prior state", () => {
+  test("when the prior state is unknown", () => {
+    permissions = new Permissions({
+      status: "unknown",
+    });
+
+    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
+  });
+
+  test("when the prior state is granted", () => {
+    permissions = new Permissions({
+      status: "granted",
+      reason: "role",
+    });
+
+    expect(permissions.getState()).toEqual(PERMISSION_STATE.PERMITTED);
   });
 });
 

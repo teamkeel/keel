@@ -6,12 +6,23 @@ const PERMISSION_STATE = {
   UNPERMITTED: "unpermitted",
 };
 
+const defaultState = {
+  status: "unknown",
+};
+
 class Permissions {
-  constructor() {
+  // The permissionState here is the prior state passed in from the Go runtime
+  // The Go runtime performs role based permission rule checks prior to calling the functions
+  // runtime, so the status could already be granted. If already granted, then we need to inherit that permission state as the state is later used to decide whether to run in process permission checks
+  // TLDR if a role based permission is relevant and it is granted, then it is effectively the same as the end user calling api.permissions.allow() explicitly in terms of behaviour.
+  constructor(permissionState = defaultState) {
     this.state = {
       // permitted starts off as null to indicate that the end user
       // hasn't explicitly marked a function execution as permitted yet
-      permitted: null,
+      permitted:
+        permissionState !== null && permissionState.status === "granted"
+          ? true
+          : null,
     };
   }
 
