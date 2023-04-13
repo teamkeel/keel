@@ -127,6 +127,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 }
 
 func ResetRequestPassword(scope *Scope, input map[string]any) error {
+
 	var err error
 	typedInput := typed.New(input)
 
@@ -163,10 +164,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return err
 	}
 
-	err = client.SendResetPasswordMail(identity.Email, redirectUrl.String())
-	if err != nil {
-		return err
-	}
+	client.SendResetPasswordMail(scope.context, identity.Email, redirectUrl.String())
 
 	return nil
 }

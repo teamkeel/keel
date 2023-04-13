@@ -79,6 +79,10 @@ type Model struct {
 	// applies to ModeRun.
 	ResetDatabase bool
 
+	// If true then SMTP connection info will be retrieved from
+	// env vars, and email sending will be enabled.
+	EnableSmtp bool
+
 	// If set then @teamkeel/* npm packages will be installed
 	// from this path, rather than NPM.
 	NodePackagesPath string
@@ -170,7 +174,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.Status = StatusSetupFunctions
 		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath)
-
 	case SetupFunctionsMsg:
 		m.Err = msg.Err
 
@@ -241,7 +244,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.RuntimeHandler = runtime.NewHttpHandler(m.Schema)
 		m.Status = StatusRunMigrations
 		return m, RunMigrations(m.Schema, m.DatabaseConnInfo)
-
 	case RunMigrationsMsg:
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes
@@ -348,11 +350,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		ctx := msg.r.Context()
-		database, _ := db.New(ctx, m.DatabaseConnInfo)
+		database, err := db.New(ctx, m.DatabaseConnInfo)
+		if err != nil {
+			panic(err.Error())
+		}
 
 		ctx = runtimectx.WithDatabase(ctx, database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
-		ctx = runtimectx.WithMailClient(ctx, &mail.Client{Enabled: false})
+
+		if m.EnableSmtp {
+			ctx = runtimectx.WithMailClient(ctx, mail.Local())
+		} else {
+			ctx = runtimectx.WithMailClient(ctx, mail.Disabled())
+		}
 
 		if m.FunctionsServer != nil {
 			ctx = functions.WithFunctionsTransport(
