@@ -288,14 +288,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case StartFunctionsMsg:
 		m.Err = msg.Err
 		m.FunctionsServer = msg.Server
-		m.Status = StatusRunning
+
+		if msg.Err == nil {
+			m.Status = StatusRunning
+		}
 
 		if m.Mode == ModeTest {
 			return m, RunTests(m.ProjectDir, m.Port, m.Config, m.DatabaseConnInfo, m.TestPattern)
 		}
 
 		return m, nil
-
 	case FunctionsOutputMsg:
 		log := &FunctionLog{
 			Time:  time.Now(),
