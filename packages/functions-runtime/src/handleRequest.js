@@ -83,13 +83,12 @@ async function handleRequest(request, config) {
 
               break;
             case PROTO_ACTION_TYPES.DELETE:
-              rowsForPermissions = [{ id: fnResult }]
+              rowsForPermissions = [{ id: fnResult }];
               break;
             default:
               rowsForPermissions = [fnResult];
               break;
           }
-
 
           // check will throw a PermissionError if a permission rule is invalid
           await checkBuiltInPermissions({
