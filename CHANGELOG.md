@@ -1,3 +1,10 @@
+## [0.300.3](https://github.com/teamkeel/keel/compare/v0.300.2...v0.300.3) (2023-04-14)
+
+
+### Bug Fixes
+
+* run permissions checks for delete/update ([#913](https://github.com/teamkeel/keel/issues/913)) ([69840cb](https://github.com/teamkeel/keel/commit/69840cb6b41139c4bd8b1e649dcff2453623e96b))
+
 ## [0.300.2](https://github.com/teamkeel/keel/compare/v0.300.1...v0.300.2) (2023-04-13)
 
 
