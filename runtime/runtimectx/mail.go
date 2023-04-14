@@ -27,9 +27,5 @@ func GetMailClient(ctx context.Context) (mail.EmailClient, error) {
 }
 
 func WithMailClient(ctx context.Context, client mail.EmailClient) context.Context {
-	if client == nil {
-		return context.WithValue(ctx, mailKey, mail.NoOpClient())
-	}
-
 	return context.WithValue(ctx, mailKey, client)
 }

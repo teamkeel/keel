@@ -353,7 +353,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		ctx = runtimectx.WithDatabase(ctx, database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
-		ctx = runtimectx.WithMailClient(ctx, mail.NewSMTPClientFromEnv())
+
+		mailClient := mail.NewSMTPClientFromEnv()
+		if mailClient != nil {
+			ctx = runtimectx.WithMailClient(ctx, mailClient)
+		} else {
+			ctx = runtimectx.WithMailClient(ctx, mail.NoOpClient())
+		}
 
 		if m.FunctionsServer != nil {
 			ctx = functions.WithFunctionsTransport(
