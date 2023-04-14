@@ -57,11 +57,6 @@ const checkBuiltInPermissions = async ({
   db,
   functionName,
 }) => {
-  // rows can actually just be a single record too so we need to wrap it
-  if (!Array.isArray(rows)) {
-    rows = [rows];
-  }
-
   for (const permissionFn of permissions) {
     const result = await permissionFn(rows, ctx, db);
 

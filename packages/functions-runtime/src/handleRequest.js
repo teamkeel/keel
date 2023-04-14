@@ -76,9 +76,24 @@ async function handleRequest(request, config) {
           const peakInsideTransaction =
             actionType === PROTO_ACTION_TYPES.CREATE;
 
+          let rowsForPermissions = [];
+          switch (actionType) {
+            case PROTO_ACTION_TYPES.LIST:
+              rowsForPermissions = fnResult;
+
+              break;
+            case PROTO_ACTION_TYPES.DELETE:
+              rowsForPermissions = [{ id: fnResult }]
+              break;
+            default:
+              rowsForPermissions = [fnResult];
+              break;
+          }
+
+
           // check will throw a PermissionError if a permission rule is invalid
           await checkBuiltInPermissions({
-            rows: fnResult,
+            rows: rowsForPermissions,
             permissions: relevantPermissions,
             // it is important that we pass db here as db represents the connection to the database
             // *outside* of the current transaction. Given that any changes inside of a transaction

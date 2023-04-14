@@ -205,7 +205,7 @@ test("updating a post with a permission rule", async () => {
   expect(postFromDb?.title).toEqual("changed post title");
 });
 
-test.fails("deleting a post with a permission rule", async () => {
+test("deleting a post with a permission rule", async () => {
   const identity = await models.identity.create({
     email: "adam@keel.xyz",
     password: "foo",
@@ -232,9 +232,14 @@ test.fails("deleting a post with a permission rule", async () => {
     })
   ).not.toHaveAuthorizationError();
 
+  const post2 = await models.post.create({
+    title: "a second post to be deleted",
+    businessId: business.id,
+  });
+
   await expect(
     actions.withIdentity(otherIdentity).deletePost({
-      id: post.id,
+      id: post2.id,
     })
   ).toHaveAuthorizationError();
 });
