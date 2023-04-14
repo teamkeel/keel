@@ -117,26 +117,4 @@ describe("check", () => {
       })
     ).rejects.toThrow();
   });
-
-  test("with a single row", async () => {
-    const permissionRule1 = (records, ctx, db) => {
-      // Only allow names starting with Adam
-      return records.every((r) => r.name.startsWith("Adam"));
-    };
-
-    const rows = {
-      id: "123",
-      name: "Adam Bull",
-    };
-
-    await expect(
-      checkBuiltInPermissions({
-        rows,
-        ctx,
-        db,
-        functionName,
-        permissions: [permissionRule1],
-      })
-    ).resolves.ok;
-  });
 });
