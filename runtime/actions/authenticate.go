@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/mail"
+	email "net/mail"
 	"net/url"
 	"time"
 
@@ -12,6 +12,8 @@ import (
 	"github.com/karlseguin/typed"
 	"github.com/samber/lo"
 	"github.com/segmentio/ksuid"
+
+	"github.com/teamkeel/keel/mail"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -49,7 +51,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 	typedInput := typed.New(input)
 
 	emailPassword := typedInput.Object("emailPassword")
-	if _, err := mail.ParseAddress(emailPassword.String("email")); err != nil {
+	if _, err := email.ParseAddress(emailPassword.String("email")); err != nil {
 		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid email address"}
 	}
 
@@ -130,8 +132,8 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	var err error
 	typedInput := typed.New(input)
 
-	email := typedInput.String("email")
-	if _, err = mail.ParseAddress(email); err != nil {
+	emailString := typedInput.String("email")
+	if _, err = email.ParseAddress(emailString); err != nil {
 		return common.RuntimeError{Code: common.ErrInvalidInput, Message: "invalid email address"}
 	}
 
@@ -141,7 +143,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	}
 
 	var identity *runtimectx.Identity
-	identity, err = FindIdentityByEmail(scope.context, scope.schema, email)
+	identity, err = FindIdentityByEmail(scope.context, scope.schema, emailString)
 	if err != nil {
 		return err
 	}
@@ -163,12 +165,14 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return err
 	}
 
-	err = client.SendResetPasswordMail(identity.Email, redirectUrl.String())
-	if err != nil {
-		return err
-	}
+	err = client.Send(scope.context, &mail.SendEmailRequest{
+		To:        identity.Email,
+		From:      "hi@keel.xyz",
+		Subject:   "[Keel] Reset password request",
+		PlainText: fmt.Sprintf("Please follow this link to reset your password: %s", redirectUrl),
+	})
 
-	return nil
+	return err
 }
 
 func ResetPassword(scope *Scope, input map[string]any) error {

@@ -1,42 +1,79 @@
 package mail
 
 import (
+	"context"
 	"fmt"
 	"net/smtp"
+	"os"
 )
 
-type Client struct {
-	Enabled  bool
-	ConnInfo *SmtpConnInfo
+type EmailClient interface {
+	Send(context.Context, *SendEmailRequest) error
 }
 
-type SmtpConnInfo struct {
-	Host     string
-	Port     int
-	From     string
-	Username string
-	Password string
+type SendEmailRequest struct {
+	To        string
+	From      string
+	Subject   string
+	PlainText string
 }
 
-func (c Client) SendMail(to []string, message string) error {
-	if !c.Enabled {
+type smtpClient struct {
+	host     string
+	port     string
+	username string
+	password string
+}
+
+func NewSMTPClient(host, port, username, password string) EmailClient {
+	return &smtpClient{
+		host, port, username, password,
+	}
+}
+
+// Uses env var SMTP settings to establish new mail client. If settings are missing, nil is returned.
+// Requires KEEL_SMTP_HOST, KEEL_SMTP_PORT, KEEL_SMTP_USER, and KEEL_SMTP_PASSWORD.
+func NewSMTPClientFromEnv() EmailClient {
+	var host, port, username, password string
+
+	if host = os.Getenv("KEEL_SMTP_HOST"); host == "" {
+		return nil
+	}
+	if port = os.Getenv("KEEL_SMTP_PORT"); port == "" {
+		return nil
+	}
+	if username = os.Getenv("KEEL_SMTP_USER"); username == "" {
+		return nil
+	}
+	if password = os.Getenv("KEEL_SMTP_PASSWORD"); password == "" {
 		return nil
 	}
 
-	host := fmt.Sprintf("%s:%v", c.ConnInfo.Host, c.ConnInfo.Port)
-	auth := smtp.PlainAuth("", c.ConnInfo.Username, c.ConnInfo.Password, c.ConnInfo.Host)
-	contents := []byte(message)
-
-	// TODO: run on a new thread?
-	err := smtp.SendMail(host, auth, c.ConnInfo.From, to, contents)
-	if err != nil {
-		return err
+	return &smtpClient{
+		host:     host,
+		port:     port,
+		username: username,
+		password: password,
 	}
-
-	return nil
 }
 
-func (c Client) SendResetPasswordMail(to string, redirectUrl string) error {
-	// TODO: make a pretty email
-	return c.SendMail([]string{to}, redirectUrl)
+func (c *smtpClient) Send(ctx context.Context, req *SendEmailRequest) error {
+	host := fmt.Sprintf("%s:%s", c.host, c.port)
+	auth := smtp.PlainAuth("", c.username, c.password, c.host)
+	msg := fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n%s.\r\n",
+		req.From, req.To, req.Subject, req.PlainText)
+
+	return smtp.SendMail(host, auth, req.From, []string{req.To}, []byte(msg))
+}
+
+type noOpClient struct {
+}
+
+// No op email client does not send a mail.
+func NoOpClient() EmailClient {
+	return &noOpClient{}
+}
+
+func (c *noOpClient) Send(context.Context, *SendEmailRequest) error {
+	return nil
 }
