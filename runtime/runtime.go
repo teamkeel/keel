@@ -229,7 +229,7 @@ func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http
 	if issuer == "keel" || issuer == "" {
 		identity, err = actions.FindIdentityById(ctx, schema, subject)
 	} else {
-		identity, err = actions.FindIdentityByExternalId(ctx, schema, subject)
+		identity, err = actions.FindIdentityByExternalId(ctx, schema, subject, issuer)
 		if identity == nil {
 			identity, err = actions.CreateExternalIdentity(ctx, schema, subject, issuer)
 		}

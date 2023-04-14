@@ -16,12 +16,34 @@ func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*ru
 	return findSingle(ctx, schema, "id", id)
 }
 
-func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string) (*runtimectx.Identity, error) {
-	return findSingle(ctx, schema, "externalId", externalId)
-}
-
 func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*runtimectx.Identity, error) {
 	return findSingle(ctx, schema, "email", email)
+}
+
+func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externalId string, issuer string) (*runtimectx.Identity, error) {
+	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
+	query := NewQuery(identityModel)
+	err := query.Where(Field("externalId"), Equals, Value(externalId))
+	if err != nil {
+		return nil, err
+	}
+	query.And()
+	err = query.Where(Field("createdBy"), Equals, Value(issuer))
+	if err != nil {
+		return nil, err
+	}
+
+	query.AppendSelect(AllFields())
+	result, err := query.SelectStatement().ExecuteToSingle(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+
+	return mapToIdentity(result)
 }
 
 func findSingle(ctx context.Context, schema *proto.Schema, field string, value string) (*runtimectx.Identity, error) {
