@@ -38,6 +38,12 @@ model Post {
             @permission(roles: [Admin])
             @permission(expression: false)
         }
+        update updatePost(id) with (title) {
+            @permission(expression: post.business.identity == ctx.identity)
+        }
+        delete deletePost(id) {
+            @permission(expression: post.business.identity == ctx.identity)
+        }
     }
 }
 
