@@ -387,9 +387,6 @@ func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode, isAr
 			if arg.Optional {
 				length += 1 // account for "?"
 			}
-			if arg.Repeated {
-				length += 2 // account for "[]"
-			}
 		}
 		if length > maxLineLength {
 			isMultiline = true
@@ -425,9 +422,6 @@ func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode, isAr
 
 			if arg.Optional {
 				writer.Write("?")
-			}
-			if arg.Repeated {
-				writer.Write("[]")
 			}
 		})
 

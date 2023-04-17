@@ -166,8 +166,7 @@ type ActionInputNode struct {
 
 	Label    *NameNode `(@@ ":")?`
 	Type     Ident     `@@`
-	Repeated bool      `( @( "[" "]" )`
-	Optional bool      `| @( "?" ))?`
+	Optional bool      `@( "?" )?`
 }
 
 func (a *ActionInputNode) Name() string {
