@@ -1,3 +1,10 @@
+# [0.301.0](https://github.com/teamkeel/keel/compare/v0.300.3...v0.301.0) (2023-04-17)
+
+
+### Features
+
+* remove [] from ActionInputs in parser ([#915](https://github.com/teamkeel/keel/issues/915)) ([2cf0e1b](https://github.com/teamkeel/keel/commit/2cf0e1bd558df270f774bb5d53989633115b1a2f))
+
 ## [0.300.3](https://github.com/teamkeel/keel/compare/v0.300.2...v0.300.3) (2023-04-14)
 
 
