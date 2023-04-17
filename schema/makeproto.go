@@ -997,7 +997,7 @@ func (scm *Builder) inferParserInputType(
 
 	return &proto.TypeInfo{
 		Type:      protoType,
-		Repeated:  input.Repeated,
+		Repeated:  false,
 		ModelName: modelName,
 		FieldName: fieldName,
 		EnumName:  enumName,
