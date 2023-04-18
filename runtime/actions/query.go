@@ -821,7 +821,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			// so therefore we should just apply a constraint that evaluates to false
 			// to the query
 			if len(inValues) < 1 {
-				return "true = false", nil, nil
+				return "false", nil, nil
 			}
 
 			for _, v := range inValues {
