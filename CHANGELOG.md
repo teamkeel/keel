@@ -1,3 +1,10 @@
+# [0.303.0](https://github.com/teamkeel/keel/compare/v0.302.0...v0.303.0) (2023-04-18)
+
+
+### Features
+
+* use gh_token ([#919](https://github.com/teamkeel/keel/issues/919)) ([35d6082](https://github.com/teamkeel/keel/commit/35d60826beaac3b7b9b32131794300f377a97988))
+
 # [0.302.0](https://github.com/teamkeel/keel/compare/v0.301.0...v0.302.0) (2023-04-18)
 
 
