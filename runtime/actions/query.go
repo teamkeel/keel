@@ -816,6 +816,14 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			// WHERE x IN (?, ?, ?)
 			inPlaceholders := []string{}
 			inValues := rhs.value.([]any)
+
+			// if the inValues is empty, then it is invalid SQL to have "IN ()"
+			// so therefore we should just apply a constraint that evaluates to false
+			// to the query
+			if len(inValues) < 1 {
+				return "false", nil, nil
+			}
+
 			for _, v := range inValues {
 				inPlaceholders = append(inPlaceholders, "?")
 				args = append(args, v)

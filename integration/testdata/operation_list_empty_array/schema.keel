@@ -1,0 +1,19 @@
+model Project {
+    fields {
+        name Text
+    }
+}
+
+model Todo {
+    fields {
+        label Text
+        project Project?
+        owner Identity
+    }
+
+    operations {
+        list listTodo(project.id?) {
+            @permission(expression: todo.owner == ctx.identity)
+        }
+    }
+}
