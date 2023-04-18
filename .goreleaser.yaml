@@ -19,6 +19,14 @@ archives:
       windows: Windows
       386: i386
       amd64: x86_64
+brews:
+  -
+    name: keel
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+    homepage: "https://github.com/teamkeel/keel"
+    tap:
+      owner: teamkeel
+      name: homebrew-keel
 checksum:
   name_template: "checksums.txt"
 snapshot:
