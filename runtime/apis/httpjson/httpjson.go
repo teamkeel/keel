@@ -121,7 +121,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			span.SetStatus(codes.Error, err.Error())
 
 			code := "ERR_INTERNAL"
-			message := "error executing request"
+			message := "error executing request - " + err.Error()
 			httpCode := http.StatusInternalServerError
 
 			var runtimeErr common.RuntimeError

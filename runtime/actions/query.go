@@ -816,6 +816,10 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 			// WHERE x IN (?, ?, ?)
 			inPlaceholders := []string{}
 			inValues := rhs.value.([]any)
+
+			if len(inValues) < 1 {
+				return "true = false", nil, nil
+			}
 			for _, v := range inValues {
 				inPlaceholders = append(inPlaceholders, "?")
 				args = append(args, v)
