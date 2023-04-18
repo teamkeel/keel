@@ -14,6 +14,28 @@ var (
 	AnyTypes = []string{"string", "object", "array", "integer", "number", "boolean", "null"}
 )
 
+var (
+	pageInfoSchema = JSONSchema{
+		Properties: map[string]JSONSchema{
+			"count": {
+				Type: "number",
+			},
+			"startCursor": {
+				Type: "string",
+			},
+			"endCursor": {
+				Type: "string",
+			},
+			"totalCount": {
+				Type: "number",
+			},
+			"hasNextPage": {
+				Type: "boolean",
+			},
+		},
+	}
+)
+
 type JSONSchema struct {
 	// Type is generally just a string, but when we need a type to be
 	// null it is a list containing the type and the string "null".
@@ -57,6 +79,16 @@ func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operat
 	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestType), gojsonschema.NewGoLoader(input))
 }
 
+func ValidateResponse(ctx context.Context, schema *proto.Schema, op *proto.Operation, response any) (JSONSchema, *gojsonschema.Result, error) {
+	responseSchema := JSONSchemaForOperationResponse(ctx, schema, op)
+
+	s := gojsonschema.NewGoLoader(responseSchema)
+
+	r := gojsonschema.NewGoLoader(response)
+	result, err := gojsonschema.Validate(s, r)
+	return responseSchema, result, err
+}
+
 func JSONSchemaForOperationInput(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
 	inputMessage := proto.FindMessage(schema.Messages, op.InputMessageName)
 	return JSONSchemaForMessage(ctx, schema, op, inputMessage)
@@ -74,10 +106,9 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 	}
 
 	// If we've reached this point then we know that we are dealing with built-in operations
-
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_UPDATE:
-		// model
+		// these operation types return the serialized model
 
 		model := proto.FindModel(schema.Models, op.ModelName)
 
@@ -85,11 +116,32 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		// array of models
 
-		return JSONSchema{}
+		model := proto.FindModel(schema.Models, op.ModelName)
+
+		modelSchema := jsonSchemaForModel(ctx, schema, model, true)
+		// as there are nested components within the modelSchema, we need to merge these into the top level
+		components := Components{
+			Schemas: map[string]JSONSchema{},
+		}
+		for key, prop := range modelSchema.Components.Schemas {
+			components.Schemas[key] = prop
+		}
+		modelSchema.Components = nil
+
+		wrapperSchema := JSONSchema{
+			Properties: map[string]JSONSchema{
+				"results":  modelSchema,
+				"pageInfo": pageInfoSchema,
+			},
+			Components: &components,
+		}
+		return wrapperSchema
 	case proto.OperationType_OPERATION_TYPE_DELETE:
 		// string id of deleted record
 
-		return JSONSchema{}
+		return JSONSchema{
+			Type: "string",
+		}
 	default:
 		panic("unexpected operation type " + op.Type.String())
 	}
@@ -149,27 +201,36 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 	}
 
 	s := JSONSchema{}
-
-	name := ModelComponentName(model)
+	components := &Components{
+		Schemas: map[string]JSONSchema{},
+	}
 
 	if isRepeated {
 		s.Type = "array"
-		s.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+		s.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
 	} else {
-		s = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+		s = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
 	}
 
 	for _, field := range model.Fields {
-		definitionSchema.Properties[field.Name] = jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional)
+		// if the field is a foreign key, then we don't want to expose it in the openapi definition
+		if field.Type.Type == proto.Type_TYPE_MODEL {
+			continue
+		}
+
+		// Retrieve the schema for the field
+		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional)
+
+		definitionSchema.Properties[field.Name] = fieldSchema
 	}
 
 	schemas := map[string]JSONSchema{}
 
-	schemas[name] = definitionSchema
+	components.Schemas[model.Name] = definitionSchema
 
-	s.Components = &Components{
-		Schemas: schemas,
-	}
+	schemas[model.Name] = definitionSchema
+
+	s.Components = components
 
 	return s
 }
@@ -185,9 +246,6 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 	case proto.Type_TYPE_ANY:
 		prop.Type = AnyTypes
 	case proto.Type_TYPE_MESSAGE:
-		if op == nil {
-			panic("operation not in context")
-		}
 		// Add the nested message to schema components.
 		message := proto.FindMessage(schema.Messages, t.MessageName.Value)
 		component := JSONSchemaForMessage(ctx, schema, op, message)
@@ -221,18 +279,29 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 	case proto.Type_TYPE_INT:
 		prop.Type = "number"
 	case proto.Type_TYPE_MODEL:
-		model := proto.FindModel(schema.Models, t.ModelName.Value)
-		schema := jsonSchemaForModel(ctx, schema, model, t.Repeated)
-		name := ModelComponentName(model)
+		// if it the field is a model type, then
+		// we want the schema for this just to be a nested object
+		// with its id
+		// e.g
+		// person { name, address { id } }
 
-		if t.Repeated {
-			prop.Type = "array"
-			prop.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
-		} else {
-			prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+		model := proto.FindModel(schema.Models, t.ModelName.Value)
+
+		modelSchema := jsonSchemaForModel(ctx, schema, model, false)
+		// If that nested message component has ref fields itself, then its components must be bundled.
+		if modelSchema.Components != nil {
+			for cName, comp := range modelSchema.Components.Schemas {
+				components.Schemas[cName] = comp
+			}
+			modelSchema.Components = nil
 		}
 
-		components.Schemas[name] = schema
+		if t.Repeated {
+			prop.Items = &JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
+			prop.Type = "array"
+		} else {
+			prop = JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", model.Name)}
+		}
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 		// date-time format allows both YYYY-MM-DD and full ISO8601/RFC3339 format
 		prop.Type = "string"
@@ -252,7 +321,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		}
 	}
 
-	if t.Repeated && t.Type != proto.Type_TYPE_MESSAGE {
+	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL) {
 		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum}
 		prop.Enum = nil
 		prop.Type = "array"
@@ -301,6 +370,10 @@ func boolPtr(v bool) *bool {
 	return &v
 }
 
-func ModelComponentName(m *proto.Model) string {
-	return fmt.Sprintf("%s_model", m.Name)
+func ErrorsToString(errs []gojsonschema.ResultError) (ret string) {
+	for _, err := range errs {
+		ret += fmt.Sprintf("%s\n", err.String())
+	}
+
+	return ret
 }

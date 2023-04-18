@@ -52,6 +52,35 @@ type MediaTypeObject struct {
 	Schema jsonschema.JSONSchema `json:"schema,omitempty"`
 }
 
+var (
+	responseErrorSchema = jsonschema.JSONSchema{
+		Properties: map[string]jsonschema.JSONSchema{
+			"code": {
+				Type: "string",
+			},
+			"message": {
+				Type: "string",
+			},
+			"data": {
+				Type: []string{"object", "null"},
+				Properties: map[string]jsonschema.JSONSchema{
+					"errors": {
+						Type: "array",
+						Properties: map[string]jsonschema.JSONSchema{
+							"error": {
+								Type: "string",
+							},
+							"field": {
+								Type: "string",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+)
+
 // Generate creates an OpenAPI 3.1 spec for the passed api.
 func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI {
 	spec := OpenAPI{
@@ -89,27 +118,10 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 
 			if responseSchema.Components != nil {
 				for name, comp := range responseSchema.Components.Schemas {
-
-					for propName, s := range comp.Properties {
-						if s.Components != nil {
-							model := proto.FindModel(schema.Models, op.ModelName)
-							field := proto.FindField(schema.Models, model.Name, propName)
-							fieldModel := proto.FindModel(schema.Models, field.Type.ModelName.Value)
-							targetSchema := s.Components.Schemas[jsonschema.ModelComponentName(fieldModel)]
-							targetSchema.Properties = targetSchema.Components.Schemas[jsonschema.ModelComponentName(fieldModel)].Properties
-							targetSchema.Components = nil
-							targetSchema.Ref = ""
-							s.Components = nil
-							comp.Properties[propName] = s
-							components.Schemas[jsonschema.ModelComponentName(fieldModel)] = targetSchema
-						}
-					}
-
 					components.Schemas[name] = comp
 				}
 
 				responseSchema.Components = nil
-
 			}
 
 			spec.Paths[endpoint] = PathItemObject{
@@ -136,7 +148,7 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 							Description: op.Name + " Response Errors",
 							Content: map[string]MediaTypeObject{
 								"application/json": {
-									// Schema: responseErrorSchema,
+									Schema: responseErrorSchema,
 								},
 							},
 						},

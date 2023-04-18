@@ -1,0 +1,32 @@
+message UploadInput {
+  people Person[]
+}
+
+message UploadOutput {
+  createdCount Number
+}
+
+message SearchInput {
+  funnyName Text
+}
+
+message SearchOutput {
+  people Person[]
+}
+
+model Person {
+  fields {
+    name Text
+  }
+
+  functions {
+    write upload(UploadInput) returns(UploadOutput)
+    read search(SearchInput) returns(SearchOutput)
+  }
+}
+
+api Web {
+  models {
+    Person
+  }
+}
