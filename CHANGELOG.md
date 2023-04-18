@@ -1,3 +1,10 @@
+# [0.302.0](https://github.com/teamkeel/keel/compare/v0.301.0...v0.302.0) (2023-04-18)
+
+
+### Features
+
+* homebrew tap ([#918](https://github.com/teamkeel/keel/issues/918)) ([f22ee2e](https://github.com/teamkeel/keel/commit/f22ee2e584f3cf0d39b51392861051724f13b482))
+
 # [0.301.0](https://github.com/teamkeel/keel/compare/v0.300.3...v0.301.0) (2023-04-17)
 
 
