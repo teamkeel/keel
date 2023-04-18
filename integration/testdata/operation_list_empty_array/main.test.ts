@@ -21,5 +21,5 @@ test("empty project id", async () => {
     .withIdentity(identity)
     .listTodo({ where: { projectId: { oneOf: [] } } });
 
-  expect(results.map((r) => r.id)).toEqual([]);
+  expect(results).toEqual([]);
 });
