@@ -1,3 +1,10 @@
+# [0.305.0](https://github.com/teamkeel/keel/compare/v0.304.0...v0.305.0) (2023-04-19)
+
+
+### Features
+
+* change path ([#921](https://github.com/teamkeel/keel/issues/921)) ([95d710b](https://github.com/teamkeel/keel/commit/95d710b192eda3eb1e19f2f50d117461672b7f54))
+
 # [0.304.0](https://github.com/teamkeel/keel/compare/v0.303.0...v0.304.0) (2023-04-19)
 
 
