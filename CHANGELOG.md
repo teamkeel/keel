@@ -1,3 +1,10 @@
+# [0.304.0](https://github.com/teamkeel/keel/compare/v0.303.0...v0.304.0) (2023-04-19)
+
+
+### Features
+
+* custom gh download strategy ([#920](https://github.com/teamkeel/keel/issues/920)) ([1a1c078](https://github.com/teamkeel/keel/commit/1a1c0784bc8e85c9dc1fccca2b89aa9550381a13))
+
 # [0.303.0](https://github.com/teamkeel/keel/compare/v0.302.0...v0.303.0) (2023-04-18)
 
 
