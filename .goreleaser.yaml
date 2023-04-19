@@ -23,6 +23,7 @@ brews:
   -
     name: keel
     download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+    custom_require: "../custom_download_strategy"
     homepage: "https://github.com/teamkeel/keel"
     tap:
       owner: teamkeel
