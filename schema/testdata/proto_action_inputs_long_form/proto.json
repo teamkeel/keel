@@ -170,13 +170,8 @@
           "messageName": "getPerson_input",
           "name": "personId",
           "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
-          },
-          "target": [
-            "id"
-          ]
+            "type": "TYPE_ID"
+          }
         }
       ]
     },
