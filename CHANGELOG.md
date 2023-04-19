@@ -1,3 +1,10 @@
+# [0.307.0](https://github.com/teamkeel/keel/compare/v0.306.0...v0.307.0) (2023-04-19)
+
+
+### Features
+
+* cli fix ([#923](https://github.com/teamkeel/keel/issues/923)) ([feddbca](https://github.com/teamkeel/keel/commit/feddbca4d986722b4889d9be1e0b02e307e572e5))
+
 # [0.306.0](https://github.com/teamkeel/keel/compare/v0.305.0...v0.306.0) (2023-04-19)
 
 
