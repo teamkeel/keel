@@ -26,9 +26,8 @@ release:
 brews:
   -
     name: keel
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
-    custom_require: "./custom_download_strategy"
-    homepage: "https://github.com/teamkeel/keel"
+    url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    homepage: "https://github.com/teamkeel/cli"
     tap:
       owner: teamkeel
       name: homebrew-keel
