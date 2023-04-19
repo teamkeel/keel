@@ -1,3 +1,10 @@
+## [0.307.1](https://github.com/teamkeel/keel/compare/v0.307.0...v0.307.1) (2023-04-19)
+
+
+### Bug Fixes
+
+* fix codegen nil pointer ([#924](https://github.com/teamkeel/keel/issues/924)) ([811beba](https://github.com/teamkeel/keel/commit/811bebaa664f1b3c09d2b34a9d35b78bebc050b5))
+
 # [0.307.0](https://github.com/teamkeel/keel/compare/v0.306.0...v0.307.0) (2023-04-19)
 
 
