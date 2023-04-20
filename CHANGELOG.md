@@ -1,3 +1,10 @@
+# [0.309.0](https://github.com/teamkeel/keel/compare/v0.308.0...v0.309.0) (2023-04-20)
+
+
+### Features
+
+* revert ([#926](https://github.com/teamkeel/keel/issues/926)) ([299d58d](https://github.com/teamkeel/keel/commit/299d58d85f8ca7432a29cb12d6dd934955fd9aa6))
+
 # [0.308.0](https://github.com/teamkeel/keel/compare/v0.307.1...v0.308.0) (2023-04-20)
 
 
