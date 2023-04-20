@@ -13,8 +13,6 @@ builds:
     ldflags:
       - -s -w -X github.com/teamkeel/keel/runtime.Version={{.Version}}
 archives:
-  - files:
-    - none*
   - replacements:
       darwin: Darwin
       linux: Linux
