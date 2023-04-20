@@ -1,3 +1,10 @@
+# [0.308.0](https://github.com/teamkeel/keel/compare/v0.307.1...v0.308.0) (2023-04-20)
+
+
+### Features
+
+* remove src ([#925](https://github.com/teamkeel/keel/issues/925)) ([713d502](https://github.com/teamkeel/keel/commit/713d502aa3d795c1b0949ee56237a8c406c110b3))
+
 ## [0.307.1](https://github.com/teamkeel/keel/compare/v0.307.0...v0.307.1) (2023-04-19)
 
 
