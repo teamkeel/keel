@@ -93,6 +93,7 @@
           "type": {
             "type": "TYPE_STRING"
           },
+          "optional": true,
           "unique": true
         },
         {
@@ -100,7 +101,24 @@
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
-          }
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "externalId",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "modelName": "Identity",
+          "name": "createdBy",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
         },
         {
           "modelName": "Identity",

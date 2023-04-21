@@ -13,11 +13,13 @@ const (
 )
 
 type Identity struct {
-	Id        string    `json:"id"`
-	Email     string    `json:"email"`
-	Password  string    `json:"-"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Id         string    `json:"id"`
+	ExternalId string    `json:"externalId"`
+	Email      string    `json:"email"`
+	Password   string    `json:"-"`
+	CreatedBy  string    `json:"createdBy"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
 func WithIdentity(ctx context.Context, identity *Identity) context.Context {

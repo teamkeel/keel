@@ -35,7 +35,9 @@ input resetPassword_input {
 
 type Identity {
   createdAt: Timestamp!
-  email: String!
+  createdBy: String
+  email: String
+  externalId: String
   id: ID!
   updatedAt: Timestamp!
 }

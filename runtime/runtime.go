@@ -206,7 +206,7 @@ func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http
 		return nil, errors.New("invalid authorization header")
 	}
 
-	identityId, err := actions.ValidateBearerToken(ctx, headerSplit[1])
+	subject, issuer, err := actions.ValidateBearerToken(ctx, headerSplit[1])
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -225,7 +225,16 @@ func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http
 
 	// Check that identity actually does exist as it could
 	// have been deleted after the bearer token was generated.
-	identity, err := actions.FindIdentityById(ctx, schema, identityId)
+	var identity *runtimectx.Identity
+	if issuer == "keel" || issuer == "" {
+		identity, err = actions.FindIdentityById(ctx, schema, subject)
+	} else {
+		identity, err = actions.FindIdentityByExternalId(ctx, schema, subject)
+		if identity == nil {
+			identity, err = actions.CreateExternalIdentity(ctx, schema, subject, issuer)
+		}
+	}
+
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())

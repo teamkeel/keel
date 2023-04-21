@@ -15,7 +15,7 @@ var mailKey mailContextKey = "mail"
 func GetMailClient(ctx context.Context) (mail.EmailClient, error) {
 	v := ctx.Value(mailKey)
 	if v == nil {
-		return nil, fmt.Errorf("context does not have a :%s key", dbKey)
+		return nil, fmt.Errorf("context does not have a :%s key", mailKey)
 	}
 
 	client, ok := v.(mail.EmailClient)
