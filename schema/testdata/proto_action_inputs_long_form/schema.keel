@@ -2,11 +2,12 @@ model Person {
     fields {
         name Text
     }
+
     operations {
-        get getPerson(personId: id) {
+        get getPerson(personId: ID) {
             @where(person.id == personId)
         }
-        create createPerson() with(name: Text) {
+        create createPerson() with (name: Text) {
             @set(person.name = name)
         }
         list listPerson(name: Text) {

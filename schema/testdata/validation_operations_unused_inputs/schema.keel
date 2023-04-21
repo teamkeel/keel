@@ -2,8 +2,8 @@ model Person {
     fields {
         name Text
     }
+
     operations {
-        get getPerson(personId: id)
         create createPerson() with (personName: name)
         update updatePerson(id) with (personName: Text)
     }
