@@ -1,3 +1,10 @@
+# [0.310.0](https://github.com/teamkeel/keel/compare/v0.309.0...v0.310.0) (2023-04-21)
+
+
+### Features
+
+* restrict use of named action inputs ([#927](https://github.com/teamkeel/keel/issues/927)) ([d08edfa](https://github.com/teamkeel/keel/commit/d08edfa36dac5b6be2a7b32dfa003e280b06352c))
+
 # [0.309.0](https://github.com/teamkeel/keel/compare/v0.308.0...v0.309.0) (2023-04-20)
 
 
