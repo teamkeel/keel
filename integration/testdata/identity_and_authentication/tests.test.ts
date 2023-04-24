@@ -508,7 +508,7 @@ test("reset password - valid token - password is reset", async () => {
 });
 
 // This test will break if we use a private key in the test runtime.
-test("reset password - valid token wuth aud as array - password is reset", async () => {
+test("reset password - valid token with aud as array - password is reset", async () => {
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
     email: "user@keel.xyz",
@@ -559,6 +559,7 @@ test("reset password - valid token wuth aud as array - password is reset", async
   expect(token).not.toBeNull();
 });
 
+// This test will break if we use a private key in the test runtime.
 test("3rd party Clerk token - identity already exists - permission satisfied", async () => {
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
@@ -593,6 +594,7 @@ test("3rd party Clerk token - identity already exists - permission satisfied", a
   ).resolves.toEqual(post);
 });
 
+// This test will break if we use a private key in the test runtime.
 test("3rd party Clerk token - identity does not exist - identity created and permission satisfied", async () => {
   // {
   //   "typ": "JWT",
@@ -624,6 +626,41 @@ test("3rd party Clerk token - identity does not exist - identity created and per
   );
   expect(identity?.email).toBeNull();
   expect(identity?.password).toBeNull();
+
+  await expect(
+    authedActions.getPostRequiresIdentity({ id: post.id })
+  ).resolves.toEqual(post);
+});
+
+// This test will break if we use a private key in the test runtime.
+test("3rd party Clerk token - same external id but different issuer - identity created and permission satisfied", async () => {
+  const identity = await models.identity.create({
+    id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
+    externalId: "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp",
+    createdBy: "https://somewhereelse.com",
+  });
+
+  // {
+  //   "typ": "JWT",
+  //   "alg": "none"
+  // }
+  // {
+  //   "azp": "http://localhost:3000",
+  //   "exp": 1893459661,
+  //   "iat": 1682321704,
+  //   "iss": "https://enhanced-osprey-20.clerk.accounts.dev",
+  //   "jti": "415f6916c6a97775c811",
+  //   "nbf": 1682321699,
+  //   "sub": "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
+  // }
+  const authToken =
+    "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhenAiOiJodHRwOi8vbG9jYWxob3N0OjMwMDAiLCJleHAiOjE4OTM0NTk2NjEsImlhdCI6MTY4MjMyMTcwNCwiaXNzIjoiaHR0cHM6Ly9lbmhhbmNlZC1vc3ByZXktMjAuY2xlcmsuYWNjb3VudHMuZGV2IiwianRpIjoiNDE1ZjY5MTZjNmE5Nzc3NWM4MTEiLCJuYmYiOjE2ODIzMjE2OTksInN1YiI6InVzZXJfMk9keWtOeHFIR0hOdEJBNUhjZHU1Wm02dkRwIn0.";
+
+  const authedActions = actions.withAuthToken(authToken);
+
+  const post = await authedActions.createPostWithIdentity({ title: "temp" });
+
+  expect(post.identityId).not.equal(identity.id);
 
   await expect(
     authedActions.getPostRequiresIdentity({ id: post.id })
