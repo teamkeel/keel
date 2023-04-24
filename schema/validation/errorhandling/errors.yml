@@ -171,4 +171,6 @@ en:
   E059:
     message: "You cannot set values for both {{.IdPath}} and {{.ConflictingPath}} in this Create Operation - because the first one indicates that you want to refer to an existing {{.ModelName}}"
     hint: "Either 1) use the .id form, and none of the {{.ModelName}} fields, or 2) omit the .id form and specify all of the fields of {{.ModelName}} that are needed to create one."
-
+  E060:
+    message: "You must provide an input for {{.MissingReferencePath}} in this Create Operation"
+    hint: "You cannot create models of type Identity during nested-creation of relationships"
