@@ -352,17 +352,18 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 	}
 
 	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
+	isNewLine := tokenAtPos.Line() > tokenAtPos.Prev().Line()
 
-	switch enclosingBlock {
-	case parser.KeywordFunctions:
-		return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
-			return i.Label != parser.KeywordWith
-		})
-	default:
-		return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
-			return i.Label != parser.ActionTypeRead && i.Label != parser.ActionTypeWrite
-		})
-	}
+	return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
+		keep := true
+		if enclosingBlock != parser.KeywordFunctions {
+			keep = i.Label != parser.ActionTypeRead && i.Label != parser.ActionTypeWrite
+		}
+		if isNewLine {
+			return keep && i.Label != parser.KeywordWith
+		}
+		return keep
+	})
 }
 
 var builtInFieldCompletions = []*CompletionItem{
