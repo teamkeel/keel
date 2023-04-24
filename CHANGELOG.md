@@ -1,3 +1,10 @@
+# [0.311.0](https://github.com/teamkeel/keel/compare/v0.310.0...v0.311.0) (2023-04-24)
+
+
+### Features
+
+* supporting third party tokens ([#928](https://github.com/teamkeel/keel/issues/928)) ([52617d5](https://github.com/teamkeel/keel/commit/52617d551eb010d2bf01a9d596dea1ffa9c10a77))
+
 # [0.310.0](https://github.com/teamkeel/keel/compare/v0.309.0...v0.310.0) (2023-04-21)
 
 
