@@ -27,12 +27,6 @@ type AuthenticateResult struct {
 	IdentityCreated bool   `json:"identityCreated"`
 }
 
-const (
-	IdColumnName       string = "id"
-	EmailColumnName    string = "email"
-	PasswordColumnName string = "password"
-)
-
 var (
 	ErrInvalidToken     = errors.New("cannot be parsed or vertified as a valid JWT")
 	ErrTokenExpired     = errors.New("token has expired")
@@ -44,7 +38,15 @@ const (
 	ResetTokenExpiry  time.Duration = time.Minute * 15
 )
 
-const resetPasswordAudClaim = "password-reset"
+const (
+	resetPasswordAudClaim = "password-reset"
+	keelIssuerClaim       = "keel"
+)
+
+// https://pkg.go.dev/github.com/golang-jwt/jwt/v4#RegisteredClaims
+type Claims struct {
+	jwt.RegisteredClaims
+}
 
 // Authenticate will return the identity ID if it is successfully authenticated or when a new identity is created.
 func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, error) {
@@ -95,29 +97,12 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, err
 	}
 
-	identityModel := proto.FindModel(scope.schema.Models, parser.ImplicitIdentityModelName)
-
-	modelMap, err := initialValueForModel(identityModel, scope.schema)
+	identity, err = CreateIdentity(scope.context, scope.schema, emailPassword.String("email"), string(hashedBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	modelMap[EmailColumnName] = emailPassword.String("email")
-	modelMap[PasswordColumnName] = string(hashedBytes)
-
-	query := NewQuery(identityModel)
-	query.AddWriteValues(modelMap)
-	query.AppendSelect(AllFields())
-	query.AppendReturning(IdField())
-
-	_, err = query.InsertStatement().Execute(scope.context)
-	if err != nil {
-		return nil, err
-	}
-
-	id := modelMap[IdColumnName].(string)
-
-	token, err := GenerateBearerToken(scope.context, id)
+	token, err := GenerateBearerToken(scope.context, identity.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -215,65 +200,6 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 	return nil
 }
 
-func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*runtimectx.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-	query := NewQuery(identityModel)
-	err := query.Where(IdField(), Equals, Value(id))
-	if err != nil {
-		return nil, err
-	}
-
-	query.AppendSelect(AllFields())
-	result, err := query.SelectStatement().ExecuteToSingle(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-	if result == nil {
-		return nil, nil
-	}
-
-	return &runtimectx.Identity{
-		Id:        result["id"].(string),
-		Email:     result["email"].(string),
-		Password:  result["password"].(string),
-		CreatedAt: result["createdAt"].(time.Time),
-		UpdatedAt: result["updatedAt"].(time.Time),
-	}, nil
-}
-
-func FindIdentityByEmail(ctx context.Context, schema *proto.Schema, email string) (*runtimectx.Identity, error) {
-	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
-	query := NewQuery(identityModel)
-	err := query.Where(Field(EmailColumnName), Equals, Value(email))
-	if err != nil {
-		return nil, err
-	}
-
-	query.AppendSelect(AllFields())
-	result, err := query.SelectStatement().ExecuteToSingle(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-	if result == nil {
-		return nil, nil
-	}
-
-	return &runtimectx.Identity{
-		Id:        result["id"].(string),
-		Email:     result["email"].(string),
-		Password:  result["password"].(string),
-		CreatedAt: result["createdAt"].(time.Time),
-		UpdatedAt: result["updatedAt"].(time.Time),
-	}, nil
-}
-
-// https://pkg.go.dev/github.com/golang-jwt/jwt/v4#RegisteredClaims
-type Claims struct {
-	jwt.RegisteredClaims
-}
-
 func GenerateBearerToken(ctx context.Context, identityId string) (string, error) {
 	return generateToken(ctx, identityId, []string{}, BearerTokenExpiry)
 }
@@ -290,6 +216,7 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 			Audience:  aud,
 			ExpiresAt: jwt.NewNumericDate(now.Add(expiresIn)),
 			IssuedAt:  jwt.NewNumericDate(now),
+			Issuer:    keelIssuerClaim,
 		},
 	}
 
@@ -317,18 +244,24 @@ func generateToken(ctx context.Context, sub string, aud []string, expiresIn time
 	}
 }
 
-func ValidateBearerToken(ctx context.Context, tokenString string) (string, error) {
+// Verifies the bearer token and returns the JWT subject and issuer.
+func ValidateBearerToken(ctx context.Context, tokenString string) (string, string, error) {
 	return validateToken(ctx, tokenString, "")
 }
 
+// Verifies the reset token and returns the JWT subject.
 func ValidateResetToken(ctx context.Context, tokenString string) (string, error) {
-	return validateToken(ctx, tokenString, resetPasswordAudClaim)
+	subject, issuer, err := validateToken(ctx, tokenString, resetPasswordAudClaim)
+	if issuer != keelIssuerClaim && issuer != "" {
+		return "", fmt.Errorf("can only accept reset token from %s issuer, not: %s", keelIssuerClaim, issuer)
+	}
+	return subject, err
 }
 
-func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, error) {
+func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
 	privateKey, err := runtimectx.GetPrivateKey(ctx)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	var token *jwt.Token
@@ -354,23 +287,29 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	}
 
 	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
-		return "", ErrTokenExpired
+		return "", "", ErrTokenExpired
 	}
 
 	if audienceClaim != "" {
 		if !lo.Contains(claims.Audience, audienceClaim) {
-			return "", ErrInvalidToken
+			return "", "", ErrInvalidToken
 		}
 	}
 
 	if err != nil || !token.Valid {
-		return "", ErrInvalidToken
+		return "", "", ErrInvalidToken
 	}
 
-	ksuid, err := ksuid.Parse(claims.Subject)
-	if err != nil {
-		return "", errors.New("token does not contain a parsable subject claim")
+	if claims.Issuer == keelIssuerClaim || claims.Issuer == "" {
+		identifier, err := ksuid.Parse(claims.Subject)
+		if err != nil {
+			return "", "", err
+		}
+		return identifier.String(), claims.Issuer, nil
+	} else {
+		if claims.Subject == "" {
+			return "", "", errors.New("subject claim cannot be empty")
+		}
+		return claims.Subject, claims.Issuer, nil
 	}
-
-	return ksuid.String(), nil
 }

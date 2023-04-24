@@ -6,7 +6,7 @@ export default CreatePersonWithContextInfo((inputs, api, ctx) => {
   const { identity } = ctx;
 
   return api.models.person.create({
-    name: identity != null ? identity.email : "none",
+    name: identity != null ? identity.email! : "none",
     gender: inputs.gender,
     niNumber: inputs.niNumber,
     identityId: identity != null ? identity.id : null,

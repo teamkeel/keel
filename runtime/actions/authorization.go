@@ -149,7 +149,6 @@ func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.Perm
 // todo: it would be nicer if the current user's email name was
 // available directly in the scope object?
 func getEmailAndDomain(scope *Scope) (string, string, error) {
-
 	// Use the authenticated identity's id to lookup their email address.
 	identity, err := runtimectx.GetIdentity(scope.context)
 	if err != nil {
@@ -158,6 +157,10 @@ func getEmailAndDomain(scope *Scope) (string, string, error) {
 
 	if identity == nil {
 		return "", "", ErrIdentityNotFound
+	}
+
+	if identity.Email == "" {
+		return "", "", nil
 	}
 
 	segments := strings.Split(identity.Email, "@")

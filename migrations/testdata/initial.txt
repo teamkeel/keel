@@ -9,8 +9,10 @@ model Person {
 ===
 
 CREATE TABLE "identity" (
-"email" TEXT NOT NULL,
-"password" TEXT NOT NULL,
+"email" TEXT,
+"password" TEXT,
+"external_id" TEXT,
+"created_by" TEXT,
 "id" TEXT NOT NULL,
 "created_at" TIMESTAMPTZ NOT NULL,
 "updated_at" TIMESTAMPTZ NOT NULL

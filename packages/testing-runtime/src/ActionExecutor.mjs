@@ -41,6 +41,7 @@ export class ActionExecutor {
             algorithm: "none",
             expiresIn: 60 * 60 * 24,
             subject: this._identity.id,
+            issuer: "keel",
           }
         );
     }
