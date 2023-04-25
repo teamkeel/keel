@@ -1,0 +1,16 @@
+message Foo {
+  person Person
+  people Person[]
+}
+
+model Person {
+  functions {
+    read testAction(Foo) returns(Foo)
+  }
+}
+
+api Test {
+  models {
+    Person
+  }
+}

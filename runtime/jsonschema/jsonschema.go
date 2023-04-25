@@ -115,6 +115,7 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 		model := proto.FindModel(schema.Models, op.ModelName)
 
 		modelSchema := jsonSchemaForModel(ctx, schema, model, true)
+
 		// as there are nested components within the modelSchema, we need to merge these into the top level
 		components := Components{
 			Schemas: map[string]JSONSchema{},
@@ -209,12 +210,12 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 	}
 
 	for _, field := range model.Fields {
-		// if the field is a foreign key, then we don't want to expose it in the openapi definition
+		// if the field of model type, then we don't want to include this because JSON-based
+		// apis don't serialize nested relations
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
 
-		// Retrieve the schema for the field
 		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional)
 
 		definitionSchema.Properties[field.Name] = fieldSchema
@@ -275,15 +276,11 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 	case proto.Type_TYPE_INT:
 		prop.Type = "number"
 	case proto.Type_TYPE_MODEL:
-		// if it the field is a model type, then
-		// we want the schema for this just to be a nested object
-		// with its id
-		// e.g
-		// person { name, address { id } }
-
 		model := proto.FindModel(schema.Models, t.ModelName.Value)
 
-		modelSchema := jsonSchemaForModel(ctx, schema, model, false)
+		modelSchema := jsonSchemaForModel(ctx, schema, model, t.Repeated)
+
+		
 		// If that nested message component has ref fields itself, then its components must be bundled.
 		if modelSchema.Components != nil {
 			for cName, comp := range modelSchema.Components.Schemas {
