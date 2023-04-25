@@ -1000,7 +1000,7 @@ func TestCompletions(t *testing.T) {
 			schema: `
 			model Person {
 				functions {
-					create updatePerson() <Cursor>
+					update updatePerson() <Cursor>
 				}
 			}`,
 			expected: append([]string{"with"}, parser.FunctionActionTypes...),
