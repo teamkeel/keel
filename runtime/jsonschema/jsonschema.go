@@ -101,10 +101,6 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 		return JSONSchemaForMessage(ctx, schema, op, responseMsg)
 	}
 
-	if op.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO {
-		panic("unexpected implementation type for response schema definition")
-	}
-
 	// If we've reached this point then we know that we are dealing with built-in operations
 	switch op.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_UPDATE:
@@ -143,7 +139,7 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 			Type: "string",
 		}
 	default:
-		panic("unexpected operation type " + op.Type.String())
+		return JSONSchema{}
 	}
 }
 
