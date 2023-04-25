@@ -52,7 +52,11 @@ func checkField(
 }
 
 // isNotNeeded works out if the given field is not needed for a create operation
-// by definition. For example, if it is optional etc.
+// by definition. This IS the case for:
+// - optional fields
+// - repeated fields
+// - fields which have a default
+// - built-in fields like CreatedAt, Id etc.
 func isNotNeeded(f *parser.FieldNode) bool {
 	switch {
 	case f.Optional, f.Repeated, query.FieldHasAttribute(f, parser.AttributeDefault), f.BuiltIn:
@@ -107,28 +111,36 @@ func checkHasOneRelationField(
 	errs *errorhandling.ValidationErrors,
 ) {
 
-	// Is the operation REFERENCING an existing related model instance, or
-	// is it CREATING the related model instance?
-
-	// e.g. author.pet.id
-
 	nestedModel := query.Model(asts, field.Type)
-	pathToReferenceModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
-	pathToReferenceDotID := extendDotDelimPath(pathToReferenceModel, parser.ImplicitFieldNameId)
+	pathToReferencedModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
+	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
 
-	// If it is referencing an existing model, then it is invalid to provide inputs for the
-	// fields INSIDE the referenced model.
-	if satisfied(rootModelName, pathToReferenceDotID, model.Name.Value, op) {
-		makeSureReferencedFieldsAreNotGiven(asts, nestedModel, rootModelName, pathToReferenceModel, op, errs)
+	// If there an input that REFERENCES an existing related model instance,
+	// make sure there are no OTHER inputs that refer to the related model's fields.
+	// And return early.
+	if satisfied(rootModelName, pathToReferencedModelDotID, model.Name.Value, op) {
+		makeSureReferencedFieldsAreNotGiven(asts, nestedModel, rootModelName, pathToReferencedModel, op, errs)
 		return
 	}
 
-	// If it IS creating the related model... We must recurse to make sure the
-	// those of the related model's fields that are required for creation are
-	// provided as inputs.
+	// Special case to disallow the creation of a nested Identity model.
+	if nestedModel.Name.Value == parser.ImplicitIdentityModelName {
+		errs.Append(
+			errorhandling.ErrorNestedCreateIdentityNotAllowed,
+			map[string]string{
+				"MissingReferencePath": pathToReferencedModelDotID,
+				"RelatedModel":         nestedModel.Name.Value,
+			},
+			op,
+		)
+		return
+	}
+
+	// We have established that the operation does intend to create this nested model instance.
+	// Therefore we must recurse to make sure the creation required fields for the nested model are
+	// supplied.
 	nestedPath := extendDotDelimPath(dotDelimPath, field.Name.Value)
 	for _, nestedModelField := range query.ModelFields(nestedModel) {
-
 		// This is where the recursion happens.
 		checkField(asts, nestedModelField, nestedModel, rootModelName, nestedPath, op, errs)
 	}
