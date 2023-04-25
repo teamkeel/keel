@@ -1,9 +1,15 @@
+message Meta {
+  creatorUsername Text
+}
+
 message UploadInput {
   people Person[]
+  meta Meta
 }
 
 message UploadOutput {
   createdCount Number
+  meta Meta
 }
 
 message SearchInput {

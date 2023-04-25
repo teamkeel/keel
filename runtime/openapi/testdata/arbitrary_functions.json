@@ -17,6 +17,18 @@
                 ],
                 "type": "object"
             },
+            "Meta": {
+                "additionalProperties": false,
+                "properties": {
+                    "creatorUsername": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "creatorUsername"
+                ],
+                "type": "object"
+            },
             "Person": {
               "properties": {
                   "createdAt": {
@@ -381,6 +393,9 @@
                             "schema": {
                                 "additionalProperties": false,
                                 "properties": {
+                                    "meta": {
+                                        "$ref": "#/components/schemas/Meta"
+                                    },
                                     "people": {
                                         "items": {
                                           "$ref": "#/components/schemas/Person"
@@ -389,7 +404,8 @@
                                     }
                                 },
                                 "required": [
-                                    "people"
+                                    "people",
+                                    "meta"
                                 ],
                                 "type": "object"
                             }
@@ -406,10 +422,14 @@
                                     "properties": {
                                         "createdCount": {
                                           "type": "number"
+                                        },
+                                        "meta": {
+                                            "$ref": "#/components/schemas/Meta"
                                         }
                                     },
                                     "required": [
-                                        "createdCount"
+                                        "createdCount",
+                                        "meta"
                                     ],
                                     "type": "object"
                                 }
