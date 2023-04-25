@@ -53,6 +53,19 @@ test("list action - equals", async () => {
   expect(posts.results.length).toEqual(2);
 });
 
+test("list action - notEquals", async () => {
+  await models.post.create({ title: "apple", subTitle: "def" });
+  await models.post.create({ title: "orange", subTitle: "efg" });
+
+  const posts = await actions.listPosts({
+    where: {
+      title: { notEquals: "apple" },
+    },
+  });
+
+  expect(posts.results.length).toEqual(1);
+});
+
 test("list action - contains", async () => {
   await models.post.create({ title: "banan", subTitle: "fgh" });
   await models.post.create({ title: "banana", subTitle: "ghi" });

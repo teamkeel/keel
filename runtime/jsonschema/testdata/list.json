@@ -68,6 +68,12 @@
           "equals": {
             "type": ["number", "null"]
           },
+          "notEquals": {
+            "type": [
+                "number",
+                "null"
+            ]
+          },
           "greaterThan": {
             "type": ["number", "null"]
           },
@@ -130,6 +136,12 @@
           "equals": {
             "type": ["string", "null"]
           },
+          "notEquals": {
+            "type": [
+                "string",
+                "null"
+            ]
+          },
           "oneOf": {
             "items": {
               "type": "string"
@@ -153,6 +165,12 @@
           },
           "equals": {
             "type": ["string", "null"]
+          },
+          "notEquals": {
+            "type": [
+                "string",
+                "null"
+            ]
           },
           "oneOf": {
             "items": {
