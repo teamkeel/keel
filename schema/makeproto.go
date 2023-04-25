@@ -157,6 +157,14 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 					Type: typeInfo.Type,
 				},
 			},
+			{
+				Name:     "oneOf",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					Repeated: true,
+				},
+			},
 		}}
 	case proto.Type_TYPE_BOOL:
 		return &proto.Message{Name: makeInputMessageName("BooleanQuery"), Fields: []*proto.MessageField{
