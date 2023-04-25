@@ -1,3 +1,10 @@
+# [0.312.0](https://github.com/teamkeel/keel/compare/v0.311.0...v0.312.0) (2023-04-25)
+
+
+### Features
+
+* special treatment for Identity in nested create (validation) ([#930](https://github.com/teamkeel/keel/issues/930)) ([e84cc79](https://github.com/teamkeel/keel/commit/e84cc79a7812931455597352b741af480009e5af))
+
 # [0.311.0](https://github.com/teamkeel/keel/compare/v0.310.0...v0.311.0) (2023-04-24)
 
 
