@@ -374,6 +374,13 @@
           "optional": true
         },
         {
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
           "name": "startsWith",
           "type": {
             "type": "TYPE_STRING"
@@ -473,6 +480,13 @@
       "fields": [
         {
           "name": "equals",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
