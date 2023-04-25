@@ -77,5 +77,5 @@ export declare class Permissions {
   allow(): void;
 
   // deny() can be used to explicitly deny access to an action
-  deny(): void;
+  deny(): never;
 }
