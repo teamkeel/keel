@@ -784,9 +784,11 @@ var testCases = []testCase{
 				"id": "789",
 			},
 			"values": map[string]any{
-				"name":     "bob",
-				"age":      21,
-				"parentId": "123",
+				"name": "bob",
+				"age":  21,
+				"parent": map[string]any{
+					"id": "123",
+				},
 			},
 		},
 		expectedTemplate: `
