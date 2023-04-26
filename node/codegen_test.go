@@ -529,6 +529,7 @@ export interface StringQuery_input {
 }
 export interface SportQuery_input {
 	equals?: Sport | null;
+	notEquals?: Sport | null;
 	oneOf?: Sport[] | null;
 }
 export interface listPeople_where {
