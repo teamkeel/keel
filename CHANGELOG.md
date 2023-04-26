@@ -1,3 +1,10 @@
+## [0.312.3](https://github.com/teamkeel/keel/compare/v0.312.2...v0.312.3) (2023-04-26)
+
+
+### Bug Fixes
+
+* support notEquals operator ([#934](https://github.com/teamkeel/keel/issues/934)) ([d6e60e2](https://github.com/teamkeel/keel/commit/d6e60e28cbde4aebb91c316107edbf433f130df1))
+
 ## [0.312.2](https://github.com/teamkeel/keel/compare/v0.312.1...v0.312.2) (2023-04-26)
 
 
