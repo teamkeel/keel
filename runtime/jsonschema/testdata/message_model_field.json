@@ -1,0 +1,38 @@
+{
+    "additionalProperties": false,
+    "components": {
+        "schemas": {
+            "Person": {
+                "properties": {
+                    "createdAt": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "format": "date-time",
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    },
+    "properties": {
+        "people": {
+            "items": {
+                "$ref": "#/components/schemas/Person"
+            },
+            "type": "array"
+        },
+        "person": {
+            "$ref": "#/components/schemas/Person"
+        }
+    },
+    "required": [
+        "person",
+        "people"
+    ],
+    "type": "object"
+}

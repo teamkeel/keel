@@ -1,12 +1,25 @@
+model Address {
+    fields {
+        addressLine1 Text
+        town Text
+    }
+}
+
 model Customer {
     fields {
         name Text
         dateOfBirth Date
+        address Address
     }
 
     operations {
         get getCustomer(id)
-        create createCustomer() with (name, dateOfBirth)
+        create createCustomer() with (
+            name,
+            dateOfBirth,
+            address.addressLine1,
+            address.town,
+        )
         update updateCustomer(id) with (name?, dateOfBirth?)
         list customers(name?)
     }

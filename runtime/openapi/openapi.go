@@ -52,6 +52,35 @@ type MediaTypeObject struct {
 	Schema jsonschema.JSONSchema `json:"schema,omitempty"`
 }
 
+var (
+	responseErrorSchema = jsonschema.JSONSchema{
+		Properties: map[string]jsonschema.JSONSchema{
+			"code": {
+				Type: "string",
+			},
+			"message": {
+				Type: "string",
+			},
+			"data": {
+				Type: []string{"object", "null"},
+				Properties: map[string]jsonschema.JSONSchema{
+					"errors": {
+						Type: "array",
+						Properties: map[string]jsonschema.JSONSchema{
+							"error": {
+								Type: "string",
+							},
+							"field": {
+								Type: "string",
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+)
+
 // Generate creates an OpenAPI 3.1 spec for the passed api.
 func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI {
 	spec := OpenAPI{
@@ -74,15 +103,25 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 		}
 
 		for _, op := range model.Operations {
-			opSchema := jsonschema.JSONSchemaForOperation(ctx, schema, op)
+			inputSchema := jsonschema.JSONSchemaForOperationInput(ctx, schema, op)
 			endpoint := fmt.Sprintf("/%s/json/%s", strings.ToLower(api.Name), op.Name)
 
 			// Merge components from this request schema into OpenAPI components
-			if opSchema.Components != nil {
-				for name, comp := range opSchema.Components.Schemas {
+			if inputSchema.Components != nil {
+				for name, comp := range inputSchema.Components.Schemas {
 					components.Schemas[name] = comp
 				}
-				opSchema.Components = nil
+				inputSchema.Components = nil
+			}
+
+			responseSchema := jsonschema.JSONSchemaForOperationResponse(ctx, schema, op)
+
+			if responseSchema.Components != nil {
+				for name, comp := range responseSchema.Components.Schemas {
+					components.Schemas[name] = comp
+				}
+
+				responseSchema.Components = nil
 			}
 
 			spec.Paths[endpoint] = PathItemObject{
@@ -92,18 +131,27 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 						Description: op.Name + " Request",
 						Content: map[string]MediaTypeObject{
 							"application/json": {
-								Schema: opSchema,
+								Schema: inputSchema,
 							},
 						},
 					},
 					Responses: map[string]ResponseObject{
 						"200": {
 							Description: op.Name + " Response",
-							Content:     map[string]MediaTypeObject{
-								// TODO add response schema
+							Content: map[string]MediaTypeObject{
+								"application/json": {
+									Schema: responseSchema,
+								},
 							},
 						},
-						// TODO: add possible errors
+						"400": {
+							Description: op.Name + " Response Errors",
+							Content: map[string]MediaTypeObject{
+								"application/json": {
+									Schema: responseErrorSchema,
+								},
+							},
+						},
 					},
 				},
 			}

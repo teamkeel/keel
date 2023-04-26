@@ -1,0 +1,38 @@
+message Meta {
+  creatorUsername Text
+}
+
+message UploadInput {
+  people Person[]
+  meta Meta
+}
+
+message UploadOutput {
+  createdCount Number
+  meta Meta
+}
+
+message SearchInput {
+  funnyName Text
+}
+
+message SearchOutput {
+  people Person[]
+}
+
+model Person {
+  fields {
+    name Text
+  }
+
+  functions {
+    write upload(UploadInput) returns(UploadOutput)
+    read search(SearchInput) returns(SearchOutput)
+  }
+}
+
+api Web {
+  models {
+    Person
+  }
+}

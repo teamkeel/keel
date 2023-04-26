@@ -1,0 +1,750 @@
+{
+    "components": {
+        "schemas": {
+            "Customer": {
+                "properties": {
+                    "addressId": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "dateOfBirth": {
+                        "format": "date-time",
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "updatedAt": {
+                        "format": "date-time",
+                        "type": "string"
+                    }
+                }
+            },
+            "nullable_customers_where": {
+                "additionalProperties": false,
+                "properties": {
+                    "name": {
+                        "$ref": "#/components/schemas/nullable_StringQuery_input"
+                    }
+                },
+                "type": [
+                    "object",
+                    "null"
+                ]
+            },
+            "EmailPassword_input": {
+                "additionalProperties": false,
+                "properties": {
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "type": "object"
+            },
+            "createCustomer_address_input": {
+                "additionalProperties": false,
+                "properties": {
+                    "addressLine1": {
+                        "type": "string"
+                    },
+                    "town": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "addressLine1",
+                    "town"
+                ],
+                "type": "object"
+            },
+            "nullable_StringQuery_input": {
+                "additionalProperties": false,
+                "properties": {
+                    "contains": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "endsWith": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "equals": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "oneOf": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": [
+                            "array",
+                            "null"
+                        ]
+                    },
+                    "startsWith": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "type": [
+                    "object",
+                    "null"
+                ]
+            },
+            "nullable_updateCustomer_values": {
+                "additionalProperties": false,
+                "properties": {
+                    "dateOfBirth": {
+                        "format": "date-time",
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "name": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    }
+                },
+                "type": [
+                    "object",
+                    "null"
+                ]
+            },
+            "updateCustomer_where": {
+                "additionalProperties": false,
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id"
+                ],
+                "type": "object"
+            }
+        }
+    },
+    "info": {
+        "title": "Web",
+        "version": "1"
+    },
+    "openapi": "3.1.0",
+    "paths": {
+        "/web/json/authenticate": {
+            "post": {
+                "operationId": "authenticate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "createIfNotExists": {
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
+                                    },
+                                    "emailPassword": {
+                                        "$ref": "#/components/schemas/EmailPassword_input"
+                                    }
+                                },
+                                "required": [
+                                    "emailPassword"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "authenticate Request"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "identityCreated": {
+                                            "type": "boolean"
+                                        },
+                                        "token": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "identityCreated",
+                                        "token"
+                                    ],
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "authenticate Response"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "authenticate Response Errors"
+                    }
+                }
+            }
+        },
+        "/web/json/createCustomer": {
+            "post": {
+                "operationId": "createCustomer",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "address": {
+                                        "$ref": "#/components/schemas/createCustomer_address_input"
+                                    },
+                                    "dateOfBirth": {
+                                        "format": "date-time",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "dateOfBirth",
+                                    "address"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "createCustomer Request"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        },
+                        "description": "createCustomer Response"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "createCustomer Response Errors"
+                    }
+                }
+            }
+        },
+        "/web/json/customers": {
+            "post": {
+                "operationId": "customers",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "after": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "before": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
+                                    },
+                                    "first": {
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
+                                    },
+                                    "last": {
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
+                                    },
+                                    "where": {
+                                        "$ref": "#/components/schemas/nullable_customers_where"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "customers Request"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "pageInfo": {
+                                            "properties": {
+                                                "count": {
+                                                    "type": "number"
+                                                },
+                                                "endCursor": {
+                                                    "type": "string"
+                                                },
+                                                "hasNextPage": {
+                                                    "type": "boolean"
+                                                },
+                                                "startCursor": {
+                                                    "type": "string"
+                                                },
+                                                "totalCount": {
+                                                    "type": "number"
+                                                }
+                                            }
+                                        },
+                                        "results": {
+                                            "items": {
+                                                "$ref": "#/components/schemas/Customer"
+                                            },
+                                            "type": "array"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "customers Response"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "customers Response Errors"
+                    }
+                }
+            }
+        },
+        "/web/json/getCustomer": {
+            "post": {
+                "operationId": "getCustomer",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "id": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "id"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "getCustomer Request"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        },
+                        "description": "getCustomer Response"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "getCustomer Response Errors"
+                    }
+                }
+            }
+        },
+        "/web/json/resetPassword": {
+            "post": {
+                "operationId": "resetPassword",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "password": {
+                                        "type": "string"
+                                    },
+                                    "token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "token",
+                                    "password"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "resetPassword Request"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": false,
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "resetPassword Response"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "resetPassword Response Errors"
+                    }
+                }
+            }
+        },
+        "/web/json/requestPasswordReset": {
+            "post": {
+                "operationId": "requestPasswordReset",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "email": {
+                                        "type": "string"
+                                    },
+                                    "redirectUrl": {
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "email",
+                                    "redirectUrl"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "requestPasswordReset Request"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "additionalProperties": false,
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "description": "requestPasswordReset Response"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "requestPasswordReset Response Errors"
+                    }
+                }
+            }
+        },
+        "/web/json/updateCustomer": {
+            "post": {
+                "operationId": "updateCustomer",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "values": {
+                                        "$ref": "#/components/schemas/nullable_updateCustomer_values"
+                                    },
+                                    "where": {
+                                        "$ref": "#/components/schemas/updateCustomer_where"
+                                    }
+                                },
+                                "required": [
+                                    "where"
+                                ],
+                                "type": "object"
+                            }
+                        }
+                    },
+                    "description": "updateCustomer Request"
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        },
+                        "description": "updateCustomer Response"
+                    },
+                    "400": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "errors": {
+                                                    "properties": {
+                                                        "error": {
+                                                            "type": "string"
+                                                        },
+                                                        "field": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": [
+                                                "object",
+                                                "null"
+                                            ]
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "description": "updateCustomer Response Errors"
+                    }
+                }
+            }
+        }
+    }
+}
