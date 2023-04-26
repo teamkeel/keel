@@ -1,3 +1,10 @@
+## [0.312.2](https://github.com/teamkeel/keel/compare/v0.312.1...v0.312.2) (2023-04-26)
+
+
+### Bug Fixes
+
+* hasNextPage bug ([#936](https://github.com/teamkeel/keel/issues/936)) ([5090415](https://github.com/teamkeel/keel/commit/509041596d10bdce8f56f0c7bdf294986685077e))
+
 ## [0.312.1](https://github.com/teamkeel/keel/compare/v0.312.0...v0.312.1) (2023-04-26)
 
 
