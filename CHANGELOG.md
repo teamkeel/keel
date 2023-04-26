@@ -1,3 +1,10 @@
+# [0.313.0](https://github.com/teamkeel/keel/compare/v0.312.3...v0.313.0) (2023-04-26)
+
+
+### Features
+
+* private key run argument ([#935](https://github.com/teamkeel/keel/issues/935)) ([bbebd2e](https://github.com/teamkeel/keel/commit/bbebd2e721a6565b87125f3cbcbc255a75bc54cf))
+
 ## [0.312.3](https://github.com/teamkeel/keel/compare/v0.312.2...v0.312.3) (2023-04-26)
 
 
