@@ -89,7 +89,9 @@ type Model struct {
 	// If set then runtime will be configured with private key
 	// located at this path in pem format.
 	PrivateKeyPath string
-	PrivateKey     *rsa.PrivateKey
+
+	// The private key to configure on runtime, or nil.
+	PrivateKey *rsa.PrivateKey
 
 	// Pattern to pass to vitest to isolate specific tests
 	TestPattern string

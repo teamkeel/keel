@@ -104,8 +104,6 @@ type ParsePrivateKeyMsg struct {
 func ParsePrivateKey(path string) tea.Cmd {
 	return func() tea.Msg {
 		if path != "" {
-			//os.File
-
 			privateKeyPem, err := os.ReadFile(path)
 			if errors.Is(err, os.ErrNotExist) {
 				return ParsePrivateKeyMsg{
