@@ -20,6 +20,7 @@ var testCmd = &cobra.Command{
 			ProjectDir:       flagProjectDir,
 			Port:             port,
 			NodePackagesPath: flagNodePackagesPath,
+			PrivateKeyPath:   flagPrivateKeyPath,
 			TestPattern:      flagPattern,
 		})
 	},
@@ -29,6 +30,7 @@ func init() {
 	rootCmd.AddCommand(testCmd)
 
 	testCmd.Flags().StringVarP(&flagPattern, "pattern", "p", "(.*)", "pattern to isolate test")
+	testCmd.Flags().StringVar(&flagPrivateKeyPath, "private-key-path", "", "path to the private key .pem file")
 
 	if Debug {
 		testCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
