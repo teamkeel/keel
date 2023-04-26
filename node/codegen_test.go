@@ -1074,6 +1074,7 @@ import "@teamkeel/testing-runtime";
 
 export interface HobbyQuery_input {
 	equals?: Hobby | null;
+	notEquals?: Hobby | null;
 	oneOf?: Hobby[] | null;
 }
 export interface peopleByHobby_where {
