@@ -82,7 +82,7 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 	case parser.KeywordMessage:
 		return getMessageFieldCompletions(ast, tokenAtPos)
 	case parser.KeywordOperations, parser.KeywordFunctions:
-		return getActionCompletions(ast, tokenAtPos)
+		return getActionCompletions(ast, tokenAtPos, enclosingBlock)
 	case parser.KeywordModels:
 		// models block inside an api block - complete with model names
 		return getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordModel)
@@ -297,7 +297,7 @@ func getFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Compl
 	)
 }
 
-func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
+func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition, enclosingBlock string) []*CompletionItem {
 	// if we are inside enclosing parenthesis then we are completing for
 	// action inputs, or for returns
 	if tokenAtPos.StartOfParen() != nil {
@@ -324,6 +324,18 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 		}
 	}
 
+	prev, _ = tokenAtPos.FindPrevMultipleOnLine(
+		parser.ActionTypeDelete,
+		parser.ActionTypeGet,
+		parser.ActionTypeList,
+		parser.KeywordWith,
+	)
+	// if we're delete, list or get action type and have completed our parenthesis, or there is already a `with`
+	// clause on this line then there are no further completions that are valid. Return empty list.
+	if tokenAtPos.Prev().EndOfParen() != nil && prev != "" {
+		return []*CompletionItem{}
+	}
+
 	// to see if we should provide attribute completions we see if we're inside an
 	// individual actions block or if the current or previous token is the "@"
 	inActionBlock := tokenAtPos.ValueAt(-1) == "{" && tokenAtPos.ValueAt(-2) == ")"
@@ -338,7 +350,6 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 	}
 
 	// current token is action name - can't auto-complete
-
 	if lo.Contains(append(parser.OperationActionTypes, parser.FunctionActionTypes...), tokenAtPos.ValueAt(-1)) {
 		modelName := getParentModelName(tokenAtPos)
 		actionType := tokenAtPos.ValueAt(-1)
@@ -351,16 +362,22 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Comp
 		}}
 	}
 
-	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
-	isNewLine := tokenAtPos.Line() > tokenAtPos.Prev().Line()
+	isNewLine := tokenAtPos.IsNewLine()
+	isEndOfParen := tokenAtPos.Prev().EndOfParen() != nil
 
 	return lo.Filter(actionBlockKeywords, func(i *CompletionItem, _ int) bool {
 		keep := true
+		// if we're not a function them remove `read` and `write`
 		if enclosingBlock != parser.KeywordFunctions {
 			keep = i.Label != parser.ActionTypeRead && i.Label != parser.ActionTypeWrite
 		}
+		// if we're at the start of a new line then we should remove `with`
+		// if we're not on a new line and the last token is a closing parenthesis and we haven't got another
+		// `with` on this line then the only valid completion is `with`
 		if isNewLine {
 			return keep && i.Label != parser.KeywordWith
+		} else if isEndOfParen {
+			return i.Label == parser.KeywordWith
 		}
 		return keep
 	})

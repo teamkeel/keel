@@ -165,6 +165,44 @@ func (t *TokensAtPosition) FindPrevMultiple(values ...string) (string, *TokensAt
 	}
 }
 
+func (t *TokensAtPosition) FindPrevMultipleOnLine(values ...string) (string, *TokensAtPosition) {
+	currentToken := t
+	for {
+		for _, value := range values {
+			if t.Value() == value {
+				return value, t
+			}
+		}
+
+		t = t.Prev()
+		if t == nil || currentToken.Line() > t.Line() {
+			return "", nil
+		}
+	}
+}
+
+/**
+* Find a previous token with a given value on the same line as the current token
+**/
+func (t *TokensAtPosition) FindPrevOnLine(value string) *TokensAtPosition {
+	prev := t.FindPrev(value)
+	if prev.Line() == t.Line() {
+		return prev
+	}
+	return nil
+}
+
+/**
+* Find a previous token with a given value on the same line the given offset
+**/
+func (t *TokensAtPosition) FindPrevOnLineAt(value string, offset int) *TokensAtPosition {
+	prev := t.FindPrev(value)
+	if prev.Line() == offset {
+		return prev
+	}
+	return nil
+}
+
 func (t *TokensAtPosition) Is(others ...*TokensAtPosition) bool {
 	if t == nil {
 		return false
@@ -181,6 +219,13 @@ func (t *TokensAtPosition) Is(others ...*TokensAtPosition) bool {
 	}
 
 	return false
+}
+
+/**
+* Returns true of the current token is at the beginning of a new line
+**/
+func (t *TokensAtPosition) IsNewLine() bool {
+	return t.Line() > t.Prev().Line()
 }
 
 func (t *TokensAtPosition) StartOfBlock() *TokensAtPosition {

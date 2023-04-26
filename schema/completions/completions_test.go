@@ -191,7 +191,7 @@ func TestCompletions(t *testing.T) {
 			name: "field-type-complex",
 			schema: `
 			model Foo {
-              fields {
+	          fields {
 				optionalNumber Number[]
 				things Text[]
 				some Boolean @default(false)
@@ -345,7 +345,7 @@ func TestCompletions(t *testing.T) {
                 create createA() wi<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.OperationActionTypes...),
+			expected: []string{"with"},
 		},
 		{
 			name: "with-keyword-whitespace",
@@ -354,8 +354,21 @@ func TestCompletions(t *testing.T) {
               operations {
                 create createA() <Cursor>
 			  }
+	        }`,
+			expected: []string{"with"},
+		},
+		{
+			name: "with-end-of-line",
+			schema: `
+			model A {
+			  fields {
+				name Text
+			  }
+	          operations {
+	            create createA() with (name) <Cursor>
+			  }
             }`,
-			expected: append([]string{"with"}, parser.OperationActionTypes...),
+			expected: []string{},
 		},
 		{
 			name: "action-attributes",
@@ -983,7 +996,7 @@ func TestCompletions(t *testing.T) {
 					create createPerson() <Cursor>
 				}
 			}`,
-			expected: append([]string{"with"}, parser.FunctionActionTypes...),
+			expected: []string{"with"},
 		},
 		{
 			name: "arbitrary-function-create-partial-with-completion",
@@ -993,7 +1006,7 @@ func TestCompletions(t *testing.T) {
 					create createPerson() w<Cursor>
 				}
 			}`,
-			expected: append([]string{"with"}, parser.FunctionActionTypes...),
+			expected: []string{"with"},
 		},
 		{
 			name: "arbitrary-function-update-with-completion",
@@ -1003,7 +1016,7 @@ func TestCompletions(t *testing.T) {
 					update updatePerson() <Cursor>
 				}
 			}`,
-			expected: append([]string{"with"}, parser.FunctionActionTypes...),
+			expected: []string{"with"},
 		},
 		{
 			name: "arbitrary-function-update-partial-with-completion",
@@ -1013,7 +1026,7 @@ func TestCompletions(t *testing.T) {
 					update updatePerson() w<Cursor>
 				}
 			}`,
-			expected: append([]string{"with"}, parser.FunctionActionTypes...),
+			expected: []string{"with"},
 		},
 	}
 
