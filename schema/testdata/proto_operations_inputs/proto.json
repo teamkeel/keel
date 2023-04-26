@@ -256,6 +256,13 @@
           "optional": true
         },
         {
+          "name": "notEquals",
+          "type": {
+            "type": "TYPE_INT"
+          },
+          "optional": true
+        },
+        {
           "name": "lessThan",
           "type": {
             "type": "TYPE_INT"
