@@ -1,16 +1,24 @@
 model Person {
     fields {
         name Text
+        company Company
     }
 
     operations {
-        get getPerson(id)
         update updatePerson(id) with (name)
+        update updatePersonCompany(id) with (company.id)
+    }
+}
+
+model Company {
+    fields {
+        name Text
     }
 }
 
 api Test {
     models {
         Person
+        Company
     }
 }

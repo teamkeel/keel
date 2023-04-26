@@ -1,11 +1,11 @@
 type Query {
   _health: Boolean
-  getPerson(input: getPerson_input!): Person
 }
 
 type Mutation {
   authenticate(input: authenticate_input!): authenticate_response
   createPerson(input: createPerson_input!): Person!
+  createPersonAndCompany(input: createPersonAndCompany_input!): Person!
   requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
   resetPassword(input: resetPassword_input!): resetPassword_response
 }
@@ -20,12 +20,22 @@ input authenticate_input {
   emailPassword: EmailPassword_input!
 }
 
-input createPerson_input {
+input createPersonAndCompany_company_input {
   name: String!
 }
 
-input getPerson_input {
+input createPersonAndCompany_input {
+  company: createPersonAndCompany_company_input!
+  name: String!
+}
+
+input createPerson_company_input {
   id: ID!
+}
+
+input createPerson_input {
+  company: createPerson_company_input!
+  name: String!
 }
 
 input requestPasswordReset_input {
@@ -38,7 +48,16 @@ input resetPassword_input {
   token: String!
 }
 
+type Company {
+  createdAt: Timestamp!
+  id: ID!
+  name: String!
+  updatedAt: Timestamp!
+}
+
 type Person {
+  company: Company!
+  companyId: ID!
   createdAt: Timestamp!
   id: ID!
   name: String!

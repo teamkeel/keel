@@ -1,11 +1,18 @@
 model Person {
     fields {
         name Text
+        company Company
     }
 
     operations {
-        get getPerson(id)
-        create createPerson() with (name)
+        create createPerson() with (name, company.id)
+        create createPersonAndCompany() with (name, company.name)
+    }
+}
+
+model Company {
+    fields {
+        name Text
     }
 }
 
