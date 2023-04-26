@@ -424,9 +424,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			Name:   makeValuesMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{},
 		}
-		//valuesMessage := scm.makeMessageFromActionInputNodes(valuesMessageName, action.With, model, action, impl)
 		scm.proto.Messages = append(scm.proto.Messages, valuesMessage)
-
 		for _, input := range action.With {
 			if input.Label == nil {
 				// If its an implicit input, then create a nested object input structure.
