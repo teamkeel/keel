@@ -736,6 +736,9 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 	case field.Type.Type == proto.Type_TYPE_MESSAGE:
 		messageName := field.Type.MessageName.Value
 		message := proto.FindMessage(mk.proto.Messages, messageName)
+		if message == nil {
+			return nil, fmt.Errorf("message does not exist: %s", messageName)
+		}
 
 		if len(message.Fields) == 0 {
 			break

@@ -85,3 +85,28 @@ test("create relationships - create 1:M and create M:1", async () => {
   expect(orderItemForProduct2[0].quantity).toEqual(15);
   expect(orderItemForProduct2[0].price).toEqual(2);
 });
+
+test("update relationships - update related model", async () => {
+  const customer1 = await models.customer.create({
+    name: "Madonna",
+  });
+
+  const customer2 = await models.customer.create({
+    name: "Elvis Presly",
+  });
+
+  const order = await actions.createOrder({
+    onPromotion: true,
+    customer: { id: customer1.id },
+    items: [],
+  });
+
+  expect(order.customerId).toEqual(customer1.id);
+
+  const orderUpdated = await actions.updateOrderCustomer({
+    where: { id: order.id },
+    values: { customer: { id: customer2.id } },
+  });
+
+  expect(orderUpdated.customerId).toEqual(customer2.id);
+});
