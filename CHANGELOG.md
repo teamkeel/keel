@@ -1,3 +1,12 @@
+## [0.312.1](https://github.com/teamkeel/keel/compare/v0.312.0...v0.312.1) (2023-04-26)
+
+
+### Bug Fixes
+
+* oneOf operator for Number type ([#933](https://github.com/teamkeel/keel/issues/933)) ([6493060](https://github.com/teamkeel/keel/commit/6493060fe14e6fadbdfbe4e01b9252117fbea033))
+* use MaxWidth and MaxHeight to constrain content based on term dimensions ([#932](https://github.com/teamkeel/keel/issues/932)) ([a100b88](https://github.com/teamkeel/keel/commit/a100b88066707167107f4d9e08fd4415b4047c71))
+* use never for result of permissions.deny() ([#931](https://github.com/teamkeel/keel/issues/931)) ([4763447](https://github.com/teamkeel/keel/commit/47634479baf952e1a10f80a49424431c55f642ec))
+
 # [0.312.0](https://github.com/teamkeel/keel/compare/v0.311.0...v0.312.0) (2023-04-25)
 
 
