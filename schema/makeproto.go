@@ -263,6 +263,14 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 				},
 			},
 			{
+				Name:     "notEquals",
+				Optional: true,
+				Type: &proto.TypeInfo{
+					Type:     typeInfo.Type,
+					EnumName: typeInfo.EnumName,
+				},
+			},
+			{
 				Name:     "oneOf",
 				Optional: true,
 				Type: &proto.TypeInfo{

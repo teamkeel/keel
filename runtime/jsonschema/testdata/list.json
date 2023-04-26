@@ -46,6 +46,13 @@
               null
             ]
           },
+          "notEquals": {
+            "enum": [
+                "Tennis",
+                "Chess",
+                null
+            ]
+          },
           "oneOf": {
             "type": [
 							"array",
@@ -106,6 +113,13 @@
               "Tennis",
               "Chess",
               null
+            ]
+          },
+          "notEquals": {
+            "enum": [
+                "Tennis",
+                "Chess",
+                null
             ]
           },
           "oneOf": {

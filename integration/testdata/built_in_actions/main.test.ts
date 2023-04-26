@@ -80,6 +80,28 @@ test("list action - notEquals with number", async () => {
   expect(posts.results[0].title).toEqual("orange");
 });
 
+test("list action - notEquals with enum", async () => {
+  await models.post.create({
+    title: "pear",
+    category: Category.Technical,
+    subTitle: "lmn",
+  });
+  await models.post.create({
+    title: "mango",
+    category: Category.Lifestyle,
+    subTitle: "mno",
+  });
+
+  const posts = await actions.listPosts({
+    where: {
+      category: { notEquals: Category.Lifestyle },
+    },
+  });
+
+  expect(posts.results.length).toEqual(1);
+  expect(posts.results[0].category).toEqual(Category.Technical);
+});
+
 test("list action - notEquals with ID", async () => {
   const otherPost = await models.post.create({
     title: "apple",
