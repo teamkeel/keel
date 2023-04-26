@@ -1,3 +1,10 @@
+## [0.313.1](https://github.com/teamkeel/keel/compare/v0.313.0...v0.313.1) (2023-04-26)
+
+
+### Bug Fixes
+
+* Ensure correct use of with in autocompletions. ([#929](https://github.com/teamkeel/keel/issues/929)) ([adf7344](https://github.com/teamkeel/keel/commit/adf734448a09de0982fd60f2a66dac848b8ccf85))
+
 # [0.313.0](https://github.com/teamkeel/keel/compare/v0.312.3...v0.313.0) (2023-04-26)
 
 
