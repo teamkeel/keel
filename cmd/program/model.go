@@ -437,8 +437,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *Model) View() string {
 	b := strings.Builder{}
 
-	// lipgloss will automatically wrap any text based on the current dimensions of the user's term
-	s := lipgloss.NewStyle().Width(m.width).Height(m.height)
+	// lipgloss will automatically wrap any text based on the current dimensions of the user's term.
+	s := lipgloss.
+		NewStyle().
+		MaxWidth(m.width).
+		MaxHeight(m.height)
 
 	// Mode specific output
 	switch m.Mode {
