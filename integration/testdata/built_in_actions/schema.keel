@@ -1,6 +1,7 @@
 model Post {
     fields {
         title Text
+        rating Number?
         category Category?
         subTitle Text @unique
     }
@@ -11,7 +12,7 @@ model Post {
         update updatePost(id) with (title)
         delete deletePost(id)
         delete deletePostBySubTitle(subTitle)
-        list listPosts(title?, category?)
+        list listPosts(id?, title?, category?, rating?)
         update updateWithExplicitSet(id) with (coolTitle: Text) {
             @set(post.title = coolTitle)
         }

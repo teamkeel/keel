@@ -518,6 +518,11 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"title": {"equals": "Great Gatsby"}}}`,
 				},
 				{
+					name:    "valid - text not equals",
+					opName:  "listBooks",
+					request: `{"where": {"title": {"notEquals": "Great Gatsby"}}}`,
+				},
+				{
 					name:    "valid - text starts with",
 					opName:  "listBooks",
 					request: `{"where": {"title": {"startsWith": "Great Gatsby"}}}`,
@@ -556,6 +561,11 @@ func TestValidateRequest(t *testing.T) {
 					name:    "valid - number equals",
 					opName:  "listBooks",
 					request: `{"where": {"price": {"equals": 10}}}`,
+				},
+				{
+					name:    "valid - number not equals",
+					opName:  "listBooks",
+					request: `{"where": {"price": {"notEquals": 10}}}`,
 				},
 				{
 					name:    "valid - number less than",

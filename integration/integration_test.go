@@ -116,15 +116,17 @@ func TestIntegration(t *gotest.T) {
 			})
 			require.NoError(t, err)
 
-			if !output.Success {
-				if functionOutput.Len() > 0 {
-					fmt.Println("=== Custom Functions Output ===")
-					fmt.Println(functionOutput.String())
-					fmt.Println("===============================")
-				}
-				fmt.Println("=== Vitest Output ===")
-				fmt.Println(output.Output)
+			if functionOutput.Len() > 0 {
+				fmt.Println("=== Custom Functions Output ===")
+				fmt.Println(functionOutput.String())
 				fmt.Println("===============================")
+			}
+			fmt.Println("=== Vitest Output ===")
+			fmt.Println(output.Output)
+			fmt.Println("===============================")
+
+			if !output.Success {
+
 				t.Fail()
 			}
 		})

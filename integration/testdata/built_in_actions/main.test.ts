@@ -53,6 +53,77 @@ test("list action - equals", async () => {
   expect(posts.results.length).toEqual(2);
 });
 
+test("list action - notEquals with string", async () => {
+  await models.post.create({ title: "apple", subTitle: "def" });
+  await models.post.create({ title: "orange", subTitle: "efg" });
+
+  const posts = await actions.listPosts({
+    where: {
+      title: { notEquals: "apple" },
+    },
+  });
+
+  expect(posts.results.length).toEqual(1);
+});
+
+test("list action - notEquals with number", async () => {
+  await models.post.create({ title: "apple", subTitle: "def", rating: 10 });
+  await models.post.create({ title: "orange", subTitle: "efg", rating: 9 });
+
+  const posts = await actions.listPosts({
+    where: {
+      rating: { notEquals: 10 },
+    },
+  });
+
+  expect(posts.results.length).toEqual(1);
+  expect(posts.results[0].title).toEqual("orange");
+});
+
+test("list action - notEquals with enum", async () => {
+  await models.post.create({
+    title: "pear",
+    category: Category.Technical,
+    subTitle: "lmn",
+  });
+  await models.post.create({
+    title: "mango",
+    category: Category.Lifestyle,
+    subTitle: "mno",
+  });
+
+  const posts = await actions.listPosts({
+    where: {
+      category: { notEquals: Category.Lifestyle },
+    },
+  });
+
+  expect(posts.results.length).toEqual(1);
+  expect(posts.results[0].category).toEqual(Category.Technical);
+});
+
+test("list action - notEquals with ID", async () => {
+  const otherPost = await models.post.create({
+    title: "apple",
+    subTitle: "def",
+    rating: 10,
+  });
+  const post = await models.post.create({
+    title: "orange",
+    subTitle: "efg",
+    rating: 9,
+  });
+
+  const posts = await actions.listPosts({
+    where: {
+      id: { notEquals: post.id },
+    },
+  });
+
+  expect(posts.results.length).toEqual(1);
+  expect(posts.results[0].id).toEqual(otherPost.id);
+});
+
 test("list action - contains", async () => {
   await models.post.create({ title: "banan", subTitle: "fgh" });
   await models.post.create({ title: "banana", subTitle: "ghi" });

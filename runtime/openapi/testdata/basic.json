@@ -91,6 +91,12 @@
                             "null"
                         ]
                     },
+                    "notEquals": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "oneOf": {
                         "items": {
                             "type": "string"

@@ -43,6 +43,8 @@ func graphQlOperatorToActionOperator(in string) (out ActionOperator, err error) 
 	switch in {
 	case "equals":
 		return Equals, nil
+	case "notEquals":
+		return NotEquals, nil
 	case "startsWith":
 		return StartsWith, nil
 	case "endsWith":
