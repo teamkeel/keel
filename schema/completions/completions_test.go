@@ -191,7 +191,7 @@ func TestCompletions(t *testing.T) {
 			name: "field-type-complex",
 			schema: `
 			model Foo {
-              fields {
+	          fields {
 				optionalNumber Number[]
 				things Text[]
 				some Boolean @default(false)
@@ -296,6 +296,16 @@ func TestCompletions(t *testing.T) {
 			expected: []string{"@permission", "fields", "functions", "operations"},
 		},
 		{
+			name: "operations-action-type-completions",
+			schema: `
+			model A {
+				operations {
+					<Cursor>
+				}
+			}`,
+			expected: parser.OperationActionTypes,
+		},
+		{
 			name: "create-keyword",
 			schema: `
 			model A {
@@ -303,7 +313,7 @@ func TestCompletions(t *testing.T) {
                 c<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.OperationActionTypes...),
+			expected: parser.OperationActionTypes,
 		},
 		{
 			name: "create-keyword-not-first",
@@ -314,7 +324,7 @@ func TestCompletions(t *testing.T) {
                 crea<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.OperationActionTypes...),
+			expected: parser.OperationActionTypes,
 		},
 		{
 			name: "get-keyword",
@@ -325,7 +335,7 @@ func TestCompletions(t *testing.T) {
                 g<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.OperationActionTypes...),
+			expected: parser.OperationActionTypes,
 		},
 		{
 			name: "with-keyword",
@@ -335,7 +345,7 @@ func TestCompletions(t *testing.T) {
                 create createA() wi<Cursor>
 			  }
             }`,
-			expected: append([]string{"with"}, parser.OperationActionTypes...),
+			expected: []string{"with"},
 		},
 		{
 			name: "with-keyword-whitespace",
@@ -344,8 +354,21 @@ func TestCompletions(t *testing.T) {
               operations {
                 create createA() <Cursor>
 			  }
+	        }`,
+			expected: []string{"with"},
+		},
+		{
+			name: "with-end-of-line",
+			schema: `
+			model A {
+			  fields {
+				name Text
+			  }
+	          operations {
+	            create createA() with (name) <Cursor>
+			  }
             }`,
-			expected: append([]string{"with"}, parser.OperationActionTypes...),
+			expected: []string{},
 		},
 		{
 			name: "action-attributes",
@@ -964,6 +987,46 @@ func TestCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"Any", "createdAt", "id", "updatedAt"},
+		},
+		{
+			name: "arbitrary-function-create-with-completion",
+			schema: `
+			model Person {
+				functions {
+					create createPerson() <Cursor>
+				}
+			}`,
+			expected: []string{"with"},
+		},
+		{
+			name: "arbitrary-function-create-partial-with-completion",
+			schema: `
+			model Person {
+				functions {
+					create createPerson() w<Cursor>
+				}
+			}`,
+			expected: []string{"with"},
+		},
+		{
+			name: "arbitrary-function-update-with-completion",
+			schema: `
+			model Person {
+				functions {
+					update updatePerson() <Cursor>
+				}
+			}`,
+			expected: []string{"with"},
+		},
+		{
+			name: "arbitrary-function-update-partial-with-completion",
+			schema: `
+			model Person {
+				functions {
+					update updatePerson() w<Cursor>
+				}
+			}`,
+			expected: []string{"with"},
 		},
 	}
 
