@@ -79,6 +79,15 @@
           },
           "lessThanOrEquals": {
             "type": ["number", "null"]
+          },
+          "oneOf": {
+            "items": {
+                "type": "number"
+            },
+            "type": [
+                "array",
+                "null"
+            ]
           }
         },
         "type": "object"

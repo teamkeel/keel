@@ -1,4 +1,4 @@
-import { actions, models, resetDatabase } from "@teamkeel/testing";
+import { actions, models } from "@teamkeel/testing";
 import { test, expect, beforeAll } from "vitest";
 import { Status } from "@teamkeel/sdk";
 
@@ -198,4 +198,15 @@ test("listing one with all optional fields and required inputs", async () => {
 
   expect(respMatching.results.length).toEqual(1);
   expect(respMatching.results[0].text).toEqual("matching");
+});
+
+test("listing with number one of", async () => {
+  let resp = await actions.listOptionalInputs({
+    where: {
+      number: { oneOf: [100] },
+    },
+  });
+
+  expect(resp.results.length).toEqual(1);
+  expect(resp.results[0].text).toEqual("matching");
 });
