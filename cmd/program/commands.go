@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -103,14 +104,26 @@ type ParsePrivateKeyMsg struct {
 func ParsePrivateKey(path string) tea.Cmd {
 	return func() tea.Msg {
 		if path != "" {
+			//os.File
+
 			privateKeyPem, err := os.ReadFile(path)
-			if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
 				return ParsePrivateKeyMsg{
-					Err: err,
+					Err: fmt.Errorf("cannot locate private key file at: %s", path),
+				}
+			} else if err != nil {
+				return ParsePrivateKeyMsg{
+					Err: fmt.Errorf("cannot read private key file: %s", err.Error()),
 				}
 			}
 
 			privateKeyBlock, _ := pem.Decode(privateKeyPem)
+			if privateKeyBlock == nil {
+				return ParsePrivateKeyMsg{
+					Err: errors.New("private key PEM either invalid or empty"),
+				}
+			}
+
 			privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
 			if err != nil {
 				return ParsePrivateKeyMsg{
