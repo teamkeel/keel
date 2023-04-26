@@ -17,6 +17,7 @@ input EmailPassword_input {
 
 input IDQuery_input {
   equals: ID
+  notEquals: ID
   oneOf: [ID]
 }
 

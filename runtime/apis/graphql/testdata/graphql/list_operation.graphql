@@ -32,6 +32,7 @@ input StringQuery_input {
   contains: String
   endsWith: String
   equals: String
+  notEquals: String
   oneOf: [String]
   startsWith: String
 }

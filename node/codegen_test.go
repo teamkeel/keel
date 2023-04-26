@@ -479,6 +479,7 @@ model Person {
 	expected := `
 export interface StringQuery_input {
 	equals?: string | null;
+	notEquals?: string | null;
 	startsWith?: string | null;
 	endsWith?: string | null;
 	contains?: string | null;
@@ -520,6 +521,7 @@ model Person {
 	expected := `
 export interface StringQuery_input {
 	equals?: string | null;
+	notEquals?: string | null;
 	startsWith?: string | null;
 	endsWith?: string | null;
 	contains?: string | null;
