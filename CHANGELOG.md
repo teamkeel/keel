@@ -1,3 +1,10 @@
+## [0.313.2](https://github.com/teamkeel/keel/compare/v0.313.1...v0.313.2) (2023-04-26)
+
+
+### Bug Fixes
+
+* fix multline function logs from being garbled ([#938](https://github.com/teamkeel/keel/issues/938)) ([333bc0c](https://github.com/teamkeel/keel/commit/333bc0c5cff6ecb2b9eb7236dafb31351a760722))
+
 ## [0.313.1](https://github.com/teamkeel/keel/compare/v0.313.0...v0.313.1) (2023-04-26)
 
 
