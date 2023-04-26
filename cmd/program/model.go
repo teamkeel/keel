@@ -1,6 +1,7 @@
 package program
 
 import (
+	"crypto/rsa"
 	"io"
 	"net/http"
 	"os"
@@ -33,7 +34,8 @@ const (
 )
 
 const (
-	StatusSetupDatabase = iota
+	StatusParsePrivateKey = iota
+	StatusSetupDatabase
 	StatusSetupFunctions
 	StatusLoadSchema
 	StatusRunMigrations
@@ -83,6 +85,13 @@ type Model struct {
 	// If set then @teamkeel/* npm packages will be installed
 	// from this path, rather than NPM.
 	NodePackagesPath string
+
+	// If set then runtime will be configured with private key
+	// located at this path in pem format.
+	PrivateKeyPath string
+
+	// The private key to configure on runtime, or nil.
+	PrivateKey *rsa.PrivateKey
 
 	// Pattern to pass to vitest to isolate specific tests
 	TestPattern string
@@ -181,6 +190,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusSetupFunctions
+		return m, ParsePrivateKey(m.PrivateKeyPath)
+	case ParsePrivateKeyMsg:
+		m.Err = msg.Err
+
+		// If the private key can't be parsed we exit
+		if m.Err != nil {
+			return m, tea.Quit
+		}
+
+		m.Status = StatusParsePrivateKey
+		m.PrivateKey = msg.PrivateKey
+
 		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath)
 	case SetupFunctionsMsg:
 		m.Err = msg.Err
@@ -365,23 +386,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			panic(err.Error())
 		}
 
+		if m.PrivateKey != nil {
+			ctx = runtimectx.WithPrivateKey(ctx, m.PrivateKey)
+		}
+
 		ctx = runtimectx.WithDatabase(ctx, database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
-
-		// Uncomment this block to test the runtime with some specific private key:
-		//
-		// 		privateKeyPem := `-----BEGIN RSA PRIVATE KEY-----
-		// MIIBOwIBAAJBAIJzcO/QTlrM3rSDM1QkNqdkho/HruThLa/YmvET9SOfCM7N8DqC
-		// FZogdnUuiE8CW5DZee88XIOm0VM8gfmx3g0CAwEAAQJATARVdYnffw4PYQVrbcbE
-		// insL5tEn23xUkToZ4A4PNbfrBQdKa7MMnWZ8iYlK4e+d8xWxWDWcO7GgnheU2beN
-		// CQIhAMkpeKg5zCHnpE1wJb7faL2p72xLsydJ9b9IIPHj4gx/AiEApgM+oLHNgVy9
-		// +VGS8/eNtmQpXrkPhrPGCVFKR1htP3MCIQC9DAJeZmLXAjDArcJrTN3MUKW3KrUl
-		// GTagGxMLAFRx1QIgItm/hgCNgcC0aOiFDw5DA60XOjljVwXaZw5Xp46asJ0CIQCx
-		// 6q2Bx6Ien4Y/enxUphyRTd4HBG/doBYOEaZ21aeuFg==
-		// -----END RSA PRIVATE KEY-----`
-		// 		privateKeyBlock, _ := pem.Decode([]byte(privateKeyPem))
-		// 		privateKey, _ := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
-		//		ctx = runtimectx.WithPrivateKey(ctx, privateKey)
 
 		mailClient := mail.NewSMTPClientFromEnv()
 		if mailClient != nil {

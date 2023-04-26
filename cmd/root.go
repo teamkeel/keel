@@ -11,6 +11,7 @@ var (
 	flagReset            bool
 	flagPort             string
 	flagNodePackagesPath string
+	flagPrivateKeyPath   string
 	flagPattern          string
 )
 

@@ -99,6 +99,20 @@ tests from all the packages you can use the make command `make test-js`.
 go run cmd/keel/main.go [cmd] [args]
 ```
 
+### Configuring a private key in development
+
+The `-private-key-path` argument on the run command lets you pass in the path 
+to a file containing a private key in PEM format. This may be useful if you 
+need to perform development or testing with signed tokens.
+
+```bash
+go run cmd/keel/main.go run -private-key-path private-key.pem
+```
+
+You can generate a private key in PEM with `openssl genrsa -out private-key.pem 2048` 
+or using some online [RSA key generator](https://travistidwell.com/jsencrypt/demo/index.html).
+
+
 ### Building from source
 
 You can build the CLI by running:
