@@ -367,7 +367,7 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 
 					results, pageInfo, err := query.
 						SelectStatement().
-						ExecuteToMany(ctx)
+						ExecuteToMany(ctx, &page)
 
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))

@@ -3,7 +3,6 @@ package actions
 import (
 	"fmt"
 
-	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
@@ -73,14 +72,10 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Execute database request with results
-	results, pageInfo, err := statement.ExecuteToMany(scope.context)
+	results, pageInfo, err := statement.ExecuteToMany(scope.context, page)
 
 	if err != nil {
 		return nil, err
-	}
-
-	if page.Last != 0 {
-		results = lo.Reverse(results)
 	}
 
 	return map[string]any{
