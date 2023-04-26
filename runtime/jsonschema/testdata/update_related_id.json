@@ -1,0 +1,47 @@
+{
+	"type": "object",
+	"properties": {
+		"values": {
+			"$ref": "#/components/schemas/testAction_values"
+		},
+		"where": {
+			"$ref": "#/components/schemas/testAction_where"
+		}
+	},
+	"additionalProperties": false,
+	"required": ["where", "values"],
+	"components": {
+		"schemas": {
+			"testAction_company_input": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["id"]
+			},
+			"testAction_values": {
+				"type": "object",
+				"properties": {
+					"company": {
+						"$ref": "#/components/schemas/testAction_company_input"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["company"]
+			},
+			"testAction_where": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["id"]
+			}
+		}
+	}
+}

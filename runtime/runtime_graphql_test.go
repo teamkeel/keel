@@ -2082,7 +2082,7 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 			mutation UpdatePost($postId: ID!, $authorId: ID!, $title: String!) {
-				updatePost(input: { where: { id: $postId }, values: { title: $title, authorId: $authorId } }) {
+				updatePost(input: { where: { id: $postId }, values: { title: $title, author: { id: $authorId } } }) {
 					id
 					title
 					author {
