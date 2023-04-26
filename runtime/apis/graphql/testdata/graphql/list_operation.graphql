@@ -25,6 +25,7 @@ input EmailPassword_input {
 
 input OccupationQuery_input {
   equals: Occupation
+  notEquals: Occupation
   oneOf: [Occupation]
 }
 
