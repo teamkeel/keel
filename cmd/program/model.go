@@ -1,8 +1,7 @@
 package program
 
 import (
-	"crypto/x509"
-	"encoding/pem"
+	"crypto/rsa"
 	"io"
 	"net/http"
 	"os"
@@ -35,7 +34,8 @@ const (
 )
 
 const (
-	StatusSetupDatabase = iota
+	StatusParsePrivateKey = iota
+	StatusSetupDatabase
 	StatusSetupFunctions
 	StatusLoadSchema
 	StatusRunMigrations
@@ -89,6 +89,7 @@ type Model struct {
 	// If set then runtime will be configured with private key
 	// located at this path in pem format.
 	PrivateKeyPath string
+	PrivateKey     *rsa.PrivateKey
 
 	// Pattern to pass to vitest to isolate specific tests
 	TestPattern string
@@ -187,6 +188,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusSetupFunctions
+		return m, ParsePrivateKey(m.PrivateKeyPath)
+	case ParsePrivateKeyMsg:
+		m.Err = msg.Err
+
+		// If the private key can't be parsed we exit
+		if m.Err != nil {
+			return m, tea.Quit
+		}
+
+		m.Status = StatusParsePrivateKey
+		m.PrivateKey = msg.PrivateKey
+
 		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath)
 	case SetupFunctionsMsg:
 		m.Err = msg.Err
@@ -371,19 +384,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			panic(err.Error())
 		}
 
-		if m.PrivateKeyPath != "" {
-			privateKeyPem, err := os.ReadFile(m.PrivateKeyPath)
-			if err != nil {
-				panic(err.Error())
-			}
-
-			privateKeyBlock, _ := pem.Decode(privateKeyPem)
-			privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
-			if err != nil {
-				panic(err.Error())
-			}
-
-			ctx = runtimectx.WithPrivateKey(ctx, privateKey)
+		if m.PrivateKey != nil {
+			ctx = runtimectx.WithPrivateKey(ctx, m.PrivateKey)
 		}
 
 		ctx = runtimectx.WithDatabase(ctx, database)

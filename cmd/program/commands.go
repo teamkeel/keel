@@ -2,7 +2,10 @@ package program
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
 	"database/sql"
+	"encoding/pem"
 	"fmt"
 	"net/http"
 	"os"
@@ -88,6 +91,41 @@ func Scaffold(dir string) tea.Cmd {
 		}
 		return ScaffoldMsg{
 			GeneratedFiles: files,
+		}
+	}
+}
+
+type ParsePrivateKeyMsg struct {
+	PrivateKey *rsa.PrivateKey
+	Err        error
+}
+
+func ParsePrivateKey(path string) tea.Cmd {
+	return func() tea.Msg {
+		if path != "" {
+			privateKeyPem, err := os.ReadFile(path)
+			if err != nil {
+				return ParsePrivateKeyMsg{
+					Err: err,
+				}
+			}
+
+			privateKeyBlock, _ := pem.Decode(privateKeyPem)
+			privateKey, err := x509.ParsePKCS1PrivateKey(privateKeyBlock.Bytes)
+			if err != nil {
+				return ParsePrivateKeyMsg{
+					Err: err,
+				}
+			}
+
+			return ParsePrivateKeyMsg{
+				PrivateKey: privateKey,
+			}
+
+		}
+
+		return ParsePrivateKeyMsg{
+			PrivateKey: nil,
 		}
 	}
 }
