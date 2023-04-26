@@ -711,7 +711,7 @@ func (pi *PageInfo) ToMap() map[string]any {
 }
 
 // Execute the SQL statement against the database, return the rows, number of rows affected, and a boolean to indicate if there is a next page.
-func (statement *Statement) ExecuteToMany(ctx context.Context) (Rows, *PageInfo, error) {
+func (statement *Statement) ExecuteToMany(ctx context.Context, page *Page) (Rows, *PageInfo, error) {
 	database, err := runtimectx.GetDatabase(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -731,6 +731,9 @@ func (statement *Statement) ExecuteToMany(ctx context.Context) (Rows, *PageInfo,
 	var startCursor string
 	var endCursor string
 
+	if page != nil && page.Last != 0 {
+		rows = lo.Reverse(rows)
+	}
 	if returnedCount > 0 {
 		last := rows[returnedCount-1]
 		var hasPagination bool
@@ -766,7 +769,7 @@ func (statement *Statement) ExecuteToMany(ctx context.Context) (Rows, *PageInfo,
 
 // Execute the SQL statement against the database and expects a single row, returns the single row or nil if no data is found.
 func (statement *Statement) ExecuteToSingle(ctx context.Context) (map[string]any, error) {
-	results, pageInfo, err := statement.ExecuteToMany(ctx)
+	results, pageInfo, err := statement.ExecuteToMany(ctx, nil)
 	if err != nil {
 		return nil, err
 	}

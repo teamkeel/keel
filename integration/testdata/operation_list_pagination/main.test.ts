@@ -9,7 +9,7 @@ async function setupPosts({ count }: { count: number }): Promise<Post[]> {
     Array.from(Array(count)).map(async (_, i) => {
       const p = await models.post.create({
         id: (i + 1).toString(),
-        title: `Post ${i}`,
+        title: `Post ${i + 1}`,
       });
       return p;
     })
@@ -131,9 +131,7 @@ test("counts", async () => {
   expect(count).toEqual(take);
 });
 
-// todo: hasNextPage doesnt seem to return the correct value here
-// https://github.com/teamkeel/keel/blob/055ec3629bc7e1cfb5f6284d6019cef116ac9a92/runtime/actions/query.go#L307-L308
-test.fails("hasNextPage", async () => {
+test("hasNextPage", async () => {
   await setupPosts({ count: 6 });
 
   const {
