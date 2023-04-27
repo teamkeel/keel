@@ -7,8 +7,9 @@ model Order {
     operations {
         create createOrder() with (customer.id, onPromotion, items.quantity, items.price, items.product.id)
         create createOrderWithRelated() with (customer.name, onPromotion, items.quantity, items.price, items.product.name)
+        update updateOrderCustomer(id) with (customer.id)
     }
-    @permission(expression: true, actions: [create])
+    @permission(expression: true, actions: [create, update])
 }
 
 model Product {

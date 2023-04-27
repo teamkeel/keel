@@ -5,8 +5,7 @@ model Person {
     }
 
     operations {
-        update updatePerson(id) with (name)
-        update updatePersonCompany(id) with (company.id)
+        update testAction(id) with (company.id)
     }
 }
 

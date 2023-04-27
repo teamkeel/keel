@@ -292,7 +292,20 @@
         },
         {
           "messageName": "updateChild1_values",
-          "name": "parentId",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "updateChild1_parent_input"
+          }
+        }
+      ]
+    },
+    {
+      "name": "updateChild1_parent_input",
+      "fields": [
+        {
+          "messageName": "updateChild1_parent_input",
+          "name": "id",
           "type": {
             "type": "TYPE_ID",
             "modelName": "ParentModel",
@@ -427,7 +440,29 @@
         },
         {
           "messageName": "updateChild3_values",
-          "name": "parentId",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "updateChild3_parent_input"
+          }
+        },
+        {
+          "messageName": "updateChild3_values",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "updateChild3_parentOptional_input"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "updateChild3_parent_input",
+      "fields": [
+        {
+          "messageName": "updateChild3_parent_input",
+          "name": "id",
           "type": {
             "type": "TYPE_ID",
             "modelName": "ParentModel",
@@ -437,10 +472,15 @@
             "parent",
             "id"
           ]
-        },
+        }
+      ]
+    },
+    {
+      "name": "updateChild3_parentOptional_input",
+      "fields": [
         {
-          "messageName": "updateChild3_values",
-          "name": "parentOptionalId",
+          "messageName": "updateChild3_parentOptional_input",
+          "name": "id",
           "type": {
             "type": "TYPE_ID",
             "modelName": "ParentModel",

@@ -420,9 +420,27 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
 
 		// Create values message and add it to the proto schema
-		valuesMessageName := makeValuesMessageName(action.Name.Value)
-		valuesMessage := scm.makeMessageFromActionInputNodes(valuesMessageName, action.With, model, action, impl)
+		valuesMessage := &proto.Message{
+			Name:   makeValuesMessageName(action.Name.Value),
+			Fields: []*proto.MessageField{},
+		}
 		scm.proto.Messages = append(scm.proto.Messages, valuesMessage)
+		for _, input := range action.With {
+			if input.Label == nil {
+				// If its an implicit input, then create a nested object input structure.
+				scm.makeMessageHierarchyFromImplicitInput(valuesMessage, input, model, action, impl)
+			} else {
+				// This is an explicit input, so the first and only fragment will reference the type used.
+				typeInfo := scm.explicitInputToTypeInfo(input)
+
+				valuesMessage.Fields = append(valuesMessage.Fields, &proto.MessageField{
+					Name:        input.Label.Value,
+					Type:        typeInfo,
+					Optional:    input.Optional,
+					MessageName: valuesMessage.Name,
+				})
+			}
+		}
 
 		// Create root operation message with "where" and "values" fields.
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
