@@ -60,7 +60,7 @@ test("update parent id as implicit input - get by id - parent id updated correct
 
   const updatePost = await actions.updatePost({
     where: { id: post.id },
-    values: { title: "Updated", theAuthor: { id: author2.id }},
+    values: { title: "Updated", theAuthor: { id: author2.id } },
   });
 
   const getUpdatedPost = await actions.getPost({ id: post.id });
