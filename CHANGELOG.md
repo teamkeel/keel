@@ -1,3 +1,10 @@
+## [0.313.3](https://github.com/teamkeel/keel/compare/v0.313.2...v0.313.3) (2023-04-28)
+
+
+### Bug Fixes
+
+* validation rules for identity fields in create operations ([938ad17](https://github.com/teamkeel/keel/commit/938ad176cce99c6911848cade5f39f7b3905d1aa))
+
 ## [0.313.2](https://github.com/teamkeel/keel/compare/v0.313.1...v0.313.2) (2023-04-26)
 
 
