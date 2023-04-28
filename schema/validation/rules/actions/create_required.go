@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -115,23 +116,33 @@ func checkHasOneRelationField(
 	pathToReferencedModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
 	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
 
-	// If there an input that REFERENCES an existing related model instance,
-	// make sure there are no OTHER inputs that refer to the related model's fields.
-	// And return early.
-	if satisfied(rootModelName, pathToReferencedModelDotID, model.Name.Value, op) {
+	// The field itself can be set in a @set expression. An example of this is identity e.g.
+	//   @set(myModel.identityField = ctx.identity)
+	fieldIsSet := satisfiedBySetExpr(rootModelName, pathToReferencedModel, model.Name.Value, op)
+
+	// The id field of the relation can also be set in either a @set or an input. For examoke:
+	//   @set(myModel.myField.id = someValue)
+	// or
+	//   create myAction() with (myField.id)
+	fieldIdIsSet := satisfied(rootModelName, pathToReferencedModelDotID, model.Name.Value, op)
+
+	// If the field is being set to an existing record then we make sure no other fields on the model are being set.
+	if fieldIsSet || fieldIdIsSet {
 		makeSureReferencedFieldsAreNotGiven(asts, nestedModel, rootModelName, pathToReferencedModel, op, errs)
 		return
 	}
 
-	// Special case to disallow the creation of a nested Identity model.
+	// Special case to improve error message for Identity fields
 	if nestedModel.Name.Value == parser.ImplicitIdentityModelName {
-		errs.Append(
-			errorhandling.ErrorNestedCreateIdentityNotAllowed,
-			map[string]string{
-				"MissingReferencePath": pathToReferencedModelDotID,
-				"RelatedModel":         nestedModel.Name.Value,
-			},
-			op,
+		message := fmt.Sprintf("the %s field of %s is not set as part of this create operation", field.Name.Value, model.Name.Value)
+		errs.AppendError(
+			errorhandling.NewValidationErrorWithDetails(
+				errorhandling.ActionInputError,
+				errorhandling.ErrorDetails{
+					Message: message,
+					Hint:    fmt.Sprintf("set the field using: @set(%s.%s = ctx.identity)", rootModelName, pathToReferencedModel),
+				},
+				op.Name),
 		)
 		return
 	}
