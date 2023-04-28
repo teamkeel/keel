@@ -2,68 +2,51 @@ package casing
 
 import (
 	"strings"
+	"unicode"
+
+	"github.com/fatih/camelcase"
+	"github.com/samber/lo"
 )
 
-// Add more uppercase 'special cases' here
-var uppercaseTransforms = map[string]string{
-	"ID":  "Id",
-	"API": "Api",
-}
-
 func ToLowerCamel(str string) string {
-	return toCamelInitCase(str, false)
+	return toCamelCase(str, true)
 }
 
 func ToCamel(str string) string {
-	return toCamelInitCase(str, true)
+	return toCamelCase(str, false)
 }
 
-func toCamelInitCase(s string, initCase bool) string {
-	s = strings.TrimSpace(s)
-	if s == "" {
-		return s
-	}
+func toCamelCase(input string, lowerCamel bool) string {
+	words := camelcase.Split(input)
 
-	// if the string is exactly equal to a value in uppercase transforms
-	// then we want to just use the equivalent camel cased version
-	if a, ok := uppercaseTransforms[s]; ok {
-		s = a
-	}
+	// filter out any non letter chars such as '_' from the word array
+	words = lo.Filter(words, func(word string, _ int) bool {
+		runes := []rune(word)
 
-	// loop over all of the uppercase acronyms to be transformed
-	for key, transform := range uppercaseTransforms {
-		if strings.Contains(s, key) {
-			s = strings.ReplaceAll(s, key, transform)
+		return lo.EveryBy(runes, func(r rune) bool {
+			// the parser only allows for letter and number identifiers for models and fields
+			return unicode.IsLetter(r) || unicode.IsNumber(r)
+		})
+	})
+
+	str := ""
+
+	for i, word := range words {
+		if i == 0 && lowerCamel {
+			str += strings.ToLower(word)
+
+			continue
 		}
+
+		str += capitalizeWord(word)
 	}
 
-	n := strings.Builder{}
-	n.Grow(len(s))
-	capNext := initCase
+	return str
+}
 
-	for i, v := range []byte(s) {
-		vIsCap := v >= 'A' && v <= 'Z'
-		vIsLow := v >= 'a' && v <= 'z'
-		if capNext {
-			if vIsLow {
-				v += 'A'
-				v -= 'a'
-			}
-		} else if i == 0 {
-			if vIsCap {
-				v += 'a'
-				v -= 'A'
-			}
-		}
-		if vIsCap || vIsLow {
-			n.WriteByte(v)
-			capNext = false
-		} else if vIsNum := v >= '0' && v <= '9'; vIsNum {
-			n.WriteByte(v)
-			capNext = true
-		} else {
-			capNext = v == '_' || v == ' ' || v == '-' || v == '.'
-		}
+func capitalizeWord(word string) string {
+	if len(word) < 1 {
+		return word
 	}
-	return n.String()
+	return strings.ToUpper(word[:1]) + strings.ToLower(word[1:])
 }

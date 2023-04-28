@@ -23,7 +23,7 @@ func TestLowerCamel(t *testing.T) {
 		},
 		{
 			input:  "slackIDID",
-			output: "slackIdId",
+			output: "slackIdid",
 		},
 		{
 			input:  "APIKey",
@@ -32,6 +32,10 @@ func TestLowerCamel(t *testing.T) {
 		{
 			input:  "slack_API_Key",
 			output: "slackApiKey",
+		},
+		{
+			input:  "smallBIG",
+			output: "smallBig",
 		},
 	}
 
@@ -54,7 +58,7 @@ func TestCamel(t *testing.T) {
 		},
 		{
 			input:  "slackIDID",
-			output: "SlackIdId",
+			output: "SlackIdid",
 		},
 		{
 			input:  "APIKey",

@@ -248,8 +248,8 @@ func TestValidateRequest(t *testing.T) {
 					}
 					operations {
 						create createPerson() with (name)
-						create createPersonWithDOB() with (name, birthday)
-						create createPersonWithOptionalDOB() with (name, birthday?)
+						create createPersonWithDob() with (name, birthday)
+						create createPersonWithOptionalDob() with (name, birthday?)
 						create createPersonWithEnum() with (hobby) {
 							@set(person.name = "")
 						}
@@ -265,37 +265,37 @@ func TestValidateRequest(t *testing.T) {
 				{
 					name:    "valid - input for optional field provided",
 					request: `{"name": "Jon", "birthday": "1986-03-18"}`,
-					opName:  "createPersonWithDOB",
+					opName:  "createPersonWithDob",
 				},
 				{
 					name:    "valid - input for optional field provided as null",
 					request: `{"name": "Jon", "birthday": null}`,
-					opName:  "createPersonWithDOB",
+					opName:  "createPersonWithDob",
 				},
 				{
 					name:    "valid - ommitting optional input",
 					request: `{"name": "Jon"}`,
-					opName:  "createPersonWithOptionalDOB",
+					opName:  "createPersonWithOptionalDob",
 				},
 				{
 					name:    "valid - providing optional input for optional field as null",
 					request: `{"name": "Jon", "birthday": null}`,
-					opName:  "createPersonWithOptionalDOB",
+					opName:  "createPersonWithOptionalDob",
 				},
 				{
 					name:    "valid - providing optional input for optional field",
 					request: `{"name": "Jon", "birthday": "1986-03-18"}`,
-					opName:  "createPersonWithOptionalDOB",
+					opName:  "createPersonWithOptionalDob",
 				},
 				{
 					name:    "valid - providing ISO8601 format for a Date",
 					request: `{"name": "Jon", "birthday": "1986-03-18T00:00:00.000Z"}`,
-					opName:  "createPersonWithOptionalDOB",
+					opName:  "createPersonWithOptionalDob",
 				},
 				{
 					name:    "valid - required input for optional field",
 					request: `{"name": "Jon"}`,
-					opName:  "createPersonWithDOB",
+					opName:  "createPersonWithDob",
 				},
 				{
 					name:    "valid - ommitting optional enum",
@@ -341,7 +341,7 @@ func TestValidateRequest(t *testing.T) {
 				{
 					name:    "wrong format for date",
 					request: `{"name": "Jon", "birthday": "18th March 1986"}`,
-					opName:  "createPersonWithDOB",
+					opName:  "createPersonWithDob",
 					errors: map[string]string{
 						"birthday": "Does not match format 'date-time'",
 					},

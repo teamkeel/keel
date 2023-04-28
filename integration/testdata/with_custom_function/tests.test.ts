@@ -68,7 +68,7 @@ test("fetching person by additional unique field (not PK)", async () => {
     niNumber: "333",
   });
 
-  const fetchedPerson = await actions.getPersonByNINumber({ niNumber: "333" });
+  const fetchedPerson = await actions.getPersonByNiNumber({ niNumber: "333" });
 
   expect(person.id).toEqual(fetchedPerson!.id);
 });
