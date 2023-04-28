@@ -3,8 +3,8 @@ package relationships
 import (
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -232,7 +232,7 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 				map[string]string{
 					"ModelA":     model.Name.Value,
 					"ModelB":     field.Type,
-					"Suggestion": fmt.Sprintf("%s %s", strcase.ToLowerCamel(model.Name.Value), model.Name.Value),
+					"Suggestion": fmt.Sprintf("%s %s", casing.ToLowerCamel(model.Name.Value), model.Name.Value),
 				},
 				field.Name,
 			)

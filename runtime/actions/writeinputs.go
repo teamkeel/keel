@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -103,7 +103,7 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 		return nil
 	}
 
-	target := []string{strcase.ToLowerCamel(scope.model.Name)}
+	target := []string{casing.ToLowerCamel(scope.model.Name)}
 
 	foreignKeys, row, err := query.captureWriteValuesFromMessage(scope, message, scope.model, target, args)
 
@@ -152,7 +152,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 		if !input.IsModelField() {
 			if input.Type.Type == proto.Type_TYPE_MESSAGE {
 
-				target := append(newRow.target, strcase.ToLowerCamel(input.Name))
+				target := append(newRow.target, casing.ToLowerCamel(input.Name))
 				messageModel := proto.FindModel(scope.schema.Models, field.Type.ModelName.Value)
 				nestedMessage := proto.FindMessage(scope.schema.Messages, input.Type.MessageName.Value)
 

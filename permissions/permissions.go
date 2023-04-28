@@ -8,6 +8,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -167,7 +168,7 @@ func handleOperand(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt 
 		switch o.Ident.Fragments[0].Fragment {
 		case "ctx":
 			return handleContext(o, stmt)
-		case strcase.ToLowerCamel(model.Name):
+		case casing.ToLowerCamel(model.Name):
 			return handleModel(s, model, o, stmt)
 		default:
 			// If not context of model must be enum, but still worth checking to be sure

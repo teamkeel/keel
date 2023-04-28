@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
@@ -116,7 +116,7 @@ func (resolver *OperandResolver) IsDatabaseColumn() bool {
 
 	modelTarget := resolver.Operand.Ident.Fragments[0].Fragment
 
-	return modelTarget == strcase.ToLowerCamel(resolver.Operation.ModelName)
+	return modelTarget == casing.ToLowerCamel(resolver.Operation.ModelName)
 }
 
 // IsContextField returns true if the expression operand refers to a value on the context.
@@ -156,24 +156,24 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		}
 	case resolver.IsDatabaseColumn():
 		fragmentCount := len(operand.Ident.Fragments)
-		modelTarget := strcase.ToCamel(operand.Ident.Fragments[0].Fragment)
+		modelTarget := casing.ToCamel(operand.Ident.Fragments[0].Fragment)
 
 		if fragmentCount > 2 {
 			for i := 1; i < fragmentCount-1; i++ {
-				field := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), operand.Ident.Fragments[i].Fragment)
+				field := proto.FindField(schema.Models, casing.ToCamel(modelTarget), operand.Ident.Fragments[i].Fragment)
 				modelTarget = field.Type.ModelName.Value
 			}
 		}
 
 		fieldName := operand.Ident.Fragments[fragmentCount-1].Fragment
-		if !proto.ModelHasField(schema, strcase.ToCamel(modelTarget), fieldName) {
+		if !proto.ModelHasField(schema, casing.ToCamel(modelTarget), fieldName) {
 			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("this model: %s, does not have a field of name: %s", modelTarget, fieldName)
 		}
 
-		operandType := proto.FindField(schema.Models, strcase.ToCamel(modelTarget), fieldName).Type.Type
+		operandType := proto.FindField(schema.Models, casing.ToCamel(modelTarget), fieldName).Type.Type
 		return operandType, nil
 	case resolver.IsImplicitInput():
-		modelTarget := strcase.ToCamel(operation.ModelName)
+		modelTarget := casing.ToCamel(operation.ModelName)
 		inputName := operand.Ident.Fragments[0].Fragment
 		operandType := proto.FindField(schema.Models, modelTarget, inputName).Type.Type
 		return operandType, nil

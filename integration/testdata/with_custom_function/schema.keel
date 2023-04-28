@@ -5,19 +5,20 @@ model Person {
         niNumber Text @unique
         identity Identity?
         ctxNow Timestamp?
+        slackId Text?
     }
 
     functions {
         get getPerson(id)
         get getPersonByNINumber(niNumber)
-        create createPerson() with (name, gender, niNumber)
+        create createPerson() with (name, gender, niNumber, slackId)
         create createPersonWithContextInfo() with (name, gender, niNumber)
         list listPeople(gender)
         delete deletePerson(id)
         update updatePerson(id) with (name, gender, niNumber)
         create createPersonWithEnvVar() with (name, gender, niNumber)
         create createPersonWithSecret() with (name, gender, niNumber)
-        create customPermission() with(name, gender, niNumber)
+        create customPermission() with (name, gender, niNumber)
     }
 
     @permission(
@@ -69,5 +70,11 @@ model Book {
 
     functions {
         list listBooksByPublisherName(author.publisher.name)
+    }
+}
+
+api Web {
+    models {
+        Person
     }
 }

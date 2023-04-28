@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -89,10 +89,10 @@ func ensureDir(dirName string) error {
 }
 
 func writeFunctionWrapper(function *proto.Operation) string {
-	functionName := strcase.ToCamel(function.Name)
+	functionName := casing.ToCamel(function.Name)
 
 	suggestedImplementation := ""
-	modelName := strcase.ToLowerCamel(function.ModelName)
+	modelName := casing.ToLowerCamel(function.ModelName)
 
 	switch function.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE:

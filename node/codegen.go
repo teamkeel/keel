@@ -10,6 +10,7 @@ import (
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/parser"
@@ -118,7 +119,7 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 			writeCustomFunctionWrapperType(sdkTypes, model, op)
 
-			sdk.Writef("module.exports.%s = (fn) => fn;", strcase.ToCamel(op.Name))
+			sdk.Writef("module.exports.%s = (fn) => fn;", casing.ToCamel(op.Name))
 			sdk.Writeln("")
 		}
 	}
@@ -398,7 +399,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 	w.Writeln("export type ModelsAPI = {")
 	w.Indent()
 	for _, model := range schema.Models {
-		w.Write(strcase.ToLowerCamel(model.Name))
+		w.Write(casing.ToLowerCamel(model.Name))
 		w.Write(": ")
 		w.Writef(`%sAPI`, model.Name)
 		w.Writeln(";")
@@ -455,9 +456,9 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Writeln("const models = {")
 	w.Indent()
 	for _, model := range schema.Models {
-		w.Write(strcase.ToLowerCamel(model.Name))
+		w.Write(casing.ToLowerCamel(model.Name))
 		w.Write(": ")
-		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, db, tableConfigMap)`, strcase.ToSnake(model.Name), strcase.ToLowerCamel(model.Name))
+		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, db, tableConfigMap)`, strcase.ToSnake(model.Name), casing.ToLowerCamel(model.Name))
 		w.Writeln(",")
 	}
 	w.Dedent()
@@ -548,7 +549,7 @@ func writeTableConfig(w *Writer, models []*proto.Model) {
 }
 
 func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
-	w.Writef("function %sDefaultValues() {", strcase.ToLowerCamel(model.Name))
+	w.Writef("function %sDefaultValues() {", casing.ToLowerCamel(model.Name))
 	w.Writeln("")
 	w.Indent()
 	w.Writeln("const r = {};")
@@ -581,7 +582,7 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 }
 
 func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
-	w.Writef("export declare function %s", strcase.ToCamel(op.Name))
+	w.Writef("export declare function %s", casing.ToCamel(op.Name))
 
 	inputType := op.InputMessageName
 	if inputType == parser.MessageFieldTypeAny {

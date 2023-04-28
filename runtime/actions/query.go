@@ -10,6 +10,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
@@ -892,7 +893,7 @@ func copySlice[T any](a []T) []T {
 func toLowerCamelMap(m map[string]any) map[string]any {
 	res := map[string]any{}
 	for key, value := range m {
-		res[strcase.ToLowerCamel(key)] = value
+		res[casing.ToLowerCamel(key)] = value
 	}
 	return res
 }

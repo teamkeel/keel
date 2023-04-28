@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/graphql-go/graphql/gqlerrors"
-	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/casing"
 )
 
 type Response struct {
@@ -91,7 +91,7 @@ func NewNotFoundError() RuntimeError {
 func NewNotNullError(column string) RuntimeError {
 	// Parses from the database casing back to the schema casing.
 	// Important since these error messages are delivered to the user.
-	field := strcase.ToLowerCamel(column)
+	field := casing.ToLowerCamel(column)
 
 	return RuntimeError{
 		Code:    ErrInvalidInput,
@@ -102,7 +102,7 @@ func NewNotNullError(column string) RuntimeError {
 func NewUniquenessError(column string) RuntimeError {
 	// Parses from the database casing back to the schema casing.
 	// Important since these error messages are delivered to the user.
-	field := strcase.ToLowerCamel(column)
+	field := casing.ToLowerCamel(column)
 
 	return RuntimeError{
 		Code:    ErrInvalidInput,
@@ -113,7 +113,7 @@ func NewUniquenessError(column string) RuntimeError {
 func NewForeignKeyConstraintError(column string) RuntimeError {
 	// Parses from the database casing back to the schema casing.
 	// Important since these error messages are delivered to the user.
-	field := strcase.ToLowerCamel(column)
+	field := casing.ToLowerCamel(column)
 
 	return RuntimeError{
 		Code:    ErrInvalidInput,

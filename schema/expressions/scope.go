@@ -3,8 +3,8 @@ package expressions
 import (
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -76,7 +76,7 @@ func buildRootExpressionScope(asts []*parser.AST, context *ExpressionContext) *E
 	contextualScope := &ExpressionScope{
 		Entities: []*ExpressionScopeEntity{
 			{
-				Name:  strcase.ToLowerCamel(context.Model.Name.Value),
+				Name:  casing.ToLowerCamel(context.Model.Name.Value),
 				Model: context.Model,
 			},
 		},

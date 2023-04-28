@@ -1,6 +1,26 @@
 import { CreatePerson } from "@teamkeel/sdk";
 
-export default CreatePerson((inputs, api, ctx) => {
+export default CreatePerson(async (inputs, api, ctx) => {
   api.permissions.allow();
-  return api.models.person.create(inputs);
+  console.log(
+    JSON.stringify(
+      {
+        hello: "1",
+        arr: [
+          {
+            dkk: "1",
+          },
+          {
+            ddkdjdj: "1",
+          },
+        ],
+      },
+      null,
+      2
+    )
+  );
+  const result = await api.models.person.create(inputs);
+
+  console.log(result);
+  return result;
 });
