@@ -6,20 +6,20 @@ const cases = {
     input: {
       id: "123",
       slack_id: "xxx_2929",
-      api_key: "1234"
+      api_key: "1234",
     },
     expected: {
       id: "123",
       slackId: "xxx_2929",
-      apiKey: "1234"
+      apiKey: "1234",
     },
   },
-}
+};
 
 Object.entries(cases).map(([key, { input, expected }]) => {
-  test(key, () => {  
+  test(key, () => {
     const result = camelCaseObject(input);
-  
+
     expect(result).toEqual(expected);
   });
-})
+});
