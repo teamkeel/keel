@@ -1,0 +1,10 @@
+model Todo {
+    fields {
+        name Text
+        identity Identity
+    }
+
+    operations {
+        create createTodo() with (name)
+    }
+}

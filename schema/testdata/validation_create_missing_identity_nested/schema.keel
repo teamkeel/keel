@@ -1,0 +1,27 @@
+model Profile {
+    fields {
+        name Text
+        identity Identity
+    }
+}
+
+model Post {
+    fields {
+        body Text
+        profile Profile
+    }
+
+    operations {
+        create createPost() with (body, profile.name)
+    }
+}
+
+model Comment {
+    fields {
+        post Post
+    }
+
+    operations {
+        create createComment() with (post.body, post.profile.name)
+    }
+}

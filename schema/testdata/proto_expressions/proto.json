@@ -32,7 +32,6 @@
             "type": "TYPE_MODEL",
             "modelName": "Identity"
           },
-          "optional": true,
           "foreignKeyFieldName": "identityId"
         },
         {
@@ -72,7 +71,6 @@
           "type": {
             "type": "TYPE_ID"
           },
-          "optional": true,
           "foreignKeyInfo": {
             "relatedModelName": "Identity",
             "relatedModelField": "id"
@@ -288,9 +286,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQuery_input"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         }
       ]
     },
@@ -350,9 +346,7 @@
             "modelName": "Person",
             "fieldName": "name"
           },
-          "target": [
-            "name"
-          ]
+          "target": ["name"]
         }
       ]
     },
@@ -367,9 +361,7 @@
             "modelName": "Person",
             "fieldName": "id"
           },
-          "target": [
-            "id"
-          ]
+          "target": ["id"]
         }
       ]
     },
