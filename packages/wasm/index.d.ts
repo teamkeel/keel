@@ -11,6 +11,29 @@ export function completions(
   configFile: string
 ): Promise<CompletionResult>;
 
+export function getDefinition(
+  req: GetDefinitionRequest
+): Promise<DefinitionResult>;
+
+export interface DefinitionResult {
+  schema?: Position;
+  function?: { name: string };
+}
+
+export interface SchemaDefinition {
+  schema: SchemaDefinition;
+}
+
+export interface GetDefinitionRequest {
+  position: Position;
+  schemaFiles: SchemaFile[];
+}
+
+export interface SchemaFile {
+  filename: string;
+  contents: string;
+}
+
 export interface SimplePosition {
   column: number;
   line: number;

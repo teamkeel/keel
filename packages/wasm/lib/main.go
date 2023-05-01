@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/completions"
+	"github.com/teamkeel/keel/schema/definitions"
 	"github.com/teamkeel/keel/schema/format"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -20,9 +21,10 @@ func init() {
 	// we have to declare our functions in an init func otherwise they aren't
 	// available in JS land at the call time.
 	js.Global().Set("keel", js.ValueOf(map[string]any{
-		"validate":    js.FuncOf(validate),
-		"format":      js.FuncOf(formatSchema),
-		"completions": js.FuncOf(provideCompletions),
+		"validate":      js.FuncOf(validate),
+		"format":        js.FuncOf(formatSchema),
+		"completions":   js.FuncOf(provideCompletions),
+		"getDefinition": js.FuncOf(getDefinition),
 	}))
 }
 
@@ -91,6 +93,49 @@ func provideCompletions(this js.Value, args []js.Value) any {
 		return map[string]any{
 			"completions": js.ValueOf(untypedCompletions),
 		}, nil
+	})
+}
+
+// Expected argument to definitions API:
+//
+//	{
+//		position: {
+//			filename: "",
+//			line: 1,
+//			column: 1,
+//		},
+//		schemaFiles: [
+//			{
+//				filename: "",
+//				contents: "",
+//			},
+//		],
+//	}
+func getDefinition(this js.Value, args []js.Value) any {
+	return newPromise(func() (any, error) {
+		positionArg := args[0].Get("position")
+		pos := definitions.Position{
+			Filename: positionArg.Get("filename").String(),
+			Line:     positionArg.Get("line").Int(),
+			Column:   positionArg.Get("column").Int(),
+		}
+
+		schemaFilesArg := args[0].Get("schemaFiles")
+		schemaFiles := []*reader.SchemaFile{}
+		for i := 0; i < schemaFilesArg.Length(); i++ {
+			f := schemaFilesArg.Index(i)
+			schemaFiles = append(schemaFiles, &reader.SchemaFile{
+				FileName: f.Get("filename").String(),
+				Contents: f.Get("contents").String(),
+			})
+		}
+
+		def := definitions.GetDefinition(schemaFiles, pos)
+		if def == nil {
+			return nil, nil
+		}
+
+		return toMap(def)
 	})
 }
 

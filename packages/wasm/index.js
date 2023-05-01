@@ -30,8 +30,14 @@ async function completions() {
   return api.completions(...arguments);
 }
 
+async function getDefinition() {
+  const api = await keel();
+  return api.getDefinition(...arguments);
+}
+
 module.exports = {
   format,
   validate,
   completions,
+  getDefinition,
 };

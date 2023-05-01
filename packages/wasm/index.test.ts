@@ -1,4 +1,4 @@
-import { format, validate, completions } from "./index";
+import { format, validate, completions, getDefinition } from "./index";
 import { test, expect } from "vitest";
 
 const configFile = `
@@ -70,4 +70,64 @@ test("validate - invalid schema", async () => {
 
   expect(errors[0].code).toEqual("E025");
   expect(errors[0].message).toEqual(` unexpected token "<EOF>" (expected "}")`);
+});
+
+test("getDefinition", async () => {
+  const result = await getDefinition({
+    position: {
+      line: 7,
+      column: 21,
+      offset: 0,
+      filename: "myschema.keel",
+    },
+    schemaFiles: [
+      {
+        filename: "myschema.keel",
+        contents: `
+model Person {
+  fields {
+    name Text
+  }
+  operations {
+    list getPeople(name) 
+  }
+}
+        `,
+      },
+    ],
+  });
+
+  expect(result).toEqual({
+    function: null,
+    schema: {
+      filename: "myschema.keel",
+      line: 4,
+      column: 5,
+    },
+  });
+});
+
+test("getDefinition - no result", async () => {
+  const result = await getDefinition({
+    position: {
+      line: 1,
+      column: 1,
+      offset: 0,
+      filename: "myschema.keel",
+    },
+    schemaFiles: [
+      {
+        filename: "myschema.keel",
+        contents: `
+model Person {
+  fields {
+    name Text
+  }
+}
+        `,
+      },
+    ],
+  });
+
+  expect(result).toBeNull();
 });
