@@ -1,3 +1,10 @@
+## [0.313.5](https://github.com/teamkeel/keel/compare/v0.313.4...v0.313.5) (2023-05-02)
+
+
+### Bug Fixes
+
+* validate against repeated scalar fields defined on models ([#941](https://github.com/teamkeel/keel/issues/941)) ([81c686e](https://github.com/teamkeel/keel/commit/81c686eadaacd127cb16c708f4d182f6d9cb7722))
+
 ## [0.313.4](https://github.com/teamkeel/keel/compare/v0.313.3...v0.313.4) (2023-05-02)
 
 
