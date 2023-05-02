@@ -1,3 +1,10 @@
+## [0.313.4](https://github.com/teamkeel/keel/compare/v0.313.3...v0.313.4) (2023-05-02)
+
+
+### Bug Fixes
+
+* create casing utility functions ([#939](https://github.com/teamkeel/keel/issues/939)) ([6dc4724](https://github.com/teamkeel/keel/commit/6dc47244de3c7ccc1fb17d6468949e2064979981))
+
 ## [0.313.3](https://github.com/teamkeel/keel/compare/v0.313.2...v0.313.3) (2023-04-28)
 
 
