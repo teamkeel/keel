@@ -7,8 +7,8 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// UnusedInputRule checks that all named operation inputs are
-// used in either @set or @where expressions in the action.
+// RepeatedScalarFieldRule validates that you cannot define a repeated scalar field
+// This will be temporary until we can support repeated fields at the database level
 func RepeatedScalarFieldRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	isModel := false
 
