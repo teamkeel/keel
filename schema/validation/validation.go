@@ -75,6 +75,7 @@ var visitorFuncs = []VisitorFunc{
 	NamingRule,
 	DuplicateDefinitionRule,
 	InvalidWithUsage,
+	RepeatedScalarFieldRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
