@@ -34,7 +34,8 @@ const (
 )
 
 const (
-	StatusParsePrivateKey = iota
+	StatusCheckingDependencies = iota
+	StatusParsePrivateKey
 	StatusSetupDatabase
 	StatusSetupFunctions
 	StatusLoadSchema
@@ -151,8 +152,8 @@ func (m *Model) Init() tea.Cmd {
 		m.Status = StatusLoadSchema
 		return LoadSchema(m.ProjectDir, m.Environment)
 	case ModeRun, ModeTest:
-		m.Status = StatusSetupDatabase
-		return StartDatabase(m.ResetDatabase, m.Mode)
+		m.Status = StatusCheckingDependencies
+		return CheckDependencies()
 	default:
 		return nil
 	}
@@ -180,6 +181,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 		return m, nil
+	case CheckDependenciesMsg:
+		m.Err = msg.Err
+
+		if m.Err != nil {
+			return m, tea.Quit
+		}
+
+		m.Status = StatusSetupDatabase
+		return m, StartDatabase(m.ResetDatabase, m.Mode)
 	case StartDatabaseMsg:
 		m.DatabaseConnInfo = msg.ConnInfo
 		m.Err = msg.Err
@@ -189,7 +199,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		m.Status = StatusSetupFunctions
+		m.Status = StatusParsePrivateKey
 		return m, ParsePrivateKey(m.PrivateKeyPath)
 	case ParsePrivateKeyMsg:
 		m.Err = msg.Err
@@ -199,9 +209,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		m.Status = StatusParsePrivateKey
 		m.PrivateKey = msg.PrivateKey
 
+		m.Status = StatusSetupFunctions
 		return m, SetupFunctions(m.ProjectDir, m.NodePackagesPath)
 	case SetupFunctionsMsg:
 		m.Err = msg.Err

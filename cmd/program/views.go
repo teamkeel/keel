@@ -200,12 +200,22 @@ func renderError(m *Model) string {
 	b := strings.Builder{}
 
 	switch m.Status {
+	case StatusCheckingDependencies:
+		incorrectNodeVersionErr := &node.IncorrectNodeVersionError{}
+		if errors.As(m.Err, &incorrectNodeVersionErr) {
+			b.WriteString(fmt.Sprintf("❌ Node.js %s installed. Minimum required is %s.", incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum))
+		} else {
+			b.WriteString("❌ There is an error with your dependencies:\n\n")
+			b.WriteString(m.Err.Error())
+		}
+
 	case StatusSetupDatabase:
 		b.WriteString("❌ There was an error starting the database:\n\n")
 		b.WriteString(m.Err.Error())
 
 	case StatusSetupFunctions:
 		npmInstallErr := &node.NpmInstallError{}
+
 		if errors.As(m.Err, &npmInstallErr) {
 			b.WriteString("❌ There was an error installing function dependencies:\n\n")
 			b.WriteString(npmInstallErr.Output)
