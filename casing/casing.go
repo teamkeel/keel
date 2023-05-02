@@ -5,6 +5,7 @@ import (
 	"unicode"
 
 	"github.com/fatih/camelcase"
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 )
 
@@ -14,6 +15,14 @@ func ToLowerCamel(str string) string {
 
 func ToCamel(str string) string {
 	return toCamelCase(str, false)
+}
+
+func ToSnake(str string) string {
+	return strcase.ToSnake(str)
+}
+
+func ToScreamingSnake(str string) string {
+	return strcase.ToScreamingSnake(str)
 }
 
 func toCamelCase(input string, lowerCamel bool) string {
