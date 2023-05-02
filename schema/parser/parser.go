@@ -74,6 +74,15 @@ type FieldNode struct {
 	BuiltIn bool
 }
 
+func (f *FieldNode) IsScalar() bool {
+	switch f.Type {
+	case FieldTypeBoolean, FieldTypeNumber, FieldTypeText, FieldTypeDatetime, FieldTypeDate, FieldTypeSecret, FieldTypeID, FieldTypePassword:
+		return true
+	default:
+		return false
+	}
+}
+
 type APINode struct {
 	node.Node
 
