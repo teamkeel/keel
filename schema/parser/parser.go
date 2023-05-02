@@ -7,7 +7,7 @@ import (
 
 	"github.com/alecthomas/participle/v2"
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/reader"
 )
@@ -178,10 +178,10 @@ func (a *ActionInputNode) Name() string {
 	// e.g. if type is `post.author.name` then the input is called `postAuthorName`
 	builder := strings.Builder{}
 	for _, frag := range a.Type.Fragments {
-		builder.WriteString(strcase.ToCamel(frag.Fragment))
+		builder.WriteString(casing.ToCamel(frag.Fragment))
 	}
 
-	return strcase.ToLowerCamel(builder.String())
+	return casing.ToLowerCamel(builder.String())
 }
 
 type EnumNode struct {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 
 	"github.com/teamkeel/keel/config"
@@ -249,7 +249,7 @@ func (scm *Builder) insertForeignKeyFields(
 				continue
 			}
 
-			referredToModelName := strcase.ToCamel(field.Type)
+			referredToModelName := casing.ToCamel(field.Type)
 			referredToModel := query.Model(asts, referredToModelName)
 
 			if referredToModel == nil {
@@ -265,7 +265,7 @@ func (scm *Builder) insertForeignKeyFields(
 
 			// This is the single source of truth for how we name foreign key fields.
 			// Later on, we'll let the the user name them in the schema language.
-			generatedForeignKeyName := field.Name.Value + strcase.ToCamel(referredToModelPK.Name.Value)
+			generatedForeignKeyName := field.Name.Value + casing.ToCamel(referredToModelPK.Name.Value)
 
 			fkField := &parser.FieldNode{
 				BuiltIn:  true,

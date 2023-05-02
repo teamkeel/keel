@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 )
 
@@ -31,15 +31,15 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 // can have a table name called "select" that would otherwise
 // not be allowed as it clashes with the keyword.
 func Identifier(v string) string {
-	return pq.QuoteIdentifier(strcase.ToSnake(v))
+	return pq.QuoteIdentifier(casing.ToSnake(v))
 }
 
 func UniqueConstraintName(modelName string, fieldName string) string {
-	return fmt.Sprintf("%s_%s_udx", strcase.ToSnake(modelName), strcase.ToSnake(fieldName))
+	return fmt.Sprintf("%s_%s_udx", casing.ToSnake(modelName), casing.ToSnake(fieldName))
 }
 
 func PrimaryKeyConstraintName(modelName string, fieldName string) string {
-	return fmt.Sprintf("%s_%s_pkey", strcase.ToSnake(modelName), strcase.ToSnake(fieldName))
+	return fmt.Sprintf("%s_%s_pkey", casing.ToSnake(modelName), casing.ToSnake(fieldName))
 }
 
 func createTableStmt(model *proto.Model) string {

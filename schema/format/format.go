@@ -7,8 +7,8 @@ import (
 	"text/scanner"
 
 	"github.com/alecthomas/participle/v2/lexer"
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -573,12 +573,12 @@ var allCapsRe = regexp.MustCompile("^[A-Z]+$")
 func camel(s string) string {
 	// Special case if the string is "FOOBAR" we want "Foobar" but
 	// to get there we have to first lower case the string so
-	// strcase.ToCamel does the right thing
+	// casing.ToCamel does the right thing
 	if allCapsRe.MatchString(s) {
 		s = strings.ToLower(s)
 	}
 
-	return strcase.ToCamel(s)
+	return casing.ToCamel(s)
 }
 
 func lowerCamel(s string) string {
@@ -587,7 +587,7 @@ func lowerCamel(s string) string {
 		return strings.ToLower(s)
 	}
 
-	return strcase.ToLowerCamel(s)
+	return casing.ToLowerCamel(s)
 }
 
 func printEnum(writer *Writer, enum *parser.EnumNode) {

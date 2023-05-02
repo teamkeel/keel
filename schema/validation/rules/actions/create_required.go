@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
@@ -18,7 +18,7 @@ import (
 func CreateOperationRequiredFieldsRule(
 	asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
-		rootModelName := strcase.ToLowerCamel(model.Name.Value)
+		rootModelName := casing.ToLowerCamel(model.Name.Value)
 		for _, op := range query.ModelCreateOperations(model) {
 			dotDelimPath := ""
 			for _, field := range query.ModelFields(model) {
@@ -182,7 +182,7 @@ func makeSureReferencedFieldsAreNotGiven(
 	op *parser.ActionNode,
 	errs *errorhandling.ValidationErrors) {
 
-	referencedModelName := strcase.ToLowerCamel(referencedModel.Name.Value)
+	referencedModelName := casing.ToLowerCamel(referencedModel.Name.Value)
 	pathToIgnore := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
 	for _, referencedField := range query.ModelFields(referencedModel) {
 		pathToField := extendDotDelimPath(pathToReferencedModel, referencedField.Name.Value)

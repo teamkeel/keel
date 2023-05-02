@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/casing"
 	"gopkg.in/yaml.v3"
 )
 
@@ -348,7 +348,7 @@ func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]
 				continue
 			}
 
-			ssName := strcase.ToScreamingSnake(secret.Name)
+			ssName := casing.ToScreamingSnake(secret.Name)
 
 			if secret.Name != ssName {
 				incorrectNamesMap[secret.Name] = true
@@ -365,7 +365,7 @@ func validateFormat(config *ProjectConfig, formatType string) (bool, map[string]
 
 			switch formatType {
 			case "snakecase":
-				ssName := strcase.ToScreamingSnake(envVar.Name)
+				ssName := casing.ToScreamingSnake(envVar.Name)
 
 				if envVar.Name != ssName {
 					incorrectNamesMap[envVar.Name] = true

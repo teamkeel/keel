@@ -7,9 +7,8 @@ model Post {
         create createPost() with (title, coolTitle: Text) {
             @set(post.title = coolTitle)
         }
-
-        list listPost(id, coolID: ID) {
-            @where(post.id == coolID)
+        list listPost(id, coolId: ID) {
+            @where(post.id == coolId)
         }
     }
 }

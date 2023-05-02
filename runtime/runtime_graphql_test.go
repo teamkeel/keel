@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/graphql-go/graphql/gqlerrors"
-	"github.com/iancoleman/strcase"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
@@ -169,7 +169,7 @@ func initRow(with map[string]any) map[string]any {
 		"updated_at": time.Now(),
 	}
 	for k, v := range with {
-		res[strcase.ToSnake(k)] = v
+		res[casing.ToSnake(k)] = v
 	}
 	return res
 }

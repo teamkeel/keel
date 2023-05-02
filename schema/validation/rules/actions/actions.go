@@ -3,8 +3,8 @@ package actions
 import (
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/formatting"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -186,7 +186,7 @@ func ReservedActionNameRule(asts []*parser.AST) (errs errorhandling.ValidationEr
 				errs.Append(errorhandling.ErrorReservedActionName,
 					map[string]string{
 						"Name":       op.Name.Value,
-						"Suggestion": fmt.Sprintf("perform%s", strcase.ToCamel(op.Name.Value)),
+						"Suggestion": fmt.Sprintf("perform%s", casing.ToCamel(op.Name.Value)),
 					},
 					op.Name,
 				)
@@ -355,7 +355,7 @@ func requireUniqueLookup(asts []*parser.AST, action *parser.ActionNode, model *p
 
 					modelName, fieldName := op.Ident.Fragments[0].Fragment, op.Ident.Fragments[1].Fragment
 
-					if modelName != strcase.ToLowerCamel(model.Name.Value) {
+					if modelName != casing.ToLowerCamel(model.Name.Value) {
 						continue
 					}
 

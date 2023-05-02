@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -354,7 +354,7 @@ func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition, enclosi
 		modelName := getParentModelName(tokenAtPos)
 		actionType := tokenAtPos.ValueAt(-1)
 
-		suggestion := fmt.Sprintf("%s%s", actionType, strcase.ToCamel(modelName))
+		suggestion := fmt.Sprintf("%s%s", actionType, casing.ToCamel(modelName))
 		return []*CompletionItem{{
 			Label:       suggestion,
 			Kind:        KindLabel,
@@ -685,13 +685,13 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 
 func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*CompletionItem {
 	modelName := getParentModelName(t)
-	expressionModelName := strcase.ToLowerCamel(modelName)
+	expressionModelName := casing.ToLowerCamel(modelName)
 
 	previousIdents := getPreviousIdents(t)
 	if len(previousIdents) == 0 {
 		return []*CompletionItem{
 			{
-				Label:       strcase.ToLowerCamel(modelName),
+				Label:       casing.ToLowerCamel(modelName),
 				Description: "Current model",
 				Kind:        KindModel,
 			},

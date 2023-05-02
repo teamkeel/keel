@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/iancoleman/strcase"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
@@ -89,12 +89,12 @@ func toCamelCase(s string) string {
 	//  - For "FOOBAR" we want "Foobar"
 	//  - For "FOO_BAR" we want "FooBar"
 	// To get there we have to first lower case the string so
-	// strcase.ToCamel does the right thing
+	// casing.ToCamel does the right thing
 	if allCapsRe.MatchString(s) {
 		s = strings.ToLower(s)
 	}
 
-	return strcase.ToCamel(s)
+	return casing.ToCamel(s)
 }
 
 func toLowerCamelCase(s string) string {
@@ -102,10 +102,10 @@ func toLowerCamelCase(s string) string {
 	//  - For "FOOBAR" we want "foobar"
 	//  - For "FOO_BAR" we want "fooBar"
 	// To get there we have to first lower case the string so
-	// strcase.ToCamel does the right thing
+	// casing.ToLowerCamel does the right thing
 	if allCapsRe.MatchString(s) {
 		s = strings.ToLower(s)
 	}
 
-	return strcase.ToLowerCamel(s)
+	return casing.ToLowerCamel(s)
 }

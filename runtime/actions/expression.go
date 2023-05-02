@@ -3,8 +3,8 @@ package actions
 import (
 	"fmt"
 
-	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -13,7 +13,7 @@ import (
 // Include a filter (where condition) on the query based on an implicit input filter.
 func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, fieldName string, operator ActionOperator, value any) error {
 	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
-	fragments := append([]string{strcase.ToLowerCamel(scope.operation.ModelName)}, targetField...)
+	fragments := append([]string{casing.ToLowerCamel(scope.operation.ModelName)}, targetField...)
 
 	// The lhs QueryOperand is determined from the fragments in the implicit input field
 	left, err := operandFromFragments(scope.schema, fragments)
@@ -160,7 +160,7 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 // Constructs and adds an INNER JOIN from a splice of fragments (representing an operand in an expression or implicit input).
 // The fragment slice must include the base model as the first item, for example: "post." in post.author.publisher.isActive
 func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string) error {
-	model := strcase.ToCamel(fragments[0])
+	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
 
 	for i := 1; i < fragmentCount-1; i++ {
@@ -201,7 +201,7 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 // The fragment slice must include the base model as the first fragment, for example: post.author.publisher.isActive
 func operandFromFragments(schema *proto.Schema, fragments []string) (*QueryOperand, error) {
 	var field string
-	model := strcase.ToCamel(fragments[0])
+	model := casing.ToCamel(fragments[0])
 	fragmentCount := len(fragments)
 
 	for i := 1; i < fragmentCount; i++ {

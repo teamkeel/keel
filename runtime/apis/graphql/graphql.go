@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/iancoleman/strcase"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -19,6 +18,7 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
@@ -841,7 +841,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 
 // If this is a schemd-defined message, then append with _input
 func makeUniqueInputMessageName(name string) string {
-	if name == strcase.ToCamel(name) {
+	if name == casing.ToCamel(name) {
 
 		return fmt.Sprintf("%s_input", name)
 	} else {

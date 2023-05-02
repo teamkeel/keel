@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
@@ -20,14 +20,14 @@ import (
 // Some field on the query builder's model.
 func Field(field string) *QueryOperand {
 	return &QueryOperand{
-		column: strcase.ToSnake(field),
+		column: casing.ToSnake(field),
 	}
 }
 
 // The identifier field on the query builder's model.
 func IdField() *QueryOperand {
 	return &QueryOperand{
-		column: strcase.ToSnake(parser.ImplicitFieldNameId),
+		column: casing.ToSnake(parser.ImplicitFieldNameId),
 	}
 }
 
@@ -41,8 +41,8 @@ func AllFields() *QueryOperand {
 // Some field from the fragments of an expression or input.
 func ExpressionField(fragments []string, field string) *QueryOperand {
 	return &QueryOperand{
-		table:  strcase.ToSnake(strings.Join(fragments, "$")),
-		column: strcase.ToSnake(field),
+		table:  casing.ToSnake(strings.Join(fragments, "$")),
+		column: casing.ToSnake(field),
 	}
 }
 
@@ -158,7 +158,7 @@ type Relationship struct {
 func NewQuery(model *proto.Model) *QueryBuilder {
 	return &QueryBuilder{
 		Model:      model,
-		table:      strcase.ToSnake(model.Name),
+		table:      casing.ToSnake(model.Name),
 		selection:  []string{},
 		distinctOn: []string{},
 		joins:      []join{},
@@ -279,7 +279,7 @@ func trimRhsOperators(filters []string) []string {
 // Include an INNER JOIN clause.
 func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, modelField *QueryOperand) {
 	join := join{
-		table:     sqlQuote(strcase.ToSnake(joinModel)),
+		table:     sqlQuote(casing.ToSnake(joinModel)),
 		alias:     sqlQuote(joinField.table),
 		condition: fmt.Sprintf("%s = %s", joinField.toColumnString(query), modelField.toColumnString(query)),
 	}
@@ -461,7 +461,7 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 // Recursively generates in common table expression insert query for the write values graph.
 func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) (string, []any, *proto.Field, string) {
 	sql := ""
-	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), strcase.ToSnake(row.model.Name))
+	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), casing.ToSnake(row.model.Name))
 
 	columnNames := []string{}
 	args := []any{}
@@ -502,7 +502,7 @@ func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, p
 	columnValues := []string{}
 	sort.Strings(orderedKeys)
 	for _, col := range orderedKeys {
-		colName := strcase.ToSnake(col)
+		colName := casing.ToSnake(col)
 		columnNames = append(columnNames, colName)
 
 		if inline, ok := row.values[col].(*inlineSelect); ok {
@@ -515,7 +515,7 @@ func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, p
 
 	cte := fmt.Sprintf("%s AS (INSERT INTO %s (%s) VALUES (%s) RETURNING *)",
 		alias,
-		sqlQuote(strcase.ToSnake(row.model.Name)),
+		sqlQuote(casing.ToSnake(row.model.Name)),
 		strings.Join(columnNames, ", "),
 		strings.Join(columnValues, ", "))
 
@@ -592,7 +592,7 @@ func (query *QueryBuilder) UpdateStatement() *Statement {
 	}
 	sort.Strings(orderedKeys)
 	for _, v := range orderedKeys {
-		sets = append(sets, fmt.Sprintf("%s = ?", strcase.ToSnake(v)))
+		sets = append(sets, fmt.Sprintf("%s = ?", casing.ToSnake(v)))
 		args = append(args, query.writeValues.values[v])
 	}
 
@@ -892,7 +892,7 @@ func copySlice[T any](a []T) []T {
 func toLowerCamelMap(m map[string]any) map[string]any {
 	res := map[string]any{}
 	for key, value := range m {
-		res[strcase.ToLowerCamel(key)] = value
+		res[casing.ToLowerCamel(key)] = value
 	}
 	return res
 }

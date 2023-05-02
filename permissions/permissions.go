@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/iancoleman/strcase"
 	"github.com/lib/pq"
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -167,7 +167,7 @@ func handleOperand(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt 
 		switch o.Ident.Fragments[0].Fragment {
 		case "ctx":
 			return handleContext(o, stmt)
-		case strcase.ToLowerCamel(model.Name):
+		case casing.ToLowerCamel(model.Name):
 			return handleModel(s, model, o, stmt)
 		default:
 			// If not context of model must be enum, but still worth checking to be sure
@@ -240,7 +240,7 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 		switch {
 		// The first fragment
 		case i == 0:
-			fieldName += strcase.ToSnake(f.Fragment)
+			fieldName += casing.ToSnake(f.Fragment)
 			continue
 
 		// The last fragment
@@ -271,7 +271,7 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 			leftAlias := fieldName
 
 			// Append fragment to identifer
-			fieldName += "$" + strcase.ToSnake(f.Fragment)
+			fieldName += "$" + casing.ToSnake(f.Fragment)
 
 			// Right alias is the join table
 			rightAlias := fieldName
@@ -325,7 +325,7 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 
 // identifier converts s to snake cases and wraps it in double quotes
 func identifier(s string) string {
-	return pq.QuoteIdentifier(strcase.ToSnake(s))
+	return pq.QuoteIdentifier(casing.ToSnake(s))
 }
 
 type statement struct {

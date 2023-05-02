@@ -23,14 +23,14 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_clashing_explicit_implicit_inputs/schema.keel",
-        "offset": 240,
-        "line": 12,
+        "offset": 239,
+        "line": 11,
         "column": 20
       },
       "endPos": {
         "filename": "testdata/validation_clashing_explicit_implicit_inputs/schema.keel",
-        "offset": 247,
-        "line": 12,
+        "offset": 246,
+        "line": 11,
         "column": 27
       }
     }
