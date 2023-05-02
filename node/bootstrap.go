@@ -6,13 +6,12 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 
 	"github.com/hashicorp/go-version"
 )
 
-const minimumRequiredNodeVersion = "18.100.0"
+const minimumRequiredNodeVersion = "18.0.0"
 
 type bootstrapOptions struct {
 	packagesPath string
@@ -106,24 +105,20 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 }
 
 func CheckNodeVersion() error {
-	nodeVersion, err := exec.Command("node", "--version").Output()
+	_, err := exec.LookPath("node")
+	if errors.Is(err, exec.ErrNotFound) {
+		return &NodeNotFoundError{}
+	}
+
+	output, err := exec.Command("node", "--version").Output()
 	if err != nil {
 		return err
 	}
 
-	output := string(nodeVersion)
-	versionFormatted, err := regexp.MatchString(`v(\d+)\.(\d+)\.(\d+)`, output)
-	if err != nil {
-		return err
-	}
-	if !versionFormatted {
-		return errors.New("cannot parse output from node --version")
-	}
+	nodeVersion := strings.TrimPrefix(string(output), "v")
+	nodeVersion = strings.TrimSuffix(nodeVersion, "\n")
 
-	trimmed := strings.TrimPrefix(output, "v")
-	trimmed = strings.TrimSuffix(trimmed, "\n")
-
-	current, err := version.NewVersion(trimmed)
+	current, err := version.NewVersion(nodeVersion)
 	if err != nil {
 		return err
 	}
@@ -134,7 +129,7 @@ func CheckNodeVersion() error {
 
 	if current.LessThan(minimum) {
 		return &IncorrectNodeVersionError{
-			Current: trimmed,
+			Current: nodeVersion,
 			Minimum: minimumRequiredNodeVersion,
 		}
 	}
@@ -158,4 +153,10 @@ type IncorrectNodeVersionError struct {
 
 func (n *IncorrectNodeVersionError) Error() string {
 	return fmt.Sprintf("incorrect node version. requires %s", n.Minimum)
+}
+
+type NodeNotFoundError struct{}
+
+func (n *NodeNotFoundError) Error() string {
+	return "node command not found"
 }

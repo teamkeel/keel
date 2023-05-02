@@ -203,7 +203,9 @@ func renderError(m *Model) string {
 	case StatusCheckingDependencies:
 		incorrectNodeVersionErr := &node.IncorrectNodeVersionError{}
 		if errors.As(m.Err, &incorrectNodeVersionErr) {
-			b.WriteString(fmt.Sprintf("❌ Node.js %s installed. Minimum required is %s.", incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum))
+			b.WriteString(fmt.Sprintf("❌ Node %s installed. Minimum required is %s.", incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum))
+		} else if errors.Is(m.Err, &node.NodeNotFoundError{}) {
+			b.WriteString("❌ Node is not installed or the executable location is not added to $PATH.")
 		} else {
 			b.WriteString("❌ There is an error with your dependencies:\n\n")
 			b.WriteString(m.Err.Error())
