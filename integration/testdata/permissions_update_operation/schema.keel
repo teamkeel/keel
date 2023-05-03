@@ -49,9 +49,6 @@ model Post {
         update updateWithTrueValuePermission(id) with (title) {
             @permission(expression: true)
         }
-        update updateWithTextPermissionOnImplicitInput(id) with (title) {
-            @permission(expression: post.title == "hello")
-        }
     }
 
     @permission(
