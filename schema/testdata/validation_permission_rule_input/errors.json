@@ -1,0 +1,55 @@
+{
+  "errors": [
+    {
+      "message": "'name' not found",
+      "hint": "Did you mean ctx, or person?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_permission_rule_input/schema.keel",
+        "offset": 150,
+        "line": 8,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_rule_input/schema.keel",
+        "offset": 154,
+        "line": 8,
+        "column": 41
+      }
+    },
+    {
+      "message": "'name' not found",
+      "hint": "Did you mean ctx, or person?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_permission_rule_input/schema.keel",
+        "offset": 272,
+        "line": 11,
+        "column": 46
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_rule_input/schema.keel",
+        "offset": 276,
+        "line": 11,
+        "column": 50
+      }
+    },
+    {
+      "message": "'name' not found",
+      "hint": "Did you mean ctx, or person?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_permission_rule_input/schema.keel",
+        "offset": 370,
+        "line": 14,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_rule_input/schema.keel",
+        "offset": 374,
+        "line": 14,
+        "column": 41
+      }
+    }
+  ]
+}

@@ -40,31 +40,17 @@ model ModelWithExpressions {
     }
 
     operations {
-        create textsFailedExpressions() with (title, explTitle: Text) {
+        create textsFailedExpressions() with (title) {
             @permission(expression: "hello" == "goodbye")
             @permission(expression: "hello" != "hello")
-            @permission(expression: "hello" != title)
-            @permission(expression: "hello" != explTitle)
         }
-        create numbersFailedExpressions() with (views, explViews: Number) {
+        create numbersFailedExpressions() with (views) {
             @permission(expression: 2 == 1)
             @permission(expression: 1 != 1)
             @permission(expression: 1 > 1)
             @permission(expression: 1 < 1)
             @permission(expression: 1 >= 2)
             @permission(expression: 2 <= 1)
-            @permission(expression: 1 == views)
-            @permission(expression: 2 != views)
-            @permission(expression: 1 > views)
-            @permission(expression: 3 < views)
-            @permission(expression: 1 >= views)
-            @permission(expression: 3 <= views)
-            @permission(expression: 1 == explViews)
-            @permission(expression: 2 != explViews)
-            @permission(expression: 1 > explViews)
-            @permission(expression: 3 < explViews)
-            @permission(expression: 1 >= explViews)
-            @permission(expression: 3 <= explViews)
         }
         create booleansFailedExpressions() with (isActive) {
             @permission(expression: true == false)
@@ -77,7 +63,6 @@ model ModelWithExpressions {
         create enumFailedExpressions() with (option) {
             @permission(expression: Options.One == Options.Two)
             @permission(expression: Options.One != Options.One)
-            @permission(expression: Options.One != option)
             // todo: https://linear.app/keel/issue/DEV-216/enum-as-explicit-input-action-inputs-must-be-one-of-the-fields-defined
             //@permission(expression: Options.One != explOption)
         }

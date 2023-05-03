@@ -49,15 +49,6 @@ model Post {
         get getWithTrueValuePermission(id) {
             @permission(expression: true)
         }
-        get getWithTextPermissionFromImplicitInput(id) {
-            @permission(expression: post.id == id)
-        }
-        get getWithTextPermissionFromImplicitInputNotMatching(id) {
-            @permission(expression: post.id != id)
-        }
-        get getWithTextPermissionFromExplicitInput(id, explTitle: Text?) {
-            @permission(expression: post.title == explTitle)
-        }
     }
 
     @permission(

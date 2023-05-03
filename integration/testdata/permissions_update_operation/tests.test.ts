@@ -343,36 +343,3 @@ test("true value permission - unauthenticated identity - is authorized", async (
     })
   ).not.toHaveAuthorizationError();
 });
-
-test("permission on implicit input - matching value - is authorized", async () => {
-  const post = await actions.createWithText({ title: "hello" });
-
-  await expect(
-    actions.updateWithTextPermissionOnImplicitInput({
-      where: { id: post.id },
-      values: { title: "does not matter" },
-    })
-  ).not.toHaveAuthorizationError();
-});
-
-test("permission on implicit input - not matching value - is not authorized", async () => {
-  const post = await actions.createWithText({ title: "goodbye" });
-
-  await expect(
-    actions.updateWithTextPermissionOnImplicitInput({
-      where: { id: post.id },
-      values: { title: "does not matter" },
-    })
-  ).toHaveAuthorizationError();
-});
-
-test("permission on implicit input - null value - is not authorized", async () => {
-  const post = await actions.createWithText({ title: null });
-
-  await expect(
-    actions.updateWithTextPermissionOnImplicitInput({
-      where: { id: post.id },
-      values: { title: "does not matter" },
-    })
-  ).toHaveAuthorizationError();
-});
