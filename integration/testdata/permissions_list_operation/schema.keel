@@ -50,15 +50,6 @@ model Post {
         list listWithTrueValuePermission() {
             @permission(expression: true)
         }
-        list listWithTextPermissionFromImplicitInput(isActive) {
-            @permission(expression: isActive == true)
-        }
-        list listWithTextPermissionFromImplicitInputIsFalse(isActive) {
-            @permission(expression: isActive == false)
-        }
-        list listWithTextPermissionFromExplicitInput(isActive, explTitle: Text) {
-            @permission(expression: post.title == explTitle)
-        }
     }
 
     @permission(

@@ -54,13 +54,13 @@ test("no permissions set on model level for delete op - can delete - is authoriz
 
 test("text literal comparisons - all expressions fail - is not authorized", async () => {
   await expect(
-    actions.textsFailedExpressions({ title: "hello", explTitle: "hello" })
+    actions.textsFailedExpressions({ title: "hello" })
   ).toHaveAuthorizationError();
 });
 
 test("number literal comparisons - all expressions fail - is not authorized", async () => {
   await expect(
-    actions.numbersFailedExpressions({ views: 2, explViews: 2 })
+    actions.numbersFailedExpressions({ views: 2 })
   ).toHaveAuthorizationError();
 });
 
@@ -73,9 +73,7 @@ test("boolean literal comparisons - all expressions fail - is not authorized", a
 });
 
 test("enum literal comparisons - all expressions fail - is not authorized", async () => {
-  await expect(
-    actions.enumFailedExpressions({ option: Options.One })
-  ).toHaveAuthorizationError();
+  await expect(actions.enumFailedExpressions()).toHaveAuthorizationError();
 });
 
 test("permission role email is authorized", async () => {
