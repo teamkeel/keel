@@ -1,3 +1,10 @@
+## [0.313.6](https://github.com/teamkeel/keel/compare/v0.313.5...v0.313.6) (2023-05-03)
+
+
+### Bug Fixes
+
+* modify parser field type to attach node info ([#944](https://github.com/teamkeel/keel/issues/944)) ([8e39297](https://github.com/teamkeel/keel/commit/8e39297b5d80988e90a27496961bd2b35a56ba81))
+
 ## [0.313.5](https://github.com/teamkeel/keel/compare/v0.313.4...v0.313.5) (2023-05-02)
 
 
