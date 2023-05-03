@@ -52,9 +52,6 @@ model Post {
         update updateWithTextPermissionOnImplicitInput(id) with (title) {
             @permission(expression: post.title == "hello")
         }
-        update updateWithTextPermissionOnExplicitInput(id) with (explTitle: Text) {
-            @permission(expression: post.title == explTitle)
-        }
     }
 
     @permission(
