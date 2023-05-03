@@ -185,7 +185,7 @@ func printMessage(writer *Writer, message *parser.MessageNode) {
 					writer.Write(
 						"%s %s",
 						lowerCamel(field.Name.Value),
-						field.Type,
+						field.Type.Value,
 					)
 
 					if field.Optional {
