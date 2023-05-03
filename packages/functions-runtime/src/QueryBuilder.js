@@ -1,6 +1,7 @@
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
 const { camelCaseObject } = require("./casing");
+const tracing = require("./tracing");
 
 class QueryBuilder {
   /**
@@ -34,7 +35,11 @@ class QueryBuilder {
   }
 
   async findMany() {
-    const rows = await this._db.orderBy("id").execute();
+    const query = this._db.orderBy("id");
+    const sql = query.compile().sql;
+    const rows = await tracing.promise(`query`, () => query.execute(), {
+      sql: sql,
+    });
     return rows.map((x) => camelCaseObject(x));
   }
 }
