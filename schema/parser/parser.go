@@ -53,12 +53,6 @@ type NameNode struct {
 	Value string `@Ident`
 }
 
-type TypeNode struct {
-	node.Node
-
-	Value string `@Ident`
-}
-
 type AttributeNameToken struct {
 	node.Node
 
@@ -69,7 +63,7 @@ type FieldNode struct {
 	node.Node
 
 	Name       NameNode         `@@`
-	Type       TypeNode         `@@`
+	Type       NameNode         `@@`
 	Repeated   bool             `( @( "[" "]" )`
 	Optional   bool             `| @( "?" ))?`
 	Attributes []*AttributeNode `( "{" @@+ "}" | @@+ )?`

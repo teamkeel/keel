@@ -177,7 +177,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 				Name: parser.NameNode{
 					Value: parser.ImplicitFieldNameId,
 				},
-				Type: parser.TypeNode{
+				Type: parser.NameNode{
 					Value: parser.FieldTypeID,
 				},
 				Attributes: []*parser.AttributeNode{
@@ -194,7 +194,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 				Name: parser.NameNode{
 					Value: parser.ImplicitFieldNameCreatedAt,
 				},
-				Type: parser.TypeNode{
+				Type: parser.NameNode{
 					Value: parser.FieldTypeDatetime,
 				},
 				Attributes: []*parser.AttributeNode{
@@ -210,7 +210,7 @@ func (scm *Builder) insertBuiltInFields(declarations *parser.AST) {
 				Name: parser.NameNode{
 					Value: parser.ImplicitFieldNameUpdatedAt,
 				},
-				Type: parser.TypeNode{
+				Type: parser.NameNode{
 					Value: parser.FieldTypeDatetime,
 				},
 				Attributes: []*parser.AttributeNode{
@@ -279,7 +279,7 @@ func (scm *Builder) insertForeignKeyFields(
 				Name: parser.NameNode{
 					Value: generatedForeignKeyName,
 				},
-				Type: parser.TypeNode{
+				Type: parser.NameNode{
 					Value: parser.FieldTypeID,
 				},
 				Attributes: []*parser.AttributeNode{},
@@ -331,7 +331,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Name: parser.NameNode{
 			Value: parser.ImplicitIdentityFieldNameEmail,
 		},
-		Type: parser.TypeNode{
+		Type: parser.NameNode{
 			Value: parser.FieldTypeText,
 		},
 		Attributes: []*parser.AttributeNode{uniqueAttributeNode},
@@ -343,7 +343,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Name: parser.NameNode{
 			Value: parser.ImplicitIdentityFieldNamePassword,
 		},
-		Type: parser.TypeNode{
+		Type: parser.NameNode{
 			Value: parser.FieldTypePassword,
 		},
 		Optional: true,
@@ -354,7 +354,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Name: parser.NameNode{
 			Value: parser.ImplicitIdentityFieldNameExternalId,
 		},
-		Type: parser.TypeNode{
+		Type: parser.NameNode{
 			Value: parser.FieldTypeText,
 		},
 		Optional: true,
@@ -364,7 +364,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Name: parser.NameNode{
 			Value: parser.ImplicitIdentityFieldNameCreatedBy,
 		},
-		Type: parser.TypeNode{
+		Type: parser.NameNode{
 			Value: parser.FieldTypeText,
 		},
 
