@@ -203,11 +203,11 @@ func renderError(m *Model) string {
 	case StatusCheckingDependencies:
 		incorrectNodeVersionErr := &node.IncorrectNodeVersionError{}
 		if errors.As(m.Err, &incorrectNodeVersionErr) {
-			b.WriteString(fmt.Sprintf("❌ Node %s installed. Minimum required is %s.", incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum))
+			b.WriteString(fmt.Sprintf("❌ You have Node %s installed but the minimum required is %s", incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum))
 		} else if errors.Is(m.Err, &node.NodeNotFoundError{}) {
-			b.WriteString("❌ Node is not installed or the executable location is not added to $PATH.")
+			b.WriteString("❌ Node is not installed or the executable's location is not added to $PATH")
 		} else {
-			b.WriteString("❌ There is an error with your dependencies:\n\n")
+			b.WriteString("❌ There is an issue with your dependencies:\n\n")
 			b.WriteString(m.Err.Error())
 		}
 
@@ -217,7 +217,6 @@ func renderError(m *Model) string {
 
 	case StatusSetupFunctions:
 		npmInstallErr := &node.NpmInstallError{}
-
 		if errors.As(m.Err, &npmInstallErr) {
 			b.WriteString("❌ There was an error installing function dependencies:\n\n")
 			b.WriteString(npmInstallErr.Output)
@@ -283,7 +282,7 @@ func renderError(m *Model) string {
 
 	case StatusStartingFunctions:
 		startFunctionsError := &StartFunctionsError{}
-		b.WriteString("❌ There was an error running your functions\n\n")
+		b.WriteString("❌ There was an error running your functions:\n\n")
 		b.WriteString(m.Err.Error())
 		if errors.As(m.Err, &startFunctionsError) && startFunctionsError.Output != "" {
 			b.WriteString("\n\n")
