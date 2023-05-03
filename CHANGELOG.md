@@ -1,3 +1,10 @@
+## [0.313.7](https://github.com/teamkeel/keel/compare/v0.313.6...v0.313.7) (2023-05-03)
+
+
+### Bug Fixes
+
+* disallow inputs in permission rules ([#946](https://github.com/teamkeel/keel/issues/946)) ([3c0dbee](https://github.com/teamkeel/keel/commit/3c0dbee32cf3763416cafa26482f56a0fcb29009))
+
 ## [0.313.6](https://github.com/teamkeel/keel/compare/v0.313.5...v0.313.6) (2023-05-03)
 
 
