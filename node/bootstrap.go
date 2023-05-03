@@ -1,11 +1,17 @@
 package node
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
+
+	"github.com/hashicorp/go-version"
 )
+
+const minimumRequiredNodeVersion = "18.0.0"
 
 type bootstrapOptions struct {
 	packagesPath string
@@ -30,6 +36,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 	if err == nil {
 		return nil
 	}
+
 	// A "not exists" error is fine, that means we're generating a fresh package.json
 	// Bail on all other errors
 	if !os.IsNotExist(err) {
@@ -97,6 +104,39 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 	return nil
 }
 
+func CheckNodeVersion() error {
+	_, err := exec.LookPath("node")
+	if errors.Is(err, exec.ErrNotFound) {
+		return &NodeNotFoundError{}
+	}
+
+	output, err := exec.Command("node", "--version").Output()
+	if err != nil {
+		return err
+	}
+
+	nodeVersion := strings.TrimPrefix(string(output), "v")
+	nodeVersion = strings.TrimSuffix(nodeVersion, "\n")
+
+	current, err := version.NewVersion(nodeVersion)
+	if err != nil {
+		return err
+	}
+	minimum, err := version.NewVersion(minimumRequiredNodeVersion)
+	if err != nil {
+		return err
+	}
+
+	if current.LessThan(minimum) {
+		return &IncorrectNodeVersionError{
+			Current: nodeVersion,
+			Minimum: minimumRequiredNodeVersion,
+		}
+	}
+
+	return nil
+}
+
 type NpmInstallError struct {
 	err    error
 	Output string
@@ -104,4 +144,19 @@ type NpmInstallError struct {
 
 func (n *NpmInstallError) Error() string {
 	return fmt.Sprintf("npm install error (%s): %s", n.err.Error(), n.Output)
+}
+
+type IncorrectNodeVersionError struct {
+	Current string
+	Minimum string
+}
+
+func (n *IncorrectNodeVersionError) Error() string {
+	return fmt.Sprintf("incorrect node version. requires %s", n.Minimum)
+}
+
+type NodeNotFoundError struct{}
+
+func (n *NodeNotFoundError) Error() string {
+	return "node command not found"
 }

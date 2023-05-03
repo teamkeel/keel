@@ -96,6 +96,20 @@ func Scaffold(dir string) tea.Cmd {
 	}
 }
 
+type CheckDependenciesMsg struct {
+	Err error
+}
+
+func CheckDependencies() tea.Cmd {
+	return func() tea.Msg {
+		err := node.CheckNodeVersion()
+
+		return CheckDependenciesMsg{
+			Err: err,
+		}
+	}
+}
+
 type ParsePrivateKeyMsg struct {
 	PrivateKey *rsa.PrivateKey
 	Err        error

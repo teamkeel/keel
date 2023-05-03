@@ -200,6 +200,17 @@ func renderError(m *Model) string {
 	b := strings.Builder{}
 
 	switch m.Status {
+	case StatusCheckingDependencies:
+		incorrectNodeVersionErr := &node.IncorrectNodeVersionError{}
+		if errors.As(m.Err, &incorrectNodeVersionErr) {
+			b.WriteString(fmt.Sprintf("❌ You have Node %s installed but the minimum required is %s", incorrectNodeVersionErr.Current, incorrectNodeVersionErr.Minimum))
+		} else if errors.Is(m.Err, &node.NodeNotFoundError{}) {
+			b.WriteString("❌ Node is not installed or the executable's location is not added to $PATH")
+		} else {
+			b.WriteString("❌ There is an issue with your dependencies:\n\n")
+			b.WriteString(m.Err.Error())
+		}
+
 	case StatusSetupDatabase:
 		b.WriteString("❌ There was an error starting the database:\n\n")
 		b.WriteString(m.Err.Error())
@@ -271,7 +282,7 @@ func renderError(m *Model) string {
 
 	case StatusStartingFunctions:
 		startFunctionsError := &StartFunctionsError{}
-		b.WriteString("❌ There was an error running your functions\n\n")
+		b.WriteString("❌ There was an error running your functions:\n\n")
 		b.WriteString(m.Err.Error())
 		if errors.As(m.Err, &startFunctionsError) && startFunctionsError.Output != "" {
 			b.WriteString("\n\n")
