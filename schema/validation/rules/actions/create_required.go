@@ -112,7 +112,7 @@ func checkHasOneRelationField(
 	errs *errorhandling.ValidationErrors,
 ) {
 
-	nestedModel := query.Model(asts, field.Type)
+	nestedModel := query.Model(asts, field.Type.Value)
 	pathToReferencedModel := extendDotDelimPath(dotDelimPath, field.Name.Value)
 	pathToReferencedModelDotID := extendDotDelimPath(pathToReferencedModel, parser.ImplicitFieldNameId)
 

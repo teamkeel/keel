@@ -53,6 +53,12 @@ type NameNode struct {
 	Value string `@Ident`
 }
 
+type TypeNode struct {
+	node.Node
+
+	Value string `@Ident`
+}
+
 type AttributeNameToken struct {
 	node.Node
 
@@ -63,7 +69,7 @@ type FieldNode struct {
 	node.Node
 
 	Name       NameNode         `@@`
-	Type       string           `@Ident`
+	Type       TypeNode         `@@`
 	Repeated   bool             `( @( "[" "]" )`
 	Optional   bool             `| @( "?" ))?`
 	Attributes []*AttributeNode `( "{" @@+ "}" | @@+ )?`
@@ -75,7 +81,7 @@ type FieldNode struct {
 }
 
 func (f *FieldNode) IsScalar() bool {
-	switch f.Type {
+	switch f.Type.Value {
 	case FieldTypeBoolean, FieldTypeNumber, FieldTypeText, FieldTypeDatetime, FieldTypeDate, FieldTypeSecret, FieldTypeID, FieldTypePassword:
 		return true
 	default:
@@ -213,10 +219,6 @@ type MessageNode struct {
 
 	// todo: can we use field node here
 	Fields []*FieldNode `"{" @@* "}"`
-}
-
-type TypeNode interface {
-	NameNode() NameNode
 }
 
 func (e *EnumNode) NameNode() NameNode {

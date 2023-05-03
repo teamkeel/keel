@@ -2,6 +2,7 @@ package expression
 
 import (
 	"fmt"
+
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/schema/expressions"
 	"github.com/teamkeel/keel/schema/parser"
@@ -30,7 +31,7 @@ func ValidateExpression(asts []*parser.AST, expression *parser.Expression, rules
 func DefaultCanUseZeroValueRule(asts []*parser.AST, attr *parser.AttributeNode, context expressions.ExpressionContext) (errors []*errorhandling.ValidationError) {
 	typesWithZeroValue := []string{"Text", "Number", "Boolean", "ID", "Timestamp"}
 
-	if !lo.Contains(typesWithZeroValue, context.Field.Type) {
+	if !lo.Contains(typesWithZeroValue, context.Field.Type.Value) {
 		errors = append(errors,
 			errorhandling.NewValidationError(
 				errorhandling.ErrorDefaultExpressionNeeded,
@@ -87,7 +88,7 @@ func ValueTypechecksRule(asts []*parser.AST, expression *parser.Expression, cont
 		return errors
 	}
 
-	expectedType := context.Field.Type
+	expectedType := context.Field.Type.Value
 	resolvedType := expressionScopeEntity.GetType()
 
 	if expectedType != resolvedType {

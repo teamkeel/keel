@@ -92,7 +92,7 @@ func IsForeignKey(asts []*parser.AST, model *parser.ModelNode, field *parser.Fie
 		return false
 	}
 	modelField := Field(model, strings.TrimSuffix(field.Name.Value, "Id"))
-	return modelField != nil && Model(asts, modelField.Type) != nil
+	return modelField != nil && Model(asts, modelField.Type.Value) != nil
 }
 
 func IsIdentityModel(asts []*parser.AST, name string) bool {
@@ -301,7 +301,7 @@ func ModelFieldNames(model *parser.ModelNode) []string {
 func FieldsInModelOfType(model *parser.ModelNode, requiredType string) []string {
 	names := []string{}
 	for _, field := range ModelFields(model) {
-		if field.Type == requiredType {
+		if field.Type.Value == requiredType {
 			names = append(names, field.Name.Value)
 		}
 	}
@@ -343,7 +343,7 @@ func ResolveInputType(asts []*parser.AST, input *parser.ActionInputNode, parentM
 
 	field := ResolveInputField(asts, input, parentModel)
 	if field != nil {
-		return field.Type
+		return field.Type.Value
 	}
 
 	// ResolveInputField above tries to resolve the fragments of an input identifier based on the input being a field
@@ -378,7 +378,7 @@ func ResolveInputField(asts []*parser.AST, input *parser.ActionInputNode, parent
 			return nil
 		}
 
-		model = Model(asts, field.Type)
+		model = Model(asts, field.Type.Value)
 	}
 
 	return field
@@ -409,7 +409,7 @@ func PrimaryKey(modelName string, asts []*parser.AST) *parser.FieldNode {
 // a field that references another model, and is not denoted as being repeated.
 func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 	switch {
-	case !IsModel(asts, field.Type):
+	case !IsModel(asts, field.Type.Value):
 		return false
 	case field.Repeated:
 		return false
@@ -422,7 +422,7 @@ func IsHasOneModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 // a field that references another model, and is denoted as being REPEATED.
 func IsHasManyModelField(asts []*parser.AST, field *parser.FieldNode) bool {
 	switch {
-	case !IsModel(asts, field.Type):
+	case !IsModel(asts, field.Type.Value):
 		return false
 	case !field.Repeated:
 		return false

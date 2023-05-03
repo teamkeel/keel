@@ -146,8 +146,8 @@ fragments:
 				o.scope = scopeFromModel(o.scope, e, e.Model)
 			case e.Field != nil:
 
-				model := query.Model(o.asts, e.Field.Type)
-				enum := query.Enum(o.asts, e.Field.Type)
+				model := query.Model(o.asts, e.Field.Type.Value)
+				enum := query.Enum(o.asts, e.Field.Type.Value)
 
 				if model != nil {
 					// If the field type is a model the scope is now that models fields

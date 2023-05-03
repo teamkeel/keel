@@ -71,11 +71,11 @@ func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationError
 	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
 
-			if parser.IsBuiltInFieldType(field.Type) {
+			if parser.IsBuiltInFieldType(field.Type.Value) {
 				continue
 			}
 
-			if query.IsUserDefinedType(asts, field.Type) {
+			if query.IsUserDefinedType(asts, field.Type.Value) {
 				continue
 			}
 
@@ -87,14 +87,14 @@ func ValidFieldTypesRule(asts []*parser.AST) (errs errorhandling.ValidationError
 			// todo feed hint suggestions into validation error somehow.
 			sort.Strings(validTypes)
 
-			hint := errorhandling.NewCorrectionHint(validTypes, field.Type)
+			hint := errorhandling.NewCorrectionHint(validTypes, field.Type.Value)
 
 			suggestions := formatting.HumanizeList(hint.Results, formatting.DelimiterOr)
 
 			errs.Append(errorhandling.ErrorUnsupportedFieldType,
 				map[string]string{
 					"Name":        field.Name.Value,
-					"Type":        field.Type,
+					"Type":        field.Type.Value,
 					"Suggestions": suggestions,
 				},
 				field.Name,

@@ -468,7 +468,7 @@ func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input 
 				fragment,
 			)
 		}
-		model = query.Model(asts, field.Type)
+		model = query.Model(asts, field.Type.Value)
 	}
 
 	// If we have a model at the end of this it means that the input

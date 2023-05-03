@@ -366,7 +366,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 				}
 			}
 
-			currModel = field.Type
+			currModel = field.Type.Value
 		} else {
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
@@ -797,7 +797,7 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 		field := &proto.MessageField{
 			Name: f.Name.Value,
 			Type: &proto.TypeInfo{
-				Type:     scm.parserTypeToProtoType(f.Type),
+				Type:     scm.parserTypeToProtoType(f.Type.Value),
 				Repeated: f.Repeated,
 			},
 			Optional:    f.Optional,
@@ -805,15 +805,15 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 		}
 
 		if field.Type.Type == proto.Type_TYPE_ENUM {
-			field.Type.EnumName = wrapperspb.String(f.Type)
+			field.Type.EnumName = wrapperspb.String(f.Type.Value)
 		}
 
 		if field.Type.Type == proto.Type_TYPE_MESSAGE {
-			field.Type.MessageName = wrapperspb.String(f.Type)
+			field.Type.MessageName = wrapperspb.String(f.Type.Value)
 		}
 
 		if field.Type.Type == proto.Type_TYPE_MODEL {
-			field.Type.ModelName = wrapperspb.String(f.Type)
+			field.Type.ModelName = wrapperspb.String(f.Type.Value)
 		}
 
 		return field
@@ -885,13 +885,13 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 	if query.IsForeignKey(scm.asts, model, parserField) {
 		modelField := query.Field(model, strings.TrimSuffix(parserField.Name.Value, "Id"))
 		protoField.ForeignKeyInfo = &proto.ForeignKeyInfo{
-			RelatedModelName:  modelField.Type,
+			RelatedModelName:  modelField.Type.Value,
 			RelatedModelField: parser.ImplicitFieldNameId,
 		}
 	}
 
 	// Model field (sibling to foreign key)
-	if query.IsModel(scm.asts, parserField.Type) && !parserField.Repeated {
+	if query.IsModel(scm.asts, parserField.Type.Value) && !parserField.Repeated {
 		protoField.ForeignKeyFieldName = wrapperspb.String(fmt.Sprintf("%sId", parserField.Name.Value))
 	}
 
@@ -1033,7 +1033,7 @@ func (scm *Builder) inferParserInputType(
 				targetsOptionalField = true
 			}
 
-			m := query.Model(scm.asts, field.Type)
+			m := query.Model(scm.asts, field.Type.Value)
 			if m != nil {
 				currModel = m
 			}
@@ -1050,7 +1050,7 @@ func (scm *Builder) inferParserInputType(
 
 		if protoType == proto.Type_TYPE_ENUM {
 			enumName = &wrapperspb.StringValue{
-				Value: field.Type,
+				Value: field.Type.Value,
 			}
 		}
 	}
@@ -1124,18 +1124,18 @@ func (scm *Builder) explicitInputToTypeInfo(input *parser.ActionInputNode) *prot
 
 func (scm *Builder) parserFieldToProtoTypeInfo(field *parser.FieldNode) *proto.TypeInfo {
 
-	protoType := scm.parserTypeToProtoType(field.Type)
+	protoType := scm.parserTypeToProtoType(field.Type.Value)
 	var modelName *wrapperspb.StringValue
 	var enumName *wrapperspb.StringValue
 
 	switch protoType {
 	case proto.Type_TYPE_MODEL:
 		modelName = &wrapperspb.StringValue{
-			Value: query.Model(scm.asts, field.Type).Name.Value,
+			Value: query.Model(scm.asts, field.Type.Value).Name.Value,
 		}
 	case proto.Type_TYPE_ENUM:
 		enumName = &wrapperspb.StringValue{
-			Value: query.Enum(scm.asts, field.Type).Name.Value,
+			Value: query.Enum(scm.asts, field.Type.Value).Name.Value,
 		}
 	}
 
