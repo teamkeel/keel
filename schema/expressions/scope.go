@@ -147,7 +147,7 @@ func (e *ExpressionScopeEntity) GetType() string {
 	}
 
 	if e.Field != nil {
-		return e.Field.Type
+		return e.Field.Type.Value
 	}
 
 	if e.Literal != nil {

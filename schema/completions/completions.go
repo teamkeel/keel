@@ -116,13 +116,13 @@ func getUndefinedFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition)
 	for _, model := range query.Models([]*parser.AST{ast}) {
 		for _, field := range query.ModelFields(model) {
 			// check that model exists
-			model := query.Model([]*parser.AST{ast}, field.Type)
+			model := query.Model([]*parser.AST{ast}, field.Type.Value)
 
-			enum := query.Enum([]*parser.AST{ast}, field.Type)
+			enum := query.Enum([]*parser.AST{ast}, field.Type.Value)
 
 			if model == nil && enum == nil {
 				items = append(items, &CompletionItem{
-					Label: field.Type,
+					Label: field.Type.Value,
 					Kind:  KindType,
 				})
 			}
@@ -920,7 +920,7 @@ func getFieldNamesAtPath(ast *parser.AST, model *parser.ModelNode, idents []stri
 		if field == nil {
 			return nil, false
 		}
-		model = query.Model([]*parser.AST{ast}, field.Type)
+		model = query.Model([]*parser.AST{ast}, field.Type.Value)
 		if model == nil {
 			return nil, false
 		}
@@ -934,7 +934,7 @@ func getModelFieldCompletions(model *parser.ModelNode) []*CompletionItem {
 	for _, field := range query.ModelFields(model) {
 		completions = append(completions, &CompletionItem{
 			Label:       field.Name.Value,
-			Description: field.Type,
+			Description: field.Type.Value,
 			Kind:        KindField,
 		})
 	}

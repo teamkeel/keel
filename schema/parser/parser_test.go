@@ -33,15 +33,15 @@ func TestModelWithFields(t *testing.T) {
 		}`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
 	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name.Value)
-	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type)
+	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type.Value)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[0].Repeated)
 
 	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name.Value)
-	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
+	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type.Value)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
 
 	assert.Equal(t, "rating", schema.Declarations[0].Model.Sections[0].Fields[2].Name.Value)
-	assert.Equal(t, "Number", schema.Declarations[0].Model.Sections[0].Fields[2].Type)
+	assert.Equal(t, "Number", schema.Declarations[0].Model.Sections[0].Fields[2].Type.Value)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[2].Repeated)
 
 }
@@ -60,11 +60,11 @@ func TestModelWithFunctions(t *testing.T) {
 	  }`})
 	assert.Equal(t, "Author", schema.Declarations[0].Model.Name.Value)
 	assert.Equal(t, "name", schema.Declarations[0].Model.Sections[0].Fields[0].Name.Value)
-	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type)
+	assert.Equal(t, "Text", schema.Declarations[0].Model.Sections[0].Fields[0].Type.Value)
 	assert.Equal(t, false, schema.Declarations[0].Model.Sections[0].Fields[0].Repeated)
 
 	assert.Equal(t, "books", schema.Declarations[0].Model.Sections[0].Fields[1].Name.Value)
-	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type)
+	assert.Equal(t, "Book", schema.Declarations[0].Model.Sections[0].Fields[1].Type.Value)
 	assert.Equal(t, true, schema.Declarations[0].Model.Sections[0].Fields[1].Repeated)
 
 	assert.Equal(t, "create", schema.Declarations[0].Model.Sections[1].Functions[0].Type.Value)
@@ -312,7 +312,7 @@ func TestArbitraryFunctionsNestedMessage(t *testing.T) {
 
 	myInput := schema.Declarations[0].Message.Name.Value
 	assert.Equal(t, "MyInput", myInput)
-	nestedFieldType := schema.Declarations[0].Message.Fields[0].Type
+	nestedFieldType := schema.Declarations[0].Message.Fields[0].Type.Value
 	assert.Equal(t, "NestedInput", nestedFieldType)
 	nestedInput := schema.Declarations[1].Message.Name.Value
 	assert.Equal(t, "NestedInput", nestedInput)

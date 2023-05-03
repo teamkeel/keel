@@ -37,12 +37,12 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 			relationAttr := query.FieldGetAttribute(thisField, parser.AttributeRelation)
 
 			// Make sure @relation is only used on fields of type Model
-			if !lo.Contains(query.ModelNames(asts), thisField.Type) {
+			if !lo.Contains(query.ModelNames(asts), thisField.Type.Value) {
 				errs.Append(
 					errorhandling.ErrorRelationAttrOnWrongFieldType,
 					map[string]string{
 						"FieldName":  thisField.Name.Value,
-						"WrongType":  thisField.Type,
+						"WrongType":  thisField.Type.Value,
 						"Suggestion": thisField.Name.Value,
 					},
 					thisField)
@@ -77,7 +77,7 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 
 			// Make sure the value of the @relation attribute (e.g. "written"), exists as a
 			// field in the related model.
-			relatedModelName := thisField.Type
+			relatedModelName := thisField.Type.Value
 			relatedModel := query.Model(asts, relatedModelName)
 			var relatedField *parser.FieldNode
 			if relatedField = query.Field(relatedModel, relatedFieldName); relatedField == nil {
@@ -95,14 +95,14 @@ func RelationAttributeRule(asts []*parser.AST) (errs errorhandling.ValidationErr
 			}
 
 			// Make sure the related field is of type <thisModel>
-			if relatedField.Type != thisModel.Name.Value {
+			if relatedField.Type.Value != thisModel.Name.Value {
 				suitableFields := query.FieldsInModelOfType(relatedModel, thisModel.Name.Value)
 				suggestedFields := formatting.HumanizeList(suitableFields, formatting.DelimiterOr)
 				errs.Append(
 					errorhandling.ErrorRelationAttributeRelatedFieldWrongType,
 					map[string]string{
 						"RelatedFieldName": relatedFieldName,
-						"RelatedFieldType": relatedField.Type,
+						"RelatedFieldType": relatedField.Type.Value,
 						"RequiredType":     thisModel.Name.Value,
 						"SuggestedNames":   suggestedFields,
 					},
@@ -157,7 +157,7 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 				continue
 			}
 
-			otherModel := query.Model(asts, field.Type)
+			otherModel := query.Model(asts, field.Type.Value)
 
 			if otherModel == nil {
 				continue
@@ -169,7 +169,7 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 				if otherField == field {
 					continue
 				}
-				if otherField.Type != model.Name.Value {
+				if otherField.Type.Value != model.Name.Value {
 					continue
 				}
 
@@ -184,7 +184,7 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 					errorhandling.ErrorInvalidOneToOneRelationship,
 					map[string]string{
 						"ModelA": model.Name.Value,
-						"ModelB": field.Type,
+						"ModelB": field.Type.Value,
 					},
 					field,
 				)
@@ -209,7 +209,7 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 				continue
 			}
 
-			otherModel := query.Model(asts, field.Type)
+			otherModel := query.Model(asts, field.Type.Value)
 
 			if otherModel == nil {
 				continue
@@ -218,7 +218,7 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 			otherModelFields := query.ModelFields(otherModel)
 
 			for _, otherField := range otherModelFields {
-				if otherField.Type != model.Name.Value {
+				if otherField.Type.Value != model.Name.Value {
 					continue
 				}
 
@@ -231,7 +231,7 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 				errorhandling.ErrorMissingRelationshipField,
 				map[string]string{
 					"ModelA":     model.Name.Value,
-					"ModelB":     field.Type,
+					"ModelB":     field.Type.Value,
 					"Suggestion": fmt.Sprintf("%s %s", casing.ToLowerCamel(model.Name.Value), model.Name.Value),
 				},
 				field.Name,
@@ -279,7 +279,7 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 	// the model at the HasOne end of the relationship.
 	for _, hasManyF := range hasManyFields {
 
-		singleEndModel := query.Model(asts, hasManyF.theField.Type)
+		singleEndModel := query.Model(asts, hasManyF.theField.Type.Value)
 
 		if singleEndModel == nil {
 			// This can be the case for invalid schemas but other rules check for that.
@@ -298,7 +298,7 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 			}
 			// It isn't a REVERSE relation field if despite it being a hasOne relation field,
 			// it refers to a different model to that of the model to which the hasManyField belongs to.
-			if f.Type != hasManyF.belongsTo.Name.Value {
+			if f.Type.Value != hasManyF.belongsTo.Name.Value {
 				return false
 			}
 
@@ -318,7 +318,7 @@ func MoreThanOneReverseMany(asts []*parser.AST) (errs errorhandling.ValidationEr
 				errorhandling.ErrorAmbiguousRelationship,
 				map[string]string{
 					"ModelA":          singleEndModel.Name.Value,
-					"ModelB":          reverseFields[0].Type,
+					"ModelB":          reverseFields[0].Type.Value,
 					"SuggestedFields": formatting.HumanizeList(suggestedFields, formatting.DelimiterAnd),
 				},
 				singleEndModel,

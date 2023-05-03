@@ -6,15 +6,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 33,
+        "offset": 37,
         "line": 3,
-        "column": 9
+        "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 41,
+        "offset": 39,
         "line": 3,
-        "column": 17
+        "column": 15
       }
     },
     {
@@ -23,15 +23,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 50,
+        "offset": 56,
         "line": 4,
-        "column": 9
+        "column": 15
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 62,
+        "offset": 60,
         "line": 4,
-        "column": 21
+        "column": 19
       }
     },
     {
@@ -40,15 +40,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 71,
+        "offset": 79,
         "line": 5,
-        "column": 9
+        "column": 17
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 87,
+        "offset": 85,
         "line": 5,
-        "column": 25
+        "column": 23
       }
     },
     {
@@ -57,15 +57,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 96,
+        "offset": 102,
         "line": 6,
-        "column": 9
+        "column": 15
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 111,
+        "offset": 109,
         "line": 6,
-        "column": 24
+        "column": 22
       }
     },
     {
@@ -74,15 +74,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 120,
+        "offset": 130,
         "line": 7,
-        "column": 9
+        "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 140,
+        "offset": 138,
         "line": 7,
-        "column": 29
+        "column": 27
       }
     },
     {
@@ -91,15 +91,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 149,
+        "offset": 159,
         "line": 8,
-        "column": 9
+        "column": 19
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 170,
+        "offset": 168,
         "line": 8,
-        "column": 30
+        "column": 28
       }
     },
     {
@@ -108,15 +108,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 179,
+        "offset": 185,
         "line": 9,
-        "column": 9
+        "column": 15
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 191,
+        "offset": 189,
         "line": 9,
-        "column": 21
+        "column": 19
       }
     },
     {
@@ -125,15 +125,15 @@
       "code": "TypeError",
       "pos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 200,
+        "offset": 208,
         "line": 10,
-        "column": 9
+        "column": 17
       },
       "endPos": {
         "filename": "testdata/validation_repeated_scalar_fields/schema.keel",
-        "offset": 216,
+        "offset": 214,
         "line": 10,
-        "column": 25
+        "column": 23
       }
     }
   ]
