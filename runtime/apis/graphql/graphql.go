@@ -498,7 +498,7 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 	}
 
 	edgeType := graphql.NewObject(graphql.ObjectConfig{
-		Name: itemType.Name() + "_edge",
+		Name: itemType.Name() + "Edge",
 		Fields: graphql.Fields{
 			"node": &graphql.Field{
 				Type: graphql.NewNonNull(
@@ -509,7 +509,7 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 	})
 
 	connection := graphql.NewObject(graphql.ObjectConfig{
-		Name: itemType.Name() + "_connection",
+		Name: itemType.Name() + "Connection",
 		Fields: graphql.Fields{
 			"edges": &graphql.Field{
 				Type: graphql.NewNonNull(

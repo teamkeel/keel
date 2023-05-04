@@ -8,14 +8,14 @@ type Mutation {
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input EmailPasswordInput {
-  email: String!
-  password: String!
-}
-
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
 }
 
 input RequestPasswordResetInput {

@@ -9,6 +9,11 @@ type Mutation {
   writeSportInterests(input: Input!): Response
 }
 
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
 input EmailPasswordInput {
   email: String!
   password: String!
@@ -19,11 +24,6 @@ input Input {
   sports: [Sport!]!
 }
 
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
 input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
@@ -32,11 +32,6 @@ input RequestPasswordResetInput {
 input ResetPasswordInput {
   password: String!
   token: String!
-}
-
-type Response {
-  favouriteSport: Sport
-  sports: [Sport]!
 }
 
 type AuthenticateResponse {
@@ -50,6 +45,11 @@ type RequestPasswordResetResponse {
 
 type ResetPasswordResponse {
   success: Boolean
+}
+
+type Response {
+  favouriteSport: Sport
+  sports: [Sport]!
 }
 
 enum Sport {

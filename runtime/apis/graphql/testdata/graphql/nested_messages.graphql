@@ -10,6 +10,11 @@ type Mutation {
   writePerson(input: WritePersonInput!): PersonResponse
 }
 
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
 input EmailPasswordInput {
   email: String!
   password: String!
@@ -23,15 +28,6 @@ input ReadPersonInput {
   nested: NestedInputObject!
 }
 
-input WritePersonInput {
-  nested: NestedInputObject!
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
-}
-
 input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
@@ -42,17 +38,21 @@ input ResetPasswordInput {
   token: String!
 }
 
+input WritePersonInput {
+  nested: NestedInputObject!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
+}
+
 type NestedResponseObject {
   bool: Boolean!
 }
 
 type PersonResponse {
   nested: NestedResponseObject!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
 }
 
 type RequestPasswordResetResponse {

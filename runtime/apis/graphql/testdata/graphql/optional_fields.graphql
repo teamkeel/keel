@@ -9,14 +9,14 @@ type Mutation {
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input EmailPasswordInput {
-  email: String!
-  password: String!
-}
-
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
 }
 
 input GetPersonInput {
@@ -33,6 +33,11 @@ input ResetPasswordInput {
   token: String!
 }
 
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
+}
+
 type Person {
   createdAt: Timestamp!
   id: ID!
@@ -42,24 +47,19 @@ type Person {
   updatedAt: Timestamp!
 }
 
-type Timestamp {
-  formatted(format: String!): String!
-  fromNow: String!
-  iso8601: String!
-  seconds: Int!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
-}
-
 type RequestPasswordResetResponse {
   success: Boolean
 }
 
 type ResetPasswordResponse {
   success: Boolean
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
 }
 
 scalar Any

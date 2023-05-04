@@ -9,6 +9,11 @@ type Mutation {
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
 input EmailPasswordInput {
   email: String!
   password: String!
@@ -16,11 +21,6 @@ input EmailPasswordInput {
 
 input PersonInput {
   id: [ID!]!
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
 }
 
 input RequestPasswordResetInput {
@@ -33,13 +33,13 @@ input ResetPasswordInput {
   token: String!
 }
 
-type PersonResponse {
-  id: [ID]!
-}
-
 type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
+}
+
+type PersonResponse {
+  id: [ID]!
 }
 
 type RequestPasswordResetResponse {

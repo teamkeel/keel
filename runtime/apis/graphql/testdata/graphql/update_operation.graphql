@@ -10,14 +10,14 @@ type Mutation {
   updatePersonCompany(input: UpdatePersonCompanyInput!): Person!
 }
 
-input EmailPasswordInput {
-  email: String!
-  password: String!
-}
-
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
 }
 
 input RequestPasswordResetInput {
@@ -39,7 +39,7 @@ input UpdatePersonCompanyInput {
   where: UpdatePersonCompanyWhere!
 }
 
-input updatePersonCompanyValues {
+input UpdatePersonCompanyValues {
   company: UpdatePersonCompanyCompanyInput!
 }
 
@@ -60,6 +60,11 @@ input UpdatePersonWhere {
   id: ID!
 }
 
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
+}
+
 type Company {
   createdAt: Timestamp!
   id: ID!
@@ -76,24 +81,19 @@ type Person {
   updatedAt: Timestamp!
 }
 
-type Timestamp {
-  formatted(format: String!): String!
-  fromNow: String!
-  iso8601: String!
-  seconds: Int!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
-}
-
 type RequestPasswordResetResponse {
   success: Boolean
 }
 
 type ResetPasswordResponse {
   success: Boolean
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
 }
 
 scalar Any

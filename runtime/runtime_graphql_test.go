@@ -823,7 +823,7 @@ var testCases = []testCase{
 			require.NoError(t, db.Table("thing").Create(row1).Error)
 		},
 		gqlOperation: `
-		fragment Fields on Thing_connection {
+		fragment Fields on ThingConnection {
 			edges {
 				node {
 					text

@@ -10,6 +10,11 @@ type Mutation {
   writePersonWithMessage(input: PersonInput!): PersonResponse
 }
 
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
 input EmailPasswordInput {
   email: String!
   password: String!
@@ -18,11 +23,6 @@ input EmailPasswordInput {
 input PersonInput {
   name: String!
   optionalName: String
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
 }
 
 input RequestPasswordResetInput {
@@ -39,14 +39,14 @@ input WritePersonInput {
   name: String!
 }
 
-type PersonResponse {
-  optionalText: String
-  text: String!
-}
-
 type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
+}
+
+type PersonResponse {
+  optionalText: String
+  text: String!
 }
 
 type RequestPasswordResetResponse {

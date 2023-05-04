@@ -13,14 +13,14 @@ type Mutation {
   switchBeatle: Beatle!
 }
 
-input EmailPasswordInput {
-  email: String!
-  password: String!
-}
-
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
 }
 
 input ListBeatlesInput {
@@ -37,6 +37,11 @@ input RequestPasswordResetInput {
 
 input ResetPasswordInput {
   password: String!
+  token: String!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
   token: String!
 }
 
@@ -80,24 +85,19 @@ type PageInfo {
   totalCount: Int!
 }
 
-type Timestamp {
-  formatted(format: String!): String!
-  fromNow: String!
-  iso8601: String!
-  seconds: Int!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
-}
-
 type RequestPasswordResetResponse {
   success: Boolean
 }
 
 type ResetPasswordResponse {
   success: Boolean
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
 }
 
 scalar Any

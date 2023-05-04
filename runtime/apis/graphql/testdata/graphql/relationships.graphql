@@ -10,24 +10,24 @@ type Mutation {
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input EmailPasswordInput {
-  email: String!
-  password: String!
-}
-
-input IDQueryInput {
-  equals: ID
-  notEquals: ID
-  oneOf: [ID]
-}
-
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: EmailPasswordInput!
 }
 
+input EmailPasswordInput {
+  email: String!
+  password: String!
+}
+
 input GetOrderInput {
   id: ID!
+}
+
+input IdQueryInput {
+  equals: ID
+  notEquals: ID
+  oneOf: [ID]
 }
 
 input ListOrderItemsInput {
@@ -39,7 +39,7 @@ input ListOrderItemsInput {
 }
 
 input ListOrderItemsWhere {
-  orderId: IDQueryInput!
+  orderId: IdQueryInput!
 }
 
 input RequestPasswordResetInput {
@@ -49,6 +49,11 @@ input RequestPasswordResetInput {
 
 input ResetPasswordInput {
   password: String!
+  token: String!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
   token: String!
 }
 
@@ -85,24 +90,19 @@ type PageInfo {
   totalCount: Int!
 }
 
-type Timestamp {
-  formatted(format: String!): String!
-  fromNow: String!
-  iso8601: String!
-  seconds: Int!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
-}
-
 type RequestPasswordResetResponse {
   success: Boolean
 }
 
 type ResetPasswordResponse {
   success: Boolean
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
 }
 
 scalar Any
