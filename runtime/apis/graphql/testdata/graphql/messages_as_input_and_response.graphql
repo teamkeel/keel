@@ -6,17 +6,17 @@ type Mutation {
   authenticate(input: AuthenticateInput!): AuthenticateResponse
   requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
-  writePerson(input: TheMessage!): TheMessage
-}
-
-input EmailPasswordInput {
-  email: String!
-  password: String!
+  writePerson(input: TheMessageInput!): TheMessage
 }
 
 input AuthenticateInput {
   createIfNotExists: Boolean
   emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
+  email: String!
+  password: String!
 }
 
 input RequestPasswordResetInput {
@@ -29,7 +29,7 @@ input ResetPasswordInput {
   token: String!
 }
 
-type TheMessage {
+input TheMessageInput {
   thing: Boolean!
 }
 
@@ -44,6 +44,10 @@ type RequestPasswordResetResponse {
 
 type ResetPasswordResponse {
   success: Boolean
+}
+
+type TheMessage {
+  thing: Boolean!
 }
 
 scalar Any

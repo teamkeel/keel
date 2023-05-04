@@ -1116,7 +1116,7 @@ declare class ActionExecutor {
 	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
 	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
-	resetPassword(i: ResetPasswordInput): Promise<resetPassword_response>;
+	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;

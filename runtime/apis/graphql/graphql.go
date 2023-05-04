@@ -749,7 +749,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		}
 
 		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   messageName,
+			Name:   mk.makeUniqueInputMessageName(messageName),
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
@@ -815,7 +815,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   message.Name,
+		Name:   mk.makeUniqueInputMessageName(message.Name),
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
@@ -836,4 +836,11 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	}
 
 	return inputType, allOptionalInputs, nil
+}
+
+func (mk *graphqlSchemaBuilder) makeUniqueInputMessageName(name string) string {
+	if proto.MessageUsedAsResponse(mk.proto, name) {
+		return fmt.Sprintf("%sInput", name)
+	}
+	return name
 }
