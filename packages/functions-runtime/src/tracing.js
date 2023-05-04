@@ -26,5 +26,6 @@ function withSpan(name, fn) {
 }
 
 module.exports = {
+  serviceName,
   withSpan,
 };

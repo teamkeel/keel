@@ -13,28 +13,51 @@ const {
 const { PROTO_ACTION_TYPES } = require("./consts");
 
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
+const opentelemetry = require("@opentelemetry/api");
+const { serviceName } = require("./tracing");
 
 // Generic handler function that is agnostic to runtime environment (local or lambda)
 // to execute a custom function based on the contents of a jsonrpc-2.0 payload object.
 // To read more about jsonrpc request and response shapes, please read https://www.jsonrpc.org/specification
 async function handleRequest(request, config) {
-  const {
-    createFunctionAPI,
-    createContextAPI,
-    functions,
-    permissions,
-    actionTypes,
-  } = config;
+  const activeContext = opentelemetry.propagation.extract(
+    opentelemetry.context.active(),
+    // "?." is so we don't have to provide this field on tests
+    request.meta?.tracing
+  );
+  const tracer = opentelemetry.trace.getTracer(serviceName);
+  let span = tracer.startSpan(
+    "handleRequest",
+    { attributes: {} },
+    activeContext
+  );
+  opentelemetry.trace.setSpan(activeContext, span);
 
-  if (!(request.method in functions)) {
-    return createJSONRPCErrorResponse(
-      request.id,
-      JSONRPCErrorCode.MethodNotFound,
-      `no corresponding function found for '${request.method}'`
-    );
-  }
-
+  //
+  // WARNING: Nothing should be done before this try block, as the finally closes the span
+  //
   try {
+    const {
+      createFunctionAPI,
+      createContextAPI,
+      functions,
+      permissions,
+      actionTypes,
+    } = config;
+
+    if (!(request.method in functions)) {
+      const message = `no corresponding function found for '${request.method}'`;
+      span.setStatus({
+        code: opentelemetry.SpanStatusCode.ERROR,
+        message: message,
+      });
+      return createJSONRPCErrorResponse(
+        request.id,
+        JSONRPCErrorCode.MethodNotFound,
+        message
+      );
+    }
+
     // headers reference passed to custom function where object data can be modified
     const headers = new Headers();
 
@@ -128,14 +151,27 @@ async function handleRequest(request, config) {
     return response;
   } catch (e) {
     if (e instanceof Error) {
+      span.recordException(e);
+      span.setStatus({
+        code: opentelemetry.SpanStatusCode.ERROR,
+        message: e.message,
+      });
       return errorToJSONRPCResponse(request, e);
     }
 
+    const message = JSON.stringify(e);
+
+    span.setStatus({
+      code: opentelemetry.SpanStatusCode.ERROR,
+      message: message,
+    });
     return createJSONRPCErrorResponse(
       request.id,
       RuntimeErrors.UnknownError,
-      JSON.stringify(e)
+      message
     );
+  } finally {
+    span.end();
   }
 }
 
