@@ -4,6 +4,7 @@ const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
 const { camelCaseObject, snakeCaseObject } = require("./casing");
+const tracing = require("./tracing");
 
 /**
  * RelationshipConfig is a simple representation of a model field that
@@ -48,7 +49,7 @@ class ModelAPI {
   async create(values) {
     try {
       const defaults = this._defaultValues();
-      const row = await this._db
+      const query = this._db
         .insertInto(this._tableName)
         .values(
           snakeCaseObject({
@@ -56,8 +57,15 @@ class ModelAPI {
             ...values,
           })
         )
-        .returningAll()
-        .executeTakeFirstOrThrow();
+        .returningAll();
+      const sql = query.compile().sql;
+      const row = await tracing.withSpan(
+        `${this._tableName}.create`,
+        (span) => {
+          span.setAttribute("sql", sql);
+          return query.executeTakeFirstOrThrow();
+        }
+      );
 
       return camelCaseObject(row);
     } catch (e) {
@@ -76,7 +84,11 @@ class ModelAPI {
     builder = applyJoins(context, builder, where);
     builder = applyWhereConditions(context, builder, where);
 
-    const row = await builder.executeTakeFirst();
+    const sql = builder.compile().sql;
+    const row = await tracing.withSpan(`${this._tableName}.findOne`, (span) => {
+      span.setAttribute("sql", sql);
+      return builder.executeTakeFirst();
+    });
     if (!row) {
       return null;
     }
@@ -94,8 +106,16 @@ class ModelAPI {
 
     builder = applyJoins(context, builder, where);
     builder = applyWhereConditions(context, builder, where);
+    const query = builder.orderBy("id");
 
-    const rows = await builder.orderBy("id").execute();
+    const sql = query.compile().sql;
+    const rows = await tracing.withSpan(
+      `${this._tableName}.findMany`,
+      (span) => {
+        span.setAttribute("sql", sql);
+        return builder.execute();
+      }
+    );
     return rows.map((x) => camelCaseObject(x));
   }
 
@@ -110,7 +130,14 @@ class ModelAPI {
     builder = applyWhereConditions(context, builder, where);
 
     try {
-      const row = await builder.executeTakeFirstOrThrow();
+      const sql = builder.compile().sql;
+      const row = await tracing.withSpan(
+        `${this._tableName}.update`,
+        (span) => {
+          span.setAttribute("sql", sql);
+          return builder.executeTakeFirstOrThrow();
+        }
+      );
 
       return camelCaseObject(row);
     } catch (e) {
@@ -127,7 +154,14 @@ class ModelAPI {
     builder = applyWhereConditions(context, builder, where);
 
     try {
-      const row = await builder.executeTakeFirstOrThrow();
+      const sql = builder.compile().sql;
+      const row = await tracing.withSpan(
+        `${this._tableName}.delete`,
+        (span) => {
+          span.setAttribute("sql", sql);
+          return builder.executeTakeFirstOrThrow();
+        }
+      );
 
       return row.id;
     } catch (e) {
