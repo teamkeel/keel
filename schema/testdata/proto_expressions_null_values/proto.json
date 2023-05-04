@@ -54,7 +54,7 @@
               "source": "post.title = null"
             }
           ],
-          "inputMessageName": "removeTitle_input"
+          "inputMessageName": "RemoveTitleInput"
         },
         {
           "modelName": "Post",
@@ -66,7 +66,7 @@
               "source": "post.title == null"
             }
           ],
-          "inputMessageName": "listPostsWithNoTitle_input"
+          "inputMessageName": "ListPostsWithNoTitleInput"
         }
       ]
     },
@@ -144,24 +144,24 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "authenticate_input",
-          "responseMessageName": "authenticate_response"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "requestPasswordReset_input",
-          "responseMessageName": "requestPasswordReset_response"
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "resetPassword_input",
-          "responseMessageName": "resetPassword_response"
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
         }
       ]
     }
@@ -171,10 +171,10 @@
       "name": "Any"
     },
     {
-      "name": "removeTitle_where",
+      "name": "RemoveTitleWhere",
       "fields": [
         {
-          "messageName": "removeTitle_where",
+          "messageName": "RemoveTitleWhere",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -188,47 +188,47 @@
       ]
     },
     {
-      "name": "removeTitle_values"
+      "name": "RemoveTitleValues"
     },
     {
-      "name": "removeTitle_input",
+      "name": "RemoveTitleInput",
       "fields": [
         {
-          "messageName": "removeTitle_input",
+          "messageName": "RemoveTitleInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "removeTitle_where"
+            "messageName": "RemoveTitleWhere"
           }
         },
         {
-          "messageName": "removeTitle_input",
+          "messageName": "RemoveTitleInput",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "removeTitle_values"
+            "messageName": "RemoveTitleValues"
           },
           "optional": true
         }
       ]
     },
     {
-      "name": "listPostsWithNoTitle_where"
+      "name": "ListPostsWithNoTitleWhere"
     },
     {
-      "name": "listPostsWithNoTitle_input",
+      "name": "ListPostsWithNoTitleInput",
       "fields": [
         {
-          "messageName": "listPostsWithNoTitle_input",
+          "messageName": "ListPostsWithNoTitleInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "listPostsWithNoTitle_where"
+            "messageName": "ListPostsWithNoTitleWhere"
           },
           "optional": true
         },
         {
-          "messageName": "listPostsWithNoTitle_input",
+          "messageName": "ListPostsWithNoTitleInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -236,7 +236,7 @@
           "optional": true
         },
         {
-          "messageName": "listPostsWithNoTitle_input",
+          "messageName": "ListPostsWithNoTitleInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -244,7 +244,7 @@
           "optional": true
         },
         {
-          "messageName": "listPostsWithNoTitle_input",
+          "messageName": "ListPostsWithNoTitleInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -252,7 +252,7 @@
           "optional": true
         },
         {
-          "messageName": "listPostsWithNoTitle_input",
+          "messageName": "ListPostsWithNoTitleInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -262,17 +262,17 @@
       ]
     },
     {
-      "name": "EmailPassword_input",
+      "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -281,10 +281,10 @@
       ]
     },
     {
-      "name": "authenticate_input",
+      "name": "AuthenticateInput",
       "fields": [
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -292,27 +292,27 @@
           "optional": true
         },
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPassword_input"
+            "messageName": "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "authenticate_response",
+      "name": "AuthenticateResponse",
       "fields": [
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
@@ -321,17 +321,17 @@
       ]
     },
     {
-      "name": "requestPasswordReset_input",
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
           "type": {
             "type": "TYPE_STRING"
@@ -340,20 +340,20 @@
       ]
     },
     {
-      "name": "requestPasswordReset_response"
+      "name": "RequestPasswordResetResponse"
     },
     {
-      "name": "resetPassword_input",
+      "name": "ResetPasswordInput",
       "fields": [
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -362,7 +362,7 @@
       ]
     },
     {
-      "name": "resetPassword_response"
+      "name": "ResetPasswordResponse"
     }
   ]
 }

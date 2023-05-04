@@ -1,34 +1,34 @@
 type Query {
   _health: Boolean
-  getPerson(input: getPerson_input!): Person
+  getPerson(input: GetPersonInput!): Person
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input EmailPassword_input {
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input authenticate_input {
+input AuthenticateInput {
   createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
+  emailPassword: EmailPasswordInput!
 }
 
-input getPerson_input {
+input GetPersonInput {
   id: ID!
 }
 
-input requestPasswordReset_input {
+input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
 }
 
-input resetPassword_input {
+input ResetPasswordInput {
   password: String!
   token: String!
 }
@@ -46,16 +46,16 @@ type Timestamp {
   seconds: Int!
 }
 
-type authenticate_response {
+type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
 }
 
-type requestPasswordReset_response {
+type RequestPasswordResetResponse {
   success: Boolean
 }
 
-type resetPassword_response {
+type ResetPasswordResponse {
   success: Boolean
 }
 

@@ -68,7 +68,7 @@
           "name": "searchFees",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "searchFees_input"
+          "inputMessageName": "SearchFeesInput"
         }
       ]
     },
@@ -259,7 +259,7 @@
           "name": "searchFums",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "searchFums_input"
+          "inputMessageName": "SearchFumsInput"
         }
       ]
     },
@@ -337,24 +337,24 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "authenticate_input",
-          "responseMessageName": "authenticate_response"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "requestPasswordReset_input",
-          "responseMessageName": "requestPasswordReset_response"
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "resetPassword_input",
-          "responseMessageName": "resetPassword_response"
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
         }
       ]
     }
@@ -364,7 +364,7 @@
       "name": "Any"
     },
     {
-      "name": "StringQuery_input",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -412,14 +412,14 @@
       ]
     },
     {
-      "name": "searchFees_where",
+      "name": "SearchFeesWhere",
       "fields": [
         {
-          "messageName": "searchFees_where",
+          "messageName": "SearchFeesWhere",
           "name": "theFiTheFoTheFumTheName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQuery_input"
+            "messageName": "StringQueryInput"
           },
           "target": [
             "theFi",
@@ -431,18 +431,18 @@
       ]
     },
     {
-      "name": "searchFees_input",
+      "name": "SearchFeesInput",
       "fields": [
         {
-          "messageName": "searchFees_input",
+          "messageName": "SearchFeesInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "searchFees_where"
+            "messageName": "SearchFeesWhere"
           }
         },
         {
-          "messageName": "searchFees_input",
+          "messageName": "SearchFeesInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -450,7 +450,7 @@
           "optional": true
         },
         {
-          "messageName": "searchFees_input",
+          "messageName": "SearchFeesInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -458,7 +458,7 @@
           "optional": true
         },
         {
-          "messageName": "searchFees_input",
+          "messageName": "SearchFeesInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -466,7 +466,7 @@
           "optional": true
         },
         {
-          "messageName": "searchFees_input",
+          "messageName": "SearchFeesInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -476,7 +476,7 @@
       ]
     },
     {
-      "name": "StringQuery_input",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -524,14 +524,14 @@
       ]
     },
     {
-      "name": "searchFums_where",
+      "name": "SearchFumsWhere",
       "fields": [
         {
-          "messageName": "searchFums_where",
+          "messageName": "SearchFumsWhere",
           "name": "theFosTheFisTheFeesTheName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQuery_input"
+            "messageName": "StringQueryInput"
           },
           "target": [
             "theFos",
@@ -543,18 +543,18 @@
       ]
     },
     {
-      "name": "searchFums_input",
+      "name": "SearchFumsInput",
       "fields": [
         {
-          "messageName": "searchFums_input",
+          "messageName": "SearchFumsInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "searchFums_where"
+            "messageName": "SearchFumsWhere"
           }
         },
         {
-          "messageName": "searchFums_input",
+          "messageName": "SearchFumsInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -562,7 +562,7 @@
           "optional": true
         },
         {
-          "messageName": "searchFums_input",
+          "messageName": "SearchFumsInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -570,7 +570,7 @@
           "optional": true
         },
         {
-          "messageName": "searchFums_input",
+          "messageName": "SearchFumsInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -578,7 +578,7 @@
           "optional": true
         },
         {
-          "messageName": "searchFums_input",
+          "messageName": "SearchFumsInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -588,17 +588,17 @@
       ]
     },
     {
-      "name": "EmailPassword_input",
+      "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -607,10 +607,10 @@
       ]
     },
     {
-      "name": "authenticate_input",
+      "name": "AuthenticateInput",
       "fields": [
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -618,27 +618,27 @@
           "optional": true
         },
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPassword_input"
+            "messageName": "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "authenticate_response",
+      "name": "AuthenticateResponse",
       "fields": [
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
@@ -647,17 +647,17 @@
       ]
     },
     {
-      "name": "requestPasswordReset_input",
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
           "type": {
             "type": "TYPE_STRING"
@@ -666,20 +666,20 @@
       ]
     },
     {
-      "name": "requestPasswordReset_response"
+      "name": "RequestPasswordResetResponse"
     },
     {
-      "name": "resetPassword_input",
+      "name": "ResetPasswordInput",
       "fields": [
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -688,7 +688,7 @@
       ]
     },
     {
-      "name": "resetPassword_response"
+      "name": "ResetPasswordResponse"
     }
   ]
 }

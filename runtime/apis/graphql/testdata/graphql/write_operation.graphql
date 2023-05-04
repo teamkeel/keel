@@ -3,39 +3,39 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
-  writePerson(input: writePerson_input!): PersonResponse
-  writePersonWithMessage(input: PersonInput_input!): PersonResponse
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
+  writePerson(input: WritePersonInput!): PersonResponse
+  writePersonWithMessage(input: PersonInput!): PersonResponse
 }
 
-input EmailPassword_input {
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input PersonInput_input {
+input PersonInput {
   name: String!
   optionalName: String
 }
 
-input authenticate_input {
+input AuthenticateInput {
   createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
+  emailPassword: EmailPasswordInput!
 }
 
-input requestPasswordReset_input {
+input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
 }
 
-input resetPassword_input {
+input ResetPasswordInput {
   password: String!
   token: String!
 }
 
-input writePerson_input {
+input WritePersonInput {
   name: String!
 }
 
@@ -44,16 +44,16 @@ type PersonResponse {
   text: String!
 }
 
-type authenticate_response {
+type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
 }
 
-type requestPasswordReset_response {
+type RequestPasswordResetResponse {
   success: Boolean
 }
 
-type resetPassword_response {
+type ResetPasswordResponse {
   success: Boolean
 }
 

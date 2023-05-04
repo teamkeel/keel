@@ -90,14 +90,14 @@
           "name": "listByCompany",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "listByCompany_input"
+          "inputMessageName": "ListByCompanyInput"
         },
         {
           "modelName": "Person",
           "name": "listByPreviousCompany",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "listByPreviousCompany_input"
+          "inputMessageName": "ListByPreviousCompanyInput"
         }
       ]
     },
@@ -226,24 +226,24 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "authenticate_input",
-          "responseMessageName": "authenticate_response"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "requestPasswordReset_input",
-          "responseMessageName": "requestPasswordReset_response"
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "resetPassword_input",
-          "responseMessageName": "resetPassword_response"
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
         }
       ]
     }
@@ -253,7 +253,7 @@
       "name": "Any"
     },
     {
-      "name": "StringQuery_input",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -301,7 +301,7 @@
       ]
     },
     {
-      "name": "StringQuery_input",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -349,14 +349,14 @@
       ]
     },
     {
-      "name": "listByCompany_where",
+      "name": "ListByCompanyWhere",
       "fields": [
         {
-          "messageName": "listByCompany_where",
+          "messageName": "ListByCompanyWhere",
           "name": "companyName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQuery_input"
+            "messageName": "StringQueryInput"
           },
           "target": [
             "company",
@@ -364,11 +364,11 @@
           ]
         },
         {
-          "messageName": "listByCompany_where",
+          "messageName": "ListByCompanyWhere",
           "name": "companyTradingAs",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQuery_input"
+            "messageName": "StringQueryInput"
           },
           "optional": true,
           "target": [
@@ -379,18 +379,18 @@
       ]
     },
     {
-      "name": "listByCompany_input",
+      "name": "ListByCompanyInput",
       "fields": [
         {
-          "messageName": "listByCompany_input",
+          "messageName": "ListByCompanyInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "listByCompany_where"
+            "messageName": "ListByCompanyWhere"
           }
         },
         {
-          "messageName": "listByCompany_input",
+          "messageName": "ListByCompanyInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -398,7 +398,7 @@
           "optional": true
         },
         {
-          "messageName": "listByCompany_input",
+          "messageName": "ListByCompanyInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -406,7 +406,7 @@
           "optional": true
         },
         {
-          "messageName": "listByCompany_input",
+          "messageName": "ListByCompanyInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -414,7 +414,7 @@
           "optional": true
         },
         {
-          "messageName": "listByCompany_input",
+          "messageName": "ListByCompanyInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -424,7 +424,7 @@
       ]
     },
     {
-      "name": "StringQuery_input",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -472,7 +472,7 @@
       ]
     },
     {
-      "name": "StringQuery_input",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -520,14 +520,14 @@
       ]
     },
     {
-      "name": "listByPreviousCompany_where",
+      "name": "ListByPreviousCompanyWhere",
       "fields": [
         {
-          "messageName": "listByPreviousCompany_where",
+          "messageName": "ListByPreviousCompanyWhere",
           "name": "previousCompanyName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQuery_input"
+            "messageName": "StringQueryInput"
           },
           "optional": true,
           "target": [
@@ -536,11 +536,11 @@
           ]
         },
         {
-          "messageName": "listByPreviousCompany_where",
+          "messageName": "ListByPreviousCompanyWhere",
           "name": "previousCompanyTradingAs",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQuery_input"
+            "messageName": "StringQueryInput"
           },
           "optional": true,
           "target": [
@@ -551,19 +551,19 @@
       ]
     },
     {
-      "name": "listByPreviousCompany_input",
+      "name": "ListByPreviousCompanyInput",
       "fields": [
         {
-          "messageName": "listByPreviousCompany_input",
+          "messageName": "ListByPreviousCompanyInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "listByPreviousCompany_where"
+            "messageName": "ListByPreviousCompanyWhere"
           },
           "optional": true
         },
         {
-          "messageName": "listByPreviousCompany_input",
+          "messageName": "ListByPreviousCompanyInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -571,7 +571,7 @@
           "optional": true
         },
         {
-          "messageName": "listByPreviousCompany_input",
+          "messageName": "ListByPreviousCompanyInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -579,7 +579,7 @@
           "optional": true
         },
         {
-          "messageName": "listByPreviousCompany_input",
+          "messageName": "ListByPreviousCompanyInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -587,7 +587,7 @@
           "optional": true
         },
         {
-          "messageName": "listByPreviousCompany_input",
+          "messageName": "ListByPreviousCompanyInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -597,17 +597,17 @@
       ]
     },
     {
-      "name": "EmailPassword_input",
+      "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -616,10 +616,10 @@
       ]
     },
     {
-      "name": "authenticate_input",
+      "name": "AuthenticateInput",
       "fields": [
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -627,27 +627,27 @@
           "optional": true
         },
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPassword_input"
+            "messageName": "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "authenticate_response",
+      "name": "AuthenticateResponse",
       "fields": [
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
@@ -656,17 +656,17 @@
       ]
     },
     {
-      "name": "requestPasswordReset_input",
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
           "type": {
             "type": "TYPE_STRING"
@@ -675,20 +675,20 @@
       ]
     },
     {
-      "name": "requestPasswordReset_response"
+      "name": "RequestPasswordResetResponse"
     },
     {
-      "name": "resetPassword_input",
+      "name": "ResetPasswordInput",
       "fields": [
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -697,7 +697,7 @@
       ]
     },
     {
-      "name": "resetPassword_response"
+      "name": "ResetPasswordResponse"
     }
   ]
 }

@@ -3,33 +3,33 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
-  writeSportInterests(input: Input_input!): Response
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
+  writeSportInterests(input: Input!): Response
 }
 
-input EmailPassword_input {
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input Input_input {
+input Input {
   favouriteSport: Sport
   sports: [Sport!]!
 }
 
-input authenticate_input {
+input AuthenticateInput {
   createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
+  emailPassword: EmailPasswordInput!
 }
 
-input requestPasswordReset_input {
+input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
 }
 
-input resetPassword_input {
+input ResetPasswordInput {
   password: String!
   token: String!
 }
@@ -39,16 +39,16 @@ type Response {
   sports: [Sport]!
 }
 
-type authenticate_response {
+type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
 }
 
-type requestPasswordReset_response {
+type RequestPasswordResetResponse {
   success: Boolean
 }
 
-type resetPassword_response {
+type ResetPasswordResponse {
   success: Boolean
 }
 

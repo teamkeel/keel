@@ -18,7 +18,6 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
@@ -750,7 +749,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		}
 
 		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   makeUniqueInputMessageName(messageName),
+			Name:   messageName,
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
@@ -816,7 +815,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   makeUniqueInputMessageName(message.Name),
+		Name:   message.Name,
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
@@ -837,14 +836,4 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	}
 
 	return inputType, allOptionalInputs, nil
-}
-
-// If this is a schemd-defined message, then append with _input
-func makeUniqueInputMessageName(name string) string {
-	if name == casing.ToCamel(name) {
-
-		return fmt.Sprintf("%s_input", name)
-	} else {
-		return name
-	}
 }

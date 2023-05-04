@@ -1,53 +1,53 @@
 type Query {
   _health: Boolean
-  getOrder(input: getOrder_input!): Order
-  listOrderItems(input: listOrderItems_input!): OrderItem_connection!
+  getOrder(input: GetOrderInput!): Order
+  listOrderItems(input: ListOrderItemsInput!): OrderItemConnection!
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input EmailPassword_input {
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input IDQuery_input {
+input IDQueryInput {
   equals: ID
   notEquals: ID
   oneOf: [ID]
 }
 
-input authenticate_input {
+input AuthenticateInput {
   createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
+  emailPassword: EmailPasswordInput!
 }
 
-input getOrder_input {
+input GetOrderInput {
   id: ID!
 }
 
-input listOrderItems_input {
+input ListOrderItemsInput {
   after: String
   before: String
   first: Int
   last: Int
-  where: listOrderItems_where!
+  where: ListOrderItemsWhere!
 }
 
-input listOrderItems_where {
-  orderId: IDQuery_input!
+input ListOrderItemsWhere {
+  orderId: IDQueryInput!
 }
 
-input requestPasswordReset_input {
+input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
 }
 
-input resetPassword_input {
+input ResetPasswordInput {
   password: String!
   token: String!
 }
@@ -55,7 +55,7 @@ input resetPassword_input {
 type Order {
   createdAt: Timestamp!
   id: ID!
-  items(after: String, before: String, first: Int, last: Int): OrderItem_connection!
+  items(after: String, before: String, first: Int, last: Int): OrderItemConnection!
   updatedAt: Timestamp!
 }
 
@@ -68,12 +68,12 @@ type OrderItem {
   updatedAt: Timestamp!
 }
 
-type OrderItem_connection {
-  edges: [OrderItem_edge!]!
+type OrderItemConnection {
+  edges: [OrderItemEdge!]!
   pageInfo: PageInfo!
 }
 
-type OrderItem_edge {
+type OrderItemEdge {
   node: OrderItem!
 }
 
@@ -92,16 +92,16 @@ type Timestamp {
   seconds: Int!
 }
 
-type authenticate_response {
+type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
 }
 
-type requestPasswordReset_response {
+type RequestPasswordResetResponse {
   success: Boolean
 }
 
-type resetPassword_response {
+type ResetPasswordResponse {
   success: Boolean
 }
 

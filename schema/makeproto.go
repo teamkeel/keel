@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
@@ -320,8 +321,8 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			// If this is not the last target fragment, then we know the current fragment is referring to a related model field.
 			// Therefore, we must create a new message for this related model and add it to the current message as a field (if this hasn't already been done with a previous input).
 
-			// Message name of nested message appended with the target framements. E.g. createSale_items_input
-			relatedModelMessageName := makeInputMessageName(fmt.Sprintf("%s_%s", action.Name.Value, strings.Join(target[0:currIndex+1], "_")))
+			// Message name of nested message appended with the target framements. E.g. CreateSaleItemsInput
+			relatedModelMessageName := makeInputMessageName(action.Name.Value, target[0:currIndex+1]...)
 
 			// Does the field already exist from a previous input?
 			fieldAlreadyCreated := false
@@ -1269,18 +1270,25 @@ func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
 }
 
-func makeInputMessageName(opName string) string {
-	return fmt.Sprintf("%s_input", opName)
+func makeInputMessageName(opName string, subMessageNames ...string) string {
+	if len(subMessageNames) > 0 {
+		subFieldNames := strings.Join(
+			lo.Map(subMessageNames, func(s string, _ int) string { return casing.ToCamel(s) }),
+			"")
+
+		return fmt.Sprintf("%s%sInput", casing.ToCamel(opName), subFieldNames)
+	}
+	return fmt.Sprintf("%sInput", casing.ToCamel(opName))
 }
 
 func makeWhereMessageName(opName string) string {
-	return fmt.Sprintf("%s_where", opName)
+	return fmt.Sprintf("%sWhere", casing.ToCamel(opName))
 }
 
 func makeValuesMessageName(opName string) string {
-	return fmt.Sprintf("%s_values", opName)
+	return fmt.Sprintf("%sValues", casing.ToCamel(opName))
 }
 
 func makeResponseMessageName(opName string) string {
-	return fmt.Sprintf("%s_response", opName)
+	return fmt.Sprintf("%sResponse", casing.ToCamel(opName))
 }

@@ -3,47 +3,47 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  createPerson(input: createPerson_input!): Person!
-  createPersonAndCompany(input: createPersonAndCompany_input!): Person!
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  createPerson(input: CreatePersonInput!): Person!
+  createPersonAndCompany(input: CreatePersonAndCompanyInput!): Person!
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input EmailPassword_input {
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input authenticate_input {
+input AuthenticateInput {
   createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
+  emailPassword: EmailPasswordInput!
 }
 
-input createPersonAndCompany_company_input {
+input CreatePersonAndCompanyCompanyInput {
   name: String!
 }
 
-input createPersonAndCompany_input {
-  company: createPersonAndCompany_company_input!
+input CreatePersonAndCompanyInput {
+  company: CreatePersonAndCompanyCompanyInput!
   name: String!
 }
 
-input createPerson_company_input {
+input CreatePersonCompanyInput {
   id: ID!
 }
 
-input createPerson_input {
-  company: createPerson_company_input!
+input CreatePersonInput {
+  company: CreatePersonCompanyInput!
   name: String!
 }
 
-input requestPasswordReset_input {
+input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
 }
 
-input resetPassword_input {
+input ResetPasswordInput {
   password: String!
   token: String!
 }
@@ -71,16 +71,16 @@ type Timestamp {
   seconds: Int!
 }
 
-type authenticate_response {
+type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
 }
 
-type requestPasswordReset_response {
+type RequestPasswordResetResponse {
   success: Boolean
 }
 
-type resetPassword_response {
+type ResetPasswordResponse {
   success: Boolean
 }
 
