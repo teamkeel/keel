@@ -27,7 +27,7 @@ async function handleRequest(request, config) {
   );
   const tracer = opentelemetry.trace.getTracer(serviceName);
   let span = tracer.startSpan(
-    "handleRequest",
+    `Function/${request.method}`,
     { attributes: {} },
     activeContext
   );
