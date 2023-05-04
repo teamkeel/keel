@@ -1,3 +1,11 @@
+# [0.314.0](https://github.com/teamkeel/keel/compare/v0.313.7...v0.314.0) (2023-05-04)
+
+
+### Features
+
+* add tracing to functions-runtime ([cced24a](https://github.com/teamkeel/keel/commit/cced24ad07556962ac89705475874fa81bc0c5db))
+* address PR feedback ([0fe1271](https://github.com/teamkeel/keel/commit/0fe12717dcc02bac6f532ba57b2c65fcbc608fa5))
+
 ## [0.313.7](https://github.com/teamkeel/keel/compare/v0.313.6...v0.313.7) (2023-05-03)
 
 
