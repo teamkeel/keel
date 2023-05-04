@@ -59,10 +59,12 @@ class ModelAPI {
         )
         .returningAll();
       const sql = query.compile().sql;
-      const row = await tracing.promise(
+      const row = await tracing.withSpan(
         `${this._tableName}.create`,
-        () => query.executeTakeFirstOrThrow(),
-        { sql: sql }
+        (span) => {
+          span.setAttribute("sql", sql);
+          return query.executeTakeFirstOrThrow();
+        }
       );
 
       return camelCaseObject(row);
@@ -83,11 +85,10 @@ class ModelAPI {
     builder = applyWhereConditions(context, builder, where);
 
     const sql = builder.compile().sql;
-    const row = await tracing.promise(
-      `${this._tableName}.findOne`,
-      () => builder.executeTakeFirst(),
-      { sql: sql }
-    );
+    const row = await tracing.withSpan(`${this._tableName}.findOne`, (span) => {
+      span.setAttribute("sql", sql);
+      return builder.executeTakeFirst();
+    });
     if (!row) {
       return null;
     }
@@ -108,10 +109,12 @@ class ModelAPI {
     const query = builder.orderBy("id");
 
     const sql = query.compile().sql;
-    const rows = await tracing.promise(
+    const rows = await tracing.withSpan(
       `${this._tableName}.findMany`,
-      () => builder.execute(),
-      { sql: sql }
+      (span) => {
+        span.setAttribute("sql", sql);
+        return builder.execute();
+      }
     );
     return rows.map((x) => camelCaseObject(x));
   }
@@ -128,10 +131,12 @@ class ModelAPI {
 
     try {
       const sql = builder.compile().sql;
-      const row = await tracing.promise(
+      const row = await tracing.withSpan(
         `${this._tableName}.update`,
-        () => builder.executeTakeFirstOrThrow(),
-        { sql: sql }
+        (span) => {
+          span.setAttribute("sql", sql);
+          return builder.executeTakeFirstOrThrow();
+        }
       );
 
       return camelCaseObject(row);
@@ -150,10 +155,12 @@ class ModelAPI {
 
     try {
       const sql = builder.compile().sql;
-      const row = await tracing.promise(
+      const row = await tracing.withSpan(
         `${this._tableName}.delete`,
-        () => builder.executeTakeFirstOrThrow(),
-        { sql: sql }
+        (span) => {
+          span.setAttribute("sql", sql);
+          return builder.executeTakeFirstOrThrow();
+        }
       );
 
       return row.id;

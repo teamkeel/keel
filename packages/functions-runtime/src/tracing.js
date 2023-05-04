@@ -2,27 +2,29 @@ const opentelemetry = require("@opentelemetry/api");
 
 const serviceName = "customerCustomFunctions";
 
-function asyncFunction(name, asyncFunc, attributes) {
-  return function () {
-    const tracer = opentelemetry.trace.getTracer(serviceName);
-    return tracer.startActiveSpan(name, (span) => {
-      if (attributes) {
-        for (let key of Object.keys(attributes)) {
-          span.setAttribute(key, attributes[key]);
-        }
-      }
-      return asyncFunc(span, ...arguments).finally(() => {
-        span.end();
-      });
-    });
-  };
-}
+const tracer = opentelemetry.trace.getTracer(serviceName);
 
-function promise(name, asyncFunc, attributes) {
-  return asyncFunction(name, asyncFunc, attributes)();
+function withSpan(name, fn) {
+  return tracer.startActiveSpan(name, async (span) => {
+    try {
+      // await the thing (this means we can use try/catch)
+      return await fn(span);
+    } catch (err) {
+      // record any errors
+      span.recordException(err);
+      span.setStatus({
+        code: opentelemetry.SpanStatusCode.ERROR,
+        message: err.message,
+      });
+      // re-throw the error
+      throw err;
+    } finally {
+      // make sure the span is ended
+      span.end();
+    }
+  });
 }
 
 module.exports = {
-  asyncFunction,
-  promise,
+  withSpan,
 };

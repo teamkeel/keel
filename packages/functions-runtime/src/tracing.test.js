@@ -24,76 +24,33 @@ beforeEach(() => {
   spanEvents = [];
 });
 
-test("asyncFunction arguments passed", async () => {
-  let f = tracing.asyncFunction("name", async function () {
-    return [...arguments];
-  });
-  expect(await f()).length(1);
-  const result = await f("a", "b", "c");
-  expect(result).length(4);
-  // drop first element, which is the span
-  result.shift();
-  expect(result).toEqual(["a", "b", "c"]);
-});
-
-test("asyncFunction span time", async () => {
-  let started = false;
-  let ended = false;
+test("withSpan span time", async () => {
   const waitTimeMillis = 100;
-  let f = tracing.asyncFunction("name", async function () {
-    started = true;
+  await tracing.withSpan("name", async () => {
     await new Promise((resolve) => setTimeout(resolve, waitTimeMillis));
-    ended = true;
-    return {};
   });
 
-  const resultPromise = f();
-  expect(started).toEqual(true);
-  expect(ended).toEqual(false);
-  expect(spanEvents).length(1);
-
-  await resultPromise;
-  expect(started).toEqual(true);
-  expect(ended).toEqual(true);
   expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
   const spanDuration = spanEvents.pop().span._duration.pop();
   const waitTimeNanos = waitTimeMillis * 1000 * 1000;
   expect(spanDuration).toBeGreaterThan(waitTimeNanos);
 });
 
-test("asyncFunction span ends even on error", async () => {
-  let started = false;
-  let f = tracing.asyncFunction("name", async function () {
-    started = true;
-    throw "err";
-  });
-
-  const resultPromise = f();
-  expect(started).toEqual(true);
-  expect(spanEvents.map((e) => e.event)).toEqual(["onStart"]);
-
+test("withSpan on error", async () => {
   try {
-    await resultPromise;
+    await tracing.withSpan("name", async () => {
+      throw "err";
+    });
     // previous line should have an error thrown
     expect(true).toEqual(false);
   } catch (e) {
     expect(e).toEqual("err");
     expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
+    const lastSpanEvents = spanEvents.pop().span.events;
+    expect(lastSpanEvents).length(1);
+    expect(lastSpanEvents[0].name).toEqual("exception");
+    expect(lastSpanEvents[0].attributes).toEqual({
+      "exception.message": "err",
+    });
   }
-});
-
-test("asyncFunction attributes", async () => {
-  const p = () => Promise.resolve();
-  await tracing.asyncFunction("name", p)();
-  expect(spanEvents.pop().span.attributes).toEqual({});
-  await tracing.asyncFunction("name", p, {})();
-  expect(spanEvents.pop().span.attributes).toEqual({});
-  await tracing.asyncFunction("name", p, {
-    a: 1,
-    b: 2,
-  })();
-  expect(spanEvents.pop().span.attributes).toEqual({
-    a: 1,
-    b: 2,
-  });
 });

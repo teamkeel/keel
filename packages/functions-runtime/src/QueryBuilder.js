@@ -37,8 +37,9 @@ class QueryBuilder {
   async findMany() {
     const query = this._db.orderBy("id");
     const sql = query.compile().sql;
-    const rows = await tracing.promise(`query`, () => query.execute(), {
-      sql: sql,
+    const rows = await tracing.withSpan(`query`, (span) => {
+      span.setAttribute("sql", sql);
+      return query.execute();
     });
     return rows.map((x) => camelCaseObject(x));
   }
