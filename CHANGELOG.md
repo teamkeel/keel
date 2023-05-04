@@ -1,3 +1,11 @@
+# [0.315.0](https://github.com/teamkeel/keel/compare/v0.314.1...v0.315.0) (2023-05-04)
+
+
+### Features
+
+* add tracing to handleRequest ([2f454f2](https://github.com/teamkeel/keel/commit/2f454f264a030c8df201c40d6320f67e61780177))
+* change trace name ([ecdee8c](https://github.com/teamkeel/keel/commit/ecdee8c03fdd92eba071e4a0219633f9c6949ac3))
+
 ## [0.314.1](https://github.com/teamkeel/keel/compare/v0.314.0...v0.314.1) (2023-05-04)
 
 
