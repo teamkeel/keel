@@ -48,7 +48,7 @@
           "name": "createPostSpecial",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "MyCustomFunctionInput",
+          "inputMessageName": "MyCustomFunctionPayload",
           "responseMessageName": "MyCustomFunctionOutput"
         }
       ]
@@ -154,10 +154,10 @@
       "name": "Any"
     },
     {
-      "name": "MyCustomFunctionInput",
+      "name": "MyCustomFunctionPayload",
       "fields": [
         {
-          "messageName": "MyCustomFunctionInput",
+          "messageName": "MyCustomFunctionPayload",
           "name": "titleSpecial",
           "type": {
             "type": "TYPE_STRING"

@@ -1,9 +1,9 @@
-message PersonResponse {
+message PersonResult {
     text Text
     optionalText Text?
 }
 
-message PersonInput {
+message PersonPayload {
     name Text
     optionalName Text?
 }
@@ -14,8 +14,8 @@ model Person {
     }
 
     functions {
-        read readPerson(name) returns (PersonResponse)
-        read readPersonWithMessage(PersonInput) returns (PersonResponse)
+        read readPerson(name) returns (PersonResult)
+        read readPersonWithMessage(PersonPayload) returns (PersonResult)
     }
 }
 

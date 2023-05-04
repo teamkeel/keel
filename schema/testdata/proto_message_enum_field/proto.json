@@ -48,8 +48,8 @@
           "name": "writeSportInterests",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_CUSTOM",
-          "inputMessageName": "Input",
-          "responseMessageName": "Response"
+          "inputMessageName": "Payload",
+          "responseMessageName": "Output"
         }
       ]
     },
@@ -170,10 +170,10 @@
       "name": "Any"
     },
     {
-      "name": "Input",
+      "name": "Payload",
       "fields": [
         {
-          "messageName": "Input",
+          "messageName": "Payload",
           "name": "sports",
           "type": {
             "type": "TYPE_ENUM",
@@ -182,7 +182,7 @@
           }
         },
         {
-          "messageName": "Input",
+          "messageName": "Payload",
           "name": "favouriteSport",
           "type": {
             "type": "TYPE_ENUM",
@@ -193,10 +193,10 @@
       ]
     },
     {
-      "name": "Response",
+      "name": "Output",
       "fields": [
         {
-          "messageName": "Response",
+          "messageName": "Output",
           "name": "sports",
           "type": {
             "type": "TYPE_ENUM",
@@ -205,7 +205,7 @@
           }
         },
         {
-          "messageName": "Response",
+          "messageName": "Output",
           "name": "favouriteSport",
           "type": {
             "type": "TYPE_ENUM",

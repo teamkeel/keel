@@ -1,8 +1,8 @@
-message PersonResponse {
+message PersonResult {
     id ID[]
 }
 
-message PersonInput {
+message PersonPayload {
     id ID[]
 }
 
@@ -12,7 +12,7 @@ model Person {
     }
 
     functions {
-        read readPerson(PersonInput) returns (PersonResponse)
+        read readPerson(PersonPayload) returns (PersonResult)
     }
 }
 

@@ -6,8 +6,8 @@ type Mutation {
   authenticate(input: AuthenticateInput!): AuthenticateResponse
   requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
-  writePerson(input: WritePersonInput!): PersonResponse
-  writePersonWithMessage(input: PersonInput!): PersonResponse
+  writePerson(input: WritePersonInput!): PersonResult
+  writePersonWithMessage(input: PersonPayload!): PersonResult
 }
 
 input AuthenticateInput {
@@ -20,7 +20,7 @@ input EmailPasswordInput {
   password: String!
 }
 
-input PersonInput {
+input PersonPayload {
   name: String!
   optionalName: String
 }
@@ -44,7 +44,7 @@ type AuthenticateResponse {
   token: String!
 }
 
-type PersonResponse {
+type PersonResult {
   optionalText: String
   text: String!
 }

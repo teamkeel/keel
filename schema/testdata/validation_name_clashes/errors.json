@@ -1,0 +1,395 @@
+{
+  "errors": [
+    {
+      "message": "Model names cannot end with 'Input'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 314,
+        "line": 21,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 330,
+        "line": 21,
+        "column": 23
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Input'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 342,
+        "line": 24,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 356,
+        "line": 24,
+        "column": 21
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Connection'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 368,
+        "line": 27,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 387,
+        "line": 27,
+        "column": 26
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Edge'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 399,
+        "line": 30,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 412,
+        "line": 30,
+        "column": 20
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Input'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 424,
+        "line": 33,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 440,
+        "line": 33,
+        "column": 23
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Input'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 452,
+        "line": 36,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 469,
+        "line": 36,
+        "column": 24
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Response'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 481,
+        "line": 39,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 501,
+        "line": 39,
+        "column": 27
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Input'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 513,
+        "line": 42,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 533,
+        "line": 42,
+        "column": 27
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Response'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 545,
+        "line": 45,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 568,
+        "line": 45,
+        "column": 30
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Input'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 580,
+        "line": 48,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 605,
+        "line": 48,
+        "column": 32
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Response'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 617,
+        "line": 51,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 645,
+        "line": 51,
+        "column": 35
+      }
+    },
+    {
+      "message": "Reserved model name 'PageInfo'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 657,
+        "line": 54,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 665,
+        "line": 54,
+        "column": 15
+      }
+    },
+    {
+      "message": "Reserved model name 'String'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 677,
+        "line": 57,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 683,
+        "line": 57,
+        "column": 13
+      }
+    },
+    {
+      "message": "Reserved model name 'Number'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 695,
+        "line": 60,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 701,
+        "line": 60,
+        "column": 13
+      }
+    },
+    {
+      "message": "Reserved model name 'Boolean'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 713,
+        "line": 63,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 720,
+        "line": 63,
+        "column": 14
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Request'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 732,
+        "line": 66,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 739,
+        "line": 66,
+        "column": 14
+      }
+    },
+    {
+      "message": "Model names cannot end with 'Response'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 751,
+        "line": 69,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 759,
+        "line": 69,
+        "column": 15
+      }
+    },
+    {
+      "message": "Reserved model name 'Array'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 771,
+        "line": 72,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 776,
+        "line": 72,
+        "column": 12
+      }
+    },
+    {
+      "message": "Reserved model name 'Object'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 788,
+        "line": 75,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 794,
+        "line": 75,
+        "column": 13
+      }
+    },
+    {
+      "message": "Reserved model name 'Error'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 806,
+        "line": 78,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 811,
+        "line": 78,
+        "column": 12
+      }
+    },
+    {
+      "message": "Reserved model name 'Mutation'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 823,
+        "line": 81,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 831,
+        "line": 81,
+        "column": 15
+      }
+    },
+    {
+      "message": "Reserved model name 'Query'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 843,
+        "line": 84,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 848,
+        "line": 84,
+        "column": 12
+      }
+    },
+    {
+      "message": "Reserved model name 'Subscription'",
+      "hint": "Try using a different name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 860,
+        "line": 87,
+        "column": 7
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes/schema.keel",
+        "offset": 872,
+        "line": 87,
+        "column": 19
+      }
+    }
+  ]
+}

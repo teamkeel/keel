@@ -10,47 +10,47 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// NamingRule checks that entities in the schema conform to our naming
+// Casing checks that entities in the schema conform to our casing
 // conventions.
 //
 // Models, enums, enum values, roles, and API's must written in UpperCamelCase.
 // Fields, actions, and inputs must be written in lowerCamelCase.
-func NamingRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+func CasingRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	return Visitor{
 		EnterModel: func(n *parser.ModelNode) {
-			errs.AppendError(checkNamingError(n.Name, "model"))
+			errs.AppendError(checkCasing(n.Name, "model"))
 		},
 		EnterField: func(n *parser.FieldNode) {
-			errs.AppendError(checkNamingError(n.Name, "field"))
+			errs.AppendError(checkCasing(n.Name, "field"))
 		},
 		EnterAction: func(n *parser.ActionNode) {
-			errs.AppendError(checkNamingError(n.Name, "action"))
+			errs.AppendError(checkCasing(n.Name, "action"))
 		},
 		EnterActionInput: func(n *parser.ActionInputNode) {
 			if n.Label == nil {
 				return
 			}
-			errs.AppendError(checkNamingError(*n.Label, "input"))
+			errs.AppendError(checkCasing(*n.Label, "input"))
 		},
 		EnterEnum: func(n *parser.EnumNode) {
-			errs.AppendError(checkNamingError(n.Name, "enum"))
+			errs.AppendError(checkCasing(n.Name, "enum"))
 			for _, v := range n.Values {
-				errs.AppendError(checkNamingError(v.Name, "enum value"))
+				errs.AppendError(checkCasing(v.Name, "enum value"))
 			}
 		},
 		EnterMessage: func(n *parser.MessageNode) {
-			errs.AppendError(checkNamingError(n.Name, "message"))
+			errs.AppendError(checkCasing(n.Name, "message"))
 		},
 		EnterRole: func(n *parser.RoleNode) {
-			errs.AppendError(checkNamingError(n.Name, "role"))
+			errs.AppendError(checkCasing(n.Name, "role"))
 		},
 		EnterAPI: func(n *parser.APINode) {
-			errs.AppendError(checkNamingError(n.Name, "api"))
+			errs.AppendError(checkCasing(n.Name, "api"))
 		},
 	}
 }
 
-func checkNamingError(node parser.NameNode, entity string) *errorhandling.ValidationError {
+func checkCasing(node parser.NameNode, entity string) *errorhandling.ValidationError {
 	expected := toCamelCase(node.Value)
 	casing := "UpperCamelCase"
 

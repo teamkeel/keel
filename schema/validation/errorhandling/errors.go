@@ -19,7 +19,6 @@ const (
 	ErrorOperationsUniqueGlobally                   = "E004"
 	ErrorInvalidActionInput                         = "E005"
 	ErrorReservedFieldName                          = "E006"
-	ErrorReservedModelName                          = "E007"
 	ErrorOperationMissingUniqueInput                = "E008"
 	ErrorUnsupportedFieldType                       = "E009"
 	ErrorUniqueModelsGlobally                       = "E010"

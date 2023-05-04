@@ -1,30 +1,30 @@
-message CountResponse {
+message CountResult {
     count Number
 }
 
-message AdvancedSearchInput {
+message AdvancedSearchPayload {
     contains Text?
     startsWith Text?
     endsWith Text?
 }
 
-message CreateManyInput {
+message CreateManyPayload {
     names Text[]
 }
 
-message PeopleInput {
+message PeoplePayload {
     ids ID[]
 }
 
-message PeopleResponse {
+message PeopleResult {
     people Person[]
 }
 
-message CustomPersonSearchInput {
+message CustomPersonSearchPayload {
     params Any
 }
 
-message CustomPersonSearchResponse {
+message CustomPersonSearchResult {
     people Any[]
 }
 
@@ -38,12 +38,12 @@ model Person {
     }
 
     functions {
-        read countName(name) returns (CountResponse)
-        read countNameAdvanced(AdvancedSearchInput) returns (CountResponse)
-        write createAndCount(name) returns (CountResponse)
-        write createManyAndCount(CreateManyInput) returns (CountResponse)
-        read people(PeopleInput) returns (PeopleResponse)
-        read customPersonSearch(CustomPersonSearchInput) returns (CustomPersonSearchResponse)
+        read countName(name) returns (CountResult)
+        read countNameAdvanced(AdvancedSearchPayload) returns (CountResult)
+        write createAndCount(name) returns (CountResult)
+        write createManyAndCount(CreateManyPayload) returns (CountResult)
+        read people(PeoplePayload) returns (PeopleResult)
+        read customPersonSearch(CustomPersonSearchPayload) returns (CustomPersonSearchResult)
         read customSearch(Any) returns (Any)
         write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload)
     }

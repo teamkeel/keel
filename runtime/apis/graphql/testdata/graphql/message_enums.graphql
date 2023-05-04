@@ -6,7 +6,7 @@ type Mutation {
   authenticate(input: AuthenticateInput!): AuthenticateResponse
   requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
-  writeSportInterests(input: Input!): Response
+  writeSportInterests(input: Payload!): Result
 }
 
 input AuthenticateInput {
@@ -19,7 +19,7 @@ input EmailPasswordInput {
   password: String!
 }
 
-input Input {
+input Payload {
   favouriteSport: Sport
   sports: [Sport!]!
 }
@@ -47,7 +47,7 @@ type ResetPasswordResponse {
   success: Boolean
 }
 
-type Response {
+type Result {
   favouriteSport: Sport
   sports: [Sport]!
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/api"
 	"github.com/teamkeel/keel/schema/validation/rules/attribute"
 	"github.com/teamkeel/keel/schema/validation/rules/field"
-	"github.com/teamkeel/keel/schema/validation/rules/model"
 	"github.com/teamkeel/keel/schema/validation/rules/relationships"
 	"github.com/teamkeel/keel/schema/validation/rules/role"
 )
@@ -32,8 +31,6 @@ func NewValidator(asts []*parser.AST) *Validator {
 type validationFunc func(asts []*parser.AST) errorhandling.ValidationErrors
 
 var validatorFuncs = []validationFunc{
-	model.ReservedModelNamesRule,
-
 	actions.ActionTypesRule,
 	actions.UniqueOperationNamesRule,
 	actions.ValidActionInputTypesRule,
@@ -72,10 +69,11 @@ var validatorFuncs = []validationFunc{
 var visitorFuncs = []VisitorFunc{
 	UnusedInputRule,
 	ConflictingInputsRule,
-	NamingRule,
+	CasingRule,
 	DuplicateDefinitionRule,
 	InvalidWithUsage,
 	RepeatedScalarFieldRule,
+	NameClashesRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

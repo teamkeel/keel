@@ -1,12 +1,11 @@
-
-message Input {
-	sports Sport[]
-	favouriteSport Sport?
+message Payload {
+    sports Sport[]
+    favouriteSport Sport?
 }
 
-message Response {
-	sports Sport[]
-	favouriteSport Sport?
+message Result {
+    sports Sport[]
+    favouriteSport Sport?
 }
 
 model Person {
@@ -15,7 +14,7 @@ model Person {
     }
 
     functions {
-        write testAction(Input) returns (Response)
+        write testAction(Payload) returns (Result)
     }
 }
 

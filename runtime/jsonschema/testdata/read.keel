@@ -1,8 +1,8 @@
-message PersonResponse {
+message PersonResult {
     name Text
 }
 
-message PersonInput {
+message PersonPayload {
     name Text
     optionalName Text?
 }
@@ -13,7 +13,7 @@ model Person {
     }
 
     functions {
-        read testAction(PersonInput) returns (PersonResponse)
+        read testAction(PersonPayload) returns (PersonResult)
     }
 }
 
