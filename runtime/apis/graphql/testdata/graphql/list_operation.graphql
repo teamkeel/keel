@@ -10,6 +10,11 @@ type Mutation {
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
 input DateQueryInput {
   after: ISO8601
   before: ISO8601
@@ -21,26 +26,6 @@ input DateQueryInput {
 input EmailPasswordInput {
   email: String!
   password: String!
-}
-
-input OccupationQueryInput {
-  equals: Occupation
-  notEquals: Occupation
-  oneOf: [Occupation]
-}
-
-input StringQueryInput {
-  contains: String
-  endsWith: String
-  equals: String
-  notEquals: String
-  oneOf: [String]
-  startsWith: String
-}
-
-input AuthenticateInput {
-  createIfNotExists: Boolean
-  emailPassword: EmailPasswordInput!
 }
 
 input GetPersonInput {
@@ -61,6 +46,12 @@ input ListPeopleWhere {
   occupation: OccupationQueryInput!
 }
 
+input OccupationQueryInput {
+  equals: Occupation
+  notEquals: Occupation
+  oneOf: [Occupation]
+}
+
 input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
@@ -68,6 +59,20 @@ input RequestPasswordResetInput {
 
 input ResetPasswordInput {
   password: String!
+  token: String!
+}
+
+input StringQueryInput {
+  contains: String
+  endsWith: String
+  equals: String
+  notEquals: String
+  oneOf: [String]
+  startsWith: String
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
   token: String!
 }
 
@@ -102,24 +107,19 @@ type PersonEdge {
   node: Person!
 }
 
-type Timestamp {
-  formatted(format: String!): String!
-  fromNow: String!
-  iso8601: String!
-  seconds: Int!
-}
-
-type AuthenticateResponse {
-  identityCreated: Boolean!
-  token: String!
-}
-
 type RequestPasswordResetResponse {
   success: Boolean
 }
 
 type ResetPasswordResponse {
   success: Boolean
+}
+
+type Timestamp {
+  formatted(format: String!): String!
+  fromNow: String!
+  iso8601: String!
+  seconds: Int!
 }
 
 enum Occupation {
