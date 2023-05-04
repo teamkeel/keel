@@ -130,7 +130,7 @@ func definitionFromIdent(asts []*parser.AST, model *parser.ModelNode, ident *par
 			break
 		}
 
-		model = query.Model(asts, field.Type)
+		model = query.Model(asts, field.Type.Value)
 		if !tokenContainsPosition(i.Tokens[0], pos) {
 			continue
 		}
