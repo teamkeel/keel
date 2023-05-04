@@ -1,3 +1,10 @@
+## [0.314.1](https://github.com/teamkeel/keel/compare/v0.314.0...v0.314.1) (2023-05-04)
+
+
+### Bug Fixes
+
+* use .Type.Value ([#949](https://github.com/teamkeel/keel/issues/949)) ([fe71b38](https://github.com/teamkeel/keel/commit/fe71b38e38e00acb032aac233c8ca7537f7a8516))
+
 # [0.314.0](https://github.com/teamkeel/keel/compare/v0.313.7...v0.314.0) (2023-05-04)
 
 
