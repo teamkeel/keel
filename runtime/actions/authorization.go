@@ -61,8 +61,8 @@ func Authorise(scope *Scope, args map[string]any, rowsToAuthorise []map[string]a
 		return false, nil
 	}
 
-	permissionQuery := NewQuery(scope.model)
-	permissionQuery.OpenParenthesis()
+	query := NewQuery(scope.model)
+	query.OpenParenthesis()
 	for i, permission := range exprBasedPerms {
 		expression, err := parser.ParseExpression(permission.Expression.Source)
 		if err != nil {
@@ -78,24 +78,24 @@ func Authorise(scope *Scope, args map[string]any, rowsToAuthorise []map[string]a
 			}
 		} else {
 			// Resolve the database statement for this expression
-			err = permissionQuery.whereByExpression(scope, expression, args)
+			err = query.whereByExpression(scope, expression, args)
 			if err != nil {
 				return false, err
 			}
 			// Or with the next permission attribute
-			permissionQuery.Or()
+			query.Or()
 		}
 	}
-	permissionQuery.CloseParenthesis()
+	query.CloseParenthesis()
 
 	ids := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) any {
 		return row["id"]
 	})
 
-	permissionQuery.And()
-	err = permissionQuery.Where(IdField(), OneOf, Value(ids))
+	query.And()
+	err = query.Where(IdField(), OneOf, Value(ids))
 
-	stmt := permissionQuery.SelectStatement()
+	stmt := query.SelectStatement()
 
 	results, _, err := stmt.ExecuteToMany(scope.context, nil)
 	if err != nil {
