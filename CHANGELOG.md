@@ -1,3 +1,10 @@
+# [0.316.0](https://github.com/teamkeel/keel/compare/v0.315.0...v0.316.0) (2023-05-05)
+
+
+### Features
+
+* fix withSpan tracer ([2c1dc1d](https://github.com/teamkeel/keel/commit/2c1dc1df6fa0d7b62fad5846fb179c156107373f))
+
 # [0.315.0](https://github.com/teamkeel/keel/compare/v0.314.1...v0.315.0) (2023-05-04)
 
 
