@@ -39,7 +39,7 @@ func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []str
 	return nil
 }
 
-// Include a filter (where condition) on the query based on a filter expression.
+// Include a filter (where condition) on the query based on an expression.
 func (query *QueryBuilder) whereByExpression(scope *Scope, expression *parser.Expression, args map[string]any) error {
 	// Only use parenthesis if there are multiple conditions
 	useParenthesis := len(expression.Or) > 1

@@ -48,54 +48,31 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 		}
 	}
 
-	// Dropping through to Expression-based permissions logic...
-	exprBasedPerms := proto.PermissionsWithExpression(permissions)
+	span.SetAttributes(attribute.String("reason", "permission rules"))
 
-	// No expression permissions left means no permission can be granted.
-	if len(exprBasedPerms) == 0 {
+	if len(proto.PermissionsWithExpression(permissions)) == 0 {
 		span.SetAttributes(attribute.Bool("result", false))
-		span.SetAttributes(attribute.String("reason", "no matching permission rules"))
 		return false, nil
 	}
 
-	query := NewQuery(scope.model)
-	query.OpenParenthesis()
-	for i, permission := range exprBasedPerms {
-		expression, err := parser.ParseExpression(permission.Expression.Source)
-		if err != nil {
-			return false, err
-		}
-
-		// First check to see if we can resolve the condition "in proc"
-		if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
-			if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, map[string]any{}) {
-				return true, nil
-			} else if i == len(exprBasedPerms)-1 {
-				return false, nil
-			}
-		} else {
-			// Resolve the database statement for this expression
-			err = query.whereByExpression(scope, expression, map[string]any{})
-			if err != nil {
-				return false, err
-			}
-			// Or with the next permission attribute
-			query.Or()
-		}
+	canResolve, authorised, err := tryResolveInMemory(scope)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return false, err
 	}
-	query.CloseParenthesis()
 
-	ids := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) any {
-		return row["id"]
-	})
+	if canResolve {
+		span.SetAttributes(attribute.Bool("result", authorised))
+		return authorised, nil
+	}
 
-	query.And()
-	err = query.Where(IdField(), OneOf, Value(ids))
-
-	query.AppendSelect(IdField())
-	query.AppendDistinctOn(IdField())
-
-	stmt := query.SelectStatement()
+	stmt, err := generatePermissionStatement(scope, rowsToAuthorise)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return false, err
+	}
 
 	results, _, err := stmt.ExecuteToMany(scope.context, nil)
 	if err != nil {
@@ -105,16 +82,75 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 	}
 
 	// TODO: compare ids matching in both slices
-	authorised := len(results) == len(ids)
+	authorised = len(results) == len(rowsToAuthorise)
 
 	if !authorised {
 		span.SetAttributes(attribute.Bool("result", false))
-		span.SetAttributes(attribute.String("reason", "no matching permission rules"))
 		return false, err
 	}
 
-	//span.SetAttributes(attribute.Bool("result", unauthorisedRows == 0))
+	span.SetAttributes(attribute.Bool("result", authorised))
 	return authorised, nil
+}
+
+func tryResolveInMemory(scope *Scope) (canResolve bool, authorised bool, err error) {
+	permissions := proto.PermissionsForAction(scope.schema, scope.operation)
+	exprBasedPerms := proto.PermissionsWithExpression(permissions)
+
+	for i, permission := range exprBasedPerms {
+		expression, err := parser.ParseExpression(permission.Expression.Source)
+		if err != nil {
+			return false, false, err
+		}
+
+		// First check to see if we can resolve the condition "in proc"
+		if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
+			if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, map[string]any{}) {
+				return true, true, nil
+			} else if i == len(exprBasedPerms)-1 {
+				return true, false, nil
+			}
+		}
+	}
+
+	return false, false, nil
+}
+
+func generatePermissionStatement(scope *Scope, rowsToAuthorise []map[string]any) (*Statement, error) {
+	permissions := proto.PermissionsForAction(scope.schema, scope.operation)
+	exprBasedPerms := proto.PermissionsWithExpression(permissions)
+
+	query := NewQuery(scope.model)
+	query.OpenParenthesis()
+	for _, permission := range exprBasedPerms {
+		expression, err := parser.ParseExpression(permission.Expression.Source)
+		if err != nil {
+			return nil, err
+		}
+
+		err = query.whereByExpression(scope, expression, map[string]any{})
+		if err != nil {
+			return nil, err
+		}
+		// Or with the next permission attribute
+		query.Or()
+	}
+	query.CloseParenthesis()
+
+	ids := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) any {
+		return row["id"]
+	})
+
+	query.And()
+	err := query.Where(IdField(), OneOf, Value(ids))
+	if err != nil {
+		return nil, err
+	}
+
+	query.AppendSelect(IdField())
+	query.AppendDistinctOn(IdField())
+
+	return query.SelectStatement(), nil
 }
 
 // roleBasedPermissionGranted returns true if there is a role-based permission among the
