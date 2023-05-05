@@ -463,9 +463,8 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 	w.Writeln("const { permissionState } = meta || { permissionState: { status: 'unknown' } };")
-	w.Writeln("const wrappedFetch = fetch;") // We'll likely extend it later.
 
-	w.Writeln("return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions(permissionState) };")
+	w.Writeln("return { models, headers, permissions: new runtime.Permissions(permissionState) };")
 
 	w.Dedent()
 	w.Writeln("};")
