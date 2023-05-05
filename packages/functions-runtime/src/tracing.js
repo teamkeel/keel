@@ -2,9 +2,9 @@ const opentelemetry = require("@opentelemetry/api");
 
 const serviceName = "customerCustomFunctions";
 
-const tracer = opentelemetry.trace.getTracer(serviceName);
-
 function withSpan(name, fn) {
+  const tracer = opentelemetry.trace.getTracer(serviceName);
+
   return tracer.startActiveSpan(name, async (span) => {
     try {
       // await the thing (this means we can use try/catch)
