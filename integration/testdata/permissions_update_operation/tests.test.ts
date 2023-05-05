@@ -1,10 +1,10 @@
-import { actions, resetDatabase } from "@teamkeel/testing";
+import { actions, models, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
 import { PostType } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
-test("string permission on literal - matching value - is authorized", async () => {
+test("string permission on literal - un matching value - is not authorized", async () => {
   const post = await actions.createWithText({ title: "hello" });
 
   await expect(
@@ -12,18 +12,11 @@ test("string permission on literal - matching value - is authorized", async () =
       where: { id: post.id },
       values: { title: "goodbye" },
     })
-  ).not.toHaveAuthorizationError();
-});
-
-test("string permission on literal - not matching value - is not authorized", async () => {
-  const post = await actions.createWithText({ title: "goodbye" });
-
-  await expect(
-    actions.updateWithTextPermissionLiteral({
-      where: { id: post.id },
-      values: { title: "hello" },
-    })
   ).toHaveAuthorizationError();
+
+  // Ensure the update transaction did rollback
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("hello");
 });
 
 test("string permission on literal - null value - is not authorized", async () => {
@@ -35,9 +28,13 @@ test("string permission on literal - null value - is not authorized", async () =
       values: { title: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update transaction did rollback
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("goodbye");
 });
 
-test("number permission on literal - matching value - is authorized", async () => {
+test("number permission on literal - unmatching value - is not authorized", async () => {
   const post = await actions.createWithNumber({ views: 1 });
 
   await expect(
@@ -45,18 +42,11 @@ test("number permission on literal - matching value - is authorized", async () =
       where: { id: post.id },
       values: { views: 100 },
     })
-  ).not.toHaveAuthorizationError();
-});
-
-test("number permission on literal - not matching value - is not authorized", async () => {
-  const post = await actions.createWithNumber({ views: 100 });
-
-  await expect(
-    actions.updateWithNumberPermissionLiteral({
-      where: { id: post.id },
-      values: { views: 1 },
-    })
   ).toHaveAuthorizationError();
+
+  // Ensure the update transaction did rollback
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(1);
 });
 
 test("number permission on literal - null value - is not authorized", async () => {
@@ -68,9 +58,13 @@ test("number permission on literal - null value - is not authorized", async () =
       values: { views: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update transaction did rollback
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(100);
 });
 
-test("boolean permission on literal - matching value - is authorized", async () => {
+test("boolean permission on literal - unmatching value - is not authorized", async () => {
   const post = await actions.createWithBoolean({ active: true });
 
   await expect(
@@ -78,18 +72,11 @@ test("boolean permission on literal - matching value - is authorized", async () 
       where: { id: post.id },
       values: { active: false },
     })
-  ).not.toHaveAuthorizationError();
-});
-
-test("boolean permission on literal - not matching value - is not authorized", async () => {
-  const post = await actions.createWithBoolean({ active: false });
-
-  await expect(
-    actions.updateWithBooleanPermissionLiteral({
-      where: { id: post.id },
-      values: { active: true },
-    })
   ).toHaveAuthorizationError();
+
+  // Ensure the update transaction did rollback
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(true);
 });
 
 test("boolean permission on literal - null value - is not authorized", async () => {
@@ -101,21 +88,13 @@ test("boolean permission on literal - null value - is not authorized", async () 
       values: { active: null },
     })
   ).toHaveAuthorizationError();
+
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(false);
 });
 
-test("enum permission on literal - matching value - is authorized", async () => {
+test("enum permission on literal - unmatching value - is not authorized", async () => {
   const post = await actions.createWithEnum({ type: PostType.Technical });
-
-  await expect(
-    actions.updateWithEnumPermissionLiteral({
-      where: { id: post.id },
-      values: { type: PostType.Technical },
-    })
-  ).not.toHaveAuthorizationError();
-});
-
-test("enum permission on literal - not matching value - is not authorized", async () => {
-  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
 
   await expect(
     actions.updateWithEnumPermissionLiteral({
@@ -123,6 +102,9 @@ test("enum permission on literal - not matching value - is not authorized", asyn
       values: { type: PostType.Lifestyle },
     })
   ).toHaveAuthorizationError();
+
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(PostType.Technical);
 });
 
 test("enum permission on literal - null value - is not authorized", async () => {
@@ -134,9 +116,12 @@ test("enum permission on literal - null value - is not authorized", async () => 
       values: { type: null },
     })
   ).toHaveAuthorizationError();
+
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(null);
 });
 
-test("string permission on field - matching value - is authorized", async () => {
+test("string permission on field - unmatching value - is not authorized", async () => {
   const post = await actions.createWithText({ title: "hello" });
 
   await expect(
@@ -144,18 +129,11 @@ test("string permission on field - matching value - is authorized", async () => 
       where: { id: post.id },
       values: { title: "goodbye" },
     })
-  ).not.toHaveAuthorizationError();
-});
-
-test("string permission on field - not matching value - is not authorized", async () => {
-  const post = await actions.createWithText({ title: "goodbye" });
-
-  await expect(
-    actions.updateWithTextPermissionFromField({
-      where: { id: post.id },
-      values: { title: "hello" },
-    })
   ).toHaveAuthorizationError();
+
+    // Ensure the update transaction did rollback
+    const samePost = await models.post.findOne({ id: post.id });
+    expect(samePost!.title).equals("hello");
 });
 
 test("string permission on field - null value - is not authorized", async () => {
@@ -167,9 +145,13 @@ test("string permission on field - null value - is not authorized", async () => 
       values: { title: null },
     })
   ).toHaveAuthorizationError();
+
+    // Ensure the update transaction did rollback
+    const samePost = await models.post.findOne({ id: post.id });
+    expect(samePost!.title).equals("goodbye");
 });
 
-test("number permission on field - matching value - is authorized", async () => {
+test("number permission on field - unmatching value - is not authorized", async () => {
   const post = await actions.createWithNumber({ views: 1 });
 
   await expect(
@@ -177,18 +159,11 @@ test("number permission on field - matching value - is authorized", async () => 
       where: { id: post.id },
       values: { views: 100 },
     })
-  ).not.toHaveAuthorizationError();
-});
-
-test("number permission on field - not matching value - is not authorized", async () => {
-  const post = await actions.createWithNumber({ views: 100 });
-
-  await expect(
-    actions.updateWithNumberPermissionFromField({
-      where: { id: post.id },
-      values: { views: 1 },
-    })
   ).toHaveAuthorizationError();
+
+    // Ensure the update transaction did rollback
+    const samePost = await models.post.findOne({ id: post.id });
+    expect(samePost!.views).equals(1);
 });
 
 test("number permission on field - null value - is not authorized", async () => {
@@ -200,9 +175,13 @@ test("number permission on field - null value - is not authorized", async () => 
       values: { views: null },
     })
   ).toHaveAuthorizationError();
+
+      // Ensure the update transaction did rollback
+      const samePost = await models.post.findOne({ id: post.id });
+      expect(samePost!.views).equals(100);
 });
 
-test("boolean permission on field - matching value - is authorized", async () => {
+test("boolean permission on field - unmatching value - is not authorized", async () => {
   const post = await actions.createWithBoolean({ active: true });
 
   await expect(
@@ -210,18 +189,11 @@ test("boolean permission on field - matching value - is authorized", async () =>
       where: { id: post.id },
       values: { active: false },
     })
-  ).not.toHaveAuthorizationError();
-});
-
-test("boolean permission on field - field is not authorized", async () => {
-  const post = await actions.createWithBoolean({ active: false });
-
-  await expect(
-    actions.updateWithBooleanPermissionFromField({
-      where: { id: post.id },
-      values: { active: true },
-    })
   ).toHaveAuthorizationError();
+
+      // Ensure the update transaction did rollback
+      const samePost = await models.post.findOne({ id: post.id });
+      expect(samePost!.active).equals(true);
 });
 
 test("boolean permission on field - null - is not authorized", async () => {
@@ -233,9 +205,13 @@ test("boolean permission on field - null - is not authorized", async () => {
       values: { active: null },
     })
   ).toHaveAuthorizationError();
+
+     // Ensure the update transaction did rollback
+     const samePost = await models.post.findOne({ id: post.id });
+     expect(samePost!.active).equals(false);
 });
 
-test("enum permission on field - matching value - is authorized", async () => {
+test("enum permission on field - unmatching value - is not authorized", async () => {
   const post = await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
@@ -243,18 +219,11 @@ test("enum permission on field - matching value - is authorized", async () => {
       where: { id: post.id },
       values: { type: PostType.Lifestyle },
     })
-  ).not.toHaveAuthorizationError();
-});
-
-test("enum permission on field - field is not authorized", async () => {
-  const post = await actions.createWithEnum({ type: PostType.Lifestyle });
-
-  await expect(
-    actions.updateWithEnumPermissionFromField({
-      where: { id: post.id },
-      values: { type: PostType.Technical },
-    })
   ).toHaveAuthorizationError();
+
+     // Ensure the update transaction did rollback
+     const samePost = await models.post.findOne({ id: post.id });
+     expect(samePost!.type).equals(PostType.Technical);
 });
 
 test("enum permission on field - null - is not authorized", async () => {
@@ -266,6 +235,10 @@ test("enum permission on field - null - is not authorized", async () => {
       values: { type: null },
     })
   ).toHaveAuthorizationError();
+
+   // Ensure the update transaction did rollback
+   const samePost = await models.post.findOne({ id: post.id });
+   expect(samePost!.type).equals(null);
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {
