@@ -1,9 +1,9 @@
 package actions
 
 import (
-	"fmt"
 	"strings"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
@@ -13,7 +13,11 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (authorized bool, err error) {
+func AuthoriseSingle(scope *Scope, args map[string]any, rowToAuthorise map[string]any) (authorized bool, err error) {
+	return Authorise(scope, args, []map[string]any{rowToAuthorise})
+}
+
+func Authorise(scope *Scope, args map[string]any, rowsToAuthorise []map[string]any) (authorized bool, err error) {
 	ctx, span := tracer.Start(scope.context, "Check Permissions")
 	defer span.End()
 
@@ -45,7 +49,7 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 	}
 
 	// Create a copy of the current action query
-	permissionQuery := query.Copy()
+	//permissionQuery := query.Copy()
 
 	// Dropping through to Expression-based permissions logic...
 	exprBasedPerms := proto.PermissionsWithExpression(permissions)
@@ -57,7 +61,7 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 		return false, nil
 	}
 
-	permissionQuery.And()
+	permissionQuery := NewQuery(scope.model)
 	permissionQuery.OpenParenthesis()
 	for i, permission := range exprBasedPerms {
 		expression, err := parser.ParseExpression(permission.Expression.Source)
@@ -84,12 +88,14 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 	}
 	permissionQuery.CloseParenthesis()
 
-	// Determine the number of rows in the current query which don't satisfy the permission conditions
-	stmt := &Statement{
-		template: fmt.Sprintf("SELECT COUNT(id) as unauthorised FROM (%v EXCEPT %v) as unauthorisedrows",
-			query.SelectStatement().template,
-			permissionQuery.SelectStatement().template),
-		args: append(query.args, permissionQuery.args...)}
+	ids := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) any {
+		return row["id"]
+	})
+
+	permissionQuery.And()
+	err = permissionQuery.Where(IdField(), OneOf, Value(ids))
+
+	stmt := permissionQuery.SelectStatement()
 
 	results, _, err := stmt.ExecuteToMany(scope.context, nil)
 	if err != nil {
@@ -98,18 +104,18 @@ func (query *QueryBuilder) isAuthorised(scope *Scope, args map[string]any) (auth
 		return false, err
 	}
 
-	unauthorisedRows, ok := results[0]["unauthorised"].(int64)
+	authorised := len(results) == len(ids)
 
-	if !ok {
-		err := fmt.Errorf("failed to query or parse unauthorised rows from database")
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		span.SetAttributes(attribute.Bool("result", false))
-		return false, err
-	}
+	// if !authorised {
+	// 	err := fmt.Errorf("failed to query or parse unauthorised rows from database")
+	// 	span.RecordError(err, trace.WithStackTrace(true))
+	// 	span.SetStatus(codes.Error, err.Error())
+	// 	span.SetAttributes(attribute.Bool("result", false))
+	// 	return false, err
+	// }
 
-	span.SetAttributes(attribute.Bool("result", unauthorisedRows == 0))
-	return unauthorisedRows == 0, nil
+	//span.SetAttributes(attribute.Bool("result", unauthorisedRows == 0))
+	return authorised, nil
 }
 
 // roleBasedPermissionGranted returns true if there is a role-based permission among the

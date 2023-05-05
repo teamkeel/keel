@@ -1,8 +1,6 @@
 package actions
 
-import (
-	"github.com/teamkeel/keel/runtime/common"
-)
+import "github.com/teamkeel/keel/runtime/common"
 
 func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	query := NewQuery(scope.model)
@@ -13,7 +11,13 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	isAuthorised, err := query.isAuthorised(scope, input)
+	// Execute database request, expecting a single result.
+	res, err := statement.ExecuteToSingle(scope.context)
+	if err != nil {
+		return nil, err
+	}
+
+	isAuthorised, err := AuthoriseSingle(scope, input, res)
 	if err != nil {
 		return nil, err
 	}
@@ -22,8 +26,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, common.NewPermissionError()
 	}
 
-	// Execute database request, expecting a single result.
-	return statement.ExecuteToSingle(scope.context)
+	return res, err
 }
 
 func GenerateGetStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {

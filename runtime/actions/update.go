@@ -33,15 +33,6 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 		permissionInputs[k] = v
 	}
 
-	isAuthorised, err := query.isAuthorised(scope, permissionInputs)
-	if err != nil {
-		return nil, err
-	}
-
-	if !isAuthorised {
-		return nil, common.NewPermissionError()
-	}
-
 	// Execute database request, expecting a single result
 	result, err := statement.ExecuteToSingle(scope.context)
 
@@ -52,6 +43,15 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	if result == nil {
 		return nil, common.NewNotFoundError()
+	}
+
+	isAuthorised, err := AuthoriseSingle(scope, permissionInputs, result)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isAuthorised {
+		return nil, common.NewPermissionError()
 	}
 
 	return result, nil
