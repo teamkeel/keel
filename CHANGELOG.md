@@ -1,3 +1,10 @@
+# [0.317.0](https://github.com/teamkeel/keel/compare/v0.316.0...v0.317.0) (2023-05-05)
+
+
+### Features
+
+* drop api.fetch ([3a1fb06](https://github.com/teamkeel/keel/commit/3a1fb062ff4c5e22b49f3e9a0f926ee021b43b2f))
+
 # [0.316.0](https://github.com/teamkeel/keel/compare/v0.315.0...v0.316.0) (2023-05-05)
 
 
