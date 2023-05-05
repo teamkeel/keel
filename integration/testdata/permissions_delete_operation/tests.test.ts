@@ -20,9 +20,7 @@ test("string permission on literal - not matching value - is not authorized", as
     actions.deleteWithTextPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("string permission on literal - not matching null value - is not authorized", async () => {
@@ -32,9 +30,7 @@ test("string permission on literal - not matching null value - is not authorized
     actions.deleteWithTextPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("number permission on literal - matching value - is authorized", async () => {
@@ -45,9 +41,7 @@ test("number permission on literal - matching value - is authorized", async () =
   });
   expect(deleted).toEqual(post.id);
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).toBeNull();
+  expect(await models.post.findOne({ id: post.id })).toBeNull();
 });
 
 test("number permission on literal - not matching value - is not authorized", async () => {
@@ -57,9 +51,7 @@ test("number permission on literal - not matching value - is not authorized", as
     actions.deleteWithNumberPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("number permission on literal - not matching null value - is not authorized", async () => {
@@ -69,9 +61,7 @@ test("number permission on literal - not matching null value - is not authorized
     actions.deleteWithNumberPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("boolean permission on literal - matching value - is authorized", async () => {
@@ -82,9 +72,7 @@ test("boolean permission on literal - matching value - is authorized", async () 
   });
   expect(deleted).toEqual(post.id);
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).toBeNull();
+  expect(await models.post.findOne({ id: post.id })).toBeNull();
 });
 
 test("boolean permission on literal - not matching value - is not authorized", async () => {
@@ -94,9 +82,7 @@ test("boolean permission on literal - not matching value - is not authorized", a
     actions.deleteWithBooleanPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("boolean permission on literal - not matching null value - is not authorized", async () => {
@@ -106,9 +92,7 @@ test("boolean permission on literal - not matching null value - is not authorize
     actions.deleteWithBooleanPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
@@ -119,9 +103,7 @@ test("enum permission on literal - matching value - is authorized", async () => 
   });
   expect(deleted).toEqual(post.id);
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).toBeNull();
+  expect(await models.post.findOne({ id: post.id })).toBeNull();
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
@@ -131,9 +113,7 @@ test("enum permission on literal - not matching value - is not authorized", asyn
     actions.deleteWithEnumPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("enum permission on literal - not matching null value - is not authorized", async () => {
@@ -143,9 +123,7 @@ test("enum permission on literal - not matching null value - is not authorized",
     actions.deleteWithEnumPermissionLiteral({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("string permission on field - matching value - is authorized", async () => {
@@ -156,9 +134,7 @@ test("string permission on field - matching value - is authorized", async () => 
   });
   expect(deleted).toEqual(post.id);
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).toBeNull();
+  expect(await models.post.findOne({ id: post.id })).toBeNull();
 });
 
 test("string permission on field - not matching value - is not authorized", async () => {
@@ -170,9 +146,7 @@ test("string permission on field - not matching value - is not authorized", asyn
     actions.deleteWithTextPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("string permission on field - not matching null value - is not authorized", async () => {
@@ -182,9 +156,7 @@ test("string permission on field - not matching null value - is not authorized",
     actions.deleteWithTextPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("number permission on field - matching value - is authorized", async () => {
@@ -195,9 +167,7 @@ test("number permission on field - matching value - is authorized", async () => 
   });
   expect(deleted).toEqual(post.id);
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).toBeNull();
+  expect(await models.post.findOne({ id: post.id })).toBeNull();
 });
 
 test("number permission on field - not matching value - is not authorized", async () => {
@@ -207,9 +177,7 @@ test("number permission on field - not matching value - is not authorized", asyn
     actions.deleteWithNumberPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("number permission on field - not matching null value - is not authorized", async () => {
@@ -219,9 +187,7 @@ test("number permission on field - not matching null value - is not authorized",
     actions.deleteWithNumberPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("boolean permission on field - matching value - is authorized", async () => {
@@ -232,9 +198,7 @@ test("boolean permission on field - matching value - is authorized", async () =>
   });
   expect(deleted).toEqual(post.id);
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).toBeNull();
+  expect(await models.post.findOne({ id: post.id })).toBeNull();
 });
 
 test("boolean permission on field - not matching value - is not authorized", async () => {
@@ -244,9 +208,7 @@ test("boolean permission on field - not matching value - is not authorized", asy
     actions.deleteWithBooleanPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("boolean permission on field - not matching null value - is not authorized", async () => {
@@ -256,9 +218,7 @@ test("boolean permission on field - not matching null value - is not authorized"
     actions.deleteWithBooleanPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("enum permission on field - matching value - is authorized", async () => {
@@ -269,9 +229,7 @@ test("enum permission on field - matching value - is authorized", async () => {
   });
   expect(deleted).toEqual(post.id);
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).toBeNull();
+  expect(await models.post.findOne({ id: post.id })).toBeNull();
 });
 
 test("enum permission on field - not matching value - is not authorized", async () => {
@@ -281,9 +239,7 @@ test("enum permission on field - not matching value - is not authorized", async 
     actions.deleteWithEnumPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("enum permission on field - not matching null value - is not authorized", async () => {
@@ -293,9 +249,7 @@ test("enum permission on field - not matching null value - is not authorized", a
     actions.deleteWithEnumPermissionOnField({ id: post.id })
   ).toHaveAuthorizationError();
 
-  expect(
-    await models.post.findOne({ id: post.id })
-  ).not.toBeNull();
+  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {
