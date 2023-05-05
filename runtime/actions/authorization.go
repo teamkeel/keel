@@ -5,6 +5,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
+	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
@@ -59,28 +60,28 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 
 	query := NewQuery(scope.model)
 	query.OpenParenthesis()
-	for _, permission := range exprBasedPerms {
+	for i, permission := range exprBasedPerms {
 		expression, err := parser.ParseExpression(permission.Expression.Source)
 		if err != nil {
 			return false, err
 		}
 
 		// First check to see if we can resolve the condition "in proc"
-		// if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
-		// 	if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, args) {
-		// 		return true, nil
-		// 	} else if i == len(exprBasedPerms)-1 {
-		// 		return false, nil
-		// 	}
-		// } else {
-		// Resolve the database statement for this expression
-		err = query.whereByExpression(scope, expression, map[string]any{})
-		if err != nil {
-			return false, err
+		if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
+			if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, map[string]any{}) {
+				return true, nil
+			} else if i == len(exprBasedPerms)-1 {
+				return false, nil
+			}
+		} else {
+			// Resolve the database statement for this expression
+			err = query.whereByExpression(scope, expression, map[string]any{})
+			if err != nil {
+				return false, err
+			}
+			// Or with the next permission attribute
+			query.Or()
 		}
-		// Or with the next permission attribute
-		query.Or()
-		//}
 	}
 	query.CloseParenthesis()
 
@@ -91,6 +92,9 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 	query.And()
 	err = query.Where(IdField(), OneOf, Value(ids))
 
+	query.AppendSelect(IdField())
+	query.AppendDistinctOn(IdField())
+
 	stmt := query.SelectStatement()
 
 	results, _, err := stmt.ExecuteToMany(scope.context, nil)
@@ -100,6 +104,7 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 		return false, err
 	}
 
+	// TODO: compare ids matching in both slices
 	authorised := len(results) == len(ids)
 
 	if !authorised {

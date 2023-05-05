@@ -13,6 +13,8 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 		return nil, err
 	}
 
+	query.AppendSelect(IdField())
+	query.AppendDistinctOn(IdField())
 	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.context)
 	if err != nil {
 		return nil, err

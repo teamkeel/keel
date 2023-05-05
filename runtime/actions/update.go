@@ -13,6 +13,8 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
+	query.AppendSelect(IdField())
+	query.AppendDistinctOn(IdField())
 	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.context)
 	if err != nil {
 		return nil, err
