@@ -29,7 +29,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 			return err
 		}
 
-		isAuthorised, err := AuthoriseSingle(scope, input, res)
+		isAuthorised, err := AuthoriseSingle(scope, res)
 		if err != nil {
 			return err
 		}

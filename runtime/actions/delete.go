@@ -18,7 +18,7 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 		return nil, err
 	}
 
-	isAuthorised, err := AuthoriseSingle(scope, input, rowToAuthorise)
+	isAuthorised, err := AuthoriseSingle(scope, rowToAuthorise)
 	if err != nil {
 		return nil, err
 	}

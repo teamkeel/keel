@@ -1,71 +1,43 @@
 package actions
 
 import (
-	"context"
-
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 )
 
 func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	database, err := runtimectx.GetDatabase(scope.context)
+	query := NewQuery(scope.model)
+
+	// Generate the SQL statement
+	statement, err := GenerateUpdateStatement(query, scope, input)
 	if err != nil {
 		return nil, err
 	}
 
-	values, ok := input["values"].(map[string]any)
-	if !ok {
-		values = map[string]any{}
+	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.context)
+	if err != nil {
+		return nil, err
 	}
 
-	where, ok := input["where"].(map[string]any)
-	if !ok {
-		where = map[string]any{}
+	isAuthorised, err := AuthoriseSingle(scope, rowToAuthorise)
+	if err != nil {
+		return nil, err
 	}
 
-	err = database.Transaction(scope.context, func(ctx context.Context) error {
-		scope := scope.WithContext(ctx)
-		query := NewQuery(scope.model)
+	if !isAuthorised {
+		return nil, common.NewPermissionError()
+	}
 
-		// Generate the SQL statement
-		statement, err := GenerateUpdateStatement(query, scope, input)
-		if err != nil {
-			return err
-		}
+	// Execute database request, expecting a single result
+	res, err = statement.ExecuteToSingle(scope.context)
 
-		// TODO: update so that permissions can't access inputs
-		// https://linear.app/keel/issue/RUN-183/permission-expressions-barred-from-using-inputs
-		permissionInputs := map[string]any{}
-		for k, v := range where {
-			permissionInputs[k] = v
-		}
-		for k, v := range values {
-			permissionInputs[k] = v
-		}
+	// TODO: if error is multiple rows affected then rollback transaction
+	if err != nil {
+		return nil, err
+	}
 
-		// Execute database request, expecting a single result
-		res, err = statement.ExecuteToSingle(scope.context)
-
-		// TODO: if error is multiple rows affected then rollback transaction
-		if err != nil {
-			return err
-		}
-
-		if res == nil {
-			return common.NewNotFoundError()
-		}
-
-		isAuthorised, err := AuthoriseSingle(scope, permissionInputs, res)
-		if err != nil {
-			return err
-		}
-
-		if !isAuthorised {
-			return common.NewPermissionError()
-		}
-
-		return nil
-	})
+	if res == nil {
+		return nil, common.NewNotFoundError()
+	}
 
 	return res, err
 }

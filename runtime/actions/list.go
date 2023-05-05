@@ -77,12 +77,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	where, ok := input["where"].(map[string]any)
-	if !ok {
-		where = map[string]any{}
-	}
-
-	isAuthorised, err := Authorise(scope, where, results)
+	isAuthorised, err := Authorise(scope, results)
 	if err != nil {
 		return nil, err
 	}

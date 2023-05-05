@@ -5,7 +5,6 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 	"go.opentelemetry.io/otel/attribute"
@@ -13,11 +12,11 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func AuthoriseSingle(scope *Scope, args map[string]any, rowToAuthorise map[string]any) (authorized bool, err error) {
-	return Authorise(scope, args, []map[string]any{rowToAuthorise})
+func AuthoriseSingle(scope *Scope, rowToAuthorise map[string]any) (authorized bool, err error) {
+	return Authorise(scope, []map[string]any{rowToAuthorise})
 }
 
-func Authorise(scope *Scope, args map[string]any, rowsToAuthorise []map[string]any) (authorized bool, err error) {
+func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool, err error) {
 	ctx, span := tracer.Start(scope.context, "Check Permissions")
 	defer span.End()
 
@@ -48,9 +47,6 @@ func Authorise(scope *Scope, args map[string]any, rowsToAuthorise []map[string]a
 		}
 	}
 
-	// Create a copy of the current action query
-	//permissionQuery := query.Copy()
-
 	// Dropping through to Expression-based permissions logic...
 	exprBasedPerms := proto.PermissionsWithExpression(permissions)
 
@@ -63,28 +59,28 @@ func Authorise(scope *Scope, args map[string]any, rowsToAuthorise []map[string]a
 
 	query := NewQuery(scope.model)
 	query.OpenParenthesis()
-	for i, permission := range exprBasedPerms {
+	for _, permission := range exprBasedPerms {
 		expression, err := parser.ParseExpression(permission.Expression.Source)
 		if err != nil {
 			return false, err
 		}
 
 		// First check to see if we can resolve the condition "in proc"
-		if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
-			if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, args) {
-				return true, nil
-			} else if i == len(exprBasedPerms)-1 {
-				return false, nil
-			}
-		} else {
-			// Resolve the database statement for this expression
-			err = query.whereByExpression(scope, expression, args)
-			if err != nil {
-				return false, err
-			}
-			// Or with the next permission attribute
-			query.Or()
+		// if expressions.CanResolveInMemory(scope.context, scope.schema, scope.operation, expression) {
+		// 	if expressions.ResolveInMemory(scope.context, scope.schema, scope.operation, expression, args) {
+		// 		return true, nil
+		// 	} else if i == len(exprBasedPerms)-1 {
+		// 		return false, nil
+		// 	}
+		// } else {
+		// Resolve the database statement for this expression
+		err = query.whereByExpression(scope, expression, map[string]any{})
+		if err != nil {
+			return false, err
 		}
+		// Or with the next permission attribute
+		query.Or()
+		//}
 	}
 	query.CloseParenthesis()
 
@@ -106,13 +102,11 @@ func Authorise(scope *Scope, args map[string]any, rowsToAuthorise []map[string]a
 
 	authorised := len(results) == len(ids)
 
-	// if !authorised {
-	// 	err := fmt.Errorf("failed to query or parse unauthorised rows from database")
-	// 	span.RecordError(err, trace.WithStackTrace(true))
-	// 	span.SetStatus(codes.Error, err.Error())
-	// 	span.SetAttributes(attribute.Bool("result", false))
-	// 	return false, err
-	// }
+	if !authorised {
+		span.SetAttributes(attribute.Bool("result", false))
+		span.SetAttributes(attribute.String("reason", "no matching permission rules"))
+		return false, err
+	}
 
 	//span.SetAttributes(attribute.Bool("result", unauthorisedRows == 0))
 	return authorised, nil
