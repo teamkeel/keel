@@ -280,8 +280,7 @@ function createFunctionAPI({ headers, db, meta }) {
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, db, tableConfigMap),
 	};
 	const { permissionState } = meta || { permissionState: { status: 'unknown' } };
-	const wrappedFetch = fetch;
-	return { models, headers, fetch: wrappedFetch, permissions: new runtime.Permissions(permissionState) };
+	return { models, headers, permissions: new runtime.Permissions(permissionState) };
 };
 function createContextAPI(meta) {
 	const headers = new runtime.RequestHeaders(meta.headers);
