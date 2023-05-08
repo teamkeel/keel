@@ -124,7 +124,7 @@ func CheckNodeVersion() error {
 		return err
 	}
 	if !validVersionNumber {
-		return fmt.Errorf("unexpected output from Node '%s'", nodeVersion)
+		return fmt.Errorf("unexpected output from node -v: '%s'", nodeVersion)
 	}
 
 	current, err := version.NewVersion(nodeVersion)
