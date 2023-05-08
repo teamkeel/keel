@@ -31,10 +31,7 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 		return false, nil
 	}
 
-	// Does one of the role-based rules grant permission?
-	//
-	// This is good to check first, because it avoids the composition
-	// and execution of a complex SQL query.
+	// Do one of the role-based rules grant permission?
 	if runtimectx.IsAuthenticated(scope.context) {
 		roleBasedPerms := proto.PermissionsWithRole(permissions)
 		granted, err := roleBasedPermissionGranted(scope, roleBasedPerms)
@@ -50,23 +47,25 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 
 	span.SetAttributes(attribute.String("reason", "permission rules"))
 
+	// If there are no expression permissions to satisfy, then access cannot be granted.
 	if len(proto.PermissionsWithExpression(permissions)) == 0 {
 		span.SetAttributes(attribute.Bool("result", false))
 		return false, nil
 	}
 
+	// Test if any expressions can be resolved and satisfied without a database operation.
 	canResolve, authorised, err := tryResolveInMemory(scope)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
 		return false, err
 	}
-
 	if canResolve {
 		span.SetAttributes(attribute.Bool("result", authorised))
 		return authorised, nil
 	}
 
+	// Generate SQL for the permission expressions.
 	stmt, err := generatePermissionStatement(scope, rowsToAuthorise)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
@@ -74,6 +73,7 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 		return false, err
 	}
 
+	// Execute permission query against the database.
 	results, _, err := stmt.ExecuteToMany(scope.context, nil)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
@@ -119,8 +119,9 @@ func tryResolveInMemory(scope *Scope) (canResolve bool, authorised bool, err err
 func generatePermissionStatement(scope *Scope, rowsToAuthorise []map[string]any) (*Statement, error) {
 	permissions := proto.PermissionsForAction(scope.schema, scope.operation)
 	exprBasedPerms := proto.PermissionsWithExpression(permissions)
-
 	query := NewQuery(scope.model)
+
+	// Append SQL where conditions for each permission attribute.
 	query.OpenParenthesis()
 	for _, permission := range exprBasedPerms {
 		expression, err := parser.ParseExpression(permission.Expression.Source)
@@ -141,12 +142,14 @@ func generatePermissionStatement(scope *Scope, rowsToAuthorise []map[string]any)
 		return row["id"]
 	})
 
+	// Filter by the IDs of the rows we want to authorise.
 	query.And()
 	err := query.Where(IdField(), OneOf, Value(ids))
 	if err != nil {
 		return nil, err
 	}
 
+	// Select distinct IDs.
 	query.AppendSelect(IdField())
 	query.AppendDistinctOn(IdField())
 
@@ -183,12 +186,7 @@ func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.Perm
 }
 
 // getEmailAndDomain requires that the the given scope's context
-// contains an authenticated user, extracts the id of that
-// authenticated user, and does a database query to fetch their
-// email and domain.
-//
-// todo: it would be nicer if the current user's email name was
-// available directly in the scope object?
+// contains an authenticated user
 func getEmailAndDomain(scope *Scope) (string, string, error) {
 	// Use the authenticated identity's id to lookup their email address.
 	identity, err := runtimectx.GetIdentity(scope.context)
