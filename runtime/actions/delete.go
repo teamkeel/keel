@@ -13,7 +13,14 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 		return nil, err
 	}
 
-	isAuthorised, err := query.isAuthorised(scope, input)
+	query.AppendSelect(IdField())
+	query.AppendDistinctOn(IdField())
+	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.context)
+	if err != nil {
+		return nil, err
+	}
+
+	isAuthorised, err := AuthoriseSingle(scope, rowToAuthorise)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +42,7 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 	}
 
 	id, _ := row["id"].(string)
-	return &id, nil
+	return &id, err
 }
 
 func GenerateDeleteStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {

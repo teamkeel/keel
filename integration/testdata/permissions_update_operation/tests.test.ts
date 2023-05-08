@@ -1,4 +1,4 @@
-import { actions, resetDatabase } from "@teamkeel/testing";
+import { actions, models, resetDatabase } from "@teamkeel/testing";
 import { test, expect, beforeEach } from "vitest";
 import { PostType } from "@teamkeel/sdk";
 
@@ -13,6 +13,10 @@ test("string permission on literal - matching value - is authorized", async () =
       values: { title: "goodbye" },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update completed
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("goodbye");
 });
 
 test("string permission on literal - not matching value - is not authorized", async () => {
@@ -24,6 +28,10 @@ test("string permission on literal - not matching value - is not authorized", as
       values: { title: "hello" },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("goodbye");
 });
 
 test("string permission on literal - null value - is not authorized", async () => {
@@ -35,6 +43,10 @@ test("string permission on literal - null value - is not authorized", async () =
       values: { title: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("goodbye");
 });
 
 test("number permission on literal - matching value - is authorized", async () => {
@@ -46,6 +58,10 @@ test("number permission on literal - matching value - is authorized", async () =
       values: { views: 100 },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update completed
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(100);
 });
 
 test("number permission on literal - not matching value - is not authorized", async () => {
@@ -57,6 +73,10 @@ test("number permission on literal - not matching value - is not authorized", as
       values: { views: 1 },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(100);
 });
 
 test("number permission on literal - null value - is not authorized", async () => {
@@ -68,6 +88,10 @@ test("number permission on literal - null value - is not authorized", async () =
       values: { views: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(100);
 });
 
 test("boolean permission on literal - matching value - is authorized", async () => {
@@ -79,6 +103,10 @@ test("boolean permission on literal - matching value - is authorized", async () 
       values: { active: false },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update completed
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(false);
 });
 
 test("boolean permission on literal - not matching value - is not authorized", async () => {
@@ -90,6 +118,10 @@ test("boolean permission on literal - not matching value - is not authorized", a
       values: { active: true },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(false);
 });
 
 test("boolean permission on literal - null value - is not authorized", async () => {
@@ -101,6 +133,10 @@ test("boolean permission on literal - null value - is not authorized", async () 
       values: { active: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(false);
 });
 
 test("enum permission on literal - matching value - is authorized", async () => {
@@ -109,9 +145,13 @@ test("enum permission on literal - matching value - is authorized", async () => 
   await expect(
     actions.updateWithEnumPermissionLiteral({
       where: { id: post.id },
-      values: { type: PostType.Technical },
+      values: { type: PostType.Lifestyle },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update completed
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(PostType.Lifestyle);
 });
 
 test("enum permission on literal - not matching value - is not authorized", async () => {
@@ -123,6 +163,10 @@ test("enum permission on literal - not matching value - is not authorized", asyn
       values: { type: PostType.Lifestyle },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(PostType.Lifestyle);
 });
 
 test("enum permission on literal - null value - is not authorized", async () => {
@@ -134,6 +178,10 @@ test("enum permission on literal - null value - is not authorized", async () => 
       values: { type: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(null);
 });
 
 test("string permission on field - matching value - is authorized", async () => {
@@ -145,6 +193,10 @@ test("string permission on field - matching value - is authorized", async () => 
       values: { title: "goodbye" },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("goodbye");
 });
 
 test("string permission on field - not matching value - is not authorized", async () => {
@@ -156,6 +208,10 @@ test("string permission on field - not matching value - is not authorized", asyn
       values: { title: "hello" },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("goodbye");
 });
 
 test("string permission on field - null value - is not authorized", async () => {
@@ -167,6 +223,10 @@ test("string permission on field - null value - is not authorized", async () => 
       values: { title: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.title).equals("goodbye");
 });
 
 test("number permission on field - matching value - is authorized", async () => {
@@ -178,6 +238,10 @@ test("number permission on field - matching value - is authorized", async () => 
       values: { views: 100 },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update completed
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(100);
 });
 
 test("number permission on field - not matching value - is not authorized", async () => {
@@ -189,6 +253,10 @@ test("number permission on field - not matching value - is not authorized", asyn
       values: { views: 1 },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(100);
 });
 
 test("number permission on field - null value - is not authorized", async () => {
@@ -200,6 +268,10 @@ test("number permission on field - null value - is not authorized", async () => 
       values: { views: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.views).equals(100);
 });
 
 test("boolean permission on field - matching value - is authorized", async () => {
@@ -211,6 +283,10 @@ test("boolean permission on field - matching value - is authorized", async () =>
       values: { active: false },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update completed
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(false);
 });
 
 test("boolean permission on field - field is not authorized", async () => {
@@ -222,6 +298,10 @@ test("boolean permission on field - field is not authorized", async () => {
       values: { active: true },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(false);
 });
 
 test("boolean permission on field - null - is not authorized", async () => {
@@ -233,6 +313,10 @@ test("boolean permission on field - null - is not authorized", async () => {
       values: { active: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.active).equals(false);
 });
 
 test("enum permission on field - matching value - is authorized", async () => {
@@ -244,6 +328,10 @@ test("enum permission on field - matching value - is authorized", async () => {
       values: { type: PostType.Lifestyle },
     })
   ).not.toHaveAuthorizationError();
+
+  // Ensure the update completed
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(PostType.Lifestyle);
 });
 
 test("enum permission on field - field is not authorized", async () => {
@@ -255,6 +343,10 @@ test("enum permission on field - field is not authorized", async () => {
       values: { type: PostType.Technical },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(PostType.Lifestyle);
 });
 
 test("enum permission on field - null - is not authorized", async () => {
@@ -266,6 +358,10 @@ test("enum permission on field - null - is not authorized", async () => {
       values: { type: null },
     })
   ).toHaveAuthorizationError();
+
+  // Ensure the update did not complete
+  const samePost = await models.post.findOne({ id: post.id });
+  expect(samePost!.type).equals(null);
 });
 
 test("identity permission - correct identity in context - is authorized", async () => {

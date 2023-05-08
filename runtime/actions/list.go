@@ -73,9 +73,17 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 
 	// Execute database request with results
 	results, pageInfo, err := statement.ExecuteToMany(scope.context, page)
-
 	if err != nil {
 		return nil, err
+	}
+
+	isAuthorised, err := Authorise(scope, results)
+	if err != nil {
+		return nil, err
+	}
+
+	if !isAuthorised {
+		return nil, common.NewPermissionError()
 	}
 
 	return map[string]any{
@@ -98,15 +106,6 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	err = query.applyExplicitFilters(scope, where)
 	if err != nil {
 		return nil, nil, err
-	}
-
-	isAuthorised, err := query.isAuthorised(scope, where)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if !isAuthorised {
-		return nil, nil, common.NewPermissionError()
 	}
 
 	page, err := ParsePage(input)

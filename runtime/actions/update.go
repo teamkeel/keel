@@ -4,18 +4,8 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 )
 
-func Update(scope *Scope, input map[string]any) (map[string]any, error) {
+func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
 	query := NewQuery(scope.model)
-
-	values, ok := input["values"].(map[string]any)
-	if !ok {
-		values = map[string]any{}
-	}
-
-	where, ok := input["where"].(map[string]any)
-	if !ok {
-		where = map[string]any{}
-	}
 
 	// Generate the SQL statement
 	statement, err := GenerateUpdateStatement(query, scope, input)
@@ -23,17 +13,14 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	// TODO: update so that permissions can't access inputs
-	// https://linear.app/keel/issue/RUN-183/permission-expressions-barred-from-using-inputs
-	permissionInputs := map[string]any{}
-	for k, v := range where {
-		permissionInputs[k] = v
-	}
-	for k, v := range values {
-		permissionInputs[k] = v
+	query.AppendSelect(IdField())
+	query.AppendDistinctOn(IdField())
+	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.context)
+	if err != nil {
+		return nil, err
 	}
 
-	isAuthorised, err := query.isAuthorised(scope, permissionInputs)
+	isAuthorised, err := AuthoriseSingle(scope, rowToAuthorise)
 	if err != nil {
 		return nil, err
 	}
@@ -43,18 +30,18 @@ func Update(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Execute database request, expecting a single result
-	result, err := statement.ExecuteToSingle(scope.context)
+	res, err = statement.ExecuteToSingle(scope.context)
 
 	// TODO: if error is multiple rows affected then rollback transaction
 	if err != nil {
 		return nil, err
 	}
 
-	if result == nil {
+	if res == nil {
 		return nil, common.NewNotFoundError()
 	}
 
-	return result, nil
+	return res, err
 }
 
 func GenerateUpdateStatement(query *QueryBuilder, scope *Scope, input map[string]any) (*Statement, error) {

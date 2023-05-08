@@ -29,14 +29,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 			return err
 		}
 
-		// Retrieve the newly created row so we can check permissions
-		err = query.Where(IdField(), Equals, Value(res["id"]))
-		if err != nil {
-			return err
-		}
-
-		// Check permissions and roles conditions
-		isAuthorised, err := query.isAuthorised(scope, input)
+		isAuthorised, err := AuthoriseSingle(scope, res)
 		if err != nil {
 			return err
 		}
