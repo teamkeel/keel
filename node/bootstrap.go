@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/go-version"
@@ -117,6 +118,14 @@ func CheckNodeVersion() error {
 
 	nodeVersion := strings.TrimPrefix(string(output), "v")
 	nodeVersion = strings.TrimSuffix(nodeVersion, "\n")
+
+	validVersionNumber, err := regexp.MatchString(`(\d+)\.(\d+)\.(\d+)`, nodeVersion)
+	if err != nil {
+		return err
+	}
+	if !validVersionNumber {
+		return fmt.Errorf("unexpected output from Node '%s'", nodeVersion)
+	}
 
 	current, err := version.NewVersion(nodeVersion)
 	if err != nil {
