@@ -1580,7 +1580,7 @@ var testCases = []testCase{
 func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			scope, query, operation, err := generateQueryScope(testCase.keelSchema, testCase.operationName)
+			scope, query, operation, err := generateQueryScope(context.Background(), testCase.keelSchema, testCase.operationName)
 			if err != nil {
 				require.NoError(t, err)
 			}
@@ -1629,7 +1629,7 @@ var ignore Ignore
 type Ignore struct{}
 
 // Generates a scope and query builder
-func generateQueryScope(schemaText string, operationName string) (*actions.Scope, *actions.QueryBuilder, *proto.Operation, error) {
+func generateQueryScope(ctx context.Context, schemaText string, operationName string) (*actions.Scope, *actions.QueryBuilder, *proto.Operation, error) {
 	builder := &schema.Builder{}
 	schema, err := builder.MakeFromString(schemaText)
 	if err != nil {
@@ -1643,7 +1643,7 @@ func generateQueryScope(schemaText string, operationName string) (*actions.Scope
 
 	model := proto.FindModel(schema.Models, operation.ModelName)
 	query := actions.NewQuery(model)
-	scope := actions.NewScope(context.Background(), operation, schema)
+	scope := actions.NewScope(ctx, operation, schema)
 
 	return scope, query, operation, nil
 }
