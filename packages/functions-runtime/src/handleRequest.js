@@ -68,10 +68,12 @@ async function handleRequest(request, config) {
     // This is useful for permissions where we want to only proceed with database writes if all permission rules
     // have been validated.
     const result = await db.transaction().execute(async (transaction) => {
-      const ctx = createContextAPI(request.meta);
+      const ctx = createContextAPI({
+        responseHeaders: headers,
+        meta: request.meta
+      });
       const api = createFunctionAPI({
         meta: request.meta,
-        headers,
         db: transaction,
       });
 

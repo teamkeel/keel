@@ -274,16 +274,17 @@ const actionTypes = {
 
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
-function createFunctionAPI({ headers, db, meta }) {
+function createFunctionAPI({ db, meta }) {
 	const models = {
 		person: new runtime.ModelAPI("person", personDefaultValues, db, tableConfigMap),
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, db, tableConfigMap),
 	};
 	const { permissionState } = meta || { permissionState: { status: 'unknown' } };
-	return { models, headers, permissions: new runtime.Permissions(permissionState) };
+	return { models, permissions: new runtime.Permissions(permissionState) };
 };
-function createContextAPI(meta) {
+function createContextAPI({ responseHeaders, meta }) {
 	const headers = new runtime.RequestHeaders(meta.headers);
+	const response = { headers: responseHeaders }
 	const now = () => { return new Date(); };
 	const { identity } = meta;
 	const isAuthenticated = identity != null;
@@ -293,7 +294,7 @@ function createContextAPI(meta) {
 	const secrets = {
 		SECRET_KEY: meta.secrets.SECRET_KEY || "",
 	};
-	return { headers, identity, env, now, secrets, isAuthenticated };
+	return { headers, response, identity, env, now, secrets, isAuthenticated };
 }
 module.exports.createFunctionAPI = createFunctionAPI;
 module.exports.createContextAPI = createContextAPI;`
@@ -319,7 +320,6 @@ export type ModelsAPI = {
 export type FunctionAPI = {
 	models: ModelsAPI;
 	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
-	headers: Headers;
 	permissions: runtime.Permissions;
 }
 type Environment = {

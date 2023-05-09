@@ -52,8 +52,13 @@ export type TimestampQueryInput = {
 
 export type ContextAPI = {
   headers: RequestHeaders;
+  response: Response;
   isAuthenticated: boolean;
   now(): Date;
+};
+
+export type Response = {
+  headers: Headers;
 };
 
 export type PageInfo = {
