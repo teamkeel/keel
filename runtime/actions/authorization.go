@@ -66,7 +66,7 @@ func Authorise(scope *Scope, rowsToAuthorise []map[string]any) (authorized bool,
 	}
 
 	// Generate SQL for the permission expressions.
-	stmt, err := generatePermissionStatement(scope, rowsToAuthorise)
+	stmt, err := GeneratePermissionStatement(scope, rowsToAuthorise)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -116,7 +116,7 @@ func tryResolveInMemory(scope *Scope) (canResolve bool, authorised bool, err err
 	return false, false, nil
 }
 
-func generatePermissionStatement(scope *Scope, rowsToAuthorise []map[string]any) (*Statement, error) {
+func GeneratePermissionStatement(scope *Scope, rowsToAuthorise []map[string]any) (*Statement, error) {
 	permissions := proto.PermissionsForAction(scope.schema, scope.operation)
 	exprBasedPerms := proto.PermissionsWithExpression(permissions)
 	query := NewQuery(scope.model)
