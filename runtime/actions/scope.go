@@ -50,6 +50,19 @@ func NewScope(
 	}
 }
 
+func NewModelScope(
+	ctx context.Context,
+	model *proto.Model,
+	schema *proto.Schema) *Scope {
+
+	return &Scope{
+		context:   ctx,
+		operation: nil,
+		model:     model,
+		schema:    schema,
+	}
+}
+
 func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 	ctx, span := tracer.Start(scope.context, fmt.Sprintf("Action: %s/%s", scope.model.Name, scope.operation.Name))
 	defer span.End()

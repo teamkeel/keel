@@ -24,8 +24,8 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		lhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.LHS)
-		rhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.RHS)
+		lhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.model, scope.operation, assignment.LHS)
+		rhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.model, scope.operation, assignment.RHS)
 		operandType, err := lhsResolver.GetOperandType()
 		if err != nil {
 			return err

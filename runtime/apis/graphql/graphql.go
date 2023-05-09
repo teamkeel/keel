@@ -329,6 +329,8 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					return nil, err
 				}
 
+				scope := actions.NewModelScope(p.Context, relatedModel, mk.proto)
+
 				switch {
 				case proto.IsBelongsTo(field), proto.IsHasOne(field):
 					result, err := query.
@@ -338,6 +340,17 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 						span.RecordError(err, trace.WithStackTrace(true))
 						span.SetStatus(codes.Error, err.Error())
 						return nil, err
+					}
+
+					authorised, err := actions.AuthoriseForActionType(scope, proto.OperationType_OPERATION_TYPE_GET, []map[string]any{result})
+					if err != nil {
+						span.RecordError(err, trace.WithStackTrace(true))
+						span.SetStatus(codes.Error, err.Error())
+						return nil, err
+					}
+
+					if !authorised {
+						return nil, common.NewPermissionError()
 					}
 
 					// Return an error if no record if found for the corresponding foreign key
@@ -367,11 +380,21 @@ func (mk *graphqlSchemaBuilder) addModel(model *proto.Model) (*graphql.Object, e
 					results, pageInfo, err := query.
 						SelectStatement().
 						ExecuteToMany(ctx, &page)
-
 					if err != nil {
 						span.RecordError(err, trace.WithStackTrace(true))
 						span.SetStatus(codes.Error, err.Error())
 						return nil, err
+					}
+
+					authorised, err := actions.AuthoriseForActionType(scope, proto.OperationType_OPERATION_TYPE_LIST, results)
+					if err != nil {
+						span.RecordError(err, trace.WithStackTrace(true))
+						span.SetStatus(codes.Error, err.Error())
+						return nil, err
+					}
+
+					if !authorised {
+						return nil, common.NewPermissionError()
 					}
 
 					res, err := connectionResponse(map[string]any{

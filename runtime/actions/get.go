@@ -17,7 +17,7 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 
-	isAuthorised, err := AuthoriseSingle(scope, res)
+	isAuthorised, err := AuthoriseAction(scope, []map[string]any{res})
 	if err != nil {
 		return nil, err
 	}

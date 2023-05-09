@@ -20,7 +20,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		return nil, err
 	}
 
-	isAuthorised, err := AuthoriseSingle(scope, rowToAuthorise)
+	isAuthorised, err := AuthoriseAction(scope, []map[string]any{rowToAuthorise})
 	if err != nil {
 		return nil, err
 	}

@@ -298,6 +298,21 @@ permissions:
 	return filtered
 }
 
+// PermissionsForOperationType returns a list of permissions defined for an operation type on a model.
+func PermissionsForOperationType(schema *Schema, modelName string, opType OperationType) []*PermissionRule {
+	permissions := []*PermissionRule{}
+
+	model := FindModel(schema.Models, modelName)
+
+	for _, perm := range model.Permissions {
+		if lo.Contains(perm.OperationsTypes, opType) {
+			permissions = append(permissions, perm)
+		}
+	}
+
+	return permissions
+}
+
 // PermissionsWithExpression returns a list of those permission present in the given permissions
 // list, which have at least one expression-based permission rule. This does not imply that the
 // returned Permissions might not also have some role-based rules.

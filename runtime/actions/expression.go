@@ -87,8 +87,8 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 		return fmt.Errorf("can only handle condition type of LogicalCondition or ValueCondition, have: %s", condition.Type())
 	}
 
-	lhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, condition.LHS)
-	rhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, condition.RHS)
+	lhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.model, scope.operation, condition.LHS)
+	rhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.model, scope.operation, condition.RHS)
 
 	lhsOperandType, err := lhsResolver.GetOperandType()
 	if err != nil {
