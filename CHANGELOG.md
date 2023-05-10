@@ -1,3 +1,10 @@
+## [0.318.1](https://github.com/teamkeel/keel/compare/v0.318.0...v0.318.1) (2023-05-10)
+
+
+### Bug Fixes
+
+* prettier type names for sdk, graphql etc ([#950](https://github.com/teamkeel/keel/issues/950)) ([b6478a1](https://github.com/teamkeel/keel/commit/b6478a14ef8717a9575d9e5748dfd2ce28e5cca4))
+
 # [0.318.0](https://github.com/teamkeel/keel/compare/v0.317.0...v0.318.0) (2023-05-10)
 
 
