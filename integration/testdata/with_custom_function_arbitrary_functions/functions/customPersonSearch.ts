@@ -1,6 +1,6 @@
 import { CustomPersonSearch } from "@teamkeel/sdk";
 
-export default CustomPersonSearch(async ({ params }, api, _) => {
+export default CustomPersonSearch(async (_, { params }, api) => {
   api.permissions.allow();
 
   const { names } = params;

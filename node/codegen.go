@@ -587,7 +587,7 @@ func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Ope
 		inputType = "any"
 	}
 
-	w.Writef("(fn: (inputs: %s, api: FunctionAPI, ctx: ContextAPI) => ", inputType)
+	w.Writef("(fn: (ctx: ContextAPI, inputs: %s, api: FunctionAPI) => ", inputType)
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))

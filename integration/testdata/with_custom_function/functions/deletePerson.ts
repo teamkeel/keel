@@ -1,6 +1,6 @@
 import { DeletePerson } from "@teamkeel/sdk";
 
-export default DeletePerson((inputs, api, ctx) => {
+export default DeletePerson((ctx, inputs, api) => {
   api.permissions.allow();
 
   return api.models.person.delete({

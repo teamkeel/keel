@@ -1,6 +1,6 @@
 import { CreateManyAndCount } from "@teamkeel/sdk";
 
-export default CreateManyAndCount(async (inputs, api, ctx) => {
+export default CreateManyAndCount(async (_, inputs, api) => {
   api.permissions.allow();
 
   let count = 0;

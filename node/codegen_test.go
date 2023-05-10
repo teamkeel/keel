@@ -896,11 +896,11 @@ model Person {
 }
 	`
 	expected := `
-export declare function GetPerson(fn: (inputs: getPerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person | null>): Promise<Person | null>;
-export declare function CreatePerson(fn: (inputs: createPerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
-export declare function UpdatePerson(fn: (inputs: updatePerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person>): Promise<Person>;
-export declare function DeletePerson(fn: (inputs: deletePerson_input, api: FunctionAPI, ctx: ContextAPI) => Promise<string>): Promise<string>;
-export declare function ListPeople(fn: (inputs: listPeople_input, api: FunctionAPI, ctx: ContextAPI) => Promise<Person[]>): Promise<Person[]>;`
+export declare function GetPerson(fn: (ctx: ContextAPI, inputs: getPerson_input, api: FunctionAPI) => Promise<Person | null>): Promise<Person | null>;
+export declare function CreatePerson(fn: (ctx: ContextAPI, inputs: createPerson_input, api: FunctionAPI) => Promise<Person>): Promise<Person>;
+export declare function UpdatePerson(fn: (ctx: ContextAPI, inputs: updatePerson_input, api: FunctionAPI) => Promise<Person>): Promise<Person>;
+export declare function DeletePerson(fn: (ctx: ContextAPI, inputs: deletePerson_input, api: FunctionAPI) => Promise<string>): Promise<string>;
+export declare function ListPeople(fn: (ctx: ContextAPI, inputs: listPeople_input, api: FunctionAPI) => Promise<Person[]>): Promise<Person[]>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
@@ -1255,7 +1255,7 @@ func TestSDKTypings(t *testing.T) {
 			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson((inputs, api) => {
+				export default GetPerson((_, inputs, api) => {
 					return api.models.person.findOne({
 						id: inputs.id,
 					});
@@ -1268,7 +1268,7 @@ func TestSDKTypings(t *testing.T) {
 			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson(async (inputs, api) => {
+				export default GetPerson(async (_, inputs, api) => {
 					const r = await api.models.person.findOne({
 						id: "1234",
 					});
@@ -1283,7 +1283,7 @@ func TestSDKTypings(t *testing.T) {
 			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson(async (inputs, api) => {
+				export default GetPerson(async (_, inputs, api) => {
 					const r = await api.models.person.findMany({
 						name: {
 							startsWith: true,
@@ -1299,7 +1299,7 @@ func TestSDKTypings(t *testing.T) {
 			code: `
 				import { GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson(async (inputs, api) => {
+				export default GetPerson(async (_, inputs, api) => {
 					const person = await api.models.person.findOne({
 						id: "1234",
 					});

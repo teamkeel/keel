@@ -1,6 +1,6 @@
 import { BulkPersonUpload } from "@teamkeel/sdk";
 
-export default BulkPersonUpload(async (value, api, _) => {
+export default BulkPersonUpload(async (_, value, api) => {
   api.permissions.allow();
 
   return {

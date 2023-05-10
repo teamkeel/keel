@@ -1,6 +1,6 @@
 import { CreatePersonWithEnvVar } from "@teamkeel/sdk";
 
-export default CreatePersonWithEnvVar((inputs, api, ctx) => {
+export default CreatePersonWithEnvVar((ctx, inputs, api) => {
   api.permissions.allow();
 
   return api.models.person.create({

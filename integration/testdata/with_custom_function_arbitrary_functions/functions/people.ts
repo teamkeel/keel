@@ -1,6 +1,6 @@
 import { People, Person } from "@teamkeel/sdk";
 
-export default People(async (inputs, api, ctx) => {
+export default People(async (_, inputs, api) => {
   api.permissions.allow();
 
   const people: Person[] = [];
