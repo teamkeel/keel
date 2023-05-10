@@ -1,6 +1,6 @@
 import { CreateProfileWithNullPerson } from "@teamkeel/sdk";
 
-export default CreateProfileWithNullPerson((inputs, api) => {
+export default CreateProfileWithNullPerson((ctx, inputs, api) => {
   api.permissions.allow();
 
   return api.models.profile.create({

@@ -1,6 +1,6 @@
 import { CreatePerson } from "@teamkeel/sdk";
 
-export default CreatePerson((inputs, api, ctx) => {
+export default CreatePerson((ctx, inputs, api) => {
   api.permissions.allow();
 
   return api.models.person.create(inputs);

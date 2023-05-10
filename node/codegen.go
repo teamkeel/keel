@@ -410,7 +410,6 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 	w.Indent()
 	w.Writeln("models: ModelsAPI;")
 	w.Writeln("fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;")
-	w.Writeln("headers: Headers;")
 	w.Writeln("permissions: runtime.Permissions;")
 	w.Dedent()
 
@@ -449,7 +448,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 }
 
 func writeAPIFactory(w *Writer, schema *proto.Schema) {
-	w.Writeln("function createFunctionAPI({ headers, db, meta }) {")
+	w.Writeln("function createFunctionAPI({ db, meta }) {")
 	w.Indent()
 
 	w.Writeln("const models = {")
@@ -464,14 +463,15 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Writeln("};")
 	w.Writeln("const { permissionState } = meta || { permissionState: { status: 'unknown' } };")
 
-	w.Writeln("return { models, headers, permissions: new runtime.Permissions(permissionState) };")
+	w.Writeln("return { models, permissions: new runtime.Permissions(permissionState) };")
 
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("function createContextAPI(meta) {")
+	w.Writeln("function createContextAPI({ responseHeaders, meta }) {")
 	w.Indent()
 	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
+	w.Writeln("const response = { headers: responseHeaders }")
 	w.Writeln("const now = () => { return new Date(); };")
 	w.Writeln("const { identity } = meta;")
 	w.Writeln("const isAuthenticated = identity != null;")
@@ -496,7 +496,7 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("return { headers, identity, env, now, secrets, isAuthenticated };")
+	w.Writeln("return { headers, response, identity, env, now, secrets, isAuthenticated };")
 	w.Dedent()
 	w.Writeln("}")
 	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")
@@ -587,7 +587,7 @@ func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Ope
 		inputType = "any"
 	}
 
-	w.Writef("(fn: (inputs: %s, api: FunctionAPI, ctx: ContextAPI) => ", inputType)
+	w.Writef("(fn: (ctx: ContextAPI, inputs: %s, api: FunctionAPI) => ", inputType)
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))
@@ -748,7 +748,7 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 	js.Writeln("const db = getDatabase();")
 
 	js.Writeln(`export const actions = new ActionExecutor({});`)
-	js.Writeln("export const models = createFunctionAPI({ headers: new Headers(), db }).models;")
+	js.Writeln("export const models = createFunctionAPI({ db }).models;")
 
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()

@@ -68,17 +68,19 @@ async function handleRequest(request, config) {
     // This is useful for permissions where we want to only proceed with database writes if all permission rules
     // have been validated.
     const result = await db.transaction().execute(async (transaction) => {
-      const ctx = createContextAPI(request.meta);
+      const ctx = createContextAPI({
+        responseHeaders: headers,
+        meta: request.meta,
+      });
       const api = createFunctionAPI({
         meta: request.meta,
-        headers,
         db: transaction,
       });
 
       const customFunction = functions[request.method];
 
       // Call the user's custom function!
-      const fnResult = await customFunction(request.params, api, ctx);
+      const fnResult = await customFunction(ctx, request.params, api);
 
       // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
       // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny

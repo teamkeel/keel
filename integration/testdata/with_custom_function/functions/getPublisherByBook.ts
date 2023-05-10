@@ -1,6 +1,6 @@
 import { GetPublisherByBook } from "@teamkeel/sdk";
 
-export default GetPublisherByBook(async (inputs, api, ctx) => {
+export default GetPublisherByBook(async (ctx, inputs, api) => {
   api.permissions.allow();
 
   return api.models.publisher.findOne({

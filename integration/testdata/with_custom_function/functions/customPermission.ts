@@ -2,7 +2,7 @@ import { CustomPermission } from "@teamkeel/sdk";
 
 const GUEST_LIST = ["Adam", "Jon", "Dave"];
 
-export default CustomPermission((inputs, api, ctx) => {
+export default CustomPermission((ctx, inputs, api) => {
   const { name } = inputs;
 
   if (!GUEST_LIST.includes(name)) {

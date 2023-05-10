@@ -32,7 +32,7 @@ func TestDevelopmentServer(t *testing.T) {
 			Contents: `
 				import { GetPerson } from "@teamkeel/sdk";
 
-				export default GetPerson(async (inputs, api, ctx) => {
+				export default GetPerson(async (ctx, inputs, api) => {
 					api.permissions.allow();
 					return {id: inputs.id, createdAt: new Date("2022-01-01"), updatedAt: new Date("2022-01-01")};
 				});

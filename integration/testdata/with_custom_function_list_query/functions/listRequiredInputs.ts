@@ -1,6 +1,6 @@
 import { ListRequiredInputs } from "@teamkeel/sdk";
 
-export default ListRequiredInputs((inputs, api) => {
+export default ListRequiredInputs((_, inputs, api) => {
   api.permissions.allow();
 
   return api.models.person.findMany(inputs.where);

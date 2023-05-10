@@ -1,6 +1,6 @@
 import { CreatePersonWithContextInfo } from "@teamkeel/sdk";
 
-export default CreatePersonWithContextInfo((inputs, api, ctx) => {
+export default CreatePersonWithContextInfo((ctx, inputs, api) => {
   api.permissions.allow();
 
   const { identity } = ctx;
