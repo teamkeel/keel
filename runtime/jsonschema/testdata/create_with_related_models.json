@@ -2,12 +2,12 @@
 	"type": "object",
 	"properties": {
 		"customer": {
-			"$ref": "#/components/schemas/testAction_customer_input"
+			"$ref": "#/components/schemas/TestActionCustomerInput"
 		},
 		"items": {
 			"type": "array",
 			"items": {
-				"$ref": "#/components/schemas/testAction_items_input"
+				"$ref": "#/components/schemas/TestActionItemsInput"
 			}
 		},
 		"onPromotion": {
@@ -18,7 +18,7 @@
 	"required": ["customer", "onPromotion", "items"],
 	"components": {
 		"schemas": {
-			"testAction_customer_input": {
+			"TestActionCustomerInput": {
 				"type": "object",
 				"properties": {
 					"name": {
@@ -28,14 +28,14 @@
 				"additionalProperties": false,
 				"required": ["name"]
 			},
-			"testAction_items_input": {
+			"TestActionItemsInput": {
 				"type": "object",
 				"properties": {
 					"price": {
 						"type": "number"
 					},
 					"product": {
-						"$ref": "#/components/schemas/testAction_items_product_input"
+						"$ref": "#/components/schemas/TestActionItemsProductInput"
 					},
 					"quantity": {
 						"type": "number"
@@ -44,7 +44,7 @@
 				"additionalProperties": false,
 				"required": ["quantity", "price", "product"]
 			},
-			"testAction_items_product_input": {
+			"TestActionItemsProductInput": {
 				"type": "object",
 				"properties": {
 					"name": {

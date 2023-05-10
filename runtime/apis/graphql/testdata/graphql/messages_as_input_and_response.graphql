@@ -3,51 +3,51 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
-  writePerson(input: TheMessage_input!): TheMessage
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
+  writePerson(input: TheMessageInput!): TheMessage
 }
 
-input EmailPassword_input {
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input TheMessage_input {
-  thing: Boolean!
-}
-
-input authenticate_input {
-  createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
-}
-
-input requestPasswordReset_input {
+input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
 }
 
-input resetPassword_input {
+input ResetPasswordInput {
   password: String!
   token: String!
 }
 
-type TheMessage {
+input TheMessageInput {
   thing: Boolean!
 }
 
-type authenticate_response {
+type AuthenticateResponse {
   identityCreated: Boolean!
   token: String!
 }
 
-type requestPasswordReset_response {
+type RequestPasswordResetResponse {
   success: Boolean
 }
 
-type resetPassword_response {
+type ResetPasswordResponse {
   success: Boolean
+}
+
+type TheMessage {
+  thing: Boolean!
 }
 
 scalar Any

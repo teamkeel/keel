@@ -57,21 +57,21 @@
           "name": "createSale",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "createSale_input"
+          "inputMessageName": "CreateSaleInput"
         },
         {
           "modelName": "Sale",
           "name": "createSaleAndItems",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "createSaleAndItems_input"
+          "inputMessageName": "CreateSaleAndItemsInput"
         },
         {
           "modelName": "Sale",
           "name": "createSaleAndProduct",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "createSaleAndProduct_input"
+          "inputMessageName": "CreateSaleAndProductInput"
         }
       ]
     },
@@ -163,7 +163,7 @@
           "name": "createSaleItem",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "createSaleItem_input"
+          "inputMessageName": "CreateSaleItemInput"
         }
       ]
     },
@@ -284,24 +284,24 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "authenticate_input",
-          "responseMessageName": "authenticate_response"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "requestPasswordReset_input",
-          "responseMessageName": "requestPasswordReset_response"
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "resetPassword_input",
-          "responseMessageName": "resetPassword_response"
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
         }
       ]
     }
@@ -311,10 +311,10 @@
       "name": "Any"
     },
     {
-      "name": "createSale_input",
+      "name": "CreateSaleInput",
       "fields": [
         {
-          "messageName": "createSale_input",
+          "messageName": "CreateSaleInput",
           "name": "date",
           "type": {
             "type": "TYPE_DATE",
@@ -326,21 +326,21 @@
           ]
         },
         {
-          "messageName": "createSale_input",
+          "messageName": "CreateSaleInput",
           "name": "items",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "createSale_items_input",
+            "messageName": "CreateSaleItemsInput",
             "repeated": true
           }
         }
       ]
     },
     {
-      "name": "createSale_items_input",
+      "name": "CreateSaleItemsInput",
       "fields": [
         {
-          "messageName": "createSale_items_input",
+          "messageName": "CreateSaleItemsInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -355,10 +355,10 @@
       ]
     },
     {
-      "name": "createSaleAndItems_input",
+      "name": "CreateSaleAndItemsInput",
       "fields": [
         {
-          "messageName": "createSaleAndItems_input",
+          "messageName": "CreateSaleAndItemsInput",
           "name": "date",
           "type": {
             "type": "TYPE_DATE",
@@ -370,29 +370,29 @@
           ]
         },
         {
-          "messageName": "createSaleAndItems_input",
+          "messageName": "CreateSaleAndItemsInput",
           "name": "items",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "createSaleAndItems_items_input",
+            "messageName": "CreateSaleAndItemsItemsInput",
             "repeated": true
           }
         }
       ]
     },
     {
-      "name": "createSaleAndItems_items_input",
+      "name": "CreateSaleAndItemsItemsInput",
       "fields": [
         {
-          "messageName": "createSaleAndItems_items_input",
+          "messageName": "CreateSaleAndItemsItemsInput",
           "name": "product",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "createSaleAndItems_items_product_input"
+            "messageName": "CreateSaleAndItemsItemsProductInput"
           }
         },
         {
-          "messageName": "createSaleAndItems_items_input",
+          "messageName": "CreateSaleAndItemsItemsInput",
           "name": "quantity",
           "type": {
             "type": "TYPE_INT",
@@ -407,10 +407,10 @@
       ]
     },
     {
-      "name": "createSaleAndItems_items_product_input",
+      "name": "CreateSaleAndItemsItemsProductInput",
       "fields": [
         {
-          "messageName": "createSaleAndItems_items_product_input",
+          "messageName": "CreateSaleAndItemsItemsProductInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -426,10 +426,10 @@
       ]
     },
     {
-      "name": "createSaleAndProduct_input",
+      "name": "CreateSaleAndProductInput",
       "fields": [
         {
-          "messageName": "createSaleAndProduct_input",
+          "messageName": "CreateSaleAndProductInput",
           "name": "date",
           "type": {
             "type": "TYPE_DATE",
@@ -441,29 +441,29 @@
           ]
         },
         {
-          "messageName": "createSaleAndProduct_input",
+          "messageName": "CreateSaleAndProductInput",
           "name": "items",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "createSaleAndProduct_items_input",
+            "messageName": "CreateSaleAndProductItemsInput",
             "repeated": true
           }
         }
       ]
     },
     {
-      "name": "createSaleAndProduct_items_input",
+      "name": "CreateSaleAndProductItemsInput",
       "fields": [
         {
-          "messageName": "createSaleAndProduct_items_input",
+          "messageName": "CreateSaleAndProductItemsInput",
           "name": "product",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "createSaleAndProduct_items_product_input"
+            "messageName": "CreateSaleAndProductItemsProductInput"
           }
         },
         {
-          "messageName": "createSaleAndProduct_items_input",
+          "messageName": "CreateSaleAndProductItemsInput",
           "name": "quantity",
           "type": {
             "type": "TYPE_INT",
@@ -478,10 +478,10 @@
       ]
     },
     {
-      "name": "createSaleAndProduct_items_product_input",
+      "name": "CreateSaleAndProductItemsProductInput",
       "fields": [
         {
-          "messageName": "createSaleAndProduct_items_product_input",
+          "messageName": "CreateSaleAndProductItemsProductInput",
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
@@ -497,26 +497,26 @@
       ]
     },
     {
-      "name": "createSaleItem_input",
+      "name": "CreateSaleItemInput",
       "fields": [
         {
-          "messageName": "createSaleItem_input",
+          "messageName": "CreateSaleItemInput",
           "name": "sale",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "createSaleItem_sale_input"
+            "messageName": "CreateSaleItemSaleInput"
           }
         },
         {
-          "messageName": "createSaleItem_input",
+          "messageName": "CreateSaleItemInput",
           "name": "product",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "createSaleItem_product_input"
+            "messageName": "CreateSaleItemProductInput"
           }
         },
         {
-          "messageName": "createSaleItem_input",
+          "messageName": "CreateSaleItemInput",
           "name": "quantity",
           "type": {
             "type": "TYPE_INT",
@@ -530,10 +530,10 @@
       ]
     },
     {
-      "name": "createSaleItem_sale_input",
+      "name": "CreateSaleItemSaleInput",
       "fields": [
         {
-          "messageName": "createSaleItem_sale_input",
+          "messageName": "CreateSaleItemSaleInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -548,10 +548,10 @@
       ]
     },
     {
-      "name": "createSaleItem_product_input",
+      "name": "CreateSaleItemProductInput",
       "fields": [
         {
-          "messageName": "createSaleItem_product_input",
+          "messageName": "CreateSaleItemProductInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -566,17 +566,17 @@
       ]
     },
     {
-      "name": "EmailPassword_input",
+      "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -585,10 +585,10 @@
       ]
     },
     {
-      "name": "authenticate_input",
+      "name": "AuthenticateInput",
       "fields": [
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -596,27 +596,27 @@
           "optional": true
         },
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPassword_input"
+            "messageName": "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "authenticate_response",
+      "name": "AuthenticateResponse",
       "fields": [
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
@@ -625,17 +625,17 @@
       ]
     },
     {
-      "name": "requestPasswordReset_input",
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
           "type": {
             "type": "TYPE_STRING"
@@ -644,20 +644,20 @@
       ]
     },
     {
-      "name": "requestPasswordReset_response"
+      "name": "RequestPasswordResetResponse"
     },
     {
-      "name": "resetPassword_input",
+      "name": "ResetPasswordInput",
       "fields": [
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -666,7 +666,7 @@
       ]
     },
     {
-      "name": "resetPassword_response"
+      "name": "ResetPasswordResponse"
     }
   ]
 }

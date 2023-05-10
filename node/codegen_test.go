@@ -385,7 +385,7 @@ model Person {
 }
 	`
 	expected := `
-export interface getPerson_input {
+export interface GetPersonInput {
 	id: string;
 }`
 
@@ -406,7 +406,7 @@ model Person {
 }
 	`
 	expected := `
-export interface createPerson_input {
+export interface CreatePersonInput {
 	name: string;
 }`
 
@@ -427,7 +427,7 @@ model Person {
 }
 	`
 	expected := `
-export interface createPerson_input {
+export interface CreatePersonInput {
 	name?: string | null;
 }`
 
@@ -448,15 +448,15 @@ model Person {
 }
 	`
 	expected := `
-export interface updatePerson_where {
+export interface UpdatePersonWhere {
 	id: string;
 }
-export interface updatePerson_values {
+export interface UpdatePersonValues {
 	name: string;
 }
-export interface updatePerson_input {
-	where: updatePerson_where;
-	values: updatePerson_values;
+export interface UpdatePersonInput {
+	where: UpdatePersonWhere;
+	values: UpdatePersonValues;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
@@ -476,7 +476,7 @@ model Person {
 }
 	`
 	expected := `
-export interface StringQuery_input {
+export interface StringQueryInput {
 	equals?: string | null;
 	notEquals?: string | null;
 	startsWith?: string | null;
@@ -484,12 +484,12 @@ export interface StringQuery_input {
 	contains?: string | null;
 	oneOf?: string[] | null;
 }
-export interface listPeople_where {
-	name: StringQuery_input;
+export interface ListPeopleWhere {
+	name: StringQueryInput;
 	some?: boolean | null;
 }
-export interface listPeople_input {
-	where: listPeople_where;
+export interface ListPeopleInput {
+	where: ListPeopleWhere;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
@@ -518,7 +518,7 @@ model Person {
 }
 	`
 	expected := `
-export interface StringQuery_input {
+export interface StringQueryInput {
 	equals?: string | null;
 	notEquals?: string | null;
 	startsWith?: string | null;
@@ -526,17 +526,17 @@ export interface StringQuery_input {
 	contains?: string | null;
 	oneOf?: string[] | null;
 }
-export interface SportQuery_input {
+export interface SportQueryInput {
 	equals?: Sport | null;
 	notEquals?: Sport | null;
 	oneOf?: Sport[] | null;
 }
-export interface listPeople_where {
-	name: StringQuery_input;
-	favouriteSport: SportQuery_input;
+export interface ListPeopleWhere {
+	name: StringQueryInput;
+	favouriteSport: SportQueryInput;
 }
-export interface listPeople_input {
-	where: listPeople_where;
+export interface ListPeopleInput {
+	where: ListPeopleWhere;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
@@ -557,7 +557,7 @@ model Person {
 }
 	`
 	expected := `
-export interface deletePerson_input {
+export interface DeletePersonInput {
 	id: string;
 }`
 
@@ -578,7 +578,7 @@ model Person {
 	}
 }`
 	expected := `
-export interface getPersonName_input {
+export interface GetPersonNameInput {
 	id: string;
 }`
 
@@ -651,7 +651,7 @@ model Person {
 	}
 }`
 	expected := `
-export interface deletePerson_input {
+export interface DeletePersonInput {
 	id: string;
 }`
 
@@ -896,11 +896,11 @@ model Person {
 }
 	`
 	expected := `
-export declare function GetPerson(fn: (ctx: ContextAPI, inputs: getPerson_input, api: FunctionAPI) => Promise<Person | null>): Promise<Person | null>;
-export declare function CreatePerson(fn: (ctx: ContextAPI, inputs: createPerson_input, api: FunctionAPI) => Promise<Person>): Promise<Person>;
-export declare function UpdatePerson(fn: (ctx: ContextAPI, inputs: updatePerson_input, api: FunctionAPI) => Promise<Person>): Promise<Person>;
-export declare function DeletePerson(fn: (ctx: ContextAPI, inputs: deletePerson_input, api: FunctionAPI) => Promise<string>): Promise<string>;
-export declare function ListPeople(fn: (ctx: ContextAPI, inputs: listPeople_input, api: FunctionAPI) => Promise<Person[]>): Promise<Person[]>;`
+export declare function GetPerson(fn: (ctx: ContextAPI, inputs: GetPersonInput, api: FunctionAPI) => Promise<Person | null>): Promise<Person | null>;
+export declare function CreatePerson(fn: (ctx: ContextAPI, inputs: CreatePersonInput, api: FunctionAPI) => Promise<Person>): Promise<Person>;
+export declare function UpdatePerson(fn: (ctx: ContextAPI, inputs: UpdatePersonInput, api: FunctionAPI) => Promise<Person>): Promise<Person>;
+export declare function DeletePerson(fn: (ctx: ContextAPI, inputs: DeletePersonInput, api: FunctionAPI) => Promise<string>): Promise<string>;
+export declare function ListPeople(fn: (ctx: ContextAPI, inputs: ListPeopleInput, api: FunctionAPI) => Promise<Person[]>): Promise<Person[]>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
@@ -929,65 +929,65 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface getPerson_input {
+export interface GetPersonInput {
 	id: string;
 }
-export interface createPerson_input {
+export interface CreatePersonInput {
 }
-export interface updatePerson_where {
+export interface UpdatePersonWhere {
 }
-export interface updatePerson_values {
+export interface UpdatePersonValues {
 }
-export interface updatePerson_input {
-	where?: updatePerson_where | null;
-	values?: updatePerson_values | null;
+export interface UpdatePersonInput {
+	where?: UpdatePersonWhere | null;
+	values?: UpdatePersonValues | null;
 }
-export interface deletePerson_input {
+export interface DeletePersonInput {
 }
-export interface listPeople_where {
+export interface ListPeopleWhere {
 }
-export interface listPeople_input {
-	where?: listPeople_where | null;
+export interface ListPeopleInput {
+	where?: ListPeopleWhere | null;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
 	before?: string | null;
 }
-export interface EmailPassword_input {
+export interface EmailPasswordInput {
 	email: string;
 	password: string;
 }
-export interface authenticate_input {
+export interface AuthenticateInput {
 	createIfNotExists?: boolean | null;
-	emailPassword: EmailPassword_input;
+	emailPassword: EmailPasswordInput;
 }
-export interface authenticate_response {
+export interface AuthenticateResponse {
 	identityCreated: boolean;
 	token: string;
 }
-export interface requestPasswordReset_input {
+export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
 }
-export interface requestPasswordReset_response {
+export interface RequestPasswordResetResponse {
 }
-export interface resetPassword_input {
+export interface ResetPasswordInput {
 	token: string;
 	password: string;
 }
-export interface resetPassword_response {
+export interface ResetPasswordResponse {
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	getPerson(i: getPerson_input): Promise<sdk.Person | null>;
-	createPerson(i?: createPerson_input): Promise<sdk.Person>;
-	updatePerson(i?: updatePerson_input): Promise<sdk.Person>;
-	deletePerson(i?: deletePerson_input): Promise<string>;
-	listPeople(i?: listPeople_input): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
-	authenticate(i: authenticate_input): Promise<authenticate_response>;
-	requestPasswordReset(i: requestPasswordReset_input): Promise<requestPasswordReset_response>;
-	resetPassword(i: resetPassword_input): Promise<resetPassword_response>;
+	getPerson(i: GetPersonInput): Promise<sdk.Person | null>;
+	createPerson(i?: CreatePersonInput): Promise<sdk.Person>;
+	updatePerson(i?: UpdatePersonInput): Promise<sdk.Person>;
+	deletePerson(i?: DeletePersonInput): Promise<string>;
+	listPeople(i?: ListPeopleInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
+	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
+	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
+	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
@@ -1071,52 +1071,52 @@ import * as sdk from "@teamkeel/sdk";
 import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
-export interface HobbyQuery_input {
+export interface HobbyQueryInput {
 	equals?: Hobby | null;
 	notEquals?: Hobby | null;
 	oneOf?: Hobby[] | null;
 }
-export interface peopleByHobby_where {
-	hobby: HobbyQuery_input;
+export interface PeopleByHobbyWhere {
+	hobby: HobbyQueryInput;
 }
-export interface peopleByHobby_input {
-	where: peopleByHobby_where;
+export interface PeopleByHobbyInput {
+	where: PeopleByHobbyWhere;
 	first?: number | null;
 	after?: string | null;
 	last?: number | null;
 	before?: string | null;
 }
-export interface EmailPassword_input {
+export interface EmailPasswordInput {
 	email: string;
 	password: string;
 }
-export interface authenticate_input {
+export interface AuthenticateInput {
 	createIfNotExists?: boolean | null;
-	emailPassword: EmailPassword_input;
+	emailPassword: EmailPasswordInput;
 }
-export interface authenticate_response {
+export interface AuthenticateResponse {
 	identityCreated: boolean;
 	token: string;
 }
-export interface requestPasswordReset_input {
+export interface RequestPasswordResetInput {
 	email: string;
 	redirectUrl: string;
 }
-export interface requestPasswordReset_response {
+export interface RequestPasswordResetResponse {
 }
-export interface resetPassword_input {
+export interface ResetPasswordInput {
 	token: string;
 	password: string;
 }
-export interface resetPassword_response {
+export interface ResetPasswordResponse {
 }
 declare class ActionExecutor {
 	withIdentity(identity: sdk.Identity): ActionExecutor;
 	withAuthToken(token: string): ActionExecutor;
-	peopleByHobby(i: peopleByHobby_input): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
-	authenticate(i: authenticate_input): Promise<authenticate_response>;
-	requestPasswordReset(i: requestPasswordReset_input): Promise<requestPasswordReset_response>;
-	resetPassword(i: resetPassword_input): Promise<resetPassword_response>;
+	peopleByHobby(i: PeopleByHobbyInput): Promise<{results: sdk.Person[], pageInfo: runtime.PageInfo}>;
+	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
+	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
+	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;

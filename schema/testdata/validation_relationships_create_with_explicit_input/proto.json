@@ -98,7 +98,7 @@
               "source": "childModel.parentOptional.id = explicitParentId"
             }
           ],
-          "inputMessageName": "createChild1_input"
+          "inputMessageName": "CreateChild1Input"
         },
         {
           "modelName": "ChildModel",
@@ -113,7 +113,7 @@
               "source": "childModel.parentOptional.id = childModel.parent.id"
             }
           ],
-          "inputMessageName": "createChild2_input"
+          "inputMessageName": "CreateChild2Input"
         },
         {
           "modelName": "ChildModel",
@@ -125,7 +125,7 @@
               "source": "childModel.parent.id = explicitParentId"
             }
           ],
-          "inputMessageName": "createChild3_input"
+          "inputMessageName": "CreateChild3Input"
         }
       ]
     },
@@ -246,24 +246,24 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "authenticate_input",
-          "responseMessageName": "authenticate_response"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "requestPasswordReset_input",
-          "responseMessageName": "requestPasswordReset_response"
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "resetPassword_input",
-          "responseMessageName": "resetPassword_response"
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
         }
       ]
     }
@@ -273,10 +273,10 @@
       "name": "Any"
     },
     {
-      "name": "createChild1_input",
+      "name": "CreateChild1Input",
       "fields": [
         {
-          "messageName": "createChild1_input",
+          "messageName": "CreateChild1Input",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL",
@@ -288,7 +288,7 @@
           ]
         },
         {
-          "messageName": "createChild1_input",
+          "messageName": "CreateChild1Input",
           "name": "explicitParentId",
           "type": {
             "type": "TYPE_ID"
@@ -297,10 +297,10 @@
       ]
     },
     {
-      "name": "createChild2_input",
+      "name": "CreateChild2Input",
       "fields": [
         {
-          "messageName": "createChild2_input",
+          "messageName": "CreateChild2Input",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL",
@@ -312,7 +312,7 @@
           ]
         },
         {
-          "messageName": "createChild2_input",
+          "messageName": "CreateChild2Input",
           "name": "explicitParentId",
           "type": {
             "type": "TYPE_ID"
@@ -321,10 +321,10 @@
       ]
     },
     {
-      "name": "createChild3_input",
+      "name": "CreateChild3Input",
       "fields": [
         {
-          "messageName": "createChild3_input",
+          "messageName": "CreateChild3Input",
           "name": "isActive",
           "type": {
             "type": "TYPE_BOOL",
@@ -336,7 +336,7 @@
           ]
         },
         {
-          "messageName": "createChild3_input",
+          "messageName": "CreateChild3Input",
           "name": "explicitParentId",
           "type": {
             "type": "TYPE_ID"
@@ -345,17 +345,17 @@
       ]
     },
     {
-      "name": "EmailPassword_input",
+      "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -364,10 +364,10 @@
       ]
     },
     {
-      "name": "authenticate_input",
+      "name": "AuthenticateInput",
       "fields": [
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -375,27 +375,27 @@
           "optional": true
         },
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPassword_input"
+            "messageName": "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "authenticate_response",
+      "name": "AuthenticateResponse",
       "fields": [
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
@@ -404,17 +404,17 @@
       ]
     },
     {
-      "name": "requestPasswordReset_input",
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
           "type": {
             "type": "TYPE_STRING"
@@ -423,20 +423,20 @@
       ]
     },
     {
-      "name": "requestPasswordReset_response"
+      "name": "RequestPasswordResetResponse"
     },
     {
-      "name": "resetPassword_input",
+      "name": "ResetPasswordInput",
       "fields": [
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -445,7 +445,7 @@
       ]
     },
     {
-      "name": "resetPassword_response"
+      "name": "ResetPasswordResponse"
     }
   ]
 }

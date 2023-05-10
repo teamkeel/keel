@@ -1,16 +1,21 @@
 type Query {
   _health: Boolean
-  getPerson(input: getPerson_input!): Person
-  listPeople(input: listPeople_input!): Person_connection!
+  getPerson(input: GetPersonInput!): Person
+  listPeople(input: ListPeopleInput!): PersonConnection!
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
 }
 
-input DateQuery_input {
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
+input DateQueryInput {
   after: ISO8601
   before: ISO8601
   equals: ISO8601
@@ -18,18 +23,46 @@ input DateQuery_input {
   onOrBefore: ISO8601
 }
 
-input EmailPassword_input {
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input OccupationQuery_input {
+input GetPersonInput {
+  id: ID!
+}
+
+input ListPeopleInput {
+  after: String
+  before: String
+  first: Int
+  last: Int
+  where: ListPeopleWhere!
+}
+
+input ListPeopleWhere {
+  dateOfBirth: DateQueryInput!
+  name: StringQueryInput!
+  occupation: OccupationQueryInput!
+}
+
+input OccupationQueryInput {
   equals: Occupation
   notEquals: Occupation
   oneOf: [Occupation]
 }
 
-input StringQuery_input {
+input RequestPasswordResetInput {
+  email: String!
+  redirectUrl: String!
+}
+
+input ResetPasswordInput {
+  password: String!
+  token: String!
+}
+
+input StringQueryInput {
   contains: String
   endsWith: String
   equals: String
@@ -38,36 +71,8 @@ input StringQuery_input {
   startsWith: String
 }
 
-input authenticate_input {
-  createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
-}
-
-input getPerson_input {
-  id: ID!
-}
-
-input listPeople_input {
-  after: String
-  before: String
-  first: Int
-  last: Int
-  where: listPeople_where!
-}
-
-input listPeople_where {
-  dateOfBirth: DateQuery_input!
-  name: StringQuery_input!
-  occupation: OccupationQuery_input!
-}
-
-input requestPasswordReset_input {
-  email: String!
-  redirectUrl: String!
-}
-
-input resetPassword_input {
-  password: String!
+type AuthenticateResponse {
+  identityCreated: Boolean!
   token: String!
 }
 
@@ -93,13 +98,21 @@ type Person {
   updatedAt: Timestamp!
 }
 
-type Person_connection {
-  edges: [Person_edge!]!
+type PersonConnection {
+  edges: [PersonEdge!]!
   pageInfo: PageInfo!
 }
 
-type Person_edge {
+type PersonEdge {
   node: Person!
+}
+
+type RequestPasswordResetResponse {
+  success: Boolean
+}
+
+type ResetPasswordResponse {
+  success: Boolean
 }
 
 type Timestamp {
@@ -107,19 +120,6 @@ type Timestamp {
   fromNow: String!
   iso8601: String!
   seconds: Int!
-}
-
-type authenticate_response {
-  identityCreated: Boolean!
-  token: String!
-}
-
-type requestPasswordReset_response {
-  success: Boolean
-}
-
-type resetPassword_response {
-  success: Boolean
 }
 
 enum Occupation {

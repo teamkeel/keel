@@ -55,28 +55,28 @@
           "name": "opA",
           "type": "OPERATION_TYPE_GET",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opA_input"
+          "inputMessageName": "OpAInput"
         },
         {
           "modelName": "Foo",
           "name": "opB",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opB_input"
+          "inputMessageName": "OpBInput"
         },
         {
           "modelName": "Foo",
           "name": "opC",
           "type": "OPERATION_TYPE_UPDATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opC_input"
+          "inputMessageName": "OpCInput"
         },
         {
           "modelName": "Foo",
           "name": "opD",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opD_input"
+          "inputMessageName": "OpDInput"
         }
       ]
     },
@@ -154,24 +154,24 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "authenticate_input",
-          "responseMessageName": "authenticate_response"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "requestPasswordReset_input",
-          "responseMessageName": "requestPasswordReset_response"
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "resetPassword_input",
-          "responseMessageName": "resetPassword_response"
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
         }
       ]
     }
@@ -181,10 +181,10 @@
       "name": "Any"
     },
     {
-      "name": "opA_input",
+      "name": "OpAInput",
       "fields": [
         {
-          "messageName": "opA_input",
+          "messageName": "OpAInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -198,7 +198,7 @@
       ]
     },
     {
-      "name": "StringQuery_input",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -246,7 +246,7 @@
       ]
     },
     {
-      "name": "IntQuery_input",
+      "name": "IntQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -301,25 +301,25 @@
       ]
     },
     {
-      "name": "opB_where",
+      "name": "OpBWhere",
       "fields": [
         {
-          "messageName": "opB_where",
+          "messageName": "OpBWhere",
           "name": "f1",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQuery_input"
+            "messageName": "StringQueryInput"
           },
           "target": [
             "f1"
           ]
         },
         {
-          "messageName": "opB_where",
+          "messageName": "OpBWhere",
           "name": "f2",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "IntQuery_input"
+            "messageName": "IntQueryInput"
           },
           "target": [
             "f2"
@@ -328,18 +328,18 @@
       ]
     },
     {
-      "name": "opB_input",
+      "name": "OpBInput",
       "fields": [
         {
-          "messageName": "opB_input",
+          "messageName": "OpBInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "opB_where"
+            "messageName": "OpBWhere"
           }
         },
         {
-          "messageName": "opB_input",
+          "messageName": "OpBInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -347,7 +347,7 @@
           "optional": true
         },
         {
-          "messageName": "opB_input",
+          "messageName": "OpBInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -355,7 +355,7 @@
           "optional": true
         },
         {
-          "messageName": "opB_input",
+          "messageName": "OpBInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -363,7 +363,7 @@
           "optional": true
         },
         {
-          "messageName": "opB_input",
+          "messageName": "OpBInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -373,10 +373,10 @@
       ]
     },
     {
-      "name": "opC_where",
+      "name": "OpCWhere",
       "fields": [
         {
-          "messageName": "opC_where",
+          "messageName": "OpCWhere",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -390,10 +390,10 @@
       ]
     },
     {
-      "name": "opC_values",
+      "name": "OpCValues",
       "fields": [
         {
-          "messageName": "opC_values",
+          "messageName": "OpCValues",
           "name": "f1",
           "type": {
             "type": "TYPE_STRING",
@@ -407,31 +407,31 @@
       ]
     },
     {
-      "name": "opC_input",
+      "name": "OpCInput",
       "fields": [
         {
-          "messageName": "opC_input",
+          "messageName": "OpCInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "opC_where"
+            "messageName": "OpCWhere"
           }
         },
         {
-          "messageName": "opC_input",
+          "messageName": "OpCInput",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "opC_values"
+            "messageName": "OpCValues"
           }
         }
       ]
     },
     {
-      "name": "opD_input",
+      "name": "OpDInput",
       "fields": [
         {
-          "messageName": "opD_input",
+          "messageName": "OpDInput",
           "name": "f1",
           "type": {
             "type": "TYPE_STRING",
@@ -443,7 +443,7 @@
           ]
         },
         {
-          "messageName": "opD_input",
+          "messageName": "OpDInput",
           "name": "f2",
           "type": {
             "type": "TYPE_INT",
@@ -457,17 +457,17 @@
       ]
     },
     {
-      "name": "EmailPassword_input",
+      "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -476,10 +476,10 @@
       ]
     },
     {
-      "name": "authenticate_input",
+      "name": "AuthenticateInput",
       "fields": [
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -487,27 +487,27 @@
           "optional": true
         },
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPassword_input"
+            "messageName": "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "authenticate_response",
+      "name": "AuthenticateResponse",
       "fields": [
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
@@ -516,17 +516,17 @@
       ]
     },
     {
-      "name": "requestPasswordReset_input",
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
           "type": {
             "type": "TYPE_STRING"
@@ -535,20 +535,20 @@
       ]
     },
     {
-      "name": "requestPasswordReset_response"
+      "name": "RequestPasswordResetResponse"
     },
     {
-      "name": "resetPassword_input",
+      "name": "ResetPasswordInput",
       "fields": [
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -557,7 +557,7 @@
       ]
     },
     {
-      "name": "resetPassword_response"
+      "name": "ResetPasswordResponse"
     }
   ]
 }

@@ -3,61 +3,66 @@ type Query {
 }
 
 type Mutation {
-  authenticate(input: authenticate_input!): authenticate_response
-  requestPasswordReset(input: requestPasswordReset_input!): requestPasswordReset_response
-  resetPassword(input: resetPassword_input!): resetPassword_response
-  updatePerson(input: updatePerson_input!): Person!
-  updatePersonCompany(input: updatePersonCompany_input!): Person!
+  authenticate(input: AuthenticateInput!): AuthenticateResponse
+  requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
+  resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
+  updatePerson(input: UpdatePersonInput!): Person!
+  updatePersonCompany(input: UpdatePersonCompanyInput!): Person!
 }
 
-input EmailPassword_input {
+input AuthenticateInput {
+  createIfNotExists: Boolean
+  emailPassword: EmailPasswordInput!
+}
+
+input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input authenticate_input {
-  createIfNotExists: Boolean
-  emailPassword: EmailPassword_input!
-}
-
-input requestPasswordReset_input {
+input RequestPasswordResetInput {
   email: String!
   redirectUrl: String!
 }
 
-input resetPassword_input {
+input ResetPasswordInput {
   password: String!
   token: String!
 }
 
-input updatePersonCompany_company_input {
+input UpdatePersonCompanyCompanyInput {
   id: ID!
 }
 
-input updatePersonCompany_input {
-  values: updatePersonCompany_values!
-  where: updatePersonCompany_where!
+input UpdatePersonCompanyInput {
+  values: UpdatePersonCompanyValues!
+  where: UpdatePersonCompanyWhere!
 }
 
-input updatePersonCompany_values {
-  company: updatePersonCompany_company_input!
+input UpdatePersonCompanyValues {
+  company: UpdatePersonCompanyCompanyInput!
 }
 
-input updatePersonCompany_where {
+input UpdatePersonCompanyWhere {
   id: ID!
 }
 
-input updatePerson_input {
-  values: updatePerson_values!
-  where: updatePerson_where!
+input UpdatePersonInput {
+  values: UpdatePersonValues!
+  where: UpdatePersonWhere!
 }
 
-input updatePerson_values {
+input UpdatePersonValues {
   name: String!
 }
 
-input updatePerson_where {
+input UpdatePersonWhere {
   id: ID!
+}
+
+type AuthenticateResponse {
+  identityCreated: Boolean!
+  token: String!
 }
 
 type Company {
@@ -76,24 +81,19 @@ type Person {
   updatedAt: Timestamp!
 }
 
+type RequestPasswordResetResponse {
+  success: Boolean
+}
+
+type ResetPasswordResponse {
+  success: Boolean
+}
+
 type Timestamp {
   formatted(format: String!): String!
   fromNow: String!
   iso8601: String!
   seconds: Int!
-}
-
-type authenticate_response {
-  identityCreated: Boolean!
-  token: String!
-}
-
-type requestPasswordReset_response {
-  success: Boolean
-}
-
-type resetPassword_response {
-  success: Boolean
 }
 
 scalar Any

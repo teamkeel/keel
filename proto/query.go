@@ -379,3 +379,15 @@ func FindWhereInputMessage(schema *Schema, operationName string) *Message {
 	}
 	return nil
 }
+
+func MessageUsedAsResponse(schema *Schema, msgName string) bool {
+	for _, model := range schema.Models {
+		for _, op := range model.Operations {
+			if op.ResponseMessageName == msgName {
+				return true
+			}
+		}
+	}
+
+	return false
+}

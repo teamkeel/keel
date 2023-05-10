@@ -1,7 +1,7 @@
 {
     "components": {
         "schemas": {
-            "EmailPassword_input": {
+            "EmailPasswordInput": {
                 "additionalProperties": false,
                 "properties": {
                     "email": {
@@ -71,7 +71,7 @@
                                         ]
                                     },
                                     "emailPassword": {
-                                        "$ref": "#/components/schemas/EmailPassword_input"
+                                        "$ref": "#/components/schemas/EmailPasswordInput"
                                     }
                                 },
                                 "required": [

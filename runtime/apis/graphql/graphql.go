@@ -18,7 +18,6 @@ import (
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/samber/lo"
-	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/common"
@@ -499,7 +498,7 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 	}
 
 	edgeType := graphql.NewObject(graphql.ObjectConfig{
-		Name: itemType.Name() + "_edge",
+		Name: itemType.Name() + "Edge",
 		Fields: graphql.Fields{
 			"node": &graphql.Field{
 				Type: graphql.NewNonNull(
@@ -510,7 +509,7 @@ func (mk *graphqlSchemaBuilder) makeConnectionType(itemType graphql.Output) grap
 	})
 
 	connection := graphql.NewObject(graphql.ObjectConfig{
-		Name: itemType.Name() + "_connection",
+		Name: itemType.Name() + "Connection",
 		Fields: graphql.Fields{
 			"edges": &graphql.Field{
 				Type: graphql.NewNonNull(
@@ -750,7 +749,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		}
 
 		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
-			Name:   makeUniqueInputMessageName(messageName),
+			Name:   mk.makeUniqueInputMessageName(messageName),
 			Fields: graphql.InputObjectConfigFieldMap{},
 		})
 
@@ -816,7 +815,7 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	allOptionalInputs := true
 
 	inputType := graphql.NewInputObject(graphql.InputObjectConfig{
-		Name:   makeUniqueInputMessageName(message.Name),
+		Name:   mk.makeUniqueInputMessageName(message.Name),
 		Fields: graphql.InputObjectConfigFieldMap{},
 	})
 
@@ -839,12 +838,9 @@ func (mk *graphqlSchemaBuilder) makeOperationInputType(op *proto.Operation) (*gr
 	return inputType, allOptionalInputs, nil
 }
 
-// If this is a schemd-defined message, then append with _input
-func makeUniqueInputMessageName(name string) string {
-	if name == casing.ToCamel(name) {
-
-		return fmt.Sprintf("%s_input", name)
-	} else {
-		return name
+func (mk *graphqlSchemaBuilder) makeUniqueInputMessageName(name string) string {
+	if proto.MessageUsedAsResponse(mk.proto, name) {
+		return fmt.Sprintf("%sInput", name)
 	}
+	return name
 }

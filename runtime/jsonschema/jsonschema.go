@@ -258,7 +258,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		name := t.MessageName.Value
 		if nullable {
 			component.allowNull()
-			name = "nullable_" + name
+			name = "Nullable" + name
 		}
 
 		if t.Repeated {
@@ -280,7 +280,6 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 
 		modelSchema := jsonSchemaForModel(ctx, schema, model, t.Repeated)
 
-		
 		// If that nested message component has ref fields itself, then its components must be bundled.
 		if modelSchema.Components != nil {
 			for cName, comp := range modelSchema.Components.Schemas {

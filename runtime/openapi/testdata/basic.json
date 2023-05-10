@@ -26,11 +26,11 @@
                     }
                 }
             },
-            "nullable_customers_where": {
+            "NullableCustomersWhere": {
                 "additionalProperties": false,
                 "properties": {
                     "name": {
-                        "$ref": "#/components/schemas/nullable_StringQuery_input"
+                        "$ref": "#/components/schemas/NullableStringQueryInput"
                     }
                 },
                 "type": [
@@ -38,7 +38,7 @@
                     "null"
                 ]
             },
-            "EmailPassword_input": {
+            "EmailPasswordInput": {
                 "additionalProperties": false,
                 "properties": {
                     "email": {
@@ -54,7 +54,7 @@
                 ],
                 "type": "object"
             },
-            "createCustomer_address_input": {
+            "CreateCustomerAddressInput": {
                 "additionalProperties": false,
                 "properties": {
                     "addressLine1": {
@@ -70,7 +70,7 @@
                 ],
                 "type": "object"
             },
-            "nullable_StringQuery_input": {
+            "NullableStringQueryInput": {
                 "additionalProperties": false,
                 "properties": {
                     "contains": {
@@ -118,7 +118,7 @@
                     "null"
                 ]
             },
-            "nullable_updateCustomer_values": {
+            "NullableUpdateCustomerValues": {
                 "additionalProperties": false,
                 "properties": {
                     "dateOfBirth": {
@@ -140,7 +140,7 @@
                     "null"
                 ]
             },
-            "updateCustomer_where": {
+            "UpdateCustomerWhere": {
                 "additionalProperties": false,
                 "properties": {
                     "id": {
@@ -176,7 +176,7 @@
                                         ]
                                     },
                                     "emailPassword": {
-                                        "$ref": "#/components/schemas/EmailPassword_input"
+                                        "$ref": "#/components/schemas/EmailPasswordInput"
                                     }
                                 },
                                 "required": [
@@ -261,7 +261,7 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "address": {
-                                        "$ref": "#/components/schemas/createCustomer_address_input"
+                                        "$ref": "#/components/schemas/CreateCustomerAddressInput"
                                     },
                                     "dateOfBirth": {
                                         "format": "date-time",
@@ -366,7 +366,7 @@
                                         ]
                                     },
                                     "where": {
-                                        "$ref": "#/components/schemas/nullable_customers_where"
+                                        "$ref": "#/components/schemas/NullableCustomersWhere"
                                     }
                                 },
                                 "type": "object"
@@ -687,10 +687,10 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "values": {
-                                        "$ref": "#/components/schemas/nullable_updateCustomer_values"
+                                        "$ref": "#/components/schemas/NullableUpdateCustomerValues"
                                     },
                                     "where": {
-                                        "$ref": "#/components/schemas/updateCustomer_where"
+                                        "$ref": "#/components/schemas/UpdateCustomerWhere"
                                     }
                                 },
                                 "required": [

@@ -2,17 +2,17 @@
 	"type": "object",
 	"properties": {
 		"values": {
-			"$ref": "#/components/schemas/testAction_values"
+			"$ref": "#/components/schemas/TestActionValues"
 		},
 		"where": {
-			"$ref": "#/components/schemas/testAction_where"
+			"$ref": "#/components/schemas/TestActionWhere"
 		}
 	},
 	"additionalProperties": false,
 	"required": ["where", "values"],
 	"components": {
 		"schemas": {
-			"testAction_company_input": {
+			"TestActionCompanyInput": {
 				"type": "object",
 				"properties": {
 					"id": {
@@ -22,17 +22,17 @@
 				"additionalProperties": false,
 				"required": ["id"]
 			},
-			"testAction_values": {
+			"TestActionValues": {
 				"type": "object",
 				"properties": {
 					"company": {
-						"$ref": "#/components/schemas/testAction_company_input"
+						"$ref": "#/components/schemas/TestActionCompanyInput"
 					}
 				},
 				"additionalProperties": false,
 				"required": ["company"]
 			},
-			"testAction_where": {
+			"TestActionWhere": {
 				"type": "object",
 				"properties": {
 					"id": {

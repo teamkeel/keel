@@ -49,28 +49,28 @@
           "name": "opA",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opA_input"
+          "inputMessageName": "OpAInput"
         },
         {
           "modelName": "Foo",
           "name": "opB",
           "type": "OPERATION_TYPE_UPDATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opB_input"
+          "inputMessageName": "OpBInput"
         },
         {
           "modelName": "Foo",
           "name": "opC",
           "type": "OPERATION_TYPE_GET",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opC_input"
+          "inputMessageName": "OpCInput"
         },
         {
           "modelName": "Foo",
           "name": "opD",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "opD_input"
+          "inputMessageName": "OpDInput"
         }
       ]
     },
@@ -148,24 +148,24 @@
           "name": "authenticate",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "authenticate_input",
-          "responseMessageName": "authenticate_response"
+          "inputMessageName": "AuthenticateInput",
+          "responseMessageName": "AuthenticateResponse"
         },
         {
           "modelName": "Identity",
           "name": "requestPasswordReset",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "requestPasswordReset_input",
-          "responseMessageName": "requestPasswordReset_response"
+          "inputMessageName": "RequestPasswordResetInput",
+          "responseMessageName": "RequestPasswordResetResponse"
         },
         {
           "modelName": "Identity",
           "name": "resetPassword",
           "type": "OPERATION_TYPE_WRITE",
           "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "resetPassword_input",
-          "responseMessageName": "resetPassword_response"
+          "inputMessageName": "ResetPasswordInput",
+          "responseMessageName": "ResetPasswordResponse"
         }
       ]
     }
@@ -175,13 +175,13 @@
       "name": "Any"
     },
     {
-      "name": "opA_input"
+      "name": "OpAInput"
     },
     {
-      "name": "opB_where",
+      "name": "OpBWhere",
       "fields": [
         {
-          "messageName": "opB_where",
+          "messageName": "OpBWhere",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -195,10 +195,10 @@
       ]
     },
     {
-      "name": "opB_values",
+      "name": "OpBValues",
       "fields": [
         {
-          "messageName": "opB_values",
+          "messageName": "OpBValues",
           "name": "name",
           "type": {
             "type": "TYPE_STRING",
@@ -213,32 +213,32 @@
       ]
     },
     {
-      "name": "opB_input",
+      "name": "OpBInput",
       "fields": [
         {
-          "messageName": "opB_input",
+          "messageName": "OpBInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "opB_where"
+            "messageName": "OpBWhere"
           }
         },
         {
-          "messageName": "opB_input",
+          "messageName": "OpBInput",
           "name": "values",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "opB_values"
+            "messageName": "OpBValues"
           },
           "optional": true
         }
       ]
     },
     {
-      "name": "opC_input",
+      "name": "OpCInput",
       "fields": [
         {
-          "messageName": "opC_input",
+          "messageName": "OpCInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
@@ -252,22 +252,22 @@
       ]
     },
     {
-      "name": "opD_where"
+      "name": "OpDWhere"
     },
     {
-      "name": "opD_input",
+      "name": "OpDInput",
       "fields": [
         {
-          "messageName": "opD_input",
+          "messageName": "OpDInput",
           "name": "where",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "opD_where"
+            "messageName": "OpDWhere"
           },
           "optional": true
         },
         {
-          "messageName": "opD_input",
+          "messageName": "OpDInput",
           "name": "first",
           "type": {
             "type": "TYPE_INT"
@@ -275,7 +275,7 @@
           "optional": true
         },
         {
-          "messageName": "opD_input",
+          "messageName": "OpDInput",
           "name": "after",
           "type": {
             "type": "TYPE_STRING"
@@ -283,7 +283,7 @@
           "optional": true
         },
         {
-          "messageName": "opD_input",
+          "messageName": "OpDInput",
           "name": "last",
           "type": {
             "type": "TYPE_INT"
@@ -291,7 +291,7 @@
           "optional": true
         },
         {
-          "messageName": "opD_input",
+          "messageName": "OpDInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -301,17 +301,17 @@
       ]
     },
     {
-      "name": "EmailPassword_input",
+      "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPassword_input",
+          "messageName": "EmailPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -320,10 +320,10 @@
       ]
     },
     {
-      "name": "authenticate_input",
+      "name": "AuthenticateInput",
       "fields": [
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "createIfNotExists",
           "type": {
             "type": "TYPE_BOOL"
@@ -331,27 +331,27 @@
           "optional": true
         },
         {
-          "messageName": "authenticate_input",
+          "messageName": "AuthenticateInput",
           "name": "emailPassword",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "EmailPassword_input"
+            "messageName": "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "authenticate_response",
+      "name": "AuthenticateResponse",
       "fields": [
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "identityCreated",
           "type": {
             "type": "TYPE_BOOL"
           }
         },
         {
-          "messageName": "authenticate_response",
+          "messageName": "AuthenticateResponse",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
@@ -360,17 +360,17 @@
       ]
     },
     {
-      "name": "requestPasswordReset_input",
+      "name": "RequestPasswordResetInput",
       "fields": [
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "email",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "requestPasswordReset_input",
+          "messageName": "RequestPasswordResetInput",
           "name": "redirectUrl",
           "type": {
             "type": "TYPE_STRING"
@@ -379,20 +379,20 @@
       ]
     },
     {
-      "name": "requestPasswordReset_response"
+      "name": "RequestPasswordResetResponse"
     },
     {
-      "name": "resetPassword_input",
+      "name": "ResetPasswordInput",
       "fields": [
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "token",
           "type": {
             "type": "TYPE_STRING"
           }
         },
         {
-          "messageName": "resetPassword_input",
+          "messageName": "ResetPasswordInput",
           "name": "password",
           "type": {
             "type": "TYPE_STRING"
@@ -401,7 +401,7 @@
       ]
     },
     {
-      "name": "resetPassword_response"
+      "name": "ResetPasswordResponse"
     }
   ]
 }
