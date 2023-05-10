@@ -1,3 +1,10 @@
+# [0.318.0](https://github.com/teamkeel/keel/compare/v0.317.0...v0.318.0) (2023-05-10)
+
+
+### Features
+
+* instrument fetch with tracing ([4c3dfa0](https://github.com/teamkeel/keel/commit/4c3dfa082101e377b859f57a208e152c0fa843b2))
+
 # [0.317.0](https://github.com/teamkeel/keel/compare/v0.316.0...v0.317.0) (2023-05-05)
 
 
