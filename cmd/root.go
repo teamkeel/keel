@@ -13,6 +13,7 @@ var (
 	flagNodePackagesPath string
 	flagPrivateKeyPath   string
 	flagPattern          string
+	flagTracing          bool
 )
 
 var rootCmd = &cobra.Command{

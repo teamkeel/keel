@@ -332,23 +332,28 @@ type FunctionsOutputMsg struct {
 	Output string
 }
 
-func StartFunctions(dir string, mode int, cfg *config.ProjectConfig, connInfo *db.ConnectionInfo, ch chan tea.Msg) tea.Cmd {
+func StartFunctions(m *Model) tea.Cmd {
 	return func() tea.Msg {
 		envType := "development"
-		if mode == ModeTest {
+		if m.Mode == ModeTest {
 			envType = "test"
 		}
 
-		envVars := cfg.GetEnvVars(envType)
+		envVars := m.Config.GetEnvVars(envType)
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
-		envVars["KEEL_DB_CONN"] = connInfo.String()
+		envVars["KEEL_DB_CONN"] = m.DatabaseConnInfo.String()
+
+		if m.TracingEnabled {
+			envVars["KEEL_TRACING_ENABLED"] = "true"
+			envVars["OTEL_RESOURCE_ATTRIBUTES"] = "service.name=functions"
+		}
 
 		output := &FunctionsOutputWriter{
 			// Initially buffer output inside the writer in case there's an error
 			Buffer: true,
-			ch:     ch,
+			ch:     m.functionsLogCh,
 		}
-		server, err := node.RunDevelopmentServer(dir, &node.ServerOpts{
+		server, err := node.RunDevelopmentServer(m.ProjectDir, &node.ServerOpts{
 			EnvVars: envVars,
 			Output:  output,
 		})

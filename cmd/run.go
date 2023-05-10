@@ -16,6 +16,7 @@ var runCmd = &cobra.Command{
 			ProjectDir:       flagProjectDir,
 			ResetDatabase:    flagReset,
 			Port:             flagPort,
+			TracingEnabled:   flagTracing,
 			NodePackagesPath: flagNodePackagesPath,
 			PrivateKeyPath:   flagPrivateKeyPath,
 		})
@@ -31,5 +32,6 @@ func init() {
 
 	if Debug {
 		runCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
+		runCmd.Flags().BoolVar(&flagTracing, "tracing", false, "enable tracing - an OTEL collector (e.g. jaeger) must be running on localhost:4318")
 	}
 }

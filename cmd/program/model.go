@@ -1,6 +1,7 @@
 package program
 
 import (
+	"context"
 	"crypto/rsa"
 	"io"
 	"net/http"
@@ -24,6 +25,12 @@ import (
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 const (
@@ -51,6 +58,22 @@ func Run(model *Model) {
 	// The runtime currently does logging with logrus, which is super noisy.
 	// For now we just discard the logs as they are not useful in the CLI
 	logrus.SetOutput(io.Discard)
+
+	if model.TracingEnabled {
+		exporter, err := otlptracehttp.New(context.Background(), otlptracehttp.WithInsecure())
+		if err != nil {
+			panic(err)
+		}
+
+		provider := sdktrace.NewTracerProvider(
+			sdktrace.WithBatcher(exporter),
+			sdktrace.WithResource(
+				resource.NewSchemaless(attribute.String("service.name", "runtime")),
+			),
+		)
+		otel.SetTracerProvider(provider)
+		otel.SetTextMapPropagator(propagation.TraceContext{})
+	}
 
 	defer func() {
 		_ = database.Stop()
@@ -96,6 +119,10 @@ type Model struct {
 
 	// Pattern to pass to vitest to isolate specific tests
 	TestPattern string
+
+	// If true then an OTLP export will be setup for the runtime and the
+	// env var KEEL_TRACING_ENABLED will be passed to the functions runtime
+	TracingEnabled bool
 
 	// Model state - used in View()
 	Status           int
@@ -322,7 +349,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.Status = StatusStartingFunctions
 		return m, tea.Batch(
-			StartFunctions(m.ProjectDir, m.Mode, m.Config, m.DatabaseConnInfo, m.functionsLogCh),
+			StartFunctions(m),
 			NextMsgCommand(m.functionsLogCh),
 		)
 

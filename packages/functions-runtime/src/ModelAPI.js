@@ -3,7 +3,11 @@ const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
-const { camelCaseObject, snakeCaseObject } = require("./casing");
+const {
+  camelCaseObject,
+  snakeCaseObject,
+  upperCamelCase,
+} = require("./casing");
 const tracing = require("./tracing");
 
 /**
@@ -44,129 +48,123 @@ class ModelAPI {
     this._defaultValues = defaultValues;
     this._tableName = tableName;
     this._tableConfigMap = tableConfigMap;
+    this._modelName = upperCamelCase(this._tableName);
   }
 
   async create(values) {
-    try {
-      const defaults = this._defaultValues();
-      const query = this._db
-        .insertInto(this._tableName)
-        .values(
-          snakeCaseObject({
-            ...defaults,
-            ...values,
-          })
-        )
-        .returningAll();
-      const sql = query.compile().sql;
-      const row = await tracing.withSpan(
-        `${this._tableName}.create`,
-        (span) => {
-          span.setAttribute("sql", sql);
-          return query.executeTakeFirstOrThrow();
-        }
-      );
+    const name = spanName(this._modelName, "create");
 
-      return camelCaseObject(row);
-    } catch (e) {
-      throw new DatabaseError(e);
-    }
+    return tracing.withSpan(name, async (span) => {
+      try {
+        const defaults = this._defaultValues();
+        const query = this._db
+          .insertInto(this._tableName)
+          .values(
+            snakeCaseObject({
+              ...defaults,
+              ...values,
+            })
+          )
+          .returningAll();
+
+        span.setAttribute("sql", query.compile().sql);
+        const row = await query.executeTakeFirstOrThrow();
+
+        return camelCaseObject(row);
+      } catch (e) {
+        throw new DatabaseError(e);
+      }
+    });
   }
 
   async findOne(where = {}) {
-    let builder = this._db
-      .selectFrom(this._tableName)
-      .distinctOn(`${this._tableName}.id`)
-      .selectAll(this._tableName);
+    const name = spanName(this._modelName, "findOne");
 
-    const context = new QueryContext([this._tableName], this._tableConfigMap);
+    return tracing.withSpan(name, async (span) => {
+      let builder = this._db
+        .selectFrom(this._tableName)
+        .distinctOn(`${this._tableName}.id`)
+        .selectAll(this._tableName);
 
-    builder = applyJoins(context, builder, where);
-    builder = applyWhereConditions(context, builder, where);
+      const context = new QueryContext([this._tableName], this._tableConfigMap);
 
-    const sql = builder.compile().sql;
-    const row = await tracing.withSpan(`${this._tableName}.findOne`, (span) => {
-      span.setAttribute("sql", sql);
-      return builder.executeTakeFirst();
+      builder = applyJoins(context, builder, where);
+      builder = applyWhereConditions(context, builder, where);
+
+      span.setAttribute("sql", builder.compile().sql);
+      const row = await builder.executeTakeFirst();
+      if (!row) {
+        return null;
+      }
+
+      return camelCaseObject(row);
     });
-    if (!row) {
-      return null;
-    }
-
-    return camelCaseObject(row);
   }
 
   async findMany(where = {}) {
-    let builder = this._db
-      .selectFrom(this._tableName)
-      .distinctOn(`${this._tableName}.id`)
-      .selectAll(this._tableName);
+    const name = spanName(this._modelName, "findMany");
 
-    const context = new QueryContext([this._tableName], this._tableConfigMap);
+    return tracing.withSpan(name, async (span) => {
+      let builder = this._db
+        .selectFrom(this._tableName)
+        .distinctOn(`${this._tableName}.id`)
+        .selectAll(this._tableName);
 
-    builder = applyJoins(context, builder, where);
-    builder = applyWhereConditions(context, builder, where);
-    const query = builder.orderBy("id");
+      const context = new QueryContext([this._tableName], this._tableConfigMap);
 
-    const sql = query.compile().sql;
-    const rows = await tracing.withSpan(
-      `${this._tableName}.findMany`,
-      (span) => {
-        span.setAttribute("sql", sql);
-        return builder.execute();
-      }
-    );
-    return rows.map((x) => camelCaseObject(x));
+      builder = applyJoins(context, builder, where);
+      builder = applyWhereConditions(context, builder, where);
+      const query = builder.orderBy("id");
+
+      span.setAttribute("sql", query.compile().sql);
+      const rows = await builder.execute();
+      return rows.map((x) => camelCaseObject(x));
+    });
   }
 
   async update(where, values) {
-    let builder = this._db.updateTable(this._tableName).returningAll();
+    const name = spanName(this._modelName, "update");
 
-    builder = builder.set(snakeCaseObject(values));
+    return tracing.withSpan(name, async (span) => {
+      let builder = this._db.updateTable(this._tableName).returningAll();
 
-    const context = new QueryContext([this._tableName], this._tableConfigMap);
+      builder = builder.set(snakeCaseObject(values));
 
-    // TODO: support joins for update
-    builder = applyWhereConditions(context, builder, where);
+      const context = new QueryContext([this._tableName], this._tableConfigMap);
 
-    try {
-      const sql = builder.compile().sql;
-      const row = await tracing.withSpan(
-        `${this._tableName}.update`,
-        (span) => {
-          span.setAttribute("sql", sql);
-          return builder.executeTakeFirstOrThrow();
-        }
-      );
+      // TODO: support joins for update
+      builder = applyWhereConditions(context, builder, where);
 
-      return camelCaseObject(row);
-    } catch (e) {
-      throw new DatabaseError(e);
-    }
+      span.setAttribute("sql", builder.compile().sql);
+
+      try {
+        const row = await builder.executeTakeFirstOrThrow();
+        return camelCaseObject(row);
+      } catch (e) {
+        throw new DatabaseError(e);
+      }
+    });
   }
 
   async delete(where) {
-    let builder = this._db.deleteFrom(this._tableName).returning(["id"]);
+    const name = spanName(this._modelName, "delete");
 
-    const context = new QueryContext([this._tableName], this._tableConfigMap);
+    return tracing.withSpan(name, async (span) => {
+      let builder = this._db.deleteFrom(this._tableName).returning(["id"]);
 
-    // TODO: support joins for delete
-    builder = applyWhereConditions(context, builder, where);
+      const context = new QueryContext([this._tableName], this._tableConfigMap);
 
-    try {
-      const sql = builder.compile().sql;
-      const row = await tracing.withSpan(
-        `${this._tableName}.delete`,
-        (span) => {
-          span.setAttribute("sql", sql);
-          return builder.executeTakeFirstOrThrow();
-        }
-      );
+      // TODO: support joins for delete
+      builder = applyWhereConditions(context, builder, where);
 
-      return row.id;
-    } catch (e) {
-      throw new DatabaseError(e);
-    }
+      span.setAttribute("sql", builder.compile().sql);
+      try {
+        const row = await builder.executeTakeFirstOrThrow();
+        return row.id;
+      } catch (e) {
+        throw new DatabaseError(e);
+      }
+    });
   }
 
   where(where) {
@@ -180,8 +178,12 @@ class ModelAPI {
     builder = applyJoins(context, builder, where);
     builder = applyWhereConditions(context, builder, where);
 
-    return new QueryBuilder(context, builder);
+    return new QueryBuilder(this._tableName, context, builder);
   }
+}
+
+function spanName(modelName, action) {
+  return `Database ${modelName}.${action}`;
 }
 
 module.exports = {
