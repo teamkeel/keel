@@ -70,7 +70,7 @@ async function handleRequest(request, config) {
     const result = await db.transaction().execute(async (transaction) => {
       const ctx = createContextAPI({
         responseHeaders: headers,
-        meta: request.meta
+        meta: request.meta,
       });
       const api = createFunctionAPI({
         meta: request.meta,
