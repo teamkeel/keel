@@ -26,7 +26,7 @@ test("when the custom function returns expected value", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createFunctionAPI: ({ headers, db }) => {
+    createFunctionAPI: ({ db }) => {
       return {
         permissions: new Permissions(),
       };
@@ -60,7 +60,7 @@ test("when the custom function doesnt return a value", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createFunctionAPI: ({ headers, db }) => {
+    createFunctionAPI: ({ db }) => {
       return {
         permissions: new Permissions(),
       };
@@ -88,7 +88,7 @@ test("when there is no matching function for the path", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createFunctionAPI: ({ headers, db }) => {
+    createFunctionAPI: ({ db }) => {
       return {
         permissions: new Permissions(),
       };
@@ -120,7 +120,7 @@ test("when there is an unexpected error in the custom function", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createFunctionAPI: ({ headers, db }) => {
+    createFunctionAPI: ({ db }) => {
       return {
         permissions: new Permissions(),
       };
@@ -152,7 +152,7 @@ test("when a role based permission has already been granted by the main runtime"
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createFunctionAPI: ({ headers, db }) => {
+    createFunctionAPI: ({ db }) => {
       return {
         permissions: new Permissions({ status: "granted", reason: "role" }),
       };
@@ -186,7 +186,7 @@ test("when there is an unexpected object thrown in the custom function", async (
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createFunctionAPI: ({ headers, db }) => {
+    createFunctionAPI: ({ db }) => {
       return {
         permissions: new Permissions(),
       };
@@ -257,7 +257,7 @@ describe("ModelAPI error handling", () => {
           return deleted;
         },
       },
-      createFunctionAPI: ({ headers, db }) => ({
+      createFunctionAPI: ({ db }) => ({
         permissions: new Permissions(),
         models: {
           post: new ModelAPI(
