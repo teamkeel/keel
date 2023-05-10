@@ -21,6 +21,7 @@ provider.addSpanProcessor({
 provider.register();
 
 beforeEach(() => {
+  tracing.init();
   spanEvents = [];
 });
 
@@ -53,4 +54,65 @@ test("withSpan on error", async () => {
       "exception.message": "err",
     });
   }
+});
+
+test("fetch - 200", async () => {
+  await fetch("http://example.com");
+
+  expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
+  expect(spanEvents.pop().span.attributes).toEqual({
+    "http.url": "http://example.com/",
+    "http.scheme": "http",
+    "http.method": "GET",
+    "http.status": 200,
+    "http.status_text": "OK",
+  });
+});
+
+test("fetch - 404", async () => {
+  await fetch("http://example.com/movies.json");
+
+  expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
+  expect(spanEvents.pop().span.attributes).toEqual({
+    "http.url": "http://example.com/movies.json",
+    "http.scheme": "http",
+    "http.method": "GET",
+    "http.status": 404,
+    "http.status_text": "Not Found",
+  });
+});
+
+test("fetch - invalid URL", async () => {
+  try {
+    await fetch({});
+  } catch (err) {
+    expect(err.message).toEqual("Invalid URL");
+  }
+
+  expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
+
+  const span = spanEvents.pop().span;
+  expect(spanEvents.pop().span.attributes).toEqual({});
+  expect(span.events[0].name).toEqual("exception");
+  expect.assertions(4);
+});
+
+test("fetch - ENOTFOUND", async () => {
+  try {
+    await fetch("http://qpwoeuthnvksnvnsanrurvnc.com");
+  } catch (err) {
+    expect(err.message).toEqual("fetch failed");
+    expect(err.cause.code).toEqual("ENOTFOUND");
+  }
+
+  expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
+
+  const span = spanEvents.pop().span;
+  expect(span.attributes).toEqual({
+    "http.method": "GET",
+    "http.scheme": "http",
+    "http.url": "http://qpwoeuthnvksnvnsanrurvnc.com/",
+  });
+  expect(span.events[0].name).toEqual("exception");
+  expect.assertions(5);
 });
