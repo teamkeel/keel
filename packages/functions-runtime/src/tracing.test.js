@@ -57,7 +57,8 @@ test("withSpan on error", async () => {
 });
 
 test("fetch - 200", async () => {
-  await fetch("http://example.com");
+  const res = await fetch("http://example.com");
+  expect(res.status).toEqual(200);
 
   expect(spanEvents.map((e) => e.event)).toEqual(["onStart", "onEnd"]);
   expect(spanEvents.pop().span.attributes).toEqual({
