@@ -1,8 +1,8 @@
-message PersonResult {
+message PersonResponse {
     name Text
 }
 
-message PersonPayload {
+message PersonInput {
     name Text
     nested NestedObject
     optionalNested NestedObject?
@@ -18,7 +18,7 @@ model Person {
     }
 
     functions {
-        write testAction(PersonPayload) returns (PersonResult)
+        write testAction(PersonInput) returns (PersonResponse)
     }
 }
 

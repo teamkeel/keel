@@ -1,7 +1,7 @@
 type Query {
   _health: Boolean
-  readPerson(input: ReadPersonInput!): PersonResult
-  readPersonWithMessage(input: PersonPayload!): PersonResult
+  readPerson(input: ReadPersonInput!): PersonResponse
+  readPersonWithMessage(input: PersonInput!): PersonResponse
 }
 
 type Mutation {
@@ -20,7 +20,7 @@ input EmailPasswordInput {
   password: String!
 }
 
-input PersonPayload {
+input PersonInput {
   name: String!
   optionalName: String
 }
@@ -44,7 +44,7 @@ type AuthenticateResponse {
   token: String!
 }
 
-type PersonResult {
+type PersonResponse {
   optionalText: String
   text: String!
 }

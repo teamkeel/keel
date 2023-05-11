@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
+	"github.com/teamkeel/keel/schema/query"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
@@ -26,7 +28,7 @@ func NameClashesRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) V
 			}
 		},
 		EnterMessage: func(m *parser.MessageNode) {
-			err := checkName(m.Name.Value, m.Name.Node)
+			err := checkMessageName(asts, m)
 
 			if err != nil {
 				errs.AppendError(err)
@@ -110,6 +112,35 @@ func getReservedJavaScriptGlobals() []string {
 	// 	ret = append(ret, "URL")
 
 	return []string{"String", "Number", "Boolean", "Object", "Array", "Error"}
+}
+
+func checkMessageName(asts []*parser.AST, message *parser.MessageNode) *errorhandling.ValidationError {
+	candidateActions := []parser.ActionNode{}
+
+	for _, model := range query.Models(asts) {
+		for _, action := range query.ModelActions(model) {
+			if action.Type.Value != parser.ActionTypeRead && action.Type.Value != parser.ActionTypeWrite {
+				candidateActions = append(candidateActions, *action)
+			}
+		}
+	}
+
+	for _, a := range candidateActions {
+		for _, suffix := range getReservedSuffixes() {
+			if message.Name.Value == fmt.Sprintf("%s%s", casing.ToCamel(a.Name.Value), suffix) {
+				return errorhandling.NewValidationErrorWithDetails(
+					errorhandling.NamingError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("Reserved message name '%s'", message.Name.Value),
+						Hint:    "Try a different name",
+					},
+					message.Name,
+				)
+			}
+		}
+	}
+
+	return nil
 }
 
 func merge(slices ...[]string) (ret []string) {

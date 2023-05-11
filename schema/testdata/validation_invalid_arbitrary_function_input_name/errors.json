@@ -16,23 +16,6 @@
         "line": 16,
         "column": 49
       }
-    },
-    {
-      "message": "Model names cannot end with 'Input'",
-      "hint": "Try using a different name",
-      "code": "NamingError",
-      "pos": {
-        "filename": "testdata/validation_invalid_arbitrary_function_input_name/schema.keel",
-        "offset": 8,
-        "line": 1,
-        "column": 9
-      },
-      "endPos": {
-        "filename": "testdata/validation_invalid_arbitrary_function_input_name/schema.keel",
-        "offset": 29,
-        "line": 1,
-        "column": 30
-      }
     }
   ]
 }

@@ -1,4 +1,4 @@
-message MyCustomFunctionPayload {
+message MyCustomFunctionInput {
   post Post
 }
 
@@ -12,6 +12,6 @@ model Post {
   }
 
   functions {
-    write createPostSpecial(MyCustomFunctionPayload) returns(MyCustomFunctionOutput)
+    write createPostSpecial(MyCustomFunctionInput) returns(MyCustomFunctionOutput)
   }
 }

@@ -1,9 +1,9 @@
-message Payload {
+message Input {
 	sports Sport[]
 	favouriteSport Sport?
 }
 
-message Output {
+message Response {
 	sports Sport[]
 	favouriteSport Sport?
 }
@@ -14,7 +14,7 @@ model Person {
     }
 
     functions {
-        write writeSportInterests(Payload) returns (Output)
+        write writeSportInterests(Input) returns (Response)
     }
 }
 

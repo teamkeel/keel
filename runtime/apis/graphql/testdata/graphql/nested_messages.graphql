@@ -1,13 +1,13 @@
 type Query {
   _health: Boolean
-  readPerson(input: ReadPersonPayload!): PersonResult
+  readPerson(input: ReadPersonInput!): PersonResponse
 }
 
 type Mutation {
   authenticate(input: AuthenticateInput!): AuthenticateResponse
   requestPasswordReset(input: RequestPasswordResetInput!): RequestPasswordResetResponse
   resetPassword(input: ResetPasswordInput!): ResetPasswordResponse
-  writePerson(input: WritePersonPayload!): PersonResult
+  writePerson(input: WritePersonInput!): PersonResponse
 }
 
 input AuthenticateInput {
@@ -24,7 +24,7 @@ input NestedInputObject {
   bool: Boolean!
 }
 
-input ReadPersonPayload {
+input ReadPersonInput {
   nested: NestedInputObject!
 }
 
@@ -38,7 +38,7 @@ input ResetPasswordInput {
   token: String!
 }
 
-input WritePersonPayload {
+input WritePersonInput {
   nested: NestedInputObject!
 }
 
@@ -51,7 +51,7 @@ type NestedResponseObject {
   bool: Boolean!
 }
 
-type PersonResult {
+type PersonResponse {
   nested: NestedResponseObject!
 }
 

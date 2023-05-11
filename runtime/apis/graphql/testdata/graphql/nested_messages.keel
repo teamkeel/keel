@@ -1,12 +1,12 @@
-message PersonResult {
+message PersonResponse {
     nested NestedResponseObject
 }
 
-message ReadPersonPayload {
+message ReadPersonInput {
     nested NestedInputObject
 }
 
-message WritePersonPayload {
+message WritePersonInput {
     nested NestedInputObject
 }
 
@@ -24,8 +24,8 @@ model Person {
     }
 
     functions {
-        read readPerson(ReadPersonPayload) returns (PersonResult)
-        write writePerson(WritePersonPayload) returns (PersonResult)
+        read readPerson(ReadPersonInput) returns (PersonResponse)
+        write writePerson(WritePersonInput) returns (PersonResponse)
     }
 }
 
