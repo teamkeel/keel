@@ -256,40 +256,6 @@
       }
     },
     {
-      "message": "Model names cannot end with 'Request'",
-      "hint": "Try using a different name",
-      "code": "NamingError",
-      "pos": {
-        "filename": "testdata/validation_name_clashes/schema.keel",
-        "offset": 732,
-        "line": 66,
-        "column": 7
-      },
-      "endPos": {
-        "filename": "testdata/validation_name_clashes/schema.keel",
-        "offset": 739,
-        "line": 66,
-        "column": 14
-      }
-    },
-    {
-      "message": "Model names cannot end with 'Response'",
-      "hint": "Try using a different name",
-      "code": "NamingError",
-      "pos": {
-        "filename": "testdata/validation_name_clashes/schema.keel",
-        "offset": 751,
-        "line": 69,
-        "column": 7
-      },
-      "endPos": {
-        "filename": "testdata/validation_name_clashes/schema.keel",
-        "offset": 759,
-        "line": 69,
-        "column": 15
-      }
-    },
-    {
       "message": "Reserved model name 'Array'",
       "hint": "Try using a different name",
       "code": "NamingError",

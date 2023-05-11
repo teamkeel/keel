@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fatih/camelcase"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
@@ -48,7 +49,13 @@ func checkName(name string, node node.Node) *errorhandling.ValidationError {
 	reservedSuffixes := getReservedSuffixes()
 
 	for _, suffix := range reservedSuffixes {
-		if strings.HasSuffix(name, suffix) {
+		entries := camelcase.Split(name)
+
+		// if the prospective name split into word fragments (e.g CamelCase will become ["Camel", "Case"])
+		// is just one item and that item matches one of the reserved suffixes, this is okay because it won't
+		// clash with any other actions reserved entity names
+		// e.g it is perfectly acceptable to have a model called "Edge" or "Connection"
+		if strings.HasSuffix(name, suffix) && len(entries) > 1 {
 			return errorhandling.NewValidationErrorWithDetails(
 				errorhandling.NamingError,
 				errorhandling.ErrorDetails{

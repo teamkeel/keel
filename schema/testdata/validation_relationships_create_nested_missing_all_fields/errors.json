@@ -101,23 +101,6 @@
         "line": 11,
         "column": 46
       }
-    },
-    {
-      "message": "Model names cannot end with 'Connection'",
-      "hint": "Try using a different name",
-      "code": "NamingError",
-      "pos": {
-        "filename": "testdata/validation_relationships_create_nested_missing_all_fields/schema.keel",
-        "offset": 429,
-        "line": 31,
-        "column": 7
-      },
-      "endPos": {
-        "filename": "testdata/validation_relationships_create_nested_missing_all_fields/schema.keel",
-        "offset": 439,
-        "line": 31,
-        "column": 17
-      }
     }
   ]
 }
