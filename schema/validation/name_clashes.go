@@ -67,7 +67,7 @@ func checkName(name string, node node.Node) *errorhandling.ValidationError {
 		}
 	}
 
-	err := checkReservedWholeWordMatches(name, node)
+	err := checkReservedExactMatches(name, node)
 
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func getReservedGraphQLNames() []string {
 	return []string{"Mutation", "Query", "Subscription"}
 }
 
-func checkReservedWholeWordMatches(name string, node node.Node) *errorhandling.ValidationError {
+func checkReservedExactMatches(name string, node node.Node) *errorhandling.ValidationError {
 	reservedNames := merge(
 		getReservedKeelNames(),
 		getReservedJavaScriptGlobals(),
@@ -162,7 +162,7 @@ func checkMessageName(asts []*parser.AST, message *parser.MessageNode) *errorhan
 		}
 	}
 
-	err := checkReservedWholeWordMatches(message.Name.Value, message.Name.Node)
+	err := checkReservedExactMatches(message.Name.Value, message.Name.Node)
 
 	if err != nil {
 		return err
