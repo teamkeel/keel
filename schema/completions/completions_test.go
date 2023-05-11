@@ -14,20 +14,124 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestCompletions(t *testing.T) {
+type testCase struct {
+	name     string
+	schema   string
+	expected []string
+}
 
-	type testCase struct {
-		name     string
-		schema   string
-		expected []string
-	}
+func TestRootCompletions(t *testing.T) {
 
 	cases := []testCase{
+		{
+			name:     "top-level-keyword",
+			schema:   "mod<Cursor>",
+			expected: []string{"api", "enum", "message", "model", "role"},
+		},
+		{
+			name: "top-level-keyword-not-first",
+			schema: `
+			model A {
+
+            }
+
+            m<Cursor>`,
+			expected: []string{"api", "enum", "message", "model", "role"},
+		},
+		{
+			name:     "top-level-keyword-whitespace",
+			schema:   `<Cursor>`,
+			expected: []string{"api", "enum", "message", "model", "role"},
+		},
+		{
+			name: "top-level-keyword-whitespace-partial-schema",
+			schema: `
+			model A {}
+
+			<Cursor>
+
+			model B {}
+			`,
+			expected: []string{"api", "enum", "message", "model", "role"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestModelCompletions(t *testing.T) {
+
+	cases := []testCase{
+		// name tests
 		{
 			name:     "model-name-no-completions",
 			schema:   "model Per<Cursor>",
 			expected: []string{},
 		},
+		{
+			name: "model-name-completion",
+			schema: `
+			model Person {
+				fields {
+					author Author
+				}
+			}
+
+			model A<Cursor>
+			`,
+			expected: []string{"Author"},
+		},
+		{
+			name: "model-name-completion-predefined-enum",
+			schema: `
+			enum Author {
+
+			}
+			model Person {
+				fields {
+					author Author
+				}
+			}
+
+			model A<Cursor>
+			`,
+			expected: []string{},
+		},
+		// block tests
+		{
+			name: "model-block-keywords",
+			schema: `
+			model A {
+              f<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "model-block-keywords-whitespace",
+			schema: `
+			model A {
+			  <Cursor>
+			}`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		// attributes tests
+		{
+			name: "model-attributes",
+			schema: `
+			model A {
+              @<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestFieldCompletions(t *testing.T) {
+
+	cases := []testCase{
+		// name tests
 		{
 			name: "field-name-no-completions",
 			schema: `
@@ -74,53 +178,7 @@ func TestCompletions(t *testing.T) {
 			`,
 			expected: []string{},
 		},
-		{
-			name:     "top-level-keyword",
-			schema:   "mod<Cursor>",
-			expected: []string{"api", "enum", "message", "model", "role"},
-		},
-		{
-			name: "top-level-keyword-not-first",
-			schema: `
-			model A {
-
-            }
-
-            m<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
-		},
-		{
-			name:     "top-level-keyword-whitespace",
-			schema:   `<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
-		},
-		{
-			name: "top-level-keyword-whitespace-partial-schema",
-			schema: `
-			model A {}
-
-			<Cursor>
-
-			model B {}
-			`,
-			expected: []string{"api", "enum", "message", "model", "role"},
-		},
-		{
-			name: "model-block-keywords",
-			schema: `
-			model A {
-              f<Cursor>
-            }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
-		},
-		{
-			name: "model-block-keywords-whitespace",
-			schema: `
-			model A {
-			  <Cursor>
-			}`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
-		},
+		// keyword tests
 		{
 			name: "fields-keyword",
 			schema: `
@@ -129,22 +187,7 @@ func TestCompletions(t *testing.T) {
             }`,
 			expected: []string{"@permission", "fields", "functions", "operations"},
 		},
-		{
-			name: "model-attributes",
-			schema: `
-			model A {
-              @<Cursor>
-            }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
-		},
-		{
-			name: "permission-attribute",
-			schema: `
-			model A {
-              @p<Cursor>
-            }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
-		},
+		// type tests
 		{
 			name: "field-type",
 			schema: `
@@ -230,6 +273,7 @@ func TestCompletions(t *testing.T) {
 			}`,
 			expected: []string{"Book", "Category", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp", "Secret", "Password"},
 		},
+		// attributes tests
 		{
 			name: "field-attributes",
 			schema: `
@@ -283,18 +327,14 @@ func TestCompletions(t *testing.T) {
 			}`,
 			expected: []string{"@unique", "@default", "@relation"},
 		},
-		{
-			name: "functions-keyword",
-			schema: `
-			model A {
-              fields {
-				name Text
-			  }
+	}
 
-              fun<Cursor>
-            }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
-		},
+	runTestsCases(t, cases)
+}
+
+func TestOperationCompletions(t *testing.T) {
+	cases := []testCase{
+		// actions tests
 		{
 			name: "operations-action-type-completions",
 			schema: `
@@ -337,6 +377,7 @@ func TestCompletions(t *testing.T) {
             }`,
 			expected: parser.OperationActionTypes,
 		},
+		// with tests
 		{
 			name: "with-keyword",
 			schema: `
@@ -370,6 +411,7 @@ func TestCompletions(t *testing.T) {
             }`,
 			expected: []string{},
 		},
+		// attribute tests
 		{
 			name: "action-attributes",
 			schema: `
@@ -415,327 +457,168 @@ func TestCompletions(t *testing.T) {
             }`,
 			expected: []string{"@permission", "@set", "@validate", "@where"},
 		},
-		{
-			name: "role-keyword",
-			schema: `
-			r<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
-		},
-		{
-			name: "domains-keyword",
-			schema: `
-			role Staff {
-				dom<Cursor>	
-			}`,
-			expected: []string{"domains", "emails"},
-		},
-		{
-			name: "emails-keyword",
-			schema: `
-			role Staff {
-				e<Cursor>	
-			}`,
-			expected: []string{"domains", "emails"},
-		},
-		{
-			name: "api-keyword",
-			schema: `
-			a<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
-		},
-		{
-			name: "models-keyword",
-			schema: `
-			api Test {
-				mo<Cursor>
-			}
-			`,
-			expected: []string{"models"},
-		},
-		{
-			name: "api-attributes",
-			schema: `
-			api Test {
-				@<Cursor>
-			}
-			`,
-			expected: []string{"models"},
-		},
-		{
-			name: "api-model-names",
-			schema: `
-			model Person {}
+	}
 
-			api Test {
-				models {
-					P<Cursor>
-				}
-			}
-			`,
-			expected: []string{"Person"},
-		},
+	runTestsCases(t, cases)
+}
+
+func TestFunctionCompletions(t *testing.T) {
+
+	cases := []testCase{
+		// block tests
 		{
-			name: "actions-input-field-name",
+			name: "functions-keyword",
 			schema: `
 			model A {
-			  fields {
-				name Text @unique
+              fields {
+				name Text
 			  }
-              operations {
-                get getA(na<Cursor>)
-			  }
+
+              fun<Cursor>
             }`,
-			expected: []string{"createdAt", "id", "name", "updatedAt"},
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		// name tests
+		{
+			name: "suggested-function-name-completion",
+			schema: `
+			model Post {
+				fields {
+					title Text
+				}
+			}
+			model PostExtended {
+				fields {
+					title Text
+				}
+			
+				functions {
+					create c<Cursor>
+				}
+			}
+			`,
+			expected: []string{"createPostExtended"},
+		},
+		// action type tests
+		{
+			name: "arbitrary-function-action-type-completions",
+			schema: `
+			model Person {
+				functions {
+					<Cursor>
+				}
+			}
+			`,
+			expected: parser.FunctionActionTypes,
+		},
+		// input tests
+		{
+			name: "arbitrary-function-input-completions",
+			schema: `
+			message GetPersonInput {}
+			model Person {
+				functions {
+					read getPerson(<Cursor>
+				}
+			}
+			`,
+			expected: []string{"GetPersonInput", "Any", "createdAt", "id", "updatedAt"},
+		},
+		// returns keyword tests
+		{
+			name: "arbitrary-function-returns-completions",
+			schema: `
+			message GetPersonInput {}
+			message GetPersonResponse {}
+			model Person {
+				functions {
+					read getPerson(GetPersonInput) returns(<Cursor>)
+				}
+			}
+			`,
+			expected: []string{"GetPersonInput", "GetPersonResponse"},
 		},
 		{
-			name: "actions-input-with-field-name",
+			name: "arbitrary-function-returns-keyword-completions",
+			schema: `
+			message GetPersonInput {}
+			message GetPersonResponse {}
+			model Person {
+				functions {
+					read getPerson(GetPersonInput) <Cursor>
+				}
+			}
+			`,
+			expected: []string{"returns"},
+		},
+		// Any keyword tests
+		{
+			name: "arbitrary-function-any-completions",
+			schema: `
+			model Person {
+				functions {
+					read getPerson(<Cursor>)
+				}
+			}
+			`,
+			expected: []string{"Any", "createdAt", "id", "updatedAt"},
+		},
+		{
+			name: "arbitrary-function-create-with-completion",
+			schema: `
+			model Person {
+				functions {
+					create createPerson() <Cursor>
+				}
+			}`,
+			expected: []string{"with"},
+		},
+		// With keyword tests
+		{
+			name: "arbitrary-function-create-partial-with-completion",
+			schema: `
+			model Person {
+				functions {
+					create createPerson() w<Cursor>
+				}
+			}`,
+			expected: []string{"with"},
+		},
+		{
+			name: "arbitrary-function-update-with-completion",
+			schema: `
+			model Person {
+				functions {
+					update updatePerson() <Cursor>
+				}
+			}`,
+			expected: []string{"with"},
+		},
+		{
+			name: "arbitrary-function-update-partial-with-completion",
+			schema: `
+			model Person {
+				functions {
+					update updatePerson() w<Cursor>
+				}
+			}`,
+			expected: []string{"with"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestPermissionCompletions(t *testing.T) {
+
+	cases := []testCase{
+		{
+			name: "permission-attribute",
 			schema: `
 			model A {
-			  fields {
-				name Text @unique
-				nickName Text
-			  }
-              operations {
-                create createA() with (n<Cursor>`,
-			expected: []string{"createdAt", "id", "name", "nickName", "updatedAt"},
-		},
-		{
-			name: "actions-input-not-first",
-			schema: `
-			model A {
-			  fields {
-				name Text @unique
-				birthday Date
-			  }
-              operations {
-                create createA() with (name, bi<Cursor>`,
-			expected: []string{"birthday", "createdAt", "id", "name", "updatedAt"},
-		},
-		{
-			name: "actions-input-built-in-fields",
-			schema: `
-			model A {
-              operations {
-                get getA(i<Cursor>`,
-			expected: []string{"createdAt", "id", "updatedAt"},
-		},
-		{
-			name: "actions-input-long-form-type",
-			schema: `
-			model Person {
-				fields {
-					name Text
-				}
-				operations {
-					create createPerson() with (name: Te<Cursor>)
-				}
-			}
-			`,
-			expected: []string{
-				"Boolean", "Date", "ID", "Identity", "Number", "Text", "Timestamp", "Password", "Secret", "createdAt", "id", "name", "updatedAt",
-			},
-		},
-		{
-			name: "actions-input-nested-field",
-			schema: `
-			model Author {}
-
-			model Book {
-				fields {
-					author Author
-				}
-				operations {
-					list booksByAuthor(author.<Cursor>)
-				}
-			}
-			`,
-			expected: []string{"createdAt", "id", "updatedAt"},
-		},
-		{
-			name: "actions-input-nested-field",
-			schema: `
-			model Publisher {
-				fields {
-					name Text
-				}
-			}
-
-			model Author {
-				fields {
-					publisher Publisher
-				}
-			}
-
-			model Book {
-				fields {
-					author Author
-				}
-				operations {
-					list booksByPublisher(author.publisher.<Cursor>)
-				}
-			}
-			`,
-			expected: []string{"createdAt", "id", "name", "updatedAt"},
-		},
-		{
-			name: "actions-input-nested-field-partial",
-			schema: `
-			model Publisher {
-				fields {
-					name Text
-				}
-			}
-
-			model Author {
-				fields {
-					publisher Publisher
-				}
-			}
-
-			model Book {
-				fields {
-					author Author
-				}
-				operations {
-					list booksByPublisher(author.publisher.na<Cursor>)
-				}
-			}
-			`,
-			expected: []string{"createdAt", "id", "name", "updatedAt"},
-		},
-		{
-			name: "actions-input-unresolvable",
-			schema: `
-			model Foo {
-				operations {
-					list listFoos(no.idea.what.im.doing<Cursor>)
-				}
-			}
-			`,
-			expected: []string{},
-		},
-		{
-			name: "set-expression",
-			schema: `
-			model Person {
-				operations {
-					create createPerson() {
-						@set(p<Cursor>)
-					}
-				}
-			}	
-			`,
-			expected: []string{"person", "ctx", "env", "secrets"},
-		},
-		{
-			name: "set-expression-model-attribute",
-			schema: `
-			model Person {
-				fields {
-					name Text
-				}
-				operations {
-					create createPerson() {
-						@set(person.<Cursor>)
-					}
-				}
-			}	
-			`,
-			expected: []string{"id", "createdAt", "updatedAt", "name"},
-		},
-		{
-			name: "set-expression-ctx-fields",
-			schema: `
-			model Person {
-				fields {
-					identity Identity
-				}
-				operations {
-					create createPerson() {
-						@set(person.identity = ctx.<Cursor>)
-					}
-				}
-			}	
-			`,
-			expected: []string{"env", "identity", "now", "secrets", "isAuthenticated"},
-		},
-		{
-			name: "set-expression-ctx-env-vars",
-			schema: `
-			model Person {
-				fields {
-					identity Identity
-				}
-				operations {
-					create createPerson() {
-						@set(person.identity = ctx.env.<Cursor>)
-					}
-				}
-			}	
-			`,
-			expected: []string{"TEST", "TEST_2"},
-		},
-		{
-			name: "set-expression-ctx-secrets",
-			schema: `
-			model Person {
-				fields {
-					identity Identity
-					apikey Secret
-				}
-				operations {
-					create createPerson() {
-						@set(person.apikey = ctx.secrets.<Cursor>)
-					}
-				}
-			}
-			`,
-			expected: []string{"API_KEY"},
-		},
-		{
-			name: "set-expression-unresolvable",
-			schema: `
-			model Person {
-				fields {
-					name Text
-				}
-				operations {
-					create createPerson() {
-						@set(total.nonsense.<Cursor>)
-					}
-				}
-			}	
-			`,
-			expected: []string{},
-		},
-		{
-			name: "where-expression",
-			schema: `
-			model Person {
-				operations {
-					get getPerson() {
-						@where(p<Cursor>)
-					}
-				}
-			}	
-			`,
-			expected: []string{"person", "ctx", "env", "secrets"},
-		},
-		{
-			name: "validate-expression",
-			schema: `
-			model Person {
-				fields {
-					name Text
-				}
-				operations {
-					update updatePerson(id) with (name) {
-						@validate(p<Cursor>)
-					}
-				}
-			}	
-			`,
-			expected: []string{"person", "ctx", "env", "secrets"},
+              @p<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
 		},
 		{
 			name: "model-permission-attribute-labels",
@@ -827,31 +710,35 @@ func TestCompletions(t *testing.T) {
 			`,
 			expected: []string{"Staff"},
 		},
-		{
-			name: "model-name-completion",
-			schema: `
-			model Person {
-				fields {
-					author Author
-				}
-			}
+	}
 
-			model A<Cursor>
-			`,
-			expected: []string{"Author"},
+	runTestsCases(t, cases)
+}
+
+func TestRoleCompletions(t *testing.T) {
+
+	cases := []testCase{
+		{
+			name: "role-keyword",
+			schema: `
+			r<Cursor>`,
+			expected: []string{"api", "enum", "message", "model", "role"},
 		},
 		{
-			name: "enum-name-completion",
+			name: "domains-keyword",
 			schema: `
-			model Person {
-				fields {
-					author Author
-				}
-			}
-
-			enum A<Cursor>
-			`,
-			expected: []string{"Author"},
+			role Staff {
+				dom<Cursor>	
+			}`,
+			expected: []string{"domains", "emails"},
+		},
+		{
+			name: "emails-keyword",
+			schema: `
+			role Staff {
+				e<Cursor>	
+			}`,
+			expected: []string{"domains", "emails"},
 		},
 		{
 			name: "role-name-completion-nadda",
@@ -866,21 +753,71 @@ func TestCompletions(t *testing.T) {
 			`,
 			expected: []string{},
 		},
-		{
-			name: "model-name-completion-predefined-enum",
-			schema: `
-			enum Author {
+	}
 
+	runTestsCases(t, cases)
+}
+
+func TestAPICompletions(t *testing.T) {
+
+	cases := []testCase{
+		{
+			name: "api-keyword",
+			schema: `
+			a<Cursor>`,
+			expected: []string{"api", "enum", "message", "model", "role"},
+		},
+		{
+			name: "models-keyword",
+			schema: `
+			api Test {
+				mo<Cursor>
 			}
+			`,
+			expected: []string{"models"},
+		},
+		{
+			name: "api-attributes",
+			schema: `
+			api Test {
+				@<Cursor>
+			}
+			`,
+			expected: []string{"models"},
+		},
+		{
+			name: "api-model-names",
+			schema: `
+			model Person {}
+
+			api Test {
+				models {
+					P<Cursor>
+				}
+			}
+			`,
+			expected: []string{"Person"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestEnumCompletions(t *testing.T) {
+
+	cases := []testCase{
+		{
+			name: "enum-name-completion",
+			schema: `
 			model Person {
 				fields {
 					author Author
 				}
 			}
 
-			model A<Cursor>
+			enum A<Cursor>
 			`,
-			expected: []string{},
+			expected: []string{"Author"},
 		},
 		{
 			name: "enum-name-completion-predefined-model",
@@ -898,26 +835,14 @@ func TestCompletions(t *testing.T) {
 			`,
 			expected: []string{},
 		},
-		{
-			name: "suggested-function-name-completion",
-			schema: `
-			model Post {
-				fields {
-					title Text
-				}
-			}
-			model PostExtended {
-				fields {
-					title Text
-				}
-			
-				functions {
-					create c<Cursor>
-				}
-			}
-			`,
-			expected: []string{"createPostExtended"},
-		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestMessageCompletions(t *testing.T) {
+
+	cases := []testCase{
 		{
 			name: "message-field-completions",
 			schema: `
@@ -928,108 +853,12 @@ func TestCompletions(t *testing.T) {
 			`,
 			expected: []string{"AnotherMessage", "Boolean", "Date", "ID", "Identity", "MyMessage", "Number", "Password", "Secret", "Text", "Timestamp"},
 		},
-		{
-			name: "arbitrary-function-action-type-completions",
-			schema: `
-			model Person {
-				functions {
-					<Cursor>
-				}
-			}
-			`,
-			expected: parser.FunctionActionTypes,
-		},
-		{
-			name: "arbitrary-function-input-completions",
-			schema: `
-			message GetPersonInput {}
-			model Person {
-				functions {
-					read getPerson(<Cursor>
-				}
-			}
-			`,
-			expected: []string{"GetPersonInput", "Any", "createdAt", "id", "updatedAt"},
-		},
-		{
-			name: "arbitrary-function-returns-completions",
-			schema: `
-			message GetPersonInput {}
-			message GetPersonResponse {}
-			model Person {
-				functions {
-					read getPerson(GetPersonInput) returns(<Cursor>)
-				}
-			}
-			`,
-			expected: []string{"GetPersonInput", "GetPersonResponse"},
-		},
-		{
-			name: "arbitrary-function-returns-keyword-completions",
-			schema: `
-			message GetPersonInput {}
-			message GetPersonResponse {}
-			model Person {
-				functions {
-					read getPerson(GetPersonInput) <Cursor>
-				}
-			}
-			`,
-			expected: []string{"returns"},
-		},
-		{
-			name: "arbitrary-function-any-completions",
-			schema: `
-			model Person {
-				functions {
-					read getPerson(<Cursor>)
-				}
-			}
-			`,
-			expected: []string{"Any", "createdAt", "id", "updatedAt"},
-		},
-		{
-			name: "arbitrary-function-create-with-completion",
-			schema: `
-			model Person {
-				functions {
-					create createPerson() <Cursor>
-				}
-			}`,
-			expected: []string{"with"},
-		},
-		{
-			name: "arbitrary-function-create-partial-with-completion",
-			schema: `
-			model Person {
-				functions {
-					create createPerson() w<Cursor>
-				}
-			}`,
-			expected: []string{"with"},
-		},
-		{
-			name: "arbitrary-function-update-with-completion",
-			schema: `
-			model Person {
-				functions {
-					update updatePerson() <Cursor>
-				}
-			}`,
-			expected: []string{"with"},
-		},
-		{
-			name: "arbitrary-function-update-partial-with-completion",
-			schema: `
-			model Person {
-				functions {
-					update updatePerson() w<Cursor>
-				}
-			}`,
-			expected: []string{"with"},
-		},
 	}
 
+	runTestsCases(t, cases)
+}
+
+func runTestsCases(t *testing.T, cases []testCase) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var pos *node.Position
@@ -1077,5 +906,4 @@ func TestCompletions(t *testing.T) {
 			assert.EqualValues(t, tc.expected, values)
 		})
 	}
-
 }
