@@ -568,13 +568,13 @@ export interface DeletePersonInput {
 
 func TestWriteActionInputTypesInlineInputRead(t *testing.T) {
 	schema := `
-message PersonName {
+message PersonNameResponse {
 	name Text
 }
 
 model Person {
 	functions {
-		read getPersonName(id) returns (PersonName)
+		read getPersonName(id) returns (PersonNameResponse)
 	}
 }`
 	expected := `
@@ -589,22 +589,22 @@ export interface GetPersonNameInput {
 
 func TestWriteActionInputTypesMessageInputRead(t *testing.T) {
 	schema := `
-message PersonNameResult {
+message PersonNameResponse {
 	name Text
 }
 
-message GetPayload {
+message GetInput {
 	id ID
 }
 
 model Person {
 	functions {
-		read deletePerson(GetPayload) returns (PersonNameResult)
+		read deletePerson(GetInput) returns (PersonNameResponse)
 	}
 }
 	`
 	expected := `
-export interface GetPayload {
+export interface GetInput {
 	id: string;
 }`
 
@@ -615,22 +615,22 @@ export interface GetPayload {
 
 func TestWriteActionResponseTypesRead(t *testing.T) {
 	schema := `
-message PersonNameResult {
+message PersonNameResponse {
 	name Text
 }
 
-message GetPayload {
+message GetInput {
 	id ID
 }
 
 model Person {
 	functions {
-		read deletePerson(GetPayload) returns (PersonNameResult)
+		read deletePerson(GetInput) returns (PersonNameResponse)
 	}
 }
 	`
 	expected := `
-export interface PersonNameResult {
+export interface PersonNameResponse {
 	name: string;
 }`
 
@@ -641,13 +641,13 @@ export interface PersonNameResult {
 
 func TestWriteActionInputTypesInlineInputWrite(t *testing.T) {
 	schema := `
-message DeleteResult {
+message DeleteResponse {
 	isDeleted Boolean
 }
 
 model Person {
 	functions {
-		write deletePerson(id) returns (DeleteResult)
+		write deletePerson(id) returns (DeleteResponse)
 	}
 }`
 	expected := `
@@ -662,22 +662,22 @@ export interface DeletePersonInput {
 
 func TestWriteActionInputTypesMessageInputWrite(t *testing.T) {
 	schema := `
-message DeleteResult {
+message DeleteResponse {
 	isDeleted Boolean
 }
 
-message DeletePayload {
+message DeleteInput {
 	id ID
 }
 
 model Person {
 	functions {
-		write deletePerson(DeletePayload) returns (DeleteResult)
+		write deletePerson(DeleteInput) returns (DeleteResponse)
 	}
 }
 	`
 	expected := `
-export interface DeletePayload {
+export interface DeleteInput {
 	id: string;
 }`
 
@@ -688,22 +688,22 @@ export interface DeletePayload {
 
 func TestWriteActionResponseTypesWrite(t *testing.T) {
 	schema := `
-message DeleteResult {
+message DeleteResponse {
 	isDeleted Boolean
 }
 
-message DeletePayload {
+message DeleteInput {
 	id ID
 }
 
 model Person {
 	functions {
-		read deletePerson(DeletePayload) returns (DeleteResult)
+		read deletePerson(DeleteInput) returns (DeleteResponse)
 	}
 }
 	`
 	expected := `
-export interface DeleteResult {
+export interface DeleteResponse {
 	isDeleted: boolean;
 }`
 
@@ -714,21 +714,21 @@ export interface DeleteResult {
 
 func TestWriteActionInputTypesArrayField(t *testing.T) {
 	schema := `
-message PeoplePayload {
+message PeopleInput {
 	ids ID[]
 }
 
-message PeopleResult {
+message People {
 	names Text[]
 }
 
 model Person {
 	functions {
-		read readPerson(PeoplePayload) returns (PeopleResult)
+		read readPerson(PeopleInput) returns (People)
 	}
 }`
 	expected := `
-export interface PeoplePayload {
+export interface PeopleInput {
 	ids: string[];
 }`
 
@@ -762,19 +762,19 @@ export interface Foo {
 
 func TestWriteActionTypesEnumField(t *testing.T) {
 	schema := `
-message Payload {
+message Input {
 	sports Sport[]
 	favouriteSport Sport?
 }
 
-message Result {
+message Response {
 	sports Sport[]
 	favouriteSport Sport?
 }
 
 model Person {
 	functions {
-		write writeSportInterests(Payload) returns (Result)
+		write writeSportInterests(Input) returns (Response)
 	}
 }
 
@@ -784,12 +784,12 @@ enum Sport {
 	Soccer
 }`
 	inputExpected := `
-export interface Payload {
+export interface Input {
 	sports: Sport[];
 	favouriteSport?: Sport | null;
 }`
 	responseExpected := `
-export interface Result {
+export interface Response {
 	sports: Sport[];
 	favouriteSport?: Sport | null;
 }`
@@ -855,7 +855,7 @@ export interface Details {
 
 func TestWriteActionResponseTypesNestedModels(t *testing.T) {
 	schema := `
-message PersonResult {
+message PersonResponse {
 	sales Sale[]
 	person Person
 	topSale Sale?
@@ -863,7 +863,7 @@ message PersonResult {
 
 model Person {
 	functions {
-		read readPerson(id) returns (PersonResult)
+		read readPerson(id) returns (PersonResponse)
 	}
 }
 
@@ -872,7 +872,7 @@ model Sale {
 }
 	`
 	expected := `
-export interface PersonResult {
+export interface PersonResponse {
 	sales: Sale[];
 	person: Person;
 	topSale?: Sale | null;
