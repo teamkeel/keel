@@ -124,6 +124,7 @@ func getReservedJavaScriptGlobals() []string {
 func checkMessageName(asts []*parser.AST, message *parser.MessageNode) *errorhandling.ValidationError {
 	candidateActions := []parser.ActionNode{}
 
+	// collect all of the built-in actions in the schema as these will be the clash candidates
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
 			if action.Type.Value != parser.ActionTypeRead && action.Type.Value != parser.ActionTypeWrite {
@@ -134,6 +135,10 @@ func checkMessageName(asts []*parser.AST, message *parser.MessageNode) *errorhan
 
 	for _, a := range candidateActions {
 		for _, suffix := range getReservedSuffixes() {
+			// for every reserved suffix we want to check the combination of the action name + suffix
+			// against the prospective messsage name.
+			// e.g You shouldn't be allowed to have a message name called FooInput if there is already a built in
+			// action called foo
 			if message.Name.Value == fmt.Sprintf("%s%s", casing.ToCamel(a.Name.Value), suffix) {
 				return errorhandling.NewValidationErrorWithDetails(
 					errorhandling.NamingError,
