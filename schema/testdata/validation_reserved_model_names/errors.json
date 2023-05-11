@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "Reserved name 'Query'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_reserved_model_names/schema.keel",

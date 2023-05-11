@@ -60,7 +60,6 @@ func checkName(name string, node node.Node) *errorhandling.ValidationError {
 				errorhandling.NamingError,
 				errorhandling.ErrorDetails{
 					Message: fmt.Sprintf("Model names cannot end with '%s'", suffix),
-					Hint:    "Try using a different name",
 				},
 				node,
 			)
@@ -101,7 +100,6 @@ func checkReservedExactMatches(name string, node node.Node) *errorhandling.Valid
 				errorhandling.NamingError,
 				errorhandling.ErrorDetails{
 					Message: fmt.Sprintf("Reserved name '%s'", name),
-					Hint:    "Try using a different name",
 				},
 				node,
 			)
@@ -154,7 +152,6 @@ func checkMessageName(asts []*parser.AST, message *parser.MessageNode) *errorhan
 					errorhandling.NamingError,
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("Reserved message name '%s'", message.Name.Value),
-						Hint:    "Try a different name",
 					},
 					message.Name,
 				)

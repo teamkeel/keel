@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "Model names cannot end with 'Input'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -19,7 +19,7 @@
     },
     {
       "message": "Model names cannot end with 'Input'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -36,7 +36,7 @@
     },
     {
       "message": "Model names cannot end with 'Connection'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -53,7 +53,7 @@
     },
     {
       "message": "Model names cannot end with 'Edge'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -70,7 +70,7 @@
     },
     {
       "message": "Model names cannot end with 'Input'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -87,7 +87,7 @@
     },
     {
       "message": "Model names cannot end with 'Input'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -104,7 +104,7 @@
     },
     {
       "message": "Model names cannot end with 'Response'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -121,7 +121,7 @@
     },
     {
       "message": "Model names cannot end with 'Input'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -138,7 +138,7 @@
     },
     {
       "message": "Model names cannot end with 'Response'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -155,7 +155,7 @@
     },
     {
       "message": "Model names cannot end with 'Input'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -172,7 +172,7 @@
     },
     {
       "message": "Model names cannot end with 'Response'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -189,7 +189,7 @@
     },
     {
       "message": "Reserved name 'PageInfo'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -206,7 +206,7 @@
     },
     {
       "message": "Reserved name 'String'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -223,7 +223,7 @@
     },
     {
       "message": "Reserved name 'Number'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -240,7 +240,7 @@
     },
     {
       "message": "Reserved name 'Boolean'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -257,7 +257,7 @@
     },
     {
       "message": "Reserved name 'Array'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -274,7 +274,7 @@
     },
     {
       "message": "Reserved name 'Object'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -291,7 +291,7 @@
     },
     {
       "message": "Reserved name 'Error'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -308,7 +308,7 @@
     },
     {
       "message": "Reserved name 'Mutation'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -325,7 +325,7 @@
     },
     {
       "message": "Reserved name 'Query'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
@@ -342,7 +342,7 @@
     },
     {
       "message": "Reserved name 'Subscription'",
-      "hint": "Try using a different name",
+      "hint": "",
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_name_clashes/schema.keel",
