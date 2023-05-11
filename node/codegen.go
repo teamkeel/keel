@@ -650,7 +650,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 
 func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles {
 	w := &Writer{}
-	w.Writeln(`import { handleRequest } from '@teamkeel/functions-runtime';`)
+	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createFunctionAPI, createContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
@@ -721,6 +721,8 @@ const listener = async (req, res) => {
 	res.statusCode = 400;
 	res.end();
 };
+
+tracing.init();
 
 const server = createServer(listener);
 const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;

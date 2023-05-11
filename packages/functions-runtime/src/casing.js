@@ -16,9 +16,15 @@ function snakeCaseObject(obj) {
   return r;
 }
 
+function upperCamelCase(s) {
+  s = camelCase(s);
+  return s[0].toUpperCase() + s.substring(1);
+}
+
 module.exports = {
   camelCaseObject,
   snakeCaseObject,
   snakeCase,
   camelCase,
+  upperCamelCase,
 };

@@ -8,3 +8,15 @@ services:
       - POSTGRES_DB=keel
     ports:
       - "8001:5432"
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.45
+    restart: always
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "5778:5778"
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+      - "9411:9411"

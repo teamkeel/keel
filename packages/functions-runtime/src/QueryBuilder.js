@@ -1,14 +1,16 @@
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
-const { camelCaseObject } = require("./casing");
+const { camelCaseObject, upperCamelCase } = require("./casing");
 const tracing = require("./tracing");
 
 class QueryBuilder {
   /**
+   * @param {string} tableName
    * @param {import("./QueryContext").QueryContext} context
    * @param {import("kysely").Kysely} db
    */
-  constructor(context, db) {
+  constructor(tableName, context, db) {
+    this._tableName = tableName;
     this._context = context;
     this._db = db;
   }
@@ -19,7 +21,7 @@ class QueryBuilder {
     let builder = applyJoins(context, this._db, where);
     builder = applyWhereConditions(context, builder, where);
 
-    return new QueryBuilder(context, builder);
+    return new QueryBuilder(this._tableName, context, builder);
   }
 
   orWhere(where) {
@@ -31,17 +33,17 @@ class QueryBuilder {
       return applyWhereConditions(context, qb, where);
     });
 
-    return new QueryBuilder(context, builder);
+    return new QueryBuilder(this._tableName, context, builder);
   }
 
   async findMany() {
-    const query = this._db.orderBy("id");
-    const sql = query.compile().sql;
-    const rows = await tracing.withSpan(`query`, (span) => {
-      span.setAttribute("sql", sql);
-      return query.execute();
+    const spanName = `Database ${upperCamelCase(this._tableName)}.findMany`;
+    return tracing.withSpan(spanName, async (span) => {
+      const query = this._db.orderBy("id");
+      span.setAttribute("sql", query.compile().sql);
+      const rows = await query.execute();
+      return rows.map((x) => camelCaseObject(x));
     });
-    return rows.map((x) => camelCaseObject(x));
   }
 }
 

@@ -1,4 +1,10 @@
 const opentelemetry = require("@opentelemetry/api");
+const { BatchSpanProcessor } = require("@opentelemetry/sdk-trace-base");
+const {
+  OTLPTraceExporter,
+} = require("@opentelemetry/exporter-trace-otlp-proto");
+const { NodeTracerProvider } = require("@opentelemetry/sdk-trace-node");
+const { envDetectorSync } = require("@opentelemetry/resources");
 
 function withSpan(name, fn) {
   return getTracer().startActiveSpan(name, async (span) => {
@@ -21,7 +27,7 @@ function withSpan(name, fn) {
   });
 }
 
-function init() {
+function patchFetch() {
   if (!globalThis.fetch.patched) {
     const originalFetch = globalThis.fetch;
 
@@ -45,6 +51,20 @@ function init() {
     };
     globalThis.fetch.patched = true;
   }
+}
+
+function init() {
+  if (process.env.KEEL_TRACING_ENABLED == "true") {
+    const provider = new NodeTracerProvider({
+      resource: envDetectorSync.detect(),
+    });
+    const exporter = new OTLPTraceExporter();
+    const processor = new BatchSpanProcessor(exporter);
+    provider.addSpanProcessor(processor);
+    provider.register();
+  }
+
+  patchFetch();
 }
 
 function getTracer() {

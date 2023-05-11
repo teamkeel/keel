@@ -8,6 +8,7 @@ const {
   PERMISSION_STATE,
   checkBuiltInPermissions,
 } = require("./permissions");
+const tracing = require("./tracing");
 
 module.exports = {
   ModelAPI,
@@ -17,6 +18,7 @@ module.exports = {
   Permissions,
   PERMISSION_STATE,
   checkBuiltInPermissions,
+  tracing,
   ksuid() {
     return KSUID.randomSync().string;
   },
