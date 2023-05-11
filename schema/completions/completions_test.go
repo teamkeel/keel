@@ -62,34 +62,11 @@ func TestRootCompletions(t *testing.T) {
 func TestModelCompletions(t *testing.T) {
 
 	cases := []testCase{
+		// name tests
 		{
 			name:     "model-name-no-completions",
 			schema:   "model Per<Cursor>",
 			expected: []string{},
-		},
-		{
-			name: "model-block-keywords",
-			schema: `
-			model A {
-              f<Cursor>
-            }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
-		},
-		{
-			name: "model-block-keywords-whitespace",
-			schema: `
-			model A {
-			  <Cursor>
-			}`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
-		},
-		{
-			name: "model-attributes",
-			schema: `
-			model A {
-              @<Cursor>
-            }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
 		},
 		{
 			name: "model-name-completion",
@@ -120,6 +97,32 @@ func TestModelCompletions(t *testing.T) {
 			`,
 			expected: []string{},
 		},
+		// block tests
+		{
+			name: "model-block-keywords",
+			schema: `
+			model A {
+              f<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		{
+			name: "model-block-keywords-whitespace",
+			schema: `
+			model A {
+			  <Cursor>
+			}`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
+		// attributes tests
+		{
+			name: "model-attributes",
+			schema: `
+			model A {
+              @<Cursor>
+            }`,
+			expected: []string{"@permission", "fields", "functions", "operations"},
+		},
 	}
 
 	runTestsCases(t, cases)
@@ -128,6 +131,7 @@ func TestModelCompletions(t *testing.T) {
 func TestFieldCompletions(t *testing.T) {
 
 	cases := []testCase{
+		// name tests
 		{
 			name: "field-name-no-completions",
 			schema: `
@@ -174,6 +178,7 @@ func TestFieldCompletions(t *testing.T) {
 			`,
 			expected: []string{},
 		},
+		// keyword tests
 		{
 			name: "fields-keyword",
 			schema: `
@@ -182,6 +187,7 @@ func TestFieldCompletions(t *testing.T) {
             }`,
 			expected: []string{"@permission", "fields", "functions", "operations"},
 		},
+		// type tests
 		{
 			name: "field-type",
 			schema: `
@@ -267,6 +273,7 @@ func TestFieldCompletions(t *testing.T) {
 			}`,
 			expected: []string{"Book", "Category", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp", "Secret", "Password"},
 		},
+		// attributes tests
 		{
 			name: "field-attributes",
 			schema: `
@@ -326,8 +333,8 @@ func TestFieldCompletions(t *testing.T) {
 }
 
 func TestOperationCompletions(t *testing.T) {
-
 	cases := []testCase{
+		// actions tests
 		{
 			name: "operations-action-type-completions",
 			schema: `
@@ -370,6 +377,7 @@ func TestOperationCompletions(t *testing.T) {
             }`,
 			expected: parser.OperationActionTypes,
 		},
+		// with tests
 		{
 			name: "with-keyword",
 			schema: `
@@ -403,6 +411,7 @@ func TestOperationCompletions(t *testing.T) {
             }`,
 			expected: []string{},
 		},
+		// attribute tests
 		{
 			name: "action-attributes",
 			schema: `
@@ -448,12 +457,6 @@ func TestOperationCompletions(t *testing.T) {
             }`,
 			expected: []string{"@permission", "@set", "@validate", "@where"},
 		},
-		{
-			name: "role-keyword",
-			schema: `
-			r<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
-		},
 	}
 
 	runTestsCases(t, cases)
@@ -462,6 +465,7 @@ func TestOperationCompletions(t *testing.T) {
 func TestFunctionCompletions(t *testing.T) {
 
 	cases := []testCase{
+		// block tests
 		{
 			name: "functions-keyword",
 			schema: `
@@ -474,6 +478,7 @@ func TestFunctionCompletions(t *testing.T) {
             }`,
 			expected: []string{"@permission", "fields", "functions", "operations"},
 		},
+		// name tests
 		{
 			name: "suggested-function-name-completion",
 			schema: `
@@ -494,6 +499,7 @@ func TestFunctionCompletions(t *testing.T) {
 			`,
 			expected: []string{"createPostExtended"},
 		},
+		// action type tests
 		{
 			name: "arbitrary-function-action-type-completions",
 			schema: `
@@ -505,6 +511,7 @@ func TestFunctionCompletions(t *testing.T) {
 			`,
 			expected: parser.FunctionActionTypes,
 		},
+		// input tests
 		{
 			name: "arbitrary-function-input-completions",
 			schema: `
@@ -517,6 +524,7 @@ func TestFunctionCompletions(t *testing.T) {
 			`,
 			expected: []string{"GetPersonInput", "Any", "createdAt", "id", "updatedAt"},
 		},
+		// returns keyword tests
 		{
 			name: "arbitrary-function-returns-completions",
 			schema: `
@@ -543,6 +551,7 @@ func TestFunctionCompletions(t *testing.T) {
 			`,
 			expected: []string{"returns"},
 		},
+		// Any keyword tests
 		{
 			name: "arbitrary-function-any-completions",
 			schema: `
@@ -564,6 +573,7 @@ func TestFunctionCompletions(t *testing.T) {
 			}`,
 			expected: []string{"with"},
 		},
+		// With keyword tests
 		{
 			name: "arbitrary-function-create-partial-with-completion",
 			schema: `
@@ -708,6 +718,12 @@ func TestPermissionCompletions(t *testing.T) {
 func TestRoleCompletions(t *testing.T) {
 
 	cases := []testCase{
+		{
+			name: "role-keyword",
+			schema: `
+			r<Cursor>`,
+			expected: []string{"api", "enum", "message", "model", "role"},
+		},
 		{
 			name: "domains-keyword",
 			schema: `
