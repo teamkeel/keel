@@ -1,3 +1,10 @@
+## [0.319.1](https://github.com/teamkeel/keel/compare/v0.319.0...v0.319.1) (2023-05-11)
+
+
+### Bug Fixes
+
+* return Response from patched fetch in tracing ([589e824](https://github.com/teamkeel/keel/commit/589e82444f299b05f0b2e2c7c7583ac635566519))
+
 # [0.319.0](https://github.com/teamkeel/keel/compare/v0.318.2...v0.319.0) (2023-05-11)
 
 
