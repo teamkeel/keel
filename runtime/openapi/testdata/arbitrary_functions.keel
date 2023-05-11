@@ -2,7 +2,7 @@ message Meta {
   creatorUsername Text
 }
 
-message UploadPayload {
+message UploadInput {
   people Person[]
   meta Meta
 }
@@ -12,7 +12,7 @@ message UploadOutput {
   meta Meta
 }
 
-message SearchPayload {
+message SearchInput {
   funnyName Text
 }
 
@@ -26,8 +26,8 @@ model Person {
   }
 
   functions {
-    write upload(UploadPayload) returns(UploadOutput)
-    read search(SearchPayload) returns(SearchOutput)
+    write upload(UploadInput) returns(UploadOutput)
+    read search(SearchInput) returns(SearchOutput)
   }
 }
 
