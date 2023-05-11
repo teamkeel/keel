@@ -1,3 +1,10 @@
+## [0.319.2](https://github.com/teamkeel/keel/compare/v0.319.1...v0.319.2) (2023-05-11)
+
+
+### Bug Fixes
+
+* more tests for enum/message clashes ([#965](https://github.com/teamkeel/keel/issues/965)) ([5d666ad](https://github.com/teamkeel/keel/commit/5d666ad95b86db6a5539fdea0348fd221b40329c))
+
 ## [0.319.1](https://github.com/teamkeel/keel/compare/v0.319.0...v0.319.1) (2023-05-11)
 
 
