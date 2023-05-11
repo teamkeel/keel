@@ -71,6 +71,9 @@ func (m *Migrations) Apply(ctx context.Context, database db.Db) error {
 	insertStmt := fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON)
 	sql.WriteString(insertStmt)
 
+	// Enable extensions
+	sql.WriteString("CREATE EXTENSION IF NOT EXISTS pg_stat_statements;\n")
+
 	_, err = database.ExecuteStatement(ctx, sql.String())
 
 	return err
