@@ -11,7 +11,7 @@ builds:
       - darwin
     main: ./cmd/keel
     ldflags:
-      - -s -w -X github.com/teamkeel/keel/runtime.Version={{.Version}}
+      - -s -w -X 'github.com/teamkeel/keel/runtime.Version={{.Version}}' -X 'github.com/teamkeel/keel/cmd.enabledDebugFlags=false'
 archives:
   - replacements:
       darwin: Darwin
@@ -20,12 +20,11 @@ archives:
       386: i386
       amd64: x86_64
 release:
-    github:
-      owner: teamkeel
-      name: cli
+  github:
+    owner: teamkeel
+    name: cli
 brews:
-  -
-    name: keel
+  - name: keel
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://github.com/teamkeel/cli"
     install: |

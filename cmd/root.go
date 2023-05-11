@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var enabledDebugFlags = "true"
+
 var (
 	flagProjectDir       string
 	flagReset            bool
