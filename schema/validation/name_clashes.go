@@ -67,6 +67,28 @@ func checkName(name string, node node.Node) *errorhandling.ValidationError {
 		}
 	}
 
+	err := checkReservedWholeWordMatches(name, node)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getReservedSuffixes() []string {
+	return []string{"Input", "Connection", "Edge", "Values", "Where", "Request", "Response"}
+}
+
+func getReservedKeelNames() []string {
+	return []string{"Any", "ID", "Identity", "Text", "Boolean", "Secret", "Image", "Float", "Image", "File", "Coordinate", "Location", "Email", "Phone", "PageInfo"}
+}
+
+func getReservedGraphQLNames() []string {
+	return []string{"Mutation", "Query", "Subscription"}
+}
+
+func checkReservedWholeWordMatches(name string, node node.Node) *errorhandling.ValidationError {
 	reservedNames := merge(
 		getReservedKeelNames(),
 		getReservedJavaScriptGlobals(),
@@ -87,18 +109,6 @@ func checkName(name string, node node.Node) *errorhandling.ValidationError {
 	}
 
 	return nil
-}
-
-func getReservedSuffixes() []string {
-	return []string{"Input", "Connection", "Edge", "Values", "Where", "Request", "Response"}
-}
-
-func getReservedKeelNames() []string {
-	return []string{"Any", "ID", "Identity", "Text", "Boolean", "Secret", "Image", "Float", "Image", "File", "Coordinate", "Location", "Email", "Phone", "PageInfo"}
-}
-
-func getReservedGraphQLNames() []string {
-	return []string{"Mutation", "Query", "Subscription"}
 }
 
 func getReservedJavaScriptGlobals() []string {
@@ -150,6 +160,12 @@ func checkMessageName(asts []*parser.AST, message *parser.MessageNode) *errorhan
 				)
 			}
 		}
+	}
+
+	err := checkReservedWholeWordMatches(message.Name.Value, message.Name.Node)
+
+	if err != nil {
+		return err
 	}
 
 	return nil
