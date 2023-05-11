@@ -1,3 +1,10 @@
+## [0.318.2](https://github.com/teamkeel/keel/compare/v0.318.1...v0.318.2) (2023-05-11)
+
+
+### Bug Fixes
+
+* validate name clashes  ([#962](https://github.com/teamkeel/keel/issues/962)) ([77cdf05](https://github.com/teamkeel/keel/commit/77cdf05802e6b680841183dfae24335bead6b6e1))
+
 ## [0.318.1](https://github.com/teamkeel/keel/compare/v0.318.0...v0.318.1) (2023-05-10)
 
 
