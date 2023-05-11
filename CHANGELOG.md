@@ -1,3 +1,10 @@
+# [0.319.0](https://github.com/teamkeel/keel/compare/v0.318.2...v0.319.0) (2023-05-11)
+
+
+### Features
+
+* pg_stat_statements extension ([#899](https://github.com/teamkeel/keel/issues/899)) ([a77e509](https://github.com/teamkeel/keel/commit/a77e509b4ee00464f954afec6548d00c8430ea2b))
+
 ## [0.318.2](https://github.com/teamkeel/keel/compare/v0.318.1...v0.318.2) (2023-05-11)
 
 
