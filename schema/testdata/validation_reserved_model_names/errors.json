@@ -1,7 +1,7 @@
 {
   "errors": [
     {
-      "message": "Reserved model name 'Query'",
+      "message": "Reserved name 'Query'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {

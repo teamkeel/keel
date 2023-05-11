@@ -78,7 +78,7 @@ func checkName(name string, node node.Node) *errorhandling.ValidationError {
 			return errorhandling.NewValidationErrorWithDetails(
 				errorhandling.NamingError,
 				errorhandling.ErrorDetails{
-					Message: fmt.Sprintf("Reserved model name '%s'", name),
+					Message: fmt.Sprintf("Reserved name '%s'", name),
 					Hint:    "Try using a different name",
 				},
 				node,

@@ -188,7 +188,7 @@
       }
     },
     {
-      "message": "Reserved model name 'PageInfo'",
+      "message": "Reserved name 'PageInfo'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -205,7 +205,7 @@
       }
     },
     {
-      "message": "Reserved model name 'String'",
+      "message": "Reserved name 'String'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -222,7 +222,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Number'",
+      "message": "Reserved name 'Number'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -239,7 +239,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Boolean'",
+      "message": "Reserved name 'Boolean'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -256,7 +256,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Array'",
+      "message": "Reserved name 'Array'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -273,7 +273,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Object'",
+      "message": "Reserved name 'Object'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -290,7 +290,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Error'",
+      "message": "Reserved name 'Error'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -307,7 +307,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Mutation'",
+      "message": "Reserved name 'Mutation'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -324,7 +324,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Query'",
+      "message": "Reserved name 'Query'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
@@ -341,7 +341,7 @@
       }
     },
     {
-      "message": "Reserved model name 'Subscription'",
+      "message": "Reserved name 'Subscription'",
       "hint": "Try using a different name",
       "code": "NamingError",
       "pos": {
