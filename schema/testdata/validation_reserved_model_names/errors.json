@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "You have a reserved model name Query",
-      "hint": "Try 'Queryer' instead",
-      "code": "E007",
+      "message": "Reserved name 'Query'",
+      "hint": "",
+      "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_reserved_model_names/schema.keel",
         "offset": 6,
