@@ -5,8 +5,6 @@ import (
 	"github.com/teamkeel/keel/cmd/program"
 )
 
-var Debug = true
-
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run your Keel App for development",
@@ -29,7 +27,7 @@ func init() {
 	runCmd.Flags().StringVar(&flagPort, "port", "8000", "the port to run the Keel application on")
 	runCmd.Flags().StringVar(&flagPrivateKeyPath, "private-key-path", "", "path to the private key .pem file")
 
-	if Debug {
+	if enabledDebugFlags == "true" {
 		runCmd.Flags().StringVar(&flagNodePackagesPath, "node-packages-path", "", "path to local @teamkeel npm packages")
 	}
 }
