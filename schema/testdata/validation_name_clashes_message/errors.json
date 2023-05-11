@@ -1,0 +1,208 @@
+{
+  "errors": [
+    {
+      "message": "Reserved message name 'UpdateModelInput'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 8,
+        "line": 1,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 24,
+        "line": 1,
+        "column": 25
+      }
+    },
+    {
+      "message": "Reserved message name 'UpdateModelResponse'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 38,
+        "line": 4,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 57,
+        "line": 4,
+        "column": 28
+      }
+    },
+    {
+      "message": "Reserved name 'PageInfo'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 326,
+        "line": 22,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 334,
+        "line": 22,
+        "column": 17
+      }
+    },
+    {
+      "message": "Reserved name 'String'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 348,
+        "line": 25,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 354,
+        "line": 25,
+        "column": 15
+      }
+    },
+    {
+      "message": "Reserved name 'Number'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 368,
+        "line": 28,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 374,
+        "line": 28,
+        "column": 15
+      }
+    },
+    {
+      "message": "Reserved name 'Boolean'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 388,
+        "line": 31,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 395,
+        "line": 31,
+        "column": 16
+      }
+    },
+    {
+      "message": "Reserved name 'Array'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 452,
+        "line": 40,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 457,
+        "line": 40,
+        "column": 14
+      }
+    },
+    {
+      "message": "Reserved name 'Object'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 471,
+        "line": 43,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 477,
+        "line": 43,
+        "column": 15
+      }
+    },
+    {
+      "message": "Reserved name 'Error'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 491,
+        "line": 46,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 496,
+        "line": 46,
+        "column": 14
+      }
+    },
+    {
+      "message": "Reserved name 'Mutation'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 510,
+        "line": 49,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 518,
+        "line": 49,
+        "column": 17
+      }
+    },
+    {
+      "message": "Reserved name 'Query'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 532,
+        "line": 52,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 537,
+        "line": 52,
+        "column": 14
+      }
+    },
+    {
+      "message": "Reserved name 'Subscription'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 551,
+        "line": 55,
+        "column": 9
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_message/schema.keel",
+        "offset": 563,
+        "line": 55,
+        "column": 21
+      }
+    }
+  ]
+}

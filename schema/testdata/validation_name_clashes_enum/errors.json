@@ -1,0 +1,361 @@
+{
+  "errors": [
+    {
+      "message": "Names cannot end with 'Input'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 313,
+        "line": 21,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 329,
+        "line": 21,
+        "column": 22
+      }
+    },
+    {
+      "message": "Names cannot end with 'Input'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 340,
+        "line": 24,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 354,
+        "line": 24,
+        "column": 20
+      }
+    },
+    {
+      "message": "Names cannot end with 'Connection'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 365,
+        "line": 27,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 384,
+        "line": 27,
+        "column": 25
+      }
+    },
+    {
+      "message": "Names cannot end with 'Edge'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 395,
+        "line": 30,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 408,
+        "line": 30,
+        "column": 19
+      }
+    },
+    {
+      "message": "Names cannot end with 'Input'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 419,
+        "line": 33,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 435,
+        "line": 33,
+        "column": 22
+      }
+    },
+    {
+      "message": "Names cannot end with 'Input'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 446,
+        "line": 36,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 463,
+        "line": 36,
+        "column": 23
+      }
+    },
+    {
+      "message": "Names cannot end with 'Response'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 474,
+        "line": 39,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 494,
+        "line": 39,
+        "column": 26
+      }
+    },
+    {
+      "message": "Names cannot end with 'Input'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 505,
+        "line": 42,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 525,
+        "line": 42,
+        "column": 26
+      }
+    },
+    {
+      "message": "Names cannot end with 'Response'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 536,
+        "line": 45,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 559,
+        "line": 45,
+        "column": 29
+      }
+    },
+    {
+      "message": "Names cannot end with 'Input'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 570,
+        "line": 48,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 595,
+        "line": 48,
+        "column": 31
+      }
+    },
+    {
+      "message": "Names cannot end with 'Response'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 606,
+        "line": 51,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 634,
+        "line": 51,
+        "column": 34
+      }
+    },
+    {
+      "message": "Reserved name 'PageInfo'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 645,
+        "line": 54,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 653,
+        "line": 54,
+        "column": 14
+      }
+    },
+    {
+      "message": "Reserved name 'String'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 664,
+        "line": 57,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 670,
+        "line": 57,
+        "column": 12
+      }
+    },
+    {
+      "message": "Reserved name 'Number'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 681,
+        "line": 60,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 687,
+        "line": 60,
+        "column": 12
+      }
+    },
+    {
+      "message": "Reserved name 'Boolean'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 698,
+        "line": 63,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 705,
+        "line": 63,
+        "column": 13
+      }
+    },
+    {
+      "message": "Reserved name 'Array'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 753,
+        "line": 72,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 758,
+        "line": 72,
+        "column": 11
+      }
+    },
+    {
+      "message": "Reserved name 'Object'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 769,
+        "line": 75,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 775,
+        "line": 75,
+        "column": 12
+      }
+    },
+    {
+      "message": "Reserved name 'Error'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 786,
+        "line": 78,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 791,
+        "line": 78,
+        "column": 11
+      }
+    },
+    {
+      "message": "Reserved name 'Mutation'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 802,
+        "line": 81,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 810,
+        "line": 81,
+        "column": 14
+      }
+    },
+    {
+      "message": "Reserved name 'Query'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 821,
+        "line": 84,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 826,
+        "line": 84,
+        "column": 11
+      }
+    },
+    {
+      "message": "Reserved name 'Subscription'",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 837,
+        "line": 87,
+        "column": 6
+      },
+      "endPos": {
+        "filename": "testdata/validation_name_clashes_enum/schema.keel",
+        "offset": 849,
+        "line": 87,
+        "column": 18
+      }
+    }
+  ]
+}

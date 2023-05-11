@@ -1,0 +1,56 @@
+message UpdateModelInput {
+}
+
+message UpdateModelResponse {
+}
+
+model ModelWithActions {
+    fields {
+        foo Text
+    }
+
+    operations {
+        update updateModel(id) with (foo)
+    }
+
+    functions {
+        read readModel(UpdateModelInput) returns (UpdateModelResponse)
+    }
+}
+
+// Begin invalid names - model
+message PageInfo {
+}
+
+message String {
+}
+
+message Number {
+}
+
+message Boolean {
+}
+
+message Request {
+}
+
+message Response {
+}
+
+message Array {
+}
+
+message Object {
+}
+
+message Error {
+}
+
+message Mutation {
+}
+
+message Query {
+}
+
+message Subscription {
+}

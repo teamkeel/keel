@@ -59,7 +59,7 @@ func checkName(name string, node node.Node) *errorhandling.ValidationError {
 			return errorhandling.NewValidationErrorWithDetails(
 				errorhandling.NamingError,
 				errorhandling.ErrorDetails{
-					Message: fmt.Sprintf("Model names cannot end with '%s'", suffix),
+					Message: fmt.Sprintf("Names cannot end with '%s'", suffix),
 				},
 				node,
 			)
