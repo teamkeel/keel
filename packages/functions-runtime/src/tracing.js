@@ -47,6 +47,7 @@ function patchFetch() {
         const res = await originalFetch(...args);
         span.setAttribute("http.status", res.status);
         span.setAttribute("http.status_text", res.statusText);
+        return res;
       });
     };
     globalThis.fetch.patched = true;
