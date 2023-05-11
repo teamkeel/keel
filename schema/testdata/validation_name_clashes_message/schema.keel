@@ -19,38 +19,38 @@ model ModelWithActions {
 }
 
 // Begin invalid names - model
-enum PageInfo {
+message PageInfo {
 }
 
-enum String {
+message String {
 }
 
-enum Number {
+message Number {
 }
 
-enum Boolean {
+message Boolean {
 }
 
-enum Request {
+message Request {
 }
 
-enum Response {
+message Response {
 }
 
-enum Array {
+message Array {
 }
 
-enum Object {
+message Object {
 }
 
-enum Error {
+message Error {
 }
 
-enum Mutation {
+message Mutation {
 }
 
-enum Query {
+message Query {
 }
 
-enum Subscription {
+message Subscription {
 }
