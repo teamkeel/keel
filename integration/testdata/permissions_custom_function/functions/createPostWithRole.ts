@@ -1,7 +1,7 @@
-import { CreatePostWithRole } from "@teamkeel/sdk";
+import { models, CreatePostWithRole } from "@teamkeel/sdk";
 
-export default CreatePostWithRole(async (_, inputs, api) => {
-  return api.models.post.create({
+export default CreatePostWithRole(async (_, inputs) => {
+  return models.post.create({
     title: inputs.title,
     businessId: inputs.business.id,
   });

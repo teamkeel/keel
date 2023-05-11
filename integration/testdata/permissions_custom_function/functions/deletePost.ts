@@ -1,6 +1,6 @@
-import { DeletePost } from "@teamkeel/sdk";
+import { models, DeletePost } from "@teamkeel/sdk";
 
-export default DeletePost(async (_, inputs, api) => {
-  const post = await api.models.post.delete(inputs);
+export default DeletePost(async (_, inputs) => {
+  const post = await models.post.delete(inputs);
   return post;
 });

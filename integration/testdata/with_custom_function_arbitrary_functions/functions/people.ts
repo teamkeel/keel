@@ -1,12 +1,12 @@
-import { People, Person } from "@teamkeel/sdk";
+import { models, permissions, People, Person } from "@teamkeel/sdk";
 
-export default People(async (_, inputs, api) => {
-  api.permissions.allow();
+export default People(async (_, inputs) => {
+  permissions.allow();
 
   const people: Person[] = [];
 
   for (let i = 0; i < inputs.ids.length; i++) {
-    const person = await api.models.person.findOne({
+    const person = await models.person.findOne({
       id: inputs.ids[i],
     });
 

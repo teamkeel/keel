@@ -1,7 +1,5 @@
-import { UpdatePerson } from "@teamkeel/sdk";
+import { models, UpdatePerson } from "@teamkeel/sdk";
 
-export default UpdatePerson((ctx, inputs, api) => {
-  api.permissions.allow();
-
-  return api.models.person.update(inputs.where, inputs.values);
+export default UpdatePerson((ctx, inputs) => {
+  return models.person.update(inputs.where, inputs.values);
 });

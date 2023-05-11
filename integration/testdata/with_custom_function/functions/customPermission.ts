@@ -1,17 +1,17 @@
-import { CustomPermission } from "@teamkeel/sdk";
+import { models, permissions, CustomPermission } from "@teamkeel/sdk";
 
 const GUEST_LIST = ["Adam", "Jon", "Dave"];
 
-export default CustomPermission((ctx, inputs, api) => {
+export default CustomPermission((ctx, inputs) => {
   const { name } = inputs;
 
   if (!GUEST_LIST.includes(name)) {
     // if your name's not on the list, you're not coming in.
-    api.permissions.deny();
+    permissions.deny();
   } else {
     // you're alright
-    api.permissions.allow();
+    permissions.allow();
   }
 
-  return api.models.person.create(inputs);
+  return models.person.create(inputs);
 });

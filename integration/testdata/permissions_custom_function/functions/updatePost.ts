@@ -1,6 +1,6 @@
-import { UpdatePost } from "@teamkeel/sdk";
+import { models, UpdatePost } from "@teamkeel/sdk";
 
-export default UpdatePost(async (_, inputs, api) => {
-  const post = await api.models.post.update(inputs.where, inputs.values);
+export default UpdatePost(async (_, inputs) => {
+  const post = await models.post.update(inputs.where, inputs.values);
   return post;
 });

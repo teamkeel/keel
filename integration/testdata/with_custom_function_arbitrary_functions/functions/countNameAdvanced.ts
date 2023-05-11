@@ -1,9 +1,9 @@
-import { CountNameAdvanced } from "@teamkeel/sdk";
+import { models, permissions, CountNameAdvanced } from "@teamkeel/sdk";
 
-export default CountNameAdvanced(async (_, inputs, api) => {
-  api.permissions.allow();
+export default CountNameAdvanced(async (_, inputs) => {
+  permissions.allow();
 
-  const persons = await api.models.person.findMany({
+  const persons = await models.person.findMany({
     name: {
       startsWith: inputs.startsWith,
       contains: inputs.contains,

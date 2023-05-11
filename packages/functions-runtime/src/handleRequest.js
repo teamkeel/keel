@@ -32,8 +32,9 @@ async function handleRequest(request, config) {
     return withSpan(request.method, async (span) => {
       try {
         const {
-          createFunctionAPI,
           createContextAPI,
+          createModelAPI,
+          createPermissionAPI,
           functions,
           permissions,
           actionTypes,
@@ -62,24 +63,25 @@ async function handleRequest(request, config) {
         // This is useful for permissions where we want to only proceed with database writes if all permission rules
         // have been validated.
         const result = await db.transaction().execute(async (transaction) => {
+          // Calling createModelAPI instantiates the models API in the custom function scope using the current transaction.
+          createModelAPI({ db: transaction });
+          // Calling createPermissionAPI instantiates the permissions API in the custom function scope.
+          const permissionApi = createPermissionAPI({ meta: request.meta });
+          // The ctx argument passed into the custom function.
           const ctx = createContextAPI({
             responseHeaders: headers,
             meta: request.meta,
-          });
-          const api = createFunctionAPI({
-            meta: request.meta,
-            db: transaction,
           });
 
           const customFunction = functions[request.method];
 
           // Call the user's custom function!
-          const fnResult = await customFunction(ctx, request.params, api);
+          const fnResult = await customFunction(ctx, request.params);
 
           // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
           // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
           // and therefore we default to checking the permissions defined in the schema automatically.
-          switch (api.permissions.getState()) {
+          switch (permissionApi.getState()) {
             case PERMISSION_STATE.PERMITTED:
               return fnResult;
             case PERMISSION_STATE.UNPERMITTED:
@@ -99,7 +101,6 @@ async function handleRequest(request, config) {
               switch (actionType) {
                 case PROTO_ACTION_TYPES.LIST:
                   rowsForPermissions = fnResult;
-
                   break;
                 case PROTO_ACTION_TYPES.DELETE:
                   rowsForPermissions = [{ id: fnResult }];

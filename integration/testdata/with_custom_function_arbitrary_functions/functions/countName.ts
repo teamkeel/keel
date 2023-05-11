@@ -1,9 +1,9 @@
-import { CountName } from "@teamkeel/sdk";
+import { models, permissions, CountName } from "@teamkeel/sdk";
 
-export default CountName(async (_, inputs, api) => {
-  api.permissions.allow();
+export default CountName(async (_, inputs) => {
+  permissions.allow();
 
-  const persons = await api.models.person.findMany({
+  const persons = await models.person.findMany({
     name: { equals: inputs.name },
   });
 

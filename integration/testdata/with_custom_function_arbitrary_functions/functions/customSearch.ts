@@ -1,7 +1,7 @@
-import { CustomSearch } from "@teamkeel/sdk";
+import { models, permissions, CustomSearch } from "@teamkeel/sdk";
 
-export default CustomSearch(async (_, value, api) => {
-  api.permissions.allow();
+export default CustomSearch(async (_, value) => {
+  permissions.allow();
 
   return value;
 });

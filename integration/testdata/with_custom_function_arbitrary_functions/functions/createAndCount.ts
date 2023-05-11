@@ -1,10 +1,10 @@
-import { CreateAndCount } from "@teamkeel/sdk";
+import { models, permissions, CreateAndCount } from "@teamkeel/sdk";
 
-export default CreateAndCount(async (_, inputs, api) => {
-  api.permissions.allow();
+export default CreateAndCount(async (_, inputs) => {
+  permissions.allow();
 
-  const person = await api.models.person.create({ name: inputs.name });
-  const persons = await api.models.person.findMany({
+  const person = await models.person.create({ name: inputs.name });
+  const persons = await models.person.findMany({
     name: { equals: person.name },
   });
 

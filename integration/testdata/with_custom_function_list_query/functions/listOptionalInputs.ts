@@ -1,7 +1,5 @@
-import { ListOptionalInputs } from "@teamkeel/sdk";
+import { models, ListOptionalInputs } from "@teamkeel/sdk";
 
-export default ListOptionalInputs((_, inputs, api) => {
-  api.permissions.allow();
-
-  return api.models.person.findMany(inputs.where!);
+export default ListOptionalInputs((_, inputs) => {
+  return models.person.findMany(inputs.where!);
 });
