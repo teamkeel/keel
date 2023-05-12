@@ -117,7 +117,7 @@ func writeFunctionWrapper(function *proto.Operation) string {
 
 	return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
 
-export default %s(async (inputs, api, ctx) => {
+export default %s(async (ctx, inputs, api) => {
 	%s
 });
 	`, functionName, functionName, suggestedImplementation)
