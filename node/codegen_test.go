@@ -264,7 +264,7 @@ const actionTypes = {
 	`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
-		files := generateDevelopmentServer("fakedir", s)
+		files := generateDevelopmentServer(s)
 
 		serverJs := files[0]
 
@@ -1145,7 +1145,7 @@ func TestTestingActionExecutor(t *testing.T) {
 				}
 			}
 			`,
-			Path: filepath.Join(tmpDir, "schema.keel"),
+			Path: "schema.keel",
 		},
 		{
 			Contents: `
@@ -1164,15 +1164,19 @@ func TestTestingActionExecutor(t *testing.T) {
 				await expect(p).toHaveAuthorizationError();
 			});
 			`,
-			Path: filepath.Join(tmpDir, "code.test.ts"),
+			Path: "code.test.ts",
 		},
-	}.Write()
+	}.Write(tmpDir)
 	require.NoError(t, err)
 
-	files, err := Generate(context.Background(), tmpDir)
+	builder := schema.Builder{}
+	schema, err := builder.MakeFromDirectory(tmpDir)
 	require.NoError(t, err)
 
-	err = files.Write()
+	files, err := Generate(context.Background(), schema)
+	require.NoError(t, err)
+
+	err = files.Write(tmpDir)
 	require.NoError(t, err)
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -1228,7 +1232,7 @@ func TestSDKTypings(t *testing.T) {
 
 	err = GeneratedFiles{
 		{
-			Path: filepath.Join(tmpDir, "schema.keel"),
+			Path: "schema.keel",
 			Contents: `
 				model Person {
 					fields {
@@ -1240,7 +1244,7 @@ func TestSDKTypings(t *testing.T) {
 					}
 				}`,
 		},
-	}.Write()
+	}.Write(tmpDir)
 	require.NoError(t, err)
 
 	type fixture struct {
@@ -1357,16 +1361,20 @@ func TestSDKTypings(t *testing.T) {
 		t.Run(fixture.name, func(t *testing.T) {
 			err := GeneratedFiles{
 				{
-					Path:     filepath.Join(tmpDir, "code.ts"),
+					Path:     "code.ts",
 					Contents: fixture.code,
 				},
-			}.Write()
+			}.Write(tmpDir)
 			require.NoError(t, err)
 
-			files, err := Generate(context.Background(), tmpDir)
+			builder := schema.Builder{}
+			schema, err := builder.MakeFromDirectory(tmpDir)
 			require.NoError(t, err)
 
-			err = files.Write()
+			files, err := Generate(context.Background(), schema)
+			require.NoError(t, err)
+
+			err = files.Write(tmpDir)
 			require.NoError(t, err)
 
 			c := exec.Command("npx", "tsc", "--noEmit")

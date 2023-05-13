@@ -13,6 +13,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/node"
+	"github.com/teamkeel/keel/schema"
 )
 
 func TestDevelopmentServer(t *testing.T) {
@@ -105,16 +106,17 @@ func runDevelopmentServerTest(t *testing.T, files node.GeneratedFiles, fn func(*
 	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
-	for _, f := range files {
-		f.Path = filepath.Join(tmpDir, f.Path)
-	}
-	err = files.Write()
+	err = files.Write(tmpDir)
 	require.NoError(t, err)
 
-	files, err = node.Generate(context.Background(), tmpDir, node.WithDevelopmentServer(true))
+	b := schema.Builder{}
+	schema, err := b.MakeFromDirectory(tmpDir)
 	require.NoError(t, err)
 
-	err = files.Write()
+	files, err = node.Generate(context.Background(), schema, node.WithDevelopmentServer(true))
+	require.NoError(t, err)
+
+	err = files.Write(tmpDir)
 	require.NoError(t, err)
 
 	server, err := node.RunDevelopmentServer(tmpDir, &node.ServerOpts{

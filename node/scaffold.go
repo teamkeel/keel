@@ -23,13 +23,13 @@ func Scaffold(dir string) (GeneratedFiles, error) {
 		return nil, err
 	}
 
-	files, err := Generate(context.TODO(), dir)
+	files, err := Generate(context.TODO(), schema)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = files.Write()
+	err = files.Write(dir)
 
 	if err != nil {
 		return nil, err
@@ -47,32 +47,22 @@ func Scaffold(dir string) (GeneratedFiles, error) {
 	})
 
 	for _, fn := range functions {
-		path := filepath.Join(dir, FUNCTIONS_DIR, fmt.Sprintf("%s.ts", fn.Name))
+		path := filepath.Join(FUNCTIONS_DIR, fmt.Sprintf("%s.ts", fn.Name))
 
-		_, err = os.Stat(path)
+		_, err = os.Stat(filepath.Join(dir, path))
 
 		if os.IsNotExist(err) {
-
-			file, err := os.Create(path)
-			if err != nil {
-				continue
-			}
-
-			src := writeFunctionWrapper(fn)
-			_, err = file.WriteString(src)
-
-			if err != nil {
-				continue
-			}
-
-			generatedFiles = append(generatedFiles, GeneratedFiles{
-				{
-					Path:     path,
-					Contents: src,
-				},
-			}...)
+			generatedFiles = append(generatedFiles, &GeneratedFile{
+				Path:     path,
+				Contents: writeFunctionWrapper(fn),
+			})
 		}
 
+	}
+
+	err = files.Write(dir)
+	if err != nil {
+		return nil, err
 	}
 
 	return generatedFiles, nil
