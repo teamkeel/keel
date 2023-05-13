@@ -1,3 +1,10 @@
+# [0.320.0](https://github.com/teamkeel/keel/compare/v0.319.2...v0.320.0) (2023-05-13)
+
+
+### Features
+
+* change API of node.Generate and GeneratedFiles.Write ([20c4a1a](https://github.com/teamkeel/keel/commit/20c4a1a98e9ece5387426cead604bad86451d362))
+
 ## [0.319.2](https://github.com/teamkeel/keel/compare/v0.319.1...v0.319.2) (2023-05-11)
 
 
