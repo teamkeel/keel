@@ -28,7 +28,7 @@ function getDialect() {
 let db = null;
 const dbInstance = new AsyncLocalStorage();
 
-// getDatabase will first check for an instance of Kysely in AsyncLocalStorage, 
+// getDatabase will first check for an instance of Kysely in AsyncLocalStorage,
 // otherwise it will create a new instance and reuse it..
 function getDatabase() {
   let fromStore = dbInstance.getStore();
@@ -36,10 +36,10 @@ function getDatabase() {
     return fromStore;
   }
 
-  if(db) {
+  if (db) {
     return db;
   }
-  
+
   db = new Kysely({
     dialect: getDialect(),
   });

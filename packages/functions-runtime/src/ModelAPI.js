@@ -128,9 +128,7 @@ class ModelAPI {
     const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = db
-        .updateTable(this._tableName)
-        .returningAll();
+      let builder = db.updateTable(this._tableName).returningAll();
 
       builder = builder.set(snakeCaseObject(values));
 
@@ -155,9 +153,7 @@ class ModelAPI {
     const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = db
-        .deleteFrom(this._tableName)
-        .returning(["id"]);
+      let builder = db.deleteFrom(this._tableName).returning(["id"]);
 
       const context = new QueryContext([this._tableName], this._tableConfigMap);
 

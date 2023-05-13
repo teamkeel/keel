@@ -465,7 +465,7 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 
 	w.Writeln("function createModelAPI() {")
 	w.Indent()
-	w.Writeln("const modelApi = {")
+	w.Writeln("return {")
 	w.Indent()
 	for _, model := range schema.Models {
 		w.Write(casing.ToLowerCamel(model.Name))
@@ -475,24 +475,12 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	}
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("return modelApi;")
-	w.Dedent()
-	w.Writeln("};")
-
-	w.Writeln("function createPermissionAPI({ meta }) {")
-	w.Indent()
-	w.Writeln("const { permissionState } = meta || { permissionState: { status: 'unknown' } };")
-	w.Writeln("const permissionApi = new runtime.Permissions(permissionState);")
-	w.Writeln("module.exports.permissions = permissionApi;")
-	w.Writeln("return permissionApi;")
 	w.Dedent()
 	w.Writeln("};")
 
 	w.Writeln(`module.exports.models = createModelAPI();`)
-	w.Writeln(`module.exports.permissions = undefined;`)
 	w.Writeln("module.exports.createModelAPI = createModelAPI;")
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
-	w.Writeln("module.exports.createPermissionAPI = createPermissionAPI;")
 }
 
 func writeTableConfig(w *Writer, models []*proto.Model) {
@@ -643,7 +631,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 func generateDevelopmentServer(schema *proto.Schema) GeneratedFiles {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createContextAPI, createPermissionAPI, permissionFns } from '@teamkeel/sdk';`)
+	w.Writeln(`import { createContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
 	functions := []*proto.Operation{}
@@ -698,7 +686,6 @@ const listener = async (req, res) => {
 		const rpcResponse = await handleRequest(json, {
 			functions,
 			createContextAPI,
-			createPermissionAPI,
 			actionTypes,
 			permissions: permissionFns,
 		});
@@ -741,7 +728,7 @@ func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
 	js.Writeln("export const models = createModelAPI();")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
-	js.Writeln("")
+	js.Indent()
 	js.Writeln("const db = getDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{}

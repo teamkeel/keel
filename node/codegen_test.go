@@ -289,23 +289,14 @@ function createContextAPI({ responseHeaders, meta }) {
 	return { headers, response, identity, env, now, secrets, isAuthenticated };
 };
 function createModelAPI() {
-	const modelApi = {
+	return {
 		person: new runtime.ModelAPI("person", personDefaultValues, tableConfigMap),
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, tableConfigMap),
 	};
-	return modelApi;
-};
-function createPermissionAPI({ meta }) {
-	const { permissionState } = meta || { permissionState: { status: 'unknown' } };
-	const permissionApi = new runtime.Permissions(permissionState);
-	module.exports.permissions = permissionApi;
-	return permissionApi;
 };
 module.exports.models = createModelAPI();
-module.exports.permissions = undefined;
 module.exports.createModelAPI = createModelAPI;
-module.exports.createContextAPI = createContextAPI;
-module.exports.createPermissionAPI = createPermissionAPI;`
+module.exports.createContextAPI = createContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{

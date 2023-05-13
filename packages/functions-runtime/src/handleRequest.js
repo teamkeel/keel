@@ -7,6 +7,7 @@ const {
 const { getDatabase, dbInstance } = require("./database");
 const {
   PERMISSION_STATE,
+  Permissions,
   PermissionError,
   checkBuiltInPermissions,
 } = require("./permissions");
@@ -31,14 +32,8 @@ async function handleRequest(request, config) {
     // Wrapping span for the whole request
     return withSpan(request.method, async (span) => {
       try {
-        const {
-          createContextAPI,
-          createModelAPI,
-          createPermissionAPI,
-          functions,
-          permissions,
-          actionTypes,
-        } = config;
+        const { createContextAPI, functions, permissions, actionTypes } =
+          config;
 
         if (!(request.method in functions)) {
           const message = `no corresponding function found for '${request.method}'`;
@@ -62,7 +57,10 @@ async function handleRequest(request, config) {
           meta: request.meta,
         });
 
-        const permissionApi = createPermissionAPI({ meta: request.meta });
+        const { permissionState } = request.meta || {
+          permissionState: { status: "unknown" },
+        };
+        const permissionApi = new Permissions(permissionState);
 
         const db = getDatabase();
 
@@ -76,7 +74,7 @@ async function handleRequest(request, config) {
             const customFunction = functions[request.method];
             const fnResult = await customFunction(ctx, request.params);
 
-             // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
+            // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
             // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
             // and therefore we default to checking the permissions defined in the schema automatically.
             switch (permissionApi.getState()) {
