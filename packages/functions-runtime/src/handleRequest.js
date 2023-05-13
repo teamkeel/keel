@@ -4,7 +4,7 @@ const {
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
 
-const { getDatabase } = require("./database");
+const { getDatabase, dbInstance } = require("./database");
 const {
   PERMISSION_STATE,
   PermissionError,
@@ -56,6 +56,14 @@ async function handleRequest(request, config) {
         // headers reference passed to custom function where object data can be modified
         const headers = new Headers();
 
+        // The ctx argument passed into the custom function.
+        const ctx = createContextAPI({
+          responseHeaders: headers,
+          meta: request.meta,
+        });
+
+        const permissionApi = createPermissionAPI({ meta: request.meta });
+
         const db = getDatabase();
 
         // We want to wrap the execution of the custom function in a transaction so that any call the user makes
@@ -63,69 +71,60 @@ async function handleRequest(request, config) {
         // This is useful for permissions where we want to only proceed with database writes if all permission rules
         // have been validated.
         const result = await db.transaction().execute(async (transaction) => {
-          // Calling createModelAPI instantiates the models API in the custom function scope using the current transaction.
-          createModelAPI({ db: transaction });
-          // Calling createPermissionAPI instantiates the permissions API in the custom function scope.
-          const permissionApi = createPermissionAPI({ meta: request.meta });
-          // The ctx argument passed into the custom function.
-          const ctx = createContextAPI({
-            responseHeaders: headers,
-            meta: request.meta,
+          return dbInstance.run(transaction, async () => {
+            // Call the user's custom function!
+            const customFunction = functions[request.method];
+            const fnResult = await customFunction(ctx, request.params);
+
+             // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
+            // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
+            // and therefore we default to checking the permissions defined in the schema automatically.
+            switch (permissionApi.getState()) {
+              case PERMISSION_STATE.PERMITTED:
+                return fnResult;
+              case PERMISSION_STATE.UNPERMITTED:
+                throw new PermissionError(
+                  `Not permitted to access ${request.method}`
+                );
+              default:
+                // unknown state, proceed with checking against the built in permissions in the schema
+                const relevantPermissions = permissions[request.method];
+
+                const actionType = actionTypes[request.method];
+
+                const peakInsideTransaction =
+                  actionType === PROTO_ACTION_TYPES.CREATE;
+
+                let rowsForPermissions = [];
+                switch (actionType) {
+                  case PROTO_ACTION_TYPES.LIST:
+                    rowsForPermissions = fnResult;
+                    break;
+                  case PROTO_ACTION_TYPES.DELETE:
+                    rowsForPermissions = [{ id: fnResult }];
+                    break;
+                  default:
+                    rowsForPermissions = [fnResult];
+                    break;
+                }
+
+                // check will throw a PermissionError if a permission rule is invalid
+                await checkBuiltInPermissions({
+                  rows: rowsForPermissions,
+                  permissions: relevantPermissions,
+                  // it is important that we pass db here as db represents the connection to the database
+                  // *outside* of the current transaction. Given that any changes inside of a transaction
+                  // are opaque to the outside, we can utilize this when running permission rules and then deciding to
+                  // rollback any changes if they do not pass. However, for creates we need to be able to 'peak' inside the transaction to read the created record, as this won't exist outside of the transaction.
+                  db: peakInsideTransaction ? transaction : db,
+                  ctx,
+                  functionName: request.method,
+                });
+
+                // If the built in permission check above doesn't throw, then it means that the request is permitted and we can continue returning the return value from the custom function out of the transaction
+                return fnResult;
+            }
           });
-
-          const customFunction = functions[request.method];
-
-          // Call the user's custom function!
-          const fnResult = await customFunction(ctx, request.params);
-
-          // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
-          // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
-          // and therefore we default to checking the permissions defined in the schema automatically.
-          switch (permissionApi.getState()) {
-            case PERMISSION_STATE.PERMITTED:
-              return fnResult;
-            case PERMISSION_STATE.UNPERMITTED:
-              throw new PermissionError(
-                `Not permitted to access ${request.method}`
-              );
-            default:
-              // unknown state, proceed with checking against the built in permissions in the schema
-              const relevantPermissions = permissions[request.method];
-
-              const actionType = actionTypes[request.method];
-
-              const peakInsideTransaction =
-                actionType === PROTO_ACTION_TYPES.CREATE;
-
-              let rowsForPermissions = [];
-              switch (actionType) {
-                case PROTO_ACTION_TYPES.LIST:
-                  rowsForPermissions = fnResult;
-                  break;
-                case PROTO_ACTION_TYPES.DELETE:
-                  rowsForPermissions = [{ id: fnResult }];
-                  break;
-                default:
-                  rowsForPermissions = [fnResult];
-                  break;
-              }
-
-              // check will throw a PermissionError if a permission rule is invalid
-              await checkBuiltInPermissions({
-                rows: rowsForPermissions,
-                permissions: relevantPermissions,
-                // it is important that we pass db here as db represents the connection to the database
-                // *outside* of the current transaction. Given that any changes inside of a transaction
-                // are opaque to the outside, we can utilize this when running permission rules and then deciding to
-                // rollback any changes if they do not pass. However, for creates we need to be able to 'peak' inside the transaction to read the created record, as this won't exist outside of the transaction.
-                db: peakInsideTransaction ? transaction : db,
-                ctx,
-                functionName: request.method,
-              });
-
-              // If the built in permission check above doesn't throw, then it means that the request is permitted and we can continue returning the return value from the custom function out of the transaction
-              return fnResult;
-          }
         });
 
         if (result === undefined) {

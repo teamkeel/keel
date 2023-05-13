@@ -1,3 +1,4 @@
+const { AsyncLocalStorage } = require("async_hooks");
 const { Kysely, PostgresDialect } = require("kysely");
 const pg = require("pg");
 
@@ -25,12 +26,20 @@ function getDialect() {
 }
 
 let db = null;
+const dbInstance = new AsyncLocalStorage();
 
+// getDatabase will first check for an instance of Kysely in AsyncLocalStorage, 
+// otherwise it will create a new instance and reuse it..
 function getDatabase() {
-  if (db) {
-    return db;
+  let fromStore = dbInstance.getStore();
+  if (fromStore) {
+    return fromStore;
   }
 
+  if(db) {
+    return db;
+  }
+  
   db = new Kysely({
     dialect: getDialect(),
   });
@@ -38,4 +47,5 @@ function getDatabase() {
   return db;
 }
 
+module.exports.dbInstance = dbInstance;
 module.exports.getDatabase = getDatabase;

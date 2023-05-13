@@ -463,19 +463,18 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("function createModelAPI({ db }) {")
+	w.Writeln("function createModelAPI() {")
 	w.Indent()
 	w.Writeln("const modelApi = {")
 	w.Indent()
 	for _, model := range schema.Models {
 		w.Write(casing.ToLowerCamel(model.Name))
 		w.Write(": ")
-		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, db, tableConfigMap)`, casing.ToSnake(model.Name), casing.ToLowerCamel(model.Name))
+		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, tableConfigMap)`, casing.ToSnake(model.Name), casing.ToLowerCamel(model.Name))
 		w.Writeln(",")
 	}
 	w.Dedent()
 	w.Writeln("};")
-	w.Writeln("module.exports.models = modelApi;")
 	w.Writeln("return modelApi;")
 	w.Dedent()
 	w.Writeln("};")
@@ -483,16 +482,16 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Writeln("function createPermissionAPI({ meta }) {")
 	w.Indent()
 	w.Writeln("const { permissionState } = meta || { permissionState: { status: 'unknown' } };")
-	w.Writeln("permissionApi = new runtime.Permissions(permissionState);")
+	w.Writeln("const permissionApi = new runtime.Permissions(permissionState);")
 	w.Writeln("module.exports.permissions = permissionApi;")
 	w.Writeln("return permissionApi;")
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("module.exports.models = undefined;")
-	w.Writeln("module.exports.permissions = undefined;")
-	w.Writeln("module.exports.createContextAPI = createContextAPI;")
+	w.Writeln(`module.exports.models = createModelAPI();`)
+	w.Writeln(`module.exports.permissions = undefined;`)
 	w.Writeln("module.exports.createModelAPI = createModelAPI;")
+	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 	w.Writeln("module.exports.createPermissionAPI = createPermissionAPI;")
 }
 
@@ -644,7 +643,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 func generateDevelopmentServer(schema *proto.Schema) GeneratedFiles {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createContextAPI, createModelAPI, createPermissionAPI, permissionFns } from '@teamkeel/sdk';`)
+	w.Writeln(`import { createContextAPI, createPermissionAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
 	functions := []*proto.Operation{}
@@ -699,7 +698,6 @@ const listener = async (req, res) => {
 		const rpcResponse = await handleRequest(json, {
 			functions,
 			createContextAPI,
-			createModelAPI,
 			createPermissionAPI,
 			actionTypes,
 			permissions: permissionFns,
@@ -740,14 +738,11 @@ func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
 	js.Writeln("const { getDatabase, createModelAPI } = sdk;")
 	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
-
-	js.Writeln("const db = getDatabase();")
-
-	js.Writeln(`export const actions = new ActionExecutor({});`)
-	js.Writeln("export const models = createModelAPI({ db });")
-
+	js.Writeln("export const models = createModelAPI();")
+	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
-	js.Indent()
+	js.Writeln("")
+	js.Writeln("const db = getDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{}
 	for _, model := range schema.Models {
