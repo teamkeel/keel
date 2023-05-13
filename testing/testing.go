@@ -68,7 +68,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	files, err := node.Generate(
 		context,
-		opts.Dir,
+		schema,
 		node.WithDevelopmentServer(true),
 	)
 
@@ -76,7 +76,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		return nil, err
 	}
 
-	err = files.Write()
+	err = files.Write(opts.Dir)
 	if err != nil {
 		return nil, err
 	}

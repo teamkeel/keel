@@ -11,7 +11,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -22,13 +21,14 @@ type GeneratedFile struct {
 
 type GeneratedFiles []*GeneratedFile
 
-func (files GeneratedFiles) Write() error {
+func (files GeneratedFiles) Write(dir string) error {
 	for _, f := range files {
-		err := os.MkdirAll(filepath.Dir(f.Path), 0777)
+		path := filepath.Join(dir, f.Path)
+		err := os.MkdirAll(filepath.Dir(path), 0777)
 		if err != nil {
 			return fmt.Errorf("error creating directory: %w", err)
 		}
-		err = os.WriteFile(f.Path, []byte(f.Contents), 0777)
+		err = os.WriteFile(path, []byte(f.Contents), 0777)
 		if err != nil {
 			return fmt.Errorf("error writing file: %w", err)
 		}
@@ -50,35 +50,26 @@ func WithDevelopmentServer(b bool) func(o *generateOptions) {
 
 // Generate generates and returns a list of objects that represent files to be written
 // to a project. Calling .Write() on the result will cause those files be written to disk.
-func Generate(ctx context.Context, dir string, opts ...func(o *generateOptions)) (GeneratedFiles, error) {
+// This function should not interact with the file system so it can be used in a backend
+// context.
+func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generateOptions)) (GeneratedFiles, error) {
 	options := &generateOptions{}
 	for _, o := range opts {
 		o(options)
 	}
 
-	builder := schema.Builder{}
-
-	schema, err := builder.MakeFromDirectory(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	if !IsEnabled(dir, schema) {
-		return GeneratedFiles{}, nil
-	}
-
-	files := generateSdkPackage(dir, schema)
-	files = append(files, generateTestingPackage(dir, schema)...)
-	files = append(files, generateTestingSetup(dir)...)
+	files := generateSdkPackage(schema)
+	files = append(files, generateTestingPackage(schema)...)
+	files = append(files, generateTestingSetup()...)
 
 	if options.developmentServer {
-		files = append(files, generateDevelopmentServer(dir, schema)...)
+		files = append(files, generateDevelopmentServer(schema)...)
 	}
 
 	return files, nil
 }
 
-func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
+func generateSdkPackage(schema *proto.Schema) GeneratedFiles {
 	sdk := &Writer{}
 	sdk.Writeln(`const { sql } = require("kysely")`)
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
@@ -134,15 +125,15 @@ func generateSdkPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 	return []*GeneratedFile{
 		{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/index.js"),
+			Path:     "node_modules/@teamkeel/sdk/index.js",
 			Contents: sdk.String(),
 		},
 		{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/index.d.ts"),
+			Path:     "node_modules/@teamkeel/sdk/index.d.ts",
 			Contents: sdkTypes.String(),
 		},
 		{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/sdk/package.json"),
+			Path:     "node_modules/@teamkeel/sdk/package.json",
 			Contents: `{"name": "@teamkeel/sdk"}`,
 		},
 	}
@@ -648,7 +639,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	return returnType
 }
 
-func generateDevelopmentServer(dir string, schema *proto.Schema) GeneratedFiles {
+func generateDevelopmentServer(schema *proto.Schema) GeneratedFiles {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createFunctionAPI, createContextAPI, permissionFns } from '@teamkeel/sdk';`)
@@ -730,13 +721,13 @@ server.listen(port);`)
 
 	return []*GeneratedFile{
 		{
-			Path:     filepath.Join(dir, ".build/server.js"),
+			Path:     ".build/server.js",
 			Contents: w.String(),
 		},
 	}
 }
 
-func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
+func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
 	js := &Writer{}
 	types := &Writer{}
 
@@ -768,24 +759,24 @@ func generateTestingPackage(dir string, schema *proto.Schema) GeneratedFiles {
 
 	return GeneratedFiles{
 		{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/index.mjs"),
+			Path:     "node_modules/@teamkeel/testing/index.mjs",
 			Contents: js.String(),
 		},
 		{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/index.d.ts"),
+			Path:     "node_modules/@teamkeel/testing/index.d.ts",
 			Contents: types.String(),
 		},
 		{
-			Path:     filepath.Join(dir, "node_modules/@teamkeel/testing/package.json"),
+			Path:     "node_modules/@teamkeel/testing/package.json",
 			Contents: `{"name": "@teamkeel/testing", "type": "module", "exports": "./index.mjs"}`,
 		},
 	}
 }
 
-func generateTestingSetup(dir string) GeneratedFiles {
+func generateTestingSetup() GeneratedFiles {
 	return GeneratedFiles{
 		{
-			Path: filepath.Join(dir, ".build/vitest.config.mjs"),
+			Path: ".build/vitest.config.mjs",
 			Contents: `
 import { defineConfig } from "vitest/config";
 
@@ -797,7 +788,7 @@ export default defineConfig({
 			`,
 		},
 		{
-			Path: filepath.Join(dir, ".build/vitest.setup.mjs"),
+			Path: ".build/vitest.setup.mjs",
 			Contents: `
 import { expect } from "vitest";
 import { toHaveError, toHaveAuthorizationError } from "@teamkeel/testing-runtime";

@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/node"
+	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testing"
 )
 
@@ -86,14 +87,18 @@ func TestIntegration(t *gotest.T) {
 				"NAME_API_KEY": "worf",
 			}
 
+			b := schema.Builder{}
+			schema, err := b.MakeFromDirectory(tmpDir)
+			require.NoError(t, err)
+
 			files, err := node.Generate(
 				context.Background(),
-				tmpDir,
+				schema,
 				node.WithDevelopmentServer(true),
 			)
 
 			require.NoError(t, err)
-			err = files.Write()
+			err = files.Write(tmpDir)
 			require.NoError(t, err)
 
 			// Use the docker compose database
