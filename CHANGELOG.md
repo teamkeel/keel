@@ -1,3 +1,10 @@
+## [0.321.1](https://github.com/teamkeel/keel/compare/v0.321.0...v0.321.1) (2023-05-15)
+
+
+### Bug Fixes
+
+* write generated files in scaffold ([e512b36](https://github.com/teamkeel/keel/commit/e512b369fe3aca29f16e58a13f97ce07a42d9937))
+
 # [0.321.0](https://github.com/teamkeel/keel/compare/v0.320.0...v0.321.0) (2023-05-15)
 
 
