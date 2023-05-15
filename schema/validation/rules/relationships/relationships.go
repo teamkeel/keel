@@ -217,26 +217,33 @@ func InvalidImplicitBelongsToWithHasManyRule(asts []*parser.AST) (errs errorhand
 
 			otherModelFields := query.ModelFields(otherModel)
 
+			match := false
+
 			for _, otherField := range otherModelFields {
 				if otherField.Type.Value != model.Name.Value {
 					continue
 				}
 
-				if !otherField.Repeated {
+				if otherField.Repeated {
 					continue fields
 				}
+
+				match = true
+
+				break
 			}
 
-			errs.Append(
-				errorhandling.ErrorMissingRelationshipField,
-				map[string]string{
-					"ModelA":     model.Name.Value,
-					"ModelB":     field.Type.Value,
-					"Suggestion": fmt.Sprintf("%s %s", casing.ToLowerCamel(model.Name.Value), model.Name.Value),
-				},
-				field.Name,
-			)
-
+			if !match {
+				errs.Append(
+					errorhandling.ErrorMissingRelationshipField,
+					map[string]string{
+						"ModelA":     model.Name.Value,
+						"ModelB":     field.Type.Value,
+						"Suggestion": fmt.Sprintf("%s %s", casing.ToLowerCamel(model.Name.Value), model.Name.Value),
+					},
+					field.Name,
+				)
+			}
 		}
 	}
 
