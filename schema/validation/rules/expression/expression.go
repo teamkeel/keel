@@ -277,6 +277,21 @@ func InvalidOperatorForOperandsRule(asts []*parser.AST, condition *parser.Condit
 				))
 			}
 		}
+		if resolvedLHS.IsRepeated() {
+			if !lo.Contains(allowedOperatorsLHS, condition.Operator.Symbol) {
+				errors = append(errors, errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionArrayMismatchingOperator,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"LHS":      condition.LHS.ToString(),
+							"LHSType":  resolvedLHS.GetType(),
+							"Operator": condition.Operator.Symbol,
+						},
+					},
+					condition.Operator,
+				))
+			}
+		}
 	}
 
 	return errors

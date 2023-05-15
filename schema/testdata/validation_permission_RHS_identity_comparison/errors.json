@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "\u003cno value\u003e is an array of \u003cno value\u003e. Only 'in' or 'not in' can be used",
+      "hint": "Change '==' to either 'in' or 'not in'.",
+      "code": "E030",
+      "pos": {
+        "filename": "testdata/validation_permission_RHS_identity_comparison/schema.keel",
+        "offset": 226,
+        "line": 20,
+        "column": 45
+      },
+      "endPos": {
+        "filename": "testdata/validation_permission_RHS_identity_comparison/schema.keel",
+        "offset": 228,
+        "line": 20,
+        "column": 47
+      }
+    }
+  ]
+}
