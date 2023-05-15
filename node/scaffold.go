@@ -60,7 +60,7 @@ func Scaffold(dir string) (GeneratedFiles, error) {
 
 	}
 
-	err = files.Write(dir)
+	err = generatedFiles.Write(dir)
 	if err != nil {
 		return nil, err
 	}
