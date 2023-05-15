@@ -1,3 +1,10 @@
+# [0.321.0](https://github.com/teamkeel/keel/compare/v0.320.0...v0.321.0) (2023-05-15)
+
+
+### Features
+
+* permissions for GQL nested queries ([#959](https://github.com/teamkeel/keel/issues/959)) ([a4ff78c](https://github.com/teamkeel/keel/commit/a4ff78cff420f169df6bd300c42a66a3fc25173f))
+
 # [0.320.0](https://github.com/teamkeel/keel/compare/v0.319.2...v0.320.0) (2023-05-13)
 
 
