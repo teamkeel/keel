@@ -9,7 +9,7 @@ import (
 
 // Applies all implicit input filters to the query.
 func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]any) error {
-	message := proto.FindWhereInputMessage(scope.schema, scope.operation.Name)
+	message := proto.FindWhereInputMessage(scope.Schema, scope.Operation.Name)
 	if message == nil {
 		return nil
 	}
@@ -41,7 +41,7 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]an
 
 // Applies all exlicit where attribute filters to the query.
 func (query *QueryBuilder) applyExplicitFilters(scope *Scope, args map[string]any) error {
-	for _, where := range scope.operation.WhereExpressions {
+	for _, where := range scope.Operation.WhereExpressions {
 		expression, err := parser.ParseExpression(where.Source)
 		if err != nil {
 			return err

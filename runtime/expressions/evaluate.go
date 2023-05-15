@@ -11,26 +11,26 @@ import (
 
 // Determines if the expression can be evaluated on the runtime process
 // as opposed to producing a SQL statement and querying against the database.
-func CanResolveInMemory(ctx context.Context, schema *proto.Schema, operation *proto.Operation, expression *parser.Expression) bool {
+func CanResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression) bool {
 	condition := expression.Conditions()[0]
 
-	lhsResolver := NewOperandResolver(ctx, schema, operation, condition.LHS)
+	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
 
 	if condition.Type() == parser.ValueCondition {
 		return !lhsResolver.IsDatabaseColumn()
 	}
 
-	rhsResolver := NewOperandResolver(ctx, schema, operation, condition.RHS)
+	rhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.RHS)
 	referencesDatabaseColumns := lhsResolver.IsDatabaseColumn() || rhsResolver.IsDatabaseColumn()
 
 	return !(referencesDatabaseColumns)
 }
 
 // Evaluated the expression in the runtime process without generated and query against the database.
-func ResolveInMemory(ctx context.Context, schema *proto.Schema, operation *proto.Operation, expression *parser.Expression, args map[string]any) bool {
+func ResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression, args map[string]any) bool {
 	condition := expression.Conditions()[0]
 
-	lhsResolver := NewOperandResolver(ctx, schema, operation, condition.LHS)
+	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
 	operandType, _ := lhsResolver.GetOperandType()
 	lhsValue, _ := lhsResolver.ResolveValue(args)
 
@@ -39,7 +39,7 @@ func ResolveInMemory(ctx context.Context, schema *proto.Schema, operation *proto
 		return result
 	}
 
-	rhsResolver := NewOperandResolver(ctx, schema, operation, condition.RHS)
+	rhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.RHS)
 
 	rhsValue, _ := rhsResolver.ResolveValue(args)
 

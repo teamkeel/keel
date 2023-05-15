@@ -61,7 +61,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, common.RuntimeError{Code: common.ErrInvalidInput, Message: "password cannot be empty"}
 	}
 
-	identity, err := FindIdentityByEmail(scope.context, scope.schema, emailPassword.String("email"))
+	identity, err := FindIdentityByEmail(scope.Context, scope.Schema, emailPassword.String("email"))
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 			return nil, err
 		}
 
-		token, err := GenerateBearerToken(scope.context, id.String())
+		token, err := GenerateBearerToken(scope.Context, id.String())
 		if err != nil {
 			return nil, err
 		}
@@ -97,12 +97,12 @@ func Authenticate(scope *Scope, input map[string]any) (*AuthenticateResult, erro
 		return nil, err
 	}
 
-	identity, err = CreateIdentity(scope.context, scope.schema, emailPassword.String("email"), string(hashedBytes))
+	identity, err = CreateIdentity(scope.Context, scope.Schema, emailPassword.String("email"), string(hashedBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := GenerateBearerToken(scope.context, identity.Id)
+	token, err := GenerateBearerToken(scope.Context, identity.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	}
 
 	var identity *runtimectx.Identity
-	identity, err = FindIdentityByEmail(scope.context, scope.schema, emailString)
+	identity, err = FindIdentityByEmail(scope.Context, scope.Schema, emailString)
 	if err != nil {
 		return err
 	}
@@ -136,7 +136,7 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 		return nil
 	}
 
-	token, err := GenerateResetToken(scope.context, identity.Id)
+	token, err := GenerateResetToken(scope.Context, identity.Id)
 	if err != nil {
 		return err
 	}
@@ -145,12 +145,12 @@ func ResetRequestPassword(scope *Scope, input map[string]any) error {
 	q.Add("token", token)
 	redirectUrl.RawQuery = q.Encode()
 
-	client, err := runtimectx.GetMailClient(scope.context)
+	client, err := runtimectx.GetMailClient(scope.Context)
 	if err != nil {
 		return err
 	}
 
-	err = client.Send(scope.context, &mail.SendEmailRequest{
+	err = client.Send(scope.Context, &mail.SendEmailRequest{
 		To:        identity.Email,
 		From:      "hi@keel.xyz",
 		Subject:   "[Keel] Reset password request",
@@ -166,7 +166,7 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 	token := typedInput.String("token")
 	password := typedInput.String("password")
 
-	identityId, err := ValidateResetToken(scope.context, token)
+	identityId, err := ValidateResetToken(scope.Context, token)
 	switch {
 	case errors.Is(err, ErrInvalidToken) || errors.Is(err, ErrTokenExpired):
 		return common.RuntimeError{Code: common.ErrInvalidInput, Message: err.Error()}
@@ -179,7 +179,7 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 		return err
 	}
 
-	identityModel := proto.FindModel(scope.schema.Models, parser.ImplicitIdentityModelName)
+	identityModel := proto.FindModel(scope.Schema.Models, parser.ImplicitIdentityModelName)
 
 	query := NewQuery(identityModel)
 	err = query.Where(Field("id"), Equals, Value(identityId))
@@ -189,7 +189,7 @@ func ResetPassword(scope *Scope, input map[string]any) error {
 
 	query.AddWriteValue("password", string(hashedPassword))
 
-	affected, err := query.UpdateStatement().Execute(scope.context)
+	affected, err := query.UpdateStatement().Execute(scope.Context)
 	if err != nil {
 		return err
 	}

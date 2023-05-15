@@ -22,14 +22,16 @@ import (
 type OperandResolver struct {
 	Context   context.Context
 	Schema    *proto.Schema
+	Model     *proto.Model
 	Operation *proto.Operation
 	Operand   *parser.Operand
 }
 
-func NewOperandResolver(ctx context.Context, schema *proto.Schema, operation *proto.Operation, operand *parser.Operand) *OperandResolver {
+func NewOperandResolver(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, operand *parser.Operand) *OperandResolver {
 	return &OperandResolver{
 		Context:   ctx,
 		Schema:    schema,
+		Model:     model,
 		Operation: operation,
 		Operand:   operand,
 	}
@@ -116,7 +118,7 @@ func (resolver *OperandResolver) IsDatabaseColumn() bool {
 
 	modelTarget := resolver.Operand.Ident.Fragments[0].Fragment
 
-	return modelTarget == casing.ToLowerCamel(resolver.Operation.ModelName)
+	return modelTarget == casing.ToLowerCamel(resolver.Model.Name)
 }
 
 // IsContextField returns true if the expression operand refers to a value on the context.

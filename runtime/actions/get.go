@@ -3,7 +3,7 @@ package actions
 import "github.com/teamkeel/keel/runtime/common"
 
 func Get(scope *Scope, input map[string]any) (map[string]any, error) {
-	query := NewQuery(scope.model)
+	query := NewQuery(scope.Model)
 
 	// Generate the SQL statement
 	statement, err := GenerateGetStatement(query, scope, input)
@@ -12,12 +12,12 @@ func Get(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Execute database request, expecting a single result.
-	res, err := statement.ExecuteToSingle(scope.context)
+	res, err := statement.ExecuteToSingle(scope.Context)
 	if err != nil {
 		return nil, err
 	}
 
-	isAuthorised, err := AuthoriseSingle(scope, res)
+	isAuthorised, err := AuthoriseAction(scope, []map[string]any{res})
 	if err != nil {
 		return nil, err
 	}

@@ -5,7 +5,7 @@ import (
 )
 
 func Delete(scope *Scope, input map[string]any) (*string, error) {
-	query := NewQuery(scope.model)
+	query := NewQuery(scope.Model)
 
 	// Generate the SQL statement
 	statement, err := GenerateDeleteStatement(query, scope, input)
@@ -15,12 +15,12 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 
 	query.AppendSelect(IdField())
 	query.AppendDistinctOn(IdField())
-	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.context)
+	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
 	if err != nil {
 		return nil, err
 	}
 
-	isAuthorised, err := AuthoriseSingle(scope, rowToAuthorise)
+	isAuthorised, err := AuthoriseAction(scope, []map[string]any{rowToAuthorise})
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 	}
 
 	// Execute database request
-	row, err := statement.ExecuteToSingle(scope.context)
+	row, err := statement.ExecuteToSingle(scope.Context)
 
 	// TODO: if the error is multiple rows affected then rollback transaction
 	if err != nil {

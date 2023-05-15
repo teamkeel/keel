@@ -13,7 +13,7 @@ import (
 
 // Updates the query with all set attributes defined on the operation.
 func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) error {
-	for _, setExpression := range scope.operation.SetExpressions {
+	for _, setExpression := range scope.Operation.SetExpressions {
 		expression, err := parser.ParseExpression(setExpression.Source)
 		if err != nil {
 			return err
@@ -24,8 +24,8 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 			return err
 		}
 
-		lhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.LHS)
-		rhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, assignment.RHS)
+		lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, assignment.LHS)
+		rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, assignment.RHS)
 		operandType, err := lhsResolver.GetOperandType()
 		if err != nil {
 			return err
@@ -98,14 +98,14 @@ func (query *QueryBuilder) captureSetValues(scope *Scope, args map[string]any) e
 
 // Updates the query with all write inputs defined on the operation.
 func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any) error {
-	message := proto.FindValuesInputMessage(scope.schema, scope.operation.Name)
+	message := proto.FindValuesInputMessage(scope.Schema, scope.Operation.Name)
 	if message == nil {
 		return nil
 	}
 
-	target := []string{casing.ToLowerCamel(scope.model.Name)}
+	target := []string{casing.ToLowerCamel(scope.Model.Name)}
 
-	foreignKeys, row, err := query.captureWriteValuesFromMessage(scope, message, scope.model, target, args)
+	foreignKeys, row, err := query.captureWriteValuesFromMessage(scope, message, scope.Model, target, args)
 
 	// Add any foreign keys to the root row from rows which it references.
 	for k, v := range foreignKeys {
@@ -123,8 +123,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	defaultValues := map[string]any{}
 	var err error
 
-	if scope.operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
-		defaultValues, err = initialValueForModel(model, scope.schema)
+	if scope.Operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
+		defaultValues, err = initialValueForModel(model, scope.Schema)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -144,7 +144,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 	//   - create a new row and relate it to the current row (either referencedBy or references), OR
 	//   - determine that it is a primary key reference, do not create a row, and return the FK to the referencing row.
 	for _, input := range message.Fields {
-		field := proto.FindField(scope.schema.Models, model.Name, input.Name)
+		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
 
 		// If the input is not targeting a model field, then it is either a:
 		//  - Message, with nested fields which we must recurse into, or an
@@ -153,8 +153,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			if input.Type.Type == proto.Type_TYPE_MESSAGE {
 
 				target := append(newRow.target, casing.ToLowerCamel(input.Name))
-				messageModel := proto.FindModel(scope.schema.Models, field.Type.ModelName.Value)
-				nestedMessage := proto.FindMessage(scope.schema.Messages, input.Type.MessageName.Value)
+				messageModel := proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
+				nestedMessage := proto.FindMessage(scope.Schema.Messages, input.Type.MessageName.Value)
 
 				var foreignKeys map[string]any
 

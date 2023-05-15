@@ -13,10 +13,10 @@ import (
 // Include a filter (where condition) on the query based on an implicit input filter.
 func (query *QueryBuilder) whereByImplicitFilter(scope *Scope, targetField []string, fieldName string, operator ActionOperator, value any) error {
 	// Implicit inputs don't include the base model as the first fragment (unlike expressions), so we include it
-	fragments := append([]string{casing.ToLowerCamel(scope.operation.ModelName)}, targetField...)
+	fragments := append([]string{casing.ToLowerCamel(scope.Operation.ModelName)}, targetField...)
 
 	// The lhs QueryOperand is determined from the fragments in the implicit input field
-	left, err := operandFromFragments(scope.schema, fragments)
+	left, err := operandFromFragments(scope.Schema, fragments)
 	if err != nil {
 		return err
 	}
@@ -87,8 +87,8 @@ func (query *QueryBuilder) whereByCondition(scope *Scope, condition *parser.Cond
 		return fmt.Errorf("can only handle condition type of LogicalCondition or ValueCondition, have: %s", condition.Type())
 	}
 
-	lhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, condition.LHS)
-	rhsResolver := expressions.NewOperandResolver(scope.context, scope.schema, scope.operation, condition.RHS)
+	lhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, condition.LHS)
+	rhsResolver := expressions.NewOperandResolver(scope.Context, scope.Schema, scope.Model, scope.Operation, condition.RHS)
 
 	lhsOperandType, err := lhsResolver.GetOperandType()
 	if err != nil {
@@ -166,14 +166,14 @@ func (query *QueryBuilder) addJoinFromFragments(scope *Scope, fragments []string
 	for i := 1; i < fragmentCount-1; i++ {
 		currentFragment := fragments[i]
 
-		if !proto.ModelHasField(scope.schema, model, currentFragment) {
+		if !proto.ModelHasField(scope.Schema, model, currentFragment) {
 			return fmt.Errorf("this model: %s, does not have a field of name: %s", model, currentFragment)
 		}
 
 		// We know that the current fragment is a related model because it's not the last fragment
-		relatedModelField := proto.FindField(scope.schema.Models, model, currentFragment)
+		relatedModelField := proto.FindField(scope.Schema.Models, model, currentFragment)
 		relatedModel := relatedModelField.Type.ModelName.Value
-		foreignKeyField := proto.GetForignKeyFieldName(scope.schema.Models, relatedModelField)
+		foreignKeyField := proto.GetForignKeyFieldName(scope.Schema.Models, relatedModelField)
 		primaryKey := "id"
 
 		var leftOperand *QueryOperand

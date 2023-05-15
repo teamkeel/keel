@@ -332,7 +332,7 @@ const relationships string = `
 		}
 		@permission(
 			expression: true,
-			actions: [get, create, update]
+			actions: [get, create, update, list]
 		)
 	}
 	
@@ -358,6 +358,10 @@ const relationships string = `
 		fields {
 			organisation Text
 		}
+		@permission(
+			expression: true,
+			actions: [get]
+		)
 	}
 
 	api Test {
@@ -2337,6 +2341,345 @@ var testCases = []testCase{
 			require.True(t,
 				(edge1["title"] == "Bobs Adventures" && edge2["title"] == "Bobs Biography") ||
 					(edge2["title"] == "Bobs Adventures" && edge1["title"] == "Bobs Biography"))
+		},
+	},
+	{
+		name: "get_op_nested_traversal_list_permission",
+		keelSchema: `
+			model BlogPost {
+				fields {
+					title Text
+					author Author
+				}
+				@permission(
+					expression: true,
+					actions: [get, create, update, delete]
+				)
+			}
+			model Author {
+				fields {
+					name Text
+					posts BlogPost[]
+				}
+				operations {
+					get getAuthor(id)
+				}
+				@permission(
+					expression: true,
+					actions: [get]
+				)
+			}
+			api Test {
+				models {
+					BlogPost
+					Author
+				}
+			}		
+		`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":   "author_1",
+					"name": "Keelson",
+				}),
+				initRow(map[string]any{
+					"id":   "author_2",
+					"name": "Weaveton",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_4",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query GetAuthor($authorId: ID!) {
+				getAuthor(input: { id: $authorId }) {
+					id
+					name
+					posts {
+						edges {
+							node {
+								title
+							}
+						}
+					}
+				}
+			}`,
+		variables: map[string]any{
+			"authorId": "author_1",
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "not authorized to access this action", errors[0].Message)
+		},
+	},
+	{
+		name: "list_op_nested_traversal_list_permission",
+		keelSchema: `
+			model BlogPost {
+				fields {
+					title Text
+					author Author
+				}
+				@permission(
+					expression: true,
+					actions: [get, create, update, delete]
+				)
+			}
+			model Author {
+				fields {
+					name Text
+					posts BlogPost[]
+				}
+				operations {
+					list listAuthors()
+				}
+				@permission(
+					expression: true,
+					actions: [get]
+				)
+			}
+			api Test {
+				models {
+					BlogPost
+					Author
+				}
+			}		
+		`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":   "author_1",
+					"name": "Keelson",
+				}),
+				initRow(map[string]any{
+					"id":   "author_2",
+					"name": "Weaveton",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_4",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query ListAuthors {
+				listAuthors {
+					edges {
+						node {
+							id
+							name
+							posts {
+								edges {
+									node {
+										title
+									}
+								}
+							}
+						}
+					}
+				}
+			}`,
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "not authorized to access this action", errors[0].Message)
+		},
+	},
+	{
+		name: "get_op_nested_traversal_get_permission",
+		keelSchema: `
+			model BlogPost {
+				fields {
+					title Text
+					author Author
+				}
+				operations {
+					get getPost(id)
+				}
+				@permission(
+					expression: true,
+					actions: [get]
+				)
+			}
+			model Author {
+				fields {
+					name Text
+					posts BlogPost[]
+				}
+				@permission(
+					expression: true,
+					actions: [list, create, update, delete]
+				)
+			}
+			api Test {
+				models {
+					BlogPost
+					Author
+				}
+			}		
+		`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":   "author_1",
+					"name": "Keelson",
+				}),
+				initRow(map[string]any{
+					"id":   "author_2",
+					"name": "Weaveton",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_2",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query GetPost($postId: ID!) {
+				getPost(input: { id: $postId }) {
+					id
+					title
+					author {
+						name
+					}
+				}
+			}`,
+		variables: map[string]any{
+			"postId": "post_1",
+		},
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "not authorized to access this action", errors[0].Message)
+		},
+	},
+	{
+		name: "list_op_nested_traversal_get_permission",
+		keelSchema: `
+			model BlogPost {
+				fields {
+					title Text
+					author Author
+				}
+				operations {
+					list listPost()
+				}
+				@permission(
+					expression: true,
+					actions: [get]
+				)
+			}
+			model Author {
+				fields {
+					name Text
+					posts BlogPost[]
+				}
+				@permission(
+					expression: true,
+					actions: [list, create, update, delete]
+				)
+			}
+			api Test {
+				models {
+					BlogPost
+					Author
+				}
+			}		
+		`,
+		databaseSetup: func(t *testing.T, db *gorm.DB) {
+			rows := []map[string]any{
+				initRow(map[string]any{
+					"id":   "author_1",
+					"name": "Keelson",
+				}),
+				initRow(map[string]any{
+					"id":   "author_2",
+					"name": "Weaveton",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("author").Create(row).Error)
+			}
+
+			rows = []map[string]any{
+				initRow(map[string]any{
+					"id":       "post_1",
+					"title":    "Keelson First Post",
+					"authorId": "author_1",
+				}),
+				initRow(map[string]any{
+					"id":       "post_2",
+					"title":    "Weaveton First Second",
+					"authorId": "author_2",
+				}),
+			}
+			for _, row := range rows {
+				require.NoError(t, db.Table("blog_post").Create(row).Error)
+			}
+		},
+		gqlOperation: `
+			query ListPost {
+				listPost {
+					edges {
+						node {
+							id
+							title
+							author {
+								name
+							}
+						}
+					}
+					
+				}
+			}`,
+		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
+			require.Len(t, errors, 1)
+			require.Equal(t, "not authorized to access this action", errors[0].Message)
 		},
 	},
 }
