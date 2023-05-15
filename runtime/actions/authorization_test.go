@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 )
@@ -280,7 +281,9 @@ func TestPermissionQueryBuilder(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			statement, err := actions.GeneratePermissionStatement(scope, rowsToAuthorise)
+			permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+
+			statement, err := actions.GeneratePermissionStatement(scope, permissions, rowsToAuthorise)
 			if err != nil {
 				require.NoError(t, err)
 			}

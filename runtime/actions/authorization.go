@@ -17,24 +17,24 @@ import (
 // AuthoriseAction checks authorisation for rows using the permission and role rules applicable for an action,
 // which could be defined at model- and action- levels.
 func AuthoriseAction(scope *Scope, rowsToAuthorise []map[string]any) (authorised bool, err error) {
-	if scope.operation == nil {
+	if scope.Operation == nil {
 		return false, errors.New("cannot authorise with AuthoriseAction if no operation is provided in scope")
 	}
 
-	permissions := proto.PermissionsForAction(scope.schema, scope.operation)
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
 	return Authorise(scope, permissions, rowsToAuthorise)
 }
 
 // AuthoriseForActionType checks authorisation for rows using permission and role rules defined for some operation type,
 // i.e. agnostic to any action.
 func AuthoriseForActionType(scope *Scope, opType proto.OperationType, rowsToAuthorise []map[string]any) (authorised bool, err error) {
-	permissions := proto.PermissionsForOperationType(scope.schema, scope.model.Name, opType)
+	permissions := proto.PermissionsForOperationType(scope.Schema, scope.Model.Name, opType)
 	return Authorise(scope, permissions, rowsToAuthorise)
 }
 
 // Authorise checks authorisation for rows using the slice of permission rules provided.
 func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (authorized bool, err error) {
-	ctx, span := tracer.Start(scope.context, "Check Permissions")
+	ctx, span := tracer.Start(scope.Context, "Check Permissions")
 	defer span.End()
 
 	scope = scope.WithContext(ctx)
@@ -47,7 +47,7 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	}
 
 	// Do one of the role-based rules grant permission?
-	if runtimectx.IsAuthenticated(scope.context) {
+	if runtimectx.IsAuthenticated(scope.Context) {
 		roleBasedPerms := proto.PermissionsWithRole(permissions)
 		granted, err := roleBasedPermissionGranted(scope, roleBasedPerms)
 		if err != nil {
@@ -89,7 +89,7 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	}
 
 	// Execute permission query against the database.
-	results, _, err := stmt.ExecuteToMany(scope.context, nil)
+	results, _, err := stmt.ExecuteToMany(scope.Context, nil)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -118,8 +118,8 @@ func tryResolveInMemory(scope *Scope, permissions []*proto.PermissionRule) (canR
 		}
 
 		// Check to see if we can resolve the condition "in proc"
-		if expressions.CanResolveInMemory(scope.context, scope.schema, scope.model, scope.operation, expression) {
-			if expressions.ResolveInMemory(scope.context, scope.schema, scope.model, scope.operation, expression, map[string]any{}) {
+		if expressions.CanResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression) {
+			if expressions.ResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{}) {
 				return true, true, nil
 			} else if i == len(permissions)-1 {
 				return true, false, nil
@@ -132,7 +132,7 @@ func tryResolveInMemory(scope *Scope, permissions []*proto.PermissionRule) (canR
 
 func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (*Statement, error) {
 	permissions = proto.PermissionsWithExpression(permissions)
-	query := NewQuery(scope.model)
+	query := NewQuery(scope.Model)
 
 	// Append SQL where conditions for each permission attribute.
 	query.OpenParenthesis()
@@ -181,7 +181,7 @@ func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.Perm
 
 	for _, perm := range roleBasedPermissions {
 		for _, roleName := range perm.RoleNames {
-			role := proto.FindRole(roleName, scope.schema)
+			role := proto.FindRole(roleName, scope.Schema)
 			for _, email := range role.Emails {
 				if email == currentUserEmail {
 					return true, nil
@@ -202,7 +202,7 @@ func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.Perm
 // contains an authenticated user
 func getEmailAndDomain(scope *Scope) (string, string, error) {
 	// Use the authenticated identity's id to lookup their email address.
-	identity, err := runtimectx.GetIdentity(scope.context)
+	identity, err := runtimectx.GetIdentity(scope.Context)
 	if err != nil {
 		return "", "", err
 	}

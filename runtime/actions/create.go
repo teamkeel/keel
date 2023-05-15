@@ -8,14 +8,14 @@ import (
 )
 
 func Create(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	database, err := runtimectx.GetDatabase(scope.context)
+	database, err := runtimectx.GetDatabase(scope.Context)
 	if err != nil {
 		return nil, err
 	}
 
-	err = database.Transaction(scope.context, func(ctx context.Context) error {
+	err = database.Transaction(scope.Context, func(ctx context.Context) error {
 		scope := scope.WithContext(ctx)
-		query := NewQuery(scope.model)
+		query := NewQuery(scope.Model)
 
 		// Generate the SQL statement
 		statement, err := GenerateCreateStatement(query, scope, input)
@@ -24,7 +24,7 @@ func Create(scope *Scope, input map[string]any) (res map[string]any, err error) 
 		}
 
 		// Execute database request, expecting a single result
-		res, err = statement.ExecuteToSingle(scope.context)
+		res, err = statement.ExecuteToSingle(scope.Context)
 		if err != nil {
 			return err
 		}

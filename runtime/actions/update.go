@@ -5,7 +5,7 @@ import (
 )
 
 func Update(scope *Scope, input map[string]any) (res map[string]any, err error) {
-	query := NewQuery(scope.model)
+	query := NewQuery(scope.Model)
 
 	// Generate the SQL statement
 	statement, err := GenerateUpdateStatement(query, scope, input)
@@ -15,7 +15,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 
 	query.AppendSelect(IdField())
 	query.AppendDistinctOn(IdField())
-	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.context)
+	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +30,7 @@ func Update(scope *Scope, input map[string]any) (res map[string]any, err error) 
 	}
 
 	// Execute database request, expecting a single result
-	res, err = statement.ExecuteToSingle(scope.context)
+	res, err = statement.ExecuteToSingle(scope.Context)
 
 	// TODO: if error is multiple rows affected then rollback transaction
 	if err != nil {

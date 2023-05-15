@@ -8,7 +8,7 @@ import (
 )
 
 func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[string]any) error {
-	message := proto.FindWhereInputMessage(scope.schema, scope.operation.Name)
+	message := proto.FindWhereInputMessage(scope.Schema, scope.Operation.Name)
 	if message == nil {
 		return nil
 	}
@@ -63,7 +63,7 @@ inputs:
 }
 
 func List(scope *Scope, input map[string]any) (map[string]any, error) {
-	query := NewQuery(scope.model)
+	query := NewQuery(scope.Model)
 
 	// Generate the SQL statement.
 	statement, page, err := GenerateListStatement(query, scope, input)
@@ -72,7 +72,7 @@ func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	}
 
 	// Execute database request with results
-	results, pageInfo, err := statement.ExecuteToMany(scope.context, page)
+	results, pageInfo, err := statement.ExecuteToMany(scope.Context, page)
 	if err != nil {
 		return nil, err
 	}
