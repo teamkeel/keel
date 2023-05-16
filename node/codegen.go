@@ -478,7 +478,14 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
+	w.Writeln("function createPermissionApi() {")
+	w.Indent()
+	w.Writeln("return new runtime.Permissions();")
+	w.Dedent()
+	w.Writeln("};")
+
 	w.Writeln(`module.exports.models = createModelAPI();`)
+	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createModelAPI = createModelAPI;")
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 }
@@ -687,7 +694,7 @@ const listener = async (req, res) => {
 			functions,
 			createContextAPI,
 			actionTypes,
-			permissions: permissionFns,
+			permissionFns,
 		});
 
 		res.statusCode = 200;

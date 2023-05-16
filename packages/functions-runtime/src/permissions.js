@@ -1,3 +1,5 @@
+const { AsyncLocalStorage } = require("async_hooks");
+
 class PermissionError extends Error {}
 
 const PERMISSION_STATE = {
@@ -10,41 +12,46 @@ const defaultState = {
   status: "unknown",
 };
 
+const permissionsApiInstance = new AsyncLocalStorage();
+
 class Permissions {
-  // The permissionState here is the prior state passed in from the Go runtime
   // The Go runtime performs role based permission rule checks prior to calling the functions
   // runtime, so the status could already be granted. If already granted, then we need to inherit that permission state as the state is later used to decide whether to run in process permission checks
   // TLDR if a role based permission is relevant and it is granted, then it is effectively the same as the end user calling api.permissions.allow() explicitly in terms of behaviour.
-  constructor(permissionState = defaultState) {
-    this.state = {
-      // permitted starts off as null to indicate that the end user
-      // hasn't explicitly marked a function execution as permitted yet
-      permitted:
-        permissionState !== null && permissionState.status === "granted"
-          ? true
-          : null,
-    };
+
+  async allow() {
+    permissionsApiInstance.getStore().permitted = true;
+    // let store = permissionsApiInstance.getStore();
+    // if(store) {
+    //   store.permitted = true;
+    // } else {
+    //   this.permitted = true;
+    // }
   }
 
-  allow() {
-    this.state.permitted = true;
-  }
-
-  deny() {
+  async deny() {
     // if a user is explicitly calling deny() then we want to throw an error
     // so that any further execution of the custom function stops abruptly
-    this.state.permitted = false;
+    permissionsApiInstance.getStore().permitted = false;
+    // let store = permissionsApiInstance.getStore();
+    // if(store) {
+    //   store.permitted = false;
+    // } else {
+    //   this.permitted = false;
+    // }
 
     throw new PermissionError();
   }
 
   getState() {
+    const permitted = permissionsApiInstance.getStore().permitted;// ? permissionsApiInstance.getStore().permitted : this.permitted;
+
     switch (true) {
-      case this.state.permitted === false:
+      case permitted === false:
         return PERMISSION_STATE.UNPERMITTED;
-      case this.state.permitted === null:
+      case permitted === null:
         return PERMISSION_STATE.UNKNOWN;
-      case this.state.permitted === true:
+      case permitted === true:
         return PERMISSION_STATE.PERMITTED;
     }
   }
@@ -52,12 +59,12 @@ class Permissions {
 
 const checkBuiltInPermissions = async ({
   rows,
-  permissions,
+  permissionFns,
   ctx,
   db,
   functionName,
 }) => {
-  for (const permissionFn of permissions) {
+  for (const permissionFn of permissionFns) {
     const result = await permissionFn(rows, ctx, db);
 
     // if any of the permission functions return true,
@@ -70,6 +77,7 @@ const checkBuiltInPermissions = async ({
   throw new PermissionError(`Not permitted to access ${functionName}`);
 };
 
+module.exports.permissionsApiInstance = permissionsApiInstance;
 module.exports.checkBuiltInPermissions = checkBuiltInPermissions;
 module.exports.PermissionError = PermissionError;
 module.exports.PERMISSION_STATE = PERMISSION_STATE;

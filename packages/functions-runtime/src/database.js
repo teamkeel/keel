@@ -1,5 +1,5 @@
-const { AsyncLocalStorage } = require("async_hooks");
 const { Kysely, PostgresDialect } = require("kysely");
+const { AsyncLocalStorage } = require("async_hooks");
 const pg = require("pg");
 
 function mustEnv(key) {

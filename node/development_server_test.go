@@ -31,10 +31,9 @@ func TestDevelopmentServer(t *testing.T) {
 		{
 			Path: "functions/getPerson.ts",
 			Contents: `
-				import { permissions, GetPerson } from "@teamkeel/sdk";
+				import { GetPerson } from "@teamkeel/sdk";
 
-				export default GetPerson(async (ctx, inputs, api) => {
-					permissions.allow();
+				export default GetPerson(async (ctx, inputs) => {
 					return {id: inputs.id, createdAt: new Date("2022-01-01"), updatedAt: new Date("2022-01-01")};
 				});
 			`,

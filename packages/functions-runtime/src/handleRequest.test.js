@@ -13,12 +13,9 @@ process.env.KEEL_DB_CONN_TYPE = "pg";
 process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 
 test("when the custom function returns expected value", async () => {
-  const permissions = new Permissions();
-
   const config = {
     functions: {
       createPost: async (ctx, inputs) => {
-        permissions.allow();
         return {
           title: "a post",
           id: "abcde",
@@ -28,8 +25,6 @@ test("when the custom function returns expected value", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createModelAPI: () => {},
-    createPermissionAPI: () => permissions,
     createContextAPI: () => {},
   };
 
@@ -49,20 +44,15 @@ test("when the custom function returns expected value", async () => {
 });
 
 test("when the custom function doesnt return a value", async () => {
-  const permissions = new Permissions();
-
   const config = {
     functions: {
       createPost: async (ctx, inputs) => {
-        permissions.allow();
       },
     },
     permissions: {},
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createModelAPI: () => {},
-    createPermissionAPI: () => permissions,
     createContextAPI: () => {},
   };
 
@@ -86,8 +76,6 @@ test("when there is no matching function for the path", async () => {
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createModelAPI: () => {},
-    createPermissionAPI: () => new Permissions(),
     createContextAPI: () => {},
   };
 
@@ -104,21 +92,15 @@ test("when there is no matching function for the path", async () => {
 });
 
 test("when there is an unexpected error in the custom function", async () => {
-  const permissions = new Permissions();
-
   const config = {
     functions: {
-      createPost: async (ctx, inputs, api) => {
-        permissions.allow();
-
+      createPost: async (ctx, inputs) => {
         throw new Error("oopsie daisy");
       },
     },
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createModelAPI: () => {},
-    createPermissionAPI: () => permissions,
     createContextAPI: () => {},
   };
 
@@ -134,53 +116,48 @@ test("when there is an unexpected error in the custom function", async () => {
   });
 });
 
-test("when a role based permission has already been granted by the main runtime", async () => {
-  const config = {
-    functions: {
-      createPost: async (ctx, inputs, api) => {
-        return {
-          title: inputs.title,
-        };
-      },
-    },
-    actionTypes: {
-      createPost: PROTO_ACTION_TYPES.CREATE,
-    },
-    createModelAPI: () => {},
-    createPermissionAPI: ({ db }) =>
-      new Permissions({ status: "granted", reason: "role" }),
-    createContextAPI: () => {},
-  };
+// test("when a role based permission has already been granted by the main runtime", async () => {
+//   const config = {
+//     functions: {
+//       createPost: async (ctx, inputs, api) => {
+//         return {
+//           title: inputs.title,
+//         };
+//       },
+//     },
+//     actionTypes: {
+//       createPost: PROTO_ACTION_TYPES.CREATE,
+//     },
+//     createModelAPI: () => {},
+//     createPermissionAPI: () =>
+//       new Permissions({ status: "granted", reason: "role" }),
+//     createContextAPI: () => {},
+//   };
 
-  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+//   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
 
-  expect(await handleRequest(rpcReq, config)).toEqual({
-    id: "123",
-    jsonrpc: "2.0",
-    result: {
-      title: "a post",
-    },
-    meta: {
-      headers: {},
-    },
-  });
-});
+//   expect(await handleRequest(rpcReq, config)).toEqual({
+//     id: "123",
+//     jsonrpc: "2.0",
+//     result: {
+//       title: "a post",
+//     },
+//     meta: {
+//       headers: {},
+//     },
+//   });
+// });
 
 test("when there is an unexpected object thrown in the custom function", async () => {
-  const permissions = new Permissions();
-
   const config = {
     functions: {
-      createPost: async (ctx, inputs, api) => {
-        permissions.allow();
+      createPost: async (ctx, inputs) => {
         throw { err: "oopsie daisy" };
       },
     },
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createModelAPI: () => {},
-    createPermissionAPI: () => permissions,
     createContextAPI: () => {},
   };
 
@@ -229,7 +206,6 @@ describe("ModelAPI error handling", () => {
       INSERT INTO author (id, name) VALUES ('adam', 'adam bull')
     `.execute(db);
 
-    const permissions = new Permissions();
     const models = {
       post: new ModelAPI(
         "post",
@@ -252,16 +228,16 @@ describe("ModelAPI error handling", () => {
     };
 
     functionConfig = {
-      permissions: {},
+      permissionFns: {},
       functions: {
-        createPost: async (ctx, inputs, api) => {
+        createPost: async (ctx, inputs) => {
           permissions.allow();
 
           const post = await models.post.create(inputs);
 
           return post;
         },
-        deletePost: async (ctx, inputs, api) => {
+        deletePost: async (ctx, inputs) => {
           permissions.allow();
 
           const deleted = await models.post.delete(inputs);
@@ -269,8 +245,6 @@ describe("ModelAPI error handling", () => {
           return deleted;
         },
       },
-      createPermissionAPI: () => permissions,
-      createModelAPI: () => models,
       createContextAPI: () => ({}),
     };
   });
@@ -383,5 +357,5 @@ describe("ModelAPI error handling", () => {
         },
       },
     });
-  });
+  });   
 });

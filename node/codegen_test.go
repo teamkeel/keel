@@ -294,7 +294,11 @@ function createModelAPI() {
 		identity: new runtime.ModelAPI("identity", identityDefaultValues, tableConfigMap),
 	};
 };
+function createPermissionApi() {
+	return new runtime.Permissions();
+};
 module.exports.models = createModelAPI();
+module.exports.permissions = createPermissionApi();
 module.exports.createModelAPI = createModelAPI;
 module.exports.createContextAPI = createContextAPI;`
 
