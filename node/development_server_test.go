@@ -17,7 +17,6 @@ import (
 )
 
 func TestDevelopmentServer(t *testing.T) {
-	t.Skip()
 	files := node.GeneratedFiles{
 		{
 			Path: "schema.keel",
@@ -51,7 +50,7 @@ func TestDevelopmentServer(t *testing.T) {
 			return
 		}
 
-		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}, "meta": { "headers": {}}}`)
+		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}, "meta": { "permissionState": { "status": "unknown" }, "headers": {}}}`)
 		res, err := http.Post(server.URL, "application/json", body)
 		require.NoError(t, err)
 		assert.Equal(t, res.StatusCode, 200)
@@ -125,7 +124,6 @@ func runDevelopmentServerTest(t *testing.T, files node.GeneratedFiles, fn func(*
 			"KEEL_DB_CONN_TYPE": "pg",
 			"KEEL_DB_CONN":      "postgresql://postgres:postgres@localhost:8001/keel",
 		},
-		Output: os.Stdout,
 	})
 	t.Cleanup(func() {
 		if server != nil {
