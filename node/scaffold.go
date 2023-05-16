@@ -94,31 +94,42 @@ func writeFunctionWrapper(function *proto.Operation) string {
 	suggestedImplementation := ""
 	modelName := casing.ToLowerCamel(function.ModelName)
 
+	requiresModelsInput := true
+
 	switch function.Type {
 	case proto.OperationType_OPERATION_TYPE_CREATE:
-		suggestedImplementation = fmt.Sprintf(`const %s = await api.models.%s.create(inputs);
+		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.create(inputs);
 	return %s;`, modelName, modelName, modelName)
 	case proto.OperationType_OPERATION_TYPE_LIST:
 		// todo: fix bang! below
-		suggestedImplementation = fmt.Sprintf(`const %ss = await api.models.%s.findMany(inputs.where!);
+		suggestedImplementation = fmt.Sprintf(`const %ss = await models.%s.findMany(inputs.where!);
 	return %ss;`, modelName, modelName, modelName)
 	case proto.OperationType_OPERATION_TYPE_GET:
-		suggestedImplementation = fmt.Sprintf(`const %s = await api.models.%s.findOne(inputs);
+		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.findOne(inputs);
 	return %s;`, modelName, modelName, modelName)
 	case proto.OperationType_OPERATION_TYPE_UPDATE:
-		suggestedImplementation = fmt.Sprintf(`const %s = await api.models.%s.update(inputs.where, inputs.values);
+		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.update(inputs.where, inputs.values);
 	return %s;`, modelName, modelName, modelName)
 	case proto.OperationType_OPERATION_TYPE_DELETE:
-		suggestedImplementation = fmt.Sprintf(`const %s = await api.models.%s.delete(inputs);
+		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.delete(inputs);
 	return %s;`, modelName, modelName, modelName)
 	case proto.OperationType_OPERATION_TYPE_READ, proto.OperationType_OPERATION_TYPE_WRITE:
 		suggestedImplementation = "// Build something cool"
+		requiresModelsInput = false
 	}
 
-	return fmt.Sprintf(`import { %s } from '@teamkeel/sdk';
+	extraImports := ""
 
-export default %s(async (ctx, inputs, api) => {
+	if requiresModelsInput {
+		// import models from the sdk for those scaffolded functions who's default
+		// implementation hits the database via the model api
+		extraImports += ", models"
+	}
+
+	return fmt.Sprintf(`import { %s%s } from '@teamkeel/sdk';
+
+export default %s(async (ctx, inputs) => {
 	%s
 });
-	`, functionName, functionName, suggestedImplementation)
+	`, functionName, extraImports, functionName, suggestedImplementation)
 }
