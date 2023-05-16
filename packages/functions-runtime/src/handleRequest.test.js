@@ -4,9 +4,8 @@ import { handleRequest, RuntimeErrors } from "./handleRequest";
 import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
 import { getDatabase } from "./database";
-import { Permissions } from "./permissions";
+const { Permissions } = require("./permissions");
 import { PROTO_ACTION_TYPES } from "./consts";
-
 import KSUID from "ksuid";
 
 process.env.KEEL_DB_CONN_TYPE = "pg";
@@ -16,6 +15,8 @@ test("when the custom function returns expected value", async () => {
   const config = {
     functions: {
       createPost: async (ctx, inputs) => {
+        new Permissions().allow();
+
         return {
           title: "a post",
           id: "abcde",
@@ -47,6 +48,7 @@ test("when the custom function doesnt return a value", async () => {
   const config = {
     functions: {
       createPost: async (ctx, inputs) => {
+        new Permissions().allow();
       },
     },
     permissions: {},
@@ -116,37 +118,39 @@ test("when there is an unexpected error in the custom function", async () => {
   });
 });
 
-// test("when a role based permission has already been granted by the main runtime", async () => {
-//   const config = {
-//     functions: {
-//       createPost: async (ctx, inputs, api) => {
-//         return {
-//           title: inputs.title,
-//         };
-//       },
-//     },
-//     actionTypes: {
-//       createPost: PROTO_ACTION_TYPES.CREATE,
-//     },
-//     createModelAPI: () => {},
-//     createPermissionAPI: () =>
-//       new Permissions({ status: "granted", reason: "role" }),
-//     createContextAPI: () => {},
-//   };
+test("when a role based permission has already been granted by the main runtime", async () => {
+  const config = {
+    functions: {
+      createPost: async (ctx, inputs, api) => {
+        return {
+          title: inputs.title,
+        };
+      },
+    },
+    actionTypes: {
+      createPost: PROTO_ACTION_TYPES.CREATE,
+    },
+    createModelAPI: () => {},
+    createContextAPI: () => {},
+  };
 
-//   const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+  let rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
 
-//   expect(await handleRequest(rpcReq, config)).toEqual({
-//     id: "123",
-//     jsonrpc: "2.0",
-//     result: {
-//       title: "a post",
-//     },
-//     meta: {
-//       headers: {},
-//     },
-//   });
-// });
+  Object.assign(rpcReq, {
+    ...rpcReq,
+    meta: { permissionState: { status: "granted", reason: "role" } },
+  });
+  expect(await handleRequest(rpcReq, config)).toEqual({
+    id: "123",
+    jsonrpc: "2.0",
+    result: {
+      title: "a post",
+    },
+    meta: {
+      headers: {},
+    },
+  });
+});
 
 test("when there is an unexpected object thrown in the custom function", async () => {
   const config = {
@@ -214,7 +218,6 @@ describe("ModelAPI error handling", () => {
             id: KSUID.randomSync().string,
           };
         },
-        db,
         {
           post: {
             author: {
@@ -231,14 +234,14 @@ describe("ModelAPI error handling", () => {
       permissionFns: {},
       functions: {
         createPost: async (ctx, inputs) => {
-          permissions.allow();
+          new Permissions().allow();
 
           const post = await models.post.create(inputs);
 
           return post;
         },
         deletePost: async (ctx, inputs) => {
-          permissions.allow();
+          new Permissions().allow();
 
           const deleted = await models.post.delete(inputs);
 
@@ -357,5 +360,5 @@ describe("ModelAPI error handling", () => {
         },
       },
     });
-  });   
+  });
 });

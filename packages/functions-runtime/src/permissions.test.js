@@ -1,9 +1,11 @@
-import {
+const {
+  permissionsApiInstance,
   Permissions,
   PERMISSION_STATE,
   PermissionError,
   checkBuiltInPermissions,
-} from "./permissions";
+} = require("./permissions");
+
 import { getDatabase } from "./database";
 
 import { beforeEach, describe, expect, test } from "vitest";
@@ -14,48 +16,43 @@ process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functi
 let permissions;
 let ctx = {};
 let db = getDatabase();
-let permissionState = {
-  status: "unknown",
-};
 
 describe("explicit", () => {
   beforeEach(() => {
-    permissions = new Permissions(permissionState);
+    permissions = new Permissions();
   });
 
   test("explicitly allowing execution", () => {
-    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
+    wrapWithAsyncLocalStorage({ permitted: null }, () => {
+      expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
 
-    permissions.allow();
+      permissions.allow();
 
-    expect(permissions.getState()).toEqual(PERMISSION_STATE.PERMITTED);
+      expect(permissions.getState()).toEqual(PERMISSION_STATE.PERMITTED);
+    });
   });
 
   test("explicitly denying execution", () => {
-    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
+    wrapWithAsyncLocalStorage({ permitted: null }, () => {
+      expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
 
-    expect(() => permissions.deny()).toThrowError(PermissionError);
+      expect(() => permissions.deny()).toThrowError(PermissionError);
 
-    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
+      expect(permissions.getState()).toEqual(PERMISSION_STATE.UNPERMITTED);
+    });
   });
 });
 
 describe("prior state", () => {
-  test("when the prior state is unknown", () => {
-    permissions = new Permissions({
-      status: "unknown",
-    });
-
-    expect(permissions.getState()).toEqual(PERMISSION_STATE.UNKNOWN);
-  });
-
   test("when the prior state is granted", () => {
-    permissions = new Permissions({
-      status: "granted",
-      reason: "role",
-    });
-
-    expect(permissions.getState()).toEqual(PERMISSION_STATE.PERMITTED);
+    wrapWithAsyncLocalStorage(
+      {
+        permitted: true,
+      },
+      () => {
+        expect(permissions.getState()).toEqual(PERMISSION_STATE.PERMITTED);
+      }
+    );
   });
 });
 
@@ -85,7 +82,7 @@ describe("check", () => {
         ctx,
         db,
         functionName,
-        permissions: [permissionRule1],
+        permissionFns: [permissionRule1],
       })
     ).resolves.ok;
   });
@@ -113,8 +110,14 @@ describe("check", () => {
         ctx,
         db,
         functionName,
-        permissions: [permissionRule1],
+        permissionFns: [permissionRule1],
       })
     ).rejects.toThrow();
   });
 });
+
+function wrapWithAsyncLocalStorage(initialState, testFn) {
+  permissionsApiInstance.run(initialState, () => {
+    testFn();
+  });
+}

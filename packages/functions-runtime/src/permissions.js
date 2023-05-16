@@ -19,8 +19,9 @@ class Permissions {
   // runtime, so the status could already be granted. If already granted, then we need to inherit that permission state as the state is later used to decide whether to run in process permission checks
   // TLDR if a role based permission is relevant and it is granted, then it is effectively the same as the end user calling api.permissions.allow() explicitly in terms of behaviour.
 
-  async allow() {
-    permissionsApiInstance.getStore().permitted = true;
+  allow() {
+    const store = permissionsApiInstance.getStore();
+    store.permitted = true;
     // let store = permissionsApiInstance.getStore();
     // if(store) {
     //   store.permitted = true;
@@ -29,7 +30,7 @@ class Permissions {
     // }
   }
 
-  async deny() {
+  deny() {
     // if a user is explicitly calling deny() then we want to throw an error
     // so that any further execution of the custom function stops abruptly
     permissionsApiInstance.getStore().permitted = false;
@@ -44,7 +45,7 @@ class Permissions {
   }
 
   getState() {
-    const permitted = permissionsApiInstance.getStore().permitted;// ? permissionsApiInstance.getStore().permitted : this.permitted;
+    const permitted = permissionsApiInstance.getStore().permitted; // ? permissionsApiInstance.getStore().permitted : this.permitted;
 
     switch (true) {
       case permitted === false:
