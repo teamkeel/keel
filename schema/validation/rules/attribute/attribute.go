@@ -323,11 +323,7 @@ func validatePermissionAttribute(asts []*parser.AST, attr *parser.AttributeNode,
 			// applies to that action.
 			if action == nil {
 				allowedIdents := append([]string{}, validActionKeywords...)
-				for _, action := range query.ModelActions(model) {
-					allowedIdents = append(allowedIdents, action.Name.Value)
-				}
 				errs.Concat(validateIdentArray(arg.Expression, allowedIdents))
-
 			} else {
 				errs.Append(errorhandling.ErrorInvalidAttributeArgument,
 					map[string]string{
