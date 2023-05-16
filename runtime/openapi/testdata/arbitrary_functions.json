@@ -45,7 +45,13 @@
                       "format": "date-time",
                       "type": "string"
                   }
-              }
+              },
+              "required": [
+                "name",
+                "id",
+                "createdAt",
+                "updatedAt"
+            ]
           }
         }
     },

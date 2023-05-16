@@ -96,18 +96,20 @@ func TestRuntimeRPC(t *testing.T) {
 
 			op := proto.FindOperation(schema, tCase.Path)
 
-			_, result, err := jsonschema.ValidateResponse(ctx, schema, op, res)
+			if response.Status == 200 {
+				_, result, err := jsonschema.ValidateResponse(ctx, schema, op, res)
+				assert.NoError(t, err)
 
-			assert.NoError(t, err)
+				if !result.Valid() {
+					msg := ""
 
-			if !result.Valid() {
-				msg := ""
-
-				for _, err := range result.Errors() {
-					msg += fmt.Sprintf("%s\n", err.String())
+					for _, err := range result.Errors() {
+						msg += fmt.Sprintf("%s\n", err.String())
+					}
+					assert.Fail(t, msg)
 				}
-				assert.Fail(t, msg)
 			}
+
 		})
 	}
 }
@@ -414,17 +416,17 @@ var rpcTestCases = []rpcTestCase{
 	{
 		name: "rpc_json_schema_errors",
 		keelSchema: `
-		model Thing {
-			operations {
-				get getThing(id)
+			model Thing {
+				operations {
+					get getThing(id)
+				}
 			}
-		}
-		api Test {
-			models {
-				Thing
+			api Test {
+				models {
+					Thing
+				}
 			}
-		}
-	`,
+		`,
 		Path:   "getThing",
 		Body:   `{"total": "nonsense"}`,
 		Method: http.MethodPost,

@@ -15,7 +15,12 @@
                         "format": "date-time",
                         "type": "string"
                     }
-                }
+                },
+                "required": [
+                    "id",
+                    "createdAt",
+                    "updatedAt"
+                ]
             }
         }
     },

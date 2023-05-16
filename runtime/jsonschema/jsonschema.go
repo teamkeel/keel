@@ -219,6 +219,11 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 		fieldSchema := jsonSchemaForField(ctx, schema, nil, field.Type, field.Optional)
 
 		definitionSchema.Properties[field.Name] = fieldSchema
+
+		// If the field is not optional then mark it as required in the JSON schema
+		if !field.Optional {
+			definitionSchema.Required = append(definitionSchema.Required, field.Name)
+		}
 	}
 
 	schemas := map[string]JSONSchema{}

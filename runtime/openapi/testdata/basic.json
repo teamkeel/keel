@@ -24,7 +24,15 @@
                         "format": "date-time",
                         "type": "string"
                     }
-                }
+                },
+                "required": [
+                    "name",
+                    "dateOfBirth",
+                    "id",
+                    "createdAt",
+                    "updatedAt",
+                    "addressId"
+                ]
             },
             "NullableCustomersWhere": {
                 "additionalProperties": false,
