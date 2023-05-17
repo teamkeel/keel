@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -36,10 +37,23 @@ type InitialisedMsg struct {
 
 func Init(dir string) tea.Cmd {
 	return func() tea.Msg {
-		// if the dir already exists then initialisation is skipped
-		if _, err := os.Stat(dir); err == nil {
+		if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
 			return InitialisedMsg{
-				Err: fmt.Errorf("The directory you are trying to initialise already exists"),
+				Err: fmt.Errorf("The directory does not exist"),
+			}
+		}
+
+		empty, err := isDirEmpty(dir)
+
+		if err != nil {
+			return InitialisedMsg{
+				Err: err,
+			}
+		}
+
+		if !empty {
+			return InitialisedMsg{
+				Err: fmt.Errorf("The directory you are trying to initialise is not empty"),
 			}
 		}
 
@@ -73,7 +87,7 @@ secrets:
 `,
 		})
 
-		err := files.Write(dir)
+		err = files.Write(dir)
 
 		if err != nil {
 			return InitialisedMsg{
@@ -621,4 +635,18 @@ func RemoveSecret(path, environment, key string) error {
 	})
 
 	return config.RemoveSecret(path, environment, key)
+}
+
+func isDirEmpty(name string) (bool, error) {
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	defer f.Close()
+
+	_, err = f.Readdirnames(1) // Or f.Readdir(1)
+	if err == io.EOF {
+		return true, nil
+	}
+	return false, err // Either not empty or error, suits both cases
 }
