@@ -676,6 +676,17 @@ func TestPermissionCompletions(t *testing.T) {
 			expected: []string{"id", "createdAt", "updatedAt"},
 		},
 		{
+			name: "permission-attribute-ctx-fields",
+			schema: `
+			model Person {
+				@permission(
+					expression: ctx.<Cursor>
+				)
+			}
+			`,
+			expected: []string{"env", "headers", "identity", "isAuthenticated", "now", "secrets"},
+		},
+		{
 			name: "permission-attribute-actions",
 			schema: `
 			model Person {
