@@ -60,8 +60,8 @@ node_modules/
 
 		files = append(files, &codegen.GeneratedFile{
 			Path: "keelconfig.yaml",
-			Contents: `// Visit https://keel.notaku.site/documentation/environment-variables-and-secrets for more
-// information about environment variables and secrets
+			Contents: `# Visit https://keel.notaku.site/documentation/environment-variables-and-secrets for more
+# information about environment variables and secrets
 environment:
 	default:
 	development:
