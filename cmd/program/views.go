@@ -51,6 +51,34 @@ func renderScaffold(m *Model) string {
 	return b.String()
 }
 
+func renderInit(m *Model) string {
+	b := strings.Builder{}
+
+	if m.Err != nil {
+		return ""
+	}
+
+	b.WriteString(fmt.Sprintf("%s\n\n", colors.Green("You are ready to build with Keel!").String()))
+
+	if len(m.GeneratedFiles) > 0 {
+
+		b.WriteString("The following files were generated:\n")
+		b.WriteString("===================================\n")
+
+		for _, f := range m.GeneratedFiles {
+			b.WriteString(fmt.Sprintf("%s\n", colors.Gray(fmt.Sprintf("- %s", f.Path)).String()))
+		}
+	}
+
+	b.WriteString("\n")
+
+	b.WriteString(colors.Cyan("Visit https://keel.notaku.site/ to get started.").String())
+
+	b.WriteString("\n")
+
+	return b.String()
+}
+
 func renderValidate(m *Model) string {
 	b := strings.Builder{}
 
@@ -210,7 +238,9 @@ func renderError(m *Model) string {
 			b.WriteString("❌ There is an issue with your dependencies:\n\n")
 			b.WriteString(m.Err.Error())
 		}
-
+	case StatusInitialized:
+		b.WriteString("❌ There was an error initialising the Keel project:\n\n")
+		b.WriteString(m.Err.Error())
 	case StatusSetupDatabase:
 		b.WriteString("❌ There was an error starting the database:\n\n")
 		b.WriteString(m.Err.Error())

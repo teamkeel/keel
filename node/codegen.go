@@ -4,37 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/cmd/clisupport"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
-
-type GeneratedFile struct {
-	Contents string
-	Path     string
-}
-
-type GeneratedFiles []*GeneratedFile
-
-func (files GeneratedFiles) Write(dir string) error {
-	for _, f := range files {
-		path := filepath.Join(dir, f.Path)
-		err := os.MkdirAll(filepath.Dir(path), 0777)
-		if err != nil {
-			return fmt.Errorf("error creating directory: %w", err)
-		}
-		err = os.WriteFile(path, []byte(f.Contents), 0777)
-		if err != nil {
-			return fmt.Errorf("error writing file: %w", err)
-		}
-	}
-	return nil
-}
 
 type generateOptions struct {
 	developmentServer bool
@@ -52,7 +29,7 @@ func WithDevelopmentServer(b bool) func(o *generateOptions) {
 // to a project. Calling .Write() on the result will cause those files be written to disk.
 // This function should not interact with the file system so it can be used in a backend
 // context.
-func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generateOptions)) (GeneratedFiles, error) {
+func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generateOptions)) (clisupport.GeneratedFiles, error) {
 	options := &generateOptions{}
 	for _, o := range opts {
 		o(options)
@@ -69,7 +46,7 @@ func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generat
 	return files, nil
 }
 
-func generateSdkPackage(schema *proto.Schema) GeneratedFiles {
+func generateSdkPackage(schema *proto.Schema) clisupport.GeneratedFiles {
 	sdk := &Writer{}
 	sdk.Writeln(`const { sql } = require("kysely")`)
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
@@ -123,7 +100,7 @@ func generateSdkPackage(schema *proto.Schema) GeneratedFiles {
 
 	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
 
-	return []*GeneratedFile{
+	return []*clisupport.GeneratedFile{
 		{
 			Path:     "node_modules/@teamkeel/sdk/index.js",
 			Contents: sdk.String(),
@@ -634,7 +611,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	return returnType
 }
 
-func generateDevelopmentServer(schema *proto.Schema) GeneratedFiles {
+func generateDevelopmentServer(schema *proto.Schema) clisupport.GeneratedFiles {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createContextAPI, permissionFns } from '@teamkeel/sdk';`)
@@ -713,7 +690,7 @@ const server = createServer(listener);
 const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;
 server.listen(port);`)
 
-	return []*GeneratedFile{
+	return []*clisupport.GeneratedFile{
 		{
 			Path:     ".build/server.js",
 			Contents: w.String(),
@@ -721,7 +698,7 @@ server.listen(port);`)
 	}
 }
 
-func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
+func generateTestingPackage(schema *proto.Schema) clisupport.GeneratedFiles {
 	js := &Writer{}
 	types := &Writer{}
 
@@ -748,7 +725,7 @@ func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
 
 	writeTestingTypes(types, schema)
 
-	return GeneratedFiles{
+	return clisupport.GeneratedFiles{
 		{
 			Path:     "node_modules/@teamkeel/testing/index.mjs",
 			Contents: js.String(),
@@ -764,8 +741,8 @@ func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
 	}
 }
 
-func generateTestingSetup() GeneratedFiles {
-	return GeneratedFiles{
+func generateTestingSetup() clisupport.GeneratedFiles {
+	return clisupport.GeneratedFiles{
 		{
 			Path: ".build/vitest.config.mjs",
 			Contents: `

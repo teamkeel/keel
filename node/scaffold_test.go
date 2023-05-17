@@ -9,6 +9,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/cmd/clisupport"
 )
 
 func TestScaffold(t *testing.T) {
@@ -36,7 +37,7 @@ func TestScaffold(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	expectedFiles := []GeneratedFile{
+	expectedFiles := []clisupport.GeneratedFile{
 		{
 			Path: "deletePost.ts",
 			Contents: `import { DeletePost, models } from '@teamkeel/sdk';
@@ -101,7 +102,7 @@ export default CustomFunctionWrite(async (ctx, inputs) => {
 	}
 
 	for _, f := range expectedFiles {
-		matchingActualFile, found := lo.Find(actualFiles, func(a *GeneratedFile) bool {
+		matchingActualFile, found := lo.Find(actualFiles, func(a *clisupport.GeneratedFile) bool {
 			base := filepath.Base(a.Path)
 
 			return base == f.Path
@@ -117,7 +118,7 @@ export default CustomFunctionWrite(async (ctx, inputs) => {
 	for _, f := range actualFiles {
 		base := filepath.Base(f.Path)
 
-		_, found := lo.Find(expectedFiles, func(e GeneratedFile) bool {
+		_, found := lo.Find(expectedFiles, func(e clisupport.GeneratedFile) bool {
 			return base == e.Path
 		})
 

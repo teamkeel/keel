@@ -16,6 +16,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/cmd/clisupport"
 	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
@@ -1135,7 +1136,7 @@ func TestTestingActionExecutor(t *testing.T) {
 	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
-	err = GeneratedFiles{
+	err = clisupport.GeneratedFiles{
 		{
 			Contents: `
 			model Person {
@@ -1229,7 +1230,7 @@ func TestSDKTypings(t *testing.T) {
 	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
-	err = GeneratedFiles{
+	err = clisupport.GeneratedFiles{
 		{
 			Path: "schema.keel",
 			Contents: `
@@ -1358,7 +1359,7 @@ func TestSDKTypings(t *testing.T) {
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.name, func(t *testing.T) {
-			err := GeneratedFiles{
+			err := clisupport.GeneratedFiles{
 				{
 					Path:     "code.ts",
 					Contents: fixture.code,
