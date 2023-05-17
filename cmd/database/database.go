@@ -2,8 +2,10 @@ package database
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -43,13 +45,21 @@ func (e ErrPortInUse) Error() string {
 // is not in the local docker registery.
 //
 // It sets the password for that user to "postgres".
-// It sets the default database name to "keel"
+// It sets the default database name to a hash of the working directory.
 func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
+	// Bring up the container, if it isn't already up.
 	connectionInfo, err := bringUpContainer(useExistingContainer)
 	if err != nil {
 		return nil, err
 	}
 
+	// Create database if it doesn't exist.
+	err = createDatabaseIfNotExists(connectionInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check database connection.
 	err = checkConnection(connectionInfo)
 	if err != nil {
 		return nil, err
@@ -137,6 +147,14 @@ func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	var port string
 	usingExistingContainer := postgresContainer != nil
 
+	wd, err := os.Getwd()
+
+	if err != nil {
+		return nil, err
+	}
+
+	databaseName := fmt.Sprintf("keel_%x", md5.Sum([]byte(wd)))
+
 	if postgresContainer != nil {
 		container, err := dockerClient.ContainerInspect(context.Background(), postgresContainer.ID)
 		if err != nil {
@@ -155,7 +173,6 @@ func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 			Image: postgresImageName + ":" + postgresTag,
 			Env: []string{
 				"POSTGRES_PASSWORD=postgres",
-				"POSTGRES_DB=postgres",
 				"POSTGRES_USER=postgres",
 			},
 		}
@@ -202,7 +219,7 @@ func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	return &db.ConnectionInfo{
 		Username: "postgres",
 		Password: "postgres",
-		Database: "postgres",
+		Database: databaseName,
 		Host:     "0.0.0.0",
 		Port:     port,
 	}, nil
@@ -284,6 +301,34 @@ func makeHostConfig(port string) *container.HostConfig {
 		PortBindings: portMap,
 	}
 	return hostConfig
+}
+
+func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
+	server, err := sql.Open("postgres", info.ServerString())
+	if err != nil {
+		return err
+	}
+	//https://stackoverflow.com/questions/18389124/simulate-create-database-if-not-exists-for-postgresql
+	//
+
+	result := server.QueryRow(fmt.Sprintf("SELECT 1 as Count FROM pg_database WHERE datname = '%s'", info.Database))
+	if err != nil {
+		return err
+	}
+	var count int
+	err = result.Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	if count == 0 {
+		_, err = server.Exec(fmt.Sprintf("CREATE DATABASE %s;", info.Database))
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
 
 // checkConnection connects to the database, veryifies the connection and returns the connection.

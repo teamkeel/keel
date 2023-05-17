@@ -97,6 +97,9 @@ func renderRun(m *Model) string {
 		b.WriteString("Connect to your database using: ")
 		b.WriteString(colors.Yellow(m.DatabaseConnInfo.String()).Highlight().String())
 		b.WriteString("\n")
+		b.WriteString("Login via psql: ")
+		b.WriteString(colors.Cyan(fmt.Sprintf("psql -Atx \"%s\"", m.DatabaseConnInfo.String())).Highlight().String())
+		b.WriteString("\n")
 	}
 
 	b.WriteString("\n")
