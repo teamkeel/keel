@@ -1,3 +1,10 @@
+## [0.321.2](https://github.com/teamkeel/keel/compare/v0.321.1...v0.321.2) (2023-05-17)
+
+
+### Bug Fixes
+
+* functions input argument order ([#967](https://github.com/teamkeel/keel/issues/967)) ([ba1db01](https://github.com/teamkeel/keel/commit/ba1db0195880b0dc50674b07de8db73552fef968))
+
 ## [0.321.1](https://github.com/teamkeel/keel/compare/v0.321.0...v0.321.1) (2023-05-15)
 
 
