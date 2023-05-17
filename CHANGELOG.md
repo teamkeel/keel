@@ -1,3 +1,10 @@
+# [0.322.0](https://github.com/teamkeel/keel/compare/v0.321.2...v0.322.0) (2023-05-17)
+
+
+### Features
+
+* add headers to ctx expressions auto complete ([#972](https://github.com/teamkeel/keel/issues/972)) ([43f3aea](https://github.com/teamkeel/keel/commit/43f3aea5cbc2568a5b29574f540f737a1d81084e))
+
 ## [0.321.2](https://github.com/teamkeel/keel/compare/v0.321.1...v0.321.2) (2023-05-17)
 
 
