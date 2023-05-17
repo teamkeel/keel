@@ -39,46 +39,46 @@ func TestScaffold(t *testing.T) {
 	expectedFiles := []GeneratedFile{
 		{
 			Path: "deletePost.ts",
-			Contents: `import { DeletePost } from '@teamkeel/sdk';
+			Contents: `import { DeletePost, models } from '@teamkeel/sdk';
 
-export default DeletePost(async (inputs, api, ctx) => {
-	const post = await api.models.post.delete(inputs);
+export default DeletePost(async (ctx, inputs) => {
+	const post = await models.post.delete(inputs);
 	return post;
 });`,
 		},
 		{
 			Path: "createPost.ts",
-			Contents: `import { CreatePost } from '@teamkeel/sdk';
+			Contents: `import { CreatePost, models } from '@teamkeel/sdk';
 
-export default CreatePost(async (inputs, api, ctx) => {
-	const post = await api.models.post.create(inputs);
+export default CreatePost(async (ctx, inputs) => {
+	const post = await models.post.create(inputs);
 	return post;
 });`,
 		},
 		{
 			Path: "updatePost.ts",
-			Contents: `import { UpdatePost } from '@teamkeel/sdk';
+			Contents: `import { UpdatePost, models } from '@teamkeel/sdk';
 
-export default UpdatePost(async (inputs, api, ctx) => {
-	const post = await api.models.post.update(inputs.where, inputs.values);
+export default UpdatePost(async (ctx, inputs) => {
+	const post = await models.post.update(inputs.where, inputs.values);
 	return post;
 });`,
 		},
 		{
 			Path: "getPost.ts",
-			Contents: `import { GetPost } from '@teamkeel/sdk';
+			Contents: `import { GetPost, models } from '@teamkeel/sdk';
 
-export default GetPost(async (inputs, api, ctx) => {
-	const post = await api.models.post.findOne(inputs);
+export default GetPost(async (ctx, inputs) => {
+	const post = await models.post.findOne(inputs);
 	return post;
 });`,
 		},
 		{
 			Path: "listPosts.ts",
-			Contents: `import { ListPosts } from '@teamkeel/sdk';
+			Contents: `import { ListPosts, models } from '@teamkeel/sdk';
 
-export default ListPosts(async (inputs, api, ctx) => {
-	const posts = await api.models.post.findMany(inputs.where!);
+export default ListPosts(async (ctx, inputs) => {
+	const posts = await models.post.findMany(inputs.where!);
 	return posts;
 });`,
 		},
@@ -86,7 +86,7 @@ export default ListPosts(async (inputs, api, ctx) => {
 			Path: "customFunctionRead.ts",
 			Contents: `import { CustomFunctionRead } from '@teamkeel/sdk';
 
-export default CustomFunctionRead(async (inputs, api, ctx) => {
+export default CustomFunctionRead(async (ctx, inputs) => {
 	// Build something cool
 });`,
 		},
@@ -94,7 +94,7 @@ export default CustomFunctionRead(async (inputs, api, ctx) => {
 			Path: "customFunctionWrite.ts",
 			Contents: `import { CustomFunctionWrite } from '@teamkeel/sdk';
 
-export default CustomFunctionWrite(async (inputs, api, ctx) => {
+export default CustomFunctionWrite(async (ctx, inputs) => {
 	// Build something cool
 });`,
 		},
