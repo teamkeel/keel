@@ -564,6 +564,48 @@ var testCases = []testCase{
 		expectedArgs: []any{"title1", "title2", "title1", "title2", 50},
 	},
 	{
+		name: "list_op_expression_text_in_field",
+		keelSchema: `
+			model RepeatedThing {
+				fields {
+					name Text
+					thing Thing
+				}
+			}
+			model Thing {
+				fields {
+                    title Text
+					repeatedThings RepeatedThing[]
+                }
+				operations {
+					list listRepeatedThings() {
+						@where(thing.title in thing.repeatedThings.name)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listRepeatedThings",
+		input:         map[string]any{},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "thing"."id") 
+					FROM 
+						"thing" 
+					INNER JOIN "repeated_thing" AS "thing$repeated_things" ON 
+						"thing$repeated_things"."thing_id" = "thing"."id" 
+					WHERE 
+						"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name") AS totalCount FROM "thing" 
+			INNER JOIN "repeated_thing" AS "thing$repeated_things" ON 
+				"thing$repeated_things"."thing_id" = "thing"."id" 
+			WHERE 
+				"thing"."title" IS NOT DISTINCT FROM "thing$repeated_things"."name" 
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
 		name: "list_op_expression_text_notin",
 		keelSchema: `
 			model Thing {
@@ -1343,9 +1385,7 @@ var testCases = []testCase{
 					items OrderItem[]
 				}
 				operations {
-					create createOrder() with (items.quantity, items.product.name) {
-						@set(order.items.product.createdOnOrder = true)
-					}
+					create createOrder() with (items.quantity, items.product.name)
 				}
 				@permission(expression: true, actions: [create])
 			}	
@@ -1416,9 +1456,9 @@ var testCases = []testCase{
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			ignore, ignore, ignore, // new_1_order
-			ignore, true, ignore, true, "Hair dryer", ignore, // new_1_product
+			ignore, false, ignore, true, "Hair dryer", ignore, // new_1_product
 			ignore, ignore, false, 2, ignore, //new_1_order_item
-			ignore, true, ignore, true, "Hair clips", ignore, // new_2_product
+			ignore, false, ignore, true, "Hair clips", ignore, // new_2_product
 			ignore, ignore, false, 4, ignore, //new_2_order_item
 		},
 	},

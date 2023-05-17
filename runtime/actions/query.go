@@ -853,7 +853,14 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 	case NotContains:
 		template = fmt.Sprintf("%s NOT LIKE %s", lhsSqlOperand, rhsSqlOperand)
 	case OneOf:
-		template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
+		// If the RHS is a repeated field where the parent is the array, then we must use a comparison
+		// instead of an `IN` to avoid comparing an array with a value.
+		if rhs.IsField() {
+			template = fmt.Sprintf("%s IS NOT DISTINCT FROM %s", lhsSqlOperand, rhsSqlOperand)
+		} else {
+			template = fmt.Sprintf("%s IN %s", lhsSqlOperand, rhsSqlOperand)
+		}
+
 	case NotOneOf:
 		template = fmt.Sprintf("%s NOT IN %s", lhsSqlOperand, rhsSqlOperand)
 	case LessThan:

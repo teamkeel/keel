@@ -298,7 +298,7 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	}
 
 	// Case: LHS and RHS are the same type
-	if resolvedLHS.GetType() == resolvedRHS.GetType() {
+	if resolvedLHS.GetType() == resolvedRHS.GetType() && resolvedLHS.IsRepeated() == resolvedRHS.IsRepeated() {
 		return nil
 	}
 
@@ -314,10 +314,10 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	}
 
 	// Case: LHS is of type T and RHS is an array of type T
-	if resolvedRHS.GetType() == parser.TypeArray {
+	if resolvedRHS.IsRepeated() {
 
 		// First check array contains only one type
-		var arrayType string
+		arrayType := resolvedRHS.GetType()
 		valid := true
 		for i, item := range resolvedRHS.Array {
 			if i == 0 {

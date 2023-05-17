@@ -33,7 +33,7 @@ model Post {
             @where(post.isActive == true)
         }
         get getPostModelsReferencedMoreThanOnce(id) {
-            @where(post.theAuthor.thePublisher.theAuthors.thePosts.isActive == true)
+            @where(true in post.theAuthor.thePublisher.theAuthors.thePosts.isActive)
         }
     }
 
@@ -72,32 +72,32 @@ model Publisher {
 
     operations {
         get getActivePublisherWithActivePosts(id) {
-            @where(publisher.theAuthors.thePosts.isActive == true)
-            @where(publisher.theAuthors.isActive == true)
+            @where(true in publisher.theAuthors.thePosts.isActive)
+            @where(true in publisher.theAuthors.isActive)
             @where(publisher.isActive == true)
         }
         get getActivePublisherWithActivePostsWithRhsField(id) {
-            @where(publisher.theAuthors.thePosts.isActive == publisher.booleanValue)
-            @where(publisher.theAuthors.isActive == publisher.booleanValue)
+            @where(publisher.booleanValue in publisher.theAuthors.thePosts.isActive)
+            @where(publisher.booleanValue in publisher.theAuthors.isActive)
             @where(publisher.isActive == publisher.booleanValue)
         }
         list listActivePublishersWithActivePosts() {
-            @where(publisher.theAuthors.thePosts.isActive == true)
-            @where(publisher.theAuthors.isActive == true)
+            @where(true in publisher.theAuthors.thePosts.isActive)
+            @where(true in publisher.theAuthors.isActive)
             @where(publisher.isActive == true)
         }
         list listActivePublishersWithActivePostsWithRhsField() {
-            @where(publisher.theAuthors.thePosts.isActive == publisher.booleanValue)
-            @where(publisher.theAuthors.isActive == publisher.booleanValue)
+            @where(publisher.booleanValue in publisher.theAuthors.thePosts.isActive)
+            @where(publisher.booleanValue in publisher.theAuthors.isActive)
             @where(publisher.isActive == publisher.booleanValue)
         }
         delete deleteActivePublisherWithActivePosts(id) {
-            @where(publisher.theAuthors.thePosts.isActive == true)
-            @where(publisher.theAuthors.isActive == true)
+            @where(true in publisher.theAuthors.thePosts.isActive)
+            @where(true in publisher.theAuthors.isActive)
             @where(publisher.isActive == true)
         }
         list listPublishersModelsReferencedMoreThanOnce() {
-            @where(publisher.theAuthors.thePosts.theAuthor.thePublisher.isActive == true)
+            @where(true in publisher.theAuthors.thePosts.theAuthor.thePublisher.isActive)
         }
     }
 
