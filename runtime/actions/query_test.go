@@ -1343,9 +1343,7 @@ var testCases = []testCase{
 					items OrderItem[]
 				}
 				operations {
-					create createOrder() with (items.quantity, items.product.name) {
-						@set(order.items.product.createdOnOrder = true)
-					}
+					create createOrder() with (items.quantity, items.product.name)
 				}
 				@permission(expression: true, actions: [create])
 			}	

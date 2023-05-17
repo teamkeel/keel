@@ -28,10 +28,10 @@ model Author {
 
     operations {
         get getAuthor(id) {
-            @permission(expression: author.thePosts.isActive == true)
+            @permission(expression: true in author.thePosts.isActive)
         }
         list listAuthors() {
-            @permission(expression: author.thePosts.isActive == true)
+            @permission(expression: true in author.thePosts.isActive)
         }
     }
 }
