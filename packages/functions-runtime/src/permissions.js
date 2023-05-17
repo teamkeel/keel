@@ -16,7 +16,7 @@ class Permissions {
   // TLDR if a role based permission is relevant and it is granted, then it is effectively the same as the end user calling api.permissions.allow() explicitly in terms of behaviour.
 
   allow() {
-    const store = permissionsApiInstance.getStore().permitted = true;
+    const store = (permissionsApiInstance.getStore().permitted = true);
   }
 
   deny() {

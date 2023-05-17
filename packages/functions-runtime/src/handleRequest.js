@@ -56,7 +56,10 @@ async function handleRequest(request, config) {
           meta: request.meta,
         });
 
-        const permitted = request.meta && request.meta.permissionState.status === "granted" ? true : null;
+        const permitted =
+          request.meta && request.meta.permissionState.status === "granted"
+            ? true
+            : null;
 
         const db = getDatabase();
         const permissions = new Permissions();
