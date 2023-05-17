@@ -1,4 +1,4 @@
-package clisupport
+package codegen
 
 import (
 	"fmt"
@@ -11,6 +11,12 @@ type GeneratedFile struct {
 	Path     string
 }
 
+// GeneratedFiles represents a collection of files due to be generated as part of code generation
+// You can append any number of files to an instance of GeneratedFiles like so:
+// files := GeneratedFiles{}
+// files = append(files, &GeneratedFile{...})
+// And then once you are ready to write these files to disk, you can call write:
+// files.Write(dir)
 type GeneratedFiles []*GeneratedFile
 
 func (files GeneratedFiles) Write(dir string) error {

@@ -18,8 +18,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/radovskyb/watcher"
 	"github.com/teamkeel/keel/cmd/cliconfig"
-	"github.com/teamkeel/keel/cmd/clisupport"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
@@ -30,7 +30,7 @@ import (
 )
 
 type InitialisedMsg struct {
-	GeneratedFiles clisupport.GeneratedFiles
+	GeneratedFiles codegen.GeneratedFiles
 	Err            error
 }
 
@@ -43,9 +43,9 @@ func Init(dir string) tea.Cmd {
 			}
 		}
 
-		files := clisupport.GeneratedFiles{}
+		files := codegen.GeneratedFiles{}
 
-		files = append(files, &clisupport.GeneratedFile{
+		files = append(files, &codegen.GeneratedFile{
 			Path: ".gitignore",
 			Contents: `.build/
 node_modules/
@@ -53,12 +53,12 @@ node_modules/
 			`,
 		})
 
-		files = append(files, &clisupport.GeneratedFile{
+		files = append(files, &codegen.GeneratedFile{
 			Path:     "schema.keel",
 			Contents: "// Visit https://keel.notaku.site/ for documentation on how to get started",
 		})
 
-		files = append(files, &clisupport.GeneratedFile{
+		files = append(files, &codegen.GeneratedFile{
 			Path: "keelconfig.yaml",
 			Contents: `// Visit https://keel.notaku.site/documentation/environment-variables-and-secrets for more
 // information about environment variables and secrets
@@ -137,7 +137,7 @@ func LoadSchema(dir, environment string) tea.Cmd {
 
 type ScaffoldMsg struct {
 	Err            error
-	GeneratedFiles clisupport.GeneratedFiles
+	GeneratedFiles codegen.GeneratedFiles
 }
 
 func Scaffold(dir string) tea.Cmd {

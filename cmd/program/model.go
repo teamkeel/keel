@@ -14,8 +14,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
-	"github.com/teamkeel/keel/cmd/clisupport"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
@@ -135,7 +135,7 @@ type Model struct {
 	Config           *config.ProjectConfig
 	SchemaFiles      []reader.SchemaFile
 	DatabaseConnInfo *db.ConnectionInfo
-	GeneratedFiles   clisupport.GeneratedFiles
+	GeneratedFiles   codegen.GeneratedFiles
 	MigrationChanges []*migrations.DatabaseChange
 	FunctionsServer  *node.DevelopmentServer
 	RuntimeHandler   http.Handler

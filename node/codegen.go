@@ -8,7 +8,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
-	"github.com/teamkeel/keel/cmd/clisupport"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -29,7 +29,7 @@ func WithDevelopmentServer(b bool) func(o *generateOptions) {
 // to a project. Calling .Write() on the result will cause those files be written to disk.
 // This function should not interact with the file system so it can be used in a backend
 // context.
-func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generateOptions)) (clisupport.GeneratedFiles, error) {
+func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generateOptions)) (codegen.GeneratedFiles, error) {
 	options := &generateOptions{}
 	for _, o := range opts {
 		o(options)
@@ -46,13 +46,13 @@ func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generat
 	return files, nil
 }
 
-func generateSdkPackage(schema *proto.Schema) clisupport.GeneratedFiles {
-	sdk := &Writer{}
+func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
+	sdk := &codegen.Writer{}
 	sdk.Writeln(`const { sql } = require("kysely")`)
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
 	sdk.Writeln("")
 
-	sdkTypes := &Writer{}
+	sdkTypes := &codegen.Writer{}
 	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
@@ -100,7 +100,7 @@ func generateSdkPackage(schema *proto.Schema) clisupport.GeneratedFiles {
 
 	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
 
-	return []*clisupport.GeneratedFile{
+	return []*codegen.GeneratedFile{
 		{
 			Path:     "node_modules/@teamkeel/sdk/index.js",
 			Contents: sdk.String(),
@@ -116,7 +116,7 @@ func generateSdkPackage(schema *proto.Schema) clisupport.GeneratedFiles {
 	}
 }
 
-func writeTableInterface(w *Writer, model *proto.Model) {
+func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sTable {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
@@ -139,7 +139,7 @@ func writeTableInterface(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeModelInterface(w *Writer, model *proto.Model) {
+func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %s {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
@@ -159,7 +159,7 @@ func writeModelInterface(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeCreateValuesInterface(w *Writer, model *proto.Model) {
+func writeCreateValuesInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sCreateValues {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
@@ -183,7 +183,7 @@ func writeCreateValuesInterface(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
+func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sWhereConditions {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
@@ -206,7 +206,7 @@ func writeWhereConditionsInterface(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeMessages(w *Writer, schema *proto.Schema, isTestingPackage bool) {
+func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage bool) {
 	for _, msg := range schema.Messages {
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
@@ -215,7 +215,7 @@ func writeMessages(w *Writer, schema *proto.Schema, isTestingPackage bool) {
 	}
 }
 
-func writeMessage(w *Writer, schema *proto.Schema, message *proto.Message, isTestingPackage bool) {
+func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Message, isTestingPackage bool) {
 	w.Writef("export interface %s {\n", message.Name)
 	w.Indent()
 
@@ -262,7 +262,7 @@ func writeMessage(w *Writer, schema *proto.Schema, message *proto.Message, isTes
 	w.Writeln("}")
 }
 
-func writeUniqueConditionsInterface(w *Writer, model *proto.Model) {
+func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sUniqueConditions = ", model.Name)
 	w.Indent()
 	for _, f := range model.Fields {
@@ -287,7 +287,7 @@ func writeUniqueConditionsInterface(w *Writer, model *proto.Model) {
 	w.Dedent()
 }
 
-func writeModelAPIDeclaration(w *Writer, model *proto.Model) {
+func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sAPI = {\n", model.Name)
 	w.Indent()
 	w.Writef("create(values: %sCreateValues): Promise<%s>;\n", model.Name, model.Name)
@@ -300,7 +300,7 @@ func writeModelAPIDeclaration(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeModelQueryBuilderDeclaration(w *Writer, model *proto.Model) {
+func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sQueryBuilder = {\n", model.Name)
 	w.Indent()
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
@@ -310,7 +310,7 @@ func writeModelQueryBuilderDeclaration(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeEnumObject(w *Writer, enum *proto.Enum) {
+func writeEnumObject(w *codegen.Writer, enum *proto.Enum) {
 	w.Writef("module.exports.%s = {\n", enum.Name)
 	w.Indent()
 	for _, v := range enum.Values {
@@ -323,7 +323,7 @@ func writeEnumObject(w *Writer, enum *proto.Enum) {
 	w.Writeln("};")
 }
 
-func writeEnum(w *Writer, enum *proto.Enum) {
+func writeEnum(w *codegen.Writer, enum *proto.Enum) {
 	w.Writef("export enum %s {\n", enum.Name)
 	w.Indent()
 	for _, v := range enum.Values {
@@ -336,7 +336,7 @@ func writeEnum(w *Writer, enum *proto.Enum) {
 	w.Writeln("}")
 }
 
-func writeEnumWhereCondition(w *Writer, enum *proto.Enum) {
+func writeEnumWhereCondition(w *codegen.Writer, enum *proto.Enum) {
 	w.Writef("export interface %sWhereCondition {\n", enum.Name)
 	w.Indent()
 	w.Write("equals?: ")
@@ -350,7 +350,7 @@ func writeEnumWhereCondition(w *Writer, enum *proto.Enum) {
 	w.Writeln("}")
 }
 
-func writeDatabaseInterface(w *Writer, schema *proto.Schema) {
+func writeDatabaseInterface(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("interface database {")
 	w.Indent()
 	for _, model := range schema.Models {
@@ -362,7 +362,7 @@ func writeDatabaseInterface(w *Writer, schema *proto.Schema) {
 	w.Writeln("export declare function getDatabase(): Kysely<database>;")
 }
 
-func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
+func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export type ModelsAPI = {")
 	w.Indent()
 	for _, model := range schema.Models {
@@ -408,7 +408,7 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 	w.Writeln("}")
 }
 
-func writeAPIFactory(w *Writer, schema *proto.Schema) {
+func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("function createContextAPI({ responseHeaders, meta }) {")
 	w.Indent()
 	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
@@ -466,7 +466,7 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 }
 
-func writeTableConfig(w *Writer, models []*proto.Model) {
+func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 	w.Write("const tableConfigMap = ")
 
 	// In case the words map and string over and over aren't clear enough
@@ -509,7 +509,7 @@ func writeTableConfig(w *Writer, models []*proto.Model) {
 	w.Writeln(";")
 }
 
-func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
+func writeModelDefaultValuesFunction(w *codegen.Writer, model *proto.Model) {
 	w.Writef("function %sDefaultValues() {", casing.ToLowerCamel(model.Name))
 	w.Writeln("")
 	w.Indent()
@@ -542,7 +542,7 @@ func writeModelDefaultValuesFunction(w *Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Operation) {
+func writeCustomFunctionWrapperType(w *codegen.Writer, model *proto.Model, op *proto.Operation) {
 	w.Writef("export declare function %s", casing.ToCamel(op.Name))
 
 	inputType := op.InputMessageName
@@ -611,8 +611,8 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 	return returnType
 }
 
-func generateDevelopmentServer(schema *proto.Schema) clisupport.GeneratedFiles {
-	w := &Writer{}
+func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
+	w := &codegen.Writer{}
 	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
 	w.Writeln(`import { createContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
@@ -690,7 +690,7 @@ const server = createServer(listener);
 const port = (process.env.PORT && parseInt(process.env.PORT, 10)) || 3001;
 server.listen(port);`)
 
-	return []*clisupport.GeneratedFile{
+	return []*codegen.GeneratedFile{
 		{
 			Path:     ".build/server.js",
 			Contents: w.String(),
@@ -698,9 +698,9 @@ server.listen(port);`)
 	}
 }
 
-func generateTestingPackage(schema *proto.Schema) clisupport.GeneratedFiles {
-	js := &Writer{}
-	types := &Writer{}
+func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
+	js := &codegen.Writer{}
+	types := &codegen.Writer{}
 
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
@@ -725,7 +725,7 @@ func generateTestingPackage(schema *proto.Schema) clisupport.GeneratedFiles {
 
 	writeTestingTypes(types, schema)
 
-	return clisupport.GeneratedFiles{
+	return codegen.GeneratedFiles{
 		{
 			Path:     "node_modules/@teamkeel/testing/index.mjs",
 			Contents: js.String(),
@@ -741,8 +741,8 @@ func generateTestingPackage(schema *proto.Schema) clisupport.GeneratedFiles {
 	}
 }
 
-func generateTestingSetup() clisupport.GeneratedFiles {
-	return clisupport.GeneratedFiles{
+func generateTestingSetup() codegen.GeneratedFiles {
+	return codegen.GeneratedFiles{
 		{
 			Path: ".build/vitest.config.mjs",
 			Contents: `
@@ -770,7 +770,7 @@ expect.extend({
 	}
 }
 
-func writeTestingTypes(w *Writer, schema *proto.Schema) {
+func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln(`import * as sdk from "@teamkeel/sdk";`)
 	w.Writeln(`import * as runtime from "@teamkeel/functions-runtime";`)
 

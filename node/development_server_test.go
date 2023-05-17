@@ -12,13 +12,13 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/teamkeel/keel/cmd/clisupport"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/schema"
 )
 
 func TestDevelopmentServer(t *testing.T) {
-	files := clisupport.GeneratedFiles{
+	files := codegen.GeneratedFiles{
 		{
 			Path: "schema.keel",
 			Contents: `
@@ -64,7 +64,7 @@ func TestDevelopmentServer(t *testing.T) {
 }
 
 func TestDevelopmentServerStartError(t *testing.T) {
-	files := clisupport.GeneratedFiles{
+	files := codegen.GeneratedFiles{
 		{
 			Path: "schema.keel",
 			Contents: `
@@ -98,7 +98,7 @@ func TestDevelopmentServerStartError(t *testing.T) {
 	})
 }
 
-func runDevelopmentServerTest(t *testing.T, files clisupport.GeneratedFiles, fn func(*node.DevelopmentServer, error)) {
+func runDevelopmentServerTest(t *testing.T, files codegen.GeneratedFiles, fn func(*node.DevelopmentServer, error)) {
 	tmpDir := t.TempDir()
 
 	wd, err := os.Getwd()
