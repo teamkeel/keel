@@ -8,7 +8,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -38,18 +37,18 @@ type InitialisedMsg struct {
 func Init(dir string) tea.Cmd {
 	return func() tea.Msg {
 		if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
-			return InitialisedMsg{
-				Err: fmt.Errorf("The directory does not exist"),
+			// create the dir
+
+			err = os.MkdirAll(dir, os.ModePerm)
+
+			if err != nil {
+				return InitialisedMsg{
+					Err: fmt.Errorf("Could not create the specified directory."),
+				}
 			}
 		}
 
-		empty, err := isDirEmpty(dir)
-
-		if err != nil {
-			return InitialisedMsg{
-				Err: err,
-			}
-		}
+		empty := isDirEmpty(dir)
 
 		if !empty {
 			return InitialisedMsg{
@@ -87,7 +86,7 @@ secrets:
 `,
 		})
 
-		err = files.Write(dir)
+		err := files.Write(dir)
 
 		if err != nil {
 			return InitialisedMsg{
@@ -637,16 +636,10 @@ func RemoveSecret(path, environment, key string) error {
 	return config.RemoveSecret(path, environment, key)
 }
 
-func isDirEmpty(name string) (bool, error) {
-	f, err := os.Open(name)
-	if err != nil {
-		return false, err
-	}
-	defer f.Close()
+func isDirEmpty(name string) bool {
+	// we can ignore the error
+	entries, _ := os.ReadDir(name)
 
-	_, err = f.Readdirnames(1) // Or f.Readdir(1)
-	if err == io.EOF {
-		return true, nil
-	}
-	return false, err // Either not empty or error, suits both cases
+	// if len is 0 then dir is empty or doesn't exist
+	return len(entries) == 0
 }
