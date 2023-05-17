@@ -1,3 +1,10 @@
+## [0.322.1](https://github.com/teamkeel/keel/compare/v0.322.0...v0.322.1) (2023-05-17)
+
+
+### Bug Fixes
+
+* use version number from ldflags for npm packages ([#975](https://github.com/teamkeel/keel/issues/975)) ([d70e632](https://github.com/teamkeel/keel/commit/d70e632282cee21a2144dc85f83f25e39ac30ae1))
+
 # [0.322.0](https://github.com/teamkeel/keel/compare/v0.321.2...v0.322.0) (2023-05-17)
 
 
