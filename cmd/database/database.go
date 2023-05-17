@@ -53,6 +53,13 @@ func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
 		return nil, err
 	}
 
+	// Generate unique database name and append it to connectionInfo.
+	dbName, err := GenerateDatabaseName()
+	if err != nil {
+		return nil, err
+	}
+	connectionInfo = connectionInfo.WithDatabase(dbName)
+
 	// Create database if it doesn't exist.
 	err = createDatabaseIfNotExists(connectionInfo)
 	if err != nil {
@@ -66,6 +73,17 @@ func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	}
 
 	return connectionInfo, nil
+}
+
+// Generates a unique database name using a hash of the project's working directory
+// For example: keel_48f77af86bffe7cdbb44308a70d11f8b
+func GenerateDatabaseName() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("keel_%x", md5.Sum([]byte(wd))), nil
 }
 
 // Stop stops the postgres container - having checked first
@@ -147,14 +165,6 @@ func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	var port string
 	usingExistingContainer := postgresContainer != nil
 
-	wd, err := os.Getwd()
-
-	if err != nil {
-		return nil, err
-	}
-
-	databaseName := fmt.Sprintf("keel_%x", md5.Sum([]byte(wd)))
-
 	if postgresContainer != nil {
 		container, err := dockerClient.ContainerInspect(context.Background(), postgresContainer.ID)
 		if err != nil {
@@ -219,7 +229,6 @@ func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	return &db.ConnectionInfo{
 		Username: "postgres",
 		Password: "postgres",
-		Database: databaseName,
 		Host:     "0.0.0.0",
 		Port:     port,
 	}, nil
@@ -308,10 +317,8 @@ func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
 	if err != nil {
 		return err
 	}
-	//https://stackoverflow.com/questions/18389124/simulate-create-database-if-not-exists-for-postgresql
-	//
 
-	result := server.QueryRow(fmt.Sprintf("SELECT 1 as Count FROM pg_database WHERE datname = '%s'", info.Database))
+	result := server.QueryRow(fmt.Sprintf("SELECT 1 as count FROM pg_database WHERE datname = '%s'", info.Database))
 	if err != nil {
 		return err
 	}
