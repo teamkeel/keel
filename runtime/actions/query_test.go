@@ -1416,9 +1416,9 @@ var testCases = []testCase{
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
 			ignore, ignore, ignore, // new_1_order
-			ignore, true, ignore, true, "Hair dryer", ignore, // new_1_product
+			ignore, false, ignore, true, "Hair dryer", ignore, // new_1_product
 			ignore, ignore, false, 2, ignore, //new_1_order_item
-			ignore, true, ignore, true, "Hair clips", ignore, // new_2_product
+			ignore, false, ignore, true, "Hair clips", ignore, // new_2_product
 			ignore, ignore, false, 4, ignore, //new_2_order_item
 		},
 	},

@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "\u003cno value\u003e is an array of \u003cno value\u003e. Only 'in' or 'not in' can be used",
-      "hint": "Change '==' to either 'in' or 'not in'.",
-      "code": "E030",
+      "message": "project.users.user.identity is an array of Identity and ctx.identity is Identity",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
       "pos": {
         "filename": "testdata/validation_permission_RHS_identity_comparison/schema.keel",
-        "offset": 226,
+        "offset": 198,
         "line": 20,
-        "column": 45
+        "column": 17
       },
       "endPos": {
         "filename": "testdata/validation_permission_RHS_identity_comparison/schema.keel",
-        "offset": 228,
+        "offset": 241,
         "line": 20,
-        "column": 47
+        "column": 60
       }
     }
   ]

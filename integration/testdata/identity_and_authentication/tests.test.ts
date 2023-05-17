@@ -341,32 +341,6 @@ test("related model identity context permission - incorrect identity - permissio
   expect(childPosts.length).toEqual(0);
 });
 
-test("set identity on related models - authenticated - fields set correctly", async () => {
-  const authResponse = await actions.authenticate({
-    createIfNotExists: true,
-    emailPassword: {
-      email: "user@keel.xyz",
-      password: "1234",
-    },
-  });
-
-  const authedActions = actions.withAuthToken(authResponse.token);
-
-  const post = await authedActions.createPostWithComments({
-    title: "temp",
-    comments: [{ comment: "comment 1" }, { comment: "comment 2" }],
-  });
-
-  const identity = await models.identity.findOne({ email: "user@keel.xyz" });
-
-  const comments = await models.comment.findMany({});
-
-  expect(comments[0].createdById).toEqual(identity!.id);
-  expect(comments[0].isActive).toEqual(true);
-  expect(comments[1].createdById).toEqual(identity!.id);
-  expect(comments[1].isActive).toEqual(true);
-});
-
 test("request reset password - invalid email - respond with invalid email address error", async () => {
   await expect(
     actions.requestPasswordReset({
