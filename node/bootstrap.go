@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-version"
+	"github.com/teamkeel/keel/runtime"
 )
 
 const minimumRequiredNodeVersion = "18.0.0"
@@ -49,8 +50,9 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 		o(options)
 	}
 
-	functionsRuntimeVersion := "*"
-	testingRuntimeVersion := "*"
+	functionsRuntimeVersion := runtime.GetVersion()
+	testingRuntimeVersion := runtime.GetVersion()
+
 	if options.packagesPath != "" {
 		functionsRuntimeVersion = filepath.Join(options.packagesPath, "functions-runtime")
 		testingRuntimeVersion = filepath.Join(options.packagesPath, "testing-runtime")
