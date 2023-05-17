@@ -382,7 +382,7 @@ func writeDatabaseInterface(w *Writer, schema *proto.Schema) {
 	}
 	w.Dedent()
 	w.Writeln("}")
-	w.Write("export declare function getDatabase(): Kysely<database>;")
+	w.Writeln("export declare function getDatabase(): Kysely<database>;")
 }
 
 func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
@@ -396,15 +396,8 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 	}
 	w.Dedent()
 	w.Writeln("}")
-
-	w.Writeln("export type FunctionAPI = {")
-	w.Indent()
-	w.Writeln("models: ModelsAPI;")
-	w.Writeln("fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;")
-	w.Writeln("permissions: runtime.Permissions;")
-	w.Dedent()
-
-	w.Writeln("}")
+	w.Writeln("export declare const models: ModelsAPI;")
+	w.Writeln("export declare const permissions: runtime.Permissions;")
 
 	w.Writeln("type Environment = {")
 
@@ -439,26 +432,6 @@ func writeAPIDeclarations(w *Writer, schema *proto.Schema) {
 }
 
 func writeAPIFactory(w *Writer, schema *proto.Schema) {
-	w.Writeln("function createFunctionAPI({ db, meta }) {")
-	w.Indent()
-
-	w.Writeln("const models = {")
-	w.Indent()
-	for _, model := range schema.Models {
-		w.Write(casing.ToLowerCamel(model.Name))
-		w.Write(": ")
-		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, db, tableConfigMap)`, casing.ToSnake(model.Name), casing.ToLowerCamel(model.Name))
-		w.Writeln(",")
-	}
-	w.Dedent()
-	w.Writeln("};")
-	w.Writeln("const { permissionState } = meta || { permissionState: { status: 'unknown' } };")
-
-	w.Writeln("return { models, permissions: new runtime.Permissions(permissionState) };")
-
-	w.Dedent()
-	w.Writeln("};")
-
 	w.Writeln("function createContextAPI({ responseHeaders, meta }) {")
 	w.Indent()
 	w.Writeln("const headers = new runtime.RequestHeaders(meta.headers);")
@@ -486,11 +459,33 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 
 	w.Dedent()
 	w.Writeln("};")
-
 	w.Writeln("return { headers, response, identity, env, now, secrets, isAuthenticated };")
 	w.Dedent()
-	w.Writeln("}")
-	w.Writeln("module.exports.createFunctionAPI = createFunctionAPI;")
+	w.Writeln("};")
+
+	w.Writeln("function createModelAPI() {")
+	w.Indent()
+	w.Writeln("return {")
+	w.Indent()
+	for _, model := range schema.Models {
+		w.Write(casing.ToLowerCamel(model.Name))
+		w.Write(": ")
+		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, tableConfigMap)`, casing.ToSnake(model.Name), casing.ToLowerCamel(model.Name))
+		w.Writeln(",")
+	}
+	w.Dedent()
+	w.Writeln("};")
+	w.Dedent()
+	w.Writeln("};")
+
+	w.Writeln("function createPermissionApi() {")
+	w.Indent()
+	w.Writeln("return new runtime.Permissions();")
+	w.Dedent()
+	w.Writeln("};")
+
+	w.Writeln(`module.exports.models = createModelAPI();`)
+	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 }
 
@@ -578,7 +573,7 @@ func writeCustomFunctionWrapperType(w *Writer, model *proto.Model, op *proto.Ope
 		inputType = "any"
 	}
 
-	w.Writef("(fn: (ctx: ContextAPI, inputs: %s, api: FunctionAPI) => ", inputType)
+	w.Writef("(fn: (ctx: ContextAPI, inputs: %s) => ", inputType)
 	w.Write(toCustomFunctionReturnType(model, op, false))
 	w.Write("): ")
 	w.Write(toCustomFunctionReturnType(model, op, false))
@@ -642,7 +637,7 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 func generateDevelopmentServer(schema *proto.Schema) GeneratedFiles {
 	w := &Writer{}
 	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createFunctionAPI, createContextAPI, permissionFns } from '@teamkeel/sdk';`)
+	w.Writeln(`import { createContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
 	functions := []*proto.Operation{}
@@ -696,10 +691,9 @@ const listener = async (req, res) => {
 
 		const rpcResponse = await handleRequest(json, {
 			functions,
-			createFunctionAPI,
 			createContextAPI,
 			actionTypes,
-			permissions: permissionFns,
+			permissionFns,
 		});
 
 		res.statusCode = 200;
@@ -734,17 +728,14 @@ func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
 	js.Writeln(`import sdk from "@teamkeel/sdk"`)
-	js.Writeln("const { getDatabase, createFunctionAPI } = sdk;")
+	js.Writeln("const { getDatabase, models } = sdk;")
 	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
-
-	js.Writeln("const db = getDatabase();")
-
-	js.Writeln(`export const actions = new ActionExecutor({});`)
-	js.Writeln("export const models = createFunctionAPI({ db }).models;")
-
+	js.Writeln("export { models };")
+	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
+	js.Writeln("const db = getDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{}
 	for _, model := range schema.Models {

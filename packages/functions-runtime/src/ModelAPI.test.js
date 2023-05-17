@@ -62,7 +62,6 @@ beforeEach(async () => {
         date: new Date("2022-01-01"),
       };
     },
-    db,
     tableConfigMap
   );
 
@@ -73,7 +72,6 @@ beforeEach(async () => {
         id: KSUID.randomSync().string,
       };
     },
-    db,
     tableConfigMap
   );
 
@@ -84,7 +82,6 @@ beforeEach(async () => {
         id: KSUID.randomSync().string,
       };
     },
-    db,
     tableConfigMap
   );
 });

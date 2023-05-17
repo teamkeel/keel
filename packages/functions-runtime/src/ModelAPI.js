@@ -40,11 +40,9 @@ class ModelAPI {
   /**
    * @param {string} tableName The name of the table this API is for
    * @param {Function} defaultValues A function that returns the default values for a row in this table
-   * @param {import("kysely").Kysely} db
    * @param {TableConfigMap} tableConfigMap
    */
-  constructor(tableName, defaultValues, db, tableConfigMap = {}) {
-    this._db = db || getDatabase();
+  constructor(tableName, defaultValues, tableConfigMap = {}) {
     this._defaultValues = defaultValues;
     this._tableName = tableName;
     this._tableConfigMap = tableConfigMap;
@@ -53,11 +51,12 @@ class ModelAPI {
 
   async create(values) {
     const name = spanName(this._modelName, "create");
+    const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
       try {
         const defaults = this._defaultValues();
-        const query = this._db
+        const query = db
           .insertInto(this._tableName)
           .values(
             snakeCaseObject({
@@ -79,9 +78,10 @@ class ModelAPI {
 
   async findOne(where = {}) {
     const name = spanName(this._modelName, "findOne");
+    const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = this._db
+      let builder = db
         .selectFrom(this._tableName)
         .distinctOn(`${this._tableName}.id`)
         .selectAll(this._tableName);
@@ -103,9 +103,10 @@ class ModelAPI {
 
   async findMany(where = {}) {
     const name = spanName(this._modelName, "findMany");
+    const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = this._db
+      let builder = db
         .selectFrom(this._tableName)
         .distinctOn(`${this._tableName}.id`)
         .selectAll(this._tableName);
@@ -124,9 +125,10 @@ class ModelAPI {
 
   async update(where, values) {
     const name = spanName(this._modelName, "update");
+    const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = this._db.updateTable(this._tableName).returningAll();
+      let builder = db.updateTable(this._tableName).returningAll();
 
       builder = builder.set(snakeCaseObject(values));
 
@@ -148,9 +150,10 @@ class ModelAPI {
 
   async delete(where) {
     const name = spanName(this._modelName, "delete");
+    const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
-      let builder = this._db.deleteFrom(this._tableName).returning(["id"]);
+      let builder = db.deleteFrom(this._tableName).returning(["id"]);
 
       const context = new QueryContext([this._tableName], this._tableConfigMap);
 
@@ -168,7 +171,9 @@ class ModelAPI {
   }
 
   where(where) {
-    let builder = this._db
+    const db = getDatabase();
+
+    let builder = db
       .selectFrom(this._tableName)
       .distinctOn(`${this._tableName}.id`)
       .selectAll(this._tableName);

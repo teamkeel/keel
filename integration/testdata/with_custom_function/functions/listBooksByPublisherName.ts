@@ -1,9 +1,7 @@
-import { ListBooksByPublisherName } from "@teamkeel/sdk";
+import { models, ListBooksByPublisherName } from "@teamkeel/sdk";
 
-export default ListBooksByPublisherName(async (ctx, inputs, api) => {
-  api.permissions.allow();
-
-  return api.models.book.findMany({
+export default ListBooksByPublisherName(async (ctx, inputs) => {
+  return models.book.findMany({
     author: {
       publisher: {
         name: inputs.where?.authorPublisherName,

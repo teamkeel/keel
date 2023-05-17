@@ -4,9 +4,8 @@ import { handleRequest, RuntimeErrors } from "./handleRequest";
 import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
 import { getDatabase } from "./database";
-import { Permissions } from "./permissions";
+const { Permissions } = require("./permissions");
 import { PROTO_ACTION_TYPES } from "./consts";
-
 import KSUID from "ksuid";
 
 process.env.KEEL_DB_CONN_TYPE = "pg";
@@ -15,8 +14,9 @@ process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functi
 test("when the custom function returns expected value", async () => {
   const config = {
     functions: {
-      createPost: async (ctx, inputs, api) => {
-        api.permissions.allow();
+      createPost: async (ctx, inputs) => {
+        new Permissions().allow();
+
         return {
           title: "a post",
           id: "abcde",
@@ -25,11 +25,6 @@ test("when the custom function returns expected value", async () => {
     },
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
-    },
-    createFunctionAPI: ({ db }) => {
-      return {
-        permissions: new Permissions(),
-      };
     },
     createContextAPI: () => {},
   };
@@ -52,18 +47,13 @@ test("when the custom function returns expected value", async () => {
 test("when the custom function doesnt return a value", async () => {
   const config = {
     functions: {
-      createPost: async (ctx, inputs, api) => {
-        api.permissions.allow();
+      createPost: async (ctx, inputs) => {
+        new Permissions().allow();
       },
     },
     permissions: {},
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
-    },
-    createFunctionAPI: ({ db }) => {
-      return {
-        permissions: new Permissions(),
-      };
     },
     createContextAPI: () => {},
   };
@@ -83,15 +73,10 @@ test("when the custom function doesnt return a value", async () => {
 test("when there is no matching function for the path", async () => {
   const config = {
     functions: {
-      createPost: async (ctx, inputs, api) => {},
+      createPost: async (ctx, inputs) => {},
     },
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
-    },
-    createFunctionAPI: ({ db }) => {
-      return {
-        permissions: new Permissions(),
-      };
     },
     createContextAPI: () => {},
   };
@@ -111,19 +96,12 @@ test("when there is no matching function for the path", async () => {
 test("when there is an unexpected error in the custom function", async () => {
   const config = {
     functions: {
-      createPost: async (ctx, inputs, api) => {
-        api.permissions.allow();
-
+      createPost: async (ctx, inputs) => {
         throw new Error("oopsie daisy");
       },
     },
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
-    },
-    createFunctionAPI: ({ db }) => {
-      return {
-        permissions: new Permissions(),
-      };
     },
     createContextAPI: () => {},
   };
@@ -152,16 +130,16 @@ test("when a role based permission has already been granted by the main runtime"
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
     },
-    createFunctionAPI: ({ db }) => {
-      return {
-        permissions: new Permissions({ status: "granted", reason: "role" }),
-      };
-    },
+    createModelAPI: () => {},
     createContextAPI: () => {},
   };
 
-  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+  let rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
 
+  Object.assign(rpcReq, {
+    ...rpcReq,
+    meta: { permissionState: { status: "granted", reason: "role" } },
+  });
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
@@ -177,18 +155,12 @@ test("when a role based permission has already been granted by the main runtime"
 test("when there is an unexpected object thrown in the custom function", async () => {
   const config = {
     functions: {
-      createPost: async (ctx, inputs, api) => {
-        api.permissions.allow();
+      createPost: async (ctx, inputs) => {
         throw { err: "oopsie daisy" };
       },
     },
     actionTypes: {
       createPost: PROTO_ACTION_TYPES.CREATE,
-    },
-    createFunctionAPI: ({ db }) => {
-      return {
-        permissions: new Permissions(),
-      };
     },
     createContextAPI: () => {},
   };
@@ -238,47 +210,44 @@ describe("ModelAPI error handling", () => {
       INSERT INTO author (id, name) VALUES ('adam', 'adam bull')
     `.execute(db);
 
-    functionConfig = {
-      permissions: {},
-      functions: {
-        createPost: async (ctx, inputs, api) => {
-          api.permissions.allow();
+    const models = {
+      post: new ModelAPI(
+        "post",
+        () => {
+          return {
+            id: KSUID.randomSync().string,
+          };
+        },
+        {
+          post: {
+            author: {
+              relationshipType: "belongsTo",
+              foreignKey: "author_id",
+              referencesTable: "person",
+            },
+          },
+        }
+      ),
+    };
 
-          const post = await api.models.post.create(inputs);
+    functionConfig = {
+      permissionFns: {},
+      functions: {
+        createPost: async (ctx, inputs) => {
+          new Permissions().allow();
+
+          const post = await models.post.create(inputs);
 
           return post;
         },
-        deletePost: async (ctx, inputs, api) => {
-          api.permissions.allow();
+        deletePost: async (ctx, inputs) => {
+          new Permissions().allow();
 
-          const deleted = await api.models.post.delete(inputs);
+          const deleted = await models.post.delete(inputs);
 
           return deleted;
         },
       },
-      createFunctionAPI: ({ db }) => ({
-        permissions: new Permissions(),
-        models: {
-          post: new ModelAPI(
-            "post",
-            () => {
-              return {
-                id: KSUID.randomSync().string,
-              };
-            },
-            db,
-            {
-              post: {
-                author: {
-                  relationshipType: "belongsTo",
-                  foreignKey: "author_id",
-                  referencesTable: "person",
-                },
-              },
-            }
-          ),
-        },
-      }),
       createContextAPI: () => ({}),
     };
   });

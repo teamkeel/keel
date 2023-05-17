@@ -1,11 +1,9 @@
-import { BulkPersonUpload } from "@teamkeel/sdk";
+import { models, permissions, BulkPersonUpload } from "@teamkeel/sdk";
 
-export default BulkPersonUpload(async (_, value, api) => {
-  api.permissions.allow();
+export default BulkPersonUpload(async (_, value) => {
+  permissions.allow();
 
   return {
-    people: await Promise.all(
-      value.people.map((p) => api.models.person.create(p))
-    ),
+    people: await Promise.all(value.people.map((p) => models.person.create(p))),
   };
 });

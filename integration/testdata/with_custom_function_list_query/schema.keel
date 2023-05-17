@@ -13,7 +13,7 @@ model Person {
 
     @permission(
         expression: true,
-        actions: [create, get, list, update, delete]
+        actions: [list]
     )
 }
 
@@ -32,7 +32,7 @@ model PersonOptionalFields {
 
     @permission(
         expression: true,
-        actions: [create, get, list, update, delete]
+        actions: [list]
     )
 }
 

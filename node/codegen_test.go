@@ -274,14 +274,6 @@ const actionTypes = {
 
 func TestWriteAPIFactory(t *testing.T) {
 	expected := `
-function createFunctionAPI({ db, meta }) {
-	const models = {
-		person: new runtime.ModelAPI("person", personDefaultValues, db, tableConfigMap),
-		identity: new runtime.ModelAPI("identity", identityDefaultValues, db, tableConfigMap),
-	};
-	const { permissionState } = meta || { permissionState: { status: 'unknown' } };
-	return { models, permissions: new runtime.Permissions(permissionState) };
-};
 function createContextAPI({ responseHeaders, meta }) {
 	const headers = new runtime.RequestHeaders(meta.headers);
 	const response = { headers: responseHeaders }
@@ -295,8 +287,18 @@ function createContextAPI({ responseHeaders, meta }) {
 		SECRET_KEY: meta.secrets.SECRET_KEY || "",
 	};
 	return { headers, response, identity, env, now, secrets, isAuthenticated };
-}
-module.exports.createFunctionAPI = createFunctionAPI;
+};
+function createModelAPI() {
+	return {
+		person: new runtime.ModelAPI("person", personDefaultValues, tableConfigMap),
+		identity: new runtime.ModelAPI("identity", identityDefaultValues, tableConfigMap),
+	};
+};
+function createPermissionApi() {
+	return new runtime.Permissions();
+};
+module.exports.models = createModelAPI();
+module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
@@ -317,11 +319,8 @@ export type ModelsAPI = {
 	person: PersonAPI;
 	identity: IdentityAPI;
 }
-export type FunctionAPI = {
-	models: ModelsAPI;
-	fetch(input: RequestInfo | URL, init?: RequestInit | undefined): Promise<Response>;
-	permissions: runtime.Permissions;
-}
+export declare const models: ModelsAPI;
+export declare const permissions: runtime.Permissions;
 type Environment = {
 	TEST: string;
 }
@@ -896,11 +895,11 @@ model Person {
 }
 	`
 	expected := `
-export declare function GetPerson(fn: (ctx: ContextAPI, inputs: GetPersonInput, api: FunctionAPI) => Promise<Person | null>): Promise<Person | null>;
-export declare function CreatePerson(fn: (ctx: ContextAPI, inputs: CreatePersonInput, api: FunctionAPI) => Promise<Person>): Promise<Person>;
-export declare function UpdatePerson(fn: (ctx: ContextAPI, inputs: UpdatePersonInput, api: FunctionAPI) => Promise<Person>): Promise<Person>;
-export declare function DeletePerson(fn: (ctx: ContextAPI, inputs: DeletePersonInput, api: FunctionAPI) => Promise<string>): Promise<string>;
-export declare function ListPeople(fn: (ctx: ContextAPI, inputs: ListPeopleInput, api: FunctionAPI) => Promise<Person[]>): Promise<Person[]>;`
+export declare function GetPerson(fn: (ctx: ContextAPI, inputs: GetPersonInput) => Promise<Person | null>): Promise<Person | null>;
+export declare function CreatePerson(fn: (ctx: ContextAPI, inputs: CreatePersonInput) => Promise<Person>): Promise<Person>;
+export declare function UpdatePerson(fn: (ctx: ContextAPI, inputs: UpdatePersonInput) => Promise<Person>): Promise<Person>;
+export declare function DeletePerson(fn: (ctx: ContextAPI, inputs: DeletePersonInput) => Promise<string>): Promise<string>;
+export declare function ListPeople(fn: (ctx: ContextAPI, inputs: ListPeopleInput) => Promise<Person[]>): Promise<Person[]>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
 		m := proto.FindModel(s.Models, "Person")
@@ -1257,10 +1256,10 @@ func TestSDKTypings(t *testing.T) {
 		{
 			name: "findOne",
 			code: `
-				import { GetPerson } from "@teamkeel/sdk";
+				import { models, GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson((_, inputs, api) => {
-					return api.models.person.findOne({
+				export default GetPerson((_, inputs) => {
+					return models.person.findOne({
 						id: inputs.id,
 					});
 				});
@@ -1270,10 +1269,10 @@ func TestSDKTypings(t *testing.T) {
 		{
 			name: "findOne - can return null",
 			code: `
-				import { GetPerson } from "@teamkeel/sdk";
+				import { models, GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson(async (_, inputs, api) => {
-					const r = await api.models.person.findOne({
+				export default GetPerson(async (_, inputs) => {
+					const r = await models.person.findOne({
 						id: "1234",
 					});
 					console.log(r.id);
@@ -1285,10 +1284,10 @@ func TestSDKTypings(t *testing.T) {
 		{
 			name: "findMany - correct typings on where condition",
 			code: `
-				import { GetPerson } from "@teamkeel/sdk";
+				import { models, GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson(async (_, inputs, api) => {
-					const r = await api.models.person.findMany({
+				export default GetPerson(async (_, inputs) => {
+					const r = await models.person.findMany({
 						name: {
 							startsWith: true,
 						}
@@ -1301,10 +1300,10 @@ func TestSDKTypings(t *testing.T) {
 		{
 			name: "optional model fields are typed as nullable",
 			code: `
-				import { GetPerson } from "@teamkeel/sdk";
+				import { models, GetPerson } from "@teamkeel/sdk";
 		
-				export default GetPerson(async (_, inputs, api) => {
-					const person = await api.models.person.findOne({
+				export default GetPerson(async (_, inputs) => {
+					const person = await models.person.findOne({
 						id: "1234",
 					});
 					if (person) {

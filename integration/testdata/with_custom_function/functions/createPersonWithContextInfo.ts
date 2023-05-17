@@ -1,11 +1,9 @@
-import { CreatePersonWithContextInfo } from "@teamkeel/sdk";
+import { models, CreatePersonWithContextInfo } from "@teamkeel/sdk";
 
-export default CreatePersonWithContextInfo((ctx, inputs, api) => {
-  api.permissions.allow();
-
+export default CreatePersonWithContextInfo((ctx, inputs) => {
   const { identity } = ctx;
 
-  return api.models.person.create({
+  return models.person.create({
     name: identity != null ? identity.email! : "none",
     gender: inputs.gender,
     niNumber: inputs.niNumber,

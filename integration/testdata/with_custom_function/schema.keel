@@ -39,7 +39,7 @@ model Profile {
 
     @permission(
         expression: true,
-        actions: [create, get, list, update, delete]
+        actions: [create]
     )
 }
 
@@ -52,6 +52,11 @@ model Publisher {
     functions {
         get getPublisherByBook(bookId: ID)
     }
+    
+    @permission(
+        expression: true,
+        actions: [get]
+    )
 }
 
 model Author {
@@ -71,6 +76,11 @@ model Book {
     functions {
         list listBooksByPublisherName(author.publisher.name)
     }
+
+    @permission(
+        expression: true,
+        actions: [list]
+    )
 }
 
 api Web {

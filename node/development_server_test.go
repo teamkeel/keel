@@ -31,10 +31,10 @@ func TestDevelopmentServer(t *testing.T) {
 		{
 			Path: "functions/getPerson.ts",
 			Contents: `
-				import { GetPerson } from "@teamkeel/sdk";
+				import { GetPerson, permissions } from "@teamkeel/sdk";
 
-				export default GetPerson(async (ctx, inputs, api) => {
-					api.permissions.allow();
+				export default GetPerson(async (ctx, inputs) => {
+					permissions.allow()
 					return {id: inputs.id, createdAt: new Date("2022-01-01"), updatedAt: new Date("2022-01-01")};
 				});
 			`,
@@ -50,7 +50,7 @@ func TestDevelopmentServer(t *testing.T) {
 			return
 		}
 
-		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}, "meta": { "headers": {}}}`)
+		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}, "meta": { "permissionState": { "status": "unknown" }, "headers": {}}}`)
 		res, err := http.Post(server.URL, "application/json", body)
 		require.NoError(t, err)
 		assert.Equal(t, res.StatusCode, 200)
@@ -77,13 +77,13 @@ func TestDevelopmentServerStartError(t *testing.T) {
 		{
 			Path: "functions/getPerson.ts",
 			Contents: `
-				import { GetPerson } from "@teamkeel/sdk";
+				import { permissions, GetPerson } from "@teamkeel/sdk";
 				
 				console.error('unexpected error')
 				process.exit(1);
 
 				export default GetPerson(async (inputs, api, ctx) => {
-					api.permissions.allow();
+					permissions.allow();
 
 					return "this is not correct";
 				});
