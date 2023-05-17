@@ -54,7 +54,7 @@ func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	}
 
 	// Generate unique database name and append it to connectionInfo.
-	dbName, err := GenerateDatabaseName()
+	dbName, err := generateDatabaseName()
 	if err != nil {
 		return nil, err
 	}
@@ -73,17 +73,6 @@ func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	}
 
 	return connectionInfo, nil
-}
-
-// Generates a unique database name using a hash of the project's working directory
-// For example: keel_48f77af86bffe7cdbb44308a70d11f8b
-func GenerateDatabaseName() (string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("keel_%x", md5.Sum([]byte(wd))), nil
 }
 
 // Stop stops the postgres container - having checked first
@@ -312,6 +301,19 @@ func makeHostConfig(port string) *container.HostConfig {
 	return hostConfig
 }
 
+// Generates a unique database name using a hash of the project's working directory
+// For example: keel_48f77af86bffe7cdbb44308a70d11f8b
+func generateDatabaseName() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("keel_%x", md5.Sum([]byte(wd))), nil
+}
+
+// createDatabaseIfNotExists creates a database if it does not exist.
+// It uses the database name found in the db.ConnectionInfo argument.
 func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
 	server, err := sql.Open("postgres", info.ServerString())
 	if err != nil {
