@@ -1,3 +1,10 @@
+## [0.322.2](https://github.com/teamkeel/keel/compare/v0.322.1...v0.322.2) (2023-05-17)
+
+
+### Bug Fixes
+
+* test lhs as well as rhs for repeated fields. #BLD-541 ([#969](https://github.com/teamkeel/keel/issues/969)) ([12fee30](https://github.com/teamkeel/keel/commit/12fee30c47ba65b9322c5f3fc7224f5d75a31c97)), closes [#BLD-541](https://github.com/teamkeel/keel/issues/BLD-541)
+
 ## [0.322.1](https://github.com/teamkeel/keel/compare/v0.322.0...v0.322.1) (2023-05-17)
 
 
