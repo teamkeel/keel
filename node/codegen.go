@@ -486,7 +486,6 @@ func writeAPIFactory(w *Writer, schema *proto.Schema) {
 
 	w.Writeln(`module.exports.models = createModelAPI();`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
-	w.Writeln("module.exports.createModelAPI = createModelAPI;")
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 }
 
@@ -729,10 +728,10 @@ func generateTestingPackage(schema *proto.Schema) GeneratedFiles {
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
 	js.Writeln(`import sdk from "@teamkeel/sdk"`)
-	js.Writeln("const { getDatabase, createModelAPI } = sdk;")
+	js.Writeln("const { getDatabase, models } = sdk;")
 	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
-	js.Writeln("export const models = createModelAPI();")
+	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()

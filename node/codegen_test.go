@@ -299,7 +299,6 @@ function createPermissionApi() {
 };
 module.exports.models = createModelAPI();
 module.exports.permissions = createPermissionApi();
-module.exports.createModelAPI = createModelAPI;
 module.exports.createContextAPI = createContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
