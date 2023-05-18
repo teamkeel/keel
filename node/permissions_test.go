@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/schema"
 )
@@ -341,7 +342,7 @@ module.exports.permissionFns = permissionFns;
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.name, func(t *testing.T) {
-			w := Writer{}
+			w := codegen.Writer{}
 			builder := schema.Builder{
 				Config: &config.ProjectConfig{
 					Secrets: []config.Input{

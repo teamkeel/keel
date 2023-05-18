@@ -19,6 +19,7 @@ import (
 	"github.com/radovskyb/watcher"
 	"github.com/teamkeel/keel/cmd/cliconfig"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/migrations"
@@ -27,6 +28,77 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 )
+
+type InitialisedMsg struct {
+	GeneratedFiles codegen.GeneratedFiles
+	Err            error
+}
+
+func Init(dir string) tea.Cmd {
+	return func() tea.Msg {
+		if _, err := os.Stat(dir); errors.Is(err, os.ErrNotExist) {
+			// create the dir
+
+			err = os.MkdirAll(dir, os.ModePerm)
+
+			if err != nil {
+				return InitialisedMsg{
+					Err: fmt.Errorf("Could not create the specified directory."),
+				}
+			}
+		}
+
+		empty := isDirEmpty(dir)
+
+		if !empty {
+			return InitialisedMsg{
+				Err: fmt.Errorf("The directory you are trying to initialise is not empty"),
+			}
+		}
+
+		files := codegen.GeneratedFiles{}
+
+		files = append(files, &codegen.GeneratedFile{
+			Path: ".gitignore",
+			Contents: `.build/
+node_modules/
+.DS_Store
+			`,
+		})
+
+		files = append(files, &codegen.GeneratedFile{
+			Path:     "schema.keel",
+			Contents: "// Visit https://keel.notaku.site/ for documentation on how to get started",
+		})
+
+		files = append(files, &codegen.GeneratedFile{
+			Path: "keelconfig.yaml",
+			Contents: `# Visit https://keel.notaku.site/documentation/environment-variables-and-secrets for more
+# information about environment variables and secrets
+environment:
+	default:
+	development:
+	test:
+	staging:
+	production:
+
+secrets:
+`,
+		})
+
+		err := files.Write(dir)
+
+		if err != nil {
+			return InitialisedMsg{
+				Err: err,
+			}
+		}
+
+		return InitialisedMsg{
+			GeneratedFiles: files,
+		}
+	}
+}
 
 type LoadSchemaMsg struct {
 	Schema      *proto.Schema
@@ -78,7 +150,7 @@ func LoadSchema(dir, environment string) tea.Cmd {
 
 type ScaffoldMsg struct {
 	Err            error
-	GeneratedFiles node.GeneratedFiles
+	GeneratedFiles codegen.GeneratedFiles
 }
 
 func Scaffold(dir string) tea.Cmd {
@@ -562,4 +634,12 @@ func RemoveSecret(path, environment, key string) error {
 	})
 
 	return config.RemoveSecret(path, environment, key)
+}
+
+func isDirEmpty(name string) bool {
+	// we can ignore the error
+	entries, _ := os.ReadDir(name)
+
+	// if len is 0 then dir is empty or doesn't exist
+	return len(entries) == 0
 }

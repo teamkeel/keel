@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/permissions"
 	"github.com/teamkeel/keel/proto"
 )
@@ -15,7 +16,7 @@ var (
 // writePermissions writes a JS object where the keys are function names
 // and the values a list of functions that can be run to check permissions
 // for a list of records.
-func writePermissions(w *Writer, schema *proto.Schema) {
+func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("const permissionFns = {")
 	w.Indent()
 

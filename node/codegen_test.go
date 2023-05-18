@@ -16,6 +16,7 @@ import (
 	"github.com/sergi/go-diff/diffmatchpatch"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
@@ -53,7 +54,7 @@ export interface PersonTable {
 	updated_at: Generated<Date>
 }
 `
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeTableInterface(w, m)
 	})
@@ -73,7 +74,7 @@ export interface Person {
 	updatedAt: Date
 }
 `
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeModelInterface(w, m)
 	})
@@ -93,7 +94,7 @@ export interface PersonCreateValues {
 	updatedAt?: Date
 }
 `
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeCreateValuesInterface(w, m)
 	})
@@ -116,7 +117,7 @@ export interface PostCreateValues {
 	authorId: string
 }
 `
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Post")
 		writeCreateValuesInterface(w, m)
 	})
@@ -135,7 +136,7 @@ export interface PersonWhereConditions {
 	createdAt?: Date | runtime.DateWhereCondition | null;
 	updatedAt?: Date | runtime.DateWhereCondition | null;
 }`
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeWhereConditionsInterface(w, m)
 	})
@@ -173,12 +174,12 @@ export type AuthorUniqueConditions =
 	| {id: string};
 	`
 
-	runWriterTest(t, schema, expectedBookType, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expectedBookType, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Book")
 		writeUniqueConditionsInterface(w, m)
 	})
 
-	runWriterTest(t, schema, expectedAuthorType, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expectedAuthorType, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Author")
 		writeUniqueConditionsInterface(w, m)
 	})
@@ -195,7 +196,7 @@ export type PersonAPI = {
 	where(where: PersonWhereConditions): PersonQueryBuilder;
 }`
 
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeModelAPIDeclaration(w, m)
 	})
@@ -208,7 +209,7 @@ export enum Gender {
 	Female = "Female",
 }`
 
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeEnum(w, s.Enums[0])
 	})
 }
@@ -220,7 +221,7 @@ export interface GenderWhereCondition {
 	oneOf?: Gender[] | null;
 }`
 
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeEnumWhereCondition(w, s.Enums[0])
 	})
 }
@@ -233,7 +234,7 @@ interface database {
 }
 export declare function getDatabase(): Kysely<database>;`
 
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeDatabaseInterface(w, s)
 	})
 }
@@ -263,7 +264,7 @@ const actionTypes = {
 		}
 	`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		files := generateDevelopmentServer(s)
 
 		serverJs := files[0]
@@ -301,7 +302,7 @@ module.exports.models = createModelAPI();
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;`
 
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
 			Name: "TEST",
 		})
@@ -335,7 +336,7 @@ export interface ContextAPI extends runtime.ContextAPI {
 	now(): Date;
 }`
 
-	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
 			Name: "TEST",
 		})
@@ -369,7 +370,7 @@ function personDefaultValues() {
 	return r;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeModelDefaultValuesFunction(w, m)
 	})
@@ -388,7 +389,7 @@ export interface GetPersonInput {
 	id: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -409,7 +410,7 @@ export interface CreatePersonInput {
 	name: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -430,7 +431,7 @@ export interface CreatePersonInput {
 	name?: string | null;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -458,7 +459,7 @@ export interface UpdatePersonInput {
 	values: UpdatePersonValues;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -495,7 +496,7 @@ export interface ListPeopleInput {
 	before?: string | null;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -542,7 +543,7 @@ export interface ListPeopleInput {
 	before?: string | null;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -560,7 +561,7 @@ export interface DeletePersonInput {
 	id: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -581,7 +582,7 @@ export interface GetPersonNameInput {
 	id: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -607,7 +608,7 @@ export interface GetInput {
 	id: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -633,7 +634,7 @@ export interface PersonNameResponse {
 	name: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -654,7 +655,7 @@ export interface DeletePersonInput {
 	id: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -680,7 +681,7 @@ export interface DeleteInput {
 	id: string;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -706,7 +707,7 @@ export interface DeleteResponse {
 	isDeleted: boolean;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -731,7 +732,7 @@ export interface PeopleInput {
 	ids: string[];
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -754,7 +755,7 @@ export interface Foo {
 }
 	`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -793,11 +794,11 @@ export interface Response {
 	favouriteSport?: Sport | null;
 }`
 
-	runWriterTest(t, schema, inputExpected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, inputExpected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 
-	runWriterTest(t, schema, responseExpected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, responseExpected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -818,7 +819,7 @@ export interface People {
 	names: string[];
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -847,7 +848,7 @@ export interface Details {
 }
 `
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -877,7 +878,7 @@ export interface PersonResponse {
 	topSale?: Sale | null;
 }`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeMessages(w, s, false)
 	})
 }
@@ -901,7 +902,7 @@ export declare function UpdatePerson(fn: (ctx: ContextAPI, inputs: UpdatePersonI
 export declare function DeletePerson(fn: (ctx: ContextAPI, inputs: DeletePersonInput) => Promise<string>): Promise<string>;
 export declare function ListPeople(fn: (ctx: ContextAPI, inputs: ListPeopleInput) => Promise<Person[]>): Promise<Person[]>;`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		for _, op := range m.Operations {
 			writeCustomFunctionWrapperType(w, m, op)
@@ -992,7 +993,7 @@ export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTestingTypes(w, s)
 	})
 }
@@ -1045,7 +1046,7 @@ const tableConfigMap = {
 	}
 };`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTableConfig(w, s.Models)
 	})
 }
@@ -1121,7 +1122,7 @@ export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`
 
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *Writer) {
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeTestingTypes(w, s)
 	})
 }
@@ -1135,7 +1136,7 @@ func TestTestingActionExecutor(t *testing.T) {
 	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
-	err = GeneratedFiles{
+	err = codegen.GeneratedFiles{
 		{
 			Contents: `
 			model Person {
@@ -1229,7 +1230,7 @@ func TestSDKTypings(t *testing.T) {
 	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
 	require.NoError(t, err)
 
-	err = GeneratedFiles{
+	err = codegen.GeneratedFiles{
 		{
 			Path: "schema.keel",
 			Contents: `
@@ -1358,7 +1359,7 @@ func TestSDKTypings(t *testing.T) {
 
 	for _, fixture := range fixtures {
 		t.Run(fixture.name, func(t *testing.T) {
-			err := GeneratedFiles{
+			err := codegen.GeneratedFiles{
 				{
 					Path:     "code.ts",
 					Contents: fixture.code,
@@ -1388,11 +1389,11 @@ func normalise(s string) string {
 	return strings.ReplaceAll(strings.TrimSpace(s), "\t", "    ")
 }
 
-func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s *proto.Schema, w *Writer)) {
+func runWriterTest(t *testing.T, schemaString string, expected string, fn func(s *proto.Schema, w *codegen.Writer)) {
 	b := schema.Builder{}
 	s, err := b.MakeFromString(schemaString)
 	require.NoError(t, err)
-	w := &Writer{}
+	w := &codegen.Writer{}
 	fn(s, w)
 	diff := diffmatchpatch.New()
 	diffs := diff.DiffMain(normalise(expected), normalise(w.String()), true)

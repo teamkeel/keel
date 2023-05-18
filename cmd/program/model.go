@@ -15,6 +15,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/functions"
@@ -38,6 +39,7 @@ const (
 	ModeRun
 	ModeTest
 	ModeScaffold
+	ModeInit
 )
 
 const (
@@ -52,6 +54,8 @@ const (
 	StatusRunning
 	StatusQuitting
 	StatusScaffolded
+	StatusInitializing
+	StatusInitialized
 )
 
 func Run(model *Model) {
@@ -131,7 +135,7 @@ type Model struct {
 	Config           *config.ProjectConfig
 	SchemaFiles      []reader.SchemaFile
 	DatabaseConnInfo *db.ConnectionInfo
-	GeneratedFiles   node.GeneratedFiles
+	GeneratedFiles   codegen.GeneratedFiles
 	MigrationChanges []*migrations.DatabaseChange
 	FunctionsServer  *node.DevelopmentServer
 	RuntimeHandler   http.Handler
@@ -178,6 +182,9 @@ func (m *Model) Init() tea.Cmd {
 	case ModeScaffold:
 		m.Status = StatusLoadSchema
 		return LoadSchema(m.ProjectDir, m.Environment)
+	case ModeInit:
+		m.Status = StatusInitializing
+		return Init(m.ProjectDir)
 	case ModeRun, ModeTest:
 		m.Status = StatusCheckingDependencies
 		return CheckDependencies()
@@ -208,6 +215,15 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 		return m, nil
+	case InitialisedMsg:
+		m.Status = StatusInitialized
+
+		if msg.Err != nil {
+			m.Err = msg.Err
+		}
+		m.GeneratedFiles = msg.GeneratedFiles
+
+		return m, tea.Quit
 	case CheckDependenciesMsg:
 		m.Err = msg.Err
 
@@ -500,6 +516,8 @@ func (m *Model) View() string {
 		b.WriteString(renderTest(m))
 	case ModeScaffold:
 		b.WriteString(renderScaffold(m))
+	case ModeInit:
+		b.WriteString(renderInit(m))
 	}
 
 	if m.Err != nil {

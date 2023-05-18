@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 )
@@ -15,7 +16,7 @@ const (
 	FUNCTIONS_DIR = "functions"
 )
 
-func Scaffold(dir string) (GeneratedFiles, error) {
+func Scaffold(dir string) (codegen.GeneratedFiles, error) {
 	builder := schema.Builder{}
 
 	schema, err := builder.MakeFromDirectory(dir)
@@ -40,7 +41,7 @@ func Scaffold(dir string) (GeneratedFiles, error) {
 		return nil, err
 	}
 
-	generatedFiles := GeneratedFiles{}
+	generatedFiles := codegen.GeneratedFiles{}
 
 	functions := proto.FilterOperations(schema, func(op *proto.Operation) bool {
 		return op.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
@@ -52,7 +53,7 @@ func Scaffold(dir string) (GeneratedFiles, error) {
 		_, err = os.Stat(filepath.Join(dir, path))
 
 		if os.IsNotExist(err) {
-			generatedFiles = append(generatedFiles, &GeneratedFile{
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
 				Path:     path,
 				Contents: writeFunctionWrapper(fn),
 			})
