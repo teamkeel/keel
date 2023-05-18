@@ -78,7 +78,7 @@ func invalidManyToManyError(invalidDetails *InvalidManyToManyDetails, node node.
 		errorhandling.RelationshipError,
 		errorhandling.ErrorDetails{
 			Message: fmt.Sprintf("Cannot have a direct many to many between '%s' and '%s'", invalidDetails.ThisModel.Name.Value, invalidDetails.InverseModel.Name.Value),
-			Hint:    fmt.Sprintf("Remove field '%s' from the '%s' model, and create a join model called '%s' that acts as a bridge between either side", invalidDetails.InverseField.Name.Value, invalidDetails.InverseModel.Name.Value, fmt.Sprintf("%s%s", invalidDetails.ThisModel.Name.Value, invalidDetails.InverseModel.Name.Value)),
+			Hint:    "Visit https://keel.notaku.site/documentation/models for information on how to create a many-to-many relationship",
 		},
 		node,
 	)

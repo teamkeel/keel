@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "Cannot have a direct many to many between 'ModelA' and 'ModelB'",
-      "hint": "Remove field 'a' from the 'ModelB' model, and create a join model called 'ModelAModelB' that acts as a bridge between either side",
+      "hint": "See our docs for information on how to construct a many-to-many relationship: https://keel.notaku.site/documentation/models",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_direct_many_to_many/schema.keel",
@@ -19,7 +19,7 @@
     },
     {
       "message": "Cannot have a direct many to many between 'ModelB' and 'ModelA'",
-      "hint": "Remove field 'b' from the 'ModelA' model, and create a join model called 'ModelBModelA' that acts as a bridge between either side",
+      "hint": "See our docs for information on how to construct a many-to-many relationship: https://keel.notaku.site/documentation/models",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_direct_many_to_many/schema.keel",
