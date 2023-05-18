@@ -1,3 +1,10 @@
+## [0.323.1](https://github.com/teamkeel/keel/compare/v0.323.0...v0.323.1) (2023-05-18)
+
+
+### Bug Fixes
+
+* validate against direct many to many ([#976](https://github.com/teamkeel/keel/issues/976)) ([6748ada](https://github.com/teamkeel/keel/commit/6748adad46fcb2a0c101c808d7140baa5daee508))
+
 # [0.323.0](https://github.com/teamkeel/keel/compare/v0.322.3...v0.323.0) (2023-05-18)
 
 
