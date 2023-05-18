@@ -1,0 +1,106 @@
+{
+  "errors": [
+    {
+      "message": "'author' refers to a model which cannot used as an input",
+      "hint": "Inputs must target fields on models only, e.g author.id",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 111,
+        "line": 7,
+        "column": 36
+      },
+      "endPos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 117,
+        "line": 7,
+        "column": 42
+      }
+    },
+    {
+      "message": "'author' refers to a model which cannot used as an input",
+      "hint": "Inputs must target fields on models only, e.g author.id",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 156,
+        "line": 8,
+        "column": 38
+      },
+      "endPos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 162,
+        "line": 8,
+        "column": 44
+      }
+    },
+    {
+      "message": "'author' refers to a model which cannot used as an input",
+      "hint": "Inputs must target fields on models only, e.g author.id",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 187,
+        "line": 9,
+        "column": 24
+      },
+      "endPos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 193,
+        "line": 9,
+        "column": 30
+      }
+    },
+    {
+      "message": "'author' refers to a model which cannot used as an input",
+      "hint": "Inputs must target fields on models only, e.g author.id",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 261,
+        "line": 13,
+        "column": 44
+      },
+      "endPos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 267,
+        "line": 13,
+        "column": 50
+      }
+    },
+    {
+      "message": "'author' refers to a model which cannot used as an input",
+      "hint": "Inputs must target fields on models only, e.g author.id",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 314,
+        "line": 14,
+        "column": 46
+      },
+      "endPos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 320,
+        "line": 14,
+        "column": 52
+      }
+    },
+    {
+      "message": "'author' refers to a model which cannot used as an input",
+      "hint": "Inputs must target fields on models only, e.g author.id",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 353,
+        "line": 15,
+        "column": 32
+      },
+      "endPos": {
+        "filename": "testdata/validation_actions_no_bare_model_as_input/schema.keel",
+        "offset": 359,
+        "line": 15,
+        "column": 38
+      }
+    }
+  ]
+}
