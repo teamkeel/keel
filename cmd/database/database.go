@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -45,8 +46,8 @@ func (e ErrPortInUse) Error() string {
 // is not in the local docker registery.
 //
 // It sets the password for that user to "postgres".
-// It sets the default database name to a hash of the working directory.
-func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
+// It sets the default database name to a hash of the project directory.
+func Start(useExistingContainer bool, projectDirectory string) (*db.ConnectionInfo, error) {
 	// Bring up the container, if it isn't already up.
 	connectionInfo, err := bringUpContainer(useExistingContainer)
 	if err != nil {
@@ -54,7 +55,7 @@ func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	}
 
 	// Generate unique database name and append it to connectionInfo.
-	dbName, err := generateDatabaseName()
+	dbName, err := generateDatabaseName(projectDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -62,12 +63,6 @@ func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
 
 	// Create database if it doesn't exist.
 	err = createDatabaseIfNotExists(connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check database connection.
-	err = checkConnection(connectionInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -303,13 +298,21 @@ func makeHostConfig(port string) *container.HostConfig {
 
 // Generates a unique database name using a hash of the project's working directory
 // For example: keel_48f77af86bffe7cdbb44308a70d11f8b
-func generateDatabaseName() (string, error) {
-	wd, err := os.Getwd()
+func generateDatabaseName(projectDirectory string) (string, error) {
+	if strings.HasPrefix(projectDirectory, "~/") {
+		home, _ := os.UserHomeDir()
+		projectDirectory = filepath.Join(home, projectDirectory[2:])
+	}
+
+	// Ensure path is absolute and cleaned for determinism.
+	projectDirectory, err := filepath.Abs(projectDirectory)
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("keel_%x", md5.Sum([]byte(wd))), nil
+	projectDirectory = strings.ToLower(projectDirectory)
+
+	return fmt.Sprintf("keel_%x", md5.Sum([]byte(projectDirectory))), nil
 }
 
 // createDatabaseIfNotExists creates a database if it does not exist.
@@ -320,7 +323,16 @@ func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
 		return err
 	}
 
-	result := server.QueryRow(fmt.Sprintf("SELECT 1 as count FROM pg_database WHERE datname = '%s'", info.Database))
+	// ping() the database server until it is available.
+	var pingError error
+	for i := 0; i < 10; i++ {
+		if pingError = server.Ping(); pingError == nil {
+			break
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+
+	result := server.QueryRow(fmt.Sprintf("SELECT COUNT(*) as count FROM pg_database WHERE datname = '%s'", info.Database))
 	if err != nil {
 		return err
 	}
@@ -338,31 +350,6 @@ func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
 	}
 
 	return err
-}
-
-// checkConnection connects to the database, veryifies the connection and returns the connection.
-// It makes a series of attempts over a small time span to give postgres the
-// change to be ready.
-func checkConnection(info *db.ConnectionInfo) error {
-	db, err := sql.Open("postgres", info.String())
-	if err != nil {
-		return err
-	}
-
-	// Attempt to ping() the database at 250ms intervals a few times.
-	var pingError error
-	for i := 0; i < 10; i++ {
-		if pingError = db.Ping(); pingError == nil {
-			break
-		}
-		time.Sleep(250 * time.Millisecond)
-	}
-
-	fmt.Printf("\n")
-	if pingError != nil {
-		return fmt.Errorf("could not ping the database, despite several retries: %v", pingError)
-	}
-	return nil
 }
 
 const postgresImageName string = "postgres"

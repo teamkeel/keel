@@ -48,7 +48,7 @@ async function handleRequest(request, config) {
         }
 
         // headers reference passed to custom function where object data can be modified
-        const headers = new Headers();
+      const headers = new Headers();
 
         // The ctx argument passed into the custom function.
         const ctx = createContextAPI({

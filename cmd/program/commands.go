@@ -160,9 +160,9 @@ type StartDatabaseMsg struct {
 	Err      error
 }
 
-func StartDatabase(reset bool, mode int) tea.Cmd {
+func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 	return func() tea.Msg {
-		connInfo, err := database.Start(!reset)
+		connInfo, err := database.Start(!reset, projectDirectory)
 		if err != nil {
 			return StartDatabaseMsg{
 				Err: err,
