@@ -1,0 +1,20 @@
+model Book {
+    fields {
+        author Author
+    }
+    
+    operations {
+        create createBooks() with (author)
+        update updateBooks(id) with (author)
+        list listBooks(author)
+    }
+
+    functions {
+        create createBooksFunction() with (author)
+        update updateBooksFunction(id) with (author)
+        list listBooksFunction(author)
+    }
+}
+
+model Author {
+}

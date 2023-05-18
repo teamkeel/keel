@@ -4,7 +4,8 @@ model Post {
     }
 
     operations {
-        create createPost() with (identity) {
+        create createPost() {
+            @set(post.identity = ctx.identity)
             @permission(expression: post.identity == null)
         }
     }

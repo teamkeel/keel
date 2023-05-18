@@ -214,14 +214,12 @@ func UpdateOperationUniqueConstraintRule(asts []*parser.AST) (errs errorhandling
 	return
 }
 
-func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
+func ActionModelInputsRule(asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		for _, action := range query.ModelActions(model) {
-			if action.Type.Value != parser.ActionTypeList {
-				continue
-			}
+			allInputs := append(action.Inputs, action.With...)
 
-			for _, input := range action.Inputs {
+			for _, input := range allInputs {
 				resolvedType := query.ResolveInputType(asts, input, model, action)
 				if resolvedType == "" {
 					continue
@@ -232,14 +230,15 @@ func ListActionModelInputsRule(asts []*parser.AST) (errs errorhandling.Validatio
 					continue
 				}
 
-				// error - cannot use a model field as an input to a list action
-				errs.Append(errorhandling.ErrorModelNotAllowedAsInput,
-					map[string]string{
-						"Input":      input.Type.ToString(),
-						"ActionType": action.Type.Value,
-						"ModelName":  m.Name.Value,
-					},
-					input.Type,
+				errs.AppendError(
+					errorhandling.NewValidationErrorWithDetails(
+						errorhandling.ActionInputError,
+						errorhandling.ErrorDetails{
+							Message: fmt.Sprintf("'%s' refers to a model which cannot used as an input", input.Type.ToString()),
+							Hint:    fmt.Sprintf("Inputs must target fields on models only, e.g %s.id", input.Type.ToString()),
+						},
+						input.Type,
+					),
 				)
 			}
 		}
@@ -469,23 +468,6 @@ func validateInputIsUnique(asts []*parser.AST, action *parser.ActionNode, input 
 			)
 		}
 		model = query.Model(asts, field.Type.Value)
-	}
-
-	// If we have a model at the end of this it means that the input
-	// is referring to the "bare" model and not a specific field of that
-	// model. This is an error for unique inputs.
-	if model != nil {
-		// input refers to a non-unique field - this is an error
-		return false, errorhandling.NewValidationError(errorhandling.ErrorModelNotAllowedAsInput,
-			errorhandling.TemplateLiterals{
-				Literals: map[string]string{
-					"ActionType": action.Type.Value,
-					"Input":      input.Type.ToString(),
-					"ModelName":  model.Name.Value,
-				},
-			},
-			input,
-		)
 	}
 
 	return true, nil

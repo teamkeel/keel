@@ -336,26 +336,56 @@
           "messageName": "CreatePostInput",
           "name": "publisher",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher",
-            "fieldName": "publisher"
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreatePostPublisherInput"
           },
-          "optional": true,
-          "target": [
-            "publisher"
-          ]
+          "optional": true
         },
         {
           "messageName": "CreatePostInput",
           "name": "owner",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author",
-            "fieldName": "owner"
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreatePostOwnerInput"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "CreatePostPublisherInput",
+      "fields": [
+        {
+          "messageName": "CreatePostPublisherInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Publisher",
+            "fieldName": "id"
           },
           "optional": true,
           "target": [
-            "owner"
+            "publisher",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreatePostOwnerInput",
+      "fields": [
+        {
+          "messageName": "CreatePostOwnerInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
+          },
+          "optional": true,
+          "target": [
+            "owner",
+            "id"
           ]
         }
       ]

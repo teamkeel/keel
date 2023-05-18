@@ -38,7 +38,7 @@ var validatorFuncs = []validationFunc{
 	actions.ValidArbitraryFunctionReturns,
 	actions.GetOperationUniqueConstraintRule,
 	actions.DeleteOperationUniqueConstraintRule,
-	actions.ListActionModelInputsRule,
+	actions.ActionModelInputsRule,
 	actions.UpdateOperationUniqueConstraintRule,
 	actions.CreateOperationNoReadInputsRule,
 	actions.CreateOperationRequiredFieldsRule,
