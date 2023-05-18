@@ -72,6 +72,11 @@
               }
             }
           ],
+          "setExpressions": [
+            {
+              "source": "post.identity = ctx.identity"
+            }
+          ],
           "inputMessageName": "CreatePostInput"
         }
       ]
@@ -177,22 +182,7 @@
       "name": "Any"
     },
     {
-      "name": "CreatePostInput",
-      "fields": [
-        {
-          "messageName": "CreatePostInput",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity",
-            "fieldName": "identity"
-          },
-          "optional": true,
-          "target": [
-            "identity"
-          ]
-        }
-      ]
+      "name": "CreatePostInput"
     },
     {
       "name": "EmailPasswordInput",

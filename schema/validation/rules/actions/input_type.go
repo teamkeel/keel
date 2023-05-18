@@ -16,7 +16,6 @@ func ValidActionInputTypesRule(asts []*parser.AST) (errs errorhandling.Validatio
 		for _, action := range query.ModelActions(model) {
 			allInputs := append(slices.Clone(action.Inputs), action.With...)
 			for _, input := range allInputs {
-
 				errs.AppendError(validateInputType(asts, input, len(allInputs), model, action))
 			}
 		}

@@ -322,7 +322,7 @@ func AllHasManyRelationFields(asts []*parser.AST) []*parser.FieldNode {
 	return captured
 }
 
-// ResolveInputType returns a string represention of the type of the give input.
+// ResolveInputType returns a string represention of the type of the given input.
 //
 // If the input is explicitly typed using a built in type that type is returned
 //
