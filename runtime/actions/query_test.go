@@ -170,7 +170,7 @@ var testCases = []testCase{
 					company Company?
 				}
 				operations {
-					create createPerson() with (name, company?)
+					create createPerson() with (name, company.id?)
 				}
 				@permission(expression: true, actions: [create])
 			}
