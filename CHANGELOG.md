@@ -1,3 +1,10 @@
+## [0.323.2](https://github.com/teamkeel/keel/compare/v0.323.1...v0.323.2) (2023-05-18)
+
+
+### Bug Fixes
+
+* validate against bare model as input ([#977](https://github.com/teamkeel/keel/issues/977)) ([09c869f](https://github.com/teamkeel/keel/commit/09c869f505b1a5ccec264d96bd7ade152125e0b8))
+
 ## [0.323.1](https://github.com/teamkeel/keel/compare/v0.323.0...v0.323.1) (2023-05-18)
 
 
