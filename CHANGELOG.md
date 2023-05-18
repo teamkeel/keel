@@ -1,3 +1,10 @@
+## [0.322.3](https://github.com/teamkeel/keel/compare/v0.322.2...v0.322.3) (2023-05-18)
+
+
+### Bug Fixes
+
+* generated database names ([#974](https://github.com/teamkeel/keel/issues/974)) ([2ffed0f](https://github.com/teamkeel/keel/commit/2ffed0fdb6cdeb94413cd5c0a7110c5a131c2c62))
+
 ## [0.322.2](https://github.com/teamkeel/keel/compare/v0.322.1...v0.322.2) (2023-05-17)
 
 
