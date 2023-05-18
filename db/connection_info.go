@@ -21,6 +21,16 @@ func (dbConnInfo *ConnectionInfo) String() string {
 	)
 }
 
+func (dbConnInfo *ConnectionInfo) ServerString() string {
+	return fmt.Sprintf(
+		"postgresql://%s:%s@%s:%s?sslmode=disable",
+		dbConnInfo.Username,
+		dbConnInfo.Password,
+		dbConnInfo.Host,
+		dbConnInfo.Port,
+	)
+}
+
 func (dbConnInfo *ConnectionInfo) WithDatabase(database string) *ConnectionInfo {
 	return &ConnectionInfo{
 		Host:     dbConnInfo.Host,

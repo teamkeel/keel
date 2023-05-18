@@ -2,8 +2,11 @@ package database
 
 import (
 	"context"
+	"crypto/md5"
 	"fmt"
 	"io"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -43,14 +46,23 @@ func (e ErrPortInUse) Error() string {
 // is not in the local docker registery.
 //
 // It sets the password for that user to "postgres".
-// It sets the default database name to "keel"
-func Start(useExistingContainer bool) (*db.ConnectionInfo, error) {
+// It sets the default database name to a hash of the project directory.
+func Start(useExistingContainer bool, projectDirectory string) (*db.ConnectionInfo, error) {
+	// Bring up the container, if it isn't already up.
 	connectionInfo, err := bringUpContainer(useExistingContainer)
 	if err != nil {
 		return nil, err
 	}
 
-	err = checkConnection(connectionInfo)
+	// Generate unique database name and append it to connectionInfo.
+	dbName, err := generateDatabaseName(projectDirectory)
+	if err != nil {
+		return nil, err
+	}
+	connectionInfo = connectionInfo.WithDatabase(dbName)
+
+	// Create database if it doesn't exist.
+	err = createDatabaseIfNotExists(connectionInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +167,6 @@ func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 			Image: postgresImageName + ":" + postgresTag,
 			Env: []string{
 				"POSTGRES_PASSWORD=postgres",
-				"POSTGRES_DB=postgres",
 				"POSTGRES_USER=postgres",
 			},
 		}
@@ -202,7 +213,6 @@ func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
 	return &db.ConnectionInfo{
 		Username: "postgres",
 		Password: "postgres",
-		Database: "postgres",
 		Host:     "0.0.0.0",
 		Port:     port,
 	}, nil
@@ -286,29 +296,60 @@ func makeHostConfig(port string) *container.HostConfig {
 	return hostConfig
 }
 
-// checkConnection connects to the database, veryifies the connection and returns the connection.
-// It makes a series of attempts over a small time span to give postgres the
-// change to be ready.
-func checkConnection(info *db.ConnectionInfo) error {
-	db, err := sql.Open("postgres", info.String())
+// Generates a unique database name using a hash of the project's working directory
+// For example: keel_48f77af86bffe7cdbb44308a70d11f8b
+func generateDatabaseName(projectDirectory string) (string, error) {
+	if strings.HasPrefix(projectDirectory, "~/") {
+		home, _ := os.UserHomeDir()
+		projectDirectory = filepath.Join(home, projectDirectory[2:])
+	}
+
+	// Ensure path is absolute and cleaned for determinism.
+	projectDirectory, err := filepath.Abs(projectDirectory)
+	if err != nil {
+		return "", err
+	}
+
+	projectDirectory = strings.ToLower(projectDirectory)
+
+	return fmt.Sprintf("keel_%x", md5.Sum([]byte(projectDirectory))), nil
+}
+
+// createDatabaseIfNotExists creates a database if it does not exist.
+// It uses the database name found in the db.ConnectionInfo argument.
+func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
+	server, err := sql.Open("postgres", info.ServerString())
 	if err != nil {
 		return err
 	}
 
-	// Attempt to ping() the database at 250ms intervals a few times.
+	// ping() the database server until it is available.
 	var pingError error
 	for i := 0; i < 10; i++ {
-		if pingError = db.Ping(); pingError == nil {
+		if pingError = server.Ping(); pingError == nil {
 			break
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
 
-	fmt.Printf("\n")
-	if pingError != nil {
-		return fmt.Errorf("could not ping the database, despite several retries: %v", pingError)
+	result := server.QueryRow(fmt.Sprintf("SELECT COUNT(*) as count FROM pg_database WHERE datname = '%s'", info.Database))
+	if err != nil {
+		return err
 	}
-	return nil
+	var count int
+	err = result.Scan(&count)
+	if err != nil {
+		return err
+	}
+
+	if count == 0 {
+		_, err = server.Exec(fmt.Sprintf("CREATE DATABASE %s;", info.Database))
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
 
 const postgresImageName string = "postgres"

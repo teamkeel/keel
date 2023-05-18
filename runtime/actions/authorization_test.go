@@ -302,7 +302,6 @@ func TestPermissionQueryBuilder(t *testing.T) {
 					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
 				}
 			}
-
 		})
 	}
 }

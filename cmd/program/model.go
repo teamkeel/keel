@@ -216,7 +216,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.Status = StatusSetupDatabase
-		return m, StartDatabase(m.ResetDatabase, m.Mode)
+		return m, StartDatabase(m.ResetDatabase, m.Mode, m.ProjectDir)
 	case StartDatabaseMsg:
 		m.DatabaseConnInfo = msg.ConnInfo
 		m.Err = msg.Err
