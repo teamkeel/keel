@@ -1,3 +1,10 @@
+# [0.323.0](https://github.com/teamkeel/keel/compare/v0.322.3...v0.323.0) (2023-05-18)
+
+
+### Features
+
+* init cmd ([#973](https://github.com/teamkeel/keel/issues/973)) ([4c2f929](https://github.com/teamkeel/keel/commit/4c2f9295469117a1ded857734a68a5af83eb77d7))
+
 ## [0.322.3](https://github.com/teamkeel/keel/compare/v0.322.2...v0.322.3) (2023-05-18)
 
 
