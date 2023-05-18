@@ -24,9 +24,6 @@ model Post {
             @set(post.isAuthenticated = ctx.isAuthenticated)
             @permission(expression: true)
         }
-        create createPostWithComments() with (title, comments.comment, comments.isActive, comments.createdBy) {
-            @permission(expression: ctx.isAuthenticated)
-        }
     }
 }
 
