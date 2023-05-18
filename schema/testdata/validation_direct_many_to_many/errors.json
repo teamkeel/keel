@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "Cannot have a direct many to many between 'ModelA' and 'ModelB'",
-      "hint": "See our docs for information on how to construct a many-to-many relationship: https://keel.notaku.site/documentation/models",
+      "hint": "Visit https://keel.notaku.site/documentation/models for information on how to create a many-to-many relationship",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_direct_many_to_many/schema.keel",
@@ -19,7 +19,7 @@
     },
     {
       "message": "Cannot have a direct many to many between 'ModelB' and 'ModelA'",
-      "hint": "See our docs for information on how to construct a many-to-many relationship: https://keel.notaku.site/documentation/models",
+      "hint": "Visit https://keel.notaku.site/documentation/models for information on how to create a many-to-many relationship",
       "code": "RelationshipError",
       "pos": {
         "filename": "testdata/validation_direct_many_to_many/schema.keel",
