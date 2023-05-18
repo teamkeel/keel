@@ -9,21 +9,13 @@ import (
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema"
 )
 
 const (
 	FUNCTIONS_DIR = "functions"
 )
 
-func Scaffold(dir string) (codegen.GeneratedFiles, error) {
-	builder := schema.Builder{}
-
-	schema, err := builder.MakeFromDirectory(dir)
-	if err != nil {
-		return nil, err
-	}
-
+func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) {
 	files, err := Generate(context.TODO(), schema)
 
 	if err != nil {
@@ -59,11 +51,6 @@ func Scaffold(dir string) (codegen.GeneratedFiles, error) {
 			})
 		}
 
-	}
-
-	err = generatedFiles.Write(dir)
-	if err != nil {
-		return nil, err
 	}
 
 	return generatedFiles, nil

@@ -10,30 +10,39 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/codegen"
+	"github.com/teamkeel/keel/schema"
 )
 
 func TestScaffold(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
-		model Post {
-			fields {
-				title Text
-			}
-			functions {
-				create createPost() with(title)
-				list listPosts()
-				update updatePost(id) with(title)
-				get getPost(id)
-				delete deletePost(id)
-				write customFunctionWrite(Any) returns(Any)
-				read customFunctionRead(Any) returns(Any)
-			}
+	schemaString := `
+	model Post {
+		fields {
+			title Text
 		}
-	`), 0777)
+		functions {
+			create createPost() with(title)
+			list listPosts()
+			update updatePost(id) with(title)
+			get getPost(id)
+			delete deletePost(id)
+			write customFunctionWrite(Any) returns(Any)
+			read customFunctionRead(Any) returns(Any)
+		}
+	}
+`
+
+	builder := schema.Builder{}
+
+	schema, err := builder.MakeFromString(schemaString)
+
+	assert.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
 	require.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir)
+	actualFiles, err := Scaffold(tmpDir, schema)
 
 	assert.NoError(t, err)
 
@@ -131,7 +140,7 @@ export default CustomFunctionWrite(async (ctx, inputs) => {
 func TestExistingFunction(t *testing.T) {
 	tmpDir := t.TempDir()
 
-	err := os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(`
+	schemaString := `
 	model Post {
 		fields {
 			title Text
@@ -140,7 +149,12 @@ func TestExistingFunction(t *testing.T) {
 			create existingCreatePost() with(title)
 		}
 	}
-`), 0777)
+`
+	builder := schema.Builder{}
+	schema, err := builder.MakeFromString(schemaString)
+	assert.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
 	require.NoError(t, err)
 
 	err = os.Mkdir(filepath.Join(tmpDir, "functions"), os.ModePerm)
@@ -156,7 +170,7 @@ func TestExistingFunction(t *testing.T) {
 
 	assert.NoError(t, err)
 
-	actualFiles, err := Scaffold(tmpDir)
+	actualFiles, err := Scaffold(tmpDir, schema)
 
 	assert.NoError(t, err)
 

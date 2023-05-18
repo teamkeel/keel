@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -31,6 +32,19 @@ func WithTmpDir(dir string) (string, error) {
 	}
 
 	return tmpDir, nil
+}
+
+func NpmInstall(dir string) (string, error) {
+	npmInstall := exec.Command("npm", "install", "--progress=false")
+	npmInstall.Dir = dir
+
+	b, err := npmInstall.CombinedOutput()
+
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), err
 }
 
 func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string) (db.Database, error) {

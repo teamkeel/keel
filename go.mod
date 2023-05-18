@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
 	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/bykof/gostradamus v1.0.4
-	github.com/charmbracelet/bubbles v0.14.0
+	github.com/charmbracelet/bubbles v0.15.0
 	github.com/charmbracelet/bubbletea v0.23.2
 	github.com/charmbracelet/lipgloss v0.6.0
 	github.com/docker/docker v20.10.17+incompatible

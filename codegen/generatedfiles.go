@@ -31,5 +31,6 @@ func (files GeneratedFiles) Write(dir string) error {
 			return fmt.Errorf("error writing file: %w", err)
 		}
 	}
+
 	return nil
 }
