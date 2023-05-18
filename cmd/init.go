@@ -9,6 +9,7 @@ import (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
+	Args:  cobra.MaximumNArgs(1),
 	Short: "Initializes a new Keel project",
 	Run: func(cmd *cobra.Command, args []string) {
 		dir, _ := os.Getwd()
