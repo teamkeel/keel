@@ -1,0 +1,11 @@
+model ModelA {
+  fields {
+    b ModelB[]
+  }
+}
+
+model ModelB {
+  fields {
+    a ModelA[]
+  }
+}
