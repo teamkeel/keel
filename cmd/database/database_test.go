@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 	"strings"
 	"testing"
@@ -10,14 +11,14 @@ import (
 )
 
 func TestGenerateDatabaseNameWithHomeDirectory(t *testing.T) {
-	user, err := user.Current()
+	userDir, err := os.UserHomeDir()
 	if err != nil {
 		require.NoError(t, err)
 	}
 
 	// These two paths are identical and need to produce the same database name.
 	path1 := "~/code/my_projects/blog"
-	path2 := fmt.Sprintf("/Users/%s/code/my_projects/blog", user.Username)
+	path2 := fmt.Sprintf("%s/code/my_projects/blog", userDir)
 
 	dbName1, err := generateDatabaseName(path1)
 	if err != nil {
