@@ -5,13 +5,13 @@
       "hint": "",
       "code": "TypeError",
       "pos": {
-        "filename": "testdata/validation_field_of_model_type/schema.keel",
+        "filename": "testdata/validation_field_of_same_model_type/schema.keel",
         "offset": 43,
         "line": 3,
         "column": 16
       },
       "endPos": {
-        "filename": "testdata/validation_field_of_model_type/schema.keel",
+        "filename": "testdata/validation_field_of_same_model_type/schema.keel",
         "offset": 49,
         "line": 3,
         "column": 22

@@ -7,7 +7,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// FieldOfSameModelType ensures that a model cannot have a field of the same type,
+// FieldOfSameMessageType ensures that a message cannot have a field of the same type,
 // as this results in an infinite recursion.
 func FieldOfSameMessageType(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var message *parser.MessageNode
