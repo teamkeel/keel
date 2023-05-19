@@ -1,3 +1,10 @@
+## [0.323.3](https://github.com/teamkeel/keel/compare/v0.323.2...v0.323.3) (2023-05-19)
+
+
+### Bug Fixes
+
+* init cmd minor fixes ([#979](https://github.com/teamkeel/keel/issues/979)) ([ef1bd78](https://github.com/teamkeel/keel/commit/ef1bd782b044a73d8577b8a581b3f509b4d3a54e))
+
 ## [0.323.2](https://github.com/teamkeel/keel/compare/v0.323.1...v0.323.2) (2023-05-18)
 
 
