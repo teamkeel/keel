@@ -22,11 +22,11 @@ type GeneratedFiles []*GeneratedFile
 func (files GeneratedFiles) Write(dir string) error {
 	for _, f := range files {
 		path := filepath.Join(dir, f.Path)
-		err := os.MkdirAll(filepath.Dir(path), 0777)
+		err := os.MkdirAll(filepath.Dir(path), os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("error creating directory: %w", err)
 		}
-		err = os.WriteFile(path, []byte(f.Contents), 0777)
+		err = os.WriteFile(path, []byte(f.Contents), os.ModePerm)
 		if err != nil {
 			return fmt.Errorf("error writing file: %w", err)
 		}
