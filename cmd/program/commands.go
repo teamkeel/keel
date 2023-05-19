@@ -76,11 +76,11 @@ node_modules/
 			Contents: `# Visit https://keel.notaku.site/documentation/environment-variables-and-secrets for more
 # information about environment variables and secrets
 environment:
-	default:
-	development:
-	test:
-	staging:
-	production:
+  default:
+  development:
+  test:
+  staging:
+  production:
 
 secrets:
 `,
