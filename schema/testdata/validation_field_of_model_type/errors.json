@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "The model 'Person' cannot have a field of its own type.",
+      "hint": "",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_field_of_model_type/schema.keel",
+        "offset": 43,
+        "line": 3,
+        "column": 16
+      },
+      "endPos": {
+        "filename": "testdata/validation_field_of_model_type/schema.keel",
+        "offset": 49,
+        "line": 3,
+        "column": 22
+      }
+    }
+  ]
+}

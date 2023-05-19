@@ -1,0 +1,13 @@
+message Foo {
+  bar Foo
+}
+
+model Person {
+  functions {
+    read getPerson() returns (Foo)
+  }
+}
+
+message UnusedMessage {
+  bar UnusedMessage
+}
