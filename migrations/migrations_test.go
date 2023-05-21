@@ -81,18 +81,21 @@ func TestMigrations(t *testing.T) {
 			var currProto *proto.Schema
 			if currSchema != "" {
 				currProto = protoSchema(t, currSchema)
-				m := migrations.New(currProto, nil)
-				require.NoError(t, m.Apply(context, database))
+				m, err := migrations.New(context, currProto, database)
+				require.NoError(t, err)
+				require.NoError(t, m.Apply(context))
 			}
 
 			// Create the new proto
 			schema := protoSchema(t, newSchema)
 
 			// Create migrations from old (may be nil) to new
-			m := migrations.New(
+			m, err := migrations.New(
+				context,
 				schema,
-				currProto,
+				database,
 			)
+			require.NoError(t, err)
 
 			// Assert correct SQL generated
 			assert.Equal(t, expectedSQL, m.SQL)
@@ -104,7 +107,7 @@ func TestMigrations(t *testing.T) {
 			assertJSON(t, []byte(expectedChanges), actualChanges)
 
 			// Check the new migrations can be applied without error
-			require.NoError(t, m.Apply(context, database))
+			require.NoError(t, m.Apply(context))
 
 			// Now fetch the "current" schema from the database, which
 			// should be the new one we just applied

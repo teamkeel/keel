@@ -319,7 +319,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		m.RuntimeHandler = runtime.NewHttpHandler(m.Schema)
 		m.Status = StatusRunMigrations
-		return m, RunMigrations(m.Schema, m.DatabaseConnInfo)
+		return m, RunMigrations(m.Schema, m.Database)
 	case RunMigrationsMsg:
 		m.Err = msg.Err
 		m.MigrationChanges = msg.Changes

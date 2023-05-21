@@ -82,9 +82,12 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 	}
 
 	// Migrate the database to this test case's schema.
-	m := migrations.New(schema, nil)
+	m, err := migrations.New(ctx, schema, database)
+	if err != nil {
+		return nil, err
+	}
 
-	err = m.Apply(ctx, database)
+	err = m.Apply(ctx)
 	if err != nil {
 		return nil, err
 	}
