@@ -18,7 +18,6 @@ import (
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	rtt "github.com/teamkeel/keel/runtime/runtimetest"
 	"github.com/teamkeel/keel/testhelpers"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -53,22 +52,15 @@ func TestRuntimeRPC(t *testing.T) {
 			ctx := request.Context()
 
 			dbName := testhelpers.DbNameForTestName(tCase.name)
-			testDB, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
-			require.NoError(t, err)
-
-			database, err := db.NewFromConnection(ctx, testDB)
+			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
 			require.NoError(t, err)
 
 			ctx = runtimectx.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
 
-			// We are still using gorm database to assert againt the data in the test databases.
-			gormDb, err := gorm.Open(postgres.New(postgres.Config{Conn: testDB}), &gorm.Config{})
-			require.NoError(t, err)
-
 			// Apply the database prior-set up mandated by this test case.
 			if tCase.databaseSetup != nil {
-				tCase.databaseSetup(t, gormDb)
+				tCase.databaseSetup(t, database.GetDB())
 			}
 
 			// Call the handler, and capture the response.
@@ -79,7 +71,7 @@ func TestRuntimeRPC(t *testing.T) {
 
 			// Do the specified assertion on the resultant database contents, if one is specified.
 			if tCase.assertDatabase != nil {
-				tCase.assertDatabase(t, gormDb, res)
+				tCase.assertDatabase(t, database.GetDB(), res)
 			}
 
 			if response.Status != 200 && tCase.assertError == nil {

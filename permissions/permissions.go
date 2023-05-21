@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
+	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -325,7 +325,7 @@ func handleModel(s *proto.Schema, model *proto.Model, o *parser.Operand, stmt *s
 
 // identifier converts s to snake cases and wraps it in double quotes
 func identifier(s string) string {
-	return pq.QuoteIdentifier(casing.ToSnake(s))
+	return db.QuoteIdentifier(casing.ToSnake(s))
 }
 
 type statement struct {

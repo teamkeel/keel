@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
@@ -50,7 +49,7 @@ func (m *Migrations) HasModelFieldChanges() bool {
 }
 
 // Apply executes the migrations against the database
-func (m *Migrations) Apply(ctx context.Context, database db.Db) error {
+func (m *Migrations) Apply(ctx context.Context, database db.Database) error {
 
 	sql := strings.Builder{}
 
@@ -67,7 +66,7 @@ func (m *Migrations) Apply(ctx context.Context, database db.Db) error {
 
 	// Cannot use parameters as then you get an error:
 	//   ERROR: cannot insert multiple commands into a prepared statement (SQLSTATE 42601)
-	escapedJSON := pq.QuoteLiteral(string(b))
+	escapedJSON := db.QuoteLiteral(string(b))
 	insertStmt := fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON)
 	sql.WriteString(insertStmt)
 
@@ -200,7 +199,7 @@ func New(newSchema *proto.Schema, currSchema *proto.Schema) *Migrations {
 	}
 }
 
-func keelSchemaTableExists(ctx context.Context, database db.Db) (bool, error) {
+func keelSchemaTableExists(ctx context.Context, database db.Database) (bool, error) {
 
 	// to_regclass docs - https://www.postgresql.org/docs/current/functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE
 	// translates a textual relation name to its OID ... this function will
@@ -213,7 +212,7 @@ func keelSchemaTableExists(ctx context.Context, database db.Db) (bool, error) {
 	return result.Rows[0]["name"] != nil, nil
 }
 
-func GetCurrentSchema(ctx context.Context, database db.Db) (*proto.Schema, error) {
+func GetCurrentSchema(ctx context.Context, database db.Database) (*proto.Schema, error) {
 	exists, err := keelSchemaTableExists(ctx, database)
 	if err != nil {
 		return nil, err

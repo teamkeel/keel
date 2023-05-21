@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
@@ -925,7 +924,7 @@ func sqlQuote(tokens ...string) string {
 			// if the token is * then it doesnt need to be quoted e.g "post".*
 			quotedTokens = append(quotedTokens, token)
 		default:
-			quotedTokens = append(quotedTokens, pq.QuoteIdentifier(token))
+			quotedTokens = append(quotedTokens, db.QuoteIdentifier(token))
 		}
 	}
 	return strings.Join(quotedTokens, ".")

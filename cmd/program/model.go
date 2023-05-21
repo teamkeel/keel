@@ -134,6 +134,7 @@ type Model struct {
 	Schema           *proto.Schema
 	Config           *config.ProjectConfig
 	SchemaFiles      []reader.SchemaFile
+	Database         db.Database
 	DatabaseConnInfo *db.ConnectionInfo
 	GeneratedFiles   codegen.GeneratedFiles
 	MigrationChanges []*migrations.DatabaseChange
@@ -242,6 +243,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
+		database, err := db.New(context.Background(), m.DatabaseConnInfo)
+		if err != nil {
+			m.Err = err
+			return m, tea.Quit
+		}
+
+		m.Database = database
 		m.Status = StatusParsePrivateKey
 		return m, ParsePrivateKey(m.PrivateKeyPath)
 	case ParsePrivateKeyMsg:
@@ -434,16 +442,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		ctx := msg.r.Context()
-		database, err := db.New(ctx, m.DatabaseConnInfo)
-		if err != nil {
-			panic(err.Error())
-		}
 
 		if m.PrivateKey != nil {
 			ctx = runtimectx.WithPrivateKey(ctx, m.PrivateKey)
 		}
 
-		ctx = runtimectx.WithDatabase(ctx, database)
+		ctx = runtimectx.WithDatabase(ctx, m.Database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 
 		mailClient := mail.NewSMTPClientFromEnv()

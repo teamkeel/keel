@@ -16,7 +16,6 @@ import (
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
-	_ "github.com/lib/pq"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/util"
@@ -318,7 +317,7 @@ func generateDatabaseName(projectDirectory string) (string, error) {
 // createDatabaseIfNotExists creates a database if it does not exist.
 // It uses the database name found in the db.ConnectionInfo argument.
 func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
-	server, err := sql.Open("postgres", info.ServerString())
+	server, err := sql.Open("pgx/v5", info.ServerString())
 	if err != nil {
 		return err
 	}

@@ -22,7 +22,6 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testhelpers"
-	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -62,23 +61,16 @@ func TestRuntimeGraphQL(t *testing.T) {
 			ctx := request.Context()
 
 			dbName := testhelpers.DbNameForTestName(tCase.name)
-			testDB, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
+			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, schema, dbName)
 			require.NoError(t, err)
-			defer testDB.Close()
-
-			database, err := db.NewFromConnection(ctx, testDB)
-			require.NoError(t, err)
+			defer database.Close()
 
 			ctx = runtimectx.WithDatabase(ctx, database)
 			request = request.WithContext(ctx)
 
-			// We are still using gorm database to assert againt the data in the test databases.
-			gormDb, err := gorm.Open(postgres.New(postgres.Config{Conn: testDB}), &gorm.Config{})
-			require.NoError(t, err)
-
 			// Apply the database prior-set up mandated by this test case.
 			if tCase.databaseSetup != nil {
-				tCase.databaseSetup(t, gormDb)
+				tCase.databaseSetup(t, database.GetDB())
 			}
 
 			// Call the handler, and capture the response.
@@ -108,7 +100,7 @@ func TestRuntimeGraphQL(t *testing.T) {
 
 			// Do the specified assertion on the resultant database contents, if one is specified.
 			if tCase.assertDatabase != nil {
-				tCase.assertDatabase(t, gormDb, bodyFields.Data)
+				tCase.assertDatabase(t, database.GetDB(), bodyFields.Data)
 			}
 
 		})

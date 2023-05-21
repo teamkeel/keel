@@ -33,8 +33,8 @@ func WithTmpDir(dir string) (string, error) {
 	return tmpDir, nil
 }
 
-func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string) (*sql.DB, error) {
-	mainDB, err := sql.Open("postgres", dbConnInfo.String())
+func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo, schema *proto.Schema, dbName string) (db.Database, error) {
+	mainDB, err := sql.Open("pgx/v5", dbConnInfo.String())
 	if err != nil {
 		return nil, err
 	}
@@ -61,12 +61,8 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 	// at the end of the test. We need to explicitly close the connection
 	// so the mainDB connection can drop the database.
 	testDBConnInfo := dbConnInfo.WithDatabase(dbName)
-	testDB, err := sql.Open("postgres", testDBConnInfo.String())
-	if err != nil {
-		return nil, err
-	}
 
-	database, err := db.NewFromConnection(ctx, testDB)
+	database, err := db.New(ctx, testDBConnInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -75,12 +71,11 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 	m := migrations.New(schema, nil)
 
 	err = m.Apply(ctx, database)
-
 	if err != nil {
 		return nil, err
 	}
 
-	return testDB, nil
+	return database, nil
 }
 
 func DbNameForTestName(testName string) string {

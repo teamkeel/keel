@@ -2,10 +2,12 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 type ExecuteQueryResult struct {
@@ -35,33 +37,36 @@ func (err *DbError) Unwrap() error {
 	return err.Err
 }
 
-type Db interface {
+type Database interface {
 	// Executes SQL query statement and returns rows.
 	ExecuteQuery(ctx context.Context, sql string, values ...any) (*ExecuteQueryResult, error)
 	// Executes SQL statement and returns number of rows affected.
 	ExecuteStatement(ctx context.Context, sql string, values ...any) (*ExecuteStatementResult, error)
 	// Runs fn inside a transaction which is commited if fn returns a nil error
 	Transaction(ctx context.Context, fn func(ctx context.Context) error) error
+	Close() error
+	GetDB() *gorm.DB
 }
 
-func New(ctx context.Context, dbConnInfo *ConnectionInfo) (Db, error) {
-	sqlDb, err := sql.Open("postgres", dbConnInfo.String())
+func New(ctx context.Context, dbConnInfo *ConnectionInfo) (Database, error) {
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  dbConnInfo.String(),
+		PreferSimpleProtocol: true,
+	}), &gorm.Config{
+		Logger:                 logger.Discard,
+		SkipDefaultTransaction: true,
+	})
 	if err != nil {
 		return nil, err
 	}
-	return &postgres{conn: sqlDb}, nil
+
+	return &GormDB{db: db}, nil
 }
 
-func NewFromConnection(ctx context.Context, sqlDb *sql.DB) (Db, error) {
-	return &postgres{conn: sqlDb}, nil
+func QuoteIdentifier(name string) string {
+	return pq.QuoteIdentifier(name)
 }
 
-var supportedValueTypes = []string{
-	"<nil>",
-	"bool",
-	"string",
-	"int",
-	"int64",
-	"float64",
-	"time.Time",
+func QuoteLiteral(literal string) string {
+	return pq.QuoteLiteral(literal)
 }

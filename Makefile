@@ -23,7 +23,7 @@ testdata:
 	nix-shell --command "cd ./schema && go run ./tools/generate_testdata.go ./testdata"
 
 test:
-	go test $(PACKAGES) -count=1 $(RUNARG)
+	TZ=UTC go test $(PACKAGES) -count=1 $(RUNARG)
 
 test-js:
 	cd ./packages/functions-runtime && pnpm run test
