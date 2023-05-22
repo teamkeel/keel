@@ -105,7 +105,7 @@ func TestWriteCreateValuesInterfaceWithRelationships(t *testing.T) {
 	model Author {}
 	model Post {
 		fields {
-			author Post
+			author Author
 		}
 	}
 	`

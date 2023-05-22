@@ -1,0 +1,9 @@
+model Person {
+    fields {
+        person Person?
+    }
+
+    operations {
+        create createPerson()
+    }
+}

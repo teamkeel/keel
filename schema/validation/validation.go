@@ -67,6 +67,8 @@ var validatorFuncs = []validationFunc{
 }
 
 var visitorFuncs = []VisitorFunc{
+	RequiredFieldOfSameModelType,
+	RequiredFieldOfSameMessageType,
 	UnusedInputRule,
 	ConflictingInputsRule,
 	CasingRule,
