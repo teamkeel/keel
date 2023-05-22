@@ -22,9 +22,9 @@ func CreateOperationRequiredFieldsRule(
 		for _, op := range query.ModelCreateOperations(model) {
 			dotDelimPath := ""
 			for _, field := range query.ModelFields(model) {
-				if field.Type.Value == model.Name.Value {
+				if field.Type.Value == model.Name.Value && !field.Optional {
 					// This avoids an infinite loop in the case that the field type is the same as the model type,
-					// which is not a valid and is handled elsewhere in schema validations.
+					// and is not optional, which is not a valid schema and is handled elsewhere in schema validations.
 					continue
 				}
 				checkField(asts, field, model, rootModelName, dotDelimPath, op, &errs)

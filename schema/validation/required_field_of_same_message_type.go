@@ -7,9 +7,9 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// FieldOfSameMessageType ensures that a message cannot have a field of the same type,
+// RequiredFieldOfSameMessageType ensures that a message cannot have a field of the same type,
 // as this results in an infinite recursion.
-func FieldOfSameMessageType(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+func RequiredFieldOfSameMessageType(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var message *parser.MessageNode
 	message = nil
 
@@ -21,12 +21,12 @@ func FieldOfSameMessageType(_ []*parser.AST, errs *errorhandling.ValidationError
 			message = nil
 		},
 		EnterField: func(f *parser.FieldNode) {
-			if message != nil && message.Name.Value == f.Type.Value {
+			if message != nil && message.Name.Value == f.Type.Value && !f.Optional {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.TypeError,
 						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("The message '%s' cannot have a field of its own type.", f.Type.Value),
+							Message: fmt.Sprintf("The message '%s' cannot have a field of its own type unless it is optional.", f.Type.Value),
 						},
 						f.Type,
 					),

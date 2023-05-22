@@ -7,8 +7,9 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// FieldOfSameModelType ensures that a model cannot have a field of the same tye
-func FieldOfSameModelType(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+// RequiredFieldOfSameModelType ensures that a model cannot have a field of the same type,
+// as this results in an infinite recursion.
+func RequiredFieldOfSameModelType(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	model = nil
 
@@ -20,12 +21,12 @@ func FieldOfSameModelType(_ []*parser.AST, errs *errorhandling.ValidationErrors)
 			model = nil
 		},
 		EnterField: func(f *parser.FieldNode) {
-			if model != nil && model.Name.Value == f.Type.Value {
+			if model != nil && model.Name.Value == f.Type.Value && !f.Optional {
 				errs.AppendError(
 					errorhandling.NewValidationErrorWithDetails(
 						errorhandling.TypeError,
 						errorhandling.ErrorDetails{
-							Message: fmt.Sprintf("The model '%s' cannot have a field of its own type.", f.Type.Value),
+							Message: fmt.Sprintf("The model '%s' cannot have a field of its own type unless it is optional.", f.Type.Value),
 						},
 						f.Type,
 					),
