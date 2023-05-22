@@ -1,3 +1,10 @@
+## [0.323.4](https://github.com/teamkeel/keel/compare/v0.323.3...v0.323.4) (2023-05-22)
+
+
+### Bug Fixes
+
+* model and message cannot have required fields of same type ([#978](https://github.com/teamkeel/keel/issues/978)) ([5a32966](https://github.com/teamkeel/keel/commit/5a32966c587bec1f4cc9e0cd71e62115dbb00627))
+
 ## [0.323.3](https://github.com/teamkeel/keel/compare/v0.323.2...v0.323.3) (2023-05-19)
 
 
