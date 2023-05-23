@@ -247,7 +247,7 @@ func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 			}
 		}
 
-		mainDB, err := sql.Open("postgres", connInfo.String())
+		mainDB, err := sql.Open("pgx/v5", connInfo.String())
 		if err != nil {
 			return StartDatabaseMsg{
 				Err: err,

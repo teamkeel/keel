@@ -688,12 +688,9 @@ func TestToSQL(t *testing.T) {
 			// Setup test database
 			ctx := context.Background()
 			dbName := testhelpers.DbNameForTestName(t.Name())
-			testDB, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, s, dbName)
+			database, err := testhelpers.SetupDatabaseForTestCase(ctx, dbConnInfo, s, dbName)
 			require.NoError(t, err)
-			defer testDB.Close()
-
-			conn, err := db.NewFromConnection(context.Background(), testDB)
-			require.NoError(t, err)
+			defer database.Close()
 
 			// Can use nil for all values as we're only testing SQL is valid
 			vals := []any{}
@@ -702,7 +699,7 @@ func TestToSQL(t *testing.T) {
 			}
 
 			// Execute the query runs without error
-			_, err = conn.ExecuteQuery(context.Background(), sql, vals...)
+			_, err = database.ExecuteQuery(context.Background(), sql, vals...)
 			require.NoError(t, err)
 		})
 	}

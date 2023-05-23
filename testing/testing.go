@@ -59,10 +59,11 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	context := context.Background()
 
 	dbName := "keel_test"
-	mainDB, err := testhelpers.SetupDatabaseForTestCase(context, opts.DbConnInfo, schema, dbName)
+	database, err := testhelpers.SetupDatabaseForTestCase(context, opts.DbConnInfo, schema, dbName)
 	if err != nil {
 		return nil, err
 	}
+	defer database.Close()
 
 	dbConnString := opts.DbConnInfo.WithDatabase(dbName).String()
 
@@ -134,7 +135,6 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 			ctx := r.Context()
-			database, _ := db.NewFromConnection(ctx, mainDB)
 			ctx = runtimectx.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 			if functionsTransport != nil {

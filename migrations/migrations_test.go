@@ -36,7 +36,7 @@ func TestMigrations(t *testing.T) {
 
 	// We connect to the "main" database here only so we can create a new database
 	// for each sub-test
-	mainDB, err := sql.Open("postgres", dbConnInfo.String())
+	mainDB, err := sql.Open("pgx/v5", dbConnInfo.String())
 	require.NoError(t, err)
 	defer func() {
 		mainDB.Close()
@@ -60,18 +60,7 @@ func TestMigrations(t *testing.T) {
 
 			context := context.Background()
 
-			// Connect to the newly created test database and close connection
-			// at the end of the test. We need to explicitly close the connection
-			// so the mainDB connection can drop the database.
-			testDB, err := sql.Open("postgres", dbConnInfo.WithDatabase(dbName).String())
-			require.NoError(t, err)
-
-			defer func() {
-				err := testDB.Close()
-				require.NoError(t, err)
-			}()
-
-			database, err := db.NewFromConnection(context, testDB)
+			database, err := db.New(context, dbConnInfo.WithDatabase(dbName))
 			require.NoError(t, err)
 
 			// Read the fixture file

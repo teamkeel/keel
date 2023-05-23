@@ -12,13 +12,13 @@ type dbContextKey string
 
 var dbKey dbContextKey = "database"
 
-func GetDatabase(ctx context.Context) (db.Db, error) {
+func GetDatabase(ctx context.Context) (db.Database, error) {
 	v := ctx.Value(dbKey)
 	if v == nil {
 		return nil, fmt.Errorf("context does not have a :%s key", dbKey)
 	}
 
-	database, ok := v.(db.Db)
+	database, ok := v.(db.Database)
 
 	if !ok {
 		return nil, errors.New("database in the context has wrong value type")
@@ -26,6 +26,6 @@ func GetDatabase(ctx context.Context) (db.Db, error) {
 	return database, nil
 }
 
-func WithDatabase(ctx context.Context, database db.Db) context.Context {
+func WithDatabase(ctx context.Context, database db.Database) context.Context {
 	return context.WithValue(ctx, dbKey, database)
 }
