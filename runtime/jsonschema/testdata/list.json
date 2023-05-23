@@ -5,7 +5,7 @@
         "additionalProperties": false,
         "properties": {
           "equals": {
-            "type": ["boolean", "null"]
+            "type": "boolean"
           }
         },
         "type": "object"
@@ -15,23 +15,23 @@
         "properties": {
           "after": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           },
           "before": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           },
           "equals": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           },
           "onOrAfter": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           },
           "onOrBefore": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
         "type": "object"
@@ -42,27 +42,21 @@
           "equals": {
             "enum": [
               "Tennis",
-              "Chess",
-              null
+              "Chess"
             ]
           },
           "notEquals": {
             "enum": [
                 "Tennis",
-                "Chess",
-                null
+                "Chess"
             ]
           },
           "oneOf": {
-            "type": [
-							"array",
-							"null"
-						],
+            "type": "array",
             "items": {
               "enum": [
                 "Tennis",
-                "Chess",
-                null
+                "Chess"
               ]
             }
           }
@@ -73,34 +67,28 @@
         "additionalProperties": false,
         "properties": {
           "equals": {
-            "type": ["number", "null"]
+            "type": "number"
           },
           "notEquals": {
-            "type": [
-                "number",
-                "null"
-            ]
+            "type": "number"
           },
           "greaterThan": {
-            "type": ["number", "null"]
+            "type": "number"
           },
           "greaterThanOrEquals": {
-            "type": ["number", "null"]
+            "type": "number"
           },
           "lessThan": {
-            "type": ["number", "null"]
+            "type": "number"
           },
           "lessThanOrEquals": {
-            "type": ["number", "null"]
+            "type": "number"
           },
           "oneOf": {
             "items": {
                 "type": "number"
             },
-            "type": [
-                "array",
-                "null"
-            ]
+            "type": "array"
           }
         },
         "type": "object"
@@ -111,89 +99,83 @@
           "equals": {
             "enum": [
               "Tennis",
-              "Chess",
-              null
+              "Chess"
             ]
+          },
+          "isNull": {
+            "type": "boolean"
           },
           "notEquals": {
             "enum": [
                 "Tennis",
-                "Chess",
-                null
+                "Chess"
             ]
           },
           "oneOf": {
-            "type": [
-							"array",
-							"null"
-						],
+            "type": "array",
             "items": {
               "enum": [
                 "Tennis",
-                "Chess",
-                null
+                "Chess"
               ]
             }
           }
         },
-        "type": ["object", "null"]
+        "type": "object"
       },
       "NullableStringQueryInput": {
         "additionalProperties": false,
         "properties": {
           "contains": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "endsWith": {
-            "type":["string", "null"]
+            "type": "string"
           },
           "equals": {
-            "type": ["string", "null"]
+            "type": "string"
+          },
+          "isNull": {
+            "type": "boolean"
           },
           "notEquals": {
-            "type": [
-                "string",
-                "null"
-            ]
+            "type": "string"
           },
           "oneOf": {
             "items": {
               "type": "string"
             },
-            "type": ["array", "null"]
+            "type": "array"
           },
           "startsWith": {
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
-        "type": ["object", "null"]
+        "type": "object"
       },
       "StringQueryInput": {
         "additionalProperties": false,
         "properties": {
           "contains": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "endsWith": {
-            "type":["string", "null"]
+            "type": "string"
           },
           "equals": {
-            "type": ["string", "null"]
+            "type": "string"
           },
           "notEquals": {
-            "type": [
-                "string",
-                "null"
-            ]
+            "type": "string"
           },
           "oneOf": {
             "items": {
               "type": "string"
             },
-            "type": ["array", "null"]
+            "type": "array"
           },
           "startsWith": {
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
         "type": "object"
@@ -248,11 +230,11 @@
         "properties": {
           "after": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           },
           "before": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
         "type": "object"
@@ -262,16 +244,16 @@
   "additionalProperties": false,
   "properties": {
     "after": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "before": {
-      "type": ["string", "null"]
+      "type": "string"
     },
     "first": {
-      "type": ["number", "null"]
+      "type": "number"
     },
     "last": {
-      "type": ["number", "null"]
+      "type": "number"
     },
     "where": {
       "$ref": "#/components/schemas/TestActionWhere"

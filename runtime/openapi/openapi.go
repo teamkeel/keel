@@ -62,7 +62,7 @@ var (
 				Type: "string",
 			},
 			"data": {
-				Type: []string{"object", "null"},
+				Type: "object",
 				Properties: map[string]jsonschema.JSONSchema{
 					"errors": {
 						Type: "array",

@@ -71,10 +71,7 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "createIfNotExists": {
-                                        "type": [
-                                            "boolean",
-                                            "null"
-                                        ]
+                                        "type": "boolean"
                                     },
                                     "emailPassword": {
                                         "$ref": "#/components/schemas/EmailPasswordInput"
@@ -135,10 +132,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -212,10 +206,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -289,10 +280,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -373,10 +361,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -465,10 +450,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"

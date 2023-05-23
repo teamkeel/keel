@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	AnyTypes = []string{"string", "object", "array", "integer", "number", "boolean", "null"}
+	AnyTypes = []string{"string", "object", "array", "integer", "number", "boolean"}
 )
 
 var (
@@ -242,7 +242,6 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		Schemas: map[string]JSONSchema{},
 	}
 	prop := JSONSchema{}
-	nullable := isOptional
 
 	switch t.Type {
 	case proto.Type_TYPE_ANY:
@@ -261,10 +260,6 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		}
 
 		name := t.MessageName.Value
-		if nullable {
-			component.allowNull()
-			name = "Nullable" + name
-		}
 
 		if t.Repeated {
 			prop.Type = "array"
@@ -312,10 +307,6 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		for _, v := range enum.Values {
 			prop.Enum = append(prop.Enum, &v.Name)
 		}
-
-		if nullable {
-			prop.allowNull()
-		}
 	}
 
 	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL) {
@@ -324,43 +315,11 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		prop.Type = "array"
 	}
 
-	if nullable {
-		prop.allowNull()
-	}
-
 	if len(components.Schemas) > 0 {
 		prop.Components = components
 	}
 
 	return prop
-}
-
-// allowNull makes sure that s allows null, either by modifying
-// the type field or the enum field
-//
-// This is an area where OpenAPI differs from JSON Schema, from
-// the OpenAPI spec:
-//
-//	| Note that there is no null type; instead, the nullable
-//	| attribute is used as a modifier of the base type.
-//
-// We currently only support JSON schema
-func (s *JSONSchema) allowNull() {
-	t := s.Type
-	switch t := t.(type) {
-	case string:
-		s.Type = []string{t, "null"}
-	case []string:
-		if lo.Contains(t, "null") {
-			return
-		}
-		t = append(t, "null")
-		s.Type = t
-	}
-
-	if len(s.Enum) > 0 && !lo.Contains(s.Enum, nil) {
-		s.Enum = append(s.Enum, nil)
-	}
 }
 
 func boolPtr(v bool) *bool {

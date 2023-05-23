@@ -34,17 +34,14 @@
                     "addressId"
                 ]
             },
-            "NullableCustomersWhere": {
+            "CustomersWhere": {
                 "additionalProperties": false,
                 "properties": {
                     "name": {
-                        "$ref": "#/components/schemas/NullableStringQueryInput"
+                        "$ref": "#/components/schemas/StringQueryInput"
                     }
                 },
-                "type": [
-                    "object",
-                    "null"
-                ]
+                "type": "object"
             },
             "EmailPasswordInput": {
                 "additionalProperties": false,
@@ -60,6 +57,33 @@
                     "email",
                     "password"
                 ],
+                "type": "object"
+            },
+            "StringQueryInput": {
+                "additionalProperties": false,
+                "properties": {
+                    "contains": {
+                    "type": "string"
+                    },
+                    "endsWith": {
+                    "type": "string"
+                    },
+                    "equals": {
+                    "type": "string"
+                    },
+                    "notEquals": {
+                    "type": "string"
+                    },
+                    "oneOf": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                    },
+                    "startsWith": {
+                    "type": "string"
+                    }
+                },
                 "type": "object"
             },
             "CreateCustomerAddressInput": {
@@ -78,75 +102,18 @@
                 ],
                 "type": "object"
             },
-            "NullableStringQueryInput": {
-                "additionalProperties": false,
-                "properties": {
-                    "contains": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "endsWith": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "equals": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "notEquals": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    },
-                    "oneOf": {
-                        "items": {
-                            "type": "string"
-                        },
-                        "type": [
-                            "array",
-                            "null"
-                        ]
-                    },
-                    "startsWith": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
-                    }
-                },
-                "type": [
-                    "object",
-                    "null"
-                ]
-            },
-            "NullableUpdateCustomerValues": {
+            "UpdateCustomerValues": {
                 "additionalProperties": false,
                 "properties": {
                     "dateOfBirth": {
                         "format": "date-time",
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     },
                     "name": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     }
                 },
-                "type": [
-                    "object",
-                    "null"
-                ]
+                "type": "object"
             },
             "UpdateCustomerWhere": {
                 "additionalProperties": false,
@@ -178,10 +145,7 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "createIfNotExists": {
-                                        "type": [
-                                            "boolean",
-                                            "null"
-                                        ]
+                                        "type": "boolean"
                                     },
                                     "emailPassword": {
                                         "$ref": "#/components/schemas/EmailPasswordInput"
@@ -242,10 +206,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -323,10 +284,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -350,31 +308,19 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "after": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
+                                        "type": "string"
                                     },
                                     "before": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
+                                        "type": "string"
                                     },
                                     "first": {
-                                        "type": [
-                                            "number",
-                                            "null"
-                                        ]
+                                        "type": "number"
                                     },
                                     "last": {
-                                        "type": [
-                                            "number",
-                                            "null"
-                                        ]
+                                        "type": "number"
                                     },
                                     "where": {
-                                        "$ref": "#/components/schemas/NullableCustomersWhere"
+                                        "$ref": "#/components/schemas/CustomersWhere"
                                     }
                                 },
                                 "type": "object"
@@ -442,10 +388,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -514,10 +457,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -591,10 +531,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -668,10 +605,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
@@ -695,7 +629,7 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "values": {
-                                        "$ref": "#/components/schemas/NullableUpdateCustomerValues"
+                                        "$ref": "#/components/schemas/UpdateCustomerValues"
                                     },
                                     "where": {
                                         "$ref": "#/components/schemas/UpdateCustomerWhere"
@@ -743,10 +677,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": [
-                                                "object",
-                                                "null"
-                                            ]
+                                            "type": "object"
                                         },
                                         "message": {
                                             "type": "string"
