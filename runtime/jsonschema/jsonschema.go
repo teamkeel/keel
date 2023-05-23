@@ -262,7 +262,6 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		name := t.MessageName.Value
 		if allowNull {
 			component.allowNull()
-			//name = "Nullable" + name
 		}
 
 		if t.Repeated {
