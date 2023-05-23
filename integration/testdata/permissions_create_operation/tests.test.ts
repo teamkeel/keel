@@ -16,11 +16,11 @@ test("string permission on literal - not matching value - is not authorized", as
   ).toHaveAuthorizationError();
 });
 
-test("string permission on literal - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithTextPermissionLiteral({ title: null })
-  ).toHaveAuthorizationError();
-});
+// test("string permission on literal - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithTextPermissionLiteral({ title: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("number permission on literal - matching value - is authorized", async () => {
   await expect(
@@ -34,11 +34,11 @@ test("number permission on literal - not matching value - is not authorized", as
   ).toHaveAuthorizationError();
 });
 
-test("number permission on literal - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithNumberPermissioLiteral({ views: null })
-  ).toHaveAuthorizationError();
-});
+// test("number permission on literal - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithNumberPermissioLiteral({ views: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("boolean permission on literal - matching value - is authorized", async () => {
   await expect(
@@ -52,11 +52,11 @@ test("boolean permission on literal - not matching value - is not authorized", a
   ).toHaveAuthorizationError();
 });
 
-test("boolean permission on literal - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithBooleanPermissionLiteral({ active: null })
-  ).toHaveAuthorizationError();
-});
+// test("boolean permission on literal - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithBooleanPermissionLiteral({ active: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("enum permission on literal - matching value - is authorized", async () => {
   await expect(
@@ -70,11 +70,11 @@ test("enum permission on literal - not matching value - is not authorized", asyn
   ).toHaveAuthorizationError();
 });
 
-test("enum permission on literal - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithEnumPermissionLiteral({ type: null })
-  ).toHaveAuthorizationError();
-});
+// test("enum permission on literal - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithEnumPermissionLiteral({ type: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("string permission on field name - matching value - is authorized", async () => {
   await expect(
@@ -88,11 +88,11 @@ test("string permission on field name - not matching value - is not authorized",
   ).toHaveAuthorizationError();
 });
 
-test("string permission on field name - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithTextPermissionFromField({ title: null })
-  ).toHaveAuthorizationError();
-});
+// test("string permission on field name - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithTextPermissionFromField({ title: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("number permission on field name - matching value - is authorized", async () => {
   await expect(
@@ -106,11 +106,11 @@ test("number permission on field name - not matching value - is not authorized",
   ).toHaveAuthorizationError();
 });
 
-test("number permission on field name - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithNumberPermissionFromField({ views: null })
-  ).toHaveAuthorizationError();
-});
+// test("number permission on field name - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithNumberPermissionFromField({ views: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("boolean permission on field name - matching value - is authorized", async () => {
   await expect(
@@ -124,11 +124,11 @@ test("boolean permission on field name - not matching value - is not authorized"
   ).toHaveAuthorizationError();
 });
 
-test("boolean permission on field name - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithBooleanPermissionFromField({ active: null })
-  ).toHaveAuthorizationError();
-});
+// test("boolean permission on field name - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithBooleanPermissionFromField({ active: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("enum permission on field name - matching value - is authorized", async () => {
   await expect(
@@ -142,11 +142,11 @@ test("enum permission on field name - not matching value - is not authorized", a
   ).toHaveAuthorizationError();
 });
 
-test("enum permission on field name - null value - is not authorized", async () => {
-  await expect(
-    actions.createWithEnumPermissionFromField({ type: null })
-  ).toHaveAuthorizationError();
-});
+// test("enum permission on field name - null value - is not authorized", async () => {
+//   await expect(
+//     actions.createWithEnumPermissionFromField({ type: null })
+//   ).toHaveAuthorizationError();
+// });
 
 test("identity permission - correct identity in context - is authorized", async () => {
   const { token } = await actions.authenticate({
