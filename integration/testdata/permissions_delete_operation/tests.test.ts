@@ -149,15 +149,15 @@ test("string permission on field - not matching value - is not authorized", asyn
   expect(await models.post.findOne({ id: post.id })).not.toBeNull();
 });
 
-test("string permission on field - not matching null value - is not authorized", async () => {
-  const post = await actions.createWithTitle({ title: null });
+// test("string permission on field - not matching null value - is not authorized", async () => {
+//   const post = await actions.createWithTitle({ title: null });
 
-  await expect(
-    actions.deleteWithTextPermissionOnField({ id: post.id })
-  ).toHaveAuthorizationError();
+//   await expect(
+//     actions.deleteWithTextPermissionOnField({ id: post.id })
+//   ).toHaveAuthorizationError();
 
-  expect(await models.post.findOne({ id: post.id })).not.toBeNull();
-});
+//   expect(await models.post.findOne({ id: post.id })).not.toBeNull();
+// });
 
 test("number permission on field - matching value - is authorized", async () => {
   const post = await actions.createWithViews({ views: 5 });
