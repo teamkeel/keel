@@ -8,6 +8,16 @@ const PERMISSION_STATE = {
   UNPERMITTED: "unpermitted",
 };
 
+// withPermissions sets the initial permission state from the go runtime in the AsyncLocalStorage so consumers further down the hierarchy can read or mutate the state
+// at will
+const withPermissions = async (initialValue, cb) => {
+  const permissions = new Permissions();
+
+  return await permissionsApiInstance.run({ permitted: initialValue }, () => {
+    return cb({ getPermissionState: permissions.getState });
+  });
+};
+
 const permissionsApiInstance = new AsyncLocalStorage();
 
 class Permissions {
@@ -39,6 +49,12 @@ class Permissions {
         return PERMISSION_STATE.PERMITTED;
     }
   }
+
+  static async with(initialValue = false, cb = () => {}) {
+    return await permissionsApiInstance.run({ permitted: initialValue }, () => {
+      return new Permissions();
+    });
+  }
 }
 
 const checkBuiltInPermissions = async ({
@@ -61,8 +77,9 @@ const checkBuiltInPermissions = async ({
   throw new PermissionError(`Not permitted to access ${functionName}`);
 };
 
-module.exports.permissionsApiInstance = permissionsApiInstance;
 module.exports.checkBuiltInPermissions = checkBuiltInPermissions;
 module.exports.PermissionError = PermissionError;
 module.exports.PERMISSION_STATE = PERMISSION_STATE;
 module.exports.Permissions = Permissions;
+module.exports.withPermissions = withPermissions;
+module.exports.permissionsApiInstance = permissionsApiInstance;
