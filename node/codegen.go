@@ -250,6 +250,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		writeModelInterface(sdkTypes, model)
 		writeCreateValuesInterface(sdkTypes, model)
 		writeWhereConditionsInterface(sdkTypes, model)
+		writeFindManyParamsInterface(sdkTypes, model, false)
 		writeUniqueConditionsInterface(sdkTypes, model)
 		writeModelAPIDeclaration(sdkTypes, model)
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
@@ -360,6 +361,45 @@ func writeCreateValuesInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
+func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTestingPackage bool) {
+	w.Writeln(`export type SortOrder = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writef("export type %sOrderBy = {\n", model.Name)
+	w.Indent()
+
+	relevantFields := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
+		switch f.Type.Type {
+		// scalar types are only permitted to sort by
+		case proto.Type_TYPE_BOOL, proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_INT, proto.Type_TYPE_STRING, proto.Type_TYPE_ENUM, proto.Type_TYPE_TIMESTAMP, proto.Type_TYPE_ID:
+			return true
+		default:
+			// includes types such as password, secret, model etc
+			return false
+		}
+	})
+
+	for i, f := range relevantFields {
+		w.Writef("%s?: SortOrder", f.Name)
+
+		if i < len(relevantFields)-1 {
+			w.Write(",")
+		}
+
+		w.Write("\n")
+	}
+	w.Dedent()
+	w.Write("}")
+
+	w.Writeln("\n")
+	w.Writef("export interface %sFindManyParams {\n", model.Name)
+	w.Indent()
+	w.Writef("where?: %sWhereConditions;\n", model.Name)
+	w.Writef("limit?: number;\n")
+	w.Writef("offset?: number;\n")
+	w.Writef("orderBy?: %sOrderBy;\n", model.Name)
+	w.Dedent()
+	w.Writeln("}")
+}
+
 func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export interface %sWhereConditions {\n", model.Name)
 	w.Indent()
@@ -455,18 +495,26 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("update(where: %sUniqueConditions, values: Partial<%s>): Promise<%s>;\n", model.Name, model.Name, model.Name)
 	w.Writef("delete(where: %sUniqueConditions): Promise<string>;\n", model.Name)
 	w.Writef("findOne(where: %sUniqueConditions): Promise<%s | null>;\n", model.Name, model.Name)
-	w.Writef("findMany(where: %sWhereConditions): Promise<%s[]>;\n", model.Name, model.Name)
+	w.Writef("findMany(params?: %sFindManyParams | undefined): Promise<%s[]>;\n", model.Name, model.Name)
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
 	w.Dedent()
 	w.Writeln("}")
 }
 
 func writeModelQueryBuilderDeclaration(w *codegen.Writer, model *proto.Model) {
+	w.Writef("export type %sQueryBuilderParams = {\n", model.Name)
+	w.Indent()
+	w.Writef("limit?: number;\n")
+	w.Writef("offset?: number;\n")
+	w.Writef("orderBy?: %sOrderBy;\n", model.Name)
+	w.Dedent()
+	w.Writeln("}")
+
 	w.Writef("export type %sQueryBuilder = {\n", model.Name)
 	w.Indent()
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
 	w.Writef("orWhere(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
-	w.Writef("findMany(): Promise<%s[]>;\n", model.Name)
+	w.Writef("findMany(params?: %sQueryBuilderParams): Promise<%s[]>;\n", model.Name, model.Name)
 	w.Dedent()
 	w.Writeln("}")
 }

@@ -77,7 +77,7 @@ test("authenticate - existing identity and createIfNotExists false - authenticat
     },
   });
 
-  const count = (await models.identity.findMany({})).length;
+  const count = (await models.identity.findMany()).length;
 
   expect(count).toEqual(1);
   expect(created1).toEqual(true);
@@ -305,7 +305,9 @@ test("related model identity context permission - correct identity - permission 
     .withAuthToken(token)
     .createChild({ post: { id: post.id } });
 
-  const childPosts = await models.childPost.findMany({ postId: post.id });
+  const childPosts = await models.childPost.findMany({
+    where: { postId: post.id },
+  });
 
   expect(child.postId).toEqual(post.id);
   expect(childPosts.length).toEqual(1);
@@ -337,7 +339,9 @@ test("related model identity context permission - incorrect identity - permissio
     actions.withAuthToken(token2).createChild({ post: { id: post.id } })
   ).toHaveAuthorizationError();
 
-  const childPosts = await models.childPost.findMany({ postId: post.id });
+  const childPosts = await models.childPost.findMany({
+    where: { postId: post.id },
+  });
   expect(childPosts.length).toEqual(0);
 });
 

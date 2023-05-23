@@ -4,6 +4,11 @@ const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
 const { applyJoins } = require("./applyJoins");
 const {
+  applyLimit,
+  applyOffset,
+  applyOrderBy,
+} = require("./applyAdditionalQueryConstraints");
+const {
   camelCaseObject,
   snakeCaseObject,
   upperCamelCase,
@@ -50,7 +55,7 @@ class ModelAPI {
   }
 
   async create(values) {
-    const name = spanName(this._modelName, "create");
+    const name = tracing.spanNameForModelAPI(this._modelName, "create");
     const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
@@ -77,7 +82,7 @@ class ModelAPI {
   }
 
   async findOne(where = {}) {
-    const name = spanName(this._modelName, "findOne");
+    const name = tracing.spanNameForModelAPI(this._modelName, "findOne");
     const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
@@ -101,21 +106,55 @@ class ModelAPI {
     });
   }
 
-  async findMany(where = {}) {
-    const name = spanName(this._modelName, "findMany");
+  async findMany(params) {
+    const name = tracing.spanNameForModelAPI(this._modelName, "findMany");
     const db = getDatabase();
+    const where = params?.where || {};
 
     return tracing.withSpan(name, async (span) => {
-      let builder = db
-        .selectFrom(this._tableName)
-        .distinctOn(`${this._tableName}.id`)
-        .selectAll(this._tableName);
-
       const context = new QueryContext([this._tableName], this._tableConfigMap);
 
-      builder = applyJoins(context, builder, where);
-      builder = applyWhereConditions(context, builder, where);
-      const query = builder.orderBy("id");
+      let builder = db
+        .selectFrom((qb) => {
+          // We need to wrap this query as a sub query in the selectFrom because you cannot apply a different order by column when using distinct(id)
+          let builder = qb
+            .selectFrom(this._tableName)
+            .distinctOn(`${this._tableName}.id`)
+            .selectAll(this._tableName);
+
+          builder = applyJoins(context, builder, where);
+          builder = applyWhereConditions(context, builder, where);
+
+          builder = builder.as(this._tableName);
+
+          return builder;
+        })
+        .selectAll();
+
+      // The only constraints added to the main query are the orderBy, limit and offset as they are performed on the "outer" set
+      if (params?.limit) {
+        builder = applyLimit(context, builder, params.limit);
+      }
+
+      if (params?.offset) {
+        builder = applyOffset(context, builder, params.offset);
+      }
+
+      if (
+        params?.orderBy !== undefined &&
+        Object.keys(params?.orderBy).length > 0
+      ) {
+        builder = applyOrderBy(
+          context,
+          builder,
+          this._tableName,
+          params.orderBy
+        );
+      } else {
+        builder = builder.orderBy(`${this._tableName}.id`);
+      }
+
+      const query = builder;
 
       span.setAttribute("sql", query.compile().sql);
       const rows = await builder.execute();
@@ -124,7 +163,7 @@ class ModelAPI {
   }
 
   async update(where, values) {
-    const name = spanName(this._modelName, "update");
+    const name = tracing.spanNameForModelAPI(this._modelName, "update");
     const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
@@ -149,7 +188,7 @@ class ModelAPI {
   }
 
   async delete(where) {
-    const name = spanName(this._modelName, "delete");
+    const name = tracing.spanNameForModelAPI(this._modelName, "delete");
     const db = getDatabase();
 
     return tracing.withSpan(name, async (span) => {
@@ -185,10 +224,6 @@ class ModelAPI {
 
     return new QueryBuilder(this._tableName, context, builder);
   }
-}
-
-function spanName(modelName, action) {
-  return `Database ${modelName}.${action}`;
 }
 
 module.exports = {

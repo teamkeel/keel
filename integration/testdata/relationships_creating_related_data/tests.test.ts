@@ -24,15 +24,19 @@ test("create relationships - create 1:M and associate M:1", async () => {
   });
 
   const orderItems = await models.orderItem.findMany({
-    order: { id: order.id },
+    where: {
+      order: { id: order.id },
+    },
   });
 
   expect(order.customerId).toEqual(customer.id);
   expect(orderItems.length).toEqual(2);
 
   const orderItemForProduct1 = await models.orderItem.findMany({
-    order: { id: order.id },
-    product: { id: product1.id },
+    where: {
+      order: { id: order.id },
+      product: { id: product1.id },
+    },
   });
   expect(orderItemForProduct1.length).toEqual(1);
   expect(orderItemForProduct1[0].quantity).toEqual(1);
@@ -40,8 +44,10 @@ test("create relationships - create 1:M and associate M:1", async () => {
   expect(orderItemForProduct1[0].productId).toEqual(product1.id);
 
   const orderItemForProduct2 = await models.orderItem.findMany({
-    order: { id: order.id },
-    product: { id: product2.id },
+    where: {
+      order: { id: order.id },
+      product: { id: product2.id },
+    },
   });
   expect(orderItemForProduct2.length).toEqual(1);
   expect(orderItemForProduct2[0].quantity).toEqual(15);
@@ -65,21 +71,27 @@ test("create relationships - create 1:M and create M:1", async () => {
   expect(customer!.name).toEqual("Madonna");
 
   const orderItems = await models.orderItem.findMany({
-    order: { id: order.id },
+    where: {
+      order: { id: order.id },
+    },
   });
   expect(orderItems.length).toEqual(2);
 
   const orderItemForProduct1 = await models.orderItem.findMany({
-    order: { id: order.id },
-    product: { name: "Hair Dryer" },
+    where: {
+      order: { id: order.id },
+      product: { name: "Hair Dryer" },
+    },
   });
   expect(orderItemForProduct1.length).toEqual(1);
   expect(orderItemForProduct1[0].quantity).toEqual(1);
   expect(orderItemForProduct1[0].price).toEqual(25);
 
   const orderItemForProduct2 = await models.orderItem.findMany({
-    order: { id: order.id },
-    product: { name: "Hair Clips" },
+    where: {
+      order: { id: order.id },
+      product: { name: "Hair Clips" },
+    },
   });
   expect(orderItemForProduct2.length).toEqual(1);
   expect(orderItemForProduct2[0].quantity).toEqual(15);

@@ -13,7 +13,7 @@ test("permission expression with create in M:1 relationship - related model sati
     title: "New Post",
     theAuthor: { id: author.id },
   });
-  const collection = await models.post.findMany({});
+  const collection = await models.post.findMany();
 
   expect(createPost.theAuthorId).toEqual(author.id);
   expect(collection[0].id).toEqual(createPost.id);
@@ -33,7 +33,7 @@ test("permission expression with create in M:1 relationship - related model does
     })
   ).toHaveAuthorizationError();
 
-  const collection = await models.post.findMany({});
+  const collection = await models.post.findMany();
   expect(collection.length).toEqual(0);
 });
 

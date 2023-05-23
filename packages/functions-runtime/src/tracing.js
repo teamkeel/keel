@@ -80,8 +80,13 @@ function getTracer() {
   return opentelemetry.trace.getTracer("functions");
 }
 
+function spanNameForModelAPI(modelName, action) {
+  return `Database ${modelName}.${action}`;
+}
+
 module.exports = {
   getTracer,
   withSpan,
   init,
+  spanNameForModelAPI,
 };

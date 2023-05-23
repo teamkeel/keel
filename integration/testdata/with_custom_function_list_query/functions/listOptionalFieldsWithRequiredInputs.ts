@@ -7,5 +7,5 @@ import {
 export default ListOptionalFieldsWithRequiredInputs((_, inputs) => {
   permissions.allow();
 
-  return models.person.findMany(inputs.where!);
+  return models.person.findMany(inputs!);
 });
