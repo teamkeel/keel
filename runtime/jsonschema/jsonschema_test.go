@@ -669,6 +669,7 @@ func TestValidateRequest(t *testing.T) {
 						"where.genre":     `Invalid type. Expected: object, given: null`,
 						"where.id":        `Invalid type. Expected: object, given: null`,
 						"where.title":     `Invalid type. Expected: object, given: null`,
+						"where.price":     `Invalid type. Expected: object, given: null`,
 					},
 				},
 				{
@@ -796,7 +797,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "getWhatever",
 					request: "null",
 					errors: map[string]string{
-						"(root)": `Invalid type. [string,object,array,integer,number,boolean], given: null`,
+						"(root)": `Invalid type. Expected: [string,object,array,integer,number,boolean], given: null`,
 					},
 				},
 			},
