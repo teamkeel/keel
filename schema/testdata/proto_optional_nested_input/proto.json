@@ -301,7 +301,7 @@
       ]
     },
     {
-      "name": "StringQueryInput",
+      "name": "NullableStringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -345,6 +345,13 @@
             "repeated": true
           },
           "optional": true
+        },
+        {
+          "name": "isNull",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
         }
       ]
     },
@@ -368,7 +375,7 @@
           "name": "companyTradingAs",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "NullableStringQueryInput"
           },
           "optional": true,
           "target": [
@@ -424,102 +431,6 @@
       ]
     },
     {
-      "name": "StringQueryInput",
-      "fields": [
-        {
-          "name": "equals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "notEquals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "startsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "endsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "contains",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "oneOf",
-          "type": {
-            "type": "TYPE_STRING",
-            "repeated": true
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "StringQueryInput",
-      "fields": [
-        {
-          "name": "equals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "notEquals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "startsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "endsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "contains",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "oneOf",
-          "type": {
-            "type": "TYPE_STRING",
-            "repeated": true
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "ListByPreviousCompanyWhere",
       "fields": [
         {
@@ -527,7 +438,7 @@
           "name": "previousCompanyName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "NullableStringQueryInput"
           },
           "optional": true,
           "target": [
@@ -540,7 +451,7 @@
           "name": "previousCompanyTradingAs",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
+            "messageName": "NullableStringQueryInput"
           },
           "optional": true,
           "target": [
