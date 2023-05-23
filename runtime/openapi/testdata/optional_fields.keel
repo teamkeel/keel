@@ -1,0 +1,38 @@
+
+model Person {
+    fields {
+        name Text
+        nickName Text?
+        favouritePet Pet
+        leastFavoritePet Pet?
+
+    }
+
+    operations {
+        create createCustomer() with (name, nickName, favouritePet, leastFavoritePet)
+        create createCustomerOptionals() with (name, nickName?, favouritePet, leastFavoritePet?)
+        list customers(name, nickName, favouritePet, leastFavoritePet)
+        list customersOptionals(name?, nickName?, favouritePet?, leastFavoritePet?)
+    }
+
+    functions {
+        read groupedByNickName(nickName?) returns (Grouped)
+    }
+}
+
+message Grouped {
+    nickName Text?
+    customer Customer?
+}
+
+enum Pet {
+    Dog
+    Cat
+    Hamster
+}
+
+api Web {
+    models {
+        Person
+    }
+}

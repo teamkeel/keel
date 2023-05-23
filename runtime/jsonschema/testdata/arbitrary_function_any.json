@@ -1,4 +1,4 @@
 {
-  "type": ["string","object","array","integer","number","boolean","null"],
+  "type": ["string","object","array","integer","number","boolean"],
   "additionalProperties":true
 }

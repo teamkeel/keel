@@ -206,7 +206,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": "object"
+                                            "type": [ "object", "null" ]
                                         },
                                         "message": {
                                             "type": "string"
@@ -284,7 +284,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": "object"
+                                            "type": [ "object", "null" ]
                                         },
                                         "message": {
                                             "type": "string"
@@ -388,7 +388,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": "object"
+                                            "type": [ "object", "null" ]
                                         },
                                         "message": {
                                             "type": "string"
@@ -457,7 +457,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": "object"
+                                            "type": [ "object", "null" ]
                                         },
                                         "message": {
                                             "type": "string"
@@ -531,7 +531,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": "object"
+                                            "type": [ "object", "null" ]
                                         },
                                         "message": {
                                             "type": "string"
@@ -605,7 +605,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": "object"
+                                            "type": [ "object", "null" ]
                                         },
                                         "message": {
                                             "type": "string"
@@ -677,7 +677,7 @@
                                                     "type": "array"
                                                 }
                                             },
-                                            "type": "object"
+                                            "type": [ "object", "null" ]
                                         },
                                         "message": {
                                             "type": "string"
