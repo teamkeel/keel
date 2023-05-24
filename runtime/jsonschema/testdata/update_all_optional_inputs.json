@@ -1,25 +1,24 @@
 {
   "components": {
     "schemas": {
-      "NullableTestActionValues": {
+      "TestActionValues": {
         "additionalProperties": false,
         "properties": {
           "birthday": {
             "format": "date-time",
-            "type": ["string", "null"]
+            "type": "string"
           },
           "hobby": {
             "enum": [
               "Tennis",
-              "Chess",
-              null
+              "Chess"
             ]
           },
           "name": {
-            "type": ["string", "null"]
+            "type": "string"
           }
         },
-        "type": ["object", "null"]
+        "type": "object"
       },
       "TestActionWhere": {
         "additionalProperties": false,
@@ -36,7 +35,7 @@
   "additionalProperties": false,
   "properties": {
     "values": {
-      "$ref": "#/components/schemas/NullableTestActionValues"
+      "$ref": "#/components/schemas/TestActionValues"
     },
     "where": {
       "$ref": "#/components/schemas/TestActionWhere"

@@ -267,19 +267,10 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"name": "Jon", "birthday": "1986-03-18"}`,
 					opName:  "createPersonWithDob",
 				},
-				{
-					name:    "valid - input for optional field provided as null",
-					request: `{"name": "Jon", "birthday": null}`,
-					opName:  "createPersonWithDob",
-				},
+
 				{
 					name:    "valid - ommitting optional input",
 					request: `{"name": "Jon"}`,
-					opName:  "createPersonWithOptionalDob",
-				},
-				{
-					name:    "valid - providing optional input for optional field as null",
-					request: `{"name": "Jon", "birthday": null}`,
 					opName:  "createPersonWithOptionalDob",
 				},
 				{
@@ -302,11 +293,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{}`,
 					opName:  "createPersonWithEnum",
 				},
-				{
-					name:    "valid - providing optional input for optional enum field as null",
-					request: `{"hobby": null}`,
-					opName:  "createPersonWithEnum",
-				},
+
 				{
 					name:    "valid - providing optional input for optional enum field",
 					request: `{"hobby": "Chess"}`,
@@ -314,6 +301,30 @@ func TestValidateRequest(t *testing.T) {
 				},
 
 				// errors
+				{
+					name:    "null value - input for optional field provided as null",
+					request: `{"name": "Jon", "birthday": null}`,
+					opName:  "createPersonWithDob",
+					errors: map[string]string{
+						"birthday": "Invalid type. Expected: string, given: null",
+					},
+				},
+				{
+					name:    "null value - providing optional input for optional field as null",
+					request: `{"name": "Jon", "birthday": null}`,
+					opName:  "createPersonWithOptionalDob",
+					errors: map[string]string{
+						"birthday": "Invalid type. Expected: string, given: null",
+					},
+				},
+				{
+					name:    "null value - providing optional input for optional enum field as null",
+					request: `{"hobby": null}`,
+					opName:  "createPersonWithEnum",
+					errors: map[string]string{
+						"hobby": `hobby must be one of the following: "Tennis", "Chess"`,
+					},
+				},
 				{
 					name:    "missing input",
 					request: `{}`,
@@ -390,11 +401,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": "Johnny"}}`,
 					opName:  "updateNameAndNickname",
 				},
-				{
-					name:    "valid - two inputs - null for optional field",
-					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": null}}`,
-					opName:  "updateNameAndNickname",
-				},
+
 				{
 					name:    "valid - two inputs - both optional - both provided",
 					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": "Johnny"}}`,
@@ -427,6 +434,14 @@ func TestValidateRequest(t *testing.T) {
 				},
 
 				// errors
+				{
+					name:    "null value - two inputs - null for optional field",
+					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": null}}`,
+					opName:  "updateNameAndNickname",
+					errors: map[string]string{
+						"values.nickName": "Invalid type. Expected: string, given: null",
+					},
+				},
 				{
 					name:    "missing required value",
 					request: `{"where": {"id": "1234"}, "values": {}}`,
@@ -506,11 +521,6 @@ func TestValidateRequest(t *testing.T) {
 					name:    "valid - no inputs",
 					opName:  "listBooks",
 					request: `{"where": {}}`,
-				},
-				{
-					name:    "valid - optional inputs can be null",
-					opName:  "listBooks",
-					request: `{"where": {"id": null, "title": null, "genre": null, "price": null, "available": null, "createdAt": null}}`,
 				},
 				{
 					name:    "valid - text equals",
@@ -647,13 +657,21 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooksByPublisherName",
 					request: `{"where": {"authorPublisherName": {"equals": "Jim"}}}`,
 				},
-				{
-					name:    "valid - nullable nested model field",
-					opName:  "listBooksByPublisherDateFounded",
-					request: `{"where": {"authorPublisherDateFounded": null}}`,
-				},
 
 				// errors
+				{
+					name:    "optional inputs cannot be null",
+					opName:  "listBooks",
+					request: `{"where": {"id": null, "title": null, "genre": null, "price": null, "available": null, "createdAt": null}}`,
+					errors: map[string]string{
+						"where.available": `Invalid type. Expected: object, given: null`,
+						"where.createdAt": `Invalid type. Expected: object, given: null`,
+						"where.genre":     `Invalid type. Expected: object, given: null`,
+						"where.id":        `Invalid type. Expected: object, given: null`,
+						"where.title":     `Invalid type. Expected: object, given: null`,
+						"where.price":     `Invalid type. Expected: object, given: null`,
+					},
+				},
 				{
 					name:    "text unknown filter",
 					opName:  "listBooks",
@@ -667,7 +685,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"equals": "Sci-fi"}}}`,
 					errors: map[string]string{
-						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror", null`,
+						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror"`,
 					},
 				},
 				{
@@ -675,7 +693,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"oneOf": ["Sci-fi"]}}}`,
 					errors: map[string]string{
-						"where.genre.oneOf.0": `where.genre.oneOf.0 must be one of the following: "Romance", "Horror", null`,
+						"where.genre.oneOf.0": `where.genre.oneOf.0 must be one of the following: "Romance", "Horror"`,
 					},
 				},
 				{
@@ -701,6 +719,14 @@ func TestValidateRequest(t *testing.T) {
 					errors: map[string]string{
 						"where.title": `Invalid type. Expected: string, given: object`,
 						"where.genre": `where.genre must be one of the following: "Romance", "Horror"`,
+					},
+				},
+				{
+					name:    "null value - nullable nested model field",
+					opName:  "listBooksByPublisherDateFounded",
+					request: `{"where": {"authorPublisherDateFounded": null}}`,
+					errors: map[string]string{
+						"where.authorPublisherDateFounded": `Invalid type. Expected: object, given: null`,
 					},
 				},
 			},
@@ -767,9 +793,12 @@ func TestValidateRequest(t *testing.T) {
 					request: "true",
 				},
 				{
-					name:    "valid - null",
+					name:    "invalid - null",
 					opName:  "getWhatever",
 					request: "null",
+					errors: map[string]string{
+						"(root)": `Invalid type. Expected: [string,object,array,integer,number,boolean], given: null`,
+					},
 				},
 			},
 		},

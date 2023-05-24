@@ -10,16 +10,6 @@
         },
         "required": ["bool"],
         "type": "object"
-      },
-      "NullableNestedObject": {
-        "additionalProperties": false,
-        "properties": {
-          "bool": {
-            "type": "boolean"
-          }
-        },
-        "required": ["bool"],
-        "type": ["object", "null"]
       }
     }
   },
@@ -32,7 +22,7 @@
       "$ref": "#/components/schemas/NestedObject"
     },
     "optionalNested": {
-      "$ref": "#/components/schemas/NullableNestedObject"
+      "$ref": "#/components/schemas/NestedObject"
     }
   },
   "additionalProperties": false,

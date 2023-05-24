@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	AnyTypes = []string{"string", "object", "array", "integer", "number", "boolean", "null"}
+	AnyTypes = []string{"string", "object", "array", "integer", "number", "boolean"}
 )
 
 var (
@@ -91,14 +91,14 @@ func ValidateResponse(ctx context.Context, schema *proto.Schema, op *proto.Opera
 
 func JSONSchemaForOperationInput(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
 	inputMessage := proto.FindMessage(schema.Messages, op.InputMessageName)
-	return JSONSchemaForMessage(ctx, schema, op, inputMessage)
+	return JSONSchemaForMessage(ctx, schema, op, inputMessage, false)
 }
 
 func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
 	if op.ResponseMessageName != "" {
 		responseMsg := proto.FindMessage(schema.Messages, op.ResponseMessageName)
 
-		return JSONSchemaForMessage(ctx, schema, op, responseMsg)
+		return JSONSchemaForMessage(ctx, schema, op, responseMsg, true)
 	}
 
 	// If we've reached this point then we know that we are dealing with built-in operations
@@ -146,7 +146,7 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 
 // Generates JSONSchema for an operation by generating properties for the root input message.
 // Any subsequent nested messages are referenced.
-func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.Operation, message *proto.Message) JSONSchema {
+func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.Operation, message *proto.Message, isResponse bool) JSONSchema {
 	components := Components{
 		Schemas: map[string]JSONSchema{},
 	}
@@ -166,7 +166,8 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.O
 
 	if !isAny {
 		for _, field := range message.Fields {
-			prop := jsonSchemaForField(ctx, schema, op, field.Type, field.Optional)
+			allowNull := isResponse && field.Optional
+			prop := jsonSchemaForField(ctx, schema, op, field.Type, allowNull)
 
 			// Merge components from this request schema into OpenAPI components
 			if prop.Components != nil {
@@ -229,7 +230,6 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 	schemas := map[string]JSONSchema{}
 
 	components.Schemas[model.Name] = definitionSchema
-
 	schemas[model.Name] = definitionSchema
 
 	s.Components = components
@@ -237,12 +237,11 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 	return s
 }
 
-func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Operation, t *proto.TypeInfo, isOptional bool) JSONSchema {
+func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Operation, t *proto.TypeInfo, allowNull bool) JSONSchema {
 	components := &Components{
 		Schemas: map[string]JSONSchema{},
 	}
 	prop := JSONSchema{}
-	nullable := isOptional
 
 	switch t.Type {
 	case proto.Type_TYPE_ANY:
@@ -250,7 +249,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 	case proto.Type_TYPE_MESSAGE:
 		// Add the nested message to schema components.
 		message := proto.FindMessage(schema.Messages, t.MessageName.Value)
-		component := JSONSchemaForMessage(ctx, schema, op, message)
+		component := JSONSchemaForMessage(ctx, schema, op, message, allowNull)
 
 		// If that nested message component has ref fields itself, then its components must be bundled.
 		if component.Components != nil {
@@ -261,9 +260,8 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		}
 
 		name := t.MessageName.Value
-		if nullable {
+		if allowNull {
 			component.allowNull()
-			name = "Nullable" + name
 		}
 
 		if t.Repeated {
@@ -313,7 +311,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 			prop.Enum = append(prop.Enum, &v.Name)
 		}
 
-		if nullable {
+		if allowNull {
 			prop.allowNull()
 		}
 	}
@@ -324,7 +322,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		prop.Type = "array"
 	}
 
-	if nullable {
+	if allowNull {
 		prop.allowNull()
 	}
 
