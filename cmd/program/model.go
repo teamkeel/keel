@@ -194,12 +194,6 @@ func (m *Model) Init() tea.Cmd {
 	}
 }
 
-func NextMsgCommand(ch chan tea.Msg) tea.Cmd {
-	return func() tea.Msg {
-		return <-ch
-	}
-}
-
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -289,20 +283,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		return m, tea.Batch(cmds...)
-	case ScaffoldMsg:
-		m.GeneratedFiles = msg.GeneratedFiles
-		m.Status = StatusScaffolded
-		return m, tea.Quit
 	case LoadSchemaMsg:
 		m.Schema = msg.Schema
 		m.SchemaFiles = msg.SchemaFiles
 		m.Config = msg.Config
 		m.Err = msg.Err
 		m.Secrets = msg.Secrets
-
-		if m.Mode == ModeScaffold {
-			return m, Scaffold(m.ProjectDir)
-		}
 
 		// For validate mode we're done
 		if m.Mode == ModeValidate {
@@ -518,8 +504,6 @@ func (m *Model) View() string {
 		b.WriteString(renderValidate(m))
 	case ModeTest:
 		b.WriteString(renderTest(m))
-	case ModeScaffold:
-		b.WriteString(renderScaffold(m))
 	case ModeInit:
 		b.WriteString(renderInit(m))
 	}

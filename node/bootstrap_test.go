@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/testhelpers"
 )
 
 func TestBootstrap(t *testing.T) {
@@ -28,7 +29,12 @@ func TestBootstrap(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	files, err := node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	require.NoError(t, err)
+
+	require.NoError(t, files.Write(tmpDir))
+
+	_, err = testhelpers.NpmInstall(tmpDir)
 	require.NoError(t, err)
 
 	entries, err := os.ReadDir(tmpDir)
@@ -63,8 +69,9 @@ func TestBootstrapVersionInterpolation(t *testing.T) {
 
 	runtime.Version = testVersion
 
-	err = node.Bootstrap(tmpDir)
+	files, err := node.Bootstrap(tmpDir)
 	require.NoError(t, err)
+	require.NoError(t, files.Write(tmpDir))
 
 	packageJsonContents, err := os.ReadFile(filepath.Join(tmpDir, "package.json"))
 	assert.NoError(t, err)
@@ -95,8 +102,9 @@ func TestBootstrapPackageJSONExists(t *testing.T) {
 	err = os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte("{}"), 0777)
 	assert.NoError(t, err)
 
-	err = node.Bootstrap(tmpDir)
+	files, err := node.Bootstrap(tmpDir)
 	assert.NoError(t, err)
+	require.NoError(t, files.Write(tmpDir))
 
 	entries, err := os.ReadDir(tmpDir)
 	assert.NoError(t, err)

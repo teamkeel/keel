@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/go-version"
+	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/runtime"
 )
 
@@ -32,17 +33,18 @@ type BootstrapOption func(o *bootstrapOptions)
 
 // Bootstrap sets dir up to use either custom functions or write tests. It will do nothing
 // if there is already a package.json present in the directory.
-func Bootstrap(dir string, opts ...BootstrapOption) error {
+func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, error) {
 	_, err := os.Stat(filepath.Join(dir, "package.json"))
+	// todo: this probably isn't what we want
 	// No error - we have a package.json so we're done
 	if err == nil {
-		return nil
+		return codegen.GeneratedFiles{}, nil
 	}
 
 	// A "not exists" error is fine, that means we're generating a fresh package.json
 	// Bail on all other errors
 	if !os.IsNotExist(err) {
-		return err
+		return codegen.GeneratedFiles{}, nil
 	}
 
 	options := &bootstrapOptions{}
@@ -58,53 +60,50 @@ func Bootstrap(dir string, opts ...BootstrapOption) error {
 		testingRuntimeVersion = filepath.Join(options.packagesPath, "testing-runtime")
 	}
 
-	err = os.WriteFile(filepath.Join(dir, "package.json"), []byte(fmt.Sprintf(`{
-		"name": "%s",
-		"dependencies": {
-			"@teamkeel/functions-runtime": "%s",
-			"@teamkeel/testing-runtime": "%s",
-			"@types/node": "^18.11.18",
-			"kysely": "^0.23.4",
-			"tsx": "^3.12.6",
-			"typescript": "^4.9.4",
-			"vitest": "^0.27.2",
-			"node-fetch": "^3.3.0"
-		}
-	}`, filepath.Base(dir), functionsRuntimeVersion, testingRuntimeVersion)), 0644)
+	files := codegen.GeneratedFiles{}
+
+	files = append(files, &codegen.GeneratedFile{
+		Path: "package.json",
+		Contents: fmt.Sprintf(`{
+			"name": "%s",
+			"dependencies": {
+				"@teamkeel/functions-runtime": "%s",
+				"@teamkeel/testing-runtime": "%s",
+				"@types/node": "^18.11.18",
+				"kysely": "^0.23.4",
+				"tsx": "^3.12.6",
+				"typescript": "^4.9.4",
+				"vitest": "^0.27.2",
+				"node-fetch": "^3.3.0"
+			}
+		}`, filepath.Base(dir), functionsRuntimeVersion, testingRuntimeVersion),
+	})
+
+	files = append(files, &codegen.GeneratedFile{
+		Path: "tsconfig.json",
+		Contents: `{
+			"compilerOptions": {
+				"lib": ["ES2016"],
+				"target": "ES2016",
+				"esModuleInterop": true,
+				"moduleResolution": "node",
+				"skipLibCheck": true,
+				"strictNullChecks": true,
+				"types": ["node"],
+				"allowJs": true
+			},
+			"include": ["**/*.ts"],
+			"exclude": ["node_modules"]
+		}`,
+	})
+
+	err = files.Write(dir)
+
 	if err != nil {
-		return err
+		return codegen.GeneratedFiles{}, err
 	}
 
-	err = os.WriteFile(filepath.Join(dir, "tsconfig.json"), []byte(`{
-		"compilerOptions": {
-			"lib": ["ES2016"],
-			"target": "ES2016",
-			"esModuleInterop": true,
-			"moduleResolution": "node",
-			"skipLibCheck": true,
-			"strictNullChecks": true,
-			"types": ["node"],
-			"allowJs": true
-		},
-		"include": ["**/*.ts"],
-		"exclude": ["node_modules"]
-	}`), 0644)
-	if err != nil {
-		return err
-	}
-
-	npmInstall := exec.Command("npm", "install", "--progress=false", "--no-audit")
-	npmInstall.Dir = dir
-
-	o, err := npmInstall.CombinedOutput()
-	if err != nil {
-		return &NpmInstallError{
-			Output: string(o),
-			err:    err,
-		}
-	}
-
-	return nil
+	return files, nil
 }
 
 func CheckNodeVersion() error {

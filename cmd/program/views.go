@@ -3,7 +3,6 @@ package program
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 	"sort"
 	"strings"
 
@@ -17,39 +16,6 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
-
-func renderScaffold(m *Model) string {
-	b := strings.Builder{}
-	b.WriteString("\n")
-
-	if m.Schema != nil && m.Status == StatusScaffolded {
-		switch {
-		case m.Err != nil:
-			b.WriteString(m.Err.Error())
-		case len(m.GeneratedFiles) > 0:
-			b.WriteString("The following files were generated:\n\n")
-
-			for _, generatedFile := range m.GeneratedFiles {
-				functionName := strings.Split(filepath.Base(generatedFile.Path), ".")[0]
-				parts := strings.Split(generatedFile.Path, "/")
-				prePath := filepath.Join(parts[0 : len(parts)-1]...)
-
-				b.WriteString(
-					colors.Gray(
-						fmt.Sprintf("- %s/%s.ts", prePath, colors.Cyan(functionName).String()),
-					).Highlight().String(),
-				)
-				b.WriteString("\n")
-			}
-
-			b.WriteString("\n\n")
-		default:
-			b.WriteString("No functions to generate.")
-		}
-	}
-
-	return b.String()
-}
 
 func renderInit(m *Model) string {
 	b := strings.Builder{}
@@ -299,7 +265,7 @@ func renderError(m *Model) string {
 		tscError := &TypeScriptError{}
 		if errors.As(m.Err, &tscError) && tscError.Output != "" {
 			if strings.Contains(tscError.Output, "No inputs were found in config file") {
-				b.WriteString("❌ Your functions/ folder is empty")
+				b.WriteString(fmt.Sprintf("❌ Your functions/ folder is empty. Please run %s", colors.Cyan("keel generate").String()))
 			} else {
 				b.WriteString("❌ We found the following errors in your function code:\n\n")
 				b.WriteString(tscError.Output)

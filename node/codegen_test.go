@@ -20,6 +20,7 @@ import (
 	"github.com/teamkeel/keel/colors"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/testhelpers"
 )
 
 const testSchema = `
@@ -1133,7 +1134,10 @@ func TestTestingActionExecutor(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
+	_, err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
+	require.NoError(t, err)
+
+	_, err = testhelpers.NpmInstall(tmpDir)
 	require.NoError(t, err)
 
 	err = codegen.GeneratedFiles{
@@ -1227,7 +1231,10 @@ func TestSDKTypings(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
+	_, err = Bootstrap(tmpDir, WithPackagesPath(filepath.Join(wd, "../packages")))
+	require.NoError(t, err)
+
+	_, err = testhelpers.NpmInstall(tmpDir)
 	require.NoError(t, err)
 
 	err = codegen.GeneratedFiles{

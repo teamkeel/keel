@@ -16,6 +16,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/testing"
 )
 
@@ -28,7 +29,12 @@ func TestIntegration(t *gotest.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	files, err := node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	require.NoError(t, err)
+
+	require.NoError(t, files.Write(tmpDir))
+
+	_, err = testhelpers.NpmInstall(tmpDir)
 	require.NoError(t, err)
 
 	// Whatever files/dirs are present now can stay between tests

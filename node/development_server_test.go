@@ -15,6 +15,7 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/schema"
+	"github.com/teamkeel/keel/testhelpers"
 )
 
 func TestDevelopmentServer(t *testing.T) {
@@ -101,10 +102,16 @@ func TestDevelopmentServerStartError(t *testing.T) {
 func runDevelopmentServerTest(t *testing.T, files codegen.GeneratedFiles, fn func(*node.DevelopmentServer, error)) {
 	tmpDir := t.TempDir()
 
+	require.NoError(t, files.Write(tmpDir))
+
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 
-	err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	files, err = node.Bootstrap(tmpDir, node.WithPackagesPath(filepath.Join(wd, "../packages")))
+	require.NoError(t, err)
+	require.NoError(t, files.Write(tmpDir))
+
+	_, err = testhelpers.NpmInstall(tmpDir)
 	require.NoError(t, err)
 
 	err = files.Write(tmpDir)
