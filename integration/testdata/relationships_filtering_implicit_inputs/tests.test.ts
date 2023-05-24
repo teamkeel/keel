@@ -21,8 +21,8 @@ test("get operation implicit inputs with M:1 relations - all models active - mod
 
   const post = await actions.getActivePost({
     id: firstpost.id,
-    theAuthorThePublisherIsActive: true,
-    theAuthorIsActive: true,
+    theAuthorThePublisherIsActive: { value: true },
+    theAuthorIsActive: { value: true },
     isActive: true,
   });
 
@@ -48,8 +48,8 @@ test("get operation implicit inputs with M:1 relations - post model not active -
   expect(
     await actions.getActivePost({
       id: firstpost.id,
-      theAuthorThePublisherIsActive: true,
-      theAuthorIsActive: true,
+      theAuthorThePublisherIsActive: { value: true },
+      theAuthorIsActive: { value: true },
       isActive: true,
     })
   ).toEqual(null);
@@ -74,8 +74,8 @@ test("get operation implicit inputs with M:1 relations - nested author model not
   expect(
     await actions.getActivePost({
       id: firstpost.id,
-      theAuthorThePublisherIsActive: true,
-      theAuthorIsActive: true,
+      theAuthorThePublisherIsActive: { value: true },
+      theAuthorIsActive: { value: true },
       isActive: true,
     })
   ).toEqual(null);
@@ -100,8 +100,8 @@ test("get operation implicit inputs with M:1 relations - nested nested publisher
   expect(
     await actions.getActivePost({
       id: firstpost.id,
-      theAuthorThePublisherIsActive: true,
-      theAuthorIsActive: true,
+      theAuthorThePublisherIsActive: { value: true },
+      theAuthorIsActive: { value: true },
       isActive: true,
     })
   ).toEqual(null);
@@ -773,7 +773,7 @@ test("implicit inputs which references models multiple times - Keel has active p
 
   const post = await actions.getPostModelsReferencedMoreThanOnce({
     id: post1.id,
-    theAuthorThePublisherTheAuthorsThePostsIsActive: true,
+    theAuthorThePublisherTheAuthorsThePostsIsActive: { value: true },
   });
 
   expect(post!.id).toEqual(post1.id);
@@ -781,7 +781,7 @@ test("implicit inputs which references models multiple times - Keel has active p
   expect(
     await actions.getPostModelsReferencedMoreThanOnce({
       id: post3.id,
-      theAuthorThePublisherTheAuthorsThePostsIsActive: true,
+      theAuthorThePublisherTheAuthorsThePostsIsActive: { value: true },
     })
   ).toEqual(null);
 });
@@ -804,8 +804,8 @@ test("delete operation where expressions with M:1 relations - all models active 
 
   const deletedId = await actions.deleteActivePost({
     id: firstpost.id,
-    theAuthorThePublisherIsActive: true,
-    theAuthorIsActive: true,
+    theAuthorThePublisherIsActive: { value: true },
+    theAuthorIsActive: { value: true },
     isActive: true,
   });
 
@@ -831,8 +831,8 @@ test("delete operation where expressions with M:1 relations - post model not act
   await expect(
     actions.deleteActivePost({
       id: firstpost.id,
-      theAuthorThePublisherIsActive: true,
-      theAuthorIsActive: true,
+      theAuthorThePublisherIsActive: { value: true },
+      theAuthorIsActive: { value: true },
       isActive: true,
     })
   ).toHaveError({
@@ -859,8 +859,8 @@ test("delete operation where expressions with M:1 relations - publisher model no
   await expect(
     actions.deleteActivePost({
       id: firstpost.id,
-      theAuthorThePublisherIsActive: true,
-      theAuthorIsActive: true,
+      theAuthorThePublisherIsActive: { value: true },
+      theAuthorIsActive: { value: true },
       isActive: true,
     })
   ).toHaveError({

@@ -3,6 +3,7 @@ package openapi_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,6 +28,7 @@ func TestGeneration(t *testing.T) {
 
 	for _, e := range entries {
 		caseName := strings.TrimSuffix(e.Name(), filepath.Ext(e.Name()))
+
 		c, ok := cases[caseName]
 		if !ok {
 			c = &testCase{}
@@ -57,6 +59,8 @@ func TestGeneration(t *testing.T) {
 
 			if diff != jsondiff.FullMatch {
 				t.Errorf("actual JSON schema does not match expected: %s", explanation)
+				fmt.Println("Actual:")
+				fmt.Println(string(actual))
 			}
 		})
 	}

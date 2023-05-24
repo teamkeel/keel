@@ -8,6 +8,7 @@ test("creating a person", async () => {
     name: "foo",
     gender: "female",
     niNumber: "282",
+    slackId: { isNull: true },
   });
 
   expect(person.name).toEqual("foo");
@@ -168,6 +169,7 @@ test("uniqueness constraint violation", async () => {
       name: "bob",
       niNumber: person.niNumber,
       gender: "non-binary",
+      slackId: { isNull: true },
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",

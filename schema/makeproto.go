@@ -62,7 +62,7 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	return scm.proto
 }
 
-func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.Message, error) {
+func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) *proto.Message {
 	var message *proto.Message
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
@@ -283,7 +283,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 			},
 		}}
 	default:
-		return nil, fmt.Errorf("unsupported query type %s", typeInfo.Type.String())
+		panic(fmt.Errorf("unsupported query type %s", typeInfo.Type.String()))
 	}
 
 	// If the field is optional, then we need to return a Nullable query type,
@@ -301,7 +301,48 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 		message.Fields = append(message.Fields, &nullableField)
 	}
 
-	return message, nil
+	return message
+}
+
+func makeNullableMutateInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
+	message := &proto.Message{Fields: []*proto.MessageField{
+		{
+			Name:     "value",
+			Optional: true,
+			Type: &proto.TypeInfo{
+				Type:     typeInfo.Type,
+				EnumName: typeInfo.EnumName,
+			},
+		},
+		{
+			Name:     "isNull",
+			Optional: true,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_BOOL,
+			},
+		},
+	}}
+
+	switch typeInfo.Type {
+	case proto.Type_TYPE_ID:
+		message.Name = "NullableIDValue"
+	case proto.Type_TYPE_STRING:
+		message.Name = "NullableStringValue"
+	case proto.Type_TYPE_INT:
+		message.Name = "NullableIntValue"
+	case proto.Type_TYPE_BOOL:
+		message.Name = "NullableBooleanValue"
+	case proto.Type_TYPE_DATE:
+		message.Name = "NullableDateValue"
+	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
+		message.Name = "NullableTimestampValue"
+	case proto.Type_TYPE_ENUM:
+		message.Name = fmt.Sprintf("Nullable%sValue", typeInfo.EnumName.Value)
+	default:
+		panic(fmt.Errorf("unsupported query type %s", typeInfo.Type.String()))
+	}
+
+	return message
 }
 
 // Creates a proto.Message from a slice of action inputs.
@@ -310,13 +351,32 @@ func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parse
 	for _, input := range inputs {
 		typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
-		fields = append(fields, &proto.MessageField{
-			Name:        input.Name(),
-			Type:        typeInfo,
-			Target:      target,
-			Optional:    input.Optional || targetsOptionalField,
-			MessageName: name,
-		})
+		if targetsOptionalField {
+			message := makeNullableMutateInputMessage(typeInfo)
+
+			// Make sure this query input message hasn't already been added by another input.
+			if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
+				scm.proto.Messages = append(scm.proto.Messages, message)
+			}
+
+			fields = append(fields, &proto.MessageField{
+				Name: input.Name(),
+				Type: &proto.TypeInfo{
+					Type:        proto.Type_TYPE_MESSAGE,
+					MessageName: wrapperspb.String(message.Name)},
+				Target:      target,
+				Optional:    input.Optional,
+				MessageName: name,
+			})
+		} else {
+			fields = append(fields, &proto.MessageField{
+				Name:        input.Name(),
+				Type:        typeInfo,
+				Target:      target,
+				Optional:    input.Optional,
+				MessageName: name,
+			})
+		}
 	}
 
 	return &proto.Message{
@@ -389,14 +449,34 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 		} else {
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
-			// If this is the last or only target, then we add the field to the current message using the typeInfo.
-			currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
-				Name:        fragment,
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    input.Optional || targetsOptionalField,
-				MessageName: currMessage.Name,
-			})
+			if targetsOptionalField {
+				message := makeNullableMutateInputMessage(typeInfo)
+
+				// Make sure this query input message hasn't already been added by another input.
+				if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
+					scm.proto.Messages = append(scm.proto.Messages, message)
+				}
+
+				// If this is the last or only target, then we add the field to the current message using the typeInfo.
+				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
+					Name: fragment,
+					Type: &proto.TypeInfo{
+						Type:        proto.Type_TYPE_MESSAGE,
+						MessageName: wrapperspb.String(message.Name)},
+					Target:      target,
+					Optional:    input.Optional,
+					MessageName: currMessage.Name,
+				})
+			} else {
+				// If this is the last or only target, then we add the field to the current message using the typeInfo.
+				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
+					Name:        fragment,
+					Type:        typeInfo,
+					Target:      target,
+					Optional:    input.Optional || targetsOptionalField,
+					MessageName: currMessage.Name,
+				})
+			}
 		}
 	}
 }
@@ -430,11 +510,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	case parser.ActionTypeGet, parser.ActionTypeDelete, parser.ActionTypeRead, parser.ActionTypeWrite:
 		// Create message and add it to the proto schema
 		messageName := makeInputMessageName(action.Name.Value)
+
 		message := scm.makeMessageFromActionInputNodes(messageName, action.Inputs, model, action, impl)
 		scm.proto.Messages = append(scm.proto.Messages, message)
 	case parser.ActionTypeUpdate:
 		// Create where message and add it to the proto schema
 		whereMessageName := makeWhereMessageName(action.Name.Value)
+
 		whereMessage := scm.makeMessageFromActionInputNodes(whereMessageName, action.Inputs, model, action, impl)
 		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
 
@@ -495,12 +577,9 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
 			if target != nil {
-				queryMessage, err := makeListQueryInputMessage(typeInfo, targetsOptionalField)
+				queryMessage := makeListQueryInputMessage(typeInfo, targetsOptionalField)
 
-				if err != nil {
-					continue
-				}
-
+				// Make sure this query input message hasn't already been added by another input.
 				if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == queryMessage.Name }) {
 					scm.proto.Messages = append(scm.proto.Messages, queryMessage)
 				}
@@ -511,14 +590,14 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 						Type:        proto.Type_TYPE_MESSAGE,
 						MessageName: wrapperspb.String(queryMessage.Name)},
 					Target:      target,
-					Optional:    input.Optional || targetsOptionalField,
+					Optional:    input.Optional,
 					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			} else {
 				wheres = append(wheres, &proto.MessageField{
 					Name:        input.Name(),
 					Type:        typeInfo,
-					Optional:    input.Optional || targetsOptionalField,
+					Optional:    input.Optional,
 					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			}

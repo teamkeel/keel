@@ -201,14 +201,31 @@
           "messageName": "OpBValues",
           "name": "name",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Foo",
-            "fieldName": "name"
+            "type": "TYPE_MESSAGE",
+            "messageName": "NullableStringValue"
           },
-          "optional": true,
           "target": [
             "name"
           ]
+        }
+      ]
+    },
+    {
+      "name": "NullableStringValue",
+      "fields": [
+        {
+          "name": "value",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true
+        },
+        {
+          "name": "isNull",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
         }
       ]
     },
@@ -229,8 +246,7 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "OpBValues"
-          },
-          "optional": true
+          }
         }
       ]
     },
