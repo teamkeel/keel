@@ -1,3 +1,10 @@
+# [0.324.0](https://github.com/teamkeel/keel/compare/v0.323.4...v0.324.0) (2023-05-24)
+
+
+### Features
+
+* generate cmd ([#981](https://github.com/teamkeel/keel/issues/981)) ([182ef66](https://github.com/teamkeel/keel/commit/182ef66b07288c240070eecab1b45e07bd6e6c9f))
+
 ## [0.323.4](https://github.com/teamkeel/keel/compare/v0.323.3...v0.323.4) (2023-05-22)
 
 
