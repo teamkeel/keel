@@ -10,7 +10,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Fi"
           },
-          "foreignKeyFieldName": "theFiId"
+          "foreignKeyFieldName": "theFiId",
+          "inverseFieldName": "theFees"
         },
         {
           "modelName": "Fee",
@@ -82,7 +83,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Fo"
           },
-          "foreignKeyFieldName": "theFoId"
+          "foreignKeyFieldName": "theFoId",
+          "inverseFieldName": "theFis"
         },
         {
           "modelName": "Fi",
@@ -91,7 +93,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Fee",
             "repeated": true
-          }
+          },
+          "inverseFieldName": "theFi"
         },
         {
           "modelName": "Fi",
@@ -147,7 +150,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Fum"
           },
-          "foreignKeyFieldName": "theFumId"
+          "foreignKeyFieldName": "theFumId",
+          "inverseFieldName": "theFos"
         },
         {
           "modelName": "Fo",
@@ -156,7 +160,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Fi",
             "repeated": true
-          }
+          },
+          "inverseFieldName": "theFo"
         },
         {
           "modelName": "Fo",
@@ -212,7 +217,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Fo",
             "repeated": true
-          }
+          },
+          "inverseFieldName": "theFum"
         },
         {
           "modelName": "Fum",

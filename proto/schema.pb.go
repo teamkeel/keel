@@ -503,16 +503,11 @@ type Field struct {
 	// If it is non null it *defines* this field as being a foreign key field,
 	// and carries corresponding metadata.
 	ForeignKeyInfo *ForeignKeyInfo `protobuf:"bytes,11,opt,name=foreign_key_info,json=foreignKeyInfo,proto3" json:"foreign_key_info,omitempty"`
-	// In this schema, the @relation attribute disambiguates Post.author as being
-	// an "inverse" relation to Author.wrotePosts.
-	//
-	//	model Post
-	//	  author Author @relation(wrotePosts)
-	//	model Author
-	//	  wrotePosts Post[]
-	//
-	// In such a case, the Author.wrotePosts field would have its inverse_field_name set to
-	// "author".
+	// If this field is of type MODEL and the related model has an inverse field
+	// to this one, then this field is set to that field name.
+	// For example if a Post model has a field called author which is of type Author,
+	// and then Author has posts which is of type Post, on the Post.author field this
+	// value will be "posts" and on the Author.posts field this value will be "author".
 	InverseFieldName *wrapperspb.StringValue `protobuf:"bytes,12,opt,name=inverse_field_name,json=inverseFieldName,proto3" json:"inverse_field_name,omitempty"`
 }
 

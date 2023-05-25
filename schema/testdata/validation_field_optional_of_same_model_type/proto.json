@@ -11,7 +11,8 @@
             "modelName": "Person"
           },
           "optional": true,
-          "foreignKeyFieldName": "personId"
+          "foreignKeyFieldName": "personId",
+          "inverseFieldName": "person"
         },
         {
           "modelName": "Person",

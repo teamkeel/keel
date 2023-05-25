@@ -17,7 +17,8 @@
             "type": "TYPE_MODEL",
             "modelName": "SaleItem",
             "repeated": true
-          }
+          },
+          "inverseFieldName": "sale"
         },
         {
           "modelName": "Sale",
@@ -85,7 +86,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Sale"
           },
-          "foreignKeyFieldName": "saleId"
+          "foreignKeyFieldName": "saleId",
+          "inverseFieldName": "items"
         },
         {
           "modelName": "SaleItem",
