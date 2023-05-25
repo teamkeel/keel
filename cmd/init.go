@@ -10,14 +10,25 @@ import (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Args:  cobra.MaximumNArgs(1),
+	Args:  cobra.RangeArgs(0, 1),
 	Short: "Initializes a new Keel project",
 	Run: func(cmd *cobra.Command, args []string) {
-		model := &program.InitModel{
-			ProjectDir: args[0],
+		cwd, err := os.Getwd()
+		if err != nil {
+			panic(err)
 		}
 
-		_, err := tea.NewProgram(model).Run()
+		dir := cwd
+
+		if len(args) > 0 {
+			dir = args[0]
+		}
+
+		model := &program.InitModel{
+			ProjectDir: dir,
+		}
+
+		_, err = tea.NewProgram(model).Run()
 		if err != nil {
 			panic(err)
 		}
