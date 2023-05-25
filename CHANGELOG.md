@@ -1,3 +1,10 @@
+## [0.324.1](https://github.com/teamkeel/keel/compare/v0.324.0...v0.324.1) (2023-05-25)
+
+
+### Bug Fixes
+
+* minor generate fixes ([#985](https://github.com/teamkeel/keel/issues/985)) ([af5413b](https://github.com/teamkeel/keel/commit/af5413b06540fd4fe0875d9ffbebeaf4a3e7bd72))
+
 # [0.324.0](https://github.com/teamkeel/keel/compare/v0.323.4...v0.324.0) (2023-05-24)
 
 
