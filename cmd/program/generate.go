@@ -113,11 +113,15 @@ func (m *GenerateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.GeneratedFiles = append(m.GeneratedFiles, msg.GeneratedFiles...)
 		m.Err = msg.Err
 
-		if m.Status == StatusGenerated {
+		switch m.Status {
+		case StatusGenerated, StatusNotGenerated:
+			// if generation has finished successfully or generation was aborted
+			// due to there being no tests / functions in the schema we can quit now.
 			return m, tea.Quit
+		default:
+			// otherwise, keep reading from the channel
+			return m, NextMsgCommand(m.generateCh)
 		}
-
-		return m, NextMsgCommand(m.generateCh)
 	default:
 		var cmd tea.Cmd
 		m.npmInstallSpinner, cmd = m.npmInstallSpinner.Update(msg)
@@ -150,88 +154,88 @@ func (m *GenerateModel) renderGenerate() string {
 			b.WriteString(colors.Red(fmt.Sprintf("Error: %s", m.Err.Error())).String())
 		} else {
 			b.WriteString(colors.Blue("⚠️  Not required").String())
-			b.WriteString("\n")
-			b.WriteString(
-				colors.White(
-					fmt.Sprintf("In order to use %s, define some functions in your schema, or write some tests.", colors.Cyan("generate").String()),
-				).String(),
-			)
+			b.WriteString("\n\n")
+			b.WriteString(colors.Gray("In order to use the ").String())
+			b.WriteString(colors.Cyan("generate").String())
+			b.WriteString(colors.Gray(" command, define some functions in your schema, or write some tests.").String())
 			b.WriteString("\n\n")
 			b.WriteString(colors.Gray("For more information, visit https://keel.notaku.site/documentation/cli-and-local-development").String())
 		}
 
-	} else {
+		b.WriteString("\n")
 
-		if m.Status >= StatusBootstrapping {
-			b.WriteString(fmt.Sprintf("%s\n", colors.Cyan("🥾 Bootstrapping..").String()))
-			relevant := m.filterLogsByStage(StatusBootstrapping)
+		return b.String()
+	}
+
+	if m.Status >= StatusBootstrapping {
+		b.WriteString(fmt.Sprintf("%s\n", colors.Cyan("🥾 Bootstrapping..").String()))
+		relevant := m.filterLogsByStage(StatusBootstrapping)
+
+		for _, msg := range relevant {
+			b.WriteString(fmt.Sprintf("%s\n", colors.Gray(msg.Log).String()))
+		}
+	}
+
+	if m.Status >= StatusNpmInstalling {
+		b.WriteString("\n")
+
+		b.WriteString(colors.Cyan("🏃 Installing dependencies..").String())
+
+		if m.Status == StatusNpmInstalling {
+			b.WriteString("\n")
+			b.WriteString(m.npmInstallSpinner.View())
+		} else {
+			relevant := m.filterLogsByStage(StatusNpmInstalling)
 
 			for _, msg := range relevant {
 				b.WriteString(fmt.Sprintf("%s\n", colors.Gray(msg.Log).String()))
 			}
 		}
 
-		if m.Status >= StatusNpmInstalling {
-			b.WriteString("\n")
+	}
 
-			b.WriteString(colors.Cyan("🏃 Installing dependencies..").String())
+	if m.Status >= StatusGeneratingNodePackages {
+		b.WriteString("\n")
 
-			if m.Status == StatusNpmInstalling {
+		b.WriteString(fmt.Sprintf("%s\n", colors.Cyan("📦 Generating dynamic packages..").String()))
+		relevant := m.filterLogsByStage(StatusGeneratingNodePackages)
+
+		for _, msg := range relevant {
+			b.WriteString(fmt.Sprintf("%s\n", colors.Gray(msg.Log).String()))
+		}
+	}
+
+	if m.Status >= StatusScaffolding {
+		b.WriteString("\n")
+
+		b.WriteString(fmt.Sprintf("%s\n", colors.Cyan("👷 Scaffolding missing functions..").String()))
+
+		relevant := m.filterLogsByStage(StatusScaffolding)
+
+		for _, msg := range relevant {
+			b.WriteString(fmt.Sprintf("%s\n", colors.Gray(msg.Log).String()))
+		}
+	}
+	if m.Status >= StatusGenerated {
+		b.WriteString("\n")
+
+		b.WriteString(fmt.Sprintf("%s\n\n", colors.Green("✅ All done!").String()))
+
+		if len(m.GeneratedFiles) > 0 {
+			b.WriteString(fmt.Sprintf("%s\n\n", colors.Gray("The following functions were generated:").String()))
+
+			// output scaffolded file names with the function name highlighted in cyan
+			for _, generatedFile := range m.GeneratedFiles {
+				functionName := strings.Split(filepath.Base(generatedFile.Path), ".")[0]
+				parts := strings.Split(generatedFile.Path, "/")
+				prePath := filepath.Join(parts[0 : len(parts)-1]...)
+
+				b.WriteString(
+					colors.Gray(
+						fmt.Sprintf("- %s/%s%s", prePath, colors.Cyan(functionName).String(), colors.Gray(".ts").String()),
+					).Highlight().String(),
+				)
 				b.WriteString("\n")
-				b.WriteString(m.npmInstallSpinner.View())
-			} else {
-				relevant := m.filterLogsByStage(StatusNpmInstalling)
-
-				for _, msg := range relevant {
-					b.WriteString(fmt.Sprintf("%s\n", colors.Gray(msg.Log).String()))
-				}
-			}
-
-		}
-
-		if m.Status >= StatusGeneratingNodePackages {
-			b.WriteString("\n")
-
-			b.WriteString(fmt.Sprintf("%s\n", colors.Cyan("📦 Generating dynamic packages..").String()))
-			relevant := m.filterLogsByStage(StatusGeneratingNodePackages)
-
-			for _, msg := range relevant {
-				b.WriteString(fmt.Sprintf("%s\n", colors.Gray(msg.Log).String()))
-			}
-		}
-
-		if m.Status >= StatusScaffolding {
-			b.WriteString("\n")
-
-			b.WriteString(fmt.Sprintf("%s\n", colors.Cyan("👷 Scaffolding missing functions..").String()))
-
-			relevant := m.filterLogsByStage(StatusScaffolding)
-
-			for _, msg := range relevant {
-				b.WriteString(fmt.Sprintf("%s\n", colors.Gray(msg.Log).String()))
-			}
-		}
-		if m.Status >= StatusGenerated {
-			b.WriteString("\n")
-
-			b.WriteString(fmt.Sprintf("%s\n\n", colors.Green("✅ All done!").String()))
-
-			if len(m.GeneratedFiles) > 0 {
-				b.WriteString(fmt.Sprintf("%s\n\n", colors.Gray("The following functions were generated:").String()))
-
-				// output scaffolded file names with the function name highlighted in cyan
-				for _, generatedFile := range m.GeneratedFiles {
-					functionName := strings.Split(filepath.Base(generatedFile.Path), ".")[0]
-					parts := strings.Split(generatedFile.Path, "/")
-					prePath := filepath.Join(parts[0 : len(parts)-1]...)
-
-					b.WriteString(
-						colors.Gray(
-							fmt.Sprintf("- %s/%s%s", prePath, colors.Cyan(functionName).String(), colors.Gray(".ts").String()),
-						).Highlight().String(),
-					)
-					b.WriteString("\n")
-				}
 			}
 		}
 	}
