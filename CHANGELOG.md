@@ -1,3 +1,10 @@
+# [0.325.0](https://github.com/teamkeel/keel/compare/v0.324.1...v0.325.0) (2023-05-25)
+
+
+### Features
+
+* init cmd as standalone tea program ([#986](https://github.com/teamkeel/keel/issues/986)) ([9c837fa](https://github.com/teamkeel/keel/commit/9c837fa1d32ca45a9c17f0e431ea88b4020bfb56))
+
 ## [0.324.1](https://github.com/teamkeel/keel/compare/v0.324.0...v0.324.1) (2023-05-25)
 
 
