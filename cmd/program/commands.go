@@ -517,23 +517,17 @@ func (a *ApplyMigrationsError) Error() string {
 	return a.Err.Error()
 }
 
-func RunMigrations(schema *proto.Schema, connInfo *db.ConnectionInfo) tea.Cmd {
+func RunMigrations(schema *proto.Schema, database db.Database) tea.Cmd {
 	return func() tea.Msg {
-		db, err := db.New(context.Background(), connInfo)
+
+		m, err := migrations.New(context.Background(), schema, database)
 		if err != nil {
 			return RunMigrationsMsg{
-				Err: err,
+				Err: &ApplyMigrationsError{
+					Err: err,
+				},
 			}
 		}
-
-		currSchema, err := migrations.GetCurrentSchema(context.Background(), db)
-		if err != nil {
-			return RunMigrationsMsg{
-				Err: err,
-			}
-		}
-
-		m := migrations.New(schema, currSchema)
 
 		msg := RunMigrationsMsg{
 			Changes: m.Changes,
@@ -543,7 +537,7 @@ func RunMigrations(schema *proto.Schema, connInfo *db.ConnectionInfo) tea.Cmd {
 			return msg
 		}
 
-		err = m.Apply(context.Background(), db)
+		err = m.Apply(context.Background())
 		if err != nil {
 			msg.Err = &ApplyMigrationsError{
 				Err: err,

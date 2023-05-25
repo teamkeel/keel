@@ -18,7 +18,6 @@ var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
 	proto.Type_TYPE_TIMESTAMP: "TIMESTAMPTZ",
 	proto.Type_TYPE_DATETIME:  "TIMESTAMPTZ",
 	proto.Type_TYPE_DATE:      "DATE",
-	proto.Type_TYPE_MODEL:     "TEXT", // id of the target
 	proto.Type_TYPE_ENUM:      "TEXT",
 	proto.Type_TYPE_SECRET:    "TEXT",
 	proto.Type_TYPE_PASSWORD:  "TEXT",
@@ -64,11 +63,7 @@ func createTableStmt(model *proto.Model) string {
 
 	for _, field := range fields {
 		if field.Unique {
-			statements = append(statements, fmt.Sprintf(
-				"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
-				Identifier(model.Name),
-				UniqueConstraintName(model.Name, field.Name),
-				Identifier(field.Name)))
+			statements = append(statements, addUniqueConstraintStmt(model.Name, field.Name))
 		}
 		if field.PrimaryKey {
 			statements = append(statements, fmt.Sprintf(
@@ -86,6 +81,18 @@ func dropTableStmt(name string) string {
 	return fmt.Sprintf("DROP TABLE %s CASCADE;", Identifier(name))
 }
 
+func addUniqueConstraintStmt(modelName, fieldName string) string {
+	return fmt.Sprintf(
+		"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
+		Identifier(modelName),
+		UniqueConstraintName(modelName, fieldName),
+		Identifier(fieldName))
+}
+
+func dropConstraintStmt(tableName string, constraintName string) string {
+	return fmt.Sprintf("ALTER TABLE %s DROP CONSTRAINT %s;", Identifier(tableName), constraintName)
+}
+
 func addColumnStmt(modelName string, field *proto.Field) string {
 	statements := []string{}
 
@@ -94,13 +101,7 @@ func addColumnStmt(modelName string, field *proto.Field) string {
 	)
 
 	if field.Unique {
-		statements = append(statements,
-			fmt.Sprintf(
-				"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
-				Identifier(modelName),
-				UniqueConstraintName(modelName, field.Name),
-				Identifier(field.Name)),
-		)
+		statements = append(statements, addUniqueConstraintStmt(modelName, field.Name))
 	}
 
 	return strings.Join(statements, "\n")
@@ -118,29 +119,18 @@ func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable
 	)
 }
 
-func alterColumnStmt(modelName string, newField *proto.Field, currField *proto.Field) string {
+func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) string {
 	stmts := []string{}
 
-	if newField.Optional != currField.Optional {
-		output := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(currField.Name))
+	// these two flags are opposites of each other, so if they are both true
+	// or both false then there is a change to be applied
+	if field.Optional == column.NotNull {
+		output := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(column.ColumnName))
 
-		if newField.Optional && !currField.Optional {
+		if field.Optional && column.NotNull {
 			output += " DROP NOT NULL"
-		}
-		if !newField.Optional && currField.Optional {
-			output += " SET NOT NULL"
-		}
-		output += ";"
-		stmts = append(stmts, output)
-	}
-
-	if newField.Unique != currField.Unique {
-		constraintName := UniqueConstraintName(modelName, newField.Name)
-		output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
-		if !newField.Unique {
-			output += fmt.Sprintf("DROP CONSTRAINT %s", constraintName)
 		} else {
-			output += fmt.Sprintf("ADD CONSTRAINT %s UNIQUE (%s)", constraintName, Identifier(newField.Name))
+			output += " SET NOT NULL"
 		}
 		output += ";"
 		stmts = append(stmts, output)
@@ -160,23 +150,8 @@ func fieldDefinition(field *proto.Field) string {
 	return output
 }
 
-func dropColumnStmt(modelName string, field *proto.Field) string {
+func dropColumnStmt(modelName string, fieldName string) string {
 	output := fmt.Sprintf("ALTER TABLE %s ", Identifier(modelName))
-	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(field.Name))
-	return output
-}
-
-func SelectSingleColumn(tableName string, columnName string) string {
-	return fmt.Sprintf("SELECT \"%s\" FROM \"%s\";", columnName, tableName)
-}
-
-func InsertRowComprisingSingleString(tableName string, theString string) string {
-	output := fmt.Sprintf("INSERT INTO \"%s\"\n", tableName)
-	output += fmt.Sprintf("VALUES ('%s');", theString)
-	return output
-}
-
-func UpdateSingleStringColumn(tableName string, column string, newValue string) string {
-	output := fmt.Sprintf("UPDATE \"%s\" SET \"%s\"='%s';", tableName, column, newValue)
+	output += fmt.Sprintf("DROP COLUMN %s;", Identifier(fieldName))
 	return output
 }
