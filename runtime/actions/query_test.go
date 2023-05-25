@@ -247,7 +247,7 @@ var testCases = []testCase{
 				"id": "xyz",
 			},
 			"values": map[string]any{
-				"name": "Bob",
+				"name": map[string]any{"value": "Bob"},
 			},
 		},
 		expectedTemplate: `

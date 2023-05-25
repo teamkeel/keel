@@ -4,8 +4,8 @@ import { actions, resetDatabase } from "@teamkeel/testing";
 beforeEach(resetDatabase);
 
 test("List Where filters - using equal operator (string) - filters correctly", async () => {
-  await actions.createPost({ title: "Fred" });
-  await actions.createPost({ title: "NotFred" });
+  await actions.createPost({ title: { value: "Fred" } });
+  await actions.createPost({ title: { value: "NotFred" } });
 
   const { results } = await actions.listPostsEqualString({
     where: {
@@ -18,8 +18,8 @@ test("List Where filters - using equal operator (string) - filters correctly", a
 });
 
 test("List Where filters - using not equal operator (string) - filters correctly", async () => {
-  await actions.createPost({ title: "Fred" });
-  await actions.createPost({ title: "NotFred" });
+  await actions.createPost({ title: { value: "Fred" } });
+  await actions.createPost({ title: { value: "NotFred" } });
 
   const { results } = await actions.listPostsNotEqualString({
     where: {
@@ -32,9 +32,9 @@ test("List Where filters - using not equal operator (string) - filters correctly
 });
 
 test("List Where filters - using equal operator on date - filters correctly", async () => {
-  await actions.createPost({ aDate: new Date(2020, 1, 21) });
-  await actions.createPost({ aDate: new Date(2020, 1, 22) });
-  await actions.createPost({ aDate: new Date(2020, 1, 23) });
+  await actions.createPost({ aDate: { value: new Date(2020, 1, 21) } });
+  await actions.createPost({ aDate: { value: new Date(2020, 1, 22) } });
+  await actions.createPost({ aDate: { value: new Date(2020, 1, 23) } });
 
   const { results } = await actions.listPostsEqualDate({
     where: {
@@ -46,9 +46,9 @@ test("List Where filters - using equal operator on date - filters correctly", as
 });
 
 test("List Where filters - using not equal operator on date - filters correctly", async () => {
-  await actions.createPost({ aDate: new Date(2020, 1, 21) });
-  await actions.createPost({ aDate: new Date(2020, 1, 22) });
-  await actions.createPost({ aDate: new Date(2020, 1, 23) });
+  await actions.createPost({ aDate: { value: new Date(2020, 1, 21) } });
+  await actions.createPost({ aDate: { value: new Date(2020, 1, 22) } });
+  await actions.createPost({ aDate: { value: new Date(2020, 1, 23) } });
 
   const { results } = await actions.listPostsNotEqualDate({
     where: {
@@ -60,9 +60,15 @@ test("List Where filters - using not equal operator on date - filters correctly"
 });
 
 test("List Where filters - using after operator on timestamp - filters correctly", async () => {
-  await actions.createPost({ aTimestamp: new Date(2020, 1, 21, 1, 0, 0) });
-  await actions.createPost({ aTimestamp: new Date(2020, 1, 22, 2, 30, 0) });
-  await actions.createPost({ aTimestamp: new Date(2020, 1, 23, 4, 0, 0) });
+  await actions.createPost({
+    aTimestamp: { value: new Date(2020, 1, 21, 1, 0, 0) },
+  });
+  await actions.createPost({
+    aTimestamp: { value: new Date(2020, 1, 22, 2, 30, 0) },
+  });
+  await actions.createPost({
+    aTimestamp: { value: new Date(2020, 1, 23, 4, 0, 0) },
+  });
 
   const { results } = await actions.listPostsAfterTimestamp({
     where: {
@@ -74,9 +80,15 @@ test("List Where filters - using after operator on timestamp - filters correctly
 });
 
 test("List Where filters - using before operator on timestamp - filters correctly", async () => {
-  await actions.createPost({ aTimestamp: new Date(2020, 1, 21, 1, 0, 0) });
-  await actions.createPost({ aTimestamp: new Date(2020, 1, 22, 2, 30, 0) });
-  await actions.createPost({ aTimestamp: new Date(2020, 1, 23, 4, 0, 0) });
+  await actions.createPost({
+    aTimestamp: { value: new Date(2020, 1, 21, 1, 0, 0) },
+  });
+  await actions.createPost({
+    aTimestamp: { value: new Date(2020, 1, 22, 2, 30, 0) },
+  });
+  await actions.createPost({
+    aTimestamp: { value: new Date(2020, 1, 23, 4, 0, 0) },
+  });
 
   const { results } = await actions.beforePostsBeforeTimestamp({
     where: {

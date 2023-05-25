@@ -6,7 +6,7 @@ beforeEach(resetDatabase);
 
 test("permission set on model level for create op - matching title - is authorized", async () => {
   await expect(
-    actions.create({ title: "hello", views: 0 })
+    actions.create({ title: { value: "hello" }, views: { value: 0 } })
   ).resolves.toMatchObject({
     title: "hello",
   });
@@ -14,14 +14,14 @@ test("permission set on model level for create op - matching title - is authoriz
 
 test("permission set on model level for create op - not matching - is not authorized", async () => {
   await expect(
-    actions.create({ title: "goodbye", views: 0 })
+    actions.create({ title: { value: "goodbye" }, views: { value: 0 } })
   ).toHaveAuthorizationError();
 });
 
 test("ORed permissions set on model level for get op - matching title - is authorized", async () => {
   const post = await actions.create({
-    title: "hello",
-    views: 0,
+    title: { value: "hello" },
+    views: { value: 0 },
   });
 
   const p = await actions.get({ id: post.id });
@@ -29,51 +29,62 @@ test("ORed permissions set on model level for get op - matching title - is autho
 });
 
 test("ORed permissions set on model level for get op - matching title and views - is authorized", async () => {
-  const post = await actions.create({ title: "hello", views: 5 });
+  const post = await actions.create({
+    title: { value: "hello" },
+    views: { value: 5 },
+  });
 
   const p = await actions.get({ id: post.id });
   expect(p).toEqual(post);
 });
 
 test("ORed permissions set on model level for get op - none matching - is not authorized", async () => {
-  const post = await actions.create({ title: "hello", views: 500 });
+  const post = await actions.create({
+    title: { value: "hello" },
+    views: { value: 500 },
+  });
 
   await actions.update({
     where: { id: post.id },
-    values: { title: "goodbye" },
+    values: { title: { value: "goodbye" } },
   });
 
   await expect(actions.get({ id: post.id })).toHaveAuthorizationError();
 });
 
 test("no permissions set on model level for delete op - can delete - is authorized", async () => {
-  const post = await actions.create({ title: "hello", views: 500 });
+  const post = await actions.create({
+    title: { value: "hello" },
+    views: { value: 500 },
+  });
 
   await expect(actions.delete({ id: post.id })).resolves.toEqual(post.id);
 });
 
 test("text literal comparisons - all expressions fail - is not authorized", async () => {
   await expect(
-    actions.textsFailedExpressions({ title: "hello" })
+    actions.textsFailedExpressions({ title: { value: "hello" } })
   ).toHaveAuthorizationError();
 });
 
 test("number literal comparisons - all expressions fail - is not authorized", async () => {
   await expect(
-    actions.numbersFailedExpressions({ views: 2 })
+    actions.numbersFailedExpressions({ views: { value: 2 } })
   ).toHaveAuthorizationError();
 });
 
 test("boolean literal comparisons - all expressions fail - is not authorized", async () => {
   await expect(
     actions.booleansFailedExpressions({
-      isActive: false,
+      isActive: { value: false },
     })
   ).toHaveAuthorizationError();
 });
 
 test("enum literal comparisons - all expressions fail - is not authorized", async () => {
-  await expect(actions.enumFailedExpressions()).toHaveAuthorizationError();
+  await expect(
+    actions.enumFailedExpressions({ option: { value: Options.One } })
+  ).toHaveAuthorizationError();
 });
 
 test("permission role email is authorized", async () => {
@@ -88,7 +99,7 @@ test("permission role email is authorized", async () => {
   await expect(
     actions
       .withAuthToken(token)
-      .createUsingRole({ title: "nothing special about this title" })
+      .createUsingRole({ title: { value: "nothing special about this title" } })
   ).resolves.toMatchObject({
     title: "nothing special about this title",
   });
@@ -106,7 +117,7 @@ test("permission role wrong email is not authorized", async () => {
   await expect(
     actions
       .withAuthToken(token)
-      .createUsingRole({ title: "nothing special about this title" })
+      .createUsingRole({ title: { value: "nothing special about this title" } })
   ).toHaveAuthorizationError();
 });
 
@@ -122,7 +133,7 @@ test("permission role domain is authorized", async () => {
   await expect(
     actions
       .withAuthToken(token)
-      .createUsingRole({ title: "nothing special about this title" })
+      .createUsingRole({ title: { value: "nothing special about this title" } })
   ).resolves.toMatchObject({
     title: "nothing special about this title",
   });
@@ -140,7 +151,7 @@ test("permission role wrong domain is not authorized", async () => {
   await expect(
     actions
       .withAuthToken(token)
-      .createUsingRole({ title: "nothing special about this title" })
+      .createUsingRole({ title: { value: "nothing special about this title" } })
   ).toHaveAuthorizationError();
 });
 

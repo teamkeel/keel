@@ -215,13 +215,16 @@
           }
         },
         "required": [
-          "name",
-          "favouriteNumber",
-          "birthday",
+          "name", 
+          "preferredName", 
+          "favouriteNumber", 
+          "birthday", 
           "hobby",
-          "isAdmin",
-          "lastSeenAt",
-          "currentCityName"
+          "secondHobby", 
+          "isAdmin", 
+          "lastSeenAt", 
+          "currentCityName", 
+          "previousCityName"
         ],
         "type": "object"
       },

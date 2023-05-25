@@ -1,17 +1,33 @@
 {
-  "type": "object",
-  "properties": {
-    "birthday": {
-      "format": "date-time",
-      "type": "string"
-    },
-    "name": {
-      "type": "string"
-    },
-    "nickName": {
-      "type": "string"
-    }
-  },
-  "additionalProperties": false,
-  "required": ["name", "birthday"]
+	"type": "object",
+	"properties": {
+		"birthday": {
+			"type": "string",
+			"format": "date-time"
+		},
+		"name": {
+			"type": "string"
+		},
+		"nickName": {
+			"$ref": "#/components/schemas/NullableStringValue"
+		}
+	},
+	"additionalProperties": false,
+	"required": ["name", "nickName", "birthday"],
+	"components": {
+		"schemas": {
+			"NullableStringValue": {
+				"type": "object",
+				"properties": {
+					"isNull": {
+						"type": "boolean"
+					},
+					"value": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			}
+		}
+	}
 }

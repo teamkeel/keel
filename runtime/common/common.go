@@ -2,10 +2,12 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/graphql-go/graphql/gqlerrors"
+	"github.com/karlseguin/typed"
 	"github.com/teamkeel/keel/casing"
 )
 
@@ -125,5 +127,35 @@ func NewPermissionError() RuntimeError {
 	return RuntimeError{
 		Code:    ErrPermissionDenied,
 		Message: "not authorized to access this action",
+	}
+}
+
+func ValueFromNullableInput(input any) (any, error) {
+	asMap, ok := input.(map[string]any)
+	if !ok {
+		return nil, errors.New("nullable input cannot be converted to map[string]any")
+	}
+
+	typedInput := typed.New(asMap)
+
+	value, hasValue := typedInput.InterfaceIf("value")
+	isNull, hasIsNull := typedInput.BoolIf("isNull")
+
+	if hasValue && hasIsNull && isNull {
+		return nil, errors.New("nullable input cannot have a value and isNull set to true")
+	}
+
+	if !hasValue && !isNull {
+		return nil, errors.New("nullable input must have at least value or isNull set")
+	}
+
+	if hasIsNull && !isNull && !hasValue {
+		return nil, errors.New("nullable input must have a value if isNull is false")
+	}
+
+	if hasIsNull && isNull {
+		return nil, nil
+	} else {
+		return value, nil
 	}
 }
