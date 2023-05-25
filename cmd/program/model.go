@@ -38,8 +38,6 @@ const (
 	ModeValidate = iota
 	ModeRun
 	ModeTest
-	ModeScaffold
-	ModeInit
 )
 
 const (
@@ -53,9 +51,6 @@ const (
 	StatusStartingFunctions
 	StatusRunning
 	StatusQuitting
-	StatusScaffolded
-	StatusInitializing
-	StatusInitialized
 )
 
 func Run(model *Model) {
@@ -180,12 +175,6 @@ func (m *Model) Init() tea.Cmd {
 	case ModeValidate:
 		m.Status = StatusLoadSchema
 		return LoadSchema(m.ProjectDir, m.Environment)
-	case ModeScaffold:
-		m.Status = StatusLoadSchema
-		return LoadSchema(m.ProjectDir, m.Environment)
-	case ModeInit:
-		m.Status = StatusInitializing
-		return Init(m.ProjectDir)
 	case ModeRun, ModeTest:
 		m.Status = StatusCheckingDependencies
 		return CheckDependencies()
@@ -210,15 +199,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 		return m, nil
-	case InitialisedMsg:
-		m.Status = StatusInitialized
-
-		if msg.Err != nil {
-			m.Err = msg.Err
-		}
-		m.GeneratedFiles = msg.GeneratedFiles
-
-		return m, tea.Quit
 	case CheckDependenciesMsg:
 		m.Err = msg.Err
 
@@ -504,8 +484,6 @@ func (m *Model) View() string {
 		b.WriteString(renderValidate(m))
 	case ModeTest:
 		b.WriteString(renderTest(m))
-	case ModeInit:
-		b.WriteString(renderInit(m))
 	}
 
 	if m.Err != nil {
