@@ -930,8 +930,6 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 // see if the schema defines an explicit inverse relationship field for it, and when so, sets
 // this field's InverseFieldName property accordingly.
 func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisProtoField *proto.Field) {
-	// todo: rename to SetInverseFieldName taking into account default and explicit logic
-
 	// We have to look in the related model's fields, to see if any of them have an @relation
 	// attribute that refers back to this field.
 

@@ -137,10 +137,13 @@ generator client {
 			s.Writeln("")
 		}
 
+		// Prisma enforces relationship bi-directionality, whereas our schema language doesn't enforce specifying both sides of a relationship in some cases
+		// so therefore, after adding all of the known fields for a model into the corresponding Prisma model, we now need to go and add find any relationships between this model and another model where a link field isn't specified on *this* side of the relationship but one
+		// is on the other side.
 		for _, otherModel := range schema.Models {
 			for _, otherField := range otherModel.Fields {
 				if otherField.Type.Type == proto.Type_TYPE_MODEL && otherField.Type.ModelName.Value == m.Name && otherField.InverseFieldName == nil {
-					// {genFieldName} {otherModel.Name} @relation("{genRelName}")
+					// format we're generating: {generatedFieldName} {otherModel.Name} @relation("{generatedRelationshipName}")
 					_, fieldName, relName := getPrismaRelationInfo(schema, otherModel, otherField)
 					fieldType := otherModel.Name
 

@@ -108,8 +108,6 @@ func GetForignKeyFieldName(models []*Model, field *Field) string {
 		return fkName
 	}
 
-	// todo: remove need for the below by always setting InverseFieldName
-	
 	// If we get this far, we must search for fields in the related thisModel to infer the answer.
 	// NB. Schema validation guarentees that there will never be more than one
 	// candidate in the latter case.
