@@ -57,6 +57,7 @@ var toPrismaTypes = map[proto.Type]string{
 	proto.Type_TYPE_DATE:      "DateTime",
 	proto.Type_TYPE_DATETIME:  "DateTime",
 	proto.Type_TYPE_PASSWORD:  "String",
+	proto.Type_TYPE_SECRET:    "String",
 }
 
 // generatePrismaSchema takes our proto.Schema and generates a valid Prisma schema from it.
@@ -64,15 +65,15 @@ func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
 	s := &codegen.Writer{}
 
 	s.Writeln(`
-	datasource db {                                                                                                                               
-		provider = "postgresql"                                                                                                                     
-		url      = env("KEEL_DB_CONN")                                                                                                                    
-	  } 
+datasource db {
+    provider = "postgresql"
+    url      = env("KEEL_DB_CONN") 
+} 
 
-	  generator client {
-		provider = "prisma-client-js"
-	  }
-	`)
+generator client {
+    provider = "prisma-client-js"
+}
+`)
 
 	for _, m := range schema.Models {
 		s.Writef("model %s {", m.Name)
@@ -91,6 +92,7 @@ func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
 				var ok bool
 				prismaType, ok = toPrismaTypes[f.Type.Type]
 				if !ok {
+					// https://www.prisma.io/docs/concepts/components/prisma-schema/data-model#unsupported-types
 					prismaType = "Unsupported"
 				}
 				mapping = fmt.Sprintf(`@map("%s")`, casing.ToSnake(f.Name))
@@ -110,7 +112,7 @@ func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
 			if f.PrimaryKey {
 				s.Writef(` @id`)
 			}
-			if f.Unique {
+			if f.Type.Type != proto.Type_TYPE_MODEL && f.Unique {
 				s.Write(" @unique")
 			}
 
@@ -125,7 +127,7 @@ func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
 					s.Write(f.ForeignKeyFieldName.Value)
 					s.Write("], references: [")
 					s.Write(proto.PrimaryKeyFieldName(relatedModel))
-					s.Write("])")
+					s.Write("]")
 				}
 
 				s.Write(")")
@@ -141,12 +143,17 @@ func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
 					// {genFieldName} {otherModel.Name} @relation("{genRelName}")
 					_, fieldName, relName := getPrismaRelationInfo(schema, otherModel, otherField)
 					fieldType := otherModel.Name
+
 					if !otherField.Unique {
+						// if the field isn't unique, then it means this is the has-many side
 						fieldType += "[]"
-					}
-					if otherField.Optional {
+					} else {
+						// in prisma, one to one relationships must set the side of the relationship
+						// that doesn't have the foreign key to optional
+						// docs: https://www.prisma.io/docs/concepts/components/prisma-schema/relations/one-to-one-relations#required-and-optional-1-1-relation-fields
 						fieldType += "?"
 					}
+
 					s.Writeln("")
 					s.Writef("%s %s @relation(\"%s\")", fieldName, fieldType, relName)
 				}
@@ -187,7 +194,7 @@ func getPrismaRelationInfo(schema *proto.Schema, m *proto.Model, f *proto.Field)
 	if f.InverseFieldName != nil {
 		fieldName = f.InverseFieldName.Value
 	} else {
-		fieldName = fmt.Sprintf("%sBy%s", m.Name, f.Name)
+		fieldName = fmt.Sprintf("%s_By_%s", casing.ToLowerCamel(m.Name), casing.ToCamel(f.Name))
 
 	}
 	nameParts = append(nameParts, fieldName)

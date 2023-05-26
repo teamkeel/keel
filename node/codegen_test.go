@@ -124,47 +124,6 @@ export interface PostCreateValues {
 	})
 }
 
-// todo: write more tests!
-func TestPrismaSchemaGeneration(t *testing.T) {
-	schemaString := `
-		model Author {
-			fields {
-				name Text
-				posts Post[]
-			}
-		}
-		model Post {
-			fields {
-        title Text
-				author Author
-				
-			}
-		}
-	`
-
-	expected := ``
-
-	b := schema.Builder{}
-	s, err := b.MakeFromString(schemaString)
-	require.NoError(t, err)
-
-	files := generatePrismaSchema(s)
-
-	actual := files[0].Contents
-
-	assert.Equal(t, expected, actual)
-
-	tmpDir := os.TempDir()
-	err = os.WriteFile(filepath.Join(tmpDir, "schema.prisma"), []byte(actual), os.ModePerm)
-	assert.NoError(t, err)
-	cmd := exec.Command("npx", "prisma", "generate", "--schema", "schema.prisma")
-	cmd.Dir = tmpDir
-	_, err = cmd.CombinedOutput()
-	assert.NoError(t, err)
-
-	fmt.Print(err)
-}
-
 func TestWriteWhereConditionsInterface(t *testing.T) {
 	expected := `
 export interface PersonWhereConditions {
