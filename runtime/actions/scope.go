@@ -223,7 +223,7 @@ func checkNullableImplicitInputs(scope *Scope, inputs map[string]any) error {
 		model := proto.FindModel(scope.Schema.Models, scope.Model.Name)
 		modelField := proto.FindField(scope.Schema.Models, model.Name, key)
 
-		if modelField.Optional {
+		if modelField != nil && modelField.Optional {
 			_, err := common.ValueFromNullableInput(value)
 			if err != nil {
 
