@@ -211,12 +211,13 @@ func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string]
 
 // Validates at runtime that implicit inputs which target optional fields pass the correct arguments.
 func checkNullableImplicitInputs(scope *Scope, inputs map[string]any) error {
+	message := proto.FindMessage(scope.Schema.Messages, scope.Operation.InputMessageName)
+
 	for key, value := range inputs {
-		message := proto.FindMessage(scope.Schema.Messages, scope.Operation.InputMessageName)
 		messageField := proto.FindMessageField(message, key)
 
-		// not an implicit input
-		if len(messageField.Target) == 0 {
+		// Any field or not an implicit input
+		if messageField == nil || len(messageField.Target) == 0 {
 			continue
 		}
 
