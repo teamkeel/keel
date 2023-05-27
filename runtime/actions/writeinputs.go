@@ -249,14 +249,6 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 				// If any nested messages referenced a primary key, then the
 				// foreign keys will be generated instead of a new row created.
 				for k, v := range foreignKeys {
-					// // If the target field is optional, then parse the nullable input type.
-					// if field.Optional {
-					// 	v, err = common.ValueFromNullableInput(v)
-					// 	if err != nil {
-					// 		return nil, nil, err
-					// 	}
-					// }
-
 					newRow.values[k] = v
 				}
 			}
@@ -280,15 +272,6 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 
 			// Only add the arg value if it was provided as an input.
 			if ok {
-				// If the target field is optional, then parse the nullable input type.
-				// mfield := proto.FindField(scope.Schema.Models, model.Name, input.Target[0])
-				// if mfield != nil && mfield.Optional {
-				// 	value, err = common.ValueFromNullableInput(value)
-				// 	if err != nil {
-				// 		return nil, nil, err
-				// 	}
-				// }
-
 				newRow.values[input.Name] = value
 			}
 		}

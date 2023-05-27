@@ -421,14 +421,6 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			}
 
 			if !fieldAlreadyCreated {
-				// typeInfo :=
-				// message := makeNullableInputMessage(field.Type.)
-
-				// // Make sure this query input message hasn't already been added by another input.
-				// if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
-				// 	scm.proto.Messages = append(scm.proto.Messages, message)
-				// }
-
 				typeInfo := &proto.TypeInfo{
 					Type: proto.Type_TYPE_MESSAGE,
 					// Repeated with be true in a 1:M relationship.
@@ -468,9 +460,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					}
 
 					scm.proto.Messages = append(scm.proto.Messages, nullableMessage)
-
 				} else {
-
 					// Add the related model message as a field to the current message with typeInfo of Type_TYPE_MESSAGE.
 					mField = &proto.MessageField{
 						Name:        fragment,
@@ -482,15 +472,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					currMessage.Fields = append(currMessage.Fields, mField)
 				}
 
-				// if field.Optional {
-				// 	nullableMessage := makeNullableInputMessage(typeInfo)
-				// 	nullableMessage.Fields = append(nullableMessage.Fields, mField)
-				// 	//scm.proto.Messages = append(scm.proto.Messages, nullableMessage)
-
-				// 	currMessage = nullableMessage
-				// } else {
 				currMessage.Fields = append(currMessage.Fields, mField)
-
 				currMessage = &proto.Message{
 					Name:   relatedModelMessageName,
 					Fields: []*proto.MessageField{},
@@ -510,13 +492,6 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
 			if targetsOptionalField {
-				// typeInfo := &proto.TypeInfo{
-				// 	Type:        proto.Type_TYPE_MESSAGE,
-				// 	MessageName: wrapperspb.String(message.Name),
-				// 	ModelName:   typeInfo.ModelName,
-				// 	FieldName:   typeInfo.FieldName}
-				// }
-
 				message := makeNullableInputMessage(typeInfo)
 
 				// Make sure this query input message hasn't already been added by another input.
