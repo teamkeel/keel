@@ -1,0 +1,16 @@
+model Person {
+    fields {
+        employer Company?
+    }
+
+    operations {
+        create createPerson() with (employer.id)
+    }
+}
+
+model Company {
+    fields {
+        title Text
+    }
+
+}

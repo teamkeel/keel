@@ -71,20 +71,24 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 
 	// inputs can be anything - with arbitrary functions 'Any' type, they can be
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
-	inputsAsMap, inputWasAMap := inputs.(map[string]any)
+	inputsAsMap, inputIsAMap := inputs.(map[string]any)
 
-	// Check that all nullable inputs are in the correct format
-	err := checkNullableImplicitInputs(scope, inputsAsMap)
+	if inputIsAMap {
+		// Check that all nullable inputs are in the correct format
+		//err := checkNullableImplicitInputs(scope, inputsAsMap)
 
-	if err != nil {
-		return nil, nil, err
+		message := proto.FindMessage(scope.Schema.Messages, scope.Operation.InputMessageName)
+		err := rewriteNullableInputsInMessage(scope, message, inputsAsMap, scope.Model)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	switch scope.Operation.Implementation {
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM:
 		return executeCustomFunction(scope, inputs)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_RUNTIME:
-		if !inputWasAMap {
+		if !inputIsAMap {
 			if inputs == nil {
 				inputsAsMap = make(map[string]any)
 			} else {
@@ -93,7 +97,7 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 		}
 		return executeRuntimeOperation(scope, inputsAsMap)
 	case proto.OperationImplementation_OPERATION_IMPLEMENTATION_AUTO:
-		if !inputWasAMap {
+		if !inputIsAMap {
 			if inputs == nil {
 				inputsAsMap = make(map[string]any)
 			} else {

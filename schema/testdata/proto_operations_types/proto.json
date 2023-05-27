@@ -202,6 +202,8 @@
           "name": "name",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "Foo",
+            "fieldName": "name",
             "messageName": "NullableStringValue"
           },
           "target": [
@@ -216,7 +218,8 @@
         {
           "name": "value",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_STRING",
+            "modelName": "Foo"
           },
           "optional": true
         },

@@ -264,6 +264,16 @@
           "name": "parent",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "ParentModel",
+            "messageName": "CreateChild1ParentInput"
+          }
+        },
+        {
+          "messageName": "CreateChild1Input",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "ParentModel",
             "messageName": "CreateChild1ParentInput"
           }
         }
@@ -307,6 +317,16 @@
           "name": "parent",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "ParentModel",
+            "messageName": "CreateChild2ParentInput"
+          }
+        },
+        {
+          "messageName": "CreateChild2Input",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "ParentModel",
             "messageName": "CreateChild2ParentInput"
           }
         },
@@ -315,7 +335,8 @@
           "name": "parentOptional",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "CreateChild2ParentOptionalInput"
+            "modelName": "ParentModel",
+            "messageName": "NullableCreateChild2ParentOptionalInput"
           },
           "optional": true
         }
@@ -340,6 +361,27 @@
       ]
     },
     {
+      "name": "NullableCreateChild2ParentOptionalInput",
+      "fields": [
+        {
+          "name": "value",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "ParentModel",
+            "messageName": "CreateChild2ParentOptionalInput"
+          },
+          "optional": true
+        },
+        {
+          "name": "isNull",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
       "name": "CreateChild2ParentOptionalInput",
       "fields": [
         {
@@ -347,6 +389,8 @@
           "name": "id",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "ParentModel",
+            "fieldName": "id",
             "messageName": "NullableIDValue"
           },
           "target": [
@@ -362,7 +406,8 @@
         {
           "name": "value",
           "type": {
-            "type": "TYPE_ID"
+            "type": "TYPE_ID",
+            "modelName": "ParentModel"
           },
           "optional": true
         },

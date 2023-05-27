@@ -337,7 +337,8 @@
           "name": "publisher",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "CreatePostPublisherInput"
+            "modelName": "Publisher",
+            "messageName": "NullableCreatePostPublisherInput"
           },
           "optional": true
         },
@@ -346,7 +347,29 @@
           "name": "owner",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "CreatePostOwnerInput"
+            "modelName": "Author",
+            "messageName": "NullableCreatePostOwnerInput"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "NullableCreatePostPublisherInput",
+      "fields": [
+        {
+          "name": "value",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "Publisher",
+            "messageName": "CreatePostPublisherInput"
+          },
+          "optional": true
+        },
+        {
+          "name": "isNull",
+          "type": {
+            "type": "TYPE_BOOL"
           },
           "optional": true
         }
@@ -360,6 +383,8 @@
           "name": "id",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "Publisher",
+            "fieldName": "id",
             "messageName": "NullableIDValue"
           },
           "target": [
@@ -375,7 +400,29 @@
         {
           "name": "value",
           "type": {
-            "type": "TYPE_ID"
+            "type": "TYPE_ID",
+            "modelName": "Publisher"
+          },
+          "optional": true
+        },
+        {
+          "name": "isNull",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
+        }
+      ]
+    },
+    {
+      "name": "NullableCreatePostOwnerInput",
+      "fields": [
+        {
+          "name": "value",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "Author",
+            "messageName": "CreatePostOwnerInput"
           },
           "optional": true
         },
@@ -396,6 +443,8 @@
           "name": "id",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "Author",
+            "fieldName": "id",
             "messageName": "NullableIDValue"
           },
           "target": [

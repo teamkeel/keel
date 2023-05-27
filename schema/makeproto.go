@@ -304,14 +304,16 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) *proto.M
 	return message
 }
 
-func makeNullableMutateInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
+func makeNullableInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 	message := &proto.Message{Fields: []*proto.MessageField{
 		{
 			Name:     "value",
 			Optional: true,
 			Type: &proto.TypeInfo{
-				Type:     typeInfo.Type,
-				EnumName: typeInfo.EnumName,
+				Type:        typeInfo.Type,
+				EnumName:    typeInfo.EnumName,
+				MessageName: typeInfo.MessageName,
+				ModelName:   typeInfo.ModelName,
 			},
 		},
 		{
@@ -338,6 +340,8 @@ func makeNullableMutateInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 		message.Name = "NullableTimestampValue"
 	case proto.Type_TYPE_ENUM:
 		message.Name = fmt.Sprintf("Nullable%sValue", typeInfo.EnumName.Value)
+	case proto.Type_TYPE_MESSAGE:
+		message.Name = fmt.Sprintf("Nullable%s", typeInfo.MessageName.Value)
 	default:
 		panic(fmt.Errorf("unsupported query type %s", typeInfo.Type.String()))
 	}
@@ -352,7 +356,7 @@ func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parse
 		typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
 		if targetsOptionalField {
-			message := makeNullableMutateInputMessage(typeInfo)
+			message := makeNullableInputMessage(typeInfo)
 
 			// Make sure this query input message hasn't already been added by another input.
 			if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
@@ -417,25 +421,81 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			}
 
 			if !fieldAlreadyCreated {
-				// Add the related model message as a field to the current message with typeInfo of Type_TYPE_MESSAGE.
-				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
-					Name: fragment,
-					Type: &proto.TypeInfo{
+				// typeInfo :=
+				// message := makeNullableInputMessage(field.Type.)
+
+				// // Make sure this query input message hasn't already been added by another input.
+				// if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
+				// 	scm.proto.Messages = append(scm.proto.Messages, message)
+				// }
+
+				typeInfo := &proto.TypeInfo{
+					Type: proto.Type_TYPE_MESSAGE,
+					// Repeated with be true in a 1:M relationship.
+					Repeated: field.Repeated,
+					MessageName: &wrapperspb.StringValue{
+						Value: relatedModelMessageName,
+					},
+					// This message refers to a related model, so indicate that related model.
+					ModelName: &wrapperspb.StringValue{
+						Value: field.Type.Value,
+					},
+				}
+
+				var mField *proto.MessageField
+				if field.Optional {
+					nullableMessage := makeNullableInputMessage(typeInfo)
+
+					typeInfo = &proto.TypeInfo{
 						Type: proto.Type_TYPE_MESSAGE,
 						// Repeated with be true in a 1:M relationship.
-						Repeated: field.Repeated,
+						Repeated: false,
 						MessageName: &wrapperspb.StringValue{
-							Value: relatedModelMessageName,
+							Value: nullableMessage.Name,
 						},
-					},
-					Optional:    field.Optional,
-					MessageName: currMessage.Name,
-				})
+						// This message refers to a related model, so indicate that related model.
+						ModelName: &wrapperspb.StringValue{
+							Value: field.Type.Value,
+						},
+					}
+
+					// Add the related model message as a field to the current message with typeInfo of Type_TYPE_MESSAGE.
+					mField = &proto.MessageField{
+						Name:        fragment,
+						Type:        typeInfo,
+						Optional:    field.Optional,
+						MessageName: currMessage.Name,
+					}
+
+					scm.proto.Messages = append(scm.proto.Messages, nullableMessage)
+
+				} else {
+
+					// Add the related model message as a field to the current message with typeInfo of Type_TYPE_MESSAGE.
+					mField = &proto.MessageField{
+						Name:        fragment,
+						Type:        typeInfo,
+						Optional:    field.Optional,
+						MessageName: currMessage.Name,
+					}
+
+					currMessage.Fields = append(currMessage.Fields, mField)
+				}
+
+				// if field.Optional {
+				// 	nullableMessage := makeNullableInputMessage(typeInfo)
+				// 	nullableMessage.Fields = append(nullableMessage.Fields, mField)
+				// 	//scm.proto.Messages = append(scm.proto.Messages, nullableMessage)
+
+				// 	currMessage = nullableMessage
+				// } else {
+				currMessage.Fields = append(currMessage.Fields, mField)
 
 				currMessage = &proto.Message{
 					Name:   relatedModelMessageName,
 					Fields: []*proto.MessageField{},
 				}
+
 				scm.proto.Messages = append(scm.proto.Messages, currMessage)
 			} else {
 				for _, m := range scm.proto.Messages {
@@ -450,7 +510,14 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
 			if targetsOptionalField {
-				message := makeNullableMutateInputMessage(typeInfo)
+				// typeInfo := &proto.TypeInfo{
+				// 	Type:        proto.Type_TYPE_MESSAGE,
+				// 	MessageName: wrapperspb.String(message.Name),
+				// 	ModelName:   typeInfo.ModelName,
+				// 	FieldName:   typeInfo.FieldName}
+				// }
+
+				message := makeNullableInputMessage(typeInfo)
 
 				// Make sure this query input message hasn't already been added by another input.
 				if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
@@ -462,7 +529,10 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					Name: fragment,
 					Type: &proto.TypeInfo{
 						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(message.Name)},
+						MessageName: wrapperspb.String(message.Name),
+						ModelName:   typeInfo.ModelName,
+						FieldName:   typeInfo.FieldName,
+					},
 					Target:      target,
 					Optional:    input.Optional,
 					MessageName: currMessage.Name,

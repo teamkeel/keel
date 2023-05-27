@@ -5,18 +5,13 @@
       "fields": [
         {
           "modelName": "Person",
-          "name": "name",
+          "name": "employer",
           "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Person",
-          "name": "preferredName",
-          "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_MODEL",
+            "modelName": "Company"
           },
-          "optional": true
+          "optional": true,
+          "foreignKeyFieldName": "employerId"
         },
         {
           "modelName": "Person",
@@ -48,6 +43,18 @@
           "defaultValue": {
             "useZeroValue": true
           }
+        },
+        {
+          "modelName": "Person",
+          "name": "employerId",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "optional": true,
+          "foreignKeyInfo": {
+            "relatedModelName": "Company",
+            "relatedModelField": "id"
+          }
         }
       ],
       "operations": [
@@ -57,20 +64,49 @@
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputMessageName": "CreatePersonInput"
+        }
+      ]
+    },
+    {
+      "name": "Company",
+      "fields": [
+        {
+          "modelName": "Company",
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING"
+          }
         },
         {
-          "modelName": "Person",
-          "name": "updatePerson",
-          "type": "OPERATION_TYPE_UPDATE",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "UpdatePersonInput"
+          "modelName": "Company",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
         },
         {
-          "modelName": "Person",
-          "name": "listPerson",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "ListPersonInput"
+          "modelName": "Company",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
       ]
     },
@@ -179,39 +215,25 @@
       "fields": [
         {
           "messageName": "CreatePersonInput",
-          "name": "name",
-          "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": [
-            "name"
-          ]
-        },
-        {
-          "messageName": "CreatePersonInput",
-          "name": "preferredName",
+          "name": "employer",
           "type": {
             "type": "TYPE_MESSAGE",
-            "modelName": "Person",
-            "fieldName": "preferredName",
-            "messageName": "NullableStringValue"
+            "modelName": "Company",
+            "messageName": "NullableCreatePersonEmployerInput"
           },
-          "target": [
-            "preferredName"
-          ]
+          "optional": true
         }
       ]
     },
     {
-      "name": "NullableStringValue",
+      "name": "NullableCreatePersonEmployerInput",
       "fields": [
         {
           "name": "value",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person"
+            "type": "TYPE_MESSAGE",
+            "modelName": "Company",
+            "messageName": "CreatePersonEmployerInput"
           },
           "optional": true
         },
@@ -225,164 +247,32 @@
       ]
     },
     {
-      "name": "UpdatePersonWhere",
+      "name": "CreatePersonEmployerInput",
       "fields": [
         {
-          "messageName": "UpdatePersonWhere",
+          "messageName": "CreatePersonEmployerInput",
           "name": "id",
           "type": {
-            "type": "TYPE_ID",
-            "modelName": "Person",
-            "fieldName": "id"
+            "type": "TYPE_MESSAGE",
+            "modelName": "Company",
+            "fieldName": "id",
+            "messageName": "NullableIDValue"
           },
           "target": [
+            "employer",
             "id"
           ]
         }
       ]
     },
     {
-      "name": "UpdatePersonValues",
+      "name": "NullableIDValue",
       "fields": [
         {
-          "messageName": "UpdatePersonValues",
-          "name": "name",
+          "name": "value",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Person",
-            "fieldName": "name"
-          },
-          "target": [
-            "name"
-          ]
-        },
-        {
-          "messageName": "UpdatePersonValues",
-          "name": "preferredName",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "modelName": "Person",
-            "fieldName": "preferredName",
-            "messageName": "NullableStringValue"
-          },
-          "target": [
-            "preferredName"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "UpdatePersonInput",
-      "fields": [
-        {
-          "messageName": "UpdatePersonInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdatePersonWhere"
-          }
-        },
-        {
-          "messageName": "UpdatePersonInput",
-          "name": "values",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "UpdatePersonValues"
-          }
-        }
-      ]
-    },
-    {
-      "name": "StringQueryInput",
-      "fields": [
-        {
-          "name": "equals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "notEquals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "startsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "endsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "contains",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "oneOf",
-          "type": {
-            "type": "TYPE_STRING",
-            "repeated": true
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "NullableStringQueryInput",
-      "fields": [
-        {
-          "name": "equals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "notEquals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "startsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "endsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "contains",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "oneOf",
-          "type": {
-            "type": "TYPE_STRING",
-            "repeated": true
+            "type": "TYPE_ID",
+            "modelName": "Company"
           },
           "optional": true
         },
@@ -390,78 +280,6 @@
           "name": "isNull",
           "type": {
             "type": "TYPE_BOOL"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "ListPersonWhere",
-      "fields": [
-        {
-          "messageName": "ListPersonWhere",
-          "name": "name",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
-          },
-          "target": [
-            "name"
-          ]
-        },
-        {
-          "messageName": "ListPersonWhere",
-          "name": "preferredName",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringQueryInput"
-          },
-          "target": [
-            "preferredName"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ListPersonInput",
-      "fields": [
-        {
-          "messageName": "ListPersonInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListPersonWhere"
-          }
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "first",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "after",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "last",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListPersonInput",
-          "name": "before",
-          "type": {
-            "type": "TYPE_STRING"
           },
           "optional": true
         }

@@ -330,6 +330,17 @@
           "name": "items",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "SaleItem",
+            "messageName": "CreateSaleItemsInput",
+            "repeated": true
+          }
+        },
+        {
+          "messageName": "CreateSaleInput",
+          "name": "items",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "SaleItem",
             "messageName": "CreateSaleItemsInput",
             "repeated": true
           }
@@ -374,6 +385,17 @@
           "name": "items",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "SaleItem",
+            "messageName": "CreateSaleAndItemsItemsInput",
+            "repeated": true
+          }
+        },
+        {
+          "messageName": "CreateSaleAndItemsInput",
+          "name": "items",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "SaleItem",
             "messageName": "CreateSaleAndItemsItemsInput",
             "repeated": true
           }
@@ -388,6 +410,16 @@
           "name": "product",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "Product",
+            "messageName": "CreateSaleAndItemsItemsProductInput"
+          }
+        },
+        {
+          "messageName": "CreateSaleAndItemsItemsInput",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "Product",
             "messageName": "CreateSaleAndItemsItemsProductInput"
           }
         },
@@ -445,6 +477,17 @@
           "name": "items",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "SaleItem",
+            "messageName": "CreateSaleAndProductItemsInput",
+            "repeated": true
+          }
+        },
+        {
+          "messageName": "CreateSaleAndProductInput",
+          "name": "items",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "SaleItem",
             "messageName": "CreateSaleAndProductItemsInput",
             "repeated": true
           }
@@ -459,6 +502,16 @@
           "name": "product",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "Product",
+            "messageName": "CreateSaleAndProductItemsProductInput"
+          }
+        },
+        {
+          "messageName": "CreateSaleAndProductItemsInput",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "Product",
             "messageName": "CreateSaleAndProductItemsProductInput"
           }
         },
@@ -504,6 +557,16 @@
           "name": "sale",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "Sale",
+            "messageName": "CreateSaleItemSaleInput"
+          }
+        },
+        {
+          "messageName": "CreateSaleItemInput",
+          "name": "sale",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "Sale",
             "messageName": "CreateSaleItemSaleInput"
           }
         },
@@ -512,6 +575,16 @@
           "name": "product",
           "type": {
             "type": "TYPE_MESSAGE",
+            "modelName": "Product",
+            "messageName": "CreateSaleItemProductInput"
+          }
+        },
+        {
+          "messageName": "CreateSaleItemInput",
+          "name": "product",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "modelName": "Product",
             "messageName": "CreateSaleItemProductInput"
           }
         },

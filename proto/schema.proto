@@ -238,6 +238,7 @@ message TypeInfo {
     // In the case of other types e.g. TYPE_ID this type is referencing a field
     // on the model named here, and the specific field being referenced is indicated
     // by `field_name`.
+    // In the case of TYPE_MESSAGE, this type is the related model.
     google.protobuf.StringValue model_name = 3;
 
     // This field indicates which field on `model_name` this type is referencing.

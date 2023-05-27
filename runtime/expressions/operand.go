@@ -13,7 +13,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -238,16 +237,16 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		inputName := resolver.Operand.Ident.Fragments[0].Fragment
 		value, ok := args[inputName]
 
-		// If the target field is optional, then parse the nullable input type.
-		if resolver.IsImplicitInput() {
-			modelField := proto.FindField(resolver.Schema.Models, resolver.Model.Name, inputName)
-			if modelField.Optional {
-				value, err = common.ValueFromNullableInput(value)
-				if err != nil {
-					return nil, err
-				}
-			}
-		}
+		// // If the target field is optional, then parse the nullable input type.
+		// if resolver.IsImplicitInput() {
+		// 	modelField := proto.FindField(resolver.Schema.Models, resolver.Model.Name, inputName)
+		// 	if modelField.Optional {
+		// 		value, err = common.ValueFromNullableInput(value)
+		// 		if err != nil {
+		// 			return nil, err
+		// 		}
+		// 	}
+		// }
 
 		if !ok {
 			return nil, fmt.Errorf("implicit or explicit input '%s' does not exist in arguments", inputName)

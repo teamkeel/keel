@@ -457,7 +457,7 @@ func (query *QueryBuilder) InsertStatement() *Statement {
 	}
 }
 
-// Recursively generates in common table expression insert query for the write values graph.
+// Recursively generates a common table expression insert query for the write values graph.
 func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, primaryKeyTableAlias string) (string, []any, *proto.Field, string) {
 	sql := ""
 	alias := fmt.Sprintf("new_%v_%s", makeAlias(query.writeValues, row), casing.ToSnake(row.model.Name))
