@@ -1,0 +1,28 @@
+model Person {
+    fields {
+        nickName Text?
+        company Company?
+    }
+
+    operations {
+        create createPerson() with (nickName?, company.id?)
+        create createPersonAndCompany() with (nickName?, company.tradingAs?)
+        update updatePerson(id) with (nickName?)
+        list listPerson(nickName?)
+    }
+
+    @permission(expression: true, actions:[create, update, list])
+}
+
+model Company {
+    fields {
+        tradingAs Text?
+    }
+
+}
+
+api Web {
+    models {
+        Person
+    }
+}
