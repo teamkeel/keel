@@ -250,15 +250,6 @@
             "modelName": "Author",
             "messageName": "CreatePostBAuthorInput"
           }
-        },
-        {
-          "messageName": "CreatePostBInput",
-          "name": "author",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "modelName": "Author",
-            "messageName": "CreatePostBAuthorInput"
-          }
         }
       ]
     },

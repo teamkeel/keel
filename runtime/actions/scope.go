@@ -73,12 +73,8 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 	// an array / number / string etc, which doesn't fit in with the traditional map[string]any definition of an inputs object
 	inputsAsMap, inputIsAMap := inputs.(map[string]any)
 
-	if inputIsAMap {
-		// Check that all nullable inputs are in the correct format
-		//err := checkNullableImplicitInputs(scope, inputsAsMap)
-
-		message := proto.FindMessage(scope.Schema.Messages, scope.Operation.InputMessageName)
-		err := rewriteNullableInputsInMessage(scope, message, inputsAsMap, scope.Model)
+	if inputIsAMap && scope.Operation.Implementation != proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM {
+		err := rewriteNullableInputs(scope, inputsAsMap)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -211,31 +207,4 @@ func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string]
 	default:
 		return nil, nil, fmt.Errorf("unhandled auto operation type: %s", scope.Operation.Type.String())
 	}
-}
-
-// Validates at runtime that implicit inputs which target optional fields pass the correct arguments.
-func checkNullableImplicitInputs(scope *Scope, inputs map[string]any) error {
-	message := proto.FindMessage(scope.Schema.Messages, scope.Operation.InputMessageName)
-
-	for key, value := range inputs {
-		messageField := proto.FindMessageField(message, key)
-
-		// Any field or not an implicit input
-		if messageField == nil || len(messageField.Target) == 0 {
-			continue
-		}
-
-		model := proto.FindModel(scope.Schema.Models, scope.Model.Name)
-		modelField := proto.FindField(scope.Schema.Models, model.Name, key)
-
-		if modelField != nil && modelField.Optional {
-			_, err := common.ValueFromNullableInput(value)
-			if err != nil {
-
-				return common.NewInputValidationError(fmt.Sprintf("invalid value for '%s': %s", key, err.Error()))
-			}
-		}
-	}
-
-	return nil
 }

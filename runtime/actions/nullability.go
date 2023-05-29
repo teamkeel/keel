@@ -1,6 +1,8 @@
 package actions
 
 import (
+	"fmt"
+
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 )
@@ -15,13 +17,16 @@ func rewriteNullableInputs(scope *Scope, inputs map[string]any) error {
 		rootMessage := proto.FindMessage(scope.Schema.Messages, scope.Operation.InputMessageName)
 		valuesField := proto.FindMessageField(rootMessage, "values")
 		message = proto.FindMessage(scope.Schema.Messages, valuesField.Type.MessageName.Value)
+		if inputs["values"] == nil {
+			return nil
+		}
 		inputs = inputs["values"].(map[string]any)
-	case proto.OperationType_OPERATION_TYPE_GET,
+	case
+		proto.OperationType_OPERATION_TYPE_GET,
 		proto.OperationType_OPERATION_TYPE_LIST,
 		proto.OperationType_OPERATION_TYPE_DELETE,
 		proto.OperationType_OPERATION_TYPE_READ,
 		proto.OperationType_OPERATION_TYPE_WRITE:
-		// todo
 		return nil
 	}
 
@@ -48,7 +53,7 @@ func rewriteNullableInputsInMessage(scope *Scope, message *proto.Message, inputs
 				var err error
 				inputs[key], err = common.ValueFromNullableInput(value)
 				if err != nil {
-					return err
+					return common.NewInputValidationError(fmt.Sprintf("invalid value for '%s': %s", key, err.Error()))
 				}
 			}
 			continue
@@ -59,16 +64,22 @@ func rewriteNullableInputsInMessage(scope *Scope, message *proto.Message, inputs
 			// Determine if THIS relationship field is optional. If it is, then
 			// unwrap it from the nullable type.
 			relationshipField := proto.FindField(scope.Schema.Models, currModel.Name, key)
+
+			if proto.IsHasMany(relationshipField) {
+				continue
+			}
+
 			if relationshipField.Optional {
 				var err error
 				inputs[key], err = common.ValueFromNullableInput(value)
 				if err != nil {
-					return err
+					return common.NewInputValidationError(fmt.Sprintf("invalid value for '%s': %s", key, err.Error()))
 				}
 			}
 
 			var asMap map[string]any
 			if inputs[key] != nil {
+				// TODO: HANDLE IsHasMany relationship
 				asMap = inputs[key].(map[string]any)
 
 				// Now rewrite all values within this new message, recursively.
@@ -83,10 +94,6 @@ func rewriteNullableInputsInMessage(scope *Scope, message *proto.Message, inputs
 					return err
 				}
 			}
-			// } else {
-			// 	asMap = nil
-			// }
-
 		}
 
 	}

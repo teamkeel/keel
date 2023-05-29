@@ -12,6 +12,23 @@ test("creating a person", async () => {
   });
 
   expect(person.name).toEqual("foo");
+  expect(person.gender).toEqual("female");
+  expect(person.niNumber).toEqual("282");
+  expect(person.slackId).toBeNull();
+});
+
+test("creating a person with nullable value set", async () => {
+  const person = await actions.createPerson({
+    name: "foo",
+    gender: "female",
+    niNumber: "282",
+    slackId: { value: "123" },
+  });
+
+  expect(person.name).toEqual("foo");
+  expect(person.gender).toEqual("female");
+  expect(person.niNumber).toEqual("282");
+  expect(person.slackId).toEqual("123");
 });
 
 test("creating a person with identity", async () => {

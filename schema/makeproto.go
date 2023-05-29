@@ -353,34 +353,35 @@ func makeNullableInputMessage(typeInfo *proto.TypeInfo) *proto.Message {
 func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) *proto.Message {
 	fields := []*proto.MessageField{}
 	for _, input := range inputs {
-		typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
+		typeInfo, target, _ := scm.inferParserInputType(model, action, input, impl)
 
-		if targetsOptionalField {
-			message := makeNullableInputMessage(typeInfo)
+		// if targetsOptionalField {
+		// 	message := makeNullableInputMessage(typeInfo)
 
-			// Make sure this query input message hasn't already been added by another input.
-			if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
-				scm.proto.Messages = append(scm.proto.Messages, message)
-			}
+		// 	// Make sure this query input message hasn't already been added by another input.
+		// 	if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
+		// 		scm.proto.Messages = append(scm.proto.Messages, message)
+		// 	}
 
-			fields = append(fields, &proto.MessageField{
-				Name: input.Name(),
-				Type: &proto.TypeInfo{
-					Type:        proto.Type_TYPE_MESSAGE,
-					MessageName: wrapperspb.String(message.Name)},
-				Target:      target,
-				Optional:    input.Optional,
-				MessageName: name,
-			})
-		} else {
-			fields = append(fields, &proto.MessageField{
-				Name:        input.Name(),
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    input.Optional,
-				MessageName: name,
-			})
-		}
+		// 	fields = append(fields, &proto.MessageField{
+		// 		Name: input.Name(),
+		// 		Type: &proto.TypeInfo{
+		// 			Type:        proto.Type_TYPE_MESSAGE,
+		// 			MessageName: wrapperspb.String(message.Name),
+		// 			ModelName:   typeInfo.ModelName},
+		// 		Target:      target,
+		// 		Optional:    input.Optional,
+		// 		MessageName: name,
+		// 	})
+		// } else {
+		fields = append(fields, &proto.MessageField{
+			Name:        input.Name(),
+			Type:        typeInfo,
+			Target:      target,
+			Optional:    input.Optional,
+			MessageName: name,
+		})
+		//}
 	}
 
 	return &proto.Message{
@@ -469,7 +470,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 						MessageName: currMessage.Name,
 					}
 
-					currMessage.Fields = append(currMessage.Fields, mField)
+					//currMessage.Fields = append(currMessage.Fields, mField)
 				}
 
 				currMessage.Fields = append(currMessage.Fields, mField)

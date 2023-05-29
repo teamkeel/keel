@@ -339,8 +339,7 @@
             "type": "TYPE_MESSAGE",
             "modelName": "Publisher",
             "messageName": "NullableCreatePostPublisherInput"
-          },
-          "optional": true
+          }
         },
         {
           "messageName": "CreatePostInput",
@@ -349,8 +348,7 @@
             "type": "TYPE_MESSAGE",
             "modelName": "Author",
             "messageName": "NullableCreatePostOwnerInput"
-          },
-          "optional": true
+          }
         }
       ]
     },
@@ -382,35 +380,14 @@
           "messageName": "CreatePostPublisherInput",
           "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
+            "type": "TYPE_ID",
             "modelName": "Publisher",
-            "fieldName": "id",
-            "messageName": "NullableIDValue"
+            "fieldName": "id"
           },
           "target": [
             "publisher",
             "id"
           ]
-        }
-      ]
-    },
-    {
-      "name": "NullableIDValue",
-      "fields": [
-        {
-          "name": "value",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "Publisher"
-          },
-          "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },
@@ -442,10 +419,9 @@
           "messageName": "CreatePostOwnerInput",
           "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
+            "type": "TYPE_ID",
             "modelName": "Author",
-            "fieldName": "id",
-            "messageName": "NullableIDValue"
+            "fieldName": "id"
           },
           "target": [
             "owner",

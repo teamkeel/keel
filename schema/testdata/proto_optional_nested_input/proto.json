@@ -437,7 +437,7 @@
           "name": "previousCompanyName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringQueryInput"
+            "messageName": "StringQueryInput"
           },
           "target": [
             "previousCompany",

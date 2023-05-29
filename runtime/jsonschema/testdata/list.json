@@ -208,7 +208,7 @@
             "$ref": "#/components/schemas/NullableStringQueryInput"
           }, 
           "currentCityName": {
-            "$ref": "#/components/schemas/StringQueryInput"
+            "$ref": "#/components/schemas/NullableStringQueryInput"
           },
           "previousCityName": {
             "$ref": "#/components/schemas/NullableStringQueryInput"

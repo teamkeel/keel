@@ -298,15 +298,6 @@
             "modelName": "ParentModel",
             "messageName": "UpdateChild1ParentInput"
           }
-        },
-        {
-          "messageName": "UpdateChild1Values",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "modelName": "ParentModel",
-            "messageName": "UpdateChild1ParentInput"
-          }
         }
       ]
     },
@@ -459,22 +450,12 @@
         },
         {
           "messageName": "UpdateChild3Values",
-          "name": "parent",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "modelName": "ParentModel",
-            "messageName": "UpdateChild3ParentInput"
-          }
-        },
-        {
-          "messageName": "UpdateChild3Values",
           "name": "parentOptional",
           "type": {
             "type": "TYPE_MESSAGE",
             "modelName": "ParentModel",
             "messageName": "NullableUpdateChild3ParentOptionalInput"
-          },
-          "optional": true
+          }
         }
       ]
     },
@@ -524,35 +505,14 @@
           "messageName": "UpdateChild3ParentOptionalInput",
           "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
+            "type": "TYPE_ID",
             "modelName": "ParentModel",
-            "fieldName": "id",
-            "messageName": "NullableIDValue"
+            "fieldName": "id"
           },
           "target": [
             "parentOptional",
             "id"
           ]
-        }
-      ]
-    },
-    {
-      "name": "NullableIDValue",
-      "fields": [
-        {
-          "name": "value",
-          "type": {
-            "type": "TYPE_ID",
-            "modelName": "ParentModel"
-          },
-          "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },
@@ -633,6 +593,26 @@
           "target": [
             "parentOptionalId"
           ]
+        }
+      ]
+    },
+    {
+      "name": "NullableIDValue",
+      "fields": [
+        {
+          "name": "value",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ChildModel"
+          },
+          "optional": true
+        },
+        {
+          "name": "isNull",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
         }
       ]
     },

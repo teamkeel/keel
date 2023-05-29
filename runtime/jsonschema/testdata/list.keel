@@ -5,7 +5,7 @@ enum Hobby {
 
 model City {
     fields { 
-        name Text
+        name Text?
     }
 }
 

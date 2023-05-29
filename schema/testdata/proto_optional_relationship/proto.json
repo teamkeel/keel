@@ -10,7 +10,6 @@
             "type": "TYPE_MODEL",
             "modelName": "Company"
           },
-          "optional": true,
           "foreignKeyFieldName": "employerId"
         },
         {
@@ -50,7 +49,6 @@
           "type": {
             "type": "TYPE_ID"
           },
-          "optional": true,
           "foreignKeyInfo": {
             "relatedModelName": "Company",
             "relatedModelField": "id"
@@ -64,6 +62,13 @@
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
           "inputMessageName": "CreatePersonInput"
+        },
+        {
+          "modelName": "Person",
+          "name": "createPersonWithEmployer",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreatePersonWithEmployerInput"
         }
       ]
     },
@@ -73,6 +78,13 @@
         {
           "modelName": "Company",
           "name": "title",
+          "type": {
+            "type": "TYPE_STRING"
+          }
+        },
+        {
+          "modelName": "Company",
+          "name": "tradingAs",
           "type": {
             "type": "TYPE_STRING"
           }
@@ -219,30 +231,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "modelName": "Company",
-            "messageName": "NullableCreatePersonEmployerInput"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "NullableCreatePersonEmployerInput",
-      "fields": [
-        {
-          "name": "value",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "modelName": "Company",
             "messageName": "CreatePersonEmployerInput"
-          },
-          "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
+          }
         }
       ]
     },
@@ -253,10 +243,9 @@
           "messageName": "CreatePersonEmployerInput",
           "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
+            "type": "TYPE_ID",
             "modelName": "Company",
-            "fieldName": "id",
-            "messageName": "NullableIDValue"
+            "fieldName": "id"
           },
           "target": [
             "employer",
@@ -266,22 +255,47 @@
       ]
     },
     {
-      "name": "NullableIDValue",
+      "name": "CreatePersonWithEmployerInput",
       "fields": [
         {
-          "name": "value",
+          "messageName": "CreatePersonWithEmployerInput",
+          "name": "employer",
           "type": {
-            "type": "TYPE_ID",
-            "modelName": "Company"
+            "type": "TYPE_MESSAGE",
+            "modelName": "Company",
+            "messageName": "CreatePersonWithEmployerEmployerInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CreatePersonWithEmployerEmployerInput",
+      "fields": [
+        {
+          "messageName": "CreatePersonWithEmployerEmployerInput",
+          "name": "title",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Company",
+            "fieldName": "title"
           },
-          "optional": true
+          "target": [
+            "employer",
+            "title"
+          ]
         },
         {
-          "name": "isNull",
+          "messageName": "CreatePersonWithEmployerEmployerInput",
+          "name": "tradingAs",
           "type": {
-            "type": "TYPE_BOOL"
+            "type": "TYPE_STRING",
+            "modelName": "Company",
+            "fieldName": "tradingAs"
           },
-          "optional": true
+          "target": [
+            "employer",
+            "tradingAs"
+          ]
         }
       ]
     },

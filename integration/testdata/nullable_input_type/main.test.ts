@@ -4,50 +4,59 @@ import { Person, Company } from "@teamkeel/sdk";
 
 beforeEach(resetDatabase);
 
-// test("create operation - set optional model field to value", async () => {
-//     let person =  await actions.createPerson({ 
-//         nickName: { 
-//             value: "Biggy" 
-//         } 
-//     });
+test("create operation - set optional model field to value", async () => {
+    let person =  await actions.createPerson({ 
+        nickName: { 
+            value: "Biggy" 
+        } 
+    });
 
-//     expect(person.nickName).toEqual("Biggy");
-// });
+    expect(person.nickName).toEqual("Biggy");
+});
 
-// test("create operation - set optional relationship field to value", async () => {
-//     let company = await models.company.create({ tradingAs: "Big Company"})
+test("create operation - set optional relationship field to value", async () => {
+    let company = await models.company.create({ tradingAs: "Big Company"})
 
-//     let person =  await actions.createPerson({ 
-//         company: { 
-//             value: {
-//                 id: company.id
-//             }
-//         }
-//     });
+    let person =  await actions.createPerson({ 
+        company: { 
+            value: {
+                id: company.id
+            }
+        }
+    });
 
-//     expect(person.companyId).toEqual(company.id);
-// });
+    expect(person.companyId).toEqual(company.id);
+});
 
-// test("create operation - set optional model field to null", async () => {
-//     let person =  await actions.createPerson({ 
-//         nickName: { 
-//             isNull: true
-//         } 
-//     });
+test("create operation - set optional model field to null", async () => {
+    let person =  await actions.createPerson({ 
+        nickName: { 
+            isNull: true
+        } 
+    });
 
-//     expect(person.nickName).toBeNull();
-// });
+    expect(person.nickName).toBeNull();
+});
 
-// test("create operation - set optional relationship field to null", async () => {
-//     let person =  await actions.createPerson({ 
-//         company: { 
-//             isNull: true
-//         }
-//     });
+test("create operation - set optional relationship field to null", async () => {
+    let person =  await actions.createPerson({ 
+        company: { 
+            isNull: true
+        }
+    });
 
-//     expect(person.companyId).toBeNull();
-// });
+    expect(person.companyId).toBeNull();
+});
 
+test("create operation - set optional model field to override default", async () => {
+    let person =  await actions.createPerson();
+
+    expect(person.withDefault).toEqual("default value");
+
+    person =  await actions.createPerson({ withDefault: { isNull: true } });
+
+    expect(person.withDefault).toBeNull();
+});
 
 test("update operation - set optional model field to value", async () => {
     let { id } = await models.person.create({ nickName: null });
@@ -66,32 +75,32 @@ test("update operation - set optional model field to value", async () => {
     expect(person.nickName).toEqual("Biggy");
 });
 
-// test("update operation - set optional relationship field to value", async () => {
-//     let company = await models.company.create({ tradingAs: "Big Company"})
-//     let { id } = await models.person.create({ companyId: null });
+test("update operation - set optional relationship field to value", async () => {
+    let company = await models.company.create({ tradingAs: "Big Company"})
+    let { id } = await models.person.create({ companyId: null });
 
-//     let person =  await actions.createPerson({ 
-//         company: { 
-//             value: {
-//                 id: company.id 
-//             }
-//         }
-//     });
+    let person =  await actions.createPerson({ 
+        company: { 
+            value: {
+                id: company.id 
+            }
+        }
+    });
 
-//     expect(person.companyId).toEqual(company.id);
-// });
+    expect(person.companyId).toEqual(company.id);
+});
 
-// test("update operation - set optional model field to null", async () => {
-//     let { id } = await models.person.create({ nickName: "Biggy" });
+test("update operation - set optional model field to null", async () => {
+    let { id } = await models.person.create({ nickName: "Biggy" });
     
-//     let person =  await actions.createPerson({ 
-//         nickName: { 
-//             isNull: true
-//         } 
-//     });
+    let person =  await actions.createPerson({ 
+        nickName: { 
+            isNull: true
+        } 
+    });
 
-//     expect(person.nickName).toBeNull();
-// });
+    expect(person.nickName).toBeNull();
+});
 
 test("create operation - create nested model field to value", async () => {
     let person =  await actions.createPersonAndCompany({ 
@@ -107,4 +116,49 @@ test("create operation - create nested model field to value", async () => {
     let company = await models.company.findOne({ id: person.companyId! });
 
     expect(company?.tradingAs).toEqual("Big Company");
+});
+
+test("create operation - create nested model field to null", async () => {
+    let person =  await actions.createPersonAndCompany({ 
+        company: { 
+            value: {
+                tradingAs: { 
+                    isNull: true
+                }
+            }
+        }
+    });
+
+    let company = await models.company.findOne({ id: person.companyId! });
+
+    expect(company?.tradingAs).toBeNull();
+});
+
+test("create operation - create nested model field to null overriding default", async () => {
+    let person =  await actions.createPersonAndCompany({ 
+        company: { 
+            value: {
+                tradingAs: { 
+                    value: "Big Company"
+                }
+            }
+        }
+    });
+
+    let company = await models.company.findOne({ id: person.companyId! });
+    expect(company?.withDefault).toEqual("default value");
+
+    person =  await actions.createPersonAndCompany({ 
+        company: { 
+            value: {
+                withDefault: { 
+                    isNull: true
+                }
+            }
+        }
+    });
+
+    company = await models.company.findOne({ id: person.companyId! });
+
+    expect(company?.withDefault).toBeNull();
 });

@@ -951,7 +951,6 @@ var testCases = []testCase{
 			for _, key := range keys {
 				edges := rtt.GetValueAtPath(t, data, key+".edges")
 				edgesList, ok := edges.([]any)
-				fmt.Println(key)
 				require.True(t, ok)
 				require.Len(t, edgesList, 1)
 			}

@@ -1,16 +1,18 @@
 model Person {
     fields {
-        employer Company?
+        employer Company
     }
 
     operations {
         create createPerson() with (employer.id)
+        create createPersonWithEmployer() with (employer.title, employer.tradingAs)
     }
 }
 
 model Company {
     fields {
         title Text
+        tradingAs Text
     }
 
 }

@@ -2,11 +2,12 @@ model Person {
     fields {
         nickName Text?
         company Company?
+        withDefault Text? @default("default value")
     }
 
     operations {
-        create createPerson() with (nickName?, company.id?)
-        create createPersonAndCompany() with (nickName?, company.tradingAs?)
+        create createPerson() with (nickName?, company.id?, withDefault?)
+        create createPersonAndCompany() with (nickName?, company.tradingAs?, company.withDefault?)
         update updatePerson(id) with (nickName?)
         list listPerson(nickName?)
     }
@@ -17,6 +18,7 @@ model Person {
 model Company {
     fields {
         tradingAs Text?
+        withDefault Text? @default("default value")
     }
 
 }

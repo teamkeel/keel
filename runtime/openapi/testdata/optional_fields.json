@@ -457,7 +457,7 @@
 								"type": "object",
 								"properties": {
 									"nickName": {
-										"$ref": "#/components/schemas/NullableStringValue"
+										"type": "string"
 									}
 								},
 								"additionalProperties": false
