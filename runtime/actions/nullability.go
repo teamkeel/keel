@@ -70,21 +70,23 @@ func rewriteNullableInputsInMessage(scope *Scope, message *proto.Message, inputs
 			var asMap map[string]any
 			if inputs[key] != nil {
 				asMap = inputs[key].(map[string]any)
-			} else {
-				asMap = nil
-			}
 
-			// Now rewrite all values within this new message, recursively.
-			message := proto.FindMessage(scope.Schema.Messages, messageField.Type.MessageName.Value)
-			if relationshipField.Optional {
-				valueField := proto.FindMessageField(message, "value")
-				message = proto.FindMessage(scope.Schema.Messages, valueField.Type.MessageName.Value)
+				// Now rewrite all values within this new message, recursively.
+				message := proto.FindMessage(scope.Schema.Messages, messageField.Type.MessageName.Value)
+				if relationshipField.Optional {
+					valueField := proto.FindMessageField(message, "value")
+					message = proto.FindMessage(scope.Schema.Messages, valueField.Type.MessageName.Value)
+				}
+				nestedModel := proto.FindModel(scope.Schema.Models, messageField.Type.ModelName.Value)
+				err := rewriteNullableInputsInMessage(scope, message, asMap, nestedModel)
+				if err != nil {
+					return err
+				}
 			}
-			nestedModel := proto.FindModel(scope.Schema.Models, messageField.Type.ModelName.Value)
-			err := rewriteNullableInputsInMessage(scope, message, asMap, nestedModel)
-			if err != nil {
-				return err
-			}
+			// } else {
+			// 	asMap = nil
+			// }
+
 		}
 
 	}
