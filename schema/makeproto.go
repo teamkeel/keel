@@ -355,25 +355,6 @@ func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parse
 	for _, input := range inputs {
 		typeInfo, target, _ := scm.inferParserInputType(model, action, input, impl)
 
-		// if targetsOptionalField {
-		// 	message := makeNullableInputMessage(typeInfo)
-
-		// 	// Make sure this query input message hasn't already been added by another input.
-		// 	if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == message.Name }) {
-		// 		scm.proto.Messages = append(scm.proto.Messages, message)
-		// 	}
-
-		// 	fields = append(fields, &proto.MessageField{
-		// 		Name: input.Name(),
-		// 		Type: &proto.TypeInfo{
-		// 			Type:        proto.Type_TYPE_MESSAGE,
-		// 			MessageName: wrapperspb.String(message.Name),
-		// 			ModelName:   typeInfo.ModelName},
-		// 		Target:      target,
-		// 		Optional:    input.Optional,
-		// 		MessageName: name,
-		// 	})
-		// } else {
 		fields = append(fields, &proto.MessageField{
 			Name:        input.Name(),
 			Type:        typeInfo,
@@ -381,7 +362,6 @@ func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parse
 			Optional:    input.Optional,
 			MessageName: name,
 		})
-		//}
 	}
 
 	return &proto.Message{
@@ -440,8 +420,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					nullableMessage := makeNullableInputMessage(typeInfo)
 
 					typeInfo = &proto.TypeInfo{
-						Type: proto.Type_TYPE_MESSAGE,
-						// Repeated with be true in a 1:M relationship.
+						Type:     proto.Type_TYPE_MESSAGE,
 						Repeated: false,
 						MessageName: &wrapperspb.StringValue{
 							Value: nullableMessage.Name,
@@ -469,8 +448,6 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 						Optional:    input.Optional,
 						MessageName: currMessage.Name,
 					}
-
-					//currMessage.Fields = append(currMessage.Fields, mField)
 				}
 
 				currMessage.Fields = append(currMessage.Fields, mField)

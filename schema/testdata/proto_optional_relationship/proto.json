@@ -87,7 +87,8 @@
           "name": "tradingAs",
           "type": {
             "type": "TYPE_STRING"
-          }
+          },
+          "optional": true
         },
         {
           "modelName": "Company",
@@ -288,14 +289,35 @@
           "messageName": "CreatePersonWithEmployerEmployerInput",
           "name": "tradingAs",
           "type": {
-            "type": "TYPE_STRING",
+            "type": "TYPE_MESSAGE",
             "modelName": "Company",
-            "fieldName": "tradingAs"
+            "fieldName": "tradingAs",
+            "messageName": "NullableStringValue"
           },
           "target": [
             "employer",
             "tradingAs"
           ]
+        }
+      ]
+    },
+    {
+      "name": "NullableStringValue",
+      "fields": [
+        {
+          "name": "value",
+          "type": {
+            "type": "TYPE_STRING",
+            "modelName": "Company"
+          },
+          "optional": true
+        },
+        {
+          "name": "isNull",
+          "type": {
+            "type": "TYPE_BOOL"
+          },
+          "optional": true
         }
       ]
     },
