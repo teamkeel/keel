@@ -1443,6 +1443,7 @@ type TypeInfo struct {
 	// In the case of other types e.g. TYPE_ID this type is referencing a field
 	// on the model named here, and the specific field being referenced is indicated
 	// by `field_name`.
+	// In the case of TYPE_MESSAGE, this type is the related model.
 	ModelName *wrapperspb.StringValue `protobuf:"bytes,3,opt,name=model_name,json=modelName,proto3" json:"model_name,omitempty"`
 	// This field indicates which field on `model_name` this type is referencing.
 	// This field should only be set if `model_name` is set.
