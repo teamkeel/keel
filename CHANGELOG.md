@@ -1,3 +1,10 @@
+# [0.326.0](https://github.com/teamkeel/keel/compare/v0.325.0...v0.326.0) (2023-05-30)
+
+
+### Features
+
+* prisma client creation ([#988](https://github.com/teamkeel/keel/issues/988)) ([e3a4e5a](https://github.com/teamkeel/keel/commit/e3a4e5a2be77e7dd3f109b1672082439abe73a14))
+
 # [0.325.0](https://github.com/teamkeel/keel/compare/v0.324.1...v0.325.0) (2023-05-25)
 
 
