@@ -998,28 +998,40 @@ func (scm *Builder) makeField(parserField *parser.FieldNode, modelName string) *
 
 	// If this is a HasMany relationship field - see if we can mark it with
 	// an explicit InverseFieldName - i.e. one defined by an @relation attribute.
-	if protoField.Type.Type == proto.Type_TYPE_MODEL && protoField.Type.Repeated {
-		scm.setExplicitInverseFieldName(parserField, protoField)
+	if protoField.Type.Type == proto.Type_TYPE_MODEL {
+		scm.setInverseFieldName(parserField, protoField)
 	}
 
 	return protoField
 }
 
-// setExplicitInverseFieldName works on fields of type Model that are repeated. It looks to
+// setInverseFieldName works on fields of type Model that are repeated. It looks to
 // see if the schema defines an explicit inverse relationship field for it, and when so, sets
 // this field's InverseFieldName property accordingly.
-func (scm *Builder) setExplicitInverseFieldName(thisParserField *parser.FieldNode, thisProtoField *proto.Field) {
-
+func (scm *Builder) setInverseFieldName(thisParserField *parser.FieldNode, thisProtoField *proto.Field) {
 	// We have to look in the related model's fields, to see if any of them have an @relation
 	// attribute that refers back to this field.
 
 	nameOfRelatedModel := thisProtoField.Type.ModelName.Value
 	relatedModel := query.Model(scm.asts, nameOfRelatedModel)
+
+	relationAttr := query.FieldGetAttribute(thisParserField, parser.AttributeRelation)
+	if relationAttr != nil {
+		inverseFieldName := attributeFirstArgAsIdentifier(relationAttr)
+		thisProtoField.InverseFieldName = wrapperspb.String(inverseFieldName)
+		return
+	}
+
 	for _, remoteField := range query.ModelFields(relatedModel) {
-		if !query.FieldHasAttribute(remoteField, parser.AttributeRelation) {
+		if remoteField.Type.Value != thisProtoField.ModelName {
 			continue
 		}
 		relationAttr := query.FieldGetAttribute(remoteField, parser.AttributeRelation)
+		if relationAttr == nil {
+			thisProtoField.InverseFieldName = wrapperspb.String(remoteField.Name.Value)
+			return
+		}
+
 		inverseFieldName := attributeFirstArgAsIdentifier(relationAttr)
 		if inverseFieldName == thisProtoField.Name {
 			// We've found the inverse.

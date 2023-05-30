@@ -10,7 +10,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Post",
             "repeated": true
-          }
+          },
+          "inverseFieldName": "author"
         },
         {
           "modelName": "Account",
@@ -55,7 +56,8 @@
             "type": "TYPE_MODEL",
             "modelName": "Account"
           },
-          "foreignKeyFieldName": "authorId"
+          "foreignKeyFieldName": "authorId",
+          "inverseFieldName": "posts"
         },
         {
           "modelName": "Post",

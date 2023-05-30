@@ -74,7 +74,8 @@ func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, err
 				"tsx": "^3.12.6",
 				"typescript": "^4.9.4",
 				"vitest": "^0.27.2",
-				"node-fetch": "^3.3.0"
+				"node-fetch": "^3.3.0",
+				"@prisma/client": "^4.14.1"
 			}
 		}`, filepath.Base(dir), functionsRuntimeVersion, testingRuntimeVersion),
 	})

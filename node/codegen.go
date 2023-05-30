@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
+	"golang.org/x/exp/slices"
 )
 
 type generateOptions struct {
@@ -38,12 +39,170 @@ func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generat
 	files := generateSdkPackage(schema)
 	files = append(files, generateTestingPackage(schema)...)
 	files = append(files, generateTestingSetup()...)
+	files = append(files, generatePrismaSchema(schema)...)
 
 	if options.developmentServer {
 		files = append(files, generateDevelopmentServer(schema)...)
 	}
 
 	return files, nil
+}
+
+var toPrismaTypes = map[proto.Type]string{
+	proto.Type_TYPE_ID:        "String",
+	proto.Type_TYPE_STRING:    "String",
+	proto.Type_TYPE_INT:       "Int",
+	proto.Type_TYPE_BOOL:      "Boolean",
+	proto.Type_TYPE_TIMESTAMP: "DateTime",
+	proto.Type_TYPE_DATE:      "DateTime",
+	proto.Type_TYPE_DATETIME:  "DateTime",
+	proto.Type_TYPE_PASSWORD:  "String",
+	proto.Type_TYPE_SECRET:    "String",
+}
+
+// generatePrismaSchema takes our proto.Schema and generates a valid Prisma schema from it.
+func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
+	s := &codegen.Writer{}
+
+	s.Writeln(`
+datasource db {
+    provider = "postgresql"
+    url      = env("KEEL_DB_CONN") 
+} 
+
+generator client {
+    provider = "prisma-client-js"
+}
+`)
+
+	for _, m := range schema.Models {
+		s.Writef("model %s {", m.Name)
+		s.Writeln("")
+		s.Indent()
+
+		for _, f := range m.Fields {
+			var prismaType string
+			var mapping string
+			switch f.Type.Type {
+			case proto.Type_TYPE_ENUM:
+				prismaType = f.Type.EnumName.Value
+			case proto.Type_TYPE_MODEL:
+				prismaType = f.Type.ModelName.Value
+			default:
+				var ok bool
+				prismaType, ok = toPrismaTypes[f.Type.Type]
+				if !ok {
+					// https://www.prisma.io/docs/concepts/components/prisma-schema/data-model#unsupported-types
+					prismaType = "Unsupported"
+				}
+				mapping = fmt.Sprintf(`@map("%s")`, casing.ToSnake(f.Name))
+			}
+			s.Write(f.Name)
+			s.Write(" ")
+			s.Write(prismaType)
+			if f.Optional {
+				s.Write("?")
+			}
+			if f.Type.Repeated {
+				s.Write("[]")
+			}
+			s.Write(" ")
+			s.Write(mapping)
+
+			if f.PrimaryKey {
+				s.Writef(` @id`)
+			}
+			if f.Type.Type != proto.Type_TYPE_MODEL && f.Unique {
+				s.Write(" @unique")
+			}
+
+			if f.Type.Type == proto.Type_TYPE_MODEL {
+				relatedModel, _, relName := getPrismaRelationInfo(schema, m, f)
+
+				s.Write(" @relation(")
+				s.Writef(`"%s"`, relName)
+
+				if f.ForeignKeyFieldName != nil {
+					s.Write(", fields: [")
+					s.Write(f.ForeignKeyFieldName.Value)
+					s.Write("], references: [")
+					s.Write(proto.PrimaryKeyFieldName(relatedModel))
+					s.Write("]")
+				}
+
+				s.Write(")")
+
+			}
+
+			s.Writeln("")
+		}
+
+		// Prisma enforces relationship bi-directionality, whereas our schema language doesn't enforce specifying both sides of a relationship in some cases
+		// so therefore, after adding all of the known fields for a model into the corresponding Prisma model, we now need to go and add find any relationships between this model and another model where a link field isn't specified on *this* side of the relationship but one
+		// is on the other side.
+		for _, otherModel := range schema.Models {
+			for _, otherField := range otherModel.Fields {
+				if otherField.Type.Type == proto.Type_TYPE_MODEL && otherField.Type.ModelName.Value == m.Name && otherField.InverseFieldName == nil {
+					// format we're generating: {generatedFieldName} {otherModel.Name} @relation("{generatedRelationshipName}")
+					_, fieldName, relName := getPrismaRelationInfo(schema, otherModel, otherField)
+					fieldType := otherModel.Name
+
+					if !otherField.Unique {
+						// if the field isn't unique, then it means this is the has-many side
+						fieldType += "[]"
+					} else {
+						// in prisma, one to one relationships must set the side of the relationship
+						// that doesn't have the foreign key to optional
+						// docs: https://www.prisma.io/docs/concepts/components/prisma-schema/relations/one-to-one-relations#required-and-optional-1-1-relation-fields
+						fieldType += "?"
+					}
+
+					s.Writeln("")
+					s.Writef("%s %s @relation(\"%s\")", fieldName, fieldType, relName)
+				}
+			}
+		}
+		s.Writeln("")
+		s.Writef(`@@map("%s")`, casing.ToSnake(m.Name))
+		s.Writeln("")
+		s.Dedent()
+		s.Writeln("}")
+	}
+
+	for _, e := range schema.Enums {
+		s.Writef("enum %s {", e.Name)
+		s.Writeln("")
+		s.Indent()
+		for _, v := range e.Values {
+			s.Writeln(v.Name)
+		}
+		s.Dedent()
+		s.Writeln("}")
+	}
+
+	return codegen.GeneratedFiles{
+		{
+			Path:     ".build/schema.prisma",
+			Contents: s.String(),
+		},
+	}
+}
+
+func getPrismaRelationInfo(schema *proto.Schema, m *proto.Model, f *proto.Field) (*proto.Model, string, string) {
+	nameParts := []string{m.Name, f.Name}
+	relatedModel := proto.FindModel(schema.Models, f.Type.ModelName.Value)
+	nameParts = append(nameParts, relatedModel.Name)
+	fieldName := ""
+
+	if f.InverseFieldName != nil {
+		fieldName = f.InverseFieldName.Value
+	} else {
+		fieldName = fmt.Sprintf("%s_By_%s", casing.ToLowerCamel(m.Name), casing.ToCamel(f.Name))
+
+	}
+	nameParts = append(nameParts, fieldName)
+	slices.Sort(nameParts)
+	return relatedModel, fieldName, strings.Join(nameParts, "")
 }
 
 func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {

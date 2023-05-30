@@ -69,16 +69,11 @@ message Field {
     // and carries corresponding metadata.
     ForeignKeyInfo foreign_key_info = 11;
 
-    // In this schema, the @relation attribute disambiguates Post.author as being
-    // an "inverse" relation to Author.wrotePosts.
-    //
-    //    model Post
-    //      author Author @relation(wrotePosts)
-    //    model Author
-    //      wrotePosts Post[]
-    //
-    // In such a case, the Author.wrotePosts field would have its inverse_field_name set to
-    // "author".
+    // If this field is of type MODEL and the related model has an inverse field
+    // to this one, then this field is set to that field name.
+    // For example if a Post model has a field called author which is of type Author,
+    // and then Author has posts which is of type Post, on the Post.author field this 
+    // value will be "posts" and on the Author.posts field this value will be "author".
     google.protobuf.StringValue inverse_field_name = 12;
 }
 

@@ -416,6 +416,20 @@ func UpdateFunctions(schema *proto.Schema, dir string) tea.Cmd {
 			return UpdateFunctionsMsg{Err: err}
 		}
 
+		// todo: reinstate once we have handled existing projects without prisma client dep
+
+		// cmd := exec.Command("npx", "prisma", "generate", "--schema", ".build/schema.prisma")
+		// cmd.Dir = dir
+		// b, err := cmd.CombinedOutput()
+		// if err != nil {
+		// 	return UpdateFunctionsMsg{
+		// 		Err: &TypeScriptError{
+		// 			Output: string(b),
+		// 			Err:    err,
+		// 		},
+		// 	}
+		// }
+
 		cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
 		cmd.Dir = dir
 
