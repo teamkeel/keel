@@ -34,6 +34,7 @@ const (
 	OnOrAfter
 	OnOrBefore
 	StartsWith
+	IsNull
 )
 
 // graphQlOperatorToActionOperator converts the conditional operators that are used
@@ -69,6 +70,8 @@ func graphQlOperatorToActionOperator(in string) (out ActionOperator, err error) 
 		return OnOrBefore, nil
 	case "onOrAfter":
 		return OnOrAfter, nil
+	case "isNull":
+		return IsNull, nil
 	default:
 		return out, fmt.Errorf("unrecognized operator: %s", in)
 	}
@@ -95,7 +98,6 @@ func expressionOperatorToActionOperator(in string) (out ActionOperator, err erro
 		return OneOf, nil
 	case parser.OperatorNotIn:
 		return NotOneOf, nil
-
 	default:
 		return Unknown, fmt.Errorf("this is not a recognized conditional operator: %s", in)
 	}

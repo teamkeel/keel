@@ -536,6 +536,136 @@ var testCases = []testCase{
 		expectedArgs: []any{time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC), 50},
 	},
 	{
+		name: "list_op_implicit_input_field_is_null",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text?
+				}
+				operations {
+					list listThings(name) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"name": map[string]any{
+					"isNull": true}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" IS NULL) AS totalCount
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."name" IS NULL
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_implicit_input_field_is_not_null",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text?
+				}
+				operations {
+					list listThings(name) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"name": map[string]any{
+					"isNull": false}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" IS NOT NULL) AS totalCount
+			FROM 
+				"thing" 
+			WHERE
+				"thing"."name" IS NOT NULL
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_implicit_input_relationship_field_is_null",
+		keelSchema: `
+			model Parent {
+				fields {
+					name Text?
+				}
+			}
+			model Thing {
+				fields {
+					theParent Parent?
+				}
+				operations {
+					list listThings(theParent.name) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"theParentName": map[string]any{
+					"isNull": true}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" INNER JOIN "parent" AS "thing$the_parent" ON "thing$the_parent"."id" = "thing"."the_parent_id" WHERE "thing$the_parent"."name" IS NULL) AS totalCount
+			FROM 
+				"thing" 
+			INNER JOIN "parent" AS "thing$the_parent" ON 
+				"thing$the_parent"."id" = "thing"."the_parent_id" 
+			WHERE 
+				"thing$the_parent"."name" IS NULL 
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_implicit_input_relationship_field_is_not_null",
+		keelSchema: `
+			model Parent {
+				fields {
+					name Text?
+				}
+			}
+			model Thing {
+				fields {
+					theParent Parent?
+				}
+				operations {
+					list listThings(theParent.name) 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{
+				"theParentName": map[string]any{
+					"isNull": false}}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" INNER JOIN "parent" AS "thing$the_parent" ON "thing$the_parent"."id" = "thing"."the_parent_id" WHERE "thing$the_parent"."name" IS NOT NULL) AS totalCount
+			FROM 
+				"thing" 
+			INNER JOIN "parent" AS "thing$the_parent" ON 
+				"thing$the_parent"."id" = "thing"."the_parent_id" 
+			WHERE 
+				"thing$the_parent"."name" IS NOT NULL 
+			ORDER BY 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
 		name: "list_op_expression_text_in",
 		keelSchema: `
 			model Thing {

@@ -833,8 +833,10 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 
 			rhsSqlOperand = fmt.Sprintf("(%s)", strings.Join(inPlaceholders, ", "))
 		} else {
-			rhsSqlOperand = "?"
-			args = append(args, rhs.value)
+			if operator != IsNull {
+				rhsSqlOperand = "?"
+				args = append(args, rhs.value)
+			}
 		}
 	case rhs.IsNull():
 		rhsSqlOperand = "NULL"
@@ -878,6 +880,12 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		template = fmt.Sprintf("%s <= %s", lhsSqlOperand, rhsSqlOperand)
 	case OnOrAfter:
 		template = fmt.Sprintf("%s >= %s", lhsSqlOperand, rhsSqlOperand)
+	case IsNull:
+		if rhs.value.(bool) {
+			template = fmt.Sprintf("%s IS NULL", lhsSqlOperand)
+		} else {
+			template = fmt.Sprintf("%s IS NOT NULL", lhsSqlOperand)
+		}
 	default:
 		return "", nil, fmt.Errorf("operator: %v is not yet supported", operator)
 	}

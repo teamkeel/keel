@@ -217,9 +217,6 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 					argsSectioned, ok := argValue.(map[string]any)
 					if !ok && !field.Optional {
 						return nil, nil, fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
-					} else if !ok {
-						// The relationship is optional and set to null
-						//continue
 					}
 
 					if field.Optional {

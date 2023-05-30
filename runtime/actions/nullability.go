@@ -34,7 +34,6 @@ func rewriteNullableInputs(scope *Scope, inputs map[string]any) error {
 }
 
 func rewriteNullableInputsInMessage(scope *Scope, message *proto.Message, inputs map[string]any, currModel *proto.Model) error {
-
 	for key, value := range inputs {
 		messageField := proto.FindMessageField(message, key)
 

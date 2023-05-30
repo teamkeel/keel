@@ -8,8 +8,8 @@ model Person {
     operations {
         create createPerson() with (nickName?, company.id?, withDefault?)
         create createPersonAndCompany() with (nickName?, company.tradingAs?, company.withDefault?)
-        update updatePerson(id) with (nickName?)
-        list listPerson(nickName?)
+        update updatePerson(id) with (nickName?, company.id?)
+        list listPerson(nickName?, company.tradingAs?)
     }
 
     @permission(expression: true, actions:[create, update, list])
