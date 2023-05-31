@@ -49,6 +49,9 @@ async function handleRequest(request, config) {
           meta: request.meta,
         });
 
+        // The Go runtime does *some* permissions checks up front before the request reaches
+        // this method, so we pass in a permissionState object on the request.meta object that
+        // indicates whether a call to a custom function has already been authorised
         const permitted =
           request.meta && request.meta.permissionState.status === "granted"
             ? true
@@ -60,15 +63,15 @@ async function handleRequest(request, config) {
         const result = await tryExecuteFunction(
           { request, ctx, permitted, db, permissionFns, actionTypes },
           async () => {
-            // Call the user's custom function!
+            // Return the custom function to the containing tryExecuteFunction block
+            // Once the custom function is called, tryExecuteFunction will check the schema's permission rules to see if it can continue committing
+            // the transaction to the db. If a permission rule is violated, any changes made inside the transaction are rolled back.
             return customFunction(ctx, request.params);
           }
         );
 
-        // We want to wrap the execution of the custom function in a transaction so that any call the user makes
-        // to any of the model apis we provide to the custom function is processed in a transaction.
-        // This is useful for permissions where we want to only proceed with database writes if all permission rules
-        // have been validated.
+        // Sometimes a custom function may be coded in such a way that nothing is returned from it.
+        // We see this as an error so handle accordingly.
         if (result === undefined) {
           // no result returned from custom function
           return createJSONRPCErrorResponse(
