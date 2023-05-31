@@ -49,12 +49,6 @@ class Permissions {
         return PERMISSION_STATE.PERMITTED;
     }
   }
-
-  static async with(initialValue = false, cb = () => {}) {
-    return await permissionsApiInstance.run({ permitted: initialValue }, () => {
-      return new Permissions();
-    });
-  }
 }
 
 const checkBuiltInPermissions = async ({
