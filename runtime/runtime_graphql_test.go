@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/sanity-io/litter"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"

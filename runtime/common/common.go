@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/graphql-go/graphql/gqlerrors"
 	"github.com/karlseguin/typed"
+	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/casing"
 )
 
