@@ -238,7 +238,8 @@ func (resolver *OperandResolver) ResolveValue(args map[string]any) (any, error) 
 		inputName := resolver.Operand.Ident.Fragments[0].Fragment
 		value, ok := args[inputName]
 
-		// If the target field is optional, then parse the nullable input type.
+		// The input could be targeting an optional field on the model,
+		// which means we need to extract the value or null.
 		if resolver.IsImplicitInput() {
 			modelField := proto.FindField(resolver.Schema.Models, resolver.Model.Name, inputName)
 			if modelField.Optional {
