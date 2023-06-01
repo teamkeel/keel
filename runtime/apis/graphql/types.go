@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/bykof/gostradamus"
-	"github.com/graphql-go/graphql"
-	"github.com/graphql-go/graphql/language/ast"
 	"github.com/nleeper/goment"
 	"github.com/relvacode/iso8601"
 	"github.com/samber/lo"
+	"github.com/teamkeel/graphql"
+	"github.com/teamkeel/graphql/language/ast"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )

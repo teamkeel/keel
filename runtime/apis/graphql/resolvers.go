@@ -3,8 +3,8 @@ package graphql
 import (
 	"errors"
 
-	"github.com/graphql-go/graphql"
 	"github.com/sirupsen/logrus"
+	"github.com/teamkeel/graphql"
 
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"

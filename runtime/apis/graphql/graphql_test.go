@@ -12,9 +12,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/graphql-go/graphql/testutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/teamkeel/graphql/testutil"
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
 	"github.com/teamkeel/keel/schema"

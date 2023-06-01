@@ -211,8 +211,6 @@ github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
 github.com/googleapis/google-cloud-go-testing v0.0.0-20200911160855-bcd43fbb19e8/go.mod h1:dvDLG8qkwmyD9a/MJJN3XJcT3xFxOKAvTZGvuZmac9g=
 github.com/gorilla/websocket v1.5.0/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
-github.com/graphql-go/graphql v0.8.0 h1:JHRQMeQjofwqVvGwYnr8JnPTY0AxgVy1HpHSGPLdH0I=
-github.com/graphql-go/graphql v0.8.0/go.mod h1:nKiHzRM0qopJEwCITUuIsxk9PlVlwIiiI8pnJEhordQ=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0 h1:BZHcxBETFHIdVyhyEfOvn/RdU/QGdLI4y34qQGjGWO0=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.7.0/go.mod h1:hgWBS7lorOAVIJEQMi4ZsPv9hVvWI6+ch50m39Pf2Ks=
@@ -393,6 +391,12 @@ github.com/stretchr/testify v1.8.2 h1:+h33VjcLVPDHtOdpUCuF+7gSuG3yGIftsP1YvFihtJ
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/subosito/gotenv v1.4.2 h1:X1TuBLAMDFbaTAChgCBLu3DU3UPyELpnF2jjJ2cz/S8=
 github.com/subosito/gotenv v1.4.2/go.mod h1:ayKnFf/c6rvx/2iiLrJUk1e6plDbT3edrFNGqEflhK0=
+github.com/teamkeel/graphql v0.8.2-0.20230531095556-afd573998e0d h1:PowCgkrkND5DzCsngSkmEcUnLxeC+OxYymMVLFjOL/U=
+github.com/teamkeel/graphql v0.8.2-0.20230531095556-afd573998e0d/go.mod h1:5td34OA5ZUdckc2w3GgE7QQoaG8MK6hIVR3dFI+qaK4=
+github.com/teamkeel/graphql v0.8.2-0.20230531100352-dae3ebaf47b0 h1:R9jSO3Hwz8V+8RuFj9XiehCMdRV5JNK4ZhZ0N2ZAGmI=
+github.com/teamkeel/graphql v0.8.2-0.20230531100352-dae3ebaf47b0/go.mod h1:5td34OA5ZUdckc2w3GgE7QQoaG8MK6hIVR3dFI+qaK4=
+github.com/teamkeel/graphql v0.8.2-0.20230531102419-995b8ab035b6 h1:q8ZbAgqr7jJlZNJ4WAI+QMuZrcCBDOw9k7orYuy+Vqs=
+github.com/teamkeel/graphql v0.8.2-0.20230531102419-995b8ab035b6/go.mod h1:5td34OA5ZUdckc2w3GgE7QQoaG8MK6hIVR3dFI+qaK4=
 github.com/thoas/go-funk v0.9.1 h1:O549iLZqPpTUQ10ykd26sZhzD+rmR5pWhuElrhbC20M=
 github.com/tkuchiki/go-timezone v0.2.0 h1:yyZVHtQRVZ+wvlte5HXvSpBkR0dPYnPEIgq9qqAqltk=
 github.com/tkuchiki/go-timezone v0.2.0/go.mod h1:b1Ean9v2UXtxSq4TZF0i/TU9NuoWa9hOzOKoGCV2zqY=

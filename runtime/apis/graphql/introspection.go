@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/graphql-go/graphql"
 	"github.com/samber/lo"
+	"github.com/teamkeel/graphql"
 	"github.com/teamkeel/keel/runtime/common"
 )
 
@@ -49,7 +49,7 @@ type introspectionField struct {
 	Type introsepctionTypeRef `json:"type"`
 }
 
-// Represents the result of executing github.com/graphql-go/graphql/testutil.IntrospectionQuery
+// Represents the result of executing github.com/teamkeel/graphql/testutil.IntrospectionQuery
 type IntrospectionQueryResult struct {
 	Schema struct {
 		MutationType struct {

@@ -16,7 +16,6 @@ require (
 	github.com/docker/go-connections v0.4.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/golang-jwt/jwt/v4 v4.4.2
-	github.com/graphql-go/graphql v0.8.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/iancoleman/strcase v0.2.0
 	github.com/jackc/pgx/v5 v5.3.1
@@ -37,6 +36,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
+	github.com/teamkeel/graphql v0.8.2-0.20230531102419-995b8ab035b6
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.opentelemetry.io/otel v1.15.1
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.15.1
