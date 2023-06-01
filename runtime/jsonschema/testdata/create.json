@@ -9,7 +9,7 @@
       "type": "string"
     },
     "nickName": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   },
   "additionalProperties": false,

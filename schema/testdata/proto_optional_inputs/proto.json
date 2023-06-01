@@ -321,7 +321,7 @@
       ]
     },
     {
-      "name": "NullableStringQueryInput",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -365,13 +365,6 @@
             "repeated": true
           },
           "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },
@@ -394,7 +387,7 @@
           "name": "preferredName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringQueryInput"
+            "messageName": "StringQueryInput"
           },
           "optional": true,
           "target": [

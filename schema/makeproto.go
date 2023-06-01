@@ -62,11 +62,10 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 	return scm.proto
 }
 
-func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.Message, error) {
-	var message *proto.Message
+func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {
 	switch typeInfo.Type {
 	case proto.Type_TYPE_ID:
-		message = &proto.Message{Name: makeInputMessageName("IDQuery"), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("IDQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -89,9 +88,9 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 					Type: typeInfo.Type,
 				},
 			},
-		}}
+		}}, nil
 	case proto.Type_TYPE_STRING:
-		message = &proto.Message{Name: makeInputMessageName("StringQuery"), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("StringQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -135,9 +134,9 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 					Repeated: true,
 				},
 			},
-		}}
+		}}, nil
 	case proto.Type_TYPE_INT:
-		message = &proto.Message{Name: makeInputMessageName("IntQuery"), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("IntQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -188,9 +187,9 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 					Repeated: true,
 				},
 			},
-		}}
+		}}, nil
 	case proto.Type_TYPE_BOOL:
-		message = &proto.Message{Name: makeInputMessageName("BooleanQuery"), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("BooleanQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -198,9 +197,9 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 					Type: typeInfo.Type,
 				},
 			},
-		}}
+		}}, nil
 	case proto.Type_TYPE_DATE:
-		message = &proto.Message{Name: makeInputMessageName("DateQuery"), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("DateQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -236,9 +235,9 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 					Type: typeInfo.Type,
 				},
 			},
-		}}
+		}}, nil
 	case proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		message = &proto.Message{Name: makeInputMessageName("TimestampQuery"), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName("TimestampQuery"), Fields: []*proto.MessageField{
 			{
 				Name:     "before",
 				Optional: true,
@@ -253,9 +252,9 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 					Type: typeInfo.Type,
 				},
 			},
-		}}
+		}}, nil
 	case proto.Type_TYPE_ENUM:
-		message = &proto.Message{Name: makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value)), Fields: []*proto.MessageField{
+		return &proto.Message{Name: makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value)), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
 				Optional: true,
@@ -281,27 +280,10 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo, nullable bool) (*proto.
 					Repeated: true,
 				},
 			},
-		}}
+		}}, nil
 	default:
 		return nil, fmt.Errorf("unsupported query type %s", typeInfo.Type.String())
 	}
-
-	// If the field is optional, then we need to return a Nullable query type,
-	// which means we add the { isNull: true } query option.
-	if nullable {
-		nullableField := proto.MessageField{
-			Name:     "isNull",
-			Optional: true,
-			Type: &proto.TypeInfo{
-				Type: proto.Type_TYPE_BOOL,
-			},
-		}
-
-		message.Name = fmt.Sprintf("Nullable%s", message.Name)
-		message.Fields = append(message.Fields, &nullableField)
-	}
-
-	return message, nil
 }
 
 // Creates a proto.Message from a slice of action inputs.
@@ -495,16 +477,13 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
 			if target != nil {
-				queryMessage, err := makeListQueryInputMessage(typeInfo, targetsOptionalField)
+				queryMessage, err := makeListQueryInputMessage(typeInfo)
 
 				if err != nil {
 					continue
 				}
 
-				if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == queryMessage.Name }) {
-					scm.proto.Messages = append(scm.proto.Messages, queryMessage)
-				}
-
+				scm.proto.Messages = append(scm.proto.Messages, queryMessage)
 				wheres = append(wheres, &proto.MessageField{
 					Name: input.Name(),
 					Type: &proto.TypeInfo{
