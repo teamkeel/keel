@@ -377,6 +377,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "NullableStringQueryInput"
           },
+          "optional": true,
           "target": [
             "company",
             "tradingAs"
@@ -439,6 +440,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "NullableStringQueryInput"
           },
+          "optional": true,
           "target": [
             "previousCompany",
             "name"
@@ -451,6 +453,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "NullableStringQueryInput"
           },
+          "optional": true,
           "target": [
             "previousCompany",
             "tradingAs"
@@ -467,7 +470,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListByPreviousCompanyWhere"
-          }
+          },
+          "optional": true
         },
         {
           "messageName": "ListByPreviousCompanyInput",

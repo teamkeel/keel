@@ -5,6 +5,7 @@ model Person {
         nickName Text?
         favouritePet Pet
         leastFavoritePet Pet?
+
     }
 
     operations {

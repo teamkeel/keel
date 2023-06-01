@@ -425,14 +425,11 @@ model Person {
 	functions {
 		create createPerson() with (name)
 	}
-}`
+}
+	`
 	expected := `
 export interface CreatePersonInput {
-	name: NullableStringValue;
-}
-export interface NullableStringValue {
-	value?: string | null;
-	isNull?: boolean | null;
+	name?: string | null;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {

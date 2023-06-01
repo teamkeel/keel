@@ -359,32 +359,15 @@
           "messageName": "CreatePostPublisherInput",
           "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableIDValue"
+            "type": "TYPE_ID",
+            "modelName": "Publisher",
+            "fieldName": "id"
           },
+          "optional": true,
           "target": [
             "publisher",
             "id"
           ]
-        }
-      ]
-    },
-    {
-      "name": "NullableIDValue",
-      "fields": [
-        {
-          "name": "value",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },
@@ -395,9 +378,11 @@
           "messageName": "CreatePostOwnerInput",
           "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableIDValue"
+            "type": "TYPE_ID",
+            "modelName": "Author",
+            "fieldName": "id"
           },
+          "optional": true,
           "target": [
             "owner",
             "id"

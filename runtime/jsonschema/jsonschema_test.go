@@ -264,7 +264,7 @@ func TestValidateRequest(t *testing.T) {
 				},
 				{
 					name:    "valid - input for optional field provided",
-					request: `{"name": "Jon", "birthday": {"value": "1986-03-18"}}`,
+					request: `{"name": "Jon", "birthday": "1986-03-18"}`,
 					opName:  "createPersonWithDob",
 				},
 
@@ -275,40 +275,38 @@ func TestValidateRequest(t *testing.T) {
 				},
 				{
 					name:    "valid - providing optional input for optional field",
-					request: `{"name": "Jon", "birthday": {"value": "1986-03-18"}}`,
+					request: `{"name": "Jon", "birthday": "1986-03-18"}`,
 					opName:  "createPersonWithOptionalDob",
 				},
 				{
 					name:    "valid - providing ISO8601 format for a Date",
-					request: `{"name": "Jon", "birthday": {"value": "1986-03-18T00:00:00.000Z"}}`,
+					request: `{"name": "Jon", "birthday": "1986-03-18T00:00:00.000Z"}`,
 					opName:  "createPersonWithOptionalDob",
 				},
 				{
 					name:    "valid - required input for optional field",
-					request: `{"name": "Jon", "birthday": {"value": "1986-03-18"}}`,
+					request: `{"name": "Jon"}`,
 					opName:  "createPersonWithDob",
 				},
 				{
+					name:    "valid - ommitting optional enum",
+					request: `{}`,
+					opName:  "createPersonWithEnum",
+				},
+
+				{
 					name:    "valid - providing optional input for optional enum field",
-					request: `{"hobby": {"value": "Chess"}}`,
+					request: `{"hobby": "Chess"}`,
 					opName:  "createPersonWithEnum",
 				},
 
 				// errors
 				{
-					name:    "not valid - ommitting optional field but required input enum",
-					request: `{}`,
-					opName:  "createPersonWithEnum",
-					errors: map[string]string{
-						"(root)": "hobby is required",
-					},
-				},
-				{
 					name:    "null value - input for optional field provided as null",
 					request: `{"name": "Jon", "birthday": null}`,
 					opName:  "createPersonWithDob",
 					errors: map[string]string{
-						"birthday": "Invalid type. Expected: object, given: null",
+						"birthday": "Invalid type. Expected: string, given: null",
 					},
 				},
 				{
@@ -316,7 +314,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"name": "Jon", "birthday": null}`,
 					opName:  "createPersonWithOptionalDob",
 					errors: map[string]string{
-						"birthday": "Invalid type. Expected: object, given: null",
+						"birthday": "Invalid type. Expected: string, given: null",
 					},
 				},
 				{
@@ -324,7 +322,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"hobby": null}`,
 					opName:  "createPersonWithEnum",
 					errors: map[string]string{
-						"hobby": `Invalid type. Expected: object, given: null`,
+						"hobby": `hobby must be one of the following: "Tennis", "Chess"`,
 					},
 				},
 				{
@@ -353,10 +351,10 @@ func TestValidateRequest(t *testing.T) {
 				},
 				{
 					name:    "wrong format for date",
-					request: `{"name": "Jon", "birthday": {"value": "18th March 1986"}}`,
+					request: `{"name": "Jon", "birthday": "18th March 1986"}`,
 					opName:  "createPersonWithDob",
 					errors: map[string]string{
-						"birthday.value": "Does not match format 'date-time'",
+						"birthday": "Does not match format 'date-time'",
 					},
 				},
 				{
@@ -400,17 +398,18 @@ func TestValidateRequest(t *testing.T) {
 				},
 				{
 					name:    "valid - two inputs",
-					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": { "value": "Johnny" }}}`,
+					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": "Johnny"}}`,
 					opName:  "updateNameAndNickname",
 				},
+
 				{
 					name:    "valid - two inputs - both optional - both provided",
-					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": { "value": "Johnny" }}}`,
+					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": "Johnny"}}`,
 					opName:  "updateNameOrNickname",
 				},
 				{
 					name:    "valid - two inputs - both optional - one provided",
-					request: `{"where": {"id": "1234"}, "values": {"nickName": { "value": "Johnny" }}}`,
+					request: `{"where": {"id": "1234"}, "values": {"nickName": "Johnny"}}`,
 					opName:  "updateNameOrNickname",
 				},
 				{
@@ -440,7 +439,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"id": "1234"}, "values": {"name": "Jon", "nickName": null}}`,
 					opName:  "updateNameAndNickname",
 					errors: map[string]string{
-						"values.nickName": "Invalid type. Expected: object, given: null",
+						"values.nickName": "Invalid type. Expected: string, given: null",
 					},
 				},
 				{

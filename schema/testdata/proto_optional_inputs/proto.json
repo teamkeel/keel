@@ -193,31 +193,14 @@
           "messageName": "CreatePersonInput",
           "name": "preferredName",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringValue"
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "preferredName"
           },
+          "optional": true,
           "target": [
             "preferredName"
           ]
-        }
-      ]
-    },
-    {
-      "name": "NullableStringValue",
-      "fields": [
-        {
-          "name": "value",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },
@@ -257,9 +240,11 @@
           "messageName": "UpdatePersonValues",
           "name": "preferredName",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringValue"
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "preferredName"
           },
+          "optional": true,
           "target": [
             "preferredName"
           ]
@@ -411,6 +396,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "NullableStringQueryInput"
           },
+          "optional": true,
           "target": [
             "preferredName"
           ]

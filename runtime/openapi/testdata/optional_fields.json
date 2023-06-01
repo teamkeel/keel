@@ -99,17 +99,17 @@
 										"enum": ["Dog", "Cat", "Hamster"]
 									},
 									"leastFavoritePet": {
-										"$ref": "#/components/schemas/NullablePetValue"
+										"enum": ["Dog", "Cat", "Hamster"]
 									},
 									"name": {
 										"type": "string"
 									},
 									"nickName": {
-										"$ref": "#/components/schemas/NullableStringValue"
+										"type": "string"
 									}
 								},
 								"additionalProperties": false,
-								"required": ["name", "nickName", "favouritePet", "leastFavoritePet"]
+								"required": ["name", "favouritePet"]
 							}
 						}
 					}
@@ -175,13 +175,13 @@
 										"enum": ["Dog", "Cat", "Hamster"]
 									},
 									"leastFavoritePet": {
-										"$ref": "#/components/schemas/NullablePetValue"
+										"enum": ["Dog", "Cat", "Hamster"]
 									},
 									"name": {
 										"type": "string"
 									},
 									"nickName": {
-										"$ref": "#/components/schemas/NullableStringValue"
+										"type": "string"
 									}
 								},
 								"additionalProperties": false,
@@ -457,7 +457,7 @@
 								"type": "object",
 								"properties": {
 									"nickName": {
-										"$ref": "#/components/schemas/NullableStringValue"
+										"type": "string"
 									}
 								},
 								"additionalProperties": false
@@ -699,7 +699,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": ["name", "nickName", "favouritePet", "leastFavoritePet"]
+				"required": ["name", "favouritePet"]
 			},
 			"EmailPasswordInput": {
 				"type": "object",
@@ -735,18 +735,6 @@
 				},
 				"additionalProperties": false
 			},
-            "NullablePetValue": {
-				"type": "object",
-				"properties": {
-					"isNull": {
-						"type": "boolean"
-					},
-					"value": {
-						"enum": ["Dog", "Cat", "Hamster"]
-					}
-				},
-				"additionalProperties": false
-			},
 			"NullableStringQueryInput": {
 				"type": "object",
 				"properties": {
@@ -772,18 +760,6 @@
 						}
 					},
 					"startsWith": {
-						"type": "string"
-					}
-				},
-				"additionalProperties": false
-			},
-            "NullableStringValue": {
-				"type": "object",
-				"properties": {
-					"isNull": {
-						"type": "boolean"
-					},
-					"value": {
 						"type": "string"
 					}
 				},

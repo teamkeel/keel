@@ -7,7 +7,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/expressions"
 	"github.com/teamkeel/keel/schema/parser"
 )
@@ -250,13 +249,6 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 				// If any nested messages referenced a primary key, then the
 				// foreign keys will be generated instead of a new row created.
 				for k, v := range foreignKeys {
-					if field.Optional {
-						v, err = common.ValueFromNullableInput(v)
-						if err != nil {
-							return nil, nil, err
-						}
-					}
-
 					newRow.values[k] = v
 				}
 			}
@@ -277,18 +269,8 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 			}, nil, nil
 		} else {
 			value, ok := args[input.Name]
-
 			// Only add the arg value if it was provided as an input.
 			if ok {
-				// If the field is optional, then parse the value/isNull map.
-				mfield := proto.FindField(scope.Schema.Models, model.Name, input.Target[0])
-				if mfield != nil && mfield.Optional {
-					value, err = common.ValueFromNullableInput(value)
-					if err != nil {
-						return nil, nil, err
-					}
-				}
-
 				newRow.values[input.Name] = value
 			}
 		}
