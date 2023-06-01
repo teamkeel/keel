@@ -1,3 +1,10 @@
+## [0.326.1](https://github.com/teamkeel/keel/compare/v0.326.0...v0.326.1) (2023-06-01)
+
+
+### Bug Fixes
+
+* using our null-supported graphql-go fork ([#991](https://github.com/teamkeel/keel/issues/991)) ([681c902](https://github.com/teamkeel/keel/commit/681c902faf49be3247abb49341f1ed33fcd27db5))
+
 # [0.326.0](https://github.com/teamkeel/keel/compare/v0.325.0...v0.326.0) (2023-05-30)
 
 
