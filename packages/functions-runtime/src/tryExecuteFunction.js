@@ -10,13 +10,13 @@ const { PROTO_ACTION_TYPES } = require("./consts");
 // tryExecuteFunction will create a new database transaction around a function call
 // and handle any permissions checks. If a permission check fails, then an Error will be thrown and the catch block will be hit.
 function tryExecuteFunction(
-  { db, permitted, permissionFns, actionTypes, request, ctx },
+  { permitted, permissionFns, actionTypes, request, ctx },
   cb
 ) {
   const actionType = actionTypes[request.method];
 
   return withPermissions(permitted, async ({ getPermissionState }) => {
-    return withTransaction(db, actionType, async ({ transaction }) => {
+    return withTransaction({ actionType, orm: request.meta.orm }, async ({ transaction, db }) => {
       const fnResult = await cb();
 
       // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).

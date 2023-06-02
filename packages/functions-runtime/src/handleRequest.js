@@ -57,11 +57,10 @@ async function handleRequest(request, config) {
             ? true
             : null;
 
-        const db = getDatabase();
         const customFunction = functions[request.method];
 
         const result = await tryExecuteFunction(
-          { request, ctx, permitted, db, permissionFns, actionTypes },
+          { request, ctx, permitted, permissionFns, actionTypes },
           async () => {
             // Return the custom function to the containing tryExecuteFunction block
             // Once the custom function is called, tryExecuteFunction will check the schema's permission rules to see if it can continue committing

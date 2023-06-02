@@ -29,7 +29,7 @@ test("when the custom function returns expected value", async () => {
     createContextAPI: () => {},
   };
 
-  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+  const rpcReq = newRpcRequest("123", "createPost", { title: "a post" });
 
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
@@ -58,7 +58,7 @@ test("when the custom function doesnt return a value", async () => {
     createContextAPI: () => {},
   };
 
-  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+  const rpcReq = newRpcRequest("123", "createPost", { title: "a post" });
 
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
@@ -81,7 +81,7 @@ test("when there is no matching function for the path", async () => {
     createContextAPI: () => {},
   };
 
-  const rpcReq = createJSONRPCRequest("123", "unknown", { title: "a post" });
+  const rpcReq = newRpcRequest("123", "unknown", { title: "a post" });
 
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
@@ -106,7 +106,7 @@ test("when there is an unexpected error in the custom function", async () => {
     createContextAPI: () => {},
   };
 
-  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+  const rpcReq = newRpcRequest("123", "createPost", { title: "a post" });
 
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
@@ -134,12 +134,9 @@ test("when a role based permission has already been granted by the main runtime"
     createContextAPI: () => {},
   };
 
-  let rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+  let rpcReq = newRpcRequest("123", "createPost", { title: "a post" }, { permissionState: { status: 'granted', reason: 'role' } });
 
-  Object.assign(rpcReq, {
-    ...rpcReq,
-    meta: { permissionState: { status: "granted", reason: "role" } },
-  });
+
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
     jsonrpc: "2.0",
@@ -165,7 +162,7 @@ test("when there is an unexpected object thrown in the custom function", async (
     createContextAPI: () => {},
   };
 
-  const rpcReq = createJSONRPCRequest("123", "createPost", { title: "a post" });
+  const rpcReq = newRpcRequest("123", "createPost", { title: "a post" });
 
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
@@ -258,7 +255,7 @@ describe("ModelAPI error handling", () => {
 
   test("when kysely returns a no result error", async () => {
     // a kysely NoResultError is thrown when attempting to delete/update a non existent record.
-    const rpcReq = createJSONRPCRequest("123", "deletePost", {
+    const rpcReq = newRpcRequest("123", "deletePost", {
       id: "non-existent-id",
     });
 
@@ -273,7 +270,7 @@ describe("ModelAPI error handling", () => {
   });
 
   test("when there is a not null constraint error", async () => {
-    const rpcReq = createJSONRPCRequest("123", "createPost", { title: null });
+    const rpcReq = newRpcRequest("123", "createPost", { title: null });
 
     expect(await handleRequest(rpcReq, functionConfig)).toEqual({
       id: "123",
@@ -299,7 +296,7 @@ describe("ModelAPI error handling", () => {
     }, 'hello', 'adam')
     `.execute(db);
 
-    const rpcReq = createJSONRPCRequest("123", "createPost", {
+    const rpcReq = newRpcRequest("123", "createPost", {
       title: "hello",
       author_id: "something",
     });
@@ -323,7 +320,7 @@ describe("ModelAPI error handling", () => {
   });
 
   test("when there is a null value in a foreign key column", async () => {
-    const rpcReq = createJSONRPCRequest("123", "createPost", { title: "123" });
+    const rpcReq = newRpcRequest("123", "createPost", { title: "123" });
 
     expect(await handleRequest(rpcReq, functionConfig)).toEqual({
       id: "123",
@@ -343,7 +340,7 @@ describe("ModelAPI error handling", () => {
   });
 
   test("when there is a foreign key constraint violation", async () => {
-    const rpcReq2 = createJSONRPCRequest("123", "createPost", {
+    const rpcReq2 = newRpcRequest("123", "createPost", {
       title: "123",
       author_id: "fake",
     });
@@ -366,3 +363,14 @@ describe("ModelAPI error handling", () => {
     });
   });
 });
+
+function newRpcRequest(id, method, params, meta = { permissionState: { status: 'unknown' }}) {
+  const req = createJSONRPCRequest(id, method, params)
+
+  Object.assign(req, {
+    ...req,
+    meta,
+  });
+
+  return req;
+}
