@@ -1,14 +1,14 @@
-const { KNOWN_CLIENTS } = require('./clients')
+const { KNOWN_CLIENTS } = require("./clients");
 const { AsyncLocalStorage } = require("async_hooks");
 const { PROTO_ACTION_TYPES } = require("./consts");
-const { getDatabase: getKysely } =  require("./clients/kysely")
+const { getDatabase: getKysely } = require("./clients/kysely");
 
 // withTransaction wraps the containing code with a transaction
 // and sets the transaction in the AsyncLocalStorage so consumers further
 // down the hierarchy can access the current transaction.
 // For read type operations such as list & get, no transaction is used
 async function withTransaction({ actionType, orm = KNOWN_CLIENTS.KYSELY }, cb) {
-  const db = getDatabase(orm)
+  const db = getDatabase(orm);
 
   let requiresTransaction = true;
 
@@ -19,7 +19,7 @@ async function withTransaction({ actionType, orm = KNOWN_CLIENTS.KYSELY }, cb) {
   }
 
   if (requiresTransaction) {
-    switch(orm) {
+    switch (orm) {
       case KNOWN_CLIENTS.KYSELY:
         return db.transaction().execute(async (transaction) => {
           return dbInstance.run(transaction, async () => {
@@ -28,14 +28,11 @@ async function withTransaction({ actionType, orm = KNOWN_CLIENTS.KYSELY }, cb) {
         });
       case KNOWN_CLIENTS.PRISMA:
     }
-    
   }
   return dbInstance.run(db, async () => {
     return cb({ db, transaction: null });
   });
 }
-
-
 
 let db = null;
 const dbInstance = new AsyncLocalStorage();
@@ -52,17 +49,15 @@ function getDatabase(orm = KNOWN_CLIENTS.KYSELY) {
     return db;
   }
 
-
-  switch(orm) {
+  switch (orm) {
     case KNOWN_CLIENTS.KYSELY:
-      db = getKysely()
+      db = getKysely();
     case KNOWN_CLIENTS.PRISMA:
-      // todo
+    // todo
     default:
-
   }
 
-  return db
+  return db;
 }
 
 module.exports.getDatabase = getDatabase;

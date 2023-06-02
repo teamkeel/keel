@@ -134,8 +134,12 @@ test("when a role based permission has already been granted by the main runtime"
     createContextAPI: () => {},
   };
 
-  let rpcReq = newRpcRequest("123", "createPost", { title: "a post" }, { permissionState: { status: 'granted', reason: 'role' } });
-
+  let rpcReq = newRpcRequest(
+    "123",
+    "createPost",
+    { title: "a post" },
+    { permissionState: { status: "granted", reason: "role" } }
+  );
 
   expect(await handleRequest(rpcReq, config)).toEqual({
     id: "123",
@@ -364,8 +368,13 @@ describe("ModelAPI error handling", () => {
   });
 });
 
-function newRpcRequest(id, method, params, meta = { permissionState: { status: 'unknown' }}) {
-  const req = createJSONRPCRequest(id, method, params)
+function newRpcRequest(
+  id,
+  method,
+  params,
+  meta = { permissionState: { status: "unknown" } }
+) {
+  const req = createJSONRPCRequest(id, method, params);
 
   Object.assign(req, {
     ...req,
