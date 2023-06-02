@@ -346,32 +346,15 @@
           "messageName": "CreateChild2ParentOptionalInput",
           "name": "id",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableIDValue"
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
+            "fieldName": "id"
           },
+          "optional": true,
           "target": [
             "parentOptional",
             "id"
           ]
-        }
-      ]
-    },
-    {
-      "name": "NullableIDValue",
-      "fields": [
-        {
-          "name": "value",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },

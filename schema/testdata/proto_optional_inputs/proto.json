@@ -193,31 +193,14 @@
           "messageName": "CreatePersonInput",
           "name": "preferredName",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringValue"
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "preferredName"
           },
+          "optional": true,
           "target": [
             "preferredName"
           ]
-        }
-      ]
-    },
-    {
-      "name": "NullableStringValue",
-      "fields": [
-        {
-          "name": "value",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },
@@ -257,9 +240,11 @@
           "messageName": "UpdatePersonValues",
           "name": "preferredName",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringValue"
+            "type": "TYPE_STRING",
+            "modelName": "Person",
+            "fieldName": "preferredName"
           },
+          "optional": true,
           "target": [
             "preferredName"
           ]
@@ -336,7 +321,7 @@
       ]
     },
     {
-      "name": "NullableStringQueryInput",
+      "name": "StringQueryInput",
       "fields": [
         {
           "name": "equals",
@@ -380,13 +365,6 @@
             "repeated": true
           },
           "optional": true
-        },
-        {
-          "name": "isNull",
-          "type": {
-            "type": "TYPE_BOOL"
-          },
-          "optional": true
         }
       ]
     },
@@ -409,8 +387,9 @@
           "name": "preferredName",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "NullableStringQueryInput"
+            "messageName": "StringQueryInput"
           },
+          "optional": true,
           "target": [
             "preferredName"
           ]

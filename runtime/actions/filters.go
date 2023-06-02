@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -23,16 +22,6 @@ func (query *QueryBuilder) applyImplicitFilters(scope *Scope, args map[string]an
 
 		fieldName := input.Name
 		value, ok := args[fieldName]
-
-		// If the target field is optional, then parse the nullable input type.
-		modelField := proto.FindField(scope.Schema.Models, scope.Model.Name, input.Target[0])
-		if modelField.Optional {
-			var err error
-			value, err = common.ValueFromNullableInput(value)
-			if err != nil {
-				return err
-			}
-		}
 
 		if !ok {
 			return fmt.Errorf("this expected input: %s, is missing from this provided args map: %+v", fieldName, args)

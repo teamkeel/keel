@@ -36,7 +36,7 @@ test("text set attribute from implicit input - set to goodbye - is goodbye", asy
   const thing = await actions.create({});
   const thingUpdated = await actions.updateTextFromImplicitInput({
     where: { id: thing.id },
-    values: { otherText: { value: "goodbye" } },
+    values: { otherText: "goodbye" },
   });
   expect(thingUpdated.text).toEqual("goodbye");
   expect(thingUpdated.otherText).toEqual("goodbye");
@@ -73,7 +73,7 @@ test("number set attribute from implicit input - set to 5 - is 5", async () => {
   const thing = await actions.create({});
   const thingUpdated = await actions.updateNumberFromImplicitInput({
     where: { id: thing.id },
-    values: { otherNumber: { value: 5 } },
+    values: { otherNumber: 5 },
   });
   expect(thingUpdated.number).toEqual(5);
   expect(thingUpdated.otherNumber).toEqual(5);
@@ -110,7 +110,7 @@ test("boolean set attribute from implicit input - set to true - is true", async 
   const thing = await actions.create({});
   const thingUpdated = await actions.updateBooleanFromImplicitInput({
     where: { id: thing.id },
-    values: { otherBoolean: { value: true } },
+    values: { otherBoolean: true },
   });
   expect(thingUpdated.boolean).toEqual(true);
   expect(thingUpdated.otherBoolean).toEqual(true);
@@ -147,7 +147,7 @@ test("enum set attribute from implicit input - set to TypeTwo - is TypeTwo", asy
   const thing = await actions.create({});
   const thingUpdated = await actions.updateEnumFromImplicitInput({
     where: { id: thing.id },
-    values: { otherEnum: { value: ThingType.TypeTwo } },
+    values: { otherEnum: ThingType.TypeTwo },
   });
   expect(thingUpdated.enum).toEqual(ThingType.TypeTwo);
   expect(thingUpdated.otherEnum).toEqual(ThingType.TypeTwo);

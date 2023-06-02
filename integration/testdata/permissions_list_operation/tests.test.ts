@@ -1,19 +1,15 @@
 import { test, expect, beforeEach } from "vitest";
 import { actions, resetDatabase } from "@teamkeel/testing";
 import { PostType } from "@teamkeel/sdk";
-import { isNullishCoalesce } from "typescript";
 
 beforeEach(resetDatabase);
 
 test("string permission on literal - all matching - is authorized", async () => {
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({
-    title: { value: "goodbye" },
-    isActive: false,
-  });
-  await actions.createWithText({ title: { isNull: true }, isActive: false });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "goodbye", isActive: false });
+  await actions.createWithText({ title: null, isActive: false });
 
   const r = await actions.listWithTextPermissionLiteral({
     where: {
@@ -24,9 +20,9 @@ test("string permission on literal - all matching - is authorized", async () => 
 });
 
 test("string permission on literal - one not matching value - is not authorized", async () => {
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { value: "goodbye" } });
-  await actions.createWithText({ title: { value: "hello" } });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "goodbye" });
+  await actions.createWithText({ title: "hello" });
 
   await expect(
     actions.listWithTextPermissionLiteral({
@@ -38,9 +34,9 @@ test("string permission on literal - one not matching value - is not authorized"
 });
 
 test("string permission on literal - one not matching null value - is not authorized", async () => {
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { isNull: true } });
-  await actions.createWithText({ title: { value: "hello" } });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: null });
+  await actions.createWithText({ title: "hello" });
 
   await expect(
     actions.listWithTextPermissionLiteral({
@@ -52,11 +48,11 @@ test("string permission on literal - one not matching null value - is not author
 });
 
 test("number permission on literal - all matching - is authorized", async () => {
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 100 }, isActive: false });
-  await actions.createWithNumber({ views: { isNull: true }, isActive: false });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 100, isActive: false });
+  await actions.createWithNumber({ views: null, isActive: false });
 
   const r = await actions.listWithNumberPermissionLiteral({
     where: {
@@ -67,9 +63,9 @@ test("number permission on literal - all matching - is authorized", async () => 
 });
 
 test("number permission on literal - one not matching value - is not authorized", async () => {
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 100 } });
-  await actions.createWithNumber({ views: { value: 1 } });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 100 });
+  await actions.createWithNumber({ views: 1 });
 
   await expect(
     actions.listWithNumberPermissionLiteral({
@@ -81,9 +77,9 @@ test("number permission on literal - one not matching value - is not authorized"
 });
 
 test("number permission on literal - one not matching null value - is not authorized", async () => {
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { isNull: true } });
-  await actions.createWithNumber({ views: { value: 1 } });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: null });
+  await actions.createWithNumber({ views: 1 });
 
   await expect(
     actions.listWithNumberPermissionLiteral({
@@ -95,17 +91,11 @@ test("number permission on literal - one not matching null value - is not author
 });
 
 test("boolean permission on literal - all matching - is authorized", async () => {
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({
-    active: { value: false },
-    isActive: false,
-  });
-  await actions.createWithBoolean({
-    active: { isNull: true },
-    isActive: false,
-  });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: false, isActive: false });
+  await actions.createWithBoolean({ active: null, isActive: false });
 
   const r = await actions.listWithBooleanPermissionLiteral({
     where: {
@@ -116,9 +106,9 @@ test("boolean permission on literal - all matching - is authorized", async () =>
 });
 
 test("boolean permission on literal - one not matching value - is not authorized", async () => {
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { value: false } });
-  await actions.createWithBoolean({ active: { value: true } });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: false });
+  await actions.createWithBoolean({ active: true });
 
   await expect(
     actions.listWithBooleanPermissionLiteral({
@@ -130,9 +120,9 @@ test("boolean permission on literal - one not matching value - is not authorized
 });
 
 test("boolean permission on literal - one not matching null value - is not authorized", async () => {
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { isNull: true } });
-  await actions.createWithBoolean({ active: { value: true } });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: null });
+  await actions.createWithBoolean({ active: true });
 
   await expect(
     actions.listWithBooleanPermissionLiteral({
@@ -144,14 +134,11 @@ test("boolean permission on literal - one not matching null value - is not autho
 });
 
 test("enum permission on literal - all matching - is authorized", async () => {
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({
-    type: { value: PostType.Food },
-    isActive: false,
-  });
-  await actions.createWithEnum({ type: { isNull: true }, isActive: false });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food, isActive: false });
+  await actions.createWithEnum({ type: null, isActive: false });
 
   const r = await actions.listWithEnumPermissionLiteral({
     where: {
@@ -162,9 +149,9 @@ test("enum permission on literal - all matching - is authorized", async () => {
 });
 
 test("enum permission on literal - one not matching value - is not authorized", async () => {
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { value: PostType.Food } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionLiteral({
@@ -176,9 +163,9 @@ test("enum permission on literal - one not matching value - is not authorized", 
 });
 
 test("enum permission on literal - one not matching null value - is not authorized", async () => {
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { isNull: true } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: null });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionLiteral({
@@ -190,14 +177,11 @@ test("enum permission on literal - one not matching null value - is not authoriz
 });
 
 test("string permission on field - all matching - is authorized", async () => {
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({
-    title: { value: "goodbye" },
-    isActive: false,
-  });
-  await actions.createWithText({ title: { isNull: true }, isActive: false });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "goodbye", isActive: false });
+  await actions.createWithText({ title: null, isActive: false });
 
   const r = await actions.listWithTextPermissionFromField({
     where: {
@@ -208,9 +192,9 @@ test("string permission on field - all matching - is authorized", async () => {
 });
 
 test("string permission on field - one not matching value - is not authorized", async () => {
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { value: "goodbye" } });
-  await actions.createWithText({ title: { value: "hello" } });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: "goodbye" });
+  await actions.createWithText({ title: "hello" });
 
   await expect(
     actions.listWithTextPermissionFromField({
@@ -222,9 +206,9 @@ test("string permission on field - one not matching value - is not authorized", 
 });
 
 test("string permission on field - one not matching null value - is not authorized", async () => {
-  await actions.createWithText({ title: { value: "hello" } });
-  await actions.createWithText({ title: { isNull: true } });
-  await actions.createWithText({ title: { value: "hello" } });
+  await actions.createWithText({ title: "hello" });
+  await actions.createWithText({ title: null });
+  await actions.createWithText({ title: "hello" });
 
   await expect(
     actions.listWithTextPermissionFromField({
@@ -236,11 +220,11 @@ test("string permission on field - one not matching null value - is not authoriz
 });
 
 test("number permission on field - all matching - is authorized", async () => {
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 100 }, isActive: false });
-  await actions.createWithNumber({ views: { isNull: true }, isActive: false });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 100, isActive: false });
+  await actions.createWithNumber({ views: null, isActive: false });
 
   const r = await actions.listWithNumberPermissionFromField({
     where: {
@@ -251,9 +235,9 @@ test("number permission on field - all matching - is authorized", async () => {
 });
 
 test("number permission on field - one not matching value - is not authorized", async () => {
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { value: 100 } });
-  await actions.createWithNumber({ views: { value: 1 } });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: 100 });
+  await actions.createWithNumber({ views: 1 });
 
   await expect(
     actions.listWithNumberPermissionFromField({
@@ -265,9 +249,9 @@ test("number permission on field - one not matching value - is not authorized", 
 });
 
 test("number permission on field - one not matching null value - is not authorized", async () => {
-  await actions.createWithNumber({ views: { value: 1 } });
-  await actions.createWithNumber({ views: { isNull: true } });
-  await actions.createWithNumber({ views: { value: 1 } });
+  await actions.createWithNumber({ views: 1 });
+  await actions.createWithNumber({ views: null });
+  await actions.createWithNumber({ views: 1 });
 
   await expect(
     actions.listWithNumberPermissionFromField({
@@ -279,17 +263,11 @@ test("number permission on field - one not matching null value - is not authoriz
 });
 
 test("boolean permission on field - all matching - is authorized", async () => {
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({
-    active: { value: false },
-    isActive: false,
-  });
-  await actions.createWithBoolean({
-    active: { isNull: true },
-    isActive: false,
-  });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: false, isActive: false });
+  await actions.createWithBoolean({ active: null, isActive: false });
 
   const r = await actions.listWithBooleanPermissionFromField({
     where: {
@@ -300,9 +278,9 @@ test("boolean permission on field - all matching - is authorized", async () => {
 });
 
 test("boolean permission on field - one not matching value - field is not authorized", async () => {
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { value: false } });
-  await actions.createWithBoolean({ active: { value: true } });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: false });
+  await actions.createWithBoolean({ active: true });
 
   await expect(
     actions.listWithBooleanPermissionFromField({
@@ -314,9 +292,9 @@ test("boolean permission on field - one not matching value - field is not author
 });
 
 test("boolean permission on field - one not matching null value - is not authorized", async () => {
-  await actions.createWithBoolean({ active: { value: true } });
-  await actions.createWithBoolean({ active: { isNull: true } });
-  await actions.createWithBoolean({ active: { value: true } });
+  await actions.createWithBoolean({ active: true });
+  await actions.createWithBoolean({ active: null });
+  await actions.createWithBoolean({ active: true });
 
   await expect(
     actions.listWithBooleanPermissionFromField({
@@ -328,14 +306,11 @@ test("boolean permission on field - one not matching null value - is not authori
 });
 
 test("enum permission on field name - all matching - is authorized", async () => {
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({
-    type: { value: PostType.Food },
-    isActive: false,
-  });
-  await actions.createWithEnum({ type: { isNull: true }, isActive: false });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food, isActive: false });
+  await actions.createWithEnum({ type: null, isActive: false });
 
   await expect(
     actions.listWithEnumPermissionFromField({
@@ -347,9 +322,9 @@ test("enum permission on field name - all matching - is authorized", async () =>
 });
 
 test("enum permission on field name - one not matching value - is not authorized", async () => {
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { value: PostType.Food } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: PostType.Food });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionFromField({
@@ -361,9 +336,9 @@ test("enum permission on field name - one not matching value - is not authorized
 });
 
 test("enum permission on field name - one not matching null value - is not authorized", async () => {
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
-  await actions.createWithEnum({ type: { isNull: true } });
-  await actions.createWithEnum({ type: { value: PostType.Technical } });
+  await actions.createWithEnum({ type: PostType.Technical });
+  await actions.createWithEnum({ type: null });
+  await actions.createWithEnum({ type: PostType.Technical });
 
   await expect(
     actions.listWithEnumPermissionFromField({
@@ -455,7 +430,7 @@ test("identity permission - no identity in context - is not authorized", async (
 });
 
 test("true value permission - unauthenticated identity - is authorized", async () => {
-  await actions.createWithText({ title: { value: "hello" } });
+  await actions.createWithText({ title: "hello" });
 
   await expect(
     actions.listWithTrueValuePermission({})

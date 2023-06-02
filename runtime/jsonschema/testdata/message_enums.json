@@ -5,7 +5,8 @@
             "enum": [
                 "Cricket",
                 "Rugby",
-                "Soccer"
+                "Soccer",
+                null
             ]
         },
         "sports": {

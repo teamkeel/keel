@@ -2,11 +2,9 @@ package common
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
-	"github.com/karlseguin/typed"
 	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/casing"
 )
@@ -83,13 +81,6 @@ func (r RuntimeError) Error() string {
 	return r.Message
 }
 
-func NewInputValidationError(message string) RuntimeError {
-	return RuntimeError{
-		Code:    ErrInvalidInput,
-		Message: message,
-	}
-}
-
 func NewNotFoundError() RuntimeError {
 	return RuntimeError{
 		Code:    ErrRecordNotFound,
@@ -134,38 +125,5 @@ func NewPermissionError() RuntimeError {
 	return RuntimeError{
 		Code:    ErrPermissionDenied,
 		Message: "not authorized to access this action",
-	}
-}
-
-// Extracts value from a nullable input type, or errors if incorrectly formatted.
-// - If isNull is true, value must not be provided.
-// - If isNull is false, value must be provided
-// - If isNull is omitted, then value must be provided.
-func ValueFromNullableInput(input any) (any, error) {
-	asMap, ok := input.(map[string]any)
-	if !ok {
-		return nil, errors.New("input must be a nullable type")
-	}
-
-	typedInput := typed.New(asMap)
-	value, hasValue := typedInput.InterfaceIf("value")
-	isNull, hasIsNull := typedInput.BoolIf("isNull")
-
-	if hasValue && hasIsNull && isNull {
-		return nil, errors.New("nullable input cannot have a value if isNull is true")
-	}
-
-	if hasIsNull && !isNull && !hasValue {
-		return nil, errors.New("nullable input must have a value if isNull is false")
-	}
-
-	if !hasValue && !isNull {
-		return nil, errors.New("nullable input must have a value or isNull set")
-	}
-
-	if hasIsNull && isNull {
-		return nil, nil
-	} else {
-		return value, nil
 	}
 }

@@ -5,7 +5,7 @@
         "additionalProperties": false,
         "properties": {
           "equals": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
           }
         },
         "type": "object"
@@ -15,23 +15,23 @@
         "properties": {
           "after": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "before": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "equals": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "onOrAfter": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "onOrBefore": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"
@@ -42,21 +42,27 @@
           "equals": {
             "enum": [
               "Tennis",
-              "Chess"
+              "Chess",
+              null
             ]
           },
           "notEquals": {
             "enum": [
                 "Tennis",
-                "Chess"
+                "Chess",
+                null
             ]
           },
           "oneOf": {
-            "type": "array",
+            "type": [
+							"array",
+							"null"
+						],
             "items": {
               "enum": [
                 "Tennis",
-                "Chess"
+                "Chess",
+                null
               ]
             }
           }
@@ -67,28 +73,34 @@
         "additionalProperties": false,
         "properties": {
           "equals": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "notEquals": {
-            "type": "number"
+            "type": [
+                "number",
+                "null"
+            ]
           },
           "greaterThan": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "greaterThanOrEquals": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "lessThan": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "lessThanOrEquals": {
-            "type": "number"
+            "type": ["number", "null"]
           },
           "oneOf": {
             "items": {
                 "type": "number"
             },
-            "type": "array"
+            "type": [
+                "array",
+                "null"
+            ]
           }
         },
         "type": "object"
@@ -99,83 +111,89 @@
           "equals": {
             "enum": [
               "Tennis",
-              "Chess"
+              "Chess",
+              null
             ]
-          },
-          "isNull": {
-            "type": "boolean"
           },
           "notEquals": {
             "enum": [
                 "Tennis",
-                "Chess"
+                "Chess",
+                null
             ]
           },
           "oneOf": {
-            "type": "array",
+            "type": [
+							"array",
+							"null"
+						],
             "items": {
               "enum": [
                 "Tennis",
-                "Chess"
+                "Chess",
+                null
               ]
             }
           }
         },
-        "type": "object"
+        "type": ["object", "null"]
       },
       "NullableStringQueryInput": {
         "additionalProperties": false,
         "properties": {
           "contains": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "endsWith": {
-            "type": "string"
+            "type":["string", "null"]
           },
           "equals": {
-            "type": "string"
-          },
-          "isNull": {
-            "type": "boolean"
+            "type": ["string", "null"]
           },
           "notEquals": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
           },
           "oneOf": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "type": ["array", "null"]
           },
           "startsWith": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
-        "type": "object"
+        "type": ["object", "null"]
       },
       "StringQueryInput": {
         "additionalProperties": false,
         "properties": {
           "contains": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "endsWith": {
-            "type": "string"
+            "type":["string", "null"]
           },
           "equals": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "notEquals": {
-            "type": "string"
+            "type": [
+                "string",
+                "null"
+            ]
           },
           "oneOf": {
             "items": {
               "type": "string"
             },
-            "type": "array"
+            "type": ["array", "null"]
           },
           "startsWith": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"
@@ -215,16 +233,13 @@
           }
         },
         "required": [
-          "name", 
-          "preferredName", 
-          "favouriteNumber", 
-          "birthday", 
+          "name",
+          "favouriteNumber",
+          "birthday",
           "hobby",
-          "secondHobby", 
-          "isAdmin", 
-          "lastSeenAt", 
-          "currentCityName", 
-          "previousCityName"
+          "isAdmin",
+          "lastSeenAt",
+          "currentCityName"
         ],
         "type": "object"
       },
@@ -233,11 +248,11 @@
         "properties": {
           "after": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           },
           "before": {
             "format": "date-time",
-            "type": "string"
+            "type": ["string", "null"]
           }
         },
         "type": "object"
@@ -247,16 +262,16 @@
   "additionalProperties": false,
   "properties": {
     "after": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "before": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "first": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "last": {
-      "type": "number"
+      "type": ["number", "null"]
     },
     "where": {
       "$ref": "#/components/schemas/TestActionWhere"

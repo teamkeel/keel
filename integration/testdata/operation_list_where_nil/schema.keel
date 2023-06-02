@@ -1,0 +1,19 @@
+model Thing {
+    @permission(
+        expression: true,
+        actions: [create, get, list, update, delete]
+    )
+    fields {
+        switchIsOn Boolean?
+    }
+
+    operations {
+        list eqArg(arg: Boolean?) {
+            @where(thing.switchIsOn == arg)
+        }
+        list notEqArg(arg: Boolean?) {
+            @where(thing.switchIsOn != arg)
+        }
+
+    }
+}

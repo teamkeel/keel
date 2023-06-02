@@ -992,7 +992,7 @@ var testCases = []testCase{
 				listPeople(input: { where: {
 					firstName: { startsWith: "Fr" }
 					secondName: "Smith"
-				} })
+				} }) 	   
 				{
 					pageInfo {
 						hasNextPage
@@ -1045,7 +1045,7 @@ var testCases = []testCase{
 					get getPerson(id)
 					create createPerson() with (name) {
 						@set(person.nickname = "Joe Soap")
-					}
+					}	
 				}
 			}
 			api Test {
@@ -1199,10 +1199,10 @@ var testCases = []testCase{
 		`,
 		gqlOperation: `
 			mutation {
-				authenticate(input: {
-					createIfNotExists: true,
-					emailPassword: {
-						email: "newuser@keel.xyz",
+				authenticate(input: { 
+					createIfNotExists: true, 
+					emailPassword: { 
+						email: "newuser@keel.xyz", 
 						password: "1234"
 					}
 				}) {
@@ -1241,10 +1241,10 @@ var testCases = []testCase{
 		`,
 		gqlOperation: `
 			mutation {
-				authenticate(input: {
-					createIfNotExists: false,
-					emailPassword: {
-						email: "newuser@keel.xyz",
+				authenticate(input: { 
+					createIfNotExists: false, 
+					emailPassword: { 
+						email: "newuser@keel.xyz", 
 						password: "1234"
 					}
 				}) {
@@ -1939,7 +1939,7 @@ var testCases = []testCase{
 					actions: [get]
 				)
 			}
-
+			
 			model Author {
 				fields {
 					name Text
@@ -1951,7 +1951,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}
+			}		
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2009,10 +2009,10 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 			mutation CreatePost($authorId: ID!, $title: String!) {
-				createPost(input:
-					{
+				createPost(input: 
+					{ 
 						title: $title, author: { id: $authorId }
-					})
+					}) 
 					{
 						id
 						title
@@ -2103,7 +2103,7 @@ var testCases = []testCase{
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
 				mutation CreateThing {
-					createThing(input: {
+					createThing(input: { 
 						theDate: "2022-06-17",
 						theTimestamp: "2017-01-02T15:04:05Z"
 					}) {
@@ -2133,7 +2133,7 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 				mutation UpdateThing {
-					updateThing(input: {
+					updateThing(input: { 
 						where: {
 							id: "thing_1"
 						}
@@ -2168,7 +2168,7 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 				query GetThing {
-					getThing(input: {
+					getThing(input: { 
 						id: "thing_1",
 						theDate: "2022-06-17",
 						theTimestamp: "2022-01-01T15:04:05Z"
@@ -2201,12 +2201,12 @@ var testCases = []testCase{
 		},
 		gqlOperation: `
 				query ListThing {
-					listThing(input: {
+					listThing(input: { 
 						where: {
 							theDate: {
 								equals: "2022-06-17"
 							},
-	          theTimestamp: {
+              theTimestamp: {
 								before: "2024-03-13T17:39:04Z",
 								after: "2021-03-13T10:39:04Z"
 							}
@@ -2238,7 +2238,7 @@ var testCases = []testCase{
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
 				mutation CreateThing {
-					createThing(input: {
+					createThing(input: { 
 						theDate: "20th December 2022",
 						theTimestamp: "2023-03-13T12:00:00.00Z"
 					}) {
@@ -2264,7 +2264,7 @@ var testCases = []testCase{
 		keelSchema: date_timestamp_parsing,
 		gqlOperation: `
 				mutation CreateThing {
-					createThing(input: {
+					createThing(input: { 
 						theDate: "2022-06-17",
 						theTimestamp: "2023-03-13T17:00:00.00+07:00"
 					}) {
@@ -2286,8 +2286,8 @@ var testCases = []testCase{
 		keelSchema: relationships,
 		gqlOperation: `
 			mutation CreateAuthorWithPosts {
-				createAuthorWithPosts(input:
-					{
+				createAuthorWithPosts(input: 
+					{ 
 						name: "Bob",
 						posts: [
 							{ title: "Bobs Adventures" },
@@ -2296,7 +2296,7 @@ var testCases = []testCase{
 						publisher: {
 							organisation: "Bobs Publishers"
 						}
-					})
+					}) 
 					{
 						id
 						name
@@ -2366,7 +2366,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}
+			}		
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2452,7 +2452,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}
+			}		
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2539,7 +2539,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}
+			}		
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2621,7 +2621,7 @@ var testCases = []testCase{
 					BlogPost
 					Author
 				}
-			}
+			}		
 		`,
 		databaseSetup: func(t *testing.T, db *gorm.DB) {
 			rows := []map[string]any{
@@ -2666,152 +2666,12 @@ var testCases = []testCase{
 							}
 						}
 					}
-
+					
 				}
 			}`,
 		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
 			require.Len(t, errors, 1)
 			require.Equal(t, "not authorized to access this action", errors[0].Message)
-		},
-	},
-	{
-		name: "invalid_nullable_input_isNull_true_with_value",
-		keelSchema: `
-			model Thing {
-				fields {
-					text Text?
-				}
-				operations {
-					create createThing() with (text)
-				}
-				@permission(
-					expression: true,
-					actions: [create]
-				)
-			}
-			api Test {
-				models {
-					Thing
-				}
-			}
-		`,
-		gqlOperation: `
-			mutation CreateThing($text: NullableStringValue!) {
-				createThing(input: { text: $text }) {
-					text
-				}
-			}`,
-		variables: map[string]any{
-			"text": map[string]any{"value": "foo", "isNull": true},
-		},
-		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
-			require.Len(t, errors, 1)
-			require.Equal(t, "invalid value for 'text': nullable input cannot have a value if isNull is true", errors[0].Message)
-		},
-	},
-	{
-		name: "invalid_nullable_input_not_nullable",
-		keelSchema: `
-			model Thing {
-				fields {
-					text Text?
-				}
-				operations {
-					create createThing() with (text)
-				}
-				@permission(
-					expression: true,
-					actions: [create]
-				)
-			}
-			api Test {
-				models {
-					Thing
-				}
-			}
-		`,
-		gqlOperation: `
-			mutation CreateThing($text: NullableStringValue!) {
-				createThing(input: { text: $text }) {
-					text
-				}
-			}`,
-		variables: map[string]any{
-			"text": "foo",
-		},
-		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
-			require.Len(t, errors, 1)
-			require.Equal(t, "Variable \"$text\" got invalid value \"foo\".\nExpected \"NullableStringValue\", found not an object.", errors[0].Message)
-		},
-	},
-	{
-		name: "invalid_nullable_input_empty_object",
-		keelSchema: `
-			model Thing {
-				fields {
-					text Text?
-				}
-				operations {
-					create createThing() with (text)
-				}
-				@permission(
-					expression: true,
-					actions: [create]
-				)
-			}
-			api Test {
-				models {
-					Thing
-				}
-			}
-		`,
-		gqlOperation: `
-			mutation CreateThing($text: NullableStringValue!) {
-				createThing(input: { text: $text }) {
-					text
-				}
-			}`,
-		variables: map[string]any{
-			"text": map[string]any{},
-		},
-		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
-			require.Len(t, errors, 1)
-			require.Equal(t, "invalid value for 'text': nullable input must have a value or isNull set", errors[0].Message)
-		},
-	},
-	{
-		name: "invalid_nullable_input_missing_value",
-		keelSchema: `
-			model Thing {
-				fields {
-					text Text?
-				}
-				operations {
-					create createThing() with (text)
-				}
-				@permission(
-					expression: true,
-					actions: [create]
-				)
-			}
-			api Test {
-				models {
-					Thing
-				}
-			}
-		`,
-		gqlOperation: `
-			mutation CreateThing($text: NullableStringValue!) {
-				createThing(input: { text: $text }) {
-					text
-				}
-			}`,
-		variables: map[string]any{
-			"text": map[string]any{"isNull": false},
-		},
-		assertErrors: func(t *testing.T, errors []gqlerrors.FormattedError) {
-			require.Len(t, errors, 1)
-			require.Equal(t, "invalid value for 'text': nullable input must have a value if isNull is false", errors[0].Message)
 		},
 	},
 }
