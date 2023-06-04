@@ -76,7 +76,7 @@ func SetupDatabaseForTestCase(ctx context.Context, dbConnInfo *db.ConnectionInfo
 	// so the mainDB connection can drop the database.
 	testDBConnInfo := dbConnInfo.WithDatabase(dbName)
 
-	database, err := db.New(ctx, testDBConnInfo)
+	database, err := db.New(ctx, testDBConnInfo.String())
 	if err != nil {
 		return nil, err
 	}

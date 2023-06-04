@@ -48,9 +48,9 @@ type Database interface {
 	GetDB() *gorm.DB
 }
 
-func New(ctx context.Context, dbConnInfo *ConnectionInfo) (Database, error) {
+func New(ctx context.Context, connString string) (Database, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  dbConnInfo.String(),
+		DSN:                  connString,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{
 		Logger:                 logger.Discard,
