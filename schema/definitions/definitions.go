@@ -1,8 +1,6 @@
 package definitions
 
 import (
-	"fmt"
-
 	"github.com/alecthomas/participle/v2/lexer"
 	"github.com/iancoleman/strcase"
 	"github.com/teamkeel/keel/schema/parser"
@@ -147,7 +145,6 @@ func tokenContainsPosition(tok lexer.Token, pos Position) bool {
 	end := start + len(tok.Value)
 
 	if tok.Pos.Filename != pos.Filename {
-		fmt.Println(tok.Pos.Filename, "!=", pos.Filename)
 		return false
 	}
 

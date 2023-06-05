@@ -11,13 +11,14 @@ import (
 	"github.com/teamkeel/keel/schema/completions"
 	"github.com/teamkeel/keel/schema/node"
 	"github.com/teamkeel/keel/schema/parser"
-	"gopkg.in/yaml.v3"
+	"github.com/teamkeel/keel/schema/reader"
 )
 
 type testCase struct {
-	name     string
-	schema   string
-	expected []string
+	name        string
+	schema      string
+	otherSchema string
+	expected    []string
 }
 
 func TestRootCompletions(t *testing.T) {
@@ -259,6 +260,19 @@ func TestFieldCompletions(t *testing.T) {
 			expected: []string{"Author", "Book", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp", "Secret", "Password"},
 		},
 		{
+			name: "field-type-model-multi-file",
+			schema: `
+			model Book {
+				fields {
+					author Au<Cursor>
+				}	
+			}`,
+			otherSchema: `
+			model Author {}
+			`,
+			expected: []string{"Author", "Book", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp", "Secret", "Password"},
+		},
+		{
 			name: "field-type-enum",
 			schema: `
 			model Book {
@@ -271,6 +285,23 @@ func TestFieldCompletions(t *testing.T) {
 				Romance
 				Horror	
 			}`,
+			expected: []string{"Book", "Category", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp", "Secret", "Password"},
+		},
+		{
+			name: "field-type-enum-multi-file",
+			schema: `
+			model Book {
+				fields {
+					category Ca<Cursor>
+				}
+			}
+			`,
+			otherSchema: `
+			enum Category {
+				Romance
+				Horror	
+			}
+			`,
 			expected: []string{"Book", "Category", "Identity", "ID", "Text", "Number", "Boolean", "Date", "Timestamp", "Secret", "Password"},
 		},
 		// attributes tests
@@ -377,6 +408,65 @@ func TestOperationCompletions(t *testing.T) {
             }`,
 			expected: parser.OperationActionTypes,
 		},
+		// input tests
+		{
+			name: "model-field-inputs",
+			schema: `
+			model A {
+			  fields {
+				something Text
+			  }
+              operations {
+                get getA(<Cursor>)
+			  }
+            }`,
+			expected: []string{"something", "id", "createdAt", "updatedAt"},
+		},
+		{
+			name: "model-field-inputs-relationship",
+			schema: `
+			model B {
+				fields {
+					foo Text
+				}
+			}
+			model A {
+			  fields {
+				other B
+			  }
+              operations {
+                get getA(other.<Cursor>)
+			  }
+            }
+			`,
+			expected: []string{"foo", "id", "createdAt", "updatedAt"},
+		},
+		{
+			name: "model-field-inputs-relationship-multi-file",
+			schema: `
+			model A {
+			  fields {
+				other B
+			  }
+              operations {
+                get getA(other.deeper.<Cursor>)
+			  }
+            }
+			`,
+			otherSchema: `
+			model B {
+				fields {
+					deeper C
+				}
+			}
+			model C {
+				fields {
+					bar Text
+				}
+			}
+			`,
+			expected: []string{"bar", "id", "createdAt", "updatedAt"},
+		},
 		// with tests
 		{
 			name: "with-keyword",
@@ -457,6 +547,111 @@ func TestOperationCompletions(t *testing.T) {
             }`,
 			expected: []string{"@permission", "@set", "@validate", "@where"},
 		},
+		// @where tests
+		{
+			name: "where-attribute-model-fields",
+			schema: `
+			model Person {
+			  fields {
+				name Text
+				age Number
+			  }
+              operations {
+                list people() {
+					@where(person.<Cursor>)
+				}
+			  }
+            }`,
+			expected: []string{"name", "age", "id", "createdAt", "updatedAt"},
+		},
+		{
+			name: "where-attribute-model-fields-relationships",
+			schema: `
+			model Dog {
+				fields {
+					breed Text
+					owner Person
+				}
+			}
+			model Person {
+			  fields {
+				dogs Dog[]
+			  }
+              operations {
+                list people() {
+					@where(person.dogs.<Cursor>)
+				}
+			  }
+            }`,
+			expected: []string{"breed", "id", "createdAt", "owner", "updatedAt"},
+		},
+		{
+			name: "where-attribute-model-fields-relationships-multi-file",
+			schema: `
+			model Person {
+			  fields {
+				dogs Dog[]
+			  }
+              operations {
+                list people() {
+					@where(person.dogs.<Cursor>)
+				}
+			  }
+            }`,
+			otherSchema: `
+			model Dog {
+				fields {
+					breed Text
+					owner Person
+				}
+			}
+			`,
+			expected: []string{"breed", "id", "createdAt", "owner", "updatedAt"},
+		},
+		{
+			name: "where-attribute-enums",
+			schema: `
+			model Pet {
+			  fields {
+				species Animal
+			  }
+              operations {
+                list pets() {
+					@where(pet.species == <Cursor>)
+				}
+			  }
+            }`,
+			otherSchema: `
+			enum Animal {
+				Dog
+				Cat
+				Rabbit
+			}
+			`,
+			expected: []string{"Animal", "ctx", "pet"},
+		},
+		{
+			name: "where-attribute-enum-values",
+			schema: `
+			model Pet {
+			  fields {
+				species Animal
+			  }
+              operations {
+                list pets() {
+					@where(pet.species == Animal.<Cursor>)
+				}
+			  }
+            }`,
+			otherSchema: `
+			enum Animal {
+				Dog
+				Cat
+				Rabbit
+			}
+			`,
+			expected: []string{"Dog", "Cat", "Rabbit"},
+		},
 	}
 
 	runTestsCases(t, cases)
@@ -521,6 +716,20 @@ func TestFunctionCompletions(t *testing.T) {
 					read getPerson(<Cursor>
 				}
 			}
+			`,
+			expected: []string{"GetPersonInput", "Any", "createdAt", "id", "updatedAt"},
+		},
+		{
+			name: "arbitrary-function-input-completions-multi-file",
+			schema: `
+			model Person {
+				functions {
+					read getPerson(<Cursor>
+				}
+			}
+			`,
+			otherSchema: `
+			message GetPersonInput {}
 			`,
 			expected: []string{"GetPersonInput", "Any", "createdAt", "id", "updatedAt"},
 		},
@@ -651,7 +860,7 @@ func TestPermissionCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"person", "ctx", "env", "secrets"},
+			expected: []string{"person", "ctx"},
 		},
 		{
 			name: "permission-attribute-expression-whitespace",
@@ -662,7 +871,7 @@ func TestPermissionCompletions(t *testing.T) {
 				)
 			}
 			`,
-			expected: []string{"person", "ctx", "env", "secrets"},
+			expected: []string{"person", "ctx"},
 		},
 		{
 			name: "permission-attribute-model-fields",
@@ -882,8 +1091,9 @@ func runTestsCases(t *testing.T, cases []testCase) {
 					continue
 				}
 				pos = &node.Position{
-					Line:   i + 1,
-					Column: idx + 1,
+					Filename: "schema.keel",
+					Line:     i + 1,
+					Column:   idx + 1,
 				}
 				break
 			}
@@ -901,10 +1111,20 @@ func runTestsCases(t *testing.T, cases []testCase) {
 			configFile, err := config.Load(dir + "/fixtures")
 			assert.NoError(t, err)
 
-			configString, err := yaml.Marshal(configFile)
-			assert.NoError(t, err)
+			schemaFiles := []*reader.SchemaFile{
+				{
+					FileName: "schema.keel",
+					Contents: schema,
+				},
+			}
+			if tc.otherSchema != "" {
+				schemaFiles = append(schemaFiles, &reader.SchemaFile{
+					FileName: "other.keel",
+					Contents: tc.otherSchema,
+				})
+			}
 
-			results := completions.Completions(schema, pos, string(configString))
+			results := completions.Completions(schemaFiles, pos, configFile)
 			values := []string{}
 			for _, r := range results {
 				values = append(values, r.Label)

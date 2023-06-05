@@ -37,19 +37,18 @@ const (
 	DescriptionSuggested = "Suggested"
 )
 
-func Completions(schema string, pos *node.Position, configFile string) []*CompletionItem {
+func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *config.ProjectConfig) []*CompletionItem {
 
-	// parse the schema ignoring any errors, it's very likely the
-	// schema is not in a valid state
-	ast, _ := parser.Parse(&reader.SchemaFile{
-		Contents: schema,
-	})
+	var schema string
+	asts := []*parser.AST{}
 
-	if configFile != "" {
-		config, err := config.LoadFromBytes([]byte(configFile))
-		if err == nil {
-			ast.EnvironmentVariables = config.AllEnvironmentVariables()
-			ast.Secrets = config.AllSecrets()
+	for _, f := range schemaFiles {
+		// parse the schema ignoring any errors, it's very likely the
+		// schema is not in a valid state
+		ast, _ := parser.Parse(f)
+		asts = append(asts, ast)
+		if f.FileName == pos.Filename {
+			schema = f.Contents
 		}
 	}
 
@@ -60,7 +59,7 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 	// for this up-front
 	_, isAttr := getParentAttribute(tokenAtPos)
 	if isAttr {
-		return getAttributeArgCompletions(ast, tokenAtPos)
+		return getAttributeArgCompletions(asts, tokenAtPos, cfg)
 	}
 
 	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
@@ -78,14 +77,14 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 		// no completions for enum block
 		return []*CompletionItem{}
 	case parser.KeywordFields:
-		return getFieldCompletions(ast, tokenAtPos)
+		return getFieldCompletions(asts, tokenAtPos)
 	case parser.KeywordMessage:
-		return getMessageFieldCompletions(ast, tokenAtPos)
+		return getMessageFieldCompletions(asts, tokenAtPos)
 	case parser.KeywordOperations, parser.KeywordFunctions:
-		return getActionCompletions(ast, tokenAtPos, enclosingBlock)
+		return getActionCompletions(asts, tokenAtPos, enclosingBlock)
 	case parser.KeywordModels:
 		// models block inside an api block - complete with model names
-		return getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordModel)
+		return getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordModel)
 	default:
 		// If no enclosing block then we're at the top-level of the schema, or we are defining
 		// a top level named block
@@ -101,7 +100,7 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 
 		if ok {
 			if lastToken == parser.KeywordModel || lastToken == parser.KeywordEnum {
-				return getUndefinedFieldCompletions(ast, tokenAtPos)
+				return getUndefinedFieldCompletions(asts, tokenAtPos)
 			} else {
 				// api / role etc - no name completions possible
 				return []*CompletionItem{}
@@ -112,13 +111,13 @@ func Completions(schema string, pos *node.Position, configFile string) []*Comple
 	}
 }
 
-func getUndefinedFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) (items []*CompletionItem) {
-	for _, model := range query.Models([]*parser.AST{ast}) {
+func getUndefinedFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) (items []*CompletionItem) {
+	for _, model := range query.Models(asts) {
 		for _, field := range query.ModelFields(model) {
 			// check that model exists
-			model := query.Model([]*parser.AST{ast}, field.Type.Value)
+			model := query.Model(asts, field.Type.Value)
 
-			enum := query.Enum([]*parser.AST{ast}, field.Type.Value)
+			enum := query.Enum(asts, field.Type.Value)
 
 			if model == nil && enum == nil {
 				items = append(items, &CompletionItem{
@@ -132,7 +131,7 @@ func getUndefinedFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition)
 	return items
 }
 
-func getMessageFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
+func getMessageFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	// First we find the start of the current block
 	startOfBlock := tokenAtPos.StartOfBlock()
 
@@ -187,15 +186,15 @@ func getMessageFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) [
 	// Provide completions for field type which is built-in and user-defined types
 	return lo.Flatten(
 		[][]*CompletionItem{
-			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordModel),
-			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordEnum),
-			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordMessage),
+			getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordModel),
+			getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordEnum),
+			getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordMessage),
 			getBuiltInTypeCompletions(),
 		},
 	)
 }
 
-func getFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
+func getFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	// First we find the start of the current block
 	startOfBlock := tokenAtPos.StartOfBlock()
 
@@ -287,21 +286,19 @@ func getFieldCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*Compl
 		return []*CompletionItem{}
 	}
 
-	// Provide completions for field type which is built-in and user-defined types
-	return lo.Flatten(
-		[][]*CompletionItem{
-			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordModel),
-			getUserDefinedTypeCompletions(tokenAtPos, parser.KeywordEnum),
-			getBuiltInTypeCompletions(),
-		},
-	)
+	results := []*CompletionItem{}
+	results = append(results, getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordModel)...)
+	results = append(results, getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordEnum)...)
+	results = append(results, getBuiltInTypeCompletions()...)
+
+	return results
 }
 
-func getActionCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition, enclosingBlock string) []*CompletionItem {
+func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, enclosingBlock string) []*CompletionItem {
 	// if we are inside enclosing parenthesis then we are completing for
 	// action inputs, or for returns
 	if tokenAtPos.StartOfParen() != nil {
-		return getActionInputCompletions(ast, tokenAtPos)
+		return getActionInputCompletions(asts, tokenAtPos)
 	}
 
 	// try to find the first matching token out of returns/read/write
@@ -508,7 +505,7 @@ func getBuiltInTypeCompletions() []*CompletionItem {
 	return completions
 }
 
-func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
+func getActionInputCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
 	enclosingBlock := getTypeOfEnclosingBlock(tokenAtPos)
 
 	// inside action input args - auto-complete field names
@@ -534,7 +531,7 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 			// the first occurence was the 'returns' keyword, so we know we're inside a returns parentheses
 			insideReturns := match == parser.KeywordReturns
 
-			messages := lo.Map(query.MessageNames([]*parser.AST{ast}), func(msgName string, _ int) *CompletionItem {
+			messages := lo.Map(query.MessageNames(asts), func(msgName string, _ int) *CompletionItem {
 				return &CompletionItem{
 					Label: msgName,
 					Kind:  KindLabel,
@@ -562,7 +559,7 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 	}
 
 	modelName := getParentModelName(tokenAtPos)
-	model := query.Model([]*parser.AST{ast}, modelName)
+	model := query.Model(asts, modelName)
 
 	// if we have been able to get the model from the AST we can try to
 	// find the field names
@@ -574,7 +571,7 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 		if tokenAtPos.Value() == "." || tokenAtPos.ValueAt(-1) == "." {
 			idents := getPreviousIdents(tokenAtPos)
 			var ok bool
-			fieldNames, ok = getFieldNamesAtPath(ast, model, idents)
+			fieldNames, ok = getFieldNamesAtPath(asts, model, idents)
 			if !ok {
 				// if we were unable to resolve the relevant model
 				// return no completions as returning the default
@@ -596,14 +593,14 @@ func getActionInputCompletions(ast *parser.AST, tokenAtPos *TokensAtPosition) []
 
 }
 
-func getAttributeArgCompletions(ast *parser.AST, t *TokensAtPosition) []*CompletionItem {
+func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
 	attrName, _ := getParentAttribute(t)
 
 	switch attrName {
 	case parser.AttributeSet, parser.AttributeWhere, parser.AttributeValidate:
-		return getExpressionCompletions(ast, t)
+		return getExpressionCompletions(asts, t, cfg)
 	case parser.AttributePermission:
-		return getPermissionArgCompletions(ast, t)
+		return getPermissionArgCompletions(asts, t, cfg)
 	default:
 		// this is likely a user error e.g. providing args to an attribute
 		// that doesn't take them like @unique
@@ -611,7 +608,7 @@ func getAttributeArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Complet
 	}
 }
 
-func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*CompletionItem {
+func getPermissionArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
 	argStart := t.StartOfParen()
 	for {
 		if argStart == nil {
@@ -665,7 +662,7 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 	label := colon.Prev().Value()
 	switch label {
 	case "expression":
-		return getExpressionCompletions(ast, t)
+		return getExpressionCompletions(asts, t, cfg)
 	case "actions":
 		if listStart != nil {
 			return lo.Filter(actionBlockKeywords, func(c *CompletionItem, _ int) bool {
@@ -675,7 +672,7 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 		return []*CompletionItem{}
 	case "roles":
 		if listStart != nil {
-			return getUserDefinedTypeCompletions(t, parser.KeywordRole)
+			return getUserDefinedTypeCompletions(asts, t, parser.KeywordRole)
 		}
 		return []*CompletionItem{}
 	default:
@@ -683,13 +680,13 @@ func getPermissionArgCompletions(ast *parser.AST, t *TokensAtPosition) []*Comple
 	}
 }
 
-func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*CompletionItem {
+func getExpressionCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
 	modelName := getParentModelName(t)
 	expressionModelName := casing.ToLowerCamel(modelName)
 
 	previousIdents := getPreviousIdents(t)
 	if len(previousIdents) == 0 {
-		return []*CompletionItem{
+		return append([]*CompletionItem{
 			{
 				Label:       casing.ToLowerCamel(modelName),
 				Description: "Current model",
@@ -700,17 +697,7 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 				Description: "Current context",
 				Kind:        KindVariable,
 			},
-			{
-				Label:       "env",
-				Description: "Environment Variables",
-				Kind:        KindVariable,
-			},
-			{
-				Label:       "secrets",
-				Description: "Secrets",
-				Kind:        KindVariable,
-			},
-		}
+		}, getUserDefinedTypeCompletions(asts, t, "enum")...)
 	}
 
 	switch previousIdents[0] {
@@ -752,17 +739,17 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 		if len(previousIdents) == 2 {
 			switch previousIdents[1] {
 			case "env":
-				completions = getEnvironmentVariableCompletions(ast)
+				completions = getEnvironmentVariableCompletions(cfg)
 			case "secrets":
-				completions = getSecretsCompletions(ast)
+				completions = getSecretsCompletions(cfg)
 			}
 		}
 
 		return completions
 
 	case expressionModelName:
-		model := query.Model([]*parser.AST{ast}, modelName)
-		fieldNames, ok := getFieldNamesAtPath(ast, model, previousIdents[1:])
+		model := query.Model(asts, modelName)
+		fieldNames, ok := getFieldNamesAtPath(asts, model, previousIdents[1:])
 		if !ok {
 			// if we were unable to resolve the relevant model
 			// return no completions as returning the default
@@ -774,7 +761,17 @@ func getExpressionCompletions(ast *parser.AST, t *TokensAtPosition) []*Completio
 		return fieldNames
 
 	default:
-		// TODO: enumm and action inputs
+		// Enum value completions
+		e := query.Enum(asts, previousIdents[0])
+		if e != nil {
+			return lo.Map(e.Values, func(v *parser.EnumValueNode, _ int) *CompletionItem {
+				return &CompletionItem{
+					Label: v.Name.Value,
+					Kind:  KindField,
+				}
+			})
+		}
+
 		return []*CompletionItem{}
 	}
 }
@@ -888,9 +885,36 @@ func getParentAttribute(t *TokensAtPosition) (string, bool) {
 
 // getUserDefinedTypeCompletions returns the names of user-defined
 // types defined with `keyword`
-func getUserDefinedTypeCompletions(t *TokensAtPosition, keyword string) []*CompletionItem {
+func getUserDefinedTypeCompletions(asts []*parser.AST, t *TokensAtPosition, keyword string) []*CompletionItem {
 	completions := []*CompletionItem{}
 
+	// First we take values from the AST's
+	switch keyword {
+	case "model":
+		for _, m := range query.Models(asts) {
+			completions = append(completions, &CompletionItem{
+				Label: m.Name.Value,
+				Kind:  keyword,
+			})
+		}
+	case "enum":
+		for _, m := range query.Enums(asts) {
+			completions = append(completions, &CompletionItem{
+				Label: m.Name.Value,
+				Kind:  keyword,
+			})
+		}
+	case "message":
+		for _, name := range query.MessageNames(asts) {
+			completions = append(completions, &CompletionItem{
+				Label: name,
+				Kind:  keyword,
+			})
+		}
+	}
+
+	// Then we inspect the tokens from the active file to find definitions
+	// This approach means we can extract definitions that occur after a syntax error
 	t = t.Start()
 	for {
 		if t.Value() == keyword {
@@ -911,10 +935,13 @@ func getUserDefinedTypeCompletions(t *TokensAtPosition, keyword string) []*Compl
 		}
 	}
 
-	return completions
+	// Finally make sure there are no duplicates
+	return lo.UniqBy(completions, func(r *CompletionItem) string {
+		return r.Label
+	})
 }
 
-func getFieldNamesAtPath(ast *parser.AST, model *parser.ModelNode, idents []string) ([]*CompletionItem, bool) {
+func getFieldNamesAtPath(asts []*parser.AST, model *parser.ModelNode, idents []string) ([]*CompletionItem, bool) {
 	if model == nil {
 		return nil, false
 	}
@@ -925,7 +952,7 @@ func getFieldNamesAtPath(ast *parser.AST, model *parser.ModelNode, idents []stri
 		if field == nil {
 			return nil, false
 		}
-		model = query.Model([]*parser.AST{ast}, field.Type.Value)
+		model = query.Model(asts, field.Type.Value)
 		if model == nil {
 			return nil, false
 		}
@@ -972,9 +999,9 @@ func getAttributeCompletions(token *TokensAtPosition, names []string) []*Complet
 	return completions
 }
 
-func getEnvironmentVariableCompletions(ast *parser.AST) []*CompletionItem {
+func getEnvironmentVariableCompletions(cfg *config.ProjectConfig) []*CompletionItem {
 	var builtInFieldCompletions []*CompletionItem
-	for _, key := range ast.EnvironmentVariables {
+	for _, key := range cfg.AllEnvironmentVariables() {
 		builtInFieldCompletions = append(builtInFieldCompletions, &CompletionItem{
 			Label:       key,
 			Description: "Environment Variables",
@@ -985,9 +1012,9 @@ func getEnvironmentVariableCompletions(ast *parser.AST) []*CompletionItem {
 	return builtInFieldCompletions
 }
 
-func getSecretsCompletions(ast *parser.AST) []*CompletionItem {
+func getSecretsCompletions(cfg *config.ProjectConfig) []*CompletionItem {
 	var builtInFieldCompletions []*CompletionItem
-	for _, key := range ast.Secrets {
+	for _, key := range cfg.AllSecrets() {
 		builtInFieldCompletions = append(builtInFieldCompletions, &CompletionItem{
 			Label:       key,
 			Description: "Secret",

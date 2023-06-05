@@ -78,15 +78,50 @@ func newPromise(fn func() (any, error)) any {
 	return promiseConstructor.New(handler)
 }
 
+// Expected argument to definitions API:
+//
+//	{
+//		position: {
+//			filename: "",
+//			line: 1,
+//			column: 1,
+//		},
+//		schemaFiles: [
+//			{
+//				filename: "",
+//				contents: "",
+//			},
+//		],
+//		config: "",
+//	}
 func provideCompletions(this js.Value, args []js.Value) any {
 	return newPromise(func() (any, error) {
-		line := args[1].Get("line").Int()
-		column := args[1].Get("column").Int()
+		positionArg := args[0].Get("position")
+		pos := &node.Position{
+			Filename: positionArg.Get("filename").String(),
+			Line:     positionArg.Get("line").Int(),
+			Column:   positionArg.Get("column").Int(),
+		}
 
-		completions := completions.Completions(args[0].String(), &node.Position{
-			Column: column,
-			Line:   line,
-		}, args[2].String())
+		schemaFilesArg := args[0].Get("schemaFiles")
+		schemaFiles := []*reader.SchemaFile{}
+		for i := 0; i < schemaFilesArg.Length(); i++ {
+			f := schemaFilesArg.Index(i)
+			schemaFiles = append(schemaFiles, &reader.SchemaFile{
+				FileName: f.Get("filename").String(),
+				Contents: f.Get("contents").String(),
+			})
+		}
+
+		configSrc := args[0].Get("config")
+		var cfg *config.ProjectConfig
+		if configSrc.Truthy() {
+			// We don't care about errors here, if we can get a config object
+			// back we'll use it, if not then we'll run validation without it
+			cfg, _ = config.LoadFromBytes([]byte(configSrc.String()))
+		}
+
+		completions := completions.Completions(schemaFiles, pos, cfg)
 
 		untypedCompletions := toUntypedArray(completions)
 
@@ -155,28 +190,46 @@ func formatSchema(this js.Value, args []js.Value) any {
 	})
 }
 
-// Type definition for this function:
+// Expected argument to validate API:
 //
-//	validate(schema: string)
+//	{
+//		schemaFiles: [
+//			{
+//				filename: "",
+//				contents: "",
+//			},
+//		],
+//		config: "<YAML config file>"
+//	}
+//
+// The config file source is optional.
 func validate(this js.Value, args []js.Value) any {
 	return newPromise(func() (any, error) {
-		schemaFile := reader.SchemaFile{
-			FileName: "schema.keel",
-			Contents: args[0].String(),
+
+		schemaFilesArg := args[0].Get("schemaFiles")
+		schemaFiles := []reader.SchemaFile{}
+		for i := 0; i < schemaFilesArg.Length(); i++ {
+			f := schemaFilesArg.Index(i)
+			schemaFiles = append(schemaFiles, reader.SchemaFile{
+				FileName: f.Get("filename").String(),
+				Contents: f.Get("contents").String(),
+			})
 		}
 
 		builder := schema.Builder{}
 
-		if args[1].Truthy() {
-			config, err := config.LoadFromBytes([]byte(args[1].String()))
-			if err != nil {
-				return nil, err
+		configSrc := args[0].Get("config")
+		if configSrc.Truthy() {
+			// We don't care about errors here, if we can get a config object
+			// back we'll use it, if not then we'll run validation without it
+			config, _ := config.LoadFromBytes([]byte(configSrc.String()))
+			if config != nil {
+				builder.Config = config
 			}
-			builder.Config = config
 		}
 
 		_, err := builder.MakeFromInputs(&reader.Inputs{
-			SchemaFiles: []reader.SchemaFile{schemaFile},
+			SchemaFiles: schemaFiles,
 		})
 
 		if err != nil {

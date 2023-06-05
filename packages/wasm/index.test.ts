@@ -40,16 +40,77 @@ test("completions", async () => {
         name Te 
     }
 }`;
-  const result = await completions(
-    schema,
-    {
+  const result = await completions({
+    schemaFiles: [
+      {
+        filename: "schema.keel",
+        contents: schema,
+      },
+    ],
+    position: {
+      filename: "schema.keel",
       line: 3,
       column: 16,
     },
-    configFile
-  );
+  });
 
   expect(result.completions.map((x) => x.label)).toContain("Text");
+});
+
+test("completions - multi file", async () => {
+  const result = await completions({
+    schemaFiles: [
+      {
+        filename: "schema.keel",
+        contents: `
+model Person {
+  fields { 
+    name 
+  }
+}`,
+      },
+      {
+        filename: "other.keel",
+        contents: `
+enum Category {
+  Sport
+  Finance
+}
+        `,
+      },
+    ],
+    position: {
+      filename: "schema.keel",
+      line: 4,
+      column: 10,
+    },
+  });
+
+  expect(result.completions.map((x) => x.label)).toContain("Category");
+});
+
+test("completions - with config", async () => {
+  const result = await completions({
+    schemaFiles: [
+      {
+        filename: "schema.keel",
+        contents: `
+model Person {
+  @permission(
+    expression: ctx.secrets.
+  )
+}`,
+      },
+    ],
+    position: {
+      filename: "schema.keel",
+      line: 4,
+      column: 29,
+    },
+    config: configFile,
+  });
+
+  expect(result.completions.map((x) => x.label)).toContain("API_KEY");
 });
 
 test("validate", async () => {
@@ -58,15 +119,42 @@ test("validate", async () => {
         name Foo
     }
 }`;
-  const { errors } = await validate(schema, configFile);
+  const { errors } = await validate({
+    schemaFiles: [{ filename: "schema.keel", contents: schema }],
+    config: configFile,
+  });
 
   expect(errors[0].message).toEqual("field name has an unsupported type Foo");
+});
+
+test("validate - multi file", async () => {
+  const schemaA = `model Customer {
+    fields { 
+        orders Order[]
+    }
+}`;
+  const schemaB = `model Order {
+  fields { 
+      customer Customer
+  }
+}`;
+  const { errors } = await validate({
+    schemaFiles: [
+      { filename: "customer.keel", contents: schemaA },
+      { filename: "hobby.keel", contents: schemaB },
+    ],
+  });
+
+  expect(errors.length).toEqual(0);
 });
 
 test("validate - invalid schema", async () => {
   const schema = `model Person {
     fields {`;
-  const { errors } = await validate(schema, configFile);
+  const { errors } = await validate({
+    schemaFiles: [{ filename: "schema.keel", contents: schema }],
+    config: configFile,
+  });
 
   expect(errors[0].code).toEqual("E025");
   expect(errors[0].message).toEqual(` unexpected token "<EOF>" (expected "}")`);
@@ -77,7 +165,6 @@ test("getDefinition", async () => {
     position: {
       line: 7,
       column: 21,
-      offset: 0,
       filename: "myschema.keel",
     },
     schemaFiles: [
@@ -112,7 +199,6 @@ test("getDefinition - no result", async () => {
     position: {
       line: 1,
       column: 1,
-      offset: 0,
       filename: "myschema.keel",
     },
     schemaFiles: [
