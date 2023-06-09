@@ -108,7 +108,11 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			return c.TableName == casing.ToSnake(model.Name)
 		})
 		if !exists {
-			statements = append(statements, createTableStmt(model))
+			stmt, err := createTableStmt(schema, model)
+			if err != nil {
+				return nil, err
+			}
+			statements = append(statements, stmt)
 			changes = append(changes, &DatabaseChange{
 				Model: model.Name,
 				Type:  ChangeTypeAdded,
@@ -162,7 +166,11 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			})
 			if column == nil {
 				// Add new column
-				statements = append(statements, addColumnStmt(model.Name, field))
+				stmt, err := addColumnStmt(schema, model.Name, field)
+				if err != nil {
+					return nil, err
+				}
+				statements = append(statements, stmt)
 				changes = append(changes, &DatabaseChange{
 					Model: model.Name,
 					Field: field.Name,
@@ -179,7 +187,10 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			// Column already exists - see if any changes need to be applied
 			hasChanged := false
 
-			alterSQL := alterColumnStmt(model.Name, field, column)
+			alterSQL, err := alterColumnStmt(schema, model.Name, field, column)
+			if err != nil {
+				return nil, err
+			}
 			if alterSQL != "" {
 				statements = append(statements, alterSQL)
 				hasChanged = true
