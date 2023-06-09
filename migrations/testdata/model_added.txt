@@ -23,9 +23,9 @@ model Animal {
 
 CREATE TABLE "animal" (
 "name" TEXT NOT NULL,
-"id" TEXT NOT NULL DEFAULT '',
-"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"id" TEXT NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL,
+"updated_at" TIMESTAMPTZ NOT NULL,
 "human_friend_id" TEXT NOT NULL
 );
 ALTER TABLE "animal" ADD CONSTRAINT animal_id_pkey PRIMARY KEY ("id");

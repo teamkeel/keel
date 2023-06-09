@@ -1,16 +1,13 @@
 package migrations
 
 import (
-	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
-	"github.com/teamkeel/keel/schema/parser"
 )
 
 var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
@@ -44,7 +41,7 @@ func PrimaryKeyConstraintName(modelName string, fieldName string) string {
 	return fmt.Sprintf("%s_%s_pkey", casing.ToSnake(modelName), casing.ToSnake(fieldName))
 }
 
-func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
+func createTableStmt(model *proto.Model) string {
 	statements := []string{}
 	output := fmt.Sprintf("CREATE TABLE %s (\n", Identifier(model.Name))
 
@@ -55,11 +52,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 	})
 
 	for i, field := range fields {
-		stmt, err := fieldDefinition(schema, field)
-		if err != nil {
-			return "", err
-		}
-		output += stmt
+		output += fieldDefinition(field)
 		if i < len(fields)-1 {
 			output += ","
 		}
@@ -81,7 +74,7 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 		}
 	}
 
-	return strings.Join(statements, "\n"), nil
+	return strings.Join(statements, "\n")
 }
 
 func dropTableStmt(name string) string {
@@ -100,23 +93,18 @@ func dropConstraintStmt(tableName string, constraintName string) string {
 	return fmt.Sprintf("ALTER TABLE %s DROP CONSTRAINT %s;", Identifier(tableName), constraintName)
 }
 
-func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (string, error) {
+func addColumnStmt(modelName string, field *proto.Field) string {
 	statements := []string{}
 
-	stmt, err := fieldDefinition(schema, field)
-	if err != nil {
-		return "", err
-	}
-
 	statements = append(statements,
-		fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), stmt),
+		fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", Identifier(modelName), fieldDefinition(field)),
 	)
 
 	if field.Unique {
 		statements = append(statements, addUniqueConstraintStmt(modelName, field.Name))
 	}
 
-	return strings.Join(statements, "\n"), nil
+	return strings.Join(statements, "\n")
 }
 
 // addForeignKeyConstraintStmt generates a string of this form:
@@ -131,49 +119,27 @@ func addForeignKeyConstraintStmt(thisTable string, thisColumn string, otherTable
 	)
 }
 
-func alterColumnStmt(schema *proto.Schema, modelName string, field *proto.Field, column *ColumnRow) (string, error) {
+func alterColumnStmt(modelName string, field *proto.Field, column *ColumnRow) string {
 	stmts := []string{}
-
-	alterColumnStmtPrefix := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(column.ColumnName))
 
 	// these two flags are opposites of each other, so if they are both true
 	// or both false then there is a change to be applied
 	if field.Optional == column.NotNull {
-		var change string
-		if field.Optional && column.NotNull {
-			change = "DROP NOT NULL"
-		} else {
-			change = "SET NOT NULL"
-		}
-		stmts = append(stmts, fmt.Sprintf("%s %s;", alterColumnStmtPrefix, change))
-	}
+		output := fmt.Sprintf("ALTER TABLE %s ALTER COLUMN %s", Identifier(modelName), Identifier(column.ColumnName))
 
-	if field.DefaultValue == nil && column.HasDefault {
-		output := fmt.Sprintf("%s DROP DEFAULT;", alterColumnStmtPrefix)
+		if field.Optional && column.NotNull {
+			output += " DROP NOT NULL"
+		} else {
+			output += " SET NOT NULL"
+		}
+		output += ";"
 		stmts = append(stmts, output)
 	}
 
-	if field.DefaultValue != nil {
-		value, err := getDefaultValue(schema, field)
-		if err != nil {
-			return "", err
-		}
-
-		// Strip cast from default value e.g. 'Foo'::text -> 'Foo
-		currentDefault := typeCastRegex.ReplaceAllString(column.DefaultValue, "")
-
-		if !column.HasDefault || currentDefault != value {
-			output := fmt.Sprintf("%s SET DEFAULT %s;", alterColumnStmtPrefix, value)
-			stmts = append(stmts, output)
-		}
-	}
-
-	return strings.Join(stmts, "\n"), nil
+	return strings.Join(stmts, "\n")
 }
 
-var typeCastRegex = regexp.MustCompile("::(\\w)+$")
-
-func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
+func fieldDefinition(field *proto.Field) string {
 	columnName := Identifier(field.Name)
 	output := fmt.Sprintf("%s %s", columnName, PostgresFieldTypes[field.Type.Type])
 
@@ -181,76 +147,7 @@ func fieldDefinition(schema *proto.Schema, field *proto.Field) (string, error) {
 		output += " NOT NULL"
 	}
 
-	if field.DefaultValue != nil {
-		value, err := getDefaultValue(schema, field)
-		if err != nil {
-			return "", err
-		}
-
-		output += " DEFAULT " + value
-	}
-
-	return output, nil
-}
-
-func getDefaultValue(schema *proto.Schema, field *proto.Field) (string, error) {
-	if field.DefaultValue.UseZeroValue {
-		switch field.Type.Type {
-		case proto.Type_TYPE_STRING:
-			return db.QuoteLiteral(""), nil
-		case proto.Type_TYPE_INT:
-			return "0", nil
-		case proto.Type_TYPE_BOOL:
-			return "false", nil
-		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-			return "now()", nil
-		case proto.Type_TYPE_ID:
-			// TODO
-			return db.QuoteLiteral(""), nil
-		}
-	}
-
-	expr, err := parser.ParseExpression(field.DefaultValue.Expression.Source)
-	if err != nil {
-		return "", err
-	}
-
-	value, err := expr.ToValue()
-	if err != nil {
-		return "", err
-	}
-
-	switch {
-	case value.String != nil:
-		s := *value.String
-		s = strings.TrimPrefix(s, `"`)
-		s = strings.TrimSuffix(s, `"`)
-		return db.QuoteLiteral(s), nil
-	case value.Number != nil:
-		return fmt.Sprintf("%d", *value.Number), nil
-	case value.True:
-		return "true", nil
-	case value.False:
-		return "false", nil
-	case value.Ident != nil:
-		if field.Type.Type != proto.Type_TYPE_ENUM {
-			return "", fmt.Errorf("expected field %s to be enum type but is %s", field.Name, field.Type.Type.String())
-		}
-		enumName := value.Ident.Fragments[0].Fragment
-		if enumName != field.Type.EnumName.Value {
-			return "", fmt.Errorf("expected enum %s in default value but got %s", field.Type.EnumName.Value, enumName)
-		}
-		enum := proto.FindEnum(schema.Enums, enumName)
-		if enum == nil {
-			return "", errors.New("expected enum in @default")
-		}
-		if len(value.Ident.Fragments) != 2 {
-			return "", fmt.Errorf("invalid default value for field %s", field.Name)
-		}
-		return db.QuoteLiteral(value.Ident.Fragments[1].Fragment), nil
-	default:
-		return "", fmt.Errorf("field %s has unexpected default value %s", field.Name, value.ToString())
-	}
+	return output
 }
 
 func dropColumnStmt(modelName string, fieldName string) string {

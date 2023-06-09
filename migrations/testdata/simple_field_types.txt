@@ -22,9 +22,9 @@ CREATE TABLE "identity" (
 "password" TEXT,
 "external_id" TEXT,
 "created_by" TEXT,
-"id" TEXT NOT NULL DEFAULT '',
-"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+"id" TEXT NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL,
+"updated_at" TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
@@ -35,9 +35,9 @@ CREATE TABLE "person" (
 "enum" TEXT NOT NULL,
 "date" DATE NOT NULL,
 "timestamp" TIMESTAMPTZ NOT NULL,
-"id" TEXT NOT NULL DEFAULT '',
-"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+"id" TEXT NOT NULL,
+"created_at" TIMESTAMPTZ NOT NULL,
+"updated_at" TIMESTAMPTZ NOT NULL
 );
 ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
 
