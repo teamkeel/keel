@@ -1,17 +1,20 @@
 ===
 
 enum MyEnum {
-    Value
+    One
+    Two
 }
 
 model Person {
     fields {
-        text Text
-        bool Boolean
-        number Number
-        enum MyEnum
-        date Date
-        timestamp Timestamp
+        textWithValue Text @default("foo")
+        textWithDefault Text @default
+        numberWithValue Number @default(37)
+        numberWithDefault Number @default
+        booleanTrue Boolean @default(true)
+        booleanFalse Boolean @default(false)
+        booleanDefault Boolean @default
+        enumValue MyEnum @default(MyEnum.Two)
     }
 }
 
@@ -29,12 +32,14 @@ CREATE TABLE "identity" (
 ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
-"text" TEXT NOT NULL,
-"bool" BOOL NOT NULL,
-"number" INTEGER NOT NULL,
-"enum" TEXT NOT NULL,
-"date" DATE NOT NULL,
-"timestamp" TIMESTAMPTZ NOT NULL,
+"text_with_value" TEXT NOT NULL DEFAULT 'foo',
+"text_with_default" TEXT NOT NULL DEFAULT '',
+"number_with_value" INTEGER NOT NULL DEFAULT 37,
+"number_with_default" INTEGER NOT NULL DEFAULT 0,
+"boolean_true" BOOL NOT NULL DEFAULT true,
+"boolean_false" BOOL NOT NULL DEFAULT false,
+"boolean_default" BOOL NOT NULL DEFAULT false,
+"enum_value" TEXT NOT NULL DEFAULT 'Two',
 "id" TEXT NOT NULL DEFAULT '',
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -47,3 +52,4 @@ ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
   { "Model": "Identity", "Field": "", "Type": "ADDED" },
   { "Model": "Person", "Field": "", "Type": "ADDED" }
 ]
+
