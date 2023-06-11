@@ -1,3 +1,10 @@
+# [0.327.0](https://github.com/teamkeel/keel/compare/v0.326.1...v0.327.0) (2023-06-11)
+
+
+### Features
+
+* create a new database instance from a conn string ([#993](https://github.com/teamkeel/keel/issues/993)) ([e0d2326](https://github.com/teamkeel/keel/commit/e0d2326f401d6174c6019e978515422afae01820))
+
 ## [0.326.1](https://github.com/teamkeel/keel/compare/v0.326.0...v0.326.1) (2023-06-01)
 
 
