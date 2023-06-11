@@ -217,7 +217,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-		database, err := db.New(context.Background(), m.DatabaseConnInfo)
+		database, err := db.New(context.Background(), m.DatabaseConnInfo.String())
 		if err != nil {
 			m.Err = err
 			return m, tea.Quit

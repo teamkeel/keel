@@ -60,7 +60,7 @@ func TestMigrations(t *testing.T) {
 
 			context := context.Background()
 
-			database, err := db.New(context, dbConnInfo.WithDatabase(dbName))
+			database, err := db.New(context, dbConnInfo.WithDatabase(dbName).String())
 			require.NoError(t, err)
 
 			// Read the fixture file

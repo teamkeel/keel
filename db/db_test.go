@@ -21,7 +21,7 @@ func createTestDb(t *testing.T, ctx context.Context) Database {
 		Database: "keel",
 	}
 
-	db, err := New(ctx, dbConnInfo)
+	db, err := New(ctx, dbConnInfo.String())
 	require.NoError(t, err)
 	return db
 }
