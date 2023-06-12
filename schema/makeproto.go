@@ -408,7 +408,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Name:        input.Label.Value,
 					Type:        typeInfo,
 					Optional:    input.Optional,
-					Nullable:    true, // TODO: can explicit inputs use the null value?
+					Nullable:    false, // TODO: can explicit inputs use the null value?
 					MessageName: rootMessage.Name,
 				})
 			}
@@ -442,7 +442,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Name:        input.Label.Value,
 					Type:        typeInfo,
 					Optional:    input.Optional,
-					Nullable:    true, // TODO: can explicit inputs use the null value?
+					Nullable:    false, // TODO: can explicit inputs use the null value?
 					MessageName: valuesMessage.Name,
 				})
 			}
