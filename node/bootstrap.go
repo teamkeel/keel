@@ -36,6 +36,7 @@ func getRequiredDependencies(options *bootstrapOptions) map[string]string {
 		"typescript":                  "4.9.4",
 		"vitest":                      "0.27.2",
 		"node-fetch":                  "3.3.0",
+		"prisma":                      "4.14.1",
 		"@prisma/client":              "4.14.1",
 	}
 }
@@ -114,7 +115,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, err
 	err = installCmd.Run()
 
 	if err != nil {
-		return codegen.GeneratedFiles{}, err
+		return codegen.GeneratedFiles{}, fmt.Errorf("Could not install required dependencies")
 	}
 
 	files = append(files, &codegen.GeneratedFile{

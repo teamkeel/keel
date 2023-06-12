@@ -109,6 +109,11 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 			}
 		}
 
+		output <- GenerateMsg{
+			Status: StatusBootstrapping,
+			Log:    "Determining changes",
+		}
+
 		// make sure we have all correct deps
 		files, err := node.Bootstrap(dir, node.WithPackagesPath(nodePackagesPath))
 
@@ -124,6 +129,11 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 			return GenerateMsg{
 				Err: err,
 			}
+		}
+
+		output <- GenerateMsg{
+			Status: StatusBootstrapping,
+			Log:    "Satisfying dependencies",
 		}
 
 		if len(files) > 0 {
@@ -212,7 +222,7 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 		}
 
 		// generate prisma client from the prisma schema we generated in the previous step
-		cmd := exec.Command("npx", "prisma", "generate", "--schema", ".build/schema.prisma")
+		cmd := exec.Command("node_modules/.bin/prisma", "generate", "--schema", ".build/schema.prisma")
 		cmd.Dir = dir
 		b, err := cmd.CombinedOutput()
 		if err != nil {
@@ -441,7 +451,7 @@ func UpdateFunctions(schema *proto.Schema, dir string) tea.Cmd {
 			return UpdateFunctionsMsg{Err: err}
 		}
 
-		cmd := exec.Command("npx", "prisma", "generate", "--schema", ".build/schema.prisma")
+		cmd := exec.Command("node_modules/.bin/prisma", "generate", "--schema", ".build/schema.prisma")
 		cmd.Dir = dir
 		b, err := cmd.CombinedOutput()
 		if err != nil {
