@@ -100,6 +100,7 @@ type GenerateMsg struct {
 // - Scaffolding any missing custom functions
 func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output chan tea.Msg) tea.Cmd {
 	return func() tea.Msg {
+
 		generatedFiles := codegen.GeneratedFiles{}
 
 		if !node.HasFunctions(schema) && !node.HasTests(dir) {
@@ -108,6 +109,7 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 			}
 		}
 
+		// make sure we have all correct deps
 		files, err := node.Bootstrap(dir, node.WithPackagesPath(nodePackagesPath))
 
 		if err != nil {
@@ -200,7 +202,30 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 		}
 
 		output <- GenerateMsg{
+			Log:    "Generated .build directory",
+			Status: StatusGeneratingNodePackages,
+		}
+
+		output <- GenerateMsg{
 			Log:    "Generated @teamkeel/testing",
+			Status: StatusGeneratingNodePackages,
+		}
+
+		// generate prisma client from the prisma schema we generated in the previous step
+		cmd := exec.Command("npx", "prisma", "generate", "--schema", ".build/schema.prisma")
+		cmd.Dir = dir
+		b, err := cmd.CombinedOutput()
+		if err != nil {
+			return GenerateMsg{
+				Err: &TypeScriptError{
+					Output: string(b),
+					Err:    err,
+				},
+			}
+		}
+
+		output <- GenerateMsg{
+			Log:    "Generated prisma schema",
 			Status: StatusGeneratingNodePackages,
 		}
 
@@ -418,22 +443,22 @@ func UpdateFunctions(schema *proto.Schema, dir string) tea.Cmd {
 
 		// todo: reinstate once we have handled existing projects without prisma client dep
 
-		// cmd := exec.Command("npx", "prisma", "generate", "--schema", ".build/schema.prisma")
-		// cmd.Dir = dir
-		// b, err := cmd.CombinedOutput()
-		// if err != nil {
-		// 	return UpdateFunctionsMsg{
-		// 		Err: &TypeScriptError{
-		// 			Output: string(b),
-		// 			Err:    err,
-		// 		},
-		// 	}
-		// }
+		cmd := exec.Command("npx", "prisma", "generate", "--schema", ".build/schema.prisma")
+		cmd.Dir = dir
+		b, err := cmd.CombinedOutput()
+		if err != nil {
+			return UpdateFunctionsMsg{
+				Err: &TypeScriptError{
+					Output: string(b),
+					Err:    err,
+				},
+			}
+		}
 
-		cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
+		cmd = exec.Command("npx", "tsc", "--noEmit", "--pretty")
 		cmd.Dir = dir
 
-		b, err := cmd.CombinedOutput()
+		b, err = cmd.CombinedOutput()
 		if err != nil {
 			return UpdateFunctionsMsg{
 				Err: &TypeScriptError{
