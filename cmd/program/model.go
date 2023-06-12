@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/rs/cors"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/cmd/database"
@@ -297,7 +298,23 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Schema.Apis = append(m.Schema.Apis, testApi)
 		}
 
-		m.RuntimeHandler = runtime.NewHttpHandler(m.Schema)
+		cors := cors.New(cors.Options{
+			AllowOriginFunc: func(origin string) bool {
+				return true
+			},
+			AllowedMethods: []string{
+				http.MethodHead,
+				http.MethodGet,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodPatch,
+				http.MethodDelete,
+			},
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+		})
+
+		m.RuntimeHandler = cors.Handler(runtime.NewHttpHandler(m.Schema))
 		m.Status = StatusRunMigrations
 		return m, RunMigrations(m.Schema, m.Database)
 	case RunMigrationsMsg:
