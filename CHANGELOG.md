@@ -1,3 +1,10 @@
+## [0.327.1](https://github.com/teamkeel/keel/compare/v0.327.0...v0.327.1) (2023-06-12)
+
+
+### Bug Fixes
+
+* move cors to only be used in localhost ([#997](https://github.com/teamkeel/keel/issues/997)) ([5426034](https://github.com/teamkeel/keel/commit/54260344e9a8a67090afa34aab8952ad52b0e3e8))
+
 # [0.327.0](https://github.com/teamkeel/keel/compare/v0.326.1...v0.327.0) (2023-06-11)
 
 
