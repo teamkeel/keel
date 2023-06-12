@@ -1,3 +1,10 @@
+# [0.328.0](https://github.com/teamkeel/keel/compare/v0.327.1...v0.328.0) (2023-06-12)
+
+
+### Features
+
+* generate prisma schema and upgrade user dependencies ([#996](https://github.com/teamkeel/keel/issues/996)) ([0ab5d37](https://github.com/teamkeel/keel/commit/0ab5d37aef3398d373cc57222ceee94345bedb68))
+
 ## [0.327.1](https://github.com/teamkeel/keel/compare/v0.327.0...v0.327.1) (2023-06-12)
 
 
