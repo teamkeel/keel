@@ -23,7 +23,7 @@ model Animal {
 
 CREATE TABLE "animal" (
 "name" TEXT NOT NULL,
-"id" TEXT NOT NULL DEFAULT '',
+"id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "human_friend_id" TEXT NOT NULL

@@ -12,6 +12,7 @@ import (
 
 	"github.com/nsf/jsondiff"
 	"github.com/samber/lo"
+	"github.com/segmentio/ksuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/db"
@@ -121,6 +122,14 @@ func TestMigrations(t *testing.T) {
 			require.NoError(t, err)
 
 			assertJSON(t, schemaBytes, dbSchemaBytes)
+
+			// Test ksuid function
+			r, err := database.ExecuteQuery(context, `select ksuid()`)
+			require.NoError(t, err)
+			require.Equal(t, 1, len(r.Rows))
+			k, err := ksuid.Parse(r.Rows[0]["ksuid"].(string))
+			require.NoError(t, err)
+			assert.False(t, k.IsNil())
 		})
 	}
 }

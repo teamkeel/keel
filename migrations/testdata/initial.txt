@@ -13,7 +13,7 @@ CREATE TABLE "identity" (
 "password" TEXT,
 "external_id" TEXT,
 "created_by" TEXT,
-"id" TEXT NOT NULL DEFAULT '',
+"id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -21,7 +21,7 @@ ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
 "name" TEXT NOT NULL,
-"id" TEXT NOT NULL DEFAULT '',
+"id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
