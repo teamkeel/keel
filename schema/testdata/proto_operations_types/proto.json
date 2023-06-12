@@ -205,7 +205,7 @@
             "modelName": "Foo",
             "fieldName": "name"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "name"
           ]
@@ -229,8 +229,7 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "OpBValues"
-          },
-          "optional": true
+          }
         }
       ]
     },

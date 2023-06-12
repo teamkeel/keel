@@ -339,7 +339,8 @@
             "type": "TYPE_MESSAGE",
             "messageName": "CreatePostPublisherInput"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "messageName": "CreatePostInput",
@@ -348,7 +349,8 @@
             "type": "TYPE_MESSAGE",
             "messageName": "CreatePostOwnerInput"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         }
       ]
     },
@@ -363,7 +365,7 @@
             "modelName": "Publisher",
             "fieldName": "id"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "publisher",
             "id"
@@ -382,7 +384,7 @@
             "modelName": "Author",
             "fieldName": "id"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "owner",
             "id"

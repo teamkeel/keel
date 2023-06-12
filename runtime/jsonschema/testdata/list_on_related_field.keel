@@ -1,0 +1,23 @@
+model Person {
+    fields {
+        company Company
+    }
+
+    operations {
+        list testAction(company.name, company.tradingAs)
+    }
+}
+
+model Company {
+    fields {
+        name Text
+        tradingAs Text?
+    }
+}
+
+api Test {
+    models {
+        Person
+        Company
+    }
+}

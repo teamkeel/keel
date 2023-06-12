@@ -197,7 +197,7 @@
             "modelName": "Person",
             "fieldName": "preferredName"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "preferredName"
           ]
@@ -244,7 +244,7 @@
             "modelName": "Person",
             "fieldName": "preferredName"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "preferredName"
           ]

@@ -208,8 +208,11 @@ message MessageField {
     // The type of this field. 
     TypeInfo type = 3;
 
-    // Set to true if this field is optional.
+    // Set to true if this can be omitted.
     bool optional = 4;
+
+    // Set to true if this can be set to the null value.
+    bool nullable = 6;
 
     // Only valid for implicit inputs on built-in actions (OPERATION_IMPLEMENTATION_AUTO)
     // This field can be set to a path, from the current model, to a field that should

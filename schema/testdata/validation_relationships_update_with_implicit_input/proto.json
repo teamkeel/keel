@@ -453,7 +453,8 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateChild3ParentOptionalInput"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         }
       ]
     },
@@ -486,7 +487,7 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "parentOptional",
             "id"
@@ -567,7 +568,7 @@
             "modelName": "ChildModel",
             "fieldName": "parentOptionalId"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "parentOptionalId"
           ]

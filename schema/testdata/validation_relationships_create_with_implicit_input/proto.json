@@ -317,7 +317,8 @@
             "type": "TYPE_MESSAGE",
             "messageName": "CreateChild2ParentOptionalInput"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         }
       ]
     },
@@ -350,7 +351,7 @@
             "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "optional": true,
+          "nullable": true,
           "target": [
             "parentOptional",
             "id"
