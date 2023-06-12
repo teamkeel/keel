@@ -1,0 +1,72 @@
+enum Planets {
+    Mercury
+    Venus
+    Earth
+}
+
+model Defaults {
+    fields {
+        textChanged Text @default("foo")
+        textNoChange Text @default("foo")
+        textRemoved Text @default("foo")
+        numberChanged Number @default(100)
+        numberNoChange Number @default(100)
+        numberRemoved Number @default(100)
+        boolChanged Boolean @default(true)
+        boolNoChange Boolean @default(true)
+        boolRemoved Boolean @default(true)
+        enumChanged Planets @default(Planets.Mercury)
+        enumNoChange Planets @default(Planets.Mercury)
+        enumRemoved Planets @default(Planets.Venus)
+    }
+}
+
+===
+
+enum Planets {
+    Mercury
+    Venus
+    Earth
+}
+
+model Defaults {
+    fields {
+        textChanged Text @default("bar")
+        textNoChange Text @default("foo")
+        textRemoved Text
+        numberChanged Number @default(42)
+        numberNoChange Number @default(100)
+        numberRemoved Number
+        boolChanged Boolean @default(false)
+        boolNoChange Boolean @default(true)
+        boolRemoved Boolean
+        enumChanged Planets @default(Planets.Earth)
+        enumNoChange Planets @default(Planets.Mercury)
+        enumRemoved Planets
+    }
+}
+
+===
+
+ALTER TABLE "defaults" ALTER COLUMN "text_changed" SET DEFAULT 'bar';
+ALTER TABLE "defaults" ALTER COLUMN "text_removed" DROP DEFAULT;
+ALTER TABLE "defaults" ALTER COLUMN "number_changed" SET DEFAULT 42;
+ALTER TABLE "defaults" ALTER COLUMN "number_removed" DROP DEFAULT;
+ALTER TABLE "defaults" ALTER COLUMN "bool_changed" SET DEFAULT false;
+ALTER TABLE "defaults" ALTER COLUMN "bool_removed" DROP DEFAULT;
+ALTER TABLE "defaults" ALTER COLUMN "enum_changed" SET DEFAULT 'Earth';
+ALTER TABLE "defaults" ALTER COLUMN "enum_removed" DROP DEFAULT;
+
+=== 
+
+[
+  { "Model": "Defaults", "Field": "textChanged", "Type": "MODIFIED" },
+  { "Model": "Defaults", "Field": "textRemoved", "Type": "MODIFIED" },
+  { "Model": "Defaults", "Field": "numberChanged", "Type": "MODIFIED" },
+  { "Model": "Defaults", "Field": "numberRemoved", "Type": "MODIFIED" },
+  { "Model": "Defaults", "Field": "boolChanged", "Type": "MODIFIED" },
+  { "Model": "Defaults", "Field": "boolRemoved", "Type": "MODIFIED" },
+  { "Model": "Defaults", "Field": "enumChanged", "Type": "MODIFIED" },
+  { "Model": "Defaults", "Field": "enumRemoved", "Type": "MODIFIED" }
+]
+
