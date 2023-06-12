@@ -178,7 +178,6 @@ func (m *GenerateModel) renderGenerate() string {
 
 	if m.Status >= StatusNpmInstalling {
 		b.WriteString("\n")
-
 		b.WriteString(colors.Cyan("🏃 Installing dependencies..").String())
 
 		if m.Status == StatusNpmInstalling {

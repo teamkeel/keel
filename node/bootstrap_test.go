@@ -2,6 +2,7 @@ package node_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sort"
@@ -83,8 +84,8 @@ func TestBootstrapVersionInterpolation(t *testing.T) {
 
 	dependencies := m["dependencies"].(map[string]interface{})
 
-	assert.Equal(t, testVersion, dependencies["@teamkeel/functions-runtime"])
-	assert.Equal(t, testVersion, dependencies["@teamkeel/testing-runtime"])
+	assert.Equal(t, fmt.Sprintf("^%s", testVersion), dependencies["@teamkeel/functions-runtime"])
+	assert.Equal(t, fmt.Sprintf("^%s", testVersion), dependencies["@teamkeel/testing-runtime"])
 }
 
 func TestBootstrapPackageJSONExists(t *testing.T) {
@@ -99,7 +100,14 @@ func TestBootstrapPackageJSONExists(t *testing.T) {
 	`), 0777)
 	assert.NoError(t, err)
 
-	err = os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte("{}"), 0777)
+	packageJsonContents := `
+		{
+			"dependencies": {
+				"express": "*"
+			}
+		}
+	`
+	err = os.WriteFile(filepath.Join(tmpDir, "package.json"), []byte(packageJsonContents), 0777)
 	assert.NoError(t, err)
 
 	files, err := node.Bootstrap(tmpDir)
@@ -115,5 +123,27 @@ func TestBootstrapPackageJSONExists(t *testing.T) {
 	}
 	sort.Strings(names)
 
-	assert.Equal(t, []string{"package.json", "schema.keel"}, names)
+	assert.Equal(t, []string{"node_modules", "package-lock.json", "package.json", "schema.keel", "tsconfig.json"}, names)
+
+	// check that with an existing package.json, any previously existing
+	// dependencies are not removed
+	b, err := os.ReadFile(filepath.Join(tmpDir, "package.json"))
+
+	assert.NoError(t, err)
+
+	m := map[string]any{}
+
+	err = json.Unmarshal(b, &m)
+
+	assert.NoError(t, err)
+
+	deps := m["dependencies"].(map[string]interface{})
+
+	dependenciesList := []string{}
+
+	for key := range deps {
+		dependenciesList = append(dependenciesList, key)
+	}
+
+	assert.Contains(t, dependenciesList, "express")
 }
