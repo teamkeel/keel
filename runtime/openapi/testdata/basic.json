@@ -34,17 +34,14 @@
                     "addressId"
                 ]
             },
-            "NullableCustomersWhere": {
+            "CustomersWhere": {
                 "additionalProperties": false,
                 "properties": {
                     "name": {
-                        "$ref": "#/components/schemas/NullableStringQueryInput"
+                        "$ref": "#/components/schemas/StringQueryInput"
                     }
                 },
-                "type": [
-                    "object",
-                    "null"
-                ]
+                "type": "object"
             },
             "EmailPasswordInput": {
                 "additionalProperties": false,
@@ -78,75 +75,45 @@
                 ],
                 "type": "object"
             },
-            "NullableStringQueryInput": {
+            "StringQueryInput": {
                 "additionalProperties": false,
                 "properties": {
                     "contains": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     },
                     "endsWith": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     },
                     "equals": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     },
                     "notEquals": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     },
                     "oneOf": {
                         "items": {
                             "type": "string"
                         },
-                        "type": [
-                            "array",
-                            "null"
-                        ]
+                        "type": "array"
                     },
                     "startsWith": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     }
                 },
-                "type": [
-                    "object",
-                    "null"
-                ]
+                "type": "object"
             },
-            "NullableUpdateCustomerValues": {
+            "UpdateCustomerValues": {
                 "additionalProperties": false,
                 "properties": {
                     "dateOfBirth": {
                         "format": "date-time",
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     },
                     "name": {
-                        "type": [
-                            "string",
-                            "null"
-                        ]
+                        "type": "string"
                     }
                 },
-                "type": [
-                    "object",
-                    "null"
-                ]
+                "type": "object"
             },
             "UpdateCustomerWhere": {
                 "additionalProperties": false,
@@ -178,10 +145,7 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "createIfNotExists": {
-                                        "type": [
-                                            "boolean",
-                                            "null"
-                                        ]
+                                        "type": "boolean"
                                     },
                                     "emailPassword": {
                                         "$ref": "#/components/schemas/EmailPasswordInput"
@@ -350,31 +314,19 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "after": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
+                                        "type": "string"
                                     },
                                     "before": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
+                                        "type": "string"
                                     },
                                     "first": {
-                                        "type": [
-                                            "number",
-                                            "null"
-                                        ]
+                                        "type": "number"
                                     },
                                     "last": {
-                                        "type": [
-                                            "number",
-                                            "null"
-                                        ]
+                                        "type": "number"
                                     },
                                     "where": {
-                                        "$ref": "#/components/schemas/NullableCustomersWhere"
+                                        "$ref": "#/components/schemas/CustomersWhere"
                                     }
                                 },
                                 "type": "object"
@@ -695,7 +647,7 @@
                                 "additionalProperties": false,
                                 "properties": {
                                     "values": {
-                                        "$ref": "#/components/schemas/NullableUpdateCustomerValues"
+                                        "$ref": "#/components/schemas/UpdateCustomerValues"
                                     },
                                     "where": {
                                         "$ref": "#/components/schemas/UpdateCustomerWhere"

@@ -429,6 +429,27 @@ model Person {
 	`
 	expected := `
 export interface CreatePersonInput {
+	name: string | null;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesCreateWithOptionalInput(t *testing.T) {
+	schema := `
+model Person {
+	fields {
+		name Text?
+	}
+	functions {
+		create createPerson() with (name?)
+	}
+}
+	`
+	expected := `
+export interface CreatePersonInput {
 	name?: string | null;
 }`
 
@@ -465,6 +486,62 @@ export interface UpdatePersonInput {
 	})
 }
 
+func TestWriteActionInputTypesUpdateWithOptionalField(t *testing.T) {
+	schema := `
+model Person {
+	fields {
+		name Text?
+	}
+	functions {
+		update updatePerson(id) with (name)
+	}
+}
+	`
+	expected := `
+export interface UpdatePersonWhere {
+	id: string;
+}
+export interface UpdatePersonValues {
+	name: string | null;
+}
+export interface UpdatePersonInput {
+	where: UpdatePersonWhere;
+	values: UpdatePersonValues;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesUpdateWithOptionalFieldAndOptionalInput(t *testing.T) {
+	schema := `
+model Person {
+	fields {
+		name Text?
+	}
+	functions {
+		update updatePerson(id) with (name?)
+	}
+}
+	`
+	expected := `
+export interface UpdatePersonWhere {
+	id: string;
+}
+export interface UpdatePersonValues {
+	name?: string | null;
+}
+export interface UpdatePersonInput {
+	where: UpdatePersonWhere;
+	values?: UpdatePersonValues;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
 func TestWriteActionInputTypesList(t *testing.T) {
 	schema := `
 model Person {
@@ -478,23 +555,23 @@ model Person {
 	`
 	expected := `
 export interface StringQueryInput {
-	equals?: string | null;
-	notEquals?: string | null;
-	startsWith?: string | null;
-	endsWith?: string | null;
-	contains?: string | null;
-	oneOf?: string[] | null;
+	equals?: string;
+	notEquals?: string;
+	startsWith?: string;
+	endsWith?: string;
+	contains?: string;
+	oneOf?: string[];
 }
 export interface ListPeopleWhere {
 	name: StringQueryInput;
-	some?: boolean | null;
+	some?: boolean;
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;
-	first?: number | null;
-	after?: string | null;
-	last?: number | null;
-	before?: string | null;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -520,17 +597,17 @@ model Person {
 	`
 	expected := `
 export interface StringQueryInput {
-	equals?: string | null;
-	notEquals?: string | null;
-	startsWith?: string | null;
-	endsWith?: string | null;
-	contains?: string | null;
-	oneOf?: string[] | null;
+	equals?: string;
+	notEquals?: string;
+	startsWith?: string;
+	endsWith?: string;
+	contains?: string;
+	oneOf?: string[];
 }
 export interface SportQueryInput {
-	equals?: Sport | null;
-	notEquals?: Sport | null;
-	oneOf?: Sport[] | null;
+	equals?: Sport;
+	notEquals?: Sport;
+	oneOf?: Sport[];
 }
 export interface ListPeopleWhere {
 	name: StringQueryInput;
@@ -538,10 +615,10 @@ export interface ListPeopleWhere {
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;
-	first?: number | null;
-	after?: string | null;
-	last?: number | null;
-	before?: string | null;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -940,26 +1017,26 @@ export interface UpdatePersonWhere {
 export interface UpdatePersonValues {
 }
 export interface UpdatePersonInput {
-	where?: UpdatePersonWhere | null;
-	values?: UpdatePersonValues | null;
+	where?: UpdatePersonWhere;
+	values?: UpdatePersonValues;
 }
 export interface DeletePersonInput {
 }
 export interface ListPeopleWhere {
 }
 export interface ListPeopleInput {
-	where?: ListPeopleWhere | null;
-	first?: number | null;
-	after?: string | null;
-	last?: number | null;
-	before?: string | null;
+	where?: ListPeopleWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
 }
 export interface EmailPasswordInput {
 	email: string;
 	password: string;
 }
 export interface AuthenticateInput {
-	createIfNotExists?: boolean | null;
+	createIfNotExists?: boolean;
 	emailPassword: EmailPasswordInput;
 }
 export interface AuthenticateResponse {
@@ -1073,26 +1150,26 @@ import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
 export interface HobbyQueryInput {
-	equals?: Hobby | null;
-	notEquals?: Hobby | null;
-	oneOf?: Hobby[] | null;
+	equals?: Hobby;
+	notEquals?: Hobby;
+	oneOf?: Hobby[];
 }
 export interface PeopleByHobbyWhere {
 	hobby: HobbyQueryInput;
 }
 export interface PeopleByHobbyInput {
 	where: PeopleByHobbyWhere;
-	first?: number | null;
-	after?: string | null;
-	last?: number | null;
-	before?: string | null;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
 }
 export interface EmailPasswordInput {
 	email: string;
 	password: string;
 }
 export interface AuthenticateInput {
-	createIfNotExists?: boolean | null;
+	createIfNotExists?: boolean;
 	emailPassword: EmailPasswordInput;
 }
 export interface AuthenticateResponse {
