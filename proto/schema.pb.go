@@ -1345,9 +1345,9 @@ type MessageField struct {
 	Name string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	// The type of this field.
 	Type *TypeInfo `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	// Set to true if this field can be optionally provided.
+	// Set to true if this can be omitted.
 	Optional bool `protobuf:"varint,4,opt,name=optional,proto3" json:"optional,omitempty"`
-	// Set to true if this field can be set to null. i.e. if null is a valid value.
+	// Set to true if this can be set to the null value.
 	Nullable bool `protobuf:"varint,6,opt,name=nullable,proto3" json:"nullable,omitempty"`
 	// Only valid for implicit inputs on built-in actions (OPERATION_IMPLEMENTATION_AUTO)
 	// This field can be set to a path, from the current model, to a field that should
