@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
@@ -96,26 +95,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 		_, _ = w.Write(response.Body)
 	}
 
-	cors := cors.New(cors.Options{
-		AllowOriginFunc: CheckOrigin,
-		AllowedMethods: []string{
-			http.MethodHead,
-			http.MethodGet,
-			http.MethodPost,
-			http.MethodPut,
-			http.MethodPatch,
-			http.MethodDelete,
-		},
-		AllowedHeaders:   []string{"*"},
-		AllowCredentials: true,
-	})
-
-	return cors.Handler(http.HandlerFunc(httpHandler))
-}
-
-func CheckOrigin(origin string) bool {
-	// Returning true reflects the request origin as the allows origin to allow support of any origin along with AllowCredentials
-	return true
+	return http.HandlerFunc(httpHandler)
 }
 
 func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
