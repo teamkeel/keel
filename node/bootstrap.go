@@ -61,8 +61,10 @@ type BootstrapOption func(o *bootstrapOptions)
 func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, error) {
 	packageJsonPath := filepath.Join(dir, "package.json")
 
+	_, err := os.Stat(packageJsonPath)
+
 	// if the package.json doesn't exist, then we need to generate with npm init -y
-	if _, err := os.Stat(packageJsonPath); errors.Is(err, os.ErrNotExist) {
+	if errors.Is(err, os.ErrNotExist) {
 		npmInit := exec.Command("npm", "init", "--yes")
 		npmInit.Dir = dir
 
@@ -71,6 +73,9 @@ func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, err
 		if err != nil {
 			return codegen.GeneratedFiles{}, err
 		}
+	} else if err != nil {
+		// any other type of error
+		return codegen.GeneratedFiles{}, err
 	}
 
 	// Once we know the package.json exists, we need to install all of the required dependencies using npm install --save {deps}
@@ -106,7 +111,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, err
 	installCmd := exec.Command("npm", args...)
 	installCmd.Dir = dir
 
-	err := installCmd.Run()
+	err = installCmd.Run()
 
 	if err != nil {
 		return codegen.GeneratedFiles{}, err
