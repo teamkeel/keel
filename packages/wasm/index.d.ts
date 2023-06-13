@@ -1,14 +1,9 @@
 export function format(schema: string): Promise<string>;
 
-export function validate(
-  schemaString: string,
-  configFile: string
-): Promise<ValidationResult>;
+export function validate(req: ValidateRequest): Promise<ValidationResult>;
 
 export function completions(
-  schemaString: string,
-  position: SimplePosition,
-  configFile: string
+  req: GetCompletionsRequest
 ): Promise<CompletionResult>;
 
 export function getDefinition(
@@ -24,9 +19,20 @@ export interface SchemaDefinition {
   schema: SchemaDefinition;
 }
 
+export interface GetCompletionsRequest {
+  position: Position;
+  schemaFiles: SchemaFile[];
+  config?: string;
+}
+
 export interface GetDefinitionRequest {
   position: Position;
   schemaFiles: SchemaFile[];
+}
+
+export interface ValidateRequest {
+  schemaFiles: SchemaFile[];
+  config?: string;
 }
 
 export interface SchemaFile {
@@ -34,14 +40,10 @@ export interface SchemaFile {
   contents: string;
 }
 
-export interface SimplePosition {
-  column: number;
-  line: number;
-}
-
-export interface Position extends SimplePosition {
+export interface Position {
   filename: string;
-  offset: number;
+  line: number;
+  column: number;
 }
 
 export interface CompletionItem {

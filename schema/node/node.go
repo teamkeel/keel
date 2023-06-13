@@ -14,8 +14,9 @@ type ParserNode interface {
 }
 
 type Position struct {
-	Column int `json:"column"`
-	Line   int `json:"line"`
+	Filename string `json:"filename"`
+	Column   int    `json:"column"`
+	Line     int    `json:"line"`
 }
 
 type Node struct {
