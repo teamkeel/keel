@@ -296,7 +296,8 @@ func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parse
 			Name:        input.Name(),
 			Type:        typeInfo,
 			Target:      target,
-			Optional:    input.Optional || targetsOptionalField,
+			Optional:    input.Optional,
+			Nullable:    targetsOptionalField,
 			MessageName: name,
 		})
 	}
@@ -351,6 +352,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 						},
 					},
 					Optional:    field.Optional,
+					Nullable:    field.Optional,
 					MessageName: currMessage.Name,
 				})
 
@@ -376,7 +378,8 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 				Name:        fragment,
 				Type:        typeInfo,
 				Target:      target,
-				Optional:    input.Optional || targetsOptionalField,
+				Optional:    input.Optional,
+				Nullable:    targetsOptionalField,
 				MessageName: currMessage.Name,
 			})
 		}
@@ -405,6 +408,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Name:        input.Label.Value,
 					Type:        typeInfo,
 					Optional:    input.Optional,
+					Nullable:    false, // TODO: can explicit inputs use the null value?
 					MessageName: rootMessage.Name,
 				})
 			}
@@ -438,6 +442,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					Name:        input.Label.Value,
 					Type:        typeInfo,
 					Optional:    input.Optional,
+					Nullable:    false, // TODO: can explicit inputs use the null value?
 					MessageName: valuesMessage.Name,
 				})
 			}
@@ -802,6 +807,7 @@ func (scm *Builder) makeMessage(decl *parser.DeclarationNode) {
 				Repeated: f.Repeated,
 			},
 			Optional:    f.Optional,
+			Nullable:    f.Optional,
 			MessageName: parserMsg.Name.Value,
 		}
 

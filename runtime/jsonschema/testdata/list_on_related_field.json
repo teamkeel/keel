@@ -1,0 +1,66 @@
+{
+	"type": "object",
+	"properties": {
+		"after": {
+			"type": "string"
+		},
+		"before": {
+			"type": "string"
+		},
+		"first": {
+			"type": "number"
+		},
+		"last": {
+			"type": "number"
+		},
+		"where": {
+			"$ref": "#/components/schemas/TestActionWhere"
+		}
+	},
+	"additionalProperties": false,
+	"required": ["where"],
+	"components": {
+		"schemas": {
+			"StringQueryInput": {
+				"type": "object",
+				"properties": {
+					"contains": {
+						"type": "string"
+					},
+					"endsWith": {
+						"type": "string"
+					},
+					"equals": {
+						"type": "string"
+					},
+					"notEquals": {
+						"type": "string"
+					},
+					"oneOf": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					},
+					"startsWith": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			},
+			"TestActionWhere": {
+				"type": "object",
+				"properties": {
+					"companyName": {
+						"$ref": "#/components/schemas/StringQueryInput"
+					},
+					"companyTradingAs": {
+						"$ref": "#/components/schemas/StringQueryInput"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["companyName"]
+			}
+		}
+	}
+}

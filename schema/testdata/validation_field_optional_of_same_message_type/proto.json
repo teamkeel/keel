@@ -156,7 +156,8 @@
             "type": "TYPE_MESSAGE",
             "messageName": "Foo"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         }
       ]
     },
@@ -170,7 +171,8 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UnusedMessage"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         }
       ]
     },

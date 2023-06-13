@@ -800,7 +800,7 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		}
 	}
 
-	if !field.Optional {
+	if !field.Optional && !field.Nullable {
 		in = graphql.NewNonNull(in)
 	}
 

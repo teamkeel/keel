@@ -1,47 +1,43 @@
 {
-  "components": {
-    "schemas": {
-      "NullableTestActionValues": {
-        "additionalProperties": false,
-        "properties": {
-          "birthday": {
-            "format": "date-time",
-            "type": ["string", "null"]
-          },
-          "hobby": {
-            "enum": [
-              "Tennis",
-              "Chess",
-              null
-            ]
-          },
-          "name": {
-            "type": ["string", "null"]
-          }
-        },
-        "type": ["object", "null"]
-      },
-      "TestActionWhere": {
-        "additionalProperties": false,
-        "properties": {
-          "id": {
-            "type": "string"
-          }
-        },
-        "required": ["id"],
-        "type": "object"
-      }
-    }
-  },
-  "additionalProperties": false,
-  "properties": {
-    "values": {
-      "$ref": "#/components/schemas/NullableTestActionValues"
-    },
-    "where": {
-      "$ref": "#/components/schemas/TestActionWhere"
-    }
-  },
-  "required": ["where"],
-  "type": "object"
+	"type": "object",
+	"properties": {
+		"values": {
+			"$ref": "#/components/schemas/TestActionValues"
+		},
+		"where": {
+			"$ref": "#/components/schemas/TestActionWhere"
+		}
+	},
+	"additionalProperties": false,
+	"required": ["where"],
+	"components": {
+		"schemas": {
+			"TestActionValues": {
+				"type": "object",
+				"properties": {
+					"birthday": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"hobby": {
+						"enum": ["Tennis", "Chess"]
+					},
+					"name": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			},
+			"TestActionWhere": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["id"]
+			}
+		}
+	}
 }

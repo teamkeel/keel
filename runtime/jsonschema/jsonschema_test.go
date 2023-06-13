@@ -292,16 +292,7 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"name": "Jon", "birthday": "1986-03-18T00:00:00.000Z"}`,
 					opName:  "createPersonWithOptionalDob",
 				},
-				{
-					name:    "valid - required input for optional field",
-					request: `{"name": "Jon"}`,
-					opName:  "createPersonWithDob",
-				},
-				{
-					name:    "valid - ommitting optional enum",
-					request: `{}`,
-					opName:  "createPersonWithEnum",
-				},
+
 				{
 					name:    "valid - providing optional input for optional enum field as null",
 					request: `{"hobby": null}`,
@@ -320,6 +311,22 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "createPerson",
 					errors: map[string]string{
 						"(root)": "name is required",
+					},
+				},
+				{
+					name:    "missing required enum on optional field",
+					request: `{}`,
+					opName:  "createPersonWithEnum",
+					errors: map[string]string{
+						"(root)": "hobby is required",
+					},
+				},
+				{
+					name:    "missing required input on optional field",
+					request: `{"name": "Jon"}`,
+					opName:  "createPersonWithDob",
+					errors: map[string]string{
+						"(root)": "birthday is required",
 					},
 				},
 				{
@@ -507,11 +514,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {}}`,
 				},
-				{
-					name:    "valid - optional inputs can be null",
-					opName:  "listBooks",
-					request: `{"where": {"id": null, "title": null, "genre": null, "price": null, "available": null, "createdAt": null}}`,
-				},
+
 				{
 					name:    "valid - text equals",
 					opName:  "listBooks",
@@ -648,12 +651,33 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"authorPublisherName": {"equals": "Jim"}}}`,
 				},
 				{
-					name:    "valid - nullable nested model field",
+					name:    "valid - optional nested field omitted",
 					opName:  "listBooksByPublisherDateFounded",
-					request: `{"where": {"authorPublisherDateFounded": null}}`,
+					request: `{"where": { }}`,
 				},
 
 				// errors
+				{
+					name:    "nullable nested model list field as null",
+					opName:  "listBooksByPublisherDateFounded",
+					request: `{"where": {"authorPublisherDateFounded": null}}`,
+					errors: map[string]string{
+						"where.authorPublisherDateFounded": `Invalid type. Expected: object, given: null`,
+					},
+				},
+				{
+					name:    "optional inputs cannot be null when fields are required",
+					opName:  "listBooks",
+					request: `{"where": {"id": null, "title": null, "genre": null, "price": null, "available": null, "createdAt": null}}`,
+					errors: map[string]string{
+						"where.id":        `Invalid type. Expected: object, given: null`,
+						"where.title":     `Invalid type. Expected: object, given: null`,
+						"where.genre":     `Invalid type. Expected: object, given: null`,
+						"where.price":     `Invalid type. Expected: object, given: null`,
+						"where.available": `Invalid type. Expected: object, given: null`,
+						"where.createdAt": `Invalid type. Expected: object, given: null`,
+					},
+				},
 				{
 					name:    "text unknown filter",
 					opName:  "listBooks",
@@ -667,7 +691,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"equals": "Sci-fi"}}}`,
 					errors: map[string]string{
-						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror", null`,
+						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror"`,
 					},
 				},
 				{
@@ -675,7 +699,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"oneOf": ["Sci-fi"]}}}`,
 					errors: map[string]string{
-						"where.genre.oneOf.0": `where.genre.oneOf.0 must be one of the following: "Romance", "Horror", null`,
+						"where.genre.oneOf.0": `where.genre.oneOf.0 must be one of the following: "Romance", "Horror"`,
 					},
 				},
 				{

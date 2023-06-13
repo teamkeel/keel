@@ -11,7 +11,7 @@ model Person {
     functions {
         get getPerson(id)
         get getPersonByNiNumber(niNumber)
-        create createPerson() with (name, gender, niNumber, slackId)
+        create createPerson() with (name, gender, niNumber, slackId?)
         create createPersonWithContextInfo() with (name, gender, niNumber)
         list listPeople(gender)
         delete deletePerson(id)

@@ -166,7 +166,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.O
 
 	if !isAny {
 		for _, field := range message.Fields {
-			prop := jsonSchemaForField(ctx, schema, op, field.Type, field.Optional)
+			prop := jsonSchemaForField(ctx, schema, op, field.Type, field.Nullable)
 
 			// Merge components from this request schema into OpenAPI components
 			if prop.Components != nil {
@@ -237,12 +237,11 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 	return s
 }
 
-func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Operation, t *proto.TypeInfo, isOptional bool) JSONSchema {
+func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Operation, t *proto.TypeInfo, isNullableField bool) JSONSchema {
 	components := &Components{
 		Schemas: map[string]JSONSchema{},
 	}
 	prop := JSONSchema{}
-	nullable := isOptional
 
 	switch t.Type {
 	case proto.Type_TYPE_ANY:
@@ -261,7 +260,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		}
 
 		name := t.MessageName.Value
-		if nullable {
+		if isNullableField {
 			component.allowNull()
 			name = "Nullable" + name
 		}
@@ -313,7 +312,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 			prop.Enum = append(prop.Enum, &v.Name)
 		}
 
-		if nullable {
+		if isNullableField {
 			prop.allowNull()
 		}
 	}
@@ -324,7 +323,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		prop.Type = "array"
 	}
 
-	if nullable {
+	if isNullableField {
 		prop.allowNull()
 	}
 

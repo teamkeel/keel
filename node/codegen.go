@@ -393,23 +393,7 @@ func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Messag
 			w.Write("[]")
 		}
 
-		nullable := false
-
-		// If a field isn't tied to a model field and it's optional then it's allowed to be null
-		if field.Type.FieldName == nil && field.Optional {
-			nullable = true
-		}
-
-		// If an input is tied to a model field and that field is nullable then the input is also nullable
-		if field.Type.FieldName != nil && field.Type.FieldName.Value != "" {
-			f := proto.FindField(schema.Models, field.Type.ModelName.Value, field.Type.FieldName.Value)
-
-			if f.Optional {
-				nullable = true
-			}
-		}
-
-		if nullable {
+		if field.Nullable {
 			w.Write(" | null")
 		}
 

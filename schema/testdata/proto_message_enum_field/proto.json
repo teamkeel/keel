@@ -188,7 +188,8 @@
             "type": "TYPE_ENUM",
             "enumName": "Sport"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         }
       ]
     },
@@ -211,7 +212,8 @@
             "type": "TYPE_ENUM",
             "enumName": "Sport"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         }
       ]
     },

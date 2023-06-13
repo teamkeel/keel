@@ -60,7 +60,7 @@ model ModelWithExpressions {
             //@permission(expression: false != isActive)
             //@permission(expression: false != explIsActive)
         }
-        create enumFailedExpressions() with (option) {
+        create enumFailedExpressions() {
             @permission(expression: Options.One == Options.Two)
             @permission(expression: Options.One != Options.One)
             // todo: https://linear.app/keel/issue/DEV-216/enum-as-explicit-input-action-inputs-must-be-one-of-the-fields-defined
