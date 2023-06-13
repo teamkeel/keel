@@ -1,3 +1,10 @@
+## [0.330.2](https://github.com/teamkeel/keel/compare/v0.330.1...v0.330.2) (2023-06-13)
+
+
+### Bug Fixes
+
+* empty inputs for arbitrary functions ([#1003](https://github.com/teamkeel/keel/issues/1003)) ([6d05cf0](https://github.com/teamkeel/keel/commit/6d05cf086c90b07556bbf4445c9deb2b617fa926))
+
 ## [0.330.1](https://github.com/teamkeel/keel/compare/v0.330.0...v0.330.1) (2023-06-13)
 
 
