@@ -1,3 +1,10 @@
+## [0.330.1](https://github.com/teamkeel/keel/compare/v0.330.0...v0.330.1) (2023-06-13)
+
+
+### Bug Fixes
+
+* upgrade bubbletea to fix issue with how tty is handled ([8f57ad9](https://github.com/teamkeel/keel/commit/8f57ad9940be404121bb30a73dbd8d692a2eeecd))
+
 # [0.330.0](https://github.com/teamkeel/keel/compare/v0.329.0...v0.330.0) (2023-06-13)
 
 
