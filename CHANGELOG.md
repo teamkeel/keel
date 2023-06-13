@@ -1,3 +1,10 @@
+# [0.330.0](https://github.com/teamkeel/keel/compare/v0.329.0...v0.330.0) (2023-06-13)
+
+
+### Features
+
+* support multiple schema files in wasm  API ([9400463](https://github.com/teamkeel/keel/commit/9400463cb5552d207031abfefa096e2006a50c07))
+
 # [0.329.0](https://github.com/teamkeel/keel/compare/v0.328.0...v0.329.0) (2023-06-13)
 
 
