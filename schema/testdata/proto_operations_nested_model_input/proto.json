@@ -377,14 +377,16 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "startsWith",
@@ -489,14 +491,16 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "startsWith",

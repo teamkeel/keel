@@ -185,7 +185,8 @@
 										"$ref": "#/components/schemas/CustomersWhere"
 									}
 								},
-								"additionalProperties": false
+								"additionalProperties": false,
+								"required": ["where"]
 							}
 						}
 					}
@@ -574,11 +575,15 @@
 			"CustomersWhere": {
 				"type": "object",
 				"properties": {
+					"addressAddressLine1": {
+						"$ref": "#/components/schemas/StringQueryInput"
+					},
 					"name": {
 						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
-				"additionalProperties": false
+				"additionalProperties": false,
+				"required": ["name", "addressAddressLine1"]
 			},
 			"EmailPasswordInput": {
 				"type": "object",
@@ -613,10 +618,10 @@
 						"type": "string"
 					},
 					"equals": {
-						"type": "string"
+						"type": ["string", "null"]
 					},
 					"notEquals": {
-						"type": "string"
+						"type": ["string", "null"]
 					},
 					"oneOf": {
 						"type": "array",

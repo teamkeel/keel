@@ -1,0 +1,23 @@
+model Person {
+    fields {
+        name Text?
+        company Company?
+    }
+
+    operations {
+        create createPerson() with (name, company.id)
+        create createPersonAndCompany() with (name, company.name)
+    }
+}
+
+model Company {
+    fields {
+        name Text?
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

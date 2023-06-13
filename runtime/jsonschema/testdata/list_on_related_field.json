@@ -31,10 +31,10 @@
 						"type": "string"
 					},
 					"equals": {
-						"type": "string"
+						"type": ["string", "null"]
 					},
 					"notEquals": {
-						"type": "string"
+						"type": ["string", "null"]
 					},
 					"oneOf": {
 						"type": "array",
@@ -59,7 +59,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": ["companyName"]
+				"required": ["companyName", "companyTradingAs"]
 			}
 		}
 	}

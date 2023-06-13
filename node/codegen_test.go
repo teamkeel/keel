@@ -555,8 +555,8 @@ model Person {
 	`
 	expected := `
 export interface StringQueryInput {
-	equals?: string;
-	notEquals?: string;
+	equals?: string | null;
+	notEquals?: string | null;
 	startsWith?: string;
 	endsWith?: string;
 	contains?: string;
@@ -597,16 +597,16 @@ model Person {
 	`
 	expected := `
 export interface StringQueryInput {
-	equals?: string;
-	notEquals?: string;
+	equals?: string | null;
+	notEquals?: string | null;
 	startsWith?: string;
 	endsWith?: string;
 	contains?: string;
 	oneOf?: string[];
 }
 export interface SportQueryInput {
-	equals?: Sport;
-	notEquals?: Sport;
+	equals?: Sport | null;
+	notEquals?: Sport | null;
 	oneOf?: Sport[];
 }
 export interface ListPeopleWhere {
@@ -1150,8 +1150,8 @@ import * as runtime from "@teamkeel/functions-runtime";
 import "@teamkeel/testing-runtime";
 
 export interface HobbyQueryInput {
-	equals?: Hobby;
-	notEquals?: Hobby;
+	equals?: Hobby | null;
+	notEquals?: Hobby | null;
 	oneOf?: Hobby[];
 }
 export interface PeopleByHobbyWhere {
