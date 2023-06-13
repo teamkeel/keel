@@ -108,6 +108,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 		"secrets":         secrets,
 		"tracing":         tracingContext,
 		"permissionState": permissionState,
+		"orm":             "prisma",
 	}
 
 	req := &FunctionsRuntimeRequest{

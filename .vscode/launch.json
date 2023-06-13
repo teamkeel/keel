@@ -57,9 +57,7 @@
         "args": [
             "${input:cmd}",
             "-d",
-            "${input:directory}",
-            "--node-packages-path",
-            "/packages",
+            "${input:directory}"
         ]
     },
     {

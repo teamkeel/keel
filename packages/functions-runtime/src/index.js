@@ -1,4 +1,3 @@
-const { ModelAPI } = require("./ModelAPI");
 const { RequestHeaders } = require("./RequestHeaders");
 const { handleRequest } = require("./handleRequest");
 const KSUID = require("ksuid");
@@ -11,7 +10,6 @@ const {
 const tracing = require("./tracing");
 
 module.exports = {
-  ModelAPI,
   RequestHeaders,
   handleRequest,
   getDatabase,

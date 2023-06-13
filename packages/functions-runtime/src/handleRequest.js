@@ -3,7 +3,6 @@ const {
   createJSONRPCSuccessResponse,
   JSONRPCErrorCode,
 } = require("json-rpc-2.0");
-const { getDatabase } = require("./database");
 const { tryExecuteFunction } = require("./tryExecuteFunction");
 const { errorToJSONRPCResponse, RuntimeErrors } = require("./errors");
 const opentelemetry = require("@opentelemetry/api");

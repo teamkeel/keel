@@ -583,28 +583,12 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln("function createModelAPI() {")
-	w.Indent()
-	w.Writeln("return {")
-	w.Indent()
-	for _, model := range schema.Models {
-		w.Write(casing.ToLowerCamel(model.Name))
-		w.Write(": ")
-		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, tableConfigMap)`, casing.ToSnake(model.Name), casing.ToLowerCamel(model.Name))
-		w.Writeln(",")
-	}
-	w.Dedent()
-	w.Writeln("};")
-	w.Dedent()
-	w.Writeln("};")
-
 	w.Writeln("function createPermissionApi() {")
 	w.Indent()
 	w.Writeln("return new runtime.Permissions();")
 	w.Dedent()
 	w.Writeln("};")
 
-	w.Writeln(`module.exports.models = createModelAPI();`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
 }
@@ -849,20 +833,22 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	// with Vitest
 	js.Writeln(`import sdk from "@teamkeel/sdk"`)
 	js.Writeln("const { getDatabase, models } = sdk;")
-	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
+	js.Writeln(`import { ActionExecutor } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
-	js.Writeln("const db = getDatabase();")
-	js.Write("await sql`TRUNCATE TABLE ")
+	js.Writeln("const db = await getDatabase('prisma');")
+	js.Writeln("console.log(db)")
+	js.Writeln("console.log(Object.keys(db))")
+	js.Write("await db.$queryRaw`TRUNCATE TABLE ")
 	tableNames := []string{}
 	for _, model := range schema.Models {
 		tableNames = append(tableNames, casing.ToSnake(model.Name))
 	}
 	js.Writef("%s CASCADE", strings.Join(tableNames, ","))
-	js.Writeln("`.execute(db);")
+	js.Writeln("`")
 	js.Dedent()
 	js.Writeln("}")
 

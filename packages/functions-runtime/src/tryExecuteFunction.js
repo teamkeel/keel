@@ -1,4 +1,4 @@
-const { withTransaction } = require("./database");
+const { withDatabase } = require("./database");
 const {
   withPermissions,
   PERMISSION_STATE,
@@ -16,7 +16,7 @@ function tryExecuteFunction(
   const actionType = actionTypes[request.method];
 
   return withPermissions(permitted, async ({ getPermissionState }) => {
-    return withTransaction(
+    return withDatabase(
       { actionType, orm: request.meta.orm },
       async ({ transaction, db }) => {
         const fnResult = await cb();

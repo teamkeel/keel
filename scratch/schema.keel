@@ -1,0 +1,9 @@
+model Person {
+    fields {
+        name Text
+    }
+
+    functions {
+        create createPerson() with (name)
+    }
+}

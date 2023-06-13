@@ -290,16 +290,9 @@ function createContextAPI({ responseHeaders, meta }) {
 	};
 	return { headers, response, identity, env, now, secrets, isAuthenticated };
 };
-function createModelAPI() {
-	return {
-		person: new runtime.ModelAPI("person", personDefaultValues, tableConfigMap),
-		identity: new runtime.ModelAPI("identity", identityDefaultValues, tableConfigMap),
-	};
-};
 function createPermissionApi() {
 	return new runtime.Permissions();
 };
-module.exports.models = createModelAPI();
 module.exports.permissions = createPermissionApi();
 module.exports.createContextAPI = createContextAPI;`
 

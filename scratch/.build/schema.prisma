@@ -1,0 +1,29 @@
+
+datasource db {
+    provider = "postgresql"
+    url      = env("KEEL_DB_CONN") 
+} 
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Person {
+    name String @map("name")
+    id String @map("id") @id
+    createdAt DateTime @map("created_at")
+    updatedAt DateTime @map("updated_at")
+
+    @@map("person")
+}
+model Identity {
+    email String? @map("email") @unique
+    password String? @map("password")
+    externalId String? @map("external_id")
+    createdBy String? @map("created_by")
+    id String @map("id") @id
+    createdAt DateTime @map("created_at")
+    updatedAt DateTime @map("updated_at")
+
+    @@map("identity")
+}
