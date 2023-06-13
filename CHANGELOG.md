@@ -1,3 +1,10 @@
+# [0.329.0](https://github.com/teamkeel/keel/compare/v0.328.0...v0.329.0) (2023-06-13)
+
+
+### Features
+
+* nullable inputs ([#998](https://github.com/teamkeel/keel/issues/998)) ([e2a2c91](https://github.com/teamkeel/keel/commit/e2a2c91da66f3f8024cef9a711cea52987c62a2f))
+
 # [0.328.0](https://github.com/teamkeel/keel/compare/v0.327.1...v0.328.0) (2023-06-12)
 
 
