@@ -1,0 +1,12 @@
+message In {}
+
+message Out {
+  bar Text
+}
+
+model Post {
+  functions {
+    read noInput() returns(Out)
+    read emptyInput(In) returns(Out)
+  }
+}

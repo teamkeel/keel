@@ -1002,6 +1002,10 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl
 			default:
 				protoOp.InputMessageName = action.Inputs[0].Type.ToString()
 			}
+		} else {
+			// Create an empty message if there is no input defined.
+			message := &proto.Message{Name: protoOp.InputMessageName}
+			scm.proto.Messages = append(scm.proto.Messages, message)
 		}
 
 		protoOp.ResponseMessageName = action.Returns[0].Type.ToString()
