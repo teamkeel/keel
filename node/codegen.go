@@ -207,12 +207,11 @@ func getPrismaRelationInfo(schema *proto.Schema, m *proto.Model, f *proto.Field)
 
 func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	sdk := &codegen.Writer{}
-	sdk.Writeln(`const { sql } = require("kysely")`)
 	sdk.Writeln(`const runtime = require("@teamkeel/functions-runtime")`)
 	sdk.Writeln("")
 
 	sdkTypes := &codegen.Writer{}
-	sdkTypes.Writeln(`import { Kysely, Generated } from "kysely"`)
+	sdkTypes.Writeln(`import { PrismaClient } from "@prisma/client"`)
 	sdkTypes.Writeln(`import * as runtime from "@teamkeel/functions-runtime"`)
 	sdkTypes.Writeln(`import { Headers } from 'node-fetch'`)
 	sdkTypes.Writeln("")
@@ -502,7 +501,7 @@ func writeDatabaseInterface(w *codegen.Writer, schema *proto.Schema) {
 	}
 	w.Dedent()
 	w.Writeln("}")
-	w.Writeln("export declare function getDatabase(): Kysely<database>;")
+	w.Writeln("export declare function getDatabase(): PrismaClient;")
 }
 
 func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
@@ -839,7 +838,7 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
-	js.Writeln("const db = await getDatabase('prisma');")
+	js.Writeln("const db = await getDatabase();")
 	js.Writeln("console.log(db)")
 	js.Writeln("console.log(Object.keys(db))")
 	js.Write("await db.$queryRaw`TRUNCATE TABLE ")

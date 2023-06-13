@@ -5,12 +5,14 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	gotest "testing"
 
 	cp "github.com/otiai10/copy"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -106,6 +108,12 @@ func TestIntegration(t *gotest.T) {
 			require.NoError(t, err)
 			err = files.Write(tmpDir)
 			require.NoError(t, err)
+
+			cmd := exec.Command("node_modules/.bin/prisma", "generate", "--schema", ".build/schema.prisma")
+			cmd.Dir = tmpDir
+			err = cmd.Run()
+
+			assert.NoError(t, err)
 
 			// Use the docker compose database
 			dbConnInfo := &db.ConnectionInfo{

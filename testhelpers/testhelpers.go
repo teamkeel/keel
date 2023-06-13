@@ -35,7 +35,7 @@ func WithTmpDir(dir string) (string, error) {
 }
 
 func NpmInstall(dir string) (string, error) {
-	npmInstall := exec.Command("npm", "install", "--progress=false")
+	npmInstall := exec.Command("npm", "install", "--progress=false", "--install-links")
 	npmInstall.Dir = dir
 
 	b, err := npmInstall.CombinedOutput()

@@ -154,7 +154,7 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 			Status: StatusNpmInstalling,
 		}
 
-		npmInstall := exec.Command("npm", "install", "--progress=false")
+		npmInstall := exec.Command("npm", "install", "--progress=false", "--install-links")
 		npmInstall.Dir = dir
 		stdoutPipe, _ := npmInstall.StdoutPipe()
 		stderrPipe, _ := npmInstall.StderrPipe()
@@ -413,7 +413,8 @@ func SetupFunctions(dir string, nodePackagesPath string) tea.Cmd {
 			}
 		}
 
-		npmInstall := exec.Command("npm", "install")
+		// https://docs.npmjs.com/cli/v8/commands/npm-install#install-links
+		npmInstall := exec.Command("npm", "install", "--install-links")
 		npmInstall.Dir = dir
 		err = npmInstall.Run()
 

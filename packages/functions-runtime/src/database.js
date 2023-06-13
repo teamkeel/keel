@@ -3,12 +3,14 @@ const { AsyncLocalStorage } = require("async_hooks");
 const { PROTO_ACTION_TYPES } = require("./consts");
 const { getDatabase: getKysely } = require("./clients/kysely");
 
+const { PrismaClient } = require("@prisma/client");
+
 // withDatabase sets up a new database client that custom functions will utilize.
 // The database client is stored in an AsyncLocalStorage store so consumers further down the hierarchy can access the db.
 // Create / Update action types require the custom function to be executed inside of a transaction so therefore
 // the db client returned will execute any queries inside a transaction 
 // For read type operations such as list & get, no transaction is used
-async function withDatabase({ actionType, orm = KNOWN_CLIENTS.KYSELY }, cb) {
+async function withDatabase({ actionType, orm = KNOWN_CLIENTS.PRISMA }, cb) {
   const db = await getDatabase(orm);
 
   let requiresTransaction = true;
@@ -40,7 +42,7 @@ const dbInstance = new AsyncLocalStorage();
 
 // getDatabase will first check for an instance of Kysely in AsyncLocalStorage,
 // otherwise it will create a new instance and reuse it..
-async function getDatabase(orm = KNOWN_CLIENTS.KYSELY) {
+async function getDatabase(orm = KNOWN_CLIENTS.PRISMA) {
   let fromStore = dbInstance.getStore();
   if (fromStore) {
     return fromStore;
@@ -50,16 +52,7 @@ async function getDatabase(orm = KNOWN_CLIENTS.KYSELY) {
     return db;
   }
 
-  switch (orm) {
-    case KNOWN_CLIENTS.KYSELY:
-      db = getKysely();
-      break;
-    case KNOWN_CLIENTS.PRISMA:
-      const { PrismaClient } = await import("@prisma/client");
-
       db = new PrismaClient()
-      break;
-  }
 
   return db;
 }

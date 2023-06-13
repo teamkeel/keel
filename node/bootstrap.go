@@ -95,6 +95,7 @@ func Bootstrap(dir string, opts ...BootstrapOption) (codegen.GeneratedFiles, err
 
 	// the first arg is obviously install (because that's what this is all about)
 	args = append(args, "install")
+	args = append(args, "--install-links")
 
 	requiredDeps := getRequiredDependencies(options)
 
