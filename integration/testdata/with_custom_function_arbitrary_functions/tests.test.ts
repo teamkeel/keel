@@ -128,6 +128,11 @@ test("Message types with fields of 'Any' type", async () => {
   expect(result.people.map((p) => p.name).sort()).toEqual(params.names.sort());
 });
 
+test("No inputs", async () => {
+  const result = await actions.noInputs();
+  expect(result.success).toEqual(true);
+});
+
 test("Message with field of type Model", async () => {
   const person_1: Person = {
     id: "234",

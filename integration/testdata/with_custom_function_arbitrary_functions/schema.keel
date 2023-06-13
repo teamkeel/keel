@@ -46,7 +46,7 @@ model Person {
         read customPersonSearch(CustomPersonSearchInput) returns (CustomPersonSearchResponse)
         read customSearch(Any) returns (Any)
         write bulkPersonUpload(BulkPersonUpload) returns (BulkPersonUpload)
-       // read noInputs() returns (Any)
+        read noInputs() returns (Any)
     }
 
     @permission(

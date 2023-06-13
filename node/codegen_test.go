@@ -961,6 +961,39 @@ export interface PersonResponse {
 	})
 }
 
+func TestWriteActionInputTypesNoInputs(t *testing.T) {
+	schema := `
+model Person {
+	functions {
+		read getPersonName() returns (Any)
+	}
+}`
+	expected := `
+export interface GetPersonNameInput {
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesEmptyInputs(t *testing.T) {
+	schema := `
+message In {}
+model Person {
+	functions {
+		read getPersonName(In) returns (Any)
+	}
+}`
+	expected := `
+export interface In {
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
 func TestWriteCustomFunctionWrapperType(t *testing.T) {
 	schema := `
 model Person {
