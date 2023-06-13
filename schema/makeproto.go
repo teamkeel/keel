@@ -979,26 +979,33 @@ func (scm *Builder) makeAction(action *parser.ActionNode, modelName string, impl
 	model := query.Model(scm.asts, modelName)
 
 	if action.IsArbitraryFunction() {
-		// if its an arbitrary function, then the input will exist in scm.Messages unless the inputs were defined inline
-		// output messages will always be defined in scm.Messages
-		usesAny := action.Inputs[0].Type.ToString() == parser.MessageFieldTypeAny
-		usingInlineInputs := true
+		// Does the function have any inputs defined?
+		if action.Inputs != nil {
+			// if its an arbitrary function, then the input will exist in scm.Messages unless the inputs were defined inline
+			// output messages will always be defined in scm.Messages
+			usesAny := action.Inputs[0].Type.ToString() == parser.MessageFieldTypeAny
+			usingInlineInputs := true
 
-		for _, ast := range scm.asts {
-			for _, d := range ast.Declarations {
-				if d.Message != nil && d.Message.Name.Value == action.Inputs[0].Type.ToString() {
-					usingInlineInputs = false
+			for _, ast := range scm.asts {
+				for _, d := range ast.Declarations {
+					if d.Message != nil && d.Message.Name.Value == action.Inputs[0].Type.ToString() {
+						usingInlineInputs = false
+					}
 				}
 			}
-		}
 
-		switch {
-		case usesAny:
-			protoOp.InputMessageName = action.Inputs[0].Type.ToString()
-		case usingInlineInputs:
-			scm.makeActionInputMessages(model, action, impl)
-		default:
-			protoOp.InputMessageName = action.Inputs[0].Type.ToString()
+			switch {
+			case usesAny:
+				protoOp.InputMessageName = action.Inputs[0].Type.ToString()
+			case usingInlineInputs:
+				scm.makeActionInputMessages(model, action, impl)
+			default:
+				protoOp.InputMessageName = action.Inputs[0].Type.ToString()
+			}
+		} else {
+			// Create an empty message if there is no input defined.
+			message := &proto.Message{Name: protoOp.InputMessageName}
+			scm.proto.Messages = append(scm.proto.Messages, message)
 		}
 
 		protoOp.ResponseMessageName = action.Returns[0].Type.ToString()
