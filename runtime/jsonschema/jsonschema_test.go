@@ -741,11 +741,14 @@ func TestValidateRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "arbitrary function with Any",
+			name: "arbitrary functions",
 			schema: `
+			    message In {}
 				model Whatever {
 					functions {
 						read getWhatever(Any) returns(Any)
+						read noInputs() returns(Any)
+						read emptyInputMessage(In) returns(Any)
 					}
 				}
 			`,
@@ -794,6 +797,21 @@ func TestValidateRequest(t *testing.T) {
 					name:    "valid - null",
 					opName:  "getWhatever",
 					request: "null",
+				},
+				{
+					name:    "valid - object",
+					opName:  "getWhatever",
+					request: `{ "name": "Arnold" }`,
+				},
+				{
+					name:    "valid - no arguments",
+					opName:  "noInputs",
+					request: "{}",
+				},
+				{
+					name:    "valid - no arguments for empty message",
+					opName:  "emptyInputMessage",
+					request: "{}",
 				},
 			},
 		},

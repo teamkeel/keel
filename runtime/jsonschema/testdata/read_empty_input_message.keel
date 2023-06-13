@@ -1,0 +1,13 @@
+message In {}
+
+model Person {
+    functions {
+        read testAction(In) returns (Any)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}
