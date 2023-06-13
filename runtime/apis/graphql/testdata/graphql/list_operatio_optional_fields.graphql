@@ -92,10 +92,10 @@ type PageInfo {
 
 type Person {
   createdAt: Timestamp!
-  dateOfBirth: Date
+  dateOfBirth: Date!
   id: ID!
-  name: String
-  occupation: Occupation
+  name: String!
+  occupation: Occupation!
   updatedAt: Timestamp!
 }
 
