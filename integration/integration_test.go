@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	gotest "testing"
@@ -93,8 +94,8 @@ func TestIntegration(t *gotest.T) {
 				"NAME_API_KEY": "worf",
 			}
 
-			b := schema.Builder{}
-			schema, err := b.MakeFromDirectory(tmpDir)
+			builder := schema.Builder{}
+			schema, err := builder.MakeFromDirectory(tmpDir)
 			require.NoError(t, err)
 
 			files, err := node.Generate(
@@ -105,6 +106,12 @@ func TestIntegration(t *gotest.T) {
 
 			require.NoError(t, err)
 			err = files.Write(tmpDir)
+			require.NoError(t, err)
+
+			// generate prisma client from the prisma schema we generated in the previous step
+			cmd := exec.Command("node_modules/.bin/prisma", "generate", "--schema", ".build/schema.prisma")
+			cmd.Dir = tmpDir
+			err = cmd.Run()
 			require.NoError(t, err)
 
 			// Use the docker compose database

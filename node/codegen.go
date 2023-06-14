@@ -64,6 +64,8 @@ var toPrismaTypes = map[proto.Type]string{
 func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
 	s := &codegen.Writer{}
 
+	// Note on the binaryTargets - rhel-openssl-1.0.x is needed for AWS Lambda x86
+	// If we were to move to ARM based Lambda we'd need to update this
 	s.Writeln(`
 datasource db {
     provider = "postgresql"
@@ -72,6 +74,8 @@ datasource db {
 
 generator client {
     provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 `)
 
