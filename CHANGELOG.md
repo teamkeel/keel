@@ -1,3 +1,10 @@
+# [0.331.0](https://github.com/teamkeel/keel/compare/v0.330.3...v0.331.0) (2023-06-14)
+
+
+### Features
+
+* configure prisma tracing ([#1007](https://github.com/teamkeel/keel/issues/1007)) ([adae004](https://github.com/teamkeel/keel/commit/adae004170aaa85b1a6b0f9de3bf2b609cc88c9b))
+
 ## [0.330.3](https://github.com/teamkeel/keel/compare/v0.330.2...v0.330.3) (2023-06-14)
 
 
