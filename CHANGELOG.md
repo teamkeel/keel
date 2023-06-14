@@ -1,3 +1,10 @@
+## [0.330.3](https://github.com/teamkeel/keel/compare/v0.330.2...v0.330.3) (2023-06-14)
+
+
+### Bug Fixes
+
+* specify binaryTargets in prisma schema ([321feb7](https://github.com/teamkeel/keel/commit/321feb72576e13688fed0c5be0eeaef6a9ba801c))
+
 ## [0.330.2](https://github.com/teamkeel/keel/compare/v0.330.1...v0.330.2) (2023-06-13)
 
 
