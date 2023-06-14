@@ -2,6 +2,7 @@ package migrations
 
 import (
 	"context"
+	_ "embed"
 	"errors"
 	"fmt"
 	"strings"
@@ -21,6 +22,11 @@ const (
 
 var ErrNoStoredSchema = errors.New("no schema stored in keel_schema table")
 var ErrMultipleStoredSchemas = errors.New("more than one schema found in keel_schema table")
+
+var (
+	//go:embed ksuid.sql
+	ksuidFunction string
+)
 
 type DatabaseChange struct {
 	// The model this change applies to
@@ -53,11 +59,13 @@ func (m *Migrations) HasModelFieldChanges() bool {
 
 // Apply executes the migrations against the database
 func (m *Migrations) Apply(ctx context.Context) error {
-
 	sql := strings.Builder{}
 
-	sql.WriteString(m.SQL)
-	sql.WriteString("\n")
+	// Enable extensions
+	sql.WriteString("CREATE EXTENSION IF NOT EXISTS pg_stat_statements;\n")
+
+	// Functions
+	sql.WriteString(ksuidFunction)
 
 	sql.WriteString("CREATE TABLE IF NOT EXISTS keel_schema ( schema TEXT NOT NULL );\n")
 	sql.WriteString("DELETE FROM keel_schema;\n")
@@ -73,8 +81,8 @@ func (m *Migrations) Apply(ctx context.Context) error {
 	insertStmt := fmt.Sprintf("INSERT INTO keel_schema (schema) VALUES (%s);", escapedJSON)
 	sql.WriteString(insertStmt)
 
-	// Enable extensions
-	sql.WriteString("CREATE EXTENSION IF NOT EXISTS pg_stat_statements;\n")
+	sql.WriteString(m.SQL)
+	sql.WriteString("\n")
 
 	_, err = m.database.ExecuteStatement(ctx, sql.String())
 	return err

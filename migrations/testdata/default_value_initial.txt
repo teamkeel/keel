@@ -25,7 +25,7 @@ CREATE TABLE "identity" (
 "password" TEXT,
 "external_id" TEXT,
 "created_by" TEXT,
-"id" TEXT NOT NULL DEFAULT '',
+"id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -40,7 +40,7 @@ CREATE TABLE "person" (
 "boolean_false" BOOL NOT NULL DEFAULT false,
 "boolean_default" BOOL NOT NULL DEFAULT false,
 "enum_value" TEXT NOT NULL DEFAULT 'Two',
-"id" TEXT NOT NULL DEFAULT '',
+"id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );

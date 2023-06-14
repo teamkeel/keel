@@ -205,8 +205,7 @@ func getDefaultValue(schema *proto.Schema, field *proto.Field) (string, error) {
 		case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
 			return "now()", nil
 		case proto.Type_TYPE_ID:
-			// TODO - add ksuid function
-			return db.QuoteLiteral(""), nil
+			return "ksuid()", nil
 		}
 	}
 
