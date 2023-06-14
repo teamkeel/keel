@@ -46,6 +46,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Post {
@@ -98,6 +100,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Author {
@@ -153,6 +157,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Post {
@@ -203,6 +209,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Post {
@@ -256,6 +264,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Author {
@@ -315,6 +325,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Author {
@@ -375,6 +387,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model Author {
@@ -428,6 +442,8 @@ datasource db {
 
 generator client {
 	provider = "prisma-client-js"
+    previewFeatures = ["jsonProtocol", "tracing"]
+    binaryTargets = ["native", "rhel-openssl-1.0.x"]
 }
 
 model User {
