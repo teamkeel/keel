@@ -2,4 +2,16 @@ model Person {
     fields {
         name Text
     }
+
+    functions {
+        create createPerson() with(name) {
+            @permission(expression: true)
+        }
+    }
+}
+
+api Web {
+    models {
+        Person
+    }
 }
