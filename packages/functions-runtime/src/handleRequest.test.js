@@ -232,6 +232,10 @@ describe("ModelAPI error handling", () => {
 
     functionConfig = {
       permissionFns: {},
+      actionTypes: {
+        createPost: PROTO_ACTION_TYPES.CREATE,
+        deletePost: PROTO_ACTION_TYPES.DELETE,
+      },
       functions: {
         createPost: async (ctx, inputs) => {
           new Permissions().allow();

@@ -1,6 +1,27 @@
 const { Kysely, PostgresDialect } = require("kysely");
 const { AsyncLocalStorage } = require("async_hooks");
 const pg = require("pg");
+const { PROTO_ACTION_TYPES } = require("./consts");
+
+// withTransaction wraps the containing code with a transaction
+// and sets the transaction in the AsyncLocalStorage so consumers further
+// down the hierarchy can access the current transaction.
+// For read type operations such as list & get, no transaction is used
+async function withTransaction(db, actionType, cb) {
+  switch (actionType) {
+    case PROTO_ACTION_TYPES.GET:
+    case PROTO_ACTION_TYPES.LIST:
+      return dbInstance.run(db, async () => {
+        return cb({ transaction: db });
+      });
+    default:
+      return db.transaction().execute(async (transaction) => {
+        return dbInstance.run(transaction, async () => {
+          return cb({ transaction });
+        });
+      });
+  }
+}
 
 function mustEnv(key) {
   const v = process.env[key];
@@ -47,5 +68,5 @@ function getDatabase() {
   return db;
 }
 
-module.exports.dbInstance = dbInstance;
 module.exports.getDatabase = getDatabase;
+module.exports.withTransaction = withTransaction;
