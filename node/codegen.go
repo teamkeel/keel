@@ -15,7 +15,8 @@ import (
 )
 
 type generateOptions struct {
-	developmentServer bool
+	developmentServer  bool
+	prismaBinaryTarget string
 }
 
 // WithDevelopmentServer enables or disables the generation of the development
@@ -23,6 +24,14 @@ type generateOptions struct {
 func WithDevelopmentServer(b bool) func(o *generateOptions) {
 	return func(o *generateOptions) {
 		o.developmentServer = b
+	}
+}
+
+// WithPrismaBinaryTarget adds target to the binaryTargets list in the Prisma
+// client generation config
+func WithPrismaBinaryTarget(target string) func(o *generateOptions) {
+	return func(o *generateOptions) {
+		o.prismaBinaryTarget = target
 	}
 }
 
@@ -39,7 +48,7 @@ func Generate(ctx context.Context, schema *proto.Schema, opts ...func(o *generat
 	files := generateSdkPackage(schema)
 	files = append(files, generateTestingPackage(schema)...)
 	files = append(files, generateTestingSetup()...)
-	files = append(files, generatePrismaSchema(schema)...)
+	files = append(files, generatePrismaSchema(schema, options.prismaBinaryTarget)...)
 
 	if options.developmentServer {
 		files = append(files, generateDevelopmentServer(schema)...)
@@ -61,12 +70,17 @@ var toPrismaTypes = map[proto.Type]string{
 }
 
 // generatePrismaSchema takes our proto.Schema and generates a valid Prisma schema from it.
-func generatePrismaSchema(schema *proto.Schema) codegen.GeneratedFiles {
+func generatePrismaSchema(schema *proto.Schema, binaryTarget string) codegen.GeneratedFiles {
 	s := &codegen.Writer{}
+
+	binaryTargets := []string{`"native"`}
+	if binaryTarget != "" {
+		binaryTargets = append(binaryTargets, fmt.Sprintf(`"%s"`, binaryTarget))
+	}
 
 	// Note on the binaryTargets - rhel-openssl-1.0.x is needed for AWS Lambda x86
 	// If we were to move to ARM based Lambda we'd need to update this
-	s.Writeln(`
+	s.Writeln(fmt.Sprintf(`
 datasource db {
     provider = "postgresql"
     url      = env("KEEL_DB_CONN") 
@@ -75,9 +89,9 @@ datasource db {
 generator client {
     provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = [%s]
 }
-`)
+`, strings.Join(binaryTargets, ", ")))
 
 	for _, m := range schema.Models {
 		s.Writef("model %s {", m.Name)
