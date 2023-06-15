@@ -8,5 +8,7 @@ model Post {
   functions {
     read noInput() returns(Out)
     read emptyInput(In) returns(Out)
+    write noInputWrite() returns(Out)
+    write emptyInputWrite(In) returns(Out)
   }
 }

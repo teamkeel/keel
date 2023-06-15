@@ -1,0 +1,11 @@
+model Person {
+    functions {
+        read testAction() returns (Any)
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}
