@@ -47,7 +47,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model Post {
@@ -101,7 +101,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model Author {
@@ -158,7 +158,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model Post {
@@ -210,7 +210,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model Post {
@@ -265,7 +265,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model Author {
@@ -326,7 +326,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model Author {
@@ -388,7 +388,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model Author {
@@ -443,7 +443,7 @@ datasource db {
 generator client {
 	provider = "prisma-client-js"
     previewFeatures = ["jsonProtocol", "tracing"]
-    binaryTargets = ["native", "rhel-openssl-1.0.x"]
+    binaryTargets = ["native"]
 }
 
 model User {
@@ -471,22 +471,31 @@ model Identity {
 }
 
 func TestPrismaSchemaGeneration(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	cmd := exec.Command("npm", "init", "--yes")
+	cmd.Dir = tmpDir
+	require.NoError(t, cmd.Run())
+
+	cmd = exec.Command("npm", "install", "prisma")
+	cmd.Dir = tmpDir
+	require.NoError(t, cmd.Run())
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			b := schema.Builder{}
 			s, err := b.MakeFromString(tc.keelSchema)
 			require.NoError(t, err)
 
-			files := generatePrismaSchema(s)
+			files := generatePrismaSchema(s, "")
 
 			actual := files[0].Contents
 
-			tmpDir := os.TempDir()
 			err = os.WriteFile(filepath.Join(tmpDir, "schema.prisma"), []byte(actual), os.ModePerm)
 			require.NoError(t, err)
 
 			// validate the generated schema using the prisma validate cmd
-			cmd := exec.Command("npx", "prisma", "validate", "--schema", "schema.prisma")
+			cmd := exec.Command("./node_modules/.bin/prisma", "validate", "--schema", "schema.prisma")
 			cmd.Dir = tmpDir
 			cmd.Env = os.Environ()
 
