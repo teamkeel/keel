@@ -1,3 +1,10 @@
+# [0.333.0](https://github.com/teamkeel/keel/compare/v0.332.0...v0.333.0) (2023-06-15)
+
+
+### Features
+
+* allow passing prisma binary target as an option to codegen ([598c540](https://github.com/teamkeel/keel/commit/598c5405420cdd07aba59df6f83b7b90d982e3a8))
+
 # [0.332.0](https://github.com/teamkeel/keel/compare/v0.331.0...v0.332.0) (2023-06-15)
 
 
