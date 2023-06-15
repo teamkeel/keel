@@ -1,3 +1,10 @@
+# [0.332.0](https://github.com/teamkeel/keel/compare/v0.331.0...v0.332.0) (2023-06-15)
+
+
+### Features
+
+* list filtering by null ([#1000](https://github.com/teamkeel/keel/issues/1000)) ([93c4de4](https://github.com/teamkeel/keel/commit/93c4de4583f4b242eff3e2c6abd17d3439c229ae))
+
 # [0.331.0](https://github.com/teamkeel/keel/compare/v0.330.3...v0.331.0) (2023-06-14)
 
 
