@@ -260,14 +260,16 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "startsWith",
@@ -308,14 +310,16 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "startsWith",
@@ -370,7 +374,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "optional": true,
           "target": [
             "company",
             "tradingAs"
@@ -431,14 +434,16 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "startsWith",
@@ -479,14 +484,16 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "startsWith",
@@ -529,7 +536,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "optional": true,
           "target": [
             "previousCompany",
             "name"
@@ -542,7 +548,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "optional": true,
           "target": [
             "previousCompany",
             "tradingAs"
@@ -559,8 +564,7 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListByPreviousCompanyWhere"
-          },
-          "optional": true
+          }
         },
         {
           "messageName": "ListByPreviousCompanyInput",

@@ -19,7 +19,7 @@ model Customer {
             address.addressLine1
         )
         update updateCustomer(id) with (name, dateOfBirth)
-        list customers(name)
+        list customers(name, address.addressLine1)
     }
 }
 

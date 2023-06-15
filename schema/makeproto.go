@@ -69,6 +69,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "equals",
 				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -84,6 +85,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "notEquals",
 				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -94,6 +96,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "equals",
 				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -101,6 +104,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "notEquals",
 				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -140,6 +144,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "equals",
 				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -147,6 +152,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "notEquals",
 				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -193,6 +199,15 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "equals",
 				Optional: true,
+				Nullable: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "notEquals",
+				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -203,6 +218,15 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "equals",
 				Optional: true,
+				Nullable: true,
+				Type: &proto.TypeInfo{
+					Type: typeInfo.Type,
+				},
+			},
+			{
+				Name:     "notEquals",
+				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type: typeInfo.Type,
 				},
@@ -257,6 +281,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 		return &proto.Message{Name: makeInputMessageName(fmt.Sprintf("%sQuery", typeInfo.EnumName.Value)), Fields: []*proto.MessageField{
 			{
 				Name:     "equals",
+				Nullable: true,
 				Optional: true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
@@ -266,6 +291,7 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 			{
 				Name:     "notEquals",
 				Optional: true,
+				Nullable: true,
 				Type: &proto.TypeInfo{
 					Type:     typeInfo.Type,
 					EnumName: typeInfo.EnumName,
@@ -479,7 +505,7 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 	case parser.ActionTypeList:
 		wheres := []*proto.MessageField{}
 		for _, input := range action.Inputs {
-			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
+			typeInfo, target, _ := scm.inferParserInputType(model, action, input, impl)
 
 			if target != nil {
 				queryMessage, err := makeListQueryInputMessage(typeInfo)
@@ -495,14 +521,14 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 						Type:        proto.Type_TYPE_MESSAGE,
 						MessageName: wrapperspb.String(queryMessage.Name)},
 					Target:      target,
-					Optional:    input.Optional || targetsOptionalField,
+					Optional:    input.Optional,
 					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			} else {
 				wheres = append(wheres, &proto.MessageField{
 					Name:        input.Name(),
 					Type:        typeInfo,
-					Optional:    input.Optional || targetsOptionalField,
+					Optional:    input.Optional,
 					MessageName: makeWhereMessageName(action.Name.Value),
 				})
 			}

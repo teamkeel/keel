@@ -1,0 +1,37 @@
+model Person {
+    fields {
+        name Text
+        preferredName Text?
+        employmentStatus Status?
+        employer Company?
+    }
+
+    operations {
+        get getPerson(id)
+        create createPerson() with (name, preferredName, employmentStatus, employer.id)
+        create createPersonAndEmployer() with (name, employer.tradingAs)
+        update updatePerson(id) with (preferredName, employmentStatus, employer.id)
+        list listPersons(preferredName?, employmentStatus?, employer.tradingAs?)
+    }
+
+    @permission(expression: true, actions: [get, list, update, delete, create])
+}
+
+model Company {
+    fields {
+        tradingAs Text?
+    }
+}
+
+enum Status {
+    Employed
+    Retrenched
+    Fired
+}
+
+api Web {
+    models {
+        Person
+        Company
+    }
+}

@@ -205,14 +205,16 @@
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_STRING"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "startsWith",
@@ -253,14 +255,16 @@
           "type": {
             "type": "TYPE_INT"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "notEquals",
           "type": {
             "type": "TYPE_INT"
           },
-          "optional": true
+          "optional": true,
+          "nullable": true
         },
         {
           "name": "lessThan",

@@ -25,7 +25,10 @@
 				"type": "object",
 				"properties": {
 					"equals": {
-						"type": "boolean"
+						"type": ["boolean", "null"]
+					},
+					"notEquals": {
+						"type": ["boolean", "null"]
 					}
 				},
 				"additionalProperties": false
@@ -42,7 +45,11 @@
 						"format": "date-time"
 					},
 					"equals": {
-						"type": "string",
+						"type": ["string", "null"],
+						"format": "date-time"
+					},
+					"notEquals": {
+						"type": ["string", "null"],
 						"format": "date-time"
 					},
 					"onOrAfter": {
@@ -60,10 +67,10 @@
 				"type": "object",
 				"properties": {
 					"equals": {
-						"enum": ["Tennis", "Chess"]
+						"enum": ["Tennis", "Chess", null]
 					},
 					"notEquals": {
-						"enum": ["Tennis", "Chess"]
+						"enum": ["Tennis", "Chess", null]
 					},
 					"oneOf": {
 						"type": "array",
@@ -78,7 +85,7 @@
 				"type": "object",
 				"properties": {
 					"equals": {
-						"type": "number"
+						"type": ["number", "null"]
 					},
 					"greaterThan": {
 						"type": "number"
@@ -93,7 +100,7 @@
 						"type": "number"
 					},
 					"notEquals": {
-						"type": "number"
+						"type": ["number", "null"]
 					},
 					"oneOf": {
 						"type": "array",
@@ -114,10 +121,10 @@
 						"type": "string"
 					},
 					"equals": {
-						"type": "string"
+						"type": ["string", "null"]
 					},
 					"notEquals": {
-						"type": "string"
+						"type": ["string", "null"]
 					},
 					"oneOf": {
 						"type": "array",
@@ -166,7 +173,7 @@
 					}
 				},
 				"additionalProperties": false,
-				"required": ["name", "favouriteNumber", "birthday", "hobby", "isAdmin", "lastSeenAt", "currentCityName"]
+				"required": ["name", "preferredName", "favouriteNumber", "birthday", "hobby", "secondHobby", "isAdmin", "lastSeenAt", "currentCityName", "previousCityName"]
 			},
 			"TimestampQueryInput": {
 				"type": "object",

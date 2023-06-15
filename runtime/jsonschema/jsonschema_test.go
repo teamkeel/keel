@@ -505,6 +505,7 @@ func TestValidateRequest(t *testing.T) {
 						}
 						list listBooksByPublisherName(author.publisher.name)
 						list listBooksByPublisherDateFounded(author.publisher.dateFounded)
+						list listBooksByPublisherOptionalDateFounded(author.publisher.dateFounded?)
 					}
 				}
 			`,
@@ -651,8 +652,8 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"authorPublisherName": {"equals": "Jim"}}}`,
 				},
 				{
-					name:    "valid - optional nested field omitted",
-					opName:  "listBooksByPublisherDateFounded",
+					name:    "valid - missing optional input",
+					opName:  "listBooksByPublisherOptionalDateFounded",
 					request: `{"where": { }}`,
 				},
 
@@ -663,6 +664,14 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"authorPublisherDateFounded": null}}`,
 					errors: map[string]string{
 						"where.authorPublisherDateFounded": `Invalid type. Expected: object, given: null`,
+					},
+				},
+				{
+					name:    "missing required input targeting optional field",
+					opName:  "listBooksByPublisherDateFounded",
+					request: `{"where": { }}`,
+					errors: map[string]string{
+						"where": `authorPublisherDateFounded is required`,
 					},
 				},
 				{
@@ -691,7 +700,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {"genre": {"equals": "Sci-fi"}}}`,
 					errors: map[string]string{
-						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror"`,
+						"where.genre.equals": `where.genre.equals must be one of the following: "Romance", "Horror", null`,
 					},
 				},
 				{
