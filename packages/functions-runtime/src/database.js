@@ -3,24 +3,66 @@ const { AsyncLocalStorage } = require("async_hooks");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
 
-// withTransaction wraps the containing code with a transaction
-// and sets the transaction in the AsyncLocalStorage so consumers further
-// down the hierarchy can access the current transaction.
-// For read type operations such as list & get, no transaction is used
-async function withTransaction(db, actionType, cb) {
+// withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
+// so that the the code in a custom function uses the correct client.
+// For GET and LIST action types, no transaction is used, but for
+// actions that mutate data such as CREATE, DELETE & UPDATE, all of the code inside
+// the user's custom function is wrapped in a transaction so we can rollback
+// the transaction if something goes wrong.
+// withDatabase shouldn't be exposed in the public api of the sdk
+async function withDatabase(db, actionType, cb) {
+  let requiresTransaction = true;
+
   switch (actionType) {
     case PROTO_ACTION_TYPES.GET:
     case PROTO_ACTION_TYPES.LIST:
-      return dbInstance.run(db, async () => {
-        return cb({ transaction: db });
-      });
-    default:
-      return db.transaction().execute(async (transaction) => {
-        return dbInstance.run(transaction, async () => {
-          return cb({ transaction });
-        });
-      });
+      requiresTransaction = false;
+      break;
   }
+
+  if (requiresTransaction) {
+    return db.transaction().execute(async (transaction) => {
+      return dbInstance.run(transaction, async () => {
+        return cb({ transaction });
+      });
+    });
+  }
+
+  return dbInstance.run(db, async () => {
+    return cb({ transaction: db });
+  });
+}
+
+let db = null;
+const dbInstance = new AsyncLocalStorage();
+
+// useDatabase will retrieve the database client set by withDatabase from the local storage
+function useDatabase() {
+  let fromStore = dbInstance.getStore();
+  if (fromStore) {
+    return fromStore;
+  }
+
+  if (db) {
+    return db;
+  }
+
+  // todo: ideally we wouldn't want to give you a fresh Kysely instance here if nothing
+  // has been found in the context, but the @teamkeel/testing package needs some restructuring
+  // to allow for the database client to be set in the store so that this method can throw an error at this line instead of returning a fresh kysely instance.
+  db = new Kysely({
+    dialect: getDialect(),
+    log(event) {
+      if ("DEBUG" in process.env) {
+        if (event.level === "query") {
+          console.log(event.query.sql);
+          console.log(event.query.parameters);
+        }
+      }
+    },
+  });
+
+  return db;
 }
 
 function mustEnv(key) {
@@ -46,35 +88,5 @@ function getDialect() {
   }
 }
 
-let db = null;
-const dbInstance = new AsyncLocalStorage();
-
-// getDatabase will first check for an instance of Kysely in AsyncLocalStorage,
-// otherwise it will create a new instance and reuse it..
-function getDatabase() {
-  let fromStore = dbInstance.getStore();
-  if (fromStore) {
-    return fromStore;
-  }
-
-  if (db) {
-    return db;
-  }
-
-  db = new Kysely({
-    dialect: getDialect(),
-    log(event) {
-      if ("DEBUG" in process.env) {
-        if (event.level === "query") {
-          console.log(event.query.sql);
-          console.log(event.query.parameters);
-        }
-      }
-    },
-  });
-
-  return db;
-}
-
-module.exports.getDatabase = getDatabase;
-module.exports.withTransaction = withTransaction;
+module.exports.useDatabase = useDatabase;
+module.exports.withDatabase = withDatabase;

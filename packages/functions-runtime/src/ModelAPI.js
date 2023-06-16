@@ -1,4 +1,4 @@
-const { getDatabase } = require("./database");
+const { useDatabase } = require("./database");
 const { QueryBuilder } = require("./QueryBuilder");
 const { QueryContext } = require("./QueryContext");
 const { applyWhereConditions } = require("./applyWhereConditions");
@@ -56,7 +56,7 @@ class ModelAPI {
 
   async create(values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "create");
-    const db = getDatabase();
+    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
       try {
@@ -83,7 +83,7 @@ class ModelAPI {
 
   async findOne(where = {}) {
     const name = tracing.spanNameForModelAPI(this._modelName, "findOne");
-    const db = getDatabase();
+    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
       let builder = db
@@ -108,7 +108,7 @@ class ModelAPI {
 
   async findMany(params) {
     const name = tracing.spanNameForModelAPI(this._modelName, "findMany");
-    const db = getDatabase();
+    const db = useDatabase();
     const where = params?.where || {};
 
     return tracing.withSpan(name, async (span) => {
@@ -164,7 +164,7 @@ class ModelAPI {
 
   async update(where, values) {
     const name = tracing.spanNameForModelAPI(this._modelName, "update");
-    const db = getDatabase();
+    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
       let builder = db.updateTable(this._tableName).returningAll();
@@ -189,7 +189,7 @@ class ModelAPI {
 
   async delete(where) {
     const name = tracing.spanNameForModelAPI(this._modelName, "delete");
-    const db = getDatabase();
+    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
       let builder = db.deleteFrom(this._tableName).returning(["id"]);
@@ -210,7 +210,7 @@ class ModelAPI {
   }
 
   where(where) {
-    const db = getDatabase();
+    const db = useDatabase();
 
     let builder = db
       .selectFrom(this._tableName)

@@ -1,4 +1,4 @@
-const { withTransaction } = require("./database");
+const { withDatabase } = require("./database");
 const {
   withPermissions,
   PERMISSION_STATE,
@@ -16,7 +16,7 @@ function tryExecuteFunction(
   const actionType = actionTypes[request.method];
 
   return withPermissions(permitted, async ({ getPermissionState }) => {
-    return withTransaction(db, actionType, async ({ transaction }) => {
+    return withDatabase(db, actionType, async ({ transaction }) => {
       const fnResult = await cb();
 
       // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).

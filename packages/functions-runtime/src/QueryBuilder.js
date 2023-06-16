@@ -5,8 +5,8 @@ const {
   applyOrderBy,
 } = require("./applyAdditionalQueryConstraints");
 const { applyJoins } = require("./applyJoins");
-const { camelCaseObject, upperCamelCase } = require("./casing");
-const { getDatabase } = require("./database");
+const { camelCaseObject } = require("./casing");
+const { useDatabase } = require("./database");
 const { QueryContext } = require("./QueryContext");
 const tracing = require("./tracing");
 
@@ -45,7 +45,7 @@ class QueryBuilder {
 
   async findMany(params) {
     const name = tracing.spanNameForModelAPI(this._modelName, "findMany");
-    const db = getDatabase();
+    const db = useDatabase();
 
     return tracing.withSpan(name, async (span) => {
       const context = new QueryContext([this._tableName], this._tableConfigMap);

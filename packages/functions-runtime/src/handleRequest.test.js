@@ -3,7 +3,7 @@ import { sql } from "kysely";
 import { handleRequest, RuntimeErrors } from "./handleRequest";
 import { test, expect, beforeEach, describe } from "vitest";
 import { ModelAPI } from "./ModelAPI";
-import { getDatabase } from "./database";
+import { useDatabase } from "./database";
 const { Permissions } = require("./permissions");
 import { PROTO_ACTION_TYPES } from "./consts";
 import KSUID from "ksuid";
@@ -188,7 +188,7 @@ describe("ModelAPI error handling", () => {
     process.env.KEEL_DB_CONN_TYPE = "pg";
     process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
 
-    db = getDatabase();
+    db = useDatabase();
 
     await sql`
     DROP TABLE IF EXISTS post;
