@@ -3,54 +3,40 @@ const { AsyncLocalStorage } = require("async_hooks");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
 
-// withTransaction wraps the containing code with a transaction
-// and sets the transaction in the AsyncLocalStorage so consumers further
-// down the hierarchy can access the current transaction.
-// For read type operations such as list & get, no transaction is used
-async function withTransaction(db, actionType, cb) {
-  switch (actionType) {
+// withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
+// so that the the code in a custom function uses the correct client.
+// For GET and LIST action types, no transaction is used, but for
+// actions that mutate data such as CREATE, DELETE & UPDATE, all of the code inside
+// the user's custom function is wrapped in a transaction so we can rollback
+// the transaction if something goes wrong.
+// withDatabase shouldn't be exposed in the public api of the sdk
+async function withDatabase(db, actionType, cb) {
+  let requiresTransaction = true;
+
+  switch(actionType) {
     case PROTO_ACTION_TYPES.GET:
     case PROTO_ACTION_TYPES.LIST:
-      return dbInstance.run(db, async () => {
-        return cb({ transaction: db });
-      });
-    default:
-      return db.transaction().execute(async (transaction) => {
-        return dbInstance.run(transaction, async () => {
-          return cb({ transaction });
-        });
-      });
+      requiresTransaction = false;
+      break;
   }
-}
 
-function mustEnv(key) {
-  const v = process.env[key];
-  if (!v) {
-    throw new Error(`expected environment variable ${key} to be set`);
-  }
-  return v;
-}
-
-function getDialect() {
-  const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
-  switch (dbConnType) {
-    case "pg":
-      return new PostgresDialect({
-        pool: new pg.Pool({
-          connectionString: mustEnv("KEEL_DB_CONN"),
-        }),
+  if (requiresTransaction) {
+    return db.transaction().execute(async (transaction) => {
+      return dbInstance.run(transaction, async () => {
+        return cb({ transaction });
       });
-
-    default:
-      throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
+    });
   }
+
+  return dbInstance.run(db, async () => {
+    return cb({ transaction: db });
+  });
 }
 
 let db = null;
 const dbInstance = new AsyncLocalStorage();
 
-// useDatabase will first check for an instance of Kysely in AsyncLocalStorage,
-// otherwise it will create a new instance and reuse it..
+// useDatabase will retrieve the database client set by withDatabase from the local storage 
 function useDatabase() {
   let fromStore = dbInstance.getStore();
   if (fromStore) {
@@ -76,5 +62,29 @@ function useDatabase() {
   return db;
 }
 
+
+function mustEnv(key) {
+  const v = process.env[key];
+  if (!v) {
+    throw new Error(`expected environment variable ${key} to be set`);
+  }
+  return v;
+}
+
+function getDialect() {
+  const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
+  switch (dbConnType) {
+    case "pg":
+      return new PostgresDialect({
+        pool: new pg.Pool({
+          connectionString: mustEnv("KEEL_DB_CONN"),
+        }),
+      });
+
+    default:
+      throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
+  }
+}
+
 module.exports.useDatabase = useDatabase;
-module.exports.withTransaction = withTransaction;
+module.exports.withDatabase = withDatabase;
