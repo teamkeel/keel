@@ -1,3 +1,10 @@
+# [0.336.0](https://github.com/teamkeel/keel/compare/v0.335.0...v0.336.0) (2023-06-16)
+
+
+### Features
+
+* change getDatabase to useDatabase ([#1011](https://github.com/teamkeel/keel/issues/1011)) ([039e8bc](https://github.com/teamkeel/keel/commit/039e8bcb128c56c0c1c0b939b6dfb12e927a61b8))
+
 # [0.335.0](https://github.com/teamkeel/keel/compare/v0.334.0...v0.335.0) (2023-06-16)
 
 
