@@ -47,6 +47,9 @@ function useDatabase() {
     return db;
   }
 
+  // todo: ideally we wouldn't want to give you a fresh Kysely instance here if nothing
+  // has been found in the context, but the @teamkeel/testing package needs some restructuring
+  // to allow for the database client to be set in the store so that this method can throw an error at this line instead of returning a fresh kysely instance.
   db = new Kysely({
     dialect: getDialect(),
     log(event) {
