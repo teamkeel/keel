@@ -1,3 +1,10 @@
+# [0.335.0](https://github.com/teamkeel/keel/compare/v0.334.0...v0.335.0) (2023-06-16)
+
+
+### Features
+
+* support offset / limit / orderBy in Model API ([#1009](https://github.com/teamkeel/keel/issues/1009)) ([faedd98](https://github.com/teamkeel/keel/commit/faedd981313a5f159b840d34f7680883c36070fd))
+
 # [0.334.0](https://github.com/teamkeel/keel/compare/v0.333.0...v0.334.0) (2023-06-16)
 
 
