@@ -13,7 +13,7 @@ const { PROTO_ACTION_TYPES } = require("./consts");
 async function withDatabase(db, actionType, cb) {
   let requiresTransaction = true;
 
-  switch(actionType) {
+  switch (actionType) {
     case PROTO_ACTION_TYPES.GET:
     case PROTO_ACTION_TYPES.LIST:
       requiresTransaction = false;
@@ -36,7 +36,7 @@ async function withDatabase(db, actionType, cb) {
 let db = null;
 const dbInstance = new AsyncLocalStorage();
 
-// useDatabase will retrieve the database client set by withDatabase from the local storage 
+// useDatabase will retrieve the database client set by withDatabase from the local storage
 function useDatabase() {
   let fromStore = dbInstance.getStore();
   if (fromStore) {
@@ -61,7 +61,6 @@ function useDatabase() {
 
   return db;
 }
-
 
 function mustEnv(key) {
   const v = process.env[key];
