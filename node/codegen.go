@@ -99,7 +99,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	writeDatabaseInterface(sdkTypes, schema)
 	writeAPIDeclarations(sdkTypes, schema)
 
-	sdk.Writeln("module.exports.getDatabase = runtime.getDatabase;")
+	sdk.Writeln("module.exports.useDatabase = runtime.useDatabase;")
 
 	return []*codegen.GeneratedFile{
 		{
@@ -391,7 +391,7 @@ func writeDatabaseInterface(w *codegen.Writer, schema *proto.Schema) {
 	}
 	w.Dedent()
 	w.Writeln("}")
-	w.Writeln("export declare function getDatabase(): Kysely<database>;")
+	w.Writeln("export declare function useDatabase(): Kysely<database>;")
 }
 
 func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
@@ -737,14 +737,14 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	// The testing package uses ES modules as it only used in the context of running tests
 	// with Vitest
 	js.Writeln(`import sdk from "@teamkeel/sdk"`)
-	js.Writeln("const { getDatabase, models } = sdk;")
+	js.Writeln("const { useDatabase, models } = sdk;")
 	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
-	js.Writeln("const db = getDatabase();")
+	js.Writeln("const db = useDatabase();")
 	js.Write("await sql`TRUNCATE TABLE ")
 	tableNames := []string{}
 	for _, model := range schema.Models {

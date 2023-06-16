@@ -1,7 +1,7 @@
 import { test, expect, beforeEach } from "vitest";
-const { ModelAPI, DatabaseError } = require("./ModelAPI");
+const { ModelAPI } = require("./ModelAPI");
 const { sql } = require("kysely");
-const { getDatabase } = require("./database");
+const { useDatabase } = require("./database");
 const KSUID = require("ksuid");
 
 process.env.KEEL_DB_CONN_TYPE = "pg";
@@ -12,7 +12,7 @@ let postAPI;
 let authorAPI;
 
 beforeEach(async () => {
-  const db = getDatabase();
+  const db = useDatabase();
 
   await sql`
   DROP TABLE IF EXISTS post;

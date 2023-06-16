@@ -6,7 +6,7 @@ const {
   checkBuiltInPermissions,
 } = require("./permissions");
 
-import { getDatabase } from "./database";
+import { useDatabase } from "./database";
 
 import { beforeEach, describe, expect, test } from "vitest";
 
@@ -15,7 +15,7 @@ process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functi
 
 let permissions;
 let ctx = {};
-let db = getDatabase();
+let db = useDatabase();
 
 describe("explicit", () => {
   beforeEach(() => {

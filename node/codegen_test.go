@@ -260,7 +260,7 @@ interface database {
 	person: PersonTable;
 	identity: IdentityTable;
 }
-export declare function getDatabase(): Kysely<database>;`
+export declare function useDatabase(): Kysely<database>;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		writeDatabaseInterface(w, s)
