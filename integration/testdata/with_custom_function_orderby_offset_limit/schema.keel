@@ -1,0 +1,16 @@
+model Post {
+    fields {
+        title Text
+    }
+
+    functions {
+        list listPosts(
+            offset: Number?,
+            limit: Number?,
+            orderBy: Text?,
+            sortOrder: Text?,
+        ) {
+            @permission(expression: true)
+        }
+    }
+}

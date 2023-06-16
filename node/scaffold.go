@@ -79,8 +79,7 @@ func writeFunctionWrapper(function *proto.Operation) string {
 		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.create(inputs);
 	return %s;`, modelName, modelName, modelName)
 	case proto.OperationType_OPERATION_TYPE_LIST:
-		// todo: fix bang! below
-		suggestedImplementation = fmt.Sprintf(`const %ss = await models.%s.findMany(inputs.where!);
+		suggestedImplementation = fmt.Sprintf(`const %ss = await models.%s.findMany(inputs);
 	return %ss;`, modelName, modelName, modelName)
 	case proto.OperationType_OPERATION_TYPE_GET:
 		suggestedImplementation = fmt.Sprintf(`const %s = await models.%s.findOne(inputs);

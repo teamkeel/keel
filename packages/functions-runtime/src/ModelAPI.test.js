@@ -163,7 +163,7 @@ test("ModelAPI.findOne - return null if not found", async () => {
 });
 
 test("ModelAPI.findMany", async () => {
-  const jim = await personAPI.create({
+  await personAPI.create({
     name: "Jim",
     married: false,
     favouriteNumber: 10,
@@ -179,14 +179,16 @@ test("ModelAPI.findMany", async () => {
     favouriteNumber: 12,
   });
   const rows = await personAPI.findMany({
-    married: true,
+    where: {
+      married: true,
+    },
   });
   expect(rows.length).toEqual(2);
   expect(rows.map((x) => x.id).sort()).toEqual([bob.id, sally.id].sort());
 });
 
 test("ModelAPI.findMany - no where conditions", async () => {
-  const jim = await personAPI.create({
+  await personAPI.create({
     name: "Jim",
   });
   await personAPI.create({
@@ -206,8 +208,10 @@ test("ModelAPI.findMany - startsWith", async () => {
     name: "Bob",
   });
   const rows = await personAPI.findMany({
-    name: {
-      startsWith: "Ji",
+    where: {
+      name: {
+        startsWith: "Ji",
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -222,8 +226,10 @@ test("ModelAPI.findMany - endsWith", async () => {
     name: "Bob",
   });
   const rows = await personAPI.findMany({
-    name: {
-      endsWith: "im",
+    where: {
+      name: {
+        endsWith: "im",
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -241,8 +247,10 @@ test("ModelAPI.findMany - contains", async () => {
     name: "Jim",
   });
   const rows = await personAPI.findMany({
-    name: {
-      contains: "ll",
+    where: {
+      name: {
+        contains: "ll",
+      },
     },
   });
   expect(rows.length).toEqual(2);
@@ -260,8 +268,10 @@ test("ModelAPI.findMany - oneOf", async () => {
     name: "Jim",
   });
   const rows = await personAPI.findMany({
-    name: {
-      oneOf: ["Billy", "Sally"],
+    where: {
+      name: {
+        oneOf: ["Billy", "Sally"],
+      },
     },
   });
   expect(rows.length).toEqual(2);
@@ -276,8 +286,10 @@ test("ModelAPI.findMany - greaterThan", async () => {
     favouriteNumber: 2,
   });
   const rows = await personAPI.findMany({
-    favouriteNumber: {
-      greaterThan: 1,
+    where: {
+      favouriteNumber: {
+        greaterThan: 1,
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -295,8 +307,10 @@ test("ModelAPI.findMany - greaterThanOrEquals", async () => {
     favouriteNumber: 3,
   });
   const rows = await personAPI.findMany({
-    favouriteNumber: {
-      greaterThanOrEquals: 2,
+    where: {
+      favouriteNumber: {
+        greaterThanOrEquals: 2,
+      },
     },
   });
   expect(rows.length).toEqual(2);
@@ -311,8 +325,10 @@ test("ModelAPI.findMany - lessThan", async () => {
     favouriteNumber: 2,
   });
   const rows = await personAPI.findMany({
-    favouriteNumber: {
-      lessThan: 2,
+    where: {
+      favouriteNumber: {
+        lessThan: 2,
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -330,8 +346,10 @@ test("ModelAPI.findMany - lessThanOrEquals", async () => {
     favouriteNumber: 3,
   });
   const rows = await personAPI.findMany({
-    favouriteNumber: {
-      lessThanOrEquals: 2,
+    where: {
+      favouriteNumber: {
+        lessThanOrEquals: 2,
+      },
     },
   });
   expect(rows.length).toEqual(2);
@@ -346,8 +364,10 @@ test("ModelAPI.findMany - before", async () => {
     date: new Date("2022-01-02"),
   });
   const rows = await personAPI.findMany({
-    date: {
-      before: new Date("2022-01-02"),
+    where: {
+      date: {
+        before: new Date("2022-01-02"),
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -387,12 +407,154 @@ test("ModelAPI.findMany - onOrBefore", async () => {
     date: new Date("2022-01-03"),
   });
   const rows = await personAPI.findMany({
-    date: {
-      onOrBefore: new Date("2022-01-02"),
+    where: {
+      date: {
+        onOrBefore: new Date("2022-01-02"),
+      },
     },
   });
   expect(rows.length).toEqual(2);
   expect(rows.map((x) => x.id).sort()).toEqual([p.id, p2.id].sort());
+});
+
+test("ModelAPI.findMany - limit", async () => {
+  await personAPI.create({
+    id: "1",
+    name: "Jim",
+    married: false,
+    favouriteNumber: 10,
+  });
+  await personAPI.create({
+    id: "2",
+    name: "Bob",
+    married: true,
+    favouriteNumber: 11,
+  });
+  await personAPI.create({
+    id: "3",
+    name: "Sally",
+    married: true,
+    favouriteNumber: 12,
+  });
+
+  const rows = await personAPI.findMany({
+    limit: 2,
+  });
+
+  expect(rows.map((r) => r.name)).toEqual(["Jim", "Bob"]);
+});
+
+test("ModelAPI.findMany - orderBy", async () => {
+  await personAPI.create({
+    id: "1",
+    name: "Jim",
+    married: false,
+    favouriteNumber: 10,
+    date: new Date(2023, 12, 29),
+  });
+  await personAPI.create({
+    id: "2",
+    name: "Bob",
+    married: true,
+    favouriteNumber: 11,
+    date: new Date(2023, 12, 30),
+  });
+  await personAPI.create({
+    id: "3",
+    name: "Sally",
+    married: true,
+    favouriteNumber: 12,
+    date: new Date(2023, 12, 31),
+  });
+
+  const ascendingNames = await personAPI.findMany({
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  expect(ascendingNames.map((r) => r.name)).toEqual(["Bob", "Jim", "Sally"]);
+
+  const descendingNames = await personAPI.findMany({
+    orderBy: {
+      name: "desc",
+    },
+  });
+
+  expect(descendingNames.map((r) => r.name)).toEqual(["Sally", "Jim", "Bob"]);
+
+  const ascendingFavouriteNumbers = await personAPI.findMany({
+    orderBy: {
+      favouriteNumber: "asc",
+    },
+  });
+
+  expect(ascendingFavouriteNumbers.map((r) => r.name)).toEqual([
+    "Jim",
+    "Bob",
+    "Sally",
+  ]);
+
+  const descendingDates = await personAPI.findMany({
+    orderBy: {
+      date: "desc",
+    },
+  });
+
+  expect(descendingDates.map((r) => r.name)).toEqual(["Sally", "Bob", "Jim"]);
+});
+
+test("ModelAPI.findMany - offset", async () => {
+  await personAPI.create({
+    id: "1",
+    name: "Jim",
+    married: false,
+    favouriteNumber: 10,
+    date: new Date(2023, 12, 29),
+  });
+  await personAPI.create({
+    id: "2",
+    name: "Bob",
+    married: true,
+    favouriteNumber: 11,
+    date: new Date(2023, 12, 30),
+  });
+  await personAPI.create({
+    id: "3",
+    name: "Sally",
+    married: true,
+    favouriteNumber: 12,
+    date: new Date(2023, 12, 31),
+  });
+
+  const rows = await personAPI.findMany({
+    offset: 1,
+    limit: 2,
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  expect(rows.map((r) => r.name)).toEqual(["Jim", "Sally"]);
+
+  const rows2 = await personAPI.findMany({
+    offset: 2,
+    orderBy: {
+      name: "asc",
+    },
+  });
+
+  expect(rows2.map((r) => r.name)).toEqual(["Sally"]);
+
+  const rows3 = await personAPI.findMany({
+    offset: 1,
+    orderBy: {
+      name: "asc",
+    },
+    limit: 1,
+  });
+
+  expect(rows3.map((r) => r.name)).toEqual(["Jim"]);
 });
 
 test("ModelAPI.findMany - after", async () => {
@@ -403,8 +565,10 @@ test("ModelAPI.findMany - after", async () => {
     date: new Date("2022-01-02"),
   });
   const rows = await personAPI.findMany({
-    date: {
-      after: new Date("2022-01-01"),
+    where: {
+      date: {
+        after: new Date("2022-01-01"),
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -422,8 +586,10 @@ test("ModelAPI.findMany - onOrAfter", async () => {
     date: new Date("2022-01-03"),
   });
   const rows = await personAPI.findMany({
-    date: {
-      onOrAfter: new Date("2022-01-02"),
+    where: {
+      date: {
+        onOrAfter: new Date("2022-01-02"),
+      },
     },
   });
   expect(rows.length).toEqual(2);
@@ -438,8 +604,10 @@ test("ModelAPI.findMany - equals", async () => {
     name: "Sally",
   });
   const rows = await personAPI.findMany({
-    name: {
-      equals: "Jim",
+    where: {
+      name: {
+        equals: "Jim",
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -454,8 +622,10 @@ test("ModelAPI.findMany - notEquals", async () => {
     name: "Sally",
   });
   const rows = await personAPI.findMany({
-    name: {
-      notEquals: "Sally",
+    where: {
+      name: {
+        notEquals: "Sally",
+      },
     },
   });
   expect(rows.length).toEqual(1);
@@ -523,8 +693,10 @@ test("ModelAPI.findMany - relationships - one to many", async () => {
   });
 
   const posts = await postAPI.findMany({
-    author: {
-      name: "Jim",
+    where: {
+      author: {
+        name: "Jim",
+      },
     },
   });
   expect(posts.length).toEqual(2);
@@ -549,10 +721,12 @@ test("ModelAPI.findMany - relationships - many to one", async () => {
   });
 
   const people = await personAPI.findMany({
-    posts: {
-      title: {
-        startsWith: "My ",
-        endsWith: " Post",
+    where: {
+      posts: {
+        title: {
+          startsWith: "My ",
+          endsWith: " Post",
+        },
       },
     },
   });
@@ -665,4 +839,36 @@ test("ModelAPI.delete", async () => {
 
   expect(deletedId).toEqual(id);
   await expect(personAPI.findOne({ id })).resolves.toEqual(null);
+});
+
+test("ModelAPI chained findMany with offset/limit/order by", async () => {
+  await postAPI.create({
+    title: "adam",
+  });
+  await postAPI.create({
+    title: "dave",
+  });
+  const three = await postAPI.create({
+    title: "jon",
+  });
+  const four = await postAPI.create({
+    title: "jon bretman",
+  });
+
+  const results = await postAPI
+    .where({ title: { equals: "adam" } })
+    .orWhere({
+      title: { startsWith: "jon" },
+    })
+    .findMany({
+      limit: 3,
+      offset: 1,
+      orderBy: {
+        title: "asc",
+      },
+    });
+
+  // because we've offset by 1, adam should not appear in the results even though
+  // the query constraints match adam
+  expect(results).toEqual([three, four]);
 });

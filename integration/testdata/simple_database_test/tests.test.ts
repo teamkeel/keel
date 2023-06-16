@@ -28,8 +28,10 @@ test("findMany", async () => {
   await models.post.create({ title: "pear" });
 
   const results = await models.post.findMany({
-    title: {
-      startsWith: "apple",
+    where: {
+      title: {
+        startsWith: "apple",
+      },
     },
   });
 

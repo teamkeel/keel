@@ -193,13 +193,40 @@ export type PersonAPI = {
 	update(where: PersonUniqueConditions, values: Partial<Person>): Promise<Person>;
 	delete(where: PersonUniqueConditions): Promise<string>;
 	findOne(where: PersonUniqueConditions): Promise<Person | null>;
-	findMany(where: PersonWhereConditions): Promise<Person[]>;
+	findMany(params?: PersonFindManyParams | undefined): Promise<Person[]>;
 	where(where: PersonWhereConditions): PersonQueryBuilder;
 }`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")
 		writeModelAPIDeclaration(w, m)
+	})
+}
+
+func TestModelAPIFindManyDeclaration(t *testing.T) {
+	expected := `export type SortOrder = "asc" | "desc" | "ASC" | "DESC"
+export type PersonOrderBy = {
+	firstName?: SortOrder,
+	lastName?: SortOrder,
+	age?: SortOrder,
+	dateOfBirth?: SortOrder,
+	gender?: SortOrder,
+	hasChildren?: SortOrder,
+	id?: SortOrder,
+	createdAt?: SortOrder,
+	updatedAt?: SortOrder
+}
+
+export interface PersonFindManyParams {
+	where?: PersonWhereConditions;
+	limit?: number;
+	offset?: number;
+	orderBy?: PersonOrderBy;
+}`
+
+	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		m := proto.FindModel(s.Models, "Person")
+		writeFindManyParamsInterface(w, m, false)
 	})
 }
 
@@ -1406,14 +1433,16 @@ func TestSDKTypings(t *testing.T) {
 		
 				export default GetPerson(async (_, inputs) => {
 					const r = await models.person.findMany({
-						name: {
-							startsWith: true,
+						where: {
+							name: {
+								startsWith: true,
+							}
 						}
 					});
 					return r.length > 0 ? r[0] : null;
 				});
 			`,
-			error: "code.ts(7,8): error TS2322: Type 'boolean' is not assignable to type 'string'",
+			error: "code.ts(8,9): error TS2322: Type 'boolean' is not assignable to type 'string'",
 		},
 		{
 			name: "optional model fields are typed as nullable",

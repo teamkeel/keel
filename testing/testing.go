@@ -98,6 +98,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		functionsServer, err = node.RunDevelopmentServer(opts.Dir, &node.ServerOpts{
 			EnvVars: opts.EnvVars,
 			Output:  opts.FunctionsOutput,
+			Debug:   true, // todo: configurable
 		})
 
 		if err != nil {

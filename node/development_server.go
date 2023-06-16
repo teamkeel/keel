@@ -56,6 +56,7 @@ type ServerOpts struct {
 	Port    string
 	EnvVars map[string]string
 	Output  io.Writer
+	Debug   bool
 }
 
 // RunDevelopmentServer will start a new node runtime server serving/handling custom function requests
@@ -93,6 +94,10 @@ func RunDevelopmentServer(dir string, options *ServerOpts) (*DevelopmentServer, 
 	cmd.Stderr = d.output
 
 	if options != nil {
+		if options.Debug {
+			cmd.Env = append(cmd.Env, "DEBUG=true")
+		}
+
 		cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%s", port))
 
 		for key, value := range options.EnvVars {

@@ -5,7 +5,9 @@ export default CustomPersonSearch(async (_, { params }) => {
 
   const { names } = params;
   const people = await models.person.findMany({
-    name: { oneOf: names },
+    where: {
+      name: { oneOf: names },
+    },
   });
 
   return {

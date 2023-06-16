@@ -8,7 +8,9 @@ export default CreateManyAndCount(async (_, inputs) => {
   for (let i = 0; i < inputs.names.length; i++) {
     const person = await models.person.create({ name: inputs.names[i] });
     const persons = await models.person.findMany({
-      name: { equals: person.name },
+      where: {
+        name: { equals: person.name },
+      },
     });
     count += persons.length;
   }
