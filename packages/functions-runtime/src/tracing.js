@@ -5,8 +5,6 @@ const {
 } = require("@opentelemetry/exporter-trace-otlp-proto");
 const { NodeTracerProvider } = require("@opentelemetry/sdk-trace-node");
 const { envDetectorSync } = require("@opentelemetry/resources");
-const { registerInstrumentations } = require("@opentelemetry/instrumentation");
-const { PrismaInstrumentation } = require("@prisma/instrumentation");
 
 function withSpan(name, fn) {
   return getTracer().startActiveSpan(name, async (span) => {
@@ -63,11 +61,6 @@ function init() {
     });
     const exporter = new OTLPTraceExporter();
     const processor = new BatchSpanProcessor(exporter);
-
-    registerInstrumentations({
-      tracerProvider: provider,
-      instrumentations: [new PrismaInstrumentation()],
-    });
 
     provider.addSpanProcessor(processor);
     provider.register();

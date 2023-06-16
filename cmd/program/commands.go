@@ -221,24 +221,6 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 			Status: StatusGeneratingNodePackages,
 		}
 
-		// generate prisma client from the prisma schema we generated in the previous step
-		cmd := exec.Command("node_modules/.bin/prisma", "generate", "--schema", ".build/schema.prisma")
-		cmd.Dir = dir
-		b, err := cmd.CombinedOutput()
-		if err != nil {
-			return GenerateMsg{
-				Err: &TypeScriptError{
-					Output: string(b),
-					Err:    err,
-				},
-			}
-		}
-
-		output <- GenerateMsg{
-			Log:    "Generated prisma schema",
-			Status: StatusGeneratingNodePackages,
-		}
-
 		scaffoldedFiles, err := node.Scaffold(dir, schema)
 
 		if err != nil {
@@ -451,22 +433,10 @@ func UpdateFunctions(schema *proto.Schema, dir string) tea.Cmd {
 			return UpdateFunctionsMsg{Err: err}
 		}
 
-		cmd := exec.Command("node_modules/.bin/prisma", "generate", "--schema", ".build/schema.prisma")
+		cmd := exec.Command("npx", "tsc", "--noEmit", "--pretty")
 		cmd.Dir = dir
+
 		b, err := cmd.CombinedOutput()
-		if err != nil {
-			return UpdateFunctionsMsg{
-				Err: &TypeScriptError{
-					Output: string(b),
-					Err:    err,
-				},
-			}
-		}
-
-		cmd = exec.Command("npx", "tsc", "--noEmit", "--pretty")
-		cmd.Dir = dir
-
-		b, err = cmd.CombinedOutput()
 		if err != nil {
 			return UpdateFunctionsMsg{
 				Err: &TypeScriptError{
