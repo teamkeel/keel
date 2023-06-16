@@ -88,7 +88,7 @@ export default GetPost(async (ctx, inputs) => {
 			Contents: `import { ListPosts, models } from '@teamkeel/sdk';
 
 export default ListPosts(async (ctx, inputs) => {
-	const posts = await models.post.findMany(inputs.where!);
+	const posts = await models.post.findMany(inputs);
 	return posts;
 });`,
 		},
