@@ -77,7 +77,6 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		writeUniqueConditionsInterface(sdkTypes, model)
 		writeModelAPIDeclaration(sdkTypes, model)
 		writeModelQueryBuilderDeclaration(sdkTypes, model)
-		writeModelDefaultValuesFunction(sdk, model)
 
 		for _, op := range model.Operations {
 			// We only care about custom functions for the SDK
@@ -479,7 +478,13 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	for _, model := range schema.Models {
 		w.Write(casing.ToLowerCamel(model.Name))
 		w.Write(": ")
-		w.Writef(`new runtime.ModelAPI("%s", %sDefaultValues, tableConfigMap)`, casing.ToSnake(model.Name), casing.ToLowerCamel(model.Name))
+
+		// The second positional argument to the model API used to be a default values function but
+		// default values are now set in the database so this is no longer needed.
+		// Passing a no-op function here for backwards compatibility with older versions of the
+		// functions-runtime package.
+		w.Writef(`new runtime.ModelAPI("%s", () => ({}), tableConfigMap)`, casing.ToSnake(model.Name))
+
 		w.Writeln(",")
 	}
 	w.Dedent()
@@ -539,39 +544,6 @@ func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
 	b, _ := json.MarshalIndent(tableConfigMap, "", "    ")
 	w.Write(string(b))
 	w.Writeln(";")
-}
-
-func writeModelDefaultValuesFunction(w *codegen.Writer, model *proto.Model) {
-	w.Writef("function %sDefaultValues() {", casing.ToLowerCamel(model.Name))
-	w.Writeln("")
-	w.Indent()
-	w.Writeln("const r = {};")
-	for _, field := range model.Fields {
-		if field.DefaultValue == nil {
-			continue
-		}
-		if field.DefaultValue.UseZeroValue {
-			w.Writef("r.%s = ", field.Name)
-			switch field.Type.Type {
-			case proto.Type_TYPE_ID:
-				w.Write("runtime.ksuid()")
-			case proto.Type_TYPE_STRING:
-				w.Write(`""`)
-			case proto.Type_TYPE_BOOL:
-				w.Write(`false`)
-			case proto.Type_TYPE_INT:
-				w.Write(`0`)
-			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_DATE, proto.Type_TYPE_TIMESTAMP:
-				w.Write("new Date()")
-			}
-			w.Writeln(";")
-			continue
-		}
-		// TODO: support expressions
-	}
-	w.Writeln("return r;")
-	w.Dedent()
-	w.Writeln("}")
 }
 
 func writeCustomFunctionWrapperType(w *codegen.Writer, model *proto.Model, op *proto.Operation) {

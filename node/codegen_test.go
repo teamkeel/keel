@@ -319,8 +319,8 @@ function createContextAPI({ responseHeaders, meta }) {
 };
 function createModelAPI() {
 	return {
-		person: new runtime.ModelAPI("person", personDefaultValues, tableConfigMap),
-		identity: new runtime.ModelAPI("identity", identityDefaultValues, tableConfigMap),
+		person: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
+		identity: new runtime.ModelAPI("identity", () => ({}), tableConfigMap),
 	};
 };
 function createPermissionApi() {
@@ -373,34 +373,6 @@ export interface ContextAPI extends runtime.ContextAPI {
 		})
 
 		writeAPIDeclarations(w, s)
-	})
-}
-
-func TestWriteModelDefaultValuesFunction(t *testing.T) {
-	schema := `
-model Person {
-	fields {
-		name Text @default
-		isAdmin Boolean @default
-		counter Number @default
-	}
-}
-	`
-	expected := `
-function personDefaultValues() {
-	const r = {};
-	r.name = "";
-	r.isAdmin = false;
-	r.counter = 0;
-	r.id = runtime.ksuid();
-	r.createdAt = new Date();
-	r.updatedAt = new Date();
-	return r;
-}`
-
-	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
-		m := proto.FindModel(s.Models, "Person")
-		writeModelDefaultValuesFunction(w, m)
 	})
 }
 

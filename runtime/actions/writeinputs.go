@@ -120,21 +120,11 @@ func (query *QueryBuilder) captureWriteValues(scope *Scope, args map[string]any)
 // Parses the input data and builds a graph of row data which is organised by how this data would be stored in the database.
 // Uses the protobuf schema to determine which rows are referenced by using (i.e. it determines where the foreign key sits).
 func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *proto.Message, model *proto.Model, currentTarget []string, args map[string]any) (map[string]any, *Row, error) {
-	defaultValues := map[string]any{}
-	var err error
-
-	if scope.Operation.Type == proto.OperationType_OPERATION_TYPE_CREATE {
-		defaultValues, err = initialValueForModel(model, scope.Schema)
-		if err != nil {
-			return nil, nil, err
-		}
-	}
-
-	// Instantiate an empty row. And with default values if this is a create op.
+	// Instantiate an empty row.
 	newRow := &Row{
 		model:        model,
 		target:       currentTarget,
-		values:       defaultValues,
+		values:       map[string]any{},
 		referencedBy: []*Relationship{},
 		references:   []*Relationship{},
 	}
@@ -157,6 +147,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 				nestedMessage := proto.FindMessage(scope.Schema.Messages, input.Type.MessageName.Value)
 
 				var foreignKeys map[string]any
+				var err error
 
 				if input.Type.Repeated {
 					// A repeated field means that we have a 1:M relationship. Therefore:

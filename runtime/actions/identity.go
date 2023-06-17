@@ -70,17 +70,12 @@ func findSingle(ctx context.Context, schema *proto.Schema, field string, value s
 func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, password string) (*runtimectx.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
-	modelMap, err := initialValueForModel(identityModel, schema)
-	if err != nil {
-		return nil, err
-	}
-
-	modelMap["email"] = email
-	modelMap["password"] = password
-	modelMap["createdBy"] = keelIssuerClaim
-
 	query := NewQuery(identityModel)
-	query.AddWriteValues(modelMap)
+	query.AddWriteValues(map[string]any{
+		"email":     email,
+		"password":  password,
+		"createdBy": keelIssuerClaim,
+	})
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
 
@@ -95,16 +90,11 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, createdBy string) (*runtimectx.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
-	modelMap, err := initialValueForModel(identityModel, schema)
-	if err != nil {
-		return nil, err
-	}
-
-	modelMap["externalId"] = externalId
-	modelMap["createdBy"] = createdBy
-
 	query := NewQuery(identityModel)
-	query.AddWriteValues(modelMap)
+	query.AddWriteValues(map[string]any{
+		"externalId": externalId,
+		"createdBy":  createdBy,
+	})
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
 

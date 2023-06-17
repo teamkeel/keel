@@ -44,11 +44,10 @@ class DatabaseError extends Error {
 class ModelAPI {
   /**
    * @param {string} tableName The name of the table this API is for
-   * @param {Function} defaultValues A function that returns the default values for a row in this table
+   * @param {Function} _ Used to be a function that returns the default values for a row in this table. No longer used.
    * @param {TableConfigMap} tableConfigMap
    */
-  constructor(tableName, defaultValues, tableConfigMap = {}) {
-    this._defaultValues = defaultValues;
+  constructor(tableName, _, tableConfigMap = {}) {
     this._tableName = tableName;
     this._tableConfigMap = tableConfigMap;
     this._modelName = upperCamelCase(this._tableName);
@@ -60,12 +59,10 @@ class ModelAPI {
 
     return tracing.withSpan(name, async (span) => {
       try {
-        const defaults = this._defaultValues();
         const query = db
           .insertInto(this._tableName)
           .values(
             snakeCaseObject({
-              ...defaults,
               ...values,
             })
           )
