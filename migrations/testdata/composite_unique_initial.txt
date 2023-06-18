@@ -1,0 +1,45 @@
+===
+
+model Person {
+    fields {
+        // deliberately not in alphabetical order to test ordering of constraint columns
+        thingC Text
+        thingB Text
+        thingA Text
+    }
+
+    // deliberately different order from the fields order
+    @unique([thingB, thingC, thingA])
+}
+
+===
+
+CREATE TABLE "identity" (
+"email" TEXT,
+"password" TEXT,
+"external_id" TEXT,
+"created_by" TEXT,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
+ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
+CREATE TABLE "person" (
+"thing_c" TEXT NOT NULL,
+"thing_b" TEXT NOT NULL,
+"thing_a" TEXT NOT NULL,
+"id" TEXT NOT NULL DEFAULT ksuid(),
+"created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+"updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE "person" ADD CONSTRAINT person_id_pkey PRIMARY KEY ("id");
+ALTER TABLE "person" ADD CONSTRAINT person_thing_a_thing_b_thing_c_udx UNIQUE ("thing_a", "thing_b", "thing_c");
+
+=== 
+
+[
+  { "Model": "Identity", "Field": "", "Type": "ADDED" },
+  { "Model": "Person", "Field": "", "Type": "ADDED" }
+]
+
