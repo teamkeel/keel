@@ -1,4 +1,4 @@
-const { Kysely, PostgresDialect } = require("kysely");
+const { Kysely, PostgresDialect, CamelCasePlugin } = require("kysely");
 const { AsyncLocalStorage } = require("async_hooks");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
@@ -48,11 +48,34 @@ function useDatabase() {
     return db;
   }
 
-  // todo: ideally we wouldn't want to give you a fresh Kysely instance here if nothing
-  // has been found in the context, but the @teamkeel/testing package needs some restructuring
-  // to allow for the database client to be set in the store so that this method can throw an error at this line instead of returning a fresh kysely instance.
-  db = new Kysely({
+  // if the NODE_ENV is 'test' then we know we are inside of the vitest environment
+  // which covers any test files ending in *.test.ts. Custom function code runs in a different node process which will not have this environment variable. Tests written using our testing
+  // framework call actions (and in turn custom function code) over http using the ActionExecutor class
+  if ("NODE_ENV" in process.env && process.env.NODE_ENV == "test") {
+    // Memoize it for next use.
+    db = getDatabaseClient();
+
+    return db;
+  }
+
+  // If we've gotten to this point, then we know that we are in a custom function runtime server
+  // context and we haven't been able to retrieve the in-context instance of Kysely, which means we should throw an error.
+  throw new Error("no database client in context");
+}
+
+// getDatabaseClient will return a brand new instance of Kysely.
+// not to be exported externally from our sdk - consumers should use useDatabase
+function getDatabaseClient() {
+  return new Kysely({
     dialect: getDialect(),
+    plugins: [
+      // allows users to query using camelCased versions of the database column names, which
+      // should match the names we use in our schema.
+      // https://kysely-org.github.io/kysely/classes/CamelCasePlugin.html
+      // If they don't, then we can create a custom implementation of the plugin where we control
+      // the casing behaviour (see url above for example)
+      new CamelCasePlugin(),
+    ],
     log(event) {
       if ("DEBUG" in process.env) {
         if (event.level === "query") {
@@ -62,8 +85,6 @@ function useDatabase() {
       }
     },
   });
-
-  return db;
 }
 
 function mustEnv(key) {
@@ -127,5 +148,6 @@ function getDialect() {
   }
 }
 
+module.exports.getDatabaseClient = getDatabaseClient;
 module.exports.useDatabase = useDatabase;
 module.exports.withDatabase = withDatabase;

@@ -1,0 +1,11 @@
+model Post {
+    fields {
+        title Text
+    }
+
+    functions {
+        get getPostButOnlyIfItsAfter2020(id) {
+            @permission(expression: true)
+        }
+    }
+}
