@@ -1,0 +1,44 @@
+model Person {
+    fields {
+        name Text? @default("no name")
+        status Status? @default(Status.Fired)
+    }
+
+    operations {
+        create createPersonWithDefaults()
+
+        create createPerson() {
+            @set(person.name = null)
+            @set(person.status = null)
+        }
+
+        update updatePerson(id) {
+            @set(person.name = null)
+            @set(person.status = null)
+        }
+
+        list uninitialesedPersons() {
+            @where(person.name == null or person.status == null)
+
+        }
+
+        list listPersons() {
+            @where(person.name != null)
+            @where(person.status != null)
+        }
+    }
+
+    @permission(expression: true, actions: [get, list, update, delete, create])
+}
+
+enum Status {
+    Employed
+    Retrenched
+    Fired
+}
+
+api Web {
+    models {
+        Person
+    }
+}

@@ -1,0 +1,29 @@
+model Person {
+    fields {
+        name Text
+        employer Company?
+    }
+
+    operations {
+        create createPerson() {
+            @set(person.name = null)
+            @set(null = person.name)
+            @set(person.employer.name = null)
+            @permission(expression: person.name != null)
+        }
+
+        list listPersons() {
+            @where(person.name == null)
+            @where(null == person.name)
+            @where(person.employer.name == null)
+            @permission(expression: person.name != null)
+       }
+    }
+}
+
+model Company {
+    fields {
+        name Text
+        employees Person[]
+    }
+}

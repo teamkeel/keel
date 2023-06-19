@@ -1,0 +1,140 @@
+{
+  "errors": [
+    {
+      "message": "person.name is Text and null is Null",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 284,
+        "line": 12,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 303,
+        "line": 12,
+        "column": 56
+      }
+    },
+    {
+      "message": "person.name is Text and null is Null",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 510,
+        "line": 19,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 529,
+        "line": 19,
+        "column": 56
+      }
+    },
+    {
+      "message": "person.name is Text and null is Null",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 145,
+        "line": 9,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 163,
+        "line": 9,
+        "column": 36
+      }
+    },
+    {
+      "message": "null is Null and person.name is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 182,
+        "line": 10,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 200,
+        "line": 10,
+        "column": 36
+      }
+    },
+    {
+      "message": "person.employer.name is Text and null is Null",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 219,
+        "line": 11,
+        "column": 18
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 246,
+        "line": 11,
+        "column": 45
+      }
+    },
+    {
+      "message": "person.name is Text and null is Null",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 364,
+        "line": 16,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 383,
+        "line": 16,
+        "column": 39
+      }
+    },
+    {
+      "message": "null is Null and person.name is Text",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 404,
+        "line": 17,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 423,
+        "line": 17,
+        "column": 39
+      }
+    },
+    {
+      "message": "person.employer.name is Text and null is Null",
+      "hint": "Please make sure that you are evaluating entities of the same type",
+      "code": "E026",
+      "pos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 444,
+        "line": 18,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
+        "offset": 472,
+        "line": 18,
+        "column": 48
+      }
+    }
+  ]
+}
