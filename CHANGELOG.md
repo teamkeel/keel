@@ -1,3 +1,10 @@
+# [0.337.0](https://github.com/teamkeel/keel/compare/v0.336.0...v0.337.0) (2023-06-19)
+
+
+### Features
+
+* instrumented pg for better tracing in functions ([c867f8f](https://github.com/teamkeel/keel/commit/c867f8fc3ba4d9eb4a311e10f0f6e33f157cf74d))
+
 # [0.336.0](https://github.com/teamkeel/keel/compare/v0.335.0...v0.336.0) (2023-06-16)
 
 
