@@ -8,8 +8,8 @@ import (
 	"github.com/teamkeel/keel/db"
 )
 
-func getConstraints(ctx context.Context, database db.Database) ([]*ContraintRow, error) {
-	rows := []*ContraintRow{}
+func getConstraints(ctx context.Context, database db.Database) ([]*ConstraintRow, error) {
+	rows := []*ConstraintRow{}
 	return rows, database.GetDB().Raw(constraintsQuery).Scan(&rows).Error
 }
 
@@ -36,7 +36,7 @@ type ColumnRow struct {
 	DataType     string `json:"data_type"`
 }
 
-type ContraintRow struct {
+type ConstraintRow struct {
 	TableName          string
 	ConstraintName     string
 	ConstrainedColumns pq.Int64Array `gorm:"type:smallint[]"`

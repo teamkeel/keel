@@ -10,6 +10,7 @@ import (
 	"github.com/teamkeel/keel/db"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
+	"golang.org/x/exp/slices"
 )
 
 var PostgresFieldTypes map[proto.Type]string = map[proto.Type]string{
@@ -38,8 +39,12 @@ func Identifier(v string) string {
 	return db.QuoteIdentifier(casing.ToSnake(v))
 }
 
-func UniqueConstraintName(modelName string, fieldName string) string {
-	return fmt.Sprintf("%s_%s_udx", casing.ToSnake(modelName), casing.ToSnake(fieldName))
+func UniqueConstraintName(modelName string, fieldNames []string) string {
+	slices.Sort(fieldNames)
+	snaked := lo.Map(fieldNames, func(s string, _ int) string {
+		return casing.ToSnake(s)
+	})
+	return fmt.Sprintf("%s_%s_udx", casing.ToSnake(modelName), strings.Join(snaked, "_"))
 }
 
 func PrimaryKeyConstraintName(modelName string, fieldName string) string {
@@ -71,9 +76,6 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 	statements = append(statements, output)
 
 	for _, field := range fields {
-		if field.Unique {
-			statements = append(statements, addUniqueConstraintStmt(model.Name, field.Name))
-		}
 		if field.PrimaryKey {
 			statements = append(statements, fmt.Sprintf(
 				"ALTER TABLE %s ADD CONSTRAINT %s PRIMARY KEY (%s);",
@@ -81,7 +83,14 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 				PrimaryKeyConstraintName(model.Name, field.Name),
 				Identifier(field.Name)))
 		}
+		if field.Unique {
+			statements = append(statements, addUniqueConstraintStmt(model.Name, []string{field.Name}))
+		}
 	}
+
+	// Passing an empty slice of constraints here as this is a new table so no existing constraints
+	stmts := compositeUniqueConstraints(model, []*ConstraintRow{})
+	statements = append(statements, stmts...)
 
 	return strings.Join(statements, "\n"), nil
 }
@@ -90,12 +99,18 @@ func dropTableStmt(name string) string {
 	return fmt.Sprintf("DROP TABLE %s CASCADE;", Identifier(name))
 }
 
-func addUniqueConstraintStmt(modelName, fieldName string) string {
+func addUniqueConstraintStmt(modelName string, fieldNames []string) string {
+	slices.Sort(fieldNames)
+
+	columnNames := lo.Map(fieldNames, func(s string, _ int) string {
+		return Identifier(s)
+	})
+
 	return fmt.Sprintf(
 		"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
 		Identifier(modelName),
-		UniqueConstraintName(modelName, fieldName),
-		Identifier(fieldName))
+		UniqueConstraintName(modelName, fieldNames),
+		strings.Join(columnNames, ", "))
 }
 
 func dropConstraintStmt(tableName string, constraintName string) string {
@@ -115,7 +130,7 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 	)
 
 	if field.Unique {
-		statements = append(statements, addUniqueConstraintStmt(modelName, field.Name))
+		statements = append(statements, addUniqueConstraintStmt(modelName, []string{field.Name}))
 	}
 
 	return strings.Join(statements, "\n"), nil

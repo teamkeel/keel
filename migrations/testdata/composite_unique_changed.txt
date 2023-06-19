@@ -1,0 +1,34 @@
+model Person {
+    fields {
+        thingA Text
+        thingB Text
+        thingC Text
+    }
+
+    @unique([thingA, thingB])
+}
+
+===
+
+model Person {
+    fields {
+        thingA Text
+        thingB Text
+        thingC Text
+    }
+
+    // From A+B -> B+C
+    @unique([thingB, thingC])
+}
+
+===
+
+ALTER TABLE "person" DROP CONSTRAINT person_thing_a_thing_b_udx;
+ALTER TABLE "person" ADD CONSTRAINT person_thing_b_thing_c_udx UNIQUE ("thing_b", "thing_c");
+
+=== 
+
+[
+  { "Model": "Person", "Field": "", "Type": "MODIFIED" }
+]
+

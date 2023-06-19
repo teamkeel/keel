@@ -169,6 +169,7 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			if field.Type.Type == proto.Type_TYPE_MODEL {
 				continue
 			}
+
 			column, _ := lo.Find(tableColumns, func(c *ColumnRow) bool {
 				return c.ColumnName == casing.ToSnake(field.Name)
 			})
@@ -204,12 +205,12 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				hasChanged = true
 			}
 
-			uniqueConstraint, hasUniqueConstraint := lo.Find(constraints, func(c *ContraintRow) bool {
+			uniqueConstraint, hasUniqueConstraint := lo.Find(constraints, func(c *ConstraintRow) bool {
 				return c.TableName == tableName && c.ConstraintType == "u" && len(c.ConstrainedColumns) == 1 && c.ConstrainedColumns[0] == int64(column.ColumnNum)
 			})
 
 			if field.Unique && !hasUniqueConstraint {
-				statements = append(statements, addUniqueConstraintStmt(model.Name, field.Name))
+				statements = append(statements, addUniqueConstraintStmt(model.Name, []string{field.Name}))
 				hasChanged = true
 			}
 			if !field.Unique && hasUniqueConstraint {
@@ -238,6 +239,15 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 				})
 			}
 		}
+
+		stmts := compositeUniqueConstraints(model, constraints)
+		if len(stmts) > 0 {
+			statements = append(statements, stmts...)
+			changes = append(changes, &DatabaseChange{
+				Model: model.Name,
+				Type:  ChangeTypeModified,
+			})
+		}
 	}
 
 	return &Migrations{
@@ -246,6 +256,48 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 		Changes:  changes,
 		SQL:      strings.TrimSpace(strings.Join(statements, "\n")),
 	}, nil
+}
+
+// compositeUniqueConstraintsForModel finds all composite unique constraints in model and
+// returns a map where the keys are constraint names and the keys are the field names in
+// that constraint
+func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string {
+	uniqueConstraints := map[string][]string{}
+	for _, field := range model.Fields {
+		if len(field.UniqueWith) > 0 {
+			fieldNames := append([]string{field.Name}, field.UniqueWith...)
+			constraintName := UniqueConstraintName(model.Name, fieldNames)
+			uniqueConstraints[constraintName] = fieldNames
+		}
+	}
+	return uniqueConstraints
+}
+
+// compositeUniqueConstraints generates SQL statements for dropping or creating composite
+// unique constraints for model
+func compositeUniqueConstraints(model *proto.Model, constraints []*ConstraintRow) (statements []string) {
+	uniqueConstraints := compositeUniqueConstraintsForModel(model)
+
+	for _, c := range constraints {
+		if c.TableName != casing.ToSnake(model.Name) || c.ConstraintType != "u" || len(c.ConstrainedColumns) == 1 {
+			continue
+		}
+
+		if _, ok := uniqueConstraints[c.ConstraintName]; ok {
+			delete(uniqueConstraints, c.ConstraintName)
+			continue
+		}
+
+		stmt := dropConstraintStmt(c.TableName, c.ConstraintName)
+		statements = append(statements, stmt)
+	}
+
+	for _, fieldNames := range uniqueConstraints {
+		stmt := addUniqueConstraintStmt(model.Name, fieldNames)
+		statements = append(statements, stmt)
+	}
+
+	return statements
 }
 
 func keelSchemaTableExists(ctx context.Context, database db.Database) (bool, error) {
