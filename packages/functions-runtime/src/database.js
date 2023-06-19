@@ -2,6 +2,7 @@ const { Kysely, PostgresDialect } = require("kysely");
 const { AsyncLocalStorage } = require("async_hooks");
 const pg = require("pg");
 const { PROTO_ACTION_TYPES } = require("./consts");
+const { withSpan } = require("./tracing");
 
 // withDatabase is responsible for setting the correct database client in our AsyncLocalStorage
 // so that the the code in a custom function uses the correct client.
@@ -73,12 +74,50 @@ function mustEnv(key) {
   return v;
 }
 
+class InstrumentedPool extends pg.Pool {
+  async connect(...args) {
+    const _super = super.connect.bind(this);
+    return withSpan("Database Connect", function () {
+      return _super(...args);
+    });
+  }
+}
+
+const txStatements = {
+  begin: "Transaction Begin",
+  commit: "Transaction Commit",
+  rollback: "Transaction Rollback",
+};
+
+class InstrumentedClient extends pg.Client {
+  async query(...args) {
+    const _super = super.query.bind(this);
+    const sql = args[0];
+
+    let sqlAttribute = false;
+
+    let spanName = txStatements[sql.toLowerCase()];
+    if (!spanName) {
+      spanName = "Database Query";
+      sqlAttribute = true;
+    }
+
+    return withSpan(spanName, function (span) {
+      if (sqlAttribute) {
+        span.setAttribute("sql", args[0]);
+      }
+      return _super(...args);
+    });
+  }
+}
+
 function getDialect() {
   const dbConnType = process.env["KEEL_DB_CONN_TYPE"];
   switch (dbConnType) {
     case "pg":
       return new PostgresDialect({
-        pool: new pg.Pool({
+        pool: new InstrumentedPool({
+          Client: InstrumentedClient,
           connectionString: mustEnv("KEEL_DB_CONN"),
         }),
       });
