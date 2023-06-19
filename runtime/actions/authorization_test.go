@@ -292,7 +292,7 @@ func TestPermissionQueryBuilder(t *testing.T) {
 
 			if testCase.expectedArgs != nil {
 				for i := 1; i < len(testCase.expectedArgs); i++ {
-					if testCase.expectedArgs[i] != ignore && testCase.expectedArgs[i] != statement.SqlArgs()[i] {
+					if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
 						assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
 						break
 					}

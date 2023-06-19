@@ -512,11 +512,20 @@ func (query QueryBuilder) generateInsertCte(row *Row, foreignKey *proto.Field, p
 		}
 	}
 
-	cte := fmt.Sprintf("%s AS (INSERT INTO %s (%s) VALUES (%s) RETURNING *)",
+	// If there are no values to insert then we use "DEFAULT VALUES" which means:
+	// "All columns will be filled with their default values"
+	values := "DEFAULT VALUES"
+
+	if len(columnNames) > 0 {
+		values = fmt.Sprintf("(%s) VALUES (%s)",
+			strings.Join(columnNames, ", "),
+			strings.Join(columnValues, ", "))
+	}
+
+	cte := fmt.Sprintf("%s AS (INSERT INTO %s %s RETURNING *)",
 		alias,
 		sqlQuote(casing.ToSnake(row.model.Name)),
-		strings.Join(columnNames, ", "),
-		strings.Join(columnValues, ", "))
+		values)
 
 	if len(sql) > 0 {
 		sql += ", "

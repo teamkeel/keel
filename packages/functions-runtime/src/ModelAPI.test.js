@@ -54,47 +54,22 @@ beforeEach(async () => {
     },
   };
 
-  personAPI = new ModelAPI(
-    "person",
-    () => {
-      return {
-        id: KSUID.randomSync().string,
-        date: new Date("2022-01-01"),
-      };
-    },
-    tableConfigMap
-  );
+  personAPI = new ModelAPI("person", undefined, tableConfigMap);
 
-  postAPI = new ModelAPI(
-    "post",
-    () => {
-      return {
-        id: KSUID.randomSync().string,
-      };
-    },
-    tableConfigMap
-  );
+  postAPI = new ModelAPI("post", undefined, tableConfigMap);
 
-  authorAPI = new ModelAPI(
-    "author",
-    () => {
-      return {
-        id: KSUID.randomSync().string,
-      };
-    },
-    tableConfigMap
-  );
+  authorAPI = new ModelAPI("author", undefined, tableConfigMap);
 });
 
 test("ModelAPI.create", async () => {
   const row = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
   });
   expect(row.name).toEqual("Jim");
   expect(row.married).toEqual(false);
-  expect(row.date).toEqual(new Date("2022-01-01"));
   expect(row.favouriteNumber).toEqual(10);
   expect(KSUID.parse(row.id).string).toEqual(row.id);
 });
@@ -102,6 +77,7 @@ test("ModelAPI.create", async () => {
 test("ModelAPI.create - throws if not not null constraint violation", async () => {
   await expect(
     authorAPI.create({
+      id: KSUID.randomSync().string,
       name: null,
     })
   ).rejects.toThrow('null value in column "name" violates not-null constraint');
@@ -109,11 +85,13 @@ test("ModelAPI.create - throws if not not null constraint violation", async () =
 
 test("ModelAPI.create - throws if database constraint fails", async () => {
   const row = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
   });
   const promise = personAPI.create({
+    id: KSUID.randomSync().string,
     id: row.id,
     name: "Jim",
     married: false,
@@ -126,6 +104,7 @@ test("ModelAPI.create - throws if database constraint fails", async () => {
 
 test("ModelAPI.findOne", async () => {
   const created = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
@@ -138,11 +117,13 @@ test("ModelAPI.findOne", async () => {
 
 test("ModelAPI.findOne - relationships - one to many", async () => {
   const person = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
   });
   const post = await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My Post",
     authorId: person.id,
   });
@@ -164,16 +145,19 @@ test("ModelAPI.findOne - return null if not found", async () => {
 
 test("ModelAPI.findMany", async () => {
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
   });
   const bob = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Bob",
     married: true,
     favouriteNumber: 11,
   });
   const sally = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Sally",
     married: true,
     favouriteNumber: 12,
@@ -189,9 +173,11 @@ test("ModelAPI.findMany", async () => {
 
 test("ModelAPI.findMany - no where conditions", async () => {
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Bob",
   });
 
@@ -202,9 +188,11 @@ test("ModelAPI.findMany - no where conditions", async () => {
 
 test("ModelAPI.findMany - startsWith", async () => {
   const jim = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Bob",
   });
   const rows = await personAPI.findMany({
@@ -220,9 +208,11 @@ test("ModelAPI.findMany - startsWith", async () => {
 
 test("ModelAPI.findMany - endsWith", async () => {
   const jim = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Bob",
   });
   const rows = await personAPI.findMany({
@@ -238,12 +228,15 @@ test("ModelAPI.findMany - endsWith", async () => {
 
 test("ModelAPI.findMany - contains", async () => {
   const billy = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Billy",
   });
   const sally = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Sally",
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   const rows = await personAPI.findMany({
@@ -259,12 +252,15 @@ test("ModelAPI.findMany - contains", async () => {
 
 test("ModelAPI.findMany - oneOf", async () => {
   const billy = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Billy",
   });
   const sally = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Sally",
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   const rows = await personAPI.findMany({
@@ -280,9 +276,11 @@ test("ModelAPI.findMany - oneOf", async () => {
 
 test("ModelAPI.findMany - greaterThan", async () => {
   await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 1,
   });
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 2,
   });
   const rows = await personAPI.findMany({
@@ -298,12 +296,15 @@ test("ModelAPI.findMany - greaterThan", async () => {
 
 test("ModelAPI.findMany - greaterThanOrEquals", async () => {
   await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 1,
   });
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 2,
   });
   const p2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 3,
   });
   const rows = await personAPI.findMany({
@@ -319,9 +320,11 @@ test("ModelAPI.findMany - greaterThanOrEquals", async () => {
 
 test("ModelAPI.findMany - lessThan", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 1,
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 2,
   });
   const rows = await personAPI.findMany({
@@ -337,12 +340,15 @@ test("ModelAPI.findMany - lessThan", async () => {
 
 test("ModelAPI.findMany - lessThanOrEquals", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 1,
   });
   const p2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 2,
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     favouriteNumber: 3,
   });
   const rows = await personAPI.findMany({
@@ -358,9 +364,11 @@ test("ModelAPI.findMany - lessThanOrEquals", async () => {
 
 test("ModelAPI.findMany - before", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-01"),
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-02"),
   });
   const rows = await personAPI.findMany({
@@ -376,10 +384,12 @@ test("ModelAPI.findMany - before", async () => {
 
 test("ModelAPI.findMany - empty where", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-01"),
   });
 
   const p2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-02"),
   });
 
@@ -398,12 +408,15 @@ test("ModelAPI.findMany - empty where", async () => {
 
 test("ModelAPI.findMany - onOrBefore", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-01"),
   });
   const p2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-02"),
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-03"),
   });
   const rows = await personAPI.findMany({
@@ -419,19 +432,19 @@ test("ModelAPI.findMany - onOrBefore", async () => {
 
 test("ModelAPI.findMany - limit", async () => {
   await personAPI.create({
-    id: "1",
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
   });
   await personAPI.create({
-    id: "2",
+    id: KSUID.randomSync().string,
     name: "Bob",
     married: true,
     favouriteNumber: 11,
   });
   await personAPI.create({
-    id: "3",
+    id: KSUID.randomSync().string,
     name: "Sally",
     married: true,
     favouriteNumber: 12,
@@ -439,6 +452,9 @@ test("ModelAPI.findMany - limit", async () => {
 
   const rows = await personAPI.findMany({
     limit: 2,
+    orderBy: {
+      favouriteNumber: "asc",
+    },
   });
 
   expect(rows.map((r) => r.name)).toEqual(["Jim", "Bob"]);
@@ -446,21 +462,21 @@ test("ModelAPI.findMany - limit", async () => {
 
 test("ModelAPI.findMany - orderBy", async () => {
   await personAPI.create({
-    id: "1",
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
     date: new Date(2023, 12, 29),
   });
   await personAPI.create({
-    id: "2",
+    id: KSUID.randomSync().string,
     name: "Bob",
     married: true,
     favouriteNumber: 11,
     date: new Date(2023, 12, 30),
   });
   await personAPI.create({
-    id: "3",
+    id: KSUID.randomSync().string,
     name: "Sally",
     married: true,
     favouriteNumber: 12,
@@ -506,21 +522,21 @@ test("ModelAPI.findMany - orderBy", async () => {
 
 test("ModelAPI.findMany - offset", async () => {
   await personAPI.create({
-    id: "1",
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
     date: new Date(2023, 12, 29),
   });
   await personAPI.create({
-    id: "2",
+    id: KSUID.randomSync().string,
     name: "Bob",
     married: true,
     favouriteNumber: 11,
     date: new Date(2023, 12, 30),
   });
   await personAPI.create({
-    id: "3",
+    id: KSUID.randomSync().string,
     name: "Sally",
     married: true,
     favouriteNumber: 12,
@@ -559,9 +575,11 @@ test("ModelAPI.findMany - offset", async () => {
 
 test("ModelAPI.findMany - after", async () => {
   await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-01"),
   });
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-02"),
   });
   const rows = await personAPI.findMany({
@@ -577,12 +595,15 @@ test("ModelAPI.findMany - after", async () => {
 
 test("ModelAPI.findMany - onOrAfter", async () => {
   await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-01"),
   });
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-02"),
   });
   const p2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     date: new Date("2022-01-03"),
   });
   const rows = await personAPI.findMany({
@@ -598,9 +619,11 @@ test("ModelAPI.findMany - onOrAfter", async () => {
 
 test("ModelAPI.findMany - equals", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Sally",
   });
   const rows = await personAPI.findMany({
@@ -616,9 +639,11 @@ test("ModelAPI.findMany - equals", async () => {
 
 test("ModelAPI.findMany - notEquals", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Sally",
   });
   const rows = await personAPI.findMany({
@@ -634,16 +659,19 @@ test("ModelAPI.findMany - notEquals", async () => {
 
 test("ModelAPI.findMany - complex query", async () => {
   const p = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jake",
     favouriteNumber: 8,
     date: new Date("2021-12-31"),
   });
   await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jane",
     favouriteNumber: 12,
     date: new Date("2022-01-11"),
   });
   const p2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Billy",
     favouriteNumber: 16,
     date: new Date("2022-01-05"),
@@ -674,20 +702,25 @@ test("ModelAPI.findMany - complex query", async () => {
 
 test("ModelAPI.findMany - relationships - one to many", async () => {
   const person = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   const person2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Bob",
   });
   const post1 = await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My First Post",
     authorId: person.id,
   });
   const post2 = await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My Second Post",
     authorId: person.id,
   });
   await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My Third Post",
     authorId: person2.id,
   });
@@ -705,17 +738,21 @@ test("ModelAPI.findMany - relationships - one to many", async () => {
 
 test("ModelAPI.findMany - relationships - many to one", async () => {
   const person = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My First Post",
     authorId: person.id,
   });
   await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My Second Post",
     authorId: person.id,
   });
   await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My Second Post",
     authorId: person.id,
   });
@@ -740,16 +777,20 @@ test("ModelAPI.findMany - relationships - many to one", async () => {
 
 test("ModelAPI.findMany - relationships - duplicate joins handled", async () => {
   const person = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   const person2 = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Bob",
   });
   const post1 = await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My First Post",
     authorId: person.id,
   });
   const post2 = await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "My Second Post",
     authorId: person2.id,
   });
@@ -773,11 +814,13 @@ test("ModelAPI.findMany - relationships - duplicate joins handled", async () => 
 
 test("ModelAPI.update", async () => {
   let jim = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
     married: false,
     favouriteNumber: 10,
   });
   let bob = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Bob",
     married: false,
     favouriteNumber: 11,
@@ -811,6 +854,7 @@ test("ModelAPI.update - throws if not found", async () => {
 
 test("ModelAPI.update - throws if not not null constraint violation", async () => {
   const jim = await authorAPI.create({
+    id: KSUID.randomSync().string,
     name: "jim",
   });
 
@@ -830,6 +874,7 @@ test("ModelAPI.update - throws if not not null constraint violation", async () =
 
 test("ModelAPI.delete", async () => {
   const jim = await personAPI.create({
+    id: KSUID.randomSync().string,
     name: "Jim",
   });
   const id = jim.id;
@@ -843,15 +888,19 @@ test("ModelAPI.delete", async () => {
 
 test("ModelAPI chained findMany with offset/limit/order by", async () => {
   await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "adam",
   });
   await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "dave",
   });
   const three = await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "jon",
   });
   const four = await postAPI.create({
+    id: KSUID.randomSync().string,
     title: "jon bretman",
   });
 

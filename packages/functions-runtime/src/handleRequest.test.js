@@ -211,23 +211,15 @@ describe("ModelAPI error handling", () => {
     `.execute(db);
 
     const models = {
-      post: new ModelAPI(
-        "post",
-        () => {
-          return {
-            id: KSUID.randomSync().string,
-          };
-        },
-        {
-          post: {
-            author: {
-              relationshipType: "belongsTo",
-              foreignKey: "author_id",
-              referencesTable: "person",
-            },
+      post: new ModelAPI("post", undefined, {
+        post: {
+          author: {
+            relationshipType: "belongsTo",
+            foreignKey: "author_id",
+            referencesTable: "person",
           },
-        }
-      ),
+        },
+      }),
     };
 
     functionConfig = {
@@ -240,7 +232,10 @@ describe("ModelAPI error handling", () => {
         createPost: async (ctx, inputs) => {
           new Permissions().allow();
 
-          const post = await models.post.create(inputs);
+          const post = await models.post.create({
+            id: KSUID.randomSync().string,
+            ...inputs,
+          });
 
           return post;
         },

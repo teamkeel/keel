@@ -96,12 +96,10 @@ var testCases = []testCase{
 			WITH 
 				new_1_person AS 
 					(INSERT INTO "person" 
-						(age, created_at, id, is_active, name, updated_at) 
-					VALUES 
-						(?, ?, ?, ?, ?, ?) 
+					DEFAULT VALUES
 					RETURNING *) 
 			SELECT * FROM new_1_person`,
-		expectedArgs: []any{100, ignore, ignore, true, "Bob", ignore},
+		expectedArgs: []any{},
 	},
 	{
 		name: "create_op_set_attribute",
@@ -127,12 +125,12 @@ var testCases = []testCase{
 			WITH 
 				new_1_person AS 
 					(INSERT INTO "person" 
-						(age, created_at, id, is_active, name, updated_at) 
+						(age, is_active, name) 
 					VALUES 
-						(?, ?, ?, ?, ?, ?) 
+						(?, ?, ?) 
 					RETURNING *) 
 			SELECT * FROM new_1_person`,
-		expectedArgs: []any{100, ignore, ignore, true, "Bob", ignore},
+		expectedArgs: []any{100, true, "Bob"},
 	},
 	{
 		name: "create_op_optional_inputs",
@@ -154,12 +152,10 @@ var testCases = []testCase{
 			WITH 
 				new_1_person AS 
 					(INSERT INTO "person" 
-						(age, created_at, id, is_active, name, updated_at) 
-					VALUES 
-						(?, ?, ?, ?, ?, ?) 
+					DEFAULT VALUES
 					RETURNING *) 
 			SELECT * FROM new_1_person`,
-		expectedArgs: []any{nil, ignore, ignore, nil, nil, ignore},
+		expectedArgs: []any{},
 	},
 	{
 		name: "create_op_optional_inputs_on_M_to_1_relationship",
@@ -185,12 +181,12 @@ var testCases = []testCase{
 			WITH 
 				new_1_person AS 
 					(INSERT INTO "person" 
-						(company_id, created_at, id, name, updated_at) 
+						(name) 
 					VALUES 
-						(?, ?, ?, ?, ?) 
+						(?) 
 					RETURNING *) 
 			SELECT * FROM new_1_person`,
-		expectedArgs: []any{nil, ignore, ignore, "Bob", ignore},
+		expectedArgs: []any{"Bob"},
 	},
 	{
 		name: "update_op_set_attribute",
@@ -793,12 +789,12 @@ var testCases = []testCase{
 			WITH 
 				new_1_thing AS 
 					(INSERT INTO "thing" 
-						(age, created_at, id, name, parent_id, updated_at) 
+						(age, name, parent_id) 
 					VALUES 
-						(?, ?, ?, ?, ?, ?) 
+						(?, ?, ?) 
 					RETURNING *) 
 			SELECT * FROM new_1_thing`,
-		expectedArgs: []any{21, ignore, ignore, "bob", "123", ignore},
+		expectedArgs: []any{21, "bob", "123"},
 	},
 	{
 		name: "update_op_nested_model",
@@ -1269,27 +1265,27 @@ var testCases = []testCase{
 			WITH 
 				new_1_order AS 
 					(INSERT INTO "order" 
-						(created_at, id, on_promotion, updated_at) 
+						(on_promotion) 
 					VALUES 
-						(?, ?, ?, ?) 
+						(?) 
 					RETURNING *), 
 				new_1_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, id, order_id, product_id, quantity, updated_at) 
+						(order_id, product_id, quantity) 
 					VALUES 
-						(?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+						((SELECT id FROM new_1_order), ?, ?) 
 					RETURNING *), 
 				new_2_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, id, order_id, product_id, quantity, updated_at) 
+						(order_id, product_id, quantity) 
 					VALUES 
-						(?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+						((SELECT id FROM new_1_order), ?, ?) 
 					RETURNING *) 
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
-			ignore, ignore, true, ignore, // new_1_order
-			ignore, ignore, "xyz", 2, ignore, // new_1_order_item
-			ignore, ignore, "abc", 4, ignore, // new_2_order_item
+			true,     // new_1_order
+			"xyz", 2, // new_1_order_item
+			"abc", 4, // new_2_order_item
 		},
 	},
 	{
@@ -1347,34 +1343,33 @@ var testCases = []testCase{
 			WITH 
 				new_1_product AS 
 					(INSERT INTO "product" 
-						(created_at, created_on_order, id, is_active, name, updated_at) 
+						(created_on_order, name) 
 					VALUES 
-						(?, ?, ?, ?, ?, ?) 
+						(?, ?) 
 					RETURNING *), 
 				new_1_product_attribute AS 
 					(INSERT INTO "product_attribute" 
-						(created_at, id, name, product_id, status, updated_at) 
+						(name, product_id, status) 
 					VALUES 
-						(?, ?, ?, (SELECT id FROM new_1_product), ?, ?) 
+						(?, (SELECT id FROM new_1_product), ?) 
 					RETURNING *), 
 				new_2_product_attribute AS 
 					(INSERT INTO "product_attribute" 
-						(created_at, id, name, product_id, status, updated_at) 
-					VALUES (?, ?, ?, 
-						(SELECT id FROM new_1_product), ?, ?) 
+						(name, product_id, status) 
+					VALUES 
+						(?, (SELECT id FROM new_1_product), ?) 
 					RETURNING *), 
 				new_1_order AS 
 					(INSERT INTO "order" 
-						(created_at, id, product_id, updated_at) 
+						(product_id) 
 					VALUES 
-						(?, ?, (SELECT id FROM new_1_product), ?) 
+						((SELECT id FROM new_1_product)) 
 					RETURNING *) 
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
-			ignore, true, ignore, true, "Child Bicycle", ignore, // new_1_product
-			ignore, ignore, "FDA approved", "NotApplicable", ignore, // new_1_product_attribute
-			ignore, ignore, "Toy-safety-council approved", "Yes", ignore, // new_2_product_attribute
-			ignore, ignore, ignore, // new_1_order
+			true, "Child Bicycle", // new_1_product
+			"FDA approved", "NotApplicable", // new_1_product_attribute
+			"Toy-safety-council approved", "Yes", // new_2_product_attribute
 		},
 	},
 	{
@@ -1425,41 +1420,38 @@ var testCases = []testCase{
 			WITH 
 				new_1_order AS 
 					(INSERT INTO "order" 
-						(created_at, id, updated_at) 
-					VALUES 
-						(?, ?, ?) 
+					DEFAULT VALUES 
 					RETURNING *), 
 				new_1_product AS 
 					(INSERT INTO "product" 
-						(created_at, created_on_order, id, is_active, name, updated_at) 
+						(name) 
 					VALUES 
-						(?, ?, ?, ?, ?, ?) 
+						(?) 
 					RETURNING *),
 				new_1_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, id, is_returned, order_id, product_id, quantity, updated_at) 
+						(order_id, product_id, quantity) 
 					VALUES 
-						(?, ?, ?, (SELECT id FROM new_1_order), (SELECT id FROM new_1_product), ?, ?) 
+						((SELECT id FROM new_1_order), (SELECT id FROM new_1_product), ?) 
 					RETURNING *), 
 				new_2_product AS 
 					(INSERT INTO "product" 
-						(created_at, created_on_order, id, is_active, name, updated_at) 
+						(name) 
 					VALUES 
-						(?, ?, ?, ?, ?, ?) 
+						(?) 
 					RETURNING *),
 				new_2_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, id, is_returned, order_id, product_id, quantity, updated_at) 
+						(order_id, product_id, quantity) 
 					VALUES 
-						(?, ?, ?, (SELECT id FROM new_1_order), (SELECT id FROM new_2_product), ?, ?) 
+						((SELECT id FROM new_1_order), (SELECT id FROM new_2_product), ?) 
 					RETURNING *) 
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
-			ignore, ignore, ignore, // new_1_order
-			ignore, false, ignore, true, "Hair dryer", ignore, // new_1_product
-			ignore, ignore, false, 2, ignore, //new_1_order_item
-			ignore, false, ignore, true, "Hair clips", ignore, // new_2_product
-			ignore, ignore, false, 4, ignore, //new_2_order_item
+			"Hair dryer", // new_1_product
+			2,            //new_1_order_item
+			"Hair clips", // new_2_product
+			4,            //new_2_order_item
 		},
 	},
 	{
@@ -1494,27 +1486,26 @@ var testCases = []testCase{
 			WITH 
 				new_1_product AS 
 					(INSERT INTO "product" 
-						(created_at, id, is_active, name, updated_at) 
+						(name) 
 					VALUES 
-						(?, ?, ?, ?, ?) 
+						(?) 
 					RETURNING *), 
 				new_2_product AS 
 					(INSERT INTO "product" 
-						(created_at, id, is_active, name, updated_at) 
+						(name) 
 					VALUES 
-						(?, ?, ?, ?, ?) 
+						(?) 
 					RETURNING *), 
 				new_1_order AS 
 					(INSERT INTO "order" 
-						(created_at, id, product_1_id, product_2_id, updated_at) 
+						(product_1_id, product_2_id) 
 					VALUES 
-						(?, ?, (SELECT id FROM new_1_product), (SELECT id FROM new_2_product), ?) 
+						((SELECT id FROM new_1_product), (SELECT id FROM new_2_product)) 
 					RETURNING *) 
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
-			ignore, ignore, true, "Child Bicycle", ignore, // new_1_product
-			ignore, ignore, true, "Adult Bicycle", ignore, // new_2_product
-			ignore, ignore, ignore, // new_1_order
+			"Child Bicycle", // new_1_product
+			"Adult Bicycle", // new_2_product
 		},
 	},
 	{
@@ -1578,41 +1569,38 @@ var testCases = []testCase{
 			WITH 
 				new_1_order AS 
 					(INSERT INTO "order" 
-						(created_at, id, updated_at) 
-					VALUES 
-						(?, ?, ?) 
+					DEFAULT VALUES 
 					RETURNING *), 
 				new_1_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+						(order_id, product_id, quantity) 
 					VALUES 
-						(?, ?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+						((SELECT id FROM new_1_order), ?, ?) 
 					RETURNING *), 
 				new_2_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+						(order_id, product_id, quantity) 
 					VALUES 
-						(?, ?, ?, (SELECT id FROM new_1_order), ?, ?, ?) 
+						((SELECT id FROM new_1_order), ?, ?) 
 					RETURNING *), 
 				new_3_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+						(free_on_order_id, product_id, quantity) 
 					VALUES 
-						(?, (SELECT id FROM new_1_order), ?, ?, ?, ?, ?) 
+						((SELECT id FROM new_1_order), ?, ?) 
 					RETURNING *), 
 				new_4_order_item AS 
 					(INSERT INTO "order_item" 
-						(created_at, free_on_order_id, id, order_id, product_id, quantity, updated_at) 
+						(free_on_order_id, product_id, quantity) 
 					VALUES 
-						(?, (SELECT id FROM new_1_order), ?, ?, ?, ?, ?) 
+						((SELECT id FROM new_1_order), ?, ?) 
 					RETURNING *) 
 			SELECT * FROM new_1_order`,
 		expectedArgs: []any{
-			ignore, ignore, ignore, // new_1_order
-			ignore, ignore, ignore, "paid1", 2, ignore, // new_1_order_item
-			ignore, ignore, ignore, "paid2", 4, ignore, // new_2_order_item
-			ignore, ignore, ignore, "free1", 6, ignore, // new_3_order_item
-			ignore, ignore, ignore, "free2", 8, ignore, // new_4_order_item
+			"paid1", 2, // new_1_order_item
+			"paid2", 4, // new_2_order_item
+			"free1", 6, // new_3_order_item
+			"free2", 8, // new_4_order_item
 		},
 	},
 }
@@ -1649,7 +1637,7 @@ func TestQueryBuilder(t *testing.T) {
 
 			if testCase.expectedArgs != nil {
 				for i := 1; i < len(testCase.expectedArgs); i++ {
-					if testCase.expectedArgs[i] != ignore && testCase.expectedArgs[i] != statement.SqlArgs()[i] {
+					if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
 						assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
 						break
 					}
@@ -1662,11 +1650,6 @@ func TestQueryBuilder(t *testing.T) {
 		})
 	}
 }
-
-// Used as a placeholder to ignore asserting on sql argument values.
-var ignore Ignore
-
-type Ignore struct{}
 
 // Generates a scope and query builder
 func generateQueryScope(ctx context.Context, schemaText string, operationName string) (*actions.Scope, *actions.QueryBuilder, *proto.Operation, error) {
