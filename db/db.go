@@ -25,8 +25,8 @@ var (
 )
 
 type DbError struct {
-	Column string
-	Err    error
+	Columns []string
+	Err     error
 }
 
 func (err *DbError) Error() string {

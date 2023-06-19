@@ -226,7 +226,7 @@ func renderError(m *Model) string {
 		b.WriteString("  ")
 		if errors.As(m.Err, &dbErr) {
 			b.WriteString("column ")
-			b.WriteString(colors.Red(dbErr.Column).String())
+			b.WriteString(colors.Red(strings.Join(dbErr.Columns, ", ")).String())
 			b.WriteString(": ")
 			b.WriteString(colors.Red(dbErr.Error()).String())
 		} else {
