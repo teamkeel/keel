@@ -1,3 +1,10 @@
+# [0.338.0](https://github.com/teamkeel/keel/compare/v0.337.0...v0.338.0) (2023-06-19)
+
+
+### Features
+
+* support composite unique constraints in database migrations ([0f4a491](https://github.com/teamkeel/keel/commit/0f4a4912f46cea8efbaad60399f39922d3d000d6))
+
 # [0.337.0](https://github.com/teamkeel/keel/compare/v0.336.0...v0.337.0) (2023-06-19)
 
 
