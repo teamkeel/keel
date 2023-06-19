@@ -1,0 +1,106 @@
+{
+  "errors": [
+    {
+      "message": "You have duplicate operations Model:Person Name:updatePerson",
+      "hint": "Remove 'updatePerson' on line 22",
+      "code": "E004",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 386,
+        "line": 22,
+        "column": 16
+      },
+      "endPos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 398,
+        "line": 22,
+        "column": 28
+      }
+    },
+    {
+      "message": "This input 'name' has already been defined as an input",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 212,
+        "line": 16,
+        "column": 43
+      },
+      "endPos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 216,
+        "line": 16,
+        "column": 47
+      }
+    },
+    {
+      "message": "This input 'employer.id' has already been defined as an input",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 288,
+        "line": 17,
+        "column": 58
+      },
+      "endPos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 299,
+        "line": 17,
+        "column": 69
+      }
+    },
+    {
+      "message": "This input 'createdAt' has already been defined as an input",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 337,
+        "line": 18,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 346,
+        "line": 18,
+        "column": 46
+      }
+    },
+    {
+      "message": "This input 'id' has already been defined as an input",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 403,
+        "line": 22,
+        "column": 33
+      },
+      "endPos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 405,
+        "line": 22,
+        "column": 35
+      }
+    },
+    {
+      "message": "This input 'name' has already been defined as an input",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 462,
+        "line": 23,
+        "column": 31
+      },
+      "endPos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 466,
+        "line": 23,
+        "column": 35
+      }
+    }
+  ]
+}

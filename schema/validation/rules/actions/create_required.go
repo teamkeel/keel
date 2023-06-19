@@ -251,7 +251,6 @@ func satisfiedBySetExpr(rootModelName string, dotDelimPath string, modelName str
 	setExpressions := setExpressions(action)
 
 	for _, expr := range setExpressions {
-
 		assignment, err := expr.ToAssignmentCondition()
 		if err != nil {
 			continue

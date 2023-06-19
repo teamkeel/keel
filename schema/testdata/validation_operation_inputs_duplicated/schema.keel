@@ -1,0 +1,25 @@
+message Foo { }
+
+model Company {
+    fields {
+        name Text
+    }
+}
+
+model Person {
+    fields {
+        name Text?
+        employer Company?
+    }
+
+    operations {
+        create createPerson() with (name, name, employer.id)
+        update updatePerson(id) with (name, employer.id, employer.id)
+        list listPersons(createdAt, createdAt)
+    }
+
+    functions {
+        update updatePerson(id, id) with (name, employer.id)
+        read readPerson(name, name) returns (Foo)
+    }
+}

@@ -158,12 +158,12 @@ type AttributeArgumentNode struct {
 type ActionNode struct {
 	node.Node
 
-	Type       NameNode           `@@`
-	Name       NameNode           `@@`
-	Inputs     []*ActionInputNode `"(" ( @@ ( "," @@ )* ","? )? ")"`
-	With       []*ActionInputNode `( ( "with" "(" ( @@ ( "," @@ )* ","? ) ")" )`
-	Returns    []*ActionInputNode `| ( "returns" "(" ( @@ ( "," @@ )* ) ")" ) )?`
-	Attributes []*AttributeNode   `( "{" @@+ "}" )?`
+	Type       NameNode            `@@`
+	Name       NameNode            `@@`
+	Inputs     []*ActionInputNode  `"(" ( @@ ( "," @@ )* ","? )? ")"`
+	With       []*ActionInputNode  `( ( "with" "(" ( @@ ( "," @@ )* ","? ) ")" )`
+	Returns    []*ActionOutputNode `| ( "returns" "(" ( @@ ( "," @@ )* ) ")" ) )?`
+	Attributes []*AttributeNode    `( "{" @@+ "}" )?`
 }
 
 func (a *ActionNode) IsArbitraryFunction() bool {
@@ -191,6 +191,11 @@ func (a *ActionInputNode) Name() string {
 	}
 
 	return casing.ToLowerCamel(builder.String())
+}
+
+type ActionOutputNode struct {
+	node.Node
+	Type Ident `@@`
 }
 
 type EnumNode struct {
