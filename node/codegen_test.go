@@ -44,15 +44,15 @@ model Person {
 func TestWriteTableInterface(t *testing.T) {
 	expected := `
 export interface PersonTable {
-	first_name: string
-	last_name: string | null
+	firstName: string
+	lastName: string | null
 	age: number
-	date_of_birth: Date
+	dateOfBirth: Date
 	gender: Gender
-	has_children: boolean
+	hasChildren: boolean
 	id: Generated<string>
-	created_at: Generated<Date>
-	updated_at: Generated<Date>
+	createdAt: Generated<Date>
+	updatedAt: Generated<Date>
 }
 `
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
