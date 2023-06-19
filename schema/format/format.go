@@ -348,7 +348,9 @@ func printActionsBlock(writer *Writer, section *parser.ModelSectionNode) {
 
 					if len(op.Returns) > 0 {
 						writer.Write(" returns ")
-						printOperationInputs(writer, op.Returns, op.IsArbitraryFunction())
+						writer.Write("(")
+						writer.Write(op.Returns[0].Type.Fragments[0].Fragment)
+						writer.Write(")")
 					}
 
 					printAttributesBlock(writer, op.Attributes)
@@ -438,6 +440,10 @@ func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode, isAr
 
 	writer.Dedent()
 	writer.Write(")")
+}
+
+func printOperationOutput(writer *Writer, inputs []*parser.ActionOutputNode, isArbitraryFunction bool) {
+
 }
 
 func printRole(writer *Writer, role *parser.RoleNode) {
