@@ -442,10 +442,6 @@ func printOperationInputs(writer *Writer, inputs []*parser.ActionInputNode, isAr
 	writer.Write(")")
 }
 
-func printOperationOutput(writer *Writer, inputs []*parser.ActionOutputNode, isArbitraryFunction bool) {
-
-}
-
 func printRole(writer *Writer, role *parser.RoleNode) {
 	writer.Comments(role, func() {
 
