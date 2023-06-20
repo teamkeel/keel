@@ -123,7 +123,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 		if field.Type.Type == proto.Type_TYPE_MODEL {
 			continue
 		}
-		w.Write(casing.ToSnake(field.Name))
+		w.Write(casing.ToLowerCamel(field.Name))
 		w.Write(": ")
 		t := toTypeScriptType(field.Type, false)
 		if field.DefaultValue != nil {
