@@ -35,38 +35,42 @@ async function withDatabase(db, actionType, cb) {
 }
 
 let db = null;
+
 const dbInstance = new AsyncLocalStorage();
 
 // useDatabase will retrieve the database client set by withDatabase from the local storage
 function useDatabase() {
+  // retrieve the instance of the database client from the store which is aware of
+  // which context the current connection to the db is running in - e.g does the context
+  // require a transaction or not?
   let fromStore = dbInstance.getStore();
   if (fromStore) {
     return fromStore;
-  }
-
-  if (db) {
-    return db;
   }
 
   // if the NODE_ENV is 'test' then we know we are inside of the vitest environment
   // which covers any test files ending in *.test.ts. Custom function code runs in a different node process which will not have this environment variable. Tests written using our testing
   // framework call actions (and in turn custom function code) over http using the ActionExecutor class
   if ("NODE_ENV" in process.env && process.env.NODE_ENV == "test") {
-    // Memoize it for next use.
-    db = getDatabaseClient();
-
-    return db;
+    return getDatabaseClient();
   }
 
   // If we've gotten to this point, then we know that we are in a custom function runtime server
   // context and we haven't been able to retrieve the in-context instance of Kysely, which means we should throw an error.
-  throw new Error("no database client in context");
+  throw new Error("useDatabase must be called within a function");
 }
 
-// getDatabaseClient will return a brand new instance of Kysely.
+// getDatabaseClient will return a brand new instance of Kysely. Every instance of Kysely
+// represents an individual connection to the database.
 // not to be exported externally from our sdk - consumers should use useDatabase
 function getDatabaseClient() {
-  return new Kysely({
+  // 'db' represents the singleton connection to the database which is stored
+  // as a module scope variable.
+  if (db) {
+    return db;
+  }
+
+  db = new Kysely({
     dialect: getDialect(),
     plugins: [
       // allows users to query using camelCased versions of the database column names, which
@@ -85,14 +89,8 @@ function getDatabaseClient() {
       }
     },
   });
-}
 
-function mustEnv(key) {
-  const v = process.env[key];
-  if (!v) {
-    throw new Error(`expected environment variable ${key} to be set`);
-  }
-  return v;
+  return db;
 }
 
 class InstrumentedPool extends pg.Pool {
@@ -147,6 +145,17 @@ function getDialect() {
       throw Error("unexpected KEEL_DB_CONN_TYPE: " + dbConnType);
   }
 }
+
+function mustEnv(key) {
+  const v = process.env[key];
+  if (!v) {
+    throw new Error(`expected environment variable ${key} to be set`);
+  }
+  return v;
+}
+
+// initialise the database client at module scope level so the db variable is set
+getDatabaseClient();
 
 module.exports.getDatabaseClient = getDatabaseClient;
 module.exports.useDatabase = useDatabase;
