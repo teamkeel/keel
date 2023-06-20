@@ -10,9 +10,6 @@ import { useDatabase } from "./database";
 
 import { beforeEach, describe, expect, test } from "vitest";
 
-process.env.KEEL_DB_CONN_TYPE = "pg";
-process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
-
 let permissions;
 let ctx = {};
 let db = useDatabase();

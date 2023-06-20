@@ -8,9 +8,6 @@ const { Permissions } = require("./permissions");
 import { PROTO_ACTION_TYPES } from "./consts";
 import KSUID from "ksuid";
 
-process.env.KEEL_DB_CONN_TYPE = "pg";
-process.env.KEEL_DB_CONN = `postgresql://postgres:postgres@localhost:5432/functions-runtime`;
-
 test("when the custom function returns expected value", async () => {
   const config = {
     functions: {
