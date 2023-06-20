@@ -1,3 +1,10 @@
+# [0.339.0](https://github.com/teamkeel/keel/compare/v0.338.0...v0.339.0) (2023-06-20)
+
+
+### Features
+
+* expose kysely instance from sdk ([#1017](https://github.com/teamkeel/keel/issues/1017)) ([1f93db9](https://github.com/teamkeel/keel/commit/1f93db98008f156114ab90a72297cf3f42c68390))
+
 # [0.338.0](https://github.com/teamkeel/keel/compare/v0.337.0...v0.338.0) (2023-06-19)
 
 
