@@ -4,16 +4,15 @@
 
 Keel is the all-in-one backend platform that gives you everything you need to build your product.  
 
-
-🔥 A fully-managed relational database
-🔨 Scalable infrastructure
-🦄 A great local development experience
-🤝 Flexible and customisable API's
-👻 Authentication & Permissions
-🌍 Multiple environments
-⚡️ Configuration and secret management
-🧐 Observability
-🚀 Git-based deployments
+🔥 A fully-managed relational database  
+🔨 Scalable infrastructure  
+🦄 A great local development experience  
+🤝 Flexible and customisable API's  
+👻 Authentication & Permissions  
+🌍 Multiple environments  
+⚡️ Configuration and secret management  
+🧐 Observability  
+🚀 Git-based deployments  
 
 Keel is currently in private beta, [join the waiting list](https://keel.so/) for access to the platform. In the meantime you can run your Keel projects locally without an account using the CLI
 
