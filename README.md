@@ -14,7 +14,7 @@ Keel is an all-in-one backend platform that is designed to give you everything y
 🧐 Observability
 🚀 Git-based deployments
 
-Keel is currently in beta, so if this is what you're looking for, you should [join the Waitlist](https://keel.so/#waitlist). 
+Keel is currently in private beta, [join the waiting list](https://keel.so/) for access to the platform. In the meantime you can run your Keel projects locally without an account using the CLI
 
 ## Getting started
 
