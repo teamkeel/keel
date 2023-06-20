@@ -2,7 +2,8 @@
 
 ## What is Keel?
 
-Keel is an all-in-one backend platform that is designed to give you everything you need to build your product. We believe those things are:
+Keel is the all-in-one backend platform that gives you everything you need to build your product.  
+
 
 🔥 A fully-managed relational database
 🔨 Scalable infrastructure
