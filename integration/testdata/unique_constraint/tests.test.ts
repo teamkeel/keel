@@ -29,7 +29,7 @@ test("create operation - unique constraint error", async () => {
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message:
-      "unique composite (name, supplierCode) can only contain unique values",
+      "the values for the unique composite fields (name, supplierCode) must be unique",
   });
 });
 
@@ -53,7 +53,7 @@ test("update operation - unique constraint error", async () => {
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message:
-      "unique composite (name, supplierCode) can only contain unique values",
+      "the values for the unique composite fields (name, supplierCode) must be unique",
   });
 
   await expect(
@@ -61,7 +61,7 @@ test("update operation - unique constraint error", async () => {
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message:
-      "unique composite (name, supplierCode) can only contain unique values",
+      "the values for the unique composite fields (name, supplierCode) must be unique",
   });
 });
 
@@ -91,7 +91,7 @@ test("create function - unique constraint error", async () => {
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message:
-      "unique composite (name, supplierCode) can only contain unique values",
+      "the values for the unique composite fields (name, supplierCode) must be unique",
   });
 });
 
@@ -115,7 +115,7 @@ test("update function - unique constraint error", async () => {
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message:
-      "unique composite (name, supplierCode) can only contain unique values",
+      "the values for the unique composite fields (name, supplierCode) must be unique",
   });
 
   await expect(
@@ -126,6 +126,6 @@ test("update function - unique constraint error", async () => {
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
     message:
-      "unique composite (name, supplierCode) can only contain unique values",
+      "the values for the unique composite fields (name, supplierCode) must be unique",
   });
 });

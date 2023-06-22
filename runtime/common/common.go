@@ -110,9 +110,9 @@ func NewUniquenessError(columns []string) RuntimeError {
 
 	var message string
 	if len(columns) == 1 {
-		message = fmt.Sprintf("unique field '%s' can only contain unique values", columns[0])
+		message = fmt.Sprintf("the value for the unique field '%s' must be unique", columns[0])
 	} else {
-		message = fmt.Sprintf("unique composite (%s) can only contain unique values", strings.Join(columns, ", "))
+		message = fmt.Sprintf("the values for the unique composite fields (%s) must be unique", strings.Join(columns, ", "))
 	}
 
 	return RuntimeError{

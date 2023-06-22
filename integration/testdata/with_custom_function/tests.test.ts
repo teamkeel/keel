@@ -171,7 +171,7 @@ test("uniqueness constraint violation", async () => {
     })
   ).toHaveError({
     code: "ERR_INVALID_INPUT",
-    message: "unique field 'niNumber' can only contain unique values",
+    message: "the value for the unique field 'niNumber' must be unique",
   });
 });
 
