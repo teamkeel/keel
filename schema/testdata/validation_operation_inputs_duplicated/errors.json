@@ -1,23 +1,6 @@
 {
   "errors": [
     {
-      "message": "You have duplicate operations Model:Person Name:updatePerson",
-      "hint": "Remove 'updatePerson' on line 22",
-      "code": "E004",
-      "pos": {
-        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
-        "offset": 386,
-        "line": 22,
-        "column": 16
-      },
-      "endPos": {
-        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
-        "offset": 398,
-        "line": 22,
-        "column": 28
-      }
-    },
-    {
       "message": "This input 'name' has already been defined as an input",
       "hint": "",
       "code": "NamingError",
@@ -74,15 +57,15 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
-        "offset": 403,
-        "line": 22,
-        "column": 33
-      },
-      "endPos": {
-        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
         "offset": 405,
         "line": 22,
         "column": 35
+      },
+      "endPos": {
+        "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
+        "offset": 407,
+        "line": 22,
+        "column": 37
       }
     },
     {
@@ -91,13 +74,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
-        "offset": 462,
+        "offset": 464,
         "line": 23,
         "column": 31
       },
       "endPos": {
         "filename": "testdata/validation_operation_inputs_duplicated/schema.keel",
-        "offset": 466,
+        "offset": 468,
         "line": 23,
         "column": 35
       }

@@ -19,7 +19,7 @@ model Person {
     }
 
     functions {
-        update updatePerson(id, id) with (name, employer.id)
+        update updatePersonFn(id, id) with (name, employer.id)
         read readPerson(name, name) returns (Foo)
     }
 }
