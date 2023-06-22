@@ -1,9 +1,9 @@
 {
   "errors": [
     {
-      "message": "person.name is Text and null is Null",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 284,
@@ -18,9 +18,9 @@
       }
     },
     {
-      "message": "person.name is Text and null is Null",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 510,
@@ -35,9 +35,9 @@
       }
     },
     {
-      "message": "person.name is Text and null is Null",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 145,
@@ -52,9 +52,9 @@
       }
     },
     {
-      "message": "null is Null and person.name is Text",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 182,
@@ -69,9 +69,9 @@
       }
     },
     {
-      "message": "person.employer.name is Text and null is Null",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 219,
@@ -86,9 +86,9 @@
       }
     },
     {
-      "message": "person.name is Text and null is Null",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 364,
@@ -103,9 +103,9 @@
       }
     },
     {
-      "message": "null is Null and person.name is Text",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 404,
@@ -120,9 +120,9 @@
       }
     },
     {
-      "message": "person.employer.name is Text and null is Null",
-      "hint": "Please make sure that you are evaluating entities of the same type",
-      "code": "E026",
+      "message": "name cannot be null",
+      "hint": "You cannot evaluate a field against null unless it is defined as optional",
+      "code": "E060",
       "pos": {
         "filename": "testdata/validation_expression_null_non_optional_field/schema.keel",
         "offset": 444,

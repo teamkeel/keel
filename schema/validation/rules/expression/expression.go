@@ -354,8 +354,27 @@ func OperandTypesMatchRule(asts []*parser.AST, condition *parser.Condition, cont
 	}
 
 	// Case: LHS or RHS is an optional field and the other side is an explicit null
-	if resolvedLHS.IsOptional() && resolvedRHS.IsNull() ||
-		resolvedRHS.IsOptional() && resolvedLHS.IsNull() {
+	if (!resolvedLHS.IsOptional() && resolvedRHS.IsNull()) ||
+		(!resolvedRHS.IsOptional() && resolvedLHS.IsNull()) {
+
+		operandName := resolvedLHS.Name
+		if resolvedLHS.IsNull() {
+			operandName = resolvedRHS.Name
+		}
+
+		errors = append(errors,
+			errorhandling.NewValidationError(
+				errorhandling.ErrorExpressionTypeNotNullable,
+				errorhandling.TemplateLiterals{
+					Literals: map[string]string{
+						"OperandName": operandName,
+					},
+				},
+				condition,
+			),
+		)
+		return errors
+	} else if resolvedRHS.IsNull() || resolvedLHS.IsNull() {
 		return nil
 	}
 

@@ -69,6 +69,7 @@ const (
 	ErrorRelationAttributeRelatedFieldIsNotRepeated = "E057"
 	ErrorRelationAttributeRelatedFieldIsDuplicated  = "E058"
 	ErrorCreateOperationAmbiguousRelationship       = "E059"
+	ErrorExpressionTypeNotNullable                  = "E060"
 )
 
 type ErrorDetails struct {
