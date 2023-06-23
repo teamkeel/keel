@@ -1,0 +1,28 @@
+model Product {
+    fields {
+        name Text
+        supplierCode Text
+        sku Text
+    }
+
+    operations {
+        create createProduct() with (name, supplierCode, sku)
+        update updateProduct(id) with (supplierCode?, sku?)
+    }
+
+    functions {
+        create createProductFn() with (name, supplierCode, sku)
+        update updateProductFn(id) with (supplierCode?, sku?)
+    }
+
+    @unique([name, supplierCode])
+    @permission(expression: true, actions:[create, update])
+}
+
+
+
+api Web {
+    models {
+        Product
+    }
+}

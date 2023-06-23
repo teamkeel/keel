@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
+	"github.com/samber/lo"
 	"github.com/teamkeel/graphql/gqlerrors"
 	"github.com/teamkeel/keel/casing"
 )
@@ -99,14 +101,23 @@ func NewNotNullError(column string) RuntimeError {
 	}
 }
 
-func NewUniquenessError(column string) RuntimeError {
-	// Parses from the database casing back to the schema casing.
-	// Important since these error messages are delivered to the user.
-	field := casing.ToLowerCamel(column)
+func NewUniquenessError(columns []string) RuntimeError {
+	columns = lo.Map(columns, func(c string, _ int) string {
+		// Parses from the database casing back to the schema casing.
+		// Important since these error messages are delivered to the user.
+		return casing.ToLowerCamel(c)
+	})
+
+	var message string
+	if len(columns) == 1 {
+		message = fmt.Sprintf("the value for the unique field '%s' must be unique", columns[0])
+	} else {
+		message = fmt.Sprintf("the values for the unique composite fields (%s) must be unique", strings.Join(columns, ", "))
+	}
 
 	return RuntimeError{
 		Code:    ErrInvalidInput,
-		Message: fmt.Sprintf("field '%s' can only contain unique values", field),
+		Message: message,
 	}
 }
 

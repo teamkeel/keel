@@ -148,7 +148,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 		case NotNullConstraintError:
 			return nil, nil, common.NewNotNullError(data["column"].(string))
 		case UniqueConstraintError:
-			return nil, nil, common.NewUniquenessError(data["column"].(string))
+			return nil, nil, common.NewUniquenessError(strings.Split(data["column"].(string), ", "))
 		case RecordNotFoundError:
 			return nil, nil, common.NewNotFoundError()
 		default:

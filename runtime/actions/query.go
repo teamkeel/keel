@@ -944,11 +944,11 @@ func toRuntimeError(err error) error {
 	if errors.As(err, &value) {
 		switch value.Err {
 		case db.ErrNotNullConstraintViolation:
-			return common.NewNotNullError(value.Column)
+			return common.NewNotNullError(value.Columns[0])
 		case db.ErrUniqueConstraintViolation:
-			return common.NewUniquenessError(value.Column)
+			return common.NewUniquenessError(value.Columns)
 		case db.ErrForeignKeyConstraintViolation:
-			return common.NewForeignKeyConstraintError(value.Column)
+			return common.NewForeignKeyConstraintError(value.Columns[0])
 		default:
 			return common.RuntimeError{
 				Code:    common.ErrInvalidInput,
