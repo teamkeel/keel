@@ -1,3 +1,10 @@
+## [0.339.1](https://github.com/teamkeel/keel/compare/v0.339.0...v0.339.1) (2023-06-23)
+
+
+### Bug Fixes
+
+* unique composite validation message ([#1018](https://github.com/teamkeel/keel/issues/1018)) ([b13f701](https://github.com/teamkeel/keel/commit/b13f7015a2473485c00c0a090fc768a197207d89))
+
 # [0.339.0](https://github.com/teamkeel/keel/compare/v0.338.0...v0.339.0) (2023-06-20)
 
 
