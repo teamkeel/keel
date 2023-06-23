@@ -191,8 +191,6 @@ func TestWriteModelAPIDeclaration(t *testing.T) {
 export type PersonAPI = {
 	/**
 	* Create a Person record
-	* @param values - field values to be created
-	* @returns a %[2]sPromise%[2]s of %[2]sPerson%[2]s
 	* @example
 	%[1]stypescript
 	const record = await models.person.create({
@@ -207,9 +205,6 @@ export type PersonAPI = {
 	create(values: PersonCreateValues): Promise<Person>;
 	/**
 	* Update a Person record
-	* @param where - the constraints to apply to the query to determine which records to update. Only unique fields are valid constraints
-	* @param values - an object representing the field values on the model due to be updated.
-	* @returns a %[2]sPromise%[2]s of %[2]sPerson%[2]s
 	* @example
 	%[1]stypescript
 	const person = await models.person.update({ id: "abc" }, { firstName: XXX }});
@@ -218,8 +213,6 @@ export type PersonAPI = {
 	update(where: PersonUniqueConditions, values: Partial<Person>): Promise<Person>;
 	/**
 	* Deletes a Person record
-	* @param where - the unique conditions to determine which record to delete.
-	* @returns a Promise of string.
 	* @example
 	%[1]stypescript
 	const deletedId = await models.person.delete({ id: 'xxx' });
@@ -228,7 +221,6 @@ export type PersonAPI = {
 	delete(where: PersonUniqueConditions): Promise<string>;
 	/**
 	* Finds a single Person record
-	* @param where - the unique conditions to determine which record to return
 	* @example
 	%[1]stypescript
 	const person = await models.person.findOne({ id: 'xxx' });
@@ -237,15 +229,14 @@ export type PersonAPI = {
 	findOne(where: PersonUniqueConditions): Promise<Person | null>;
 	/**
 	* Finds multiple Person records
-	* @param params - the params to apply such as query constraints, ordering, limit and offset.* @example
+	* @example
 	%[1]stypescript
 	const persons = await models.person.findMany({ where: { createdAt: { after: new Date(2022, 1, 1) } }, orderBy: { id: 'asc' }, limit: 1000, offset: 50 });
 	%[1]s
 	*/
 	findMany(params?: PersonFindManyParams | undefined): Promise<Person[]>;
 	/**
-	* Build queries up using our fluid api
-	* @param where - the where conditions to add to the query builder.
+	* Creates a new query builder with the given conditions applied
 	* @example
 	%[1]stypescript
 	const records = await models.person.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();

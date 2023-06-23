@@ -320,8 +320,6 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 
 	tsDocComment(w, func(w *codegen.Writer) {
 		w.Writef("* Create a %s record\n", model.Name)
-		w.Write("* @param values - field values to be created\n")
-		w.Writef("* @returns a `Promise` of `%s`\n", model.Name)
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
 		w.Writef("const record = await models.%s.create({\n", casing.ToLowerCamel(model.Name))
@@ -357,9 +355,6 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 
 	tsDocComment(w, func(w *codegen.Writer) {
 		w.Writef("* Update a %s record\n", model.Name)
-		w.Writeln("* @param where - the constraints to apply to the query to determine which records to update. Only unique fields are valid constraints")
-		w.Writeln("* @param values - an object representing the field values on the model due to be updated.")
-		w.Writef("* @returns a `Promise` of `%s`\n", model.Name)
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
 		w.Writef("const %s = await models.%s.update(", casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
@@ -376,8 +371,6 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 
 	tsDocComment(w, func(w *codegen.Writer) {
 		w.Writef("* Deletes a %s record\n", model.Name)
-		w.Writeln("* @param where - the unique conditions to determine which record to delete.")
-		w.Writeln("* @returns a Promise of string.")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
 		w.Writef("const deletedId = await models.%s.delete({ id: 'xxx' });\n", casing.ToLowerCamel(model.Name))
@@ -387,7 +380,6 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 
 	tsDocComment(w, func(w *codegen.Writer) {
 		w.Writef("* Finds a single %s record\n", model.Name)
-		w.Writeln("* @param where - the unique conditions to determine which record to return")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
 		w.Writef("const %s = await models.%s.findOne({ id: 'xxx' });\n", casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
@@ -396,7 +388,6 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("findOne(where: %sUniqueConditions): Promise<%s | null>;\n", model.Name, model.Name)
 	tsDocComment(w, func(w *codegen.Writer) {
 		w.Writef("* Finds multiple %s records\n", model.Name)
-		w.Write("* @param params - the params to apply such as query constraints, ordering, limit and offset.")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
 
@@ -409,8 +400,7 @@ func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("findMany(params?: %sFindManyParams | undefined): Promise<%s[]>;\n", model.Name, model.Name)
 
 	tsDocComment(w, func(w *codegen.Writer) {
-		w.Writeln("* Build queries up using our fluid api")
-		w.Writeln("* @param where - the where conditions to add to the query builder.")
+		w.Writeln("* Creates a new query builder with the given conditions applied")
 		w.Writeln("* @example")
 		w.Writeln("```typescript")
 		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
