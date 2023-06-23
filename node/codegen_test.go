@@ -187,15 +187,72 @@ export type AuthorUniqueConditions =
 }
 
 func TestWriteModelAPIDeclaration(t *testing.T) {
-	expected := `
+	expected := fmt.Sprintf(`
 export type PersonAPI = {
+	/**
+	* Create a Person record
+	* @param values - field values to be created
+	* @returns a %[2]sPromise%[2]s of %[2]sPerson%[2]s
+	* @example
+	%[1]stypescript
+	const record = await models.person.create({
+		firstName: '',
+		age: 0,
+		dateOfBirth: new Date(),
+		gender: undefined,
+		hasChildren: false
+	});
+	%[1]s
+	*/
 	create(values: PersonCreateValues): Promise<Person>;
+	/**
+	* Update a Person record
+	* @param where - the constraints to apply to the query to determine which records to update. Only unique fields are valid constraints
+	* @param values - an object representing the field values on the model due to be updated.
+	* @returns a %[2]sPromise%[2]s of %[2]sPerson%[2]s
+	* @example
+	%[1]stypescript
+	const person = await models.person.update({ id: "abc" }, { firstName: XXX }});
+	%[1]s
+	*/
 	update(where: PersonUniqueConditions, values: Partial<Person>): Promise<Person>;
+	/**
+	* Deletes a Person record
+	* @param where - the unique conditions to determine which record to delete.
+	* @returns a Promise of string.
+	* @example
+	%[1]stypescript
+	const deletedId = await models.person.delete({ id: 'xxx' });
+	%[1]s
+	*/
 	delete(where: PersonUniqueConditions): Promise<string>;
+	/**
+	* Finds a single Person record
+	* @param where - the unique conditions to determine which record to return
+	* @example
+	%[1]stypescript
+	const person = await models.person.findOne({ id: 'xxx' });
+	%[1]s
+	*/
 	findOne(where: PersonUniqueConditions): Promise<Person | null>;
+	/**
+	* Finds multiple Person records
+	* @param params - the params to apply such as query constraints, ordering, limit and offset.* @example
+	%[1]stypescript
+	const persons = await models.person.findMany({ where: { createdAt: { after: new Date(2022, 1, 1) } }, orderBy: { id: 'asc' }, limit: 1000, offset: 50 });
+	%[1]s
+	*/
 	findMany(params?: PersonFindManyParams | undefined): Promise<Person[]>;
+	/**
+	* Build queries up using our fluid api
+	* @param where - the where conditions to add to the query builder.
+	* @example
+	%[1]stypescript
+	const records = await models.person.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();
+	%[1]s
+	*/
 	where(where: PersonWhereConditions): PersonQueryBuilder;
-}`
+}`, "```", "`")
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		m := proto.FindModel(s.Models, "Person")

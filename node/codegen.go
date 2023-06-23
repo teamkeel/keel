@@ -313,11 +313,109 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 func writeModelAPIDeclaration(w *codegen.Writer, model *proto.Model) {
 	w.Writef("export type %sAPI = {\n", model.Name)
 	w.Indent()
+
+	nonOptionalFields := lo.Filter(model.Fields, func(f *proto.Field, _ int) bool {
+		return !f.Optional && f.DefaultValue == nil
+	})
+
+	tsDocComment(w, func(w *codegen.Writer) {
+		w.Writef("* Create a %s record\n", model.Name)
+		w.Write("* @param values - field values to be created\n")
+		w.Writef("* @returns a `Promise` of `%s`\n", model.Name)
+		w.Writeln("* @example")
+		w.Writeln("```typescript")
+		w.Writef("const record = await models.%s.create({\n", casing.ToLowerCamel(model.Name))
+		w.Indent()
+
+		for i, f := range nonOptionalFields {
+			w.Writef("%s: ", casing.ToLowerCamel(f.Name))
+
+			switch f.Type.Type {
+			case proto.Type_TYPE_STRING:
+				w.Write("''")
+			case proto.Type_TYPE_BOOL:
+				w.Write("false")
+			case proto.Type_TYPE_INT:
+				w.Write("0")
+			case proto.Type_TYPE_DATETIME, proto.Type_TYPE_DATE, proto.Type_TYPE_TIMESTAMP:
+				w.Write("new Date()")
+			default:
+				w.Write("undefined")
+			}
+
+			if i < len(nonOptionalFields)-1 {
+				w.Write(",")
+			}
+
+			w.Write("\n")
+		}
+		w.Dedent()
+		w.Writeln("});")
+		w.Writeln("```")
+	})
 	w.Writef("create(values: %sCreateValues): Promise<%s>;\n", model.Name, model.Name)
+
+	tsDocComment(w, func(w *codegen.Writer) {
+		w.Writef("* Update a %s record\n", model.Name)
+		w.Writeln("* @param where - the constraints to apply to the query to determine which records to update. Only unique fields are valid constraints")
+		w.Writeln("* @param values - an object representing the field values on the model due to be updated.")
+		w.Writef("* @returns a `Promise` of `%s`\n", model.Name)
+		w.Writeln("* @example")
+		w.Writeln("```typescript")
+		w.Writef("const %s = await models.%s.update(", casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
+		w.Writef("{ id: \"abc\" },")
+		if len(nonOptionalFields) > 0 {
+			w.Writef(" { %s: XXX }", casing.ToLowerCamel(nonOptionalFields[0].Name))
+		} else {
+			w.Write("  {}")
+		}
+		w.Writeln("});")
+		w.Writeln("```")
+	})
 	w.Writef("update(where: %sUniqueConditions, values: Partial<%s>): Promise<%s>;\n", model.Name, model.Name, model.Name)
+
+	tsDocComment(w, func(w *codegen.Writer) {
+		w.Writef("* Deletes a %s record\n", model.Name)
+		w.Writeln("* @param where - the unique conditions to determine which record to delete.")
+		w.Writeln("* @returns a Promise of string.")
+		w.Writeln("* @example")
+		w.Writeln("```typescript")
+		w.Writef("const deletedId = await models.%s.delete({ id: 'xxx' });\n", casing.ToLowerCamel(model.Name))
+		w.Writeln("```")
+	})
 	w.Writef("delete(where: %sUniqueConditions): Promise<string>;\n", model.Name)
+
+	tsDocComment(w, func(w *codegen.Writer) {
+		w.Writef("* Finds a single %s record\n", model.Name)
+		w.Writeln("* @param where - the unique conditions to determine which record to return")
+		w.Writeln("* @example")
+		w.Writeln("```typescript")
+		w.Writef("const %s = await models.%s.findOne({ id: 'xxx' });\n", casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
+		w.Writeln("```")
+	})
 	w.Writef("findOne(where: %sUniqueConditions): Promise<%s | null>;\n", model.Name, model.Name)
+	tsDocComment(w, func(w *codegen.Writer) {
+		w.Writef("* Finds multiple %s records\n", model.Name)
+		w.Write("* @param params - the params to apply such as query constraints, ordering, limit and offset.")
+		w.Writeln("* @example")
+		w.Writeln("```typescript")
+
+		// cant seem to get markdown in vscode method signature popover to render indentation
+		// so we have to get it all on one line for the meantime
+		w.Writef(`const %ss = await models.%s.findMany({ where: { createdAt: { after: new Date(2022, 1, 1) } }, orderBy: { id: 'asc' }, limit: 1000, offset: 50 });`, casing.ToLowerCamel(model.Name), casing.ToLowerCamel(model.Name))
+		w.Writeln("")
+		w.Writeln("```")
+	})
 	w.Writef("findMany(params?: %sFindManyParams | undefined): Promise<%s[]>;\n", model.Name, model.Name)
+
+	tsDocComment(w, func(w *codegen.Writer) {
+		w.Writeln("* Build queries up using our fluid api")
+		w.Writeln("* @param where - the where conditions to add to the query builder.")
+		w.Writeln("* @example")
+		w.Writeln("```typescript")
+		w.Writef("const records = await models.%s.where({ createdAt: { after: new Date(2020, 1, 1) } }).orWhere({ updatedAt: { after: new Date(2020, 1, 1) } }).findMany();\n", casing.ToLowerCamel(model.Name))
+		w.Writeln("```")
+	})
 	w.Writef("where(where: %sWhereConditions): %sQueryBuilder;\n", model.Name, model.Name)
 	w.Dedent()
 	w.Writeln("}")
@@ -867,4 +965,10 @@ func toWhereConditionType(f *proto.Field) string {
 	default:
 		return "any"
 	}
+}
+
+func tsDocComment(w *codegen.Writer, f func(w *codegen.Writer)) {
+	w.Writeln("/**")
+	f(w)
+	w.Writeln("*/")
 }
