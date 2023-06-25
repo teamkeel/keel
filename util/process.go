@@ -6,8 +6,8 @@ import (
 )
 
 // GetFreePort finds an available port we can run Postgres on.
-// It prefers the standard Postgres port of 5432 but if that is
-// already in use then it will return a random free port
+// It will favour the ones you specify as preferredPorts, but if they are
+// all in use, it return an arbitrary port that is free.
 func GetFreePort(preferredPorts ...string) (string, error) {
 	var err error
 	var port string

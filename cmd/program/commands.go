@@ -330,7 +330,7 @@ type StartDatabaseMsg struct {
 
 func StartDatabase(reset bool, mode int, projectDirectory string) tea.Cmd {
 	return func() tea.Msg {
-		connInfo, err := database.Start(!reset, projectDirectory)
+		connInfo, err := database.Start(reset, projectDirectory)
 		if err != nil {
 			return StartDatabaseMsg{
 				Err: err,
