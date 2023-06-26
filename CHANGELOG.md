@@ -1,3 +1,10 @@
+# [0.340.0](https://github.com/teamkeel/keel/compare/v0.339.1...v0.340.0) (2023-06-26)
+
+
+### Features
+
+* adds dynamically generated docs to model api instances ([#1020](https://github.com/teamkeel/keel/issues/1020)) ([c72efe0](https://github.com/teamkeel/keel/commit/c72efe07db61b83cd2efe1aa818b060e6d3cdd34))
+
 ## [0.339.1](https://github.com/teamkeel/keel/compare/v0.339.0...v0.339.1) (2023-06-23)
 
 
