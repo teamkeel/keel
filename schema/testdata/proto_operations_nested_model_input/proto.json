@@ -370,6 +370,51 @@
       "name": "Any"
     },
     {
+      "name": "SearchFeesTheFiInput",
+      "fields": [
+        {
+          "messageName": "SearchFeesTheFiInput",
+          "name": "theFo",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "SearchFeesTheFiTheFoInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SearchFeesTheFiTheFoInput",
+      "fields": [
+        {
+          "messageName": "SearchFeesTheFiTheFoInput",
+          "name": "theFum",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "SearchFeesTheFiTheFoTheFumInput"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SearchFeesTheFiTheFoTheFumInput",
+      "fields": [
+        {
+          "messageName": "SearchFeesTheFiTheFoTheFumInput",
+          "name": "theName",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
+          },
+          "target": [
+            "theFi",
+            "theFo",
+            "theFum",
+            "theName"
+          ]
+        }
+      ]
+    },
+    {
       "name": "StringQueryInput",
       "fields": [
         {
@@ -424,17 +469,11 @@
       "fields": [
         {
           "messageName": "SearchFeesWhere",
-          "name": "theFiTheFoTheFumTheName",
+          "name": "theFi",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
-          },
-          "target": [
-            "theFi",
-            "theFo",
-            "theFum",
-            "theName"
-          ]
+            "messageName": "SearchFeesTheFiInput"
+          }
         }
       ]
     },
@@ -480,6 +519,53 @@
             "type": "TYPE_STRING"
           },
           "optional": true
+        }
+      ]
+    },
+    {
+      "name": "SearchFumsTheFosInput",
+      "fields": [
+        {
+          "messageName": "SearchFumsTheFosInput",
+          "name": "theFis",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "SearchFumsTheFosTheFisInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "SearchFumsTheFosTheFisInput",
+      "fields": [
+        {
+          "messageName": "SearchFumsTheFosTheFisInput",
+          "name": "theFees",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "SearchFumsTheFosTheFisTheFeesInput",
+            "repeated": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "SearchFumsTheFosTheFisTheFeesInput",
+      "fields": [
+        {
+          "messageName": "SearchFumsTheFosTheFisTheFeesInput",
+          "name": "theName",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "StringQueryInput"
+          },
+          "target": [
+            "theFos",
+            "theFis",
+            "theFees",
+            "theName"
+          ]
         }
       ]
     },
@@ -538,17 +624,12 @@
       "fields": [
         {
           "messageName": "SearchFumsWhere",
-          "name": "theFosTheFisTheFeesTheName",
+          "name": "theFos",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
-          },
-          "target": [
-            "theFos",
-            "theFis",
-            "theFees",
-            "theName"
-          ]
+            "messageName": "SearchFumsTheFosInput",
+            "repeated": true
+          }
         }
       ]
     },

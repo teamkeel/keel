@@ -393,6 +393,7 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
+          "nullable": true,
           "target": [
             "preferredName"
           ]
