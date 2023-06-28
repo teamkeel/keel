@@ -25,10 +25,10 @@ release:
     name: keel
 brews:
   - name: keel
-    url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-    homepage: "https://github.com/teamkeel/cli"
+    url_template: "https://github.com/teamkeel/keel/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    homepage: "https://github.com/teamkeel/keel"
     install: |
-      bin.install "cli" => "keel"
+      bin.install "keel"
     tap:
       owner: teamkeel
       name: homebrew-keel
