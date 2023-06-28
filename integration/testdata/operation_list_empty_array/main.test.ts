@@ -19,7 +19,7 @@ test("empty project id", async () => {
 
   const { results } = await actions
     .withIdentity(identity)
-    .listTodo({ where: { projectId: { oneOf: [] } } });
+    .listTodo({ where: { project: { id: { oneOf: [] } } }});
 
   expect(results).toEqual([]);
 });

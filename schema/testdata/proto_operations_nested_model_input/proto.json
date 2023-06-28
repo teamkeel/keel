@@ -530,8 +530,7 @@
           "name": "theFis",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "SearchFumsTheFosTheFisInput",
-            "repeated": true
+            "messageName": "SearchFumsTheFosTheFisInput"
           }
         }
       ]
@@ -544,8 +543,7 @@
           "name": "theFees",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "SearchFumsTheFosTheFisTheFeesInput",
-            "repeated": true
+            "messageName": "SearchFumsTheFosTheFisTheFeesInput"
           }
         }
       ]
@@ -570,56 +568,6 @@
       ]
     },
     {
-      "name": "StringQueryInput",
-      "fields": [
-        {
-          "name": "equals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true,
-          "nullable": true
-        },
-        {
-          "name": "notEquals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true,
-          "nullable": true
-        },
-        {
-          "name": "startsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "endsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "contains",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "oneOf",
-          "type": {
-            "type": "TYPE_STRING",
-            "repeated": true
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "SearchFumsWhere",
       "fields": [
         {
@@ -627,8 +575,7 @@
           "name": "theFos",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "SearchFumsTheFosInput",
-            "repeated": true
+            "messageName": "SearchFumsTheFosInput"
           }
         }
       ]

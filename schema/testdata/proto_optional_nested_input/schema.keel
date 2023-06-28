@@ -8,6 +8,8 @@ model Person {
     operations {
         list listByCompany(company.name, company.tradingAs)
         list listByPreviousCompany(previousCompany.name, previousCompany.tradingAs)
+        list listByCompanyTradingAs(company.tradingAs)
+        list listByCompanyOptionalInputs(company.name?, company.tradingAs?)
     }
 }
 

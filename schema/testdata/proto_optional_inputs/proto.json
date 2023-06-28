@@ -323,56 +323,6 @@
       ]
     },
     {
-      "name": "StringQueryInput",
-      "fields": [
-        {
-          "name": "equals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true,
-          "nullable": true
-        },
-        {
-          "name": "notEquals",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true,
-          "nullable": true
-        },
-        {
-          "name": "startsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "endsWith",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "contains",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "name": "oneOf",
-          "type": {
-            "type": "TYPE_STRING",
-            "repeated": true
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
       "name": "ListPersonWhere",
       "fields": [
         {
@@ -393,7 +343,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "StringQueryInput"
           },
-          "nullable": true,
           "target": [
             "preferredName"
           ]

@@ -252,7 +252,7 @@ test("relationships - findMany using multiple belongsTo relationships", async ()
   });
   const res = await actions.listBooksByPublisherName({
     where: {
-      authorPublisherName: { equals: "Harper Collins" },
+      author: { publisher: { name: { equals: "Harper Collins" } } },
     },
   });
   expect(res.results.length).toBe(2);

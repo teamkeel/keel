@@ -48,18 +48,28 @@
 				},
 				"additionalProperties": false
 			},
-			"TestActionWhere": {
+			"TestActionCompanyInput": {
 				"type": "object",
 				"properties": {
-					"companyName": {
+					"name": {
 						"$ref": "#/components/schemas/StringQueryInput"
 					},
-					"companyTradingAs": {
+					"tradingAs": {
 						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
 				"additionalProperties": false,
-				"required": ["companyName", "companyTradingAs"]
+				"required": ["name", "tradingAs"]
+			},
+			"TestActionWhere": {
+				"type": "object",
+				"properties": {
+					"company": {
+						"$ref": "#/components/schemas/TestActionCompanyInput"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["company"]
 			}
 		}
 	}

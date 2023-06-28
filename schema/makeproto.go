@@ -371,14 +371,14 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					Name: fragment,
 					Type: &proto.TypeInfo{
 						Type: proto.Type_TYPE_MESSAGE,
-						// Repeated with be true in a 1:M relationship.
-						Repeated: field.Repeated,
+						// Repeated with be true in a 1:M relationship for create only.
+						Repeated: action.Type.Value != "list" && field.Repeated,
 						MessageName: &wrapperspb.StringValue{
 							Value: relatedModelMessageName,
 						},
 					},
 					Optional:    field.Optional,
-					Nullable:    field.Optional,
+					Nullable:    action.Type.Value != "list" && field.Optional,
 					MessageName: currMessage.Name,
 				})
 
@@ -405,7 +405,9 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					panic(err.Error())
 				}
 
-				scm.proto.Messages = append(scm.proto.Messages, queryMessage)
+				if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == queryMessage.Name }) {
+					scm.proto.Messages = append(scm.proto.Messages, queryMessage)
+				}
 
 				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
 					Name: fragment,
@@ -414,7 +416,6 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 						MessageName: wrapperspb.String(queryMessage.Name)},
 					Target:      target,
 					Optional:    input.Optional,
-					Nullable:    targetsOptionalField,
 					MessageName: currMessage.Name,
 				})
 			} else {

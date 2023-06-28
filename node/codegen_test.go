@@ -445,11 +445,74 @@ model Person {
 	functions {
 		create createPerson() with (name?)
 	}
-}
-	`
+}`
+
 	expected := `
 export interface CreatePersonInput {
 	name?: string | null;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesCreateRelationshipToOne(t *testing.T) {
+	schema := `
+model Company {
+	fields {
+		name Text
+	}
+}
+model Person {
+	fields {
+		name Text
+		employer Company
+	}
+	functions {
+		create createPerson() with (name, employer.name)
+	}
+}`
+
+	expected := `
+export interface CreatePersonInput {
+	name: string;
+	employer: CreatePersonEmployerInput;
+}
+export interface CreatePersonEmployerInput {
+	name: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesCreateRelationshipToMany(t *testing.T) {
+	schema := `
+model Contract {
+	fields {
+		name Text
+		person Person
+	}
+}
+model Person {
+	fields {
+		name Text
+		contracts Contract[]
+	}
+	functions {
+		create createPerson() with (name, contracts.name)
+	}
+}`
+
+	expected := `
+export interface CreatePersonInput {
+	name: string;
+	contracts: CreatePersonContractsInput[];
+}
+export interface CreatePersonContractsInput {
+	name: string;
 }`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
@@ -614,6 +677,82 @@ export interface ListPeopleWhere {
 }
 export interface ListPeopleInput {
 	where: ListPeopleWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesListRelationshipToOne(t *testing.T) {
+	schema := `
+model Company {
+	fields {
+		name Text
+	}
+}
+model Person {
+	fields {
+		name Text
+		employer Company
+	}
+	functions {
+		list listPersons(name, employer.name)
+	}
+}`
+
+	expected := `
+export interface ListPersonsEmployerInput {
+	name: StringQueryInput;
+}
+export interface ListPersonsWhere {
+	name: StringQueryInput;
+	employer: ListPersonsEmployerInput;
+}
+export interface ListPersonsInput {
+	where: ListPersonsWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesListRelationshipToMany(t *testing.T) {
+	schema := `
+model Contract {
+	fields {
+		name Text
+	}
+}
+model Person {
+	fields {
+		name Text
+		contracts Contract
+	}
+	functions {
+		list listPersons(name, contracts.name)
+	}
+}`
+
+	expected := `
+export interface ListPersonsContractsInput {
+	name: StringQueryInput;
+}
+export interface ListPersonsWhere {
+	name: StringQueryInput;
+	contracts: ListPersonsContractsInput;
+}
+export interface ListPersonsInput {
+	where: ListPersonsWhere;
 	first?: number;
 	after?: string;
 	last?: number;

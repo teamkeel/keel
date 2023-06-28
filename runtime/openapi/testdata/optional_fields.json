@@ -575,15 +575,15 @@
 			"CustomersWhere": {
 				"type": "object",
 				"properties": {
-					"addressAddressLine1": {
-						"$ref": "#/components/schemas/StringQueryInput"
+					"address": {
+						"$ref": "#/components/schemas/NullableCustomersAddressInput"
 					},
 					"name": {
 						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
 				"additionalProperties": false,
-				"required": ["name", "addressAddressLine1"]
+				"required": ["name"]
 			},
 			"EmailPasswordInput": {
 				"type": "object",
@@ -603,6 +603,16 @@
 				"properties": {
 					"addressLine1": {
 						"type": ["string", "null"]
+					}
+				},
+				"additionalProperties": false,
+				"required": ["addressLine1"]
+			},
+			"NullableCustomersAddressInput": {
+				"type": ["object", "null"],
+				"properties": {
+					"addressLine1": {
+						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
 				"additionalProperties": false,
