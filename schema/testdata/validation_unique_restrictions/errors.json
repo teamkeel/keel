@@ -52,7 +52,7 @@
       }
     },
     {
-      "message": "Field name has already been specified as a constraint",
+      "message": "Field 'name' has already been specified as a constraint",
       "hint": "",
       "code": "TypeError",
       "pos": {
@@ -69,7 +69,7 @@
       }
     },
     {
-      "message": "Field name has already been specified as a constraint",
+      "message": "Field 'name' has already been specified as a constraint",
       "hint": "",
       "code": "TypeError",
       "pos": {
