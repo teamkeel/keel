@@ -22,7 +22,7 @@ archives:
 release:
   github:
     owner: teamkeel
-    name: cli
+    name: keel
 brews:
   - name: keel
     url_template: "https://github.com/teamkeel/cli/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
