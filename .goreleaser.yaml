@@ -21,8 +21,6 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}
 release:
   github:
-    owner: teamkeel
-    name: keel
 brews:
   - name: keel
     url_template: "https://github.com/teamkeel/keel/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
