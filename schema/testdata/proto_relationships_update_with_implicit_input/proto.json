@@ -453,7 +453,6 @@
             "type": "TYPE_MESSAGE",
             "messageName": "UpdateChild3ParentOptionalInput"
           },
-          "optional": true,
           "nullable": true
         }
       ]

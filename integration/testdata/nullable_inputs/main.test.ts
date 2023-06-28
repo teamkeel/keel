@@ -164,7 +164,7 @@ test("list operation - null values", async () => {
     where: {
       preferredName: { notEquals: null },
       employmentStatus: { equals: null },
-      employer: { tradingAs: { notEquals: null }},
+      employer: { tradingAs: { notEquals: null } },
     },
   });
   expect(resultsNullStatus).length(1);

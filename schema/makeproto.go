@@ -366,28 +366,20 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			}
 
 			if !fieldAlreadyCreated {
-				optional := false
-				if action.Type.Value != "list" {
-					// For non-list ops, input optionality is determined by whether the targeted field is optional.
-					optional = field.Optional
-				} else if action.Type.Value == "list" {
-					// For list ops, input optionality is determined by whether the input is optional.
-					optional = input.Optional
-				}
-
 				// Add the related model message as a field to the current message with typeInfo of Type_TYPE_MESSAGE.
 				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
 					Name: fragment,
 					Type: &proto.TypeInfo{
 						Type: proto.Type_TYPE_MESSAGE,
 						// Repeated with be true in a 1:M relationship for create only.
-						Repeated: action.Type.Value != "list" && field.Repeated,
+						Repeated: action.Type.Value != parser.ActionTypeList && field.Repeated,
 						MessageName: &wrapperspb.StringValue{
 							Value: relatedModelMessageName,
 						},
 					},
-					Optional:    optional, //action.Type.Value != "list" && field.Optional,
-					Nullable:    action.Type.Value != "list" && field.Optional,
+					Optional: input.Optional,
+					// List op implicit inputs are not nullable, because they will have a query type.
+					Nullable:    action.Type.Value != parser.ActionTypeList && field.Optional,
 					MessageName: currMessage.Name,
 				})
 
@@ -408,7 +400,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 		} else {
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
-			if action.Type.Value == "list" {
+			if action.Type.Value == parser.ActionTypeList {
 				queryMessage, err := makeListQueryInputMessage(typeInfo)
 				if err != nil {
 					panic(err.Error())

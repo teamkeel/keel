@@ -107,7 +107,7 @@
 									}
 								},
 								"additionalProperties": false,
-								"required": ["name", "dateOfBirth"]
+								"required": ["name", "dateOfBirth", "address"]
 							}
 						}
 					}
@@ -572,18 +572,28 @@
 				},
 				"required": ["id", "createdAt", "updatedAt"]
 			},
+			"CustomersAddressInput": {
+				"type": "object",
+				"properties": {
+					"addressLine1": {
+						"$ref": "#/components/schemas/StringQueryInput"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["addressLine1"]
+			},
 			"CustomersWhere": {
 				"type": "object",
 				"properties": {
 					"address": {
-						"$ref": "#/components/schemas/NullableCustomersAddressInput"
+						"$ref": "#/components/schemas/CustomersAddressInput"
 					},
 					"name": {
 						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
 				"additionalProperties": false,
-				"required": ["name"]
+				"required": ["name", "address"]
 			},
 			"EmailPasswordInput": {
 				"type": "object",
@@ -603,16 +613,6 @@
 				"properties": {
 					"addressLine1": {
 						"type": ["string", "null"]
-					}
-				},
-				"additionalProperties": false,
-				"required": ["addressLine1"]
-			},
-			"NullableCustomersAddressInput": {
-				"type": ["object", "null"],
-				"properties": {
-					"addressLine1": {
-						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
 				"additionalProperties": false,
