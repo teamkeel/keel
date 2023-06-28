@@ -366,6 +366,15 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 			}
 
 			if !fieldAlreadyCreated {
+				optional := false
+				if action.Type.Value != "list" {
+					// For non-list ops, input optionality is determined by whether the targeted field is optional.
+					optional = field.Optional
+				} else if action.Type.Value == "list" {
+					// For list ops, input optionality is determined by whether the input is optional.
+					optional = input.Optional
+				}
+
 				// Add the related model message as a field to the current message with typeInfo of Type_TYPE_MESSAGE.
 				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
 					Name: fragment,
@@ -377,7 +386,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 							Value: relatedModelMessageName,
 						},
 					},
-					Optional:    field.Optional,
+					Optional:    optional, //action.Type.Value != "list" && field.Optional,
 					Nullable:    action.Type.Value != "list" && field.Optional,
 					MessageName: currMessage.Name,
 				})
@@ -416,6 +425,7 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 						MessageName: wrapperspb.String(queryMessage.Name)},
 					Target:      target,
 					Optional:    input.Optional,
+					Nullable:    false,
 					MessageName: currMessage.Name,
 				})
 			} else {
@@ -429,7 +439,6 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					MessageName: currMessage.Name,
 				})
 			}
-
 		}
 	}
 }

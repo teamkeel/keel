@@ -1,8 +1,8 @@
 type Query {
   _health: Boolean
-  getPerson(input: GetPersonInput!): Person
   listPeople(input: ListPeopleInput!): PersonConnection!
-  listPeopleAllOptional(input: ListPeopleAllOptionalInput): PersonConnection!
+  listPeopleOptionalFields(input: ListPeopleOptionalFieldsInput!): PersonConnection!
+  listPeopleOptionalInputs(input: ListPeopleOptionalInputsInput): PersonConnection!
 }
 
 type Mutation {
@@ -16,36 +16,13 @@ input AuthenticateInput {
   emailPassword: EmailPasswordInput!
 }
 
-input DateQueryInput {
-  after: ISO8601
-  before: ISO8601
-  equals: ISO8601
-  notEquals: ISO8601
-  onOrAfter: ISO8601
-  onOrBefore: ISO8601
-}
-
 input EmailPasswordInput {
   email: String!
   password: String!
 }
 
-input GetPersonInput {
-  id: ID!
-}
-
-input ListPeopleAllOptionalInput {
-  after: String
-  before: String
-  first: Int
-  last: Int
-  where: ListPeopleAllOptionalWhere
-}
-
-input ListPeopleAllOptionalWhere {
-  dateOfBirth: DateQueryInput
-  name: StringQueryInput
-  occupation: OccupationQueryInput
+input ListPeopleEmployerInput {
+  name: StringQueryInput!
 }
 
 input ListPeopleInput {
@@ -56,16 +33,43 @@ input ListPeopleInput {
   where: ListPeopleWhere!
 }
 
-input ListPeopleWhere {
-  dateOfBirth: DateQueryInput!
-  name: StringQueryInput!
-  occupation: OccupationQueryInput!
+input ListPeopleOptionalFieldsInput {
+  after: String
+  before: String
+  first: Int
+  last: Int
+  where: ListPeopleOptionalFieldsWhere!
 }
 
-input OccupationQueryInput {
-  equals: Occupation
-  notEquals: Occupation
-  oneOf: [Occupation]
+input ListPeopleOptionalFieldsOptionalEmployerInput {
+  optionalName: StringQueryInput!
+}
+
+input ListPeopleOptionalFieldsWhere {
+  optionalEmployer: ListPeopleOptionalFieldsOptionalEmployerInput!
+  optionalName: StringQueryInput!
+}
+
+input ListPeopleOptionalInputsEmployerInput {
+  name: StringQueryInput
+}
+
+input ListPeopleOptionalInputsInput {
+  after: String
+  before: String
+  first: Int
+  last: Int
+  where: ListPeopleOptionalInputsWhere
+}
+
+input ListPeopleOptionalInputsWhere {
+  employer: ListPeopleOptionalInputsEmployerInput
+  name: StringQueryInput
+}
+
+input ListPeopleWhere {
+  employer: ListPeopleEmployerInput!
+  name: StringQueryInput!
 }
 
 input RequestPasswordResetInput {
@@ -92,9 +96,12 @@ type AuthenticateResponse {
   token: String!
 }
 
-type Date {
-  formatted(format: String!): String!
-  iso8601: String!
+type Company {
+  createdAt: Timestamp!
+  id: ID!
+  name: String!
+  optionalName: String!
+  updatedAt: Timestamp!
 }
 
 type PageInfo {
@@ -107,10 +114,13 @@ type PageInfo {
 
 type Person {
   createdAt: Timestamp!
-  dateOfBirth: Date
+  employer: Company!
+  employerId: ID!
   id: ID!
-  name: String
-  occupation: Occupation
+  name: String!
+  optionalEmployer: Company
+  optionalEmployerId: ID
+  optionalName: String
   updatedAt: Timestamp!
 }
 
@@ -136,12 +146,6 @@ type Timestamp {
   fromNow: String!
   iso8601: String!
   seconds: Int!
-}
-
-enum Occupation {
-  Astronaut
-  Doctor
-  Teacher
 }
 
 scalar Any

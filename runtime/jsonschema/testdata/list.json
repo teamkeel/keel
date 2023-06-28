@@ -111,16 +111,6 @@
 				},
 				"additionalProperties": false
 			},
-			"NullableTestActionPreviousCityInput": {
-				"type": ["object", "null"],
-				"properties": {
-					"name": {
-						"$ref": "#/components/schemas/StringQueryInput"
-					}
-				},
-				"additionalProperties": false,
-				"required": ["name"]
-			},
 			"StringQueryInput": {
 				"type": "object",
 				"properties": {
@@ -158,6 +148,16 @@
 				"additionalProperties": false,
 				"required": ["name"]
 			},
+			"TestActionPreviousCityInput": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"$ref": "#/components/schemas/StringQueryInput"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["name"]
+			},
 			"TestActionWhere": {
 				"type": "object",
 				"properties": {
@@ -186,14 +186,14 @@
 						"$ref": "#/components/schemas/StringQueryInput"
 					},
 					"previousCity": {
-						"$ref": "#/components/schemas/NullableTestActionPreviousCityInput"
+						"$ref": "#/components/schemas/TestActionPreviousCityInput"
 					},
 					"secondHobby": {
 						"$ref": "#/components/schemas/HobbyQueryInput"
 					}
 				},
 				"additionalProperties": false,
-				"required": ["name", "preferredName", "favouriteNumber", "birthday", "hobby", "secondHobby", "isAdmin", "lastSeenAt", "currentCity"]
+				"required": ["name", "preferredName", "favouriteNumber", "birthday", "hobby", "secondHobby", "isAdmin", "lastSeenAt", "currentCity", "previousCity"]
 			},
 			"TimestampQueryInput": {
 				"type": "object",

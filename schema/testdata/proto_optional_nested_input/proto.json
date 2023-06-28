@@ -101,13 +101,6 @@
         },
         {
           "modelName": "Person",
-          "name": "listByCompanyTradingAs",
-          "type": "OPERATION_TYPE_LIST",
-          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "inputMessageName": "ListByCompanyTradingAsInput"
-        },
-        {
-          "modelName": "Person",
           "name": "listByCompanyOptionalInputs",
           "type": "OPERATION_TYPE_LIST",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
@@ -441,8 +434,7 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListByPreviousCompanyPreviousCompanyInput"
-          },
-          "optional": true
+          }
         }
       ]
     },
@@ -455,8 +447,7 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListByPreviousCompanyWhere"
-          },
-          "optional": true
+          }
         },
         {
           "messageName": "ListByPreviousCompanyInput",
@@ -484,81 +475,6 @@
         },
         {
           "messageName": "ListByPreviousCompanyInput",
-          "name": "before",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        }
-      ]
-    },
-    {
-      "name": "ListByCompanyTradingAsCompanyInput",
-      "fields": [
-        {
-          "messageName": "ListByCompanyTradingAsCompanyInput",
-          "name": "tradingAs",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "StringQueryInput"
-          },
-          "target": [
-            "company",
-            "tradingAs"
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ListByCompanyTradingAsWhere",
-      "fields": [
-        {
-          "messageName": "ListByCompanyTradingAsWhere",
-          "name": "company",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListByCompanyTradingAsCompanyInput"
-          }
-        }
-      ]
-    },
-    {
-      "name": "ListByCompanyTradingAsInput",
-      "fields": [
-        {
-          "messageName": "ListByCompanyTradingAsInput",
-          "name": "where",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListByCompanyTradingAsWhere"
-          }
-        },
-        {
-          "messageName": "ListByCompanyTradingAsInput",
-          "name": "first",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListByCompanyTradingAsInput",
-          "name": "after",
-          "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListByCompanyTradingAsInput",
-          "name": "last",
-          "type": {
-            "type": "TYPE_INT"
-          },
-          "optional": true
-        },
-        {
-          "messageName": "ListByCompanyTradingAsInput",
           "name": "before",
           "type": {
             "type": "TYPE_STRING"
@@ -607,7 +523,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListByCompanyOptionalInputsCompanyInput"
-          }
+          },
+          "optional": true
         }
       ]
     },
@@ -620,7 +537,8 @@
           "type": {
             "type": "TYPE_MESSAGE",
             "messageName": "ListByCompanyOptionalInputsWhere"
-          }
+          },
+          "optional": true
         },
         {
           "messageName": "ListByCompanyOptionalInputsInput",

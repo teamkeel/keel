@@ -651,11 +651,16 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooksByPublisherName",
 					request: `{"where": {"author": { "publisher": { "name": {"equals": "Jim"}}}}}`,
 				},
-				// {
-				// 	name:    "valid - missing optional input",
-				// 	opName:  "listBooksByPublisherOptionalDateFounded",
-				// 	request: `{"where": { }}`,
-				// },
+				{
+					name:    "valid - missing optional where",
+					opName:  "listBooksByPublisherOptionalDateFounded",
+					request: `{"where": { }}`,
+				},
+				{
+					name:    "valid - missing optional input",
+					opName:  "listBooksByPublisherOptionalDateFounded",
+					request: `{}`,
+				},
 
 				// errors
 				{
