@@ -36,6 +36,9 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 			}
 			currentField = f
 		},
+		LeaveField: func(f *parser.FieldNode) {
+			currentField = nil
+		},
 		EnterAttribute: func(attr *parser.AttributeNode) {
 
 			if attr.Name.Value != parser.AttributeUnique {
@@ -68,7 +71,7 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 								})
 
 								if found {
-									errs.AppendError(uniqueRestrictionError(value.Array.Values[index].Node, fmt.Sprintf("Field %s has already been specified as a constraint", dupe)))
+									errs.AppendError(uniqueRestrictionError(value.Array.Values[index].Node, fmt.Sprintf("Field '%s' has already been specified as a constraint", dupe)))
 								}
 							}
 						}
@@ -78,6 +81,11 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 						for i, uniqueField := range fieldNames {
 							field := query.ModelField(currentModel, uniqueField)
 
+							if field == nil {
+								// the field isnt a recognised field on the model, so abort as this is covered
+								// by another validation
+								continue
+							}
 							if permitted, reason := uniquePermitted(field); !permitted {
 								errs.AppendError(uniqueRestrictionError(value.Array.Values[i].Node, reason))
 							}
@@ -90,10 +98,6 @@ func UniqueAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationError
 				if permitted, reason := uniquePermitted(currentField); !permitted {
 					errs.AppendError(uniqueRestrictionError(attr.Node, reason))
 				}
-			}
-
-			if currentField != nil {
-				currentField = nil
 			}
 		},
 	}

@@ -1,21 +1,89 @@
-  {
-    "Errors": [
-      {
-        "code": "",
-        "hint": "",
-        "message": "",
-        "end_pos": {
-          "column": 0,
-          "filename": "testdata/validation_unique_restrictions/schema.keel",
-          "line": 0,
-          "offset": 0
-        },
-        "pos": {
-          "column": 0,
-          "filename": "testdata/validation_unique_restrictions/schema.keel",
-          "line": 0,
-          "offset": 0
-        }
+{
+  "errors": [
+    {
+      "message": "@unique is not permitted on Timestamp fields",
+      "hint": "",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 213,
+        "line": 13,
+        "column": 30
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 220,
+        "line": 13,
+        "column": 37
       }
-    ]
-  }
+    },
+    {
+      "message": "@unique is not permitted on has many relationships",
+      "hint": "",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 277,
+        "line": 15,
+        "column": 22
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 284,
+        "line": 15,
+        "column": 29
+      }
+    },
+    {
+      "message": "@unique is not permitted on has many relationships",
+      "hint": "",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 362,
+        "line": 19,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 367,
+        "line": 19,
+        "column": 25
+      }
+    },
+    {
+      "message": "Field name has already been specified as a constraint",
+      "hint": "",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 438,
+        "line": 22,
+        "column": 20
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 442,
+        "line": 22,
+        "column": 24
+      }
+    },
+    {
+      "message": "Field name has already been specified as a constraint",
+      "hint": "",
+      "code": "TypeError",
+      "pos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 498,
+        "line": 25,
+        "column": 34
+      },
+      "endPos": {
+        "filename": "testdata/validation_unique_restrictions/schema.keel",
+        "offset": 502,
+        "line": 25,
+        "column": 38
+      }
+    }
+  ]
+}
