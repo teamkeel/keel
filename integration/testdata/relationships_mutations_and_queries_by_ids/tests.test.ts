@@ -130,7 +130,7 @@ test("list filter by parent id - list and parent id - filtered correctly", async
   });
 
   const { results: listPost } = await actions.listPost({
-    where: { theAuthorId: { equals: author1.id } },
+    where: { theAuthor: { id: { equals: author1.id } } },
   });
   expect(listPost.length).toEqual(1);
   expect(listPost[0].id).toEqual(post1.id);
@@ -175,7 +175,7 @@ test("list filter by parent id - list and parent id - filtered correctly", async
   });
 
   const { results: listAuthor } = await actions.listAuthors({
-    where: { thePostsId: { equals: post1.id } },
+    where: { thePosts: { id: { equals: post1.id } } },
   });
   expect(listAuthor.length).toEqual(1);
   expect(listAuthor[0].id).toEqual(author1.id);

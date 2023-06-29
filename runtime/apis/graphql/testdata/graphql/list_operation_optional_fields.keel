@@ -8,6 +8,7 @@ model Person {
     operations {
         get getPerson(id)
         list listPeople(name, dateOfBirth, occupation)
+        list listPeopleAllOptional(name?, dateOfBirth?, occupation?)
     }
 }
 

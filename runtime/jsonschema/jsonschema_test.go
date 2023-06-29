@@ -649,21 +649,26 @@ func TestValidateRequest(t *testing.T) {
 				{
 					name:    "valid - nested model field",
 					opName:  "listBooksByPublisherName",
-					request: `{"where": {"authorPublisherName": {"equals": "Jim"}}}`,
+					request: `{"where": {"author": { "publisher": { "name": {"equals": "Jim"}}}}}`,
+				},
+				{
+					name:    "valid - missing optional where",
+					opName:  "listBooksByPublisherOptionalDateFounded",
+					request: `{"where": { }}`,
 				},
 				{
 					name:    "valid - missing optional input",
 					opName:  "listBooksByPublisherOptionalDateFounded",
-					request: `{"where": { }}`,
+					request: `{}`,
 				},
 
 				// errors
 				{
 					name:    "nullable nested model list field as null",
 					opName:  "listBooksByPublisherDateFounded",
-					request: `{"where": {"authorPublisherDateFounded": null}}`,
+					request: `{"where": {"author": { "publisher": { "dateFounded": null}}}}`,
 					errors: map[string]string{
-						"where.authorPublisherDateFounded": `Invalid type. Expected: object, given: null`,
+						"where.author.publisher.dateFounded": `Invalid type. Expected: object, given: null`,
 					},
 				},
 				{
@@ -671,7 +676,7 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooksByPublisherDateFounded",
 					request: `{"where": { }}`,
 					errors: map[string]string{
-						"where": `authorPublisherDateFounded is required`,
+						"where": `author is required`,
 					},
 				},
 				{

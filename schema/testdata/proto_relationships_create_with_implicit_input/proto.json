@@ -1,19 +1,36 @@
 {
   "models": [
     {
-      "name": "Author",
+      "name": "ChildModel",
       "fields": [
         {
-          "modelName": "Author",
-          "name": "identity",
+          "modelName": "ChildModel",
+          "name": "isActive",
           "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
-          },
-          "foreignKeyFieldName": "identityId"
+            "type": "TYPE_BOOL"
+          }
         },
         {
-          "modelName": "Author",
+          "modelName": "ChildModel",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "ParentModel"
+          },
+          "foreignKeyFieldName": "parentId"
+        },
+        {
+          "modelName": "ChildModel",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MODEL",
+            "modelName": "ParentModel"
+          },
+          "optional": true,
+          "foreignKeyFieldName": "parentOptionalId"
+        },
+        {
+          "modelName": "ChildModel",
           "name": "id",
           "type": {
             "type": "TYPE_ID"
@@ -24,7 +41,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "modelName": "ChildModel",
           "name": "createdAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -34,7 +51,7 @@
           }
         },
         {
-          "modelName": "Author",
+          "modelName": "ChildModel",
           "name": "updatedAt",
           "type": {
             "type": "TYPE_DATETIME"
@@ -44,176 +61,86 @@
           }
         },
         {
-          "modelName": "Author",
-          "name": "identityId",
+          "modelName": "ChildModel",
+          "name": "parentId",
           "type": {
             "type": "TYPE_ID"
           },
           "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Publisher",
-      "fields": [
-        {
-          "modelName": "Publisher",
-          "name": "identity",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Identity"
-          },
-          "foreignKeyFieldName": "identityId"
-        },
-        {
-          "modelName": "Publisher",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Publisher",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Publisher",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Publisher",
-          "name": "identityId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "foreignKeyInfo": {
-            "relatedModelName": "Identity",
-            "relatedModelField": "id"
-          }
-        }
-      ]
-    },
-    {
-      "name": "Post",
-      "fields": [
-        {
-          "modelName": "Post",
-          "name": "title",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "owner",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Author"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "ownerId"
-        },
-        {
-          "modelName": "Post",
-          "name": "publisher",
-          "type": {
-            "type": "TYPE_MODEL",
-            "modelName": "Publisher"
-          },
-          "optional": true,
-          "foreignKeyFieldName": "publisherId"
-        },
-        {
-          "modelName": "Post",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
-          },
-          "defaultValue": {
-            "useZeroValue": true
-          }
-        },
-        {
-          "modelName": "Post",
-          "name": "ownerId",
-          "type": {
-            "type": "TYPE_ID"
-          },
-          "optional": true,
-          "foreignKeyInfo": {
-            "relatedModelName": "Author",
+            "relatedModelName": "ParentModel",
             "relatedModelField": "id"
           }
         },
         {
-          "modelName": "Post",
-          "name": "publisherId",
+          "modelName": "ChildModel",
+          "name": "parentOptionalId",
           "type": {
             "type": "TYPE_ID"
           },
           "optional": true,
           "foreignKeyInfo": {
-            "relatedModelName": "Publisher",
+            "relatedModelName": "ParentModel",
             "relatedModelField": "id"
           }
         }
       ],
       "operations": [
         {
-          "modelName": "Post",
-          "name": "createPost",
+          "modelName": "ChildModel",
+          "name": "createChild1",
           "type": "OPERATION_TYPE_CREATE",
           "implementation": "OPERATION_IMPLEMENTATION_AUTO",
-          "permissions": [
-            {
-              "modelName": "Post",
-              "operationName": "createPost",
-              "expression": {
-                "source": "post.owner.identity == post.publisher.identity"
-              }
-            }
-          ],
-          "inputMessageName": "CreatePostInput"
+          "inputMessageName": "CreateChild1Input"
+        },
+        {
+          "modelName": "ChildModel",
+          "name": "createChild2",
+          "type": "OPERATION_TYPE_CREATE",
+          "implementation": "OPERATION_IMPLEMENTATION_AUTO",
+          "inputMessageName": "CreateChild2Input"
+        }
+      ]
+    },
+    {
+      "name": "ParentModel",
+      "fields": [
+        {
+          "modelName": "ParentModel",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL"
+          }
+        },
+        {
+          "modelName": "ParentModel",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID"
+          },
+          "primaryKey": true,
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "ParentModel",
+          "name": "createdAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
+        },
+        {
+          "modelName": "ParentModel",
+          "name": "updatedAt",
+          "type": {
+            "type": "TYPE_DATETIME"
+          },
+          "defaultValue": {
+            "useZeroValue": true
+          }
         }
       ]
     },
@@ -318,75 +245,114 @@
       "name": "Any"
     },
     {
-      "name": "CreatePostInput",
+      "name": "CreateChild1Input",
       "fields": [
         {
-          "messageName": "CreatePostInput",
-          "name": "title",
+          "messageName": "CreateChild1Input",
+          "name": "isActive",
           "type": {
-            "type": "TYPE_STRING",
-            "modelName": "Post",
-            "fieldName": "title"
+            "type": "TYPE_BOOL",
+            "modelName": "ChildModel",
+            "fieldName": "isActive"
           },
           "target": [
-            "title"
+            "isActive"
           ]
         },
         {
-          "messageName": "CreatePostInput",
-          "name": "publisher",
+          "messageName": "CreateChild1Input",
+          "name": "parent",
           "type": {
             "type": "TYPE_MESSAGE",
-            "messageName": "CreatePostPublisherInput"
-          },
-          "optional": true,
-          "nullable": true
-        },
-        {
-          "messageName": "CreatePostInput",
-          "name": "owner",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "CreatePostOwnerInput"
-          },
-          "optional": true,
-          "nullable": true
+            "messageName": "CreateChild1ParentInput"
+          }
         }
       ]
     },
     {
-      "name": "CreatePostPublisherInput",
+      "name": "CreateChild1ParentInput",
       "fields": [
         {
-          "messageName": "CreatePostPublisherInput",
+          "messageName": "CreateChild1ParentInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Publisher",
+            "modelName": "ParentModel",
             "fieldName": "id"
           },
-          "nullable": true,
           "target": [
-            "publisher",
+            "parent",
             "id"
           ]
         }
       ]
     },
     {
-      "name": "CreatePostOwnerInput",
+      "name": "CreateChild2Input",
       "fields": [
         {
-          "messageName": "CreatePostOwnerInput",
+          "messageName": "CreateChild2Input",
+          "name": "isActive",
+          "type": {
+            "type": "TYPE_BOOL",
+            "modelName": "ChildModel",
+            "fieldName": "isActive"
+          },
+          "target": [
+            "isActive"
+          ]
+        },
+        {
+          "messageName": "CreateChild2Input",
+          "name": "parent",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateChild2ParentInput"
+          }
+        },
+        {
+          "messageName": "CreateChild2Input",
+          "name": "parentOptional",
+          "type": {
+            "type": "TYPE_MESSAGE",
+            "messageName": "CreateChild2ParentOptionalInput"
+          },
+          "nullable": true
+        }
+      ]
+    },
+    {
+      "name": "CreateChild2ParentInput",
+      "fields": [
+        {
+          "messageName": "CreateChild2ParentInput",
           "name": "id",
           "type": {
             "type": "TYPE_ID",
-            "modelName": "Author",
+            "modelName": "ParentModel",
+            "fieldName": "id"
+          },
+          "target": [
+            "parent",
+            "id"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CreateChild2ParentOptionalInput",
+      "fields": [
+        {
+          "messageName": "CreateChild2ParentOptionalInput",
+          "name": "id",
+          "type": {
+            "type": "TYPE_ID",
+            "modelName": "ParentModel",
             "fieldName": "id"
           },
           "nullable": true,
           "target": [
-            "owner",
+            "parentOptional",
             "id"
           ]
         }

@@ -349,8 +349,10 @@ test("list operation implicit inputs with M:1 relations - all models active - al
 
   const { results: posts } = await actions.listActivePosts({
     where: {
-      theAuthorThePublisherIsActive: { equals: true },
-      theAuthorIsActive: { equals: true },
+      theAuthor: {
+        thePublisher: { isActive: { equals: true } },
+        isActive: { equals: true },
+      },
       isActive: { equals: true },
     },
   });
@@ -395,8 +397,10 @@ test("list operation implicit inputs with M:1 relations - Keel org not active - 
 
   const { results: posts } = await actions.listActivePosts({
     where: {
-      theAuthorThePublisherIsActive: { equals: true },
-      theAuthorIsActive: { equals: true },
+      theAuthor: {
+        thePublisher: { isActive: { equals: true } },
+        isActive: { equals: true },
+      },
       isActive: { equals: true },
     },
   });
@@ -441,8 +445,10 @@ test("list operation implicit inputs with M:1 relations - Keelson author not act
 
   const { results: posts } = await actions.listActivePosts({
     where: {
-      theAuthorThePublisherIsActive: { equals: true },
-      theAuthorIsActive: { equals: true },
+      theAuthor: {
+        thePublisher: { isActive: { equals: true } },
+        isActive: { equals: true },
+      },
       isActive: { equals: true },
     },
   });
@@ -487,8 +493,10 @@ test("list operation implicit inputs with M:1 relations - one Keelson post not a
 
   const { results: posts } = await actions.listActivePosts({
     where: {
-      theAuthorThePublisherIsActive: { equals: true },
-      theAuthorIsActive: { equals: true },
+      theAuthor: {
+        thePublisher: { isActive: { equals: true } },
+        isActive: { equals: true },
+      },
       isActive: { equals: true },
     },
   });
@@ -534,8 +542,10 @@ test("list operation implicit inputs with 1:M relations - all models active - al
   const { results: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        theAuthorsThePostsIsActive: { equals: true },
-        theAuthorsIsActive: { equals: true },
+        theAuthors: {
+          thePosts: { isActive: { equals: true } },
+          isActive: { equals: true },
+        },
         isActive: { equals: true },
       },
     });
@@ -581,8 +591,10 @@ test("list operation implicit inputs with 1:M relations - Keel org not active - 
   const { results: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        theAuthorsThePostsIsActive: { equals: true },
-        theAuthorsIsActive: { equals: true },
+        theAuthors: {
+          thePosts: { isActive: { equals: true } },
+          isActive: { equals: true },
+        },
         isActive: { equals: true },
       },
     });
@@ -628,8 +640,10 @@ test("list operation implicit inputs with 1:M relations - Keel author not active
   const { results: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        theAuthorsThePostsIsActive: { equals: true },
-        theAuthorsIsActive: { equals: true },
+        theAuthors: {
+          thePosts: { isActive: { equals: true } },
+          isActive: { equals: true },
+        },
         isActive: { equals: true },
       },
     });
@@ -675,8 +689,10 @@ test("list operation implicit inputs with 1:M relations - one Keel post not acti
   const { results: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        theAuthorsThePostsIsActive: { equals: true },
-        theAuthorsIsActive: { equals: true },
+        theAuthors: {
+          thePosts: { isActive: { equals: true } },
+          isActive: { equals: true },
+        },
         isActive: { equals: true },
       },
     });
@@ -722,8 +738,10 @@ test("list operation implicit inputs with 1:M relations - all Keel posts not act
   const { results: publishers } =
     await actions.listActivePublishersWithActivePosts({
       where: {
-        theAuthorsThePostsIsActive: { equals: true },
-        theAuthorsIsActive: { equals: true },
+        theAuthors: {
+          thePosts: { isActive: { equals: true } },
+          isActive: { equals: true },
+        },
         isActive: { equals: true },
       },
     });

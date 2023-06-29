@@ -1,0 +1,28 @@
+model Person {
+    fields {
+        name Text
+        employer Company
+
+        optionalName Text?
+        optionalEmployer Company?
+    }
+
+    operations {
+        list listPeople(name, employer.name)
+        list listPeopleOptionalInputs(name?, employer.name?)
+        list listPeopleOptionalFields(optionalName, optionalEmployer.optionalName)
+    }
+}
+
+model Company {
+    fields {
+        name Text
+        optionalName Text
+    }
+}
+
+api Test {
+    models {
+        Person
+    }
+}

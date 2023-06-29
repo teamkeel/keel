@@ -38,8 +38,12 @@ input ListOrderItemsInput {
   where: ListOrderItemsWhere!
 }
 
+input ListOrderItemsOrderInput {
+  id: IdQueryInput!
+}
+
 input ListOrderItemsWhere {
-  orderId: IdQueryInput!
+  order: ListOrderItemsOrderInput!
 }
 
 input RequestPasswordResetInput {

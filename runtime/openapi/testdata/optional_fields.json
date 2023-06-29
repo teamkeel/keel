@@ -107,7 +107,7 @@
 									}
 								},
 								"additionalProperties": false,
-								"required": ["name", "dateOfBirth"]
+								"required": ["name", "dateOfBirth", "address"]
 							}
 						}
 					}
@@ -572,18 +572,28 @@
 				},
 				"required": ["id", "createdAt", "updatedAt"]
 			},
+			"CustomersAddressInput": {
+				"type": "object",
+				"properties": {
+					"addressLine1": {
+						"$ref": "#/components/schemas/StringQueryInput"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["addressLine1"]
+			},
 			"CustomersWhere": {
 				"type": "object",
 				"properties": {
-					"addressAddressLine1": {
-						"$ref": "#/components/schemas/StringQueryInput"
+					"address": {
+						"$ref": "#/components/schemas/CustomersAddressInput"
 					},
 					"name": {
 						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
 				"additionalProperties": false,
-				"required": ["name", "addressAddressLine1"]
+				"required": ["name", "address"]
 			},
 			"EmailPasswordInput": {
 				"type": "object",

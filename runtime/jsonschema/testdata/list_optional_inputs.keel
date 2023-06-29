@@ -1,0 +1,16 @@
+model Person {
+    fields {
+        firstName Text
+        company Company
+    }
+
+    operations {
+        list testAction(firstName?, company.name?)
+    }
+}
+
+model Company {
+    fields {
+        name Text
+    }
+}

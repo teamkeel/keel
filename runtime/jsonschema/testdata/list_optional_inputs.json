@@ -18,7 +18,6 @@
 		}
 	},
 	"additionalProperties": false,
-	"required": ["where"],
 	"components": {
 		"schemas": {
 			"StringQueryInput": {
@@ -53,23 +52,21 @@
 				"properties": {
 					"name": {
 						"$ref": "#/components/schemas/StringQueryInput"
-					},
-					"tradingAs": {
-						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
-				"additionalProperties": false,
-				"required": ["name", "tradingAs"]
+				"additionalProperties": false
 			},
 			"TestActionWhere": {
 				"type": "object",
 				"properties": {
 					"company": {
 						"$ref": "#/components/schemas/TestActionCompanyInput"
+					},
+					"firstName": {
+						"$ref": "#/components/schemas/StringQueryInput"
 					}
 				},
-				"additionalProperties": false,
-				"required": ["company"]
+				"additionalProperties": false
 			}
 		}
 	}

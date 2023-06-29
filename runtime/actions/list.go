@@ -13,31 +13,50 @@ func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[st
 		return nil
 	}
 
-inputs:
+	return query.applyImplicitFiltersFromMessage(scope, message, scope.Model, args)
+}
+
+func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message *proto.Message, model *proto.Model, args map[string]any) error {
+
 	for _, input := range message.Fields {
+		field := proto.FindField(scope.Schema.Models, model.Name, input.Name)
+
+		// If the input is not targeting a model field, then it is either a:
+		//  - Message, with nested fields which we must recurse into, or an
+		//  - Explicit input, which is handled elsewhere.
 		if !input.IsModelField() {
+			if input.Type.Type == proto.Type_TYPE_MESSAGE {
+				messageModel := proto.FindModel(scope.Schema.Models, field.Type.ModelName.Value)
+				nestedMessage := proto.FindMessage(scope.Schema.Messages, input.Type.MessageName.Value)
+
+				argsSectioned, ok := args[input.Name].(map[string]any)
+				if !ok {
+					return fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
+				}
+
+				err := query.applyImplicitFiltersFromMessage(scope, nestedMessage, messageModel, argsSectioned)
+				if err != nil {
+					return err
+				}
+			}
 			continue
 		}
 
 		fieldName := input.Name
 		value, ok := args[fieldName]
 
-		// not found
+		// Not found in arguments
 		if !ok {
 			if input.Optional {
-				continue inputs
+				continue
 			}
 			return fmt.Errorf("did not find required '%s' input in where clause", fieldName)
 		}
 
 		valueMap, ok := value.(map[string]any)
 
+		// Cannot be parsed into map
 		if !ok {
-			if input.Optional {
-				// do not do any further processing if the input is not a map
-				// as it is likely nil
-				continue inputs
-			}
 			return fmt.Errorf("'%s' input value %v is not in correct format", fieldName, value)
 		}
 
@@ -56,7 +75,6 @@ inputs:
 			// Implicit input conditions are ANDed together
 			query.And()
 		}
-
 	}
 
 	return nil

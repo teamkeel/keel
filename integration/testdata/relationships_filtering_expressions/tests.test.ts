@@ -1594,7 +1594,7 @@ test("get operation where expressions with M:1 relations - depends on @relation"
 
   const { results: reviewers } = await actions.listReviewerByPostId({
     where: {
-      reviewedPostsId: { equals: postReviewedByJane.id },
+      reviewedPosts: { id: { equals: postReviewedByJane.id } },
     },
   });
 

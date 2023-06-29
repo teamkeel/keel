@@ -134,7 +134,7 @@ test("list operation - null values", async () => {
     where: {
       preferredName: { notEquals: null },
       employmentStatus: { notEquals: null },
-      employerTradingAs: { notEquals: null },
+      employer: { tradingAs: { notEquals: null } },
     },
   });
   expect(resultsAllData).length(1);
@@ -144,7 +144,7 @@ test("list operation - null values", async () => {
     where: {
       preferredName: { equals: null },
       employmentStatus: { equals: null },
-      employerTradingAs: { equals: null },
+      employer: { tradingAs: { equals: null } },
     },
   });
   expect(resultsNoData).length(1);
@@ -154,7 +154,7 @@ test("list operation - null values", async () => {
     where: {
       preferredName: { equals: null },
       employmentStatus: { notEquals: null },
-      employerTradingAs: { notEquals: null },
+      employer: { tradingAs: { notEquals: null } },
     },
   });
   expect(resultsNullPreferredName).length(1);
@@ -164,7 +164,7 @@ test("list operation - null values", async () => {
     where: {
       preferredName: { notEquals: null },
       employmentStatus: { equals: null },
-      employerTradingAs: { notEquals: null },
+      employer: { tradingAs: { notEquals: null } },
     },
   });
   expect(resultsNullStatus).length(1);
@@ -174,7 +174,7 @@ test("list operation - null values", async () => {
     where: {
       preferredName: { notEquals: null },
       employmentStatus: { notEquals: null },
-      employerTradingAs: { equals: null },
+      employer: { tradingAs: { equals: null } },
     },
   });
   expect(resultsNullEmployerTradingAs).length(1);

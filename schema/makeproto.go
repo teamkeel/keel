@@ -371,14 +371,15 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 					Name: fragment,
 					Type: &proto.TypeInfo{
 						Type: proto.Type_TYPE_MESSAGE,
-						// Repeated with be true in a 1:M relationship.
-						Repeated: field.Repeated,
+						// Repeated with be true in a 1:M relationship for create only.
+						Repeated: action.Type.Value != parser.ActionTypeList && field.Repeated,
 						MessageName: &wrapperspb.StringValue{
 							Value: relatedModelMessageName,
 						},
 					},
-					Optional:    field.Optional,
-					Nullable:    field.Optional,
+					Optional: input.Optional,
+					// List op implicit inputs are not nullable, because they will have a query type.
+					Nullable:    action.Type.Value != parser.ActionTypeList && field.Optional,
 					MessageName: currMessage.Name,
 				})
 
@@ -399,15 +400,37 @@ func (scm *Builder) makeMessageHierarchyFromImplicitInput(rootMessage *proto.Mes
 		} else {
 			typeInfo, target, targetsOptionalField := scm.inferParserInputType(model, action, input, impl)
 
-			// If this is the last or only target, then we add the field to the current message using the typeInfo.
-			currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
-				Name:        fragment,
-				Type:        typeInfo,
-				Target:      target,
-				Optional:    input.Optional,
-				Nullable:    targetsOptionalField,
-				MessageName: currMessage.Name,
-			})
+			if action.Type.Value == parser.ActionTypeList {
+				queryMessage, err := makeListQueryInputMessage(typeInfo)
+				if err != nil {
+					panic(err.Error())
+				}
+
+				if !lo.SomeBy(scm.proto.Messages, func(m *proto.Message) bool { return m.Name == queryMessage.Name }) {
+					scm.proto.Messages = append(scm.proto.Messages, queryMessage)
+				}
+
+				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
+					Name: fragment,
+					Type: &proto.TypeInfo{
+						Type:        proto.Type_TYPE_MESSAGE,
+						MessageName: wrapperspb.String(queryMessage.Name)},
+					Target:      target,
+					Optional:    input.Optional,
+					Nullable:    false,
+					MessageName: currMessage.Name,
+				})
+			} else {
+				// If this is the last or only target, then we add the field to the current message using the typeInfo.
+				currMessage.Fields = append(currMessage.Fields, &proto.MessageField{
+					Name:        fragment,
+					Type:        typeInfo,
+					Target:      target,
+					Optional:    input.Optional,
+					Nullable:    targetsOptionalField,
+					MessageName: currMessage.Name,
+				})
+			}
 		}
 	}
 }
@@ -503,29 +526,18 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			},
 		})
 	case parser.ActionTypeList:
-		wheres := []*proto.MessageField{}
+		whereMessage := &proto.Message{
+			Name:   makeWhereMessageName(action.Name.Value),
+			Fields: []*proto.MessageField{},
+		}
+
 		for _, input := range action.Inputs {
-			typeInfo, target, _ := scm.inferParserInputType(model, action, input, impl)
-
-			if target != nil {
-				queryMessage, err := makeListQueryInputMessage(typeInfo)
-
-				if err != nil {
-					continue
-				}
-
-				scm.proto.Messages = append(scm.proto.Messages, queryMessage)
-				wheres = append(wheres, &proto.MessageField{
-					Name: input.Name(),
-					Type: &proto.TypeInfo{
-						Type:        proto.Type_TYPE_MESSAGE,
-						MessageName: wrapperspb.String(queryMessage.Name)},
-					Target:      target,
-					Optional:    input.Optional,
-					MessageName: makeWhereMessageName(action.Name.Value),
-				})
+			if input.Label == nil {
+				scm.makeMessageHierarchyFromImplicitInput(whereMessage, input, model, action, impl)
 			} else {
-				wheres = append(wheres, &proto.MessageField{
+				typeInfo := scm.explicitInputToTypeInfo(input)
+
+				whereMessage.Fields = append(whereMessage.Fields, &proto.MessageField{
 					Name:        input.Name(),
 					Type:        typeInfo,
 					Optional:    input.Optional,
@@ -534,17 +546,14 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 			}
 		}
 
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
-			Name:   makeWhereMessageName(action.Name.Value),
-			Fields: wheres,
-		})
+		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
 
 		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
 			Name: makeInputMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{
 				{
 					Name: "where",
-					Optional: len(wheres) == 0 || lo.EveryBy(wheres, func(f *proto.MessageField) bool {
+					Optional: len(whereMessage.Fields) == 0 || lo.EveryBy(whereMessage.Fields, func(f *proto.MessageField) bool {
 						return f.Optional
 					}),
 					MessageName: makeInputMessageName(action.Name.Value),

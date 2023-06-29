@@ -705,8 +705,9 @@ var testCases = []testCase{
 		operationName: "listThings",
 		input: map[string]any{
 			"where": map[string]any{
-				"parentName": map[string]any{
-					"equals": "bob"}}},
+				"parent": map[string]any{
+					"name": map[string]any{
+						"equals": "bob"}}}},
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
