@@ -69,7 +69,7 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 	// switch on nearest (previous) keyword
 	switch enclosingBlock {
 	case parser.KeywordModel:
-		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributePermission})
+		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributePermission, parser.AttributeUnique})
 		return append(attributes, modelBlockKeywords...)
 	case parser.KeywordRole:
 		return roleBlockKeywords
@@ -631,6 +631,10 @@ func getActionInputCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition)
 func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
 	attrName, _ := getParentAttribute(t)
 
+	enclosingBlock := getTypeOfEnclosingBlock(t)
+
+	fmt.Print(enclosingBlock)
+
 	switch attrName {
 	case parser.AttributeSet, parser.AttributeWhere, parser.AttributeValidate:
 		return getExpressionCompletions(asts, t, cfg)
@@ -642,11 +646,63 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 		return getOrderByArgCompletions(asts, t, cfg)
 	case parser.AttributeSchedule:
 		return getScheduleArgCompletions(asts, t, cfg)
-	default:
-		// this is likely a user error e.g. providing args to an attribute
-		// that doesn't take them like @unique
-		return []*CompletionItem{}
+	case parser.AttributeUnique:
+		// composite
+		if enclosingBlock == parser.KeywordModel {
+			if t.Prev().Value() == parser.AttributeUnique {
+				// open array notation
+
+				return []*CompletionItem{{Label: "[", Kind: KindPunctuation}}
+			}
+			modelName := getParentModelName(t)
+			model := query.Model(asts, modelName)
+
+			fields := query.ModelFields(model, func(f *parser.FieldNode) bool {
+				return f.IsScalar()
+			})
+
+			allFields := lo.Map(fields, func(f *parser.FieldNode, _ int) *CompletionItem {
+				return &CompletionItem{
+					Label: f.Name.Value,
+					Kind:  KindVariable,
+				}
+			})
+
+			// when the current token is an opening array bracket, start of list
+			if t.Value() == "[" {
+				return allFields
+			}
+
+			// when there are already items
+			if t.Value() == "," {
+				prev := t.Prev().Value()
+
+				return lo.Filter(allFields, func(i *CompletionItem, _ int) bool {
+					return i.Label != prev
+				})
+			}
+
+			// if the previous token is one of the fields that have already
+			// been autocompleted, then suggest the closing array bracket ]
+			if lo.ContainsBy(allFields, func(f *CompletionItem) bool {
+				return f.Label == t.Value()
+			}) {
+				return []*CompletionItem{{Label: "]", Kind: KindPunctuation}}
+			}
+
+			if t.Value() == "]" {
+				return []*CompletionItem{{Label: ")", Kind: KindPunctuation}}
+			}
+
+			return []*CompletionItem{}
+		}
+
+		if enclosingBlock == parser.KeywordFields {
+			return []*CompletionItem{}
+		}
 	}
+
+	return []*CompletionItem{}
 }
 
 func getSortableArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
