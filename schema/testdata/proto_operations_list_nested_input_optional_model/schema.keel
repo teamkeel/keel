@@ -1,0 +1,24 @@
+model Publisher {
+    fields {
+        name Text
+        authors Author[]
+    }
+
+}
+
+model Author {
+    fields {
+        publisher Publisher?
+        books Book[]
+    }
+}
+
+model Book {
+    fields {
+        author Author
+    }
+
+    functions {
+        list listBooksByPublisherName(author.publisher.name)
+    }
+}

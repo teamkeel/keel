@@ -764,6 +764,122 @@ export interface ListPersonsInput {
 	})
 }
 
+func TestWriteActionInputTypesListRelationshipOptionalFields(t *testing.T) {
+	schema := `
+	model Publisher {
+		fields {
+			name Text?
+			authors Author[]
+		}
+	
+	}
+	
+	model Author {
+		fields {
+			publisher Publisher?
+			books Book[]
+		}
+	}
+	
+	model Book {
+		fields {
+			author Author?
+		}
+	
+		functions {
+			list listBooks(author.publisher.name)
+		}
+	}`
+
+	expected := `
+export interface ListBooksAuthorInput {
+	publisher: ListBooksAuthorPublisherInput;
+}
+export interface ListBooksAuthorPublisherInput {
+	name: StringQueryInput;
+}
+export interface StringQueryInput {
+	equals?: string | null;
+	notEquals?: string | null;
+	startsWith?: string;
+	endsWith?: string;
+	contains?: string;
+	oneOf?: string[];
+}
+export interface ListBooksWhere {
+	author: ListBooksAuthorInput;
+}
+export interface ListBooksInput {
+	where: ListBooksWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
+func TestWriteActionInputTypesListRelationshipOptionalInput(t *testing.T) {
+	schema := `
+	model Publisher {
+		fields {
+			name Text
+			authors Author[]
+		}
+	
+	}
+	
+	model Author {
+		fields {
+			publisher Publisher
+			books Book[]
+		}
+	}
+	
+	model Book {
+		fields {
+			author Author
+		}
+	
+		functions {
+			list listBooks(author.publisher.name?)
+		}
+	}`
+
+	expected := `
+export interface ListBooksAuthorInput {
+	publisher?: ListBooksAuthorPublisherInput;
+}
+export interface ListBooksAuthorPublisherInput {
+	name?: StringQueryInput;
+}
+export interface StringQueryInput {
+	equals?: string | null;
+	notEquals?: string | null;
+	startsWith?: string;
+	endsWith?: string;
+	contains?: string;
+	oneOf?: string[];
+}
+export interface ListBooksWhere {
+	author?: ListBooksAuthorInput;
+}
+export interface ListBooksInput {
+	where?: ListBooksWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
 func TestWriteActionInputTypesDelete(t *testing.T) {
 	schema := `
 model Person {
