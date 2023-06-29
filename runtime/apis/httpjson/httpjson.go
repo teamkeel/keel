@@ -44,8 +44,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		var inputs any
 
 		span.SetAttributes(
-			attribute.String("action", actionName),
-			attribute.String("http.method", r.Method),
+			attribute.String("api.protocol", "HTTP JSON"),
 		)
 
 		switch r.Method {

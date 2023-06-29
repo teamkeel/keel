@@ -75,7 +75,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		span.SetAttributes(
 			attribute.String("request.id", req.ID),
-			attribute.String("action", req.Method),
+			attribute.String("api.protocol", "RPC"),
 		)
 
 		op := proto.FindOperation(p, actionName)

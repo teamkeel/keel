@@ -3,7 +3,6 @@ package functions
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/segmentio/ksuid"
@@ -71,7 +70,7 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 }
 
 func CallFunction(ctx context.Context, actionName string, body any, permissionState *common.PermissionState) (any, map[string][]string, error) {
-	ctx, span := tracer.Start(ctx, fmt.Sprintf("Call Function: %s", actionName))
+	ctx, span := tracer.Start(ctx, "Call function")
 	defer span.End()
 
 	transport, ok := ctx.Value(contextKey).(Transport)
