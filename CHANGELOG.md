@@ -1,3 +1,10 @@
+## [0.341.1](https://github.com/teamkeel/keel/compare/v0.341.0...v0.341.1) (2023-06-29)
+
+
+### Bug Fixes
+
+* validate unique attribute restrictions ([#1022](https://github.com/teamkeel/keel/issues/1022)) ([ff43bb9](https://github.com/teamkeel/keel/commit/ff43bb98d07db994ac36777b6c8ac7e01dd11c3d))
+
 # [0.341.0](https://github.com/teamkeel/keel/compare/v0.340.0...v0.341.0) (2023-06-29)
 
 
