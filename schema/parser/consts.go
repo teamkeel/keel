@@ -133,4 +133,5 @@ const (
 	AttributeDefault    = "default"
 	AttributeValidate   = "validate"
 	AttributeRelation   = "relation"
+	AttributeOrderBy    = "orderBy"
 )

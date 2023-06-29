@@ -2,7 +2,7 @@
   "errors": [
     {
       "message": "operation 'createProfile' has an unrecognised attribute @save",
-      "hint": "Did you mean @set, @where, @permission, or @validate?",
+      "hint": "Did you mean @set, @where, @permission, @validate, or @orderBy?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_operation_unsupported_attribute/schema.keel",

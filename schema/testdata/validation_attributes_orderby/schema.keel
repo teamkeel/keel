@@ -1,0 +1,24 @@
+
+model Author {
+	fields {
+		firstName Text
+		surname Text
+	}
+
+	operations {
+		create createAuthor() with (firstName, surname) {
+            @orderBy(firstName: asc)
+		}
+
+		list listAuthors() {
+            @orderBy(firstName: asc)
+            @orderBy(surname: asc)
+		}
+	}
+
+	functions {
+		list listAuthorsFn() {
+            @orderBy(firstName: asc, surname: asc)
+		}
+	}
+}

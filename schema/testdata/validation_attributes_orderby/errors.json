@@ -1,0 +1,55 @@
+{
+  "errors": [
+    {
+      "message": "function 'listAuthorsFn' has an unrecognised attribute @orderBy",
+      "hint": "Did you mean @permission?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "offset": 323,
+        "line": 21,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "offset": 331,
+        "line": 21,
+        "column": 21
+      }
+    },
+    {
+      "message": "@orderBy can only be used on list operations",
+      "hint": "",
+      "code": "AttributeNotAllowedError",
+      "pos": {
+        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "offset": 140,
+        "line": 10,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "offset": 148,
+        "line": 10,
+        "column": 21
+      }
+    },
+    {
+      "message": "@orderBy can only be defined once per operation",
+      "hint": "",
+      "code": "AttributeNotAllowedError",
+      "pos": {
+        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "offset": 242,
+        "line": 15,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "offset": 250,
+        "line": 15,
+        "column": 21
+      }
+    }
+  ]
+}

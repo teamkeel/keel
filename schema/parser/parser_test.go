@@ -210,6 +210,42 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 	assert.Equal(t, "create", v2.Array.Values[0].Ident.Fragments[0].Fragment)
 }
 
+func TestOperationWithOrderByAttributes(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	model Author {
+		fields {
+		  firstName Text
+		  surname Text
+		}
+
+		operations {
+		  list listAuthors() {
+			@orderBy(firstName: asc, surname: desc)
+		  }
+		}
+	}`})
+
+	attribute := schema.Declarations[0].Model.Sections[1].Operations[0].Attributes[0]
+
+	assert.Equal(t, "orderBy", attribute.Name.Value)
+
+	arg1 := attribute.Arguments[0]
+	assert.Equal(t, true, arg1.Expression.IsValue())
+	assert.Equal(t, "firstName", arg1.Label.Value)
+
+	arg2 := attribute.Arguments[1]
+	assert.Equal(t, true, arg2.Expression.IsValue())
+	assert.Equal(t, "surname", arg2.Label.Value)
+
+	v1, err := arg1.Expression.ToValue()
+	assert.NoError(t, err)
+	assert.Equal(t, "asc", v1.Ident.Fragments[0].Fragment)
+
+	v2, err := arg2.Expression.ToValue()
+	assert.NoError(t, err)
+	assert.Equal(t, "desc", v2.Ident.Fragments[0].Fragment)
+}
+
 func TestAPI(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
 	api Web {
