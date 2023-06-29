@@ -77,6 +77,7 @@ var visitorFuncs = []VisitorFunc{
 	RepeatedScalarFieldRule,
 	NameClashesRule,
 	DirectManyToManyRule,
+	UniqueAttributeRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
