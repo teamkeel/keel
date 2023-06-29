@@ -212,18 +212,18 @@ func TestAttributeWithNamedArguments(t *testing.T) {
 
 func TestOperationWithOrderByAttributes(t *testing.T) {
 	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
-	model Author {
-		fields {
-		  firstName Text
-		  surname Text
-		}
+model Author {
+    fields {
+        firstName Text
+        surname Text
+    }
 
-		operations {
-		  list listAuthors() {
-			@orderBy(firstName: asc, surname: desc)
-		  }
-		}
-	}`})
+    operations {
+        list listAuthors() {
+            @orderBy(firstName: asc, surname: desc)
+        }
+    }
+}`})
 
 	attribute := schema.Declarations[0].Model.Sections[1].Operations[0].Attributes[0]
 

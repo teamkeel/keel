@@ -80,9 +80,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
-        "offset": 273,
+        "offset": 268,
         "line": 14,
-        "column": 47
+        "column": 42
       }
     },
     {
@@ -114,9 +114,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
-        "offset": 326,
+        "offset": 321,
         "line": 15,
-        "column": 52
+        "column": 47
       }
     },
     {
@@ -148,9 +148,9 @@
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
-        "offset": 379,
+        "offset": 374,
         "line": 16,
-        "column": 52
+        "column": 47
       }
     },
     {
@@ -176,9 +176,9 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
-        "offset": 402,
+        "offset": 413,
         "line": 17,
-        "column": 22
+        "column": 33
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
@@ -210,9 +210,9 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
-        "offset": 441,
+        "offset": 452,
         "line": 18,
-        "column": 22
+        "column": 33
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
@@ -244,9 +244,9 @@
       "code": "AttributeArgumentError",
       "pos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
-        "offset": 478,
+        "offset": 489,
         "line": 19,
-        "column": 22
+        "column": 33
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
