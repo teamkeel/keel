@@ -1,3 +1,10 @@
+# [0.341.0](https://github.com/teamkeel/keel/compare/v0.340.0...v0.341.0) (2023-06-29)
+
+
+### Features
+
+* nested input structure for list actions ([#1023](https://github.com/teamkeel/keel/issues/1023)) ([cccb9d8](https://github.com/teamkeel/keel/commit/cccb9d82eccaa11d702eef084c8b361872dbb645))
+
 # [0.340.0](https://github.com/teamkeel/keel/compare/v0.339.1...v0.340.0) (2023-06-26)
 
 
