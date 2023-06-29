@@ -633,8 +633,6 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 
 	enclosingBlock := getTypeOfEnclosingBlock(t)
 
-	fmt.Print(enclosingBlock)
-
 	switch attrName {
 	case parser.AttributeSet, parser.AttributeWhere, parser.AttributeValidate:
 		return getExpressionCompletions(asts, t, cfg)
