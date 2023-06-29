@@ -1,14 +1,14 @@
 model Publisher { }
 
 model Author {
-	fields {
-		firstName Text
-		surname Text
-		publisher Publisher
-	}
+    fields {
+        firstName Text
+        surname Text
+        publisher Publisher
+    }
 
-	operations {
-		list listAuthors() {
+    operations {
+        list listAuthors() {
             @orderBy
             @orderBy(firstName)
             @orderBy(firstName: asc, nope: asc)
@@ -17,6 +17,6 @@ model Author {
             @orderBy(firstName: "asc")
             @orderBy(firstName: 123)
             @orderBy(firstName: ASC)
-		}
-	}
+        }
+    }
 }

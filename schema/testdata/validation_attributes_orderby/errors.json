@@ -6,13 +6,13 @@
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attributes_orderby/schema.keel",
-        "offset": 323,
+        "offset": 380,
         "line": 21,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby/schema.keel",
-        "offset": 331,
+        "offset": 388,
         "line": 21,
         "column": 21
       }
@@ -23,13 +23,13 @@
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attributes_orderby/schema.keel",
-        "offset": 140,
+        "offset": 167,
         "line": 10,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby/schema.keel",
-        "offset": 148,
+        "offset": 175,
         "line": 10,
         "column": 21
       }
@@ -40,13 +40,13 @@
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attributes_orderby/schema.keel",
-        "offset": 242,
+        "offset": 281,
         "line": 15,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attributes_orderby/schema.keel",
-        "offset": 250,
+        "offset": 289,
         "line": 15,
         "column": 21
       }
