@@ -352,7 +352,11 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	query.AppendOrderBy(IdField(), sortOrder)
 
 	// Select hasNext clause
-	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlQuote(query.table))
+	orderByClausesAsSql := []string{}
+	for _, o := range query.orderBy {
+		orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toColumnString(query), o.direction))
+	}
+	hasNext := fmt.Sprintf("CASE WHEN LEAD(%s) OVER (ORDER BY %s) IS NOT NULL THEN true ELSE false END AS hasNext", IdField().toColumnString(query), strings.Join(orderByClausesAsSql, ", "))
 	query.AppendSelectClause(hasNext)
 
 	// We add a subquery to the select list that fetches the total count of records
@@ -363,69 +367,13 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
 	query.args = append(query.args, query.args...)
 
-	// Paging condition is ANDed to any existing conditions
-	query.And()
-
 	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
-		var err error
-		if len(query.orderBy) > 1 {
-			query.OpenParenthesis()
+		err := query.applyAfterCursor(page.After)
+		if err != nil {
+			return err
 		}
-		for i := 0; i < len(query.orderBy); i++ {
-			if i > 0 {
-				query.OpenParenthesis()
-			}
-			for j := 0; j < i; j++ {
-				p := query.orderBy[j]
-
-				q := NewQuery(query.Model)
-				q.AppendSelect(p.field)
-				err = q.Where(IdField(), Equals, Value(page.After))
-				if err != nil {
-					return err
-				}
-
-				err = query.Where(p.field, Equals, InlineQuery(q))
-				if err != nil {
-					return err
-				}
-				query.And()
-			}
-
-			o := query.orderBy[i]
-
-			q := NewQuery(query.Model)
-			q.AppendSelect(o.field)
-			err = q.Where(IdField(), Equals, Value(page.After))
-			if err != nil {
-				return err
-			}
-
-			var operator ActionOperator
-			switch o.direction {
-			case "ASC":
-				operator = GreaterThan
-			case "DESC":
-				operator = LessThan
-			default:
-				return errors.New("unknown order by direction")
-			}
-
-			err = query.Where(o.field, operator, InlineQuery(q))
-			if err != nil {
-				return err
-			}
-			if i > 0 {
-				query.CloseParenthesis()
-			}
-			query.Or()
-		}
-		if len(query.orderBy) > 1 {
-			query.CloseParenthesis()
-		}
-
 	case page.Before != "":
 		err := query.Where(IdField(), LessThan, Value(page.Before))
 		if err != nil {
@@ -433,6 +381,72 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 		}
 	}
 
+	return nil
+}
+
+// Apply forward pagination 'after' cursor filter to the query.
+func (query *QueryBuilder) applyAfterCursor(cursor string) error {
+	query.And()
+
+	var err error
+	if len(query.orderBy) > 1 {
+		query.OpenParenthesis()
+	}
+
+	// For each column being ordered, we need to filter those which proceed the cursor row.
+	for i := 0; i < len(query.orderBy); i++ {
+		if i > 0 {
+			query.OpenParenthesis()
+		}
+		for j := 0; j < i; j++ {
+			orderClause := query.orderBy[j]
+
+			inline := NewQuery(query.Model)
+			inline.AppendSelect(orderClause.field)
+			err = inline.Where(IdField(), Equals, Value(cursor))
+			if err != nil {
+				return err
+			}
+
+			err = query.Where(orderClause.field, Equals, InlineQuery(inline))
+			if err != nil {
+				return err
+			}
+			query.And()
+		}
+
+		orderClause := query.orderBy[i]
+
+		inline := NewQuery(query.Model)
+		inline.AppendSelect(orderClause.field)
+		err = inline.Where(IdField(), Equals, Value(cursor))
+		if err != nil {
+			return err
+		}
+
+		var operator ActionOperator
+		switch orderClause.direction {
+		case "ASC":
+			operator = GreaterThan
+		case "DESC":
+			operator = LessThan
+		default:
+			return errors.New("unknown order by direction")
+		}
+
+		err = query.Where(orderClause.field, operator, InlineQuery(inline))
+		if err != nil {
+			return err
+		}
+		if i > 0 {
+			query.CloseParenthesis()
+		}
+		query.Or()
+	}
+
+	if len(query.orderBy) > 1 {
+		query.CloseParenthesis()
+	}
 	return nil
 }
 
