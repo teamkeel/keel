@@ -34,7 +34,7 @@ func AuthoriseForActionType(scope *Scope, opType proto.OperationType, rowsToAuth
 
 // Authorise checks authorisation for rows using the slice of permission rules provided.
 func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (authorized bool, err error) {
-	ctx, span := tracer.Start(scope.Context, "Check Permissions")
+	ctx, span := tracer.Start(scope.Context, "Check permissions")
 	defer span.End()
 
 	scope = scope.WithContext(ctx)

@@ -9,6 +9,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/actions")
@@ -64,8 +65,13 @@ func NewModelScope(
 }
 
 func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
-	ctx, span := tracer.Start(scope.Context, fmt.Sprintf("Action: %s/%s", scope.Model.Name, scope.Operation.Name))
+	ctx, span := tracer.Start(scope.Context, scope.Operation.Name)
 	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("action", scope.Operation.Name),
+		attribute.String("model", scope.Model.Name),
+	)
 
 	scope = scope.WithContext(ctx)
 

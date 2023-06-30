@@ -230,5 +230,7 @@ func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http
 		return nil, err
 	}
 
+	span.SetAttributes(attribute.String("identity.id", identity.Id))
+
 	return identity, nil
 }

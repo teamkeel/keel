@@ -93,6 +93,7 @@ func NewHandler(s *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		span.SetAttributes(
 			attribute.String("params.query", params.Query),
 			attribute.String("params.operationName", params.OperationName),
+			attribute.String("api.protocol", "GraphQL"),
 		)
 
 		logrus.WithFields(logrus.Fields{
