@@ -89,7 +89,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("@orderBy argument label '%s' must correspond to a field on this model", arg.Label.Value),
 					},
-					arg,
+					arg.Label,
 				))
 				return
 			}
@@ -100,7 +100,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 					errorhandling.ErrorDetails{
 						Message: "@orderBy does not support ordering of relationships fields",
 					},
-					arg,
+					arg.Label,
 				))
 				return
 			}
@@ -111,7 +111,7 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 					errorhandling.ErrorDetails{
 						Message: fmt.Sprintf("@orderBy argument name '%s' already defined", arg.Label.Value),
 					},
-					arg,
+					arg.Label,
 				))
 				return
 			}
@@ -131,14 +131,14 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				return
 			}
 
-			if operand.Ident == nil || (operand.Ident.Fragments[0].Fragment != "asc" && operand.Ident.Fragments[0].Fragment != "desc") {
+			if operand.Ident == nil || (operand.Ident.Fragments[0].Fragment != parser.OrderByAscending && operand.Ident.Fragments[0].Fragment != parser.OrderByDescending) {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
 						Message: "@orderBy argument value must either be asc or desc",
 						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
 					},
-					arg,
+					arg.Expression,
 				))
 				return
 			}

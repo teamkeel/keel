@@ -135,3 +135,8 @@ const (
 	AttributeRelation   = "relation"
 	AttributeOrderBy    = "orderBy"
 )
+
+const (
+	OrderByAscending  = "asc"
+	OrderByDescending = "desc"
+)
