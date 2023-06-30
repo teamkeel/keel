@@ -133,4 +133,10 @@ const (
 	AttributeDefault    = "default"
 	AttributeValidate   = "validate"
 	AttributeRelation   = "relation"
+	AttributeOrderBy    = "orderBy"
+)
+
+const (
+	OrderByAscending  = "asc"
+	OrderByDescending = "desc"
 )

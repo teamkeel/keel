@@ -69,6 +69,7 @@ var attributeLocations = map[string][]string{
 		parser.AttributeWhere,
 		parser.AttributePermission,
 		parser.AttributeValidate,
+		parser.AttributeOrderBy,
 	},
 	parser.KeywordFunction: {
 		parser.AttributePermission,
