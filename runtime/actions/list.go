@@ -31,6 +31,9 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 
 				argsSectioned, ok := args[input.Name].(map[string]any)
 				if !ok {
+					if input.Optional {
+						continue
+					}
 					return fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
 				}
 
