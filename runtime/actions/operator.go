@@ -103,7 +103,7 @@ func expressionOperatorToActionOperator(in string) (out ActionOperator, err erro
 	}
 }
 
-func toSQL(o proto.OrderDirection) (string, error) {
+func toSql(o proto.OrderDirection) (string, error) {
 	switch o {
 	case proto.OrderDirection_ORDER_DIRECTION_ASCENDING:
 		return "ASC", nil

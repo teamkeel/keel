@@ -67,7 +67,7 @@ type QueryOperand struct {
 	value  any
 }
 
-func (o *QueryOperand) IsQuery() bool {
+func (o *QueryOperand) IsInlineQuery() bool {
 	return o.query != nil
 }
 
@@ -305,8 +305,6 @@ func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, 
 
 // Include a column in ORDER BY.
 func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand, direction string) {
-	//c := operand.toColumnString(query)
-
 	order := orderClause{field: operand, direction: direction}
 
 	if !lo.SomeBy(query.orderBy, func(o orderClause) bool { return o.field == order.field }) {
@@ -335,21 +333,17 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Paging condition is ANDed to any existing conditions
 	query.And()
 
-	sortOrder := "ASC"
 	// Add where condition to implement the page size
 	switch {
 	case page.First != 0:
 		query.Limit(page.First)
 	case page.Last != 0:
-		// set the sort order to descending in order to make "last" work. the results are then reversed in the List execute method to restore the previous ascending order
-		// this isn't going to work when we allow the user to specify their own order by so we'll need to circle back on this then
-		sortOrder = "DESC"
 		query.Limit(page.Last)
 	}
 
 	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
 	// that helps to determine "hasNextPage"
-	query.AppendOrderBy(IdField(), sortOrder)
+	query.AppendOrderBy(IdField(), "ASC")
 
 	// Select hasNext clause
 	orderByClausesAsSql := []string{}
@@ -370,12 +364,12 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
-		err := query.applyAfterCursor(page.After)
+		err := query.applyCursorFilter(page.After, false)
 		if err != nil {
 			return err
 		}
 	case page.Before != "":
-		err := query.Where(IdField(), LessThan, Value(page.Before))
+		err := query.applyCursorFilter(page.Before, true)
 		if err != nil {
 			return err
 		}
@@ -385,7 +379,7 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 }
 
 // Apply forward pagination 'after' cursor filter to the query.
-func (query *QueryBuilder) applyAfterCursor(cursor string) error {
+func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) error {
 	query.And()
 
 	var err error
@@ -425,11 +419,15 @@ func (query *QueryBuilder) applyAfterCursor(cursor string) error {
 		}
 
 		var operator ActionOperator
-		switch orderClause.direction {
-		case "ASC":
+		switch {
+		case orderClause.direction == "ASC" && !isBackwards:
 			operator = GreaterThan
-		case "DESC":
+		case orderClause.direction == "ASC" && isBackwards:
 			operator = LessThan
+		case orderClause.direction == "DESC" && !isBackwards:
+			operator = LessThan
+		case orderClause.direction == "DESC" && isBackwards:
+			operator = GreaterThan
 		default:
 			return errors.New("unknown order by direction")
 		}
@@ -454,10 +452,12 @@ func (query *QueryBuilder) countQuery() string {
 	selection := "COUNT("
 	joins := ""
 	filters := ""
-	if len(query.distinctOn) == 1 {
-		selection += fmt.Sprintf("DISTINCT %s", strings.Join(query.distinctOn, ", "))
-	} else if len(query.distinctOn) > 1 {
-		selection += fmt.Sprintf("DISTINCT (%s)", strings.Join(query.distinctOn, ", "))
+	if len(query.distinctOn) > 0 {
+		distinctFields := strings.Join(query.distinctOn, ", ")
+		if len(query.distinctOn) > 1 {
+			distinctFields = fmt.Sprintf("(%s)", distinctFields)
+		}
+		selection += fmt.Sprintf("DISTINCT %s", distinctFields)
 	} else {
 		selection += "*"
 	}
@@ -942,7 +942,7 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		}
 	case rhs.IsNull():
 		rhsSqlOperand = "NULL"
-	case rhs.IsQuery():
+	case rhs.IsInlineQuery():
 		rhsSqlOperand = fmt.Sprintf("(%s)", rhs.query.SelectStatement().template)
 		args = append(args, rhs.query.args...)
 	default:

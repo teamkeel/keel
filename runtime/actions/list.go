@@ -83,6 +83,20 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 	return nil
 }
 
+// Applies all schema-defined ordering to the query.
+func (query *QueryBuilder) applyOrdering(scope *Scope) error {
+	for _, orderBy := range scope.Operation.OrderBy {
+		direction, err := toSql(orderBy.Direction)
+		if err != nil {
+			return err
+		}
+
+		query.AppendOrderBy(Field(orderBy.FieldName), direction)
+	}
+
+	return nil
+}
+
 func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	query := NewQuery(scope.Model)
 
@@ -148,19 +162,4 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	}
 
 	return query.SelectStatement(), &page, nil
-}
-
-// Applies all exlicit where attribute filters to the query.
-func (query *QueryBuilder) applyOrdering(scope *Scope) error {
-	for _, orderBy := range scope.Operation.OrderBy {
-
-		direction, err := toSQL(orderBy.Direction)
-		if err != nil {
-			return err
-		}
-
-		query.AppendOrderBy(Field(orderBy.FieldName), direction)
-	}
-
-	return nil
 }
