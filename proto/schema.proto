@@ -110,7 +110,7 @@ message Operation {
     // Reserved for legacy OperationInput type.
     reserved 5;
     
-    // A list of permission rules to apply to this operation
+    // A list of permission rules to apply to this operation.EnvironmentVariable
     repeated PermissionRule permissions = 6;
 
     // A list of assignment expression to be executed as part of this operation.
@@ -123,8 +123,11 @@ message Operation {
     // If there are multiple entries in this field they are AND'd.
     repeated Expression where_expressions = 8;
 
-    // A list of expressions that perform some kind of validation (likely on the inputs)
+    // A list of expressions that perform some kind of validation (likely on the inputs).
     repeated Expression validation_expressions = 9;
+
+    // A ordered list of order by statements.
+    repeated OrderByStatement order_by = 10;
 
     // The name of the input message type for this operation.
     string input_message_name = 11;
@@ -164,6 +167,14 @@ message PermissionRule {
     // A list of operation types that this permission rule applies to
     // Should not be set if `operation_name` is provided.
     repeated OperationType operations_types = 5;
+}
+
+message OrderByStatement {
+    // The name of the field to perform ordering on.
+    string field_name = 1;
+
+    // The direction in which to order.
+    OrderDirection direction = 2;
 }
 
 message Expression {
@@ -336,4 +347,10 @@ enum Type {
 
     // Any is used in Message types to denote a field with any type
     TYPE_ANY = 17;
+}
+
+enum OrderDirection {
+    ORDER_DIRECTION_UNKNOWN = 0;
+    ORDER_DIRECTION_ASCENDING = 1;
+    ORDER_DIRECTION_DECENDING = 2;
 }

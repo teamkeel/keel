@@ -762,6 +762,37 @@ var testCases = []testCase{
 		expectedArgs: []any{false, false, 50},
 	},
 	{
+		name: "list_op_orderby_attribute",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+					views Number
+				}
+				operations {
+					list listThings() {
+						@orderBy(name: asc, views: desc)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount 
+			FROM 
+				"thing" 
+			ORDER BY 
+				"thing"."name" ASC, 
+				"thing"."views" DESC, 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
 		name: "create_op_nested_model",
 		keelSchema: `
 			model Parent {
@@ -1637,15 +1668,16 @@ func TestQueryBuilder(t *testing.T) {
 			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
 
 			if testCase.expectedArgs != nil {
-				for i := 1; i < len(testCase.expectedArgs); i++ {
-					if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
-						assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
-						break
-					}
-				}
-
 				if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
 					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
+
+				} else {
+					for i := 1; i < len(testCase.expectedArgs); i++ {
+						if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
+							assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
+							break
+						}
+					}
 				}
 			}
 		})

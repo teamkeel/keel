@@ -1,8 +1,10 @@
 package actions
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
 )
 
@@ -98,5 +100,16 @@ func expressionOperatorToActionOperator(in string) (out ActionOperator, err erro
 
 	default:
 		return Unknown, fmt.Errorf("this is not a recognized conditional operator: %s", in)
+	}
+}
+
+func toSQL(o proto.OrderDirection) (string, error) {
+	switch o {
+	case proto.OrderDirection_ORDER_DIRECTION_ASCENDING:
+		return "ASC", nil
+	case proto.OrderDirection_ORDER_DIRECTION_DECENDING:
+		return "DESC", nil
+	default:
+		return "", errors.New("cannot parse ORDER_DIRECTION_UNKNOWN")
 	}
 }

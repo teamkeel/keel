@@ -126,6 +126,11 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		return nil, nil, err
 	}
 
+	err = query.applyOrdering(scope)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	page, err := ParsePage(input)
 	if err != nil {
 		return nil, nil, err
@@ -140,4 +145,19 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	}
 
 	return query.SelectStatement(), &page, nil
+}
+
+// Applies all exlicit where attribute filters to the query.
+func (query *QueryBuilder) applyOrdering(scope *Scope) error {
+	for _, orderBy := range scope.Operation.OrderBy {
+
+		direction, err := toSQL(orderBy.Direction)
+		if err != nil {
+			return err
+		}
+
+		query.AppendOrderBy(Field(orderBy.FieldName), direction)
+	}
+
+	return nil
 }
