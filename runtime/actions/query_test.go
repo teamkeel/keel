@@ -1009,14 +1009,15 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" DESC) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
+				DISTINCT ON("thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount 
 			FROM 
 				"thing" 
-			WHERE
-				"thing"."id" < ?
+			WHERE 
+				"thing"."id" < (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
 			ORDER BY 
-				"thing"."id" DESC LIMIT ?`,
+				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"123", 2},
 	},
 	{

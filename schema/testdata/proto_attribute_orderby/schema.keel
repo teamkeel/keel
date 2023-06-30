@@ -1,12 +1,12 @@
 model Author {
-	fields {
-		firstName Text
-		surname Text
-	}
+    fields {
+        firstName Text
+        surname Text
+    }
 
-	operations {
-		list listAuthors() {
+    operations {
+        list listAuthors() {
             @orderBy(firstName: asc, surname: desc)
-		}
-	}
+        }
+    }
 }
