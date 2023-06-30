@@ -5,13 +5,13 @@
       "hint": "Did you mean @permission?",
       "code": "E011",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
         "offset": 380,
         "line": 21,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
         "offset": 388,
         "line": 21,
         "column": 21
@@ -22,13 +22,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
         "offset": 167,
         "line": 10,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
         "offset": 175,
         "line": 10,
         "column": 21
@@ -39,13 +39,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
         "offset": 281,
         "line": 15,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby/schema.keel",
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
         "offset": 289,
         "line": 15,
         "column": 21

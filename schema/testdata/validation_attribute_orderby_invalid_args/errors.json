@@ -5,13 +5,13 @@
       "hint": "",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 186,
         "line": 12,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 194,
         "line": 12,
         "column": 21
@@ -22,13 +22,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 207,
         "line": 13,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 215,
         "line": 13,
         "column": 21
@@ -39,13 +39,13 @@
       "hint": "For example, @orderBy(surname: asc, firstName: asc)",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 216,
         "line": 13,
         "column": 22
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 225,
         "line": 13,
         "column": 31
@@ -56,13 +56,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 239,
         "line": 14,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 247,
         "line": 14,
         "column": 21
@@ -73,13 +73,13 @@
       "hint": "",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 264,
         "line": 14,
         "column": 38
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 268,
         "line": 14,
         "column": 42
@@ -90,13 +90,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 287,
         "line": 15,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 295,
         "line": 15,
         "column": 21
@@ -107,13 +107,13 @@
       "hint": "",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 312,
         "line": 15,
         "column": 38
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 321,
         "line": 15,
         "column": 47
@@ -124,13 +124,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 340,
         "line": 16,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 348,
         "line": 16,
         "column": 21
@@ -141,13 +141,13 @@
       "hint": "",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 365,
         "line": 16,
         "column": 38
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 374,
         "line": 16,
         "column": 47
@@ -158,13 +158,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 393,
         "line": 17,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 401,
         "line": 17,
         "column": 21
@@ -175,13 +175,13 @@
       "hint": "For example, @orderBy(surname: asc, firstName: asc)",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 413,
         "line": 17,
         "column": 33
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 418,
         "line": 17,
         "column": 38
@@ -192,13 +192,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 432,
         "line": 18,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 440,
         "line": 18,
         "column": 21
@@ -209,13 +209,13 @@
       "hint": "For example, @orderBy(surname: asc, firstName: asc)",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 452,
         "line": 18,
         "column": 33
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 455,
         "line": 18,
         "column": 36
@@ -226,13 +226,13 @@
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 469,
         "line": 19,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 477,
         "line": 19,
         "column": 21
@@ -243,13 +243,13 @@
       "hint": "For example, @orderBy(surname: asc, firstName: asc)",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 489,
         "line": 19,
         "column": 33
       },
       "endPos": {
-        "filename": "testdata/validation_attributes_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
         "offset": 492,
         "line": 19,
         "column": 36
