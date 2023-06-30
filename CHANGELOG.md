@@ -1,3 +1,10 @@
+# [0.342.0](https://github.com/teamkeel/keel/compare/v0.341.1...v0.342.0) (2023-06-30)
+
+
+### Features
+
+* orderBy attribute schema validation ([#1025](https://github.com/teamkeel/keel/issues/1025)) ([c9aac22](https://github.com/teamkeel/keel/commit/c9aac22d9d8373a262bb9e41d80c2f62347d850f))
+
 ## [0.341.1](https://github.com/teamkeel/keel/compare/v0.341.0...v0.341.1) (2023-06-29)
 
 
