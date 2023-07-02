@@ -84,7 +84,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 }
 
 // Applies all schema-defined ordering to the query.
-func (query *QueryBuilder) applyOrdering(scope *Scope) error {
+func (query *QueryBuilder) applySchemaOrdering(scope *Scope) error {
 	for _, orderBy := range scope.Operation.OrderBy {
 		direction, err := toSql(orderBy.Direction)
 		if err != nil {
@@ -92,6 +92,18 @@ func (query *QueryBuilder) applyOrdering(scope *Scope) error {
 		}
 
 		query.AppendOrderBy(Field(orderBy.FieldName), direction)
+	}
+
+	return nil
+}
+
+// Applies all schema-defined ordering to the query.
+func (query *QueryBuilder) applyRequestOrdering(scope *Scope, orderBy []any) error {
+	for _, item := range orderBy {
+		obj := item.(map[string]any)
+		for field, direction := range obj {
+			query.AppendOrderBy(Field(field), direction.(string))
+		}
 	}
 
 	return nil
@@ -133,6 +145,11 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		where = map[string]any{}
 	}
 
+	orderBy, ok := input["orderBy"].([]any)
+	if !ok {
+		orderBy = []any{}
+	}
+
 	err := query.applyImplicitFiltersForList(scope, where)
 	if err != nil {
 		return nil, nil, err
@@ -143,7 +160,12 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 		return nil, nil, err
 	}
 
-	err = query.applyOrdering(scope)
+	err = query.applySchemaOrdering(scope)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = query.applyRequestOrdering(scope, orderBy)
 	if err != nil {
 		return nil, nil, err
 	}

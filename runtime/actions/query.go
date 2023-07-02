@@ -420,13 +420,13 @@ func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) er
 
 		var operator ActionOperator
 		switch {
-		case orderClause.direction == "ASC" && !isBackwards:
+		case strings.EqualFold(orderClause.direction, "ASC") && !isBackwards:
 			operator = GreaterThan
-		case orderClause.direction == "ASC" && isBackwards:
+		case strings.EqualFold(orderClause.direction, "ASC") && isBackwards:
 			operator = LessThan
-		case orderClause.direction == "DESC" && !isBackwards:
+		case strings.EqualFold(orderClause.direction, "DESC") && !isBackwards:
 			operator = LessThan
-		case orderClause.direction == "DESC" && isBackwards:
+		case strings.EqualFold(orderClause.direction, "DESC") && isBackwards:
 			operator = GreaterThan
 		default:
 			return errors.New("unknown order by direction")
