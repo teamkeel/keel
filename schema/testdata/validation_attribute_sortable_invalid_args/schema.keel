@@ -1,0 +1,18 @@
+model Publisher { }
+
+model Author {
+    fields {
+        firstName Text
+        surname Text
+        publisher Publisher
+    }
+
+    operations {
+        list listAuthors() {
+            @sortable
+            @sortable(firstName, publisher)
+            @sortable(firstName, firstName)
+            @sortable(123)
+        }
+    }
+}

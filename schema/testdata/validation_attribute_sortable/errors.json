@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "function 'listAuthorsFn' has an unrecognised attribute @sortable",
+      "hint": "Did you mean @permission?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 377,
+        "line": 21,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 386,
+        "line": 21,
+        "column": 22
+      }
+    }
+  ]
+}
