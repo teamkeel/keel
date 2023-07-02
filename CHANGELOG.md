@@ -1,3 +1,10 @@
+# [0.343.0](https://github.com/teamkeel/keel/compare/v0.342.0...v0.343.0) (2023-07-02)
+
+
+### Features
+
+* [@order](https://github.com/order)By sorting & forward pagination ([#1028](https://github.com/teamkeel/keel/issues/1028)) ([c87a4d7](https://github.com/teamkeel/keel/commit/c87a4d7c6e1f4e9289af8be720d8d4918bf542ac))
+
 # [0.342.0](https://github.com/teamkeel/keel/compare/v0.341.1...v0.342.0) (2023-06-30)
 
 
