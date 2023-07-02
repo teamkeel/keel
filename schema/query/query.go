@@ -288,6 +288,31 @@ func FieldIsUnique(field *parser.FieldNode) bool {
 	return FieldHasAttribute(field, parser.AttributePrimaryKey) || FieldHasAttribute(field, parser.AttributeUnique)
 }
 
+// ActionSortableFieldNames returns the field names of the @sortable attribute.
+// If no @sortable attribute exists, an empty slice is returned.
+func ActionSortableFieldNames(action *parser.ActionNode) ([]string, error) {
+	fields := []string{}
+	var attribute *parser.AttributeNode
+
+	for _, attr := range action.Attributes {
+		if attr.Name.Value == parser.AttributeSortable {
+			attribute = attr
+		}
+	}
+
+	if attribute != nil {
+		for _, arg := range attribute.Arguments {
+			fieldName, err := arg.Expression.ToValue()
+			if err != nil {
+				return nil, err
+			}
+			fields = append(fields, fieldName.Ident.Fragments[0].Fragment)
+		}
+	}
+
+	return fields, nil
+}
+
 func ModelFieldNames(model *parser.ModelNode) []string {
 	names := []string{}
 	for _, field := range ModelFields(model, ExcludeBuiltInFields) {
