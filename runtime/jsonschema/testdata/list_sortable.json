@@ -16,7 +16,11 @@
 		"orderBy": {
 			"type": "array",
 			"items": {
-				"$ref": "#/components/schemas/TestActionOrderBy"
+				"oneOf": [{
+					"$ref": "#/components/schemas/TestActionOrderBySurname"
+				}, {
+					"$ref": "#/components/schemas/TestActionOrderByFirstName"
+				}]
 			}
 		},
 		"where": {
@@ -26,17 +30,27 @@
 	"additionalProperties": false,
 	"components": {
 		"schemas": {
-			"TestActionOrderBy": {
+			"TestActionOrderByFirstName": {
 				"type": "object",
 				"properties": {
 					"firstName": {
-						"type": "string"
-					},
-					"surname": {
-						"type": "string"
+						"type": "string",
+						"enum": ["asc", "desc"]
 					}
 				},
-				"additionalProperties": false
+				"additionalProperties": false,
+				"required": ["firstName"]
+			},
+			"TestActionOrderBySurname": {
+				"type": "object",
+				"properties": {
+					"surname": {
+						"type": "string",
+						"enum": ["asc", "desc"]
+					}
+				},
+				"additionalProperties": false,
+				"required": ["surname"]
 			},
 			"TestActionWhere": {
 				"type": "object",

@@ -163,21 +163,24 @@
       "name": "ListAuthorsWhere"
     },
     {
-      "name": "ListAuthorsOrderBy",
+      "name": "ListAuthorsOrderByFirstName",
       "fields": [
         {
           "name": "firstName",
           "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
-        },
+            "type": "TYPE_SORT_DIRECTION"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ListAuthorsOrderBySurname",
+      "fields": [
         {
           "name": "surname",
           "type": {
-            "type": "TYPE_STRING"
-          },
-          "optional": true
+            "type": "TYPE_SORT_DIRECTION"
+          }
         }
       ]
     },
@@ -229,9 +232,12 @@
           "messageName": "ListAuthorsInput",
           "name": "orderBy",
           "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "ListAuthorsOrderBy",
-            "repeated": true
+            "type": "TYPE_ONEOF_MESSAGE",
+            "repeated": true,
+            "oneofMessageNames": [
+              "ListAuthorsOrderByFirstName",
+              "ListAuthorsOrderBySurname"
+            ]
           },
           "optional": true
         }

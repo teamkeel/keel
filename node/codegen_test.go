@@ -928,6 +928,62 @@ export interface ListBooksInput {
 	})
 }
 
+func TestWriteActionInputTypesListSortable(t *testing.T) {
+	schema := `
+enum Sport {
+	Football
+	Tennis
+}
+model Person {
+	fields {
+		name Text
+		favouriteSport Sport
+	}
+	operations {
+		list listPeople(name, favouriteSport) {
+			@sortable(name, favouriteSport)
+		}
+	}
+}`
+
+	expected := `
+export interface StringQueryInput {
+	equals?: string | null;
+	notEquals?: string | null;
+	startsWith?: string;
+	endsWith?: string;
+	contains?: string;
+	oneOf?: string[];
+}
+export interface SportQueryInput {
+	equals?: Sport | null;
+	notEquals?: Sport | null;
+	oneOf?: Sport[];
+}
+export interface ListPeopleWhere {
+	name: StringQueryInput;
+	favouriteSport: SportQueryInput;
+}
+export interface ListPeopleOrderByName {
+	name: SortDirection;
+}
+export interface ListPeopleOrderByFavouriteSport {
+	favouriteSport: SortDirection;
+}
+export interface ListPeopleInput {
+	where: ListPeopleWhere;
+	first?: number;
+	after?: string;
+	last?: number;
+	before?: string;
+	orderBy?: (ListPeopleOrderByName | ListPeopleOrderByFavouriteSport)[];
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
+	})
+}
+
 func TestWriteActionInputTypesDelete(t *testing.T) {
 	schema := `
 model Person {

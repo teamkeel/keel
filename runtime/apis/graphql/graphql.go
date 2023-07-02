@@ -754,6 +754,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 // inputTypeFromMessageField maps the type in the given proto.MessageField to a suitable graphql.Input type.
 func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageField, op *proto.Operation) (graphql.Input, error) {
 	var in graphql.Input
+	var err error
 
 	switch {
 	case field.Type.Type == proto.Type_TYPE_MESSAGE:
@@ -789,13 +790,39 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		}
 
 		mk.inputs[messageName] = inputObject
+		in = inputObject
+	case field.Type.Type == proto.Type_TYPE_ONEOF_MESSAGE:
+		messageName := fmt.Sprintf("%sOrderBy", field.MessageName)
+		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   mk.makeUniqueInputMessageName(messageName),
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
 
+		for _, oneOf := range field.Type.OneofMessageNames {
+			fieldMessage := proto.FindMessage(mk.proto.Messages, oneOf.Value)
+			for _, oneOfField := range fieldMessage.Fields {
+				oneOfField.Optional = true
+				oneOfField.Nullable = true
+				inputField, err := mk.inputTypeFromMessageField(oneOfField, op)
+				if err != nil {
+					return nil, err
+				}
+
+				inputObject.AddFieldConfig(oneOfField.Name, &graphql.InputObjectFieldConfig{
+					Type: inputField,
+				})
+			}
+		}
+
+		mk.inputs[messageName] = inputObject
 		in = inputObject
 	case field.Type.Type == proto.Type_TYPE_MODEL:
 		model := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
-		in, _ = mk.addModelInput(model)
+		in, err = mk.addModelInput(model)
+		if err != nil {
+			return nil, err
+		}
 	default:
-		var err error
 		if in, err = mk.inputTypeFor(field); err != nil {
 			return nil, err
 		}

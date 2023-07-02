@@ -38,10 +38,10 @@ var anyType = graphql.NewScalar(graphql.ScalarConfig{
 var sortDirectionType = graphql.NewEnum(graphql.EnumConfig{
 	Name: "SortDirection",
 	Values: graphql.EnumValueConfigMap{
-		"Ascending": &graphql.EnumValueConfig{
+		"asc": &graphql.EnumValueConfig{
 			Value: "asc",
 		},
-		"Descending": &graphql.EnumValueConfig{
+		"desc": &graphql.EnumValueConfig{
 			Value: "desc",
 		},
 	},

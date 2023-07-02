@@ -258,6 +258,9 @@ message TypeInfo {
 
     // If true then is type is an array of it's `type`
     bool repeated = 4;
+
+    // When the type is TYPE_ONEOF_MESSAGE, then any of these messages will satisfy.
+    repeated google.protobuf.StringValue oneof_message_names = 7;
 }
 
 message EnvironmentVariable {
@@ -349,6 +352,9 @@ enum Type {
     TYPE_ANY = 17;
 
     TYPE_SORT_DIRECTION = 18;
+
+    // Similar to union types in Typescript, any one of MESSAGE can be parsed.
+    TYPE_ONEOF_MESSAGE = 19;
 }
 
 enum OrderDirection {

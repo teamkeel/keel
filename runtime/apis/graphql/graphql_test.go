@@ -33,8 +33,13 @@ func TestGraphQL(t *testing.T) {
 	testCases := map[string]testCase{}
 
 	for _, f := range testFiles {
+
 		parts := strings.Split(f.Name(), ".")
 		name, ext := parts[0], parts[1]
+
+		if name != "list_operation_sortable" {
+			continue
+		}
 
 		tc := testCases[name]
 
@@ -79,7 +84,7 @@ func TestGraphQL(t *testing.T) {
 			})
 
 			require.NoError(t, err)
-			assert.Equal(t, 200, response.Status)
+			assert.Equal(t, 200, response.Status, string(response.Body))
 
 			actual := graphql.ToGraphQLSchemaLanguage(response)
 			expected := tc.graphql

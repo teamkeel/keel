@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type generateOptions struct {
@@ -937,6 +938,9 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		} else {
 			ret = "SortDirection"
 		}
+	case proto.Type_TYPE_ONEOF_MESSAGE:
+		messageNames := lo.Map(t.OneofMessageNames, func(s *wrapperspb.StringValue, _ int) string { return s.Value })
+		ret = fmt.Sprintf("(%s)", strings.Join(messageNames, " | "))
 	default:
 		ret = "any"
 	}
