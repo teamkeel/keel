@@ -269,7 +269,7 @@ var testCases = []testCase{
 		operationName: "listThings",
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
 			FROM 
 				"thing" 
@@ -296,7 +296,7 @@ var testCases = []testCase{
 					"contains": "bob"}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
 			FROM 
 				"thing" 
@@ -325,7 +325,7 @@ var testCases = []testCase{
 					"startsWith": "bob"}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
 			FROM 
 				"thing" 
@@ -354,7 +354,7 @@ var testCases = []testCase{
 					"endsWith": "bob"}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" LIKE ?) AS totalCount
 			FROM 
 				"thing" 
@@ -383,7 +383,7 @@ var testCases = []testCase{
 					"oneOf": []any{"bob", "dave", "adam", "pete"}}}},
 		expectedTemplate: `
             SELECT 
-                DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+                DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."name" IN (?, ?, ?, ?)) AS totalCount
             FROM 
                 "thing" 
@@ -417,7 +417,7 @@ var testCases = []testCase{
 					"oneOf": []any{"Technical", "Food"}}}},
 		expectedTemplate: `
             SELECT 
-                DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+                DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 								(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."category" IN (?, ?)) AS totalCount
             FROM 
                 "thing" 
@@ -443,7 +443,7 @@ var testCases = []testCase{
 					"after": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" > ?) AS totalCount
 			FROM 
 				"thing" 
@@ -469,7 +469,7 @@ var testCases = []testCase{
 					"onOrAfter": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" >= ?) AS totalCount
 			FROM 
 				"thing" 
@@ -495,7 +495,7 @@ var testCases = []testCase{
 					"before": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" < ?) AS totalCount
 			FROM 
 				"thing" 
@@ -521,7 +521,7 @@ var testCases = []testCase{
 					"onOrBefore": time.Date(2020, 11, 19, 9, 0, 30, 0, time.UTC)}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."created_at" <= ?) AS totalCount
 			FROM 
 				"thing" 
@@ -549,7 +549,7 @@ var testCases = []testCase{
 		input:         map[string]any{},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."title" IN (?, ?)) AS totalCount
 			FROM 
 				"thing" 
@@ -585,7 +585,7 @@ var testCases = []testCase{
 		expectedTemplate: `
 			SELECT 
 				DISTINCT ON("thing"."id") "thing".*, 
-				CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
 				(SELECT COUNT(DISTINCT "thing"."id") 
 					FROM 
 						"thing" 
@@ -619,7 +619,7 @@ var testCases = []testCase{
 		input:         map[string]any{},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."title" NOT IN (?, ?)) AS totalCount
 			FROM 
 				"thing" 
@@ -647,7 +647,7 @@ var testCases = []testCase{
 		input:         map[string]any{},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."age" IN (?, ?)) AS totalCount
 			FROM 
 				"thing" 
@@ -675,7 +675,7 @@ var testCases = []testCase{
 		input:         map[string]any{},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."age" NOT IN (?, ?)) AS totalCount
 			FROM 
 				"thing" 
@@ -710,7 +710,7 @@ var testCases = []testCase{
 						"equals": "bob"}}}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" INNER JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."name" IS NOT DISTINCT FROM ?) AS totalCount
 			FROM 
 				"thing" 
@@ -748,7 +748,7 @@ var testCases = []testCase{
 			"where": map[string]any{}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" INNER JOIN "parent" AS "thing$parent" ON "thing$parent"."id" = "thing"."parent_id" WHERE "thing$parent"."is_active" IS NOT DISTINCT FROM ?) AS totalCount
 			FROM 
 				"thing" 
@@ -760,6 +760,78 @@ var testCases = []testCase{
 			ORDER BY 
 				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{false, false, 50},
+	},
+	{
+		name: "list_op_orderby",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+					views Number
+				}
+				operations {
+					list listThings() {
+						@orderBy(name: asc, views: desc)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
+			FROM 
+				"thing" 
+			ORDER BY 
+				"thing"."name" ASC, 
+				"thing"."views" DESC, 
+				"thing"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_orderby_with_after",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+					views Number
+				}
+				operations {
+					list listThings() {
+						@orderBy(name: asc, views: desc)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"after": "xyz",
+			"where": map[string]any{}},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
+			FROM 
+				"thing" 
+			WHERE 
+				( 
+					"thing"."name" > (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
+					OR 
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" < (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
+					OR 
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" IS NOT DISTINCT FROM (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
+				) 
+			ORDER BY 
+				"thing"."name" ASC, 
+				"thing"."views" DESC, 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"xyz", "xyz", "xyz", "xyz", "xyz", "xyz", 50},
 	},
 	{
 		name: "create_op_nested_model",
@@ -910,14 +982,15 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
 			FROM 
 				"thing" 
-			WHERE
-				"thing"."id" > ?
+			WHERE 
+				"thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? )
 			ORDER BY 
-				"thing"."id" ASC LIMIT ?`,
+				"thing"."id" ASC 
+			LIMIT ?`,
 		expectedArgs: []any{"123", 2},
 	},
 	{
@@ -936,14 +1009,15 @@ var testCases = []testCase{
 		},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
-				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount
+				DISTINCT ON("thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" ) AS totalCount 
 			FROM 
 				"thing" 
-			WHERE
-				"thing"."id" < ?
+			WHERE 
+				"thing"."id" < (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
 			ORDER BY 
-				"thing"."id" DESC LIMIT ?`,
+				"thing"."id" ASC LIMIT ?`,
 		expectedArgs: []any{"123", 2},
 	},
 	{
@@ -965,7 +1039,7 @@ var testCases = []testCase{
 		operationName: "listThing",
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( "thing"."first" IS NOT DISTINCT FROM ? AND "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? AND "thing"."second" > ? )) AS totalCount
 			FROM 
 				"thing" 
@@ -997,7 +1071,7 @@ var testCases = []testCase{
 		operationName: "listThing",
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( ( "thing"."first" IS NOT DISTINCT FROM ? AND "thing"."second" IS NOT DISTINCT FROM ? ) OR ( "thing"."third" IS NOT DISTINCT FROM ? AND "thing"."second" > ? ) )) AS totalCount
 			FROM 
 				"thing" 
@@ -1028,7 +1102,7 @@ var testCases = []testCase{
 		operationName: "listThing",
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( ( "thing"."first" IS NOT DISTINCT FROM ? OR "thing"."second" IS NOT DISTINCT FROM ? ) AND ( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) )) AS totalCount
 			FROM 
 				"thing" 
@@ -1059,7 +1133,7 @@ var testCases = []testCase{
 		operationName: "listThing",
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE ( "thing"."first" IS NOT DISTINCT FROM ? OR ( "thing"."second" IS NOT DISTINCT FROM ? AND ( "thing"."third" IS NOT DISTINCT FROM ? OR "thing"."second" > ? ) ) )) AS totalCount
 			FROM 
 				"thing" 
@@ -1095,7 +1169,7 @@ var testCases = []testCase{
 				"explicitSecond": int64(10)}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."first" IS NOT DISTINCT FROM ? AND ( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? )) AS totalCount
 			FROM 
 				"thing" 
@@ -1132,16 +1206,17 @@ var testCases = []testCase{
 				"explicitSecond": int64(10)}},
 		expectedTemplate: `
 			SELECT 
-				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing".id) OVER (ORDER BY "thing".id) IS NOT NULL THEN true ELSE false END AS hasNext,
+				DISTINCT ON("thing"."id") "thing".*, CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext,
 				(SELECT COUNT(DISTINCT "thing"."id") FROM "thing" WHERE "thing"."first" IS NOT DISTINCT FROM ? AND ( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? )) AS totalCount
 			FROM 
 				"thing" 
 			WHERE
-				"thing"."first" IS NOT DISTINCT FROM ? AND
-				( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? ) AND
-				"thing"."id" > ? 
+				"thing"."first" IS NOT DISTINCT FROM ? AND 
+				( "thing"."second" IS NOT DISTINCT FROM ? OR "thing"."third" IS NOT DISTINCT FROM ? ) AND 
+				"thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
 			ORDER BY 
-				"thing"."id" ASC LIMIT ?`,
+				"thing"."id" ASC 
+			LIMIT ?`,
 		expectedArgs: []any{"first", int64(10), false, "first", int64(10), false, "123", 2},
 	},
 	{
@@ -1637,15 +1712,16 @@ func TestQueryBuilder(t *testing.T) {
 			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
 
 			if testCase.expectedArgs != nil {
-				for i := 1; i < len(testCase.expectedArgs); i++ {
-					if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
-						assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
-						break
-					}
-				}
-
 				if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
 					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
+
+				} else {
+					for i := 1; i < len(testCase.expectedArgs); i++ {
+						if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
+							assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
+							break
+						}
+					}
 				}
 			}
 		})

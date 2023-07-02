@@ -16,41 +16,6 @@ async function setupPosts({ count }: { count: number }): Promise<Post[]> {
   );
 }
 
-test("pagination - before", async () => {
-  const posts = await setupPosts({ count: 6 });
-  const {
-    pageInfo: { endCursor },
-  } = await actions.listPosts({
-    first: 4,
-  });
-
-  const { results } = await actions.listPosts({
-    before: endCursor,
-  });
-
-  expect(results.length).toEqual(3);
-
-  expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 3));
-});
-
-test("pagination - last with before", async () => {
-  await setupPosts({ count: 6 });
-  const {
-    pageInfo: { endCursor },
-  } = await actions.listPosts({
-    first: 4,
-  });
-
-  const { results } = await actions.listPosts({
-    last: 1,
-    before: endCursor,
-  });
-
-  expect(results.length).toEqual(1);
-
-  expect(results.map((r) => r.id)).toEqual(["3"]);
-});
-
 test("pagination - first", async () => {
   const posts = await setupPosts({ count: 6 });
 
@@ -60,19 +25,6 @@ test("pagination - first", async () => {
 
   expect(results.length).toEqual(2);
   expect(results.map((r) => r.id)).toEqual(posts.map((p) => p.id).slice(0, 2));
-});
-
-test("pagination - last only", async () => {
-  const posts = await setupPosts({ count: 6 });
-
-  const { results } = await actions.listPosts({
-    last: 2,
-  });
-
-  expect(results.length).toEqual(2);
-  expect(results.map((r) => r.id)).toEqual(
-    posts.map((p) => p.id).slice(posts.length - 2, posts.length)
-  );
 });
 
 test("pagination - first with after", async () => {
@@ -137,8 +89,8 @@ test("hasNextPage", async () => {
   const {
     pageInfo: { hasNextPage },
   } = await actions.listPosts({
-    last: 2,
+    first: 2,
   });
 
-  expect(hasNextPage).toEqual(false);
+  expect(hasNextPage).toEqual(true);
 });

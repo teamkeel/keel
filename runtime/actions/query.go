@@ -45,6 +45,11 @@ func ExpressionField(fragments []string, field string) *QueryOperand {
 	}
 }
 
+// Represents an inline query.
+func InlineQuery(query *QueryBuilder) *QueryOperand {
+	return &QueryOperand{query: query}
+}
+
 // Represents a value operand.
 func Value(value any) *QueryOperand {
 	return &QueryOperand{value: value}
@@ -56,9 +61,14 @@ func Null() *QueryOperand {
 }
 
 type QueryOperand struct {
+	query  *QueryBuilder
 	table  string
 	column string
 	value  any
+}
+
+func (o *QueryOperand) IsInlineQuery() bool {
+	return o.query != nil
 }
 
 func (o *QueryOperand) IsField() bool {
@@ -70,7 +80,7 @@ func (o *QueryOperand) IsValue() bool {
 }
 
 func (o *QueryOperand) IsNull() bool {
-	return o.table == "" && o.column == "" && o.value == nil
+	return o.query == nil && o.table == "" && o.column == "" && o.value == nil
 }
 
 func (operand *QueryOperand) toColumnString(query *QueryBuilder) string {
@@ -113,11 +123,11 @@ type QueryBuilder struct {
 	// The columns and clause in DISTINCT ON.
 	distinctOn []string
 	// The join clauses required for the query.
-	joins []join
+	joins []joinClause
 	// The filter fragments used to construct WHERE.
 	filters []string
 	// The columns and clauses in ORDER BY.
-	orderBy []string
+	orderBy []orderClause
 	// The columns and clauses in RETURNING.
 	returning []string
 	// The value for LIMIT.
@@ -128,10 +138,15 @@ type QueryBuilder struct {
 	writeValues *Row
 }
 
-type join struct {
+type joinClause struct {
 	table     string
 	alias     string
 	condition string
+}
+
+type orderClause struct {
+	field     *QueryOperand
+	direction string
 }
 
 type Row struct {
@@ -160,9 +175,9 @@ func NewQuery(model *proto.Model) *QueryBuilder {
 		table:      casing.ToSnake(model.Name),
 		selection:  []string{},
 		distinctOn: []string{},
-		joins:      []join{},
+		joins:      []joinClause{},
 		filters:    []string{},
-		orderBy:    []string{},
+		orderBy:    []orderClause{},
 		limit:      nil,
 		returning:  []string{},
 		args:       []any{},
@@ -277,7 +292,7 @@ func trimRhsOperators(filters []string) []string {
 
 // Include an INNER JOIN clause.
 func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, modelField *QueryOperand) {
-	join := join{
+	join := joinClause{
 		table:     sqlQuote(casing.ToSnake(joinModel)),
 		alias:     sqlQuote(joinField.table),
 		condition: fmt.Sprintf("%s = %s", joinField.toColumnString(query), modelField.toColumnString(query)),
@@ -289,11 +304,12 @@ func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, 
 }
 
 // Include a column in ORDER BY.
-func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand, sortOrder string) {
-	c := operand.toColumnString(query)
+func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand, direction string) {
+	order := orderClause{field: operand, direction: direction}
 
-	if !lo.Contains(query.orderBy, fmt.Sprintf("%s %s", c, sortOrder)) {
-		query.orderBy = append(query.orderBy, fmt.Sprintf("%s %s", c, sortOrder))
+	if !lo.SomeBy(query.orderBy, func(o orderClause) bool { return o.field == order.field }) {
+		query.orderBy = append(query.orderBy, order)
+		query.AppendDistinctOn(operand)
 	}
 }
 
@@ -313,8 +329,28 @@ func (query *QueryBuilder) AppendReturning(operand *QueryOperand) {
 
 // Apply pagination filters to the query.
 func (query *QueryBuilder) ApplyPaging(page Page) error {
+
+	// Paging condition is ANDed to any existing conditions
+	query.And()
+
+	// Add where condition to implement the page size
+	switch {
+	case page.First != 0:
+		query.Limit(page.First)
+	case page.Last != 0:
+		query.Limit(page.Last)
+	}
+
+	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
+	// that helps to determine "hasNextPage"
+	query.AppendOrderBy(IdField(), "ASC")
+
 	// Select hasNext clause
-	hasNext := fmt.Sprintf("CASE WHEN LEAD(%[1]s.id) OVER (ORDER BY %[1]s.id) IS NOT NULL THEN true ELSE false END AS hasNext", sqlQuote(query.table))
+	orderByClausesAsSql := []string{}
+	for _, o := range query.orderBy {
+		orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toColumnString(query), o.direction))
+	}
+	hasNext := fmt.Sprintf("CASE WHEN LEAD(%s) OVER (ORDER BY %s) IS NOT NULL THEN true ELSE false END AS hasNext", IdField().toColumnString(query), strings.Join(orderByClausesAsSql, ", "))
 	query.AppendSelectClause(hasNext)
 
 	// We add a subquery to the select list that fetches the total count of records
@@ -325,40 +361,90 @@ func (query *QueryBuilder) ApplyPaging(page Page) error {
 	// Because we are essentially performing the same query again within the subquery, we need to duplicate the query parameters again as they will be used twice in the course of the whole query
 	query.args = append(query.args, query.args...)
 
-	// Paging condition is ANDed to any existing conditions
-	query.And()
-
 	// Add where condition to implement the after/before paging request
 	switch {
 	case page.After != "":
-		err := query.Where(IdField(), GreaterThan, Value(page.After))
+		err := query.applyCursorFilter(page.After, false)
 		if err != nil {
 			return err
 		}
 	case page.Before != "":
-		err := query.Where(IdField(), LessThan, Value(page.Before))
+		err := query.applyCursorFilter(page.Before, true)
 		if err != nil {
 			return err
 		}
 	}
 
-	sortOrder := "ASC"
+	return nil
+}
 
-	// Add where condition to implement the page size
-	switch {
-	case page.First != 0:
-		query.Limit(page.First)
-	case page.Last != 0:
-		// set the sort order to descending in order to make "last" work. the results are then reversed in the List execute method to restore the previous ascending order
-		// this isn't going to work when we allow the user to specify their own order by so we'll need to circle back on this then
-		sortOrder = "DESC"
-		query.Limit(page.Last)
+// Apply forward pagination 'after' cursor filter to the query.
+func (query *QueryBuilder) applyCursorFilter(cursor string, isBackwards bool) error {
+	query.And()
+
+	var err error
+	if len(query.orderBy) > 1 {
+		query.OpenParenthesis()
 	}
 
-	// Specify the ORDER BY - but also a "LEAD" extra column to harvest extra data
-	// that helps to determine "hasNextPage"
-	query.AppendOrderBy(IdField(), sortOrder)
+	// For each column being ordered, we need to filter those which proceed the cursor row.
+	for i := 0; i < len(query.orderBy); i++ {
+		if i > 0 {
+			query.OpenParenthesis()
+		}
+		for j := 0; j < i; j++ {
+			orderClause := query.orderBy[j]
 
+			inline := NewQuery(query.Model)
+			inline.AppendSelect(orderClause.field)
+			err = inline.Where(IdField(), Equals, Value(cursor))
+			if err != nil {
+				return err
+			}
+
+			err = query.Where(orderClause.field, Equals, InlineQuery(inline))
+			if err != nil {
+				return err
+			}
+			query.And()
+		}
+
+		orderClause := query.orderBy[i]
+
+		inline := NewQuery(query.Model)
+		inline.AppendSelect(orderClause.field)
+		err = inline.Where(IdField(), Equals, Value(cursor))
+		if err != nil {
+			return err
+		}
+
+		var operator ActionOperator
+		switch {
+		case orderClause.direction == "ASC" && !isBackwards:
+			operator = GreaterThan
+		case orderClause.direction == "ASC" && isBackwards:
+			operator = LessThan
+		case orderClause.direction == "DESC" && !isBackwards:
+			operator = LessThan
+		case orderClause.direction == "DESC" && isBackwards:
+			operator = GreaterThan
+		default:
+			return errors.New("unknown order by direction")
+		}
+
+		err = query.Where(orderClause.field, operator, InlineQuery(inline))
+		if err != nil {
+			return err
+		}
+		if i > 0 {
+			query.CloseParenthesis()
+		}
+		query.Or()
+	}
+
+	if len(query.orderBy) > 1 {
+		query.CloseParenthesis()
+	}
 	return nil
 }
 
@@ -367,7 +453,11 @@ func (query *QueryBuilder) countQuery() string {
 	joins := ""
 	filters := ""
 	if len(query.distinctOn) > 0 {
-		selection += fmt.Sprintf("DISTINCT %s", strings.Join(query.distinctOn, ", "))
+		distinctFields := strings.Join(query.distinctOn, ", ")
+		if len(query.distinctOn) > 1 {
+			distinctFields = fmt.Sprintf("(%s)", distinctFields)
+		}
+		selection += fmt.Sprintf("DISTINCT %s", distinctFields)
 	} else {
 		selection += "*"
 	}
@@ -424,7 +514,12 @@ func (query *QueryBuilder) SelectStatement() *Statement {
 	}
 
 	if len(query.orderBy) > 0 {
-		orderBy = fmt.Sprintf("ORDER BY %s", strings.Join(query.orderBy, ", "))
+		orderByClausesAsSql := []string{}
+		for _, o := range query.orderBy {
+			orderByClausesAsSql = append(orderByClausesAsSql, fmt.Sprintf("%s %s", o.field.toColumnString(query), o.direction))
+		}
+
+		orderBy = fmt.Sprintf("ORDER BY %s", strings.Join(orderByClausesAsSql, ", "))
 	}
 
 	if query.limit != nil {
@@ -641,11 +736,11 @@ func (query *QueryBuilder) DeleteStatement() *Statement {
 	returning := ""
 
 	if len(query.joins) > 0 {
-		usingTables := lo.Map(query.joins, func(j join, _ int) string {
+		usingTables := lo.Map(query.joins, func(j joinClause, _ int) string {
 			return fmt.Sprintf("%s AS %s", j.table, j.alias)
 		})
 		usings = fmt.Sprintf("USING %s", strings.Join(usingTables, ", "))
-		filters = strings.Join(lo.Map(query.joins, func(j join, _ int) string { return j.condition }), " AND ")
+		filters = strings.Join(lo.Map(query.joins, func(j joinClause, _ int) string { return j.condition }), " AND ")
 
 		// If there are also filters, then append another AND
 		if len(query.filters) > 0 {
@@ -847,6 +942,9 @@ func (query *QueryBuilder) generateConditionTemplate(lhs *QueryOperand, operator
 		}
 	case rhs.IsNull():
 		rhsSqlOperand = "NULL"
+	case rhs.IsInlineQuery():
+		rhsSqlOperand = fmt.Sprintf("(%s)", rhs.query.SelectStatement().template)
+		args = append(args, rhs.query.args...)
 	default:
 		return "", nil, errors.New("no handling for rhs QueryOperand type")
 	}

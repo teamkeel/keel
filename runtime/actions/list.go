@@ -31,6 +31,9 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 
 				argsSectioned, ok := args[input.Name].(map[string]any)
 				if !ok {
+					if input.Optional {
+						continue
+					}
 					return fmt.Errorf("cannot convert args to map[string]any for key %s", input.Name)
 				}
 
@@ -80,6 +83,20 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 	return nil
 }
 
+// Applies all schema-defined ordering to the query.
+func (query *QueryBuilder) applyOrdering(scope *Scope) error {
+	for _, orderBy := range scope.Operation.OrderBy {
+		direction, err := toSql(orderBy.Direction)
+		if err != nil {
+			return err
+		}
+
+		query.AppendOrderBy(Field(orderBy.FieldName), direction)
+	}
+
+	return nil
+}
+
 func List(scope *Scope, input map[string]any) (map[string]any, error) {
 	query := NewQuery(scope.Model)
 
@@ -122,6 +139,11 @@ func GenerateListStatement(query *QueryBuilder, scope *Scope, input map[string]a
 	}
 
 	err = query.applyExplicitFilters(scope, where)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = query.applyOrdering(scope)
 	if err != nil {
 		return nil, nil, err
 	}

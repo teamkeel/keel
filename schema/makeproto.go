@@ -1237,6 +1237,16 @@ func (scm *Builder) applyActionAttributes(action *parser.ActionNode, protoOperat
 			expr, _ := attribute.Arguments[0].Expression.ToString()
 			set := &proto.Expression{Source: expr}
 			protoOperation.ValidationExpressions = append(protoOperation.ValidationExpressions, set)
+		case parser.AttributeOrderBy:
+			for _, arg := range attribute.Arguments {
+				field := arg.Label.Value
+				direction, _ := arg.Expression.ToString()
+				orderBy := &proto.OrderByStatement{
+					FieldName: field,
+					Direction: scm.mapToOrderByDirection(direction),
+				}
+				protoOperation.OrderBy = append(protoOperation.OrderBy, orderBy)
+			}
 		}
 	}
 }
@@ -1322,6 +1332,17 @@ func (scm *Builder) mapToOperationType(parsedOperation string) proto.OperationTy
 		return proto.OperationType_OPERATION_TYPE_WRITE
 	default:
 		return proto.OperationType_OPERATION_TYPE_UNKNOWN
+	}
+}
+
+func (scm *Builder) mapToOrderByDirection(parsedDirection string) proto.OrderDirection {
+	switch parsedDirection {
+	case parser.OrderByAscending:
+		return proto.OrderDirection_ORDER_DIRECTION_ASCENDING
+	case parser.OrderByDescending:
+		return proto.OrderDirection_ORDER_DIRECTION_DECENDING
+	default:
+		return proto.OrderDirection_ORDER_DIRECTION_UNKNOWN
 	}
 }
 
