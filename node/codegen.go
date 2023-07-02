@@ -184,7 +184,7 @@ func writeCreateValuesInterface(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTestingPackage bool) {
-	w.Writeln(`export type SortOrder = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
 	w.Writef("export type %sOrderBy = {\n", model.Name)
 	w.Indent()
 
@@ -200,7 +200,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTesti
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: SortOrder", f.Name)
+		w.Writef("%s?: SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -930,6 +930,12 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 			ret = fmt.Sprintf("sdk.%s", t.ModelName.Value)
 		} else {
 			ret = t.ModelName.Value
+		}
+	case proto.Type_TYPE_SORT_DIRECTION:
+		if isTestingPackage {
+			ret = fmt.Sprintf("sdk.SortDirection")
+		} else {
+			ret = "SortDirection"
 		}
 	default:
 		ret = "any"
