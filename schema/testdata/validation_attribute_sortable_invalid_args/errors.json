@@ -1,258 +1,88 @@
 {
   "errors": [
     {
-      "message": "@orderBy requires at least once argument",
+      "message": "@sortable requires at least once argument",
       "hint": "",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
         "offset": 186,
         "line": 12,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 194,
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 195,
         "line": 12,
-        "column": 21
-      }
-    },
-    {
-      "message": "@orderBy can only be defined once per operation",
-      "hint": "",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 207,
-        "line": 13,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 215,
-        "line": 13,
-        "column": 21
-      }
-    },
-    {
-      "message": "@orderBy arguments must be specified with a label corresponding with a field on this model",
-      "hint": "For example, @orderBy(surname: asc, firstName: asc)",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 216,
-        "line": 13,
         "column": 22
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 225,
-        "line": 13,
-        "column": 31
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@sortable can only be defined once per operation",
       "hint": "",
       "code": "AttributeNotAllowedError",
       "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 239,
-        "line": 14,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 247,
-        "line": 14,
-        "column": 21
-      }
-    },
-    {
-      "message": "@orderBy argument label 'nope' must correspond to a field on this model",
-      "hint": "",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 264,
-        "line": 14,
-        "column": 38
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 268,
-        "line": 14,
-        "column": 42
-      }
-    },
-    {
-      "message": "@orderBy can only be defined once per operation",
-      "hint": "",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 287,
-        "line": 15,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 295,
-        "line": 15,
-        "column": 21
-      }
-    },
-    {
-      "message": "@orderBy does not support ordering of relationships fields",
-      "hint": "",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 312,
-        "line": 15,
-        "column": 38
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 321,
-        "line": 15,
-        "column": 47
-      }
-    },
-    {
-      "message": "@orderBy can only be defined once per operation",
-      "hint": "",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 340,
-        "line": 16,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 348,
-        "line": 16,
-        "column": 21
-      }
-    },
-    {
-      "message": "@orderBy argument name 'firstName' already defined",
-      "hint": "",
-      "code": "AttributeArgumentError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 365,
-        "line": 16,
-        "column": 38
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 374,
-        "line": 16,
-        "column": 47
-      }
-    },
-    {
-      "message": "@orderBy can only be defined once per operation",
-      "hint": "",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 393,
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 282,
         "line": 17,
         "column": 13
       },
       "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 401,
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 291,
         "line": 17,
-        "column": 21
+        "column": 22
       }
     },
     {
-      "message": "@orderBy argument value must either be asc or desc",
-      "hint": "For example, @orderBy(surname: asc, firstName: asc)",
+      "message": "@sortable does not support ordering of relationships fields",
+      "hint": "",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 413,
-        "line": 17,
-        "column": 33
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 375,
+        "line": 21,
+        "column": 34
       },
       "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 418,
-        "line": 17,
-        "column": 38
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 384,
+        "line": 21,
+        "column": 43
       }
     },
     {
-      "message": "@orderBy can only be defined once per operation",
+      "message": "@sortable argument name 'firstName' already defined",
       "hint": "",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 432,
-        "line": 18,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 440,
-        "line": 18,
-        "column": 21
-      }
-    },
-    {
-      "message": "@orderBy argument value must either be asc or desc",
-      "hint": "For example, @orderBy(surname: asc, firstName: asc)",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 452,
-        "line": 18,
-        "column": 33
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 460,
+        "line": 25,
+        "column": 34
       },
       "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 455,
-        "line": 18,
-        "column": 36
-      }
-    },
-    {
-      "message": "@orderBy can only be defined once per operation",
-      "hint": "",
-      "code": "AttributeNotAllowedError",
-      "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
         "offset": 469,
-        "line": 19,
-        "column": 13
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 477,
-        "line": 19,
-        "column": 21
+        "line": 25,
+        "column": 43
       }
     },
     {
-      "message": "@orderBy argument value must either be asc or desc",
-      "hint": "For example, @orderBy(surname: asc, firstName: asc)",
+      "message": "@sortable argument is not correct formatted",
+      "hint": "For example, use @sortable(firstName, surname)",
       "code": "AttributeArgumentError",
       "pos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 489,
-        "line": 19,
-        "column": 33
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 534,
+        "line": 29,
+        "column": 23
       },
       "endPos": {
-        "filename": "testdata/validation_attribute_orderby_invalid_args/schema.keel",
-        "offset": 492,
-        "line": 19,
-        "column": 36
+        "filename": "testdata/validation_attribute_sortable_invalid_args/schema.keel",
+        "offset": 537,
+        "line": 29,
+        "column": 26
       }
     }
   ]

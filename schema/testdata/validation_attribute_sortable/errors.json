@@ -1,19 +1,87 @@
 {
   "errors": [
     {
+      "message": "field 'firstName' has an unrecognised attribute @sortable",
+      "hint": "Did you mean @unique, @default, @primaryKey, or @relation?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 52,
+        "line": 4,
+        "column": 24
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 61,
+        "line": 4,
+        "column": 33
+      }
+    },
+    {
+      "message": "model 'Author' has an unrecognised attribute @sortable",
+      "hint": "Did you mean @permission, or @unique?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 332,
+        "line": 19,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 341,
+        "line": 19,
+        "column": 14
+      }
+    },
+    {
       "message": "function 'listAuthorsFn' has an unrecognised attribute @sortable",
       "hint": "Did you mean @permission?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 377,
-        "line": 21,
+        "offset": 411,
+        "line": 23,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_sortable/schema.keel",
-        "offset": 386,
-        "line": 21,
+        "offset": 420,
+        "line": 23,
+        "column": 22
+      }
+    },
+    {
+      "message": "@sortable can only be used on list operations",
+      "hint": "",
+      "code": "AttributeNotAllowedError",
+      "pos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 177,
+        "line": 10,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 186,
+        "line": 10,
+        "column": 22
+      }
+    },
+    {
+      "message": "@sortable can only be defined once per operation",
+      "hint": "",
+      "code": "AttributeNotAllowedError",
+      "pos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 292,
+        "line": 15,
+        "column": 13
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_sortable/schema.keel",
+        "offset": 301,
+        "line": 15,
         "column": 22
       }
     }

@@ -20,8 +20,15 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 		EnterModel: func(model *parser.ModelNode) {
 			currentModel = model
 		},
+		LeaveModel: func(_ *parser.ModelNode) {
+			currentModel = nil
+		},
 		EnterAction: func(action *parser.ActionNode) {
 			currentOperation = action
+			sortableAttributeDefined = false
+		},
+		LeaveAction: func(_ *parser.ActionNode) {
+			currentOperation = nil
 			sortableAttributeDefined = false
 		},
 		EnterAttribute: func(attribute *parser.AttributeNode) {
@@ -29,6 +36,10 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 			arguments = []string{}
 
 			if attribute.Name.Value != parser.AttributeSortable {
+				return
+			}
+
+			if currentOperation == nil {
 				return
 			}
 
@@ -64,8 +75,16 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				))
 			}
 		},
+		LeaveAttribute: func(attribute *parser.AttributeNode) {
+			currentAttribute = nil
+			arguments = []string{}
+		},
 		EnterAttributeArgument: func(arg *parser.AttributeArgumentNode) {
 			if currentAttribute.Name.Value != parser.AttributeSortable {
+				return
+			}
+
+			if currentOperation == nil {
 				return
 			}
 
@@ -86,7 +105,7 @@ func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErr
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@sortable argument is not correct formatted",
+						Message: "@sortable argument is not correctly formatted",
 						Hint:    "For example, use @sortable(firstName, surname)",
 					},
 					arg,

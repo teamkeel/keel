@@ -10,8 +10,22 @@ model Author {
     operations {
         list listAuthors() {
             @sortable
+        }
+
+        list listAuthors2() {
+            @sortable(firstName)
+            @sortable(surname)
+        }
+
+        list listAuthors3() {
             @sortable(firstName, publisher)
+        }
+
+        list listAuthors4() {
             @sortable(firstName, firstName)
+        }
+
+        list listAuthors5() {
             @sortable(123)
         }
     }
