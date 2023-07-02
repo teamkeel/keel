@@ -9,9 +9,6 @@ model Contestant {
     }
 
     operations {
-        create create() with (name, gold, silver, bronze, team.name) {
-            @permission(expression: true)
-        }
         list listRankings(name?, team.name?) {
             @sortable(gold, silver, bronze, name)
             @where(contestant.disqualified == false and contestant.team.disqualified == false)

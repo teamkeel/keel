@@ -127,7 +127,7 @@ type QueryBuilder struct {
 	// The filter fragments used to construct WHERE.
 	filters []string
 	// The columns and clauses in ORDER BY.
-	orderBy []orderClause
+	orderBy []*orderClause
 	// The columns and clauses in RETURNING.
 	returning []string
 	// The value for LIMIT.
@@ -177,7 +177,7 @@ func NewQuery(model *proto.Model) *QueryBuilder {
 		distinctOn: []string{},
 		joins:      []joinClause{},
 		filters:    []string{},
-		orderBy:    []orderClause{},
+		orderBy:    []*orderClause{},
 		limit:      nil,
 		returning:  []string{},
 		args:       []any{},
@@ -304,10 +304,17 @@ func (query *QueryBuilder) InnerJoin(joinModel string, joinField *QueryOperand, 
 }
 
 // Include a column in ORDER BY.
+// If the column already exists, then just update the sort direction.
 func (query *QueryBuilder) AppendOrderBy(operand *QueryOperand, direction string) {
-	order := orderClause{field: operand, direction: direction}
+	order := &orderClause{field: operand, direction: strings.ToUpper(direction)}
 
-	if !lo.SomeBy(query.orderBy, func(o orderClause) bool { return o.field == order.field }) {
+	existing, found := lo.Find(query.orderBy, func(o *orderClause) bool {
+		return o.field.column == order.field.column
+	})
+
+	if found {
+		existing.direction = strings.ToUpper(direction)
+	} else {
 		query.orderBy = append(query.orderBy, order)
 		query.AppendDistinctOn(operand)
 	}

@@ -347,6 +347,8 @@ enum Type {
 
     // Any is used in Message types to denote a field with any type
     TYPE_ANY = 17;
+
+    TYPE_SORT_DIRECTION = 18;
 }
 
 enum OrderDirection {

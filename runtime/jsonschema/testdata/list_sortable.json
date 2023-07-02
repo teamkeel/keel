@@ -1,0 +1,47 @@
+{
+	"type": "object",
+	"properties": {
+		"after": {
+			"type": "string"
+		},
+		"before": {
+			"type": "string"
+		},
+		"first": {
+			"type": "number"
+		},
+		"last": {
+			"type": "number"
+		},
+		"orderBy": {
+			"type": "array",
+			"items": {
+				"$ref": "#/components/schemas/TestActionOrderBy"
+			}
+		},
+		"where": {
+			"$ref": "#/components/schemas/TestActionWhere"
+		}
+	},
+	"additionalProperties": false,
+	"components": {
+		"schemas": {
+			"TestActionOrderBy": {
+				"type": "object",
+				"properties": {
+					"firstName": {
+						"type": "string"
+					},
+					"surname": {
+						"type": "string"
+					}
+				},
+				"additionalProperties": false
+			},
+			"TestActionWhere": {
+				"type": "object",
+				"additionalProperties": false
+			}
+		}
+	}
+}

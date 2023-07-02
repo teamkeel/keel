@@ -322,8 +322,9 @@ func makeListOrderByMessage(actionName string, fieldNames []string) *proto.Messa
 		message.Fields = append(message.Fields, &proto.MessageField{
 			Name:     fieldName,
 			Optional: true,
+			Nullable: false,
 			Type: &proto.TypeInfo{
-				Type: proto.Type_TYPE_STRING,
+				Type: proto.Type_TYPE_SORT_DIRECTION,
 			},
 		})
 	}

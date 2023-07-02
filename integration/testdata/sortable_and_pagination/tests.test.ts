@@ -78,7 +78,7 @@ test("sortable - no sorting", async () => {
 test("sortable - by name", async () => {
   const winners = await actions.listRankings({
     orderBy: [
-      { name: "asc" }
+       { name: "asc"}
     ]
   });
 
@@ -96,8 +96,8 @@ test("sortable - no paging", async () => {
   const winners = await actions.listRankings({
     orderBy: [ 
         { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+        { silver:  "desc" },
+        { bronze:  "desc" }
     ]
   });
 
@@ -115,9 +115,9 @@ test("sortable - get first - top 3 winners", async () => {
   const winners = await actions.listRankings({
     first: 3,
     orderBy: [ 
-        { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+      { gold:"desc" },
+      { silver: "desc"},
+      { bronze:"desc" }
     ]
   });
 
@@ -135,9 +135,9 @@ test("sortable - with filter - saffer rankings", async () => {
       team: { name: { equals: "South Africa" } },
     },
     orderBy: [ 
-        { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+      { gold: "desc" },
+      { silver: "desc" },
+      { bronze: "desc" }
     ]
   });
 
@@ -155,9 +155,9 @@ test("sortable - get first with filter - saffer winner", async () => {
       team: { name: { equals: "South Africa" } },
     },
     orderBy: [ 
-        { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+      { gold: "desc" },
+      { silver: "desc" },
+      { bronze: "desc" }
     ]
   });
 
@@ -171,9 +171,9 @@ test("sortable - get first and after cursor - fourth place", async () => {
   const winners = await actions.listRankings({
     first: 3,
     orderBy: [ 
-        { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+      { gold: "desc" },
+      { silver: "desc" },
+      { bronze: "desc" }
     ]
   });
 
@@ -182,9 +182,9 @@ test("sortable - get first and after cursor - fourth place", async () => {
     first: 1,
     after: cursor,
     orderBy: [ 
-        { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+      { gold:"desc" },
+      { silver: "desc" },
+      { bronze: "desc" }
     ]
   });
 
@@ -197,9 +197,9 @@ test("sortable - get first and after cursor - fourth place", async () => {
 test("sortable - before cursor - better than John", async () => {
   const winners = await actions.listRankings({
     orderBy: [ 
-        { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+      { gold: "desc" },
+      { silver: "desc" },
+      { bronze: "desc" }
     ]
   });
 
@@ -207,9 +207,9 @@ test("sortable - before cursor - better than John", async () => {
   const betterThanJohn = await actions.listRankings({
     before: cursor,
     orderBy: [ 
-        { gold: "desc" },
-        { silver: "desc" },
-        { bronze: "desc" }
+      { gold: "desc" },
+      { silver: "desc" },
+      { bronze: "desc" }
     ]
   });
 

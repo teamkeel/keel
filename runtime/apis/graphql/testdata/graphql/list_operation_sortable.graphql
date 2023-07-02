@@ -28,8 +28,8 @@ type Query {
   }
   
   input ListAuthorsOrderBy {
-    firstName: String
-    surname: String
+    firstName: SortDirection
+    surname: SortDirection
   }
   
   input RequestPasswordResetInput {
@@ -85,6 +85,11 @@ type Query {
     fromNow: String!
     iso8601: String!
     seconds: Int!
+  }
+  
+  enum SortDirection {
+    Ascending
+    Descending
   }
   
   scalar Any

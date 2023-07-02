@@ -1,0 +1,12 @@
+model Person {
+    fields {
+        firstName Text
+        surname Text
+    }
+
+    operations {
+        list testAction() {
+            @sortable(surname, firstName)
+        }
+    }
+}

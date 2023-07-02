@@ -834,6 +834,159 @@ var testCases = []testCase{
 		expectedArgs: []any{"xyz", "xyz", "xyz", "xyz", "xyz", "xyz", 50},
 	},
 	{
+		name: "list_op_sortable",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+					views Number
+				}
+				operations {
+					list listThings() {
+						@sortable(name, views)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{},
+			"orderBy": []any{
+				map[string]any{"name": "asc"},
+				map[string]any{"views": "desc"}},
+		},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
+			FROM 
+				"thing" 
+			ORDER BY 
+				"thing"."name" ASC, 
+				"thing"."views" DESC, 
+				"thing"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_sortable_with_after",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+					views Number
+				}
+				operations {
+					list listThings() {
+						@sortable(name, views)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"after": "xyz",
+			"where": map[string]any{},
+			"orderBy": []any{
+				map[string]any{"name": "asc"},
+				map[string]any{"views": "desc"}},
+		},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
+			FROM 
+				"thing" 
+			WHERE 
+				( 
+					"thing"."name" > (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) 
+					OR 
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" < (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
+					OR 
+					( "thing"."name" IS NOT DISTINCT FROM (SELECT "thing"."name" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."views" IS NOT DISTINCT FROM (SELECT "thing"."views" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) AND "thing"."id" > (SELECT "thing"."id" FROM "thing" WHERE "thing"."id" IS NOT DISTINCT FROM ? ) ) 
+				) 
+			ORDER BY 
+				"thing"."name" ASC, 
+				"thing"."views" DESC, 
+				"thing"."id" ASC LIMIT ?`,
+		expectedArgs: []any{"xyz", "xyz", "xyz", "xyz", "xyz", "xyz", 50},
+	},
+	{
+		name: "list_op_sortable_overriding_orderby",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+					views Number
+				}
+				operations {
+					list listThings() {
+						@orderBy(name: desc)
+						@sortable(name, views)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{},
+			"orderBy": []any{
+				map[string]any{"name": "asc"},
+				map[string]any{"views": "desc"}},
+		},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
+			FROM 
+				"thing" 
+			ORDER BY 
+				"thing"."name" ASC, 
+				"thing"."views" DESC, 
+				"thing"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
+		name: "list_op_sortable_and_orderby",
+		keelSchema: `
+			model Thing {
+				fields {
+					name Text
+					views Number
+				}
+				operations {
+					list listThings() {
+						@sortable(name, views)
+						@orderBy(name: asc)
+					} 
+				}
+				@permission(expression: true, actions: [list])
+			}`,
+		operationName: "listThings",
+		input: map[string]any{
+			"where": map[string]any{},
+			"orderBy": []any{
+				map[string]any{"views": "desc"}},
+		},
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."name", "thing"."views", "thing"."id") "thing".*, 
+				CASE WHEN LEAD("thing"."id") OVER (ORDER BY "thing"."name" ASC, "thing"."views" DESC, "thing"."id" ASC) IS NOT NULL THEN true ELSE false END AS hasNext, 
+				(SELECT COUNT(DISTINCT ("thing"."name", "thing"."views", "thing"."id")) FROM "thing" ) AS totalCount 
+			FROM 
+				"thing" 
+			ORDER BY 
+				"thing"."name" ASC, 
+				"thing"."views" DESC, 
+				"thing"."id" ASC 
+			LIMIT ?`,
+		expectedArgs: []any{50},
+	},
+	{
 		name: "create_op_nested_model",
 		keelSchema: `
 			model Parent {
@@ -1684,6 +1837,7 @@ var testCases = []testCase{
 func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+
 			scope, query, operation, err := generateQueryScope(context.Background(), testCase.keelSchema, testCase.operationName)
 			if err != nil {
 				require.NoError(t, err)
