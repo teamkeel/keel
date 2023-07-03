@@ -934,7 +934,7 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
 		if isTestingPackage {
-			ret = fmt.Sprintf("sdk.SortDirection")
+			ret = "sdk.SortDirection"
 		} else {
 			ret = "SortDirection"
 		}
