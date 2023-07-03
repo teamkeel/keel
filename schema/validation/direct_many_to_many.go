@@ -43,12 +43,10 @@ func DirectManyToManyRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				ManyModel: otherModel.Name.Value,
 				ManyField: relationField.ToString(),
 			}
-			if relation != nil {
-				if relationRegistry[relation.ManyModel] == nil {
-					relationRegistry[relation.ManyModel] = map[string]*ManyToOneRelation{}
-				}
-				relationRegistry[relation.ManyModel][relation.ManyField] = relation
+			if relationRegistry[relation.ManyModel] == nil {
+				relationRegistry[relation.ManyModel] = map[string]*ManyToOneRelation{}
 			}
+			relationRegistry[relation.ManyModel][relation.ManyField] = relation
 		}
 	}
 
