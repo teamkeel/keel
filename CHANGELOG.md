@@ -1,3 +1,10 @@
+# [0.344.0](https://github.com/teamkeel/keel/compare/v0.343.0...v0.344.0) (2023-07-03)
+
+
+### Features
+
+* [@sortable](https://github.com/sortable) parsing and schema validation ([#1029](https://github.com/teamkeel/keel/issues/1029)) ([6b90d5a](https://github.com/teamkeel/keel/commit/6b90d5a98447eb6c2db99239d3e6c78ffa90c945))
+
 # [0.343.0](https://github.com/teamkeel/keel/compare/v0.342.0...v0.343.0) (2023-07-02)
 
 
