@@ -180,6 +180,8 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 					continue
 				}
 
+				// check to see if a relation is defined on this attribute that
+				// disambiguates the reference.
 				relation := query.FieldGetAttribute(field, parser.AttributeRelation)
 				if relation != nil {
 					relationValue, _ := relation.Arguments[0].Expression.ToValue()

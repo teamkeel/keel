@@ -31,21 +31,23 @@ func DirectManyToManyRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 
 	var currentModel *parser.ModelNode
 
+	// This function checks for the existence of a relation attribute and, if one exists, stores the details of that
+	// relation in a map keyed by the Many side of the relationship
 	checkForRelation := func(currentModel *parser.ModelNode, currentField *parser.FieldNode, otherModel *parser.ModelNode) {
-		relation := query.FieldGetAttribute(currentField, parser.AttributeRelation)
-		if relation != nil {
-			relationValue, _ := relation.Arguments[0].Expression.ToValue()
-			m21Relation := &ManyToOneRelation{
+		relationAttribute := query.FieldGetAttribute(currentField, parser.AttributeRelation)
+		if relationAttribute != nil {
+			relationField, _ := relationAttribute.Arguments[0].Expression.ToValue()
+			relation := &ManyToOneRelation{
 				OneModel:  currentModel.Name.Value,
 				OneField:  currentField.Name.Value,
 				ManyModel: otherModel.Name.Value,
-				ManyField: relationValue.ToString(),
+				ManyField: relationField.ToString(),
 			}
-			if m21Relation != nil {
-				if relationRegistry[m21Relation.ManyModel] == nil {
-					relationRegistry[m21Relation.ManyModel] = map[string]*ManyToOneRelation{}
+			if relation != nil {
+				if relationRegistry[relation.ManyModel] == nil {
+					relationRegistry[relation.ManyModel] = map[string]*ManyToOneRelation{}
 				}
-				relationRegistry[m21Relation.ManyModel][m21Relation.ManyField] = m21Relation
+				relationRegistry[relation.ManyModel][relation.ManyField] = relation
 			}
 		}
 	}
@@ -74,11 +76,15 @@ func DirectManyToManyRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 			if query.IsHasManyModelField(asts, currentField) {
 				for _, otherField := range query.ModelFields(otherModel) {
 					if !query.IsHasManyModelField(asts, otherField) {
+						// check to see if there is a relation defined on this field and store it so we
+						// can check it later
 						checkForRelation(otherModel, otherField, currentModel)
 						continue
 					}
 
 					if otherField.Type.Value == currentModel.Name.Value {
+						// check to see if there is a relation stored for the other side of
+						// this m:m that means the relation is not refering to the current field
 						if relations, ok := relationRegistry[otherModel.Name.Value]; ok {
 							if _, ok := relations[otherField.Name.Value]; ok {
 								continue
@@ -102,6 +108,7 @@ func DirectManyToManyRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 					}
 				}
 			} else {
+				// check whether a relation exists for this field
 				checkForRelation(currentModel, currentField, otherModel)
 			}
 		},
