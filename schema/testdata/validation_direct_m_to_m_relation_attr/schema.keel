@@ -1,0 +1,13 @@
+model User {
+  fields {
+    employer Company @relation(employees)
+    owns Company[]
+  }
+}
+
+model Company {
+  fields {
+    employees User[]
+    owner User @relation(owns)
+  }
+}
