@@ -1,0 +1,26 @@
+
+model Author {
+    fields {
+        firstName Text @sortable
+        surname Text
+    }
+
+    operations {
+        create createAuthor() with (firstName, surname) {
+            @sortable(firstName, surname)
+        }
+
+        list listAuthors() {
+            @sortable(firstName)
+            @sortable(surname)
+        }
+    }
+
+    @sortable(surname)
+
+    functions {
+        list listAuthorsFn() {
+            @sortable(firstName, surname)
+        }
+    }
+}

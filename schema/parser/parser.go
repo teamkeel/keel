@@ -137,6 +137,7 @@ type ModelsNode struct {
 // - @unique
 // - @default
 // - @orderBy
+// - @sortable
 type AttributeNode struct {
 	node.Node
 

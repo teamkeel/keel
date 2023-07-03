@@ -9,26 +9,37 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+func SortableAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var currentModel *parser.ModelNode
 	var currentOperation *parser.ActionNode
 	var currentAttribute *parser.AttributeNode
-	var orderByAttributeDefined bool
-	var argumentLabels []string
+	var sortableAttributeDefined bool
+	var arguments []string
 
 	return Visitor{
 		EnterModel: func(model *parser.ModelNode) {
 			currentModel = model
 		},
+		LeaveModel: func(_ *parser.ModelNode) {
+			currentModel = nil
+		},
 		EnterAction: func(action *parser.ActionNode) {
 			currentOperation = action
-			orderByAttributeDefined = false
+			sortableAttributeDefined = false
+		},
+		LeaveAction: func(_ *parser.ActionNode) {
+			currentOperation = nil
+			sortableAttributeDefined = false
 		},
 		EnterAttribute: func(attribute *parser.AttributeNode) {
 			currentAttribute = attribute
-			argumentLabels = []string{}
+			arguments = []string{}
 
-			if attribute.Name.Value != parser.AttributeOrderBy {
+			if attribute.Name.Value != parser.AttributeSortable {
+				return
+			}
+
+			if currentOperation == nil {
 				return
 			}
 
@@ -36,60 +47,94 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy can only be used on list operations",
+						Message: "@sortable can only be used on list operations",
 					},
 					attribute.Name,
 				))
 			}
 
-			if orderByAttributeDefined {
+			if sortableAttributeDefined {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeNotAllowedError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy can only be defined once per operation",
+						Message: "@sortable can only be defined once per operation",
 					},
 					attribute.Name,
 				))
 			}
 
-			orderByAttributeDefined = true
+			sortableAttributeDefined = true
 
 			if len(attribute.Arguments) == 0 {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy requires at least once argument",
+						Message: "@sortable requires at least once argument",
 					},
 					attribute,
 				))
 			}
 		},
+		LeaveAttribute: func(attribute *parser.AttributeNode) {
+			currentAttribute = nil
+			arguments = []string{}
+		},
 		EnterAttributeArgument: func(arg *parser.AttributeArgumentNode) {
-			if currentAttribute.Name.Value != parser.AttributeOrderBy {
+			if currentAttribute.Name.Value != parser.AttributeSortable {
 				return
 			}
 
-			if arg.Label == nil {
+			if currentOperation == nil {
+				return
+			}
+
+			if arg.Label != nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy arguments must be specified with a label corresponding with a field on this model",
-						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
+						Message: "@sortable arguments should not be labelled",
+						Hint:    "For example, use @sortable(firstName, surname)",
 					},
 					arg,
 				))
 				return
 			}
 
-			modelField := query.ModelField(currentModel, arg.Label.Value)
+			operand, err := arg.Expression.ToValue()
+			if err != nil {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: "@sortable argument is not correctly formatted",
+						Hint:    "For example, use @sortable(firstName, surname)",
+					},
+					arg,
+				))
+				return
+			}
+
+			if operand.Ident == nil || len(operand.Ident.Fragments) != 1 {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: "@sortable argument is not correct formatted",
+						Hint:    "For example, use @sortable(firstName, surname)",
+					},
+					arg.Expression,
+				))
+				return
+			}
+
+			argumentValue := operand.Ident.Fragments[0].Fragment
+			modelField := query.ModelField(currentModel, argumentValue)
 
 			if modelField == nil {
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("@orderBy argument label '%s' must correspond to a field on this model", arg.Label.Value),
+						Message: fmt.Sprintf("@sortable argument '%s' must correspond to a field on this model", argumentValue),
 					},
-					arg.Label,
+					arg.Expression,
 				))
 				return
 			}
@@ -98,50 +143,26 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
 					errorhandling.AttributeArgumentError,
 					errorhandling.ErrorDetails{
-						Message: "@orderBy does not support ordering of relationships fields",
-					},
-					arg.Label,
-				))
-				return
-			}
-
-			if lo.SomeBy(argumentLabels, func(a string) bool { return a == arg.Label.Value }) {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: fmt.Sprintf("@orderBy argument name '%s' already defined", arg.Label.Value),
-					},
-					arg.Label,
-				))
-				return
-			}
-
-			argumentLabels = append(argumentLabels, arg.Label.Value)
-
-			operand, err := arg.Expression.ToValue()
-			if err != nil {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: "@orderBy argument is not correctly formatted",
-						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
-					},
-					arg,
-				))
-				return
-			}
-
-			if operand.Ident == nil || (operand.Ident.Fragments[0].Fragment != parser.OrderByAscending && operand.Ident.Fragments[0].Fragment != parser.OrderByDescending) {
-				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
-					errorhandling.AttributeArgumentError,
-					errorhandling.ErrorDetails{
-						Message: "@orderBy argument value must either be asc or desc",
-						Hint:    "For example, @orderBy(surname: asc, firstName: asc)",
+						Message: "@sortable does not support ordering of relationships fields",
 					},
 					arg.Expression,
 				))
 				return
 			}
+
+			if lo.SomeBy(arguments, func(a string) bool { return a == argumentValue }) {
+				errs.AppendError(errorhandling.NewValidationErrorWithDetails(
+					errorhandling.AttributeArgumentError,
+					errorhandling.ErrorDetails{
+						Message: fmt.Sprintf("@sortable argument name '%s' already defined", argumentValue),
+					},
+					arg.Expression,
+				))
+				return
+			}
+
+			arguments = append(arguments, argumentValue)
+
 		},
 	}
 }
