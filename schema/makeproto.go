@@ -634,9 +634,9 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 				MessageName: makeInputMessageName(action.Name.Value),
 				Optional:    true,
 				Type: &proto.TypeInfo{
-					Type:              proto.Type_TYPE_ONEOF_MESSAGE,
-					Repeated:          true,
-					OneofMessageNames: lo.Map(orderByMessages, func(m *proto.Message, _ int) *wrapperspb.StringValue { return wrapperspb.String(m.Name) }),
+					Type:       proto.Type_TYPE_UNION,
+					Repeated:   true,
+					UnionNames: lo.Map(orderByMessages, func(m *proto.Message, _ int) *wrapperspb.StringValue { return wrapperspb.String(m.Name) }),
 				},
 			}
 

@@ -275,12 +275,10 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 
 		components.Schemas[name] = component
 
-	case proto.Type_TYPE_ONEOF_MESSAGE:
-
+	case proto.Type_TYPE_UNION:
+		// Union types can be modelled using oneOf.
 		oneOf := []JSONSchema{}
-
-		for _, m := range t.OneofMessageNames {
-
+		for _, m := range t.UnionNames {
 			// Add the nested message to schema components.
 			message := proto.FindMessage(schema.Messages, m.Value)
 			component := JSONSchemaForMessage(ctx, schema, op, message)
@@ -361,7 +359,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		prop.Enum = []*string{&asc, &desc}
 	}
 
-	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_ONEOF_MESSAGE) {
+	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {
 		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum}
 		prop.Enum = nil
 		prop.Type = "array"
