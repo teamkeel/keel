@@ -252,17 +252,18 @@ export type PersonAPI = {
 }
 
 func TestModelAPIFindManyDeclaration(t *testing.T) {
-	expected := `export type SortOrder = "asc" | "desc" | "ASC" | "DESC"
+	expected := `
+export type SortDirection = "asc" | "desc" | "ASC" | "DESC"
 export type PersonOrderBy = {
-	firstName?: SortOrder,
-	lastName?: SortOrder,
-	age?: SortOrder,
-	dateOfBirth?: SortOrder,
-	gender?: SortOrder,
-	hasChildren?: SortOrder,
-	id?: SortOrder,
-	createdAt?: SortOrder,
-	updatedAt?: SortOrder
+	firstName?: SortDirection,
+	lastName?: SortDirection,
+	age?: SortDirection,
+	dateOfBirth?: SortDirection,
+	gender?: SortDirection,
+	hasChildren?: SortDirection,
+	id?: SortDirection,
+	createdAt?: SortDirection,
+	updatedAt?: SortDirection
 }
 
 export interface PersonFindManyParams {

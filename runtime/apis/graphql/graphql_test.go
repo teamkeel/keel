@@ -37,10 +37,6 @@ func TestGraphQL(t *testing.T) {
 		parts := strings.Split(f.Name(), ".")
 		name, ext := parts[0], parts[1]
 
-		if name != "list_operation_sortable" {
-			continue
-		}
-
 		tc := testCases[name]
 
 		b, err := os.ReadFile(filepath.Join("./testdata/graphql", f.Name()))

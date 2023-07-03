@@ -232,9 +232,9 @@
           "messageName": "ListAuthorsInput",
           "name": "orderBy",
           "type": {
-            "type": "TYPE_ONEOF_MESSAGE",
+            "type": "TYPE_UNION",
             "repeated": true,
-            "oneofMessageNames": [
+            "unionNames": [
               "ListAuthorsOrderByFirstName",
               "ListAuthorsOrderBySurname"
             ]
