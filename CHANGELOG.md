@@ -1,3 +1,10 @@
+## [0.345.1](https://github.com/teamkeel/keel/compare/v0.345.0...v0.345.1) (2023-07-04)
+
+
+### Bug Fixes
+
+* improving [@order](https://github.com/order)By validation ([6561362](https://github.com/teamkeel/keel/commit/656136285603f4416ef891187f138428acd0740d))
+
 # [0.345.0](https://github.com/teamkeel/keel/compare/v0.344.0...v0.345.0) (2023-07-04)
 
 
