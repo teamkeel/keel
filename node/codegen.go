@@ -11,6 +11,7 @@ import (
 	"github.com/teamkeel/keel/codegen"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema/parser"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type generateOptions struct {
@@ -184,7 +185,7 @@ func writeCreateValuesInterface(w *codegen.Writer, model *proto.Model) {
 }
 
 func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTestingPackage bool) {
-	w.Writeln(`export type SortOrder = "asc" | "desc" | "ASC" | "DESC"`)
+	w.Writeln(`export type SortDirection = "asc" | "desc" | "ASC" | "DESC"`)
 	w.Writef("export type %sOrderBy = {\n", model.Name)
 	w.Indent()
 
@@ -200,7 +201,7 @@ func writeFindManyParamsInterface(w *codegen.Writer, model *proto.Model, isTesti
 	})
 
 	for i, f := range relevantFields {
-		w.Writef("%s?: SortOrder", f.Name)
+		w.Writef("%s?: SortDirection", f.Name)
 
 		if i < len(relevantFields)-1 {
 			w.Write(",")
@@ -931,6 +932,18 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 		} else {
 			ret = t.ModelName.Value
 		}
+	case proto.Type_TYPE_SORT_DIRECTION:
+		if isTestingPackage {
+			ret = "sdk.SortDirection"
+		} else {
+			ret = "SortDirection"
+		}
+	case proto.Type_TYPE_UNION:
+		// Retrieve all the types that can satisfy this union field.
+		messageNames := lo.Map(t.UnionNames, func(s *wrapperspb.StringValue, _ int) string {
+			return s.Value
+		})
+		ret = fmt.Sprintf("(%s)", strings.Join(messageNames, " | "))
 	default:
 		ret = "any"
 	}

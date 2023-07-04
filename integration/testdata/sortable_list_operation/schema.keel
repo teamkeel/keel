@@ -1,0 +1,32 @@
+model Contestant {
+    fields {
+        name Text
+        gold Number
+        silver Number
+        bronze Number
+        disqualified Boolean @default(false)
+        team Team
+    }
+
+    operations {
+        list listRankings(name?, team.name?) {
+            @sortable(gold, silver, bronze, name)
+            @where(contestant.disqualified == false and contestant.team.disqualified == false)
+            @permission(expression: true)
+        }
+    }
+}
+
+model Team {
+    fields {
+        name Text
+        disqualified Boolean @default(false)
+    }
+}
+
+api Test {
+    models {
+        Team
+        Contestant
+    }
+}

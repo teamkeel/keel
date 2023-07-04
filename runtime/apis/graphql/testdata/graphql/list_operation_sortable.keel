@@ -1,0 +1,18 @@
+model Author {
+    fields {
+        firstName Text
+        surname Text
+    }
+
+    operations {
+        list listAuthors() {
+            @sortable(firstName, surname)
+        }
+    }
+}
+
+api Test {
+    models {
+        Author
+    }
+}

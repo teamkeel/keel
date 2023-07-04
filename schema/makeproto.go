@@ -312,6 +312,30 @@ func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error)
 	}
 }
 
+func makeListOrderByMessages(actionName string, fieldNames []string) []*proto.Message {
+	messages := []*proto.Message{}
+
+	for _, fieldName := range fieldNames {
+		message := &proto.Message{
+			Name:   makeOrderByMessageName(actionName, fieldName),
+			Fields: []*proto.MessageField{},
+		}
+
+		message.Fields = append(message.Fields, &proto.MessageField{
+			Name:     fieldName,
+			Optional: false,
+			Nullable: false,
+			Type: &proto.TypeInfo{
+				Type: proto.Type_TYPE_SORT_DIRECTION,
+			},
+		})
+
+		messages = append(messages, message)
+	}
+
+	return messages
+}
+
 // Creates a proto.Message from a slice of action inputs.
 func (scm *Builder) makeMessageFromActionInputNodes(name string, inputs []*parser.ActionInputNode, model *parser.ModelNode, action *parser.ActionNode, impl proto.OperationImplementation) *proto.Message {
 	fields := []*proto.MessageField{}
@@ -548,7 +572,12 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 
 		scm.proto.Messages = append(scm.proto.Messages, whereMessage)
 
-		scm.proto.Messages = append(scm.proto.Messages, &proto.Message{
+		sortableFields, err := query.ActionSortableFieldNames(action)
+		if err != nil {
+			panic(err)
+		}
+
+		inputMessage := &proto.Message{
 			Name: makeInputMessageName(action.Name.Value),
 			Fields: []*proto.MessageField{
 				{
@@ -596,7 +625,26 @@ func (scm *Builder) makeActionInputMessages(model *parser.ModelNode, action *par
 					},
 				},
 			},
-		})
+		}
+
+		orderByMessages := makeListOrderByMessages(action.Name.Value, sortableFields)
+		if len(orderByMessages) > 0 {
+			orderByMessageField := &proto.MessageField{
+				Name:        "orderBy",
+				MessageName: makeInputMessageName(action.Name.Value),
+				Optional:    true,
+				Type: &proto.TypeInfo{
+					Type:       proto.Type_TYPE_UNION,
+					Repeated:   true,
+					UnionNames: lo.Map(orderByMessages, func(m *proto.Message, _ int) *wrapperspb.StringValue { return wrapperspb.String(m.Name) }),
+				},
+			}
+
+			scm.proto.Messages = append(scm.proto.Messages, orderByMessages...)
+			inputMessage.Fields = append(inputMessage.Fields, orderByMessageField)
+		}
+
+		scm.proto.Messages = append(scm.proto.Messages, inputMessage)
 	default:
 		panic("unhandled operation type when creating input message types")
 	}
@@ -1364,6 +1412,10 @@ func makeInputMessageName(opName string, subMessageNames ...string) string {
 
 func makeWhereMessageName(opName string) string {
 	return fmt.Sprintf("%sWhere", casing.ToCamel(opName))
+}
+
+func makeOrderByMessageName(opName string, fieldName string) string {
+	return fmt.Sprintf("%sOrderBy%s", casing.ToCamel(opName), casing.ToCamel(fieldName))
 }
 
 func makeValuesMessageName(opName string) string {

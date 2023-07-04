@@ -35,6 +35,18 @@ var anyType = graphql.NewScalar(graphql.ScalarConfig{
 	Description: parser.MessageFieldTypeAny,
 })
 
+var sortDirectionType = graphql.NewEnum(graphql.EnumConfig{
+	Name: "SortDirection",
+	Values: graphql.EnumValueConfigMap{
+		"asc": &graphql.EnumValueConfig{
+			Value: "asc",
+		},
+		"desc": &graphql.EnumValueConfig{
+			Value: "desc",
+		},
+	},
+})
+
 const (
 	iso8601Layout = "2006-01-02T15:04:05.00Z0700"
 )
@@ -291,16 +303,17 @@ var timestampInputType = iso8601Type
 var dateInputType = iso8601Type
 
 var protoTypeToGraphQLInput = map[proto.Type]graphql.Input{
-	proto.Type_TYPE_ID:        graphql.ID,
-	proto.Type_TYPE_STRING:    graphql.String,
-	proto.Type_TYPE_INT:       graphql.Int,
-	proto.Type_TYPE_BOOL:      graphql.Boolean,
-	proto.Type_TYPE_TIMESTAMP: timestampInputType,
-	proto.Type_TYPE_DATETIME:  timestampInputType,
-	proto.Type_TYPE_DATE:      dateInputType,
-	proto.Type_TYPE_SECRET:    graphql.String,
-	proto.Type_TYPE_PASSWORD:  graphql.String,
-	proto.Type_TYPE_ANY:       anyType,
+	proto.Type_TYPE_ID:             graphql.ID,
+	proto.Type_TYPE_STRING:         graphql.String,
+	proto.Type_TYPE_INT:            graphql.Int,
+	proto.Type_TYPE_BOOL:           graphql.Boolean,
+	proto.Type_TYPE_TIMESTAMP:      timestampInputType,
+	proto.Type_TYPE_DATETIME:       timestampInputType,
+	proto.Type_TYPE_DATE:           dateInputType,
+	proto.Type_TYPE_SECRET:         graphql.String,
+	proto.Type_TYPE_PASSWORD:       graphql.String,
+	proto.Type_TYPE_ANY:            anyType,
+	proto.Type_TYPE_SORT_DIRECTION: sortDirectionType,
 }
 
 // for fields where the underlying source is a date/datetime

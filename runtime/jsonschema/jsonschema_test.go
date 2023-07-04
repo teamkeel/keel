@@ -497,7 +497,9 @@ func TestValidateRequest(t *testing.T) {
 						releaseDate Date
 					}
 					operations {
-						list listBooks(id?, title?, genre?, price?, available?, createdAt?, releaseDate?)
+						list listBooks(id?, title?, genre?, price?, available?, createdAt?, releaseDate?) {
+							@sortable(title, genre)
+						}
 						list booksByTitleAndGenre(title: Text, genre: Genre, minPrice: Number?) {
 							@where(book.title == title)
 							@where(book.genre == genre)
@@ -515,7 +517,6 @@ func TestValidateRequest(t *testing.T) {
 					opName:  "listBooks",
 					request: `{"where": {}}`,
 				},
-
 				{
 					name:    "valid - text equals",
 					opName:  "listBooks",
@@ -642,6 +643,16 @@ func TestValidateRequest(t *testing.T) {
 					request: `{"where": {"id": {"oneOf": ["123456789"]}}}`,
 				},
 				{
+					name:    "valid - empty orderby",
+					opName:  "listBooks",
+					request: `{"orderBy": []}`,
+				},
+				{
+					name:    "valid - orderby title and genre",
+					opName:  "listBooks",
+					request: `{"orderBy": [{"title":"asc"},{"genre":"desc"}]}`,
+				},
+				{
 					name:    "valid - non-query types",
 					opName:  "booksByTitleAndGenre",
 					request: `{"where": {"title": "Some title", "genre": "Horror", "minPrice": 10}}`,
@@ -663,6 +674,15 @@ func TestValidateRequest(t *testing.T) {
 				},
 
 				// errors
+				{
+					name:    "invalid sort direction",
+					opName:  "listBooks",
+					request: `{"orderBy": [{"title":"asc"},{"genre":"down"}]}`,
+					errors: map[string]string{
+						"orderBy.1":       `Must validate one and only one schema (oneOf)`,
+						"orderBy.1.genre": `orderBy.1.genre must be one of the following: "asc", "desc"`,
+					},
+				},
 				{
 					name:    "nullable nested model list field as null",
 					opName:  "listBooksByPublisherDateFounded",

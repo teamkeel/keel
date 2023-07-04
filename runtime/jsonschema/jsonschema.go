@@ -54,6 +54,7 @@ type JSONSchema struct {
 	Properties           map[string]JSONSchema `json:"properties,omitempty"`
 	AdditionalProperties *bool                 `json:"additionalProperties,omitempty"`
 	Required             []string              `json:"required,omitempty"`
+	OneOf                []JSONSchema          `json:"oneOf,omitempty"`
 
 	// For arrays
 	Items *JSONSchema `json:"items,omitempty"`
@@ -273,6 +274,42 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		}
 
 		components.Schemas[name] = component
+
+	case proto.Type_TYPE_UNION:
+		// Union types can be modelled using oneOf.
+		oneOf := []JSONSchema{}
+		for _, m := range t.UnionNames {
+			// Add the nested message to schema components.
+			message := proto.FindMessage(schema.Messages, m.Value)
+			component := JSONSchemaForMessage(ctx, schema, op, message)
+
+			// If that nested message component has ref fields itself, then its components must be bundled.
+			if component.Components != nil {
+				for cName, comp := range component.Components.Schemas {
+					components.Schemas[cName] = comp
+				}
+				component.Components = nil
+			}
+
+			name := message.Name
+			if isNullableField {
+				component.allowNull()
+				name = "Nullable" + name
+			}
+
+			j := JSONSchema{Ref: fmt.Sprintf("#/components/schemas/%s", name)}
+			oneOf = append(oneOf, j)
+
+			components.Schemas[name] = component
+		}
+
+		if t.Repeated {
+			prop.Type = "array"
+			prop.Items = &JSONSchema{OneOf: oneOf}
+		} else {
+			prop = JSONSchema{OneOf: oneOf}
+		}
+
 	case proto.Type_TYPE_ID, proto.Type_TYPE_STRING:
 		prop.Type = "string"
 	case proto.Type_TYPE_BOOL:
@@ -315,9 +352,14 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		if isNullableField {
 			prop.allowNull()
 		}
+	case proto.Type_TYPE_SORT_DIRECTION:
+		prop.Type = "string"
+		asc := "asc"
+		desc := "desc"
+		prop.Enum = []*string{&asc, &desc}
 	}
 
-	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL) {
+	if t.Repeated && (t.Type != proto.Type_TYPE_MESSAGE && t.Type != proto.Type_TYPE_MODEL && t.Type != proto.Type_TYPE_UNION) {
 		prop.Items = &JSONSchema{Type: prop.Type, Enum: prop.Enum}
 		prop.Enum = nil
 		prop.Type = "array"

@@ -754,6 +754,7 @@ func (mk *graphqlSchemaBuilder) outputTypeForModelField(field *proto.Field) (out
 // inputTypeFromMessageField maps the type in the given proto.MessageField to a suitable graphql.Input type.
 func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageField, op *proto.Operation) (graphql.Input, error) {
 	var in graphql.Input
+	var err error
 
 	switch {
 	case field.Type.Type == proto.Type_TYPE_MESSAGE:
@@ -789,13 +790,42 @@ func (mk *graphqlSchemaBuilder) inputTypeFromMessageField(field *proto.MessageFi
 		}
 
 		mk.inputs[messageName] = inputObject
+		in = inputObject
+	case field.Type.Type == proto.Type_TYPE_UNION:
+		// GraphQL doesn't support union type or the concept of oneOf for inputs _yet_,
+		// so we will rather compile all the fields from the union types into one message,
+		// make all the fields optional, and rely on runtime validation.
+		messageName := fmt.Sprintf("%sOrderBy", field.MessageName)
+		inputObject := graphql.NewInputObject(graphql.InputObjectConfig{
+			Name:   mk.makeUniqueInputMessageName(messageName),
+			Fields: graphql.InputObjectConfigFieldMap{},
+		})
 
+		for _, typeName := range field.Type.UnionNames {
+			fieldMessage := proto.FindMessage(mk.proto.Messages, typeName.Value)
+			for _, typeField := range fieldMessage.Fields {
+				typeField.Optional = true
+				typeField.Nullable = true
+				inputField, err := mk.inputTypeFromMessageField(typeField, op)
+				if err != nil {
+					return nil, err
+				}
+
+				inputObject.AddFieldConfig(typeField.Name, &graphql.InputObjectFieldConfig{
+					Type: inputField,
+				})
+			}
+		}
+
+		mk.inputs[messageName] = inputObject
 		in = inputObject
 	case field.Type.Type == proto.Type_TYPE_MODEL:
 		model := proto.FindModel(mk.proto.Models, field.Type.ModelName.Value)
-		in, _ = mk.addModelInput(model)
+		in, err = mk.addModelInput(model)
+		if err != nil {
+			return nil, err
+		}
 	default:
-		var err error
 		if in, err = mk.inputTypeFor(field); err != nil {
 			return nil, err
 		}
