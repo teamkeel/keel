@@ -83,7 +83,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 	return nil
 }
 
-// Applies all schema-defined ordering to the query.
+// Applies schema-defined @orderBy ordering to the query.
 func (query *QueryBuilder) applySchemaOrdering(scope *Scope) error {
 	for _, orderBy := range scope.Operation.OrderBy {
 		direction, err := toSql(orderBy.Direction)
@@ -97,7 +97,7 @@ func (query *QueryBuilder) applySchemaOrdering(scope *Scope) error {
 	return nil
 }
 
-// Applies all schema-defined ordering to the query.
+// Applies ordering of @sortable fields to the query.
 func (query *QueryBuilder) applyRequestOrdering(scope *Scope, orderBy []any) error {
 	for _, item := range orderBy {
 		obj := item.(map[string]any)
