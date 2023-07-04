@@ -1,19 +1,53 @@
 {
   "errors": [
     {
+      "message": "field 'firstName' has an unrecognised attribute @orderBy",
+      "hint": "Did you mean @unique, @default, @primaryKey, or @relation?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
+        "offset": 52,
+        "line": 4,
+        "column": 24
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
+        "offset": 60,
+        "line": 4,
+        "column": 32
+      }
+    },
+    {
+      "message": "model 'Author' has an unrecognised attribute @orderBy",
+      "hint": "Did you mean @permission, or @unique?",
+      "code": "E011",
+      "pos": {
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
+        "offset": 334,
+        "line": 19,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_orderby/schema.keel",
+        "offset": 342,
+        "line": 19,
+        "column": 13
+      }
+    },
+    {
       "message": "function 'listAuthorsFn' has an unrecognised attribute @orderBy",
       "hint": "Did you mean @permission?",
       "code": "E011",
       "pos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 380,
-        "line": 21,
+        "offset": 419,
+        "line": 23,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 388,
-        "line": 21,
+        "offset": 427,
+        "line": 23,
         "column": 21
       }
     },
@@ -23,13 +57,13 @@
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 167,
+        "offset": 176,
         "line": 10,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 175,
+        "offset": 184,
         "line": 10,
         "column": 21
       }
@@ -40,13 +74,13 @@
       "code": "AttributeNotAllowedError",
       "pos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 281,
+        "offset": 290,
         "line": 15,
         "column": 13
       },
       "endPos": {
         "filename": "testdata/validation_attribute_orderby/schema.keel",
-        "offset": 289,
+        "offset": 298,
         "line": 15,
         "column": 21
       }

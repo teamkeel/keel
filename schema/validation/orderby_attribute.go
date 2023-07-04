@@ -20,8 +20,15 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 		EnterModel: func(model *parser.ModelNode) {
 			currentModel = model
 		},
+		LeaveModel: func(_ *parser.ModelNode) {
+			currentModel = nil
+		},
 		EnterAction: func(action *parser.ActionNode) {
 			currentOperation = action
+			orderByAttributeDefined = false
+		},
+		LeaveAction: func(_ *parser.ActionNode) {
+			currentOperation = nil
 			orderByAttributeDefined = false
 		},
 		EnterAttribute: func(attribute *parser.AttributeNode) {
@@ -29,6 +36,10 @@ func OrderByAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErro
 			argumentLabels = []string{}
 
 			if attribute.Name.Value != parser.AttributeOrderBy {
+				return
+			}
+
+			if currentOperation == nil {
 				return
 			}
 
