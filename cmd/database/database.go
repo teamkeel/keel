@@ -14,6 +14,9 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/mount"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/samber/lo"
@@ -21,56 +24,104 @@ import (
 	"github.com/teamkeel/keel/util"
 )
 
-type ErrPortInUse struct {
-	Port string
-}
-
-func (e ErrPortInUse) Error() string {
-	return fmt.Sprintf("port %s is in use", e.Port)
-}
-
-// BringUpPostgresLocally spins up a PostgreSQL server locally and returns
+// Start spins up a dockerised PostgreSQL server locally and returns
 // a connection to it.
 //
 // It is the client's responsibility to call db.Close() on the returned
 // connection when done with it.
 //
-// It deploys it with Docker.
+// It creates a separate dedicated database for each of your projects - based
+// on the project's directory name.
 
-// You can specify if it should use the existing container, so as to retain its mounted
-// volume, and thus stored data. This is good for the Run command. Conversely, the /runtime/gql/api test
-// suite, needs to have a virgin container for each test case, to avoid conflicts with prior state.
+// You have to specify if you want the database contents for THIS project to be
+// reset (cleared) or retained.
 //
-// But it can also cope with a virgin run when even the required Docker image
-// is not in the local docker registery.
+// You don't need to have a Postgres Docker image already available - because it will
+// go and fetch one if necessary the first time.
 //
-// It sets the password for that user to "postgres".
-// It sets the default database name to a hash of the project directory.
-func Start(useExistingContainer bool, projectDirectory string) (*db.ConnectionInfo, error) {
-	// Bring up the container, if it isn't already up.
-	connectionInfo, err := bringUpContainer(useExistingContainer)
+// It creates and starts a fresh docker container each time in order to
+// be able to serve Postgres on a port that is free on the host, RIGHT NOW.
+// It favours port 5432 when possible.
+//
+// However it manages a "live forever" Docker Volume and tells Postgres
+// to persist the database contents to that volume. Consequently the Volume
+// and the data are long lived, while the container is ephemeral.
+//
+// It names the default database to be 'postgres' and sets the pg password
+// also to "postgres".
+//
+// The connection info it returns refers to the project-specific database.
+func Start(reset bool, projectDirectory string) (*db.ConnectionInfo, error) {
+
+	// We need a dockerClient (proxy) to "drive" Docker using the SDK.
+	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
 
-	// Generate unique database name and append it to connectionInfo.
-	dbName, err := generateDatabaseName(projectDirectory)
-	if err != nil {
-		return nil, err
-	}
-	connectionInfo = connectionInfo.WithDatabase(dbName)
-
-	// Create database if it doesn't exist.
-	err = createDatabaseIfNotExists(connectionInfo)
-	if err != nil {
+	// We tell every Postgres container we launch and run, to use a long-lived,
+	// external Docker Volume to store the database contents and metadata on. So
+	// we take this opportunity to create that Volume, if it doesn't already
+	// exist on this host's Docker environment. (i.e. only happens once).
+	if err := createVolumeIfNotExists(dockerClient); err != nil {
 		return nil, err
 	}
 
-	return connectionInfo, nil
+	// Create the container for THIS run.
+	// Note the returned connection is for the DEFAULT Postgres
+	// database - NOT a project-specific database.
+	containerID, serverConnectionInfo, err := createContainer(dockerClient)
+	if err != nil {
+		return nil, err
+	}
+
+	// Start the container running. (This is where it chooses the port to serve on)
+	if err := startContainer(dockerClient, containerID); err != nil {
+		return nil, err
+	}
+
+	// Calculate the deterministic and unique, project-specific database name
+	projectDbName, err := generateDatabaseName(projectDirectory)
+	if err != nil {
+		return nil, err
+	}
+
+	projectDatabaseExists, err := doesDbExist(serverConnectionInfo, projectDbName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Obey the mandate to clear the project-specific database if requested,
+	// by DROP-ing that database.
+
+	if projectDatabaseExists && reset {
+		if err := dropDatabase(serverConnectionInfo, projectDbName); err != nil {
+			return nil, err
+		}
+		projectDatabaseExists = false // We just removed it.
+	}
+
+	// Make sure the project database exists. It may never have existed yet, or we might
+	// have just dropped it to do a reset.
+	if !projectDatabaseExists {
+		if err := createProjectDatabase(serverConnectionInfo, projectDbName); err != nil {
+			return nil, err
+		}
+	}
+
+	// We return a project-specific connectionInfo that points to the
+	// project-specific database.
+	projectConnectionInfo := serverConnectionInfo.WithDatabase(projectDbName)
+	return projectConnectionInfo, nil
 }
 
 // Stop stops the postgres container - having checked first
 // that such a container exists, and it is running.
+//
+// This is no longer strictly necessary now, but it seems likely the user would prefer not
+// to have needless containers running. In fact we could with this new architecture delete the
+// container at this point. It get's deleted anyhow when you next run Keel run.
+// But it leaving it as it was because its harmless.
 func Stop() error {
 	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
@@ -99,130 +150,128 @@ func Stop() error {
 	return nil
 }
 
-func bringUpContainer(useExistingContainer bool) (*db.ConnectionInfo, error) {
-	dockerClient, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-	if err != nil {
-		return nil, err
-	}
-
+// fetchPostgresImageIfNecessary goes off to fetch the official Postgres Docker image,
+// if it is not already stored in Docker's local Image Respository.
+func fetchPostgresImageIfNecessary(dockerClient *client.Client) error {
 	postgresImage, err := findImage(dockerClient)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if postgresImage == nil {
 		fmt.Println("Pulling postgres Docker image...")
 		reader, err := dockerClient.ImagePull(context.Background(), postgresImageName+":"+postgresTag, types.ImagePullOptions{})
 		if err != nil {
-			return nil, err
+			return err
 		}
 		defer reader.Close()
 		// ImagePull() is async - and the suggested protocol for waiting for it to complete is
 		// to read from the returned reader, until you reach EOF.
 		awaitReadCompletion(reader)
 	}
+	// Double check it worked.
+	if _, err := findImage(dockerClient); err != nil {
+		return err
+	}
+	return nil
+}
 
-	postgresContainer, err := findContainer(dockerClient)
+// removeContainer removes the PG container if there already is one present.
+func removeContainer(dockerClient *client.Client) error {
+	containerMetadata, err := findContainer(dockerClient)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	if containerMetadata == nil {
+		return nil
+	}
+	if err := dockerClient.ContainerRemove(
+		context.Background(),
+		containerMetadata.ID,
+		types.ContainerRemoveOptions{
+			RemoveVolumes: false,
+			Force:         true,
+		}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// createContainer creates a fresh PG container.
+//
+// It first removes the previously created container if one exists.
+// It configures the default database to be named 'postgres'.
+// It configures it to serve on a port that is free RIGHT NOW. (favouring 5432)
+// And it mounts our long-lived Docker storage volume into the container's
+// file system - at the location that Postgres uses to store the database contents.
+func createContainer(dockerClient *client.Client) (
+	containerID string,
+	connInfo *db.ConnectionInfo, err error) {
+
+	if err := fetchPostgresImageIfNecessary(dockerClient); err != nil {
+		return "", nil, err
+	}
+	if err := removeContainer(dockerClient); err != nil {
+		return "", nil, err
 	}
 
-	// If we want to create a fresh container, but there is already one registered
-	// with that name, we have to remove it first to be able to re create it.
-	if postgresContainer != nil && !useExistingContainer {
-		err = dockerClient.ContainerRemove(
-			context.Background(),
-			postgresContainer.ID,
-			types.ContainerRemoveOptions{
-				RemoveVolumes: true,
-				Force:         true,
-			})
-
-		if err != nil {
-			return nil, err
-		}
-
-		postgresContainer = nil
+	// Note we are delibarately leaving the Postgres DB storage file system location at its
+	// default of '/var/lib/postgresql/data' (rather than setting the envvar PGDATA),
+	// because that is where we have mounted the external storage volume to the container.
+	containerConfig := &container.Config{
+		Image: postgresImageName + ":" + postgresTag,
+		Env: []string{
+			"POSTGRES_PASSWORD=postgres",
+			"POSTGRES_USER=postgres",
+		},
 	}
 
-	var port string
-	usingExistingContainer := postgresContainer != nil
-
-	if postgresContainer != nil {
-		container, err := dockerClient.ContainerInspect(context.Background(), postgresContainer.ID)
-		if err != nil {
-			return nil, err
-		}
-
-		// find the port this container is bound to
-		for p, bindings := range container.HostConfig.PortBindings {
-			if p.Proto() == "tcp" && p.Port() == "5432" && len(bindings) > 0 {
-				port = bindings[0].HostPort
-			}
-		}
-
-	} else {
-		containerConfig := &container.Config{
-			Image: postgresImageName + ":" + postgresTag,
-			Env: []string{
-				"POSTGRES_PASSWORD=postgres",
-				"POSTGRES_USER=postgres",
-			},
-		}
-
-		// get a free port
-		port, err = util.GetFreePort("5432")
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = dockerClient.ContainerCreate(
-			context.Background(),
-			containerConfig,
-			makeHostConfig(port),
-			nil,
-			nil,
-			keelPostgresContainerName)
-		if err != nil {
-			return nil, err
-		}
-
-		postgresContainer, _ = findContainer(dockerClient)
-	}
-
-	// See if container is running
-	isRunning, err := isContainerRunning(dockerClient, postgresContainer)
+	port, err := util.GetFreePort("5432")
 	if err != nil {
-		return nil, err
+		return "", nil, err
 	}
 
-	if !isRunning {
-		err := dockerClient.ContainerStart(
-			context.Background(),
-			postgresContainer.ID,
-			types.ContainerStartOptions{})
-		if err != nil {
-			if usingExistingContainer && strings.Contains(err.Error(), "port is already allocated") {
-				return nil, ErrPortInUse{port}
-			}
-			return nil, err
-		}
-	}
+	hostConfig := newPortBindingAndVolumeMountConfig(port)
 
-	return &db.ConnectionInfo{
+	createdInfo, err := dockerClient.ContainerCreate(
+		context.Background(),
+		containerConfig,
+		hostConfig,
+		nil, // network config
+		nil, // platform config
+		keelPostgresContainerName)
+
+	if err != nil {
+		return "", nil, err
+	}
+	connInfo = &db.ConnectionInfo{
 		Username: "postgres",
 		Password: "postgres",
 		Host:     "0.0.0.0",
 		Port:     port,
-	}, nil
+	}
+	return createdInfo.ID, connInfo, nil
 }
 
+// startContainer starts the container with the given ID.
+func startContainer(dockerClient *client.Client, containerID string) error {
+	if err := dockerClient.ContainerStart(
+		context.Background(),
+		containerID,
+		types.ContainerStartOptions{}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// findImage looks up the Postgres Docker Image we require in the local
+// Docker Image Resistry and returns its metadata. It it is not registered,
+// it signals this by returning nil metadata.
 func findImage(dockerClient *client.Client) (*types.ImageSummary, error) {
 	images, err := dockerClient.ImageList(context.Background(), types.ImageListOptions{})
 	if err != nil {
 		return nil, err
 	}
-
 	searchFor := strings.Join([]string{postgresImageName, postgresTag}, ":")
 	for _, image := range images {
 		tags := image.RepoTags
@@ -233,11 +282,12 @@ func findImage(dockerClient *client.Client) (*types.ImageSummary, error) {
 	return nil, nil
 }
 
+// findContainer obtains a reference to the Postgres container we make, if one exists.
+// If it cannot find it it returns container as nil.
 func findContainer(dockerClient *client.Client) (container *types.Container, err error) {
-	listOptions := types.ContainerListOptions{
+	containers, err := dockerClient.ContainerList(context.Background(), types.ContainerListOptions{
 		All: true,
-	}
-	containers, err := dockerClient.ContainerList(context.Background(), listOptions)
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -246,10 +296,10 @@ func findContainer(dockerClient *client.Client) (container *types.Container, err
 			return &c, nil
 		}
 	}
-
 	return nil, nil
 }
 
+// isContainerRunning returns true if the given container is currently running.
 func isContainerRunning(dockerClient *client.Client, container *types.Container) (bool, error) {
 	containerJSON, err := dockerClient.ContainerInspect(context.Background(), container.ID)
 	if err != nil {
@@ -261,8 +311,6 @@ func isContainerRunning(dockerClient *client.Client, container *types.Container)
 // awaitReadCompletion reads from the given reader until it reaches EOF.
 // It's used in the context of waiting for a docker image to be fetched, and
 // is the method used in the docker SDK to wait for the fetch to be complete.
-// We exploit it also to emit a growing row of dot characters to indicate
-// progress.
 func awaitReadCompletion(r io.Reader) {
 	// Consuming the output in N-byte chunks gives us circa
 	// a friendly number of read cycles - good for outputting a progress dot "." for each of them.
@@ -281,21 +329,37 @@ func awaitReadCompletion(r io.Reader) {
 	}
 }
 
-func makeHostConfig(port string) *container.HostConfig {
+// newPortBindingAndVolumeMountConfig makes a HostConfig object.
+//
+// This includes port mapping from the port the container will serve on in the
+// Docker VPN to the given host port on the host - thus making the container
+// accessible to the host's network.
+// And it includes mounting our long-lived Docker storage volume at the
+// file system location in the container that Docker uses to persist the database
+// contents and metadata. The latter makes sure that the database contents are
+// persisted beyond the life of any one container.
+func newPortBindingAndVolumeMountConfig(hostPort string) *container.HostConfig {
 	portBinding := nat.PortBinding{
 		HostIP:   "",
-		HostPort: port,
+		HostPort: hostPort,
 	}
 	portMap := nat.PortMap{
 		nat.Port("5432/tcp"): []nat.PortBinding{portBinding},
 	}
+	pgStorageMount := mount.Mount{
+		Type:   mount.TypeVolume,
+		Source: keelPGVolumeName,
+		Target: keelVolumeMountPath,
+	}
 	hostConfig := &container.HostConfig{
 		PortBindings: portMap,
+		Mounts:       []mount.Mount{pgStorageMount},
 	}
 	return hostConfig
 }
 
-// Generates a unique database name using a hash of the project's working directory
+// generateDatabaseName generates a unique but deterministic database name using a
+// hash of the project's working directory
 // For example: keel_48f77af86bffe7cdbb44308a70d11f8b
 func generateDatabaseName(projectDirectory string) (string, error) {
 	if strings.HasPrefix(projectDirectory, "~/") {
@@ -314,12 +378,58 @@ func generateDatabaseName(projectDirectory string) (string, error) {
 	return fmt.Sprintf("keel_%x", md5.Sum([]byte(projectDirectory))), nil
 }
 
-// createDatabaseIfNotExists creates a database if it does not exist.
-// It uses the database name found in the db.ConnectionInfo argument.
-func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
-	server, err := sql.Open("pgx/v5", info.ServerString())
+// doesDbExist tells you if the database of the given name already exists.
+func doesDbExist(serverConnectionInfo *db.ConnectionInfo, dbName string) (exists bool, err error) {
+	server, err := connectAndWaitForDbServer(serverConnectionInfo)
+	if err != nil {
+		return false, err
+	}
+
+	result := server.QueryRow(
+		fmt.Sprintf("SELECT COUNT(*) as count FROM pg_database WHERE datname = '%s'",
+			dbName))
+	var count int
+	err = result.Scan(&count)
+	if err != nil {
+		// The Scan errors with "no rows found" when the database does not exist.
+		return false, nil
+	}
+	return true, nil
+}
+
+// createProjectDatabase creates a database of the given name. It will return an error
+// if the database already exists.
+func createProjectDatabase(serverConnectionInfo *db.ConnectionInfo, dbToCreate string) error {
+	server, err := connectAndWaitForDbServer(serverConnectionInfo)
 	if err != nil {
 		return err
+	}
+	_, err = server.Exec(fmt.Sprintf("CREATE DATABASE %s;", dbToCreate))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// dropDatabase tells Postgres to drop the database of the given name.
+func dropDatabase(serverConnectionInfo *db.ConnectionInfo, dbToDrop string) error {
+	server, err := connectAndWaitForDbServer(serverConnectionInfo)
+	if err != nil {
+		return err
+	}
+	_, err = server.Exec(fmt.Sprintf("DROP DATABASE %s;", dbToDrop))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// connectAndWaitForDbServer connects to the database prescribed the given connection info,
+// and waits for it to be ready before returning.
+func connectAndWaitForDbServer(serverConnectionInfo *db.ConnectionInfo) (server *sql.DB, err error) {
+	server, err = sql.Open("pgx/v5", serverConnectionInfo.String())
+	if err != nil {
+		return nil, err
 	}
 
 	// ping() the database server until it is available.
@@ -330,27 +440,46 @@ func createDatabaseIfNotExists(info *db.ConnectionInfo) error {
 		}
 		time.Sleep(250 * time.Millisecond)
 	}
+	return server, nil
+}
 
-	result := server.QueryRow(fmt.Sprintf("SELECT COUNT(*) as count FROM pg_database WHERE datname = '%s'", info.Database))
+// createVolume creates the Docker volume we'll persist the database(s) on,
+// if it does not already exist.
+func createVolumeIfNotExists(dockerClient *client.Client) error {
+	vol, err := findVolume(dockerClient)
 	if err != nil {
 		return err
 	}
-	var count int
-	err = result.Scan(&count)
+	if vol != nil {
+		return nil
+	}
+	_, err = dockerClient.VolumeCreate(
+		context.Background(),
+		volume.VolumeCreateBody{Name: keelPGVolumeName})
 	if err != nil {
-		return err
+		return nil
 	}
 
-	if count == 0 {
-		_, err = server.Exec(fmt.Sprintf("CREATE DATABASE %s;", info.Database))
-		if err != nil {
-			return err
+	return nil
+}
+
+// findVolume returns the volume we use to persist the database on, if it
+// exists. If it does not yet exist it returns the volume as nil.
+func findVolume(dockerClient *client.Client) (volume *types.Volume, err error) {
+	volList, err := dockerClient.VolumeList(context.Background(), filters.Args{})
+	if err != nil {
+		return nil, err
+	}
+	for _, vol := range volList.Volumes {
+		if vol.Name == keelPGVolumeName {
+			return vol, nil
 		}
 	}
-
-	return err
+	return nil, nil
 }
 
 const postgresImageName string = "postgres"
 const postgresTag string = "11.13"
 const keelPostgresContainerName string = "keel-run-postgres"
+const keelPGVolumeName string = "keel-pg-volume"
+const keelVolumeMountPath = `/var/lib/postgresql/data`
