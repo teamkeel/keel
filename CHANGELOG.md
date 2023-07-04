@@ -1,3 +1,10 @@
+# [0.345.0](https://github.com/teamkeel/keel/compare/v0.344.0...v0.345.0) (2023-07-04)
+
+
+### Features
+
+* [@sortable](https://github.com/sortable) request ordering ([#1030](https://github.com/teamkeel/keel/issues/1030)) ([2424394](https://github.com/teamkeel/keel/commit/24243940398ac06c9cebe311ae52a42c5a8f59b8))
+
 # [0.344.0](https://github.com/teamkeel/keel/compare/v0.343.0...v0.344.0) (2023-07-03)
 
 
