@@ -1,3 +1,11 @@
+## [0.345.2](https://github.com/teamkeel/keel/compare/v0.345.1...v0.345.2) (2023-07-04)
+
+
+### Bug Fixes
+
+* redesign CLI dockerised DB strategy ([#1027](https://github.com/teamkeel/keel/issues/1027)) ([ef08507](https://github.com/teamkeel/keel/commit/ef08507e510d776b8c1c58871e13bee65e304828))
+* reinstate package.json ([#1032](https://github.com/teamkeel/keel/issues/1032)) ([3cb5572](https://github.com/teamkeel/keel/commit/3cb5572493de23870f8eb8cd6b95a7fc0a581625))
+
 ## [0.345.1](https://github.com/teamkeel/keel/compare/v0.345.0...v0.345.1) (2023-07-04)
 
 
