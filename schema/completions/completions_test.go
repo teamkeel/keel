@@ -379,22 +379,22 @@ func TestOperationCompletions(t *testing.T) {
 		{
 			name: "create-keyword",
 			schema: `
-			model A {
-		      operations {
-		        c<Cursor>
-			  }
-		    }`,
+		model A {
+			operations {
+			c<Cursor>
+			}
+		}`,
 			expected: parser.OperationActionTypes,
 		},
 		{
 			name: "create-keyword-not-first",
 			schema: `
-			model A {
-		      operations {
-		        get getA(id)
-		        crea<Cursor>
-			  }
-		    }`,
+		model A {
+			operations {
+			get getA(id)
+			crea<Cursor>
+			}
+		}`,
 			expected: parser.OperationActionTypes,
 		},
 		{
