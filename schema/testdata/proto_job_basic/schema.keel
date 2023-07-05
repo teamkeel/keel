@@ -1,7 +1,0 @@
-job MyJob {
-  inputs {
-    veryImportantValue Text
-  }
-  
-  @schedule("5 4 * * *")
-}

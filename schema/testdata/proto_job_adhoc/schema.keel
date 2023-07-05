@@ -1,0 +1,7 @@
+job MyJob {
+    inputs {
+        veryImportantValue Text
+    }
+  
+    @permission(roles: [Admin])
+}
