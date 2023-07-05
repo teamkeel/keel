@@ -402,7 +402,7 @@ func TestJobInputs(t *testing.T) {
   @schedule("...")
 }`})
 	assert.Equal(t, "MyJob", schema.Declarations[0].Job.Name.Value)
-	assert.Equal(t, "schedule", schema.Declarations[0].Job.Sections[2].Attributes.Name.Value)
+	assert.Equal(t, "schedule", schema.Declarations[0].Job.Sections[2].Attribute.Name.Value)
 	assert.Equal(t, "veryImportantValue", schema.Declarations[0].Job.Sections[0].Inputs[0].Name.Value)
 	assert.Equal(t, "someFlag", schema.Declarations[0].Job.Sections[0].Inputs[1].Name.Value)
 	assert.Equal(t, true, schema.Declarations[0].Job.Sections[0].Inputs[1].Optional)

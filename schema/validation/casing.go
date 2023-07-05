@@ -47,6 +47,12 @@ func CasingRule(_ []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 		EnterAPI: func(n *parser.APINode) {
 			errs.AppendError(checkCasing(n.Name, "api"))
 		},
+		EnterJob: func(n *parser.JobNode) {
+			errs.AppendError(checkCasing(n.Name, "job"))
+		},
+		EnterJobInput: func(n *parser.JobInputNode) {
+			errs.AppendError(checkCasing(n.Name, "job input"))
+		},
 	}
 }
 
@@ -55,7 +61,7 @@ func checkCasing(node parser.NameNode, entity string) *errorhandling.ValidationE
 	casing := "UpperCamelCase"
 
 	switch entity {
-	case "field", "action", "input":
+	case "field", "action", "input", "job input":
 		expected = toLowerCamelCase(node.Value)
 		casing = "lowerCamelCase"
 	}

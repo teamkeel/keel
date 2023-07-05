@@ -80,6 +80,7 @@ var visitorFuncs = []VisitorFunc{
 	UniqueAttributeRule,
 	OrderByAttributeRule,
 	SortableAttributeRule,
+	Jobs,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

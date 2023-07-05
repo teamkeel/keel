@@ -1,0 +1,21 @@
+{
+  "errors": [
+    {
+      "message": "Job name 'MyJob' already exists",
+      "hint": "Rename the job with a unique name",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_jobs_duplicate_names/schema.keel",
+        "offset": 22,
+        "line": 5,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_duplicate_names/schema.keel",
+        "offset": 27,
+        "line": 5,
+        "column": 10
+      }
+    }
+  ]
+}

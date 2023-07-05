@@ -55,6 +55,12 @@ type Visitor struct {
 
 	EnterAPI func(n *parser.APINode)
 	LeaveAPI func(n *parser.APINode)
+
+	EnterJob func(n *parser.JobNode)
+	LeaveJob func(n *parser.JobNode)
+
+	EnterJobInput func(n *parser.JobInputNode)
+	LeaveJobInput func(n *parser.JobInputNode)
 }
 
 type VisitorFunc func([]*parser.AST, *errorhandling.ValidationErrors) Visitor

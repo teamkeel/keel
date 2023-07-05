@@ -1,0 +1,5 @@
+job myJob {
+  inputs {
+    MyField Text
+  }
+}
