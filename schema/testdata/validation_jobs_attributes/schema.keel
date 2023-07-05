@@ -1,20 +1,20 @@
 job MyJob1 {
-  inputs {
-    myField Text
-  }
+    inputs {
+        myField Text
+    }
 }
 
 job MyJob2 {
-  inputs {
-    myField Text
-  }
+   inputs {
+      myField Text
+    }
 
-  @schedule("* * * * *")  
+    @schedule("* * * * *")  
 }
 
 job MyJob3 {
-  @permission(roles: [Admin])
-  @schedule("* * * * *")  
+    @permission(roles: [Admin])
+    @schedule("* * * * *")  
 }
 
 role Admin {}

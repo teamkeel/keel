@@ -27,10 +27,6 @@ func TestSchema(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, testCase := range testCases {
-		if testCase.Name() != "validation_jobs" {
-			continue
-		}
-
 		if !testCase.IsDir() {
 			continue
 		}

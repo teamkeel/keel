@@ -1,10 +1,10 @@
 job MyJob1 {
-  inputs {
-    myField Text
-    myField Text
-  }
+    inputs {
+        myField Text
+        myField Text
+    }
 
-  @permission(roles: [Admin])
+    @permission(roles: [Admin])
 }
 
 role Admin {}

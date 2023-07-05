@@ -1,20 +1,20 @@
 {
   "errors": [
     {
-      "message": "Job input name 'myField' already defined",
-      "hint": "Rename the job input with a unique name",
-      "code": "NamingError",
+      "message": "Job input with name 'myField' already exists",
+      "hint": "Rename the input with a unique name",
+      "code": "DuplicateDefinitionError",
       "pos": {
         "filename": "testdata/validation_jobs_duplicate_inputs_names/schema.keel",
-        "offset": 44,
+        "offset": 55,
         "line": 4,
-        "column": 5
+        "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_jobs_duplicate_inputs_names/schema.keel",
-        "offset": 51,
+        "offset": 62,
         "line": 4,
-        "column": 12
+        "column": 16
       }
     }
   ]
