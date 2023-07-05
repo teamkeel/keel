@@ -39,6 +39,8 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 				scm.makeAPI(decl)
 			case decl.Enum != nil:
 				scm.makeEnum(decl)
+			case decl.Job != nil:
+				scm.makeJob(decl)
 			case decl.Message != nil:
 				// noop
 			default:
@@ -929,6 +931,32 @@ func (scm *Builder) makeEnum(decl *parser.DeclarationNode) {
 	scm.proto.Enums = append(scm.proto.Enums, enum)
 }
 
+func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
+	parserJob := decl.Job
+	messageName := makeJobMessageName(parserJob.Name.Value)
+
+	job := &proto.Job{
+		Name:             parserJob.Name.Value,
+		InputMessageName: messageName,
+	}
+	message := &proto.Message{
+		Name: messageName,
+	}
+
+	for _, section := range parserJob.Sections {
+		switch {
+		case section.Attributes != nil:
+			scm.applyJobAttribute(parserJob, job, section.Attributes)
+		case section.Inputs != nil:
+			scm.applyJobInputs(parserJob, message, section.Inputs)
+		default:
+		}
+	}
+
+	scm.proto.Jobs = append(scm.proto.Jobs, job)
+	scm.proto.Messages = append(scm.proto.Messages, message)
+}
+
 func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
 	protoFields := []*proto.Field{}
 	for _, parserField := range parserFields {
@@ -1394,6 +1422,42 @@ func (scm *Builder) mapToOrderByDirection(parsedDirection string) proto.OrderDir
 	}
 }
 
+func (scm *Builder) applyJobAttribute(parserJob *parser.JobNode, protoJob *proto.Job, attribute *parser.AttributeNode) {
+	switch attribute.Name.Value {
+	case parser.AttributePermission:
+		protoJob.Permissions = append(protoJob.Permissions, scm.permissionAttributeToProtoPermission(attribute))
+	case parser.AttributeSchedule:
+		schedule, err := attribute.Arguments[0].Expression.ToString()
+		if err != nil {
+			panic(err)
+		}
+
+		protoJob.Schedule = &proto.Schedule{
+			Expression: schedule,
+		}
+	}
+}
+
+func (scm *Builder) applyJobInputs(parserJob *parser.JobNode, protoMessage *proto.Message, inputs []*parser.JobInputNode) {
+	for _, input := range inputs {
+
+		protoField := &proto.MessageField{
+			Name:        input.Name.Value,
+			MessageName: protoMessage.Name,
+			Type: &proto.TypeInfo{
+				Type: scm.parserTypeToProtoType(input.Type.Value),
+			},
+			Optional: input.Optional,
+		}
+
+		if protoField.Type.Type == proto.Type_TYPE_ENUM {
+			protoField.Type.EnumName = wrapperspb.String(input.Type.Value)
+		}
+
+		protoMessage.Fields = append(protoMessage.Fields, protoField)
+	}
+}
+
 // stripQuotes removes all double quotes from the given string, regardless of where they are.
 func stripQuotes(s string) string {
 	return strings.ReplaceAll(s, `"`, "")
@@ -1424,4 +1488,8 @@ func makeValuesMessageName(opName string) string {
 
 func makeResponseMessageName(opName string) string {
 	return fmt.Sprintf("%sResponse", casing.ToCamel(opName))
+}
+
+func makeJobMessageName(opName string) string {
+	return fmt.Sprintf("%sMessage", casing.ToCamel(opName))
 }

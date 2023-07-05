@@ -14,6 +14,7 @@ message Schema {
     repeated EnvironmentVariable environment_variables = 5;
     repeated Message messages = 6;
     repeated Secret secrets = 7;
+    repeated Job jobs = 8;
 }
 
 message Model {
@@ -364,4 +365,22 @@ enum OrderDirection {
     ORDER_DIRECTION_UNKNOWN = 0;
     ORDER_DIRECTION_ASCENDING = 1;
     ORDER_DIRECTION_DECENDING = 2;
+}
+
+message Job {
+    // The name of the job. 
+    string name = 1;
+
+    // The inputs defined on the job.
+    string input_message_name = 2;
+
+    // A permission rule which need to be satisfied in order to run the job. 
+    repeated PermissionRule permissions = 3;
+
+    // The schedule as an crontab expression.
+    Schedule schedule = 4;
+}
+
+message Schedule {
+    string expression = 1;
 }
