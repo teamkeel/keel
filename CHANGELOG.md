@@ -1,3 +1,10 @@
+## [0.345.3](https://github.com/teamkeel/keel/compare/v0.345.2...v0.345.3) (2023-07-05)
+
+
+### Bug Fixes
+
+* make database exists check more robust ([#1035](https://github.com/teamkeel/keel/issues/1035)) ([d82800f](https://github.com/teamkeel/keel/commit/d82800f5e492793678bb0482f283dbdfaeede1a4))
+
 ## [0.345.2](https://github.com/teamkeel/keel/compare/v0.345.1...v0.345.2) (2023-07-04)
 
 
