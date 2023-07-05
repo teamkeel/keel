@@ -390,8 +390,11 @@ func doesDbExist(serverConnectionInfo *db.ConnectionInfo, dbName string) (exists
 			dbName))
 	var count int
 	err = result.Scan(&count)
-	if err != nil {
-		// The Scan errors with "no rows found" when the database does not exist.
+	// I've seen this indicate that the database does not exist in two different ways.
+	// 1) Error: "no rows found"
+	// 2) count == 0
+	// Don't know why - so it checks for either case.
+	if err != nil || count == 0 {
 		return false, nil
 	}
 	return true, nil
