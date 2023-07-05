@@ -389,3 +389,19 @@ func TestArbitraryFunctionsNestedMessage(t *testing.T) {
 	nestedInput := schema.Declarations[1].Message.Name.Value
 	assert.Equal(t, "NestedInput", nestedInput)
 }
+
+func TestJobInputs(t *testing.T) {
+	schema := parse(t, &reader.SchemaFile{FileName: "test.keel", Contents: `
+	job MyJob {
+  inputs {
+    veryImportantValue Text
+    someFlag Boolean
+  }
+
+  @permission(roles: [Developer])
+  @schedule("...")
+}`})
+	assert.Equal(t, "schedule", schema.Declarations[0].Job.Sections[2].Attributes.Name.Value)
+	assert.Equal(t, "veryImportantValue", schema.Declarations[0].Job.Sections[0].Inputs[0].Name.Value)
+	assert.Equal(t, "Text", schema.Declarations[0].Job.Sections[0].Inputs[0].Type.Value)
+}

@@ -27,7 +27,8 @@ type DeclarationNode struct {
 	Role    *RoleNode    `| "role" @@`
 	API     *APINode     `| "api" @@`
 	Enum    *EnumNode    `| "enum" @@`
-	Message *MessageNode `| "message" @@)`
+	Message *MessageNode `| "message" @@`
+	Job     *JobNode     `| "job" @@)`
 }
 
 type ModelNode struct {
@@ -127,6 +128,29 @@ type ModelsNode struct {
 	node.Node
 
 	Name NameNode `@@`
+}
+
+type JobNode struct {
+	node.Node
+
+	Name     NameNode          `@@`
+	Sections []*JobSectionNode `"{" @@* "}"`
+}
+
+type JobSectionNode struct {
+	node.Node
+
+	Inputs     []*JobInputNode `( "inputs" "{" @@* "}"`
+	Attributes *AttributeNode  `| @@)`
+}
+
+type JobInputNode struct {
+	node.Node
+
+	Name     NameNode `@@`
+	Type     NameNode `@@`
+	Repeated bool     `( @( "[" "]" )`
+	Optional bool     `| @( "?" ))?`
 }
 
 // Attributes:
