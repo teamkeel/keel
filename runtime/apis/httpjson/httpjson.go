@@ -54,7 +54,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			var err error
 			inputs, err = parsePostBody(r.Body)
 			if err != nil {
-				return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
+				return common.NewJsonResponse(http.StatusBadRequest, HttpJsonErrorResponse{
 					Code:    "ERR_INTERNAL",
 					Message: "error parsing POST body",
 				}, nil)
@@ -81,7 +81,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			span.SetStatus(codes.Error, err.Error())
 			// I think this can only happen if we generate an invalid JSON Schema for the
 			// request type
-			return common.NewJsonResponse(http.StatusInternalServerError, HttpJsonErrorResponse{
+			return common.NewJsonResponse(http.StatusBadRequest, HttpJsonErrorResponse{
 				Code:    "ERR_INTERNAL",
 				Message: "error validating request body",
 			}, nil)
@@ -139,7 +139,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				case common.ErrRecordNotFound:
 					httpCode = http.StatusNotFound
 				case common.ErrPermissionDenied:
-					httpCode = http.StatusUnauthorized
+					httpCode = http.StatusForbidden
 				}
 			}
 
