@@ -54,6 +54,55 @@ function patchFetch() {
   }
 }
 
+function patchConsoleLog() {
+  if (!console.log.patched) {
+    const originalConsoleLog = console.log;
+
+    console.log = (...args) => {
+      const span = opentelemetry.trace.getActiveSpan();
+      if (span) {
+        const output = args
+          .map((arg) => {
+            if (arg instanceof Error) {
+              return arg.stack;
+            }
+            if (typeof arg === "object") {
+              try {
+                return JSON.stringify(arg, getCircularReplacer());
+              } catch (error) {
+                return "[Object with circular references]";
+              }
+            }
+            if (typeof arg === "function") {
+              return arg() || arg.name || arg.toString();
+            }
+            return String(arg);
+          })
+          .join(" ");
+
+        span.addEvent(output);
+      }
+      originalConsoleLog(...args);
+    };
+
+    console.log.patched = true;
+  }
+}
+
+// Utility to handle circular references in objects
+function getCircularReplacer() {
+  const seen = new WeakSet();
+  return (key, value) => {
+    if (typeof value === "object" && value !== null) {
+      if (seen.has(value)) {
+        return "[Circular]";
+      }
+      seen.add(value);
+    }
+    return value;
+  };
+}
+
 function init() {
   if (process.env.KEEL_TRACING_ENABLED == "true") {
     const provider = new NodeTracerProvider({
@@ -67,6 +116,7 @@ function init() {
   }
 
   patchFetch();
+  patchConsoleLog();
 }
 
 function getTracer() {
