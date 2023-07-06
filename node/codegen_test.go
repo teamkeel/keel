@@ -1417,9 +1417,9 @@ job AdHocJobWithoutInputs {
 role Admin {}
 	`
 	expected := `
-export declare function JobWithoutInputs(fn: (ctx: JobContextAPI) => Promise): Promise;
-export declare function AdHocJobWithInputs(fn: (ctx: JobContextAPI, inputs: AdHocJobWithInputsMessage) => Promise): Promise;
-export declare function AdHocJobWithoutInputs(fn: (ctx: JobContextAPI) => Promise): Promise;`
+export declare function JobWithoutInputs(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>;
+export declare function AdHocJobWithInputs(fn: (ctx: JobContextAPI, inputs: AdHocJobWithInputsMessage) => Promise<void>): Promise<void>;
+export declare function AdHocJobWithoutInputs(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>;`
 
 	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		for _, j := range s.Jobs {
