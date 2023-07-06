@@ -101,16 +101,7 @@
       "name": "Any"
     },
     {
-      "name": "MyJobMessage",
-      "fields": [
-        {
-          "messageName": "MyJobMessage",
-          "name": "veryImportantValue",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
+      "name": "MyJobMessage"
     },
     {
       "name": "EmailPasswordInput",
@@ -221,7 +212,7 @@
       "name": "MyJob",
       "inputMessageName": "MyJobMessage",
       "schedule": {
-        "expression": "\"5 4 * * *\""
+        "expression": "\"* * * * *\""
       }
     }
   ]

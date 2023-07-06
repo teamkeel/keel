@@ -945,8 +945,8 @@ func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
 
 	for _, section := range parserJob.Sections {
 		switch {
-		case section.Attributes != nil:
-			scm.applyJobAttribute(parserJob, job, section.Attributes)
+		case section.Attribute != nil:
+			scm.applyJobAttribute(parserJob, job, section.Attribute)
 		case section.Inputs != nil:
 			scm.applyJobInputs(parserJob, message, section.Inputs)
 		default:

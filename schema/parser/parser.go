@@ -140,8 +140,8 @@ type JobNode struct {
 type JobSectionNode struct {
 	node.Node
 
-	Inputs     []*JobInputNode `( "inputs" "{" @@* "}"`
-	Attributes *AttributeNode  `| @@)`
+	Inputs    []*JobInputNode `( "inputs" "{" @@* "}"`
+	Attribute *AttributeNode  `| @@)`
 }
 
 type JobInputNode struct {

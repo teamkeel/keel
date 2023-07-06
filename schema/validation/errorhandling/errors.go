@@ -148,6 +148,7 @@ const (
 	AttributeArgumentError   ErrorType = "AttributeArgumentError"
 	AttributeNotAllowedError ErrorType = "AttributeNotAllowedError"
 	RelationshipError        ErrorType = "RelationshipError"
+	JobDefinitionError       ErrorType = "JobDefinitionError"
 )
 
 func NewValidationErrorWithDetails(t ErrorType, details ErrorDetails, position node.ParserNode) *ValidationError {
