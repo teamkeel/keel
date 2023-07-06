@@ -1,3 +1,10 @@
+# [0.347.0](https://github.com/teamkeel/keel/compare/v0.346.0...v0.347.0) (2023-07-06)
+
+
+### Features
+
+* job schema validation ([#1036](https://github.com/teamkeel/keel/issues/1036)) ([deb0cc5](https://github.com/teamkeel/keel/commit/deb0cc51cc0421611c3be086f96d90522b9736c3))
+
 # [0.346.0](https://github.com/teamkeel/keel/compare/v0.345.3...v0.346.0) (2023-07-06)
 
 
