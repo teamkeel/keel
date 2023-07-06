@@ -1,3 +1,10 @@
+# [0.346.0](https://github.com/teamkeel/keel/compare/v0.345.3...v0.346.0) (2023-07-06)
+
+
+### Features
+
+* code completions & syntax highlighting for [@order](https://github.com/order)By and [@sortable](https://github.com/sortable) ([#1033](https://github.com/teamkeel/keel/issues/1033)) ([173ec7f](https://github.com/teamkeel/keel/commit/173ec7fc7fb68807518a4a3e165cc6141defc205))
+
 ## [0.345.3](https://github.com/teamkeel/keel/compare/v0.345.2...v0.345.3) (2023-07-05)
 
 
