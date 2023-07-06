@@ -366,6 +366,18 @@ function createContextAPI({ responseHeaders, meta }) {
 	};
 	return { headers, response, identity, env, now, secrets, isAuthenticated };
 };
+function createJobContextAPI({ meta }) {
+	const now = () => { return new Date(); };
+	const { identity } = meta;
+	const isAuthenticated = identity != null;
+	const env = {
+		TEST: process.env["TEST"] || "",
+	};
+	const secrets = {
+		SECRET_KEY: meta.secrets.SECRET_KEY || "",
+	};
+	return { identity, env, now, secrets, isAuthenticated };
+};
 function createModelAPI() {
 	return {
 		person: new runtime.ModelAPI("person", () => ({}), tableConfigMap),
@@ -377,7 +389,8 @@ function createPermissionApi() {
 };
 module.exports.models = createModelAPI();
 module.exports.permissions = createPermissionApi();
-module.exports.createContextAPI = createContextAPI;`
+module.exports.createContextAPI = createContextAPI;
+module.exports.createJobContextAPI = createJobContextAPI;`
 
 	runWriterTest(t, testSchema, expected, func(s *proto.Schema, w *codegen.Writer) {
 		s.EnvironmentVariables = append(s.EnvironmentVariables, &proto.EnvironmentVariable{
@@ -407,6 +420,12 @@ type Secrets = {
 }
 
 export interface ContextAPI extends runtime.ContextAPI {
+	secrets: Secrets;
+	env: Environment;
+	identity?: Identity;
+	now(): Date;
+}
+export interface JobContextAPI {
 	secrets: Secrets;
 	env: Environment;
 	identity?: Identity;
@@ -1377,6 +1396,63 @@ export declare function ListPeople(fn: (ctx: ContextAPI, inputs: ListPeopleInput
 		for _, op := range m.Operations {
 			writeCustomFunctionWrapperType(w, m, op)
 		}
+	})
+}
+
+func TestWriteJobWrapperType(t *testing.T) {
+	schema := `
+job JobWithoutInputs {
+	@schedule("1 * * * *")
+}
+job AdHocJobWithInputs {
+	inputs {
+		nameField Text
+		someBool Bool?
+	}
+	@permission(roles: [Admin])
+}
+job AdHocJobWithoutInputs {
+	@permission(roles: [Admin])
+}
+role Admin {}
+	`
+	expected := `
+export declare function JobWithoutInputs(fn: (ctx: JobContextAPI) => Promise): Promise;
+export declare function AdHocJobWithInputs(fn: (ctx: JobContextAPI, inputs: AdHocJobWithInputsMessage) => Promise): Promise;
+export declare function AdHocJobWithoutInputs(fn: (ctx: JobContextAPI) => Promise): Promise;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		for _, j := range s.Jobs {
+			writeJobFunctionWrapperType(w, j)
+		}
+	})
+}
+
+func TestWriteJobInputs(t *testing.T) {
+	schema := `
+job JobWithoutInputs {
+	@schedule("1 * * * *")
+}
+job AdHocJobWithInputs {
+	inputs {
+		nameField Text
+		someBool Bool?
+	}
+	@permission(roles: [Admin])
+}
+job AdHocJobWithoutInputs {
+	@permission(roles: [Admin])
+}
+role Admin {}`
+
+	expected := `
+export interface AdHocJobWithInputsMessage {
+	nameField: string;
+	someBool?: any;
+}`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeMessages(w, s, false)
 	})
 }
 

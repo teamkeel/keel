@@ -936,11 +936,12 @@ func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
 	messageName := makeJobMessageName(parserJob.Name.Value)
 
 	job := &proto.Job{
-		Name:             parserJob.Name.Value,
-		InputMessageName: messageName,
+		Name: parserJob.Name.Value,
 	}
+
 	message := &proto.Message{
-		Name: messageName,
+		Name:   messageName,
+		Fields: []*proto.MessageField{},
 	}
 
 	for _, section := range parserJob.Sections {
@@ -950,11 +951,16 @@ func (scm *Builder) makeJob(decl *parser.DeclarationNode) {
 		case section.Inputs != nil:
 			scm.applyJobInputs(parserJob, message, section.Inputs)
 		default:
+			panic(fmt.Sprintf("unhandled section when parsing job '%s'", job.Name))
 		}
 	}
 
+	if len(message.Fields) > 0 {
+		job.InputMessageName = message.Name
+		scm.proto.Messages = append(scm.proto.Messages, message)
+	}
+
 	scm.proto.Jobs = append(scm.proto.Jobs, job)
-	scm.proto.Messages = append(scm.proto.Messages, message)
 }
 
 func (scm *Builder) makeFields(parserFields []*parser.FieldNode, modelName string) []*proto.Field {
@@ -1440,7 +1446,6 @@ func (scm *Builder) applyJobAttribute(parserJob *parser.JobNode, protoJob *proto
 
 func (scm *Builder) applyJobInputs(parserJob *parser.JobNode, protoMessage *proto.Message, inputs []*parser.JobInputNode) {
 	for _, input := range inputs {
-
 		protoField := &proto.MessageField{
 			Name:        input.Name.Value,
 			MessageName: protoMessage.Name,
