@@ -3,6 +3,7 @@ package completions
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
@@ -337,12 +338,15 @@ func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, encl
 	// individual actions block or if the current or previous token is the "@"
 	inActionBlock := tokenAtPos.ValueAt(-1) == "{" && tokenAtPos.ValueAt(-2) == ")"
 	inAttribute := tokenAtPos.Value() == "@" || tokenAtPos.ValueAt(-1) == "@"
+
 	if inActionBlock || inAttribute {
 		return getAttributeCompletions(tokenAtPos, []string{
 			parser.AttributeSet,
 			parser.AttributeWhere,
 			parser.AttributePermission,
 			parser.AttributeValidate,
+			parser.AttributeOrderBy,
+			parser.AttributeSortable,
 		})
 	}
 
@@ -601,6 +605,10 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 		return getExpressionCompletions(asts, t, cfg)
 	case parser.AttributePermission:
 		return getPermissionArgCompletions(asts, t, cfg)
+	case parser.AttributeSortable:
+		return getSortableArgCompletions(asts, t, cfg)
+	case parser.AttributeOrderBy:
+		return getOrderByArgCompletions(asts, t, cfg)
 	default:
 		// this is likely a user error e.g. providing args to an attribute
 		// that doesn't take them like @unique
@@ -608,8 +616,94 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 	}
 }
 
+func getSortableArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+	modelName := getParentModelName(t)
+	model := query.Model(asts, modelName)
+	fields := query.ModelFields(model)
+
+	completions := []*CompletionItem{}
+
+	for _, field := range fields {
+		fieldName := field.Name.Value
+
+		if query.IsHasOneModelField(asts, field) || query.IsHasManyModelField(asts, field) {
+			continue
+		}
+
+		completions = append(completions, &CompletionItem{
+			Label:       fieldName,
+			Description: field.Type.Value,
+			Kind:        KindField,
+		})
+	}
+
+	completions = append(completions, builtInFieldCompletions...)
+
+	return completions
+}
+
+func getOrderByArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+
+	argStart := t.StartOfParen()
+	for {
+		if argStart == nil {
+			// shouldn't happen but worth being defensive to avoid an infinite loop
+			return []*CompletionItem{}
+		}
+		if argStart.ValueAt(-2) == "@" && argStart.ValueAt(-1) == parser.AttributeOrderBy {
+			break
+		}
+		argStart = argStart.Prev().StartOfParen()
+	}
+
+	comma := t.FindPrev(",")
+
+	// This is a big "fudgy" but to detect if the current position is a label
+	// we see if the start of the attribute args is the current or previous token
+	// or if the current or previous token is a comma...
+	isLabel := argStart.Is(t, t.Prev()) || comma.Is(t, t.Prev())
+
+	if isLabel {
+		modelName := getParentModelName(t)
+		model := query.Model(asts, modelName)
+		fields := query.ModelFields(model)
+
+		completions := []*CompletionItem{}
+
+		for _, field := range fields {
+			fieldName := field.Name.Value
+
+			if query.IsHasOneModelField(asts, field) || query.IsHasManyModelField(asts, field) {
+				continue
+			}
+
+			completions = append(completions, &CompletionItem{
+				Label:       fieldName,
+				Description: field.Type.Value,
+				Kind:        KindField,
+			})
+		}
+
+		completions = append(completions, builtInFieldCompletions...)
+
+		return completions
+	}
+
+	return []*CompletionItem{
+		{
+			Label: "asc",
+			Kind:  KindKeyword,
+		},
+		{
+			Label: "desc",
+			Kind:  KindKeyword,
+		},
+	}
+}
+
 func getPermissionArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
 	argStart := t.StartOfParen()
+
 	for {
 		if argStart == nil {
 			// shouldn't happen but worth being defensive to avoid an infinite loop
@@ -979,22 +1073,24 @@ func getModelFieldCompletions(model *parser.ModelNode) []*CompletionItem {
 func getAttributeCompletions(token *TokensAtPosition, names []string) []*CompletionItem {
 	completions := []*CompletionItem{}
 	for _, v := range names {
-
 		// By default we only insert the name of the attribute. This is
 		// becaue the "@" is actually a different token
 		insertText := v
 
-		// The exception is if the current token is whitespace, then we
-		// can insert both the "@" and the attribute name
-		if token.Value() == "" {
-			insertText = "@" + v
-		}
+		if token.Value() == "" || token.Value() == "@" || strings.HasPrefix(insertText, token.Value()) {
 
-		completions = append(completions, &CompletionItem{
-			Label:      "@" + v,
-			InsertText: insertText,
-			Kind:       KindAttribute,
-		})
+			// The exception is if the current token is whitespace, then we
+			// can insert both the "@" and the attribute name
+			if token.Value() == "" {
+				insertText = "@" + v
+			}
+
+			completions = append(completions, &CompletionItem{
+				Label:      "@" + v,
+				InsertText: insertText,
+				Kind:       KindAttribute,
+			})
+		}
 	}
 	return completions
 }
