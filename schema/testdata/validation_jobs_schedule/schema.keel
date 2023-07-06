@@ -1,0 +1,23 @@
+job MyJob {
+    @schedule("0 2 1 1 2")
+}
+
+job MyJob {
+    @schedule("0 6 * * *", "America/New_York")
+}
+
+job MyJob {
+    @schedule("121212")
+}
+
+job MyJob {
+    @schedule("")
+}
+
+job MyJob {
+    @schedule(cron: "")
+}
+
+job MyJob {
+    @schedule(1234123)
+}
