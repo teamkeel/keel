@@ -130,7 +130,7 @@ var testCases = []testCase{
 						(?, ?, ?) 
 					RETURNING *) 
 			SELECT * FROM new_1_person`,
-		expectedArgs: []any{100, true, "Bob"},
+		expectedArgs: []any{int64(100), true, "Bob"},
 	},
 	{
 		name: "create_op_optional_inputs",
@@ -221,7 +221,7 @@ var testCases = []testCase{
 				"person"."id" IS NOT DISTINCT FROM ?
 			RETURNING 
 				"person".*`,
-		expectedArgs: []any{100, true, "Bob", "xyz"},
+		expectedArgs: []any{int64(100), true, "Bob", "xyz"},
 	},
 	{
 		name: "update_op_optional_inputs",
@@ -1870,7 +1870,7 @@ func TestQueryBuilder(t *testing.T) {
 					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
 
 				} else {
-					for i := 1; i < len(testCase.expectedArgs); i++ {
+					for i := 0; i < len(testCase.expectedArgs); i++ {
 						if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
 							assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
 							break

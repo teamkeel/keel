@@ -32,6 +32,12 @@ func AuthoriseForActionType(scope *Scope, opType proto.OperationType, rowsToAuth
 	return Authorise(scope, permissions, rowsToAuthorise)
 }
 
+func TryResolveAuthorisationEarly(scope *Scope) (canResolveEarly bool, authorised bool, err error) {
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+
+	return tryResolveInMemory(scope, permissions)
+}
+
 // Authorise checks authorisation for rows using the slice of permission rules provided.
 func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (authorized bool, err error) {
 	ctx, span := tracer.Start(scope.Context, "Check permissions")
@@ -68,18 +74,6 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 		return false, nil
 	}
 
-	// Test if any expressions can be resolved and satisfied without a database operation.
-	canResolve, authorised, err := tryResolveInMemory(scope, permissions)
-	if err != nil {
-		span.RecordError(err, trace.WithStackTrace(true))
-		span.SetStatus(codes.Error, err.Error())
-		return false, err
-	}
-	if canResolve && authorised {
-		span.SetAttributes(attribute.Bool("result", authorised))
-		return authorised, nil
-	}
-
 	// Generate SQL for the permission expressions.
 	stmt, err := GeneratePermissionStatement(scope, permissions, rowsToAuthorise)
 	if err != nil {
@@ -97,7 +91,7 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	}
 
 	// TODO: compare ids matching in both slices
-	authorised = len(results) == len(rowsToAuthorise)
+	authorised := len(results) == len(rowsToAuthorise)
 
 	if !authorised {
 		span.SetAttributes(attribute.Bool("result", false))
@@ -109,22 +103,25 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 }
 
 func tryResolveInMemory(scope *Scope, permissions []*proto.PermissionRule) (canResolve bool, authorised bool, err error) {
-	permissions = proto.PermissionsWithExpression(permissions)
+	for _, permission := range permissions {
+		if permission.Expression == nil {
+			return false, false, nil
+		}
 
-	for i, permission := range permissions {
 		expression, err := parser.ParseExpression(permission.Expression.Source)
 		if err != nil {
 			return false, false, err
 		}
 
-		// Check to see if we can resolve the condition "in proc"
-		if expressions.CanResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression) {
-			if expressions.ResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{}) {
-				return true, true, nil
-			} else if i == len(permissions)-1 {
-				return true, false, nil
-			}
+		// We only need one permission attribute to resolve to true becaused they are OR'ed
+		canResolve, value := expressions.ResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
+
+		if !canResolve {
+			continue
 		}
+
+		return true, value, nil
+
 	}
 
 	return false, false, nil
@@ -134,22 +131,24 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	permissions = proto.PermissionsWithExpression(permissions)
 	query := NewQuery(scope.Model)
 
-	// Append SQL where conditions for each permission attribute.
-	query.OpenParenthesis()
-	for _, permission := range permissions {
-		expression, err := parser.ParseExpression(permission.Expression.Source)
-		if err != nil {
-			return nil, err
-		}
+	if len(permissions) > 0 {
+		// Append SQL where conditions for each permission attribute.
+		query.OpenParenthesis()
+		for _, permission := range permissions {
+			expression, err := parser.ParseExpression(permission.Expression.Source)
+			if err != nil {
+				return nil, err
+			}
 
-		err = query.whereByExpression(scope, expression, map[string]any{})
-		if err != nil {
-			return nil, err
+			err = query.whereByExpression(scope, expression, map[string]any{})
+			if err != nil {
+				return nil, err
+			}
+			// Or with the next permission attribute
+			query.Or()
 		}
-		// Or with the next permission attribute
-		query.Or()
+		query.CloseParenthesis()
 	}
-	query.CloseParenthesis()
 
 	ids := lo.Map(rowsToAuthorise, func(row map[string]interface{}, _ int) any {
 		return row["id"]

@@ -23,6 +23,10 @@ type authorisationTestCase struct {
 	expectedTemplate string
 	// OPTIONAL: Expected ordered argument slice
 	expectedArgs []any
+	// Could these permissions resolve without a query?
+	resolvedEarly bool
+	// Is resolved early, was authorisation granted?
+	authorisedEarly bool
 }
 
 var identity = &runtimectx.Identity{
@@ -267,6 +271,249 @@ var authorisationTestCases = []authorisationTestCase{
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
 	},
+	{
+		name: "early_evaluate_create_op",
+		keelSchema: `
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					create createThing() {
+						@set(thing.createdBy.id = ctx.identity.id)
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "createThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_get_op",
+		keelSchema: `
+			model Thing {
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_update_op",
+		keelSchema: `
+			model Thing {
+				operations {
+					update updateThing(id) {
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "updateThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_list_op",
+		keelSchema: `
+			model Thing {
+				operations {
+					list listThing() {
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "listThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_delete_op",
+		keelSchema: `
+			model Thing {
+				operations {
+					delete deleteThing(id) {
+						@permission(expression: ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "deleteThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_isauth_lhs",
+		keelSchema: `
+			model Thing {
+				operations {
+					create createThing() {
+						@permission(expression: ctx.isAuthenticated == false)
+					}
+				}
+			}`,
+		operationName:   "createThing",
+		resolvedEarly:   true,
+		authorisedEarly: false,
+	},
+	{
+		name: "early_evaluate_isauth_rhs",
+		keelSchema: `
+			model Thing {
+				operations {
+					create createThing() {
+						@permission(expression: false == ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "createThing",
+		resolvedEarly:   true,
+		authorisedEarly: false,
+	},
+	{
+		name: "cannot_early_evaluate_multiple_conditions_and_with_database",
+		keelSchema: `
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated and thing.createdBy.id == ctx.identity.id)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		authorisedEarly: false,
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing"."id" 
+			FROM
+				"thing" 
+			INNER JOIN "identity" AS "thing$created_by" ON 
+				"thing$created_by"."id" = "thing"."created_by_id" 
+			WHERE 
+				( ( ? IS NOT DISTINCT FROM ? AND "thing$created_by"."id" IS NOT DISTINCT FROM ? ) ) 
+				AND "thing"."id" IN (?, ?, ?)`,
+		expectedArgs: append([]any{true, true, identity.Id}, idsToAuthorise...),
+	},
+	{
+		name: "early_evaluate_multiple_conditions_or_with_database",
+		keelSchema: `
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated or thing.createdBy.id == ctx.identity.id)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_multiple_attributes_with_database",
+		keelSchema: `
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated)
+						@permission(expression: thing.createdBy.id == ctx.identity.id)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_multiple_attributes_authorised",
+		keelSchema: `
+			model Thing {
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated)
+						@permission(expression: ctx.isAuthenticated == false)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_multiple_and_conditions_authorised",
+		keelSchema: `
+			model Thing {
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated and ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_multiple_or_conditions_authorised",
+		keelSchema: `
+			model Thing {
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated or ctx.isAuthenticated)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		resolvedEarly:   true,
+		authorisedEarly: true,
+	},
+	{
+		name: "early_evaluate_multiple_and_conditions_not_authorised",
+		keelSchema: `
+			model Thing {
+				operations {
+					get getThing(id) {
+						@permission(expression: ctx.isAuthenticated and false)
+					}
+				}
+			}`,
+		operationName:   "getThing",
+		resolvedEarly:   true,
+		authorisedEarly: false,
+	},
+	{
+		name: "cannot_early_evaluate_role",
+		keelSchema: `
+			model Thing {
+				operations {
+					get getThing(id) {
+						@permission(roles: [Admin])
+					}
+				}
+			}
+			role Admin {}`,
+		operationName: "getThing",
+		resolvedEarly: false,
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing"."id" 
+			FROM 
+				"thing" 
+			WHERE 
+				"thing"."id" IN (?, ?, ?)`,
+		expectedArgs: idsToAuthorise,
+	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
@@ -281,25 +528,35 @@ func TestPermissionQueryBuilder(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
-
-			statement, err := actions.GeneratePermissionStatement(scope, permissions, rowsToAuthorise)
+			canResolveEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope)
 			if err != nil {
 				require.NoError(t, err)
 			}
 
-			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
+			require.Equal(t, testCase.resolvedEarly, canResolveEarly, "resolvedEarly not matching. Expected: %v, Actual: %v", testCase.resolvedEarly, canResolveEarly)
+			require.Equal(t, testCase.authorisedEarly, authorised, "authorisedEarly not matching. Expected: %v, Actual: %v", testCase.authorisedEarly, authorised)
 
-			if testCase.expectedArgs != nil {
-				for i := 1; i < len(testCase.expectedArgs); i++ {
-					if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
-						assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
-						break
-					}
+			if !canResolveEarly {
+				permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+
+				statement, err := actions.GeneratePermissionStatement(scope, permissions, rowsToAuthorise)
+				if err != nil {
+					require.NoError(t, err)
 				}
 
-				if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
-					assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
+				require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))
+
+				if testCase.expectedArgs != nil {
+					for i := 0; i < len(testCase.expectedArgs); i++ {
+						if testCase.expectedArgs[i] != statement.SqlArgs()[i] {
+							assert.Failf(t, "Arguments not matching", "SQL argument at index %d not matching. Expected: %v, Actual: %v", i, testCase.expectedArgs[i], statement.SqlArgs()[i])
+							break
+						}
+					}
+
+					if len(testCase.expectedArgs) != len(statement.SqlArgs()) {
+						assert.Failf(t, "Argument count not matching", "Expected: %v, Actual: %v", len(testCase.expectedArgs), len(statement.SqlArgs()))
+					}
 				}
 			}
 		})
