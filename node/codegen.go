@@ -92,6 +92,10 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 		}
 	}
 
+	for _, job := range schema.Jobs {
+		writeJobFunctionWrapperType(sdkTypes, job)
+	}
+
 	writeTableConfig(sdk, schema.Models)
 
 	writeAPIFactory(sdk, schema)
@@ -526,6 +530,15 @@ func writeAPIDeclarations(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("now(): Date;")
 	w.Dedent()
 	w.Writeln("}")
+
+	w.Writeln("export interface JobContextAPI {")
+	w.Indent()
+	w.Writeln("secrets: Secrets;")
+	w.Writeln("env: Environment;")
+	w.Writeln("identity?: Identity;")
+	w.Writeln("now(): Date;")
+	w.Dedent()
+	w.Writeln("}")
 }
 
 func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
@@ -560,6 +573,35 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Dedent()
 	w.Writeln("};")
 
+	w.Writeln("function createJobContextAPI({ meta }) {")
+	w.Indent()
+	w.Writeln("const now = () => { return new Date(); };")
+	w.Writeln("const { identity } = meta;")
+	w.Writeln("const isAuthenticated = identity != null;")
+	w.Writeln("const env = {")
+	w.Indent()
+
+	for _, variable := range schema.EnvironmentVariables {
+		// fetch the value of the env var from the process.env (will pull the value based on the current environment)
+		// outputs "key: process.env["key"] || []"
+		w.Writef("%s: process.env[\"%s\"] || \"\",\n", variable.Name, variable.Name)
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("const secrets = {")
+	w.Indent()
+
+	for _, secret := range schema.Secrets {
+		w.Writef("%s: meta.secrets.%s || \"\",\n", secret.Name, secret.Name)
+	}
+
+	w.Dedent()
+	w.Writeln("};")
+	w.Writeln("return { identity, env, now, secrets, isAuthenticated };")
+	w.Dedent()
+	w.Writeln("};")
+
 	w.Writeln("function createModelAPI() {")
 	w.Indent()
 	w.Writeln("return {")
@@ -590,6 +632,7 @@ func writeAPIFactory(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln(`module.exports.models = createModelAPI();`)
 	w.Writeln(`module.exports.permissions = createPermissionApi();`)
 	w.Writeln("module.exports.createContextAPI = createContextAPI;")
+	w.Writeln("module.exports.createJobContextAPI = createJobContextAPI;")
 }
 
 func writeTableConfig(w *codegen.Writer, models []*proto.Model) {
@@ -678,6 +721,20 @@ func toCustomFunctionReturnType(model *proto.Model, op *proto.Operation, isTesti
 	}
 	returnType += ">"
 	return returnType
+}
+
+func writeJobFunctionWrapperType(w *codegen.Writer, job *proto.Job) {
+	w.Writef("export declare function %s", casing.ToCamel(job.Name))
+
+	inputType := job.InputMessageName
+
+	if inputType == "" {
+		w.Write("(fn: (ctx: JobContextAPI) => Promise<void>): Promise<void>")
+	} else {
+		w.Writef("(fn: (ctx: JobContextAPI, inputs: %s) => Promise<void>): Promise<void>", inputType)
+	}
+
+	w.Writeln(";")
 }
 
 func toActionReturnType(model *proto.Model, op *proto.Operation) string {
