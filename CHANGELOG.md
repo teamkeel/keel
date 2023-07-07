@@ -1,3 +1,10 @@
+# [0.348.0](https://github.com/teamkeel/keel/compare/v0.347.0...v0.348.0) (2023-07-07)
+
+
+### Features
+
+* job typescript definitions ([#1039](https://github.com/teamkeel/keel/issues/1039)) ([f4467e3](https://github.com/teamkeel/keel/commit/f4467e33cf817d7a718b0f6bee432af90bdbbb8b))
+
 # [0.347.0](https://github.com/teamkeel/keel/compare/v0.346.0...v0.347.0) (2023-07-06)
 
 
