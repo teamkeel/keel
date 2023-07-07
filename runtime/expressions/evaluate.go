@@ -9,44 +9,7 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// // Determines if the expression can be evaluated on the runtime process
-// // as opposed to producing a SQL statement and querying against the database.
-// func CanResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression) bool {
-// 	can := false
-
-// 	for _, or := range expression.Or {
-// 		currExpressionCan := true
-
-// 		for _, and := range or.And {
-// 			if and.Expression != nil {
-// 				currExpressionCan = currExpressionCan && CanResolveInMemory(ctx, schema, model, operation, and.Expression)
-// 			}
-
-// 			if and.Condition != nil {
-// 				currExpressionCan = currExpressionCan && canResolveConditionInMemory(ctx, schema, model, operation, and.Condition)
-// 			}
-// 		}
-
-// 		can = can || currExpressionCan
-// 	}
-
-// 	return can
-// }
-
-func canResolveConditionInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition) bool {
-	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
-
-	if condition.Type() == parser.ValueCondition {
-		return !lhsResolver.IsDatabaseColumn()
-	}
-
-	rhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.RHS)
-	referencesDatabaseColumns := lhsResolver.IsDatabaseColumn() || rhsResolver.IsDatabaseColumn()
-
-	return !(referencesDatabaseColumns)
-}
-
-// Evaluated the expression in the runtime process without generated a query against the database.
+// ResolveInMemory attempts to evaluate the expression in the runtime process without generated a query against the database.
 func ResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression, args map[string]any) (canResolveInMemory bool, resolvedValue bool) {
 	can := false
 	value := false
@@ -76,6 +39,21 @@ func ResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Mod
 	return can, value
 }
 
+// canResolveConditionInMemory determines if a single condition can be resolved in the process (i.e. without the database).
+func canResolveConditionInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition) bool {
+	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
+
+	if condition.Type() == parser.ValueCondition {
+		return !lhsResolver.IsDatabaseColumn()
+	}
+
+	rhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.RHS)
+	referencesDatabaseColumns := lhsResolver.IsDatabaseColumn() || rhsResolver.IsDatabaseColumn()
+
+	return !(referencesDatabaseColumns)
+}
+
+// resolveConditionInMemory resolves a single condition in the process (i.e. without the database).
 func resolveConditionInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition, args map[string]any) (canResolveInMemory bool, resolvedValue bool) {
 	if !canResolveConditionInMemory(ctx, schema, model, operation, condition) {
 		return false, false
@@ -96,33 +74,6 @@ func resolveConditionInMemory(ctx context.Context, schema *proto.Schema, model *
 
 	return true, result
 }
-
-// // Evaluated the expression in the runtime process without generated a query against the database.
-// func ResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression, args map[string]any) bool {
-// 	// We don't yet support running multiple conditions in memory
-// 	if len(expression.Conditions()) > 1 {
-// 		return false
-// 	}
-
-// 	condition := expression.Conditions()[0]
-
-// 	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
-// 	operandType, _ := lhsResolver.GetOperandType()
-// 	lhsValue, _ := lhsResolver.ResolveValue(args)
-
-// 	if condition.Type() == parser.ValueCondition {
-// 		result, _ := evaluate(lhsValue, true, operandType, &parser.Operator{Symbol: parser.OperatorEquals})
-// 		return result
-// 	}
-
-// 	rhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.RHS)
-
-// 	rhsValue, _ := rhsResolver.ResolveValue(args)
-
-// 	result, _ := evaluate(lhsValue, rhsValue, operandType, condition.Operator)
-
-// 	return result
-// }
 
 func evaluate(
 	lhs any,

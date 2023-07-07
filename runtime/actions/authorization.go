@@ -32,12 +32,6 @@ func AuthoriseForActionType(scope *Scope, opType proto.OperationType, rowsToAuth
 	return Authorise(scope, permissions, rowsToAuthorise)
 }
 
-func TryResolveAuthorisationEarly(scope *Scope) (canResolveEarly bool, authorised bool, err error) {
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
-
-	return tryResolveInMemory(scope, permissions)
-}
-
 // Authorise checks authorisation for rows using the slice of permission rules provided.
 func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (authorized bool, err error) {
 	ctx, span := tracer.Start(scope.Context, "Check permissions")
@@ -102,8 +96,15 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	return authorised, nil
 }
 
-func tryResolveInMemory(scope *Scope, permissions []*proto.PermissionRule) (canResolve bool, authorised bool, err error) {
+// TryResolveAuthorisationEarly will attempt to check authorisation early without database querying.
+// This will take into account logical conditions and multiple expressions attributes.
+func TryResolveAuthorisationEarly(scope *Scope) (canResolveEarly bool, authorised bool, err error) {
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+
+	canResolveEarly = false
+	authorised = false
 	for _, permission := range permissions {
+		// Only expressions could be resolvable in memory.
 		if permission.Expression == nil {
 			return false, false, nil
 		}
@@ -115,16 +116,15 @@ func tryResolveInMemory(scope *Scope, permissions []*proto.PermissionRule) (canR
 
 		// We only need one permission attribute to resolve to true becaused they are OR'ed
 		canResolve, value := expressions.ResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
-
-		if !canResolve {
-			continue
+		if canResolve {
+			canResolveEarly = true
+			if value {
+				authorised = true
+			}
 		}
-
-		return true, value, nil
-
 	}
 
-	return false, false, nil
+	return canResolveEarly, authorised, nil
 }
 
 func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (*Statement, error) {
