@@ -32,6 +32,7 @@ const (
 	KindLabel       = "label"
 	KindAttribute   = "attribute"
 	KindPunctuation = "punctuation"
+	KindInput       = "inputs"
 )
 
 const (
@@ -86,6 +87,11 @@ func Completions(schemaFiles []*reader.SchemaFile, pos *node.Position, cfg *conf
 	case parser.KeywordModels:
 		// models block inside an api block - complete with model names
 		return getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordModel)
+	case parser.KeywordJob:
+		attributes := getAttributeCompletions(tokenAtPos, []string{parser.AttributePermission, parser.AttributeSchedule})
+		return append(attributes, getJobCompletions()...)
+	case parser.KeywordInput:
+		return getInputCompletions(asts, tokenAtPos)
 	default:
 		// If no enclosing block then we're at the top-level of the schema, or we are defining
 		// a top level named block
@@ -190,12 +196,21 @@ func getMessageFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition
 			getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordModel),
 			getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordEnum),
 			getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordMessage),
+			getUserDefinedTypeCompletions(asts, tokenAtPos, parser.KeywordJob),
 			getBuiltInTypeCompletions(),
 		},
 	)
 }
 
 func getFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
+	return getBlockCompletions(asts, tokenAtPos, parser.KeywordFields)
+}
+
+func getInputCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*CompletionItem {
+	return getBlockCompletions(asts, tokenAtPos, parser.KeywordInput)
+}
+
+func getBlockCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, keyword string) []*CompletionItem {
 	// First we find the start of the current block
 	startOfBlock := tokenAtPos.StartOfBlock()
 
@@ -205,7 +220,7 @@ func getFieldCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition) []*Co
 	//   3. Parent block is field block which can only contain attributes
 	if tokenAtPos.Value() == "@" ||
 		tokenAtPos.ValueAt(-1) == "@" ||
-		startOfBlock.Prev().Value() != parser.KeywordFields {
+		startOfBlock.Prev().Value() != keyword {
 		return getAttributeCompletions(tokenAtPos, []string{
 			parser.AttributeUnique,
 			parser.AttributeDefault,
@@ -384,6 +399,18 @@ func getActionCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition, encl
 	})
 }
 
+func getJobCompletions() []*CompletionItem {
+	completions := []*CompletionItem{
+		{
+			Label:       "inputs",
+			Description: "Inputs for manual runs",
+			Kind:        KindInput,
+		},
+	}
+
+	return completions
+}
+
 var builtInFieldCompletions = []*CompletionItem{
 	{
 		Label:       parser.ImplicitFieldNameId,
@@ -491,6 +518,10 @@ var topLevelKeywords = []*CompletionItem{
 		Label: parser.KeywordMessage,
 		Kind:  KindKeyword,
 	},
+	{
+		Label: parser.KeywordJob,
+		Kind:  KindKeyword,
+	},
 }
 
 func getBuiltInTypeCompletions() []*CompletionItem {
@@ -523,16 +554,16 @@ func getActionInputCompletions(asts []*parser.AST, tokenAtPos *TokensAtPosition)
 		readOrWriteActionType := actionType == parser.ActionTypeRead || actionType == parser.ActionTypeWrite
 
 		if readOrWriteActionType {
-			// find the first occurence of a given token in the previous token stream and return what match was found
+			// find the first occurrence of a given token in the previous token stream and return what match was found
 			match, _ := tokenAtPos.StartOfParen().FindPrevMultiple(
 				parser.KeywordReturns,
 				parser.ActionTypeRead,
 				parser.ActionTypeWrite,
 			)
-			// if insideInputs is true, it means the first preceeding token we're interested in was action type read or write
+			// if insideInputs is true, it means the first preceding token we're interested in was action type read or write
 			insideInputs := match == parser.ActionTypeRead || match == parser.ActionTypeWrite
 
-			// the first occurence was the 'returns' keyword, so we know we're inside a returns parentheses
+			// the first occurrence was the 'returns' keyword, so we know we're inside a returns parentheses
 			insideReturns := match == parser.KeywordReturns
 
 			messages := lo.Map(query.MessageNames(asts), func(msgName string, _ int) *CompletionItem {
@@ -609,6 +640,8 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 		return getSortableArgCompletions(asts, t, cfg)
 	case parser.AttributeOrderBy:
 		return getOrderByArgCompletions(asts, t, cfg)
+	case parser.AttributeSchedule:
+		return getScheduleArgCompletions(asts, t, cfg)
 	default:
 		// this is likely a user error e.g. providing args to an attribute
 		// that doesn't take them like @unique
@@ -699,6 +732,26 @@ func getOrderByArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *conf
 			Kind:  KindKeyword,
 		},
 	}
+}
+
+func getScheduleArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
+	jobs := query.Jobs(asts)
+
+	completions := []*CompletionItem{}
+
+	for _, field := range jobs {
+		fieldName := field.Name.Value
+
+		completions = append(completions, &CompletionItem{
+			Label:       fieldName,
+			Description: field.Name.Value,
+			Kind:        KindField,
+		})
+	}
+
+	completions = append(completions, builtInFieldCompletions...)
+
+	return completions
 }
 
 func getPermissionArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *config.ProjectConfig) []*CompletionItem {
@@ -876,6 +929,7 @@ var namedBlocks = []string{
 	parser.KeywordApi,
 	parser.KeywordRole,
 	parser.KeywordMessage,
+	parser.KeywordJob,
 }
 
 var unNamedBlocks = []string{
@@ -885,6 +939,7 @@ var unNamedBlocks = []string{
 	parser.KeywordEmails,
 	parser.KeywordDomains,
 	parser.KeywordModels,
+	parser.KeywordInput,
 }
 
 // getTypeOfEnclosingBlock returns the keyword used to define
@@ -1002,6 +1057,13 @@ func getUserDefinedTypeCompletions(asts []*parser.AST, t *TokensAtPosition, keyw
 		for _, name := range query.MessageNames(asts) {
 			completions = append(completions, &CompletionItem{
 				Label: name,
+				Kind:  keyword,
+			})
+		}
+	case "job":
+		for _, job := range query.Jobs(asts) {
+			completions = append(completions, &CompletionItem{
+				Label: job.Name.Value,
 				Kind:  keyword,
 			})
 		}
