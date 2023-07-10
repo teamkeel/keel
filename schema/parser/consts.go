@@ -18,6 +18,8 @@ const (
 	KeywordEnum       = "enum"
 	KeywordWith       = "with"
 	KeywordReturns    = "returns"
+	KeywordJob        = "job"
+	KeywordInput      = "inputs"
 )
 
 // Types are roughly analogous to field types but they are used to type expressions

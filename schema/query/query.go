@@ -167,6 +167,18 @@ func Message(asts []*parser.AST, name string) *parser.MessageNode {
 	return nil
 }
 
+func Jobs(asts []*parser.AST) (ret []*parser.JobNode) {
+	for _, ast := range asts {
+		for _, decl := range ast.Declarations {
+			if decl.Job != nil {
+				ret = append(ret, decl.Job)
+			}
+		}
+	}
+
+	return ret
+}
+
 func IsEnum(asts []*parser.AST, name string) bool {
 	return Enum(asts, name) != nil
 }

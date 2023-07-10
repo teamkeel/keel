@@ -101,9 +101,6 @@
       "name": "Any"
     },
     {
-      "name": "MyJobMessage"
-    },
-    {
       "name": "EmailPasswordInput",
       "fields": [
         {
@@ -210,7 +207,6 @@
   "jobs": [
     {
       "name": "MyJob",
-      "inputMessageName": "MyJobMessage",
       "schedule": {
         "expression": "\"* * * * *\""
       }

@@ -27,7 +27,7 @@ func TestRootCompletions(t *testing.T) {
 		{
 			name:     "top-level-keyword",
 			schema:   "mod<Cursor>",
-			expected: []string{"api", "enum", "message", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role", "job"},
 		},
 		{
 			name: "top-level-keyword-not-first",
@@ -37,12 +37,12 @@ func TestRootCompletions(t *testing.T) {
             }
 
             m<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role", "job"},
 		},
 		{
 			name:     "top-level-keyword-whitespace",
 			schema:   `<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role", "job"},
 		},
 		{
 			name: "top-level-keyword-whitespace-partial-schema",
@@ -53,7 +53,7 @@ func TestRootCompletions(t *testing.T) {
 
 			model B {}
 			`,
-			expected: []string{"api", "enum", "message", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role", "job"},
 		},
 	}
 
@@ -1081,7 +1081,7 @@ func TestRoleCompletions(t *testing.T) {
 			name: "role-keyword",
 			schema: `
 			r<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role", "job"},
 		},
 		{
 			name: "domains-keyword",
@@ -1123,7 +1123,7 @@ func TestAPICompletions(t *testing.T) {
 			name: "api-keyword",
 			schema: `
 			a<Cursor>`,
-			expected: []string{"api", "enum", "message", "model", "role"},
+			expected: []string{"api", "enum", "message", "model", "role", "job"},
 		},
 		{
 			name: "models-keyword",
@@ -1210,6 +1210,41 @@ func TestMessageCompletions(t *testing.T) {
 			}
 			`,
 			expected: []string{"AnotherMessage", "Boolean", "Date", "ID", "Identity", "MyMessage", "Number", "Password", "Secret", "Text", "Timestamp"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestJobCompletions(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "job-completions",
+			schema: `
+			job MyJob {
+				<Cursor>
+			}
+			`,
+			expected: []string{"inputs", "@permission", "@schedule"},
+		},
+		{
+			name: "job-block-keywords",
+			schema: `
+			job MyJob {
+              i<Cursor>
+            }`,
+			expected: []string{"inputs"},
+		},
+		{
+			name: "job-input-completions",
+			schema: `
+			job MyJob {
+			  inputs {
+				input1 <Cursor>
+			  }
+			}
+			`,
+			expected: []string{"Boolean", "Date", "ID", "Identity", "Number", "Password", "Secret", "Text", "Timestamp"},
 		},
 	}
 
