@@ -1228,7 +1228,7 @@ func TestJobCompletions(t *testing.T) {
 			expected: []string{"inputs", "@permission", "@schedule"},
 		},
 		{
-			name: "model-block-keywords",
+			name: "job-block-keywords",
 			schema: `
 			job MyJob {
               i<Cursor>
