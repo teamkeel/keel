@@ -228,6 +228,14 @@ func FindRole(roleName string, schema *Schema) *Role {
 	return nil
 }
 
+// FindJob locates the job of the given name.
+func FindJob(jobs []*Job, name string) *Job {
+	job, _ := lo.Find(jobs, func(m *Job) bool {
+		return m.Name == name
+	})
+	return job
+}
+
 func GetActionNamesForApi(p *Schema, api *Api) []string {
 	modelNames := lo.Map(api.ApiModels, func(m *ApiModel, _ int) string {
 		return m.ModelName

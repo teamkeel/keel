@@ -3,6 +3,7 @@ package program
 import (
 	"context"
 	"crypto/rsa"
+	"encoding/json"
 	"io"
 	"net/http"
 	"os"
@@ -27,6 +28,7 @@ import (
 	"github.com/teamkeel/keel/runtime"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/testing"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -136,6 +138,7 @@ type Model struct {
 	MigrationChanges []*migrations.DatabaseChange
 	FunctionsServer  *node.DevelopmentServer
 	RuntimeHandler   http.Handler
+	JobHandler       runtime.JobHandler
 	RuntimeRequests  []*RuntimeRequest
 	FunctionsLog     []*FunctionLog
 	TestOutput       string
@@ -287,7 +290,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// This is so in tests we can invoke any action
 		if m.Mode == ModeTest {
 			testApi := &proto.Api{
-				Name: "TestingActionsApi",
+				Name: testing.ActionApiPath,
 			}
 			for _, m := range m.Schema.Models {
 				testApi.ApiModels = append(testApi.ApiModels, &proto.ApiModel{
@@ -296,6 +299,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			m.Schema.Apis = append(m.Schema.Apis, testApi)
+			m.JobHandler = runtime.NewJobHandler(m.Schema)
 		}
 
 		cors := cors.New(cors.Options{
@@ -446,14 +450,51 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				functions.NewHttpTransport(m.FunctionsServer.URL),
 			)
 		}
-		r = msg.r.WithContext(ctx)
 
 		envVars := m.Config.GetEnvVars(lo.Ternary(m.Mode == ModeTest, "test", "development"))
 		for k, v := range envVars {
 			os.Setenv(k, v)
 		}
 
-		m.RuntimeHandler.ServeHTTP(msg.w, r)
+		if m.Mode == ModeTest {
+			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+
+			switch pathParts[0] {
+			case testing.ActionApiPath:
+				r = msg.r.WithContext(ctx)
+				m.RuntimeHandler.ServeHTTP(msg.w, r)
+			case testing.JobPath:
+				jobName := pathParts[2]
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					break
+				}
+
+				var inputs map[string]any
+				if string(body) == "" {
+					inputs = nil
+				} else {
+					err = json.Unmarshal(body, &inputs)
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+						break
+					}
+				}
+
+				err = m.JobHandler.RunJob(ctx, jobName, inputs)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+				} else {
+					w.WriteHeader(http.StatusOK)
+				}
+			default:
+				w.WriteHeader(http.StatusNotFound)
+			}
+		} else {
+			r = msg.r.WithContext(ctx)
+			m.RuntimeHandler.ServeHTTP(msg.w, r)
+		}
 
 		for k := range envVars {
 			os.Unsetenv(k)

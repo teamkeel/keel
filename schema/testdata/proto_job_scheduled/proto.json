@@ -1,212 +1,213 @@
 {
-  "models": [
+  "models":  [
     {
-      "name": "Identity",
-      "fields": [
+      "name":  "Identity",
+      "fields":  [
         {
-          "modelName": "Identity",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
-          "optional": true,
-          "unique": true
+          "optional":  true,
+          "unique":  true
         },
         {
-          "modelName": "Identity",
-          "name": "password",
-          "type": {
-            "type": "TYPE_PASSWORD"
+          "modelName":  "Identity",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_PASSWORD"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "modelName": "Identity",
-          "name": "externalId",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "externalId",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "modelName": "Identity",
-          "name": "createdBy",
-          "type": {
-            "type": "TYPE_STRING"
+          "modelName":  "Identity",
+          "name":  "createdBy",
+          "type":  {
+            "type":  "TYPE_STRING"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "modelName": "Identity",
-          "name": "id",
-          "type": {
-            "type": "TYPE_ID"
+          "modelName":  "Identity",
+          "name":  "id",
+          "type":  {
+            "type":  "TYPE_ID"
           },
-          "primaryKey": true,
-          "defaultValue": {
-            "useZeroValue": true
+          "primaryKey":  true,
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "createdAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "createdAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         },
         {
-          "modelName": "Identity",
-          "name": "updatedAt",
-          "type": {
-            "type": "TYPE_DATETIME"
+          "modelName":  "Identity",
+          "name":  "updatedAt",
+          "type":  {
+            "type":  "TYPE_DATETIME"
           },
-          "defaultValue": {
-            "useZeroValue": true
+          "defaultValue":  {
+            "useZeroValue":  true
           }
         }
       ],
-      "operations": [
+      "operations":  [
         {
-          "modelName": "Identity",
-          "name": "authenticate",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "AuthenticateInput",
-          "responseMessageName": "AuthenticateResponse"
+          "modelName":  "Identity",
+          "name":  "authenticate",
+          "type":  "OPERATION_TYPE_WRITE",
+          "implementation":  "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName":  "AuthenticateInput",
+          "responseMessageName":  "AuthenticateResponse"
         },
         {
-          "modelName": "Identity",
-          "name": "requestPasswordReset",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "RequestPasswordResetInput",
-          "responseMessageName": "RequestPasswordResetResponse"
+          "modelName":  "Identity",
+          "name":  "requestPasswordReset",
+          "type":  "OPERATION_TYPE_WRITE",
+          "implementation":  "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName":  "RequestPasswordResetInput",
+          "responseMessageName":  "RequestPasswordResetResponse"
         },
         {
-          "modelName": "Identity",
-          "name": "resetPassword",
-          "type": "OPERATION_TYPE_WRITE",
-          "implementation": "OPERATION_IMPLEMENTATION_RUNTIME",
-          "inputMessageName": "ResetPasswordInput",
-          "responseMessageName": "ResetPasswordResponse"
+          "modelName":  "Identity",
+          "name":  "resetPassword",
+          "type":  "OPERATION_TYPE_WRITE",
+          "implementation":  "OPERATION_IMPLEMENTATION_RUNTIME",
+          "inputMessageName":  "ResetPasswordInput",
+          "responseMessageName":  "ResetPasswordResponse"
         }
       ]
     }
   ],
-  "messages": [
+  "messages":  [
     {
-      "name": "Any"
+      "name":  "Any"
     },
     {
       "name": "EmailPasswordInput",
       "fields": [
         {
-          "messageName": "EmailPasswordInput",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "EmailPasswordInput",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         },
         {
-          "messageName": "EmailPasswordInput",
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "EmailPasswordInput",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateInput",
-      "fields": [
+      "name":  "AuthenticateInput",
+      "fields":  [
         {
-          "messageName": "AuthenticateInput",
-          "name": "createIfNotExists",
-          "type": {
-            "type": "TYPE_BOOL"
+          "messageName":  "AuthenticateInput",
+          "name":  "createIfNotExists",
+          "type":  {
+            "type":  "TYPE_BOOL"
           },
-          "optional": true
+          "optional":  true
         },
         {
-          "messageName": "AuthenticateInput",
-          "name": "emailPassword",
-          "type": {
-            "type": "TYPE_MESSAGE",
-            "messageName": "EmailPasswordInput"
+          "messageName":  "AuthenticateInput",
+          "name":  "emailPassword",
+          "type":  {
+            "type":  "TYPE_MESSAGE",
+            "messageName":  "EmailPasswordInput"
           }
         }
       ]
     },
     {
-      "name": "AuthenticateResponse",
-      "fields": [
+      "name":  "AuthenticateResponse",
+      "fields":  [
         {
-          "messageName": "AuthenticateResponse",
-          "name": "identityCreated",
-          "type": {
-            "type": "TYPE_BOOL"
+          "messageName":  "AuthenticateResponse",
+          "name":  "identityCreated",
+          "type":  {
+            "type":  "TYPE_BOOL"
           }
         },
         {
-          "messageName": "AuthenticateResponse",
-          "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "AuthenticateResponse",
+          "name":  "token",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name": "RequestPasswordResetInput",
-      "fields": [
+      "name":  "RequestPasswordResetInput",
+      "fields":  [
         {
-          "messageName": "RequestPasswordResetInput",
-          "name": "email",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "RequestPasswordResetInput",
+          "name":  "email",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         },
         {
-          "messageName": "RequestPasswordResetInput",
-          "name": "redirectUrl",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "RequestPasswordResetInput",
+          "name":  "redirectUrl",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name": "RequestPasswordResetResponse"
+      "name":  "RequestPasswordResetResponse"
     },
     {
-      "name": "ResetPasswordInput",
-      "fields": [
+      "name":  "ResetPasswordInput",
+      "fields":  [
         {
-          "messageName": "ResetPasswordInput",
-          "name": "token",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "ResetPasswordInput",
+          "name":  "token",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         },
         {
-          "messageName": "ResetPasswordInput",
-          "name": "password",
-          "type": {
-            "type": "TYPE_STRING"
+          "messageName":  "ResetPasswordInput",
+          "name":  "password",
+          "type":  {
+            "type":  "TYPE_STRING"
           }
         }
       ]
     },
     {
-      "name": "ResetPasswordResponse"
+      "name":  "ResetPasswordResponse"
     }
   ],
-  "jobs": [
+  "jobs":  [
     {
       "name": "MyJob",
+      "inputMessageName": "MyJobMessage",
       "schedule": {
         "expression": "\"* * * * *\""
       }

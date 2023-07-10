@@ -1,0 +1,51 @@
+model Post {
+    fields {
+        title Text
+        viewCount Number @default(0)
+        viewCountUpdated Timestamp?
+        status Status @default(Status.NormalPost)
+    }
+
+    @permission(expression: true, actions:[get])
+}
+
+enum Status {
+    NormalPost
+    GoldPost
+}
+
+model PostViews {
+    fields {
+        post Post
+        views Number
+    }
+}
+
+job UpdateViewCount {
+    inputs {
+        postId ID
+    }
+
+    @permission(expression: ctx.isAuthenticated)
+}
+
+job UpdateAllViewCount {
+    @permission(expression: ctx.isAuthenticated)
+}
+
+job UpdateGoldStarFromEnv {
+    @permission(expression: ctx.isAuthenticated)
+}
+
+job AllInputTypes {
+    inputs {
+        text Text
+        boolean Boolean
+        num Number
+        date Date
+        timestamp Timestamp
+        enum Status
+        id ID
+    }
+    @permission(expression: ctx.isAuthenticated)
+}

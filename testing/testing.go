@@ -3,12 +3,14 @@ package testing
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 
 	keelconfig "github.com/teamkeel/keel/config"
 	"github.com/teamkeel/keel/db"
@@ -20,6 +22,11 @@ import (
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
 	"github.com/teamkeel/keel/util"
+)
+
+const (
+	ActionApiPath = "testingactionsapi"
+	JobPath       = "testingjobs"
 )
 
 type TestOutput struct {
@@ -46,7 +53,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 
 	testApi := &proto.Api{
 		// TODO: make random so doesn't clash
-		Name: "TestingActionsApi",
+		Name: ActionApiPath,
 	}
 	for _, m := range schema.Models {
 		testApi.ApiModels = append(testApi.ApiModels, &proto.ApiModel{
@@ -130,20 +137,63 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		os.Setenv(key, value)
 	}
 
-	// Server to handle API calls to the runtime
+	// Server to handle receiving HTTP requests from the ActionExecutor and JobExecutor.
 	runtimeServer := http.Server{
 		Addr: fmt.Sprintf(":%s", runtimePort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			ctx := r.Context()
 			ctx = runtimectx.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
 			}
-			r = r.WithContext(ctx)
 
-			runtime.NewHttpHandler(schema).ServeHTTP(w, r)
+			pathParts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+			if len(pathParts) != 3 {
+				w.WriteHeader(http.StatusNotFound)
+				_, err = w.Write([]byte(fmt.Sprintf("invalid url received on testing server '%s'", r.URL.Path)))
+				if err != nil {
+					panic(err)
+				}
+			}
+
+			switch pathParts[0] {
+			case ActionApiPath:
+				r = r.WithContext(ctx)
+				runtime.NewHttpHandler(schema).ServeHTTP(w, r)
+			case JobPath:
+				jobName := pathParts[2]
+				body, err := io.ReadAll(r.Body)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+
+				var inputs map[string]any
+				// if no json body has been sent, just return an empty map for the inputs
+				if string(body) == "" {
+					inputs = nil
+				} else {
+					err = json.Unmarshal(body, &inputs)
+					if err != nil {
+						w.WriteHeader(http.StatusInternalServerError)
+						return
+					}
+				}
+
+				err = runtime.NewJobHandler(schema).RunJob(ctx, jobName, inputs)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+				} else {
+					w.WriteHeader(http.StatusOK)
+				}
+			default:
+				w.WriteHeader(http.StatusNotFound)
+				_, err = w.Write([]byte(fmt.Sprintf("invalid url received on testing server '%s'", r.URL.Path)))
+				if err != nil {
+					panic(err)
+				}
+			}
 		}),
 	}
 
@@ -175,6 +225,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 	cmd.Dir = opts.Dir
 	cmd.Env = append(os.Environ(), []string{
 		fmt.Sprintf("KEEL_TESTING_ACTIONS_API_URL=http://localhost:%s/testingactionsapi/json", runtimePort),
+		fmt.Sprintf("KEEL_TESTING_JOBS_URL=http://localhost:%s/testingjobs/json", runtimePort),
 		"KEEL_DB_CONN_TYPE=pg",
 		fmt.Sprintf("KEEL_DB_CONN=%s", dbConnString),
 		// Disables experimental fetch warning that pollutes console experience when running tests

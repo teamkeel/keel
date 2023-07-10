@@ -3,9 +3,12 @@ package functions
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/segmentio/ksuid"
+	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
@@ -20,18 +23,28 @@ var tracer = otel.Tracer("github.com/teamkeel/keel/functions")
 // Custom error codes returned from custom
 // function runtime
 // See packages/functions-runtime for original definition and more info.
+type FunctionErrorCode int
+
 const (
-	UnknownError              = -32001
-	DatabaseError             = -32002
-	NoResultError             = -32003
-	RecordNotFoundError       = -32004
-	ForeignKeyConstraintError = -32005
-	NotNullConstraintError    = -32006
-	UniqueConstraintError     = -32007
-	PermissionError           = -32008
+	UnknownError              FunctionErrorCode = -32001
+	DatabaseError             FunctionErrorCode = -32002
+	NoResultError             FunctionErrorCode = -32003
+	RecordNotFoundError       FunctionErrorCode = -32004
+	ForeignKeyConstraintError FunctionErrorCode = -32005
+	NotNullConstraintError    FunctionErrorCode = -32006
+	UniqueConstraintError     FunctionErrorCode = -32007
+	PermissionError           FunctionErrorCode = -32008
 )
 
-type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
+type FunctionType string
+
+const (
+	ActionFunction FunctionType = "action"
+	JobFunction    FunctionType = "job"
+	EventFunction  FunctionType = "event"
+)
+
+type Transport func(ctx context.Context, req *FunctionsRuntimeRequest, functionType FunctionType) (*FunctionsRuntimeResponse, error)
 
 type FunctionsRuntimeRequest struct {
 	ID     string         `json:"id"`
@@ -54,8 +67,8 @@ type FunctionsRuntimeMeta struct {
 // FunctionsRuntimeError follows the error object specification
 // from the JSONRPC spec: https://www.jsonrpc.org/specification#error_object
 type FunctionsRuntimeError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
+	Code    FunctionErrorCode `json:"code"`
+	Message string            `json:"message"`
 
 	// Data represents any additional error metadata that the functions-runtime want to send in addition to the error code + message
 	Data map[string]any `json:"data"`
@@ -69,6 +82,7 @@ func WithFunctionsTransport(ctx context.Context, transport Transport) context.Co
 	return context.WithValue(ctx, contextKey, transport)
 }
 
+// CallFunction will invoke the custom function on the runtime node server.
 func CallFunction(ctx context.Context, actionName string, body any, permissionState *common.PermissionState) (any, map[string][]string, error) {
 	ctx, span := tracer.Start(ctx, "Call function")
 	defer span.End()
@@ -121,7 +135,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 		attribute.String("jsonrpc.method", req.Method),
 	)
 
-	resp, err := transport(ctx, req)
+	resp, err := transport(ctx, req, ActionFunction)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -130,35 +144,108 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 
 	if resp.Error != nil {
 		span.SetStatus(codes.Error, resp.Error.Message)
-		span.SetAttributes(attribute.Int("error.code", resp.Error.Code))
-
-		data := resp.Error.Data
-
-		switch resp.Error.Code {
-		case PermissionError:
-			return nil, nil, common.NewPermissionError()
-		case ForeignKeyConstraintError:
-			return nil, nil, common.NewForeignKeyConstraintError(data["column"].(string))
-		case NoResultError:
-			return nil, nil, common.RuntimeError{
-				Code:    common.ErrInternal,
-				Message: "custom function returned no result",
-			}
-		case NotNullConstraintError:
-			return nil, nil, common.NewNotNullError(data["column"].(string))
-		case UniqueConstraintError:
-			return nil, nil, common.NewUniquenessError(strings.Split(data["column"].(string), ", "))
-		case RecordNotFoundError:
-			return nil, nil, common.NewNotFoundError()
-		default:
-			// includes generic errors thrown by custom functions during execution, plus other types of DatabaseError's that aren't fk/uniqueness/null constraint errors:
-			// https://www.postgresql.org/docs/current/errcodes-appendix.html
-			return nil, nil, common.RuntimeError{
-				Code:    common.ErrInternal,
-				Message: resp.Error.Message,
-			}
-		}
+		span.SetAttributes(attribute.Int("error.code", int(resp.Error.Code)))
+		return nil, nil, toRuntimeError(resp.Error)
 	}
 
 	return resp.Result, resp.Meta.Headers, nil
+}
+
+// CallJob will invoke the job function on the runtime node server.
+func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs map[string]any) error {
+	ctx, span := tracer.Start(ctx, "Call job")
+	defer span.End()
+
+	job := proto.FindJob(schema.Jobs, strcase.ToCamel(jobName))
+	if job == nil {
+		return fmt.Errorf("no job with the name '%s' exists", jobName)
+	}
+
+	// TODO: Currently we aren't handling permissions yet for jobs
+	// https://linear.app/keel/issue/BLD-631/permission-support-in-the-runtime-for-jobs
+	permissionState := common.NewPermissionState()
+	permissionState.Grant(common.GrantReasonRole)
+
+	transport, ok := ctx.Value(contextKey).(Transport)
+	if !ok {
+		return errors.New("no functions client in context")
+	}
+
+	var err error
+	var identity *runtimectx.Identity
+	if runtimectx.IsAuthenticated(ctx) {
+		identity, err = runtimectx.GetIdentity(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	secrets := runtimectx.GetSecrets(ctx)
+
+	tracingContext := propagation.MapCarrier{}
+	otel.GetTextMapPropagator().Inject(ctx, tracingContext)
+
+	meta := map[string]any{
+		"identity":        identity,
+		"secrets":         secrets,
+		"tracing":         tracingContext,
+		"permissionState": permissionState,
+	}
+
+	req := &FunctionsRuntimeRequest{
+		ID:     ksuid.New().String(),
+		Method: jobName,
+		Params: inputs,
+		Meta:   meta,
+	}
+
+	span.SetAttributes(
+		attribute.String("job.id", req.ID),
+		attribute.String("job.name", jobName),
+	)
+
+	resp, err := transport(ctx, req, JobFunction)
+	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
+		return err
+	}
+
+	if resp.Error != nil {
+		span.SetStatus(codes.Error, resp.Error.Message)
+		span.SetAttributes(attribute.Int("error.code", int(resp.Error.Code)))
+		return toRuntimeError(resp.Error)
+	}
+
+	return nil
+}
+
+// Parse the error from the functions runtime to the appropriate go runtime error.
+func toRuntimeError(errorResponse *FunctionsRuntimeError) error {
+	data := errorResponse.Data
+
+	switch errorResponse.Code {
+	case PermissionError:
+		return common.NewPermissionError()
+	case ForeignKeyConstraintError:
+		return common.NewForeignKeyConstraintError(data["column"].(string))
+	case NoResultError:
+		return common.RuntimeError{
+			Code:    common.ErrInternal,
+			Message: "custom function returned no result",
+		}
+	case NotNullConstraintError:
+		return common.NewNotNullError(data["column"].(string))
+	case UniqueConstraintError:
+		return common.NewUniquenessError(strings.Split(data["column"].(string), ", "))
+	case RecordNotFoundError:
+		return common.NewNotFoundError()
+	default:
+		// includes generic errors thrown by custom functions during execution, plus other types of DatabaseError's that aren't fk/uniqueness/null constraint errors:
+		// https://www.postgresql.org/docs/current/errcodes-appendix.html
+		return common.RuntimeError{
+			Code:    common.ErrInternal,
+			Message: errorResponse.Message,
+		}
+	}
 }

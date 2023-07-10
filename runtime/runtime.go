@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/actions"
 	"github.com/teamkeel/keel/runtime/apis/graphql"
@@ -125,6 +126,26 @@ func NewHandler(s *proto.Schema) common.ApiHandlerFunc {
 
 		return handler(r)
 	})
+}
+
+type JobHandler struct {
+	schema *proto.Schema
+}
+
+func NewJobHandler(currSchema *proto.Schema) JobHandler {
+	return JobHandler{
+		schema: currSchema,
+	}
+}
+
+// RunJob will run the job function in the runtime.
+func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map[string]any) error {
+	return functions.CallJob(
+		ctx,
+		handler.schema,
+		jobName,
+		inputs,
+	)
 }
 
 func withRequestResponseLogging(handler common.ApiHandlerFunc) common.ApiHandlerFunc {

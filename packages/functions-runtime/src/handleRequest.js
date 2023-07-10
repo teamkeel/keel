@@ -59,9 +59,10 @@ async function handleRequest(request, config) {
 
         const db = getDatabaseClient();
         const customFunction = functions[request.method];
+        const actionType = actionTypes[request.method];
 
         const result = await tryExecuteFunction(
-          { request, ctx, permitted, db, permissionFns, actionTypes },
+          { request, ctx, permitted, db, permissionFns, actionType },
           async () => {
             // Return the custom function to the containing tryExecuteFunction block
             // Once the custom function is called, tryExecuteFunction will check the schema's permission rules to see if it can continue committing
@@ -106,6 +107,7 @@ async function handleRequest(request, config) {
           code: opentelemetry.SpanStatusCode.ERROR,
           message: message,
         });
+
         return createJSONRPCErrorResponse(
           request.id,
           RuntimeErrors.UnknownError,

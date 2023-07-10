@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
 	"github.com/teamkeel/keel/casing"
 	"github.com/teamkeel/keel/codegen"
@@ -94,6 +95,8 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 
 	for _, job := range schema.Jobs {
 		writeJobFunctionWrapperType(sdkTypes, job)
+		sdk.Writef("module.exports.%s = (fn) => fn;", job.Name)
+		sdk.Writeln("")
 	}
 
 	writeTableConfig(sdk, schema.Models)
@@ -763,8 +766,8 @@ func toActionReturnType(model *proto.Model, op *proto.Operation) string {
 
 func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 	w := &codegen.Writer{}
-	w.Writeln(`import { handleRequest, tracing } from '@teamkeel/functions-runtime';`)
-	w.Writeln(`import { createContextAPI, permissionFns } from '@teamkeel/sdk';`)
+	w.Writeln(`import { handleRequest, handleJob, tracing } from '@teamkeel/functions-runtime';`)
+	w.Writeln(`import { createContextAPI, createJobContextAPI, permissionFns } from '@teamkeel/sdk';`)
 	w.Writeln(`import { createServer } from "http";`)
 
 	functions := []*proto.Operation{}
@@ -780,10 +783,27 @@ func generateDevelopmentServer(schema *proto.Schema) codegen.GeneratedFiles {
 		}
 	}
 
+	for _, job := range schema.Jobs {
+		name := strcase.ToLowerCamel(job.Name)
+		// namespace import to avoid naming clashes
+		w.Writef(`import job_%s from "../jobs/%s.ts"`, name, name)
+		w.Writeln(";")
+	}
+
 	w.Writeln("const functions = {")
 	w.Indent()
 	for _, fn := range functions {
 		w.Writef("%s: function_%s,", fn.Name, fn.Name)
+		w.Writeln("")
+	}
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writeln("const jobs = {")
+	w.Indent()
+	for _, job := range schema.Jobs {
+		name := strcase.ToLowerCamel(job.Name)
+		w.Writef("%s: job_%s,", name, name)
 		w.Writeln("")
 	}
 	w.Dedent()
@@ -816,13 +836,27 @@ const listener = async (req, res) => {
 		const data = Buffer.concat(buffers).toString();
 		const json = JSON.parse(data);
 
-		const rpcResponse = await handleRequest(json, {
-			functions,
-			createContextAPI,
-			actionTypes,
-			permissionFns,
-		});
-
+		let rpcResponse = null;
+		switch (u.pathname) {
+		case "/action":
+			rpcResponse = await handleRequest(json, {
+				functions,
+				createContextAPI,
+				actionTypes,
+				permissionFns,
+			});
+			break;
+		case "/job":
+			rpcResponse = await handleJob(json, {
+				jobs,
+				createJobContextAPI,
+			});
+			break;
+		default:
+			res.statusCode = 400;
+			res.end();
+		}
+		
 		res.statusCode = 200;
 		res.setHeader('Content-Type', 'application/json');
 		res.write(JSON.stringify(rpcResponse));
@@ -856,10 +890,11 @@ func generateTestingPackage(schema *proto.Schema) codegen.GeneratedFiles {
 	// with Vitest
 	js.Writeln(`import sdk from "@teamkeel/sdk"`)
 	js.Writeln("const { useDatabase, models } = sdk;")
-	js.Writeln(`import { ActionExecutor, sql } from "@teamkeel/testing-runtime";`)
+	js.Writeln(`import { ActionExecutor, JobExecutor, sql } from "@teamkeel/testing-runtime";`)
 	js.Writeln("")
 	js.Writeln("export { models };")
 	js.Writeln("export const actions = new ActionExecutor({});")
+	js.Writeln("export const jobs = new JobExecutor({});")
 	js.Writeln("export async function resetDatabase() {")
 	js.Indent()
 	js.Writeln("const db = useDatabase();")
@@ -901,6 +936,7 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
 	test: {
 		setupFiles: [__dirname + "/vitest.setup"],
+		testTimeout: 10000,
 	},
 });
 			`,
@@ -961,6 +997,38 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	}
 	w.Dedent()
 	w.Writeln("}")
+	if len(schema.Jobs) > 0 {
+		w.Writeln("declare class JobExecutor {")
+		w.Indent()
+		w.Writeln("withIdentity(identity: sdk.Identity): JobExecutor;")
+		w.Writeln("withAuthToken(token: string): JobExecutor;")
+		for _, job := range schema.Jobs {
+			msg := proto.FindMessage(schema.Messages, job.InputMessageName)
+
+			// Jobs can be without inputs
+			if msg != nil {
+				w.Writef("%s(i", strcase.ToLowerCamel(job.Name))
+
+				if lo.EveryBy(msg.Fields, func(f *proto.MessageField) bool {
+					return f.Optional
+				}) {
+					w.Write("?")
+				}
+
+				w.Writef(`: %s): %s`, job.InputMessageName, "Promise<void>")
+				w.Writeln(";")
+			} else {
+				w.Writef("%s(): Promise<void>", strcase.ToLowerCamel(job.Name))
+				w.Writeln(";")
+			}
+
+		}
+		w.Dedent()
+		w.Writeln("}")
+
+		w.Writeln("export declare const jobs: JobExecutor;")
+	}
+
 	w.Writeln("export declare const actions: ActionExecutor;")
 	w.Writeln("export declare const models: sdk.ModelsAPI;")
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")

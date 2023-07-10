@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"context"
 	"errors"
 	"strings"
 
@@ -49,7 +50,7 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	// Do one of the role-based rules grant permission?
 	if runtimectx.IsAuthenticated(scope.Context) {
 		roleBasedPerms := proto.PermissionsWithRole(permissions)
-		granted, err := roleBasedPermissionGranted(scope, roleBasedPerms)
+		granted, err := RoleBasedPermissionGranted(scope.Context, scope.Schema, roleBasedPerms)
 		if err != nil {
 			return false, err
 		}
@@ -169,19 +170,19 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	return query.SelectStatement(), nil
 }
 
-// roleBasedPermissionGranted returns true if there is a role-based permission among the
+// RoleBasedPermissionGranted returns true if there is a role-based permission among the
 // given list of permissions that passes.
-func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.PermissionRule) (granted bool, err error) {
+func RoleBasedPermissionGranted(ctx context.Context, schema *proto.Schema, roleBasedPermissions []*proto.PermissionRule) (granted bool, err error) {
 	// todo: nicer if this came in the Scope or Token?
 	// Because it costs a database query.
-	currentUserEmail, currentUserDomain, err := getEmailAndDomain(scope)
+	currentUserEmail, currentUserDomain, err := getEmailAndDomain(ctx)
 	if err != nil {
 		return false, err
 	}
 
 	for _, perm := range roleBasedPermissions {
 		for _, roleName := range perm.RoleNames {
-			role := proto.FindRole(roleName, scope.Schema)
+			role := proto.FindRole(roleName, schema)
 			for _, email := range role.Emails {
 				if email == currentUserEmail {
 					return true, nil
@@ -200,9 +201,9 @@ func roleBasedPermissionGranted(scope *Scope, roleBasedPermissions []*proto.Perm
 
 // getEmailAndDomain requires that the the given scope's context
 // contains an authenticated user
-func getEmailAndDomain(scope *Scope) (string, string, error) {
+func getEmailAndDomain(ctx context.Context) (string, string, error) {
 	// Use the authenticated identity's id to lookup their email address.
-	identity, err := runtimectx.GetIdentity(scope.Context)
+	identity, err := runtimectx.GetIdentity(ctx)
 	if err != nil {
 		return "", "", err
 	}
