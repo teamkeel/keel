@@ -1,3 +1,10 @@
+# [0.350.0](https://github.com/teamkeel/keel/compare/v0.349.0...v0.350.0) (2023-07-10)
+
+
+### Features
+
+* capture console logs in traces ([1c76cbc](https://github.com/teamkeel/keel/commit/1c76cbc44324fbb54e008145b5fc5a6c8ef3a8cf))
+
 # [0.349.0](https://github.com/teamkeel/keel/compare/v0.348.0...v0.349.0) (2023-07-10)
 
 
