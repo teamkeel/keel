@@ -24,7 +24,7 @@ func TestFormat(t *testing.T) {
 			require.NoError(t, err)
 
 			parts := strings.Split(string(b), "===")
-			require.Equal(t, 2, len(parts), "fixture file should contain two sections seperated by \"===\"")
+			require.Equal(t, 2, len(parts), "fixture file should contain two sections separated by \"===\"")
 
 			ast, err := parser.Parse(&reader.SchemaFile{
 				Contents: parts[0],

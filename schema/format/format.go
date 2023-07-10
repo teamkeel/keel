@@ -168,6 +168,8 @@ func Format(ast *parser.AST) string {
 				printApi(writer, decl.API)
 			case decl.Message != nil:
 				printMessage(writer, decl.Message)
+			case decl.Job != nil:
+				printJob(writer, decl.Job)
 			}
 		})
 	}
@@ -201,6 +203,40 @@ func printMessage(writer *Writer, message *parser.MessageNode) {
 			}
 		})
 
+	})
+}
+
+func printJob(writer *Writer, job *parser.JobNode) {
+	writer.Comments(job, func() {
+		writer.Write("job %s", camel(job.Name.Value))
+		writer.Block(func() {
+			for _, section := range job.Sections {
+				writer.Comments(section, func() {
+					switch {
+					case len(section.Inputs) > 0:
+						writer.Write("inputs")
+						writer.Block(func() {
+							for _, model := range section.Inputs {
+								writer.Comments(model, func() {
+									writer.Write(
+										"%s %s",
+										lowerCamel(model.Name.Value),
+										camel(model.Type.Value),
+									)
+									writer.WriteLine("")
+								})
+							}
+						},
+						)
+						if len(section.Inputs) > 0 {
+							writer.WriteLine("")
+						}
+					case section.Attribute != nil:
+						printAttributes(writer, []*parser.AttributeNode{section.Attribute})
+					}
+				})
+			}
+		})
 	})
 }
 

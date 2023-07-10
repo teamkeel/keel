@@ -1,0 +1,17 @@
+job MyJob {
+    inputs {
+        name      Text
+    }
+
+    @permission("admin")
+}
+
+===
+
+job MyJob {
+    inputs {
+        name Text
+    }
+
+    @permission("admin")
+}

@@ -1,0 +1,9 @@
+job ScheduleJob {
+        @schedule("* * * * *")
+}
+
+===
+
+job ScheduleJob {
+    @schedule("* * * * *")
+}
