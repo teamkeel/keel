@@ -1,3 +1,10 @@
+# [0.351.0](https://github.com/teamkeel/keel/compare/v0.350.0...v0.351.0) (2023-07-10)
+
+
+### Features
+
+* generating typescript clients ([ef9e115](https://github.com/teamkeel/keel/commit/ef9e115f95cafc73d11b7ff68ef06b5da61921b5))
+
 # [0.350.0](https://github.com/teamkeel/keel/compare/v0.349.0...v0.350.0) (2023-07-10)
 
 
