@@ -1,3 +1,10 @@
+# [0.349.0](https://github.com/teamkeel/keel/compare/v0.348.0...v0.349.0) (2023-07-10)
+
+
+### Features
+
+* job definition syntax highlighting and code completions ([#1042](https://github.com/teamkeel/keel/issues/1042)) ([d7848b9](https://github.com/teamkeel/keel/commit/d7848b922d7d2b694930761f942c6a483ecf4e13))
+
 # [0.348.0](https://github.com/teamkeel/keel/compare/v0.347.0...v0.348.0) (2023-07-07)
 
 
