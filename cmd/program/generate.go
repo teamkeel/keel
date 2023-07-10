@@ -113,6 +113,11 @@ func (m *GenerateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.GeneratedFiles = append(m.GeneratedFiles, msg.GeneratedFiles...)
 		m.Err = msg.Err
 
+		if msg.Err != nil {
+			m.Status = StatusNotGenerated
+			return m, tea.Quit
+		}
+
 		switch m.Status {
 		case StatusGenerated, StatusNotGenerated:
 			// if generation has finished successfully or generation was aborted

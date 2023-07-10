@@ -264,6 +264,58 @@ func Generate(dir string, schema *proto.Schema, nodePackagesPath string, output 
 	}
 }
 
+type GenerateClientMsg struct {
+	Err            error
+	Status         int
+	GeneratedFiles codegen.GeneratedFiles
+	Log            string
+}
+
+func GenerateClient(dir string, schema *proto.Schema, apiName string, outputDir string, makePackage bool, output chan tea.Msg) tea.Cmd {
+	return func() tea.Msg {
+
+		if schema == nil || len(schema.Apis) == 0 {
+			return GenerateMsg{
+				Status: StatusNotGenerated,
+			}
+		}
+
+		output <- GenerateClientMsg{
+			Log:    "Generating client SDK",
+			Status: StatusGeneratingClient,
+		}
+
+		files, err := node.GenerateClient(context.TODO(), schema, makePackage, apiName)
+
+		if err != nil {
+			return GenerateClientMsg{
+				Err: err,
+			}
+		}
+
+		o := dir
+		if outputDir != "" {
+			o = outputDir
+		}
+
+		err = files.Write(o)
+
+		if err != nil {
+			return GenerateClientMsg{
+				Err: err,
+			}
+		}
+
+		output <- GenerateClientMsg{
+			Log:            "Generated @teamkeel/client",
+			Status:         StatusGenerated,
+			GeneratedFiles: files,
+		}
+
+		return nil
+	}
+}
+
 type CheckDependenciesMsg struct {
 	Err error
 }
