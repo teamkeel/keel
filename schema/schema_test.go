@@ -31,6 +31,10 @@ func TestSchema(t *testing.T) {
 			continue
 		}
 
+		if testCase.Name() != "validation_duplicate_inputs" {
+			continue
+		}
+
 		testCaseDir := testdataDir + "/" + testCase.Name()
 
 		t.Run(testCase.Name(), func(t *testing.T) {

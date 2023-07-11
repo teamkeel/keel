@@ -1,0 +1,16 @@
+model B {
+    fields {
+        name Text
+    }
+
+    operations {
+        list listMix(name, name: Text)
+        list listExplicits(something: Text, something: Text)
+    }
+
+    functions {
+        list listFn(name, name: Text)
+        list listExplicitsFn(something: Text, something: Text)
+    }
+}
+

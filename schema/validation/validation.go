@@ -82,6 +82,7 @@ var visitorFuncs = []VisitorFunc{
 	SortableAttributeRule,
 	Jobs,
 	ScheduleAttributeRule,
+	DuplicateInputsRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {
