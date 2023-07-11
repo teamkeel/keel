@@ -63,7 +63,6 @@ export class JobExecutor {
           try {
             d = JSON.parse(t);
           } catch (e) {
-            
             if ("DEBUG" in process.env) {
               console.log(e);
             }

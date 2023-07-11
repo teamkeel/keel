@@ -40,7 +40,7 @@ wasm:
 
 prettier:
 	npx prettier --write './integration/**/*.{ts,json,yaml}'
-	npx prettier --write './packages/**/*.{ts,js}'
+	npx prettier --write './packages/**/*.{ts,js,mjs}'
 
 install:
 	go mod download
