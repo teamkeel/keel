@@ -1,3 +1,10 @@
+# [0.352.0](https://github.com/teamkeel/keel/compare/v0.351.0...v0.352.0) (2023-07-11)
+
+
+### Features
+
+* vscode formatting ([#1043](https://github.com/teamkeel/keel/issues/1043)) ([be7b0c4](https://github.com/teamkeel/keel/commit/be7b0c47d5a97ef0a28979fccb43ce5ecf599d94))
+
 # [0.351.0](https://github.com/teamkeel/keel/compare/v0.350.0...v0.351.0) (2023-07-10)
 
 
