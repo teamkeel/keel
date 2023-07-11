@@ -9,7 +9,7 @@ import (
 	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
-// DuplicateInputsRule checks that inputs are not duplicated as inputs.
+// DuplicateInputsRule checks that input names are not duplicated for an action.
 func DuplicateInputsRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var names []string
 

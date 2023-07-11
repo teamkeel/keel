@@ -1,23 +1,6 @@
 {
   "errors": [
     {
-      "message": "You have duplicate operations Model:B Name:listExplicits",
-      "hint": "Remove 'listExplicits' on line 13",
-      "code": "E004",
-      "pos": {
-        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 239,
-        "line": 13,
-        "column": 14
-      },
-      "endPos": {
-        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 252,
-        "line": 13,
-        "column": 27
-      }
-    },
-    {
       "message": "'name' has already been defined as an input on this action",
       "hint": "",
       "code": "NamingError",
@@ -108,15 +91,15 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 270,
+        "offset": 272,
         "line": 13,
-        "column": 45
+        "column": 47
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 285,
+        "offset": 287,
         "line": 13,
-        "column": 60
+        "column": 62
       }
     }
   ]
