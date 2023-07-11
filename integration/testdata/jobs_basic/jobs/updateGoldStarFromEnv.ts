@@ -8,7 +8,7 @@ export default UpdateGoldStarFromEnv(async (ctx) => {
       await models.post.update(
         { id: post!.id },
         {
-            status: Status.GoldPost,
+          status: Status.GoldPost,
         }
       );
     }

@@ -84,13 +84,13 @@ test("jobs - updating all values using env var - values updated", async () => {
 });
 
 test("jobs - all types as input values", async () => {
-    await jobs.allInputTypes({
-        text: "text",
-        num: 10,
-        boolean: true,
-        date: new Date(2022, 12, 25),
-        timestamp: new Date(2022, 12, 25, 1, 3, 4),
-        id: "123",
-        enum: Status.GoldPost
-    })
+  await jobs.allInputTypes({
+    text: "text",
+    num: 10,
+    boolean: true,
+    date: new Date(2022, 12, 25),
+    timestamp: new Date(2022, 12, 25, 1, 3, 4),
+    id: "123",
+    enum: Status.GoldPost,
+  });
 });
