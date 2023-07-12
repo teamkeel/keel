@@ -113,7 +113,7 @@ func TestModelCompletions(t *testing.T) {
 			model A {
 			  <Cursor>
 			}`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
+			expected: []string{"@permission", "@unique", "fields", "functions", "operations"},
 		},
 		// attributes tests
 		{
@@ -122,7 +122,90 @@ func TestModelCompletions(t *testing.T) {
 			model A {
               @<Cursor>
             }`,
-			expected: []string{"@permission", "fields", "functions", "operations"},
+			expected: []string{"@permission", "@unique", "fields", "functions", "operations"},
+		},
+	}
+
+	runTestsCases(t, cases)
+}
+
+func TestCompositeUniqueCompletions(t *testing.T) {
+	cases := []testCase{
+		{
+			name: "array-notation",
+			schema: `
+			model A {
+				@unique(<Cursor>
+			}
+			`,
+			expected: []string{"["},
+		},
+		{
+			name: "available-fields",
+			schema: `
+			model A {
+				fields {
+					title Text
+					subTitle Text
+				}
+				@unique([<Cursor>
+			}
+			`,
+			expected: []string{"title", "subTitle"},
+		},
+		{
+			name: "existing-composite",
+			schema: `
+			model A {
+				fields {
+					title Text
+					subTitle Text
+				}
+				@unique([title,<Cursor>
+			}
+			`,
+			expected: []string{"subTitle"},
+		},
+		{
+			name: "closing-array-notation",
+			schema: `
+			model A {
+				fields {
+					title Text
+					subTitle Text
+				}
+				@unique([title,subTitle<Cursor>
+			}
+			`,
+			expected: []string{"]"},
+		},
+		{
+			name: "closing-paren",
+			schema: `
+			model A {
+				fields {
+					title Text
+					subTitle Text
+				}
+				@unique([title,subTitle]<Cursor>
+			}
+			`,
+			expected: []string{")"},
+		},
+		{
+			name: "model-field-exclusion",
+			schema: `
+			model B {}
+			model A {
+				fields {
+					title Text
+					relation B
+					subTitle Text
+				}
+				@unique([<Cursor>
+			}
+			`,
+			expected: []string{"title", "subTitle"},
 		},
 	}
 
