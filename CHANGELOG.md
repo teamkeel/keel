@@ -1,3 +1,10 @@
+# [0.354.0](https://github.com/teamkeel/keel/compare/v0.353.0...v0.354.0) (2023-07-12)
+
+
+### Features
+
+* validation on duplicate action inputs ([#1045](https://github.com/teamkeel/keel/issues/1045)) ([004a31f](https://github.com/teamkeel/keel/commit/004a31ff06ada38249e647ae5733951b2c70bdd3))
+
 # [0.353.0](https://github.com/teamkeel/keel/compare/v0.352.0...v0.353.0) (2023-07-12)
 
 
