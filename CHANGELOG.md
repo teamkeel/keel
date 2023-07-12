@@ -1,3 +1,11 @@
+# [0.353.0](https://github.com/teamkeel/keel/compare/v0.352.0...v0.353.0) (2023-07-12)
+
+
+### Features
+
+* [@permission](https://github.com/permission) conditions & early permission checking ([#1041](https://github.com/teamkeel/keel/issues/1041)) ([22afb57](https://github.com/teamkeel/keel/commit/22afb5725ef877b7bfdabffcd4d4e0235fb02f52))
+* jobs in runtime & integration tests ([#1044](https://github.com/teamkeel/keel/issues/1044)) ([1ff2b88](https://github.com/teamkeel/keel/commit/1ff2b888547146faa3690a15f2f97405f8663509))
+
 # [0.352.0](https://github.com/teamkeel/keel/compare/v0.351.0...v0.352.0) (2023-07-11)
 
 
