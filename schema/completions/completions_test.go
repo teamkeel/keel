@@ -909,7 +909,7 @@ func TestPermissionCompletions(t *testing.T) {
 			model A {
               @p<Cursor>
             }`,
-			expected: []string{"@permission", "@unique", "fields", "functions", "operations"},
+			expected: []string{"@permission", "fields", "functions", "operations"},
 		},
 		{
 			name: "model-permission-attribute-labels",
