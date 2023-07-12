@@ -837,8 +837,8 @@ const listener = async (req, res) => {
 		const json = JSON.parse(data);
 
 		let rpcResponse = null;
-		switch (u.pathname) {
-		case "/action":
+		switch (json.type) {
+		case "action":
 			rpcResponse = await handleRequest(json, {
 				functions,
 				createContextAPI,
@@ -846,7 +846,7 @@ const listener = async (req, res) => {
 				permissionFns,
 			});
 			break;
-		case "/job":
+		case "job":
 			rpcResponse = await handleJob(json, {
 				jobs,
 				createJobContextAPI,

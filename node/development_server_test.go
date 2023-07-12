@@ -52,8 +52,8 @@ func TestDevelopmentServerAction(t *testing.T) {
 			return
 		}
 
-		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}, "meta": { "permissionState": { "status": "unknown" }, "headers": {}}}`)
-		res, err := http.Post(fmt.Sprintf("%s/action", server.URL), "application/json", body)
+		body := bytes.NewBufferString(`{"method": "getPerson", "type": "action", "params": {"id": "1234"}, "meta": { "permissionState": { "status": "unknown" }, "headers": {}}}`)
+		res, err := http.Post(server.URL, "application/json", body)
 		require.NoError(t, err)
 		assert.Equal(t, res.StatusCode, 200)
 
@@ -93,8 +93,8 @@ func TestDevelopmentServerJob(t *testing.T) {
 			return
 		}
 
-		body := bytes.NewBufferString(`{"method": "processPeople", "meta": { "permissionState": { "status": "granted" }}}`)
-		res, err := http.Post(fmt.Sprintf("%s/job", server.URL), "application/json", body)
+		body := bytes.NewBufferString(`{"method": "processPeople", "type": "job", "meta": { "permissionState": { "status": "granted" }}}`)
+		res, err := http.Post(server.URL, "application/json", body)
 		require.NoError(t, err)
 		assert.Equal(t, res.StatusCode, 200)
 

@@ -44,11 +44,12 @@ const (
 	EventFunction  FunctionType = "event"
 )
 
-type Transport func(ctx context.Context, req *FunctionsRuntimeRequest, functionType FunctionType) (*FunctionsRuntimeResponse, error)
+type Transport func(ctx context.Context, req *FunctionsRuntimeRequest) (*FunctionsRuntimeResponse, error)
 
 type FunctionsRuntimeRequest struct {
 	ID     string         `json:"id"`
 	Method string         `json:"method"`
+	Type   FunctionType   `json:"type"`
 	Params any            `json:"params"`
 	Meta   map[string]any `json:"meta"`
 }
@@ -126,6 +127,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
 		Method: actionName,
+		Type:   ActionFunction,
 		Params: body,
 		Meta:   meta,
 	}
@@ -135,7 +137,7 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 		attribute.String("jsonrpc.method", req.Method),
 	)
 
-	resp, err := transport(ctx, req, ActionFunction)
+	resp, err := transport(ctx, req)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
@@ -195,6 +197,7 @@ func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs m
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
 		Method: jobName,
+		Type:   JobFunction,
 		Params: inputs,
 		Meta:   meta,
 	}
@@ -204,7 +207,7 @@ func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs m
 		attribute.String("job.name", jobName),
 	)
 
-	resp, err := transport(ctx, req, JobFunction)
+	resp, err := transport(ctx, req)
 	if err != nil {
 		span.RecordError(err, trace.WithStackTrace(true))
 		span.SetStatus(codes.Error, err.Error())
