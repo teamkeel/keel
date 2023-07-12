@@ -180,6 +180,15 @@ func executeRuntimeOperation(scope *Scope, inputs map[string]any) (any, map[stri
 }
 
 func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
+	// Attempt to resolve permissions early; i.e. before database querying.
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope)
+	if err != nil {
+		return nil, nil, err
+	}
+	if canResolveEarly && !authorised {
+		return nil, nil, common.NewPermissionError()
+	}
+
 	switch scope.Operation.Type {
 	case proto.OperationType_OPERATION_TYPE_GET:
 		v, err := Get(scope, inputs)

@@ -1,0 +1,71 @@
+model Book {
+    fields {
+        title Text
+        lastUpdatedBy Identity
+    }
+
+    operations {
+        create createBook() with (title) {
+            @permission(expression: ctx.isAuthenticated)
+            @set(book.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+        create createBook2() with (title) {
+            @permission(expression: ctx.isAuthenticated == false)
+            @set(book.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+        create createBook3() with (title) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+            @set(book.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+        update updateBook(id) with (title) {
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+        update updateBook2(id) with (title) {
+            @permission(expression: ctx.isAuthenticated == false)
+        }
+
+        update updateBook3(id) with (title) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        get getBook(id) {
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+        get getBook2(id) {
+            @permission(expression: ctx.isAuthenticated == false)
+        }
+
+        get getBook3(id) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        delete deleteBook(id) {
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+        delete deleteBook2(id) {
+            @permission(expression: ctx.isAuthenticated == false)
+        }
+
+        delete deleteBook3(id) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        list listBook() {
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+        list listBook2() {
+            @permission(expression: ctx.isAuthenticated == false)
+        }
+
+        list listBook3() {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+    }
+}

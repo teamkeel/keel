@@ -128,7 +128,7 @@ func (ident *Ident) ToString() string {
 }
 
 func (ident *Ident) IsContext() bool {
-	return ident.Fragments[0].Fragment == "ctx"
+	return ident != nil && ident.Fragments[0].Fragment == "ctx"
 }
 
 func (ident *Ident) IsContextIdentityField() bool {

@@ -15,12 +15,17 @@ func Delete(scope *Scope, input map[string]any) (*string, error) {
 
 	query.AppendSelect(IdField())
 	query.AppendDistinctOn(IdField())
-	rowToAuthorise, err := query.SelectStatement().ExecuteToSingle(scope.Context)
+	res, err := query.SelectStatement().ExecuteToSingle(scope.Context)
 	if err != nil {
 		return nil, err
 	}
 
-	isAuthorised, err := AuthoriseAction(scope, []map[string]any{rowToAuthorise})
+	rowsToAuthorise := []map[string]any{}
+	if res != nil {
+		rowsToAuthorise = append(rowsToAuthorise, res)
+	}
+
+	isAuthorised, err := AuthoriseAction(scope, rowsToAuthorise)
 	if err != nil {
 		return nil, err
 	}
