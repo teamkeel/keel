@@ -1,3 +1,10 @@
+## [0.354.1](https://github.com/teamkeel/keel/compare/v0.354.0...v0.354.1) (2023-07-12)
+
+
+### Bug Fixes
+
+* provide completions for composite unique ([#1024](https://github.com/teamkeel/keel/issues/1024)) ([0f6fa6d](https://github.com/teamkeel/keel/commit/0f6fa6dcd5d78e56d605fc3377335bb36ff9d99e))
+
 # [0.354.0](https://github.com/teamkeel/keel/compare/v0.353.0...v0.354.0) (2023-07-12)
 
 
