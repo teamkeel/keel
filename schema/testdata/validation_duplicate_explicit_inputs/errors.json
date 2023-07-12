@@ -1,0 +1,106 @@
+{
+  "errors": [
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 89,
+        "line": 7,
+        "column": 25
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 99,
+        "line": 7,
+        "column": 35
+      }
+    },
+    {
+      "message": "name is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 89,
+        "line": 7,
+        "column": 25
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 93,
+        "line": 7,
+        "column": 29
+      }
+    },
+    {
+      "message": "'something' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 145,
+        "line": 8,
+        "column": 45
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 160,
+        "line": 8,
+        "column": 60
+      }
+    },
+    {
+      "message": "something is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute",
+      "hint": "",
+      "code": "ActionInputError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 145,
+        "line": 8,
+        "column": 45
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 154,
+        "line": 8,
+        "column": 54
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 211,
+        "line": 12,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 221,
+        "line": 12,
+        "column": 37
+      }
+    },
+    {
+      "message": "'something' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 269,
+        "line": 13,
+        "column": 47
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
+        "offset": 284,
+        "line": 13,
+        "column": 62
+      }
+    }
+  ]
+}

@@ -1,0 +1,242 @@
+{
+  "errors": [
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 101,
+        "line": 7,
+        "column": 37
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 105,
+        "line": 7,
+        "column": 41
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 131,
+        "line": 8,
+        "column": 25
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 135,
+        "line": 8,
+        "column": 29
+      }
+    },
+    {
+      "message": "'id' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 157,
+        "line": 9,
+        "column": 21
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 159,
+        "line": 9,
+        "column": 23
+      }
+    },
+    {
+      "message": "'id' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 187,
+        "line": 10,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 189,
+        "line": 10,
+        "column": 29
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 203,
+        "line": 10,
+        "column": 43
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 207,
+        "line": 10,
+        "column": 47
+      }
+    },
+    {
+      "message": "'id' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 235,
+        "line": 11,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 237,
+        "line": 11,
+        "column": 29
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 300,
+        "line": 15,
+        "column": 39
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 304,
+        "line": 15,
+        "column": 43
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 332,
+        "line": 16,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 336,
+        "line": 16,
+        "column": 31
+      }
+    },
+    {
+      "message": "'id' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 360,
+        "line": 17,
+        "column": 23
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 362,
+        "line": 17,
+        "column": 25
+      }
+    },
+    {
+      "message": "'id' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 392,
+        "line": 18,
+        "column": 29
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 394,
+        "line": 18,
+        "column": 31
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 408,
+        "line": 18,
+        "column": 45
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 412,
+        "line": 18,
+        "column": 49
+      }
+    },
+    {
+      "message": "'id' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 442,
+        "line": 19,
+        "column": 29
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 444,
+        "line": 19,
+        "column": 31
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 472,
+        "line": 20,
+        "column": 27
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 476,
+        "line": 20,
+        "column": 31
+      }
+    },
+    {
+      "message": "'name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 520,
+        "line": 21,
+        "column": 29
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_implicit_inputs/schema.keel",
+        "offset": 524,
+        "line": 21,
+        "column": 33
+      }
+    }
+  ]
+}

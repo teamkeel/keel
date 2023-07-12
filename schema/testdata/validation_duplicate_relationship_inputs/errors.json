@@ -1,0 +1,38 @@
+{
+  "errors": [
+    {
+      "message": "'blog.name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
+        "offset": 180,
+        "line": 9,
+        "column": 46
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
+        "offset": 189,
+        "line": 9,
+        "column": 55
+      }
+    },
+    {
+      "message": "'blog.name' has already been defined as an input on this action",
+      "hint": "",
+      "code": "NamingError",
+      "pos": {
+        "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
+        "offset": 260,
+        "line": 12,
+        "column": 34
+      },
+      "endPos": {
+        "filename": "testdata/validation_duplicate_relationship_inputs/schema.keel",
+        "offset": 269,
+        "line": 12,
+        "column": 43
+      }
+    }
+  ]
+}
