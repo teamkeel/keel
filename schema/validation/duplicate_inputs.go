@@ -2,6 +2,7 @@ package validation
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/iancoleman/strcase"
 	"github.com/samber/lo"
@@ -19,7 +20,17 @@ func DuplicateInputsRule(asts []*parser.AST, errs *errorhandling.ValidationError
 		},
 		EnterActionInput: func(n *parser.ActionInputNode) {
 			var input string
-			input = n.Name()
+
+			if n.Label != nil {
+				input = n.Label.Value
+			} else {
+				fragments := []string{}
+				for _, frag := range n.Type.Fragments {
+					fragments = append(fragments, frag.Fragment)
+				}
+
+				input = strings.Join(fragments, ".")
+			}
 
 			// This is a hacky way of checking if this is a message, which we'll skip from the validation.
 			// Otherwise we could run into a duplicate input validation error on this: write writeFn(Any) returns (Any)

@@ -4,7 +4,7 @@ model B {
     }
 
     operations {
-        list listMix(name, name: Text)
+        list list(name, name: Text)
         list listExplicits(something: Text, something: Text)
     }
 

@@ -6,15 +6,15 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 92,
+        "offset": 89,
         "line": 7,
-        "column": 28
+        "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 102,
+        "offset": 99,
         "line": 7,
-        "column": 38
+        "column": 35
       }
     },
     {
@@ -23,15 +23,15 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 92,
+        "offset": 89,
         "line": 7,
-        "column": 28
+        "column": 25
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 96,
+        "offset": 93,
         "line": 7,
-        "column": 32
+        "column": 29
       }
     },
     {
@@ -40,13 +40,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 148,
+        "offset": 145,
         "line": 8,
         "column": 45
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 163,
+        "offset": 160,
         "line": 8,
         "column": 60
       }
@@ -57,13 +57,13 @@
       "code": "ActionInputError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 148,
+        "offset": 145,
         "line": 8,
         "column": 45
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 157,
+        "offset": 154,
         "line": 8,
         "column": 54
       }
@@ -74,13 +74,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 214,
+        "offset": 211,
         "line": 12,
         "column": 27
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 224,
+        "offset": 221,
         "line": 12,
         "column": 37
       }
@@ -91,13 +91,13 @@
       "code": "NamingError",
       "pos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 272,
+        "offset": 269,
         "line": 13,
         "column": 47
       },
       "endPos": {
         "filename": "testdata/validation_duplicate_explicit_inputs/schema.keel",
-        "offset": 287,
+        "offset": 284,
         "line": 13,
         "column": 62
       }
