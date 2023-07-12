@@ -16,7 +16,7 @@ func IsEnabled(dir string, s *proto.Schema) bool {
 	return HasFunctions(s) || HasTests(dir)
 }
 
-// HasFunctions returns true if the schema contains any custom functions.
+// HasFunctions returns true if the schema contains any custom functions or jobs.
 func HasFunctions(sch *proto.Schema) bool {
 	var ops []*proto.Operation
 
@@ -24,9 +24,13 @@ func HasFunctions(sch *proto.Schema) bool {
 		ops = append(ops, model.Operations...)
 	}
 
-	return lo.SomeBy(ops, func(o *proto.Operation) bool {
+	hasCustomFunctions := lo.SomeBy(ops, func(o *proto.Operation) bool {
 		return o.Implementation == proto.OperationImplementation_OPERATION_IMPLEMENTATION_CUSTOM
 	})
+
+	hasJobs := sch.Jobs != nil && len(sch.Jobs) > 0
+
+	return hasCustomFunctions || hasJobs
 }
 
 // HasTests returns true if there any TypeScript test files in dir or any of it's

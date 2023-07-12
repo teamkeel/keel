@@ -18,7 +18,7 @@ import (
 	"github.com/teamkeel/keel/testhelpers"
 )
 
-func TestDevelopmentServer(t *testing.T) {
+func TestDevelopmentServerAction(t *testing.T) {
 	files := codegen.GeneratedFiles{
 		{
 			Path: "schema.keel",
@@ -53,7 +53,7 @@ func TestDevelopmentServer(t *testing.T) {
 		}
 
 		body := bytes.NewBufferString(`{"method": "getPerson", "params": {"id": "1234"}, "meta": { "permissionState": { "status": "unknown" }, "headers": {}}}`)
-		res, err := http.Post(server.URL, "application/json", body)
+		res, err := http.Post(fmt.Sprintf("%s/action", server.URL), "application/json", body)
 		require.NoError(t, err)
 		assert.Equal(t, res.StatusCode, 200)
 
@@ -61,6 +61,47 @@ func TestDevelopmentServer(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, `{"jsonrpc":"2.0","result":{"id":"1234","createdAt":"2022-01-01T00:00:00.000Z","updatedAt":"2022-01-01T00:00:00.000Z"},"meta":{"headers":{}}}`, string(b))
+	})
+}
+
+func TestDevelopmentServerJob(t *testing.T) {
+	files := codegen.GeneratedFiles{
+		{
+			Path: "schema.keel",
+			Contents: `
+				job ProcessPeople {
+					@permission(roles: [Admin])
+				}
+			`,
+		},
+		{
+			Path: "jobs/processPeople.ts",
+			Contents: `
+				import { ProcessPeople, models } from "@teamkeel/sdk";
+
+				export default ProcessPeople(async (ctx) => { });
+			`,
+		},
+	}
+
+	runDevelopmentServerTest(t, files, func(server *node.DevelopmentServer, err error) {
+		if !assert.NoError(t, err) {
+			if server != nil {
+				fmt.Println("=== Development Server Output ===")
+				fmt.Println(server.Output())
+			}
+			return
+		}
+
+		body := bytes.NewBufferString(`{"method": "processPeople", "meta": { "permissionState": { "status": "granted" }}}`)
+		res, err := http.Post(fmt.Sprintf("%s/job", server.URL), "application/json", body)
+		require.NoError(t, err)
+		assert.Equal(t, res.StatusCode, 200)
+
+		b, err := io.ReadAll(res.Body)
+		require.NoError(t, err)
+
+		assert.Equal(t, `{"jsonrpc":"2.0","result":null}`, string(b))
 	})
 }
 

@@ -38,8 +38,7 @@ model Person {
 		gender Gender
 		hasChildren Boolean
 	}
-}
-`
+}`
 
 func TestWriteTableInterface(t *testing.T) {
 	expected := `
@@ -103,13 +102,13 @@ export interface PersonCreateValues {
 
 func TestWriteCreateValuesInterfaceWithRelationships(t *testing.T) {
 	schema := `
-	model Author {}
-	model Post {
-		fields {
-			author Author
-		}
+model Author {}
+model Post {
+	fields {
+		author Author
 	}
-	`
+}`
+
 	expected := `
 export interface PostCreateValues {
 	id?: string
@@ -321,6 +320,8 @@ func TestWriteDevelopmentServer(t *testing.T) {
 const functions = {
 	createPost: function_createPost,
 	updatePost: function_updatePost,
+}
+const jobs = {
 }
 const actionTypes = {
 	createPost: "OPERATION_TYPE_CREATE",
@@ -1535,6 +1536,80 @@ declare class ActionExecutor {
 	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
 	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
 }
+export declare const actions: ActionExecutor;
+export declare const models: sdk.ModelsAPI;
+export declare function resetDatabase(): Promise<void>;`
+
+	runWriterTest(t, schema, expected, func(s *proto.Schema, w *codegen.Writer) {
+		writeTestingTypes(w, s)
+	})
+}
+
+func TestWriteTestingTypesJobs(t *testing.T) {
+	schema := `
+job JobWithoutInputs {
+	@schedule("1 * * * *")
+}
+job AdHocJobWithInputs {
+	inputs {
+		nameField Text
+		someBool Bool?
+	}
+	@permission(roles: [Admin])
+}
+job AdHocJobWithoutInputs {
+	@permission(roles: [Admin])
+}
+role Admin {}`
+
+	expected := `
+import * as sdk from "@teamkeel/sdk";
+import * as runtime from "@teamkeel/functions-runtime";
+import "@teamkeel/testing-runtime";
+
+export interface AdHocJobWithInputsMessage {
+	nameField: string;
+	someBool?: any;
+}
+export interface EmailPasswordInput {
+	email: string;
+	password: string;
+}
+export interface AuthenticateInput {
+	createIfNotExists?: boolean;
+	emailPassword: EmailPasswordInput;
+}
+export interface AuthenticateResponse {
+	identityCreated: boolean;
+	token: string;
+}
+export interface RequestPasswordResetInput {
+	email: string;
+	redirectUrl: string;
+}
+export interface RequestPasswordResetResponse {
+}
+export interface ResetPasswordInput {
+	token: string;
+	password: string;
+}
+export interface ResetPasswordResponse {
+}
+declare class ActionExecutor {
+	withIdentity(identity: sdk.Identity): ActionExecutor;
+	withAuthToken(token: string): ActionExecutor;
+	authenticate(i: AuthenticateInput): Promise<AuthenticateResponse>;
+	requestPasswordReset(i: RequestPasswordResetInput): Promise<RequestPasswordResetResponse>;
+	resetPassword(i: ResetPasswordInput): Promise<ResetPasswordResponse>;
+}
+declare class JobExecutor {
+	withIdentity(identity: sdk.Identity): JobExecutor;
+	withAuthToken(token: string): JobExecutor;
+	jobWithoutInputs(): Promise<void>;
+	adHocJobWithInputs(i: AdHocJobWithInputsMessage): Promise<void>;
+	adHocJobWithoutInputs(): Promise<void>;
+}
+export declare const jobs: JobExecutor;
 export declare const actions: ActionExecutor;
 export declare const models: sdk.ModelsAPI;
 export declare function resetDatabase(): Promise<void>;`

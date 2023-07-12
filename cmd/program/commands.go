@@ -29,6 +29,7 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/schema/reader"
+	"github.com/teamkeel/keel/testing"
 )
 
 func NextMsgCommand(ch chan tea.Msg) tea.Cmd {
@@ -734,7 +735,8 @@ func RunTests(dir string, port string, cfg *config.ProjectConfig, conn *db.Conne
 		cmd.Env = os.Environ()
 
 		envVars := cfg.GetEnvVars("test")
-		envVars["KEEL_TESTING_ACTIONS_API_URL"] = fmt.Sprintf("http://localhost:%s/testingactionsapi/json", port)
+		envVars["KEEL_TESTING_ACTIONS_API_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.ActionApiPath)
+		envVars["KEEL_TESTING_JOBS_URL"] = fmt.Sprintf("http://localhost:%s/%s/json", port, testing.JobPath)
 		envVars["KEEL_DB_CONN_TYPE"] = "pg"
 		envVars["KEEL_DB_CONN"] = conn.String()
 		envVars["NODE_OPTIONS"] = "--no-warnings"

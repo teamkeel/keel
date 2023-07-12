@@ -113,7 +113,7 @@ func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, 
 	permissionState := common.NewPermissionState()
 
 	if runtimectx.IsAuthenticated(scope.Context) {
-		granted, err := roleBasedPermissionGranted(scope, rolePermissions)
+		granted, err := RoleBasedPermissionGranted(scope.Context, scope.Schema, rolePermissions)
 
 		if err != nil {
 			return nil, nil, err

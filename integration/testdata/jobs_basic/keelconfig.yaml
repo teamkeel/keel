@@ -1,0 +1,7 @@
+environment:
+  default:
+    - name: GOLD_STAR
+      value: 20
+  test:
+    - name: GOLD_STAR
+      value: 20
