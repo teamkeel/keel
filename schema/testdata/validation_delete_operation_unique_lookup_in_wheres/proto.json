@@ -164,6 +164,19 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "MyModel"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

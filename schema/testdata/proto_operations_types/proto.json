@@ -170,6 +170,19 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Foo"
+        },
+        {
+          "modelName": "Identity"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

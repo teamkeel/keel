@@ -132,6 +132,19 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Person"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

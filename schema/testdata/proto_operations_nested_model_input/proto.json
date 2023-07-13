@@ -365,6 +365,28 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Fee"
+        },
+        {
+          "modelName": "Fi"
+        },
+        {
+          "modelName": "Fo"
+        },
+        {
+          "modelName": "Fum"
+        },
+        {
+          "modelName": "Identity"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

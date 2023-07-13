@@ -188,6 +188,22 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Book"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Person"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

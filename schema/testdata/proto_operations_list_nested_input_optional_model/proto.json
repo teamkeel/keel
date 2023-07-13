@@ -284,6 +284,25 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Author"
+        },
+        {
+          "modelName": "Book"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Publisher"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

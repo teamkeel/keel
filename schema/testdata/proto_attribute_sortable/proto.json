@@ -155,6 +155,19 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Author"
+        },
+        {
+          "modelName": "Identity"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

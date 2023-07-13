@@ -255,6 +255,22 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Company"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Person"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

@@ -149,6 +149,19 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Person"
+        }
+      ]
+    }
+  ],
   "enums": [
     {
       "name": "Sport",
