@@ -61,7 +61,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 
 	writePermissions(sdk, schema)
 
-	writeMessages(sdkTypes, schema, false)
+	writeMessages(sdkTypes, schema, false, false)
 
 	for _, enum := range schema.Enums {
 		writeEnum(sdkTypes, enum)
@@ -71,7 +71,7 @@ func generateSdkPackage(schema *proto.Schema) codegen.GeneratedFiles {
 
 	for _, model := range schema.Models {
 		writeTableInterface(sdkTypes, model)
-		writeModelInterface(sdkTypes, model)
+		writeModelInterface(sdkTypes, model, false)
 		writeCreateValuesInterface(sdkTypes, model)
 		writeWhereConditionsInterface(sdkTypes, model)
 		writeFindManyParamsInterface(sdkTypes, model, false)
@@ -130,7 +130,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 		}
 		w.Write(casing.ToLowerCamel(field.Name))
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
+		t := toTypeScriptType(field.Type, false, false)
 		if field.DefaultValue != nil {
 			t = fmt.Sprintf("Generated<%s>", t)
 		}
@@ -144,7 +144,7 @@ func writeTableInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeModelInterface(w *codegen.Writer, model *proto.Model) {
+func writeModelInterface(w *codegen.Writer, model *proto.Model, datesAsStrings bool) {
 	w.Writef("export interface %s {\n", model.Name)
 	w.Indent()
 	for _, field := range model.Fields {
@@ -153,7 +153,7 @@ func writeModelInterface(w *codegen.Writer, model *proto.Model) {
 		}
 		w.Write(field.Name)
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
+		t := toTypeScriptType(field.Type, false, datesAsStrings)
 		w.Write(t)
 		if field.Optional {
 			w.Write(" | null")
@@ -177,7 +177,7 @@ func writeCreateValuesInterface(w *codegen.Writer, model *proto.Model) {
 			w.Write("?")
 		}
 		w.Write(": ")
-		t := toTypeScriptType(field.Type, false)
+		t := toTypeScriptType(field.Type, false, false)
 		w.Write(t)
 		if field.Optional {
 			w.Write(" | null")
@@ -238,7 +238,7 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 			// Embed related models where conditions
 			w.Writef("%sWhereConditions | null;", field.Type.ModelName.Value)
 		} else {
-			w.Write(toTypeScriptType(field.Type, false))
+			w.Write(toTypeScriptType(field.Type, false, false))
 			w.Write(" | ")
 			w.Write(toWhereConditionType(field))
 			w.Write(" | null;")
@@ -250,16 +250,16 @@ func writeWhereConditionsInterface(w *codegen.Writer, model *proto.Model) {
 	w.Writeln("}")
 }
 
-func writeMessages(w *codegen.Writer, schema *proto.Schema, isTestingPackage bool) {
+func writeMessages(w *codegen.Writer, schema *proto.Schema, useSdkPackage bool, datesAsStrings bool) {
 	for _, msg := range schema.Messages {
 		if msg.Name == parser.MessageFieldTypeAny {
 			continue
 		}
-		writeMessage(w, schema, msg, isTestingPackage)
+		writeMessage(w, schema, msg, useSdkPackage, datesAsStrings)
 	}
 }
 
-func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Message, isTestingPackage bool) {
+func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Message, useSdkPackage bool, datesAsStrings bool) {
 	w.Writef("export interface %s {\n", message.Name)
 	w.Indent()
 
@@ -272,7 +272,7 @@ func writeMessage(w *codegen.Writer, schema *proto.Schema, message *proto.Messag
 
 		w.Write(": ")
 
-		w.Write(toTypeScriptType(field.Type, isTestingPackage))
+		w.Write(toTypeScriptType(field.Type, useSdkPackage, datesAsStrings))
 
 		if field.Type.Repeated {
 			w.Write("[]")
@@ -298,7 +298,7 @@ func writeUniqueConditionsInterface(w *codegen.Writer, model *proto.Model) {
 
 		switch {
 		case f.Unique || f.PrimaryKey:
-			tsType = toTypeScriptType(f.Type, false)
+			tsType = toTypeScriptType(f.Type, false, false)
 		case proto.IsHasMany(f):
 			// If a model "has one" of another model then you can
 			// do a lookup on any of that models unique fields
@@ -930,7 +930,7 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("")
 
 	// For the testing package we need input and response types for all actions
-	writeMessages(w, schema, true)
+	writeMessages(w, schema, true, false)
 
 	w.Writeln("declare class ActionExecutor {")
 	w.Indent()
@@ -966,7 +966,8 @@ func writeTestingTypes(w *codegen.Writer, schema *proto.Schema) {
 	w.Writeln("export declare function resetDatabase(): Promise<void>;")
 }
 
-func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
+// `datesAsStrings` controls if date fields as js Date objects (for the modelAPI) or strings (for APIs)
+func toTypeScriptType(t *proto.TypeInfo, useSdkPackage bool, datesAsStrings bool) (ret string) {
 	switch t.Type {
 	case proto.Type_TYPE_ID:
 		ret = "string"
@@ -977,20 +978,24 @@ func toTypeScriptType(t *proto.TypeInfo, isTestingPackage bool) (ret string) {
 	case proto.Type_TYPE_INT:
 		ret = "number"
 	case proto.Type_TYPE_DATE, proto.Type_TYPE_DATETIME, proto.Type_TYPE_TIMESTAMP:
-		ret = "Date"
+		if datesAsStrings {
+			ret = "string"
+		} else {
+			ret = "Date"
+		}
 	case proto.Type_TYPE_ENUM:
 		ret = t.EnumName.Value
 	case proto.Type_TYPE_MESSAGE:
 		ret = t.MessageName.Value
 	case proto.Type_TYPE_MODEL:
 		// models are imported from the sdk
-		if isTestingPackage {
+		if useSdkPackage {
 			ret = fmt.Sprintf("sdk.%s", t.ModelName.Value)
 		} else {
 			ret = t.ModelName.Value
 		}
 	case proto.Type_TYPE_SORT_DIRECTION:
-		if isTestingPackage {
+		if useSdkPackage {
 			ret = "sdk.SortDirection"
 		} else {
 			ret = "SortDirection"

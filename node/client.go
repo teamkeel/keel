@@ -159,7 +159,7 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 	w.Writeln("// API Types")
 	w.Writeln("")
 
-	writeMessages(w, schema, false)
+	writeMessages(w, schema, false, true)
 
 	for _, enum := range schema.Enums {
 		writeEnum(w, enum)
@@ -174,7 +174,7 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 			continue
 		}
 
-		writeModelInterface(w, model)
+		writeModelInterface(w, model, true)
 	}
 
 }
