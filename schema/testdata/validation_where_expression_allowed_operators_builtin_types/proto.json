@@ -395,6 +395,19 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Post"
+        }
+      ]
+    }
+  ],
   "enums": [
     {
       "name": "Category",

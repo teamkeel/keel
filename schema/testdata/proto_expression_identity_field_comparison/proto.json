@@ -313,6 +313,25 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Author"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Post"
+        },
+        {
+          "modelName": "Publisher"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

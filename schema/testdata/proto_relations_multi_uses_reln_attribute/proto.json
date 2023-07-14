@@ -230,6 +230,22 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Account"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Post"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

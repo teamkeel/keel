@@ -254,6 +254,22 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "ChildModel"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "ParentModel"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

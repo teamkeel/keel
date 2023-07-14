@@ -308,6 +308,25 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Product"
+        },
+        {
+          "modelName": "Sale"
+        },
+        {
+          "modelName": "SaleItem"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

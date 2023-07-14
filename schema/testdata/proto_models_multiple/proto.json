@@ -168,6 +168,22 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Model1"
+        },
+        {
+          "modelName": "Model2"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

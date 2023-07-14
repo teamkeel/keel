@@ -223,6 +223,22 @@
       ]
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Author"
+        },
+        {
+          "modelName": "Identity"
+        },
+        {
+          "modelName": "Post"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"

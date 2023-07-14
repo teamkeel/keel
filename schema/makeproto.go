@@ -61,7 +61,35 @@ func (scm *Builder) makeProtoModels() *proto.Schema {
 		}
 	}
 
+	// If the input schema doesn't specify any APIs, we create a default one.
+	// This is a temporary place holder.
+	// We expect the API block to evolve into something more expressive, and then
+	// the concept of there being a default one might disappear.
+	// See https://linear.app/keel/issue/BLD-588/automatically-create-default-api-api
+	if len(scm.proto.Apis) == 0 {
+		scm.proto.Apis = append(scm.proto.Apis, defaultAPI(scm.proto))
+	}
+
 	return scm.proto
+}
+
+/*
+defaultAPI makes this:
+
+	api API {
+	    models {
+	        ...all models
+	    }
+	}
+*/
+func defaultAPI(scm *proto.Schema) *proto.Api {
+	allModels := lo.Map(proto.ModelNames(scm), func(name string, _ int) *proto.ApiModel {
+		return &proto.ApiModel{ModelName: name}
+	})
+	return &proto.Api{
+		Name:      "Api",
+		ApiModels: allModels,
+	}
 }
 
 func makeListQueryInputMessage(typeInfo *proto.TypeInfo) (*proto.Message, error) {

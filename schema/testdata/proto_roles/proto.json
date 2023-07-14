@@ -112,6 +112,16 @@
       "name": "Other"
     }
   ],
+  "apis": [
+    {
+      "name": "Api",
+      "apiModels": [
+        {
+          "modelName": "Identity"
+        }
+      ]
+    }
+  ],
   "messages": [
     {
       "name": "Any"
