@@ -1,3 +1,10 @@
+# [0.355.0](https://github.com/teamkeel/keel/compare/v0.354.1...v0.355.0) (2023-07-14)
+
+
+### Features
+
+* auto gen default API in schema if none provided ([#1047](https://github.com/teamkeel/keel/issues/1047)) ([e2c8585](https://github.com/teamkeel/keel/commit/e2c858542c9ab3b60e8fd2d51b647f9715b97420))
+
 ## [0.354.1](https://github.com/teamkeel/keel/compare/v0.354.0...v0.354.1) (2023-07-12)
 
 
