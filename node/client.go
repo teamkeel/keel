@@ -117,6 +117,9 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 		return a.ModelName
 	})
 
+	queries := []string{}
+	mutations := []string{}
+
 	for _, model := range schema.Models {
 
 		// Skip any models not part of this api
@@ -125,6 +128,13 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 		}
 
 		for _, op := range model.Operations {
+
+			if op.Type == proto.OperationType_OPERATION_TYPE_GET || op.Type == proto.OperationType_OPERATION_TYPE_LIST || op.Type == proto.OperationType_OPERATION_TYPE_READ {
+				queries = append(queries, op.Name)
+			} else {
+				mutations = append(queries, op.Name)
+			}
+
 			msg := proto.FindMessage(schema.Messages, op.InputMessageName)
 
 			w.Writef("%s(i", op.Name)
@@ -152,6 +162,25 @@ func writeClientAPIClass(w *codegen.Writer, schema *proto.Schema, api *proto.Api
 			w.Writeln("}")
 		}
 	}
+
+	w.Writeln("queries = {")
+	w.Indent()
+	for _, fn := range queries {
+		w.Writef(`%s: this.%s.bind(this)`, fn, fn)
+		w.Writeln(",")
+	}
+	w.Dedent()
+	w.Writeln("}")
+
+	w.Writeln("mutations = {")
+	w.Indent()
+	for _, fn := range mutations {
+		w.Writef(`%s: this.%s.bind(this)`, fn, fn)
+		w.Writeln(",")
+	}
+	w.Dedent()
+	w.Writeln("}")
+
 	w.Dedent()
 	w.Writeln("}")
 
@@ -277,8 +306,11 @@ export class CoreClient {
     const result = await res;
 
     if (result.status >= 200 && result.status < 299) {
+      const rawJson = await result.text();
+      const data = JSON.parse(rawJson, reviver);
+
       return {
-        data: await result.json(),
+        data,
       };
     }
 
@@ -349,8 +381,21 @@ export class CoreClient {
 // Utils
 
 const stripTrailingSlash = (str: string) => {
+  if (!str) return str;
   return str.endsWith("/") ? str.slice(0, -1) : str;
 };
+
+
+const RFC3339 = /^(?:\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01]))?(?:[T\s](?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?(?:\.\d+)?(?:[Zz]|[+-](?:[01]\d|2[0-3]):?[0-5]\d)?)?$/;
+function reviver(key: any, value: any) {
+  // Convert any ISO8601/RFC3339 strings to dates
+  if (typeof value === "string" && RFC3339.test(value)) {
+    return new Date(value);
+  }
+  return value;
+}
+
+
 `
 
 var clientTypes = `// Result type

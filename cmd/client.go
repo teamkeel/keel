@@ -38,6 +38,6 @@ func init() {
 	rootCmd.AddCommand(clientCmd)
 
 	clientCmd.Flags().StringVarP(&flagClientApiName, "api", "a", "", "name of the API to generate a client for")
-	clientCmd.Flags().StringVarP(&flagClientOutputDir, "output", "o", "", "directory to output the client")
+	clientCmd.Flags().StringVarP(&flagClientOutputDir, "output", "o", ".", "directory to output the client")
 	clientCmd.Flags().BoolVar(&flagClientPackage, "package", false, "Set to true will generate a a client package, false will generate a single file client")
 }
