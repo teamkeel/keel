@@ -1869,9 +1869,6 @@ var testCases = []testCase{
 
 func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
-		if testCase.name != "create_op_many_reln_optional_input_is_provided" {
-			continue
-		}
 
 		t.Run(testCase.name, func(t *testing.T) {
 
