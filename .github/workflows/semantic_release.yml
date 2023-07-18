@@ -48,6 +48,14 @@ jobs:
         working-directory: ./packages/testing-runtime
         run: pnpm install --frozen-lockfile --production
 
+      - name: Install client-react publish dependencies
+        working-directory: ./packages/client-react
+        run: pnpm install --frozen-lockfile --production
+
+      - name: Install client-react-query publish dependencies
+        working-directory: ./packages/client-react-query
+        run: pnpm install --frozen-lockfile --production
+
       - name: Semantic release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

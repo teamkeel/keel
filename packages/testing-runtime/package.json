@@ -9,7 +9,8 @@
     "test": "vitest run --reporter verbose",
     "format": "npx prettier --write src/**/*"
   },
-  "license": "ISC",
+  "author": "Keel (www.keel.so)",
+  "license": "ASL (Apache 2.0)",
   "publishConfig": {
     "access": "public"
   },
