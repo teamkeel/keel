@@ -166,7 +166,7 @@ func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs m
 	// TODO: Currently we aren't handling permissions yet for jobs
 	// https://linear.app/keel/issue/BLD-631/permission-support-in-the-runtime-for-jobs
 	permissionState := common.NewPermissionState()
-	permissionState.Grant(common.GrantReasonRole)
+	permissionState.Grant()
 
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {

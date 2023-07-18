@@ -19,7 +19,6 @@ function tryExecuteFunction(
       // api.permissions maintains an internal state of whether the current operation has been *explicitly* permitted/denied by the user in the course of their custom function, or if execution has already been permitted by a role based permission (evaluated in the main runtime).
       // we need to check that the final state is permitted or unpermitted. if it's not, then it means that the user has taken no explicit action to permit/deny
       // and therefore we default to checking the permissions defined in the schema automatically.
-
       switch (getPermissionState()) {
         case PERMISSION_STATE.PERMITTED:
           return fnResult;
@@ -35,16 +34,21 @@ function tryExecuteFunction(
             actionType === PROTO_ACTION_TYPES.CREATE;
 
           let rowsForPermissions = [];
-          switch (actionType) {
-            case PROTO_ACTION_TYPES.LIST:
-              rowsForPermissions = fnResult;
-              break;
-            case PROTO_ACTION_TYPES.DELETE:
-              rowsForPermissions = [{ id: fnResult }];
-              break;
-            default:
-              rowsForPermissions = [fnResult];
-              break;
+          if (fnResult != null) {
+            switch (actionType) {
+              case PROTO_ACTION_TYPES.LIST:
+                rowsForPermissions = fnResult;
+                break;
+              case PROTO_ACTION_TYPES.DELETE:
+                rowsForPermissions = [{ id: fnResult }];
+                break;
+              case (PROTO_ACTION_TYPES.GET, PROTO_ACTION_TYPES.CREATE):
+                rowsForPermissions = [fnResult];
+                break;
+              default:
+                rowsForPermissions = [fnResult];
+                break;
+            }
           }
 
           // check will throw a PermissionError if a permission rule is invalid

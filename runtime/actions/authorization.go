@@ -97,31 +97,78 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	return authorised, nil
 }
 
-// TryResolveAuthorisationEarly will attempt to check authorisation early without database querying.
-// This will take into account logical conditions and multiple expressions attributes.
+// TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
+// This will take into account logical conditions and multiple expression and role permission attributes.
 func TryResolveAuthorisationEarly(scope *Scope) (canResolveEarly bool, authorised bool, err error) {
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
 
-	canResolveEarly = false
-	authorised = false
-	for _, permission := range permissions {
-		// Only expressions could be resolvable in memory.
-		if permission.Expression == nil {
-			return false, false, nil
-		}
-
-		expression, err := parser.ParseExpression(permission.Expression.Source)
+	var identityEmail, identityDomain string
+	if runtimectx.IsAuthenticated(scope.Context) {
+		identityEmail, identityDomain, err = getEmailAndDomain(scope.Context)
 		if err != nil {
 			return false, false, err
 		}
+	}
 
-		// We only need one permission attribute to resolve to true becaused they are OR'ed
-		canResolve, value := expressions.ResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
-		if canResolve {
-			canResolveEarly = true
+	hasDatabaseCheck := false
+	canResolveEarly = false
+	authorised = false
+	for _, permission := range permissions {
+		canResolveThis := false
+		value := false
+		switch {
+		case permission.Expression != nil:
+			if permission.Expression == nil {
+				return false, false, nil
+			}
+
+			expression, err := parser.ParseExpression(permission.Expression.Source)
+			if err != nil {
+				return false, false, err
+			}
+
+			// We only need one permission attribute to resolve to true becaused they are OR'ed
+			canResolveThis, value = expressions.ResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
+
+			if !canResolveThis {
+				hasDatabaseCheck = true
+			}
+
+		case permission.RoleNames != nil:
+			canResolveThis = true
+			for _, roleName := range permission.RoleNames {
+				role := proto.FindRole(roleName, scope.Schema)
+				for _, email := range role.Emails {
+					if email == identityEmail {
+						value = true
+					}
+				}
+
+				for _, domain := range role.Domains {
+					if domain == identityDomain {
+						value = true
+					}
+				}
+			}
+		}
+
+		// If this permission can be resolved and is satisfied,
+		// then we know the permission will be granted because
+		// permissions are OR'd
+		if canResolveThis && value {
+			return true, true, nil
+		}
+
+		if canResolveThis {
+			if !hasDatabaseCheck {
+				canResolveEarly = true
+			}
 			if value {
 				authorised = true
 			}
+		} else {
+			canResolveEarly = false
+			authorised = false
 		}
 	}
 

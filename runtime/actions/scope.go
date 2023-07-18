@@ -7,7 +7,6 @@ import (
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/common"
-	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 )
@@ -106,26 +105,19 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 }
 
 func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, error) {
-	rolePermissions := proto.PermissionsForAction(scope.Schema, scope.Operation, func(p *proto.PermissionRule) bool {
-		return len(p.RoleNames) > 0
-	})
-
-	permissionState := common.NewPermissionState()
-
-	if runtimectx.IsAuthenticated(scope.Context) {
-		granted, err := RoleBasedPermissionGranted(scope.Context, scope.Schema, rolePermissions)
-
-		if err != nil {
-			return nil, nil, err
-		}
-
-		if granted {
-			permissionState.Grant(common.GrantReasonRole)
-		}
+	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	// todo: evaluate static expressions that don't need to hit the database
-	// and grant them with reason "GrantReasonExpression"
+	permissionState := common.NewPermissionState()
+	if canAuthoriseEarly {
+		if authorised {
+			permissionState.Grant()
+		} else {
+			return nil, nil, common.NewPermissionError()
+		}
+	}
 
 	resp, headers, err := functions.CallFunction(
 		scope.Context,

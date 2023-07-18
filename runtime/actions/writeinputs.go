@@ -198,7 +198,7 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 
 					argValue, hasArg := args[input.Name]
 					if !hasArg {
-						if !field.Optional {
+						if !input.Optional {
 							return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.Name)
 						} else {
 							continue

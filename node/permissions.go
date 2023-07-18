@@ -38,6 +38,7 @@ func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 
 			w.Writeln("async (records, ctx, db) => {")
 			w.Indent()
+
 			w.Write("const { rows } = await sql`")
 			valueIdx := 0
 
@@ -59,7 +60,8 @@ func writePermissions(w *codegen.Writer, schema *proto.Schema) {
 				case permissions.ValueRecordIDs:
 					// Need to use sql.join() here:
 					// Docs: https://kysely-org.github.io/kysely/interfaces/Sql.html#join
-					return "${sql.join(records.map(x => x.id))}"
+					// Note: sql.join annoyingly throws an exception for zero length arrays
+					return "${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}"
 				case permissions.ValueString:
 					// Note: StringValue is already wrapped in double quotes
 					return fmt.Sprintf(`${%s}`, v.StringValue)

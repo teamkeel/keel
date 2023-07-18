@@ -1,0 +1,132 @@
+model Book {
+    fields {
+        title Text
+        lastUpdatedBy Identity
+    }
+
+    operations {
+        create createPermitted() with (title) {
+            @permission(expression: true)
+            @set(book.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+        create createPermittedNoSet() with (title, lastUpdatedBy.id) {
+            @permission(expression: true)
+        }
+
+        create createNotPermitted() with (title) {
+            @permission(expression: false)
+            @set(book.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+        create createIsAuthenticated() with (title) {
+            @permission(expression: ctx.isAuthenticated)
+            @set(book.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+        create createDbPermission() with (title) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+            @set(book.lastUpdatedBy.id = ctx.identity.id)
+        }
+
+        create createDbPermissionNoSet() with (title, lastUpdatedBy.id?) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        update updatePermitted(id) with (title, lastUpdatedBy.id?) {
+            @permission(expression: true)
+        }
+
+        update updateNotPermitted(id) with (title, lastUpdatedBy.id?) {
+            @permission(expression: false)
+        }
+
+        update updateDbPermission(id) with (title, lastUpdatedBy.id?) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        get getPermitted(id) {
+            @permission(expression: true)
+        }
+
+        get getNotPermitted(id) {
+            @permission(expression: false)
+        }
+
+        get getDbPermission(id) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        delete deletePermitted(id) {
+            @permission(expression: true)
+        }
+
+        delete deleteNotPermitted(id) {
+            @permission(expression: false)
+        }
+
+        delete deleteDbPermission(id) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+    }
+
+    functions {
+        create createPermittedFn() with (title, lastUpdatedBy.id?) {
+            @permission(expression: true)
+        }
+
+        create createNotPermittedFn() with (title, lastUpdatedBy.id?) {
+            @permission(expression: false)
+        }
+
+        create createIsAuthenticatedFn() with (title, lastUpdatedBy.id?) {
+            @permission(expression: ctx.isAuthenticated)
+        }
+
+        create createDbPermissionFn() with (title, lastUpdatedBy.id?) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+        
+        update updatePermittedFn(id) with (title, lastUpdatedBy.id?) {
+            @permission(expression: true)
+        }
+
+        update updateNotPermittedFn(id) with (title, lastUpdatedBy.id?) {
+            @permission(expression: false)
+        }
+
+        update updateDbPermissionFn(id) with (title, lastUpdatedBy.id?) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        get getPermittedFn(id) {
+            @permission(expression: true)
+        }
+
+        get getNotPermittedFn(id) {
+            @permission(expression: false)
+        }
+
+        get getDbPermissionFn(id) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        delete deletePermittedFn(id) {
+            @permission(expression: true)
+        }
+
+        delete deleteNotPermittedFn(id) {
+            @permission(expression: false)
+        }
+
+        delete deleteDbPermissionFn(id) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+    }
+}
+
+api Web {
+    models {
+        Book
+    }
+}
