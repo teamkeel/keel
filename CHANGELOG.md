@@ -1,3 +1,10 @@
+## [0.356.1](https://github.com/teamkeel/keel/compare/v0.356.0...v0.356.1) (2023-07-18)
+
+
+### Bug Fixes
+
+* create operation nested hasMany optional ([921eca6](https://github.com/teamkeel/keel/commit/921eca63026e82c8ada97ec49c3fc25477b8cdc0))
+
 # [0.356.0](https://github.com/teamkeel/keel/compare/v0.355.0...v0.356.0) (2023-07-18)
 
 
