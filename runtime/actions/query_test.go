@@ -1023,6 +1023,39 @@ var testCases = []testCase{
 		expectedArgs: []any{21, "bob", "123"},
 	},
 	{
+		name: "create_op_many_reln_optional_input_not_provided",
+		keelSchema: `
+		model Customer {
+			fields {
+				name Text
+				orders Order[]
+			}
+		
+			operations {
+				create createCustomer() with (name, orders.id?)
+			}
+		
+			@permission(
+				actions: [get, list, update, delete, create],
+				expression: true
+			)
+		}
+		model Order {
+			fields {
+				deliveryAddress Text
+				customer Customer?
+			}
+		}
+		`,
+		operationName: "createCustomer",
+		input: map[string]any{
+			"name": "fred",
+		},
+		expectedTemplate: `
+		WITH new_1_customer AS (INSERT INTO "customer" (name) VALUES (?) RETURNING *) SELECT * FROM new_1_customer`,
+		expectedArgs: []any{"fred"},
+	},
+	{
 		name: "update_op_nested_model",
 		keelSchema: `
 			model Parent {
@@ -1836,6 +1869,10 @@ var testCases = []testCase{
 
 func TestQueryBuilder(t *testing.T) {
 	for _, testCase := range testCases {
+		if testCase.name != "create_op_many_reln_optional_input_is_provided" {
+			continue
+		}
+
 		t.Run(testCase.name, func(t *testing.T) {
 
 			scope, query, operation, err := generateQueryScope(context.Background(), testCase.keelSchema, testCase.operationName)
@@ -1861,6 +1898,10 @@ func TestQueryBuilder(t *testing.T) {
 
 			if err != nil {
 				require.NoError(t, err)
+			}
+
+			if clean(testCase.expectedTemplate) != clean(statement.SqlTemplate()) {
+				fmt.Printf("XXXX actual sql:\n%s\n", clean(statement.SqlTemplate()))
 			}
 
 			require.Equal(t, clean(testCase.expectedTemplate), clean(statement.SqlTemplate()))

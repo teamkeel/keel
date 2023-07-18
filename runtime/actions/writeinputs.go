@@ -154,7 +154,14 @@ func (query *QueryBuilder) captureWriteValuesFromMessage(scope *Scope, message *
 					//  - we will have an array of models to parse,
 					//  - these models will have foreign keys on them.
 
-					argsArraySectioned, ok := args[input.Name].([]any)
+					arg, hasArg := args[input.Name]
+					if !hasArg && !input.Optional {
+						return nil, nil, fmt.Errorf("input argument is missing for required field %s", input.Name)
+					} else if !hasArg && input.Optional {
+						continue
+					}
+
+					argsArraySectioned, ok := arg.([]any)
 					if !ok {
 						return nil, nil, fmt.Errorf("cannot convert args to []any for key %s", input.Name)
 					}
