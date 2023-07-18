@@ -22,12 +22,6 @@ import (
 
 var tracer = otel.Tracer("github.com/teamkeel/keel/runtime/apis/httpjson")
 
-type HttpJsonErrorResponse struct {
-	Code    string         `json:"code"`
-	Message string         `json:"message"`
-	Data    map[string]any `json:"data,omitempty"`
-}
-
 func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 	return func(r *http.Request) common.Response {
 		ctx, span := tracer.Start(r.Context(), "HttpJson")
@@ -54,13 +48,13 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			var err error
 			inputs, err = parsePostBody(r.Body)
 			if err != nil {
-				return common.NewJsonResponse(http.StatusBadRequest, HttpJsonErrorResponse{
+				return common.NewJsonResponse(http.StatusBadRequest, common.HttpJsonErrorResponse{
 					Code:    "ERR_INTERNAL",
 					Message: "error parsing POST body",
 				}, nil)
 			}
 		default:
-			return common.NewJsonResponse(http.StatusMethodNotAllowed, HttpJsonErrorResponse{
+			return common.NewJsonResponse(http.StatusMethodNotAllowed, common.HttpJsonErrorResponse{
 				Code:    "ERR_HTTP_METHOD_NOT_ALLOWED",
 				Message: "only HTTP POST or GET accepted",
 			}, nil)
@@ -69,7 +63,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 		op := proto.FindOperation(p, actionName)
 		if op == nil {
 			span.SetStatus(codes.Error, "action not found")
-			return common.NewJsonResponse(http.StatusNotFound, HttpJsonErrorResponse{
+			return common.NewJsonResponse(http.StatusNotFound, common.HttpJsonErrorResponse{
 				Code:    "ERR_NOT_FOUND",
 				Message: "method not found",
 			}, nil)
@@ -81,7 +75,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			span.SetStatus(codes.Error, err.Error())
 			// I think this can only happen if we generate an invalid JSON Schema for the
 			// request type
-			return common.NewJsonResponse(http.StatusBadRequest, HttpJsonErrorResponse{
+			return common.NewJsonResponse(http.StatusBadRequest, common.HttpJsonErrorResponse{
 				Code:    "ERR_INTERNAL",
 				Message: "error validating request body",
 			}, nil)
@@ -103,7 +97,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 			span.AddEvent("errors", trace.WithAttributes(attrs...))
 			span.SetStatus(codes.Error, strings.Join(messages, ", "))
 
-			return common.NewJsonResponse(http.StatusBadRequest, HttpJsonErrorResponse{
+			return common.NewJsonResponse(http.StatusBadRequest, common.HttpJsonErrorResponse{
 				Code:    "ERR_INVALID_INPUT",
 				Message: "one or more errors found validating request object",
 				Data: map[string]any{
@@ -143,7 +137,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 				}
 			}
 
-			return common.NewJsonResponse(httpCode, HttpJsonErrorResponse{
+			return common.NewJsonResponse(httpCode, common.HttpJsonErrorResponse{
 				Code:    code,
 				Message: message,
 			}, nil)

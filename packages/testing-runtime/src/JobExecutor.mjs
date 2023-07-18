@@ -59,7 +59,6 @@ export class JobExecutor {
         // For non-200 first read the response as text
         return r.text().then((t) => {
           let d;
-
           try {
             d = JSON.parse(t);
           } catch (e) {

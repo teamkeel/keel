@@ -53,9 +53,13 @@ async function handleJob(request, config) {
         const db = getDatabaseClient();
         const jobFunction = jobs[request.method];
         const actionType = PROTO_ACTION_TYPES.JOB;
+        const permissionFns = new Object();
+
+        // Jobs will have no permission functions yet.
+        permissionFns[request.method] = [];
 
         const result = await tryExecuteFunction(
-          { request, ctx, permitted, db, actionType },
+          { request, ctx, permissionFns, permitted, db, actionType },
           async () => {
             // Return the job function to the containing tryExecuteFunction block
             return jobFunction(ctx, request.params);

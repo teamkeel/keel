@@ -96,6 +96,11 @@
       ]
     }
   ],
+  "roles": [
+    {
+      "name": "Admin"
+    }
+  ],
   "apis": [
     {
       "name": "Api",

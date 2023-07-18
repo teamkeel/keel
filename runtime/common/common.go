@@ -2,6 +2,7 @@ package common
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -17,6 +18,12 @@ type Response struct {
 	Headers map[string][]string
 }
 
+type HttpJsonErrorResponse struct {
+	Code    string         `json:"code"`
+	Message string         `json:"message"`
+	Data    map[string]any `json:"data,omitempty"`
+}
+
 func NewJsonResponse(status int, body any, headers map[string][]string) Response {
 	b, _ := json.Marshal(body)
 	return Response{
@@ -24,6 +31,32 @@ func NewJsonResponse(status int, body any, headers map[string][]string) Response
 		Body:    b,
 		Headers: headers,
 	}
+}
+
+func NewJsonErrorResponse(err error) Response {
+	code := "ERR_INTERNAL"
+	message := "error executing request"
+	httpCode := http.StatusInternalServerError
+
+	var runtimeErr RuntimeError
+	if errors.As(err, &runtimeErr) {
+		code = runtimeErr.Code
+		message = runtimeErr.Message
+
+		switch code {
+		case ErrInvalidInput:
+			httpCode = http.StatusBadRequest
+		case ErrRecordNotFound:
+			httpCode = http.StatusNotFound
+		case ErrPermissionDenied:
+			httpCode = http.StatusForbidden
+		}
+	}
+
+	return NewJsonResponse(httpCode, HttpJsonErrorResponse{
+		Code:    code,
+		Message: message,
+	}, nil)
 }
 
 type ApiHandlerFunc func(r *http.Request) Response
@@ -39,7 +72,6 @@ type PermissionStatus string
 
 const (
 	PermissionGranted PermissionStatus = "granted"
-	PermissionDenied  PermissionStatus = "denied"
 	PermissionUnknown PermissionStatus = "unknown"
 )
 

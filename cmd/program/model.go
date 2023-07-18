@@ -26,6 +26,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/reader"
 	"github.com/teamkeel/keel/testing"
@@ -484,7 +485,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				err = m.JobHandler.RunJob(ctx, jobName, inputs)
 				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
+					response := common.NewJsonErrorResponse(err)
+					w.WriteHeader(response.Status)
+					_, err = w.Write(response.Body)
+					if err != nil {
+						panic(err)
+					}
 				} else {
 					w.WriteHeader(http.StatusOK)
 				}

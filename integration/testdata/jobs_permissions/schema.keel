@@ -1,0 +1,12 @@
+job MyJob {
+    inputs {
+        name Text
+    }
+    @permission(role: [Admin])
+}
+
+role Admin {
+    domains {
+        "keel.so"
+    }
+}

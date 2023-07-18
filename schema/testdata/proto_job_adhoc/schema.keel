@@ -5,3 +5,5 @@ job MyJob {
   
     @permission(roles: [Admin])
 }
+
+role Admin {}

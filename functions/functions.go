@@ -163,11 +163,6 @@ func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs m
 		return fmt.Errorf("no job with the name '%s' exists", jobName)
 	}
 
-	// TODO: Currently we aren't handling permissions yet for jobs
-	// https://linear.app/keel/issue/BLD-631/permission-support-in-the-runtime-for-jobs
-	permissionState := common.NewPermissionState()
-	permissionState.Grant()
-
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
 		return errors.New("no functions client in context")
