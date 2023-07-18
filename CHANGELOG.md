@@ -1,3 +1,10 @@
+# [0.356.0](https://github.com/teamkeel/keel/compare/v0.355.0...v0.356.0) (2023-07-18)
+
+
+### Features
+
+* client auto parse ISO8601 dates ([c21a49a](https://github.com/teamkeel/keel/commit/c21a49aa6732a1bf9cad9fd6448a4101bca0507c))
+
 # [0.355.0](https://github.com/teamkeel/keel/compare/v0.354.1...v0.355.0) (2023-07-14)
 
 
