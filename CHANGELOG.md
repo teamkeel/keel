@@ -1,3 +1,16 @@
+# [0.357.0](https://github.com/teamkeel/keel/compare/v0.356.1...v0.357.0) (2023-07-20)
+
+
+### Bug Fixes
+
+* bump pnpm-locks to v6 ([c81e25f](https://github.com/teamkeel/keel/commit/c81e25fa5d155effa102b2125f4db73b5a2355eb))
+* correct pnpm lock files ([4aa5eba](https://github.com/teamkeel/keel/commit/4aa5ebac23e5492495ed373b6564e15a3a763231))
+
+
+### Features
+
+* client-react and client-react-query packages ([53a55a5](https://github.com/teamkeel/keel/commit/53a55a501b3d155d2d6405017f34e02ea60f1397))
+
 ## [0.356.1](https://github.com/teamkeel/keel/compare/v0.356.0...v0.356.1) (2023-07-18)
 
 
