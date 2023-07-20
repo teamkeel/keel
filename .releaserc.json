@@ -33,6 +33,18 @@
       {
         "pkgRoot": "packages/testing-runtime"
       }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/client-react"
+      }
+    ],
+    [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "packages/client-react-query"
+      }
     ]
   ]
 }

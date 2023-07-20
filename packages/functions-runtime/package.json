@@ -8,8 +8,8 @@
     "format": "npx prettier --write src/**/*.js"
   },
   "keywords": [],
-  "author": "Adam Bull (adam@keel.xyz)",
-  "license": "ISC",
+  "author": "Keel (www.keel.so)",
+  "license": "ASL (Apache 2.0)",
   "typings": "src/index.d.ts",
   "publishConfig": {
     "access": "public"
