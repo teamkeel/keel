@@ -76,12 +76,10 @@ test("create op - database permission, wrong identity - ERR_PERMISSION_DENIED", 
   });
 
   await expect(
-    actions
-      .withIdentity(wrongIdentity)
-      .createDbPermissionNoSet({
-        title: "My Book",
-        lastUpdatedBy: { id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" },
-      })
+    actions.withIdentity(wrongIdentity).createDbPermissionNoSet({
+      title: "My Book",
+      lastUpdatedBy: { id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -165,12 +163,10 @@ test("create func - database permission, wrong identity - ERR_PERMISSION_DENIED"
   });
 
   await expect(
-    actions
-      .withIdentity(wrongIdentity)
-      .createDbPermissionFn({
-        title: "My Book",
-        lastUpdatedBy: { id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" },
-      })
+    actions.withIdentity(wrongIdentity).createDbPermissionFn({
+      title: "My Book",
+      lastUpdatedBy: { id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -289,12 +285,10 @@ test("update op - database check, wrong identity - ERR_PERMISSION_DENIED", async
     id: "2Qb2ItMXLmNXDun8tk1z75mbZhj",
   });
   await expect(
-    actions
-      .withIdentity(wrongIdentity)
-      .updateDbPermission({
-        where: { id: "123" },
-        values: { title: "My Book" },
-      })
+    actions.withIdentity(wrongIdentity).updateDbPermission({
+      where: { id: "123" },
+      values: { title: "My Book" },
+    })
   ).toHaveAuthorizationError();
 });
 
@@ -413,12 +407,10 @@ test("update func - database check, wrong identity - ERR_PERMISSION_DENIED", asy
     id: "2Qb2ItMXLmNXDun8tk1z75mbZhj",
   });
   await expect(
-    actions
-      .withIdentity(wrongIdentity)
-      .updateDbPermissionFn({
-        where: { id: "123" },
-        values: { title: "My Book" },
-      })
+    actions.withIdentity(wrongIdentity).updateDbPermissionFn({
+      where: { id: "123" },
+      values: { title: "My Book" },
+    })
   ).toHaveAuthorizationError();
 });
 
