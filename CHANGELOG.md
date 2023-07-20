@@ -1,3 +1,10 @@
+## [0.357.1](https://github.com/teamkeel/keel/compare/v0.357.0...v0.357.1) (2023-07-20)
+
+
+### Bug Fixes
+
+* trigger npm ([570ed6d](https://github.com/teamkeel/keel/commit/570ed6dae875ee7ad80a2c6afeea11e30ccb9f81))
+
 # [0.357.0](https://github.com/teamkeel/keel/compare/v0.356.1...v0.357.0) (2023-07-20)
 
 
