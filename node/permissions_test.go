@@ -70,7 +70,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT "person"."id", (true) AS "result" 
 				FROM "person" 
-				WHERE "person"."id" IN (${sql.join(records.map(x => x.id))}) 
+				WHERE "person"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "person"."id"
 			`,
 		},
@@ -103,7 +103,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT "post"."id", ("post"."publish_date" <= ${ctx.now()}) AS "result" 
 				FROM "post" 
-				WHERE "post"."id" IN (${sql.join(records.map(x => x.id))}) 
+				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "post"."id"
 			`,
 		},
@@ -137,7 +137,7 @@ module.exports.permissionFns = permissionFns;
 				SELECT "post"."id", ("post$identity"."email" IS NOT DISTINCT FROM ${"adam@keel.xyz"}) AS "result" 
 				FROM "post" 
 				LEFT JOIN "identity" AS "post$identity" ON "post"."identity_id" = "post$identity"."id" 
-				WHERE "post"."id" IN (${sql.join(records.map(x => x.id))}) 
+				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "post"."id", "post$identity"."email"
 			`,
 		},
@@ -169,7 +169,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT "post"."id", ("post"."view_count" < ${10}) AS "result" 
 				FROM "post" 
-				WHERE "post"."id" IN (${sql.join(records.map(x => x.id))}) 
+				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "post"."id"
 			`,
 		},
@@ -202,7 +202,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT "post"."id", ("post"."identity_id" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.id : ''}) AS "result" 
 				FROM "post" 
-				WHERE "post"."id" IN (${sql.join(records.map(x => x.id))}) 
+				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "post"."id"
 			`,
 		},
@@ -236,7 +236,7 @@ module.exports.permissionFns = permissionFns;
 				SELECT "post"."id", ("post$identity"."email" IS NOT DISTINCT FROM ${ctx.identity ? ctx.identity.email : ''}) AS "result" 
 				FROM "post" 
 				LEFT JOIN "identity" AS "post$identity" ON "post"."identity_id" = "post$identity"."id" 
-				WHERE "post"."id" IN (${sql.join(records.map(x => x.id))}) 
+				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "post"."id", "post$identity"."email"
 			`,
 		},
@@ -270,7 +270,7 @@ module.exports.permissionFns = permissionFns;
 				SELECT "post"."id", (${ctx.isAuthenticated}::boolean) AS "result" 
 				FROM "post"
 				WHERE "post"."id" 
-				IN (${sql.join(records.map(x => x.id))}) 
+				IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "post"."id"
 			`,
 		},
@@ -302,7 +302,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT "post"."id", (${ctx.headers["secretkey"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AS "result" 
 				FROM "post" 
-				WHERE "post"."id" IN (${sql.join(records.map(x => x.id))}) 
+				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []}) 
 				GROUP BY "post"."id"
 			`,
 		},
@@ -334,7 +334,7 @@ module.exports.permissionFns = permissionFns;
 			sql: `
 				SELECT "post"."id", (${ctx.secrets["SECRET_KEY"] || ""} IS NOT DISTINCT FROM "post"."secret_key") AS "result"
 				FROM "post"
-				WHERE "post"."id" IN (${sql.join(records.map(x => x.id))})
+				WHERE "post"."id" IN (${(records.length > 0) ? sql.join(records.map(x => x.id)) : []})
 				GROUP BY "post"."id"
 			`,
 		},

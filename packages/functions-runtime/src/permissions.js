@@ -60,7 +60,6 @@ const checkBuiltInPermissions = async ({
 }) => {
   for (const permissionFn of permissionFns) {
     const result = await permissionFn(rows, ctx, db);
-
     // if any of the permission functions return true,
     // then we return early
     if (result) {

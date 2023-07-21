@@ -45,15 +45,7 @@ const (
 
 type PermissionState struct {
 	Status PermissionStatus `json:"status"`
-	Reason GrantReason      `json:"reason"`
 }
-
-type GrantReason string
-
-const (
-	GrantReasonRole       GrantReason = "role"
-	GrantReasonExpression GrantReason = "expression"
-)
 
 func NewPermissionState() *PermissionState {
 	return &PermissionState{
@@ -61,9 +53,8 @@ func NewPermissionState() *PermissionState {
 	}
 }
 
-func (ps *PermissionState) Grant(reason GrantReason) {
+func (ps *PermissionState) Grant() {
 	ps.Status = PermissionGranted
-	ps.Reason = reason
 }
 
 type RuntimeError struct {

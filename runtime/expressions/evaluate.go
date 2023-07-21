@@ -9,8 +9,8 @@ import (
 	"github.com/teamkeel/keel/schema/parser"
 )
 
-// ResolveInMemory attempts to evaluate the expression in the runtime process without generated a query against the database.
-func ResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression, args map[string]any) (canResolveInMemory bool, resolvedValue bool) {
+// TryResolveExpressionEarly attempts to evaluate the expression in the runtime process without generating a row-based query against the database.
+func TryResolveExpressionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, expression *parser.Expression, args map[string]any) (canResolveInMemory bool, resolvedValue bool) {
 	can := false
 	value := false
 
@@ -20,13 +20,13 @@ func ResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Mod
 
 		for _, and := range or.And {
 			if and.Expression != nil {
-				currCan, currValue := ResolveInMemory(ctx, schema, model, operation, and.Expression, args)
+				currCan, currValue := TryResolveExpressionEarly(ctx, schema, model, operation, and.Expression, args)
 				currCanResolve = currCan && currCanResolve
 				currExpressionValue = currExpressionValue && currValue
 			}
 
 			if and.Condition != nil {
-				currCan, currValue := resolveConditionInMemory(ctx, schema, model, operation, and.Condition, args)
+				currCan, currValue := resolveConditionEarly(ctx, schema, model, operation, and.Condition, args)
 				currCanResolve = currCan && currCanResolve
 				currExpressionValue = currExpressionValue && currValue
 			}
@@ -39,8 +39,8 @@ func ResolveInMemory(ctx context.Context, schema *proto.Schema, model *proto.Mod
 	return can, value
 }
 
-// canResolveConditionInMemory determines if a single condition can be resolved in the process (i.e. without the database).
-func canResolveConditionInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition) bool {
+// canResolveConditionEarly determines if a single condition can be resolved in the process without generating a row-based query against the database.
+func canResolveConditionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition) bool {
 	lhsResolver := NewOperandResolver(ctx, schema, model, operation, condition.LHS)
 
 	if condition.Type() == parser.ValueCondition {
@@ -53,9 +53,9 @@ func canResolveConditionInMemory(ctx context.Context, schema *proto.Schema, mode
 	return !(referencesDatabaseColumns)
 }
 
-// resolveConditionInMemory resolves a single condition in the process (i.e. without the database).
-func resolveConditionInMemory(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition, args map[string]any) (canResolveInMemory bool, resolvedValue bool) {
-	if !canResolveConditionInMemory(ctx, schema, model, operation, condition) {
+// resolveConditionEarly resolves a single condition in the process without generating a row-based query against the database.
+func resolveConditionEarly(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, condition *parser.Condition, args map[string]any) (canResolveEarly bool, resolvedValue bool) {
+	if !canResolveConditionEarly(ctx, schema, model, operation, condition) {
 		return false, false
 	}
 
@@ -75,6 +75,7 @@ func resolveConditionInMemory(ctx context.Context, schema *proto.Schema, model *
 	return true, result
 }
 
+// Evaluate lhs and rhs with an operator in this process.
 func evaluate(
 	lhs any,
 	rhs any,

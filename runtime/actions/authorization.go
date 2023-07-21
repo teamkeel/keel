@@ -23,18 +23,18 @@ func AuthoriseAction(scope *Scope, rowsToAuthorise []map[string]any) (authorised
 	}
 
 	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
-	return Authorise(scope, permissions, rowsToAuthorise)
+	return authorise(scope, permissions, rowsToAuthorise)
 }
 
 // AuthoriseForActionType checks authorisation for rows using permission and role rules defined for some operation type,
 // i.e. agnostic to any action.
 func AuthoriseForActionType(scope *Scope, opType proto.OperationType, rowsToAuthorise []map[string]any) (authorised bool, err error) {
 	permissions := proto.PermissionsForOperationType(scope.Schema, scope.Model.Name, opType)
-	return Authorise(scope, permissions, rowsToAuthorise)
+	return authorise(scope, permissions, rowsToAuthorise)
 }
 
-// Authorise checks authorisation for rows using the slice of permission rules provided.
-func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (authorized bool, err error) {
+// authorise checks authorisation for rows using the slice of permission rules provided.
+func authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (authorised bool, err error) {
 	ctx, span := tracer.Start(scope.Context, "Check permissions")
 	defer span.End()
 
@@ -47,18 +47,9 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 		return false, nil
 	}
 
-	// Do one of the role-based rules grant permission?
-	if runtimectx.IsAuthenticated(scope.Context) {
-		roleBasedPerms := proto.PermissionsWithRole(permissions)
-		granted, err := RoleBasedPermissionGranted(scope.Context, scope.Schema, roleBasedPerms)
-		if err != nil {
-			return false, err
-		}
-		if granted {
-			span.SetAttributes(attribute.Bool("result", true))
-			span.SetAttributes(attribute.String("reason", "role"))
-			return true, nil
-		}
+	canResolve, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
+	if canResolve {
+		return authorised, nil
 	}
 
 	span.SetAttributes(attribute.String("reason", "permission rules"))
@@ -86,7 +77,7 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	}
 
 	// TODO: compare ids matching in both slices
-	authorised := len(results) == len(rowsToAuthorise)
+	authorised = len(results) == len(rowsToAuthorise)
 
 	if !authorised {
 		span.SetAttributes(attribute.Bool("result", false))
@@ -97,35 +88,84 @@ func Authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 	return authorised, nil
 }
 
-// TryResolveAuthorisationEarly will attempt to check authorisation early without database querying.
-// This will take into account logical conditions and multiple expressions attributes.
-func TryResolveAuthorisationEarly(scope *Scope) (canResolveEarly bool, authorised bool, err error) {
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
-
-	canResolveEarly = false
-	authorised = false
+// TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
+// This will take into account logical conditions and multiple expression and role permission attributes.
+func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
+	hasDatabaseCheck := false
+	canResolveAll = false
 	for _, permission := range permissions {
-		// Only expressions could be resolvable in memory.
-		if permission.Expression == nil {
-			return false, false, nil
+		canResolve := false
+		authorised := false
+		switch {
+		case permission.Expression != nil:
+			expression, err := parser.ParseExpression(permission.Expression.Source)
+			if err != nil {
+				return false, false, err
+			}
+
+			//
+			canResolve, authorised = expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
+
+			if !canResolve {
+				hasDatabaseCheck = true
+			}
+
+		case permission.RoleNames != nil:
+			// Roles can always be resolved early.
+			canResolve = true
+
+			// Check if this role permission is satisfied.
+			authorised, err = resolveRolePermissionRule(scope.Context, scope.Schema, permission)
+			if err != nil {
+				return false, false, err
+			}
 		}
 
-		expression, err := parser.ParseExpression(permission.Expression.Source)
+		// If this permission can be resolved now and is satisfied,
+		// then we know the permission will be granted because
+		// permission attributes are ORed.
+		if canResolve && authorised {
+			return true, true, nil
+		}
+
+		// If this permission can be resolved now and
+		// there hasn't been a row/db permission, then
+		// assume we can still resolve the entire action.
+		canResolveAll = canResolve && !hasDatabaseCheck
+	}
+
+	return canResolveAll, false, nil
+}
+
+// resolveRolePermissionRule returns true if there is a role-based permission among the
+// given list of permissions that passes.
+func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permission *proto.PermissionRule) (bool, error) {
+	var identityEmail, identityDomain string
+	var err error
+	if runtimectx.IsAuthenticated(ctx) {
+		identityEmail, identityDomain, err = getEmailAndDomain(ctx)
 		if err != nil {
-			return false, false, err
+			return false, err
+		}
+	}
+
+	authorised := false
+	for _, roleName := range permission.RoleNames {
+		role := proto.FindRole(roleName, schema)
+		for _, email := range role.Emails {
+			if email == identityEmail {
+				authorised = true
+			}
 		}
 
-		// We only need one permission attribute to resolve to true becaused they are OR'ed
-		canResolve, value := expressions.ResolveInMemory(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
-		if canResolve {
-			canResolveEarly = true
-			if value {
+		for _, domain := range role.Domains {
+			if domain == identityDomain {
 				authorised = true
 			}
 		}
 	}
 
-	return canResolveEarly, authorised, nil
+	return authorised, nil
 }
 
 func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthorise []map[string]any) (*Statement, error) {
@@ -167,35 +207,6 @@ func GeneratePermissionStatement(scope *Scope, permissions []*proto.PermissionRu
 	query.AppendDistinctOn(IdField())
 
 	return query.SelectStatement(), nil
-}
-
-// RoleBasedPermissionGranted returns true if there is a role-based permission among the
-// given list of permissions that passes.
-func RoleBasedPermissionGranted(ctx context.Context, schema *proto.Schema, roleBasedPermissions []*proto.PermissionRule) (granted bool, err error) {
-	// todo: nicer if this came in the Scope or Token?
-	// Because it costs a database query.
-	currentUserEmail, currentUserDomain, err := getEmailAndDomain(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	for _, perm := range roleBasedPermissions {
-		for _, roleName := range perm.RoleNames {
-			role := proto.FindRole(roleName, schema)
-			for _, email := range role.Emails {
-				if email == currentUserEmail {
-					return true, nil
-				}
-			}
-
-			for _, domain := range role.Domains {
-				if domain == currentUserDomain {
-					return true, nil
-				}
-			}
-		}
-	}
-	return false, nil
 }
 
 // getEmailAndDomain requires that the the given scope's context
