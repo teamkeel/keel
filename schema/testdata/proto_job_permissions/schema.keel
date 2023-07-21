@@ -1,0 +1,18 @@
+job MyManualJob {
+    @permission(roles: [Admin, Developer])
+}
+
+job MyManualJobWithInputs {
+    inputs {
+        name Text
+    }
+    @permission(role: [Admin])
+}
+
+role Admin {
+    domains {
+        "keel.so"
+    }
+}
+
+role Developer {}

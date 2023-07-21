@@ -170,6 +170,16 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 					return
 				}
 
+				identity, err := runtime.HandleAuthorizationHeader(ctx, schema, r.Header, w)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte(err.Error()))
+				}
+
+				if identity != nil {
+					ctx = runtimectx.WithIdentity(ctx, identity)
+				}
+
 				var inputs map[string]any
 				// if no json body has been sent, just return an empty map for the inputs
 				if string(body) == "" {

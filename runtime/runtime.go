@@ -3,10 +3,12 @@ package runtime
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
 
+	"github.com/iancoleman/strcase"
 	log "github.com/sirupsen/logrus"
 	"github.com/teamkeel/keel/functions"
 	"github.com/teamkeel/keel/proto"
@@ -59,7 +61,7 @@ func NewHttpHandler(currSchema *proto.Schema) http.Handler {
 			return
 		}
 
-		identity, err := handleAuthorization(ctx, currSchema, r.Header, w)
+		identity, err := HandleAuthorizationHeader(ctx, currSchema, r.Header, w)
 		if err != nil {
 			return
 		}
@@ -140,11 +142,35 @@ func NewJobHandler(currSchema *proto.Schema) JobHandler {
 
 // RunJob will run the job function in the runtime.
 func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map[string]any) error {
+	job := proto.FindJob(handler.schema.Jobs, strcase.ToCamel(jobName))
+	if job == nil {
+		return fmt.Errorf("no job with the name '%s' exists", jobName)
+	}
+
+	scope := actions.NewJobScope(ctx, job, handler.schema)
+
+	// Check if authorisation can be achieved early.
+	permissions := proto.PermissionsForJob(handler.schema, job)
+	canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, permissions)
+	if err != nil {
+		return err
+	}
+
+	permissionState := common.NewPermissionState()
+	if canAuthoriseEarly {
+		if authorised {
+			permissionState.Grant()
+		} else {
+			return common.NewPermissionError()
+		}
+	}
+
 	return functions.CallJob(
 		ctx,
 		handler.schema,
-		jobName,
+		job,
 		inputs,
+		permissionState,
 	)
 }
 
@@ -190,7 +216,7 @@ func logLevel() log.Level {
 	}
 }
 
-func handleAuthorization(ctx context.Context, schema *proto.Schema, headers http.Header, w http.ResponseWriter) (*runtimectx.Identity, error) {
+func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, headers http.Header, w http.ResponseWriter) (*runtimectx.Identity, error) {
 	ctx, span := tracer.Start(ctx, "Authorization")
 	defer span.End()
 

@@ -314,6 +314,17 @@ func PermissionsForOperationType(schema *Schema, modelName string, opType Operat
 	return permissions
 }
 
+// PermissionsForJob returns a list of permissions defined for a job.
+func PermissionsForJob(schema *Schema, job *Job) []*PermissionRule {
+	permissions := []*PermissionRule{}
+
+	for _, perm := range job.Permissions {
+		permissions = append(permissions, perm)
+	}
+
+	return permissions
+}
+
 // PermissionsWithExpression returns a list of those permission present in the given permissions
 // list, which have at least one expression-based permission rule. This does not imply that the
 // returned Permissions might not also have some role-based rules.

@@ -472,6 +472,17 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 
+				identity, err := runtime.HandleAuthorizationHeader(ctx, m.Schema, r.Header, w)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write([]byte(err.Error()))
+					break
+				}
+
+				if identity != nil {
+					ctx = runtimectx.WithIdentity(ctx, identity)
+				}
+
 				var inputs map[string]any
 				if string(body) == "" {
 					inputs = nil

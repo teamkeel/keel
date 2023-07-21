@@ -103,7 +103,7 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 				return false, false, err
 			}
 
-			//
+			// Try resolve the permission early.
 			canResolve, authorised = expressions.TryResolveExpressionEarly(scope.Context, scope.Schema, scope.Model, scope.Operation, expression, map[string]any{})
 
 			if !canResolve {
@@ -140,13 +140,14 @@ func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionR
 // resolveRolePermissionRule returns true if there is a role-based permission among the
 // given list of permissions that passes.
 func resolveRolePermissionRule(ctx context.Context, schema *proto.Schema, permission *proto.PermissionRule) (bool, error) {
-	var identityEmail, identityDomain string
-	var err error
-	if runtimectx.IsAuthenticated(ctx) {
-		identityEmail, identityDomain, err = getEmailAndDomain(ctx)
-		if err != nil {
-			return false, err
-		}
+	// If there is no authenticated user, then no role permissions can be satisfied.
+	if !runtimectx.IsAuthenticated(ctx) {
+		return false, nil
+	}
+
+	identityEmail, identityDomain, err := getEmailAndDomain(ctx)
+	if err != nil {
+		return false, err
 	}
 
 	authorised := false

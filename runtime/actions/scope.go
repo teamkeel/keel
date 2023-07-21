@@ -23,6 +23,7 @@ type Scope struct {
 	Context   context.Context
 	Operation *proto.Operation
 	Model     *proto.Model
+	Job       *proto.Job
 	Schema    *proto.Schema
 }
 
@@ -46,6 +47,7 @@ func NewScope(
 		Context:   ctx,
 		Operation: operation,
 		Model:     model,
+		Job:       nil,
 		Schema:    schema,
 	}
 }
@@ -59,6 +61,21 @@ func NewModelScope(
 		Context:   ctx,
 		Operation: nil,
 		Model:     model,
+		Job:       nil,
+		Schema:    schema,
+	}
+}
+
+func NewJobScope(
+	ctx context.Context,
+	job *proto.Job,
+	schema *proto.Schema) *Scope {
+
+	return &Scope{
+		Context:   ctx,
+		Operation: nil,
+		Model:     nil,
+		Job:       job,
 		Schema:    schema,
 	}
 }
