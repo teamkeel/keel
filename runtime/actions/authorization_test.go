@@ -81,6 +81,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( "thing"."created_by_id" IS NOT DISTINCT FROM ? )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{identity.Id}, idsToAuthorise...),
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "identity_on_related_model",
@@ -114,6 +115,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( "thing$related"."created_by_id" IS NOT DISTINCT FROM ? )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{identity.Id}, idsToAuthorise...),
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "field_with_literal",
@@ -139,6 +141,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( "thing"."is_active" IS NOT DISTINCT FROM ? )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{true}, idsToAuthorise...),
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "field_with_related_field",
@@ -173,6 +176,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( "thing$related"."created_by_id" IS NOT DISTINCT FROM "thing"."created_by_id" )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: idsToAuthorise,
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "multiple_conditions_and",
@@ -198,6 +202,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "multiple_conditions_or",
@@ -223,6 +228,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? OR "thing"."created_by_id" IS NOT DISTINCT FROM ? ) )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "multiple_permission_attributes",
@@ -251,6 +257,7 @@ var authorisationTestCases = []authorisationTestCase{
 				 "thing"."created_by_id" IS NOT DISTINCT FROM ? )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "multiple_permission_attributes_with_multiple_conditions",
@@ -285,6 +292,7 @@ var authorisationTestCases = []authorisationTestCase{
 				( ( "thing"."is_active" IS NOT DISTINCT FROM ? AND "thing"."created_by_id" IS NOT DISTINCT FROM ? ) OR "thing"."created_by_id" IS NOT DISTINCT FROM "thing$related"."created_by_id" )
 				AND "thing"."id" IN (?, ?, ?)`,
 		expectedArgs: append([]any{true, identity.Id}, idsToAuthorise...),
+		earlyAuth:    CouldNotAuthoriseEarly(),
 	},
 	{
 		name: "early_evaluate_create_op",
@@ -737,8 +745,29 @@ var authorisationTestCases = []authorisationTestCase{
 						@permission(roles: [Admin])
 						@permission(expression: false)
 						@permission(expression: thing.createdBy.id == ctx.identity.id)
-						
-						
+					}
+				}
+			}`,
+		operationName: "getThing",
+		earlyAuth:     AuthorisationGrantedEarly(),
+	},
+	{
+		name: "can_early_evaluate_mixed_permissions_authorised_4",
+		keelSchema: `
+			role Admin {
+				emails {
+					"keelson@keel.xyz"
+				}
+			}
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					get getThing(id) {
+						@permission(expression: thing.createdBy.id == ctx.identity.id)
+						@permission(expression: false)
+						@permission(roles: [Admin])
 					}
 				}
 			}`,
