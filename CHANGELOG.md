@@ -1,3 +1,10 @@
+## [0.357.2](https://github.com/teamkeel/keel/compare/v0.357.1...v0.357.2) (2023-07-21)
+
+
+### Bug Fixes
+
+* fixed action errors & early auth on functions ([#1054](https://github.com/teamkeel/keel/issues/1054)) ([4620f78](https://github.com/teamkeel/keel/commit/4620f78048f5a1fb8a16c81f6a0cd5c3cb1aeb12))
+
 ## [0.357.1](https://github.com/teamkeel/keel/compare/v0.357.0...v0.357.1) (2023-07-20)
 
 
