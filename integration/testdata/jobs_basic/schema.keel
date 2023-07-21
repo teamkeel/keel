@@ -26,15 +26,15 @@ job UpdateViewCount {
         postId ID
     }
 
-    @permission(expression: ctx.isAuthenticated)
+    @permission(expression: true)
 }
 
 job UpdateAllViewCount {
-    @permission(expression: ctx.isAuthenticated)
+    @permission(expression: true)
 }
 
 job UpdateGoldStarFromEnv {
-    @permission(expression: ctx.isAuthenticated)
+    @permission(expression: true)
 }
 
 job AllInputTypes {
@@ -47,5 +47,5 @@ job AllInputTypes {
         enum Status
         id ID
     }
-    @permission(expression: ctx.isAuthenticated)
+    @permission(expression: true)
 }

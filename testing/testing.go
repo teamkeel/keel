@@ -173,7 +173,10 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				identity, err := runtime.HandleAuthorizationHeader(ctx, schema, r.Header, w)
 				if err != nil {
 					w.WriteHeader(http.StatusInternalServerError)
-					w.Write([]byte(err.Error()))
+					_, err = w.Write([]byte(err.Error()))
+					if err != nil {
+						panic(err)
+					}
 				}
 
 				if identity != nil {

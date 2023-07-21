@@ -116,9 +116,8 @@ func (resolver *OperandResolver) IsDatabaseColumn() bool {
 		return false
 	}
 
-	modelTarget := resolver.Operand.Ident.Fragments[0].Fragment
-
-	return modelTarget == casing.ToLowerCamel(resolver.Model.Name)
+	// Currently, ctx is the only multifragment expression that doesn't require the database.
+	return !resolver.Operand.Ident.IsContext()
 }
 
 // IsContextField returns true if the expression operand refers to a value on the context.

@@ -150,8 +150,7 @@ func (handler JobHandler) RunJob(ctx context.Context, jobName string, inputs map
 	scope := actions.NewJobScope(ctx, job, handler.schema)
 
 	// Check if authorisation can be achieved early.
-	permissions := proto.PermissionsForJob(handler.schema, job)
-	canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, permissions)
+	canAuthoriseEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, job.Permissions)
 	if err != nil {
 		return err
 	}
