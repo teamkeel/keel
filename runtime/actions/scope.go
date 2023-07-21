@@ -105,7 +105,9 @@ func Execute(scope *Scope, inputs any) (any, map[string][]string, error) {
 }
 
 func executeCustomFunction(scope *Scope, inputs any) (any, map[string][]string, error) {
-	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope)
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+
+	canAuthoriseEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -172,8 +174,10 @@ func executeRuntimeOperation(scope *Scope, inputs map[string]any) (any, map[stri
 }
 
 func executeAutoOperation(scope *Scope, inputs map[string]any) (any, map[string][]string, error) {
-	// Attempt to resolve permissions early; i.e. before database querying.
-	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope)
+	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+
+	// Attempt to resolve permissions early; i.e. before row-based database querying.
+	canResolveEarly, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if err != nil {
 		return nil, nil, err
 	}

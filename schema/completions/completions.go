@@ -644,6 +644,7 @@ func getAttributeArgCompletions(asts []*parser.AST, t *TokensAtPosition, cfg *co
 		return getOrderByArgCompletions(asts, t, cfg)
 	case parser.AttributeSchedule:
 		return getScheduleArgCompletions(asts, t, cfg)
+
 	case parser.AttributeUnique:
 		// composite
 		if enclosingBlock == parser.KeywordModel {

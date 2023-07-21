@@ -47,7 +47,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 		return false, nil
 	}
 
-	canResolve, authorised, err := TryResolveAuthorisationEarly(scope)
+	canResolve, authorised, err := TryResolveAuthorisationEarly(scope, permissions)
 	if canResolve {
 		return authorised, nil
 	}
@@ -90,9 +90,7 @@ func authorise(scope *Scope, permissions []*proto.PermissionRule, rowsToAuthoris
 
 // TryResolveAuthorisationEarly will attempt to check authorisation early without row-based querying.
 // This will take into account logical conditions and multiple expression and role permission attributes.
-func TryResolveAuthorisationEarly(scope *Scope) (canResolveAll bool, authorised bool, err error) {
-	permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
-
+func TryResolveAuthorisationEarly(scope *Scope, permissions []*proto.PermissionRule) (canResolveAll bool, authorised bool, err error) {
 	hasDatabaseCheck := false
 	canResolveAll = false
 	for _, permission := range permissions {

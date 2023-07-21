@@ -774,6 +774,72 @@ var authorisationTestCases = []authorisationTestCase{
 		operationName: "getThing",
 		earlyAuth:     AuthorisationGrantedEarly(),
 	},
+	{
+		name: "cannot_early_evaluate_op_level_permissions",
+		keelSchema: `
+			role Admin {
+				emails {
+					"keelson@keel.xyz"
+				}
+			}
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					get getThing(id) {
+						@permission(expression: thing.createdBy.id == ctx.identity.id)
+					}
+				}
+				@permission(expression: true, actions: [get])
+			}`,
+		operationName: "getThing",
+		earlyAuth:     CouldNotAuthoriseEarly(),
+	},
+	{
+		name: "can_early_evaluate_op_level_permissions_granted",
+		keelSchema: `
+			role Admin {
+				emails {
+					"keelson@keel.xyz"
+				}
+			}
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					get getThing(id) {
+						@permission(expression: true)
+					}
+				}
+				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
+			}`,
+		operationName: "getThing",
+		earlyAuth:     AuthorisationGrantedEarly(),
+	},
+	{
+		name: "can_early_evaluate_op_level_permissions_denied",
+		keelSchema: `
+			role Admin {
+				emails {
+					"keelson@keel.xyz"
+				}
+			}
+			model Thing {
+				fields {
+					createdBy Identity
+				}
+				operations {
+					get getThing(id) {
+						@permission(expression: false)
+					}
+				}
+				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
+			}`,
+		operationName: "getThing",
+		earlyAuth:     AuthorisationDeniedEarly(),
+	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
@@ -788,7 +854,9 @@ func TestPermissionQueryBuilder(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			canResolveEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope)
+			permissions := proto.PermissionsForAction(scope.Schema, scope.Operation)
+
+			canResolveEarly, authorised, err := actions.TryResolveAuthorisationEarly(scope, permissions)
 			if err != nil {
 				require.NoError(t, err)
 			}

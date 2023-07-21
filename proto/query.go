@@ -276,15 +276,8 @@ func PermissionsForAction(schema *Schema, action *Operation, filters ...Permissi
 
 	// if there are no action level permissions, then we fallback to model level permissions
 	// that match the type of the action
-	model := FindModel(schema.Models, action.ModelName)
-
-	actionType := action.Type
-
-	for _, modelPerm := range model.Permissions {
-		if lo.Contains(modelPerm.OperationsTypes, actionType) {
-			permissions = append(permissions, modelPerm)
-		}
-	}
+	opTypePermissions := PermissionsForOperationType(schema, action.ModelName, action.Type)
+	permissions = append(permissions, opTypePermissions...)
 
 	if len(filters) == 0 {
 		return permissions
