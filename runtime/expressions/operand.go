@@ -110,14 +110,7 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive)
 func (resolver *OperandResolver) IsDatabaseColumn() bool {
-	isMultiFragmentIdent := resolver.Operand.Ident != nil && len(resolver.Operand.Ident.Fragments) > 1
-
-	if !isMultiFragmentIdent {
-		return false
-	}
-
-	// Currently, ctx is the only multifragment expression that doesn't require the database.
-	return !resolver.Operand.Ident.IsContext()
+	return !resolver.IsLiteral() && !resolver.Operand.Ident.IsContext() && !resolver.IsExplicitInput() && !resolver.IsImplicitInput()
 }
 
 // IsContextField returns true if the expression operand refers to a value on the context.
