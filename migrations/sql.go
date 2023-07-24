@@ -84,12 +84,20 @@ func createTableStmt(schema *proto.Schema, model *proto.Model) (string, error) {
 				Identifier(field.Name)))
 		}
 		if field.Unique {
-			statements = append(statements, addUniqueConstraintStmt(model.Name, []string{field.Name}))
+			uniqueStmt, err := addUniqueConstraintStmt(schema, model.Name, []string{field.Name})
+			if err != nil {
+				return "", err
+			}
+			statements = append(statements, uniqueStmt)
 		}
 	}
 
 	// Passing an empty slice of constraints here as this is a new table so no existing constraints
-	stmts := compositeUniqueConstraints(model, []*ConstraintRow{})
+	stmts, err := compositeUniqueConstraints(schema, model, []*ConstraintRow{})
+	if err != nil {
+		return "", err
+	}
+
 	statements = append(statements, stmts...)
 
 	return strings.Join(statements, "\n"), nil
@@ -99,18 +107,29 @@ func dropTableStmt(name string) string {
 	return fmt.Sprintf("DROP TABLE %s CASCADE;", Identifier(name))
 }
 
-func addUniqueConstraintStmt(modelName string, fieldNames []string) string {
+func addUniqueConstraintStmt(schema *proto.Schema, modelName string, fieldNames []string) (string, error) {
 	slices.Sort(fieldNames)
 
-	columnNames := lo.Map(fieldNames, func(s string, _ int) string {
-		return Identifier(s)
-	})
+	columnNames := []string{}
+	for _, name := range fieldNames {
+		field := proto.FindField(schema.Models, modelName, name)
+
+		if proto.IsBelongsTo(field) {
+			name = fmt.Sprintf("%sId", name)
+		}
+
+		if proto.IsHasMany(field) || proto.IsHasOne(field) {
+			return "", fmt.Errorf("cannot create unique constraint on has-many or has-one model field '%s'", name)
+		}
+
+		columnNames = append(columnNames, Identifier(name))
+	}
 
 	return fmt.Sprintf(
 		"ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s);",
 		Identifier(modelName),
 		UniqueConstraintName(modelName, fieldNames),
-		strings.Join(columnNames, ", "))
+		strings.Join(columnNames, ", ")), nil
 }
 
 func dropConstraintStmt(tableName string, constraintName string) string {
@@ -130,7 +149,11 @@ func addColumnStmt(schema *proto.Schema, modelName string, field *proto.Field) (
 	)
 
 	if field.Unique {
-		statements = append(statements, addUniqueConstraintStmt(modelName, []string{field.Name}))
+		stmt, err := addUniqueConstraintStmt(schema, modelName, []string{field.Name})
+		if err != nil {
+			return "", err
+		}
+		statements = append(statements, stmt)
 	}
 
 	return strings.Join(statements, "\n"), nil

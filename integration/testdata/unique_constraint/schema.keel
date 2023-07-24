@@ -19,7 +19,27 @@ model Product {
     @permission(expression: true, actions:[create, update])
 }
 
+model Publisher {
+    fields {
+        name Text
+        registrationNumber Text
+        country Country
+    }
 
+    operations {
+        create createPublisher() with (name, registrationNumber, country.id)
+        update updatePublisher(id) with (registrationNumber?, country.id?)
+    }
+
+    @unique([registrationNumber, country])
+    @permission(expression: true, actions:[create, update])
+}
+
+model Country {
+    fields {
+        name Text
+    }
+}
 
 api Web {
     models {

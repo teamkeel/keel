@@ -210,7 +210,12 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			})
 
 			if field.Unique && !hasUniqueConstraint {
-				statements = append(statements, addUniqueConstraintStmt(model.Name, []string{field.Name}))
+				uniqueStmt, err := addUniqueConstraintStmt(schema, model.Name, []string{field.Name})
+				if err != nil {
+					return nil, err
+				}
+
+				statements = append(statements, uniqueStmt)
 				hasChanged = true
 			}
 			if !field.Unique && hasUniqueConstraint {
@@ -240,7 +245,11 @@ func New(ctx context.Context, schema *proto.Schema, database db.Database) (*Migr
 			}
 		}
 
-		stmts := compositeUniqueConstraints(model, constraints)
+		stmts, err := compositeUniqueConstraints(schema, model, constraints)
+		if err != nil {
+			return nil, err
+		}
+
 		if len(stmts) > 0 {
 			statements = append(statements, stmts...)
 			changes = append(changes, &DatabaseChange{
@@ -275,7 +284,7 @@ func compositeUniqueConstraintsForModel(model *proto.Model) map[string][]string 
 
 // compositeUniqueConstraints generates SQL statements for dropping or creating composite
 // unique constraints for model
-func compositeUniqueConstraints(model *proto.Model, constraints []*ConstraintRow) (statements []string) {
+func compositeUniqueConstraints(schema *proto.Schema, model *proto.Model, constraints []*ConstraintRow) (statements []string, err error) {
 	uniqueConstraints := compositeUniqueConstraintsForModel(model)
 
 	for _, c := range constraints {
@@ -293,11 +302,14 @@ func compositeUniqueConstraints(model *proto.Model, constraints []*ConstraintRow
 	}
 
 	for _, fieldNames := range uniqueConstraints {
-		stmt := addUniqueConstraintStmt(model.Name, fieldNames)
+		stmt, err := addUniqueConstraintStmt(schema, model.Name, fieldNames)
+		if err != nil {
+			return nil, err
+		}
 		statements = append(statements, stmt)
 	}
 
-	return statements
+	return statements, nil
 }
 
 func keelSchemaTableExists(ctx context.Context, database db.Database) (bool, error) {

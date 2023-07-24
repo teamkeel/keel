@@ -1,0 +1,10 @@
+model Product {
+    fields {
+        name Text
+        publisher Publisher
+    }
+
+    @unique([name, publisher])
+}
+
+model Publisher { }

@@ -129,3 +129,74 @@ test("update function - unique constraint error", async () => {
       "the values for the unique composite fields (name, supplierCode) must be unique",
   });
 });
+
+test("create operation - toOne model field - unique constraint error", async () => {
+  const uganda = await models.country.create({ name: "Uganda " });
+  const canada = await models.country.create({ name: "Canada " });
+
+  await expect(
+    actions.createPublisher({
+      name: "Penguin Publishers",
+      registrationNumber: "penpubs",
+      country: {
+        id: uganda.id,
+      },
+    })
+  ).not.toHaveError({});
+
+  await expect(
+    actions.createPublisher({
+      name: "Canada Penguin Publishers",
+      registrationNumber: "penpubs",
+      country: {
+        id: canada.id,
+      },
+    })
+  ).not.toHaveError({});
+
+  await expect(
+    actions.createPublisher({
+      name: "Penelopy Publishers",
+      registrationNumber: "penpubs",
+      country: {
+        id: canada.id,
+      },
+    })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message:
+      "the values for the unique composite fields (countryId, registrationNumber) must be unique",
+  });
+});
+
+test("update operation - toOne model field - unique constraint error", async () => {
+  const uganda = await models.country.create({ name: "Uganda " });
+  const canada = await models.country.create({ name: "Canada " });
+
+  const publisher = await actions.createPublisher({
+    name: "Penguin Publishers",
+    registrationNumber: "penpubs",
+    country: {
+      id: uganda.id,
+    },
+  });
+
+  await actions.createPublisher({
+    name: "Canada Penguin Publishers",
+    registrationNumber: "penpubs",
+    country: {
+      id: canada.id,
+    },
+  });
+
+  await expect(
+    actions.updatePublisher({
+      where: { id: publisher.id },
+      values: { country: { id: canada.id } },
+    })
+  ).toHaveError({
+    code: "ERR_INVALID_INPUT",
+    message:
+      "the values for the unique composite fields (countryId, registrationNumber) must be unique",
+  });
+});
