@@ -10,7 +10,8 @@ import (
 	"github.com/teamkeel/keel/schema/validation/rules/expression"
 )
 
-func PermissionArgumentsAttributeRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
+// Validates the arguments to any attribute expression.
+func AttributeArgumentsRule(asts []*parser.AST, errs *errorhandling.ValidationErrors) Visitor {
 	var model *parser.ModelNode
 	var action *parser.ActionNode
 	var job *parser.JobNode
