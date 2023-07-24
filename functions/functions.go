@@ -3,7 +3,6 @@ package functions
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -154,19 +153,9 @@ func CallFunction(ctx context.Context, actionName string, body any, permissionSt
 }
 
 // CallJob will invoke the job function on the runtime node server.
-func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs map[string]any) error {
+func CallJob(ctx context.Context, schema *proto.Schema, job *proto.Job, inputs map[string]any, permissionState *common.PermissionState) error {
 	ctx, span := tracer.Start(ctx, "Call job")
 	defer span.End()
-
-	job := proto.FindJob(schema.Jobs, strcase.ToCamel(jobName))
-	if job == nil {
-		return fmt.Errorf("no job with the name '%s' exists", jobName)
-	}
-
-	// TODO: Currently we aren't handling permissions yet for jobs
-	// https://linear.app/keel/issue/BLD-631/permission-support-in-the-runtime-for-jobs
-	permissionState := common.NewPermissionState()
-	permissionState.Grant()
 
 	transport, ok := ctx.Value(contextKey).(Transport)
 	if !ok {
@@ -196,7 +185,7 @@ func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs m
 
 	req := &FunctionsRuntimeRequest{
 		ID:     ksuid.New().String(),
-		Method: jobName,
+		Method: strcase.ToLowerCamel(job.Name),
 		Type:   JobFunction,
 		Params: inputs,
 		Meta:   meta,
@@ -204,7 +193,7 @@ func CallJob(ctx context.Context, schema *proto.Schema, jobName string, inputs m
 
 	span.SetAttributes(
 		attribute.String("job.id", req.ID),
-		attribute.String("job.name", jobName),
+		attribute.String("job.name", job.Name),
 	)
 
 	resp, err := transport(ctx, req)

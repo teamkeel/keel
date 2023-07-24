@@ -1,0 +1,53 @@
+job ManualJob {
+    inputs {
+        id ID
+    }
+    @permission(roles: [Admin])
+}
+
+job ManualJobMultiRoles {
+    inputs {
+        id ID
+    }
+    @permission(roles: [Admin, Developer])
+}
+
+job ManualJobTrueExpression {
+    inputs {
+        id ID
+    }
+    @permission(expression: true)
+}
+
+job ManualJobDeniedInCode {
+    inputs {
+        id ID
+        denyIt Boolean
+    }
+    @permission(roles: [Admin])
+}
+
+job ManualJobWithException {
+    inputs {
+        id ID
+    }
+    @permission(roles: [Admin])
+}
+
+role Admin {
+    domains {
+        "keel.so"
+    }
+}
+
+role Developer {
+    domains {
+        "keel.dev"
+    }
+}
+
+model TrackJob {
+    fields {
+        didJobRun Boolean @default(false)
+    }
+}

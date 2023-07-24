@@ -98,7 +98,13 @@
   ],
   "roles": [
     {
-      "name": "Admin"
+      "name": "Admin",
+      "domains": [
+        "keel.so"
+      ]
+    },
+    {
+      "name": "Developer"
     }
   ],
   "apis": [
@@ -116,11 +122,11 @@
       "name": "Any"
     },
     {
-      "name": "MyJobMessage",
+      "name": "MyManualJobWithInputsMessage",
       "fields": [
         {
-          "messageName": "MyJobMessage",
-          "name": "veryImportantValue",
+          "messageName": "MyManualJobWithInputsMessage",
+          "name": "name",
           "type": {
             "type": "TYPE_STRING"
           }
@@ -233,14 +239,21 @@
   ],
   "jobs": [
     {
-      "name": "MyJob",
-      "inputMessageName": "MyJobMessage",
+      "name": "MyManualJob",
       "permissions": [
         {
           "roleNames": [
-            "Admin"
+            "Admin",
+            "Developer"
           ]
         }
+      ]
+    },
+    {
+      "name": "MyManualJobWithInputs",
+      "inputMessageName": "MyManualJobWithInputsMessage",
+      "permissions": [
+        {}
       ]
     }
   ]

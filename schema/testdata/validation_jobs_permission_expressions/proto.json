@@ -96,11 +96,6 @@
       ]
     }
   ],
-  "roles": [
-    {
-      "name": "Admin"
-    }
-  ],
   "apis": [
     {
       "name": "Api",
@@ -114,18 +109,6 @@
   "messages": [
     {
       "name": "Any"
-    },
-    {
-      "name": "MyJobMessage",
-      "fields": [
-        {
-          "messageName": "MyJobMessage",
-          "name": "veryImportantValue",
-          "type": {
-            "type": "TYPE_STRING"
-          }
-        }
-      ]
     },
     {
       "name": "EmailPasswordInput",
@@ -234,12 +217,11 @@
   "jobs": [
     {
       "name": "MyJob",
-      "inputMessageName": "MyJobMessage",
       "permissions": [
         {
-          "roleNames": [
-            "Admin"
-          ]
+          "expression": {
+            "source": "ctx.isAuthenticated"
+          }
         }
       ]
     }

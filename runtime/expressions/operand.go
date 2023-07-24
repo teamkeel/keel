@@ -110,15 +110,7 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 // For example, a where condition might filter on reading data,
 // such as: @where(post.author.isActive)
 func (resolver *OperandResolver) IsDatabaseColumn() bool {
-	isMultiFragmentIdent := resolver.Operand.Ident != nil && len(resolver.Operand.Ident.Fragments) > 1
-
-	if !isMultiFragmentIdent {
-		return false
-	}
-
-	modelTarget := resolver.Operand.Ident.Fragments[0].Fragment
-
-	return modelTarget == casing.ToLowerCamel(resolver.Model.Name)
+	return !resolver.IsLiteral() && !resolver.Operand.Ident.IsContext() && !resolver.IsExplicitInput() && !resolver.IsImplicitInput()
 }
 
 // IsContextField returns true if the expression operand refers to a value on the context.

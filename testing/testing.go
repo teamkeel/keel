@@ -18,6 +18,7 @@ import (
 	"github.com/teamkeel/keel/node"
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime"
+	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema"
 	"github.com/teamkeel/keel/testhelpers"
@@ -169,6 +170,19 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 					return
 				}
 
+				identity, err := runtime.HandleAuthorizationHeader(ctx, schema, r.Header, w)
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					_, err = w.Write([]byte(err.Error()))
+					if err != nil {
+						panic(err)
+					}
+				}
+
+				if identity != nil {
+					ctx = runtimectx.WithIdentity(ctx, identity)
+				}
+
 				var inputs map[string]any
 				// if no json body has been sent, just return an empty map for the inputs
 				if string(body) == "" {
@@ -182,11 +196,19 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 				}
 
 				err = runtime.NewJobHandler(schema).RunJob(ctx, jobName, inputs)
+
 				if err != nil {
-					w.WriteHeader(http.StatusInternalServerError)
+					response := common.NewJsonErrorResponse(err)
+
+					w.WriteHeader(response.Status)
+					_, err = w.Write(response.Body)
+					if err != nil {
+						panic(err)
+					}
 				} else {
 					w.WriteHeader(http.StatusOK)
 				}
+
 			default:
 				w.WriteHeader(http.StatusNotFound)
 				_, err = w.Write([]byte(fmt.Sprintf("invalid url received on testing server '%s'", r.URL.Path)))

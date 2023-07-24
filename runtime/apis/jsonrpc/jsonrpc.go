@@ -107,7 +107,7 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 					attribute.String("error.code", runtimeError.Code),
 					attribute.String("error.message", runtimeError.Message),
 				)
-				code = runtimeErrorCodeToJsonRpcErrorCode(runtimeError.Code)
+				code = RuntimeErrorCodeToJsonRpcErrorCode(runtimeError.Code)
 				message = runtimeError.Message
 			}
 
@@ -169,7 +169,7 @@ func parseJsonRpcRequest(b io.ReadCloser) (req *JsonRpcRequest, err error) {
 	return req, err
 }
 
-func runtimeErrorCodeToJsonRpcErrorCode(code string) int {
+func RuntimeErrorCodeToJsonRpcErrorCode(code string) int {
 	switch code {
 	case common.ErrInvalidInput, common.ErrRecordNotFound, common.ErrPermissionDenied:
 		return JsonRpcInvalidParams
