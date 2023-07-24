@@ -68,6 +68,18 @@ model Book {
         delete deleteDbPermission(id) {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
         }
+
+        list listPermitted() {
+            @permission(expression: true)
+        }
+
+        list listNotPermitted() {
+            @permission(expression: false)
+        }
+
+        list listDbPermission() {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
     }
 
     functions {
@@ -120,6 +132,18 @@ model Book {
         }
 
         delete deleteDbPermissionFn(id) {
+            @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
+        }
+
+        list listPermittedFn() {
+            @permission(expression: true)
+        }
+
+        list listNotPermittedFn() {
+            @permission(expression: false)
+        }
+
+        list listDbPermissionFn() {
             @permission(expression: book.lastUpdatedBy.id == ctx.identity.id)
         }
     }
