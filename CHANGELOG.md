@@ -1,3 +1,10 @@
+# [0.358.0](https://github.com/teamkeel/keel/compare/v0.357.2...v0.358.0) (2023-07-24)
+
+
+### Features
+
+* job permissions  ([#1056](https://github.com/teamkeel/keel/issues/1056)) ([8537aa9](https://github.com/teamkeel/keel/commit/8537aa9de2c080cba2228f6f77ced41f4f0608af))
+
 ## [0.357.2](https://github.com/teamkeel/keel/compare/v0.357.1...v0.357.2) (2023-07-21)
 
 
