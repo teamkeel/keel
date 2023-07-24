@@ -35,21 +35,12 @@ func PermissionArgumentsAttributeRule(asts []*parser.AST, errs *errorhandling.Va
 			job = nil
 		},
 		EnterAttribute: func(attribute *parser.AttributeNode) {
-
 			if attribute.Name.Value != parser.AttributePermission {
 				return
 			}
 
 			errors := validatePermissionAttribute(asts, attribute, model, action, job)
-
 			errs.Concat(errors)
-
-		},
-		LeaveAttribute: func(attribute *parser.AttributeNode) {
-
-		},
-		EnterAttributeArgument: func(arg *parser.AttributeArgumentNode) {
-
 		},
 	}
 }

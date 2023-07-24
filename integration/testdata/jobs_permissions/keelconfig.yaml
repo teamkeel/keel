@@ -1,4 +1,4 @@
 environment:
   default:
     - name: REGION
-      value: 'za-test'
+      value: "za-test"

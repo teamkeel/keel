@@ -67,6 +67,74 @@
         "line": 15,
         "column": 38
       }
+    },
+    {
+      "message": "permission requires all arguments to be named, for example @permission(roles: [MyRole])",
+      "hint": "Valid argument names for permission are actions, expression, or roles",
+      "code": "E014",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 260,
+        "line": 19,
+        "column": 17
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 279,
+        "line": 19,
+        "column": 36
+      }
+    },
+    {
+      "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "hint": "",
+      "code": "E015",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 248,
+        "line": 19,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 259,
+        "line": 19,
+        "column": 16
+      }
+    },
+    {
+      "message": "The permission attribute doesn't accept the argument expr",
+      "hint": "Did you mean one of actions, expression, or roles?",
+      "code": "E013",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 313,
+        "line": 23,
+        "column": 17
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 317,
+        "line": 23,
+        "column": 21
+      }
+    },
+    {
+      "message": "The @permission attribute is missing required argument \"expression\" or \"roles\"",
+      "hint": "",
+      "code": "E015",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 301,
+        "line": 23,
+        "column": 5
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 312,
+        "line": 23,
+        "column": 16
+      }
     }
   ]
 }

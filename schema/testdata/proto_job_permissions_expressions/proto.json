@@ -234,6 +234,44 @@
           }
         }
       ]
+    },
+    {
+      "name": "MyJob2",
+      "permissions": [
+        {
+          "expression": {
+            "source": "true"
+          }
+        }
+      ]
+    },
+    {
+      "name": "MyJob3",
+      "permissions": [
+        {
+          "expression": {
+            "source": "ctx.env.FOO == \"bar\""
+          }
+        },
+        {
+          "roleNames": [
+            "Admin"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MyJob4",
+      "permissions": [
+        {
+          "roleNames": [
+            "Admin"
+          ],
+          "expression": {
+            "source": "ctx.env.FOO == \"bar\""
+          }
+        }
+      ]
     }
   ]
 }
