@@ -619,3 +619,137 @@ test("delete func - database check, wrong identity - ERR_PERMISSION_DENIED", asy
     actions.withIdentity(wrongIdentity).deleteDbPermissionFn({ id: "123" })
   ).toHaveAuthorizationError();
 });
+
+// LIST OPERATIONS
+
+test("list func - not permitted - ERR_PERMISSION_DENIED", async () => {
+  await expect(actions.listNotPermitted()).toHaveAuthorizationError();
+});
+
+test("list op - permitted, no rows - empty result", async () => {
+  const books = await actions.listPermitted();
+  expect(books.results).toHaveLength(0);
+});
+
+test("list op - database check, with identity, no rows - empty result", async () => {
+  const identity = await models.identity.create({
+    id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+
+  const books = await actions.withIdentity(identity).listDbPermission();
+  expect(books.results).toHaveLength(0);
+});
+
+test("list op - database check, no identity, no rows - empty result", async () => {
+  const books = await actions.listDbPermission();
+  expect(books.results).toHaveLength(0);
+});
+
+test("list op - database check, no identity, with rows - ERR_PERMISSION_DENIED", async () => {
+  await models.identity.create({ id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" });
+  await models.book.create({
+    id: "123",
+    title: "Harry Potter",
+    lastUpdatedById: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+
+  await expect(actions.listDbPermission()).toHaveAuthorizationError();
+});
+
+test("list op - database check, wrong identity, with rows - ERR_PERMISSION_DENIED", async () => {
+  await models.identity.create({ id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" });
+  await models.book.create({
+    id: "123",
+    title: "Harry Potter",
+    lastUpdatedById: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+  const wrongIdentity = await models.identity.create({
+    id: "2Qb2ItMXLmNXDun8tk1z75mbZhj",
+  });
+
+  await expect(
+    actions.withIdentity(wrongIdentity).listDbPermission()
+  ).toHaveAuthorizationError();
+});
+
+test("list op - database check, correct identity, with rows - rows returned", async () => {
+  const identity = await models.identity.create({
+    id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+  await models.book.create({
+    id: "123",
+    title: "Harry Potter",
+    lastUpdatedById: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+
+  await expect(
+    actions.withIdentity(identity).listDbPermission()
+  ).not.toHaveAuthorizationError();
+});
+
+// LIST FUNCTIONS
+
+test("list func - not permitted - ERR_PERMISSION_DENIED", async () => {
+  await expect(actions.listNotPermittedFn()).toHaveAuthorizationError();
+});
+
+test("list func - permitted, no rows - empty result", async () => {
+  const books = await actions.listPermittedFn();
+  expect(books.results).toHaveLength(0);
+});
+
+test("list func - database check, with identity, no rows - empty result", async () => {
+  const identity = await models.identity.create({
+    id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+
+  const books = await actions.withIdentity(identity).listDbPermissionFn();
+  expect(books.results).toHaveLength(0);
+});
+
+test("list func - database check, no identity, no rows - empty result", async () => {
+  const books = await actions.listDbPermissionFn();
+  expect(books.results).toHaveLength(0);
+});
+
+test("list func - database check, no identity, with rows - ERR_PERMISSION_DENIED", async () => {
+  await models.identity.create({ id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" });
+  await models.book.create({
+    id: "123",
+    title: "Harry Potter",
+    lastUpdatedById: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+
+  await expect(actions.listDbPermissionFn()).toHaveAuthorizationError();
+});
+
+test("list func - database check, wrong identity, with rows - ERR_PERMISSION_DENIED", async () => {
+  await models.identity.create({ id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R" });
+  await models.book.create({
+    id: "123",
+    title: "Harry Potter",
+    lastUpdatedById: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+  const wrongIdentity = await models.identity.create({
+    id: "2Qb2ItMXLmNXDun8tk1z75mbZhj",
+  });
+
+  await expect(
+    actions.withIdentity(wrongIdentity).listDbPermissionFn()
+  ).toHaveAuthorizationError();
+});
+
+test("list func - database check, correct identity, with rows - rows returned", async () => {
+  const identity = await models.identity.create({
+    id: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+  await models.book.create({
+    id: "123",
+    title: "Harry Potter",
+    lastUpdatedById: "2PvOAtybZaxSzf1WGNKaWd5BZ0R",
+  });
+
+  await expect(
+    actions.withIdentity(identity).listDbPermissionFn()
+  ).not.toHaveAuthorizationError();
+});
