@@ -50,6 +50,23 @@
         "line": 11,
         "column": 35
       }
+    },
+    {
+      "message": "Non-boolean single operand conditions such as '\"invalid\"' not permitted on @permission",
+      "hint": "Please add an operator and second operand. Did you mean '\"invalid\" == xxx'?",
+      "code": "E061",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 217,
+        "line": 15,
+        "column": 29
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 226,
+        "line": 15,
+        "column": 38
+      }
     }
   ]
 }

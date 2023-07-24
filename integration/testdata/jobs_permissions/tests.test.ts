@@ -90,6 +90,38 @@ test("job - true expression - permitted", async () => {
   expect(await jobRan(id)).toBeTruthy();
 });
 
+test("job - env var expression - not permitted", async () => {
+  const { id } = await models.trackJob.create({ didJobRun: false });
+
+  await expect(
+    jobs.manualJobEnvExpression({ id })
+  ).not.toHaveAuthorizationError();
+
+  expect(await jobRan(id)).toBeTruthy();
+});
+
+test("job - multiple permissions - not permitted", async () => {
+  const { id } = await models.trackJob.create({ didJobRun: false });
+  const identity = await models.identity.create({ email: "bob@bob.com" });
+
+  await expect(
+    jobs.withIdentity(identity).manualJobMultiPermission({ id })
+  ).toHaveAuthorizationError();
+
+  expect(await jobRan(id)).toBeFalsy();
+});
+
+test("job - multiple permissions - permitted", async () => {
+  const { id } = await models.trackJob.create({ didJobRun: false });
+  const identity = await models.identity.create({ email: "keelson@keel.so" });
+
+  await expect(
+    jobs.withIdentity(identity).manualJobMultiPermission({ id })
+  ).not.toHaveAuthorizationError();
+
+  expect(await jobRan(id)).toBeTruthy();
+});
+
 test("job - allowed in job code - permitted", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
   const identity = await models.identity.create({ email: "keel@keel.so" });

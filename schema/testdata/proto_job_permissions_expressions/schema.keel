@@ -1,0 +1,14 @@
+job MyJob1 {
+    @permission(expression: ctx.isAuthenticated)
+}
+
+// job MyJob2 {
+//     @permission(expression: true)
+// }
+
+// job MyJob3 {
+//     @permission(expression: ctx.env.FOO == "bar")
+//     @permission(roles: [Admin])
+// }
+
+role Admin {}

@@ -242,10 +242,11 @@ func validateActionAttributeWithExpression(
 
 	expr := attr.Arguments[0].Expression
 
-	rules := []expression.Rule{expression.PreventValueConditionRule}
+	rules := []expression.Rule{}
 
 	if attr.Name.Value == parser.AttributeSet {
 		rules = append(rules, expression.OperatorAssignmentRule)
+		rules = append(rules, expression.PreventValueConditionRule)
 	} else {
 		rules = append(rules, expression.OperatorLogicalRule)
 	}

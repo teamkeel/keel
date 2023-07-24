@@ -1,8 +1,11 @@
 package expressions
 
 import (
+	"fmt"
+
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 type ConditionResolver struct {
@@ -18,10 +21,6 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 		c.context,
 		OperandPositionLhs,
 	)
-
-	if c.condition.RHS != nil {
-
-	}
 
 	resolvedLhs, lhsErr := lhs.Resolve()
 
@@ -44,6 +43,28 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 		}
 
 		return resolvedLhs, resolvedRhs, errors
+	} else {
+		if lhs.operand.Type() != parser.TypeBoolean {
+			operand := NewOperandResolver(lhs.operand, c.asts, c.context, OperandPositionLhs)
+			entity, _ := operand.Resolve()
+			if entity.GetType() != parser.FieldTypeBoolean {
+
+				errors = append(errors,
+					errorhandling.NewValidationError(
+						errorhandling.ErrorExpressionSingleConditionNotBoolean,
+						errorhandling.TemplateLiterals{
+							Literals: map[string]string{
+								"Value":      lhs.operand.ToString(),
+								"Attribute":  fmt.Sprintf("@%s", c.context.Attribute.Name.Value),
+								"Suggestion": fmt.Sprintf("%s == xxx", lhs.operand.ToString()),
+							},
+						},
+						lhs.operand.Node,
+					),
+				)
+			}
+		}
+
 	}
 
 	return resolvedLhs, nil, errors

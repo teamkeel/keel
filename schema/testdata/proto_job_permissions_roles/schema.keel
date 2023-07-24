@@ -6,7 +6,7 @@ job MyManualJobWithInputs {
     inputs {
         name Text
     }
-    @permission(role: [Admin])
+    @permission(roles: [Admin])
 }
 
 role Admin {

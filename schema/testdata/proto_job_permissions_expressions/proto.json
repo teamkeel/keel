@@ -234,31 +234,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "MyJob2",
-      "permissions": [
-        {
-          "expression": {
-            "source": "true"
-          }
-        }
-      ]
-    },
-    {
-      "name": "MyJob3",
-      "permissions": [
-        {
-          "expression": {
-            "source": "ctx.env.FOO == \"bar\""
-          }
-        },
-        {
-          "roleNames": [
-            "Admin"
-          ]
-        }
-      ]
     }
   ]
 }
