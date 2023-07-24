@@ -1,3 +1,10 @@
+## [0.358.1](https://github.com/teamkeel/keel/compare/v0.358.0...v0.358.1) (2023-07-24)
+
+
+### Bug Fixes
+
+* unique constraint on relationship field ([#1058](https://github.com/teamkeel/keel/issues/1058)) ([dd866d1](https://github.com/teamkeel/keel/commit/dd866d1ece03b4cc06c606122b92f54cc9bc8689))
+
 # [0.358.0](https://github.com/teamkeel/keel/compare/v0.357.2...v0.358.0) (2023-07-24)
 
 
