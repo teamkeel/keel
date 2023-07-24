@@ -49,7 +49,6 @@ var validatorFuncs = []validationFunc{
 	field.UniqueFieldNamesRule,
 
 	attribute.AttributeLocationsRule,
-	attribute.PermissionAttributeRule,
 	attribute.SetWhereAttributeRule,
 	attribute.ValidateActionAttributeRule,
 	attribute.ValidateFieldAttributeRule,
@@ -83,6 +82,7 @@ var visitorFuncs = []VisitorFunc{
 	Jobs,
 	ScheduleAttributeRule,
 	DuplicateInputsRule,
+	PermissionArgumentsAttributeRule,
 }
 
 func (v *Validator) RunAllValidators() (errs *errorhandling.ValidationErrors) {

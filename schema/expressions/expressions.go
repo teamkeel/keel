@@ -18,12 +18,10 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 		c.context,
 		OperandPositionLhs,
 	)
-	rhs := NewOperandResolver(
-		c.condition.RHS,
-		c.asts,
-		c.context,
-		OperandPositionRhs,
-	)
+
+	if c.condition.RHS != nil {
+
+	}
 
 	resolvedLhs, lhsErr := lhs.Resolve()
 
@@ -31,7 +29,14 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 		errors = append(errors, lhsErr.ToValidationError())
 	}
 
-	if rhs != nil {
+	if c.condition.RHS != nil {
+		rhs := NewOperandResolver(
+			c.condition.RHS,
+			c.asts,
+			c.context,
+			OperandPositionRhs,
+		)
+
 		resolvedRhs, rhsErr := rhs.Resolve()
 
 		if rhsErr != nil {

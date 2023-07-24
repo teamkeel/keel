@@ -1,0 +1,55 @@
+{
+  "errors": [
+    {
+      "message": "Invalid value, expected any of the following identifiers - Admin, or Developer",
+      "hint": "",
+      "code": "E016",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 38,
+        "line": 3,
+        "column": 25
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 48,
+        "line": 3,
+        "column": 35
+      }
+    },
+    {
+      "message": "'something' not found",
+      "hint": "Did you mean ctx?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 95,
+        "line": 7,
+        "column": 29
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 104,
+        "line": 7,
+        "column": 38
+      }
+    },
+    {
+      "message": "'myJob3' not found",
+      "hint": "Did you mean ctx?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 154,
+        "line": 11,
+        "column": 29
+      },
+      "endPos": {
+        "filename": "testdata/validation_jobs_permission_attribute_invalid_args/schema.keel",
+        "offset": 160,
+        "line": 11,
+        "column": 35
+      }
+    }
+  ]
+}

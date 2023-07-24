@@ -1,0 +1,20 @@
+
+job MyJob1 {
+    @permission(roles: [NoRoleName])
+}
+
+job MyJob2 {
+    @permission(expression: something > 5)
+}
+
+job MyJob3 {
+    @permission(expression: myJob3.id == true)
+}
+
+job MyJob4 {
+    @permission(expression: "invalid")
+}
+
+role Admin {}
+
+role Developer {}

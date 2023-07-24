@@ -840,6 +840,36 @@ var authorisationTestCases = []authorisationTestCase{
 		operationName: "getThing",
 		earlyAuth:     AuthorisationDeniedEarly(),
 	},
+	{
+		name: "multiple_model_level_permissions_ored",
+		keelSchema: `
+			model Thing {
+				fields {
+					createdBy Identity
+					updatedBy Identity
+				}
+				operations {
+					get getThing(id)
+				}
+				@permission(expression: thing.createdBy.id == ctx.identity.id, actions: [get])
+				@permission(expression: thing.updatedBy.id == ctx.identity.id, actions: [get])
+			}`,
+		operationName: "getThing",
+		earlyAuth:     CouldNotAuthoriseEarly(),
+		expectedTemplate: `
+			SELECT 
+				DISTINCT ON("thing"."id") "thing"."id" 
+			FROM 
+				"thing" 
+			INNER JOIN 
+				"identity" AS "thing$created_by" ON "thing$created_by"."id" = "thing"."created_by_id" 
+			INNER JOIN 
+				"identity" AS "thing$updated_by" ON "thing$updated_by"."id" = "thing"."updated_by_id" 
+			WHERE 
+				( "thing$created_by"."id" IS NOT DISTINCT FROM ? OR "thing$updated_by"."id" IS NOT DISTINCT FROM ? ) 
+				AND "thing"."id" IN (?, ?, ?)`,
+		expectedArgs: append([]any{identity.Id, identity.Id}, idsToAuthorise...),
+	},
 }
 
 func TestPermissionQueryBuilder(t *testing.T) {
@@ -862,10 +892,10 @@ func TestPermissionQueryBuilder(t *testing.T) {
 			}
 
 			if canResolveEarly {
-				require.NotNil(t, testCase.earlyAuth, "earlyAuthorisationResult is nil, but authorised was determined early. Expected earlyAuthorisationResult.")
-				require.Equal(t, testCase.earlyAuth.authorised, authorised, "earlyAuthorisationResult.authorised not matching. Expected: %v, Actual: %v", testCase.earlyAuth.authorised, authorised)
+				require.NotNil(t, testCase.earlyAuth, "earlyAuth is CouldNotAuthoriseEarly(), but authorised was determined early. Expected earlyAuthorisationResult.")
+				require.Equal(t, testCase.earlyAuth.authorised, authorised, "earlyAuth.authorised not matching. Expected: %v, Actual: %v", testCase.earlyAuth.authorised, authorised)
 			} else {
-				require.Nil(t, testCase.earlyAuth, "earlyAuthorisationResult should be nil because authorised could not be determined given early. Expected nil.")
+				require.Nil(t, testCase.earlyAuth, "earlyAuth should be CouldNotAuthoriseEarly() because authorised could not be determined given early. Expected nil.")
 			}
 
 			if !canResolveEarly {
