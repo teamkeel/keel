@@ -1,3 +1,10 @@
+# [0.359.0](https://github.com/teamkeel/keel/compare/v0.358.2...v0.359.0) (2023-07-25)
+
+
+### Features
+
+* add jobs to what keel generate scaffolds ([#1061](https://github.com/teamkeel/keel/issues/1061)) ([c05b0bd](https://github.com/teamkeel/keel/commit/c05b0bd01311c6d2e1c17e0de39074c6349856a3))
+
 ## [0.358.2](https://github.com/teamkeel/keel/compare/v0.358.1...v0.358.2) (2023-07-25)
 
 
