@@ -1,3 +1,10 @@
+## [0.358.2](https://github.com/teamkeel/keel/compare/v0.358.1...v0.358.2) (2023-07-25)
+
+
+### Bug Fixes
+
+* disabling transactions for jobs ([#1060](https://github.com/teamkeel/keel/issues/1060)) ([5c6ccd5](https://github.com/teamkeel/keel/commit/5c6ccd55fbfa4daf010df0ca85f852aaa411d70f))
+
 ## [0.358.1](https://github.com/teamkeel/keel/compare/v0.358.0...v0.358.1) (2023-07-24)
 
 
