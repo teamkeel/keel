@@ -13,6 +13,7 @@ import (
 
 const (
 	FUNCTIONS_DIR = "functions"
+	JOBS_DIR      = "jobs"
 )
 
 func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) {
@@ -30,6 +31,10 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 
 	functionsDir := filepath.Join(dir, FUNCTIONS_DIR)
 	if err := ensureDir(functionsDir); err != nil {
+		return nil, err
+	}
+	jobsDir := filepath.Join(dir, JOBS_DIR)
+	if err := ensureDir(jobsDir); err != nil {
 		return nil, err
 	}
 
@@ -51,6 +56,17 @@ func Scaffold(dir string, schema *proto.Schema) (codegen.GeneratedFiles, error) 
 			})
 		}
 
+	}
+
+	for _, job := range schema.Jobs {
+		path := filepath.Join(JOBS_DIR, fmt.Sprintf("%s.ts", casing.ToLowerCamel(job.Name)))
+		_, err = os.Stat(filepath.Join(dir, path))
+		if os.IsNotExist(err) {
+			generatedFiles = append(generatedFiles, &codegen.GeneratedFile{
+				Path:     path,
+				Contents: writeJobWrapper(job),
+			})
+		}
 	}
 
 	return generatedFiles, nil
@@ -109,4 +125,27 @@ export default %s(async (ctx, inputs) => {
 	%s
 });
 	`, functionName, extraImports, functionName, suggestedImplementation)
+}
+
+func writeJobWrapper(job *proto.Job) string {
+	extraImports := ", models"
+	suggestedImplementation := "// Build something cool"
+
+	// The "inputs" argument for the function signature is only
+	// wanted there are some.
+	switch {
+	case job.InputMessageName == "":
+		return fmt.Sprintf(`import { %s%s } from '@teamkeel/sdk';
+export default %s(async (ctx) => {
+	%s
+});
+	`, job.Name, extraImports, job.Name, suggestedImplementation)
+
+	default:
+		return fmt.Sprintf(`import { %s%s } from '@teamkeel/sdk';
+export default %s(async (ctx, inputs) => {
+	%s
+});
+	`, job.Name, extraImports, job.Name, suggestedImplementation)
+	}
 }

@@ -31,6 +31,15 @@ func TestScaffold(t *testing.T) {
 			read customFunctionRead(Any) returns(Any)
 		}
 	}
+	job MyJobWithInputs {
+		inputs {
+		  name Text
+		}
+		@permission(roles: [Developer])
+	  }
+	job MyJobNoInputs {
+		@permission(roles: [Developer])
+	  }
 `
 
 	builder := schema.Builder{}
@@ -44,77 +53,56 @@ func TestScaffold(t *testing.T) {
 
 	actualFiles, err := Scaffold(tmpDir, schema)
 
+	// If you enable this litter.Dump during development, it produces output that can be
+	// pasted without change into the expectedFiles literal below. Obviously to do that, you have
+	// to be confident by other means that the generated content is now correct.
+
+	// litter.Dump(actualFiles)
+
 	assert.NoError(t, err)
 
-	expectedFiles := []codegen.GeneratedFile{
-		{
-			Path: "deletePost.ts",
-			Contents: `import { DeletePost, models } from '@teamkeel/sdk';
-
-export default DeletePost(async (ctx, inputs) => {
-	const post = await models.post.delete(inputs);
-	return post;
-});`,
+	expectedFiles := codegen.GeneratedFiles{
+		&codegen.GeneratedFile{
+			Contents: "import { CreatePost, models } from '@teamkeel/sdk';\n\nexport default CreatePost(async (ctx, inputs) => {\n\tconst post = await models.post.create(inputs);\n\treturn post;\n});\n\t",
+			Path:     "functions/createPost.ts",
 		},
-		{
-			Path: "createPost.ts",
-			Contents: `import { CreatePost, models } from '@teamkeel/sdk';
-
-export default CreatePost(async (ctx, inputs) => {
-	const post = await models.post.create(inputs);
-	return post;
-});`,
+		&codegen.GeneratedFile{
+			Contents: "import { ListPosts, models } from '@teamkeel/sdk';\n\nexport default ListPosts(async (ctx, inputs) => {\n\tconst posts = await models.post.findMany(inputs);\n\treturn posts;\n});\n\t",
+			Path:     "functions/listPosts.ts",
 		},
-		{
-			Path: "updatePost.ts",
-			Contents: `import { UpdatePost, models } from '@teamkeel/sdk';
-
-export default UpdatePost(async (ctx, inputs) => {
-	const post = await models.post.update(inputs.where, inputs.values);
-	return post;
-});`,
+		&codegen.GeneratedFile{
+			Contents: "import { UpdatePost, models } from '@teamkeel/sdk';\n\nexport default UpdatePost(async (ctx, inputs) => {\n\tconst post = await models.post.update(inputs.where, inputs.values);\n\treturn post;\n});\n\t",
+			Path:     "functions/updatePost.ts",
 		},
-		{
-			Path: "getPost.ts",
-			Contents: `import { GetPost, models } from '@teamkeel/sdk';
-
-export default GetPost(async (ctx, inputs) => {
-	const post = await models.post.findOne(inputs);
-	return post;
-});`,
+		&codegen.GeneratedFile{
+			Contents: "import { GetPost, models } from '@teamkeel/sdk';\n\nexport default GetPost(async (ctx, inputs) => {\n\tconst post = await models.post.findOne(inputs);\n\treturn post;\n});\n\t",
+			Path:     "functions/getPost.ts",
 		},
-		{
-			Path: "listPosts.ts",
-			Contents: `import { ListPosts, models } from '@teamkeel/sdk';
-
-export default ListPosts(async (ctx, inputs) => {
-	const posts = await models.post.findMany(inputs);
-	return posts;
-});`,
+		&codegen.GeneratedFile{
+			Contents: "import { DeletePost, models } from '@teamkeel/sdk';\n\nexport default DeletePost(async (ctx, inputs) => {\n\tconst post = await models.post.delete(inputs);\n\treturn post;\n});\n\t",
+			Path:     "functions/deletePost.ts",
 		},
-		{
-			Path: "customFunctionRead.ts",
-			Contents: `import { CustomFunctionRead } from '@teamkeel/sdk';
-
-export default CustomFunctionRead(async (ctx, inputs) => {
-	// Build something cool
-});`,
+		&codegen.GeneratedFile{
+			Contents: "import { CustomFunctionWrite } from '@teamkeel/sdk';\n\nexport default CustomFunctionWrite(async (ctx, inputs) => {\n\t// Build something cool\n});\n\t",
+			Path:     "functions/customFunctionWrite.ts",
 		},
-		{
-			Path: "customFunctionWrite.ts",
-			Contents: `import { CustomFunctionWrite } from '@teamkeel/sdk';
-
-export default CustomFunctionWrite(async (ctx, inputs) => {
-	// Build something cool
-});`,
+		&codegen.GeneratedFile{
+			Contents: "import { CustomFunctionRead } from '@teamkeel/sdk';\n\nexport default CustomFunctionRead(async (ctx, inputs) => {\n\t// Build something cool\n});\n\t",
+			Path:     "functions/customFunctionRead.ts",
+		},
+		&codegen.GeneratedFile{
+			Contents: "import { MyJobWithInputs, models } from '@teamkeel/sdk';\nexport default MyJobWithInputs(async (ctx, inputs) => {\n\t// Build something cool\n});\n\t",
+			Path:     "jobs/myJobWithInputs.ts",
+		},
+		&codegen.GeneratedFile{
+			Contents: "import { MyJobNoInputs, models } from '@teamkeel/sdk';\nexport default MyJobNoInputs(async (ctx) => {\n\t// Build something cool\n});\n\t",
+			Path:     "jobs/myJobNoInputs.ts",
 		},
 	}
 
 	for _, f := range expectedFiles {
 		matchingActualFile, found := lo.Find(actualFiles, func(a *codegen.GeneratedFile) bool {
-			base := filepath.Base(a.Path)
-
-			return base == f.Path
+			return a.Path == f.Path
 		})
 
 		if !found {
@@ -125,14 +113,12 @@ export default CustomFunctionWrite(async (ctx, inputs) => {
 	}
 
 	for _, f := range actualFiles {
-		base := filepath.Base(f.Path)
-
-		_, found := lo.Find(expectedFiles, func(e codegen.GeneratedFile) bool {
-			return base == e.Path
+		_, found := lo.Find(expectedFiles, func(e *codegen.GeneratedFile) bool {
+			return f.Path == e.Path
 		})
 
 		if !found {
-			assert.Fail(t, fmt.Sprintf("%s not found in expected files", base))
+			assert.Fail(t, fmt.Sprintf("%s not found in expected files", f.Path))
 		}
 	}
 }
@@ -167,6 +153,38 @@ func TestExistingFunction(t *testing.T) {
 		const post = await api.models.post.create(inputs);
 		return post;
 	});`), 0777)
+
+	assert.NoError(t, err)
+
+	actualFiles, err := Scaffold(tmpDir, schema)
+
+	assert.NoError(t, err)
+
+	assert.Len(t, actualFiles, 0)
+}
+
+func TestExistingJob(t *testing.T) {
+	tmpDir := t.TempDir()
+
+	schemaString := `
+	model Post {
+	}
+	job MyJobNoInputs {
+		@permission(roles: [Developer])
+	  }
+`
+	builder := schema.Builder{}
+	schema, err := builder.MakeFromString(schemaString)
+	assert.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
+	require.NoError(t, err)
+
+	err = os.Mkdir(filepath.Join(tmpDir, "jobs"), os.ModePerm)
+
+	assert.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(tmpDir, "jobs", "myJobNoInputs.ts"), []byte(`unused garbage`), 0777)
 
 	assert.NoError(t, err)
 
