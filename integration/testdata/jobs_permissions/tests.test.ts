@@ -101,7 +101,7 @@ test("job - allowed in job code - permitted", async () => {
   expect(await jobRan(id)).toBeTruthy();
 });
 
-test("job - denied in job code - not permitted with rollback transaction", async () => {
+test("job - denied in job code - not permitted without rollback transaction", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
   const identity = await models.identity.create({ email: "keel@keel.so" });
 
@@ -109,11 +109,11 @@ test("job - denied in job code - not permitted with rollback transaction", async
     jobs.withIdentity(identity).manualJobDeniedInCode({ id, denyIt: true })
   ).toHaveAuthorizationError();
 
-  // Checks that the rollback executed.
-  expect(await jobRan(id)).toBeFalsy();
+  // This would be false if a transaction rolled back.
+  expect(await jobRan(id)).toBeTruthy();
 });
 
-test("job - exception - internal error with rollback transaction", async () => {
+test("job - exception - internal error without rollback transaction", async () => {
   const { id } = await models.trackJob.create({ didJobRun: false });
   const identity = await models.identity.create({ email: "keel@keel.so" });
 
@@ -123,6 +123,6 @@ test("job - exception - internal error with rollback transaction", async () => {
     code: "ERR_INTERNAL",
   });
 
-  // Checks that the rollback executed.
-  expect(await jobRan(id)).toBeFalsy();
+  // This would be false if a transaction rolled back.
+  expect(await jobRan(id)).toBeTruthy();
 });
