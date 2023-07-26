@@ -1,3 +1,10 @@
+## [0.359.1](https://github.com/teamkeel/keel/compare/v0.359.0...v0.359.1) (2023-07-26)
+
+
+### Bug Fixes
+
+* improved attribute validations & job permissions validation ([#1059](https://github.com/teamkeel/keel/issues/1059)) ([146666c](https://github.com/teamkeel/keel/commit/146666c585f24393f2a1429fdcb9419900df4777))
+
 # [0.359.0](https://github.com/teamkeel/keel/compare/v0.358.2...v0.359.0) (2023-07-25)
 
 
