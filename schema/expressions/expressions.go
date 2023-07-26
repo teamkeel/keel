@@ -1,8 +1,11 @@
 package expressions
 
 import (
+	"fmt"
+
 	"github.com/teamkeel/keel/schema/parser"
 	"github.com/teamkeel/keel/schema/query"
+	"github.com/teamkeel/keel/schema/validation/errorhandling"
 )
 
 type ConditionResolver struct {
@@ -18,27 +21,52 @@ func (c *ConditionResolver) Resolve() (resolvedLhs *ExpressionScopeEntity, resol
 		c.context,
 		OperandPositionLhs,
 	)
-	rhs := NewOperandResolver(
-		c.condition.RHS,
-		c.asts,
-		c.context,
-		OperandPositionRhs,
-	)
 
 	resolvedLhs, lhsErr := lhs.Resolve()
-
 	if lhsErr != nil {
 		errors = append(errors, lhsErr.ToValidationError())
 	}
 
-	if rhs != nil {
-		resolvedRhs, rhsErr := rhs.Resolve()
+	// Check RHS only if it exists
+	if c.condition.RHS != nil {
+		rhs := NewOperandResolver(
+			c.condition.RHS,
+			c.asts,
+			c.context,
+			OperandPositionRhs,
+		)
 
+		resolvedRhs, rhsErr := rhs.Resolve()
 		if rhsErr != nil {
 			errors = append(errors, rhsErr.ToValidationError())
 		}
 
 		return resolvedLhs, resolvedRhs, errors
+	} else if lhs.operand.Type() != parser.TypeBoolean {
+		// If there is only a single operand, then it must be a boolean type or literal
+		operand := NewOperandResolver(lhs.operand, c.asts, c.context, OperandPositionLhs)
+		entity, operandErr := operand.Resolve()
+		if operandErr != nil {
+			errors = append(errors, operandErr.ToValidationError())
+		}
+
+		if entity.GetType() != parser.FieldTypeBoolean {
+			errors = append(errors,
+				errorhandling.NewValidationError(
+					errorhandling.ErrorExpressionSingleConditionNotBoolean,
+					errorhandling.TemplateLiterals{
+						Literals: map[string]string{
+							"Value":      lhs.operand.ToString(),
+							"Attribute":  fmt.Sprintf("@%s", c.context.Attribute.Name.Value),
+							"Suggestion": fmt.Sprintf("%s == xxx", lhs.operand.ToString()),
+						},
+					},
+					lhs.operand.Node,
+				),
+			)
+
+		}
+
 	}
 
 	return resolvedLhs, nil, errors

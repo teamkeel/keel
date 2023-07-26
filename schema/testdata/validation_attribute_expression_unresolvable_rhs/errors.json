@@ -1,23 +1,6 @@
 {
   "errors": [
     {
-      "message": "'auth' not found on 'Post'",
-      "hint": "Did you mean author, or authorId?",
-      "code": "E020",
-      "pos": {
-        "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 247,
-        "line": 14,
-        "column": 41
-      },
-      "endPos": {
-        "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
-        "offset": 251,
-        "line": 14,
-        "column": 45
-      }
-    },
-    {
       "message": "title is already being used as an input so cannot also be used in an expression",
       "hint": "",
       "code": "ActionInputError",
@@ -32,6 +15,23 @@
         "offset": 163,
         "line": 9,
         "column": 28
+      }
+    },
+    {
+      "message": "'auth' not found on 'Post'",
+      "hint": "Did you mean author, or authorId?",
+      "code": "E020",
+      "pos": {
+        "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
+        "offset": 247,
+        "line": 14,
+        "column": 41
+      },
+      "endPos": {
+        "filename": "testdata/validation_attribute_expression_unresolvable_rhs/schema.keel",
+        "offset": 251,
+        "line": 14,
+        "column": 45
       }
     }
   ]

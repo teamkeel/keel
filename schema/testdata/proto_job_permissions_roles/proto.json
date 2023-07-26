@@ -253,7 +253,11 @@
       "name": "MyManualJobWithInputs",
       "inputMessageName": "MyManualJobWithInputsMessage",
       "permissions": [
-        {}
+        {
+          "roleNames": [
+            "Admin"
+          ]
+        }
       ]
     }
   ]

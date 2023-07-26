@@ -164,13 +164,10 @@ func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, cont
 	conditions := expression.Conditions()
 
 	for _, condition := range conditions {
-		// If there is no operator, then it means there is no rhs
-		if condition.Operator == nil {
-			continue
-		}
-		correction := errorhandling.NewCorrectionHint([]string{"=="}, condition.Operator.Symbol)
 
-		if condition.Type() != parser.LogicalCondition {
+		// If there is no operator, then it means there is no rhs
+		if condition.Type() != parser.LogicalCondition && condition.Operator != nil {
+			correction := errorhandling.NewCorrectionHint([]string{"=="}, condition.Operator.Symbol)
 			errors = append(errors,
 				errorhandling.NewValidationError(
 					errorhandling.ErrorForbiddenExpressionOperation,
@@ -184,7 +181,6 @@ func OperatorLogicalRule(asts []*parser.AST, expression *parser.Expression, cont
 					condition.Operator,
 				),
 			)
-
 			continue
 		}
 

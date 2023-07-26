@@ -19,6 +19,23 @@ job ManualJobTrueExpression {
     @permission(expression: true)
 }
 
+job ManualJobEnvExpression {
+    inputs {
+        id ID
+    }
+
+    @permission(expression: ctx.env.REGION == "za-test")
+}
+
+job ManualJobMultiPermission {
+    inputs {
+        id ID
+    }
+
+    @permission(roles: [Admin, Developer])
+    @permission(expression: ctx.env.REGION == "uk-test")
+}
+
 job ManualJobDeniedInCode {
     inputs {
         id ID

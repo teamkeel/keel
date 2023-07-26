@@ -72,6 +72,7 @@ func TestDevelopmentServerJob(t *testing.T) {
 				job ProcessPeople {
 					@permission(roles: [Admin])
 				}
+				role Admin {}
 			`,
 		},
 		{

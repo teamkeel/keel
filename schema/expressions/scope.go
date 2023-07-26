@@ -73,6 +73,10 @@ type ExpressionScope struct {
 }
 
 func buildRootExpressionScope(asts []*parser.AST, context *ExpressionContext) *ExpressionScope {
+	if context.Model == nil {
+		return DefaultExpressionScope(asts)
+	}
+
 	contextualScope := &ExpressionScope{
 		Entities: []*ExpressionScopeEntity{
 			{

@@ -1,4 +1,0 @@
-
-job MyJob {
-    @permission(expression: ctx.isAuthenticated)
-}
