@@ -5,13 +5,14 @@ go 1.20
 require (
 	github.com/99designs/gqlgen v0.17.16
 	github.com/PaesslerAG/jsonpath v0.1.1
+	github.com/adhocore/gronx v1.6.3
 	github.com/alecthomas/participle/v2 v2.0.0-beta.5
 	github.com/bmatcuk/doublestar/v4 v4.2.0
 	github.com/bykof/gostradamus v1.0.4
 	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
 	github.com/charmbracelet/lipgloss v0.7.1
-	github.com/docker/docker v20.10.17+incompatible
+	github.com/docker/docker v20.10.24+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/fatih/camelcase v1.0.0
 	github.com/golang-jwt/jwt/v4 v4.4.2
@@ -50,7 +51,6 @@ require (
 
 require (
 	github.com/PaesslerAG/gval v1.0.0 // indirect
-	github.com/adhocore/gronx v1.6.3 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
