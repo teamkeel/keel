@@ -177,7 +177,13 @@ func TestExistingJob(t *testing.T) {
 	}
 	job MyJobNoInputs {
 		@permission(roles: [Developer])
-	  }
+	}
+
+	role Developer {
+		domains {
+			"keel.dev"
+		}
+	}
 `
 	builder := schema.Builder{}
 	schema, err := builder.MakeFromString(schemaString)
