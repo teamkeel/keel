@@ -36,17 +36,23 @@ func TestScaffold(t *testing.T) {
 		  name Text
 		}
 		@permission(roles: [Developer])
-	  }
+	}
 	job MyJobNoInputs {
 		@permission(roles: [Developer])
-	  }
+	}
+
+	role Developer {
+		domains {
+			"keel.dev"
+		}
+	}
 `
 
 	builder := schema.Builder{}
 
 	schema, err := builder.MakeFromString(schemaString)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = os.WriteFile(filepath.Join(tmpDir, "schema.keel"), []byte(schemaString), 0777)
 	require.NoError(t, err)
@@ -59,7 +65,7 @@ func TestScaffold(t *testing.T) {
 
 	// litter.Dump(actualFiles)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	expectedFiles := codegen.GeneratedFiles{
 		&codegen.GeneratedFile{
@@ -171,7 +177,13 @@ func TestExistingJob(t *testing.T) {
 	}
 	job MyJobNoInputs {
 		@permission(roles: [Developer])
-	  }
+	}
+
+	role Developer {
+		domains {
+			"keel.dev"
+		}
+	}
 `
 	builder := schema.Builder{}
 	schema, err := builder.MakeFromString(schemaString)
