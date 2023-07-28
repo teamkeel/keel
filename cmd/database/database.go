@@ -14,9 +14,10 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	dockerContainer "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/mount"
-	"github.com/docker/docker/api/types/volume"
+	dockerVolume "github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/samber/lo"
@@ -141,10 +142,9 @@ func Stop() error {
 	if !running {
 		return nil
 	}
-	stopTimeout := 5 * time.Second
+	stopTimeout := int(5 * time.Second)
 	// Note that ContainerStop() gracefully stops the container by choice, but then forcibly after the timeout.
-	err = dockerClient.ContainerStop(context.Background(), container.ID, &stopTimeout)
-	if err != nil {
+	if err := dockerClient.ContainerStop(context.Background(), container.ID, dockerContainer.StopOptions{Timeout: &stopTimeout}); err != nil {
 		return err
 	}
 	return nil
@@ -458,7 +458,7 @@ func createVolumeIfNotExists(dockerClient *client.Client) error {
 	}
 	_, err = dockerClient.VolumeCreate(
 		context.Background(),
-		volume.VolumeCreateBody{Name: keelPGVolumeName})
+		dockerVolume.CreateOptions{Name: keelPGVolumeName})
 	if err != nil {
 		return nil
 	}
@@ -468,8 +468,8 @@ func createVolumeIfNotExists(dockerClient *client.Client) error {
 
 // findVolume returns the volume we use to persist the database on, if it
 // exists. If it does not yet exist it returns the volume as nil.
-func findVolume(dockerClient *client.Client) (volume *types.Volume, err error) {
-	volList, err := dockerClient.VolumeList(context.Background(), filters.Args{})
+func findVolume(dockerClient *client.Client) (volume *dockerVolume.Volume, err error) {
+	volList, err := dockerClient.VolumeList(context.Background(), dockerVolume.ListOptions{Filters: filters.Args{}})
 	if err != nil {
 		return nil, err
 	}
