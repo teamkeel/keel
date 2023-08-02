@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - BLD-600-npm-pre-release
+      - release_process
     tags-ignore:
       - "*"
 
@@ -120,5 +122,5 @@ jobs:
           tag_name: ${{ needs.npm_release.outputs.version }}
           release_name: 'chore(release): ${{ needs.npm_release.outputs.version }}'
           body: ${{ steps.changelog.outputs.changelog }}
-          draft: false
+          draft: true
           prerelease: true
