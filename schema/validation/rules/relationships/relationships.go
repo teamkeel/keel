@@ -147,7 +147,6 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 	processed := map[string]bool{}
 
 	for _, model := range query.Models(asts) {
-
 		for _, field := range query.ModelFields(model) {
 			if ok := processed[fmt.Sprintf("%s-%s", model.Name.Value, field.Name.Value)]; ok {
 				continue
@@ -180,24 +179,49 @@ func InvalidOneToOneRelationshipRule(asts []*parser.AST) (errs errorhandling.Val
 					continue
 				}
 
-				// check to see if a relation is defined on this attribute that
-				// disambiguates the reference.
-				relation := query.FieldGetAttribute(field, parser.AttributeRelation)
-				if relation != nil {
-					relationValue, _ := relation.Arguments[0].Expression.ToValue()
-					if relationValue.ToString() != otherField.Name.Value {
-						continue
-					}
+				// if the field on the other side has a unique attribute, then we know the foreign key
+				// should belong there
+				if query.FieldIsUnique(otherField) && !query.FieldIsUnique(field) {
+					continue
 				}
 
-				errs.Append(
-					errorhandling.ErrorInvalidOneToOneRelationship,
-					map[string]string{
-						"ModelA": model.Name.Value,
-						"ModelB": field.Type.Value,
-					},
-					field,
-				)
+				// similarly, if the field on the lhs is unique and the other side isn't, then this is fine.
+				if query.FieldIsUnique(field) && !query.FieldIsUnique(otherField) {
+					continue
+				}
+
+				// if fields on both sides are both marked as @unique, then this is its own validation error
+				if query.FieldIsUnique(field) && query.FieldIsUnique(otherField) {
+					errs.AppendError(
+						errorhandling.NewValidationErrorWithDetails(
+							errorhandling.RelationshipError,
+							errorhandling.ErrorDetails{
+								Message: fmt.Sprintf("Field '%s' on %s and '%s' on %s are both marked as @unique", field.Name.Value, model.Name.Value, otherField.Name.Value, otherModel.Name.Value),
+								Hint:    "In a one-to-one relationship, only one side must be marked as @unique",
+							},
+							field,
+						),
+					)
+				} else {
+					// check to see if a relation is defined on this attribute that
+					// disambiguates the reference.
+					relation := query.FieldGetAttribute(field, parser.AttributeRelation)
+					if relation != nil {
+						relationValue, _ := relation.Arguments[0].Expression.ToValue()
+						if relationValue.ToString() != otherField.Name.Value {
+							continue
+						}
+					}
+
+					errs.Append(
+						errorhandling.ErrorInvalidOneToOneRelationship,
+						map[string]string{
+							"ModelA": model.Name.Value,
+							"ModelB": field.Type.Value,
+						},
+						field,
+					)
+				}
 
 				processed[fmt.Sprintf("%s-%s", model.Name.Value, field.Name.Value)] = true
 				processed[fmt.Sprintf("%s-%s", otherModel.Name.Value, otherField.Name.Value)] = true
