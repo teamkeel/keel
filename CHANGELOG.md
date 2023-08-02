@@ -1,3 +1,10 @@
+## [0.359.2](https://github.com/teamkeel/keel/compare/v0.359.1...v0.359.2) (2023-08-02)
+
+
+### Bug Fixes
+
+* handle fields marked as unique in one-to-one validation check ([#1071](https://github.com/teamkeel/keel/issues/1071)) ([da7e3c4](https://github.com/teamkeel/keel/commit/da7e3c41688c6d84a74212a0d0de41a0294bb387))
+
 ## [0.359.1](https://github.com/teamkeel/keel/compare/v0.359.0...v0.359.1) (2023-07-26)
 
 
