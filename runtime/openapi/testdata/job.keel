@@ -1,0 +1,17 @@
+job TestJob {
+    inputs {
+        input1 Text
+        input2 Boolean
+    }
+
+    @permission(roles: [Admin])
+}
+
+job TestJob2 {
+    inputs {
+        testinput1 Text
+        testinput2 Boolean
+    }
+
+    @permission(roles: [Admin])
+}

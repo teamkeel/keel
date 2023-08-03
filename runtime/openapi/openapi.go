@@ -164,3 +164,72 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 
 	return spec
 }
+
+func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) OpenAPI {
+	// loop over jobs in schema and find the one with the name and create openapi spec for it
+	var spec OpenAPI
+
+	for _, job := range schema.Jobs {
+		msg := proto.FindMessage(schema.Messages, job.InputMessageName)
+		if msg == nil {
+			continue
+		}
+
+		if job.Name == jobName {
+			inputSchema := jsonschema.JSONSchemaForMessage(ctx, schema, nil, msg)
+			endpoint := job.Name
+
+			// Merge components from this request schema into OpenAPI components
+			if inputSchema.Components != nil {
+				for name, comp := range inputSchema.Components.Schemas {
+					spec.Components.Schemas[name] = comp
+				}
+				inputSchema.Components = nil
+			}
+
+			responseSchema := jsonschema.JSONSchema{
+				Type: "object",
+				Properties: map[string]jsonschema.JSONSchema{
+					"status": {
+						Type: "string",
+					},
+				},
+			}
+			spec.Paths = map[string]PathItemObject{}
+
+			spec.Paths[endpoint] = PathItemObject{
+				Post: OperationObject{
+					OperationID: job.Name,
+					RequestBody: ResponseObject{
+						Description: job.Name + " Request",
+						Content: map[string]MediaTypeObject{
+							"application/json": {
+								Schema: inputSchema,
+							},
+						},
+					},
+					Responses: map[string]ResponseObject{
+						"200": {
+							Description: job.Name + " Response",
+							Content: map[string]MediaTypeObject{
+								"application/json": {
+									Schema: responseSchema,
+								},
+							},
+						},
+						"400": {
+							Description: job.Name + " Response Errors",
+							Content: map[string]MediaTypeObject{
+								"application/json": {
+									Schema: responseErrorSchema,
+								},
+							},
+						},
+					},
+				},
+			}
+		}
+	}
+
+	return spec
+}
