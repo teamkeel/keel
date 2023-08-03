@@ -271,6 +271,9 @@ func getKnownIssuers(ctx context.Context) (map[string]*rsa.PublicKey, error) {
 	// if there is a private key set in the ctx for the "keel" issuer, add it to the map
 	if ctxPrivateKey != nil {
 		base[keelIssuerClaim] = &ctxPrivateKey.PublicKey
+
+		// in the case of an empty issuer, use the keel issuer public key
+		base[""] = &ctxPrivateKey.PublicKey
 	}
 
 	externalIssuers, err := runtimectx.GetExternalIssuers(ctx)
@@ -312,7 +315,7 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		// if the issuer is keel but no private key is set in the ctx, then we know that
 		// we are in a test framework context
 		// todo: look into setting pk for test runner and sharing with ActionExecutor.
-		if iss == keelIssuerClaim && ctxPrivateKey == nil {
+		if (iss == keelIssuerClaim || iss == "") && ctxPrivateKey == nil {
 			return jwt.UnsafeAllowNoneSignatureType, nil
 		}
 

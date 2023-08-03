@@ -145,6 +145,8 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 			ctx := r.Context()
 			ctx = runtimectx.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
+			issuersFromEnv, _ := runtimectx.ExternalIssuersFromEnv()
+			ctx = runtimectx.WithExternalIssuers(ctx, issuersFromEnv)
 			if functionsTransport != nil {
 				ctx = functions.WithFunctionsTransport(ctx, functionsTransport)
 			}

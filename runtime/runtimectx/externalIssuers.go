@@ -36,10 +36,10 @@ func WithExternalIssuers(ctx context.Context, issuers map[string]*rsa.PublicKey)
 }
 
 const (
-	ExternalIssuersEnvKey = "KEEL_EXTERNAL_ISSUERS"
+	ExternalIssuersEnvKey = "EXTERNAL_ISSUERS"
 )
 
-// ExternalIssuersFromEnv is responsible for parsing the JSON contents of the KEEL_EXTERNAL_ISSUERS environment variable
+// ExternalIssuersFromEnv is responsible for parsing the JSON contents of the EXTERNAL_ISSUERS environment variable
 // into a map[string]*rsa.PublicKey structure. This map will contain any custom issuer definitions added by the backend and by the user
 func ExternalIssuersFromEnv() (map[string]*rsa.PublicKey, error) {
 	envVar := os.Getenv(ExternalIssuersEnvKey)
@@ -50,7 +50,7 @@ func ExternalIssuersFromEnv() (map[string]*rsa.PublicKey, error) {
 
 	issuersMap := make(map[string]string)
 
-	// example JSON string stored in the KEEL_EXTERNAL_ISSUERS environment variable:
+	// example JSON string stored in the EXTERNAL_ISSUERS environment variable:
 	// { "customissuer": "{base64 public key}", "customissuer2": "{base64 public key}" }
 	err := json.Unmarshal([]byte(envVar), &issuersMap)
 
@@ -68,7 +68,7 @@ func ExternalIssuersFromEnv() (map[string]*rsa.PublicKey, error) {
 			continue
 		}
 
-		// The decoded string is expected to be a PKCS#1 RSA Public Key and will look like this:
+		// The decoded string is expected to be in PKIX, ASN.1 DER format and will look like this:
 		// -----BEGIN RSA PUBLIC KEY-----
 		// MIIBigKCAYEAq3DnhgYgLVJknvDA3clATozPtjI7yauqD4/ZuqgZn4KzzzkQ4BzJ
 		// ar4jRygpzbghlFn0Luk1mdVKzPUgYj0VkbRlHyYfcahbgOHixOOnXkKXrtZW7yWG
@@ -77,7 +77,11 @@ func ExternalIssuersFromEnv() (map[string]*rsa.PublicKey, error) {
 
 		pemBlock, _ := pem.Decode(decodedBase64)
 
-		publicKey, err := x509.ParsePKCS1PublicKey(pemBlock.Bytes)
+		if pemBlock == nil {
+			continue
+		}
+
+		publicKey, err := x509.ParsePKIXPublicKey(pemBlock.Bytes)
 
 		if err != nil {
 			continue
@@ -85,7 +89,7 @@ func ExternalIssuersFromEnv() (map[string]*rsa.PublicKey, error) {
 
 		// if we have been able to marshal the public key, then add it to the issuers registry
 		if publicKey != nil {
-			issuers[key] = publicKey
+			issuers[key] = publicKey.(*rsa.PublicKey)
 		}
 	}
 
