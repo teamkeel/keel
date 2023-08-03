@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"crypto/rsa"
 	"errors"
 	"fmt"
 	email "net/mail"
@@ -258,33 +259,65 @@ func ValidateResetToken(ctx context.Context, tokenString string) (string, error)
 	return subject, err
 }
 
+func getKnownIssuers(ctx context.Context) (map[string]*rsa.PublicKey, error) {
+	ctxPrivateKey, err := runtimectx.GetPrivateKey(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	base := map[string]*rsa.PublicKey{}
+
+	// if there is a private key set in the ctx for the "keel" issuer, add it to the map
+	if ctxPrivateKey != nil {
+		base[keelIssuerClaim] = &ctxPrivateKey.PublicKey
+	}
+
+	externalIssuers, err := runtimectx.GetExternalIssuers(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for key, value := range externalIssuers {
+		base[key] = value
+	}
+
+	return base, nil
+}
+
 func validateToken(ctx context.Context, tokenString string, audienceClaim string) (string, string, error) {
-	privateKey, err := runtimectx.GetPrivateKey(ctx)
+	ctxPrivateKey, err := runtimectx.GetPrivateKey(ctx)
+
 	if err != nil {
 		return "", "", err
 	}
 
 	var token *jwt.Token
 	claims := &Claims{}
-	if privateKey != nil {
-		// If the private key is set, parse the token with the public key.
-		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-			if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
-			}
 
-			return &privateKey.PublicKey, nil
-		})
-	} else {
-		// If the private key is not set, parse the token without the signature.
-		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-			if t.Header["alg"] != "none" {
-				return nil, fmt.Errorf("unexpected method: %s", t.Header["alg"])
-			}
+	issuers, err := getKnownIssuers(ctx)
 
-			return jwt.UnsafeAllowNoneSignatureType, nil
-		})
+	if err != nil {
+		return "", "", err
 	}
+
+	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+		iss := t.Claims.(*Claims).Issuer
+
+		if publicKey, ok := issuers[iss]; ok {
+			return publicKey, nil
+		}
+
+		// if the issuer is keel but no private key is set in the ctx, then we know that
+		// we are in a test framework context
+		// todo: look into setting pk for test runner and sharing with ActionExecutor.
+		if iss == keelIssuerClaim && ctxPrivateKey == nil {
+			return jwt.UnsafeAllowNoneSignatureType, nil
+		}
+
+		return nil, fmt.Errorf("unexpected issuer in token: %s", iss)
+	})
 
 	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
 		return "", "", ErrTokenExpired

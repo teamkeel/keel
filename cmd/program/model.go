@@ -435,6 +435,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			ctx = runtimectx.WithPrivateKey(ctx, m.PrivateKey)
 		}
 
+		externalIssuers, _ := runtimectx.ExternalIssuersFromEnv()
+		ctx = runtimectx.WithExternalIssuers(ctx, externalIssuers)
+
 		ctx = runtimectx.WithDatabase(ctx, m.Database)
 		ctx = runtimectx.WithSecrets(ctx, m.Secrets)
 
