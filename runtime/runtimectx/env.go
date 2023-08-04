@@ -2,7 +2,6 @@ package runtimectx
 
 import (
 	"context"
-	"os"
 )
 
 type KeelEnv string
@@ -10,20 +9,7 @@ type KeelEnv string
 const (
 	KeelEnvTest    KeelEnv = "test"
 	KeelEnvDefault KeelEnv = "default"
-
-	KEEL_ENV_KEY = "KEEL_ENV"
 )
-
-func Env() KeelEnv {
-	v := os.Getenv(KEEL_ENV_KEY)
-
-	switch v {
-	case string(KeelEnvTest):
-		return KeelEnvTest
-	default:
-		return KeelEnvDefault
-	}
-}
 
 var envKeyContext string = "env"
 
