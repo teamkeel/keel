@@ -13,7 +13,7 @@ jobs:
   setup:
     name: Generate Version
     runs-on: ubuntu-latest
-    if: ${{ startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, 'BREAKING CHANGE') }}
+    if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, '!:')
     steps:
       - uses: pnpm/action-setup@v2
         with:
@@ -31,7 +31,7 @@ jobs:
         uses: paulhatch/semantic-version@v5.0.3
         with:
           tag_prefix: "v"
-          major_pattern: "BREAKING CHANGE"
+          major_pattern: "[A-Za-z]+.*!:"
           major_regexp_flags: "g"
           minor_pattern: "feat"
           version_format: "${major}.${minor}.${patch}-prerelease${increment}"
