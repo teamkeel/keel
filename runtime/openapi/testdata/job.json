@@ -1,11 +1,11 @@
 {
-    "openapi": "",
+    "openapi": "3.1.0",
     "info": {
-        "title": "",
-        "version": ""
+        "title": "TestJob",
+        "version": "1"
     },
     "paths": {
-        "TestJob": {
+        "/": {
             "post": {
                 "operationId": "TestJob",
                 "requestBody": {

@@ -2,6 +2,7 @@ package openapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -165,19 +166,27 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 	return spec
 }
 
-func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) OpenAPI {
+func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) (OpenAPI, error) {
 	// loop over jobs in schema and find the one with the name and create openapi spec for it
 	var spec OpenAPI
 
-	for _, job := range schema.Jobs {
-		msg := proto.FindMessage(schema.Messages, job.InputMessageName)
-		if msg == nil {
-			continue
-		}
+	spec = OpenAPI{
+		OpenAPI: "3.1.0",
+		Info: InfoObject{
+			Title:   jobName,
+			Version: "1",
+		},
+		Paths: map[string]PathItemObject{},
+	}
 
+	for _, job := range schema.Jobs {
 		if job.Name == jobName {
+			msg := proto.FindMessage(schema.Messages, job.InputMessageName)
+			if msg == nil {
+				return spec, errors.New("message not found")
+			}
 			inputSchema := jsonschema.JSONSchemaForMessage(ctx, schema, nil, msg)
-			endpoint := job.Name
+			endpoint := "/"
 
 			// Merge components from this request schema into OpenAPI components
 			if inputSchema.Components != nil {
@@ -231,5 +240,5 @@ func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) Open
 		}
 	}
 
-	return spec
+	return spec, nil
 }

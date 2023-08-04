@@ -63,7 +63,8 @@ func TestGeneration(t *testing.T) {
 			}
 
 			if len(schema.Jobs) > 0 {
-				jsonSchema := openapi.GenerateJob(context.Background(), schema, schema.Jobs[0].Name)
+				jsonSchema, err := openapi.GenerateJob(context.Background(), schema, schema.Jobs[0].Name)
+				require.NoError(t, err)
 				actual, err := json.Marshal(jsonSchema)
 				require.NoError(t, err)
 
