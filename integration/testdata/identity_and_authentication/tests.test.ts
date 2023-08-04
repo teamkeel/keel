@@ -429,7 +429,7 @@ test("reset password - missing aud claim - cannot be parsed error", async () => 
     }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
-    message: "cannot be parsed or vertified as a valid JWT",
+    message: "cannot be parsed or verified as a valid JWT",
   });
 });
 

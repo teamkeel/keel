@@ -274,6 +274,8 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		return "", "", err
 	}
 
+	keelEnv := runtimectx.GetEnv(ctx)
+
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 		iss := t.Claims.(*Claims).Issuer
 
@@ -281,6 +283,9 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 			if ctxPrivateKey != nil {
 				// if the issuer is keel or blank, then parse with the runtime pk
 				return &ctxPrivateKey.PublicKey, nil
+			} else if keelEnv == runtimectx.KeelEnvTest {
+				// no private key is set in test env, so in this case allow the "none" algo
+				return jwt.UnsafeAllowNoneSignatureType, nil
 			}
 		}
 

@@ -143,6 +143,7 @@ func Run(opts *RunnerOpts) (*TestOutput, error) {
 		Addr: fmt.Sprintf(":%s", runtimePort),
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := r.Context()
+			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 			ctx = runtimectx.WithDatabase(ctx, database)
 			ctx = runtimectx.WithSecrets(ctx, opts.Secrets)
 			issuersFromEnv := runtimectx.ExternalIssuersFromEnv()

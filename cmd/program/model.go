@@ -435,6 +435,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			ctx = runtimectx.WithPrivateKey(ctx, m.PrivateKey)
 		}
 
+		if m.Mode == ModeTest {
+			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
+		} else {
+			ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvDefault)
+		}
+
 		externalIssuers := runtimectx.ExternalIssuersFromEnv()
 		ctx = runtimectx.WithExternalIssuers(ctx, externalIssuers)
 
