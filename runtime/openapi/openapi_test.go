@@ -48,18 +48,34 @@ func TestGeneration(t *testing.T) {
 			schema, err := builder.MakeFromString(c.keelSchema)
 			require.NoError(t, err)
 
-			jsonSchema := openapi.Generate(context.Background(), schema, schema.Apis[0])
-			actual, err := json.Marshal(jsonSchema)
-			require.NoError(t, err)
+			if len(schema.Jobs) == 0 {
+				jsonSchema := openapi.Generate(context.Background(), schema, schema.Apis[0])
+				actual, err := json.Marshal(jsonSchema)
+				require.NoError(t, err)
 
-			opts := jsondiff.DefaultConsoleOptions()
-			diff, explanation := jsondiff.Compare([]byte(c.jsonSchema), actual, &opts)
+				opts := jsondiff.DefaultConsoleOptions()
+				diff, explanation := jsondiff.Compare([]byte(c.jsonSchema), actual, &opts)
 
-			if diff != jsondiff.FullMatch {
-				t.Errorf(string(actual))
-				t.Errorf("actual JSON schema does not match expected: %s", explanation)
+				if diff != jsondiff.FullMatch {
+					t.Errorf(string(actual))
+					t.Errorf("actual JSON schema does not match expected: %s", explanation)
+				}
+			}
+
+			if len(schema.Jobs) > 0 {
+				jsonSchema, err := openapi.GenerateJob(context.Background(), schema, schema.Jobs[0].Name)
+				require.NoError(t, err)
+				actual, err := json.Marshal(jsonSchema)
+				require.NoError(t, err)
+
+				opts := jsondiff.DefaultConsoleOptions()
+				diff, explanation := jsondiff.Compare([]byte(c.jsonSchema), actual, &opts)
+
+				if diff != jsondiff.FullMatch {
+					t.Errorf(string(actual))
+					t.Errorf("actual JSON schema does not match expected: %s", explanation)
+				}
 			}
 		})
 	}
-
 }
