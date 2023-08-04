@@ -168,9 +168,8 @@ func Generate(ctx context.Context, schema *proto.Schema, api *proto.Api) OpenAPI
 
 func GenerateJob(ctx context.Context, schema *proto.Schema, jobName string) (OpenAPI, error) {
 	// loop over jobs in schema and find the one with the name and create openapi spec for it
-	var spec OpenAPI
 
-	spec = OpenAPI{
+	spec := OpenAPI{
 		OpenAPI: "3.1.0",
 		Info: InfoObject{
 			Title:   jobName,
