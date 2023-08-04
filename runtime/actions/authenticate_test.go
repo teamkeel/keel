@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"os"
 	"testing"
 	"time"
 
@@ -17,6 +18,7 @@ import (
 
 func TestBearerTokenGenerationAndParsingWithoutPrivateKey(t *testing.T) {
 	ctx := context.Background()
+	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 	identityId := ksuid.New()
 
 	bearerJwt, err := actions.GenerateBearerToken(ctx, identityId.String())
@@ -372,12 +374,13 @@ func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 }
 
 func TestBearerTokenFromThirdParty(t *testing.T) {
-	// todo: reinstate once we have clerk access.
-	t.Skip()
-
-	ctx := context.Background()
-	identityId := "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
 	issuer := "https://enhanced-osprey-20.clerk.accounts.dev"
+
+	os.Setenv("EXTERNAL_ISSUERS", issuer)
+	ctx := context.Background()
+
+	ctx = runtimectx.WithExternalIssuers(ctx, runtimectx.ExternalIssuersFromEnv())
+	identityId := "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)
