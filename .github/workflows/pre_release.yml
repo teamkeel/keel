@@ -70,9 +70,6 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           fetch-depth: 0
 
-      - name: Install node deps
-        run: npm install
-
       - name: Install Go deps
         run: go mod download
 
@@ -89,9 +86,6 @@ jobs:
         with:
           version: ${{ needs.setup.outputs.version }}
           package: ./packages/${{ matrix.package }}
-
-      - name: NPM CI
-        run: npm ci
 
       - name: NPM Publish ${{ matrix.package }}
         uses: JS-DevTools/npm-publish@v2
