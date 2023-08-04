@@ -278,8 +278,10 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		iss := t.Claims.(*Claims).Issuer
 
 		if iss == keelIssuerClaim || iss == "" {
-			// if the issuer is keel or blank, then parse with the runtime pk
-			return &ctxPrivateKey.PublicKey, nil
+			if ctxPrivateKey != nil {
+				// if the issuer is keel or blank, then parse with the runtime pk
+				return &ctxPrivateKey.PublicKey, nil
+			}
 		}
 
 		if publicKey, ok := externalIssuers[iss]; ok {
