@@ -11,7 +11,9 @@ const (
 	KeelEnvDefault KeelEnv = "default"
 )
 
-var envKeyContext string = "env"
+type EnvKeyContextType string
+
+var envKeyContext EnvKeyContextType = "env"
 
 func GetEnv(ctx context.Context) KeelEnv {
 	v := ctx.Value(envKeyContext)
