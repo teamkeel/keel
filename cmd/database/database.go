@@ -142,7 +142,7 @@ func Stop() error {
 	if !running {
 		return nil
 	}
-	stopTimeout := int(5 * time.Second)
+	stopTimeout := int((5 * time.Second).Seconds())
 	// Note that ContainerStop() gracefully stops the container by choice, but then forcibly after the timeout.
 	if err := dockerClient.ContainerStop(context.Background(), container.ID, dockerContainer.StopOptions{Timeout: &stopTimeout}); err != nil {
 		return err
