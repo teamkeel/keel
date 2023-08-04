@@ -3,12 +3,13 @@ package runtimectx
 import (
 	"context"
 	"crypto/rsa"
-	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
-	"encoding/pem"
 	"errors"
+	"fmt"
+	"net/url"
 	"os"
+	"strings"
+
+	"github.com/lestrrat-go/jwx/v2/jwk"
 )
 
 type externalIssuersKey string
@@ -39,59 +40,86 @@ const (
 	ExternalIssuersEnvKey = "EXTERNAL_ISSUERS"
 )
 
-// ExternalIssuersFromEnv is responsible for parsing the JSON contents of the EXTERNAL_ISSUERS environment variable
-// into a map[string]*rsa.PublicKey structure. This map will contain any custom issuer definitions added by the backend and by the user
-func ExternalIssuersFromEnv() (map[string]*rsa.PublicKey, error) {
-	envVar := os.Getenv(ExternalIssuersEnvKey)
+type Jwks struct {
+	Set jwk.Set
+}
 
-	if envVar == "" {
-		return nil, errors.New("no external issuers in env")
-	}
-
-	issuersMap := make(map[string]string)
-
-	// example JSON string stored in the EXTERNAL_ISSUERS environment variable:
-	// { "customissuer": "{base64 public key}", "customissuer2": "{base64 public key}" }
-	err := json.Unmarshal([]byte(envVar), &issuersMap)
+func NewJwks(uri string) (*Jwks, error) {
+	jwksUri, err := url.Parse(fmt.Sprintf("%s/.well-known/jwks.json", uri))
 
 	if err != nil {
 		return nil, err
 	}
 
-	issuers := map[string]*rsa.PublicKey{}
+	keyset, err := jwk.Fetch(context.Background(), jwksUri.String())
 
-	for key, value := range issuersMap {
-		// the public key is stored in base64 in the json in order to preserve line breaks etc
-		decodedBase64, err := base64.StdEncoding.DecodeString(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Jwks{
+		Set: keyset,
+	}, nil
+}
+
+func (j *Jwks) PublicKey() (*rsa.PublicKey, error) {
+	allKeys := j.Set.Keys(context.Background())
+
+	found := false
+
+	var publicKey rsa.PublicKey
+
+	for allKeys.Next(context.Background()) {
+		curr := allKeys.Pair()
+
+		switch v := curr.Value.(type) {
+		case jwk.RSAPublicKey:
+
+			found = true
+
+			err := v.Raw(&publicKey)
+
+			if err != nil {
+				found = false
+			}
+		}
+
+	}
+
+	if !found {
+		return nil, errors.New("No RSA public key found")
+	}
+
+	return &publicKey, nil
+}
+
+// ExternalIssuersFromEnv is responsible for parsing the contents of the EXTERNAL_ISSUERS environment variable
+// into a []string. This environment variable is a comma separated list of authorization server uris.
+func ExternalIssuersFromEnv() map[string]*rsa.PublicKey {
+	issuers := make(map[string]*rsa.PublicKey)
+	envVar := os.Getenv(ExternalIssuersEnvKey)
+
+	if envVar == "" {
+		return make(map[string]*rsa.PublicKey)
+	}
+
+	for _, uri := range strings.Split(envVar, ",") {
+		jwks, err := NewJwks(uri)
 
 		if err != nil {
 			continue
 		}
 
-		// The decoded string is expected to be in PKIX, ASN.1 DER format and will look like this:
-		// -----BEGIN RSA PUBLIC KEY-----
-		// MIIBigKCAYEAq3DnhgYgLVJknvDA3clATozPtjI7yauqD4/ZuqgZn4KzzzkQ4BzJ
-		// ar4jRygpzbghlFn0Luk1mdVKzPUgYj0VkbRlHyYfcahbgOHixOOnXkKXrtZW7yWG
-		// jXPqy/ZJ/+...
-		// -----END RSA PUBLIC KEY-----
-
-		pemBlock, _ := pem.Decode(decodedBase64)
-
-		if pemBlock == nil {
-			continue
-		}
-
-		publicKey, err := x509.ParsePKIXPublicKey(pemBlock.Bytes)
+		publicKey, err := jwks.PublicKey()
 
 		if err != nil {
 			continue
 		}
 
-		// if we have been able to marshal the public key, then add it to the issuers registry
 		if publicKey != nil {
-			issuers[key] = publicKey.(*rsa.PublicKey)
+			issuers[uri] = publicKey
 		}
 	}
 
-	return issuers, nil
+	return issuers
 }
