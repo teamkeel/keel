@@ -372,6 +372,9 @@ func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 }
 
 func TestBearerTokenFromThirdParty(t *testing.T) {
+	// todo: reinstate once we have clerk access.
+	t.Skip()
+
 	ctx := context.Background()
 	identityId := "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp"
 	issuer := "https://enhanced-osprey-20.clerk.accounts.dev"
