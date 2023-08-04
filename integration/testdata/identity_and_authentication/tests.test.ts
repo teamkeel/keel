@@ -23,7 +23,7 @@ test("authenticate - invalid email - respond with invalid email address error", 
         email: "user",
         password: "1234",
       },
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "invalid email address",
@@ -38,7 +38,7 @@ test("authenticate - empty password - respond with password cannot be empty erro
         email: "user@keel.xyz",
         password: "",
       },
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "password cannot be empty",
@@ -53,7 +53,7 @@ test("authenticate - new identity and createIfNotExists false - respond with fai
         email: "user@keel.xyz",
         password: "1234",
       },
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "failed to authenticate",
@@ -135,7 +135,7 @@ test("authenticate - incorrect credentials with existing identity - not authenti
         email: "user@keel.xyz",
         password: "zzzz",
       },
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "failed to authenticate",
@@ -156,7 +156,7 @@ test("identity context permission - correct identity - permission satisfied", as
   const post = await authedActions.createPostWithIdentity({ title: "temp" });
 
   await expect(
-    authedActions.getPostRequiresIdentity({ id: post.id })
+    authedActions.getPostRequiresIdentity({ id: post.id }),
   ).resolves.toEqual(post);
 });
 
@@ -182,7 +182,7 @@ test("identity context permission - incorrect identity - permission not satisfie
     .createPostWithIdentity({ title: "temp" });
 
   await expect(
-    actions.withAuthToken(token2).getPostRequiresIdentity({ id: post.id })
+    actions.withAuthToken(token2).getPostRequiresIdentity({ id: post.id }),
   ).toHaveAuthorizationError();
 });
 
@@ -200,7 +200,7 @@ test("isAuthenticated context permission - authenticated - permission satisfied"
     .createPostWithIdentity({ title: "temp" });
 
   await expect(
-    actions.withAuthToken(token).getPostRequiresAuthentication({ id: post.id })
+    actions.withAuthToken(token).getPostRequiresAuthentication({ id: post.id }),
   ).resolves.toEqual(post);
 });
 
@@ -218,7 +218,7 @@ test("isAuthenticated context permission - not authenticated - permission not sa
     .createPostWithIdentity({ title: "temp" });
 
   await expect(
-    actions.getPostRequiresAuthentication({ id: post.id })
+    actions.getPostRequiresAuthentication({ id: post.id }),
   ).toHaveAuthorizationError();
 });
 
@@ -238,7 +238,7 @@ test("not isAuthenticated context permission - authenticated - permission satisf
   await expect(
     actions
       .withAuthToken(token)
-      .getPostRequiresNoAuthentication({ id: post.id })
+      .getPostRequiresNoAuthentication({ id: post.id }),
   ).toHaveAuthorizationError();
 });
 
@@ -256,7 +256,7 @@ test("not isAuthenticated context permission - not authenticated - permission sa
     .createPostWithIdentity({ title: "temp" });
 
   await expect(
-    actions.getPostRequiresNoAuthentication({ id: post.id })
+    actions.getPostRequiresNoAuthentication({ id: post.id }),
   ).resolves.toEqual(post);
 });
 
@@ -336,7 +336,7 @@ test("related model identity context permission - incorrect identity - permissio
     .createPostWithIdentity({ title: "temp" });
 
   await expect(
-    actions.withAuthToken(token2).createChild({ post: { id: post.id } })
+    actions.withAuthToken(token2).createChild({ post: { id: post.id } }),
   ).toHaveAuthorizationError();
 
   const childPosts = await models.childPost.findMany({
@@ -350,7 +350,7 @@ test("request reset password - invalid email - respond with invalid email addres
     actions.requestPasswordReset({
       email: "user",
       redirectUrl: "https://mydomain.com",
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "invalid email address",
@@ -362,7 +362,7 @@ test("request reset password - invalid redirectUrl - respond with invalid redire
     actions.requestPasswordReset({
       email: "user@keel.xyz",
       redirectUrl: "mydomain",
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "invalid redirect URL",
@@ -379,7 +379,7 @@ test("request reset password - unknown email - successful request", async () => 
     actions.requestPasswordReset({
       email: "another-user@keel.xyz",
       redirectUrl: "https://mydomain.com",
-    })
+    }),
   ).not.toHaveError({});
 });
 
@@ -395,7 +395,7 @@ test("reset password - invalid token - token has expired error", async () => {
     actions.resetPassword({
       token: "invalid",
       password: "abc",
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "token has expired",
@@ -426,7 +426,7 @@ test("reset password - missing aud claim - cannot be parsed error", async () => 
     actions.resetPassword({
       token: resetToken,
       password: "abc",
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "cannot be parsed or vertified as a valid JWT",
@@ -458,7 +458,7 @@ test("reset password - valid token - password is reset", async () => {
     actions.resetPassword({
       token: resetToken,
       password: "abc",
-    })
+    }),
   ).not.toHaveError({});
 
   await expect(
@@ -468,7 +468,7 @@ test("reset password - valid token - password is reset", async () => {
         email: "user@keel.xyz",
         password: "123",
       },
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "failed to authenticate",
@@ -510,7 +510,7 @@ test("reset password - valid token with aud as array - password is reset", async
     actions.resetPassword({
       token: resetToken,
       password: "abc",
-    })
+    }),
   ).not.toHaveError({});
 
   await expect(
@@ -520,7 +520,7 @@ test("reset password - valid token with aud as array - password is reset", async
         email: "user@keel.xyz",
         password: "123",
       },
-    })
+    }),
   ).rejects.toEqual({
     code: "ERR_INVALID_INPUT",
     message: "failed to authenticate",
@@ -538,7 +538,7 @@ test("reset password - valid token with aud as array - password is reset", async
 });
 
 // TODO: reinstate skipped tests below once we have gained access to clerk to retrieve the private key so we can
-// populate environment variable in the test fixtures keelconfig.yaml file with the corresponding public key 
+// populate environment variable in the test fixtures keelconfig.yaml file with the corresponding public key
 
 // This test will break if we use a private key in the test runtime.
 test.skip("3rd party Clerk token - identity already exists - permission satisfied", async () => {
@@ -571,7 +571,7 @@ test.skip("3rd party Clerk token - identity already exists - permission satisfie
   expect(post.identityId).equal(identity.id);
 
   await expect(
-    authedActions.getPostRequiresIdentity({ id: post.id })
+    authedActions.getPostRequiresIdentity({ id: post.id }),
   ).resolves.toEqual(post);
 });
 
@@ -603,13 +603,13 @@ test.skip("3rd party Clerk token - identity does not exist - identity created an
 
   expect(identity?.externalId).equal("user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp");
   expect(identity?.createdBy).equal(
-    "https://enhanced-osprey-20.clerk.accounts.dev"
+    "https://enhanced-osprey-20.clerk.accounts.dev",
   );
   expect(identity?.email).toBeNull();
   expect(identity?.password).toBeNull();
 
   await expect(
-    authedActions.getPostRequiresIdentity({ id: post.id })
+    authedActions.getPostRequiresIdentity({ id: post.id }),
   ).resolves.toEqual(post);
 });
 
@@ -644,6 +644,6 @@ test.skip("3rd party Clerk token - same external id but different issuer - ident
   expect(post.identityId).not.equal(identity.id);
 
   await expect(
-    authedActions.getPostRequiresIdentity({ id: post.id })
+    authedActions.getPostRequiresIdentity({ id: post.id }),
   ).resolves.toEqual(post);
 });
