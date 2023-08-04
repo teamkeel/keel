@@ -1,3 +1,10 @@
+## [0.359.3](https://github.com/teamkeel/keel/compare/v0.359.2...v0.359.3) (2023-08-04)
+
+
+### Bug Fixes
+
+* correctly convert int64 to int for linux386 arch ([#1075](https://github.com/teamkeel/keel/issues/1075)) ([b2fd5e9](https://github.com/teamkeel/keel/commit/b2fd5e9fa5fe70cbef5915cf2b8b88b9fe8fa5ef))
+
 ## [0.359.2](https://github.com/teamkeel/keel/compare/v0.359.1...v0.359.2) (2023-08-02)
 
 
