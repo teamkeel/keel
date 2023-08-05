@@ -1,3 +1,10 @@
+# [0.360.0](https://github.com/teamkeel/keel/compare/v0.359.3...v0.360.0) (2023-08-05)
+
+
+### Features
+
+* support scheduled jobs ([#1076](https://github.com/teamkeel/keel/issues/1076)) ([542d338](https://github.com/teamkeel/keel/commit/542d3388454ddaff4a87a77adb57c7ce8beb628f))
+
 ## [0.359.3](https://github.com/teamkeel/keel/compare/v0.359.2...v0.359.3) (2023-08-04)
 
 
