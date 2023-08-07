@@ -13,7 +13,7 @@ model Person { // Comment 2
         } // Comment 7 - 6
     }
     // Comment 8
-    operations { // Comment 9
+    actions { // Comment 9
         // Comment 10
         get getPerson(id) // Comment 11
         // Comment 12
@@ -78,7 +78,7 @@ model Person {
     }
 
     // Comment 8
-    operations {
+    actions {
         // Comment 9
         // Comment 10
         get getPerson(id)

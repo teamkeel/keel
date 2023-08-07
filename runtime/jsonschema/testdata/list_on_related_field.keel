@@ -3,7 +3,7 @@ model Person {
         company Company
     }
 
-    operations {
+    actions {
         list testAction(company.name, company.tradingAs)
     }
 }

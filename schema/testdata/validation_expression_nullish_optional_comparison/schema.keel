@@ -3,7 +3,7 @@ model Post {
         identity Identity?
     }
 
-    operations {
+    actions {
         create createPost() {
             @set(post.identity = ctx.identity)
             @permission(expression: post.identity == null)

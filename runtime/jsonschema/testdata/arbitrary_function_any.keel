@@ -3,7 +3,7 @@ message Foo {
 }
 
 model Post {
-    functions {
+    actions {
         read testAction(Any) returns (Foo)
     }
 }

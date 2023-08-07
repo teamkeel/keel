@@ -14,12 +14,14 @@ import (
 // CreateOperationRequiredFieldsRule makes sure that all create operation are specified in such a way
 // that all the fields that must be populated during a create, are covered by either
 // inputs or set expressions.
+// Only applies to built in actions
 // This includes (recursively) the fields in nested models where appropriate.
 func CreateOperationRequiredFieldsRule(
 	asts []*parser.AST) (errs errorhandling.ValidationErrors) {
 	for _, model := range query.Models(asts) {
 		rootModelName := casing.ToLowerCamel(model.Name.Value)
-		for _, op := range query.ModelCreateOperations(model) {
+
+		for _, op := range query.ModelCreateActions(model, func(a *parser.ActionNode) bool { return !a.IsFunction() }) {
 			dotDelimPath := ""
 			for _, field := range query.ModelFields(model) {
 				if field.Type.Value == model.Name.Value && !field.Optional {

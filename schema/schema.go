@@ -389,7 +389,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 	declaration.Model.Sections = append(declaration.Model.Sections, section)
 	declarations.Declarations = append(declarations.Declarations, declaration)
 
-	// Making the identity model and operations available on all APIs
+	// Making the identity model and actions available on all APIs
 	for _, d := range declarations.Declarations {
 		if d.API != nil {
 			for _, s := range d.API.Sections {

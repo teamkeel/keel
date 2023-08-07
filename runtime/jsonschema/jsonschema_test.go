@@ -58,10 +58,10 @@ func TestJSONSchemaGeneration(t *testing.T) {
 			schema, err := builder.MakeFromString(c.keelSchema)
 			require.NoError(t, err)
 
-			op := proto.FindOperation(schema, "testAction")
-			require.NotNil(t, op, "operation with name testAction could not be found")
+			action := proto.FindAction(schema, "testAction")
+			require.NotNil(t, action, "action with name testAction could not be found")
 
-			jsonSchema := jsonschema.JSONSchemaForOperationInput(context.Background(), schema, op)
+			jsonSchema := jsonschema.JSONSchemaForActionInput(context.Background(), schema, action)
 			jsonSchemaBytes, err := json.Marshal(jsonSchema)
 			require.NoError(t, err)
 
@@ -100,7 +100,7 @@ func TestValidateRequest(t *testing.T) {
 					fields {
 						name Text @unique
 					}
-					operations {
+					actions {
 						get getPerson(id)
 						get getBestBeatle() {
 							@where(person.name == "John Lennon")
@@ -170,7 +170,7 @@ func TestValidateRequest(t *testing.T) {
 					fields {
 						name Text @unique
 					}
-					operations {
+					actions {
 						delete deletePerson(id)
 						delete deleteBob() {
 							@where(person.name == "Bob")
@@ -246,7 +246,7 @@ func TestValidateRequest(t *testing.T) {
 						birthday Date?
 						hobby Hobby?
 					}
-					operations {
+					actions {
 						create createPerson() with (name)
 						create createPersonWithDob() with (name, birthday)
 						create createPersonWithOptionalDob() with (name, birthday?)
@@ -372,7 +372,7 @@ func TestValidateRequest(t *testing.T) {
 						name Text
 						nickName Text?
 					}
-					operations {
+					actions {
 						update updateName(id) with (name)
 						update updateNameAndNickname(id) with (name, nickName)
 						update updateNameOrNickname(id) with (name?, nickName?)
@@ -496,7 +496,7 @@ func TestValidateRequest(t *testing.T) {
 						available Boolean
 						releaseDate Date
 					}
-					operations {
+					actions {
 						list listBooks(id?, title?, genre?, price?, available?, createdAt?, releaseDate?) {
 							@sortable(title, genre)
 						}
@@ -779,7 +779,7 @@ func TestValidateRequest(t *testing.T) {
 			schema: `
 			    message In {}
 				model Whatever {
-					functions {
+					actions {
 						read getWhatever(Any) returns(Any)
 						read noInputs() returns(Any)
 						read emptyInputMessage(In) returns(Any)
@@ -865,9 +865,9 @@ func TestValidateRequest(t *testing.T) {
 				err = json.Unmarshal([]byte(f.request), &req)
 				require.NoError(t, err)
 
-				op := proto.FindOperation(schema, f.opName)
+				action := proto.FindAction(schema, f.opName)
 
-				result, err := jsonschema.ValidateRequest(context.Background(), schema, op, req)
+				result, err := jsonschema.ValidateRequest(context.Background(), schema, action, req)
 				require.NoError(t, err)
 				require.NotNil(t, result)
 

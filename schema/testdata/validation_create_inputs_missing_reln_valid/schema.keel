@@ -10,7 +10,7 @@ model Post {
         author Author
     }
 
-    operations {
+    actions {
         create createPostB() with (content, author.id)
         create createPostC() with (content, someAuthorId: ID) {
             @set(post.author.id = someAuthorId)

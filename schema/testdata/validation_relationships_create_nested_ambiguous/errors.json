@@ -6,13 +6,13 @@
       "code": "E059",
       "pos": {
         "filename": "testdata/validation_relationships_create_nested_ambiguous/schema.keel",
-        "offset": 129,
+        "offset": 126,
         "line": 9,
         "column": 9
       },
       "endPos": {
         "filename": "testdata/validation_relationships_create_nested_ambiguous/schema.keel",
-        "offset": 363,
+        "offset": 360,
         "line": 16,
         "column": 10
       }

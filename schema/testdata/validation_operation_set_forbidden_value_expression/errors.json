@@ -6,13 +6,13 @@
       "code": "E023",
       "pos": {
         "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
-        "offset": 232,
+        "offset": 229,
         "line": 13,
         "column": 18
       },
       "endPos": {
         "filename": "testdata/validation_operation_set_forbidden_value_expression/schema.keel",
-        "offset": 248,
+        "offset": 245,
         "line": 13,
         "column": 34
       }

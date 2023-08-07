@@ -3,7 +3,7 @@ model Foo {
     f1 Boolean
     f2 Text
   }
-  operations {
+  actions {
     create createPost() with (f2) {
       @set(foo.f1 = true)
     }

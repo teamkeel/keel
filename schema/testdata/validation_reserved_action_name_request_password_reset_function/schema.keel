@@ -3,7 +3,7 @@ model User {
         email Text
     }
 
-    functions {
+    actions {
         create requestPasswordReset() with (email)
     }
 }

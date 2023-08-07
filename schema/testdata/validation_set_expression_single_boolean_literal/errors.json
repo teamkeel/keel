@@ -6,13 +6,13 @@
       "code": "E023",
       "pos": {
         "filename": "testdata/validation_set_expression_single_boolean_literal/schema.keel",
-        "offset": 121,
+        "offset": 118,
         "line": 8,
         "column": 12
       },
       "endPos": {
         "filename": "testdata/validation_set_expression_single_boolean_literal/schema.keel",
-        "offset": 125,
+        "offset": 122,
         "line": 8,
         "column": 16
       }

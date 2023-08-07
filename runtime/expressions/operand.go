@@ -20,20 +20,20 @@ import (
 // OperandResolver hides some of the complexity of expression parsing so that the runtime action code
 // can reason about and execute expression logic without stepping through the AST.
 type OperandResolver struct {
-	Context   context.Context
-	Schema    *proto.Schema
-	Model     *proto.Model
-	Operation *proto.Operation
-	Operand   *parser.Operand
+	Context context.Context
+	Schema  *proto.Schema
+	Model   *proto.Model
+	Action  *proto.Action
+	Operand *parser.Operand
 }
 
-func NewOperandResolver(ctx context.Context, schema *proto.Schema, model *proto.Model, operation *proto.Operation, operand *parser.Operand) *OperandResolver {
+func NewOperandResolver(ctx context.Context, schema *proto.Schema, model *proto.Model, action *proto.Action, operand *parser.Operand) *OperandResolver {
 	return &OperandResolver{
-		Context:   ctx,
-		Schema:    schema,
-		Model:     model,
-		Operation: operation,
-		Operand:   operand,
+		Context: ctx,
+		Schema:  schema,
+		Model:   model,
+		Action:  action,
+		Operand: operand,
 	}
 }
 
@@ -46,8 +46,8 @@ func (resolver *OperandResolver) IsLiteral() bool {
 	return isLiteral || isEnumLiteral
 }
 
-// IsImplicitInput returns true if the expression operand refers to an implicit input on an operation.
-// For example, an input value provided in a create operation might require validation,
+// IsImplicitInput returns true if the expression operand refers to an implicit input on an action.
+// For example, an input value provided in a create action might require validation,
 // such as: create createThing() with (name) @validation(name != "")
 func (resolver *OperandResolver) IsImplicitInput() bool {
 	isSingleFragment := resolver.Operand.Ident != nil && len(resolver.Operand.Ident.Fragments) == 1
@@ -59,14 +59,14 @@ func (resolver *OperandResolver) IsImplicitInput() bool {
 	foundImplicitWhereInput := false
 	foundImplicitValueInput := false
 
-	whereInputs := proto.FindWhereInputMessage(resolver.Schema, resolver.Operation.Name)
+	whereInputs := proto.FindWhereInputMessage(resolver.Schema, resolver.Action.Name)
 	if whereInputs != nil {
 		_, foundImplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
 			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && in.IsModelField()
 		})
 	}
 
-	valuesInputs := proto.FindValuesInputMessage(resolver.Schema, resolver.Operation.Name)
+	valuesInputs := proto.FindValuesInputMessage(resolver.Schema, resolver.Action.Name)
 	if valuesInputs != nil {
 		_, foundImplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
 			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && in.IsModelField()
@@ -76,7 +76,7 @@ func (resolver *OperandResolver) IsImplicitInput() bool {
 	return foundImplicitWhereInput || foundImplicitValueInput
 }
 
-// IsExplicitInput returns true if the expression operand refers to an explicit input on an operation.
+// IsExplicitInput returns true if the expression operand refers to an explicit input on an action.
 // For example, a where condition might use an explicit input,
 // such as: list listThings(isActive: Boolean) @where(thing.isActive == isActive)
 func (resolver *OperandResolver) IsExplicitInput() bool {
@@ -89,14 +89,14 @@ func (resolver *OperandResolver) IsExplicitInput() bool {
 	foundExplicitWhereInput := false
 	foundExplicitValueInput := false
 
-	whereInputs := proto.FindWhereInputMessage(resolver.Schema, resolver.Operation.Name)
+	whereInputs := proto.FindWhereInputMessage(resolver.Schema, resolver.Action.Name)
 	if whereInputs != nil {
 		_, foundExplicitWhereInput = lo.Find(whereInputs.Fields, func(in *proto.MessageField) bool {
 			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && !in.IsModelField()
 		})
 	}
 
-	valuesInputs := proto.FindValuesInputMessage(resolver.Schema, resolver.Operation.Name)
+	valuesInputs := proto.FindValuesInputMessage(resolver.Schema, resolver.Action.Name)
 	if valuesInputs != nil {
 		_, foundExplicitValueInput = lo.Find(valuesInputs.Fields, func(in *proto.MessageField) bool {
 			return in.Name == resolver.Operand.Ident.Fragments[0].Fragment && !in.IsModelField()
@@ -123,7 +123,7 @@ func (resolver *OperandResolver) IsContextField() bool {
 // GetOperandType returns the equivalent protobuf type for the expression operand.
 func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 	operand := resolver.Operand
-	operation := resolver.Operation
+	action := resolver.Action
 	schema := resolver.Schema
 
 	switch {
@@ -167,32 +167,32 @@ func (resolver *OperandResolver) GetOperandType() (proto.Type, error) {
 		operandType := proto.FindField(schema.Models, casing.ToCamel(modelTarget), fieldName).Type.Type
 		return operandType, nil
 	case resolver.IsImplicitInput():
-		modelTarget := casing.ToCamel(operation.ModelName)
+		modelTarget := casing.ToCamel(action.ModelName)
 		inputName := operand.Ident.Fragments[0].Fragment
 		operandType := proto.FindField(schema.Models, modelTarget, inputName).Type.Type
 		return operandType, nil
 	case resolver.IsExplicitInput():
 		inputName := operand.Ident.Fragments[0].Fragment
 		var field *proto.MessageField
-		switch operation.Type {
-		case proto.OperationType_OPERATION_TYPE_CREATE:
-			message := proto.FindValuesInputMessage(schema, operation.Name)
+		switch action.Type {
+		case proto.ActionType_ACTION_TYPE_CREATE:
+			message := proto.FindValuesInputMessage(schema, action.Name)
 			field = proto.FindMessageField(message, inputName)
-		case proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_LIST, proto.OperationType_OPERATION_TYPE_DELETE:
-			message := proto.FindWhereInputMessage(schema, operation.Name)
+		case proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_LIST, proto.ActionType_ACTION_TYPE_DELETE:
+			message := proto.FindWhereInputMessage(schema, action.Name)
 			field = proto.FindMessageField(message, inputName)
-		case proto.OperationType_OPERATION_TYPE_UPDATE:
-			message := proto.FindValuesInputMessage(schema, operation.Name)
+		case proto.ActionType_ACTION_TYPE_UPDATE:
+			message := proto.FindValuesInputMessage(schema, action.Name)
 			field = proto.FindMessageField(message, inputName)
 			if field == nil {
-				message := proto.FindWhereInputMessage(schema, operation.Name)
+				message := proto.FindWhereInputMessage(schema, action.Name)
 				field = proto.FindMessageField(message, inputName)
 			}
 		default:
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unhandled operation type %s for explicit input", operation.Type)
+			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("unhandled action type %s for explicit input", action.Type)
 		}
 		if field == nil {
-			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("could not find explicit input %s on operation %s", inputName, operation.Name)
+			return proto.Type_TYPE_UNKNOWN, fmt.Errorf("could not find explicit input %s on action %s", inputName, action.Name)
 		}
 		return field.Type.Type, nil
 	case operand.Ident.IsContext():

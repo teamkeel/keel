@@ -6,13 +6,13 @@
       "code": "E061",
       "pos": {
         "filename": "testdata/validation_where_expression_single_string_literal/schema.keel",
-        "offset": 114,
+        "offset": 111,
         "line": 9,
         "column": 14
       },
       "endPos": {
         "filename": "testdata/validation_where_expression_single_string_literal/schema.keel",
-        "offset": 125,
+        "offset": 122,
         "line": 9,
         "column": 25
       }

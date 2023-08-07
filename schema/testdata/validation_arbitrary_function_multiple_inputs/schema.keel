@@ -11,7 +11,9 @@ message Bar {
 }
 
 model Person {
-  functions {
-    read getPerson(Foo, Baz) returns (Bar)
+  actions {
+    read getPerson(Foo, Baz) returns (Bar) {
+      @function
+    }
   }
 }

@@ -4,7 +4,7 @@ model Person {
         employer Company?
     }
 
-    operations {
+    actions {
         create createPerson() {
             @set(person.name = null)
             @set(null = person.name)

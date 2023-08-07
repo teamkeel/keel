@@ -1,18 +1,18 @@
 {
   "errors": [
     {
-      "message": "text is not a unique field. delete operations take only unique inputs",
+      "message": "text is not a unique field. delete actions take only unique inputs",
       "hint": "",
       "code": "E035",
       "pos": {
         "filename": "testdata/validation_delete_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 100,
+        "offset": 97,
         "line": 7,
         "column": 30
       },
       "endPos": {
         "filename": "testdata/validation_delete_operation_no_unique_lookup_in_inputs/schema.keel",
-        "offset": 104,
+        "offset": 101,
         "line": 7,
         "column": 34
       }

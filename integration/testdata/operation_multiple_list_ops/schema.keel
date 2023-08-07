@@ -3,7 +3,7 @@ model Thing {
         something Text
     }
 
-    operations {
+    actions {
         list listOne()
         list listTwo()
     }

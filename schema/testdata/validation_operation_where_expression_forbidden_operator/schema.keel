@@ -8,7 +8,7 @@ model Profile {
         }
     }
 
-    operations {
+    actions {
         update updateProfile(id) with (username) {
             @where(profile.identity = ctx.identity)
         }

@@ -11,7 +11,7 @@ model Post {
         typePermissionMatch PostType @default(PostType.Technical)
     }
 
-    operations {
+    actions {
         create createWithTextPermissionLiteral() with (title) {
             @permission(expression: post.title == "hello")
         }

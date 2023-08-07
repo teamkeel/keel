@@ -6,13 +6,13 @@
       "code": "E022",
       "pos": {
         "filename": "testdata/validation_operation_where_expression_forbidden_operator/schema.keel",
-        "offset": 252,
+        "offset": 249,
         "line": 13,
         "column": 37
       },
       "endPos": {
         "filename": "testdata/validation_operation_where_expression_forbidden_operator/schema.keel",
-        "offset": 253,
+        "offset": 250,
         "line": 13,
         "column": 38
       }

@@ -16,7 +16,7 @@ model Post {
         enum2 Category
     }
 
-    operations {
+    actions {
         list listWithLiterals() {
             @where(post.text == "literal")
             @where(post.text != "literal")

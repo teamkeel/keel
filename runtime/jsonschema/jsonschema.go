@@ -71,17 +71,17 @@ type Components struct {
 	Schemas map[string]JSONSchema `json:"schemas"`
 }
 
-// ValidateRequest validates that the input is valid for the given operation and schema.
+// ValidateRequest validates that the input is valid for the given action and schema.
 // If validation errors are found they will be contained in the returned result. If an error
 // is returned then validation could not be completed, likely to do an invalid JSON schema
 // being created.
-func ValidateRequest(ctx context.Context, schema *proto.Schema, op *proto.Operation, input any) (*gojsonschema.Result, error) {
-	requestType := JSONSchemaForOperationInput(ctx, schema, op)
+func ValidateRequest(ctx context.Context, schema *proto.Schema, action *proto.Action, input any) (*gojsonschema.Result, error) {
+	requestType := JSONSchemaForActionInput(ctx, schema, action)
 	return gojsonschema.Validate(gojsonschema.NewGoLoader(requestType), gojsonschema.NewGoLoader(input))
 }
 
-func ValidateResponse(ctx context.Context, schema *proto.Schema, op *proto.Operation, response any) (JSONSchema, *gojsonschema.Result, error) {
-	responseSchema := JSONSchemaForOperationResponse(ctx, schema, op)
+func ValidateResponse(ctx context.Context, schema *proto.Schema, action *proto.Action, response any) (JSONSchema, *gojsonschema.Result, error) {
+	responseSchema := JSONSchemaForActionResponse(ctx, schema, action)
 
 	s := gojsonschema.NewGoLoader(responseSchema)
 
@@ -90,30 +90,30 @@ func ValidateResponse(ctx context.Context, schema *proto.Schema, op *proto.Opera
 	return responseSchema, result, err
 }
 
-func JSONSchemaForOperationInput(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
-	inputMessage := proto.FindMessage(schema.Messages, op.InputMessageName)
-	return JSONSchemaForMessage(ctx, schema, op, inputMessage)
+func JSONSchemaForActionInput(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
+	inputMessage := proto.FindMessage(schema.Messages, action.InputMessageName)
+	return JSONSchemaForMessage(ctx, schema, action, inputMessage)
 }
 
-func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, op *proto.Operation) JSONSchema {
-	if op.ResponseMessageName != "" {
-		responseMsg := proto.FindMessage(schema.Messages, op.ResponseMessageName)
+func JSONSchemaForActionResponse(ctx context.Context, schema *proto.Schema, action *proto.Action) JSONSchema {
+	if action.ResponseMessageName != "" {
+		responseMsg := proto.FindMessage(schema.Messages, action.ResponseMessageName)
 
-		return JSONSchemaForMessage(ctx, schema, op, responseMsg)
+		return JSONSchemaForMessage(ctx, schema, action, responseMsg)
 	}
 
-	// If we've reached this point then we know that we are dealing with built-in operations
-	switch op.Type {
-	case proto.OperationType_OPERATION_TYPE_CREATE, proto.OperationType_OPERATION_TYPE_GET, proto.OperationType_OPERATION_TYPE_UPDATE:
-		// these operation types return the serialized model
+	// If we've reached this point then we know that we are dealing with built-in actions
+	switch action.Type {
+	case proto.ActionType_ACTION_TYPE_CREATE, proto.ActionType_ACTION_TYPE_GET, proto.ActionType_ACTION_TYPE_UPDATE:
+		// these action types return the serialized model
 
-		model := proto.FindModel(schema.Models, op.ModelName)
+		model := proto.FindModel(schema.Models, action.ModelName)
 
 		return jsonSchemaForModel(ctx, schema, model, false)
-	case proto.OperationType_OPERATION_TYPE_LIST:
+	case proto.ActionType_ACTION_TYPE_LIST:
 		// array of models
 
-		model := proto.FindModel(schema.Models, op.ModelName)
+		model := proto.FindModel(schema.Models, action.ModelName)
 
 		modelSchema := jsonSchemaForModel(ctx, schema, model, true)
 
@@ -134,7 +134,7 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 			Components: &components,
 		}
 		return wrapperSchema
-	case proto.OperationType_OPERATION_TYPE_DELETE:
+	case proto.ActionType_ACTION_TYPE_DELETE:
 		// string id of deleted record
 
 		return JSONSchema{
@@ -147,7 +147,7 @@ func JSONSchemaForOperationResponse(ctx context.Context, schema *proto.Schema, o
 
 // Generates JSONSchema for an operation by generating properties for the root input message.
 // Any subsequent nested messages are referenced.
-func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.Operation, message *proto.Message) JSONSchema {
+func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, action *proto.Action, message *proto.Message) JSONSchema {
 	components := Components{
 		Schemas: map[string]JSONSchema{},
 	}
@@ -167,7 +167,7 @@ func JSONSchemaForMessage(ctx context.Context, schema *proto.Schema, op *proto.O
 
 	if !isAny {
 		for _, field := range message.Fields {
-			prop := jsonSchemaForField(ctx, schema, op, field.Type, field.Nullable)
+			prop := jsonSchemaForField(ctx, schema, action, field.Type, field.Nullable)
 
 			// Merge components from this request schema into OpenAPI components
 			if prop.Components != nil {
@@ -238,7 +238,7 @@ func jsonSchemaForModel(ctx context.Context, schema *proto.Schema, model *proto.
 	return s
 }
 
-func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Operation, t *proto.TypeInfo, isNullableField bool) JSONSchema {
+func jsonSchemaForField(ctx context.Context, schema *proto.Schema, action *proto.Action, t *proto.TypeInfo, isNullableField bool) JSONSchema {
 	components := &Components{
 		Schemas: map[string]JSONSchema{},
 	}
@@ -250,7 +250,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 	case proto.Type_TYPE_MESSAGE:
 		// Add the nested message to schema components.
 		message := proto.FindMessage(schema.Messages, t.MessageName.Value)
-		component := JSONSchemaForMessage(ctx, schema, op, message)
+		component := JSONSchemaForMessage(ctx, schema, action, message)
 
 		// If that nested message component has ref fields itself, then its components must be bundled.
 		if component.Components != nil {
@@ -281,7 +281,7 @@ func jsonSchemaForField(ctx context.Context, schema *proto.Schema, op *proto.Ope
 		for _, m := range t.UnionNames {
 			// Add the nested message to schema components.
 			message := proto.FindMessage(schema.Messages, m.Value)
-			component := JSONSchemaForMessage(ctx, schema, op, message)
+			component := JSONSchemaForMessage(ctx, schema, action, message)
 
 			// If that nested message component has ref fields itself, then its components must be bundled.
 			if component.Components != nil {

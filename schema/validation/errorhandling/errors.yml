@@ -9,7 +9,7 @@ en:
     message: "You have duplicate field names {{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E004:
-    message: "You have duplicate operations Model:{{ .Model }} Name:{{ .Name }}"
+    message: "You have duplicate actions Model:{{ .Model }} Name:{{ .Name }}"
     hint: "Remove '{{ .Name }}' on line {{ .Line }}"
   E005:
     message: "Action inputs must be one of the fields defined in the model"
@@ -95,16 +95,16 @@ en:
     message: "create actions must accept all required fields that have no default value"
     hint: "maybe add {{ .FieldName }} to the with() inputs or a @set expression"
   E035:
-    message: "{{ .Input }} is not a unique field. {{ .OperationType }} operations take only unique inputs"
+    message: "{{ .Input }} is not a unique field. {{ .ActionType }} actions take only unique inputs"
     hint: ""
   E036:
-    message: "{{ .Ident }} is not a unique field. {{ .OperationType }} operations can only filter on unique fields"
+    message: "{{ .Ident }} is not a unique field. {{ .ActionType }} actions can only filter on unique fields"
     hint: ""
   E037:
-    message: "The {{ .Operator }} operator is not allowed in a {{ .OperationType }} operation, only equality operators ('==' and 'in') are allowed"
+    message: "The {{ .Operator }} operator is not allowed in a {{ .ActionType }} action, only equality operators ('==' and 'in') are allowed"
     hint: ""
   E038:
-    message: "{{ .InputName }} is not used. Labelled inputs must be used in the operation, for example in a @set or @where attribute"
+    message: "{{ .InputName }} is not used. Labelled inputs must be used in the action, for example in a @set or @where attribute"
     hint: ""
   E039:
     message: "{{ .ModelA }} and {{ .ModelB }} define a singular relationship with one another"

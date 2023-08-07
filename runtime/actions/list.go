@@ -8,7 +8,7 @@ import (
 )
 
 func (query *QueryBuilder) applyImplicitFiltersForList(scope *Scope, args map[string]any) error {
-	message := proto.FindWhereInputMessage(scope.Schema, scope.Operation.Name)
+	message := proto.FindWhereInputMessage(scope.Schema, scope.Action.Name)
 	if message == nil {
 		return nil
 	}
@@ -85,7 +85,7 @@ func (query *QueryBuilder) applyImplicitFiltersFromMessage(scope *Scope, message
 
 // Applies schema-defined @orderBy ordering to the query.
 func (query *QueryBuilder) applySchemaOrdering(scope *Scope) error {
-	for _, orderBy := range scope.Operation.OrderBy {
+	for _, orderBy := range scope.Action.OrderBy {
 		direction, err := toSql(orderBy.Direction)
 		if err != nil {
 			return err

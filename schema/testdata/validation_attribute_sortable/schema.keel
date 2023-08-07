@@ -5,7 +5,7 @@ model Author {
         surname Text
     }
 
-    operations {
+    actions {
         create createAuthor() with (firstName, surname) {
             @sortable(firstName, surname)
         }
@@ -18,7 +18,7 @@ model Author {
 
     @sortable(surname)
 
-    functions {
+    actions {
         list listAuthorsFn() {
             @sortable(firstName, surname)
         }

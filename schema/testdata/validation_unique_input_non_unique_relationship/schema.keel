@@ -12,7 +12,7 @@ model Book {
         author Author @unique
     }
 
-    operations {
+    actions {
         get getByPublisher(author.publisher.id)
     }
 }
