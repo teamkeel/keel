@@ -16,6 +16,7 @@ N.B. [See here](https://docs.keel.so/apis/client) for documentation on generatin
 
 ```ts
 import { APIClient } from "../keelClient";
+import { keel } from "@teamkeel/client-react";
 export const { KeelProvider, useKeel } = keel(APIClient);
 
 ```

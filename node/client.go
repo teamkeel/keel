@@ -274,106 +274,104 @@ export class CoreClient {
   }
 
   async request<T>(action: string, body: any): Promise<APIResult<T>> {
-    const res = fetch(
-      stripTrailingSlash(this.config.endpoint) + "/json/" + action,
-      {
-        method: "POST",
-        cache: "no-cache",
-        headers: {
-          accept: "application/json",
-          "content-type": "application/json",
-          ...this.config.headers,
-          ...(this.token
-            ? {
-                Authorization: "Bearer " + this.token,
-              }
-            : {}),
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    try {
+      const result = await fetch(
+        stripTrailingSlash(this.config.endpoint) + "/json/" + action,
+        {
+          method: "POST",
+          cache: "no-cache",
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+            ...this.config.headers,
+            ...(this.token
+              ? {
+                  Authorization: "Bearer " + this.token,
+                }
+              : {}),
+          },
+          body: JSON.stringify(body),
+        }
+      );
 
-    res.catch((err) => {
+      if (result.status >= 200 && result.status < 300) {
+        const rawJson = await result.text();
+        const data = JSON.parse(rawJson, reviver);
+
+        return {
+          data,
+        };
+      }
+
+      let errorMessage = "unknown error";
+
+      try {
+        const errorData: {
+          message: string;
+        } = await result.json();
+        errorMessage = errorData.message;
+      } catch (error) {}
+
+      const requestId = result.headers.get("X-Amzn-Requestid") || undefined;
+
+      const errorCommon = {
+        message: errorMessage,
+        requestId,
+      };
+
+      switch (result.status) {
+        case 400:
+          return {
+            error: {
+              ...errorCommon,
+              type: "bad_request",
+            },
+          };
+        case 401:
+          return {
+            error: {
+              ...errorCommon,
+              type: "unauthorized",
+            },
+          };
+        case 403:
+          return {
+            error: {
+              ...errorCommon,
+              type: "forbidden",
+            },
+          };
+        case 404:
+          return {
+            error: {
+              ...errorCommon,
+              type: "not_found",
+            },
+          };
+        case 500:
+          return {
+            error: {
+              ...errorCommon,
+              type: "internal_server_error",
+            },
+          };
+
+        default:
+          return {
+            error: {
+              ...errorCommon,
+              type: "unknown",
+            },
+          };
+      }
+    } catch (error) {
       return {
         error: {
           type: "unknown",
           message: "unknown error",
-          err,
+          error,
         },
       };
-    });
-
-    const result = await res;
-
-    if (result.status >= 200 && result.status < 299) {
-      const rawJson = await result.text();
-      const data = JSON.parse(rawJson, reviver);
-
-      return {
-        data,
-      };
-    }
-
-    let errorMessage = "unknown error";
-
-    try {
-      const errorData: {
-        message: string;
-      } = await result.json();
-      errorMessage = errorData.message;
-    } catch (error) {}
-
-    const requestId = result.headers.get("X-Amzn-Requestid") || undefined;
-
-    const errorCommon = {
-      message: errorMessage,
-      requestId,
-    };
-
-    switch (result.status) {
-      case 400:
-        return {
-          error: {
-            ...errorCommon,
-            type: "bad_request",
-          },
-        };
-      case 401:
-        return {
-          error: {
-            ...errorCommon,
-            type: "unauthorized",
-          },
-        };
-      case 403:
-        return {
-          error: {
-            ...errorCommon,
-            type: "forbidden",
-          },
-        };
-      case 404:
-        return {
-          error: {
-            ...errorCommon,
-            type: "not_found",
-          },
-        };
-      case 500:
-        return {
-          error: {
-            ...errorCommon,
-            type: "internal_server_error",
-          },
-        };
-
-      default:
-        return {
-          error: {
-            ...errorCommon,
-            type: "unknown",
-          },
-        };
     }
   }
 }
@@ -455,7 +453,7 @@ type InternalServerError = {
 type UnknownError = {
   type: "unknown";
   message: string;
-  err?: unknown;
+  error?: unknown;
   requestId?: string;
 };
 
