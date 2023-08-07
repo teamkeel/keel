@@ -257,7 +257,7 @@ func HandleAuthorizationHeader(ctx context.Context, schema *proto.Schema, header
 	} else {
 		identity, err = actions.FindIdentityByExternalId(ctx, schema, subject, issuer)
 		if identity == nil {
-			identity, err = actions.CreateExternalIdentity(ctx, schema, subject, issuer)
+			identity, err = actions.CreateExternalIdentity(ctx, schema, subject, issuer, headerSplit[1])
 		}
 	}
 
