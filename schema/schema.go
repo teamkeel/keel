@@ -338,6 +338,18 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 		Optional:   true,
 	}
 
+	emailVerifiedField := &parser.FieldNode{
+		BuiltIn: true,
+		Name: parser.NameNode{
+			Value: parser.ImplicitIdentityFieldNameEmailVerified,
+		},
+		Type: parser.NameNode{
+			Value: parser.FieldTypeText,
+		},
+		Attributes: []*parser.AttributeNode{uniqueAttributeNode},
+		Optional:   true,
+	}
+
 	passwordField := &parser.FieldNode{
 		BuiltIn: true,
 		Name: parser.NameNode{
@@ -372,7 +384,7 @@ func (scm *Builder) insertBuiltInModels(declarations *parser.AST, schemaFile rea
 	}
 
 	section := &parser.ModelSectionNode{
-		Fields: []*parser.FieldNode{emailField, passwordField, externalIdField, createdByField},
+		Fields: []*parser.FieldNode{emailField, emailVerifiedField, passwordField, externalIdField, createdByField},
 	}
 
 	declaration.Model.Sections = append(declaration.Model.Sections, section)
