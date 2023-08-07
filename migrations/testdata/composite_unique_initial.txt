@@ -16,6 +16,7 @@ model Person {
 
 CREATE TABLE "identity" (
 "email" TEXT,
+"email_verified" TEXT,
 "password" TEXT,
 "external_id" TEXT,
 "created_by" TEXT,
@@ -24,6 +25,7 @@ CREATE TABLE "identity" (
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_verified_udx UNIQUE ("email_verified");
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
 "thing_c" TEXT NOT NULL,
@@ -42,4 +44,3 @@ ALTER TABLE "person" ADD CONSTRAINT person_thing_a_thing_b_thing_c_udx UNIQUE ("
   { "Model": "Identity", "Field": "", "Type": "ADDED" },
   { "Model": "Person", "Field": "", "Type": "ADDED" }
 ]
-
