@@ -276,25 +276,32 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 
 	keelEnv := runtimectx.GetEnv(ctx)
 
+	// try to decode the token and validate using our private key as the signing method.
+	// this supports external issued tokens but which are signed with our private key (such as clerk)
 	token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
-		iss := t.Claims.(*Claims).Issuer
-
-		if iss == keelIssuerClaim || iss == "" {
-			if ctxPrivateKey != nil {
-				// if the issuer is keel or blank, then parse with the runtime pk
-				return &ctxPrivateKey.PublicKey, nil
-			} else if keelEnv == runtimectx.KeelEnvTest {
-				// no private key is set in test env, so in this case allow the "none" algo
-				return jwt.UnsafeAllowNoneSignatureType, nil
-			}
+		if ctxPrivateKey != nil {
+			return &ctxPrivateKey.PublicKey, nil
+		} else if keelEnv == runtimectx.KeelEnvTest {
+			// no private key is set in test env, so in this case allow the "none" algo
+			return jwt.UnsafeAllowNoneSignatureType, nil
 		}
 
-		if publicKey, ok := externalIssuers[iss]; ok {
-			return publicKey, nil
-		}
-
-		return nil, fmt.Errorf("unexpected issuer in token: %s", iss)
+		return nil, fmt.Errorf("invalid token")
 	})
+
+	// if unsuccessful on the first pass, then try and decode/validate the token using the public key that matches the issuer in the token from our external issuers registry
+	// external issuers can be added by modifying the KEEL_EXTERNAL_ISSUERS env var
+	if err != nil {
+		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
+			iss := t.Claims.(*Claims).Issuer
+
+			if publicKey, ok := externalIssuers[iss]; ok {
+				return publicKey, nil
+			}
+
+			return nil, fmt.Errorf("unexpected issuer in token: %s", iss)
+		})
+	}
 
 	if !claims.VerifyExpiresAt(time.Now().UTC(), true) {
 		return "", "", ErrTokenExpired

@@ -22,7 +22,7 @@ CREATE TABLE "identity" (
 "email_verified" TEXT,
 "password" TEXT,
 "external_id" TEXT,
-"created_by" TEXT,
+"issuer" TEXT,
 "id" TEXT NOT NULL DEFAULT ksuid(),
 "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()

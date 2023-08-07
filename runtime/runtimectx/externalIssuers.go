@@ -37,7 +37,7 @@ func WithExternalIssuers(ctx context.Context, issuers map[string]*rsa.PublicKey)
 }
 
 const (
-	ExternalIssuersEnvKey = "EXTERNAL_ISSUERS"
+	ExternalIssuersEnvKey = "KEEL_EXTERNAL_ISSUERS"
 )
 
 type Jwks struct {
@@ -93,7 +93,7 @@ func (j *Jwks) PublicKey() (*rsa.PublicKey, error) {
 	return &publicKey, nil
 }
 
-// ExternalIssuersFromEnv is responsible for parsing the contents of the EXTERNAL_ISSUERS environment variable. This environment variable is a comma separated list of authorization server uris. For every value in the csv, it is assumed that the target host will expose an endpoint at /.well-known/jwks.json that contains a list of public keys within it. The RSA public key will be retrieved and used to validate incoming jwts
+// ExternalIssuersFromEnv is responsible for parsing the contents of the KEEL_EXTERNAL_ISSUERS environment variable. This environment variable is a comma separated list of authorization server uris. For every value in the csv, it is assumed that the target host will expose an endpoint at /.well-known/jwks.json that contains a list of public keys within it. The RSA public key will be retrieved and used to validate incoming jwts
 func ExternalIssuersFromEnv() map[string]*rsa.PublicKey {
 	issuers := make(map[string]*rsa.PublicKey)
 	envVar := os.Getenv(ExternalIssuersEnvKey)

@@ -1,4 +1,4 @@
-import { test, expect, expectTypeOf, beforeEach } from "vitest";
+import { test, expect, beforeEach } from "vitest";
 import { actions, models, resetDatabase } from "@teamkeel/testing";
 
 beforeEach(resetDatabase);
@@ -537,15 +537,14 @@ test("reset password - valid token with aud as array - password is reset", async
   expect(token).not.toBeNull();
 });
 
-// TODO: reinstate skipped tests below once we have gained access to clerk to retrieve the private key so we can
-// populate environment variable in the test fixtures keelconfig.yaml file with the corresponding public key
-
 // This test will break if we use a private key in the test runtime.
-test.skip("3rd party Clerk token - identity already exists - permission satisfied", async () => {
+test("3rd party Clerk token - identity already exists - permission satisfied", async () => {
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
     externalId: "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp",
-    createdBy: "https://enhanced-osprey-20.clerk.accounts.dev",
+    email: "dave@keel.xyz",
+    emailVerified: true,
+    issuer: "https://enhanced-osprey-20.clerk.accounts.dev",
   });
 
   // {
@@ -576,7 +575,7 @@ test.skip("3rd party Clerk token - identity already exists - permission satisfie
 });
 
 // This test will break if we use a private key in the test runtime.
-test.skip("3rd party Clerk token - identity does not exist - identity created and permission satisfied", async () => {
+test("3rd party Clerk token - identity does not exist - identity created and permission satisfied", async () => {
   // {
   //   "typ": "JWT",
   //   "alg": "none"
@@ -602,10 +601,10 @@ test.skip("3rd party Clerk token - identity does not exist - identity created an
   });
 
   expect(identity?.externalId).equal("user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp");
-  expect(identity?.createdBy).equal(
+  expect(identity?.issuer).equal(
     "https://enhanced-osprey-20.clerk.accounts.dev"
   );
-  expect(identity?.email).toBeNull();
+  expect(identity?.email).not.toBeNull();
   expect(identity?.password).toBeNull();
 
   await expect(
@@ -614,11 +613,13 @@ test.skip("3rd party Clerk token - identity does not exist - identity created an
 });
 
 // This test will break if we use a private key in the test runtime.
-test.skip("3rd party Clerk token - same external id but different issuer - identity created and permission satisfied", async () => {
+test("3rd party Clerk token - same external id but different issuer - identity created and permission satisfied", async () => {
   const identity = await models.identity.create({
     id: "2OrbbxUb8syZzlDz0v5ofunO1vi",
     externalId: "user_2OdykNxqHGHNtBA5Hcdu5Zm6vDp",
-    createdBy: "https://somewhereelse.com",
+    email: "dave@keel.xyz",
+    emailVerified: true,
+    issuer: "https://somewhereelse.com",
   });
 
   // {

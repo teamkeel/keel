@@ -1,4 +1,0 @@
-environment:
-  test:
-    - name: EXTERNAL_ISSUERS
-      value: https://enhanced-osprey-20.clerk.accounts.dev

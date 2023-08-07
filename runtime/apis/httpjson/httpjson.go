@@ -14,6 +14,7 @@ import (
 	"github.com/teamkeel/keel/runtime/common"
 	"github.com/teamkeel/keel/runtime/jsonschema"
 	"github.com/teamkeel/keel/runtime/openapi"
+	"github.com/teamkeel/keel/runtime/runtimectx"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -108,13 +109,21 @@ func NewHandler(p *proto.Schema, api *proto.Api) common.ApiHandlerFunc {
 
 		scope := actions.NewScope(ctx, op, p)
 
+		keelEnv := runtimectx.GetEnv(ctx)
+
 		response, headers, err := actions.Execute(scope, inputs)
 		if err != nil {
 			span.RecordError(err, trace.WithStackTrace(true))
 			span.SetStatus(codes.Error, err.Error())
 
 			code := "ERR_INTERNAL"
+
 			message := "error executing request"
+
+			if keelEnv == runtimectx.KeelEnvTest {
+				message = fmt.Sprintf("error executing request - %s", err.Error())
+			}
+
 			httpCode := http.StatusInternalServerError
 
 			var runtimeErr common.RuntimeError

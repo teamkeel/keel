@@ -31,7 +31,7 @@ func FindIdentityByExternalId(ctx context.Context, schema *proto.Schema, externa
 		return nil, err
 	}
 	query.And()
-	err = query.Where(Field("createdBy"), Equals, Value(issuer))
+	err = query.Where(Field("issuer"), Equals, Value(issuer))
 	if err != nil {
 		return nil, err
 	}
@@ -75,9 +75,9 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 
 	query := NewQuery(identityModel)
 	query.AddWriteValues(map[string]any{
-		"email":     email,
-		"password":  password,
-		"createdBy": keelIssuerClaim,
+		"email":    email,
+		"password": password,
+		"issuer":   keelIssuerClaim,
 	})
 	query.AppendSelect(AllFields())
 	query.AppendReturning(IdField())
@@ -90,11 +90,11 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 	return mapToIdentity(result)
 }
 
-func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, createdBy string, jwt string) (*runtimectx.Identity, error) {
+func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, issuer string, jwt string) (*runtimectx.Identity, error) {
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	// fetch email and verified email from the openid provider
-	externalUserDetails, err := GetExternalUserDetails(createdBy, jwt)
+	externalUserDetails, err := GetExternalUserDetails(issuer, jwt)
 
 	// if we can't fetch them, then this indicates the provider isn't configured correctly, so the created identity
 	// won't be much use.
@@ -105,7 +105,7 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 	query := NewQuery(identityModel)
 	query.AddWriteValues(map[string]any{
 		"externalId":    externalId,
-		"createdBy":     createdBy,
+		"issuer":        issuer,
 		"email":         externalUserDetails.Email,
 		"emailVerified": externalUserDetails.EmailVerified,
 	})
@@ -122,10 +122,12 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 
 type ExternalUserDetails struct {
 	Email         string `json:"email"`
-	EmailVerified string `json:"email-verified"`
+	EmailVerified bool   `json:"email-verified"`
 }
 
 func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, error) {
+	// add tracing -
+
 	openIdConfigUrl := fmt.Sprintf("%s/.well-known/openid-configuration", issuer)
 
 	resp, err := http.Get(openIdConfigUrl)
@@ -212,9 +214,9 @@ func mapToIdentity(values map[string]any) (*runtimectx.Identity, error) {
 		password = ""
 	}
 
-	createdBy, ok := values["createdBy"].(string)
+	issuer, ok := values["issuer"].(string)
 	if !ok {
-		createdBy = ""
+		issuer = ""
 	}
 
 	createdAt, ok := values["createdAt"].(time.Time)
@@ -232,7 +234,7 @@ func mapToIdentity(values map[string]any) (*runtimectx.Identity, error) {
 		ExternalId: externalId,
 		Email:      email,
 		Password:   password,
-		CreatedBy:  createdBy,
+		Issuer:     issuer,
 		CreatedAt:  createdAt,
 		UpdatedAt:  updatedAt,
 	}, nil

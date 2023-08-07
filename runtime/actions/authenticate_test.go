@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
-	"os"
 	"testing"
 	"time"
 
@@ -377,10 +376,8 @@ func TestBearerTokenIssueClaimIsKeel(t *testing.T) {
 }
 
 func TestBearerTokenFromThirdParty(t *testing.T) {
-	t.Skip()
 	issuer := "https://enhanced-osprey-20.clerk.accounts.dev"
 
-	os.Setenv("EXTERNAL_ISSUERS", issuer)
 	ctx := context.Background()
 	ctx = runtimectx.WithEnv(ctx, runtimectx.KeelEnvTest)
 
