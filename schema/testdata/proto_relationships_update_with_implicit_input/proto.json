@@ -172,6 +172,15 @@
         },
         {
           "modelName": "Identity",
+          "name": "emailVerified",
+          "type": {
+            "type": "TYPE_STRING"
+          },
+          "optional": true,
+          "unique": true
+        },
+        {
+          "modelName": "Identity",
           "name": "password",
           "type": {
             "type": "TYPE_PASSWORD"
