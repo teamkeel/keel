@@ -74,10 +74,9 @@
           "modelName": "Identity",
           "name": "emailVerified",
           "type": {
-            "type": "TYPE_STRING"
+            "type": "TYPE_BOOL"
           },
-          "optional": true,
-          "unique": true
+          "optional": true
         },
         {
           "modelName": "Identity",
@@ -97,7 +96,7 @@
         },
         {
           "modelName": "Identity",
-          "name": "createdBy",
+          "name": "issuer",
           "type": {
             "type": "TYPE_STRING"
           },

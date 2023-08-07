@@ -118,7 +118,7 @@ const (
 	ImplicitIdentityFieldNameEmailVerified = "emailVerified"
 	ImplicitIdentityFieldNamePassword      = "password"
 	ImplicitIdentityFieldNameExternalId    = "externalId"
-	ImplicitIdentityFieldNameCreatedBy     = "createdBy"
+	ImplicitIdentityFieldNameIssuer        = "issuer"
 )
 
 const (
