@@ -42,6 +42,7 @@ type Identity {
   createdAt: Timestamp!
   createdBy: String
   email: String
+  emailVerified: String
   externalId: String
   id: ID!
   updatedAt: Timestamp!
