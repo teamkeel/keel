@@ -10,6 +10,7 @@ model Person {
 
 CREATE TABLE "identity" (
 "email" TEXT,
+"email_verified" TEXT,
 "password" TEXT,
 "external_id" TEXT,
 "created_by" TEXT,

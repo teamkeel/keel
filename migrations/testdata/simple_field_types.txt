@@ -28,6 +28,7 @@ CREATE TABLE "identity" (
 "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE "identity" ADD CONSTRAINT identity_email_udx UNIQUE ("email");
+ALTER TABLE "identity" ADD CONSTRAINT identity_email_verified_udx UNIQUE ("email_verified");
 ALTER TABLE "identity" ADD CONSTRAINT identity_id_pkey PRIMARY KEY ("id");
 CREATE TABLE "person" (
 "text" TEXT NOT NULL,
