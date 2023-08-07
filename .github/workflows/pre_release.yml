@@ -1,0 +1,120 @@
+name: Pre-Release
+
+on:
+  push:
+    branches:
+      - main
+      - BLD-600-npm-pre-release
+      - release_process
+    tags-ignore:
+      - "*"
+
+jobs:
+  setup:
+    name: Generate Version
+    runs-on: ubuntu-latest
+    if: startsWith( github.event.head_commit.message, 'feat' ) || startsWith( github.event.head_commit.message, 'fix' ) || contains(github.event.head_commit.message, '!:')
+    steps:
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8.5.1
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
+
+      # generate a new version number based on semantic versioning
+      - name: Generate version
+        id: generate-version
+        uses: paulhatch/semantic-version@v5.0.3
+        with:
+          tag_prefix: "v"
+          major_pattern: "[A-Za-z]+.*!:"
+          major_regexp_flags: "g"
+          minor_pattern: "feat"
+          version_format: "${major}.${minor}.${patch}-prerelease${increment}"
+
+      - name: Output release version
+        run: |
+          echo "NEW_VERSION=${{ steps.generate-version.outputs.version }}"
+
+    outputs:
+        version: ${{ steps.generate-version.outputs.version }}
+
+  npm_release:
+    name: Pre-Release Matrix
+    runs-on: ubuntu-latest
+    needs: [setup]
+    strategy:
+      matrix:
+        package: ['wasm', 'functions-runtime', 'testing-runtime', 'client-react', 'client-react-query']
+    steps:
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: "1.20"
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8.5.1
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          fetch-depth: 0
+
+      - name: Install Go deps
+        run: go mod download
+
+      - name: Generate wasm binary
+        if: ${{ matrix.package  == 'wasm'}}
+        run: make wasm
+
+      - name: Install ${{ matrix.package }} publish dependencies
+        working-directory: ./packages/${{ matrix.package }}
+        run: pnpm install --frozen-lockfile --production
+
+      - name: 'Update NPM version ${{ matrix.package }}'
+        uses: reedyuk/npm-version@1.1.1
+        with:
+          version: ${{ needs.setup.outputs.version }}
+          package: ./packages/${{ matrix.package }}
+
+      - name: NPM Publish ${{ matrix.package }}
+        uses: JS-DevTools/npm-publish@v2
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          tag: 'next'
+          package: ./packages/${{ matrix.package }}
+          dry-run: true
+
+    outputs:
+        version: ${{ needs.setup.outputs.version }}
+
+  github_release:
+    name: Make Github Release
+    runs-on: ubuntu-latest
+    needs: [npm_release]
+    steps:
+      - name: Build changelog
+        uses: Bullrich/generate-release-changelog@master
+        id: changelog
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: ${{ needs.npm_release.outputs.version }}
+          release_name: 'chore(release): ${{ needs.npm_release.outputs.version }}'
+          body: ${{ steps.changelog.outputs.changelog }}
+          draft: true
+          prerelease: true
