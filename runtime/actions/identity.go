@@ -13,6 +13,9 @@ import (
 	"github.com/teamkeel/keel/proto"
 	"github.com/teamkeel/keel/runtime/runtimectx"
 	"github.com/teamkeel/keel/schema/parser"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 func FindIdentityById(ctx context.Context, schema *proto.Schema, id string) (*runtimectx.Identity, error) {
@@ -91,14 +94,23 @@ func CreateIdentity(ctx context.Context, schema *proto.Schema, email string, pas
 }
 
 func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalId string, issuer string, jwt string) (*runtimectx.Identity, error) {
+	ctx, span := tracer.Start(ctx, "Create external identity")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("externalId", externalId))
+	span.SetAttributes(attribute.String("issuer", issuer))
+	span.SetAttributes(attribute.String("token", jwt))
+
 	identityModel := proto.FindModel(schema.Models, parser.ImplicitIdentityModelName)
 
 	// fetch email and verified email from the openid provider
-	externalUserDetails, err := GetExternalUserDetails(issuer, jwt)
+	externalUserDetails, err := GetExternalUserDetails(ctx, issuer, jwt)
 
 	// if we can't fetch them, then this indicates the provider isn't configured correctly, so the created identity
 	// won't be much use.
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -114,6 +126,8 @@ func CreateExternalIdentity(ctx context.Context, schema *proto.Schema, externalI
 
 	result, err := query.InsertStatement().ExecuteToSingle(ctx)
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -125,14 +139,20 @@ type ExternalUserDetails struct {
 	EmailVerified bool   `json:"email-verified"`
 }
 
-func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, error) {
-	// add tracing -
+func GetExternalUserDetails(ctx context.Context, issuer string, jwt string) (*ExternalUserDetails, error) {
+	_, span := tracer.Start(ctx, "Fetch openid userinfo")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("issuer", issuer))
+	span.SetAttributes(attribute.String("token", jwt))
 
 	openIdConfigUrl := fmt.Sprintf("%s/.well-known/openid-configuration", issuer)
 
 	resp, err := http.Get(openIdConfigUrl)
 
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -140,6 +160,8 @@ func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, er
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -148,6 +170,8 @@ func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, er
 	err = json.Unmarshal(b, &openIdResp)
 
 	if err != nil {
+		span.RecordError(err, trace.WithStackTrace(true))
+		span.SetStatus(codes.Error, err.Error())
 		return nil, err
 	}
 
@@ -156,6 +180,8 @@ func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, er
 			req, err := http.NewRequest(http.MethodGet, uri, nil)
 
 			if err != nil {
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
 				return nil, err
 			}
 
@@ -164,6 +190,8 @@ func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, er
 			userInfoResp, err := http.DefaultClient.Do(req)
 
 			if err != nil {
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
 				return nil, err
 			}
 
@@ -172,6 +200,8 @@ func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, er
 			b, err := io.ReadAll(userInfoResp.Body)
 
 			if err != nil {
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
 				return nil, err
 			}
 
@@ -180,6 +210,8 @@ func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, er
 			err = json.Unmarshal(b, &userDetails)
 
 			if err != nil {
+				span.RecordError(err, trace.WithStackTrace(true))
+				span.SetStatus(codes.Error, err.Error())
 				return nil, err
 			}
 
@@ -187,6 +219,8 @@ func GetExternalUserDetails(issuer string, jwt string) (*ExternalUserDetails, er
 		}
 	}
 
+	span.RecordError(err, trace.WithStackTrace(true))
+	span.SetStatus(codes.Error, err.Error())
 	return nil, errors.New("could not fetch external user info from openid provider")
 }
 
