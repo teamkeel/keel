@@ -268,12 +268,6 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 	var token *jwt.Token
 	claims := &Claims{}
 
-	externalIssuers, err := runtimectx.GetExternalIssuers(ctx)
-
-	if err != nil {
-		return "", "", err
-	}
-
 	keelEnv := runtimectx.GetEnv(ctx)
 
 	// try to decode the token and validate using our private key as the signing method.
@@ -295,8 +289,15 @@ func validateToken(ctx context.Context, tokenString string, audienceClaim string
 		token, err = jwt.ParseWithClaims(tokenString, claims, func(t *jwt.Token) (interface{}, error) {
 			iss := t.Claims.(*Claims).Issuer
 
-			if publicKey, ok := externalIssuers[iss]; ok {
-				return publicKey, nil
+			issuers := runtimectx.ExternalIssuersFromEnv()
+
+			// check to see if there is a matching issuer for the token issuer in the registry
+			if lo.Contains(issuers, iss) {
+				publicKey, err := runtimectx.PublicKeyForIssuer(iss)
+
+				if err == nil {
+					return publicKey, nil
+				}
 			}
 
 			return nil, fmt.Errorf("unexpected issuer in token: %s", iss)

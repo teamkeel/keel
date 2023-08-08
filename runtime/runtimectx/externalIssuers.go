@@ -16,22 +16,6 @@ type externalIssuersKey string
 
 var externalIssuersKeyContext externalIssuersKey = "externalIssuers"
 
-func GetExternalIssuers(ctx context.Context) (map[string]*rsa.PublicKey, error) {
-	v := ctx.Value(externalIssuersKeyContext)
-
-	if v == nil {
-		return nil, nil
-	}
-
-	issuers, ok := v.(map[string]*rsa.PublicKey)
-
-	if !ok {
-		return nil, errors.New("external issuers not in context")
-	}
-
-	return issuers, nil
-}
-
 func WithExternalIssuers(ctx context.Context, issuers map[string]*rsa.PublicKey) context.Context {
 	return context.WithValue(ctx, externalIssuersKeyContext, issuers)
 }
@@ -93,32 +77,35 @@ func (j *Jwks) PublicKey() (*rsa.PublicKey, error) {
 	return &publicKey, nil
 }
 
-// ExternalIssuersFromEnv is responsible for parsing the contents of the KEEL_EXTERNAL_ISSUERS environment variable. This environment variable is a comma separated list of authorization server uris. For every value in the csv, it is assumed that the target host will expose an endpoint at /.well-known/jwks.json that contains a list of public keys within it. The RSA public key will be retrieved and used to validate incoming jwts
-func ExternalIssuersFromEnv() map[string]*rsa.PublicKey {
-	issuers := make(map[string]*rsa.PublicKey)
+// ExternalIssuersFromEnv is responsible for parsing the contents of the KEEL_EXTERNAL_ISSUERS environment variable. This environment variable is a comma separated list of authorization server uris. For every value in the csv, it is assumed that the target host will expose an endpoint at /.well-known/jwks.json that contains a list of public keys within it. Any value that is not a valid URI will be ignored.
+func ExternalIssuersFromEnv() (providers []string) {
 	envVar := os.Getenv(ExternalIssuersEnvKey)
 
 	if envVar == "" {
-		return make(map[string]*rsa.PublicKey)
+		return []string{}
 	}
 
 	for _, uri := range strings.Split(envVar, ",") {
-		jwks, err := NewJwks(uri)
-
-		if err != nil {
-			continue
-		}
-
-		publicKey, err := jwks.PublicKey()
-
-		if err != nil {
-			continue
-		}
-
-		if publicKey != nil {
-			issuers[uri] = publicKey
+		if _, err := url.Parse(uri); err == nil {
+			providers = append(providers, uri)
 		}
 	}
 
-	return issuers
+	return providers
+}
+
+func PublicKeyForIssuer(issuerUri string) (*rsa.PublicKey, error) {
+	jwks, err := NewJwks(issuerUri)
+
+	if err != nil {
+		return nil, err
+	}
+
+	publicKey, err := jwks.PublicKey()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return publicKey, nil
 }
